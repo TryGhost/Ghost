@@ -27,12 +27,15 @@ import { editorScreen } from '@/editor/editor.screen';
 import { membersScreen } from '@/members/members.screen';
 import { postsListScreen } from '@/posts/list/posts-list.screen';
 import { sidebarScreen } from '@/layout/sidebar.screen';
+import { navigateTo } from '@/utils/navigation';
 import { postAnalyticsScreen } from './post-analytics.screen';
 
 const POST_ID = '64d623b64676110001e897d9';
 const POST_UUID = '0d5cea22-f4d5-4b23-a0f7-1d9c46ae5f2a';
 const NEWSLETTER_ID = '64d623b64676110001e897aa';
 const EMAIL_ID = '64d623b64676110001e897ab';
+const OTHER_POST_ID = '64d623b64676110001e897e0';
+const OTHER_POST_UUID = '7c2e9d41-58a3-4f0b-9e6d-2a1b3c4d5e6f';
 
 function daysAgo(days: number): string {
   const date = new Date();
@@ -57,11 +60,24 @@ function seededPost(overrides: Partial<ReturnType<typeof post>> = {}) {
   });
 }
 
+function seededOtherPost() {
+  return seededPost({
+    id: OTHER_POST_ID,
+    uuid: OTHER_POST_UUID,
+    title: 'The Phantom Menace',
+    slug: 'the-phantom-menace',
+    url: 'https://example.com/the-phantom-menace/',
+  });
+}
+
 /**
  * Waits for every named pipe to be queried, then asserts none was sent without
- * the routed post's uuid: a site-wide query the post views would discard.
+ * the given post's uuid: a site-wide query the post views would discard.
  */
-async function expectPipesScopedToPost(pipes: Record<string, TinybirdPipeCapture>) {
+async function expectPipesScopedToPost(
+  pipes: Record<string, TinybirdPipeCapture>,
+  postUuid: string,
+) {
   for (const [name, pipe] of Object.entries(pipes)) {
     await expect
       .poll(() => pipe.requests.length, { message: `${name} was never queried` })
@@ -69,9 +85,32 @@ async function expectPipesScopedToPost(pipes: Record<string, TinybirdPipeCapture
   }
   const unscopedRequests = Object.values(pipes)
     .flatMap((pipe) => pipe.requests)
-    .filter(({ params }) => params.get('post_uuid') !== POST_UUID)
+    .filter(({ params }) => params.get('post_uuid') !== postUuid)
     .map(({ url }) => url);
   expect(unscopedRequests).toEqual([]);
+}
+
+/** Each pipe's requests from this point on, so a spec can assert on the next screen's alone. */
+function pipeRequestsFromNow(
+  pipes: Record<string, TinybirdPipeCapture>,
+): Record<string, TinybirdPipeCapture> {
+  return Object.fromEntries(
+    Object.entries(pipes).map(([name, pipe]) => {
+      const offset = pipe.requests.length;
+      const requests = () => pipe.requests.slice(offset);
+      return [
+        name,
+        {
+          get requests() {
+            return requests();
+          },
+          get lastRequest() {
+            return requests().at(-1);
+          },
+        },
+      ];
+    }),
+  );
 }
 
 /**
@@ -713,21 +752,29 @@ describe('Post analytics overview', () => {
   });
 
   it('holds its Tinybird queries until the post has loaded', async () => {
-    const pendingPost = deferred<Post[]>();
+    const pendingOtherPost = deferred<Post[]>();
     // A held request would block teardown if an assertion fails first.
-    onTestFinished(() => pendingPost.resolve([]));
-    const { tokenApi, activeVisitorsApi, kpisApi, topSourcesApi } = seedPostAnalyticsWorld(
+    onTestFinished(() => pendingOtherPost.resolve([]));
+    const { postsApi, activeVisitorsApi, kpisApi, topSourcesApi } = seedPostAnalyticsWorld(
       {},
-      () => pendingPost.promise,
+      ({ filter }) =>
+        filter === `id:${OTHER_POST_ID}` ? pendingOtherPost.promise : [seededPost()],
     );
+    fakeAdminStats.postReferrers(OTHER_POST_ID);
+    fakeAdminStats.postGrowth(OTHER_POST_ID);
     await renderAdminApp(`/posts/analytics/${POST_ID}`, { boot: webAnalyticsBootOverrides() });
 
-    // The token resolves while the post is still loading.
-    await expect.poll(() => tokenApi.requests.length).toBeGreaterThan(0);
-    pendingPost.resolve([seededPost()]);
+    // Every pipe answering for the first post proves the app holds the token.
+    const pipes = { activeVisitorsApi, kpisApi, topSourcesApi };
+    await expectPipesScopedToPost(pipes, POST_UUID);
+    const otherPostPipes = pipeRequestsFromNow(pipes);
 
-    await expect.element(postAnalyticsScreen.uniqueVisitors()).toHaveTextContent('250');
-    await expectPipesScopedToPost({ activeVisitorsApi, kpisApi, topSourcesApi });
+    navigateTo(`/posts/analytics/${OTHER_POST_ID}`);
+    await expect.poll(() => postsApi.lastRequest?.filter).toBe(`id:${OTHER_POST_ID}`);
+    pendingOtherPost.resolve([seededOtherPost()]);
+
+    await expect.element(postAnalyticsScreen.postTitle('The Phantom Menace')).toBeVisible();
+    await expectPipesScopedToPost(otherPostPipes, OTHER_POST_UUID);
   });
 
   it('renders for an administrator', async () => {
@@ -893,22 +940,27 @@ describe('Post analytics web', () => {
   });
 
   it('holds its Tinybird queries until the post has loaded', async () => {
-    const pendingPost = deferred<Post[]>();
+    const pendingOtherPost = deferred<Post[]>();
     // A held request would block teardown if an assertion fails first.
-    onTestFinished(() => pendingPost.resolve([]));
-    const { tokenApi, activeVisitorsApi, kpisApi, topLocationsApi, topSourcesApi } =
-      seedPostAnalyticsWorld({}, () => pendingPost.promise);
+    onTestFinished(() => pendingOtherPost.resolve([]));
+    const { postsApi, activeVisitorsApi, kpisApi, topLocationsApi, topSourcesApi } =
+      seedPostAnalyticsWorld({}, ({ filter }) =>
+        filter === `id:${OTHER_POST_ID}` ? pendingOtherPost.promise : [seededPost()],
+      );
+    await renderAdminApp(`/posts/analytics/${POST_ID}/web`, { boot: webAnalyticsBootOverrides() });
+
+    // Every pipe answering for the first post proves the app holds the token.
+    const pipes = { activeVisitorsApi, kpisApi, topLocationsApi, topSourcesApi };
+    await expectPipesScopedToPost(pipes, POST_UUID);
+    const otherPostPipes = pipeRequestsFromNow(pipes);
+
     // An applied filter makes the filter bar fetch that field's options too.
-    await renderAdminApp(`/posts/analytics/${POST_ID}/web?location=US`, {
-      boot: webAnalyticsBootOverrides(),
-    });
+    navigateTo(`/posts/analytics/${OTHER_POST_ID}/web?location=US`);
+    await expect.poll(() => postsApi.lastRequest?.filter).toBe(`id:${OTHER_POST_ID}`);
+    pendingOtherPost.resolve([seededOtherPost()]);
 
-    // The token resolves while the post is still loading.
-    await expect.poll(() => tokenApi.requests.length).toBeGreaterThan(0);
-    pendingPost.resolve([seededPost()]);
-
-    await expect.element(postAnalyticsScreen.sourceRow('google.com')).toHaveTextContent('170');
-    await expectPipesScopedToPost({ activeVisitorsApi, kpisApi, topLocationsApi, topSourcesApi });
+    await expect.element(postAnalyticsScreen.postTitle('The Phantom Menace')).toBeVisible();
+    await expectPipesScopedToPost(otherPostPipes, OTHER_POST_UUID);
   });
 
   it('filters the post analytics pipes when a location row is clicked', async () => {
