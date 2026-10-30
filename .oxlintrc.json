@@ -33,6 +33,22 @@
       }
     },
     {
+      "files": ["apps/**/*.test.{js,jsx,ts,tsx}", "apps/*/test/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["assert", "assert/*", "node:assert", "node:assert/*"],
+                "message": "App tests assert with Vitest expect. A failing node:assert on a React DOM node inspects the whole fiber tree and can crash the worker."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "files": ["apps/admin/src/**/*.{ts,tsx}"],
       "rules": {
         "local/no-hardcoded-ghost-paths": "error"
