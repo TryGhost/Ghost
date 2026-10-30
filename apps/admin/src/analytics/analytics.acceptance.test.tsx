@@ -442,6 +442,49 @@ describe('Analytics newsletters', () => {
       .toHaveTextContent('Weekly Digest Issue #1');
   });
 
+  it('averages every send in the period, not only the oldest 20', async () => {
+    seedAnalyticsWorld();
+    fakeNewsletters([newsletter({ name: 'Weekly Digest', status: 'active', sort_order: 0 })]);
+    fakeAdminStats.newsletterSubscribers();
+    const sends = Array.from({ length: 125 }, (_, index) => ({
+      post_id: String(index).padStart(24, '0'),
+      post_title: `Issue ${index}`,
+      send_date: `${daysAgo(1)}T10:00:00.000Z`,
+      sent_to: 10,
+      total_opens: index < 25 ? 0 : 10,
+      open_rate: index < 25 ? 0 : 1,
+    }));
+    fakeAdminEndpoint('GET', /^\/stats\/newsletter-basic-stats\//, ({ url }) => {
+      const limit = Number(new URL(url).searchParams.get('limit') ?? 20);
+      return { stats: sends.slice(0, limit), meta: {} };
+    });
+    const clicksApi = fakeAdminEndpoint('GET', /^\/stats\/newsletter-click-stats\//, ({ url }) => {
+      const postIds = new URL(url).searchParams.get('post_ids')?.split(',') ?? [];
+      const stats = sends
+        .filter((send) => postIds.includes(send.post_id))
+        .map((send) => ({
+          post_id: send.post_id,
+          total_clicks: send.total_opens,
+          click_rate: send.open_rate,
+          email_count: send.sent_to,
+        }));
+      return { stats, meta: {} };
+    });
+    await renderAdminApp('/analytics/newsletters', { boot: webAnalyticsBootOverrides() });
+
+    await expect
+      .element(analyticsScreen.newslettersCardTab('Avg. open rate'))
+      .toHaveTextContent('80%');
+    await expect
+      .element(analyticsScreen.newslettersCardTab('Avg. click rate'))
+      .toHaveTextContent('80%');
+    const batchSizes = clicksApi.requests.map(
+      ({ url }) => new URL(url).searchParams.get('post_ids')?.split(',').length ?? 0,
+    );
+    expect(batchSizes).toEqual(expect.arrayContaining([100, 25]));
+    expect(batchSizes.every((size) => size <= 100)).toBe(true);
+  });
+
   it('shows the empty state on every newsletter card when none were sent', async () => {
     seedEmptyAnalyticsWorld();
     fakeNewsletters([newsletter({ name: 'Weekly Digest', status: 'active', sort_order: 0 })]);

@@ -42,6 +42,7 @@ import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletter
 import { useAnalytics } from '@/analytics/providers/analytics-context';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import {
+  useAllNewsletterStatsWithRange,
   useNewsletterStatsWithRangeSplit,
   useSubscriberCountWithRange,
 } from '@/analytics/hooks/use-newsletter-stats-with-range';
@@ -317,15 +318,12 @@ const Newsletters: React.FC = () => {
       shouldFetchStats || false,
     );
 
-  // Get newsletter stats with click data to check if any newsletters were sent in the time period
-  // and to calculate averages - using the same data source as the table for consistency
   const {
     data: newsletterStatsData,
     isLoading: isNewsletterStatsLoading,
     isClicksLoading,
-  } = useNewsletterStatsWithRangeSplit(
+  } = useAllNewsletterStatsWithRange(
     range,
-    'date asc',
     selectedNewsletterId || undefined,
     shouldFetchStats || false,
   );
