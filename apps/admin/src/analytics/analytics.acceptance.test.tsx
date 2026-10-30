@@ -29,6 +29,13 @@ function daysAgo(days: number): string {
   return date.toISOString().slice(0, 10);
 }
 
+function localDaysAgo(days: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() - days);
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
 /**
  * The world every stats view reads: growth history and the latest-post lookup
  * from the Admin API, visitor KPIs and the header's active-visitors probe
@@ -442,22 +449,47 @@ describe('Analytics newsletters', () => {
       .toHaveTextContent('Weekly Digest Issue #1');
   });
 
-  it('charts the latest 20 sends in the period, oldest first', async () => {
+  it('uses every send in the selected period for averages and charts while limiting top newsletters', async () => {
     seedAnalyticsWorld();
-    fakeNewsletters([newsletter({ name: 'Weekly Digest', status: 'active', sort_order: 0 })]);
+    const newsletterId = '64d623b64676110001e897d2';
+    fakeNewsletters([newsletter({ id: newsletterId, name: 'Weekly Digest', status: 'active', sort_order: 0 })]);
     fakeAdminStats.newsletterSubscribers();
-    const sends = Array.from({ length: 25 }, (_, index) => ({
+    const periodSends = Array.from({ length: 25 }, (_, index) => ({
       post_id: String(index).padStart(24, '0'),
       post_title: `Issue ${index}`,
-      send_date: `${daysAgo(25 - index)}T10:00:00.000Z`,
+      newsletter_id: newsletterId,
+      send_date: `${localDaysAgo(25 - index)}T10:00:00.000Z`,
       sent_to: 100,
       total_opens: index * 4,
       open_rate: (index * 4) / 100,
     }));
+    const sends = [
+      ...periodSends,
+      { ...periodSends[0], post_id: 'outside-period', send_date: `${localDaysAgo(40)}T10:00:00.000Z` },
+      { ...periodSends[0], post_id: 'old-send', post_title: 'Archive issue', send_date: `${localDaysAgo(1200)}T10:00:00.000Z` },
+      { ...periodSends[0], post_id: 'other-newsletter', newsletter_id: 'another-newsletter' },
+    ];
     fakeAdminEndpoint('GET', /^\/stats\/newsletter-basic-stats\//, ({ url }) => {
       const params = new URL(url).searchParams;
-      const ordered = params.get('order') === 'date desc' ? [...sends].reverse() : sends;
-      return { stats: ordered.slice(0, Number(params.get('limit') ?? 20)), meta: {} };
+      const matching = sends.filter((send) =>
+        send.newsletter_id === params.get('newsletter_id') &&
+        send.send_date.slice(0, 10) >= (params.get('date_from') ?? '') &&
+        send.send_date.slice(0, 10) <= (params.get('date_to') ?? '9999-12-31'),
+      );
+      const ordered = [...matching].reverse();
+      const limit = Math.min(Number(params.get('limit') ?? 20), 100);
+      const page = Number(params.get('page') ?? 1);
+      const afterId = params.get('after_id');
+      const offset = afterId ? ordered.findIndex((send) => send.post_id === afterId) + 1 : 0;
+      const hasNext = offset + limit < ordered.length;
+      return {
+        stats: ordered.slice(offset, offset + limit),
+        meta: params.has('page') ? { pagination: {
+          page, limit, next: hasNext ? page + 1 : null,
+          next_cursor: hasNext ? ordered[offset + limit - 1].post_id : null,
+          next_cursor_date: hasNext ? ordered[offset + limit - 1].send_date.replace('T', ' ').replace(/Z$/, '') : null,
+        } } : {},
+      };
     });
     fakeAdminEndpoint('GET', /^\/stats\/newsletter-click-stats\//, ({ url }) => {
       const postIds = new URL(url).searchParams.get('post_ids')?.split(',') ?? [];
@@ -475,18 +507,26 @@ describe('Analytics newsletters', () => {
 
     await expect
       .element(analyticsScreen.newslettersCardTab('Avg. open rate'))
-      .toHaveTextContent('58%');
+      .toHaveTextContent('48%');
     await expect
       .element(analyticsScreen.newslettersCardTab('Avg. click rate'))
-      .toHaveTextContent('58%');
+      .toHaveTextContent('48%');
 
     await analyticsScreen.newslettersCardTab('Avg. open rate').click();
     const bars = () =>
       analyticsScreen.newslettersCard().element().querySelectorAll('.recharts-bar-rectangle');
-    await expect.poll(() => bars().length).toBe(20);
+    await expect.poll(() => bars().length).toBe(25);
     const heights = [...bars()].map((bar) => bar.getBoundingClientRect().height);
     expect(heights).toEqual([...heights].sort((a, b) => a - b));
-    expect(heights[0]).toBeLessThan(heights[19]);
+    expect(heights[0]).toBeLessThan(heights[24]);
+    await expect.poll(() => analyticsScreen.topNewslettersCard().element().querySelectorAll('tbody tr').length).toBe(20);
+
+    await analyticsScreen.dateRangeSelect().click();
+    await analyticsScreen.rangeOption('All time').click();
+    await expect.element(analyticsScreen.newslettersCardTab('Avg. open rate')).toHaveTextContent('44%');
+    await expect.poll(() => bars().length).toBe(27);
+    await expect.element(analyticsScreen.topNewslettersCard()).toHaveTextContent('Archive issue');
+    await expect.poll(() => analyticsScreen.topNewslettersCard().element().querySelectorAll('tbody tr').length).toBe(20);
   });
 
   it('shows the empty state on every newsletter card when none were sent', async () => {
@@ -511,5 +551,21 @@ describe('Analytics newsletters', () => {
     await expect
       .element(analyticsScreen.newslettersCard())
       .toHaveTextContent('No newsletters in the last 30 days');
+  });
+
+  it('does not show incomplete averages on a backend without pagination', async () => {
+    seedAnalyticsWorld();
+    fakeNewsletters([newsletter({ name: 'Weekly Digest', status: 'active', sort_order: 0 })]);
+    fakeAdminStats.newsletterSubscribers({ total: 543 });
+    fakeAdminEndpoint('GET', /^\/stats\/newsletter-basic-stats\//, { stats: [], meta: {} });
+    fakeAdminStats.newsletterClicks();
+    await renderAdminApp('/analytics/newsletters', { boot: webAnalyticsBootOverrides() });
+
+    await expect.element(analyticsScreen.totalSubscribersValue()).toHaveTextContent('543');
+    await expect.element(analyticsScreen.newslettersCardTab('Avg. open rate')).toHaveTextContent('—');
+    await analyticsScreen.newslettersCardTab('Avg. open rate').click();
+    await expect.element(analyticsScreen.newslettersCard()).toHaveTextContent(
+      'Update Ghost to see newsletter statistics for the whole period.',
+    );
   });
 });

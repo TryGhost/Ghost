@@ -1,5 +1,19 @@
 const statsService = require('../../services/stats');
 
+// Period pages must not be mixed with cached pages from different points in time.
+const newsletterBasicCache = statsService.cache && {
+  get(key, getResponse) {
+    return JSON.parse(key).options.page === undefined
+      ? statsService.cache.get(key, getResponse)
+      : null;
+  },
+  set(key, response) {
+    if (JSON.parse(key).options.page === undefined) {
+      return statsService.cache.set(key, response);
+    }
+  },
+};
+
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
   docName: 'stats',
@@ -205,18 +219,21 @@ const controller = {
     headers: {
       cacheInvalidate: false,
     },
-    options: ['order', 'limit', 'date_from', 'date_to', 'timezone', 'newsletter_id'],
+    options: ['order', 'limit', 'page', 'after_id', 'after_date', 'date_from', 'date_to', 'timezone', 'newsletter_id'],
     permissions: {
       docName: 'posts',
       method: 'browse',
     },
-    cache: statsService.cache,
+    cache: newsletterBasicCache,
     generateCacheKeyData(frame) {
       return {
         method: 'getNewsletterBasicStats',
         options: {
           order: frame.options.order,
           limit: frame.options.limit,
+          page: frame.options.page,
+          after_id: frame.options.after_id,
+          after_date: frame.options.after_date,
           date_from: frame.options.date_from,
           date_to: frame.options.date_to,
           timezone: frame.options.timezone,

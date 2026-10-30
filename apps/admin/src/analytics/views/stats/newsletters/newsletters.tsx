@@ -42,6 +42,10 @@ import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletter
 import { useAnalytics } from '@/analytics/providers/analytics-context';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import {
+  UnsupportedNewsletterPaginationError,
+  useNewsletterPeriodStats,
+} from '@/analytics/hooks/use-newsletter-period-stats';
+import {
   useNewsletterStatsWithRangeSplit,
   useSubscriberCountWithRange,
 } from '@/analytics/hooks/use-newsletter-stats-with-range';
@@ -317,15 +321,15 @@ const Newsletters: React.FC = () => {
       shouldFetchStats || false,
     );
 
-  // Get the latest 20 sends with click data to check if any newsletters were sent in the time period
-  // and to calculate averages
+  // Fetch every send in the selected period for the averages and charts.
   const {
     data: newsletterStatsData,
     isLoading: isNewsletterStatsLoading,
-    isClicksLoading,
-  } = useNewsletterStatsWithRangeSplit(
+    isError: isNewsletterStatsError,
+    error: newsletterStatsError,
+    refetch: refetchNewsletterStats,
+  } = useNewsletterPeriodStats(
     range,
-    'date desc',
     selectedNewsletterId || undefined,
     shouldFetchStats || false,
   );
@@ -432,7 +436,7 @@ const Newsletters: React.FC = () => {
   }, [newsletterStatsData]);
 
   // Separate loading states for different sections
-  const isKPIsLoading = isSubscriberStatsLoading || isClicksLoading || isNewsletterStatsLoading;
+  const isKPIsLoading = isSubscriberStatsLoading || isNewsletterStatsLoading;
 
   // Show data only if there are actual newsletters sent in the time period
   // const hasNewslettersInPeriod = newsletterStatsData?.stats && newsletterStatsData.stats.length > 0;
@@ -461,8 +465,14 @@ const Newsletters: React.FC = () => {
                 initialTab={initialTab}
                 isAvgsLoading={false}
                 isLoading={isKPIsLoading}
+                periodError={isNewsletterStatsError
+                  ? newsletterStatsError instanceof UnsupportedNewsletterPaginationError
+                    ? 'Update Ghost to see newsletter statistics for the whole period.'
+                    : 'Unable to load newsletter statistics. Please try again.'
+                  : undefined}
                 subscribersData={subscribersData}
                 totals={totals}
+                onRetryPeriodStats={() => { void refetchNewsletterStats(); }}
               />
             </CardContent>
           </Card>

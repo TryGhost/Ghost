@@ -2,6 +2,7 @@ import moment from 'moment';
 import { TestWrapper } from '@test-utils/fixtures/query-client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getExpectedDateRange, setupDateMocking } from '@test-utils/analytics/date-testing-utils';
+import { STATS_RANGES } from '@/shared/analytics/constants';
 import { setupStatsAppMocks } from '@test-utils/analytics/test-helpers';
 import {
   mockApiHook,
@@ -357,6 +358,14 @@ describe('Newsletter Stats Hooks', () => {
   });
 
   describe('useNewsletterBasicStatsWithRange', () => {
+    it('omits the start date for All time while retaining the top-newsletter limit', () => {
+      renderHook(() => useNewsletterBasicStatsWithRange(STATS_RANGES.allTime.value), { wrapper: TestWrapper });
+      const params = mockUseNewsletterBasicStats.mock.calls[0][0]?.searchParams;
+      expect(params).not.toHaveProperty('date_from');
+      expect(params).not.toHaveProperty('limit');
+      expect(params?.timezone).toBe('UTC');
+    });
+
     it('uses default range of 30 days when no range provided', () => {
       const wrapper = TestWrapper;
       const { result } = renderHook(() => useNewsletterBasicStatsWithRange(), { wrapper });
@@ -369,6 +378,7 @@ describe('Newsletter Stats Hooks', () => {
           date_from: expectedDateRange.expectedDateFrom,
           date_to: expectedDateRange.expectedDateTo,
           order: 'date desc',
+          timezone: 'UTC',
         },
         enabled: true,
       });
@@ -388,6 +398,7 @@ describe('Newsletter Stats Hooks', () => {
           date_from: expectedDateRange.expectedDateFrom,
           date_to: expectedDateRange.expectedDateTo,
           order: 'open_rate desc',
+          timezone: 'UTC',
         },
         enabled: true,
       });
@@ -409,6 +420,7 @@ describe('Newsletter Stats Hooks', () => {
           date_to: expectedDateRange.expectedDateTo,
           order: 'date desc',
           newsletter_id: 'newsletter-456',
+          timezone: 'UTC',
         },
         enabled: true,
       });
@@ -796,6 +808,7 @@ describe('Newsletter Stats Hooks', () => {
           date_to: expectedDateRange.expectedDateTo,
           order: 'click_rate desc',
           newsletter_id: 'newsletter-456',
+          timezone: 'UTC',
         },
         enabled: true,
       });

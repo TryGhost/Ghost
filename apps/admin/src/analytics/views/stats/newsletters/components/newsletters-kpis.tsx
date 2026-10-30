@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { type AvgsDataItem } from '@/analytics/views/stats/newsletters/newsletters';
 import {
   BarChartLoadingIndicator,
+  Button,
   type ChartConfig,
   ChartContainer,
   ChartTooltip,
@@ -106,6 +107,8 @@ const NewsletterKPIs: React.FC<{
   totals: Totals;
   isLoading: boolean;
   isAvgsLoading: boolean;
+  periodError?: string;
+  onRetryPeriodStats: () => void;
   initialTab?: string;
 }> = ({
   subscribersData: allSubscribersData,
@@ -113,6 +116,8 @@ const NewsletterKPIs: React.FC<{
   totals,
   isLoading,
   isAvgsLoading,
+  periodError,
+  onRetryPeriodStats,
   initialTab = 'total-subscribers',
 }) => {
   const [currentTab, setCurrentTab] = useState(initialTab);
@@ -242,7 +247,7 @@ const NewsletterKPIs: React.FC<{
     // Include the avg line value so the y-axis always contains both the
     // tallest bar and the avg reference line.
     const avgForTab = currentTab === 'avg-open-rate' ? avgOpenRate : avgClickRate;
-    const bucketValue = Math.max(Math.max(...values), avgForTab);
+    const bucketValue = values.reduce((maximum, value) => Math.max(maximum, value), avgForTab);
 
     // Min is always 0. Upper limit:
     //   < 1%       → 1%
@@ -316,7 +321,7 @@ const NewsletterKPIs: React.FC<{
               className={isAvgsLoading ? 'opacity-50' : ''}
               color={tabConfig['avg-open-rate'].color}
               label="Avg. open rate"
-              value={formatPercentage(avgOpenRate)}
+              value={periodError ? '—' : formatPercentage(avgOpenRate)}
             />
           </KpiTabTrigger>
         )}
@@ -332,7 +337,7 @@ const NewsletterKPIs: React.FC<{
               className={isAvgsLoading ? 'opacity-50' : ''}
               color={tabConfig['avg-click-rate'].color}
               label="Avg. click rate"
-              value={formatPercentage(avgClickRate)}
+              value={periodError ? '—' : formatPercentage(avgClickRate)}
             />
           </KpiTabTrigger>
         )}
@@ -352,7 +357,7 @@ const NewsletterKPIs: React.FC<{
                 className={isAvgsLoading ? 'opacity-50' : ''}
                 color={tabConfig['avg-open-rate'].color}
                 label="Avg. open rate"
-                value={formatPercentage(avgOpenRate)}
+                value={periodError ? '—' : formatPercentage(avgOpenRate)}
               />
             )}
             {currentTab === 'avg-click-rate' && emailTrackClicksEnabled && (
@@ -360,7 +365,7 @@ const NewsletterKPIs: React.FC<{
                 className={isAvgsLoading ? 'opacity-50' : ''}
                 color={tabConfig['avg-click-rate'].color}
                 label="Avg. click rate"
-                value={formatPercentage(avgClickRate)}
+                value={periodError ? '—' : formatPercentage(avgClickRate)}
               />
             )}
           </KpiDropdownButton>
@@ -397,7 +402,12 @@ const NewsletterKPIs: React.FC<{
         {((currentTab === 'avg-open-rate' && emailTrackOpensEnabled) ||
           (currentTab === 'avg-click-rate' && emailTrackClicksEnabled)) && (
           <>
-            {isAvgsLoading ? (
+            {periodError ? (
+              <div className="flex h-[320px] flex-col items-center justify-center gap-3" role="alert">
+                <p>{periodError}</p>
+                <Button variant="outline" onClick={onRetryPeriodStats}>Retry</Button>
+              </div>
+            ) : isAvgsLoading ? (
               <div className="h-[320px] w-full items-center justify-center">
                 <BarChartLoadingIndicator />
               </div>

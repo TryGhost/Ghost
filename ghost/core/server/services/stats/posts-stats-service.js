@@ -821,6 +821,9 @@ class PostsStatsService {
    * @param {Object} options - Query options
    * @param {string} [options.order] - Sort order (e.g., 'date desc', 'open_rate desc', 'click_rate desc')
    * @param {number} [options.limit] - Number of results to return (default: 20)
+   * @param {number} [options.page] - Optional page number for period-wide statistics
+   * @param {string} [options.after_id] - Last post ID from the preceding page
+   * @param {string} [options.after_date] - UTC send date observed for that post
    * @param {string} [options.date_from] - Optional start date filter (YYYY-MM-DD)
    * @param {string} [options.date_to] - Optional end date filter (YYYY-MM-DD)
    * @param {string} [options.timezone] - Timezone to use for date interpretation
@@ -831,7 +834,13 @@ class PostsStatsService {
       const order = options.order || 'date desc';
       const limitRaw = Number.parseInt(String(options.limit ?? 20), 10);
       const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : 20;
+      const paginated = options.page !== undefined;
+      const pageRaw = Number(options.page);
+      const page = Number.isSafeInteger(pageRaw) && pageRaw > 0 ? pageRaw : 1;
       const { dateFrom, dateTo } = getDateBoundaries(options);
+      // Posts use database datetime strings rather than ISO strings in SQLite.
+      const databaseDateFrom = dateFrom?.replace('T', ' ').replace('.000Z', '') ?? null;
+      const databaseDateTo = dateTo?.replace('T', ' ').replace('Z', '') ?? null;
 
       // Parse order field and direction
       const [orderField, orderDirection = 'desc'] = order.split(' ');
@@ -858,6 +867,21 @@ class PostsStatsService {
         });
       }
 
+      if (paginated && orderField !== 'date') {
+        throw new errors.BadRequestError({ message: 'Date-ordered pagination is required' });
+      }
+      let cursorDate;
+      if (paginated && page > 1) {
+        if (
+          typeof options.after_id !== 'string' || !options.after_id ||
+          typeof options.after_date !== 'string' ||
+          !/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d{1,6})?$/.test(options.after_date)
+        ) {
+          throw new errors.BadRequestError({ message: 'A date-ordered cursor is required' });
+        }
+        cursorDate = options.after_date;
+      }
+
       let query;
 
       // If ordering by click_rate, we need to include click data
@@ -881,11 +905,11 @@ class PostsStatsService {
             this.knex.raw('COALESCE(e.email_count, 0) as sent_to'),
             this.knex.raw('COALESCE(e.opened_count, 0) as total_opens'),
             this.knex.raw(
-              'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate',
+              'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN 1.0 * COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate',
             ),
             this.knex.raw('COALESCE(clicks.click_count, 0) as total_clicks'),
             this.knex.raw(
-              'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(clicks.click_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as click_rate',
+              'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN 1.0 * COALESCE(clicks.click_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as click_rate',
             ),
           )
           .from('posts as p')
@@ -894,10 +918,11 @@ class PostsStatsService {
           .where('p.newsletter_id', newsletterId)
           .whereIn('p.status', ['sent', 'published'])
           .orderBy(orderFieldMap[orderField], orderDirection)
-          .limit(limit);
+          .orderBy('p.id', orderDirection)
+          .limit(paginated ? limit + 1 : limit);
 
         // Apply centralized date filtering
-        applyDateFilter(query, dateFrom, dateTo, 'p.published_at');
+        applyDateFilter(query, databaseDateFrom, databaseDateTo, 'p.published_at');
       } else {
         // Build the query without click data for better performance
         query = this.knex
@@ -908,7 +933,7 @@ class PostsStatsService {
             this.knex.raw('COALESCE(e.email_count, 0) as sent_to'),
             this.knex.raw('COALESCE(e.opened_count, 0) as total_opens'),
             this.knex.raw(
-              'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate',
+              'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN 1.0 * COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate',
             ),
           )
           .from('posts as p')
@@ -916,17 +941,47 @@ class PostsStatsService {
           .where('p.newsletter_id', newsletterId)
           .whereIn('p.status', ['sent', 'published'])
           .orderBy(orderFieldMap[orderField], orderDirection)
-          .limit(limit);
+          .orderBy('p.id', orderDirection)
+          .limit(paginated ? limit + 1 : limit);
 
         // Apply centralized date filtering
-        applyDateFilter(query, dateFrom, dateTo, 'p.published_at');
+        applyDateFilter(query, databaseDateFrom, databaseDateTo, 'p.published_at');
+      }
+
+      if (cursorDate) {
+        const comparison = orderDirection.toLowerCase() === 'desc' ? '<' : '>';
+        query.where((builder) => {
+          builder.where('p.published_at', comparison, cursorDate).orWhere((tied) => {
+            tied.where('p.published_at', cursorDate).andWhere('p.id', comparison, options.after_id);
+          });
+        });
       }
 
       const results = await query;
 
-      return { data: results };
+      if (!paginated) {
+        return { data: results };
+      }
+
+      const cursorSendDate = results.length > limit ? results[limit - 1].send_date : null;
+      const nextCursorDate = cursorSendDate instanceof Date
+        ? cursorSendDate.toISOString().replace('T', ' ').replace('Z', '')
+        : cursorSendDate?.replace('T', ' ').replace(/Z$/, '') ?? null;
+      return {
+        data: results.slice(0, limit),
+        meta: { pagination: {
+          page,
+          limit,
+          next: results.length > limit ? page + 1 : null,
+          next_cursor: results.length > limit ? results[limit - 1].post_id : null,
+          next_cursor_date: nextCursorDate,
+        } },
+      };
     } catch (error) {
       logging.error(`Error fetching newsletter basic stats for newsletter ${newsletterId}:`, error);
+      if (options.page !== undefined) {
+        throw error;
+      }
       return { data: [] };
     }
   }
@@ -972,7 +1027,7 @@ class PostsStatsService {
         .groupBy('r.post_id')
         .select(
           this.knex.raw(
-            'CASE WHEN MAX(COALESCE(e.email_count, 0)) > 0 THEN COALESCE(COUNT(DISTINCT mce.member_id), 0) / MAX(COALESCE(e.email_count, 0)) ELSE 0 END as click_rate',
+            'CASE WHEN MAX(COALESCE(e.email_count, 0)) > 0 THEN 1.0 * COALESCE(COUNT(DISTINCT mce.member_id), 0) / MAX(COALESCE(e.email_count, 0)) ELSE 0 END as click_rate',
           ),
         );
 
@@ -981,7 +1036,7 @@ class PostsStatsService {
       return { data: results };
     } catch (error) {
       logging.error(`Error fetching newsletter click stats for newsletter ${newsletterId}:`, error);
-      return { data: [] };
+      throw error;
     }
   }
 

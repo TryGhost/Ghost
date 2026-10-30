@@ -412,6 +412,107 @@ describe('PostsStatsService', function () {
     assert.ok(service, 'Service instance should exist');
   });
 
+  it('paginates newsletter sends with a stable order', async function () {
+    const sentAt = '2026-01-10 12:00:00';
+    for (const id of ['newsletter-c', 'newsletter-a', 'newsletter-b', 'newsletter-d', 'newsletter-e']) {
+      await _createPostWithDetails(id, id, 'sent', {
+        newsletter_id: 'newsletter-1',
+        published_at: sentAt,
+      });
+      await _createEmailStats(id, 100, 50);
+    }
+    await _createPostWithDetails('other-newsletter', 'other-newsletter', 'sent', {
+      newsletter_id: 'newsletter-2',
+      published_at: sentAt,
+    });
+    const options = { order: 'date desc', limit: 2, date_from: '2026-01-10', date_to: '2026-01-10' };
+    const first = await service.getNewsletterBasicStats('newsletter-1', { ...options, page: 1 });
+    await db('posts').where('id', 'newsletter-e').del();
+    await db('posts').where('id', 'newsletter-d').update({ published_at: '2026-01-09 12:00:00' });
+    const second = await service.getNewsletterBasicStats('newsletter-1', {
+      ...options, page: 2, after_id: first.meta.pagination.next_cursor,
+      after_date: first.meta.pagination.next_cursor_date,
+    });
+    assert.deepEqual(first.data.map((row) => row.post_id), ['newsletter-e', 'newsletter-d']);
+    assert.deepEqual(second.data.map((row) => row.post_id), ['newsletter-c', 'newsletter-b']);
+    const third = await service.getNewsletterBasicStats('newsletter-1', {
+      ...options, page: 3, after_id: second.meta.pagination.next_cursor,
+      after_date: second.meta.pagination.next_cursor_date,
+    });
+
+    assert.deepEqual(third.data.map((row) => row.post_id), ['newsletter-a']);
+    assert.equal(first.data[0].open_rate, 0.5);
+    assert.equal(first.meta.pagination.next, 2);
+    assert.equal(first.meta.pagination.next_cursor, 'newsletter-d');
+    assert.equal(first.meta.pagination.next_cursor_date, sentAt);
+    assert.equal(second.meta.pagination.next, 3);
+    assert.equal(third.meta.pagination.next, null);
+    assert.equal(third.meta.pagination.next_cursor_date, null);
+    assert.equal((await service.getNewsletterBasicStats('newsletter-1', { ...options, page: undefined })).data.length, 2);
+    await db('posts').where('id', 'newsletter-d').del();
+    const afterDeletion = await service.getNewsletterBasicStats('newsletter-1', {
+      ...options, page: 2, after_id: first.meta.pagination.next_cursor,
+      after_date: first.meta.pagination.next_cursor_date,
+    });
+    assert.deepEqual(afterDeletion.data.map((row) => row.post_id), ['newsletter-c', 'newsletter-b']);
+  });
+
+  it('rejects paginated requests with non-date ordering from the first page', async function () {
+    await assert.rejects(service.getNewsletterBasicStats('newsletter-1', {
+      page: 1, order: 'open_rate desc',
+    }), /date-ordered/i);
+    await assert.rejects(service.getNewsletterBasicStats('newsletter-1', {
+      page: 1, order: 'click_rate desc',
+    }), /date-ordered/i);
+    await assert.rejects(service.getNewsletterBasicStats('newsletter-1', {
+      page: 2, order: 'date desc', after_id: 'post-1',
+    }), /date-ordered cursor/i);
+  });
+
+  it('limits top newsletter statistics to 20 sends by default', async function () {
+    for (let index = 0; index < 25; index += 1) {
+      await _createPostWithDetails(`top-${index}`, `Top ${index}`, 'sent', {
+        newsletter_id: 'newsletter-1', published_at: '2026-01-10 12:00:00',
+      });
+    }
+    const result = await service.getNewsletterBasicStats('newsletter-1');
+    assert.equal(result.data.length, 20);
+    assert.equal(result.meta, undefined);
+  });
+
+  it('distinguishes no clicks from a failure to query newsletter statistics', async function () {
+    assert.deepEqual(await service.getNewsletterClickStats('newsletter-1', ['post-1']), { data: [] });
+    await _createPostWithDetails('post-click', 'Post Click', 'sent', { newsletter_id: 'newsletter-1' });
+    await _createEmailStats('post-click', 2, 1);
+    await db('redirects').insert({ id: 'redirect-1', post_id: 'post-click' });
+    await db('members_click_events').insert({ id: 'click-1', member_id: 'member-1', redirect_id: 'redirect-1' });
+    const clicks = await service.getNewsletterClickStats('newsletter-1', ['post-click']);
+    assert.equal(clicks.data[0].click_rate, 0.5);
+
+    const queryError = new Error('Database query failed');
+    const failingService = new PostsStatsService({
+      knex: { raw: () => null, select: () => { throw queryError; } },
+    });
+    await assert.rejects(failingService.getNewsletterBasicStats('newsletter-1', { page: 1 }), queryError);
+    await assert.rejects(failingService.getNewsletterClickStats('newsletter-1', ['post-1']), queryError);
+  });
+
+  it('filters newsletter sends using local calendar boundaries', async function () {
+    const sends = [
+      ['before', '2026-01-10 02:59:59'],
+      ['start', '2026-01-10 03:00:00'],
+      ['end', '2026-01-11 02:59:59'],
+      ['after', '2026-01-11 03:00:00'],
+    ];
+    for (const [id, published_at] of sends) {
+      await _createPostWithDetails(id, id, 'sent', { newsletter_id: 'newsletter-1', published_at });
+    }
+    const result = await service.getNewsletterBasicStats('newsletter-1', {
+      page: 1, limit: 20, date_from: '2026-01-10', date_to: '2026-01-10', timezone: 'America/Sao_Paulo',
+    });
+    assert.deepEqual(result.data.map((row) => row.post_id), ['end', 'start']);
+  });
+
   // _enrichWithTitles assigns `url_exists` based on the urlService lookup.
   // The fixtures above always return truthy, so the falsy branch was
   // unreached. Pin both branches here so the future migration to a
