@@ -50,7 +50,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/mentions': {
         default: { init: mentions, service: { controller: {}, sendingService: {} } },
       },
-      './server/services/recommendations': { init: recommendations },
+      './server/services/recommendations': { default: { init: recommendations } },
       './server/services/email-analytics': {
         getGifts: () => ({}),
         getAutomations: () => ({}),

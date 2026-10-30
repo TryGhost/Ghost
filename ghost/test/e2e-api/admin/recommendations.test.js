@@ -7,7 +7,7 @@ const {
 const { anyObjectId, anyErrorId, anyISODateTime, anyContentVersion, anyLocationFor, anyEtag } =
   matchers;
 const assert = require('node:assert/strict');
-const recommendationsService = require('../../../core/server/services/recommendations');
+const recommendationsService = require('../../../core/server/services/recommendations').default;
 const {
   Recommendation,
   ClickEvent,
@@ -27,7 +27,7 @@ async function addDummyRecommendation(i = 0) {
     createdAt: new Date(i * 5000), // Reliable ordering
   });
 
-  await recommendationsService.repository.save(recommendation);
+  await recommendationsService.service.repository.save(recommendation);
   return recommendation.id;
 }
 
@@ -39,7 +39,7 @@ async function addDummyRecommendations(amount = 15) {
 }
 
 async function addClicksAndSubscribers({ memberId }) {
-  const recommendations = await recommendationsService.repository.getAll({
+  const recommendations = await recommendationsService.service.repository.getAll({
     order: [{ field: 'createdAt', direction: 'desc' }],
   });
 
@@ -49,7 +49,7 @@ async function addClicksAndSubscribers({ memberId }) {
       recommendationId: recommendations[0].id,
     });
 
-    await recommendationsService.clickEventRepository.save(clickEvent);
+    await recommendationsService.service.clickEventRepository.save(clickEvent);
   }
 
   // Create 3 clicks for 2nd
@@ -58,7 +58,7 @@ async function addClicksAndSubscribers({ memberId }) {
       recommendationId: recommendations[1].id,
     });
 
-    await recommendationsService.clickEventRepository.save(clickEvent);
+    await recommendationsService.service.clickEventRepository.save(clickEvent);
   }
 
   // Create 3 subscribers for 1st
@@ -68,7 +68,7 @@ async function addClicksAndSubscribers({ memberId }) {
       memberId,
     });
 
-    await recommendationsService.subscribeEventRepository.save(subscribeEvent);
+    await recommendationsService.service.subscribeEventRepository.save(subscribeEvent);
   }
 
   // Create 2 subscribers for 3rd
@@ -78,7 +78,7 @@ async function addClicksAndSubscribers({ memberId }) {
       memberId,
     });
 
-    await recommendationsService.subscribeEventRepository.save(subscribeEvent);
+    await recommendationsService.service.subscribeEventRepository.save(subscribeEvent);
   }
 }
 
@@ -94,9 +94,9 @@ describe('Recommendations Admin API', function () {
   });
 
   afterEach(async function () {
-    for (const recommendation of await recommendationsService.repository.getAll()) {
+    for (const recommendation of await recommendationsService.service.repository.getAll()) {
       recommendation.delete();
-      await recommendationsService.repository.save(recommendation);
+      await recommendationsService.service.repository.save(recommendation);
     }
     mockManager.restore();
   });
@@ -327,7 +327,7 @@ describe('Recommendations Admin API', function () {
     });
 
     it('Can fetch recommendations with relations when there are no recommendations', async function () {
-      const recommendations = await recommendationsService.repository.getCount();
+      const recommendations = await recommendationsService.service.repository.getCount();
       assert.equal(recommendations, 0, 'This test expects there to be no recommendations');
 
       const { body: page1 } = await agent

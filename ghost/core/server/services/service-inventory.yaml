@@ -11353,17 +11353,23 @@ services:
     disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
+    migrated: true
     migration:
       complexity: complex
       modelImpact: fits
       reason: >-
-        A retained facade can own optional availability and the two background initializers,
-        but the root currently publishes repositories/controllers before startup finishes.
-        Define the foreground/background readiness split and clean up its mentions mapper,
-        event subscription and timers after partial failure. This is substantial ordering
-        and resource-ownership work without a demonstrated need to change the helper.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        Migrated: the root defines the service through defineService and its factory
+        constructs the wrapper with the shared modules and runs its synchronous composition,
+        so boot awaits one ready aggregate instead of a wrapper that published fields before
+        startup finished. The foreground graph is complete when init resolves; the two metadata
+        refreshes stay detached background work that the wrapper starts after composition, as
+        before. Every construction failure precedes those refreshes, the mentions mapper and
+        the event subscription, so a failed attempt leaves nothing to release and a retry
+        composes a fresh graph. Shutdown ownership of timers, the mapper, the subscription and
+        the mail transports is unchanged; the helper needed no change.
+      reviewedAt: 8cba94a138a69cbb7e496424591575daab11a529
       sources:
+        - core/server/services/recommendations/index.ts
         - core/server/services/recommendations/recommendation-service-wrapper.js
         - core/server/services/recommendations/service/recommendation-service.ts
         - core/server/services/recommendations/service/incoming-recommendation-service.ts
@@ -11372,32 +11378,34 @@ services:
       dependencies:
         complexity: complex
         reason: >-
-          The wrapper shares Mentions API, sender and mutable metadata, creates its own mailer and
-          repositories, and launches asynchronous initialization after publishing fields. It also
-          depends on oEmbed and Settings and imports filesystem/logging helpers below the root.
-          Preserving shared mapper identity and service readiness requires coordinated wiring with
-          Mentions rather than independent import moves.
+          The defineService factory constructs the wrapper with config, logging, Sentry, URL
+          helpers, models, mail, the external request client, DomainEvents, the mention event
+          class and the mentions, oEmbed, settings and staff roots, and the wrapper and its inner
+          services and repositories receive logging through their constructors; the test-only
+          in-memory repository lives in test support. The wrapper still shares the Mentions API,
+          sender and mutable metadata and creates its own mailer and settings BREAD service while
+          composing. The mongo-utils key mapping in the base repository is an exact library
+          allowance: a pure query transformer with no application instance. Shared mapper
+          identity relies on boot initializing Mentions before this root.
         preparation:
           - >-
-            Await Mentions and oEmbed readiness before constructing the aggregate, and specify
-            ownership of the mapper installed into Mentions metadata.
-          - >-
-            Inject logging, filesystem and repository transformation operations through the local
-            classes; move genuinely test-only in-memory repositories to test support after checking
-            callers.
+            Await oEmbed readiness explicitly if it ever gains an initializer; today the shared
+            instance is constructed at import, and the mentions mapper installed by this root is
+            retained by Mentions metadata for the process lifetime.
           - >-
             Keep Settings reads, staff-recipient lookup and mail delivery as explicit collaborators,
             separating the ready graph from asynchronous publication/metadata refresh.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+        reviewedAt: 8cba94a138a69cbb7e496424591575daab11a529
         sources:
+          - core/server/services/recommendations/index.ts
           - core/server/services/recommendations/recommendation-service-wrapper.js
           - core/server/services/recommendations/service/recommendation-service.ts
+          - core/server/services/recommendations/service/bookshelf-repository.ts
           - core/server/services/recommendations/service/well-known-service.ts
-          - core/server/services/recommendations/service/in-memory-recommendation-repository.ts
           - core/server/services/mentions/webmention-metadata.js
           - core/boot.js
     entryPoints:
-      - recommendations/index.js
+      - recommendations/index.ts
     notes: >-
       Preserve optional composition, database repositories, mentions integration and HTTP
       callers. Record detached startup, settings writes and notification work before changing
@@ -11405,19 +11413,21 @@ services:
     contracts:
       exports:
         summary: >-
-          CommonJS exports one mutable RecommendationServiceWrapper with receiver-dependent,
-          synchronous init returning undefined and public repositories, services and controllers.
-          Fields are undefined before the first init; when services:recommendations:enabled is
-          false, init still publishes them and skips only the two background initializers. The
-          service barrel exports constructors and entities, not another application instance. Inner
+          The TypeScript root default-exports a defineService root whose `.service`, read
+          through `.default` by its CommonJS consumers, is the ready RecommendationServiceWrapper
+          with public repositories, services and controllers; reading it before init throws
+          IncorrectUsageError and init resolves undefined. Wrapper fields are undefined until the
+          factory composes them; when services:recommendations:enabled is false, composition
+          still publishes them and skips only the two background initializers. The service
+          barrel exports constructors and entities, not another application instance. Inner
           methods return promises; controllers serialize plain recommendation values into
           data/meta responses. Controller units with fake services assert selected serialized
-          fields, pagination and validation. The root test loads the index and asserts it is one
-          wrapper instance whose eight fields are undefined before init, that init returns
-          undefined, and that the three endpoint modules read the controller fields per request,
-          rejecting with a TypeError before publication.
+          fields, pagination and validation. The root test loads the index and asserts the
+          service getter throws before init, that init resolves undefined and publishes the
+          wrapper, and that the three endpoint modules read the service per request, rejecting
+          with IncorrectUsageError before initialization.
         sources:
-          - core/server/services/recommendations/index.js
+          - core/server/services/recommendations/index.ts
           - core/server/services/recommendations/recommendation-service-wrapper.js
           - core/server/services/recommendations/service/index.ts
           - core/server/services/recommendations/service/recommendation-controller.ts
@@ -11429,9 +11439,13 @@ services:
           - test/unit/server/services/recommendations/service/incoming-recommendation-controller.test.ts
       construction:
         summary: >-
-          Import constructs only the root wrapper. Enabled init reads the ready Mentions facade
-          for its API and sender, captures model constructors and composes WellknownService, a fresh SettingsBREADService
-          and enabler, repositories, metadata/outgoing/incoming services and controllers. It
+          Import declares only the root. The defineService factory constructs the wrapper with
+          the shared config, logging, Sentry, URL helpers, models, mail, external request,
+          DomainEvents, mention event class and the mentions, oEmbed, settings and staff roots,
+          then runs its synchronous composition, which reads the ready Mentions facade for its
+          API and sender, reads model constructors and composes WellknownService, a fresh
+          SettingsBREADService and enabler, repositories, metadata/outgoing/incoming services and
+          controllers, passing logging to the inner services and repositories. It
           uses BookshelfClickEventRepository for both click and subscription models. Two
           GhostMailers are constructed: one inside SettingsBREADService and one for incoming
           notifications. Metadata borrows the shared oEmbed and external-request objects; the
@@ -11444,8 +11458,10 @@ services:
           helpers, controllers hold their services, metadata is fetched through the shared
           external request client with oEmbed fallback, incoming emails go through GhostMailer
           to the alert users mapped to email and slug, and the renderer reads the staff API at
-          send time. Failure of a model lookup after the repository is published is asserted.
+          send time. A model lookup failure during composition rejects init, publishes nothing
+          and leaves a retry to compose a complete graph.
         sources:
+          - core/server/services/recommendations/index.ts
           - core/server/services/recommendations/recommendation-service-wrapper.js
           - core/server/services/recommendations/service/recommendation-service.ts
           - core/server/services/recommendations/service/incoming-recommendation-service.ts
@@ -11460,8 +11476,9 @@ services:
           - test/e2e-server/services/recommendation-emails.test.js
       consumers:
         summary: >-
-          Boot initializes the root. Admin outgoing/incoming and Content/Members endpoints
-          retain its wrapper and read controller fields per call; controllers retain services.
+          Boot awaits the root. Admin outgoing/incoming and Content/Members endpoints retain
+          the root and read the service's controller fields per call; the site router reads the
+          well-known controller per request; controllers retain services.
           The theme helper calls the public API, and the frontend serves the generated well-known
           file. The mentions mapper strips its suffix; verified matching MentionCreatedEvents
           call the wrapper's current incoming service. Booted HTTP tests assert selected CRUD
@@ -11502,19 +11519,19 @@ services:
       startup:
         summary: >-
           Boot awaits the Mentions root before the Promise.all group that initializes
-          recommendations and staff, so the Mentions facade is ready. Recommendations throws if
-          Mentions is read before it is ready, publishes its graph, starts both async initializers without awaiting them, then installs
-          mapper/subscriber before returning. Outgoing init lists rows and writes the well-known
-          file before checking recommendations_enabled and scheduling metadata refresh. Incoming
-          init schedules revalidation. Direct inner-service units assert well-known invocation,
-          refresh invocation after advancing a day, outgoing production/development enablement
-          and test/disabled suppression. The root test asserts init throws before publishing
-          anything while Mentions is not ready and succeeds once it is, starts both
-          inner initializers on the published services without awaiting them unless config is
-          explicitly false, logs the disabled case, and logs an inner initializer rejection
-          while still returning. The boot harness asserts recommendations init waits for mentions
-          init to finish, and that its synchronous throw rejects initServices before job
-          registration. Exact jitter, completion before HTTP readiness
+          recommendations and staff, so the Mentions facade is ready when the defineService
+          factory runs synchronously inside init. The factory throws if Mentions is read before
+          it is ready, composes its graph, starts both async refreshes without awaiting them,
+          then installs mapper/subscriber and resolves with the ready wrapper. Outgoing refresh
+          init checks recommendations_enabled before scheduling metadata refresh; incoming init
+          schedules revalidation. Direct inner-service units assert refresh invocation after
+          advancing a day, outgoing production/development enablement and test/disabled
+          suppression. The root test asserts init rejects without publishing anything while
+          Mentions is not ready and succeeds once it is, starts both inner initializers on the
+          ready services without awaiting them unless config is explicitly false, logs the
+          disabled case, and logs an inner initializer rejection while still resolving. The boot
+          harness asserts recommendations init waits for mentions init to finish, and that its
+          rejection fails initServices before job registration. Exact jitter, completion before HTTP readiness
           and behavior when startup file/DB work fails remain source-only.
         sources:
           - core/boot.js
@@ -11529,19 +11546,18 @@ services:
           - test/unit/server/services/recommendations/service/incoming-recommendation-service.test.ts
       lifetime:
         summary: >-
-          The repository is published before most construction and is the only initialized
-          guard; later failure can leave an incomplete graph that repeated init skips. Successful
-          repeated init retains objects, mapper and subscription. Disabling later only makes
-          init return; it does not remove existing fields or stop work. Controllers, incoming
-          service and outgoing service retain their collaborators, while the event callback
-          rereads the wrapper's incoming service and the renderer rereads staff.api. Inner init
-          methods have no repeat guard, and their timers are not retained. The root test asserts
-          repeated init retains every published object and installs the mapper, subscriber and
-          inner initializers once, that a construction failure after the repository is published
-          leaves the other fields undefined and makes the next init return without completing
-          the graph, and that the event callback emails through the wrapper's current incoming
-          service. Timer retention and dependency replacement in retained controllers remain
-          source-only. There is no exposed reset or shutdown method.
+          defineService retains the first ready wrapper across repeated init and discards a
+          failed attempt, whose construction stops before the refreshes, mapper and subscription
+          are installed. Disabling later only changes the next factory run; it does not remove
+          the retained wrapper or stop work. Controllers, incoming service and outgoing service
+          retain their collaborators, while the event callback rereads the wrapper's incoming
+          service and the renderer rereads staff.api. Inner init methods have no repeat guard,
+          and their timers are not retained. The root test asserts repeated init retains the
+          wrapper and installs the mapper, subscriber and inner initializers once, that a
+          construction failure rejects init, publishes nothing and lets a retry compose a
+          complete graph once, and that the event callback emails through the wrapper's current
+          incoming service. Timer retention and dependency replacement in retained controllers
+          remain source-only. There is no exposed reset or shutdown method.
         sources:
           - core/server/services/recommendations/recommendation-service-wrapper.js
           - core/server/services/recommendations/service/recommendation-service.ts
@@ -11552,9 +11568,10 @@ services:
           - test/unit/server/services/recommendations/index.test.ts
       configuration:
         summary: >-
-          Explicit false for services:recommendations:enabled skips only the two background
-          initializers; repositories, services and controllers are still published.
-          Public-directory path, model/service references and both mail transports are captured;
+          Explicit false for services:recommendations:enabled, read from the injected config
+          while composing, skips only the background refreshes; repositories, services and
+          controllers are still published. Model/service references and both mail transports
+          are captured while composing;
           settings BREAD reads current cache synchronously, URL generation uses retained helpers,
           and notification recipients/settings/sender are read during work. Outgoing refresh is
           enabled by setting string true outside test environments after a 2–7 minute delay;
@@ -11619,7 +11636,7 @@ services:
           - test/e2e-server/services/recommendation-emails.test.js
       failures:
         summary: >-
-          Synchronous composition errors reach boot; detached inner-init/timer failures are
+          Composition errors reject init and reach boot; detached inner-init/timer failures are
           logged. CRUD has no transaction spanning DB writes, well-known output, settings and
           mentions, so a later rejection can follow persistence. Enabler setSetting drops the
           BREAD edit promise; awaiting it does not await persistence or propagate its rejection.
@@ -11630,10 +11647,10 @@ services:
           fallback values, mapping failure/null and non-propagation of a rejected mention sender
           using fakes; timer rejection cases only assert invocation. The root test asserts
           setSetting resolves before the settings edit settles, that an inner initializer
-          rejection is logged rather than thrown, and that partial root construction is neither
-          cleaned up nor retried; the service unit asserts checkRecommendation saves and returns
-          the stored values before its metadata refresh settles. They do not prove rollback,
-          ordered persistence or notification retry.
+          rejection is logged rather than thrown, and that a construction failure rejects init
+          and is retried from scratch; the service unit asserts checkRecommendation saves and
+          returns the stored values before its metadata refresh settles. They do not prove
+          rollback, ordered persistence or notification retry.
         sources:
           - core/server/services/recommendations/recommendation-service-wrapper.js
           - core/server/services/recommendations/recommendation-enabler-service.js
@@ -11654,14 +11671,13 @@ services:
     unverified: []
     blockers:
       - >-
-        Root identity, first disabled initialization, dependency absence and failure after
-        repository publication are characterized in the root test. Boot still does not await
-        initial DB/file work, and existing HTTP success does not establish wrapper readiness
-        or retry after a partial graph.
+        Boot still does not await the initial metadata and revalidation refreshes, which the
+        wrapper starts as detached work; existing HTTP success does not establish their
+        completion.
       - >-
-        Account for timers, mapper/listener retention and both mail transports when changing
-        lifecycle ownership. No teardown, cancellation or production event drain is exposed;
-        retained controllers/services can keep old dependencies after another root is replaced.
+        Timers, the mentions mapper, the event subscription and both mail transports have no
+        teardown, cancellation or production event drain; a retained wrapper keeps them for the
+        process lifetime.
       - >-
         The enabler's synchronous settings read boundary and its dropped edit promise are
         characterized in the root test against the real BREAD service with a stubbed edit.

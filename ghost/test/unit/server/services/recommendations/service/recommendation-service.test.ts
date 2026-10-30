@@ -1,7 +1,6 @@
 import assert from 'assert/strict';
 import {
   ClickEvent,
-  InMemoryRecommendationRepository,
   Recommendation,
   RecommendationService,
   SubscribeEvent,
@@ -10,6 +9,7 @@ import {
   RecommendationMetadataService,
 } from '../../../../../../core/server/services/recommendations/service';
 import { InMemoryRepository } from '../../../../../../core/server/lib/in-memory-repository';
+import { InMemoryRecommendationRepository } from './in-memory-recommendation-repository';
 import sinon from 'sinon';
 
 class InMemoryClickEventRepository<
@@ -22,6 +22,8 @@ class InMemoryClickEventRepository<
 
 describe('RecommendationService', function () {
   let service: RecommendationService;
+  let clickEventRepository: InMemoryClickEventRepository<ClickEvent>;
+  let subscribeEventRepository: InMemoryClickEventRepository<SubscribeEvent>;
   let enabled = 'false';
   let clock: sinon.SinonFakeTimers;
   let fetchMetadataStub: sinon.SinonStub<any[], Promise<RecommendationMetadata>>;
@@ -35,10 +37,12 @@ describe('RecommendationService', function () {
       favicon: null,
       oneClickSubscribe: false,
     });
+    clickEventRepository = new InMemoryClickEventRepository<ClickEvent>();
+    subscribeEventRepository = new InMemoryClickEventRepository<SubscribeEvent>();
     service = new RecommendationService({
       repository: new InMemoryRecommendationRepository(),
-      clickEventRepository: new InMemoryClickEventRepository<ClickEvent>(),
-      subscribeEventRepository: new InMemoryClickEventRepository<SubscribeEvent>(),
+      clickEventRepository,
+      subscribeEventRepository,
       wellknownService: {
         getURL() {
           return new URL('http://localhost/.well-known/recommendations.json');
@@ -61,6 +65,7 @@ describe('RecommendationService', function () {
       recommendationMetadataService: {
         fetch: fetchMetadataStub,
       } as unknown as RecommendationMetadataService,
+      logging: { info() {}, error() {} },
     });
     clock = sinon.useFakeTimers();
   });
@@ -747,14 +752,14 @@ describe('RecommendationService', function () {
   describe('trackClicked', function () {
     it('adds click event', async function () {
       await service.trackClicked({ id: '1' });
-      assert.equal(await service.clickEventRepository.getCount({}), 1);
+      assert.equal(await clickEventRepository.getCount({}), 1);
     });
   });
 
   describe('trackSubscribed', function () {
     it('adds subscribe event', async function () {
       await service.trackSubscribed({ id: '1', memberId: '1' });
-      assert.equal(await service.subscribeEventRepository.getCount({}), 1);
+      assert.equal(await subscribeEventRepository.getCount({}), 1);
     });
   });
 

@@ -403,7 +403,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const donationService = require('./server/services/donations').default;
   const giftService = require('./server/services/gifts');
   const machinePaymentsService = require('./server/services/machine-payments');
-  const recommendationsService = require('./server/services/recommendations');
+  const recommendationsService = require('./server/services/recommendations').default;
   const emailAddressService = require('./server/services/email-address');
   const newsletters = require('./server/services/newsletters').default;
   const statsService = require('./server/services/stats');

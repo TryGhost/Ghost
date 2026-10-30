@@ -5,6 +5,8 @@ import {
 } from '../../../../../../core/server/services/recommendations/service';
 import sinon from 'sinon';
 
+const logging = { info() {}, error() {} };
+
 describe('BookshelfClickEventRepository', function () {
   afterEach(function () {
     sinon.restore();
@@ -13,6 +15,7 @@ describe('BookshelfClickEventRepository', function () {
   it('toPrimitive', async function () {
     const repository = new BookshelfClickEventRepository({} as any, {
       sentry: undefined,
+      logging,
     });
     assert.deepEqual(
       repository.toPrimitive(
@@ -35,6 +38,7 @@ describe('BookshelfClickEventRepository', function () {
   it('modelToEntity', async function () {
     const repository = new BookshelfClickEventRepository({} as any, {
       sentry: undefined,
+      logging,
     });
     const entity = repository.modelToEntity({
       id: 'id',
@@ -64,6 +68,7 @@ describe('BookshelfClickEventRepository', function () {
       sentry: {
         captureException,
       },
+      logging,
     });
 
     sinon.stub(ClickEvent, 'create').throws(new Error('test'));
@@ -88,6 +93,7 @@ describe('BookshelfClickEventRepository', function () {
       sentry: {
         captureException,
       },
+      logging,
     });
 
     assert.ok(repository.getFieldToColumnMap());
