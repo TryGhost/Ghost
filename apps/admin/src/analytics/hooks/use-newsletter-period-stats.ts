@@ -5,7 +5,11 @@ import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useFetchApi, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
 import { STATS_RANGES } from '@/shared/analytics/constants';
-import type { NewsletterStatsResponseType } from '@tryghost/admin-x-framework/api/stats';
+import {
+  newsletterBasicStatsDataType,
+  newsletterClickStatsDataType,
+  type NewsletterBasicStatsResponseType,
+} from '@tryghost/admin-x-framework/api/stats';
 
 const PAGE_SIZE = 50;
 
@@ -46,8 +50,8 @@ export async function fetchNewsletterPeriodStats(
   dateTo: string,
   timezone: string,
   signal: AbortSignal,
-): Promise<NewsletterStatsResponseType> {
-  const stats: NewsletterStatsResponseType['stats'] = [];
+): Promise<NewsletterBasicStatsResponseType> {
+  const stats: NewsletterBasicStatsResponseType['stats'] = [];
   const seen = new Set<string>();
   let page = 1;
   let cursor: string | null = null;
@@ -92,34 +96,13 @@ export async function fetchNewsletterPeriodStats(
       throw new Error('Invalid newsletter statistics pagination');
     }
 
-    const ids = new Set<string>();
     for (const item of basic.stats) {
       if (seen.has(item.post_id)) {
         throw new Error('Duplicate newsletter statistics');
       }
       seen.add(item.post_id);
-      ids.add(item.post_id);
     }
-
-    const clicks = ids.size
-      ? clicksSchema.parse(await fetchApi<unknown>(apiUrl('/stats/newsletter-click-stats/', {
-        newsletter_id: newsletterId,
-        post_ids: [...ids].join(','),
-      }), { signal })).stats
-      : [];
-    signal.throwIfAborted();
-    const clicksByPost = new Map<string, (typeof clicks)[number]>();
-    for (const click of clicks) {
-      if (!ids.has(click.post_id) || clicksByPost.has(click.post_id)) {
-        throw new Error('Invalid newsletter click statistics');
-      }
-      clicksByPost.set(click.post_id, click);
-    }
-    stats.push(...basic.stats.map((item) => ({
-      ...item,
-      total_clicks: clicksByPost.get(item.post_id)?.total_clicks ?? 0,
-      click_rate: clicksByPost.get(item.post_id)?.click_rate ?? 0,
-    })));
+    stats.push(...basic.stats);
 
     if (pagination.next === null) {
       return { stats, meta: {} };
@@ -130,7 +113,39 @@ export async function fetchNewsletterPeriodStats(
   }
 }
 
-export function useNewsletterPeriodStats(range: number, newsletterId?: string, enabled = true) {
+export async function fetchNewsletterPeriodClicks(
+  fetchApi: ReturnType<typeof useFetchApi>,
+  newsletterId: string,
+  postIds: string[],
+  signal: AbortSignal,
+) {
+  const stats: z.infer<typeof clicksSchema>['stats'] = [];
+  for (let offset = 0; offset < postIds.length; offset += PAGE_SIZE) {
+    signal.throwIfAborted();
+    const ids = new Set(postIds.slice(offset, offset + PAGE_SIZE));
+    const clicks = clicksSchema.parse(await fetchApi<unknown>(apiUrl('/stats/newsletter-click-stats/', {
+      newsletter_id: newsletterId,
+      post_ids: [...ids].join(','),
+    }), { signal })).stats;
+    signal.throwIfAborted();
+    const seen = new Set<string>();
+    for (const click of clicks) {
+      if (!ids.has(click.post_id) || seen.has(click.post_id)) {
+        throw new Error('Invalid newsletter click statistics');
+      }
+      seen.add(click.post_id);
+    }
+    stats.push(...clicks);
+  }
+  return stats;
+}
+
+export function useNewsletterPeriodStats(
+  range: number,
+  newsletterId?: string,
+  enabled = true,
+  clickTrackingEnabled = true,
+) {
   const fetchApi = useFetchApi();
   const handleError = useHandleError();
   const { dateFrom, dateTo, timezone } = useMemo(() => {
@@ -143,11 +158,35 @@ export function useNewsletterPeriodStats(range: number, newsletterId?: string, e
   }, [range]);
 
   const result = useQuery({
-    queryKey: ['NewsletterPeriodStats', newsletterId, dateFrom, dateTo, timezone],
+    queryKey: [newsletterBasicStatsDataType, 'period', newsletterId, dateFrom, dateTo, timezone],
     enabled: enabled && !!newsletterId,
     retry: false,
     queryFn: ({ signal }) => fetchNewsletterPeriodStats(fetchApi, newsletterId!, dateFrom, dateTo, timezone, signal),
   });
+
+  const postIds = useMemo(() => result.data?.stats.map((item) => item.post_id) ?? [], [result.data]);
+  const shouldFetchClicks = enabled && clickTrackingEnabled && !!newsletterId && postIds.length > 0;
+  const clickResult = useQuery({
+    queryKey: [newsletterClickStatsDataType, 'period', newsletterId, dateFrom, dateTo, timezone, shouldFetchClicks ? postIds : []],
+    enabled: shouldFetchClicks,
+    retry: false,
+    queryFn: ({ signal }) => fetchNewsletterPeriodClicks(fetchApi, newsletterId!, postIds, signal),
+  });
+
+  const data = useMemo(() => {
+    if (!result.data || !shouldFetchClicks || !clickResult.data || clickResult.isError) {
+      return result.data;
+    }
+    const clicksByPost = new Map(clickResult.data.map((click) => [click.post_id, click]));
+    return {
+      ...result.data,
+      stats: result.data.stats.map((item) => ({
+        ...item,
+        total_clicks: clicksByPost.get(item.post_id)?.total_clicks ?? 0,
+        click_rate: clicksByPost.get(item.post_id)?.click_rate ?? 0,
+      })),
+    };
+  }, [result.data, shouldFetchClicks, clickResult.data, clickResult.isError]);
 
   useEffect(() => {
     if (result.error && !(result.error instanceof UnsupportedNewsletterPaginationError)) {
@@ -155,5 +194,17 @@ export function useNewsletterPeriodStats(range: number, newsletterId?: string, e
     }
   }, [handleError, result.error]);
 
-  return result;
+  useEffect(() => {
+    if (shouldFetchClicks && clickResult.error) {
+      handleError(clickResult.error, { withToast: false });
+    }
+  }, [handleError, shouldFetchClicks, clickResult.error]);
+
+  return {
+    ...result,
+    data,
+    isClicksLoading: shouldFetchClicks && clickResult.isLoading,
+    isClicksError: shouldFetchClicks && clickResult.isError,
+    refetchClicks: clickResult.refetch,
+  };
 }

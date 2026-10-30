@@ -46,7 +46,8 @@ import {
   useNewsletterPeriodStats,
 } from '@/analytics/hooks/use-newsletter-period-stats';
 import {
-  useNewsletterStatsWithRangeSplit,
+  useNewsletterBasicStatsWithRange,
+  useNewsletterClickStatsWithRange,
   useSubscriberCountWithRange,
 } from '@/analytics/hooks/use-newsletter-stats-with-range';
 import type { TopNewslettersOrder } from '@/analytics/hooks/use-newsletter-stats-with-range';
@@ -58,8 +59,8 @@ export type AvgsDataItem = {
   sent_to: number;
   total_opens: number;
   open_rate: number;
-  total_clicks: number;
-  click_rate: number;
+  total_clicks?: number;
+  click_rate?: number;
 };
 
 // Separate component for just the table rows that handles data fetching
@@ -71,6 +72,8 @@ const NewsletterTableRows: React.FC<{
 }> = React.memo(({ range, selectedNewsletterId, shouldFetchStats, sortBy }) => {
   const navigate = useNavigate();
   const { settings } = useAnalyticsData();
+  const emailTrackClicksEnabled = useEmailTrackClicks();
+  const emailTrackOpensEnabled = useEmailTrackOpens();
 
   const siteTimezone = getSiteTimezone(settings);
 
@@ -78,16 +81,28 @@ const NewsletterTableRows: React.FC<{
   const {
     data: newsletterStatsData,
     isLoading: isStatsLoading,
-    isClicksLoading,
-  } = useNewsletterStatsWithRangeSplit(
+  } = useNewsletterBasicStatsWithRange(
     range,
     sortBy, // Reactive to sort changes, but only affects this component
     selectedNewsletterId ? selectedNewsletterId : undefined,
     Boolean(shouldFetchStats),
   );
 
-  const emailTrackClicksEnabled = useEmailTrackClicks();
-  const emailTrackOpensEnabled = useEmailTrackOpens();
+  const postIds = useMemo(() => newsletterStatsData?.stats.map((post) => post.post_id) ?? [], [newsletterStatsData]);
+  const {
+    data: clickStatsData,
+    isLoading: isClicksLoading,
+    isError: isClicksError,
+    refetch: refetchClicks,
+  } = useNewsletterClickStatsWithRange(
+    selectedNewsletterId || undefined,
+    postIds,
+    Boolean(shouldFetchStats && emailTrackClicksEnabled && postIds.length),
+  );
+  const clicksByPost = useMemo(
+    () => new Map(clickStatsData?.stats.map((post) => [post.post_id, post]) ?? []),
+    [clickStatsData],
+  );
 
   // Data is already sorted by the API based on sortBy
   const sortedStats = useMemo(() => newsletterStatsData?.stats || [], [newsletterStatsData]);
@@ -158,11 +173,15 @@ const NewsletterTableRows: React.FC<{
               <TableCell className="text-right font-mono text-sm">
                 {isClicksLoading ? (
                   <span className="inline-block h-4 w-8 animate-pulse rounded bg-gray-200"></span>
+                ) : isClicksError ? (
+                  <Button className="h-auto p-0" title="Retry loading click statistics" variant="link" onClick={() => { void refetchClicks(); }}>
+                    Retry
+                  </Button>
                 ) : (
                   <>
-                    <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
+                    <span className="group-hover:hidden">{formatPercentage(clicksByPost.get(post.post_id)?.click_rate ?? 0)}</span>
                     <span className="hidden group-hover:visible! group-hover:block!">
-                      {formatNumber(post.total_clicks)}
+                      {formatNumber(clicksByPost.get(post.post_id)?.total_clicks ?? 0)}
                     </span>
                   </>
                 )}
@@ -186,6 +205,9 @@ const NewsletterTableRows: React.FC<{
   }, [
     sortedStats,
     isClicksLoading,
+    isClicksError,
+    clicksByPost,
+    refetchClicks,
     navigate,
     emailTrackClicksEnabled,
     emailTrackOpensEnabled,
@@ -292,6 +314,7 @@ const Newsletters: React.FC = () => {
   const { range, selectedNewsletterId } = useAnalytics();
   const [searchParams] = useSearchParams();
   const newslettersEnabled = useNewslettersEnabled();
+  const emailTrackClicksEnabled = useEmailTrackClicks();
 
   // Get the initial tab from URL search parameters
   const initialTab = searchParams.get('tab') || 'total-subscribers';
@@ -328,10 +351,14 @@ const Newsletters: React.FC = () => {
     isError: isNewsletterStatsError,
     error: newsletterStatsError,
     refetch: refetchNewsletterStats,
+    isClicksLoading,
+    isClicksError,
+    refetchClicks,
   } = useNewsletterPeriodStats(
     range,
     selectedNewsletterId || undefined,
     shouldFetchStats || false,
+    emailTrackClicksEnabled === true,
   );
 
   // Find the selected newsletter to get its active_members count
@@ -430,13 +457,13 @@ const Newsletters: React.FC = () => {
       sent_to: stat.sent_to,
       total_opens: stat.total_opens,
       open_rate: stat.open_rate,
-      total_clicks: stat.total_clicks || 0,
-      click_rate: stat.click_rate || 0,
+      total_clicks: stat.total_clicks,
+      click_rate: stat.click_rate,
     }));
   }, [newsletterStatsData]);
 
   // Separate loading states for different sections
-  const isKPIsLoading = isSubscriberStatsLoading || isNewsletterStatsLoading;
+  const isKPIsLoading = isSubscriberStatsLoading;
 
   // Show data only if there are actual newsletters sent in the time period
   // const hasNewslettersInPeriod = newsletterStatsData?.stats && newsletterStatsData.stats.length > 0;
@@ -462,8 +489,10 @@ const Newsletters: React.FC = () => {
             <CardContent>
               <NewsletterKPIs
                 avgsData={avgsData}
+                clickError={isClicksError ? 'Unable to load click statistics. Please try again.' : undefined}
                 initialTab={initialTab}
-                isAvgsLoading={false}
+                isAvgsLoading={isNewsletterStatsLoading}
+                isClicksLoading={isClicksLoading}
                 isLoading={isKPIsLoading}
                 periodError={isNewsletterStatsError
                   ? newsletterStatsError instanceof UnsupportedNewsletterPaginationError
@@ -472,6 +501,7 @@ const Newsletters: React.FC = () => {
                   : undefined}
                 subscribersData={subscribersData}
                 totals={totals}
+                onRetryClickStats={() => { void refetchClicks(); }}
                 onRetryPeriodStats={() => { void refetchNewsletterStats(); }}
               />
             </CardContent>

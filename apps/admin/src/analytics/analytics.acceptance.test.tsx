@@ -449,6 +449,45 @@ describe('Analytics newsletters', () => {
       .toHaveTextContent('Weekly Digest Issue #1');
   });
 
+  it('keeps top newsletter opens visible and retries failed click statistics', async () => {
+    seedAnalyticsWorld();
+    const newsletterId = '64d623b64676110001e897d2';
+    fakeNewsletters([newsletter({ id: newsletterId, name: 'Weekly Digest', status: 'active', sort_order: 0 })]);
+    fakeAdminStats.newsletterSubscribers();
+    const basicRequests = fakeAdminStats.newsletterBasic([{
+      post_id: LATEST_POST_ID,
+      post_title: 'Weekly Digest Issue #1',
+      send_date: `${localDaysAgo(3)}T10:00:00.000Z`,
+      sent_to: 100,
+      total_opens: 50,
+    }]);
+    let clicksUnavailable = true;
+    const clickRequests = fakeAdminEndpoint('GET', /^\/stats\/newsletter-click-stats\//, () => {
+      if (clicksUnavailable) {
+        return Response.json({ errors: [{ message: 'Unavailable', type: 'InternalServerError' }] }, { status: 500 });
+      }
+      return { stats: [{ post_id: LATEST_POST_ID, total_clicks: 10, click_rate: 0.1, email_count: 100 }], meta: {} };
+    });
+
+    await renderAdminApp('/analytics/newsletters', { boot: webAnalyticsBootOverrides() });
+    await expect.element(analyticsScreen.newslettersCardTab('Avg. open rate')).toHaveTextContent('50%');
+    const row = analyticsScreen.topNewslettersCard().getByRole('row').filter({ hasText: 'Weekly Digest Issue #1' });
+    await expect.element(row).toHaveTextContent('50%');
+    const retry = row.getByRole('button', { name: 'Retry', exact: true });
+    await expect.element(retry).toBeVisible();
+    expect(row.element().querySelectorAll('td')[4].textContent?.trim()).toBe('Retry');
+
+    await expect.poll(() => clickRequests.requests.length).toBeGreaterThanOrEqual(2);
+    const basicCount = basicRequests.requests.length;
+    const clickCount = clickRequests.requests.length;
+    clicksUnavailable = false;
+    await retry.click();
+    await expect.poll(() => row.element().querySelectorAll('td')[4].textContent).toContain('10%');
+    await expect.element(row).toHaveTextContent('50%');
+    expect(clickRequests.requests.length).toBeGreaterThan(clickCount);
+    expect(basicRequests.requests.length).toBe(basicCount);
+  });
+
   it('uses every send in the selected period for averages and charts while limiting top newsletters', async () => {
     seedAnalyticsWorld();
     const newsletterId = '64d623b64676110001e897d2';
