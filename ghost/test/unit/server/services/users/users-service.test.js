@@ -3,7 +3,7 @@ const sinon = require('sinon');
 
 const { PostsBulkAddTagsEvent } = require('../../../../../core/shared/events-ts');
 const { PostRevisions } = require('../../../../../core/server/lib/post-revisions');
-const Users = require('../../../../../core/server/services/users/users-service');
+const { UsersService: Users } = require('../../../../../core/server/services/users/users-service');
 
 describe('Users service', function () {
   describe('lockAll', function () {
