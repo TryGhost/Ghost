@@ -4,10 +4,9 @@ import type { PostBucket } from './post-query-params';
  * Assembles the three per-status queries into the single list the screen
  * renders.
  *
- * Ported from the sequenced infinity loaders in
- * `apps/ember-admin/app/templates/posts.hbs`. All three queries run from the
- * start; what is sequenced is *rendering*. A bucket only becomes visible once
- * every earlier bucket has loaded every page, so the list reads scheduled,
+ * All three queries run from the start; what is sequenced is *rendering*. A
+ * bucket only becomes visible once every earlier bucket has loaded every page,
+ * so the list reads scheduled,
  * then drafts, then published/sent - with each bucket internally sorted by its
  * own default (drafts by `updated_at`, the rest by `published_at`).
  *
@@ -44,10 +43,7 @@ export function composePostBuckets<TItem>(
   const totalItems = results.reduce((total, result) => total + result.total, 0);
   const isError = results.some((result) => result.isError);
 
-  // Nothing renders until every bucket's first page has landed. This mirrors
-  // Ember, whose route returns `RSVP.hash` of all three models and shows a
-  // skeleton until they all resolve (`routes/posts.js:177`,
-  // `templates/posts-loading.hbs`).
+  // Nothing renders until every bucket's first page has landed.
   //
   // Releasing earlier looks tempting - one slow query then can't hide the
   // rest - but it is wrong in a way that bites on nearly every site: most

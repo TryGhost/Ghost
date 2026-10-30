@@ -18,7 +18,7 @@ const view = (name: string, filter: Record<string, string | null>): SharedView =
 });
 
 describe('canSavePostView', () => {
-  // Ember gates the save button on: admin, on the posts screen, not already
+  // The save button needs: admin, on the posts screen, not already
   // on a default view, and at least one param set.
   it('allows an admin with a filter set', () => {
     expect(
@@ -42,8 +42,8 @@ describe('canSavePostView', () => {
     ).toBe(false);
   });
 
-  // Ember's `isAdmin` is `or(isOwnerOnly, isAdminOnly)`, so the Owner counts.
-  // The framework's `isAdminUser` is Administrator *only*, and using it here
+  // Owner and Administrator both count. The framework's `isAdminUser` is
+  // Administrator *only*, and using it here
   // hid the button from the site owner — the person most likely to be saving
   // views. Asserted through the same call the screen makes, so swapping the
   // helper back would fail this rather than quietly pass.
@@ -65,8 +65,7 @@ describe('canSavePostView', () => {
     ).toBe(expected);
   });
 
-  // The button is hardcoded to `currentRouteName === 'posts'` in Ember, so
-  // pages never offer it.
+  // Pages never offer the button.
   it('refuses on the pages screen', () => {
     expect(
       canSavePostView({
@@ -133,7 +132,7 @@ describe('buildPostView', () => {
     });
   });
 
-  it('only uses colours Ember knows', () => {
+  it('keeps every known view colour', () => {
     POST_VIEW_COLORS.forEach((color) => {
       expect(buildPostView('X', { type: 'draft' }, color).color).toBe(color);
     });

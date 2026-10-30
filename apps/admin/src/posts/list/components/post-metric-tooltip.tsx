@@ -17,27 +17,24 @@ interface PostMetricTooltipProps {
 }
 
 /**
- * The breakdown Ember reveals on hovering a metric — "Web traffic", "Newsletter
- * performance", "New members". Ember positions and flips these by hand;
- * Shade's Radix wrapper already does that.
+ * The breakdown revealed on hovering a metric — "Web traffic", "Newsletter
+ * performance", "New members".
  *
  * `HoverCard`, not `Tooltip`: Shade's tooltip is the small dark chip
  * (`bg-primary` / `text-primary-foreground`), which is both the wrong shape for
  * a labelled table and the wrong colour — the semantic text tones inside would
- * be dark-on-dark. Ember's is a white elevated card, which is what `HoverCard`
- * is. No delay, so it behaves like Ember's CSS-only hover.
+ * be dark-on-dark. No delay, so it opens as soon as the pointer arrives.
  */
 export function PostMetricTooltip({ title, rows, children }: PostMetricTooltipProps) {
   return (
     <HoverCard closeDelay={0} openDelay={0}>
       <HoverCardTrigger asChild>{children}</HoverCardTrigger>
-      {/* `pointer-events-none`, as Ember's tooltip is. Radix's default
+      {/* `pointer-events-none`. Radix's default
                 keeps the card interactive, but it portals outside the row — so
                 moving onto it would fire the row's mouseleave and drop the row
                 hover, the visible CTA border and the status detail. Nothing in
                 the card is clickable, so nothing is lost. */}
-      {/* Above the metric, as Ember's is: its `.above` positioning is the
-                default and it drops below only when there is no room. Radix
+      {/* Above the metric, dropping below only when there is no room. Radix
                 flips on collision by itself, so `side` sets the preference and
                 the fallback comes free. */}
       <HoverCardContent
