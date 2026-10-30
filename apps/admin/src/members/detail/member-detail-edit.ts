@@ -42,15 +42,15 @@ interface MemberFieldSource {
   newsletters?: Array<{ id: string }> | null;
 }
 
-// Soft limit shown as a countdown (Ember imposes no hard maxlength; the DB column
-// allows 2000). The counter may go negative, matching the Ember behaviour.
+// Soft limit shown as a countdown, not a hard maxlength (the DB column allows
+// 2000). The counter may go negative.
 export const NOTE_MAX_LENGTH = 500;
 
 /**
  * The editable slice used for both dirty detection (compare draft vs server) and
- * the save payload. Name/email are trimmed to match the Ember blur-trim behaviour;
- * note preserves its whitespace. Missing fields normalize to '' so a member with a
- * null field and a draft with '' don't read as dirty.
+ * the save payload. Name/email are trimmed; note preserves its whitespace.
+ * Missing fields normalize to '' so a member with a null field and a draft with
+ * '' don't read as dirty.
  */
 export function getMemberEditableSlice(member: MemberFieldSource): MemberEditableFields {
   return {
@@ -179,8 +179,8 @@ export function getEmailErrorMessage(
 
 export interface MemberSuppressionInfo {
   // Undefined for a `suppressed:true` member without a bounce/complaint history —
-  // e.g. `email_disabled` was flipped directly. Ember still renders the banner in
-  // that case, just without the reason line.
+  // e.g. `email_disabled` was flipped directly. The banner still renders in that
+  // case, just without the reason line.
   reason?: string;
   label: string | null;
 }
@@ -188,10 +188,9 @@ export interface MemberSuppressionInfo {
 /**
  * Extract a display-ready suppression status for the newsletter/suppression banner.
  * Returns null only when the member is not suppressed. `suppressed:true` is enough
- * to render the banner even without the info block, matching Ember's behaviour
- * where `email_disabled` alone (with the Mailgun row already cleaned) still shows
- * "Email disabled" + the Re-enable button. Dates use site-local formatting to
- * match the Ember copy exactly.
+ * to render the banner even without the info block: `email_disabled` alone (with
+ * the Mailgun row already cleaned) still shows "Email disabled" + the Re-enable
+ * button. Dates use site-local formatting.
  */
 export function getMemberSuppressionInfo(
   emailSuppression: Member['email_suppression'],
@@ -216,13 +215,11 @@ export function getMemberSuppressionInfo(
 }
 
 /**
- * Newsletters that Ember auto-subscribes a new member to on save. Ports
- * `gh-member-settings-form.js:233-241`: keep only newsletters that opt in
+ * Newsletters a new member is auto-subscribed to on save: those that opt in
  * via `subscribe_on_signup` AND are visible to member-tier subscribers
  * (`visibility: 'members'`). The result feeds the create-screen draft so
- * the toggles render as CHECKED, as on Ember's create screen, and the same
- * list is included in the POST payload so the server never has to fall back
- * to its own default.
+ * the toggles render as CHECKED, and the same list is included in the POST
+ * payload so the server never has to fall back to its own default.
  */
 export function getDefaultNewsletterIdsForNewMember(
   newsletters:
@@ -241,8 +238,7 @@ export function getDefaultNewsletterIdsForNewMember(
 /**
  * Characters remaining under the note soft limit. Counts unicode code points (via
  * spread) rather than UTF-16 code units so multi-byte characters like emoji count
- * as one — matching the Ember `gh-count-down-characters` helper. Goes negative when
- * the limit is exceeded.
+ * as one. Goes negative when the limit is exceeded.
  */
 export function getNoteCharactersLeft(note: string): number {
   return NOTE_MAX_LENGTH - [...note].length;

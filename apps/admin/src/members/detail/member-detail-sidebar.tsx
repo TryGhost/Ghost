@@ -25,12 +25,10 @@ interface MemberDetailSidebarProps {
   // Saved member from the query — absent in create mode.
   member?: Member;
   // Live values from the draft: the sidebar mirrors what the user is typing so
-  // there's always an identity to show (matches Ember, which live-updates the
-  // sidebar title as the fields change).
+  // there's always an identity to show.
   draftName?: string;
   draftEmail?: string;
-  // Ember-parity gate for the engagement stats section (see
-  // `gh-member-details.hbs:84`). Owned by the parent so all settings
+  // Gate for the engagement stats section. Owned by the parent so all settings
   // reads happen in one place.
   engagementEnabled?: boolean;
   showIdentity?: boolean;
@@ -163,9 +161,7 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
                                 strict `=== 0` would diverge from Ember on
                                 a payload where the field is `undefined`. */}
               {(member.email_count ?? 0) === 0 ? (
-                // Ember `gh-member-details.hbs:87-96`: same copy,
-                // same curly apostrophe. Falls back to a generic
-                // "this member" when no name is known.
+                // Falls back to a generic "this member" when no name is known.
                 <p className="text-muted-foreground">
                   {name
                     ? `We’ll show ${getFirstName(name)}’s email stats here once they receive their first newsletter.`
@@ -192,9 +188,7 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
                     <p className="text-muted-foreground">Average open rate</p>
                     {member.email_open_rate === null || member.email_open_rate === undefined ? (
                       // Server sends `null` until the member has
-                      // been sent 5 newsletters (Ember shows this
-                      // exact string via
-                      // `gh-member-details.hbs:112-114`).
+                      // been sent 5 newsletters.
                       <p className="text-muted-foreground">
                         This metric is calculated once a member has received 5 newsletters.
                       </p>
