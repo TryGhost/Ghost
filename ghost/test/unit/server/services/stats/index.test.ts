@@ -222,8 +222,40 @@ describe('Stats service root', function () {
     const late = loadEndpoint();
     assert.deepEqual(Object.keys(late), names);
     for (const name of names) {
-      assert.equal(late[name].cache, cache, `${name} captured the published cache`);
+      if (name !== 'newsletterBasicStats') {
+        assert.equal(late[name].cache, cache, `${name} captured the published cache`);
+      }
     }
+  });
+
+  it('caches unpaginated newsletter stats but bypasses the cache for period pages', async function () {
+    getConfig.withArgs('hostSettings:statsCache:enabled').returns(true);
+    const root = loadRoot();
+    await root.init();
+    const endpoint = loadEndpoint().newsletterBasicStats;
+    const basicCache = endpoint.cache as {
+      get(key: string, getResponse: () => unknown): unknown;
+      set(key: string, response: object): unknown;
+    };
+    const cacheStubs = cache as { get: sinon.SinonStub; set: sinon.SinonStub };
+    const response = { stats: [] };
+    const getResponse = sandbox.stub().resolves(response);
+    cacheStubs.get.resolves(response);
+    cacheStubs.set.resolves();
+
+    const topKey = JSON.stringify({ method: 'getNewsletterBasicStats', options: { limit: 20 } });
+    assert.equal(await basicCache.get(topKey, getResponse), response);
+    await basicCache.set(topKey, response);
+    sinon.assert.calledOnceWithExactly(cacheStubs.get, topKey, getResponse);
+    sinon.assert.calledOnceWithExactly(cacheStubs.set, topKey, response);
+
+    for (const page of [1, 2]) {
+      const pageKey = JSON.stringify({ method: 'getNewsletterBasicStats', options: { limit: 50, page } });
+      assert.equal(await basicCache.get(pageKey, getResponse), null);
+      await basicCache.set(pageKey, response);
+    }
+    sinon.assert.calledOnce(cacheStubs.get);
+    sinon.assert.calledOnce(cacheStubs.set);
   });
 
   it.each([
