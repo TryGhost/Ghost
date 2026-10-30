@@ -1,7 +1,8 @@
 import KoenigComposerContext from '../context/KoenigComposerContext';
 import React from 'react';
 import throttle from 'lodash/throttle';
-import {$getSelection, $isRangeSelection} from 'lexical';
+import {$getSelection, $isRangeSelection, BLUR_COMMAND, COMMAND_PRIORITY_LOW, FOCUS_COMMAND} from 'lexical';
+import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import {utils} from '@tryghost/helpers';
 
@@ -51,10 +52,14 @@ export const SelectionWordCountPlugin = ({onChange} = {}) => {
         };
 
         const updateSelectionCount = () => {
+            // a blurred editor keeps its last selection even though the page no longer shows it
+            const rootElement = editor.getRootElement();
+            const hasFocus = !!rootElement && rootElement.ownerDocument.activeElement === rootElement;
+
             editor.getEditorState().read(() => {
                 const selection = $getSelection();
 
-                if ($isRangeSelection(selection) && !selection.isCollapsed()) {
+                if (hasFocus && $isRangeSelection(selection) && !selection.isCollapsed()) {
                     counts.set(editor.getKey(), countWords(selection.getTextContent()));
                 } else {
                     counts.set(editor.getKey(), null);
@@ -70,9 +75,21 @@ export const SelectionWordCountPlugin = ({onChange} = {}) => {
 
         // update listeners fire after every commit, including selection-only
         // changes, so a SELECTION_CHANGE_COMMAND handler isn't needed
-        const cleanupRegister = editor.registerUpdateListener(() => {
-            throttledUpdate();
-        });
+        const cleanupRegister = mergeRegister(
+            editor.registerUpdateListener(() => {
+                throttledUpdate();
+            }),
+            editor.registerCommand(BLUR_COMMAND, () => {
+                throttledUpdate.cancel();
+                counts.set(editor.getKey(), null);
+                emitCombined();
+                return false;
+            }, COMMAND_PRIORITY_LOW),
+            editor.registerCommand(FOCUS_COMMAND, () => {
+                throttledUpdate();
+                return false;
+            }, COMMAND_PRIORITY_LOW)
+        );
 
         return () => {
             throttledUpdate.cancel();

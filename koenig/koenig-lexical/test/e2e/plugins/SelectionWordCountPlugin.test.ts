@@ -72,6 +72,28 @@ test.describe('Selection Word Count Plugin', async function () {
         await expect(page.getByTestId('word-count')).toHaveText('2');
     });
 
+    test('drops the selection count when focus leaves the editor', async function () {
+        await focusEditor(page);
+        await page.keyboard.type('Hello world');
+        await selectBackwards(page, 5);
+        await expect(page.getByTestId('selection-word-count')).toHaveText('1');
+
+        await page.getByTestId('post-title').click();
+        await expect(page.getByTestId('selection-word-count')).not.toBeVisible();
+        await expect(page.getByTestId('word-count')).toHaveText('2');
+    });
+
+    test('drops the selection count when focus leaves a nested editor', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'callout'});
+        await page.keyboard.type('Nested content here');
+        await selectBackwards(page, 4);
+        await expect(page.getByTestId('selection-word-count')).toHaveText('1');
+
+        await page.getByTestId('post-title').click();
+        await expect(page.getByTestId('selection-word-count')).not.toBeVisible();
+    });
+
     test('counts selection inside a nested editor', async function () {
         await focusEditor(page);
         await page.keyboard.type('Hello world');
