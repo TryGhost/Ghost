@@ -74,10 +74,10 @@ describe('renderers/product-renderer', function () {
             `);
         });
 
-        it('renders escaped image alt text', function () {
+        it('renders escaped image alt text', async function () {
             const result = renderForWeb(getTestData({productImageAlt: 'Fits "most" cameras & lenses'}));
 
-            assertPrettifiedIncludes(result.html, html`
+            await assertPrettifiedIncludes(result.html, html`
                 <img src="/content/images/2022/11/koenig-lexical.jpg" width="200" height="100" alt="Fits &quot;most&quot; cameras &amp; lenses" class="kg-product-card-image" loading="lazy">
             `);
         });
@@ -231,10 +231,10 @@ describe('renderers/product-renderer', function () {
             `);
         });
 
-        it('renders escaped image alt text', function () {
+        it('renders escaped image alt text', async function () {
             const result = renderForEmail(getTestData({productImageAlt: 'Fits "most" cameras & lenses'}), {feature: {}});
 
-            assertPrettifiedIncludes(result.html, html`
+            await assertPrettifiedIncludes(result.html, html`
                 <img src="/content/images/2022/11/koenig-lexical.jpg" width="200" height="100" alt="Fits &quot;most&quot; cameras &amp; lenses" border="0" />
             `);
         });
