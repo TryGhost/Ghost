@@ -17,12 +17,11 @@ it('reloads the admin when the search modal failed to load, and offers a reload 
   await globalSearchScreen.openButton().click();
   await expect.poll(() => vi.mocked(reloadAdmin).mock.calls).toEqual([['/tags']]);
 
-  await page
-    .getByRole('dialog', { name: "Search didn't load" })
-    .getByRole('button', { name: 'Reload' })
-    .click();
+  const searchError = page.getByRole('dialog', { name: "Search didn't load" });
+  await searchError.getByRole('button', { name: 'Reload' }).click();
   await expect.poll(() => vi.mocked(reloadAdmin).mock.calls).toEqual([['/tags'], ['/tags']]);
 
-  await page.getByRole('dialog').getByRole('button', { name: 'Close' }).click();
+  await searchError.getByRole('button', { name: 'Close' }).click();
+  await expect(searchError).toHaveCount(0);
   await expect.element(tagsScreen.emptyStateHeading()).toBeVisible();
 });
