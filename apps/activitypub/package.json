@@ -25,7 +25,7 @@
     "test:acceptance:full": "ALL_BROWSERS=1 pnpm test:acceptance"
   },
   "dependencies": {
-    "@hookform/resolvers": "5.4.0",
+    "@hookform/resolvers": "5.9.2",
     "@radix-ui/react-form": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@tryghost/admin-x-framework": "workspace:*",
