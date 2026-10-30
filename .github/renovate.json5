@@ -241,6 +241,18 @@
       allowedVersions: '<3.14',
     },
 
+    // The Tinybird CLI's fixture loader regressed at 4.6.14: a nested JSON
+    // object lands in a String column as ClickHouse Tuple syntax, so every
+    // JSONExtract over `payload` reads '' and all 33 pipe tests fail. Still
+    // broken at 5.0.3. Drop with the pin comments in docker/tb-cli/Dockerfile
+    // and .github/workflows/tinybird.yml once upstream fixes it.
+    {
+      description: 'Hold the Tinybird CLI at 4.6.13 (4.6.14+ breaks fixture ingestion)',
+      matchDatasources: ['pypi'],
+      matchPackageNames: ['tinybird'],
+      allowedVersions: '<4.6.14',
+    },
+
     // Stay on the MySQL 8 line — that's what Ghost supports and what CI and
     // local dev run against. Capping (rather than disabling) keeps 8.x
     // patches and digest re-pins flowing.
