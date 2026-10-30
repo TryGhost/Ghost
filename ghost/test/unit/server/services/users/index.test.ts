@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { IncorrectUsageError } from '@tryghost/errors';
+import { IncorrectUsageError, NotFoundError as UserNotFoundError } from '@tryghost/errors';
 import sinon from 'sinon';
 
 // require, not import: the service and its endpoints are CommonJS and must share these
@@ -285,6 +285,21 @@ describe('Users service', function () {
         ['where', 'author_id', 'user-id'],
         ['select', 'post_id'],
       ]);
+    });
+
+    it('throws NotFoundError before any post work when the user is missing', async function () {
+      const { models: fakes, calls } = createModels();
+      fakes.User.findOne.resolves(null);
+      const service = createService(fakes);
+
+      await assert.rejects(
+        service.assignTagToUserPosts({ id: 'user-id', context, transacting }),
+        UserNotFoundError,
+      );
+
+      assert.deepEqual(calls, []);
+      sinon.assert.notCalled(fakes.Tag.findOne);
+      sinon.assert.notCalled(dispatch);
     });
 
     it('returns before any tag work when the author has no posts', async function () {
