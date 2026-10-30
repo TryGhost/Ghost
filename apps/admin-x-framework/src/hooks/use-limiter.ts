@@ -39,10 +39,11 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
   const { data: configData } = useBrowseConfig({ refetchOnMount: false });
   const config = configData?.config;
   const wantsStaff = !wanted || wanted.includes('staff');
-  const { data: { users } = { users: [] }, isLoading: usersLoading } = useBrowseUsers({
+  // Empty array defaults would recreate the limiter on every render for disabled queries.
+  const { data: { users } = {}, isLoading: usersLoading } = useBrowseUsers({
     enabled: wantsStaff,
   });
-  const { data: { invites } = { invites: [] }, isLoading: invitesLoading } = useBrowseInvites({
+  const { data: { invites } = {}, isLoading: invitesLoading } = useBrowseInvites({
     enabled: wantsStaff,
   });
   const { data: { roles } = {}, isLoading: rolesLoading } = useBrowseRoles({
@@ -115,11 +116,11 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
       limits.staff.currentCountQuery = () => {
         // Keep the existing first-page behavior for this move. Full pagination is tracked in
         // PLA-369 because excluded users/invites can push countable staff onto later pages.
-        const staffUsers = users.filter(
+        const staffUsers = (users ?? []).filter(
           (user) =>
             user.status !== 'inactive' && !user.roles.some((role) => role.name === 'Contributor'),
         );
-        const staffInvites = invites.filter((invite) => {
+        const staffInvites = (invites ?? []).filter((invite) => {
           const role = roles?.find(({ id }) => id === invite.role_id);
           return role?.name !== 'Contributor';
         });
