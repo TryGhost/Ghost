@@ -66,6 +66,9 @@ function closing(text: string, start: number) {
   return -1;
 }
 
+// A line that opens with a member name, after any comment-line `*`.
+const memberStart = /^\s*\**\s*(?:readonly\s+)?[A-Za-z_$][\w$]*\??\s*[:(]/;
+
 function splitMembers(body: string) {
   const members: string[] = [];
   let depth = 0;
@@ -73,7 +76,11 @@ function splitMembers(body: string) {
   for (let index = 0; index < body.length; index++) {
     const change = depthChange(body, index);
     depth += change;
-    if (change === 0 && depth === 0 && ',;'.includes(body.charAt(index))) {
+    const character = body.charAt(index);
+    // Newlines separate members too, unless the next line continues a value.
+    const separator =
+      ',;'.includes(character) || (character === '\n' && memberStart.test(body.slice(index + 1)));
+    if (change === 0 && depth === 0 && separator) {
       members.push(body.slice(start, index));
       start = index + 1;
     }
