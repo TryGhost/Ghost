@@ -826,7 +826,7 @@ overrides:
   moment-timezone: 0.6.5
   '@types/bookshelf>knex': 2.4.2
   juice>cheerio: 1.2.0
-  mppx>ox: 0.14.57
+  mppx>ox: 0.14.60
   '@tryghost/kg-default-cards': workspace:*
   '@babel/runtime@<7.26.10': ^7.26.10
   braces@<3.0.3: ^3.0.3
@@ -14068,8 +14068,8 @@ packages:
   ox@0.14.33:
     resolution: {integrity: sha512-rooA/4o7bBof4Ge2VH/eovfNPb/AEEYyrNj03wggc55g5HZD8Pjs/OeWhttgjic3dDcqn0r29bDuvQEdTiUemQ==}
 
-  ox@0.14.57:
-    resolution: {integrity: sha512-CPF6aEFyAuqgL0x7VaFM0vI2/CUd5Qk8+BIL6OnViPw+gF07O/VAhqEPOPw5GYnYPwomIk8mD91gTcQ1RAtupA==}
+  ox@0.14.60:
+    resolution: {integrity: sha512-flaa3JdFY0WPoTsVtuhZ+GNL0VZghah/QU3/4ZMBrHzgd2x84NJtrJtccKseiryF8EbBvygj63d4SsIk+8Mgqg==}
 
   oxc-parser@0.127.0:
     resolution: {integrity: sha512-bkgD4qHlN7WxLdX8bLXdaU54TtQtAIg/ZBAfm0aje/mo3MRDo3P0hZSgr4U7O3xfX+fQmR5AP04JS/TGcZLcFA==}
@@ -26615,7 +26615,7 @@ snapshots:
   mppx@0.6.20(express@4.22.3(supports-color@10.2.2))(hono@4.13.14)(viem@2.55.11):
     dependencies:
       incur: 0.4.26
-      ox: 0.14.57
+      ox: 0.14.60
       viem: 2.55.11
       zod: 4.6.7
     optionalDependencies:
@@ -27096,7 +27096,7 @@ snapshots:
       abitype: 1.2.3
       eventemitter3: 5.0.1
 
-  ox@0.14.57:
+  ox@0.14.60:
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
       '@noble/ciphers': 1.3.0
