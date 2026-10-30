@@ -15,9 +15,12 @@ member  <type>:<resourceId>:<userId>
 score   last heartbeat, server milliseconds
 ```
 
-A heartbeat is one transaction: `ZADD` the member with the current time,
-`ZREMRANGEBYSCORE` everything older than the retention window, `PEXPIRE` the key
-for the retention window. A read is one `ZRANGEBYSCORE` for the active window;
+A heartbeat is one pipeline: `ZADD` the member with the current time, `PEXPIRE`
+the key for the retention window, `ZREMRANGEBYSCORE` everything older than the
+retention window. It is not a `MULTI` transaction: the commands commute, the
+next heartbeat repairs a partial write, and the Redis user then needs only
+`ZADD`, `PEXPIRE`, `ZREMRANGEBYSCORE`, `ZRANGEBYSCORE` and `ZREM`. A read is one
+`ZRANGEBYSCORE` for the active window;
 the service filters to the requested resource ids and drops the caller in
 process. Idle sites hold no key. Multiple tabs for one user collapse to one
 member.

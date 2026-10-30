@@ -5,7 +5,7 @@ type ExecResult = Array<[Error | null, unknown]> | null;
 
 /** The slice of an ioredis client the store uses; ioredis is not a direct dependency here. */
 export interface RedisPresenceClient {
-  multi(): RedisPresenceTransaction;
+  pipeline(): RedisPresencePipeline;
   zrangebyscore(
     key: string,
     min: number | string,
@@ -15,14 +15,10 @@ export interface RedisPresenceClient {
   zrem(key: string, ...members: string[]): Promise<number>;
 }
 
-export interface RedisPresenceTransaction {
-  zadd(key: string, score: number, member: string): RedisPresenceTransaction;
-  zremrangebyscore(
-    key: string,
-    min: number | string,
-    max: number | string,
-  ): RedisPresenceTransaction;
-  pexpire(key: string, milliseconds: number): RedisPresenceTransaction;
+export interface RedisPresencePipeline {
+  zadd(key: string, score: number, member: string): RedisPresencePipeline;
+  pexpire(key: string, milliseconds: number): RedisPresencePipeline;
+  zremrangebyscore(key: string, min: number | string, max: number | string): RedisPresencePipeline;
   exec(): Promise<ExecResult>;
 }
 
@@ -36,15 +32,16 @@ export class RedisPresenceStore implements PresenceStore {
     this.key = options.key;
   }
 
+  /** PEXPIRE must directly follow ZADD so a new key never lacks a TTL; no MULTI, the commands commute. */
   async touch(member: string, now: number, retentionMs: number): Promise<void> {
     const results = await this.client
-      .multi()
+      .pipeline()
       .zadd(this.key, now, member)
-      .zremrangebyscore(this.key, '-inf', now - retentionMs)
       .pexpire(this.key, retentionMs)
+      .zremrangebyscore(this.key, '-inf', now - retentionMs)
       .exec();
     if (results === null) {
-      throw new InternalServerError({ message: 'Presence transaction was aborted' });
+      throw new InternalServerError({ message: 'Presence pipeline returned no results' });
     }
     for (const [error] of results) {
       if (error) {
