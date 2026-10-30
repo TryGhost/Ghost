@@ -8,8 +8,9 @@ import {
   mockDataFactories,
   mockSuccess,
 } from '@tryghost/admin-x-framework/test/hook-testing-utils';
-import { renderHook } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import {
+  useAllNewsletterStatsWithRange,
   useNewsletterBasicStatsWithRange,
   useNewsletterClickStatsWithRange,
   useNewsletterStatsWithRange,
@@ -22,6 +23,20 @@ import {
 vi.mock('@tryghost/admin-x-framework/api/stats');
 vi.mock('@tryghost/admin-x-framework/api/newsletters');
 vi.mock('@/analytics/providers/analytics-context');
+
+const { mockFetchApi } = vi.hoisted(() => ({ mockFetchApi: vi.fn() }));
+
+vi.mock('@tryghost/admin-x-framework/hooks', async () => {
+  const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/hooks')>(
+    '@tryghost/admin-x-framework/hooks',
+  );
+
+  return {
+    ...actual,
+    useFetchApi: () => mockFetchApi,
+    useHandleError: () => vi.fn(),
+  };
+});
 
 const { useNewsletterStats, useSubscriberCount, useNewsletterBasicStats, useNewsletterClickStats } =
   await import('@tryghost/admin-x-framework/api/stats');
@@ -799,6 +814,43 @@ describe('Newsletter Stats Hooks', () => {
         },
         enabled: true,
       });
+    });
+  });
+
+  describe('useAllNewsletterStatsWithRange', () => {
+    it('grows the limit until every send is returned and batches click stats', async () => {
+      const sends = Array.from({ length: 1500 }, (_, index) => ({
+        post_id: `post-${index}`,
+        open_rate: 0.5,
+      }));
+      mockFetchApi.mockImplementation((url: string) => {
+        const { pathname, searchParams } = new URL(url);
+        if (pathname.endsWith('/stats/newsletter-basic-stats/')) {
+          return Promise.resolve({ stats: sends.slice(0, Number(searchParams.get('limit'))) });
+        }
+        const postIds = searchParams.get('post_ids')?.split(',') ?? [];
+        return Promise.resolve({
+          stats: postIds.map((postId) => ({ post_id: postId, total_clicks: 1, click_rate: 0.1 })),
+        });
+      });
+
+      const { result } = renderHook(() => useAllNewsletterStatsWithRange(30, 'newsletter-123'), {
+        wrapper: TestWrapper,
+      });
+
+      await waitFor(() => expect(result.current.data?.stats[1499]?.click_rate).toBe(0.1));
+
+      const requests = mockFetchApi.mock.calls.map(([url]) => new URL(url as string));
+      const basicLimits = requests
+        .filter(({ pathname }) => pathname.endsWith('/stats/newsletter-basic-stats/'))
+        .map(({ searchParams }) => searchParams.get('limit'));
+      const clickBatchSizes = requests
+        .filter(({ pathname }) => pathname.endsWith('/stats/newsletter-click-stats/'))
+        .map(({ searchParams }) => searchParams.get('post_ids')?.split(',').length);
+
+      expect(basicLimits).toEqual(['1000', '2000']);
+      expect(clickBatchSizes).toEqual(Array.from({ length: 15 }, () => 100));
+      expect(result.current.data?.stats).toHaveLength(1500);
     });
   });
 });

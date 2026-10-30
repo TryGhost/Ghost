@@ -17,7 +17,7 @@ import { useEffect, useMemo } from 'react';
 import { useFetchApi, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useQuery } from '@tanstack/react-query';
 
-const ALL_STATS_INITIAL_LIMIT = 100;
+const ALL_STATS_INITIAL_LIMIT = 1000;
 const CLICK_STATS_BATCH_SIZE = 100;
 
 /**
@@ -352,9 +352,10 @@ export const useAllNewsletterStatsWithRange = (
   const basicStatsResult = useQuery({
     queryKey: [newsletterBasicStatsDataType, 'all', searchParams],
     enabled: shouldFetch,
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       // The endpoint has no pagination; grow the limit until a response comes back short.
       for (let limit = ALL_STATS_INITIAL_LIMIT; ; limit *= 2) {
+        signal.throwIfAborted();
         const data = await fetchApi<NewsletterBasicStatsResponseType>(
           apiUrl('/stats/newsletter-basic-stats/', { ...searchParams, limit: String(limit) }),
         );
@@ -374,18 +375,23 @@ export const useAllNewsletterStatsWithRange = (
     queryKey: [newsletterClickStatsDataType, 'all', newsletterId, postIds],
     enabled: shouldFetch && postIds.length > 0,
     queryFn: async () => {
-      const stats: NewsletterClickStatItem[] = [];
       // Batched so the post_ids query string stays within URL length limits.
-      for (let i = 0; i < postIds.length; i += CLICK_STATS_BATCH_SIZE) {
-        const data = await fetchApi<NewsletterClickStatsResponseType>(
-          apiUrl('/stats/newsletter-click-stats/', {
-            ...(newsletterId && { newsletter_id: newsletterId }),
-            post_ids: postIds.slice(i, i + CLICK_STATS_BATCH_SIZE).join(','),
-          }),
-        );
-        stats.push(...data.stats);
-      }
-      return stats;
+      const batches = Array.from(
+        { length: Math.ceil(postIds.length / CLICK_STATS_BATCH_SIZE) },
+        (_, index) =>
+          postIds.slice(index * CLICK_STATS_BATCH_SIZE, (index + 1) * CLICK_STATS_BATCH_SIZE),
+      );
+      const responses = await Promise.all(
+        batches.map((batch) =>
+          fetchApi<NewsletterClickStatsResponseType>(
+            apiUrl('/stats/newsletter-click-stats/', {
+              ...(newsletterId && { newsletter_id: newsletterId }),
+              post_ids: batch.join(','),
+            }),
+          ),
+        ),
+      );
+      return responses.flatMap((response) => response.stats);
     },
   });
 
