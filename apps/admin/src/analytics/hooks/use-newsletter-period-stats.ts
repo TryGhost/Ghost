@@ -72,8 +72,11 @@ export async function fetchNewsletterPeriodStats(
     }
     const raw = await fetchApi<unknown>(apiUrl('/stats/newsletter-basic-stats/', params), { signal });
     signal.throwIfAborted();
-    if (!z.object({ meta: z.object({ pagination: z.object({}) }) }).safeParse(raw).success) {
-      throw new UnsupportedNewsletterPaginationError('Newsletter pagination is unavailable');
+    if (typeof raw === 'object' && raw !== null && !Array.isArray(raw) && 'stats' in raw) {
+      const meta = 'meta' in raw ? raw.meta : undefined;
+      if (meta === undefined || (typeof meta === 'object' && meta !== null && !Array.isArray(meta) && !('pagination' in meta))) {
+        throw new UnsupportedNewsletterPaginationError('Newsletter pagination is unavailable');
+      }
     }
     const basic = basicPageSchema.parse(raw);
     const { pagination } = basic.meta;

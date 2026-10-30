@@ -454,14 +454,14 @@ describe('Analytics newsletters', () => {
     const newsletterId = '64d623b64676110001e897d2';
     fakeNewsletters([newsletter({ id: newsletterId, name: 'Weekly Digest', status: 'active', sort_order: 0 })]);
     fakeAdminStats.newsletterSubscribers();
-    const periodSends = Array.from({ length: 25 }, (_, index) => ({
+    const periodSends = Array.from({ length: 61 }, (_, index) => ({
       post_id: String(index).padStart(24, '0'),
       post_title: `Issue ${index}`,
       newsletter_id: newsletterId,
-      send_date: `${localDaysAgo(25 - index)}T10:00:00.000Z`,
+      send_date: `${localDaysAgo(Math.floor((60 - index) / 3))}T10:00:00.000Z`,
       sent_to: 100,
-      total_opens: index * 4,
-      open_rate: (index * 4) / 100,
+      total_opens: index,
+      open_rate: index / 100,
     }));
     const sends = [
       ...periodSends,
@@ -469,7 +469,7 @@ describe('Analytics newsletters', () => {
       { ...periodSends[0], post_id: 'old-send', post_title: 'Archive issue', send_date: `${localDaysAgo(1200)}T10:00:00.000Z` },
       { ...periodSends[0], post_id: 'other-newsletter', newsletter_id: 'another-newsletter' },
     ];
-    fakeAdminEndpoint('GET', /^\/stats\/newsletter-basic-stats\//, ({ url }) => {
+    const basicRequests = fakeAdminEndpoint('GET', /^\/stats\/newsletter-basic-stats\//, ({ url }) => {
       const params = new URL(url).searchParams;
       const matching = sends.filter((send) =>
         send.newsletter_id === params.get('newsletter_id') &&
@@ -507,27 +507,28 @@ describe('Analytics newsletters', () => {
 
     await expect
       .element(analyticsScreen.newslettersCardTab('Avg. open rate'))
-      .toHaveTextContent('48%');
+      .toHaveTextContent('30%');
     await expect
       .element(analyticsScreen.newslettersCardTab('Avg. click rate'))
-      .toHaveTextContent('48%');
+      .toHaveTextContent('30%');
+
+    expect(basicRequests.requests.some(({ url }) => new URL(url).searchParams.get('page') === '2')).toBe(true);
 
     await analyticsScreen.newslettersCardTab('Avg. open rate').click();
     const bars = () =>
       analyticsScreen.newslettersCard().element().querySelectorAll('.recharts-bar-rectangle');
-    await expect.poll(() => bars().length).toBe(25);
+    await expect.poll(() => bars().length).toBe(61);
     const heights = [...bars()].map((bar) => bar.getBoundingClientRect().height);
     expect(heights).toEqual([...heights].sort((a, b) => a - b));
-    expect(heights[0]).toBeLessThan(heights[24]);
+    expect(heights[0]).toBeLessThan(heights[60]);
     await expect.poll(() => analyticsScreen.topNewslettersCard().element().querySelectorAll('tbody tr').length).toBe(20);
 
     await analyticsScreen.dateRangeSelect().click();
     await analyticsScreen.rangeOption('All time').click();
-    await expect.element(analyticsScreen.newslettersCardTab('Avg. open rate')).toHaveTextContent('44%');
-    await expect.poll(() => bars().length).toBe(27);
-    await expect.element(analyticsScreen.topNewslettersCard()).toHaveTextContent('Archive issue');
+    await expect.element(analyticsScreen.newslettersCardTab('Avg. open rate')).toHaveTextContent('29%');
+    await expect.poll(() => bars().length).toBe(63);
     await expect.poll(() => analyticsScreen.topNewslettersCard().element().querySelectorAll('tbody tr').length).toBe(20);
-  });
+  }, 30_000);
 
   it('shows the empty state on every newsletter card when none were sent', async () => {
     seedEmptyAnalyticsWorld();

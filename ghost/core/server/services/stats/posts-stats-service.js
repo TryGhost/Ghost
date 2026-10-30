@@ -918,7 +918,6 @@ class PostsStatsService {
           .where('p.newsletter_id', newsletterId)
           .whereIn('p.status', ['sent', 'published'])
           .orderBy(orderFieldMap[orderField], orderDirection)
-          .orderBy('p.id', orderDirection)
           .limit(paginated ? limit + 1 : limit);
 
         // Apply centralized date filtering
@@ -941,11 +940,14 @@ class PostsStatsService {
           .where('p.newsletter_id', newsletterId)
           .whereIn('p.status', ['sent', 'published'])
           .orderBy(orderFieldMap[orderField], orderDirection)
-          .orderBy('p.id', orderDirection)
           .limit(paginated ? limit + 1 : limit);
 
         // Apply centralized date filtering
         applyDateFilter(query, databaseDateFrom, databaseDateTo, 'p.published_at');
+      }
+
+      if (paginated) {
+        query.orderBy('p.id', orderDirection);
       }
 
       if (cursorDate) {

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { TestWrapper } from '@test-utils/fixtures/query-client';
 import { STATS_RANGES } from '@/shared/analytics/constants';
+import { z } from 'zod';
 import type { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import {
   fetchNewsletterPeriodStats,
@@ -76,10 +77,19 @@ describe('fetchNewsletterPeriodStats', () => {
   });
 
   it('does not present an older backend response as complete', async () => {
-    const fetchApi = vi.fn().mockResolvedValue({ stats: [], meta: {} }) as unknown as ReturnType<typeof useFetchApi>;
+    for (const stats of [[], [{ post_id: 'legacy-post' }]]) {
+      const fetchApi = vi.fn().mockResolvedValue({ stats, meta: {} }) as unknown as ReturnType<typeof useFetchApi>;
+      await expect(fetchNewsletterPeriodStats(
+        fetchApi, 'newsletter-1', '2026-01-01', '2026-01-31', 'UTC', new AbortController().signal,
+      )).rejects.toBeInstanceOf(UnsupportedNewsletterPaginationError);
+    }
+  });
+
+  it('treats a malformed pagination object as an error rather than missing support', async () => {
+    const fetchApi = vi.fn().mockResolvedValue({ stats: [], meta: { pagination: null } }) as unknown as ReturnType<typeof useFetchApi>;
     await expect(fetchNewsletterPeriodStats(
       fetchApi, 'newsletter-1', '2026-01-01', '2026-01-31', 'UTC', new AbortController().signal,
-    )).rejects.toBeInstanceOf(UnsupportedNewsletterPaginationError);
+    )).rejects.toBeInstanceOf(z.ZodError);
   });
 
   it('rejects malformed pagination without returning partial results', async () => {
@@ -89,6 +99,37 @@ describe('fetchNewsletterPeriodStats', () => {
     await expect(fetchNewsletterPeriodStats(
       fetchApi, 'newsletter-1', '2026-01-01', '2026-01-31', 'UTC', new AbortController().signal,
     )).rejects.toThrow('Invalid newsletter statistics pagination');
+  });
+
+  it('rejects an invalid cursor or duplicate sends on a subsequent page', async () => {
+    const sends = Array.from({ length: 50 }, (_, index) => ({
+      post_id: `post-${index}`, post_title: 'Post', send_date: '2026-01-10T12:00:00.000Z',
+      sent_to: 100, total_opens: 50, open_rate: 0.5,
+    }));
+    const firstPage = {
+      stats: sends,
+      meta: { pagination: {
+        page: 1, limit: 50, next: 2, next_cursor: 'post-49', next_cursor_date: '2026-01-10 12:00:00.000',
+      } },
+    };
+    const invalidCursor = vi.fn().mockResolvedValue({
+      ...firstPage,
+      meta: { pagination: { ...firstPage.meta.pagination, next_cursor: 'post-48' } },
+    }) as unknown as ReturnType<typeof useFetchApi>;
+    await expect(fetchNewsletterPeriodStats(
+      invalidCursor, 'newsletter-1', '2026-01-01', '2026-01-31', 'UTC', new AbortController().signal,
+    )).rejects.toThrow('Invalid newsletter statistics pagination');
+
+    const duplicate = vi.fn()
+      .mockResolvedValueOnce(firstPage)
+      .mockResolvedValueOnce({ stats: [] })
+      .mockResolvedValueOnce({
+        stats: [sends[0]],
+        meta: { pagination: { page: 2, limit: 50, next: null, next_cursor: null, next_cursor_date: null } },
+      }) as unknown as ReturnType<typeof useFetchApi>;
+    await expect(fetchNewsletterPeriodStats(
+      duplicate, 'newsletter-1', '2026-01-01', '2026-01-31', 'UTC', new AbortController().signal,
+    )).rejects.toThrow('Duplicate newsletter statistics');
   });
 
   it('propagates a click request failure instead of returning zero clicks', async () => {
