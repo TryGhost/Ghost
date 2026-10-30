@@ -10,7 +10,7 @@ function isRecommendationUrl(url) {
 /**
  * @typedef {object} RecommendationServiceWrapperDeps
  * @property {{get(key: string): unknown}} config
- * @property {{info(...args: unknown[]): void, error(...args: unknown[]): void}} logging
+ * @property {Pick<import('@tryghost/logging').GhostLogger, 'info' | 'error'>} logging
  * @property {{captureException(err: unknown): void}} sentry
  * @property {{relativeToAbsolute(url: string): string}} urlUtils
  * @property {object} models

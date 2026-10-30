@@ -1,5 +1,6 @@
 import { IncomingRecommendationEmailRenderer } from './incoming-recommendation-email-renderer';
 import { RecommendationService } from './recommendation-service';
+import type { GhostLogger } from '@tryghost/logging';
 
 export type IncomingRecommendation = {
   id: string;
@@ -56,11 +57,6 @@ type EmailService = {
   send(to: string, subject: string, html: string, text: string): Promise<void>;
 };
 
-type Logging = {
-  info(...args: unknown[]): void;
-  error(...args: unknown[]): void;
-};
-
 export class IncomingRecommendationService {
   #mentionsApi: MentionsAPI;
   #recommendationService: RecommendationService;
@@ -68,7 +64,7 @@ export class IncomingRecommendationService {
   #emailService: EmailService;
   #emailRenderer: IncomingRecommendationEmailRenderer;
   #getEmailRecipients: () => Promise<EmailRecipient[]>;
-  #logging: Logging;
+  #logging: Pick<GhostLogger, 'info' | 'error'>;
 
   constructor(deps: {
     recommendationService: RecommendationService;
@@ -76,7 +72,7 @@ export class IncomingRecommendationService {
     emailService: EmailService;
     emailRenderer: IncomingRecommendationEmailRenderer;
     getEmailRecipients: () => Promise<EmailRecipient[]>;
-    logging: Logging;
+    logging: Pick<GhostLogger, 'info' | 'error'>;
   }) {
     this.#recommendationService = deps.recommendationService;
     this.#logging = deps.logging;

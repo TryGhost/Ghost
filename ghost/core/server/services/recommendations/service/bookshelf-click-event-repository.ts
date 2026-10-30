@@ -1,20 +1,19 @@
 import { BookshelfRepository, ModelClass, ModelInstance } from './bookshelf-repository';
 import { ClickEvent } from './click-event';
+import type { GhostLogger } from '@tryghost/logging';
 
 type Sentry = {
   captureException(err: unknown): void;
 };
 
-type Logging = {
-  info(...args: unknown[]): void;
-  error(...args: unknown[]): void;
-};
-
 export class BookshelfClickEventRepository extends BookshelfRepository<string, ClickEvent> {
   sentry?: Sentry;
-  logging: Logging;
+  logging: Pick<GhostLogger, 'error'>;
 
-  constructor(Model: ModelClass<string>, deps: { sentry?: Sentry; logging: Logging }) {
+  constructor(
+    Model: ModelClass<string>,
+    deps: { sentry?: Sentry; logging: Pick<GhostLogger, 'error'> },
+  ) {
     super(Model);
     this.sentry = deps.sentry;
     this.logging = deps.logging;

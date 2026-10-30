@@ -2,14 +2,10 @@ import { AllOptions, BookshelfRepository, ModelClass, ModelInstance } from './bo
 import { Knex } from 'knex';
 import { Recommendation } from './recommendation';
 import { RecommendationRepository } from './recommendation-repository';
+import type { GhostLogger } from '@tryghost/logging';
 
 type Sentry = {
   captureException(err: unknown): void;
-};
-
-type Logging = {
-  info(...args: unknown[]): void;
-  error(...args: unknown[]): void;
 };
 
 type RecommendationFindOneData<T> = {
@@ -29,11 +25,11 @@ export class BookshelfRecommendationRepository
   implements RecommendationRepository
 {
   sentry?: Sentry;
-  logging: Logging;
+  logging: Pick<GhostLogger, 'error'>;
 
   constructor(
     Model: RecommendationModelClass<string>,
-    deps: { sentry?: Sentry; logging: Logging },
+    deps: { sentry?: Sentry; logging: Pick<GhostLogger, 'error'> },
   ) {
     super(Model);
     this.sentry = deps.sentry;

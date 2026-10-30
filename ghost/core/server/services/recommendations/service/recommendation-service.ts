@@ -8,6 +8,7 @@ import { RecommendationRepository } from './recommendation-repository';
 import { SubscribeEvent } from './subscribe-event';
 import { WellknownRecommendation, WellknownService } from './well-known-service';
 import { RecommendationMetadataService } from './recommendation-metadata-service';
+import type { GhostLogger } from '@tryghost/logging';
 
 type MentionSendingService = {
   sendAll(options: { url: URL; links: URL[] }): Promise<void>;
@@ -20,11 +21,6 @@ type RecommendationEnablerService = {
 
 type EventRepository<T> = {
   save(entity: T): Promise<void>;
-};
-
-type Logging = {
-  info(...args: unknown[]): void;
-  error(...args: unknown[]): void;
 };
 
 const messages = {
@@ -40,7 +36,7 @@ export class RecommendationService {
   mentionSendingService: MentionSendingService;
   recommendationEnablerService: RecommendationEnablerService;
   recommendationMetadataService: RecommendationMetadataService;
-  logging: Logging;
+  logging: Pick<GhostLogger, 'info' | 'error'>;
 
   constructor(deps: {
     repository: RecommendationRepository;
@@ -50,7 +46,7 @@ export class RecommendationService {
     mentionSendingService: MentionSendingService;
     recommendationEnablerService: RecommendationEnablerService;
     recommendationMetadataService: RecommendationMetadataService;
-    logging: Logging;
+    logging: Pick<GhostLogger, 'info' | 'error'>;
   }) {
     this.repository = deps.repository;
     this.logging = deps.logging;
