@@ -246,8 +246,8 @@ catalogs:
       specifier: 1.64.1
       version: 1.64.1
     '@pnpm/releasing.versioning':
-      specifier: 1100.2.4
-      version: 1100.2.4
+      specifier: 1100.3.8
+      version: 1100.3.8
     '@pnpm/workspace.workspace-manifest-reader':
       specifier: 1100.1.5
       version: 1100.1.5
@@ -4583,7 +4583,7 @@ importers:
         version: 11.0.5(@octokit/core@7.0.8)
       '@pnpm/releasing.versioning':
         specifier: 'catalog:'
-        version: 1100.2.4(@pnpm/logger@1100.0.0)
+        version: 1100.3.8(@pnpm/logger@1100.0.0)
       '@pnpm/workspace.workspace-manifest-reader':
         specifier: 'catalog:'
         version: 1100.1.5
@@ -6952,36 +6952,44 @@ packages:
     resolution: {integrity: sha512-jJQU6y8lhic2at0+W246+tMDdEqhbS1WSRlTjmIXeXrrWU2rAbhixi11loE+lI3f/E1Ci1+3i5N6ewOumeNJdg==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/core-loggers@1100.3.2':
-    resolution: {integrity: sha512-dsxDByU2KFLxTzVdXZCMjsv0rIxMmFMhWWjo6e1Sq8+TqdoPXSAGcFMN0psVJHRj5+xxXqZen4+NfFhHHsRQMg==}
+  '@pnpm/constants@1102.0.1':
+    resolution: {integrity: sha512-vLulGZ3iRt6kHcwbGYckrUF2Rd18nfGtpFjyRgbKmEyxLcZmFTBOWKFZSEyS3VVnxFEI7bTPNOGmRC0lD4U1qg==}
+    engines: {node: '>=22.13'}
+
+  '@pnpm/core-loggers@1101.0.4':
+    resolution: {integrity: sha512-kBzjyaQcNLVGu4q2LnwjxhwEEwBkqWp6E0LOv2ABODcMu5OriZfTbkIHjFlOi7bUCG5S6+k8mnWT8SEkNVaS8w==}
     engines: {node: '>=22.13'}
     peerDependencies:
       '@pnpm/logger': ^1100.0.0
 
-  '@pnpm/deps.peer-range@1100.1.1':
-    resolution: {integrity: sha512-G3J83gBJ5XCKhoJ7XbnF0uVJw7D5FC2X1T+txoGtEV1e1dFLT98b05zlBjgaMonkbxFCIUCuwHxttyEyKJvXow==}
+  '@pnpm/deps.peer-range@1100.1.2':
+    resolution: {integrity: sha512-PFGNtptMRhqQd7FogcaCsfMpCkvDhFQVuO3+BnMw0PByAUPjXpE7jJMIGduRUSETb2E/zDr2PZ13cXO2OQiAeQ==}
     engines: {node: '>=22.13'}
 
   '@pnpm/error@1100.1.1':
     resolution: {integrity: sha512-dqFXd5jTgBkGkwwI6AO9ON/WBXlQ8LIMRyyRysgSshix1XDyYjMmk7+bdPLuY2gjpB95j0Wu9Xq+3l7uuGZToQ==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/fs.graceful-fs@1100.1.1':
-    resolution: {integrity: sha512-knCLxjy9vx18Z1cwzzqD251jxrJhQpJ09Gch+AecX0rOWj/sygjk0UXSWZPaHPwVtK5Je7i2CIAoyYwsb8wZTg==}
+  '@pnpm/error@1100.2.2':
+    resolution: {integrity: sha512-OVUBUOtFou4xLyrnoETrplOX1FszsAVSfiq/H0DaN+g4nvqOlLPe12pLCoR2/P2Va9yEsInjgsXyrY29Ujgi7g==}
+    engines: {node: '>=22.13'}
+
+  '@pnpm/fs.graceful-fs@1100.2.5':
+    resolution: {integrity: sha512-yvGmy0mxhZRjJJy5NPLfpDTSoPkjuAQnZq4mTv/isuStN3+jKST/gyWmUzgwWke2DFFB8/WyYwFi2wU7Uc78gQ==}
     engines: {node: '>=22.13'}
 
   '@pnpm/logger@1100.0.0':
     resolution: {integrity: sha512-A3bRMTIZ5ptDPAE/KsDeY1J5UqqOiyo66+k/mUvaVjx++OJdMbp9If5kisEq9ljAV5r5TRpkxsJbSdrdJ5WtzQ==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/pkg-manifest.utils@1100.3.1':
-    resolution: {integrity: sha512-9gYZ0NFNac2+qYV8suA7KWmZia0eJJNQDeByAhTfFpM1ji3Md7SFoNY9WnqXntpx/p1r9rRTeww4iwou/NEztg==}
+  '@pnpm/pkg-manifest.utils@1100.4.11':
+    resolution: {integrity: sha512-oUJDolKSG2CSGeR+v6TsLBL0UEZ6VnAKwMOsF/T717f1mrHIb3wh2wdzcL5eZb0dLvKOGI+zMdc0UXgve/mcVQ==}
     engines: {node: '>=22.13'}
     peerDependencies:
       '@pnpm/logger': ^1100.0.0
 
-  '@pnpm/releasing.versioning@1100.2.4':
-    resolution: {integrity: sha512-9ZlTz5+/nG2yhLMpV0gxBF4QH3MSOAj+xM3RhXCqTvnBQ+h6zaObVeCOChpzrIQtyWjf0wvJCdzyc3xaZakrMA==}
+  '@pnpm/releasing.versioning@1100.3.8':
+    resolution: {integrity: sha512-zh29ewYWVGnEKsXuGcyBFh/xaoK9PWe7+x3SwGDhTEd6sxTA/Mf7j6zWTlONy0cuUZ7HwzCOreTZRaZeJiPziw==}
     engines: {node: '>=22.13'}
 
   '@pnpm/text.comments-parser@1100.0.1':
@@ -6992,14 +7000,18 @@ packages:
     resolution: {integrity: sha512-lB2aSB2h950UX1GX3JW4AZ86xjXD92YJbV92IBSQqHXXZdiemoVKADLA2cDQ4/wKeS7djY8fkITM6X+6iYF62A==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/workspace.project-manifest-reader@1100.0.23':
-    resolution: {integrity: sha512-sIZ9QLZJOVt9nf7qiWd/bUFqyF12T0HrkRhkkkAAzc50NpXEzvbZjRV1V6r9zoWfJwntFx2jzyzYVIn4Zn9Snw==}
+  '@pnpm/types@1102.1.3':
+    resolution: {integrity: sha512-uFm6fYunXaWeZs6um75cZefbmzszpaWdf8257a57HgyvodfEHugUKokUS/OEY1Xu15O9kWWlml8EbfX+sRdE/Q==}
+    engines: {node: '>=22.13'}
+
+  '@pnpm/workspace.project-manifest-reader@1100.1.5':
+    resolution: {integrity: sha512-CsBHMk4h+2SAWznc3+pJgbfj2EuCctAiXcFnUkVGOW32pdIWQi5XYfBu7uLiYAr4brmRTJTDahTvR5aFnRviTg==}
     engines: {node: '>=22.13'}
     peerDependencies:
       '@pnpm/logger': ^1100.0.0
 
-  '@pnpm/workspace.project-manifest-writer@1100.0.14':
-    resolution: {integrity: sha512-1s+T0xtNHbfQ73LdyE5mEZ8+cXKPQRT0N8qUXp+AZio9Mbgu2R9Qsz2n68vh4tiBrNSndaDc6PlyIb1N/tAEUA==}
+  '@pnpm/workspace.project-manifest-writer@1100.0.22':
+    resolution: {integrity: sha512-cyDFidRE3ihL1Hx98kHB5G7/52Ei+PalHVBuNYdBXAKNG+3kqQBW9rnhfxuoXLd+uRKsuNzlyAqW0dxTRA8FTw==}
     engines: {node: '>=22.13'}
 
   '@pnpm/workspace.spec-parser@1100.0.1':
@@ -7008,6 +7020,10 @@ packages:
 
   '@pnpm/workspace.workspace-manifest-reader@1100.1.5':
     resolution: {integrity: sha512-NMUVtTcyY8vm9xPMmpWRtWaCTdO3JyaHrm1AHdCpTQUhvhemLnULrSp5LG36o6BqUOF/P/cj/i8j97vDOypO5A==}
+    engines: {node: '>=22.13'}
+
+  '@pnpm/yaml.document-sync@1100.0.2':
+    resolution: {integrity: sha512-DXohTVqVxIDf30cPlBczibqDnSzsAB1N9PPBMGf7EkBgiOaJNvsWkFA6QeI90XVMAkLCRjV4S6LdnhVpB8U80w==}
     engines: {node: '>=22.13'}
 
   '@polka/url@1.0.0-next.29':
@@ -12085,8 +12101,8 @@ packages:
     resolution: {integrity: sha512-dFcAjpTQFgoLMzC2VwU+C/CbS7uRL0lWmxDITmqm7C+7F0Odmj6s9l6alZc6AELXhrnggM2CeWSXHGOdX2YtwA==}
     engines: {node: '>= 6'}
 
-  human-id@4.2.0:
-    resolution: {integrity: sha512-K3GbkIWqyvvlpfhBPlbEvD97TtqBpAYA4kt+cn2lD2x2HuohzZCibcA2nOlnJT6exqvJLggoB5nv2dNf192nEA==}
+  human-id@4.2.2:
+    resolution: {integrity: sha512-Z+8unD6em/MJwyrkWQ2M3wygRGI1+MztbutiNwk1DCuEPXOZRWGjtcMPZYP1exY9iNZMhd7ZOSMQSo9WYtiQRw==}
     hasBin: true
 
   human-signals@8.0.1:
@@ -14100,8 +14116,8 @@ packages:
     resolution: {integrity: sha512-TYOanM3wGwNGsZN2cVTYPArw454xnXj5qmWF1bEoAc4+cU/ol7GVh7odevjp1FNHduHc3KZMcFduxU5Xc6uJRQ==}
     engines: {node: '>=10'}
 
-  p-limit@7.3.1:
-    resolution: {integrity: sha512-0trZaiG7Y7kN/Egy9a8j47t9osC0Tch4PaIWd9yGF6bvmlk7muExRvGNYb8sXBwEKMoNKsbNN9P8EefuQekE4Q==}
+  p-limit@7.3.3:
+    resolution: {integrity: sha512-SKgVvDU5TNIxQ4r30U75BNLC6a+6GOEjngrk/ysM5+Zu3oJuk1SC5ApzIzY/7PjCEjoVPMWJ0zho/4QUiEB7TQ==}
     engines: {node: '>=20'}
 
   p-locate@4.1.0:
@@ -15348,6 +15364,9 @@ packages:
 
   selderee@0.12.0:
     resolution: {integrity: sha512-b1YMh3+DHZp59DLna3qVwQ5iOla/nrI6mLBNW02XxU77M3046Df6VLkoaJyFz20VsGIG5kkp+FK0kg4K4HnUFw==}
+
+  semver-utils@1.1.4:
+    resolution: {integrity: sha512-EjnoLE5OGmDAVV/8YDoN5KiajNadjzIp9BAHOhYeQHt7j0UWxjmgsx4YD48wp4Ue1Qogq38F1GNUJNqF1kKKxA==}
 
   semver@5.7.2:
     resolution: {integrity: sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g==}
@@ -16749,10 +16768,6 @@ packages:
     resolution: {integrity: sha512-OTIk8iR8/aCRWBqvxrzxR0hgxWpnYBblY1S5hDWBQfk/VFmJwzmJgQFN3WsoUKHISv2eAwe+PpbUzyL1CKTLXg==}
     engines: {node: ^20.17.0 || >=22.9.0}
 
-  write-yaml-file@6.0.0:
-    resolution: {integrity: sha512-WG6oDbTuNkiDr0sjYiuV715ZBUYOZVf838wu+7M0WAbkCmv5z2P7OW9gCfgEclXPwP08r5CvBtEyqV7vht070A==}
-    engines: {node: '>=22.13'}
-
   ws@8.21.0:
     resolution: {integrity: sha512-Vsp28b7DRcimFQvrqu2Wek3z1iYxDCWqHYB8Qsnk/S4RfaCQzPGPyBNuVjJV3cd6UiKtUtp6sNM77gWvzcCH+g==}
     engines: {node: '>=10.0.0'}
@@ -16808,6 +16823,11 @@ packages:
 
   yaml@2.9.0:
     resolution: {integrity: sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA==}
+    engines: {node: '>= 14.6'}
+    hasBin: true
+
+  yaml@2.9.1:
+    resolution: {integrity: sha512-3NxN8+78OdzbT7C/WjGsyfPAtJaN3FNDsWxv7Y7mcDsT/oOmgW8BpyQQFFBnvZE3j9Y2Sdz1ULFLezL7Eb2yFw==}
     engines: {node: '>= 14.6'}
     hasBin: true
 
@@ -19027,12 +19047,14 @@ snapshots:
 
   '@pnpm/constants@1101.0.0': {}
 
-  '@pnpm/core-loggers@1100.3.2(@pnpm/logger@1100.0.0)':
+  '@pnpm/constants@1102.0.1': {}
+
+  '@pnpm/core-loggers@1101.0.4(@pnpm/logger@1100.0.0)':
     dependencies:
       '@pnpm/logger': 1100.0.0
-      '@pnpm/types': 1101.9.0
+      '@pnpm/types': 1102.1.3
 
-  '@pnpm/deps.peer-range@1100.1.1':
+  '@pnpm/deps.peer-range@1100.1.2':
     dependencies:
       semver: 7.8.5
 
@@ -19040,8 +19062,13 @@ snapshots:
     dependencies:
       '@pnpm/constants': 1101.0.0
 
-  '@pnpm/fs.graceful-fs@1100.1.1':
+  '@pnpm/error@1100.2.2':
     dependencies:
+      '@pnpm/constants': 1102.0.1
+
+  '@pnpm/fs.graceful-fs@1100.2.5':
+    dependencies:
+      '@pnpm/error': 1100.2.2
       graceful-fs: 4.2.11
 
   '@pnpm/logger@1100.0.0':
@@ -19049,24 +19076,25 @@ snapshots:
       bole: 5.0.29
       split2: 4.2.0
 
-  '@pnpm/pkg-manifest.utils@1100.3.1(@pnpm/logger@1100.0.0)':
+  '@pnpm/pkg-manifest.utils@1100.4.11(@pnpm/logger@1100.0.0)':
     dependencies:
-      '@pnpm/core-loggers': 1100.3.2(@pnpm/logger@1100.0.0)
-      '@pnpm/deps.peer-range': 1100.1.1
-      '@pnpm/error': 1100.1.1
+      '@pnpm/core-loggers': 1101.0.4(@pnpm/logger@1100.0.0)
+      '@pnpm/deps.peer-range': 1100.1.2
+      '@pnpm/error': 1100.2.2
       '@pnpm/logger': 1100.0.0
-      '@pnpm/types': 1101.9.0
+      '@pnpm/types': 1102.1.3
       semver: 7.8.5
+      semver-utils: 1.1.4
 
-  '@pnpm/releasing.versioning@1100.2.4(@pnpm/logger@1100.0.0)':
+  '@pnpm/releasing.versioning@1100.3.8(@pnpm/logger@1100.0.0)':
     dependencies:
-      '@pnpm/error': 1100.1.1
-      '@pnpm/types': 1101.9.0
-      '@pnpm/workspace.project-manifest-reader': 1100.0.23(@pnpm/logger@1100.0.0)
+      '@pnpm/error': 1100.2.2
+      '@pnpm/types': 1102.1.3
+      '@pnpm/workspace.project-manifest-reader': 1100.1.5(@pnpm/logger@1100.0.0)
       '@pnpm/workspace.spec-parser': 1100.0.1
-      human-id: 4.2.0
+      human-id: 4.2.2
       semver: 7.8.5
-      yaml: 2.9.0
+      yaml: 2.9.1
     transitivePeerDependencies:
       - '@pnpm/logger'
 
@@ -19076,31 +19104,35 @@ snapshots:
 
   '@pnpm/types@1101.9.0': {}
 
-  '@pnpm/workspace.project-manifest-reader@1100.0.23(@pnpm/logger@1100.0.0)':
+  '@pnpm/types@1102.1.3': {}
+
+  '@pnpm/workspace.project-manifest-reader@1100.1.5(@pnpm/logger@1100.0.0)':
     dependencies:
-      '@pnpm/error': 1100.1.1
-      '@pnpm/fs.graceful-fs': 1100.1.1
+      '@pnpm/error': 1100.2.2
+      '@pnpm/fs.graceful-fs': 1100.2.5
       '@pnpm/logger': 1100.0.0
-      '@pnpm/pkg-manifest.utils': 1100.3.1(@pnpm/logger@1100.0.0)
+      '@pnpm/pkg-manifest.utils': 1100.4.11(@pnpm/logger@1100.0.0)
       '@pnpm/text.comments-parser': 1100.0.1
-      '@pnpm/types': 1101.9.0
-      '@pnpm/workspace.project-manifest-writer': 1100.0.14
+      '@pnpm/types': 1102.1.3
+      '@pnpm/workspace.project-manifest-writer': 1100.0.22
       detect-indent: 7.0.2
       fast-deep-equal: 3.1.3
       is-windows: 1.0.2
       json5: 2.2.3
-      p-limit: 7.3.1
+      p-limit: 7.3.3
       parse-json: 8.3.0
       read-yaml-file: 3.0.0
       strip-bom: 5.0.0
 
-  '@pnpm/workspace.project-manifest-writer@1100.0.14':
+  '@pnpm/workspace.project-manifest-writer@1100.0.22':
     dependencies:
+      '@pnpm/error': 1100.2.2
       '@pnpm/text.comments-parser': 1100.0.1
-      '@pnpm/types': 1101.9.0
+      '@pnpm/types': 1102.1.3
+      '@pnpm/yaml.document-sync': 1100.0.2
       json5: 2.2.3
       write-file-atomic: 7.0.1
-      write-yaml-file: 6.0.0
+      yaml: 2.9.1
 
   '@pnpm/workspace.spec-parser@1100.0.1': {}
 
@@ -19110,6 +19142,10 @@ snapshots:
       '@pnpm/error': 1100.1.1
       '@pnpm/types': 1101.9.0
       read-yaml-file: 3.0.0
+
+  '@pnpm/yaml.document-sync@1100.0.2':
+    dependencies:
+      yaml: 2.9.1
 
   '@polka/url@1.0.0-next.29': {}
 
@@ -24813,7 +24849,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  human-id@4.2.0: {}
+  human-id@4.2.2: {}
 
   human-signals@8.0.1: {}
 
@@ -24895,7 +24931,7 @@ snapshots:
       '@scalar/openapi-types': 0.8.0
       '@toon-format/toon': 2.3.1
       tokenx: 1.6.0
-      yaml: 2.9.0
+      yaml: 2.9.1
       zod: 4.6.7
 
   indent-string@4.0.0: {}
@@ -25592,7 +25628,7 @@ snapshots:
       strip-json-comments: 5.0.3
       tinyglobby: 0.2.17
       unbash: 4.0.10
-      yaml: 2.9.0
+      yaml: 2.9.1
       zod: 4.6.7
 
   kolorist@1.8.0: {}
@@ -25767,7 +25803,7 @@ snapshots:
       string-argv: 0.3.2
       tinyexec: 1.3.0
     optionalDependencies:
-      yaml: 2.9.0
+      yaml: 2.9.1
 
   load-plugin@6.0.3(bluebird@3.7.2):
     dependencies:
@@ -27197,7 +27233,7 @@ snapshots:
     dependencies:
       yocto-queue: 0.1.0
 
-  p-limit@7.3.1:
+  p-limit@7.3.3:
     dependencies:
       yocto-queue: 1.2.2
 
@@ -27475,7 +27511,7 @@ snapshots:
   postcss-load-config@5.1.0(jiti@2.7.0)(postcss@8.5.32)(tsx@4.23.15):
     dependencies:
       lilconfig: 3.1.3
-      yaml: 2.9.0
+      yaml: 2.9.1
     optionalDependencies:
       jiti: 2.7.0
       postcss: 8.5.32
@@ -28642,6 +28678,8 @@ snapshots:
     dependencies:
       parseley: 0.13.1
 
+  semver-utils@1.1.4: {}
+
   semver@5.7.2: {}
 
   semver@6.3.1: {}
@@ -29751,7 +29789,7 @@ snapshots:
       vfile-message: 4.0.3
       vfile-reporter: 8.1.1
       vfile-statistics: 3.0.0
-      yaml: 2.9.0
+      yaml: 2.9.1
     transitivePeerDependencies:
       - bluebird
       - supports-color
@@ -30319,11 +30357,6 @@ snapshots:
     dependencies:
       signal-exit: 4.1.0
 
-  write-yaml-file@6.0.0:
-    dependencies:
-      js-yaml: 4.3.2
-      write-file-atomic: 7.0.1
-
   ws@8.21.0: {}
 
   wsl-utils@0.1.0:
@@ -30356,6 +30389,8 @@ snapshots:
   yallist@3.1.1: {}
 
   yaml@2.9.0: {}
+
+  yaml@2.9.1: {}
 
   yargs-parser@20.2.9: {}
 
