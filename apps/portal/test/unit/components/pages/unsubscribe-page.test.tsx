@@ -2,7 +2,16 @@ import { render, fireEvent, waitFor } from '../../../utils/test-utils';
 import UnsubscribePage from '../../../../src/components/pages/unsubscribe-page';
 import { getSiteData, getMemberData } from '../../../../src/utils/fixtures-generator';
 
-const toggles = [
+type PreferenceKey = 'enableCommentNotifications' | 'enableUpdatesAndAnnouncements';
+type ToggleCase = [
+  testId: string,
+  linkParams: { comments?: boolean; updatesAndAnnouncements?: boolean },
+  updateKey: PreferenceKey,
+  memberField: 'enable_comment_notifications' | 'enable_updates_and_announcements',
+  successMessage: string,
+];
+
+const toggles: ToggleCase[] = [
   [
     'comment-toggle',
     { comments: true },
@@ -25,7 +34,24 @@ const member = {
   enable_updates_and_announcements: true,
 };
 
-const setup = ({ signedIn = false, linkParams, doAction, updateNewsletters }) => {
+type PreferenceUpdate = Partial<Record<PreferenceKey, boolean>> & { successMessage?: string };
+type UpdateNewsletters = (data: PreferenceUpdate) => Promise<typeof member>;
+type DoAction = (
+  action: string,
+  data: PreferenceUpdate,
+) => Promise<{ action: string; member?: typeof member } | undefined>;
+
+const setup = ({
+  signedIn = false,
+  linkParams,
+  doAction,
+  updateNewsletters,
+}: {
+  signedIn?: boolean;
+  linkParams: ToggleCase[1];
+  doAction?: DoAction;
+  updateNewsletters?: UpdateNewsletters;
+}) => {
   return render(<UnsubscribePage />, {
     overrideContext: {
       site: getSiteData({ labs: { automations: true } }),
@@ -42,7 +68,7 @@ describe('Unsubscribe Page', () => {
     '%s shows a retryable error when the signed-out save fails',
     async (toggleTestId, linkParams, updateKey, field, successMessage) => {
       const updateNewsletters = vi
-        .fn()
+        .fn<UpdateNewsletters>()
         .mockRejectedValueOnce(new Error('Network error'))
         .mockImplementationOnce(async (data) => ({ ...member, [field]: data[updateKey] }));
       const { mockDoActionFn, findByTestId, queryByText, getByText } = setup({
@@ -83,7 +109,7 @@ describe('Unsubscribe Page', () => {
     '%s leaves signed-in feedback to the saved result',
     async (toggleTestId, linkParams, updateKey, field, successMessage) => {
       let saveSucceeds = false;
-      const doAction = vi.fn(async (action, data) => {
+      const doAction = vi.fn<DoAction>(async (action, data) => {
         if (action !== 'updateNewsletterPreference') {
           return undefined;
         }
