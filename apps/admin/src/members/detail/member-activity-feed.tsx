@@ -13,9 +13,7 @@ import type { ParsedMemberEvent } from './member-event';
 
 interface MemberActivityFeedProps {
   // Optional so the create screen (/members/new) can render just the empty
-  // state without a member yet — matches Ember's `activity-feed.hbs:2`,
-  // which short-circuits to `Member::ActivityFeedEmpty` when `@member.isNew`
-  // (there's no member id to fetch events for).
+  // state without a member yet (there's no member id to fetch events for).
   memberId?: string;
   hasMultipleNewsletters: boolean;
   hasMultipleTiers: boolean;
@@ -23,7 +21,7 @@ interface MemberActivityFeedProps {
 }
 
 /**
- * Renders a Lucide substitute for Ember's custom SVG icon names
+ * Renders a Lucide icon for each event icon name
  * (`event-signed-up`, `event-comment`, …). Intentional visual approximation
  * — the full table lives behind the "View all member activity" link.
  * Anything unmapped falls back to the generic
@@ -103,16 +101,13 @@ const ViewAllLink: React.FC<{ memberId: string }> = ({ memberId }) => {
   return link;
 };
 
-// Copy ported verbatim from Ember's `activity-feed-empty.hbs`.
 const NEW_MEMBER_ACTIVITY_COPY = 'All events related to this member will be shown here.';
 
 const capitalize = (s?: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
 
 /**
- * Ember's activity-feed row renders an `EmailPreviewLink` when `event.email`
- * is set on delivery/open/sent rows. We don't have that component in the
- * inline feed — surface a plain "Email" label so the admin can at least see
- * the row carries an email object; the full activity page provides the preview.
+ * Delivery/open/sent rows with `event.email` get a plain subject or "Email" label
+ * in the inline feed; the full activity page provides the preview.
  */
 function getEmailLabel(email: unknown): string | undefined {
   if (email && typeof email === 'object') {
@@ -174,8 +169,7 @@ const ActivityRow: React.FC<{ event: ParsedMemberEvent }> = ({ event }) => {
             </>
           )}
           {hasEmailFallback && (
-            // Ember shows the email preview link here; we show a
-            // plain subject label as the closest text-only parity.
+            // A plain subject label in place of an email preview link.
             <>
               <span className="mx-1 text-muted-foreground">{event.join}</span>
               <span className="text-muted-foreground">{emailLabel}</span>
@@ -197,8 +191,7 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
   hasMultipleTiers,
   paidMembersEnabled,
 }) => {
-  // Cap the inline feed to the same 5 events Ember shows in the sidebar
-  // section (`activity-feed.hbs:9` — pageSize=5). Anything beyond that lives
+  // Cap the inline feed to 5 events. Anything beyond that lives
   // behind the "View all" link. On the create screen there's no memberId
   // to query against, so disable the fetch entirely — an unsaved member has
   // no events by definition.
@@ -234,9 +227,7 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
   const seen = new Set<string>();
 
   // Create mode (`/members/new`) — no member id, no fetch, no "View all"
-  // link. Ember renders `Member::ActivityFeedEmpty` in this state
-  // (`activity-feed.hbs:2-7`); we render the same copy via Shade's
-  // `EmptyIndicator` so the parity assertion for that string holds.
+  // link; only the empty-state copy via Shade's `EmptyIndicator`.
   if (!memberId) {
     return (
       <section aria-labelledby="member-activity-heading" className="flex flex-col gap-3">

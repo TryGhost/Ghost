@@ -26,9 +26,8 @@ function joinWords(words: Array<string | null | undefined>): string {
 }
 
 /**
- * The collapsed recipients row, e.g. "All 1,234 subscribers of Weekly".
- * Ported from `publish-flow/options.hbs` :78-96, including its "All" prefix
- * only appearing for a plural or unknown count.
+ * The collapsed recipients row, e.g. "All 1,234 subscribers of Weekly". The
+ * "All" prefix only appears for a plural or unknown count.
  */
 export function recipientsRowLabel({
   recipientType,
@@ -49,8 +48,7 @@ export function recipientsRowLabel({
 
 /**
  * The recipient phrase in the confirm sentence, e.g. "all 1,234 subscribers".
- * Ported from `publish-flow/confirm.hbs` :31-47; unlike the collapsed row, the
- * "all" prefix here is unconditional.
+ * Unlike the collapsed row, the "all" prefix here is unconditional.
  */
 export function recipientsConfirmLabel({ recipientType, count }: RecipientLabelInputs): string {
   const unknown = count === null || count === undefined;
@@ -66,8 +64,8 @@ export function recipientsConfirmLabel({ recipientType, count }: RecipientLabelI
 
 export type ConfirmPublishType = 'publish+send' | 'publish' | 'send';
 
-// Ember's `buttonTextMap`, less its success copy: the flow replaces the confirm
-// step with the complete step, so a success state on this button never renders.
+// No success copy: the flow replaces the confirm step with the complete step,
+// so a success state on this button never renders.
 const BUTTON_TEXT = {
   'publish+send': { idle: 'Publish & send', running: 'Publishing & sending' },
   send: { idle: 'Send email', running: 'Sending' },
@@ -84,7 +82,6 @@ export interface ConfirmButtonInputs {
   timezone: string;
 }
 
-/** `publish-flow/confirm.js` :72-89. */
 export function confirmButtonText({
   publishType,
   isScheduled,
@@ -111,7 +108,7 @@ export function confirmRunningText(publishType: ConfirmPublishType, isScheduled:
   return BUTTON_TEXT[isScheduled ? 'schedule' : publishType].running;
 }
 
-/** `publish-flow/confirm.js` :60-70 — derived from the state captured at entry. */
+/** Derived from the state captured at entry. */
 export function confirmPublishType({
   willPublish,
   willEmail,
@@ -140,7 +137,7 @@ export function siteCalendarDay(iso: string, timezone: string): Date {
   return new Date(time.year(), time.month(), time.date());
 }
 
-/** `gh-format-post-time` with `relative=true`: plain `moment().from(now)`. */
+/** Plain `moment().from(now)`. */
 export function relativeTime(iso: string, now?: Date): string {
   return moment(iso).from(now ? moment(now) : moment.utc());
 }

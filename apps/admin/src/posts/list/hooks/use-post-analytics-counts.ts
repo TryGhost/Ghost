@@ -10,8 +10,7 @@ import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
  * so a site without web analytics never asks for visitor counts.
  *
  * Deliberately not blocking: the list renders with zeroes and the numbers fill
- * in, as they do in Ember, where the loads are explicitly not awaited so a slow
- * analytics service can't hold up the screen.
+ * in, so a slow analytics service can't hold up the screen.
  */
 export interface UsePostAnalyticsCountsOptions {
   items: PostListItem[];

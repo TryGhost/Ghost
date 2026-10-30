@@ -45,9 +45,8 @@ export type MemberNewsletter = {
 export type MemberSubscription = {
   // Complimentary and gift subscriptions arrive from the members BREAD service
   // with `id: ''` — they're synthesised from the member's tier and carry no
-  // Stripe subscription id. Paid ones always have a real Stripe id. The Ember
-  // screen classifies via `!sub.id` (empty-string is falsy) combined with the
-  // plan nickname.
+  // Stripe subscription id. Paid ones always have a real Stripe id. Classify
+  // via `!sub.id` (empty-string is falsy) combined with the plan nickname.
   id: string;
   customer: {
     id: string;
@@ -221,8 +220,8 @@ export function useMemberCount() {
 // Filtered member counts (email recipients)
 // -----------------------------------------------------------------------------
 
-// The Ember members-count-cache's TTL; the framework default staleTime (5min)
-// is too stale for publish-flow recipient counts.
+// The framework default staleTime (5min) is too stale for publish-flow
+// recipient counts.
 const MEMBERS_COUNT_STALE_TIME = 60 * 1000;
 const noOpMembersCountRefetch = () => Promise.resolve();
 
@@ -248,12 +247,10 @@ export interface MembersCountOptions {
 }
 
 /**
- * Number of members matching a filter, consolidated from the Ember
- * `members-count-cache` service + `members-count-fetcher` resource: a browse
- * request with `limit=1` reading `meta.pagination.total`, cached per-filter
- * for 60 seconds. As in Ember, roles that cannot manage members get
- * `count: null` without a request and a nullish filter counts as 0 without a
- * request. A failed request resolves to `count: null` with no error toast —
+ * Number of members matching a filter: a browse request with `limit=1`
+ * reading `meta.pagination.total`, cached per-filter for 60 seconds. Roles
+ * that cannot manage members get `count: null` without a request and a
+ * nullish filter counts as 0 without a request. A failed request resolves to `count: null` with no error toast —
  * an unreadable count is not a count of zero, and callers render descriptive
  * copy for `null` rather than claiming an audience of none. While the current
  * user is still loading the result has `count: null` and `isLoading: true`,
@@ -271,7 +268,7 @@ export function useMembersCount(
   const enabled = canFetch && filter !== null && filter !== undefined;
 
   const result = useBrowseMembersCountQuery({
-    // order/page pin the same cheap, stable request shape the Ember cache used
+    // order/page pin a cheap, stable request shape
     searchParams: { filter: filter ?? '', order: 'id', limit: '1', page: '1' },
     staleTime: MEMBERS_COUNT_STALE_TIME,
     enabled,
@@ -344,8 +341,7 @@ export function useMembersCount(
   };
 }
 
-// gh-pluralize combined toLocaleString with ember-inflector; every noun used
-// below pluralizes regularly so a trailing "s" matches its output.
+// Every noun used below pluralizes regularly, so a trailing "s" is enough.
 function pluralizedCount(count: number, noun: string): string {
   return `${count.toLocaleString()} ${count === 1 ? noun : `${noun}s`}`;
 }
@@ -363,9 +359,8 @@ export interface MembersCountStringOptions {
 }
 
 /**
- * Human-readable copy for a recipient count, ported from the Ember
- * `members-count-cache#countString` (which fetched the count itself; this
- * pure port takes it from `useMembersCount`, which matches its semantics).
+ * Human-readable copy for a recipient count; takes the count from
+ * `useMembersCount` rather than fetching it.
  */
 export function membersCountString(
   filter: string = '',
@@ -376,7 +371,7 @@ export function membersCountString(
   const suffix = newsletter && hasMultipleNewsletters ? ` of ${newsletter.name}` : '';
 
   // Strips the newsletter scope composed by getFullRecipientFilter to get back
-  // the user-selected segment; a plain comma split like the Ember original.
+  // the user-selected segment with a plain comma split.
   const basicFilter = newsletter
     ? filter.replace(newsletter.recipientFilter, '').replace(/^\+\((.*)\)$/, '$1')
     : filter;
@@ -386,9 +381,8 @@ export function membersCountString(
   const isAll =
     !filter || (filterParts.includes(FREE_SEGMENT) && filterParts.includes(PAID_SEGMENT));
 
-  // Ember reserved this copy for plain Editors and fetched a count for every
-  // other role on the spot; a pure function can't fetch, so an absent count —
-  // whatever the role — gets the descriptive copy rather than a bogus "0".
+  // An absent count, whatever the role, gets the descriptive copy rather than
+  // a bogus "0".
   if (count === undefined || count === null) {
     if (isFree) {
       return `all free ${nounPlural}${suffix}`;
@@ -760,8 +754,8 @@ export const useBulkDeleteMembers = createMutation<
 
 // Labels are matched/created by name+slug, newsletters and tiers by id. `tiers`
 // carries complimentary-subscription assignments (with optional expiry); passing
-// a shorter list removes the omitted comp tiers. `include=tiers` mirrors the
-// Ember save so the response carries the refreshed tier list.
+// a shorter list removes the omitted comp tiers. `include=tiers` makes the
+// response carry the refreshed tier list.
 export interface EditMemberData {
   id: string;
   name?: string;

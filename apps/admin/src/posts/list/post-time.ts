@@ -3,8 +3,7 @@ import moment from 'moment-timezone';
 /**
  * How a post's date reads in the list.
  *
- * Ported from `apps/ember-admin/app/helpers/gh-format-post-time.js`. The
- * branches are order-dependent and the order is load-bearing:
+ * The branches are order-dependent and the order is load-bearing:
  *
  * - anything within 12 hours either way reads as relative ("2 hours ago",
  *   "in 2 hours"), which beats every absolute format;

@@ -53,7 +53,7 @@ export function PublishDateSection({ session }: PublishDateSectionProps) {
         disabled={isScheduled}
         invalid={invalid}
         labelledBy={labelId}
-        // Ember caps the calendar at today; a past publish time is the rule.
+        // The calendar is capped at today; a past publish time is the rule.
         maxDate={now}
         timeLabel="Publish time"
         timeTestId={settingsPublishTime}

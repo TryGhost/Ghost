@@ -255,7 +255,7 @@ function UserMenu(props: UserMenuProps) {
  * Floating profile menu for contributor users
  * Positioned in top-right corner, minimal menu with essential actions only
  *
- * Mirrors Ember behavior where contributors have a simplified menu with:
+ * Contributors get a simplified menu with:
  * - Posts (navigate to posts list)
  * - View site (open site in new tab)
  * - Your profile (navigate to profile settings)

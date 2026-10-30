@@ -1,4 +1,3 @@
-// taken from https://github.com/TryGhost/Ghost/blob/main/ghost/admin/lib/koenig-editor/addon/utils/extract-video-metadata.js
 export default function extractVideoMetadata(file) {
     return new Promise((resolve, reject) => {
         const mimeType = file.type;

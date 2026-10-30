@@ -30,7 +30,7 @@ interface MemberSubscriptionActionsProps {
  * — server-side the invalidation on that hook refreshes the member so the row
  * copy updates automatically once the change lands.
  *
- * Gift subs are omitted from the menu by the caller (Ember parity); comp subs
+ * Gift subs are omitted from the menu by the caller; comp subs
  * get their own menu in Phase 6.
  */
 const MemberSubscriptionActions: React.FC<MemberSubscriptionActionsProps> = ({
