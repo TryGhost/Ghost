@@ -248,7 +248,7 @@ module.exports = class RouterController {
     let currency;
     let customer;
     if (!req.body.subscription_id) {
-      const activeSubscription = await this._getActiveSubscription(member);
+      const activeSubscription = this._getActiveSubscription(subscriptions);
       currency = activeSubscription?.get('plan_currency') || undefined;
       customer = await this._getCustomerForSubscription(member, activeSubscription);
     } else {
@@ -287,17 +287,16 @@ module.exports = class RouterController {
   }
 
   /**
-   * The current subscription ranks active statuses first, so it's only inactive when none are.
+   * Newest active subscription first, the same ranking as members_resolved_subscription.
    *
-   * @param {any} member
+   * @param {any} subscriptions
    */
-  async _getActiveSubscription(member) {
-    const currentSubscriptions = await member.related('currentSubscription').fetch();
-    const subscription = currentSubscriptions.models[0];
-    const isActive = ['active', 'trialing', 'unpaid', 'past_due'].includes(
-      subscription?.get('status'),
-    );
-    return isActive ? subscription : undefined;
+  _getActiveSubscription(subscriptions) {
+    return subscriptions.models
+      .filter((sub) => ['active', 'trialing', 'unpaid', 'past_due'].includes(sub.get('status')))
+      .sort(
+        (a, b) => new Date(b.get('created_at')).getTime() - new Date(a.get('created_at')).getTime(),
+      )[0];
   }
 
   /**
@@ -350,7 +349,7 @@ module.exports = class RouterController {
 
     let customer;
     if (!req.body.subscription_id) {
-      const activeSubscription = await this._getActiveSubscription(member);
+      const activeSubscription = this._getActiveSubscription(subscriptions);
       customer = await this._getCustomerForSubscription(member, activeSubscription);
     } else {
       const subscription = subscriptions.models.find((sub) => {
