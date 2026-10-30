@@ -245,15 +245,14 @@ module.exports = class RouterController {
 
     const subscriptions = await member.related('stripeSubscriptions').fetch();
 
-    const activeSubscription = subscriptions.models.find((sub) => {
-      return ['active', 'trialing', 'unpaid', 'past_due'].includes(sub.get('status'));
-    });
-
-    let currency = activeSubscription?.get('plan_currency') || undefined;
-
+    let currency;
     let customer;
     if (!req.body.subscription_id) {
-      customer = await this._stripeAPIService.getCustomerForMemberCheckoutSession(member);
+      const activeSubscription = this._getActiveSubscription(subscriptions);
+      customer = await this._getCustomerForSubscription(member, activeSubscription);
+      if (customer.id === activeSubscription?.get('customer_id')) {
+        currency = activeSubscription.get('plan_currency') || undefined;
+      }
     } else {
       const subscription = subscriptions.models.find((sub) => {
         return sub.get('subscription_id') === req.body.subscription_id;
@@ -289,6 +288,42 @@ module.exports = class RouterController {
     res.end(JSON.stringify(sessionInfo));
   }
 
+  /**
+   * Newest active subscription first, the same ranking as members_resolved_subscription.
+   *
+   * @param {any} subscriptions
+   */
+  _getActiveSubscription(subscriptions) {
+    return subscriptions.models
+      .filter((sub) => ['active', 'trialing', 'unpaid', 'past_due'].includes(sub.get('status')))
+      .sort(
+        (a, b) =>
+          new Date(b.get('created_at')).getTime() - new Date(a.get('created_at')).getTime() ||
+          (a.get('id') < b.get('id') ? -1 : 1),
+      )[0];
+  }
+
+  /**
+   * @param {any} member
+   * @param {any} [subscription]
+   */
+  async _getCustomerForSubscription(member, subscription) {
+    if (subscription) {
+      try {
+        const customer = await this._stripeAPIService.getCustomer(subscription.get('customer_id'));
+        if (!customer.deleted) {
+          return customer;
+        }
+      } catch (err) {
+        if (err?.code !== 'resource_missing') {
+          throw err;
+        }
+      }
+    }
+
+    return await this._stripeAPIService.getCustomerForMemberCheckoutSession(member);
+  }
+
   async createBillingPortalSession(req, res) {
     const identity = req.body.identity;
 
@@ -318,7 +353,8 @@ module.exports = class RouterController {
 
     let customer;
     if (!req.body.subscription_id) {
-      customer = await this._stripeAPIService.getCustomerForMemberCheckoutSession(member);
+      const activeSubscription = this._getActiveSubscription(subscriptions);
+      customer = await this._getCustomerForSubscription(member, activeSubscription);
     } else {
       const subscription = subscriptions.models.find((sub) => {
         return sub.get('subscription_id') === req.body.subscription_id;
