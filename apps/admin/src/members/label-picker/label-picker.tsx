@@ -102,6 +102,8 @@ interface LabelListItemsProps {
   labels: PickerLabel[];
   selectedSlugs: string[];
   search: string;
+  /** Whether the list narrows itself to the search; false when the source already did. */
+  shouldClientFilter: boolean;
   onToggle: (slug: string) => void;
   onEdit?: (id: string, name: string) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
@@ -114,6 +116,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
   labels,
   selectedSlugs,
   search,
+  shouldClientFilter,
   onToggle,
   onEdit,
   onDelete,
@@ -124,8 +127,16 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
   const { isAdmin7 } = useShade();
   const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
   const normalizedSearch = search.trim().toLowerCase();
+  // A source that searches for itself hands over matches already, plus whatever
+  // is selected so the field can name it, and only the latter is checked against
+  // the search here. Narrowing the matches again would empty the list between a
+  // keystroke and its answer, and an empty list asks the source for the next
+  // page of the stale results.
+  const matchesSearch = (label: PickerLabel) => label.name.toLowerCase().includes(normalizedSearch);
   const visibleLabels = normalizedSearch
-    ? labels.filter((label) => label.name.toLowerCase().includes(normalizedSearch))
+    ? labels.filter((label) =>
+        shouldClientFilter || selectedSlugs.includes(label.slug) ? matchesSearch(label) : true,
+      )
     : labels;
   const showCreate = !!onCreate && canCreateLabel(labels, search);
   const groups = new Map<string, PickerLabel[]>();
@@ -204,6 +215,46 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
         </CommandGroup>
       )}
     </>
+  );
+};
+
+// --- LoadMoreSentinel: asks for the next page once scrolled into view ---
+
+interface LoadMoreSentinelProps {
+  isLoading: boolean;
+  onVisible: () => void;
+}
+
+// A source that pages (a site with more labels than one page holds) exposes
+// `hasMore`; the sentinel sits under the last row and requests the next page
+// when the list is scrolled down to it, so the list fills as the user scrolls
+// rather than every page being fetched up front.
+const LoadMoreSentinel: React.FC<LoadMoreSentinelProps> = ({ isLoading, onVisible }) => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || isLoading || typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        onVisible();
+      }
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [isLoading, onVisible]);
+
+  return (
+    <div
+      ref={ref}
+      aria-live="polite"
+      className="py-2 text-center text-sm text-muted-foreground"
+      data-testid="label-picker-load-more"
+    >
+      {isLoading ? 'Loading more...' : null}
+    </div>
   );
 };
 
@@ -471,12 +522,19 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                   labels={labels}
                   search={search}
                   selectedSlugs={selectedSlugs}
+                  shouldClientFilter={optionSource.shouldClientFilter}
                   onCreate={onCreate}
                   onDelete={onDelete}
                   onEdit={onEdit}
                   onSearchClear={() => handleSearchChange('')}
                   onToggle={onToggle}
                 />
+                {optionSource.hasMore && (
+                  <LoadMoreSentinel
+                    isLoading={optionSource.isLoadingMore}
+                    onVisible={optionSource.loadMore}
+                  />
+                )}
               </CommandList>
             )}
           </div>
