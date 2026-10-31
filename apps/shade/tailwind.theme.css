@@ -21,7 +21,6 @@
   /* ---------------------------------------------------------------------- */
   --color-transparent: transparent;
   --color-current: currentColor;
-  --color-ghostaccent: var(--accent-color, #ff0095);
   --color-white: oklch(100% 0 0);
   /* Admin 7 palette (admin7Design). Gray keeps Shade's lightness at each step
      with Shapeshifter's warm neutral hue, 100 and 200 pinned to its sands. The
@@ -42,7 +41,6 @@
   --color-gray-800: oklch(52.97% 0.012 85);
   --color-gray-900: oklch(36.77% 0.011 85);
   --color-gray-950: oklch(25.95% 0.0092 85);
-  --color-gray: var(--color-gray-500);
   --color-green-50: oklch(0.985 0.008 158);
   --color-green-100: oklch(0.965 0.0192 158);
   --color-green-200: oklch(0.925 0.04 158);
@@ -53,7 +51,6 @@
   --color-green-700: oklch(0.475 0.136 158);
   --color-green-800: oklch(0.37 0.088 158);
   --color-green-900: oklch(0.3 0.048 158);
-  --color-green: var(--color-green-500);
   --color-blue-50: oklch(0.985 0.009 230);
   --color-blue-100: oklch(0.965 0.0216 230);
   --color-blue-200: oklch(0.925 0.045 230);
@@ -64,7 +61,6 @@
   --color-blue-700: oklch(0.475 0.153 230);
   --color-blue-800: oklch(0.37 0.099 230);
   --color-blue-900: oklch(0.3 0.054 230);
-  --color-blue: var(--color-blue-500);
   --color-purple-50: oklch(0.985 0.009 280);
   --color-purple-100: oklch(0.965 0.0216 280);
   --color-purple-200: oklch(0.925 0.045 280);
@@ -75,7 +71,6 @@
   --color-purple-700: oklch(0.475 0.153 280);
   --color-purple-800: oklch(0.37 0.099 280);
   --color-purple-900: oklch(0.3 0.054 280);
-  --color-purple: var(--color-purple-500);
   --color-pink-50: oklch(0.985 0.009 355);
   --color-pink-100: oklch(0.965 0.0216 355);
   --color-pink-200: oklch(0.925 0.045 355);
@@ -86,7 +81,6 @@
   --color-pink-700: oklch(0.475 0.153 355);
   --color-pink-800: oklch(0.37 0.099 355);
   --color-pink-900: oklch(0.3 0.054 355);
-  --color-pink: var(--color-pink-500);
   --color-red-50: oklch(0.985 0.01 28);
   --color-red-100: oklch(0.965 0.024 28);
   --color-red-200: oklch(0.925 0.05 28);
@@ -97,7 +91,6 @@
   --color-red-700: oklch(0.475 0.17 28);
   --color-red-800: oklch(0.37 0.11 28);
   --color-red-900: oklch(0.3 0.06 28);
-  --color-red: var(--color-red-500);
   --color-orange-50: #fff8f6;
   --color-orange-100: #ffefe9;
   --color-orange-200: #ffe2d5;
@@ -108,7 +101,6 @@
   --color-orange-700: #9d3500;
   --color-orange-800: #682b10;
   --color-orange-900: #442418;
-  --color-orange: var(--color-orange-500);
   --color-yellow-50: #fffef6;
   --color-yellow-100: #fffedf;
   --color-yellow-200: #fffbc0;
@@ -119,7 +111,6 @@
   --color-yellow-700: #7d6006;
   --color-yellow-800: #513d08;
   --color-yellow-900: #2a2107;
-  --color-yellow: var(--color-yellow-500);
   --color-lime-50: oklch(99.02% 0.0305 116.9);
   --color-lime-100: oklch(97.56% 0.0795 117.7);
   --color-lime-200: oklch(95.67% 0.1502 118.9);
@@ -130,91 +121,6 @@
   --color-lime-700: oklch(68.43% 0.1796 128.3);
   --color-lime-800: oklch(56.49% 0.1478 128.1);
   --color-lime-900: oklch(44.57% 0.1156 127.4);
-  --color-lime: var(--color-lime-500);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-surface-page: var(--surface-page);
-  --color-surface-panel: var(--surface-panel);
-  --color-surface-elevated: var(--surface-elevated);
-  --color-surface-elevated-2: var(--surface-elevated-2);
-  --color-modal-backdrop: var(--modal-backdrop);
-  --color-form-sheet-backdrop: var(--form-sheet-backdrop);
-  --color-preview-canvas: var(--preview-canvas);
-  --color-preview-gradient-start: var(--preview-gradient-start);
-  --color-preview-gradient-end: var(--preview-gradient-end);
-  --color-surface-inverse: var(--surface-inverse);
-  --color-surface-inverse-foreground: var(--surface-inverse-foreground);
-  --color-text-primary: var(--text-primary);
-  --color-text-secondary: var(--text-secondary);
-  --color-text-tertiary: var(--text-tertiary);
-  --color-border-default: var(--border-default);
-  --color-border-strong: var(--border-strong);
-  --color-surface-glass: var(--surface-glass);
-  --color-border-glass: var(--border-glass);
-  --color-focus-ring: var(--focus-ring);
-  --color-search-result-title: var(--search-result-title);
-  --color-search-result-description: var(--search-result-description);
-  --color-state-info: var(--state-info);
-  --color-state-info-foreground: var(--state-info-foreground);
-  --color-state-success: var(--state-success);
-  --color-state-success-foreground: var(--state-success-foreground);
-  --color-state-warning: var(--state-warning);
-  --color-state-warning-foreground: var(--state-warning-foreground);
-  --color-state-danger: var(--state-danger);
-  --color-state-danger-foreground: var(--state-danger-foreground);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-chart-gray: var(--chart-gray);
-  --color-chart-darkgray: var(--chart-darkgray);
-  --color-chart-rose: var(--chart-rose);
-  --color-chart-orange: var(--chart-orange);
-  --color-chart-amber: var(--chart-amber);
-  --color-chart-yellow: var(--chart-yellow);
-  --color-chart-green: var(--chart-green);
-  --color-chart-teal: var(--chart-teal);
-  --color-chart-blue: var(--chart-blue);
-  --color-chart-purple: var(--chart-purple);
-  --color-sidebar: var(--sidebar-background);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-tab-hover: var(--tab-hover);
-  --color-tab-active: var(--tab-active);
-  --color-button-hover: var(--button-hover);
-  --color-button-ghost-hover: var(--button-ghost-hover);
-  --color-interactive-hover: var(--interactive-hover);
-  --color-filter-bar-background: var(--filter-bar-background);
-  --color-filter-bar-item-hover: var(--filter-bar-item-hover);
-  --color-table-row-hover: var(--table-row-hover);
-  --color-table-row-selected: var(--table-row-selected);
-  --color-control-surface: var(--control-surface);
-  --color-control-readonly-surface: var(--control-readonly-surface);
-  --color-control-disabled-surface: var(--control-disabled-surface);
-  --color-control-border: var(--control-border);
 
   /* Typography */
   /* ---------------------------------------------------------------------- */
@@ -355,6 +261,107 @@
   --animate-spin: spin 1s linear infinite;
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+/* Colour aliases are inline: utilities read the variable they point at
+   (bg-muted is var(--muted)), so they follow the palette in effect on each
+   Shade scope, including admin7Design off. As ordinary theme variables they
+   would be resolved once at the document root. */
+@theme inline {
+  --color-ghostaccent: var(--accent-color, #ff0095);
+  --color-gray: var(--color-gray-500);
+  --color-green: var(--color-green-500);
+  --color-blue: var(--color-blue-500);
+  --color-purple: var(--color-purple-500);
+  --color-pink: var(--color-pink-500);
+  --color-red: var(--color-red-500);
+  --color-orange: var(--color-orange-500);
+  --color-yellow: var(--color-yellow-500);
+  --color-lime: var(--color-lime-500);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-surface-page: var(--surface-page);
+  --color-surface-panel: var(--surface-panel);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-elevated-2: var(--surface-elevated-2);
+  --color-modal-backdrop: var(--modal-backdrop);
+  --color-form-sheet-backdrop: var(--form-sheet-backdrop);
+  --color-preview-canvas: var(--preview-canvas);
+  --color-preview-gradient-start: var(--preview-gradient-start);
+  --color-preview-gradient-end: var(--preview-gradient-end);
+  --color-surface-inverse: var(--surface-inverse);
+  --color-surface-inverse-foreground: var(--surface-inverse-foreground);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
+  --color-surface-glass: var(--surface-glass);
+  --color-border-glass: var(--border-glass);
+  --color-focus-ring: var(--focus-ring);
+  --color-search-result-title: var(--search-result-title);
+  --color-search-result-description: var(--search-result-description);
+  --color-state-info: var(--state-info);
+  --color-state-info-foreground: var(--state-info-foreground);
+  --color-state-success: var(--state-success);
+  --color-state-success-foreground: var(--state-success-foreground);
+  --color-state-warning: var(--state-warning);
+  --color-state-warning-foreground: var(--state-warning-foreground);
+  --color-state-danger: var(--state-danger);
+  --color-state-danger-foreground: var(--state-danger-foreground);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-gray: var(--chart-gray);
+  --color-chart-darkgray: var(--chart-darkgray);
+  --color-chart-rose: var(--chart-rose);
+  --color-chart-orange: var(--chart-orange);
+  --color-chart-amber: var(--chart-amber);
+  --color-chart-yellow: var(--chart-yellow);
+  --color-chart-green: var(--chart-green);
+  --color-chart-teal: var(--chart-teal);
+  --color-chart-blue: var(--chart-blue);
+  --color-chart-purple: var(--chart-purple);
+  --color-sidebar: var(--sidebar-background);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-tab-hover: var(--tab-hover);
+  --color-tab-active: var(--tab-active);
+  --color-button-hover: var(--button-hover);
+  --color-button-ghost-hover: var(--button-ghost-hover);
+  --color-interactive-hover: var(--interactive-hover);
+  --color-filter-bar-background: var(--filter-bar-background);
+  --color-filter-bar-item-hover: var(--filter-bar-item-hover);
+  --color-table-row-hover: var(--table-row-hover);
+  --color-table-row-selected: var(--table-row-selected);
+  --color-control-surface: var(--control-surface);
+  --color-control-readonly-surface: var(--control-readonly-surface);
+  --color-control-disabled-surface: var(--control-disabled-surface);
+  --color-control-border: var(--control-border);
 }
 
 @keyframes toasterIn {
