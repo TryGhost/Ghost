@@ -13,9 +13,13 @@ import {
 } from '@test-utils/acceptance';
 import { appsScreen } from './apps.screen';
 import {
+  ICON_SVG,
+  ICON_URL,
   MANIFEST_URL,
+  STORED_ICON,
   fakeAppPage,
   fakeInstallations,
+  imageSources,
   installation,
   labs,
   manifest,
@@ -27,6 +31,7 @@ const preview = (overrides: Partial<AppInstallationPreview> = {}): AppInstallati
   manifest_url: MANIFEST_URL,
   manifest: manifest(),
   digest: 'digest-1',
+  icon_svg: null,
   installation: null,
   ...overrides,
 });
@@ -41,6 +46,7 @@ const existing = (
   revision: 0,
   manifest_url: MANIFEST_URL,
   manifest: manifest(),
+  icon_svg: null,
   changes,
 });
 
@@ -129,6 +135,20 @@ describe('Installing an app', () => {
     await expect.poll(currentRoute).toBe('/apps');
     await expect(appsScreen.rows()).toHaveCount(1);
     await expect.element(appsScreen.row('Podcast')).toHaveTextContent('Example Audio');
+  });
+
+  it('shows the app’s own icon from the copy Ghost would store, never from the app', async () => {
+    fakeInstallations();
+    fakePreview(
+      previewResponse(
+        preview({ manifest: manifest({ icon: { url: ICON_URL } }), icon_svg: ICON_SVG }),
+      ),
+    );
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+
+    await expect.element(appsScreen.installButton()).toBeVisible();
+    expect(imageSources(appsScreen.installDialog().element())).toEqual([STORED_ICON]);
   });
 
   it('marks an app served from the developer’s machine', async () => {
