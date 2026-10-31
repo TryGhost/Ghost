@@ -43,6 +43,7 @@ const getSenderDetails = (designSettingsJson) => {
 };
 
 class MemberWelcomeEmailService {
+  /** @type {Pick<import('@tryghost/logging').GhostLogger, 'info' | 'warn'>} */
   #logging;
   #config;
   #labs;
@@ -60,7 +61,7 @@ class MemberWelcomeEmailService {
 
   /**
    * @param {object} deps
-   * @param {object} deps.logging
+   * @param {Pick<import('@tryghost/logging').GhostLogger, 'info' | 'warn'>} deps.logging
    * @param {object} deps.config
    * @param {object} deps.labs
    * @param {object} deps.sentry
