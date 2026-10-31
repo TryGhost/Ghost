@@ -22,7 +22,7 @@ module.exports = class RoutingService {
   /** @typedef {import('got')} */
   #externalRequest;
 
-  /** @type {import('@tryghost/logging')} */
+  /** @type {import('@tryghost/logging').GhostLogger} */
   #logging;
 
   /**
@@ -30,7 +30,7 @@ module.exports = class RoutingService {
    * @param {URL} deps.siteUrl
    * @param {IResourceService} deps.resourceService
    * @param {import('got')} deps.externalRequest;
-   * @param {import('@tryghost/logging')} deps.logging
+   * @param {import('@tryghost/logging').GhostLogger} deps.logging
    */
   constructor(deps) {
     this.#siteUrl = deps.siteUrl;

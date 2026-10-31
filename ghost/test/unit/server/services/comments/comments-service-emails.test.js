@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const i18nLib = require('@tryghost/i18n').default;
 const CommentsServiceEmails = require('../../../../../core/server/services/comments/comments-service-emails');
+const { createLoggingFake } = require('../../../../utils/logging-utils');
 
 const { t } = i18nLib('en', 'ghost');
 
@@ -20,7 +21,7 @@ describe('Comments Service: CommentsServiceEmails', function () {
 
     const instance = new CommentsServiceEmails({
       config: {},
-      logging: {},
+      logging: createLoggingFake(),
       models: {},
       mailer: {},
       settingsCache: { get: sinon.stub() },
@@ -182,7 +183,7 @@ describe('Comments Service: CommentsServiceEmails', function () {
 
     const instance = new CommentsServiceEmails({
       config: {},
-      logging: { warn: sinon.stub() },
+      logging: createLoggingFake(),
       models: { Post, Member, User, Comment },
       mailer: { send: mailerSendStub },
       settingsCache: {

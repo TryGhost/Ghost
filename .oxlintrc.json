@@ -231,7 +231,8 @@
         "ghost/core/server/services/support-requests/index.ts",
         "ghost/core/server/services/tags-public/index.ts",
         "ghost/core/server/services/upgrades/index.ts",
-        "ghost/core/server/services/users/index.ts"
+        "ghost/core/server/services/users/index.ts",
+        "ghost/core/server/services/tiers/index.ts"
       ],
       "rules": {
         "ghost/service-root-shape": [
@@ -246,6 +247,12 @@
       "files": ["ghost/core/server/services/*/index.ts"],
       "rules": {
         "ghost/no-injected-service-libraries": "error"
+      }
+    },
+    {
+      "files": ["ghost/core/**/*.{js,ts}"],
+      "rules": {
+        "ghost/prefer-canonical-types": "error"
       }
     }
   ],

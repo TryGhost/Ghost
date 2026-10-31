@@ -24,14 +24,14 @@ module.exports = class BookshelfMentionRepository {
   /** @type {import('@tryghost/domain-events')} */
   #DomainEvents;
 
-  /** @type {import('@tryghost/logging')} */
+  /** @type {import('@tryghost/logging').GhostLogger} */
   #logging;
 
   /**
    * @param {object} deps
    * @param {object} deps.MentionModel Bookshelf Model
    * @param {import('@tryghost/domain-events')} deps.DomainEvents
-   * @param {import('@tryghost/logging')} deps.logging
+   * @param {import('@tryghost/logging').GhostLogger} deps.logging
    */
   constructor(deps) {
     this.#MentionModel = deps.MentionModel;

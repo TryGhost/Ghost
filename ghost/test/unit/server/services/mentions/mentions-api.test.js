@@ -4,7 +4,7 @@ const Mention = require('../../../../../core/server/services/mentions/mention');
 const MentionsAPI = require('../../../../../core/server/services/mentions/mentions-api');
 const InMemoryMentionRepository = require('../../../../../core/server/services/mentions/in-memory-mention-repository');
 const sinon = require('sinon');
-const logging = require('@tryghost/logging');
+const { createLoggingFake } = require('../../../../utils/logging-utils');
 const cheerio = require('cheerio/slim');
 
 const mockRoutingService = {
@@ -44,8 +44,11 @@ function addMinutes(date, minutes) {
 }
 
 describe('MentionsAPI', function () {
+  let logging;
+
   beforeEach(function () {
     sinon.restore();
+    logging = createLoggingFake();
   });
 
   it('Can generate a mentions report', async function () {
@@ -325,6 +328,10 @@ describe('MentionsAPI', function () {
 
     const page = await api.listMentions({ limit: 'all' });
     assert.equal(page.meta.pagination.total, 1, 'Mention should not be deleted on transient error');
+    sinon.assert.calledOnceWithExactly(
+      logging.warn,
+      sinon.match('[Webmention Revalidation] Transient error fetching https://source.com/'),
+    );
   });
 
   it('Increments hard failure count but does not delete when count < 3', async function () {
@@ -353,6 +360,10 @@ describe('MentionsAPI', function () {
 
     const page = await api.listMentions({ limit: 'all' });
     assert.equal(page.meta.pagination.total, 1, 'Mention should survive a single hard failure');
+    sinon.assert.calledOnceWithExactly(
+      logging.warn,
+      sinon.match('[Webmention Revalidation] Hard failure 1/3 for https://source.com/'),
+    );
   });
 
   it('Successful fetch after failures resets the failure count', async function () {
@@ -637,6 +648,10 @@ describe('MentionsAPI', function () {
       });
 
       assert.equal(page.data.length, 0);
+      sinon.assert.calledWith(
+        logging.warn,
+        sinon.match('[Webmention Revalidation] Deleting mention after 3 consecutive failures'),
+      );
       break checkMentionDeleted;
     }
 

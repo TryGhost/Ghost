@@ -4,10 +4,15 @@ import {
   Recommendation,
 } from '../../../../../../core/server/services/recommendations/service';
 import sinon from 'sinon';
-
-const logging = { info() {}, error() {} };
+import { createLoggingFake } from '../../../../../utils/logging-utils';
 
 describe('BookshelfRecommendationRepository', function () {
+  let logging: ReturnType<typeof createLoggingFake>;
+
+  beforeEach(function () {
+    logging = createLoggingFake();
+  });
+
   afterEach(function () {
     sinon.restore();
   });
@@ -105,6 +110,7 @@ describe('BookshelfRecommendationRepository', function () {
 
     assert.deepEqual(entity, null);
     sinon.assert.calledOnce(captureException);
+    sinon.assert.calledOnce(logging.error);
   });
 
   it('getByUrl returns null if not found', async function () {

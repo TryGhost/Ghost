@@ -15,7 +15,7 @@ const urlUtils = require('../../../shared/url-utils').default;
 const urlService = require('../url');
 const labsService = require('../../../shared/labs');
 const offersService = require('../offers');
-const tiersService = require('../tiers');
+const tiers = require('../tiers').default;
 const newsletters = require('../newsletters').default;
 const memberAttributionService = require('../member-attribution').default;
 const emailSuppressionList = require('../email-suppression-list');
@@ -261,7 +261,13 @@ function createApiInstance(config) {
       AutomatedEmailRecipient: models.AutomatedEmailRecipient,
     },
     stripeAPIService: stripeService.api,
-    tiersService: tiersService,
+    // The members API is built while tiers is still initializing, so its controllers read
+    // the tiers API when they use it.
+    tiersService: {
+      get api() {
+        return tiers.service.api;
+      },
+    },
     offersAPI: offersService.api,
     labsService: labsService,
     newslettersService: newsletters.service,

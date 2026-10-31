@@ -17,7 +17,7 @@ const debug = require('@tryghost/debug')('boot');
  */
 class BootLogger {
   /**
-   * @param {{info: (message: string) => unknown}} logging
+   * @param {Pick<import('@tryghost/logging').GhostLogger, 'info'>} logging
    * @param {{metric: (name: string, time: number) => unknown}} metrics
    * @param {number} startTime
    */
@@ -378,7 +378,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const identityTokens = require('./server/services/identity-tokens');
   const stripe = require('./server/services/stripe');
   const members = require('./server/services/members');
-  const tiers = require('./server/services/tiers');
+  const tiers = require('./server/services/tiers').default;
   const permissions = require('./server/services/permissions');
   const indexnow = require('./server/services/indexnow-ping').default;
   const upgrades = require('./server/services/upgrades').default;

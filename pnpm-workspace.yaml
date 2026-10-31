@@ -79,14 +79,14 @@ catalog:
   '@radix-ui/react-tooltip': 1.2.11
   '@sentry/bundler-plugin-core': 5.3.0
   '@sentry/react': 7.120.4
-  '@sentry/vite-plugin': 5.3.0
+  '@sentry/vite-plugin': 5.4.1
   '@storybook/addon-docs': 10.4.6
   '@storybook/addon-links': 10.4.6
   '@storybook/preact-vite': 10.4.6
   '@storybook/react-vite': 10.4.6
   '@tailwindcss/postcss': 4.3.3
   '@tailwindcss/vite': 4.3.3
-  '@tanstack/react-query': 5.101.4
+  '@tanstack/react-query': 5.105.0
   '@tanstack/react-virtual': 3.14.13
   '@testing-library/dom': 10.4.2
   '@testing-library/jest-dom': 6.9.1
@@ -200,7 +200,7 @@ catalog:
   react: 18.3.1
   react-day-picker: 9.14.0
   react-dom: 18.3.1
-  react-router: 7.18.4
+  react-router: 7.18.5
   rolldown-plugin-dts: 0.27.11
   semver: 7.8.5
   sharp: 0.35.5
@@ -243,9 +243,9 @@ catalog:
   shell-quote: 1.11.0
   unidecode: 1.1.0
   mppx: 0.6.20
-  '@x402/core': 2.27.0
-  '@x402/evm': 2.27.0
-  '@x402/hono': 2.27.0
+  '@x402/core': 2.28.0
+  '@x402/evm': 2.28.0
+  '@x402/hono': 2.28.0
   hono: 4.13.14
   '@octokit/core': 7.0.8
   '@octokit/plugin-retry': 8.1.1
@@ -256,7 +256,7 @@ catalog:
   lint-staged: 17.3.0
   secretlint: 13.0.7
   '@pnpm/releasing.versioning': 1100.3.8
-  '@pnpm/workspace.workspace-manifest-reader': 1100.1.5
+  '@pnpm/workspace.workspace-manifest-reader': 1100.3.1
   execa: 10.0.1
   remark-cli: 12.0.1
   remark-validate-links: 13.1.0

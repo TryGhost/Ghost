@@ -100,7 +100,7 @@ module.exports = class MentionsAPI {
   #routingService;
   /** @type {IWebmentionMetadata} */
   #webmentionMetadata;
-  /** @type {import('@tryghost/logging')} */
+  /** @type {import('@tryghost/logging').GhostLogger} */
   #logging;
 
   /**
@@ -109,7 +109,7 @@ module.exports = class MentionsAPI {
    * @param {IResourceService} deps.resourceService
    * @param {IRoutingService} deps.routingService
    * @param {IWebmentionMetadata} deps.webmentionMetadata
-   * @param {import('@tryghost/logging')} deps.logging
+   * @param {import('@tryghost/logging').GhostLogger} deps.logging
    */
   constructor(deps) {
     this.#repository = deps.repository;
