@@ -195,20 +195,26 @@ Do not store report totals in the inventory or infer kernel requirements from
 violation counts. Shared primitives need a demonstrated application-independent
 contract; feature-specific helpers stay with their owners.
 
-`disposition` records the intended home of the current directory entry:
-`retain` keeps it here, `relocate` plans a move or split between other owners,
-and `review` leaves ownership undecided. It does not record completed work.
-A relocated capability can still be a configured runtime service; relocation
-does not make its initialization assessment `not-applicable`. Keep the entry
-until the directory actually leaves, and preserve its dependency, readiness
-and lifetime contracts at the destination. Use `notes` to describe the intended
-split and distinguish it from an earlier in-place migration assessment.
+`disposition` records whether the entry is an application-owned instance whose
+lifecycle boot should manage, not where it will finally live: `retain` is a
+boot-owned service, `relocate` is supporting code that is not a service and
+leaves this directory as ordinary code, and `review` leaves that question
+unresolved. It does not record completed work. Every root is expected to move
+into its owning domain or shared module eventually; that move is separate from
+this migration, which adopts the initializer in place. A `retain` entry keeps
+its dependency, readiness and lifetime contracts wherever it later moves.
 
-Base disposition on the capability's responsibilities and intended owner. Per-call
+Base disposition on the capability's runtime responsibilities. Per-call
 construction, no initializer, a single consumer, or use of another service does
-not by itself justify relocation. A feature-owned target list or an extractable
-helper also does not settle ownership of the whole root. If the owner is
-undecided, use `review` and keep initialization and dependency work applicable.
+not by itself make a root supporting code. If an ownership or split decision
+must come before the initializer migration, use `review` and keep
+initialization and dependency work applicable. Use `notes` to record intended
+ownership changes and distinguish them from the in-place migration assessment.
+
+`futureHome` optionally suggests a later destination, relative to `ghost`, for
+a boot-owned root that is not really a standalone service, such as a cache
+binding or credential store belonging to its consumer. It is a suggestion for
+work after this migration, not a planned move or an approved destination.
 
 Each entry records its intended ownership and audit status. `pending` means
 the contract audit has not started; `auditing` means evidence is incomplete;

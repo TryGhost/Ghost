@@ -133,14 +133,13 @@ It replaces `pnpm audit:services`; `services dependencies` replaces
 ### Interpreting the reports
 
 Counts are calculated from the checkout, not stored in the inventory. The report
-shows one table with `MIGRATION`, `COUNT` and `GROUP` columns. Ownership and
-migration progress are counted independently: a migrated entry marked for
-relocation appears in both counts. Migration does not complete its move.
-The `relocation` filter includes these migrated entries.
-The `migrated-relocation` row and filter show just the migrated entries planned
-for a move or split.
+shows one table with `MIGRATION`, `COUNT` and `GROUP` columns. Disposition and
+migration progress are counted independently. Disposition records lifecycle,
+not location: a **Boot-owned service** may still move into a domain later, and
+**Not a service** is supporting code leaving `services/` as ordinary code. The
+`relocation` and `migrated-relocation` groups list those non-service entries.
 
-**Staying in services/** comprises three groups:
+**Boot-owned service** comprises three groups:
 
 - **Migrated:** marked `migrated: true`.
 - **Needs preparation:** not migrated, and either assessment is
@@ -150,17 +149,21 @@ for a move or split.
   dependency violations and test gaps.
 
 The `unmigrated-retained` filter shows what's left to migrate:
-**needs preparation + straightforward**. It excludes relocation and undecided
-ownership. Entries needing a decision before proceeding use the existing
+**needs preparation + straightforward**. It excludes non-services and
+undecided entries. Entries needing a decision before proceeding use
 `disposition: review` and appear under `ownership-undecided`; their notes and
 migration assessments explain the work needed.
+
+Per-service reports show an entry's optional `futureHome`, a suggested later
+destination for a root that is not really a standalone service. It is not part
+of this migration and does not change the entry's group.
 
 Lists and per-service JSON expose independent `ownership` and `migrationStatus`
 fields instead of a combined category. Summary JSON retains labelled counts;
 ownership counts sum to **Catalogued entries**, and **Migrated + Unmigrated
 entries** gives the same total. Diagnostic counts are overlapping subsets,
-not additional services. Entries planned for a move or split can still be
-configured runtime services with dependency, readiness and lifetime contracts.
+not additional services. Boot-owned services keep their dependency, readiness and lifetime contracts
+when they later move.
 
 Per-service reports show inventory notes before the migration assessments, so
 planned ownership changes are visible alongside earlier assessments. Notes are

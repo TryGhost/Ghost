@@ -20,6 +20,7 @@ const inventorySchema = z.object({
       .object({
         migrated: z.boolean().optional(),
         disposition: z.enum(['retain', 'relocate', 'review']),
+        futureHome: z.string().optional(),
         notes: z.string().optional(),
         migration: assessment.extend({
           modelImpact: z.enum(['fits', 'may-change', 'not-applicable']),
@@ -80,9 +81,9 @@ function migrationStatus(entry?: Entry): MigrationStatus {
 }
 
 const ownership = {
-  retain: 'Staying in services/',
-  relocate: 'Move or split planned',
-  review: 'Ownership undecided',
+  retain: 'Boot-owned service',
+  relocate: 'Not a service',
+  review: 'Undecided',
 } as const;
 
 function entryName(source: string) {
@@ -177,7 +178,7 @@ const groups: { name: string; label: string; matches: (row: Service) => boolean 
   { name: 'catalogued', label: 'Catalogued entries', matches: (row) => !!row.entry },
   {
     name: 'retained',
-    label: 'Staying in services/',
+    label: 'Boot-owned service',
     matches: (row) => row.entry?.disposition === 'retain',
   },
   { name: 'migrated', label: 'Migrated', matches: (row) => row.migrationStatus === 'Migrated' },
@@ -188,27 +189,27 @@ const groups: { name: string; label: string; matches: (row: Service) => boolean 
   },
   {
     name: 'unmigrated-retained',
-    label: 'Unmigrated — staying in services/',
+    label: 'Unmigrated — boot-owned service',
     matches: (row) => row.entry?.disposition === 'retain' && !row.entry.migrated,
   },
   {
     name: 'relocation',
-    label: 'Move or split planned',
+    label: 'Not a service',
     matches: (row) => row.entry?.disposition === 'relocate',
   },
   {
     name: 'ownership-undecided',
-    label: 'Ownership undecided',
+    label: 'Undecided',
     matches: (row) => row.entry?.disposition === 'review',
   },
   {
     name: 'migrated-retained',
-    label: 'Migrated — staying in services/',
+    label: 'Migrated — boot-owned service',
     matches: (row) => row.entry?.disposition === 'retain' && !!row.entry.migrated,
   },
   {
     name: 'migrated-relocation',
-    label: 'Migrated — Move or split planned',
+    label: 'Migrated — Not a service',
     matches: (row) => row.entry?.disposition === 'relocate' && !!row.entry.migrated,
   },
   {
@@ -247,7 +248,7 @@ const groups: { name: string; label: string; matches: (row: Service) => boolean 
   },
   {
     name: 'unmigrated-retained-with-violations',
-    label: 'Unmigrated — staying in services/ with dependency violations',
+    label: 'Unmigrated — boot-owned service with dependency violations',
     matches: (row) =>
       row.entry?.disposition === 'retain' && !row.entry.migrated && row.findings.length > 0,
   },
@@ -273,7 +274,10 @@ function summary(rows: Service[]) {
 function details(row: Service) {
   const lines = [list([row])];
   if (row.entry) {
-    const { migration, notes, blockers, unverified } = row.entry;
+    const { migration, futureHome, notes, blockers, unverified } = row.entry;
+    if (futureHome) {
+      lines.push(`\nSuggested future home (after this migration): ${futureHome}`);
+    }
     if (notes?.trim()) {
       lines.push(`\nInventory notes:\n${notes.trim()}`);
     }
