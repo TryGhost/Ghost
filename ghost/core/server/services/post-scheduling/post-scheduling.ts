@@ -1,24 +1,29 @@
-import moment from 'moment';
-import logging from '@tryghost/logging';
+import type { GhostLogger } from '@tryghost/logging';
 import type { SchedulerJob } from '@tryghost/adapter-base-scheduling';
+import { moment } from '../../../kernel/clock';
 import type { InternalApiKey, InternalKeys } from '../internal-keys';
-import { buildSignedJob } from '../../adapters/scheduling/build-signed-job';
+import type { buildSignedJob } from '../../adapters/scheduling/build-signed-job';
 import type { SchedulingAdapter } from '../../adapters/scheduling/error-capture';
-import { getSchedulerIdempotencyKey } from '../../adapters/scheduling/get-scheduler-idempotency-key';
+import type { getSchedulerIdempotencyKey } from '../../adapters/scheduling/get-scheduler-idempotency-key';
 
-// CJS-only modules — typed loosely below. models is the Bookshelf registry
-// without TS declarations; the rest are JS modules without types.
-const models = require('../../models');
-const events = require('../../lib/common/events');
+// Bookshelf models have no TS declarations, so post rows stay loosely typed.
+interface PostModel {
+  findAll(options: { filter: string; columns: string[] }): Promise<any[]>;
+}
 
-interface PostSchedulingDeps {
+export interface PostSchedulingEvents {
+  on(eventName: string, listener: (model: any) => Promise<void>): unknown;
+}
+
+export interface PostSchedulingDeps {
   apiUrl: string;
-  // Optional in deps so the JS wrapper can pass options.schedulerAdapter
-  // through without TS complaining at the JS/TS boundary. The class field
-  // below is non-optional; the constructor's adapter.register(this) call
-  // throws if undefined is passed through in practice.
-  adapter?: SchedulingAdapter;
+  adapter: SchedulingAdapter;
   internalKeys: InternalKeys;
+  models: { Post: PostModel };
+  events: PostSchedulingEvents;
+  logging: Pick<GhostLogger, 'error'>;
+  buildSignedJob: typeof buildSignedJob;
+  getSchedulerIdempotencyKey: typeof getSchedulerIdempotencyKey;
 }
 
 // Pages live in the posts table with type:'page', so both types are
@@ -30,11 +35,26 @@ export default class PostScheduling {
   readonly #apiUrl: string;
   readonly #adapter: SchedulingAdapter;
   readonly #internalKeys: InternalKeys;
+  readonly #models: PostSchedulingDeps['models'];
+  readonly #buildSignedJob: PostSchedulingDeps['buildSignedJob'];
+  readonly #getSchedulerIdempotencyKey: PostSchedulingDeps['getSchedulerIdempotencyKey'];
 
-  constructor({ apiUrl, adapter, internalKeys }: PostSchedulingDeps) {
+  constructor({
+    apiUrl,
+    adapter,
+    internalKeys,
+    models,
+    events,
+    logging,
+    buildSignedJob,
+    getSchedulerIdempotencyKey,
+  }: PostSchedulingDeps) {
     this.#apiUrl = apiUrl;
-    this.#adapter = adapter!;
+    this.#adapter = adapter;
     this.#internalKeys = internalKeys;
+    this.#models = models;
+    this.#buildSignedJob = buildSignedJob;
+    this.#getSchedulerIdempotencyKey = getSchedulerIdempotencyKey;
 
     SCHEDULED_RESOURCES.forEach((resource) => {
       events.on(`${resource}.scheduled`, async (model: any) => {
@@ -146,7 +166,7 @@ export default class PostScheduling {
   async #loadScheduledResources(): Promise<Record<ScheduledResource, any[]>> {
     const entries = await Promise.all(
       SCHEDULED_RESOURCES.map(async (resourceType) => {
-        const found = await models.Post.findAll({
+        const found = await this.#models.Post.findAll({
           filter: `status:scheduled+type:${resourceType}`,
           columns: ['id', 'published_at', 'created_at', 'type'],
         });
@@ -170,7 +190,7 @@ export default class PostScheduling {
     const previousPublishedAt = model.previous('published_at');
     const time = moment(publishedAt).valueOf();
 
-    return buildSignedJob({
+    return this.#buildSignedJob({
       apiUrl: this.#apiUrl,
       path: ['schedules', resource, `${model.get('id')}/`],
       time,
@@ -183,7 +203,11 @@ export default class PostScheduling {
       // so re-registering the same job (e.g. a boot rebuild) yields the same
       // key, while a reschedule or key rotation yields a new one.
       getIdempotencyKey: (url) =>
-        getSchedulerIdempotencyKey({ namespace: 'post-scheduling', date: new Date(time), url }),
+        this.#getSchedulerIdempotencyKey({
+          namespace: 'post-scheduling',
+          date: new Date(time),
+          url,
+        }),
     });
   }
 }

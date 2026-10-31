@@ -251,7 +251,8 @@
         "ghost/core/server/services/tags-public/index.ts",
         "ghost/core/server/services/upgrades/index.ts",
         "ghost/core/server/services/users/index.ts",
-        "ghost/core/server/services/tiers/index.ts"
+        "ghost/core/server/services/tiers/index.ts",
+        "ghost/core/server/services/post-scheduling/index.ts"
       ],
       "rules": {
         "ghost/service-root-shape": [

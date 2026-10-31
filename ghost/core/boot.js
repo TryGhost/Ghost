@@ -428,6 +428,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   emailAddressService.init();
   const apiUrl = urlUtils.urlFor('api', { type: 'admin' }, true);
   const schedulerAdapter = withErrorCapture(adapterManager.getAdapter('scheduling'));
+  // Post scheduling subscribes to post events and registers with the adapter before it runs.
+  await postScheduling.init();
   schedulerAdapter.run();
   await stripe.init();
   giftService.init({
@@ -536,7 +538,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   });
 
   if (schedulerAdapter.rescheduleOnBoot) {
-    await postScheduling.rescheduleAll();
+    await postScheduling.service.rescheduleAll();
   }
 
   debug('End: Services');
