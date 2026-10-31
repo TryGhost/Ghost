@@ -6,6 +6,8 @@ import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { FilterBar, PageHeader } from '@tryghost/shade/patterns';
 import { PostListRow } from './components/post-list-row';
 import { usePresence, usePresenceEnabled } from '@/shared/presence/use-presence';
+import { usePresenceByResource } from '@/shared/presence/use-presence-by-resource';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useVisibleResources } from '@/shared/presence/use-visible-resources';
 import { PostsEmptyState } from './components/posts-empty-state';
 import { PostsFilters } from './components/posts-filters';
@@ -176,7 +178,9 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     items.map((item) => ({ id: item.id, type: resource === 'pages' ? 'page' : 'post' })),
     presenceEnabled,
   );
-  usePresence(presenceResources);
+  const presence = usePresence(presenceResources);
+  const presenceForResource = usePresenceByResource(presence.active);
+  const showPresence = useFeatureFlag('editorPresence');
 
   // Snapshotted when the menu item is picked: Radix closes the menu at once,
   // which clears a transient selection before the modal could read it.
@@ -437,6 +441,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                       metricsSettings={metricsSettings}
                       paidMembersEnabled={paidMembersEnabled}
                       post={item}
+                      presenceActive={showPresence ? presenceForResource(item.id) : undefined}
                       resource={resource}
                       showGiftLink={menuGiftLinkPostId === item.id}
                       timezone={timezone}
