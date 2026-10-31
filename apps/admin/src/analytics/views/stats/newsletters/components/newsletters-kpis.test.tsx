@@ -16,9 +16,9 @@ it('hides clicks in the chart tooltip when tracking is disabled', () => {
       },
     },
   ];
-  const { rerender } = render(<BarTooltipContent active payload={payload} showClicks={false} />);
+  const { rerender } = render(<BarTooltipContent payload={payload} showClicks={false} active />);
   expect(screen.getByText('Opens')).toBeTruthy();
   expect(screen.queryByText('Clicks')).toBeNull();
-  rerender(<BarTooltipContent active payload={payload} showClicks />);
+  rerender(<BarTooltipContent payload={payload} active showClicks />);
   expect(screen.getByText('Clicks').parentElement?.textContent).toContain('—');
 });

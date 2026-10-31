@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { createElement } from 'react';
 import { QueryClient } from '@tanstack/react-query';
 import { TestWrapper } from '@test-utils/fixtures/query-client';
 import {
@@ -62,7 +61,8 @@ describe('newsletter period statistics', () => {
     let active = 0;
     let maxActive = 0;
     const fetchApi = vi.fn(async (input: string | URL) => {
-      maxActive = Math.max(maxActive, ++active);
+      active += 1;
+      maxActive = Math.max(maxActive, active);
       await Promise.resolve();
       const url = new URL(input);
       const params = url.searchParams;
@@ -72,7 +72,7 @@ describe('newsletter period statistics', () => {
         const ids = params.get('post_ids')!.split(',');
         sizes.push(ids.length);
         active -= 1;
-        return { stats: ids.map((post_id) => ({ ...click, post_id })) };
+        return { stats: ids.map((postId) => ({ ...click, post_id: postId })) };
       }
       expect(params.get('date_from')).toBe('2026-01-01');
       expect(params.get('date_to')).toBe('2026-01-31');
@@ -112,7 +112,7 @@ describe('newsletter period statistics', () => {
       .mockResolvedValueOnce(first)
       .mockResolvedValueOnce(page([send(1)], 2));
     expect((await load(fetchApi)).stats).toHaveLength(2);
-    const params = new URL(fetchApi.mock.calls[1][0]).searchParams;
+    const params = new URL(fetchApi.mock.calls[1][0] as string).searchParams;
     expect(params.get('after_id')).toBe('post-0');
     expect(params.get('after_date')).toBe(expectedDate);
   });
@@ -154,10 +154,10 @@ describe('newsletter period statistics', () => {
   it('stops before another page or batch on cancellation', async () => {
     for (const kind of ['basic', 'clicks']) {
       const controller = new AbortController();
-      const fetchApi = vi.fn(async (_url: string | URL, options: { signal: AbortSignal }) => {
+      const fetchApi = vi.fn((_url: string | URL, options: { signal: AbortSignal }) => {
         expect(options.signal).toBe(controller.signal);
         controller.abort();
-        return kind === 'basic' ? page([]) : { stats: [] };
+        return Promise.resolve(kind === 'basic' ? page([]) : { stats: [] });
       });
       const request =
         kind === 'basic'
@@ -175,14 +175,14 @@ describe('newsletter period statistics', () => {
 
   it('keeps opens when clicks fail, retries only clicks, and hides stale clicks on refresh failure', async () => {
     let clicksFail = true;
-    mocks.fetchApi.mockReset().mockImplementation(async (input: string | URL) => {
+    mocks.fetchApi.mockReset().mockImplementation((input: string | URL) => {
       if (new URL(input).pathname.includes('newsletter-basic-stats')) {
-        return basicPage;
+        return Promise.resolve(basicPage);
       }
       if (clicksFail) {
-        throw new Error('Click request failed');
+        return Promise.reject(new Error('Click request failed'));
       }
-      return { stats: [click] };
+      return Promise.resolve({ stats: [click] });
     });
     const { result } = renderHook(
       () => useNewsletterPeriodStats(STATS_RANGES.last30Days.value, 'newsletter-1'),
@@ -204,7 +204,7 @@ describe('newsletter period statistics', () => {
     expect(result.current.data?.stats[0].click_rate).toBeUndefined();
     expect(
       mocks.fetchApi.mock.calls.filter(([input]) =>
-        new URL(input).pathname.includes('newsletter-basic-stats'),
+        new URL(input as string).pathname.includes('newsletter-basic-stats'),
       ),
     ).toHaveLength(1);
   });
@@ -245,15 +245,19 @@ describe('newsletter period statistics', () => {
     });
     mocks.fetchApi
       .mockReset()
-      .mockImplementation(async (input: string | URL) =>
-        new URL(input).pathname.includes('newsletter-basic-stats') ? basicPage : { stats: [click] },
+      .mockImplementation((input: string | URL) =>
+        Promise.resolve(
+          new URL(input).pathname.includes('newsletter-basic-stats')
+            ? basicPage
+            : { stats: [click] },
+        ),
       );
     const { result } = renderHook(
       () => useNewsletterPeriodStats(STATS_RANGES.allTime.value, 'newsletter-1'),
-      { wrapper: ({ children }) => createElement(TestWrapper, { queryClient, children }) },
+      { wrapper: ({ children }) => TestWrapper({ children, queryClient }) },
     );
     await waitFor(() => expect(result.current.data?.stats[0].click_rate).toBe(0.25));
-    const params = new URL(mocks.fetchApi.mock.calls[0][0]).searchParams;
+    const params = new URL(mocks.fetchApi.mock.calls[0][0] as string).searchParams;
     expect(params.has('date_from')).toBe(false);
     expect(params.get('timezone')).toBeTruthy();
     await act(async () => {

@@ -510,10 +510,10 @@ describe('Analytics newsletters', () => {
     fakeAdminEndpoint('GET', /^\/stats\/newsletter-click-stats\//, ({ url }) => {
       const ids = new URL(url).searchParams.get('post_ids')?.split(',') ?? [];
       return {
-        stats: ids.map((post_id) => ({
-          post_id,
-          total_clicks: sendsById.get(post_id)!.total_opens,
-          click_rate: sendsById.get(post_id)!.open_rate,
+        stats: ids.map((postId) => ({
+          post_id: postId,
+          total_clicks: sendsById.get(postId)!.total_opens,
+          click_rate: sendsById.get(postId)!.open_rate,
           email_count: 100,
         })),
         meta: {},
