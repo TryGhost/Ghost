@@ -72,4 +72,19 @@ describe('ProductNode', function () {
             expect(title).toEqual('<span style="white-space: pre-wrap;">Hello title</span><i><em style="white-space: pre-wrap;"> land </em></i><span style="white-space: pre-wrap;">baaaabeee.</span>');
         }));
     });
+
+    describe('image alt text', function () {
+        it('exports productImageAlt', editorTest(function () {
+            dataset.productImageAlt = 'A camera on a wooden table';
+            const productNode = $createProductNode(dataset);
+            const json = productNode.exportJSON();
+            expect(json.productImageAlt).toEqual('A camera on a wooden table');
+        }));
+
+        it('defaults productImageAlt to an empty string', editorTest(function () {
+            const productNode = $createProductNode(dataset);
+            const json = productNode.exportJSON();
+            expect(json.productImageAlt).toEqual('');
+        }));
+    });
 });

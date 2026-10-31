@@ -68,7 +68,7 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({
 
   const onCommentingSelect = async () => {
     // Disable → open the confirm modal (needs the hide-comments checkbox);
-    // Enable → fire directly. Matches Ember `controllers/member.js:200-224`.
+    // Enable → fire directly.
     if (!commentingDisabled) {
       setShowDisableCommenting(true);
       return;

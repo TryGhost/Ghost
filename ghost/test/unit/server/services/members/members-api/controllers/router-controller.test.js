@@ -2058,6 +2058,234 @@ describe('RouterController', function () {
     });
   });
 
+  describe('customer selection for members with multiple Stripe customers', function () {
+    let stripeService;
+    let mockRes;
+
+    function subscription(attrs) {
+      return { get: (key) => attrs[key] };
+    }
+
+    const canceledSubscription = subscription({
+      subscription_id: 'sub_old',
+      customer_id: 'cus_first',
+      status: 'canceled',
+      plan_currency: 'eur',
+      created_at: new Date('2025-01-01'),
+    });
+    const olderActiveSubscription = subscription({
+      subscription_id: 'sub_older_active',
+      customer_id: 'cus_older_active',
+      status: 'past_due',
+      plan_currency: 'gbp',
+      created_at: new Date('2025-06-01'),
+    });
+    const activeSubscription = subscription({
+      subscription_id: 'sub_new',
+      customer_id: 'cus_active',
+      status: 'active',
+      plan_currency: 'usd',
+      created_at: new Date('2026-01-01'),
+    });
+
+    function createController(subscriptions) {
+      const related = sinon.stub();
+      related.withArgs('stripeSubscriptions').returns({
+        fetch: sinon.stub().resolves({ models: subscriptions }),
+      });
+      stripeService = {
+        createBillingPortalSession: sinon.stub().resolves({ url: 'https://billing.stripe.com/' }),
+        createCheckoutSetupSession: sinon.stub().resolves({ id: 'cs_test_setup' }),
+        getCustomerForMemberCheckoutSession: sinon.stub().resolves({ id: 'cus_first' }),
+        getCustomer: sinon.stub().callsFake(async (id) => ({ id })),
+        getPublicKey: sinon.stub().returns('pk_test'),
+      };
+      return new RouterController({
+        stripeAPIService: stripeService,
+        tokenService: { decodeToken: sinon.stub().resolves({ sub: 'member@example.com' }) },
+        memberRepository: { get: sinon.stub().resolves({ related }) },
+        settingsCache: { get: sinon.stub().returns(null) },
+        checkouts: { read: async () => null },
+        urlUtils,
+      });
+    }
+
+    const multipleCustomers = [canceledSubscription, activeSubscription];
+
+    const req = { body: { identity: 'valid-token' } };
+
+    beforeEach(function () {
+      mockRes = { writeHead: sinon.stub(), end: sinon.stub() };
+    });
+
+    it('opens the billing portal for the customer behind the active subscription', async function () {
+      const controller = createController(multipleCustomers);
+
+      await controller.createBillingPortalSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createBillingPortalSession,
+        sinon.match({ id: 'cus_active' }),
+      );
+      sinon.assert.notCalled(stripeService.getCustomerForMemberCheckoutSession);
+    });
+
+    it('creates the card update session for the customer and currency of the active subscription', async function () {
+      const controller = createController(multipleCustomers);
+
+      await controller.createCheckoutSetupSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createCheckoutSetupSession,
+        sinon.match({ id: 'cus_active' }),
+        sinon.match({ currency: 'usd' }),
+      );
+      sinon.assert.notCalled(stripeService.getCustomerForMemberCheckoutSession);
+    });
+
+    it('picks the newest active subscription when there are several', async function () {
+      const controller = createController([
+        olderActiveSubscription,
+        activeSubscription,
+        canceledSubscription,
+      ]);
+
+      await controller.createCheckoutSetupSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createCheckoutSetupSession,
+        sinon.match({ id: 'cus_active' }),
+        sinon.match({ currency: 'usd' }),
+      );
+    });
+
+    it('breaks created_at ties by id', async function () {
+      const createdAt = new Date('2026-01-01');
+      const controller = createController([
+        subscription({
+          id: 'id_b',
+          subscription_id: 'sub_b',
+          customer_id: 'cus_b',
+          status: 'active',
+          created_at: createdAt,
+        }),
+        subscription({
+          id: 'id_a',
+          subscription_id: 'sub_a',
+          customer_id: 'cus_a',
+          status: 'active',
+          created_at: createdAt,
+        }),
+      ]);
+
+      await controller.createBillingPortalSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createBillingPortalSession,
+        sinon.match({ id: 'cus_a' }),
+      );
+    });
+
+    for (const status of ['trialing', 'unpaid', 'past_due']) {
+      it(`treats a ${status} subscription as active`, async function () {
+        const controller = createController([
+          canceledSubscription,
+          subscription({
+            subscription_id: `sub_${status}`,
+            customer_id: `cus_${status}`,
+            status,
+            created_at: new Date('2024-01-01'),
+          }),
+        ]);
+
+        await controller.createBillingPortalSession(req, mockRes);
+
+        sinon.assert.calledWith(
+          stripeService.createBillingPortalSession,
+          sinon.match({ id: `cus_${status}` }),
+        );
+      });
+    }
+
+    it('falls back to the first customer when no subscription is active', async function () {
+      const controller = createController([canceledSubscription]);
+
+      await controller.createBillingPortalSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createBillingPortalSession,
+        sinon.match({ id: 'cus_first' }),
+      );
+      sinon.assert.notCalled(stripeService.getCustomer);
+    });
+
+    it('falls back to the first customer when there are no subscriptions', async function () {
+      const controller = createController([]);
+
+      await controller.createCheckoutSetupSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createCheckoutSetupSession,
+        sinon.match({ id: 'cus_first' }),
+        sinon.match({ currency: undefined }),
+      );
+      sinon.assert.notCalled(stripeService.getCustomer);
+    });
+
+    it('falls back to the first customer when the active subscription customer is deleted', async function () {
+      const controller = createController(multipleCustomers);
+      stripeService.getCustomer.resolves({ id: 'cus_active', deleted: true });
+
+      await controller.createBillingPortalSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createBillingPortalSession,
+        sinon.match({ id: 'cus_first' }),
+      );
+    });
+
+    it('does not send the active subscription currency for a fallback customer', async function () {
+      const controller = createController(multipleCustomers);
+      stripeService.getCustomer.resolves({ id: 'cus_active', deleted: true });
+
+      await controller.createCheckoutSetupSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createCheckoutSetupSession,
+        sinon.match({ id: 'cus_first' }),
+        sinon.match({ currency: undefined }),
+      );
+    });
+
+    it('falls back to the first customer when the active subscription customer is missing from Stripe', async function () {
+      const controller = createController(multipleCustomers);
+      stripeService.getCustomer.rejects(
+        Object.assign(new Error('No such customer'), { code: 'resource_missing' }),
+      );
+
+      await controller.createBillingPortalSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createBillingPortalSession,
+        sinon.match({ id: 'cus_first' }),
+      );
+    });
+
+    it('does not fall back when Stripe fails to fetch the active subscription customer', async function () {
+      const controller = createController(multipleCustomers);
+      stripeService.getCustomer.rejects(
+        Object.assign(new Error('Too many requests'), { code: 'rate_limit' }),
+      );
+
+      await assert.rejects(controller.createBillingPortalSession(req, mockRes), {
+        message: 'Too many requests',
+      });
+
+      sinon.assert.notCalled(stripeService.getCustomerForMemberCheckoutSession);
+      sinon.assert.notCalled(stripeService.createBillingPortalSession);
+    });
+  });
+
   describe('sendMagicLink', function () {
     describe('newsletters', function () {
       let req, res, sendEmailWithMagicLinkStub;

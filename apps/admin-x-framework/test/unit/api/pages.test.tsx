@@ -12,7 +12,7 @@ import { searchIndexQueryMeta } from '../../../src/api/search-index';
 import { tagsDataType } from '../../../src/api/tags';
 import { withMockFetch } from '../../utils/mock-fetch';
 
-// The Ember editor's exact include list — page writes re-request it too
+// The full include list — page writes re-request it too
 const ALL_INCLUDES =
   'tags,authors,authors.roles,email,tiers,newsletter,count.clicks,post_revisions,post_revisions.author';
 

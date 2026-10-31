@@ -28,6 +28,8 @@ export interface KoenigPostEditorProps {
   onSecondaryError?: () => void;
   registerAPI: (api: KoenigInstance | null) => void;
   onWordCountChange: (count: number) => void;
+  /** The selection's word count, or null while nothing is selected. */
+  onSelectionWordCountChange: (count: number | null) => void;
   onTkCountChange: (count: number) => void;
 }
 
@@ -52,9 +54,11 @@ function KoenigInstanceMount({
   onSecondaryChange,
   registerAPI,
   onWordCountChange,
+  onSelectionWordCountChange,
   onTkCountChange,
 }: KoenigInstanceMountProps) {
-  const { KoenigComposer, KoenigEditor, WordCountPlugin, TKCountPlugin } = editor.read();
+  const { KoenigComposer, KoenigEditor, WordCountPlugin, SelectionWordCountPlugin, TKCountPlugin } =
+    editor.read();
 
   return (
     <div
@@ -78,6 +82,7 @@ function KoenigInstanceMount({
           onChange={isSecondary ? onSecondaryChange : onChange}
         />
         <WordCountPlugin onChange={isSecondary ? NOOP : onWordCountChange} />
+        {isSecondary ? null : <SelectionWordCountPlugin onChange={onSelectionWordCountChange} />}
         <TKCountPlugin onChange={isSecondary ? NOOP : onTkCountChange} />
       </KoenigComposer>
     </div>

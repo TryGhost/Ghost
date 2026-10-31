@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { beforeEach, describe, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 
 import ShadeProvider from '../../../../src/providers/shade-provider';
@@ -41,10 +40,10 @@ describe('CodeEditor', () => {
     render(<Harness />);
 
     const editor = await screen.findByRole('textbox', { name: 'Code editor' });
-    const descriptionId = editor.getAttribute('aria-describedby');
+    const descriptionId = editor.getAttribute('aria-describedby')!;
 
-    assert.ok(descriptionId);
-    assert.equal(document.getElementById(descriptionId)?.textContent, 'Add valid HTML.');
+    expect(descriptionId).toBeTruthy();
+    expect(document.getElementById(descriptionId)?.textContent).toBe('Add valid HTML.');
   });
 
   it('associates the visible title and renders as one layout item', async () => {
@@ -57,14 +56,14 @@ describe('CodeEditor', () => {
     );
 
     const editor = await screen.findByRole('textbox', { name: 'HTML editor' });
-    const labelId = editor.getAttribute('aria-labelledby');
+    const labelId = editor.getAttribute('aria-labelledby')!;
 
-    assert.ok(labelId);
-    assert.equal(document.getElementById(labelId)?.textContent, 'HTML editor');
-    assert.equal(screen.getByTestId('editor-layout').childElementCount, 1);
+    expect(labelId).toBeTruthy();
+    expect(document.getElementById(labelId)?.textContent).toBe('HTML editor');
+    expect(screen.getByTestId('editor-layout').childElementCount).toBe(1);
 
     fireEvent.click(document.getElementById(labelId)!);
-    assert.equal(document.activeElement, editor);
+    expect(document.activeElement).toBe(editor);
   });
 
   it('clears the shared focus state when a focused editor unmounts', async () => {
@@ -72,9 +71,9 @@ describe('CodeEditor', () => {
     const editor = await screen.findByRole('textbox', { name: 'Code editor' });
 
     fireEvent.focus(editor);
-    assert.equal(screen.getByTestId('focus-state').textContent, 'true');
+    expect(screen.getByTestId('focus-state').textContent).toBe('true');
 
     rerender(<Harness showEditor={false} />);
-    assert.equal(screen.getByTestId('focus-state').textContent, 'false');
+    expect(screen.getByTestId('focus-state').textContent).toBe('false');
   });
 });

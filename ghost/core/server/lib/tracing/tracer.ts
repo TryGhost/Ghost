@@ -21,13 +21,20 @@ export interface Span {
  * - `track` ends the span and sets its status itself: success when the operation returns, and
  *   failure when it throws. OpenTelemetry leaves both to the operation, so each operation would
  *   repeat the same `try`, `catch` and `finally`.
- * - A failure records the error's type, never the message and stack that OpenTelemetry's
- *   `recordException` records, because error messages can hold personal data such as a buyer's
- *   email address.
+ * - For the same reason, `track` records a failure's exception itself, which OpenTelemetry also
+ *   leaves to the operation.
+ * - The exception is in Ghost's `err` field, not OpenTelemetry's `exception.*` attributes, as
+ *   that is where Ghost's logs keep errors.
+ *
+ * As OpenTelemetry's conventions for exceptions in logs describe, the exception is a log line of
+ * its own, named `<name>.exception`, with the span's trace and span ids and its attributes. The
+ * span keeps only the error's type, because error messages can hold personal data such as a
+ * buyer's email address, and spans are kept as metrics, far longer than logs.
  *
  * It also lacks two things OpenTelemetry has. An error the operation expects, such as a buyer
- * mistyping their email address, can't be marked as anything but a failure. And a span started
- * inside another isn't linked to it as its child.
+ * mistyping their email address, can't be marked as anything but a failure, so its exception is
+ * logged as an error, like any other exception that leaves its span. And a span started
+ * inside another isn't linked to it as its child, so each span is a trace of its own.
  */
 export interface Tracer {
   /**

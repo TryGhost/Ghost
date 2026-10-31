@@ -47,8 +47,7 @@ export interface ViewLocation {
 }
 
 /**
- * A view is active only when *every* view param agrees, matching
- * Ember's `activeView` (which compares the whole cleaned filter). So a view of
+ * A view is active only when *every* view param agrees. So a view of
  * `{type: 'draft'}` is not active on `?type=draft&tag=news` — that is a
  * different view, or none.
  *

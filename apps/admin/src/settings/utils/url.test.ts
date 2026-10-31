@@ -1,4 +1,3 @@
-import * as assert from 'assert/strict';
 import { trimHash, trimSearch, trimSearchAndHash } from '@/settings/utils/url';
 
 describe('trimSearch', function () {
@@ -6,7 +5,7 @@ describe('trimSearch', function () {
     const url = 'https://example.com/?foo=bar&baz=qux';
     const parsedUrl = new URL(url);
 
-    assert.equal(trimSearch(parsedUrl).toString(), 'https://example.com/');
+    expect(trimSearch(parsedUrl).toString()).toBe('https://example.com/');
   });
 });
 
@@ -15,7 +14,7 @@ describe('trimHash', function () {
     const url = 'https://example.com/path#section-1';
     const parsedUrl = new URL(url);
 
-    assert.equal(trimHash(parsedUrl).toString(), 'https://example.com/path');
+    expect(trimHash(parsedUrl).toString()).toBe('https://example.com/path');
   });
 });
 
@@ -24,6 +23,6 @@ describe('trimSearchAndHash', function () {
     const url = 'https://example.com/path#section-1?foo=bar&baz=qux';
     const parsedUrl = new URL(url);
 
-    assert.equal(trimSearchAndHash(parsedUrl).toString(), 'https://example.com/path');
+    expect(trimSearchAndHash(parsedUrl).toString()).toBe('https://example.com/path');
   });
 });

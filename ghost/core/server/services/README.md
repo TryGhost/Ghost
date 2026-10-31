@@ -110,6 +110,13 @@ roots. The rule covers static imports, `require()`, literal dynamic imports and
 re-exports. All implementation source inside a service is checked, including
 nested folders named `test` or `fixtures`.
 
+Type injected logging as `GhostLogger`, or a `Pick<GhostLogger, ...>` of the
+methods used, with `import type { GhostLogger } from '@tryghost/logging'`. In
+JSDoc, use `import('@tryghost/logging').GhostLogger`. Do not hand-write a logger
+shape; `ghost/prefer-canonical-types` rejects one in Ghost Core whatever it is
+named. Class tests pass `createLoggingFake()` from `ghost/test/utils/logging-utils`
+and assert on its stubs instead of stubbing the global logger.
+
 Where JavaScript has a matching TypeScript sibling, the audit and boundary
 checks inspect the TypeScript source and resolve imports back to it. This keeps
 adjacent `build:tsc` output out of the report; ordinary JavaScript implementations

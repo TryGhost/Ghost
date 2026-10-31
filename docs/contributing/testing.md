@@ -24,7 +24,9 @@ end-to-end suite. Run them separately when your change affects that area.
 Put tests as close as possible to the code and behavior under test:
 
 - **Unit tests** cover a function, component, or package in isolation. Most
-  workspaces use Vitest and expose a `test` or `test:unit` target.
+  workspaces use Vitest and expose a `test` or `test:unit` target. App tests
+  under `apps/` assert with Vitest's `expect`; Ghost Core, the packages and
+  Koenig assert with `node:assert/strict`.
 - **Ghost Core integration tests** cover interactions between server modules
   and live against a test database. They live in `ghost/test/integration/`.
 - **Ghost Core server E2E tests** exercise the server, frontend rendering,

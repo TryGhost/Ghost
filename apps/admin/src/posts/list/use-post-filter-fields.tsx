@@ -39,7 +39,7 @@ export interface BuildPostFilterFieldsOptions {
    * The params currently in the URL. A value that isn't a known option gets
    * an "Unknown" entry so the chip still shows something — otherwise Shade
    * falls back to "Select…" and the filter vanishes from the UI while
-   * staying in the URL. Ember shows a red "Unknown type" for the same case.
+   * staying in the URL.
    */
   params?: Partial<Record<'type' | 'visibility', string | null>>;
 }

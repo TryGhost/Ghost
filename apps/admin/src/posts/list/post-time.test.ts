@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { formatPostTime } from './post-time';
 
-// Ported from apps/ember-admin/app/helpers/gh-format-post-time.js. The rules
-// are order-dependent (the <=12h relative window wins over everything, and
-// "yesterday" is checked before "tomorrow"), so each branch is pinned.
+// The rules are order-dependent (the <=12h relative window wins over
+// everything, and "yesterday" is checked before "tomorrow"), so each branch is
+// pinned.
 
 const TZ = 'UTC';
 const NOW = new Date('2026-08-04T12:00:00.000Z');

@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
 const mappers = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/mappers');
-const tiersService = require('../../../../../../../core/server/services/tiers');
+const tiersService = require('../../../../../../../core/server/services/tiers').default;
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 
 describe('Unit: endpoints/utils/serializers/output/pages', function () {
@@ -13,18 +13,19 @@ describe('Unit: endpoints/utils/serializers/output/pages', function () {
       return Object.assign(data, { toJSON: sinon.stub().returns(data) });
     };
 
-    tiersService.api = {
-      browse() {
-        return { data: null };
+    sinon.stub(tiersService, 'service').get(() => ({
+      api: {
+        browse() {
+          return { data: null };
+        },
       },
-    };
+    }));
 
     sinon.stub(mappers, 'pages').returns({});
   });
 
   afterEach(function () {
     sinon.restore();
-    tiersService.api = null;
   });
 
   it('destroy responds without serializing the destroyed model', async function () {

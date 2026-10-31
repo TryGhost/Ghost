@@ -2,6 +2,8 @@ const knex = require('knex').default;
 const assert = require('node:assert/strict');
 const moment = require('moment-timezone');
 const PostsStatsService = require('../../../../../core/server/services/stats/posts-stats-service');
+const logging = require('@tryghost/logging');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 const {
   applyBetterSqlite3Patches,
 } = require('../../../../../core/server/data/db/better-sqlite3-patches');
@@ -363,7 +365,7 @@ describe('PostsStatsService', function () {
       },
     };
 
-    service = new PostsStatsService({ knex: db, urlService: mockUrlService });
+    service = new PostsStatsService({ knex: db, logging, urlUtils, urlService: mockUrlService });
 
     // Create default users for test data
     await _createUser('user1', 'John Doe');
@@ -420,6 +422,8 @@ describe('PostsStatsService', function () {
     function svcWithUrlLookup(lookup) {
       return new PostsStatsService({
         knex: db,
+        logging,
+        urlUtils,
         urlService: {
           hasFinished: () => true,
           resolveUrl: async (path) => lookup(path),
@@ -1053,7 +1057,7 @@ describe('PostsStatsService', function () {
 
   describe('getTopPostsViews', function () {
     it('returns latest posts with zero views when no Tinybird client exists', async function () {
-      service = new PostsStatsService({ knex: db }); // No Tinybird client
+      service = new PostsStatsService({ knex: db, logging, urlUtils }); // No Tinybird client
       const result = await service.getTopPostsViews({
         date_from: '2025-01-01',
         date_to: '2025-01-31',
@@ -1146,7 +1150,12 @@ describe('PostsStatsService', function () {
         fetch: () => Promise.resolve([]), // No views data
       };
 
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       const result = await service.getTopPostsViews({
         date_from: '2025-01-01',
@@ -1306,7 +1315,12 @@ describe('PostsStatsService', function () {
         },
       };
 
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       const result = await service.getTopPostsViews({
         date_from: '2025-01-01',
@@ -1398,7 +1412,12 @@ describe('PostsStatsService', function () {
           return Promise.resolve([]);
         },
       };
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       await service.getTopPostsViews({
         date_from: '2025-01-01',
@@ -1420,7 +1439,12 @@ describe('PostsStatsService', function () {
       const mockTinybirdClient = {
         fetch: () => Promise.reject(new Error('Tinybird error')),
       };
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       const result = await service.getTopPostsViews({
         date_from: '2025-01-01',
@@ -1443,7 +1467,12 @@ describe('PostsStatsService', function () {
           return Promise.resolve([]);
         },
       };
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       // Create posts with UUIDs
       await db('posts').truncate();
@@ -1520,7 +1549,12 @@ describe('PostsStatsService', function () {
           return Promise.resolve([]);
         },
       };
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       // Create posts with UUIDs
       await db('posts').truncate();
@@ -1581,7 +1615,12 @@ describe('PostsStatsService', function () {
           return Promise.resolve([]);
         },
       };
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       // Create posts with UUIDs
       await db('posts').truncate();
@@ -1698,7 +1737,12 @@ describe('PostsStatsService', function () {
         },
       };
 
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       const result = await service.getTopPostsViews({
         date_from: '2025-01-01',
@@ -1737,7 +1781,12 @@ describe('PostsStatsService', function () {
           return Promise.resolve([]);
         },
       };
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       // Create posts and users
       await db('posts').truncate();
@@ -1813,7 +1862,7 @@ describe('PostsStatsService', function () {
     });
 
     it('filters out pages when no Tinybird client exists (fallback)', async function () {
-      service = new PostsStatsService({ knex: db }); // No Tinybird client
+      service = new PostsStatsService({ knex: db, logging, urlUtils }); // No Tinybird client
 
       // Create posts and pages
       await db('posts').truncate();
@@ -1881,7 +1930,12 @@ describe('PostsStatsService', function () {
       const mockTinybirdClient = {
         fetch: () => Promise.resolve([]), // No views data
       };
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       // Create posts and pages
       await db('posts').truncate();
@@ -1952,7 +2006,12 @@ describe('PostsStatsService', function () {
             { post_uuid: 'post-uuid1', visits: 1000 }, // Only one post has views
           ]),
       };
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       // Create posts and pages
       await db('posts').truncate();
@@ -2525,6 +2584,37 @@ describe('PostsStatsService', function () {
 
       assert.equal(result.length, 3);
       assert.deepEqual(result, completeValues, 'Should return same values when all dates present');
+    });
+
+    it('keys event instants by their calendar day in the given timezone', function () {
+      // 03:00 UTC on 2 January is still the evening of 1 January in New York.
+      const sparseValues = [{ date: '2024-01-02T03:00:00.000Z', value: 30 }];
+
+      const resultUTC = service._fillMissingDates(
+        sparseValues,
+        '2024-01-01',
+        '2024-01-03',
+        'UTC',
+        20,
+      );
+      const resultNY = service._fillMissingDates(
+        sparseValues,
+        '2024-01-01',
+        '2024-01-03',
+        'America/New_York',
+        20,
+      );
+
+      assert.deepEqual(resultUTC, [
+        { date: '2024-01-01', value: 20 },
+        { date: '2024-01-02', value: 30 },
+        { date: '2024-01-03', value: 30 },
+      ]);
+      assert.deepEqual(resultNY, [
+        { date: '2024-01-01', value: 30 },
+        { date: '2024-01-02', value: 30 },
+        { date: '2024-01-03', value: 30 },
+      ]);
     });
   });
 });

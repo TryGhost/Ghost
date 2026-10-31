@@ -53,6 +53,10 @@ exempt. Implementations must not retrieve collaborators through their own root.
 
 Wire application instances, models, logging and configured adapters in the root.
 Keep approved libraries imported where used and use explicit type-only imports.
+Type injected logging as `GhostLogger` (or a `Pick` of it) from
+`@tryghost/logging`, never a hand-written shape; class tests inject
+`createLoggingFake()` from `ghost/test/utils/logging-utils` rather than stubbing
+the global logger.
 Do not inject stateless utilities to evade the policy or duplicate shared helpers.
 
 Inspect the source before adding a library allowance. Justify why the dependency

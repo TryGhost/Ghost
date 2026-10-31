@@ -39,6 +39,7 @@ vi.mock('@/settings/components/koenig-loader', () => {
       return null;
     },
     WordCountPlugin: () => null,
+    SelectionWordCountPlugin: () => null,
     TKCountPlugin: () => null,
   };
   const resource = { read: () => stub };
@@ -151,6 +152,7 @@ describe('KoenigPostEditor hidden instance', () => {
         onChange={NOOP}
         onSecondaryChange={onSecondaryChange}
         onSecondaryError={onSecondaryError}
+        onSelectionWordCountChange={NOOP}
         onTkCountChange={NOOP}
         onWordCountChange={NOOP}
       />,
@@ -179,6 +181,7 @@ describe('KoenigPostEditor hidden instance', () => {
         onChange={NOOP}
         onSecondaryChange={NOOP}
         onSecondaryError={onSecondaryError}
+        onSelectionWordCountChange={NOOP}
         onTkCountChange={NOOP}
         onWordCountChange={NOOP}
       />,

@@ -19,8 +19,8 @@ function eventMoney(amount: unknown, currency: unknown) {
   ) {
     return undefined;
   }
-  // Activity's stored monetary values follow Ember's getNonDecimal: divide by
-  // 100 for every currency, including gifts. Do not infer a Stripe exponent.
+  // Activity's stored monetary values divide by 100 for every currency,
+  // including gifts. Do not infer a Stripe exponent.
   return { value: currencyToDecimal(amount), symbol: getSymbol(currency) };
 }
 

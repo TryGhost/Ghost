@@ -1,8 +1,9 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
-const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
-const Users = require('../../../../../core/server/services/users');
+const { PostsBulkAddTagsEvent } = require('../../../../../core/shared/events-ts');
+const { removeAuthorFromRevisions } = require('../../../../../core/server/lib/post-revisions');
+const { UsersService: Users } = require('../../../../../core/server/services/users/users-service');
 
 describe('Users service', function () {
   describe('lockAll', function () {
@@ -42,14 +43,9 @@ describe('Users service', function () {
           Base: { transaction: (cb) => cb('fake_transaction') },
           User: { findAll },
         },
-        auth: {
-          passwordreset: {
-            generateToken: sinon.stub().resolves('secret_fake_token'),
-            sendResetNotification: sinon.stub().resolves(),
-          },
-        },
-        apiMail: 'fake_api_mail',
-        apiSettings: 'fake_api_settings',
+        DomainEvents: { dispatch: sinon.stub() },
+        PostsBulkAddTagsEvent,
+        removeAuthorFromRevisions,
       });
     }
 
@@ -63,17 +59,6 @@ describe('Users service', function () {
       assert.equal(result.count, 2);
       assert.equal(a.locked, true);
       assert.equal(b.locked, true);
-    });
-
-    it('does not proactively send any reset emails', async function () {
-      const usersService = makeService({
-        users: [makeUser({ email: 'a@example.com' }), makeUser({ email: 'b@example.com' })],
-      });
-
-      await usersService.lockAll({ context: {} });
-
-      sinon.assert.notCalled(usersService.auth.passwordreset.generateToken);
-      sinon.assert.notCalled(usersService.auth.passwordreset.sendResetNotification);
     });
 
     it('returns count=0 when no users match', async function () {
@@ -124,11 +109,7 @@ describe('Users service', function () {
     let dispatchStub;
 
     beforeEach(function () {
-      dispatchStub = sinon.stub(DomainEvents, 'dispatch');
-    });
-
-    afterEach(function () {
-      dispatchStub.restore();
+      dispatchStub = sinon.stub();
     });
 
     function createMockOptions({ userPostIds, alreadyTaggedPostIds, insertedRows, addActions }) {
@@ -183,12 +164,9 @@ describe('Users service', function () {
             addActions,
           },
         },
-        auth: {
-          setup: {},
-          passwordreset: {},
-        },
-        apiMail: 'fake_api_mail',
-        apiSettings: 'fake_api_settings',
+        DomainEvents: { dispatch: dispatchStub },
+        PostsBulkAddTagsEvent,
+        removeAuthorFromRevisions,
       };
     }
 

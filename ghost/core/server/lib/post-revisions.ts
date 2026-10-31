@@ -43,6 +43,53 @@ type RevisionResult =
       value: false;
     };
 
+type AuthorRemovalOptions = {
+  // The model owns the transaction handle; author removal only forwards it.
+  transacting?: unknown;
+};
+
+type RevisionAuthorModel = {
+  findAll(options: AuthorRemovalOptions & { filter: string; columns: string[] }): Promise<{
+    toJSON(): Array<{ id: string }>;
+  }>;
+  bulkEdit(
+    ids: string[],
+    table: string,
+    options: AuthorRemovalOptions & {
+      data: { author_id: null };
+      column: string;
+      throwErrors: boolean;
+    },
+  ): Promise<unknown>;
+};
+
+export async function removeAuthorFromRevisions(
+  model: RevisionAuthorModel,
+  authorId: string,
+  options: AuthorRemovalOptions,
+): Promise<void> {
+  const revisions = await model.findAll({
+    filter: `author_id:'${authorId}'`,
+    columns: ['id'],
+    transacting: options.transacting,
+  });
+
+  const revisionIds = revisions.toJSON().map(({ id }) => id);
+
+  if (revisionIds.length === 0) {
+    return;
+  }
+
+  await model.bulkEdit(revisionIds, 'post_revisions', {
+    data: {
+      author_id: null,
+    },
+    column: 'id',
+    transacting: options.transacting,
+    throwErrors: true,
+  });
+}
+
 export class PostRevisions {
   config: PostRevisionsDeps['config'];
   model: any;
@@ -153,26 +200,7 @@ export class PostRevisions {
     };
   }
 
-  async removeAuthorFromRevisions(authorId: string, options: any): Promise<void> {
-    const revisions = await this.model.findAll({
-      filter: `author_id:'${authorId}'`,
-      columns: ['id'],
-      transacting: options.transacting,
-    });
-
-    const revisionIds = revisions.toJSON().map(({ id }: { id: string }) => id);
-
-    if (revisionIds.length === 0) {
-      return;
-    }
-
-    await this.model.bulkEdit(revisionIds, 'post_revisions', {
-      data: {
-        author_id: null,
-      },
-      column: 'id',
-      transacting: options.transacting,
-      throwErrors: true,
-    });
+  async removeAuthorFromRevisions(authorId: string, options: AuthorRemovalOptions): Promise<void> {
+    await removeAuthorFromRevisions(this.model, authorId, options);
   }
 }

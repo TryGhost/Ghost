@@ -1,5 +1,6 @@
 const DomainEvents = require('@tryghost/domain-events');
 const nock = require('nock');
+const { z } = require('zod');
 let members = {};
 let stripeService = {};
 let tiers = {};
@@ -10,6 +11,81 @@ const crypto = require('crypto');
 /**
  * @typedef {"customers" | "checkout" | "subscriptions" | "coupons" | "payment_methods" | "prices" | "setup_intents" | "products"} resource
  */
+
+/** What Stripe decides an existing customer's tax rules from, as it decodes a session: flags as strings. */
+const CustomerTaxSession = z.object({
+  customer: z.string().optional(),
+  customer_update: z.record(z.string(), z.unknown()).optional(),
+  tax_id_collection: z.object({ enabled: z.unknown() }).partial().optional(),
+  automatic_tax: z.object({ enabled: z.unknown() }).partial().optional(),
+  shipping_address_collection: z.object({ allowed_countries: z.unknown() }).partial().optional(),
+});
+
+/**
+ * Why Stripe refuses a checkout session for an existing customer, measured against test mode at
+ * Ghost's pinned API version with `pnpm --filter @tryghost/e2e stripe:probe`, or null when it
+ * would accept it. Stripe checks a tax ID and works out tax against what the customer holds, so
+ * the checkout must be allowed to save what those depend on. Messages are Stripe's own, and the
+ * browser tests' fake Stripe server refuses the same sessions.
+ *
+ * @param {unknown} body The session as Stripe decodes it.
+ * @param {{address?: unknown} | undefined} customer
+ * @returns {string | null}
+ */
+function customerSessionRefusal(body, customer) {
+  const parsed = CustomerTaxSession.safeParse(body);
+  if (!parsed.success) {
+    return null;
+  }
+  const session = parsed.data;
+  const update = session.customer_update ?? {};
+  if (!session.customer) {
+    return session.customer_update ? '`customer_update` can only be used with `customer`.' : null;
+  }
+  const mayUpdate = (/** @type {string} */ field) => update[field] === 'auto';
+  const hasAddress = Boolean(customer?.address) || mayUpdate('address');
+  // A shipping address is only collected with countries to ship to, as measured.
+  const countries = session.shipping_address_collection?.allowed_countries;
+  const collectsShipping =
+    typeof countries === 'object' && countries !== null && Object.values(countries).length > 0;
+  if (session.tax_id_collection?.enabled === 'true') {
+    if (!mayUpdate('name')) {
+      return (
+        'Tax ID collection requires updating business name on the customer. To enable tax ID ' +
+        'collection for an existing customer, please set `customer_update[name]` to `auto`.'
+      );
+    }
+    if (!hasAddress) {
+      return (
+        'We could not find a valid address on the provided customer. To enable tax ID ' +
+        'collection, please set `customer_update[address]` to `auto`.'
+      );
+    }
+    if (collectsShipping && !mayUpdate('shipping')) {
+      return (
+        'Tax ID collection requires updating the shipping address on the provided customer. ' +
+        'To enable tax ID collection, please set `customer_update[shipping]` to `auto`.'
+      );
+    }
+  }
+  if (session.automatic_tax?.enabled === 'true') {
+    if (!hasAddress) {
+      return (
+        'Automatic tax calculation in Checkout requires a valid address on the Customer. Add a ' +
+        "valid address to the Customer or set `customer_update[address]` to 'auto' to save the " +
+        'billing address entered in Checkout to the Customer.'
+      );
+    }
+    if (collectsShipping && !mayUpdate('shipping')) {
+      return (
+        'Automatic tax calculation uses fields saved on the Customer. To collect a shipping ' +
+        "address with `automatic_tax` enabled, set `customer_update[shipping]` to 'auto' to " +
+        'save the shipping address back to the Customer.'
+      );
+    }
+  }
+  return null;
+}
 
 /**
  * The Stripe Mocker mimics an in memory version of the Stripe API. We can use it to quickly create new subscriptions and get a close to real world test environment with working webhooks etc.
@@ -36,6 +112,12 @@ class StripeMocker {
   failCheckoutExpiry = false;
   /** Makes Stripe refuse checkout sessions sent with a design. */
   refuseCheckoutDesign = false;
+  /**
+   * Makes Stripe refuse checkout sessions sent with this parameter, with this error in Stripe's
+   * API shape, and take them once it's left out. The error names the parameter only if given one.
+   * @type {{param: string, error: object} | null}
+   */
+  checkoutParamRefusal = null;
   /** Makes Stripe fail every new checkout session with this error, in Stripe's API shape. */
   checkoutSessionError = null;
 
@@ -75,12 +157,13 @@ class StripeMocker {
     this.checkoutBranding = StripeMocker.defaultCheckoutBranding();
     this.failCheckoutExpiry = false;
     this.refuseCheckoutDesign = false;
+    this.checkoutParamRefusal = null;
     this.checkoutSessionError = null;
 
     // Fix for now, because of importing order breaking some things when they are not initialized
     members = require('../../core/server/services/members');
     stripeService = require('../../core/server/services/stripe');
-    tiers = require('../../core/server/services/tiers');
+    tiers = require('../../core/server/services/tiers').default;
     models = require('../../core/server/models');
   }
 
@@ -126,7 +209,7 @@ class StripeMocker {
     if (!product) {
       throw new Error('Product not found with slug ' + tierSlug);
     }
-    const tier = await tiers.api.read(product.id);
+    const tier = await tiers.service.api.read(product.id);
     const payments = members.api.paymentsService;
     const { id } = await payments.createPriceForTierCadence(tier, cadence);
     return this.#getData(this.prices, id)[1];
@@ -142,7 +225,7 @@ class StripeMocker {
    * @returns {Promise<object>} - The created product object.
    */
   async createTier({ name, currency, monthly_price, yearly_price }) {
-    const result = await tiers.api.add({
+    const result = await tiers.service.api.add({
       name: name ?? 'Tier ' + this.#generateRandomId(),
       type: 'paid',
       currency: currency.toUpperCase(),
@@ -507,7 +590,18 @@ class StripeMocker {
         if (this.checkoutSessionError) {
           return [400, { error: this.checkoutSessionError }];
         }
-        if (this.refuseCheckoutDesign && require('qs').parse(body).branding_settings) {
+        const session = require('qs').parse(body);
+        const refusal = customerSessionRefusal(
+          session,
+          this.customers.find((customer) => customer.id === session.customer),
+        );
+        if (refusal) {
+          return [400, { error: { type: 'invalid_request_error', message: refusal } }];
+        }
+        if (this.checkoutParamRefusal && this.checkoutParamRefusal.param in session) {
+          return [400, { error: this.checkoutParamRefusal.error }];
+        }
+        if (this.refuseCheckoutDesign && session.branding_settings) {
           return [
             400,
             {

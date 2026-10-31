@@ -1,6 +1,5 @@
 import EmailDesignModal from '@/settings/email-design/email-design-modal';
 import React, { useState } from 'react';
-import assert from 'node:assert/strict';
 import { ButtonColorField } from '@/settings/email-design/design-fields/button-color-field';
 import { DEFAULT_EMAIL_DESIGN } from '@/settings/email-design/types';
 import { EmailDesignProvider } from '@/settings/email-design/email-design-provider';
@@ -77,14 +76,14 @@ describe('Welcome email customize modal', function () {
       await vi.advanceTimersByTimeAsync(50);
     });
 
-    assert.ok(screen.getByRole('textbox'));
+    expect(screen.getByRole('textbox')).toBeTruthy();
 
     act(() => {
       fireEvent.keyDown(document, { key: 'Escape' });
     });
 
-    assert.equal(onClose.mock.calls.length, 0);
-    assert.ok(screen.getByTestId('welcome-email-customize-modal'));
+    expect(onClose.mock.calls.length).toBe(0);
+    expect(screen.getByTestId('welcome-email-customize-modal')).toBeTruthy();
   });
 
   it('keeps the customize modal open when Escape is pressed immediately after opening the color picker', function () {
@@ -95,11 +94,11 @@ describe('Welcome email customize modal', function () {
 
     act(() => {
       fireEvent.click(screen.getByText('Button color'));
-      assert.equal(screen.queryByRole('textbox'), null);
+      expect(screen.queryByRole('textbox')).toBeNull();
       fireEvent.keyDown(document, { key: 'Escape' });
     });
 
-    assert.ok(screen.queryByTestId('welcome-email-customize-modal'));
-    assert.equal(onClose.mock.calls.length, 0);
+    expect(screen.queryByTestId('welcome-email-customize-modal')).toBeTruthy();
+    expect(onClose.mock.calls.length).toBe(0);
   });
 });

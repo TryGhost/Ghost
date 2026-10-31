@@ -55,7 +55,7 @@ describe('jobs-service retained consumers', function () {
 
   it('keeps a retained MentionController dispatching to the current handler after restart', async function () {
     const service = jobsService.init(initArgs);
-    const controller = new MentionController();
+    const controller = new MentionController({ logging });
     const api = { processWebmention: sinon.stub().resolves() };
     await controller.init({
       api,

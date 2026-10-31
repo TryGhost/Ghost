@@ -6,17 +6,13 @@ An app's page runs in a frame inside Ghost Admin. The SDK connects it to Admin,
 gives it the site, the user and the theme, and lets it call the Admin API, keep
 its route in sync with Admin's URL, and send the publisher elsewhere in Admin.
 
-> **Unreleased.** The package is `private` and not published to npm yet. The
-> pre-release will change that. Until then, build it in a Ghost checkout and use
-> it from there (see below), or load its browser bundle.
+> **Alpha.** CI publishes each change to npm as the next `0.1.0-alpha.N` under
+> the `alpha` tag. Alphas make no compatibility promise.
 
 ## Quick start
 
-Build the SDK in a Ghost checkout first, from `packages/app-sdk`, with
-`pnpm build`.
-
-Without a bundler, load the bundle (`dist/app-sdk.js`), a single ES module with
-everything inlined:
+Without a bundler, load the bundle (`dist/app-sdk.js` in the package), a single
+ES module with everything inlined:
 
 ```html
 <script type="module">
@@ -32,13 +28,11 @@ everything inlined:
 </script>
 ```
 
-With a bundler, depend on the built package through a `file:` link, or run
-`pnpm link ../Ghost/packages/app-sdk` in the app. The package includes the types
-and code it uses from Ghost's contracts, so its only dependency is
-`@quilted/threads`:
+With a bundler, install the package. It includes the types and code it uses
+from Ghost's contracts, so its only dependency is `@quilted/threads`:
 
-```json
-{ "dependencies": { "@tryghost/app-sdk": "file:../Ghost/packages/app-sdk" } }
+```sh
+pnpm add @tryghost/app-sdk@alpha
 ```
 
 ```ts
@@ -292,14 +286,14 @@ This is a workspace package in the Ghost monorepo. From the package directory:
 ```bash
 pnpm build   # the package to build/ and the browser bundle to dist/, with Vite
 pnpm test    # type-check + unit tests (jsdom, with a fake Admin on a real MessageChannel),
-             # which build both afresh to check what they import
+             # which build both afresh to check what they import, and pack build/ and dist/
+             # to use them from an app outside the workspace (after pnpm build; Nx runs it)
 pnpm lint    # lint source and tests
 ```
 
 It follows the [internal package golden path](../README.md), except where it
 ships to apps. Its `build` bundles with Vite instead of compiling with `tsc`,
-and also writes `dist/`, which is in `files` and in the Nx build outputs. So it
-is marked `exempt`.
+and also writes `dist/`, which is in `files` and in the Nx build outputs.
 
 It uses `@tryghost/app-contracts` for the bridge's message types, limits and
 shape checks, so the SDK and Admin apply the same rules to paths, themes and

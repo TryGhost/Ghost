@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const moment = require('moment-timezone');
 const ReferrersStatsService = require('../../../../../core/server/services/stats/referrers-stats-service');
 const { DateTime } = require('luxon');
+const { mockSystemTime } = require('../../../../utils/clock-utils');
 
 describe('ReferrersStatsService', function () {
   describe('getReferrerHistory', function () {
@@ -172,6 +173,50 @@ describe('ReferrersStatsService', function () {
 
       assert(nullReferrerCounts.signups === 2);
       assert(nullReferrerCounts.paid_conversions === 2);
+    });
+
+    it('Counts signups and paid conversions from exactly 90 days ago but nothing older', async function () {
+      // Midday, so a window that forgot the start of the day would miss the
+      // midnight events below. Rows use the database's own datetime format so
+      // the comparison with the window's start is exact.
+      const clock = mockSystemTime(new Date('2026-06-15T12:00:00.000Z'));
+      try {
+        const ninetyDaysAgo = '2026-03-17';
+        const ninetyOneDaysAgo = '2026-03-16';
+        await db('members_created_events').insert([
+          { member_id: 'in', referrer_source: 'Twitter', created_at: `${ninetyDaysAgo} 00:00:00` },
+          {
+            member_id: 'out',
+            referrer_source: 'Reddit',
+            created_at: `${ninetyOneDaysAgo} 00:00:00`,
+          },
+        ]);
+        await db('members_subscription_created_events').insert([
+          {
+            id: 'sub_in',
+            member_id: 'in',
+            subscription_id: 'sub_in',
+            referrer_source: 'Twitter',
+            created_at: `${ninetyDaysAgo} 00:00:00`,
+          },
+          {
+            id: 'sub_out',
+            member_id: 'out',
+            subscription_id: 'sub_out',
+            referrer_source: 'Reddit',
+            created_at: `${ninetyOneDaysAgo} 00:00:00`,
+          },
+        ]);
+        const stats = new ReferrersStatsService({ knex: db });
+
+        const results = await stats.getReferrersHistory();
+
+        assert.deepEqual(results.data, [
+          { date: ninetyDaysAgo, source: 'Twitter', signups: 1, paid_conversions: 1 },
+        ]);
+      } finally {
+        clock.restore();
+      }
     });
   });
 

@@ -44,7 +44,13 @@ export function init(options: GiftServiceInitOptions): void {
   } = require('../../models');
   const GiftCheckoutAdapter = require('./gift-checkout-adapter');
   const membersService = require('../members');
-  const tiersService = require('../tiers');
+  const tiers = require('../tiers').default;
+  // Boot builds gifts before tiers initializes, so gifts read the tiers API when they use it.
+  const tiersService = {
+    get api() {
+      return tiers.service.api;
+    },
+  };
   const staffService = require('../staff');
   const DomainEvents = require('@tryghost/domain-events');
   const logging = require('@tryghost/logging');
@@ -61,7 +67,7 @@ export function init(options: GiftServiceInitOptions): void {
   const settingsHelpers = require('../settings-helpers');
   const { formatAddressForDelivery } = require('../../lib/mail/format-address-for-delivery');
   const { blogIcon } = require('../../../server/lib/image');
-  const { t } = require('../i18n');
+  const { t } = require('../../../shared/i18n');
 
   const repository = new GiftBookshelfRepository({
     GiftModel,
