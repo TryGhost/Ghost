@@ -1,14 +1,11 @@
+import type { GhostLogger } from '@tryghost/logging';
+
 type SettingsCache = {
   get(key: string): unknown;
 };
 
 type Config = {
   get(key: string): unknown;
-};
-
-type Logging = {
-  info(...args: unknown[]): void;
-  warn(...args: unknown[]): void;
 };
 
 type GhostVersion = {
@@ -64,7 +61,7 @@ type ExplorePayload = {
 export type ExplorePingServiceDeps = {
   settingsCache: SettingsCache;
   config: Config;
-  logging: Logging;
+  logging: Pick<GhostLogger, 'info' | 'warn'>;
   ghostVersion: GhostVersion;
   request: RequestFn;
   posts: PostsService;
@@ -75,7 +72,7 @@ export type ExplorePingServiceDeps = {
 export class ExplorePingService {
   settingsCache: SettingsCache;
   config: Config;
-  logging: Logging;
+  logging: Pick<GhostLogger, 'info' | 'warn'>;
   ghostVersion: GhostVersion;
   request: RequestFn;
   posts: PostsService;

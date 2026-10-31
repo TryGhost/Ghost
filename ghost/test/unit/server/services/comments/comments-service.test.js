@@ -4,6 +4,7 @@ const errors = require('@tryghost/errors');
 const { MemberCommentEvent } = require('../../../../../core/shared/events');
 const { mockSystemTime } = require('../../../../utils/clock-utils');
 const CommentsService = require('../../../../../core/server/services/comments/comments-service');
+const { createLoggingFake } = require('../../../../utils/logging-utils');
 
 describe('Comments Service: CommentsService', function () {
   afterEach(function () {
@@ -171,7 +172,7 @@ describe('Comments Service: CommentsService', function () {
 
     const instance = new CommentsService({
       config: {},
-      logging: {},
+      logging: createLoggingFake(),
       models,
       mailer: {},
       settingsCache: {

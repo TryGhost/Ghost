@@ -4,7 +4,7 @@ const nock = require('nock');
 // non-standard to use externalRequest here, but this is required for the overrides in the libary, which we want to test for security reasons in combination with the package
 const externalRequest = require('../../../../../core/server/lib/request-external.js');
 const sinon = require('sinon');
-const logging = require('@tryghost/logging');
+const { createLoggingFake } = require('../../../../utils/logging-utils');
 const dnsPromises = require('node:dns').promises;
 const { createModel } = require('./utils/index.js');
 
@@ -14,12 +14,11 @@ const SendWebmentionsJob =
 const linkHtml = '<a href="https://example.com/">link</a>';
 
 describe('MentionSendingService', function () {
-  let errorLogStub;
+  let logging;
 
   beforeEach(function () {
     nock.disableNetConnect();
-    sinon.stub(logging, 'info');
-    errorLogStub = sinon.stub(logging, 'error');
+    logging = createLoggingFake();
   });
 
   afterEach(function () {
@@ -70,7 +69,7 @@ describe('MentionSendingService', function () {
         }),
       );
       sinon.assert.notCalled(jobsService.dispatch);
-      sinon.assert.notCalled(errorLogStub);
+      sinon.assert.notCalled(logging.error);
     });
 
     it('Ignores if importing data', async function () {
@@ -94,7 +93,7 @@ describe('MentionSendingService', function () {
         { importing: true },
       );
       sinon.assert.notCalled(jobsService.dispatch);
-      sinon.assert.notCalled(errorLogStub);
+      sinon.assert.notCalled(logging.error);
     });
 
     it('Ignores if internal context', async function () {
@@ -118,7 +117,7 @@ describe('MentionSendingService', function () {
         { context: { internal: true } },
       );
       sinon.assert.notCalled(jobsService.dispatch);
-      sinon.assert.notCalled(errorLogStub);
+      sinon.assert.notCalled(logging.error);
     });
 
     it('Ignores draft posts', async function () {
@@ -141,7 +140,7 @@ describe('MentionSendingService', function () {
         }),
       );
       sinon.assert.notCalled(jobsService.dispatch);
-      sinon.assert.notCalled(errorLogStub);
+      sinon.assert.notCalled(logging.error);
     });
 
     it('Ignores if html was not changed', async function () {
@@ -164,7 +163,7 @@ describe('MentionSendingService', function () {
         }),
       );
       sinon.assert.notCalled(jobsService.dispatch);
-      sinon.assert.notCalled(errorLogStub);
+      sinon.assert.notCalled(logging.error);
     });
 
     it('Ignores if html changed but its links did not', async function () {
@@ -189,7 +188,7 @@ describe('MentionSendingService', function () {
       );
       sinon.assert.notCalled(jobsService.dispatch);
       sinon.assert.notCalled(getPostData);
-      sinon.assert.notCalled(errorLogStub);
+      sinon.assert.notCalled(logging.error);
     });
 
     it('Ignores email only posts', async function () {
@@ -212,7 +211,7 @@ describe('MentionSendingService', function () {
         }),
       );
       sinon.assert.notCalled(jobsService.dispatch);
-      sinon.assert.notCalled(errorLogStub);
+      sinon.assert.notCalled(logging.error);
     });
 
     it('Sends on publish', async function () {
@@ -380,7 +379,7 @@ describe('MentionSendingService', function () {
           },
         }),
       );
-      sinon.assert.calledTwice(errorLogStub);
+      sinon.assert.calledTwice(logging.error);
     });
 
     it('Sends no mentions for posts without html and previous html', async function () {
@@ -482,7 +481,7 @@ describe('MentionSendingService', function () {
       );
       assert.equal(scope.isDone(), true);
       assert.equal(counter, 3);
-      sinon.assert.calledOnce(errorLogStub);
+      sinon.assert.calledOnce(logging.error);
     });
   });
 

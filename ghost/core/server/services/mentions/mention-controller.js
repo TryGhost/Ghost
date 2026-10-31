@@ -28,7 +28,7 @@ const ProcessWebmentionJob = require('./process-webmention-job').default;
  */
 
 module.exports = class MentionController {
-  /** @type {import('@tryghost/logging')} */
+  /** @type {import('@tryghost/logging').GhostLogger} */
   #logging;
 
   /** @type {import('./mentions-api')} */
@@ -42,7 +42,7 @@ module.exports = class MentionController {
 
   /**
    * @param {object} deps
-   * @param {import('@tryghost/logging')} deps.logging
+   * @param {import('@tryghost/logging').GhostLogger} deps.logging
    */
   constructor({ logging }) {
     this.#logging = logging;

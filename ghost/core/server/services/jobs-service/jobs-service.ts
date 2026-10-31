@@ -10,14 +10,11 @@ import type {
   QueueDeclaration,
   RecurringSchedule,
 } from '@tryghost/adapter-base-jobs';
+import type { GhostLogger } from '@tryghost/logging';
 import { Job, JobConstructor, JobHandler } from './job';
 import { afterCommit } from '../../lib/after-commit';
 
-export interface JobsLogger {
-  error(...args: unknown[]): void;
-  info(...args: unknown[]): void;
-  warn?(...args: unknown[]): void;
-}
+export type JobsLogger = Pick<GhostLogger, 'error' | 'info' | 'warn'>;
 
 export interface JobsErrorReporter {
   captureException(err: unknown, captureContext?: { tags?: Record<string, string> }): void;
@@ -215,7 +212,7 @@ export class JobsService {
     if (this.#outbox) {
       this.#outbox.relay.start();
     } else if (this.#logOutboxUnavailable) {
-      this.#logging.warn?.(
+      this.#logging.warn(
         '[Jobs] services:jobs:outbox is enabled but the outbox is unavailable here (it needs MySQL and the jobs_outbox table); using the legacy direct-dispatch path.',
       );
     }

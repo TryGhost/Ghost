@@ -247,6 +247,12 @@
       "rules": {
         "ghost/no-injected-service-libraries": "error"
       }
+    },
+    {
+      "files": ["ghost/core/**/*.{js,ts}"],
+      "rules": {
+        "ghost/prefer-canonical-types": "error"
+      }
     }
   ],
   "ignorePatterns": [
