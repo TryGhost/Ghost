@@ -355,6 +355,192 @@ describe('useForm', () => {
     });
   });
 
+  describe('edits while saving', () => {
+    it('keeps newer edits unsaved until they are saved', async () => {
+      let resolveFirstSave!: () => void;
+      const firstSavePromise = new Promise<void>((resolve) => {
+        resolveFirstSave = resolve;
+      });
+      const onSave = vi
+        .fn()
+        .mockImplementationOnce(() => firstSavePromise)
+        .mockResolvedValue(undefined);
+      const { result } = renderHook(() =>
+        useForm({
+          initialState: { field: 'initial' },
+          onSave,
+        }),
+      );
+
+      act(() => {
+        result.current.updateForm(() => ({ field: 'first' }));
+      });
+
+      let firstSave!: Promise<boolean>;
+      act(() => {
+        firstSave = result.current.handleSave();
+      });
+
+      act(() => {
+        result.current.updateForm(() => ({ field: 'newer' }));
+      });
+
+      expect(result.current.saveState).toBe('unsaved');
+
+      let firstResult!: boolean;
+      await act(async () => {
+        resolveFirstSave();
+        firstResult = await firstSave;
+      });
+
+      expect(result.current.formState).toEqual({ field: 'newer' });
+      expect(result.current.saveState).toBe('unsaved');
+      expect(firstResult).toBe(false);
+
+      let secondResult!: boolean;
+      await act(async () => {
+        secondResult = await result.current.handleSave();
+      });
+
+      expect(secondResult).toBe(true);
+      expect(result.current.saveState).toBe('saved');
+      expect(onSave.mock.calls).toEqual([[{ field: 'first' }], [{ field: 'newer' }]]);
+    });
+
+    it('does not start another save while the previous save is pending', async () => {
+      let resolveFirstSave!: () => void;
+      const firstSavePromise = new Promise<void>((resolve) => {
+        resolveFirstSave = resolve;
+      });
+      const onSave = vi
+        .fn()
+        .mockImplementationOnce(() => firstSavePromise)
+        .mockResolvedValue(undefined);
+      const { result } = renderHook(() =>
+        useForm({
+          initialState: { field: 'initial' },
+          onSave,
+        }),
+      );
+
+      act(() => {
+        result.current.updateForm(() => ({ field: 'first' }));
+      });
+
+      let firstSave!: Promise<boolean>;
+      act(() => {
+        firstSave = result.current.handleSave();
+      });
+
+      act(() => {
+        result.current.updateForm(() => ({ field: 'newer' }));
+      });
+
+      let overlappingResult!: boolean;
+      await act(async () => {
+        overlappingResult = await result.current.handleSave({ force: true });
+      });
+
+      expect(overlappingResult).toBe(false);
+      expect(onSave).toHaveBeenCalledTimes(1);
+      expect(result.current.saveState).toBe('unsaved');
+
+      await act(async () => {
+        resolveFirstSave();
+        await firstSave;
+      });
+
+      expect(result.current.saveState).toBe('unsaved');
+    });
+
+    it('keeps newer edits after a failed save and saves them on retry', async () => {
+      let rejectFirstSave!: (error: Error) => void;
+      const firstSavePromise = new Promise<void>((_resolve, reject) => {
+        rejectFirstSave = reject;
+      });
+      const onSave = vi
+        .fn()
+        .mockImplementationOnce(() => firstSavePromise)
+        .mockResolvedValue(undefined);
+      const onSaveError = vi.fn();
+      const { result } = renderHook(() =>
+        useForm({
+          initialState: { field: 'initial' },
+          onSave,
+          onSaveError,
+        }),
+      );
+
+      act(() => {
+        result.current.updateForm(() => ({ field: 'first' }));
+      });
+
+      let firstSave!: Promise<boolean>;
+      act(() => {
+        firstSave = result.current.handleSave();
+      });
+
+      act(() => {
+        result.current.updateForm(() => ({ field: 'newer' }));
+      });
+
+      expect(result.current.saveState).toBe('unsaved');
+
+      const error = new Error('Save failed');
+      await act(async () => {
+        rejectFirstSave(error);
+        await expect(firstSave).rejects.toThrow('Save failed');
+      });
+
+      expect(onSaveError).toHaveBeenCalledWith(error);
+      expect(result.current.formState).toEqual({ field: 'newer' });
+      expect(result.current.saveState).toBe('unsaved');
+
+      let retryResult!: boolean;
+      await act(async () => {
+        retryResult = await result.current.handleSave();
+      });
+
+      expect(retryResult).toBe(true);
+      expect(result.current.saveState).toBe('saved');
+      expect(onSave.mock.calls).toEqual([[{ field: 'first' }], [{ field: 'newer' }]]);
+    });
+    it('does not restore the saved state after a pending save is reset', async () => {
+      let resolveFirstSave!: () => void;
+      const firstSavePromise = new Promise<void>((resolve) => {
+        resolveFirstSave = resolve;
+      });
+      const { result } = renderHook(() =>
+        useForm({
+          initialState: { field: 'initial' },
+          onSave: () => firstSavePromise,
+        }),
+      );
+
+      act(() => {
+        result.current.updateForm(() => ({ field: 'first' }));
+      });
+
+      let firstSave!: Promise<boolean>;
+      act(() => {
+        firstSave = result.current.handleSave();
+      });
+
+      act(() => {
+        result.current.reset();
+      });
+
+      let firstResult!: boolean;
+      await act(async () => {
+        resolveFirstSave();
+        firstResult = await firstSave;
+      });
+
+      expect(firstResult).toBe(false);
+      expect(result.current.formState).toEqual({ field: 'initial' });
+      expect(result.current.saveState).toBe('');
+    });
+  });
   describe('setFormState vs updateForm', () => {
     it('setFormState does not mark form as dirty', () => {
       const { result } = renderHook(() =>

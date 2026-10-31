@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ButtonProps } from '@tryghost/shade/components';
 
 export type ButtonVariant = NonNullable<ButtonProps['variant']>;
@@ -27,6 +27,7 @@ export interface FormHook<State> {
   saveState: SaveState;
   /**
    * Validate and save the state. Use the `force` option to save even when there are no changes made (e.g., initial state should be saveable)
+   * Returns false if validation fails, a save is already pending, or the form changes while saving.
    */
   handleSave: SaveHandler;
   /**
@@ -68,6 +69,8 @@ const useForm = <State>({
   const [formState, setFormState] = useState(initialState);
   const [saveState, setSaveState] = useState<SaveState>('');
   const [errors, setErrors] = useState<ErrorMessages>({});
+  const pendingSave = useRef(false);
+  const formVersion = useRef(0);
 
   // Reset saved state after a delay
   // To prevent infinite renders, uses the value of onSaveCompleted from when the form was saved
@@ -95,6 +98,10 @@ const useForm = <State>({
   // function to save the changed settings via API
   const handleSave = useCallback<SaveHandler>(
     async (options = {}) => {
+      if (pendingSave.current) {
+        return false;
+      }
+
       if (!validate()) {
         setSaveState('error');
         return false;
@@ -104,6 +111,8 @@ const useForm = <State>({
         return true;
       }
 
+      const versionAtSave = formVersion.current;
+      pendingSave.current = true;
       const timeBefore = Date.now();
 
       setSaveState('saving');
@@ -119,19 +128,27 @@ const useForm = <State>({
           });
         }
 
+        if (formVersion.current !== versionAtSave) {
+          setSaveState((state) => (state === 'saving' ? 'unsaved' : state));
+          return false;
+        }
+
         setSaveState('saved');
 
         return true;
       } catch (e) {
         await onSaveError?.(e);
-        setSaveState('unsaved');
+        setSaveState((state) => (state === 'saving' ? 'unsaved' : state));
         throw e;
+      } finally {
+        pendingSave.current = false;
       }
     },
     [formState, saveState, savingDelay, onSave, onSaveError, validate],
   );
 
   const updateForm = useCallback((updater: (state: State) => State) => {
+    formVersion.current += 1;
     setFormState(updater);
     setSaveState('unsaved');
   }, []);
@@ -165,6 +182,7 @@ const useForm = <State>({
     updateForm,
     setFormState,
     reset() {
+      formVersion.current += 1;
       setFormState(initialState);
       setSaveState('');
     },
