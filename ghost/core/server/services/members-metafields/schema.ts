@@ -5,6 +5,7 @@ import {
   FieldStatusSchema,
   FieldTypeSchema,
   MetafieldChangeEventFieldSchema,
+  TypedSettingsSchema,
   type FieldStatus,
   type MetafieldChangeEntry,
   type MetafieldChangeSource,
@@ -20,22 +21,53 @@ export { FIELD_STATUS, FieldStatusSchema, type FieldStatus };
 
 // The single source for the read projection and the knex table type below. `type` parses
 // as the field-type enum, so the row carries the narrow type and no codec needs a cast.
+// `settings` is the column's JSON text, which only `DbTypedSettings` reads, beside the type.
 export const DbMetafield = z.object({
   id: z.string(),
   namespace: z.string(),
   key: z.string(),
   name: z.string(),
   type: FieldTypeSchema,
+  settings: z.string().nullable(),
   status: FieldStatusSchema,
   member_access: MemberAccessSchema,
   created_at: DbDate,
   updated_at: DbDate.nullable(),
 });
 
+const SettingsJson = DbJson(z.json(), { message: 'The stored settings are not JSON.' }).nullable();
+
+/**
+ * A field's type and settings as the table holds them, read against each other: the one way either
+ * column is read or written. Read for their shape alone, since the rules apply when settings are
+ * written, so a rule tightened later never hides a field set up under the old one.
+ */
+export const DbTypedSettings = z.codec(
+  z.object({ type: FieldTypeSchema, settings: z.string().nullable() }),
+  TypedSettingsSchema,
+  {
+    decode: ({ type, settings }, ctx) => {
+      const json = SettingsJson.safeParse(settings);
+      const typed = json.success
+        ? TypedSettingsSchema.safeParse({ type, settings: json.data })
+        : json;
+      if (!typed.success) {
+        for (const issue of typed.error.issues) {
+          ctx.issues.push({ code: 'custom', message: issue.message, input: settings });
+        }
+        return z.NEVER;
+      }
+      return typed.data;
+    },
+    encode: ({ type, settings }) => ({ type, settings: z.encode(SettingsJson, settings ?? null) }),
+  },
+);
+
 // Storage only: order is a fact about the list, so no read projection carries a rank.
 type MetafieldRank = { sort_order: number };
 
-export type MetafieldRow = z.infer<typeof DbMetafield> & MetafieldRank;
+// As the table holds it, so `settings` is the JSON text.
+export type MetafieldRow = z.input<typeof DbMetafield> & MetafieldRank;
 
 /**
  * How a value arrived, not who caused it: who edited a member's fields is already an

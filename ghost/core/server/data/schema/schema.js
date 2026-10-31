@@ -1086,6 +1086,11 @@ module.exports = {
         isIn: [['short_text', 'long_text', 'address']],
       },
     },
+    // What the field is set up with beyond its name, as JSON: a list field's options and
+    // whether a member picks several. Null for a type with nothing to set up. Each type's
+    // settings are checked by @tryghost/metafield-types. MEDIUMTEXT because a list's options
+    // can outgrow TEXT's 65,535 bytes.
+    settings: { type: 'text', maxlength: 16777215, fieldtype: 'medium', nullable: true },
     status: {
       type: 'string',
       maxlength: 50,
