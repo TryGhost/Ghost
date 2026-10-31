@@ -816,7 +816,7 @@ catalogs:
       version: 3.4.19
 
 overrides:
-  cron-validate: 1.4.5
+  cron-validate: 1.5.3
   '@tryghost/errors': 3.4.4
   '@tryghost/logging': 6.0.1
   '@tryghost/nql': 0.13.4
@@ -2362,8 +2362,8 @@ importers:
         specifier: 3.11.0
         version: 3.11.0
       cron-validate:
-        specifier: 1.4.5
-        version: 1.4.5
+        specifier: 1.5.3
+        version: 1.5.3
       csso:
         specifier: 5.0.5
         version: 5.0.5
@@ -10611,8 +10611,8 @@ packages:
   crelt@1.0.6:
     resolution: {integrity: sha512-VQ2MBenTq1fWZUH9DJNGti7kKv6EeAuYr3cLwxUWhIu1baTaXh4Ib5W2CqHVqib4/MqbYGJqiL3Zb8GJZr3l4g==}
 
-  cron-validate@1.4.5:
-    resolution: {integrity: sha512-nKlOJEnYKudMn/aNyNH8xxWczlfpaazfWV32Pcx/2St51r2bxWbGhZD7uwzMcRhunA/ZNL+Htm/i0792Z59UMQ==}
+  cron-validate@1.5.3:
+    resolution: {integrity: sha512-jcu8g/3wZL8OBr4MkEcbeIdLpM8pp5Y6UoOlRktcJG3WjgpifijR0s26Yac7ywR0gC2ABtevOsz5mlD3l3gzwA==}
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -13666,9 +13666,6 @@ packages:
   nan@2.28.0:
     resolution: {integrity: sha512-fTsDz99OTq2sVePhGdp4qQhggZFtKr64ZNVyVajRKtMOkJxYekplBh577PiJB12v/D3s2E5cGtOI45LWp6rnLQ==}
 
-  nanoclone@0.2.1:
-    resolution: {integrity: sha512-wynEP02LmIbLpcYw8uBKpcfF6dmg2vcpKqxeH5UcoKEYdExslsdUA4ugFauuaeYdTB76ez6gJW8XAZ6CgkXYxA==}
-
   nanoid@3.3.20:
     resolution: {integrity: sha512-uKdg2G3GNCKQn9byYOpxbGqrT2fGO5KRt5J/8b3pok8rT6qxGWF6hxMyJiEYtAf+FVyYuD9hRaDqX5uPFYJ4ZQ==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
@@ -15938,6 +15935,9 @@ packages:
     resolution: {integrity: sha512-Cc+OraorugtXNfs50hU9KS369rFXCfgGLpfCfvlc+Ud5u6VWmUQsOAa9HbTvheQdYnrdJqqv1e5oIqXppMYnSw==}
     engines: {node: '>=8'}
 
+  tiny-case@1.0.3:
+    resolution: {integrity: sha512-Eet/eeMhkO6TX8mnUteS9zgPbUMQa4I6Kkp5ORiBD5476/m+PIRiumP5tmh5ioJpH7k51Kehawy2UDfsnxxY8Q==}
+
   tiny-invariant@1.3.3:
     resolution: {integrity: sha512-+FbBPE1o9QAYvviau/qC5SE3caw21q3xkvWKBtja5vgqOWIHHJ3ioaq1VPfn/Szqctz2bU/oYeKd9/z5BL+PVg==}
 
@@ -16116,6 +16116,10 @@ packages:
   type-fest@0.21.3:
     resolution: {integrity: sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w==}
     engines: {node: '>=10'}
+
+  type-fest@2.19.0:
+    resolution: {integrity: sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA==}
+    engines: {node: '>=12.20'}
 
   type-fest@3.13.1:
     resolution: {integrity: sha512-tLq3bSNx+xSpwvAJnzrK0Ep5CLNWjvFTOp71URMaAEWBfRb9nnJiBoUe0tF8bI4ZFO3omgBR6NvnbzVUT3Ly4g==}
@@ -16890,9 +16894,8 @@ packages:
   yuku-parser@0.6.12:
     resolution: {integrity: sha512-A1+KVTvdm1pQmrl/cS5JlqFvUclKpM8I5MvAOoQnYSGmmJBVDKN24HNXiZmxE8Ndsl4g3qBliZBAxq8/J4pKxA==}
 
-  yup@0.32.9:
-    resolution: {integrity: sha512-Ci1qN+i2H0XpY7syDQ0k5zKQ/DoxO0LzPg8PAR/X4Mpj6DqaeCoIYEEjDJwhArh3Fa7GWbQQVDZKeXYlSH4JMg==}
-    engines: {node: '>=10'}
+  yup@1.7.1:
+    resolution: {integrity: sha512-GKHFX2nXul2/4Dtfxhozv701jLQHdf6J34YDh2cEkpqoo8le5Mg6/LrdseVLrFarmFygZTlfIhHx/QKfb/QWXw==}
 
   zip-stream@7.0.5:
     resolution: {integrity: sha512-dSvYKdvLsAHCDqPOhIwk/q5CvuWtTB3Dgpoe0uVEFjTzIOAmsQpprX25InCvrvJsirEbu1OHyy67n/kAj1Sw/w==}
@@ -22984,9 +22987,9 @@ snapshots:
 
   crelt@1.0.6: {}
 
-  cron-validate@1.4.5:
+  cron-validate@1.5.3:
     dependencies:
-      yup: 0.32.9
+      yup: 1.7.1
 
   cross-spawn@7.0.6:
     dependencies:
@@ -26701,8 +26704,6 @@ snapshots:
   nan@2.28.0:
     optional: true
 
-  nanoclone@0.2.1: {}
-
   nanoid@3.3.20: {}
 
   napi-build-utils@2.0.0:
@@ -29453,6 +29454,8 @@ snapshots:
 
   tildify@2.0.0: {}
 
+  tiny-case@1.0.3: {}
+
   tiny-invariant@1.3.3: {}
 
   tinybench@2.9.0: {}
@@ -29602,6 +29605,8 @@ snapshots:
   type-detect@4.1.0: {}
 
   type-fest@0.21.3: {}
+
+  type-fest@2.19.0: {}
 
   type-fest@3.13.1: {}
 
@@ -30496,15 +30501,12 @@ snapshots:
       '@yuku-parser/binding-win32-arm64': 0.6.12
       '@yuku-parser/binding-win32-x64': 0.6.12
 
-  yup@0.32.9:
+  yup@1.7.1:
     dependencies:
-      '@babel/runtime': 7.29.7
-      '@types/lodash': 4.17.27
-      lodash: 4.18.1
-      lodash-es: 4.18.1
-      nanoclone: 0.2.1
       property-expr: 2.0.6
+      tiny-case: 1.0.3
       toposort: 2.0.2
+      type-fest: 2.19.0
 
   zip-stream@7.0.5:
     dependencies:
