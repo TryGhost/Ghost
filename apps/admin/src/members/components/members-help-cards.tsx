@@ -54,7 +54,7 @@ const MembersHelpCards: React.FC = () => {
           )}
         >
           <LucideIcon.UserPlus
-            className={admin7Design ? 'text-green-600 dark:text-[#16A34A]' : 'text-[#16A34A]'}
+            className={admin7Design ? 'text-green-600' : 'text-[#16A34A]'}
             size={20}
             strokeWidth={1.5}
           />
@@ -75,7 +75,7 @@ const MembersHelpCards: React.FC = () => {
           )}
         >
           <LucideIcon.Mail
-            className={admin7Design ? 'text-purple-600 dark:text-[#DB2777]' : 'text-[#DB2777]'}
+            className={admin7Design ? 'text-purple-600' : 'text-[#DB2777]'}
             size={20}
             strokeWidth={1.5}
           />

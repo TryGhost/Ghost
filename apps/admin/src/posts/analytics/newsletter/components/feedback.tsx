@@ -45,9 +45,7 @@ interface FeedbackProps {
 }
 
 const Feedback: React.FC<FeedbackProps> = ({ feedbackStats }) => {
-  const { admin7Design, darkMode } = useShade();
-  // admin7Design's tonal avatars, light mode only for now, as in Shade's Avatar.
-  const tonalAvatars = admin7Design && !darkMode;
+  const { admin7Design: tonalAvatars } = useShade();
   const { postId } = useParams();
   const navigate = useNavigate();
   const { isNewsletterDataHidden } = useEmailSendingStatusContext();
