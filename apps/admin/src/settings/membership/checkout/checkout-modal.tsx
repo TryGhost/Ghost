@@ -384,11 +384,13 @@ const CheckoutEditor: React.FC<{
   const paidTiers = tiers
     .filter((tier) => tier.type === 'paid')
     .sort((a, b) => (a.monthly_price ?? 0) - (b.monthly_price ?? 0));
+  const alwaysAsked = (part: CollectedPart) =>
+    CHECKOUT_PARTS[part].alwaysAsked?.({ automaticTax }) ?? false;
   // What the sketch shows each part as, tagged with the tiers it's asked on.
   const sketched: { [Part in CollectedPart]?: { audience: string } } = {};
   for (const part of COLLECTED_PARTS) {
     const state = formState.parts[part];
-    if (CHECKOUT_PARTS[part].alwaysAsked?.({ automaticTax })) {
+    if (alwaysAsked(part)) {
       sketched[part] = { audience: '' };
     } else if (offered.includes(part) && state.collect) {
       sketched[part] = { audience: audienceOf(state, paidTiers) };
@@ -400,7 +402,7 @@ const CheckoutEditor: React.FC<{
     return (
       <Settings
         key={part}
-        automaticTax={automaticTax}
+        alwaysAsked={alwaysAsked(part)}
         chosenFields={chosenFields}
         errors={errors}
         fields={customFields}

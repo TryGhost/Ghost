@@ -52,12 +52,15 @@ const ShippingSettings: React.FC<{
   /** The fields chosen for every collected value, which no other value is offered. */
   chosenFields: Array<string | null>;
   errors: ShippingErrors;
+  /** Whether every checkout asks for it, whatever this says. */
+  alwaysAsked: boolean;
   onChange: (next: ShippingFormState) => void;
-}> = ({ state, tiers, fields, chosenFields, errors, onChange }) => {
+}> = ({ state, tiers, fields, chosenFields, errors, alwaysAsked, onChange }) => {
   const set = (next: Partial<ShippingFormState>) => onChange({ ...state, ...next });
 
   return (
     <CollectRow
+      alwaysAsked={alwaysAsked}
       id="checkout-collect-shipping"
       label="Shipping address"
       state={state}
