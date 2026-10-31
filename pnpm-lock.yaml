@@ -2359,8 +2359,8 @@ importers:
         specifier: 2.8.6
         version: 2.8.6
       countries-and-timezones:
-        specifier: 3.9.0
-        version: 3.9.0
+        specifier: 3.11.0
+        version: 3.11.0
       cron-validate:
         specifier: 1.4.5
         version: 1.4.5
@@ -10577,8 +10577,8 @@ packages:
       typescript:
         optional: true
 
-  countries-and-timezones@3.9.0:
-    resolution: {integrity: sha512-3upkVtUfZgdp5xOQI/Deg1ye73ae6bygJMO4UvtUi6wLjwcj7cBqx2PzSZ1VL8i5iveBbjhsQp2Judx7kPKivA==}
+  countries-and-timezones@3.11.0:
+    resolution: {integrity: sha512-amqnHZJyuaFol6Z9gmyDb/D5cS6OSZUMfT6Ovj2HMmEBykHfwfA6dih59rulQ2kWynW7XeCAOzJr60hWL64Anw==}
     engines: {node: '>=8.x', npm: '>=5.x'}
 
   country-flag-icons@1.6.20:
@@ -22960,7 +22960,7 @@ snapshots:
     optionalDependencies:
       typescript: '@typescript/typescript6@6.0.2'
 
-  countries-and-timezones@3.9.0: {}
+  countries-and-timezones@3.11.0: {}
 
   country-flag-icons@1.6.20(@types/react@18.3.31)(react@18.3.1):
     optionalDependencies:
