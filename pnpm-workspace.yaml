@@ -320,7 +320,7 @@ overrides:
   'esbuild@>=0.28.0': 'catalog:'
   # gscan pins handlebars exactly; lift every copy past the 4.7.10 security fixes
   'handlebars@<4.7.10': ^4.7.10
-  'minimatch@<3.1.4': ^3.1.4
+  'minimatch@<3.1.4': ^11.0.0
   'smol-toml@<1.9.0': ^1.9.0
   supports-color: '10.2.2'
   'trim@<0.0.3': ^0.0.3
@@ -438,6 +438,8 @@ minimumReleaseAgeExclude:
   - '@nx/nx-*'
   # Renovate security update: markdown-it@14.3.3
   - markdown-it@14.3.3
+  # Renovate security update: minimatch@11.0.2
+  - minimatch@11.0.2
 
 # configuration for pnpm's native versioning (changesets). Private packages opt out
 # by carrying the non-semver placeholder version "private", so only published
