@@ -3,7 +3,8 @@ import * as AvatarPrimitive from '@radix-ui/react-avatar';
 import { User } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { stringToHslColor } from '@/lib/ds-utils';
+import { stringToHslColor, stringToTonalAvatarClasses } from '@/lib/ds-utils';
+import { useShade } from '@/providers/shade-context';
 
 const AvatarImage = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Image>,
@@ -71,8 +72,12 @@ interface AvatarProps extends React.ComponentPropsWithoutRef<typeof AvatarPrimit
 
 const Avatar = React.forwardRef<React.ElementRef<typeof AvatarPrimitive.Root>, AvatarProps>(
   ({ className, children, src, initials, colorSeed, ...props }, ref) => {
+    const { admin7Design, darkMode } = useShade();
     const hasInitials = !!initials;
-    const bgColor = hasInitials ? stringToHslColor(colorSeed || initials, '45', '55') : undefined;
+    const seed = colorSeed || initials || '';
+    // admin7Design's tonal colours are light-mode only until dark mode gets its Admin 7 palette.
+    const tonal = hasInitials && admin7Design && !darkMode;
+    const bgColor = hasInitials && !tonal ? stringToHslColor(seed, '45', '55') : undefined;
 
     return (
       <AvatarPrimitive.Root
@@ -85,9 +90,10 @@ const Avatar = React.forwardRef<React.ElementRef<typeof AvatarPrimitive.Root>, A
             <AvatarFallback
               className={cn(
                 'text-xs text-muted-foreground md:text-sm [&_svg]:size-3 md:[&_svg]:size-4',
-                hasInitials && 'font-semibold text-white',
+                hasInitials && 'font-semibold',
+                hasInitials && (tonal ? stringToTonalAvatarClasses(seed) : 'text-white'),
               )}
-              style={hasInitials ? { backgroundColor: bgColor } : undefined}
+              style={bgColor ? { backgroundColor: bgColor } : undefined}
             >
               {initials ?? <User />}
             </AvatarFallback>

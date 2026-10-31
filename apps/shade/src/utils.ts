@@ -17,6 +17,7 @@ export {
   formatPercentage,
   getCountryFlag,
   stringToHslColor,
+  stringToTonalAvatarClasses,
   abbreviateNumber,
   getYRange,
   calculateYAxisWidth,
