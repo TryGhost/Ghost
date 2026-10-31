@@ -60,6 +60,7 @@ const entry = z
   .object({
     kind: z.enum(['directory', 'file']),
     disposition: z.enum(['retain', 'relocate', 'review']),
+    futureHome: description.optional(),
     status: z.enum(['pending', 'auditing', 'audited']),
     migrated: z.literal(true).optional(),
     extras: z.record(description, extraSchema).optional(),
