@@ -5,13 +5,16 @@ import {
   fakeEditorChrome,
   fakePosts,
   fakePostsListScreen,
+  fakeUsers,
   post,
   renderAdminApp,
+  staffUser,
 } from '@test-utils/acceptance';
 
 const POST_ID = 'a'.repeat(24);
 const OTHER_USER = 'b'.repeat(24);
 const POLLING_ON = { labs: { editorPresencePolling: true } };
+const INDICATORS_ON = { labs: { editorPresencePolling: true, editorPresence: true } };
 
 function fakePresence(status = 200) {
   return fakeAdminEndpoint('POST', '/presence/', () =>
@@ -78,6 +81,28 @@ describe('presence polling', () => {
     await renderAdminApp('/posts?type=draft');
     await expect.element(page.getByText('Presence example')).toBeVisible();
     expect(presence.requests).toHaveLength(0);
+  });
+
+  it('shows who else is in the editor once both flags are on', async () => {
+    fakeEditorChrome();
+    fakePostRead('Presence example');
+    fakeLeave();
+    fakeUsers([staffUser({ id: OTHER_USER, name: 'Alex Smith', profile_image: null })]);
+    fakePresence();
+    await renderAdminApp(`/editor/post/${POST_ID}`, INDICATORS_ON);
+    await expect
+      .element(page.getByRole('img', { name: 'Alex Smith has this post open' }))
+      .toBeVisible();
+  });
+
+  it('keeps the header clear while only polling is on', async () => {
+    fakeEditorChrome();
+    fakePostRead('Presence example');
+    fakeLeave();
+    const presence = fakePresence();
+    await renderAdminApp(`/editor/post/${POST_ID}`, POLLING_ON);
+    await expect.poll(() => presence.requests.length).toBeGreaterThan(0);
+    await expect.element(page.getByTestId('presence-avatars')).not.toBeInTheDocument();
   });
 
   it('stops after one request against an older backend and leaves the editor usable', async () => {
