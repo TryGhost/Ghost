@@ -22,6 +22,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const staff = sinon.stub();
   const linkTracking = sinon.stub().resolves();
   const memberWelcomeEmails = sinon.stub().resolves();
+  // Webhook listener registration is synchronous in production; boot awaits whatever it returns.
+  const webhooks = sinon.stub();
   const register = sinon.stub();
   const start = sinon.stub().resolves();
   // Production init returns before its first poll. Poll behavior belongs to
@@ -72,6 +74,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/staff': { init: staff },
       './server/services/link-tracking': { init: linkTracking },
       './server/services/member-welcome-emails': { default: { init: memberWelcomeEmails } },
+      './server/services/webhooks': { listen: webhooks },
       './server/services/media-inliner': { default: { init: media, service: {} } },
       './server/services/post-scheduling': { default: { rescheduleAll: reschedule } },
       './server/services/jobs-service/register-job-handlers': { default: register },
@@ -97,6 +100,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     staff,
     linkTracking,
     memberWelcomeEmails,
+    webhooks,
     register,
     start,
     automations,
@@ -227,6 +231,15 @@ it('propagates a synchronous recommendations initialization error without starti
   sinon.assert.notCalled(boot.reschedule);
 });
 
+it('registers the webhook listeners once, after mentions initialization', async function () {
+  const boot = createServicesHarness();
+
+  await boot.initServices();
+
+  sinon.assert.calledOnceWithExactly(boot.webhooks);
+  sinon.assert.callOrder(boot.mentions, boot.webhooks);
+});
+
 it('constructs gifts over the tiers root before tiers initialization starts', async function () {
   const boot = createServicesHarness();
 
@@ -269,6 +282,7 @@ for (const dependency of [
   'donations',
   'memberWelcomeEmails',
   'tiers',
+  'webhooks',
 ] as const) {
   it(`waits for ${dependency} initialization to finish before registering or starting jobs`, async function () {
     const boot = createServicesHarness();

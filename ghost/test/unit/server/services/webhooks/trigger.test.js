@@ -1,6 +1,8 @@
 const assert = require('node:assert/strict');
 const crypto = require('crypto');
+const { setImmediate } = require('node:timers/promises');
 const sinon = require('sinon');
+const ghostVersion = require('@tryghost/version');
 const logging = require('@tryghost/logging');
 const { LimitService } = require('@tryghost/limit-service');
 
@@ -236,42 +238,45 @@ describe('Webhook Service', function () {
 
     it('uses the request payload and a timestamp to generate the hash in the signature header', async function () {
       const clock = sinon.useFakeTimers();
-      const ts = Date.now();
-      const webhookModel = {
-        get: sinon.stub(),
-      };
+      try {
+        const ts = Date.now();
+        const webhookModel = {
+          get: sinon.stub(),
+        };
 
-      webhookModel.get
-        .withArgs('event')
-        .returns(WEBHOOK_EVENT)
-        .withArgs('target_url')
-        .returns(WEBHOOK_TARGET_URL)
-        .withArgs('secret')
-        .returns(WEBHOOK_SECRET);
+        webhookModel.get
+          .withArgs('event')
+          .returns(WEBHOOK_EVENT)
+          .withArgs('target_url')
+          .returns(WEBHOOK_TARGET_URL)
+          .withArgs('secret')
+          .returns(WEBHOOK_SECRET);
 
-      models.Webhook.findAllByEvent
-        .withArgs(WEBHOOK_EVENT, { context: { internal: true } })
-        .resolves({ models: [webhookModel] });
+        models.Webhook.findAllByEvent
+          .withArgs(WEBHOOK_EVENT, { context: { internal: true } })
+          .resolves({ models: [webhookModel] });
 
-      const postModel = sinon.stub();
+        const postModel = sinon.stub();
 
-      payload.withArgs(WEBHOOK_EVENT, postModel).resolves({ data: [1] });
+        payload.withArgs(WEBHOOK_EVENT, postModel).resolves({ data: [1] });
 
-      await webhookTrigger.trigger(WEBHOOK_EVENT, postModel);
+        await webhookTrigger.trigger(WEBHOOK_EVENT, postModel);
 
-      sinon.assert.called(models.Webhook.findAllByEvent);
-      sinon.assert.called(payload);
-      sinon.assert.called(request);
-      assert.equal(request.args[0][0], WEBHOOK_TARGET_URL);
-      const expectedPayload = JSON.stringify({
-        event: WEBHOOK_EVENT,
-        data: [1],
-      });
-      const expectedHeader = `sha256=${crypto.createHmac('sha256', WEBHOOK_SECRET).update(`${expectedPayload}${ts}`).digest('hex')}, t=${ts}`;
-      const header = request.args[0][1].headers[SIGNATURE_HEADER];
-      assert.equal(expectedHeader, header);
-
-      clock.restore();
+        sinon.assert.called(models.Webhook.findAllByEvent);
+        sinon.assert.called(payload);
+        sinon.assert.called(request);
+        assert.equal(request.args[0][0], WEBHOOK_TARGET_URL);
+        const expectedPayload = JSON.stringify({
+          event: WEBHOOK_EVENT,
+          data: [1],
+        });
+        const expectedHeader = `sha256=${crypto.createHmac('sha256', WEBHOOK_SECRET).update(`${expectedPayload}${ts}`).digest('hex')}, t=${ts}`;
+        const header = request.args[0][1].headers[SIGNATURE_HEADER];
+        assert.equal(expectedHeader, header);
+      } finally {
+        // Restored on failure too, so the fake clock can't leak into the next test.
+        clock.restore();
+      }
     });
 
     it('includes the event name in the JSON payload', async function () {
@@ -369,6 +374,261 @@ describe('Webhook Service', function () {
       assert.ok(logLine.includes('url=unknown'));
       assert.ok(logLine.includes('status=none'));
       assert.ok(logLine.includes('error_code=unknown'));
+    });
+  });
+
+  describe('delivery', function () {
+    const sandbox = sinon.createSandbox();
+    let deliveryTrigger;
+    let log;
+
+    function webhookFor(url, { id = 'webhook-id', secret } = {}) {
+      const attributes = { event: WEBHOOK_EVENT, target_url: url, secret };
+      return { id, get: (key) => attributes[key] };
+    }
+
+    function hooks(...webhooks) {
+      models.Webhook.findAllByEvent
+        .withArgs(WEBHOOK_EVENT, { context: { internal: true } })
+        .resolves({ models: webhooks });
+    }
+
+    beforeEach(function () {
+      log = {
+        info: sandbox.stub(logging, 'info'),
+        warn: sandbox.stub(logging, 'warn'),
+        error: sandbox.stub(logging, 'error'),
+      };
+      payload.resolves({ post: { current: { id: 'post-id' }, previous: {} } });
+      deliveryTrigger = new WebhookTrigger({ models, payload, request, limitService });
+    });
+
+    afterEach(function () {
+      sandbox.restore();
+    });
+
+    it('posts the JSON body with a two second timeout and no retries under test', async function () {
+      hooks(webhookFor(WEBHOOK_TARGET_URL));
+
+      await deliveryTrigger.trigger(WEBHOOK_EVENT, {});
+
+      sinon.assert.calledOnce(request);
+      const body = JSON.stringify({
+        event: WEBHOOK_EVENT,
+        post: { current: { id: 'post-id' }, previous: {} },
+      });
+      assert.deepEqual(request.args[0], [
+        WEBHOOK_TARGET_URL,
+        {
+          method: 'POST',
+          body,
+          headers: {
+            'Content-Length': Buffer.byteLength(body),
+            'Content-Type': 'application/json',
+            'Content-Version': `v${ghostVersion.safe}`,
+          },
+          timeout: { request: 2000 },
+          retry: { limit: 0 },
+        },
+      ]);
+    });
+
+    it('asks for five retries outside the test environment', async function () {
+      hooks(webhookFor(WEBHOOK_TARGET_URL));
+      const environment = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+      try {
+        await deliveryTrigger.trigger(WEBHOOK_EVENT, {});
+      } finally {
+        process.env.NODE_ENV = environment;
+      }
+
+      assert.deepEqual(request.args[0][1].retry, { limit: 5 });
+    });
+
+    it('records the status and time of a delivery without waiting for the write', async function () {
+      const clock = sandbox.useFakeTimers({ now: 1767225600000, toFake: ['Date'] });
+      hooks(webhookFor(WEBHOOK_TARGET_URL));
+      request.resolves({ statusCode: 202 });
+      // A write that never settles: the trigger does not wait for it.
+      models.Webhook.edit.returns(new Promise(() => {}));
+
+      await deliveryTrigger.trigger(WEBHOOK_EVENT, {});
+
+      sinon.assert.calledOnceWithExactly(
+        models.Webhook.edit,
+        {
+          last_triggered_at: clock.now,
+          last_triggered_status: 202,
+          last_triggered_error: null,
+        },
+        { id: 'webhook-id', autoRefresh: false },
+      );
+    });
+
+    it('warns when the last-triggered write fails', async function () {
+      hooks(webhookFor(WEBHOOK_TARGET_URL));
+      models.Webhook.edit.rejects(new Error('database unavailable'));
+
+      await deliveryTrigger.trigger(WEBHOOK_EVENT, {});
+      await setImmediate();
+
+      sinon.assert.calledOnceWithExactly(
+        log.warn,
+        'Unable to update "last_triggered" for webhook: webhook-id',
+      );
+    });
+
+    it('records and logs a failed delivery, then delivers to the next webhook', async function () {
+      hooks(
+        webhookFor('https://one.example.com', { id: 'one' }),
+        webhookFor('https://two.example.com', { id: 'two' }),
+      );
+      const failure = Object.assign(new Error('socket hang up'), {
+        statusCode: 500,
+        code: 'ECONNRESET',
+      });
+      request.onFirstCall().rejects(failure);
+      request.onSecondCall().resolves({ statusCode: 200 });
+
+      await deliveryTrigger.trigger(WEBHOOK_EVENT, {});
+
+      sinon.assert.calledTwice(request);
+      assert.deepEqual(
+        models.Webhook.edit.args.map(([data, options]) => [
+          options.id,
+          data.last_triggered_status,
+          data.last_triggered_error,
+        ]),
+        [
+          ['one', 500, 'Request failed: ECONNRESET'],
+          ['two', 200, null],
+        ],
+      );
+      sinon.assert.calledOnceWithExactly(
+        log.error,
+        '[WEBHOOK_DELIVERY_FAILURE] url=https://one.example.com status=500 error_code=ECONNRESET message=socket hang up',
+        failure,
+      );
+    });
+
+    it('records an unknown failure when the error has no code or status', async function () {
+      hooks(webhookFor(WEBHOOK_TARGET_URL));
+      request.rejects(new Error('boom'));
+
+      await deliveryTrigger.trigger(WEBHOOK_EVENT, {});
+
+      const [data] = models.Webhook.edit.args[0];
+      assert.equal(data.last_triggered_status, undefined);
+      assert.equal(data.last_triggered_error, 'Request failed: unknown');
+    });
+
+    it('destroys a webhook whose target answers 410 and waits for the removal', async function () {
+      hooks(webhookFor(WEBHOOK_TARGET_URL));
+      request.rejects(Object.assign(new Error('Gone'), { statusCode: 410 }));
+      const removal = Promise.withResolvers();
+      models.Webhook.destroy.returns(removal.promise);
+      let settled = false;
+
+      const triggered = deliveryTrigger.trigger(WEBHOOK_EVENT, {}).then(() => {
+        settled = true;
+      });
+      await setImmediate();
+
+      sinon.assert.calledOnceWithExactly(
+        models.Webhook.destroy,
+        { id: 'webhook-id' },
+        { context: { internal: true } },
+      );
+      assert.equal(settled, false);
+      removal.resolve(null);
+      await triggered;
+
+      sinon.assert.notCalled(models.Webhook.edit);
+      sinon.assert.notCalled(log.error);
+      sinon.assert.calledWithExactly(
+        log.info,
+        `Webhook destroyed (410 response) for "${WEBHOOK_EVENT}" with url "${WEBHOOK_TARGET_URL}".`,
+      );
+    });
+
+    it('warns when a 410 removal fails', async function () {
+      hooks(webhookFor(WEBHOOK_TARGET_URL));
+      request.rejects(Object.assign(new Error('Gone'), { statusCode: 410 }));
+      models.Webhook.destroy.rejects(new Error('database unavailable'));
+
+      await deliveryTrigger.trigger(WEBHOOK_EVENT, {});
+
+      sinon.assert.calledOnceWithExactly(log.warn, 'Unable to destroy webhook webhook-id.');
+    });
+
+    it('delivers to one webhook at a time', async function () {
+      hooks(webhookFor('https://one.example.com'), webhookFor('https://two.example.com'));
+      const first = Promise.withResolvers();
+      request.onFirstCall().returns(first.promise);
+      request.onSecondCall().resolves({ statusCode: 200 });
+
+      const triggered = deliveryTrigger.trigger(WEBHOOK_EVENT, {});
+      await setImmediate();
+
+      sinon.assert.calledOnce(request);
+      first.resolve({ statusCode: 200 });
+      await triggered;
+
+      sinon.assert.calledTwice(request);
+      assert.equal(request.args[1][0], 'https://two.example.com');
+    });
+
+    it('logs and sends nothing when the webhooks cannot be looked up', async function () {
+      const failure = new Error('database unavailable');
+      models.Webhook.findAllByEvent.rejects(failure);
+
+      await deliveryTrigger.trigger(WEBHOOK_EVENT, {});
+
+      sinon.assert.notCalled(payload);
+      sinon.assert.notCalled(request);
+      sinon.assert.calledOnceWithExactly(
+        log.error,
+        { event: { name: 'webhooks.trigger.failed' }, err: failure, webhookEvent: WEBHOOK_EVENT },
+        'Failed to prepare webhooks for an event, so none were sent',
+      );
+    });
+
+    it('delivers only to internal integrations while the custom integrations limit is reached', async function () {
+      limitService.isLimited.withArgs('customIntegrations').returns(true);
+      limitService.checkWouldGoOverLimit.withArgs('customIntegrations').resolves(true);
+      const withIntegration = (url, type) => ({
+        ...webhookFor(url),
+        related: (relation) => relation === 'integration' && { get: () => type },
+      });
+      models.Webhook.findAllByEvent
+        .withArgs(WEBHOOK_EVENT, { context: { internal: true }, withRelated: ['integration'] })
+        .resolves({
+          models: [
+            withIntegration('https://internal.example.com', 'internal'),
+            withIntegration('https://custom.example.com', 'custom'),
+          ],
+        });
+
+      await deliveryTrigger.trigger(WEBHOOK_EVENT, {});
+
+      sinon.assert.calledOnce(request);
+      assert.equal(request.args[0][0], 'https://internal.example.com');
+      sinon.assert.calledWithExactly(
+        log.info,
+        `Skipping all non-internal webhooks for event ${WEBHOOK_EVENT}. The "customIntegrations" plan limit is enabled.`,
+      );
+    });
+
+    it('delivers to every webhook while the limit is enabled but not reached', async function () {
+      limitService.isLimited.withArgs('customIntegrations').returns(true);
+      limitService.checkWouldGoOverLimit.withArgs('customIntegrations').resolves(false);
+      hooks(webhookFor('https://custom.example.com'));
+
+      await deliveryTrigger.trigger(WEBHOOK_EVENT, {});
+
+      sinon.assert.calledOnce(request);
+      assert.equal(request.args[0][0], 'https://custom.example.com');
     });
   });
 });

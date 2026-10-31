@@ -16857,14 +16857,18 @@ services:
           returns a fresh receiver-dependent WebhooksService with async add; the trigger class
           and serialize/payload/listener factories are private support. The endpoint retains
           one management instance and uses its add, while edit/destroy call the model directly.
-          HTTP tests cover selected management results; the one factory unit only asserts an
-          injected add error is rethrown. Exact root shape, returns and receivers are source-only.
+          HTTP tests cover selected management results. Root units pin the exact export, listen
+          only and returning undefined, with nothing registered before it; endpoint units pin add
+          through the management service, which reads the shared Webhook model per call, duplicate
+          rejection, the three foreign-key translations and rethrow of other failures.
         sources:
           - core/server/services/webhooks/index.js
           - core/server/services/webhooks/webhooks-service.js
           - core/server/services/webhooks/webhook-trigger.js
           - core/server/api/endpoints/webhooks.js
         tests:
+          - test/unit/server/services/webhooks/index.test.ts
+          - test/unit/server/api/endpoints/webhooks.test.ts
           - test/unit/server/services/webhooks/webhook-service.test.js
           - test/e2e-api/admin/webhooks.test.js
       construction:
@@ -16876,7 +16880,10 @@ services:
           The management endpoint constructs its own service at module evaluation, normally
           reached during lazy Admin router setup. No other production constructor/deep consumer
           was found. Units test injected trigger and serializer construction, including transport
-          choice; repeated real-root composition and dependency replacement are untested.
+          choice. Root units compose the real root: transport follows the config set before listen
+          (user agent on the wire), and URL relations and the members API are read when an event
+          is serialized. Whether a repeated listen's new trigger reaches any listener is not
+          observable through the root, since its listeners are not replaced (see lifetime).
         sources:
           - core/server/services/webhooks/index.js
           - core/server/services/webhooks/webhook-trigger.js
@@ -16887,6 +16894,8 @@ services:
           - core/server/web/api/endpoints/admin/app.js
           - core/shared/express.js
         tests:
+          - test/unit/server/services/webhooks/index.test.ts
+          - test/unit/server/api/endpoints/webhooks.test.ts
           - test/unit/server/services/webhooks/trigger.test.js
           - test/unit/server/services/webhooks/serialize.test.js
       consumers:
@@ -16894,7 +16903,8 @@ services:
           Boot calls listen. Common model events drive post/page/tag/member delivery; response
           finish with full cache invalidation emits site.changed. Listeners skip importing and
           launch trigger without awaiting it. The Admin endpoint separately adds definitions
-          and authorizes management. HTTP suites exercise selected publish/add/edit payloads
+          and authorizes management. Root units pin the 29-event mapping, one named listener per
+          event, lookups for the emitted event and import suppression. HTTP suites exercise selected publish/add/edit payloads
           through real API/model composition and a Nock-backed receiver; custom-field tests
           assert current/previous values and omissions. Import suppression is checked after
           importer settlement plus a bounded wait, not a webhook drain. These tests establish
@@ -16918,6 +16928,7 @@ services:
           - test/e2e-webhooks/zapier-custom-fields.test.ts
           - test/e2e-webhooks/posts-importer.test.ts
           - test/e2e-api/admin/webhooks.test.js
+          - test/unit/server/services/webhooks/index.test.ts
       startup:
         summary: >-
           Importing the root defers model/service construction until listen. Boot prepares
@@ -16925,8 +16936,9 @@ services:
           member access is deferred until serialization. Listen registers synchronously and
           does not wait for any delivery. Management construction has no boot hook and can
           occur on the first Admin request. Existing HTTP suites exercise a normal booted
-          pipeline, not explicit settings/member/URL readiness failures, listener registration
-          ordering or rollback after a later initializer fails.
+          pipeline. Boot units pin one listen after Mentions init, boot awaiting what it returns
+          before jobs and a failure stopping jobs. Explicit settings/member/URL readiness failures
+          and rollback after a later initializer fails remain untested.
         sources:
           - core/boot.js
           - core/server/services/webhooks/index.js
@@ -16935,6 +16947,8 @@ services:
           - core/server/web/api/app.js
           - core/server/web/api/endpoints/admin/routes.js
         tests:
+          - test/unit/boot/init-services.test.ts
+          - test/unit/server/services/webhooks/index.test.ts
           - test/e2e-webhooks/members.test.js
           - test/e2e-api/admin/webhooks.test.js
       lifetime:
@@ -16946,7 +16960,8 @@ services:
           can overlap without a shared queue. Models are retained by reference across async
           serialization. Model transactions defer event emission until committed=true, using
           mutable model state, not a persisted delivery record. Units assert one payload for
-          two hooks, not serial completion. Members HTTP tests capture an emitted model then
+          two hooks and serial delivery: the next request starts once the previous settles. Root
+          units pin that a repeated listen adds no listener. Members HTTP tests capture an emitted model then
           call the serializer directly; they do not prove rollback-safe network delivery.
         sources:
           - core/server/services/webhooks/index.js
@@ -16957,6 +16972,7 @@ services:
           - core/server/models/base/plugins/events.js
           - core/server/models/base/bookshelf.js
         tests:
+          - test/unit/server/services/webhooks/index.test.ts
           - test/unit/server/services/webhooks/trigger.test.js
           - test/e2e-api/members/webhooks.test.js
       configuration:
@@ -16969,7 +16985,11 @@ services:
           signs JSON body plus timestamp with HMAC-SHA256. Request options ask for two seconds
           and retry limit five outside tests, zero in tests; installed Got excludes POST from
           retry methods, so the limit alone does not enable retries. Units assert transport,
-          body/headers and exact signature; they do not assert production timing/retry policy.
+          exact request options and retry limits, body/headers and exact signature; root units
+          assert each transport's user agent and the safe-version Content-Version on the wire;
+          the integration suite shows @tryghost/request abandoning a target slower than two
+          seconds and not retrying a POST outside tests. request-external's test-only init hook
+          replaces the timeout, so its production timeout is source-only.
           Test config replacement does not establish hot reload of captured collaborators.
         sources:
           - core/server/services/webhooks/index.js
@@ -16981,6 +17001,8 @@ services:
         tests:
           - test/unit/server/services/webhooks/trigger.test.js
           - test/unit/server/services/webhooks/serialize.test.js
+          - test/unit/server/services/webhooks/index.test.ts
+          - test/integration/services/webhook-request.test.ts
           - test/e2e-webhooks/site.test.js
       resources:
         summary: >-
@@ -16990,8 +17012,9 @@ services:
           request-external owns shared keep-alive agents; @tryghost/request owns a shared DNS
           cache with unref'd cleanup timers. Neither is disposed by this root. Trigger awaits
           each request and a 410 destroy, but last-triggered edits are launched without awaiting
-          persistence. Success-only Nock transport tests use fake models/payload/limits and
-          prove POST routing for both clients, not socket cleanup or database completion.
+          persistence. Nock transport tests use fake models/payload/limits and prove POST routing
+          and outcomes for both clients, not socket cleanup or database completion; units pin that
+          the trigger does not wait for the last-triggered write.
         sources:
           - core/server/services/webhooks/index.js
           - core/server/services/webhooks/listen.js
@@ -17010,11 +17033,16 @@ services:
           trigger. Update/destroy rejection only warns. Source reveals a transport mismatch:
           default request-external retains HTTP status on error.response.statusCode, while
           onError reads error.statusCode for 410 removal and status persistence; the alternate
-          request wrapper flattens response fields. Existing tests inject shaped errors or only
-          intercept 200, so this is an uncovered source finding, not a reproduced delivery bug.
+          request wrapper flattens response fields. The integration suite reproduces it with real
+          Got errors and pins today's behavior: through request-external a 410 records an
+          undefined status instead of destroying the webhook, and other error statuses record
+          as undefined; through @tryghost/request a 410 destroys and a 500 records 500. Units pin
+          awaited 410 removal, write and removal failure warnings, failure continuation and
+          lookup failure logging.
           Management rejects duplicates and translates selected foreign-key errors; check/add
           has no atomic uniqueness guard. HTTP tests assert duplicate/orphan 422 and selected
-          management statuses; units assert payload failure logging and injected error text.
+          management statuses; units assert payload failure logging and injected error text,
+          and endpoint units assert duplicate and foreign-key translation.
         sources:
           - core/server/services/webhooks/webhook-trigger.js
           - core/server/services/webhooks/webhooks-service.js
@@ -17026,24 +17054,23 @@ services:
           - test/unit/server/services/webhooks/trigger.test.js
           - test/unit/server/services/webhooks/webhook-service.test.js
           - test/integration/services/webhook-request.test.ts
+          - test/unit/server/api/endpoints/webhooks.test.ts
           - test/e2e-api/admin/webhooks.test.js
     unverified: []
     blockers:
       - >-
-        Protect both real compositions, root exports, lazy management construction and repeated
-        listen/partial registration behavior. Decide how retained listener dependencies, captured
-        transport and event-time member access survive restart without duplicates or leaked listeners.
+        Partial registration after a failure part-way through listen is unpinned. Decide how
+        retained listener dependencies and captured transport survive restart without duplicates
+        or leaked listeners.
       - >-
-        Add real commit/rollback-to-delivery coverage and deferred-request assertions for ordering,
-        failure continuation and shutdown. Preserve import suppression and current/previous payloads
+        Add real commit/rollback-to-delivery coverage and shutdown assertions. Preserve import suppression and current/previous payloads
         without assuming mutable event models are snapshots or intercepted sends are durable.
         On committed=false the model retains ghostEvents; reuse would skip registering another
         transaction callback. No production reuse path or reproduction has been established.
       - >-
-        Reproduce and resolve default-transport error status handling, especially 410 deletion
-        and recorded status, using actual Got errors. Pin POST retry behavior, timeouts, transport
-        policy and signature compatibility; test overrides and success-only requests hide these gaps.
+        Resolve default-transport error status handling: request-external errors carry the status
+        on error.response, so a 410 is not deleted and the recorded status is undefined. Real Got
+        errors reproduce it; the tests pin today's behavior.
       - >-
-        Cover persistence failures, unawaited last-triggered writes, synchronous/post-preparation
-        exceptions and concurrent duplicate creation. Define delivery/replay and disposal ownership
+        Cover synchronous/post-preparation exceptions and concurrent duplicate creation. Define delivery/replay and disposal ownership
         before adding a lifecycle; existing code has no durable queue or drain.
