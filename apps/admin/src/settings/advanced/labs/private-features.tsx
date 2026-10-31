@@ -108,6 +108,12 @@ const features: Feature[] = [
       'Record which staff have a post open in the editor and poll for it. Shows nothing yet.',
     flag: 'editorPresencePolling',
   },
+  {
+    title: 'Editor presence indicators',
+    description:
+      'Show who else has a post open in the editor header. Needs editor presence polling.',
+    flag: 'editorPresence',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {
