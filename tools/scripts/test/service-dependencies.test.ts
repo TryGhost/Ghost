@@ -430,14 +430,16 @@ it('allows the exact libraries required by Comments without allowing siblings', 
 
 it('allows the CSS inlining helper required by Staff without allowing its siblings', (t) => {
   const approved = 'ghost/core/server/lib/email-rendering/inline-css.ts';
+  // finalize.ts is itself allowed for Member welcome emails, so the rejected siblings are
+  // files with no allowance of their own.
   const rejected = [
-    'ghost/core/server/lib/email-rendering/finalize.ts',
     'ghost/core/server/lib/email-rendering/inline-css-extra.ts',
+    'ghost/core/server/lib/email-rendering/render.ts',
   ] as const;
   const f = fixture(t, {
     [`${alpha}/approved.js`]: "require('../../lib/email-rendering/inline-css');",
     [`${alpha}/rejected.ts`]:
-      "import '../../lib/email-rendering/finalize'; import '../../lib/email-rendering/inline-css-extra';",
+      "import '../../lib/email-rendering/inline-css-extra'; import '../../lib/email-rendering/render';",
     [approved]: 'export const inlineCss = (html: string) => html;',
     [rejected[0]]: 'export {};',
     [rejected[1]]: 'export {};',
@@ -450,6 +452,81 @@ it('allows the CSS inlining helper required by Staff without allowing its siblin
     violations(graph),
     rejected.map((to) => ['service-dependencies', `${alpha}/rejected.ts`, to]).sort(),
   );
+});
+
+it('allows the Koenig default nodes entry required by Member welcome emails without allowing other exports', (t) => {
+  const pkg = 'koenig/kg-default-nodes';
+  const f = fixture(t, {
+    [`${alpha}/approved.ts`]: "import '@tryghost/kg-default-nodes';",
+    [`${alpha}/rejected.ts`]: "import '@tryghost/kg-default-nodes/visibility';",
+    [`${pkg}/package.json`]: JSON.stringify({
+      name: '@tryghost/kg-default-nodes',
+      exports: {
+        '.': { source: './src/index.ts', default: './build/cjs/index.js' },
+        './visibility': { source: './src/visibility.ts', default: './build/cjs/visibility.js' },
+      },
+    }),
+    [`${pkg}/src/index.ts`]: 'export const utils = {};',
+    [`${pkg}/src/visibility.ts`]: 'export const visibility = {};',
+  });
+  f.link(pkg, 'node_modules/@tryghost/kg-default-nodes');
+  const graph = f.graph();
+  assert.ok(
+    edges(graph).some(
+      ([from, , to]) => from === `${alpha}/approved.ts` && to === `${pkg}/src/index.ts`,
+    ),
+  );
+  assert.deepEqual(violations(graph), [
+    ['service-dependencies', `${alpha}/rejected.ts`, `${pkg}/src/visibility.ts`],
+  ]);
+});
+
+it('allows the email design computation required by Member welcome emails without allowing its siblings', (t) => {
+  const approved = 'ghost/core/server/lib/email-rendering/email-design.js';
+  const rejected = 'ghost/core/server/lib/email-rendering/email-design-extra.js';
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: "require('../../lib/email-rendering/email-design');",
+    [`${alpha}/rejected.ts`]: "import '../../lib/email-rendering/email-design-extra';",
+    [approved]: 'module.exports = { getEmailDesign() {} };',
+    [rejected]: 'module.exports = {};',
+  });
+  const graph = f.graph();
+  assert.ok(
+    edges(graph).some(([from, , to]) => from === `${alpha}/approved.js` && to === approved),
+  );
+  assert.deepEqual(violations(graph), [['service-dependencies', `${alpha}/rejected.ts`, rejected]]);
+});
+
+it('allows the email finalizer required by Member welcome emails without allowing its siblings', (t) => {
+  const approved = 'ghost/core/server/lib/email-rendering/finalize.ts';
+  const rejected = 'ghost/core/server/lib/email-rendering/finalize-extra.ts';
+  const f = fixture(t, {
+    [`${alpha}/approved.ts`]: "import '../../lib/email-rendering/finalize';",
+    [`${alpha}/rejected.ts`]: "import '../../lib/email-rendering/finalize-extra';",
+    [approved]: 'export const finalize = () => ({});',
+    [rejected]: 'export {};',
+  });
+  const graph = f.graph();
+  assert.ok(
+    edges(graph).some(([from, , to]) => from === `${alpha}/approved.ts` && to === approved),
+  );
+  assert.deepEqual(violations(graph), [['service-dependencies', `${alpha}/rejected.ts`, rejected]]);
+});
+
+it('allows the delivery address formatter required by Member welcome emails without allowing its siblings', (t) => {
+  const approved = 'ghost/core/server/lib/mail/format-address-for-delivery.ts';
+  const rejected = 'ghost/core/server/lib/mail/ghost-mailer.js';
+  const f = fixture(t, {
+    [`${alpha}/approved.ts`]: "import '../../lib/mail/format-address-for-delivery';",
+    [`${alpha}/rejected.ts`]: "import '../../lib/mail/ghost-mailer';",
+    [approved]: 'export const formatAddressForDelivery = () => "";',
+    [rejected]: 'module.exports = class GhostMailer {};',
+  });
+  const graph = f.graph();
+  assert.ok(
+    edges(graph).some(([from, , to]) => from === `${alpha}/approved.ts` && to === approved),
+  );
+  assert.deepEqual(violations(graph), [['service-dependencies', `${alpha}/rejected.ts`, rejected]]);
 });
 
 it('rejects outside dependencies, own roots and unresolved imports without folder or package-prefix escapes', (t) => {

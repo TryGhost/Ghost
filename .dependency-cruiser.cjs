@@ -58,6 +58,10 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/signed-webhook\\.ts$', // Request signing/formatting and URL sanitization; no running transport.
   '^ghost/core/server/lib/email-rendering/inline-css\\.ts$', // CSS inlining of a supplied HTML string with Core's fixed options; no application instances.
   '^ghost/core/server/services/jobs-service/job\\.ts$', // Job base class, not the running service.
+  '^@tryghost/kg-default-nodes$|^koenig/kg-default-nodes/(src|build)/index\\.(ts|js)$', // Koenig replacement-string helpers; no application instances.
+  '^ghost/core/server/lib/email-rendering/email-design\\.js$', // Email design token computation from supplied settings.
+  '^ghost/core/server/lib/email-rendering/finalize\\.ts$', // Email CSS inlining and plaintext generation; no application instances.
+  '^ghost/core/server/lib/mail/format-address-for-delivery\\.ts$', // Mailbox formatting for delivery; no sender policy or application instances.
 ];
 
 /*
