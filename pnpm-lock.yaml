@@ -480,8 +480,8 @@ catalogs:
       specifier: 4.1.12
       version: 4.1.12
     '@x402/core':
-      specifier: 2.27.0
-      version: 2.27.0
+      specifier: 2.28.0
+      version: 2.28.0
     '@x402/evm':
       specifier: 2.27.0
       version: 2.27.0
@@ -2300,7 +2300,7 @@ importers:
         version: 3.5.18(supports-color@10.2.2)
       '@x402/core':
         specifier: 'catalog:'
-        version: 2.27.0
+        version: 2.28.0
       '@x402/evm':
         specifier: 'catalog:'
         version: 2.27.0
@@ -9442,6 +9442,9 @@ packages:
 
   '@x402/core@2.27.0':
     resolution: {integrity: sha512-UbxCKnoTsg5nQX9fYER3g9tt5l80jHm1IZOmDczQRqE0cwskls5r+VAAj0iUQfHVshnpv0qo/rLFI7UntqL96g==}
+
+  '@x402/core@2.28.0':
+    resolution: {integrity: sha512-Da/7zKxCKqpBoB4Msc9tFgkAv7tJTD8nG+DSSm+QdXAyJS4PQsmgVSKe17rDJTtlu0pwNbLcOje6MyQ6kaDkig==}
 
   '@x402/evm@2.27.0':
     resolution: {integrity: sha512-WKVFq5VaSrDJfo6lHNG7/4hT0iZdpsmd53W/a+gZqmE1CiVT8wyRpwIPue4f/YKqNfgHHhZ00AcfPho0xLr2eQ==}
@@ -21821,6 +21824,10 @@ snapshots:
   '@webcontainer/env@1.1.1': {}
 
   '@x402/core@2.27.0':
+    dependencies:
+      zod: 3.25.76
+
+  '@x402/core@2.28.0':
     dependencies:
       zod: 3.25.76
 
