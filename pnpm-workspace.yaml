@@ -291,7 +291,6 @@ overrides:
   '@tryghost/logging': 'catalog:'
   '@tryghost/nql': 'catalog:'
   '@tryghost/nql-lang': 'catalog:'
-  jackspeak: 4.2.3
   moment: 'catalog:'
   moment-timezone: 'catalog:'
   # @types/bookshelf asks for knex 0.21, which only its types read
@@ -337,6 +336,12 @@ overrides:
   'tinypool@<2.1.2': ^2.1.2
   # nx 23.3.0 pins undici before the 7.29.1 security fixes
   'nx>undici': 7.29.1
+  # Deprecated majors; the current majors keep the same API
+  'glob@>=10.0.0 <13.0.0': ^13.0.6
+  'test-exclude@<8.0.0': ^8.0.0
+  # The npm `crypto` package is an empty placeholder; require('crypto') loads
+  # Node's builtin regardless
+  'probability-distributions>crypto': '-'
   # routing-related dependencies
   body-parser: 'catalog:'
   express: 'catalog:'
