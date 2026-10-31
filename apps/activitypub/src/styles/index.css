@@ -71,7 +71,7 @@ button.ap-action-button:active svg {
 }
 
 .ap-red-heart path {
-  fill: #fb2d8d;
+  fill: var(--color-pink-500);
 }
 
 /* Note and profile content */
@@ -79,7 +79,7 @@ button.ap-action-button:active svg {
 .ap-note-content a,
 .ap-profile-content a,
 .ap-note-content-large a {
-  color: #00a4eb !important;
+  color: var(--color-blue-600) !important;
 }
 
 .ap-note-content a:hover,
@@ -166,7 +166,7 @@ button.ap-action-button:active svg {
 
 .ap-note-content blockquote,
 .ap-note-content-large blockquote {
-  border-left: 2px solid #e5e9ed;
+  border-left: 2px solid var(--color-gray-200);
   padding-left: 0.8rem;
   margin: 0.6rem 0 !important;
 }
@@ -183,9 +183,9 @@ button.ap-action-button:active svg {
 
 .ap-note-content code,
 .ap-note-content-large code {
-  background-color: #f9fafb !important;
+  background-color: var(--color-gray-50) !important;
   font-size: 1.3rem !important;
-  color: #15171a;
+  color: var(--color-black);
 }
 
 .ap-note-content-large code {
@@ -195,7 +195,7 @@ button.ap-action-button:active svg {
 .ap-note-content mark,
 .ap-note-content-large mark {
   background-color: transparent !important;
-  color: #15171a;
+  color: var(--color-black);
 }
 
 .ap-likes .invisible {

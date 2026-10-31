@@ -24,8 +24,10 @@ import {
   formatPercentage,
   formatTimestamp,
   stringToHslColor,
+  stringToTonalAvatarClasses,
   useSimplePagination,
 } from '@tryghost/shade/utils';
+import { useShade } from '@tryghost/shade/app';
 import { formatMemberName, getMemberInitials } from '@/members/api';
 import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { usePostFeedback } from '@/posts/analytics/hooks/use-post-feedback';
@@ -43,6 +45,7 @@ interface FeedbackProps {
 }
 
 const Feedback: React.FC<FeedbackProps> = ({ feedbackStats }) => {
+  const { admin7Design: tonalAvatars } = useShade();
   const { postId } = useParams();
   const navigate = useNavigate();
   const { isNewsletterDataHidden } = useEmailSendingStatusContext();
@@ -153,10 +156,18 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackStats }) => {
                           />
                         )}
                         <AvatarFallback
-                          className="text-white"
-                          style={{
-                            backgroundColor: `${stringToHslColor(formatMemberName(item.member), '45', '55')}`,
-                          }}
+                          className={
+                            tonalAvatars
+                              ? stringToTonalAvatarClasses(formatMemberName(item.member))
+                              : 'text-white'
+                          }
+                          style={
+                            tonalAvatars
+                              ? undefined
+                              : {
+                                  backgroundColor: `${stringToHslColor(formatMemberName(item.member), '45', '55')}`,
+                                }
+                          }
                         >
                           {getMemberInitials(item.member)}
                         </AvatarFallback>

@@ -1,5 +1,8 @@
-/* Runtime semantic variables shared by styles.css and tokens.css */
-:root {
+/* Runtime semantic variables shared by styles.css and tokens.css. Declared on
+   every Shade scope too (ShadeApp, portals), so they resolve against the
+   palette in effect there: see the admin7Design block below. */
+:root,
+[data-admin7-design] {
   --background: var(--color-white);
   --foreground: var(--color-black);
   --muted: var(--color-gray-100);
@@ -16,7 +19,7 @@
   --secondary-foreground: var(--color-black);
   --accent: var(--color-gray-100);
   --accent-foreground: var(--color-black);
-  --destructive: var(--color-red-500);
+  --destructive: var(--color-red-600);
   --destructive-foreground: var(--color-white);
   --ring: var(--color-gray-600);
   --surface-page: var(--color-white);
@@ -27,10 +30,10 @@
   --surface-elevated-2: var(--color-white);
   --surface-overlay: var(--color-white);
   --surface-overlay-foreground: var(--color-black);
-  --modal-backdrop: rgb(98 109 121 / 0.2);
-  --form-sheet-backdrop: rgb(98 109 121 / 0.08);
+  --modal-backdrop: oklch(50% 0.002 100 / 0.2);
+  --form-sheet-backdrop: oklch(50% 0.002 100 / 0.08);
   --preview-canvas: var(--color-gray-50);
-  --preview-gradient-start: var(--color-white);
+  --preview-gradient-start: var(--color-gray-50);
   --preview-gradient-end: var(--color-gray-50);
   --surface-inverse: var(--color-black);
   --surface-inverse-foreground: var(--color-white);
@@ -44,7 +47,7 @@
   /* Frosted glass (the floating sidebar): a faint translucent fill over a
      backdrop blur, a light-catching outline, and a sheen along the top edge.
      The two shadows have matching layers so one interpolates into the other. */
-  --surface-glass: rgb(248 248 248 / 0.5);
+  --surface-glass: oklch(97.83% 0.0007 100 / 0.5);
   --border-glass: rgb(255 255 255 / 0.7);
   --surface-glass-highlight: linear-gradient(
     180deg,
@@ -62,35 +65,37 @@
     0 0 0 1px rgb(0 0 0 / 0.06), 0 8px 24px -10px rgb(0 0 0 / 0), 0 4px 12px -4px rgb(0 0 0 / 0),
     0 2px 6px rgb(0 0 0 / 0);
   --focus-ring: var(--color-gray-600);
-  --state-info: var(--color-blue-500);
+  --state-info: var(--color-blue-700);
   --search-result-title: #1a0dab;
   --search-result-description: #4d5156;
   --state-info-foreground: var(--color-black);
-  --state-success: var(--color-green-500);
+  --state-success: var(--color-green-700);
   --state-success-foreground: var(--color-black);
-  --state-warning: var(--color-yellow-500);
+  --state-warning: var(--color-yellow-700);
   --state-warning-foreground: var(--color-black);
-  --state-danger: var(--color-red-500);
+  --state-danger: var(--color-red-600);
   --state-danger-foreground: var(--color-black);
   --control-height: 32px;
   --control-height-lg: 40px;
   --input-group-radius: 9px;
-  --chart-1: hsl(201 100% 50%);
-  --chart-2: hsl(201 88% 70%);
-  --chart-3: hsl(201 85% 80%);
-  --chart-4: hsl(201 82% 90%);
-  --chart-5: hsl(201 87% 94%);
-  --chart-gray: hsl(210 13% 88%);
-  --chart-darkgray: hsl(210 13% 79%);
-  --chart-rose: hsl(345 100% 56%);
-  --chart-orange: hsl(25 100% 50%);
-  --chart-amber: hsl(36 100% 50%);
-  --chart-yellow: hsl(47 100% 50%);
-  --chart-green: hsl(144 100% 39%);
-  --chart-teal: hsl(174 100% 37%);
-  --chart-blue: hsl(198 100% 51%);
-  --chart-darkblue: hsl(226 91% 61%);
-  --chart-purple: hsl(273 100% 64%);
+  /* Charts use flat Shapeshifter colours; rose, amber (Shapeshifter's orange)
+     and teal have no Shade palette family, so they are its values. */
+  --chart-1: var(--color-blue-600);
+  --chart-2: var(--color-blue-500);
+  --chart-3: var(--color-blue-400);
+  --chart-4: var(--color-blue-300);
+  --chart-5: var(--color-blue-200);
+  --chart-gray: var(--color-gray-300);
+  --chart-darkgray: var(--color-gray-500);
+  --chart-rose: oklch(0.685 0.1 14);
+  --chart-orange: var(--color-orange-500);
+  --chart-amber: oklch(0.705 0.205 72);
+  --chart-yellow: var(--color-yellow-400);
+  --chart-green: var(--color-green-500);
+  --chart-teal: oklch(0.685 0.13 210);
+  --chart-blue: var(--color-blue-500);
+  --chart-darkblue: var(--color-purple-600);
+  --chart-purple: var(--color-pink-500);
   --sidebar-background: var(--color-gray-50);
   --sidebar-foreground: var(--color-black);
   --sidebar-primary: var(--color-black);
@@ -128,7 +133,229 @@
   --mobile-navbar-height: 64px;
 }
 
-.dark {
+/* admin7Design off: the previous palette and the tokens that changed with it.
+   Temporary: delete with the flag, along with the previous dark block below. */
+[data-admin7-design='false'] {
+  --color-black: oklch(20.38% 0.0067 258.4);
+  --color-gray-50: oklch(98.54% 0.0013 286.4);
+  --color-gray-100: oklch(96.97% 0.0017 247.8);
+  --color-gray-200: oklch(94.74% 0.0042 236.5);
+  --color-gray-300: oklch(90.78% 0.007 247.9);
+  --color-gray-400: oklch(86.68% 0.0095 242.9);
+  --color-gray-500: oklch(77.55% 0.0174 250.9);
+  --color-gray-600: oklch(70.33% 0.0223 248.1);
+  --color-gray-700: oklch(62.98% 0.0286 248.3);
+  --color-gray-800: oklch(52.97% 0.0232 250.6);
+  --color-gray-900: oklch(36.77% 0.0153 248.2);
+  --color-gray-950: oklch(25.95% 0.0063 258.4);
+  --color-red-50: oklch(96.69% 0.0162 17.4);
+  --color-red-100: oklch(93.22% 0.0343 17.8);
+  --color-red-200: oklch(86.97% 0.0702 15.3);
+  --color-red-300: oklch(78.48% 0.1262 15.5);
+  --color-red-400: oklch(64.57% 0.2253 21.5);
+  --color-red-500: oklch(61.27% 0.2462 26.4);
+  --color-red-600: oklch(56.5% 0.2269 26.4);
+  --color-red-700: oklch(48.49% 0.1939 26);
+  --color-red-800: oklch(40.18% 0.1591 25.2);
+  --color-red-900: oklch(32.24% 0.1264 24);
+  --color-orange-50: oklch(97.96% 0.0158 73.7);
+  --color-orange-100: oklch(95.42% 0.0372 75.2);
+  --color-orange-200: oklch(90.15% 0.0729 70.7);
+  --color-orange-300: oklch(83.66% 0.1165 66.3);
+  --color-orange-400: oklch(75.76% 0.159 55.9);
+  --color-orange-500: oklch(70.49% 0.1867 47.6);
+  --color-orange-600: oklch(64.61% 0.1943 41.1);
+  --color-orange-700: oklch(55.34% 0.1739 38.4);
+  --color-orange-800: oklch(46.98% 0.143 37.3);
+  --color-orange-900: oklch(40.84% 0.1165 38.2);
+  --color-yellow-50: oklch(98.27% 0.0207 88.7);
+  --color-yellow-100: oklch(96.22% 0.0384 83.8);
+  --color-yellow-200: oklch(92.42% 0.0867 87);
+  --color-yellow-300: oklch(88.67% 0.1322 87.2);
+  --color-yellow-400: oklch(84.87% 0.1508 81.3);
+  --color-yellow-500: oklch(82.04% 0.1655 77.3);
+  --color-yellow-600: oklch(76.61% 0.1628 73.4);
+  --color-yellow-700: oklch(65.82% 0.1419 70.8);
+  --color-yellow-800: oklch(54.44% 0.1173 70.8);
+  --color-yellow-900: oklch(43.45% 0.0931 72);
+  --color-green-50: oklch(98.14% 0.0199 150.1);
+  --color-green-100: oklch(95.89% 0.0375 148.9);
+  --color-green-200: oklch(91.68% 0.0857 148.3);
+  --color-green-300: oklch(85.66% 0.1484 146.8);
+  --color-green-400: oklch(79.04% 0.1936 145.5);
+  --color-green-500: oklch(74.81% 0.2213 144.4);
+  --color-green-600: oklch(66.9% 0.1961 144.5);
+  --color-green-700: oklch(55.58% 0.1604 144.5);
+  --color-green-800: oklch(47.03% 0.1318 144.9);
+  --color-green-900: oklch(39.31% 0.107 145.1);
+  --color-blue-50: oklch(97.83% 0.0134 226.6);
+  --color-blue-100: oklch(95.23% 0.0302 226);
+  --color-blue-200: oklch(90.71% 0.0587 227.1);
+  --color-blue-300: oklch(84.34% 0.0975 229.7);
+  --color-blue-400: oklch(77.95% 0.1376 231.3);
+  --color-blue-500: oklch(74.03% 0.1559 235.9);
+  --color-blue-600: oklch(68.26% 0.1518 238.2);
+  --color-blue-700: oklch(59.77% 0.1942 261.4);
+  --color-blue-800: oklch(48.99% 0.1869 262.4);
+  --color-blue-900: oklch(39.35% 0.1428 262.6);
+  --color-purple-50: oklch(96.95% 0.0183 306.7);
+  --color-purple-100: oklch(92.64% 0.0437 304.5);
+  --color-purple-200: oklch(84.44% 0.095 303.8);
+  --color-purple-300: oklch(74.11% 0.163 302.8);
+  --color-purple-400: oklch(64.94% 0.2182 298.5);
+  --color-purple-500: oklch(58.34% 0.2584 295.5);
+  --color-purple-600: oklch(53.55% 0.2835 291.5);
+  --color-purple-700: oklch(46.38% 0.2511 291);
+  --color-purple-800: oklch(38.02% 0.1986 292.9);
+  --color-purple-900: oklch(31.05% 0.157 294.7);
+  --color-pink-50: oklch(96.86% 0.0179 351.1);
+  --color-pink-100: oklch(93.43% 0.0402 347.9);
+  --color-pink-200: oklch(85.75% 0.091 350.5);
+  --color-pink-300: oklch(77.49% 0.1514 354.2);
+  --color-pink-400: oklch(70.96% 0.2092 355);
+  --color-pink-500: oklch(65.62% 0.2437 359.2);
+  --color-pink-600: oklch(63.03% 0.2514 3.9);
+  --color-pink-700: oklch(53.87% 0.217 3.4);
+  --color-pink-800: oklch(44.07% 0.1778 2.5);
+  --color-pink-900: oklch(35.27% 0.1427 0.8);
+  --destructive: var(--color-red-500);
+  --modal-backdrop: rgb(98 109 121 / 0.2);
+  --form-sheet-backdrop: rgb(98 109 121 / 0.08);
+  --preview-gradient-start: var(--color-white);
+  --surface-glass: rgb(248 248 248 / 0.5);
+  --state-info: var(--color-blue-500);
+  --state-success: var(--color-green-500);
+  --state-warning: var(--color-yellow-500);
+  --state-danger: var(--color-red-500);
+  --chart-1: hsl(201 100% 50%);
+  --chart-2: hsl(201 88% 70%);
+  --chart-3: hsl(201 85% 80%);
+  --chart-4: hsl(201 82% 90%);
+  --chart-5: hsl(201 87% 94%);
+  --chart-gray: hsl(210 13% 88%);
+  --chart-darkgray: hsl(210 13% 79%);
+  --chart-rose: hsl(345 100% 56%);
+  --chart-orange: hsl(25 100% 50%);
+  --chart-amber: hsl(36 100% 50%);
+  --chart-yellow: hsl(47 100% 50%);
+  --chart-green: hsl(144 100% 39%);
+  --chart-teal: hsl(174 100% 37%);
+  --chart-blue: hsl(198 100% 51%);
+  --chart-darkblue: hsl(226 91% 61%);
+  --chart-purple: hsl(273 100% 64%);
+}
+
+/* Dark mode. With admin7Design off, the previous dark block below wins. */
+.dark,
+.dark [data-admin7-design] {
+  /* The near-neutral gray ramp is shared with light mode. Black keeps the
+     dark-mode lightness so surfaces built on it don't get darker. */
+  --color-black: oklch(20.38% 0.0008 100);
+
+  /* One-off colors (not in the standard color scale) */
+  --color-sidebar-bg: oklch(0.204 0.001 100);
+
+  --tab-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
+  --tab-active: color-mix(in oklab, oklch(36.77% 0.0018 100) 60%, transparent);
+  --button-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
+  --button-ghost-hover: var(--accent);
+  --interactive-hover: var(--button-hover);
+  --filter-bar-background: var(--surface-elevated-2);
+  --filter-bar-item-hover: var(--tab-hover);
+  --control-surface: transparent;
+  --control-readonly-surface: var(--color-gray-950);
+  --control-disabled-surface: var(--color-gray-950);
+  --control-border: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
+  --control-pressed-shadow: lch(0 0 0 / 0.07) 0px 1px 2px 0px inset;
+  --control-outline-shadow:
+    lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
+    lch(0 0 0 / 0.04) 0px 1px 1px 0px;
+  --control-outline-pressed-shadow:
+    lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
+    lch(0 0 0 / 0.04) 0px 1px 1px 0px, var(--control-pressed-shadow);
+  --table-row-hover: var(--color-sidebar-bg);
+  /* Mixed into the page background rather than a step off the blue ramp: at
+     dark-mode lightness the raw palette blues are far too saturated for a
+     whole row. */
+  --table-row-selected: color-mix(in oklab, var(--color-blue-700) 25%, var(--background));
+  --members-sticky-hover-bg: var(--table-row-hover);
+
+  --background: oklch(0.178 0.001 100);
+  --foreground: var(--color-gray-200);
+  --muted: var(--color-gray-900);
+  --muted-foreground: var(--color-gray-600);
+  --accent: var(--color-gray-900);
+  --accent-foreground: var(--color-gray-100);
+  --popover: var(--color-sidebar-bg);
+  --popover-foreground: var(--color-gray-400);
+  --border: color-mix(in oklab, var(--color-gray-900) 50%, transparent);
+  --input: var(--color-gray-900);
+  --card: var(--background);
+  --card-foreground: var(--color-gray-100);
+  --primary: var(--color-gray-200);
+  --primary-foreground: var(--color-black);
+  --secondary: var(--color-gray-900);
+  --secondary-foreground: var(--color-gray-100);
+  --destructive: var(--color-red-500);
+  /* Shapeshifter's red-500 is light enough for text on dark but too light for a
+     white label, so the destructive button gets a dark one. */
+  --destructive-foreground: var(--color-black);
+  --ring: var(--color-gray-900);
+  --surface-page: var(--color-black);
+  --surface-panel: var(--color-black);
+  --surface-panel-foreground: var(--color-gray-100);
+  --surface-elevated: var(--color-sidebar-bg);
+  --surface-elevated-foreground: var(--color-gray-100);
+  --surface-elevated-2: oklch(0.235 0.001 100);
+  --surface-overlay: var(--color-black);
+  --surface-overlay-foreground: var(--color-gray-400);
+  --preview-canvas: var(--color-black);
+  --preview-gradient-start: var(--color-gray-950);
+  --preview-gradient-end: var(--color-black);
+  --surface-inverse: var(--color-white);
+  --surface-inverse-foreground: var(--color-black);
+  --text-primary: var(--color-gray-200);
+  --text-secondary: var(--color-gray-400);
+  --text-tertiary: var(--color-gray-500);
+  --text-inverse: var(--color-black);
+  --border-subtle: var(--color-gray-900);
+  --border-default: var(--color-gray-950);
+  --border-strong: var(--color-gray-700);
+  --surface-glass: oklch(25% 0.001 100 / 0.55);
+  --border-glass: rgb(255 255 255 / 0.1);
+  --surface-glass-highlight: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 0.066) 0%,
+    rgb(255 255 255 / 0) 18%,
+    rgb(255 255 255 / 0) 85%,
+    rgb(255 255 255 / 0.018) 100%
+  );
+  --focus-ring: var(--color-gray-900);
+  --state-info: var(--color-blue-400);
+  --search-result-title: #8ab4f8;
+  --search-result-description: #bdc1c6;
+  --state-info-foreground: var(--color-black);
+  --state-success: var(--color-green-400);
+  --state-success-foreground: var(--color-black);
+  --state-warning: var(--color-yellow-400);
+  --state-warning-foreground: var(--color-black);
+  --state-danger: var(--color-red-500);
+  --state-danger-foreground: var(--color-black);
+  --chart-gray: var(--color-gray-700);
+  --sidebar-background: var(--color-sidebar-bg);
+  --sidebar-foreground: var(--color-gray-500);
+  --sidebar-primary: var(--color-gray-900);
+  --sidebar-primary-foreground: var(--color-white);
+  --sidebar-accent: var(--tab-active);
+  --sidebar-accent-foreground: var(--color-gray-100);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--color-gray-700);
+}
+
+/* admin7Design off in dark mode: today's dark values, exactly. Temporary:
+   delete with the flag. */
+.dark [data-admin7-design='false'] {
+  --color-black: oklch(20.38% 0.0067 258.4);
   /* Less-saturated gray scale for dark mode (lightness + hue preserved, chroma halved again) */
   --color-gray-50: oklch(98.54% 0.0003 286.4);
   --color-gray-100: oklch(96.97% 0.0004 247.8);

@@ -19,6 +19,11 @@ body:where(.react-admin) {
   background: rgb(88 101 116 / 0.99);
 }
 
+/* admin7Design on: the neutral gray at the same lightness. */
+:where(html.dark body.react-admin [data-admin7-design='true']) ::selection {
+  background: oklch(47% 0.002 100 / 0.99);
+}
+
 /* Text */
 :where(body.react-admin) p {
   margin: 0 0 1.7em 0;
@@ -122,6 +127,15 @@ body:where(.react-admin) {
   white-space: pre-wrap;
   font-size: 0.85em;
   line-height: 1em;
+}
+
+/* admin7Design on: the palette's pink, a lighter step on dark backgrounds. */
+:where(body.react-admin [data-admin7-design='true']) code {
+  color: var(--color-pink-600);
+}
+
+:where(html.dark body.react-admin [data-admin7-design='true']) code {
+  color: var(--color-pink-400);
 }
 
 :where(body.react-admin) pre {

@@ -1,7 +1,9 @@
+import type React from 'react';
 import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 import { Avatar, AvatarFallback, AvatarImage } from '../../../../src/components/ui/avatar';
 import { render } from '../../utils/test-utils';
+import ShadeProvider from '../../../../src/providers/shade-provider';
 
 describe('Avatar Components', () => {
   it('renders Avatar correctly with default props', () => {
@@ -47,17 +49,30 @@ describe('Avatar Components', () => {
     expect(avatarFallback.className, 'Should have custom class').toContain('custom-fallback-class');
   });
 
-  it('renders the initials prop in the default fallback', () => {
+  it('renders the initials prop in a tonal palette fallback', () => {
     render(<Avatar data-testid="avatar" initials="JD" />);
     const avatar = screen.getByTestId('avatar');
 
     expect(avatar.textContent, 'Should render the initials').toBe('JD');
     const fallback = avatar.querySelector('span')!;
-    expect(fallback, 'Fallback should be rendered').toBeTruthy();
+    expect(fallback.className, 'admin7Design pairs a family 200 with its 800').toMatch(
+      /bg-[a-z]+-200 text-[a-z]+-800/,
+    );
+    expect(fallback.getAttribute('style'), 'Tonal fallbacks need no inline colour').toBeNull();
+  });
+
+  it('keeps the generated background colour with admin7Design off', () => {
+    render(
+      <ShadeProvider admin7Design={false} darkMode={false}>
+        <Avatar data-testid="avatar" initials="JD" />
+      </ShadeProvider>,
+    );
+    const fallback = screen.getByTestId('avatar').querySelector('span')!;
     expect(
       fallback.getAttribute('style')?.includes('background-color'),
       'Initials fallback should have a deterministic background color',
     ).toBeTruthy();
+    expect(fallback.className).toContain('text-white');
   });
 
   it('renders a user icon fallback when no initials are given', () => {
@@ -106,9 +121,14 @@ describe('Avatar Components', () => {
   });
 
   it('seeds the fallback color from colorSeed when provided, else the initials', () => {
-    const { rerender, container } = render(<Avatar initials="JD" />);
+    const flagOff = (avatar: React.ReactElement) => (
+      <ShadeProvider admin7Design={false} darkMode={false}>
+        {avatar}
+      </ShadeProvider>
+    );
+    const { rerender, container } = render(flagOff(<Avatar initials="JD" />));
     const seededByInitials = container.querySelector('[style]')?.getAttribute('style');
-    rerender(<Avatar colorSeed="Jane Doe" initials="JD" />);
+    rerender(flagOff(<Avatar colorSeed="Jane Doe" initials="JD" />));
     const seededByName = container.querySelector('[style]')?.getAttribute('style');
     expect(seededByInitials).toBeTruthy();
     expect(seededByName).toBeTruthy();

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { ColorPalette, ColorRow } from '../showcase/color-swatch';
+import { ContrastComparison, PaletteComparison } from '../showcase/palette-comparison';
 
 const rawPalette = (cssVars: string[]) =>
   cssVars.map((cssVar) => ({
@@ -170,6 +171,80 @@ export const RawPalette: Story = {
       description: {
         story:
           'Raw palette. Colour families use a 10-step scale: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900. Gray adds 950.',
+      },
+    },
+  },
+};
+
+export const Admin7Comparison: Story = {
+  render: () => (
+    <div className="flex flex-col gap-10">
+      <PaletteComparison
+        families={[
+          {
+            name: 'Gray',
+            cssVars: [...rawPalettes.gray.map((swatch) => swatch.cssVar), '--color-black'],
+          },
+          { name: 'Red', cssVars: rawPalettes.red.map((swatch) => swatch.cssVar) },
+          { name: 'Orange', cssVars: rawPalettes.orange.map((swatch) => swatch.cssVar) },
+          { name: 'Yellow', cssVars: rawPalettes.yellow.map((swatch) => swatch.cssVar) },
+          { name: 'Green', cssVars: rawPalettes.green.map((swatch) => swatch.cssVar) },
+          { name: 'Blue', cssVars: rawPalettes.blue.map((swatch) => swatch.cssVar) },
+          { name: 'Purple', cssVars: rawPalettes.purple.map((swatch) => swatch.cssVar) },
+          { name: 'Pink', cssVars: rawPalettes.pink.map((swatch) => swatch.cssVar) },
+          {
+            name: 'Chart',
+            cssVars: [
+              '--chart-1',
+              '--chart-2',
+              '--chart-3',
+              '--chart-4',
+              '--chart-5',
+              '--chart-blue',
+              '--chart-darkblue',
+              '--chart-teal',
+              '--chart-purple',
+              '--chart-green',
+              '--chart-rose',
+            ],
+          },
+          {
+            name: 'Chart (cont.)',
+            cssVars: [
+              '--chart-orange',
+              '--chart-amber',
+              '--chart-yellow',
+              '--chart-gray',
+              '--chart-darkgray',
+            ],
+          },
+        ]}
+      />
+      <ContrastComparison
+        pairs={[
+          { label: 'Primary text', text: '--text-primary', background: '--background' },
+          { label: 'Secondary text', text: '--text-secondary', background: '--background' },
+          { label: 'Tertiary text', text: '--text-tertiary', background: '--background' },
+          { label: 'Destructive text', text: '--destructive', background: '--background' },
+          {
+            label: 'Destructive button',
+            text: '--destructive-foreground',
+            background: '--destructive',
+          },
+          { label: 'Primary button', text: '--primary-foreground', background: '--primary' },
+          { label: 'Danger text', text: '--state-danger', background: '--background' },
+          { label: 'Success text', text: '--state-success', background: '--background' },
+          { label: 'Warning text', text: '--state-warning', background: '--background' },
+          { label: 'Info text', text: '--state-info', background: '--background' },
+        ]}
+      />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "The admin7Design palette next to the previous one, with WCAG contrast for the main text pairs (AA needs 4.5). Light mode only: dark mode keeps the previous palette until it gets its Admin 7 colours. Gray keeps Shade's lightness at each step with Shapeshifter's warm hue; the colour families are Shapeshifter's ramps.",
       },
     },
   },
