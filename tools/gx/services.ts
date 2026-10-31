@@ -20,7 +20,7 @@ const inventorySchema = z.object({
       .object({
         migrated: z.boolean().optional(),
         disposition: z.enum(['retain', 'relocate', 'review']),
-        futureHome: z.string().optional(),
+        futureHome: z.string().trim().min(1).optional(),
         notes: z.string().optional(),
         migration: assessment.extend({
           modelImpact: z.enum(['fits', 'may-change', 'not-applicable']),

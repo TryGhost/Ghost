@@ -501,7 +501,7 @@ test('list filters match every report group, including unknown analysis and ever
   const clean = f.run(['list', '--group=straightforward-clear']);
   assert.equal(clean.status, 0, clean.stderr);
   assert.match(clean.stdout, /^SERVICE\s+OWNERSHIP\s+MIGRATION/m);
-  assert.match(clean.stdout, /^clean\s+Staying in services\/\s+Straightforward\s+0\s+0\s+0$/m);
+  assert.match(clean.stdout, /^clean\s+Boot-owned service\s+Straightforward\s+0\s+0\s+0$/m);
   assert.doesNotMatch(clean.stdout, /^(?:absent|alpha|own|unresolved)\s+/m);
 });
 
