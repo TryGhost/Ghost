@@ -21,11 +21,13 @@ ids and a server timestamp; names and avatars come from the staff users list.
   request. Other failures back off exponentially up to 60 seconds and clear
   what is shown.
 - Indicators are a second flag, `editorPresence`. The editor header shows the
-  other staff on the open document as avatars with an overflow count, named
-  from the staff users list, which is read only once someone is present. Users
-  missing from that list are not shown. Hovering or focusing the cluster names
-  everyone in one sentence, "Alex and Sam have this post open". Below the `sm`
-  breakpoint one avatar with a count badge stands for everyone.
+  other staff on the open document, and posts and pages list rows show who has
+  that row open, as avatars with an overflow count named from the staff users
+  list, which is read only once someone is present. Users missing from that
+  list are not shown. Hovering or focusing the cluster names everyone in one
+  sentence, "Alex and Sam have this post open", the same in the editor and the
+  lists. Below the `sm` breakpoint one avatar with a count badge stands for
+  everyone.
 
 ## Modules
 

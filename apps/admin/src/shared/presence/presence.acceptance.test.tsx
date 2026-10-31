@@ -95,6 +95,17 @@ describe('presence polling', () => {
       .toBeVisible();
   });
 
+  it('shows who has a listed post open once both flags are on', async () => {
+    fakePostsListScreen();
+    fakePosts([post({ id: POST_ID, title: 'Presence example', status: 'draft' })]);
+    fakeUsers([staffUser({ id: OTHER_USER, name: 'Alex Smith', profile_image: null })]);
+    fakePresence();
+    await renderAdminApp('/posts?type=draft', INDICATORS_ON);
+    await expect
+      .element(page.getByRole('img', { name: 'Alex Smith has this post open' }))
+      .toBeVisible();
+  });
+
   it('keeps the header clear while only polling is on', async () => {
     fakeEditorChrome();
     fakePostRead('Presence example');
