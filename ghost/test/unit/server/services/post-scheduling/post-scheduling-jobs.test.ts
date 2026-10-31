@@ -2,11 +2,14 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import jwt from 'jsonwebtoken';
 import { mockSystemTime } from '../../../../utils/clock-utils';
+import { createLoggingFake } from '../../../../utils/logging-utils';
 
-const logging = require('@tryghost/logging');
 const models = require('../../../../../core/server/models');
 const events = require('../../../../../core/server/lib/common/events');
 const { getSignedAdminToken } = require('../../../../../core/server/adapters/scheduling/utils');
+const {
+  buildSignedJob,
+} = require('../../../../../core/server/adapters/scheduling/build-signed-job');
 const {
   getSchedulerIdempotencyKey,
 } = require('../../../../../core/server/adapters/scheduling/get-scheduler-idempotency-key');
@@ -89,6 +92,7 @@ function expectedJob({
 describe('PostScheduling jobs', function () {
   const sandbox = sinon.createSandbox();
   let added: Array<[string, (...args: unknown[]) => unknown]> = [];
+  let logging: ReturnType<typeof createLoggingFake>;
 
   // The class subscribes on Ghost's shared event bus. Track what each
   // construction adds so the handlers can be awaited directly and removed.
@@ -105,7 +109,16 @@ describe('PostScheduling jobs', function () {
     let service: InstanceType<typeof PostScheduling> | undefined;
     let error: unknown;
     try {
-      service = new PostScheduling({ apiUrl: API_URL, adapter, internalKeys });
+      service = new PostScheduling({
+        apiUrl: API_URL,
+        adapter,
+        internalKeys,
+        models,
+        events,
+        logging,
+        buildSignedJob,
+        getSchedulerIdempotencyKey,
+      });
     } catch (err) {
       error = err;
     }
@@ -131,6 +144,7 @@ describe('PostScheduling jobs', function () {
 
   beforeEach(function () {
     mockSystemTime(NOW);
+    logging = createLoggingFake();
   });
 
   afterEach(function () {
@@ -320,7 +334,7 @@ describe('PostScheduling jobs', function () {
       ['post.unscheduled', 'post-scheduling.unschedule.error'],
     ] as const) {
       it(`logs and swallows a key failure on ${name}`, async function () {
-        const error = sandbox.stub(logging, 'error');
+        const error = logging.error;
         const failure = new Error('no key');
         const internalKeys = { get: sinon.stub().rejects(failure) };
         const { handlers, adapter } = construct({ internalKeys });
@@ -345,7 +359,7 @@ describe('PostScheduling jobs', function () {
     }
 
     it('stops a reschedule when the unschedule throws, logging the failure', async function () {
-      const error = sandbox.stub(logging, 'error');
+      const error = logging.error;
       const failure = new Error('unschedule failed');
       const adapter = fakeAdapter({ unschedule: sinon.stub().throws(failure) });
       const { handlers } = construct({ adapter });
@@ -356,9 +370,10 @@ describe('PostScheduling jobs', function () {
       )(fakeModel({ id: 'p1', published_at: new Date(NOW) }, { published_at: new Date(NOW) }));
 
       sinon.assert.notCalled(adapter.schedule);
-      sinon.assert.calledOnce(error);
-      assert.equal(error.firstCall.args[0].event.name, 'post-scheduling.reschedule.error');
-      assert.equal(error.firstCall.args[0].err, failure);
+      sinon.assert.calledOnceWithMatch(error, {
+        event: { name: 'post-scheduling.reschedule.error' },
+        err: failure,
+      });
     });
   });
 
@@ -455,10 +470,9 @@ describe('PostScheduling jobs', function () {
     it('logs instead of scheduling a null published_at', async function () {
       // Incidental: Moment reads null as an invalid date, whose ISO string
       // throws while signing.
-      const error = sandbox.stub(logging, 'error');
+      const error = logging.error;
       assert.equal(await timeFor(null), undefined);
-      sinon.assert.calledOnce(error);
-      assert.ok(error.firstCall.args[0].err instanceof RangeError);
+      sinon.assert.calledOnceWithMatch(error, { err: sinon.match.instanceOf(RangeError) });
     });
   });
 

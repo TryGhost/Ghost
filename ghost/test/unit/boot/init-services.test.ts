@@ -22,8 +22,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   // the automations tests, not this boot orchestration harness.
   const automations = sinon.stub();
   const reschedule = sinon.stub().resolves();
-  // Loading the post-scheduling root constructs the scheduler.
-  const postScheduling = sinon.stub().returns({ default: { rescheduleAll: reschedule } });
+  // Initializing the post-scheduling root constructs the scheduler.
+  const postScheduling = sinon.stub().resolves();
   const jobsService = { start };
   const genericService = {
     init: async () => {},
@@ -68,15 +68,13 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
         init: media,
         getInstance: () => ({}),
       },
+      './server/services/post-scheduling': {
+        default: { init: postScheduling, service: { rescheduleAll: reschedule } },
+      },
       './server/services/jobs-service/register-job-handlers': { default: register },
       './server/services/automations': { automationsService: { init: automations } },
     },
-    {
-      fallback: (name) =>
-        name === './server/services/post-scheduling'
-          ? postScheduling()
-          : { ...genericService, default: genericService },
-    },
+    { fallback: () => ({ ...genericService, default: genericService }) },
   );
   return {
     initServices: (): Promise<void> =>
@@ -143,7 +141,7 @@ it('constructs post scheduling before running the scheduling adapter or initiali
 it('propagates a post scheduling construction failure before running the scheduling adapter', async function () {
   const boot = createServicesHarness();
   const failure = new Error('post scheduling construction failed');
-  boot.postScheduling.throws(failure);
+  boot.postScheduling.rejects(failure);
 
   await assert.rejects(boot.initServices(), (error) => error === failure);
 

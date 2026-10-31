@@ -10561,17 +10561,19 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: complex
       modelImpact: fits
       reason: >-
-        The constructor installs six listeners and registers itself with a shared adapter;
-        boot separately runs that adapter and later rebuilds jobs, while key rotation also
-        invokes the retained rescheduler. Move construction without merging those owners,
-        and define rollback of subscriptions/registration if startup fails. One retained
-        scheduler facade fits; job completion and normal adapter drain remain separate.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        The boot-owned defineService root constructs the scheduler with models, the event bus,
+        logging and the signed-job helpers injected. The constructor installs six listeners and
+        registers itself with the shared adapter; a failed construction removes its listeners
+        before init rejects. initServices awaits init before running that adapter and later
+        reads the service to rebuild jobs, while key rotation still invokes the retained
+        rescheduler. Job completion and normal adapter drain remain separate; no extras.
+      reviewedAt: deba02cdbded8b78f24adfb79bebf2790b275c8e
       sources:
         - core/server/services/post-scheduling/index.ts
         - core/server/services/post-scheduling/post-scheduling.ts
@@ -10602,20 +10604,22 @@ services:
     entryPoints:
       - post-scheduling/index.ts
     notes: >-
-      Preserve constructor event subscriptions, shared adapter identity, signed callback
-      generation and boot/key-rotation rebuilding. The publishing callback belongs to the
-      separate posts composition; the scheduler graph still lacks cleanup ownership.
+      Migration inspected deba02cdbded8b78f24adfb79bebf2790b275c8e with the characterization
+      from the preceding tests-only commit. Moment comes from the shared clock. The publishing
+      callback belongs to the separate posts composition; the scheduler graph still lacks
+      cleanup ownership. auditedAt and the dependency assessment retain historical provenance.
     contracts:
       exports:
         summary: >-
-          TypeScript default-exports one eagerly constructed PostScheduling instance;
-          CommonJS boot reads .default. Its only public operation is receiver-dependent
+          The TypeScript root default-exports a defineService root with async init and no
+          reset/stop; CommonJS boot reads .default. Its service, one PostScheduling instance,
+          throws IncorrectUsageError before init. The only public operation is receiver-dependent
           async rescheduleAll({previousKey} = {}), resolving undefined after database/key
           lookup and adapter call submission, not after those calls settle. The deep module
-          default-exports the constructor; production constructs it only in the root. There
-          is no init/reset/stop export. Root units pin the default export as the one instance
-          built on first load and reused by later requires; class units pin rescheduleAll's
-          undefined result. Pending-adapter completion semantics remain unasserted.
+          default-exports the constructor; production constructs it only in the root. Root
+          units pin nothing constructed on load, one instance published by init and kept by
+          repeated init; class units pin rescheduleAll's undefined result. Pending-adapter
+          completion semantics remain unasserted.
         sources:
           - core/server/services/post-scheduling/index.ts
           - core/server/services/post-scheduling/post-scheduling.ts
@@ -10626,16 +10630,17 @@ services:
           - test/unit/server/services/post-scheduling/post-scheduling-jobs.test.ts
       construction:
         summary: >-
-          Import captures the Admin API URL, resolves the adapter-manager's cached scheduling
+          Init captures the Admin API URL, resolves the adapter-manager's cached scheduling
           adapter and creates an ErrorCapturingSchedulingAdapter around it. The constructor
-          retains URL/adapter/internal-keys, adds six common-event listeners for scheduled,
-          rescheduled and unscheduled posts/pages, then registers itself on the adapter.
+          retains URL/adapter/internal-keys, the models registry and signed-job helpers, adds six
+          listeners for scheduled, rescheduled and unscheduled posts/pages through the injected
+          event bus, then registers itself on the adapter.
           Boot makes a separate error-capture wrapper around the same cached adapter; auth
           retains the underlying adapter for rotation. Constructor does not start it. Root
           units pin one adapter lookup, the absolute Admin API URL, registration with the
-          default export, one listener per event and a failed load (internal keys not ready)
-          subscribing nothing; class units pin exactly six listeners, registration after
-          subscribing and one listener set per instance.
+          service, one listener per event, a failed init (internal keys not ready) subscribing
+          nothing and a registration failure removing its listeners; class units pin exactly
+          six listeners, registration after subscribing and one listener set per instance.
         sources:
           - core/server/services/post-scheduling/index.ts
           - core/server/services/post-scheduling/post-scheduling.ts
@@ -10679,15 +10684,16 @@ services:
           - test/unit/server/auth/reset-authentication.test.ts
       startup:
         summary: >-
-          Boot validates adapters before importing this eager root in initServices. It later
-          calls the shared adapter's run without awaiting a possible promise, initializes
+          Boot validates adapters before initServices imports this root and awaits its init.
+          It then calls the shared adapter's run without awaiting a possible promise, initializes
           dependent services, registers job handlers and awaits jobs.start. After synchronous
           automations init returns, it awaits post rescheduleAll only when rescheduleOnBoot
-          is truthy. Rebuilding queries scheduled posts and pages concurrently and then reads
+          is truthy, reading the service then. Rebuilding queries scheduled posts and pages
+          concurrently and then reads
           the scheduler key. Boot harness tests keep jobs.start unresolved and assert neither
           automations nor rescheduling runs, propagate its rejection, and assert opt-out skips
-          rescheduling. They also pin that the root loads before the adapter runs and Stripe
-          initializes, and that a load failure stops boot before either. Modules are fakes, so
+          rescheduling. They also pin that init runs before the adapter runs and Stripe
+          initializes, and that an init rejection stops boot before either. Modules are fakes, so
           real adapter readiness and outstanding adapter operations are not protected.
         sources:
           - core/boot.js
@@ -10698,9 +10704,10 @@ services:
           - test/unit/boot/init-services.test.ts
       lifetime:
         summary: >-
-          Module caching preserves the first URL/adapter graph and six listeners. There is
-          no listener disposer, rebind or registration removal; constructing another instance
-          adds another listener set. Reschedulers remain retained by the shared adapter.
+          defineService keeps the first initialized URL/adapter graph and six listeners across
+          repeated init, including same-process reboots. A failed construction removes its
+          listeners; otherwise there is no listener disposer, rebind or registration removal,
+          and constructing another instance adds another listener set. Reschedulers remain retained by the shared adapter.
           Database scheduled status is durable; the default adapter's queue, tombstones and
           running flag are process state. Normal rebuild unschedules then schedules using
           bootstrap=true, except adapters declaring strict-true idempotency dedupe skip the
@@ -10720,7 +10727,7 @@ services:
           - test/unit/server/services/post-scheduling/post-scheduling-jobs.test.ts
       configuration:
         summary: >-
-          Root captures the URL and resolved adapter at import; later adapter-manager cache
+          Root captures the URL and resolved adapter at init; later adapter-manager cache
           clearing does not rebind it. Shared URL bases/config are frozen, so repeated facade
           calls and test replacement are not hot reload. Internal keys are read per event or
           rebuild through a retained promise cache, cleared by auth rotation. Jobs use current
@@ -10731,7 +10738,7 @@ services:
           without changing the key or publish time. Class units pin the JWT claims, the
           per-event key read, the overdue key change and Moment's parsing (Dates, offsets,
           zone-less strings as UTC, undefined as now, null as a logged failure); root units
-          pin the URL read once at load.
+          pin the URL read once at init.
         sources:
           - core/server/services/post-scheduling/index.ts
           - core/server/services/post-scheduling/post-scheduling.ts
@@ -10770,8 +10777,8 @@ services:
           - test/unit/server/adapters/scheduling/scheduling-default.test.js
       failures:
         summary: >-
-          Adapter resolution/registration can fail import, and registration occurs after
-          listeners were attached. Event handlers log key/normalization or synchronous raw
+          Adapter resolution/registration can reject init. Registration occurs after listeners
+          were attached, and the root removes them before rejecting. Event handlers log key/normalization or synchronous raw
           adapter failures; they do not retry. Production error-capture reports synchronous
           throws and rejected scheduling promises without propagating them. Direct rebuild
           query/key/normalization failures reject, possibly after earlier jobs were submitted;
@@ -10780,7 +10787,8 @@ services:
           Default HTTP requests have five-second timeout/no client retries; only status 503
           schedules up to 30 delayed retries, 404 is ignored and other errors are logged.
           Decorator units assert selected reporting/redaction and rejection handling; root
-          units pin that the root's adapter reports through that decorator, and class units
+          units pin that the root's adapter reports through that decorator and the listener
+          removal, and class units
           pin per-handler logging, a reschedule stopping at a failed unschedule, rebuild
           rejection and listeners kept when registration throws. They do not establish
           whole-root recovery, and the two-retry unit does not pin exhaustion.
@@ -10800,8 +10808,8 @@ services:
     blockers:
       - >-
         Define ownership of listener removal, scheduler timers, pending HTTP work and adapter
-        rebinding across stop/reboot; none is supplied by the existing root or default adapter.
-        Root units pin today's retained adapter after the adapter cache changes.
+        rebinding across stop/reboot; none is supplied by the root or default adapter. Root
+        units pin the retained adapter after the adapter cache changes.
       - >-
         Cover real post/page schedule, reschedule and unschedule events through commit/rollback
         and overlapping edits. Class units drive the six handlers with fake models; manually
