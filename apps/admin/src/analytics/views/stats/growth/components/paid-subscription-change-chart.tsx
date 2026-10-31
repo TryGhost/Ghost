@@ -291,10 +291,12 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
         return [];
       }
 
-      // For "Today" range, show just today's change
+      // For "Today" range, show just today's change. useGrowthStats dates
+      // Today's points by the start of each day, so the point dated today
+      // carries yesterday's counts and today's own sit on the last point
       if (range === 1) {
         const today = moment().format('YYYY-MM-DD');
-        const todayData = memberData.find((item) => item.date === today);
+        const todayData = memberData[memberData.length - 1];
 
         return [
           {
