@@ -4,17 +4,19 @@ const fs = require('fs');
 const sinon = require('sinon');
 const nock = require('nock');
 const path = require('path');
-const loggingLib = require('@tryghost/logging');
+const { createLoggingFake } = require('../../../../../utils/logging-utils');
 const configUtils = require('../../../../../utils/config-utils');
 const urlUtilsHelper = require('../../../../../utils/url-utils');
 const request = require('../../../../../../core/server/lib/request-external');
 const urlUtils = require('../../../../../../core/shared/url-utils').default;
 const ExternalMediaInliner = require('../../../../../../core/server/services/media-inliner/external-media-inliner');
 
+let logging;
+
 // The root supplies these collaborators in production; the tests keep the real ones.
 const createInliner = (deps = {}) =>
   new ExternalMediaInliner({
-    logging: loggingLib,
+    logging,
     request,
     urlUtils,
     loadFileType: () => import('file-type'),
@@ -23,7 +25,6 @@ const createInliner = (deps = {}) =>
   });
 
 describe('ExternalMediaInliner', function () {
-  let logging;
   let ghostLogoPng;
   let exeFile;
   let heicFile;
@@ -41,11 +42,7 @@ describe('ExternalMediaInliner', function () {
     heicFile = fs.readFileSync(path.join(__dirname, 'fixtures', 'image.heic'));
     heifFile = fs.readFileSync(path.join(__dirname, 'fixtures', 'image.heif'));
     GIF1x1 = Buffer.from('R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'base64');
-    logging = {
-      info: sinon.stub(loggingLib, 'info'),
-      error: sinon.stub(loggingLib, 'error'),
-      warn: sinon.stub(loggingLib, 'warn'),
-    };
+    logging = createLoggingFake();
 
     postModelStub = {
       findAll: sinon.stub().resolves([]),
