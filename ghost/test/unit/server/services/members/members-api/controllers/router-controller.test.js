@@ -2512,6 +2512,70 @@ describe('RouterController', function () {
         );
       });
 
+      describe('on restricted signup sites', function () {
+        const createRestrictedController = (signupAccess) => {
+          const get = sinon.stub();
+          get.withArgs('all_blocked_email_domains').returns([]);
+          get.withArgs('members_signup_access').returns(signupAccess);
+          giftService.service.getRedeemable = sinon.stub().resolves({});
+
+          return createRouterController({
+            allowSelfSignup: sinon.stub().returns(false),
+            giftService,
+            settingsCache: { get },
+          });
+        };
+
+        it('sends the signup link for a redeemable gift on a paid-members-only site', async function () {
+          const controller = createRestrictedController('paid');
+
+          await controller.sendMagicLink(req, res);
+
+          sinon.assert.calledOnceWithExactly(giftService.service.getRedeemable, {
+            token: 'gift-token-123',
+            memberStatus: null,
+          });
+          sinon.assert.calledOnce(sendEmailWithMagicLinkStub);
+          assert.equal(
+            sendEmailWithMagicLinkStub.firstCall.args[0].tokenData.giftToken,
+            'gift-token-123',
+          );
+        });
+
+        it('rejects a gift that cannot be redeemed on a paid-members-only site', async function () {
+          const controller = createRestrictedController('paid');
+          giftService.service.getRedeemable.rejects(
+            new errors.BadRequestError({ message: 'This gift has already been redeemed.' }),
+          );
+
+          await assert.rejects(controller.sendMagicLink(req, res), {
+            message: 'This gift has already been redeemed.',
+          });
+          sinon.assert.notCalled(sendEmailWithMagicLinkStub);
+        });
+
+        it('still rejects paid-members-only signups without a gift', async function () {
+          const controller = createRestrictedController('paid');
+          delete req.body.giftToken;
+
+          await assert.rejects(controller.sendMagicLink(req, res), {
+            message: 'This site only accepts paid members.',
+          });
+          sinon.assert.notCalled(giftService.service.getRedeemable);
+          sinon.assert.notCalled(sendEmailWithMagicLinkStub);
+        });
+
+        it('still rejects gift signups on an invite-only site', async function () {
+          const controller = createRestrictedController('invite');
+
+          await assert.rejects(controller.sendMagicLink(req, res), {
+            message: 'This site is invite-only, contact the owner for access.',
+          });
+          sinon.assert.notCalled(giftService.service.getRedeemable);
+          sinon.assert.notCalled(sendEmailWithMagicLinkStub);
+        });
+      });
+
       it('forwards giftToken for signin flows', async function () {
         req.body.emailType = 'signin';
         const controller = createRouterController();
