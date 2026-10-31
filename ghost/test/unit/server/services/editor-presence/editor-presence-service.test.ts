@@ -168,21 +168,78 @@ describe('EditorPresenceService', function () {
     );
   });
 
-  it('propagates store failures and records them', async function () {
-    const failing: PresenceStore = {
+  function failingStore(failure: Partial<PresenceStore>): PresenceStore {
+    return {
       kind: 'redis',
-      touch: async () => {
-        throw new Error('connection closed');
-      },
+      touch: async () => undefined,
       read: async () => [],
       remove: async () => undefined,
+      ...failure,
     };
-    const { service, recorded } = build({ store: failing });
+  }
+
+  it('turns a store failure into a 503 and records the degraded operation', async function () {
+    const store = failingStore({
+      touch: async () => {
+        throw Object.assign(new Error('connect ECONNREFUSED 127.0.0.1:6379'), {
+          code: 'ECONNREFUSED',
+        });
+      },
+    });
+    const { service, recorded } = build({ store });
     await assert.rejects(
       service.poll(USER_1, { editing: { id: POST_A, type: 'post' } }),
-      /connection closed/,
+      (error: unknown) => {
+        const ghostError = error as { statusCode: number; errorType: string; message: string };
+        assert.equal(ghostError.statusCode, 503);
+        assert.equal(ghostError.errorType, 'ServiceUnavailableError');
+        assert.equal(ghostError.message, 'Presence is temporarily unavailable');
+        return true;
+      },
     );
-    assert.equal(recorded[0].value.outcome, 'error');
-    assert.equal(recorded[0].value.store, 'redis');
+    assert.deepEqual(
+      recorded.map((entry) => ({ name: entry.name, ...entry.value, value: undefined })),
+      [
+        {
+          name: 'presence-degraded',
+          feature: 'presence',
+          store: 'redis',
+          operation: 'touch',
+          reason: 'ECONNREFUSED',
+          value: undefined,
+        },
+        {
+          name: 'presence-poll',
+          feature: 'presence',
+          store: 'redis',
+          outcome: 'error',
+          write: true,
+          value: undefined,
+        },
+      ],
+    );
+  });
+
+  it('labels a NOPERM reply from Redis as noperm on read and remove', async function () {
+    const noperm = () => {
+      throw new Error("NOPERM User 1 has no permissions to run the 'zrangebyscore' command");
+    };
+    const { service, recorded } = build({
+      store: failingStore({ read: async () => noperm(), remove: async () => noperm() }),
+    });
+    await assert.rejects(service.poll(USER_1, { resources: [{ id: POST_A, type: 'post' }] }), {
+      statusCode: 503,
+    });
+    await assert.rejects(service.leave(USER_1, { resource: { id: POST_A, type: 'post' } }), {
+      statusCode: 503,
+    });
+    const degraded = recorded.filter((entry) => entry.name === 'presence-degraded');
+    assert.deepEqual(
+      degraded.map((entry) => [entry.value.operation, entry.value.reason]),
+      [
+        ['read', 'noperm'],
+        ['remove', 'noperm'],
+      ],
+    );
   });
 });

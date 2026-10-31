@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { TooManyRequestsError, ValidationError } from '@tryghost/errors';
+import { InternalServerError, TooManyRequestsError, ValidationError } from '@tryghost/errors';
 import { FixedWindowLimiter } from './rate-limiter';
 import {
   RESOURCE_TYPES,
@@ -48,6 +48,19 @@ export interface EditorPresenceServiceOptions {
 
 export const DEFAULT_ACTIVE_WINDOW_MS = 60_000;
 export const DEFAULT_RETENTION_MS = 60_000;
+
+type StoreOperation = 'touch' | 'read' | 'remove';
+
+function failureReason(error: unknown): string {
+  const details = error as { code?: unknown; name?: unknown; message?: unknown };
+  if (typeof details.message === 'string' && details.message.startsWith('NOPERM')) {
+    return 'noperm';
+  }
+  if (typeof details.code === 'string') {
+    return details.code;
+  }
+  return typeof details.name === 'string' ? details.name : 'Error';
+}
 
 function parse<T>(schema: z.ZodType<T>, input: unknown): T {
   const result = schema.safeParse(input ?? {});
@@ -103,13 +116,15 @@ export class EditorPresenceService {
     const started = performance.now();
     try {
       if (editing) {
-        await this.store.touch(
-          encodeMember({ type: editing.type, resourceId: editing.id, userId }),
-          now,
-          this.retentionMs,
+        await this.fromStore('touch', () =>
+          this.store.touch(
+            encodeMember({ type: editing.type, resourceId: editing.id, userId }),
+            now,
+            this.retentionMs,
+          ),
         );
       }
-      const stored = await this.store.read(now - this.activeWindowMs);
+      const stored = await this.fromStore('read', () => this.store.read(now - this.activeWindowMs));
       this.record('presence-poll', started, { outcome: 'ok', write: Boolean(editing) });
 
       const active: ActivePresence[] = [];
@@ -137,8 +152,8 @@ export class EditorPresenceService {
     const { resource } = parse(leaveSchema, input);
     const started = performance.now();
     try {
-      await this.store.remove(
-        encodeMember({ type: resource.type, resourceId: resource.id, userId }),
+      await this.fromStore('remove', () =>
+        this.store.remove(encodeMember({ type: resource.type, resourceId: resource.id, userId })),
       );
       this.record('presence-leave', started, { outcome: 'ok' });
     } catch (error) {
@@ -154,6 +169,27 @@ export class EditorPresenceService {
       throw new TooManyRequestsError({
         message: 'Too many presence requests',
         context: `Retry after ${Math.ceil(decision.retryAfterMs / 1000)}s`,
+      });
+    }
+  }
+
+  /** A store failure is a 503, never a 500: editing does not depend on presence and clients back off. */
+  private async fromStore<T>(operation: StoreOperation, run: () => Promise<T>): Promise<T> {
+    try {
+      return await run();
+    } catch (error) {
+      this.metrics?.metric('presence-degraded', {
+        feature: 'presence',
+        store: this.store.kind,
+        operation,
+        reason: failureReason(error),
+      });
+      throw new InternalServerError({
+        statusCode: 503,
+        errorType: 'ServiceUnavailableError',
+        level: 'normal',
+        message: 'Presence is temporarily unavailable',
+        err: error instanceof Error ? error : undefined,
       });
     }
   }

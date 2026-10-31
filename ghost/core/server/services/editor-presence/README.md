@@ -85,8 +85,17 @@ beyond that. Ids must be 24-character hex and `type` must be `post` or `page`.
 Both are options on the service; raising retention supports "last active N
 minutes ago" without a model change.
 
+## Failure
+
+A store failure (Redis down, `NOPERM`, timeout) answers 503
+`ServiceUnavailableError` with a generic message; the original error stays in
+the wrapped stack for logs. Editing and saving never depend on presence, and
+clients treat 503 as a signal to back off.
+
 ## Metrics
 
 `presence-poll` and `presence-leave` carry `feature: presence`, the store kind,
-duration and outcome; `presence-rate-limited` counts refusals. No ids are
-recorded.
+duration and outcome; `presence-rate-limited` counts refusals;
+`presence-degraded` records each store failure with the operation (`touch`,
+`read`, `remove`) and a reason (`noperm`, a socket error code, or the error
+name). No ids are recorded.
