@@ -2,9 +2,10 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import sinon from 'sinon';
+import errors from '@tryghost/errors';
 import type { ExternalMediaImportResult } from '../../../../../core/server/services/media-inliner/types';
+import { createLoggingFake } from '../../../../utils/logging-utils';
 
-const loggingLib = require('@tryghost/logging');
 const request = require('../../../../../core/server/lib/request-external');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const ExternalMediaInliner = require('../../../../../core/server/services/media-inliner/external-media-inliner');
@@ -63,13 +64,13 @@ function pageModel(resources: object[]) {
 }
 
 describe('ExternalMediaInliner seams', function () {
-  let logging: { info: sinon.SinonStub; error: sinon.SinonStub; warn: sinon.SinonStub };
+  let logging: ReturnType<typeof createLoggingFake>;
 
   // The root supplies these collaborators in production; the tests keep the
   // real ones and replace a loader only where a case needs it.
   function create(deps: object = {}): Inliner {
     return new ExternalMediaInliner({
-      logging: loggingLib,
+      logging,
       request,
       urlUtils,
       loadFileType: () => import('file-type'),
@@ -88,11 +89,7 @@ describe('ExternalMediaInliner seams', function () {
   }
 
   beforeEach(function () {
-    logging = {
-      info: sinon.stub(loggingLib, 'info'),
-      error: sinon.stub(loggingLib, 'error'),
-      warn: sinon.stub(loggingLib, 'warn'),
-    };
+    logging = createLoggingFake();
   });
 
   afterEach(function () {
@@ -171,7 +168,7 @@ describe('ExternalMediaInliner seams', function () {
         lexical: `{"src":"${STORED_URL}"}`,
       });
       sinon.assert.calledWithExactly(logging.error, 'Error inlining media for post: post-1');
-      assert.equal(logging.error.secondCall.args[0].errorType, 'DataImportError');
+      assert.ok(logging.error.secondCall.args[0] instanceof errors.DataImportError);
     });
 
     it('leaves a post untouched when its download fails and still inlines the next post', async function () {
@@ -377,7 +374,7 @@ describe('ExternalMediaInliner seams', function () {
       sinon.assert.calledOnceWithExactly(getMediaStorage, '.heic', heicFile);
       assert.equal(storage.saveRaw.firstCall.args[0], heicFile);
       sinon.assert.calledWithExactly(logging.error, `Error converting file to JPEG: ${heicUrl}`);
-      assert.equal(logging.error.secondCall.args[0].errorType, 'DataImportError');
+      assert.ok(logging.error.secondCall.args[0] instanceof errors.DataImportError);
     });
   });
 });
