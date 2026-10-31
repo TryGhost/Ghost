@@ -28,12 +28,15 @@ import { appsScreen } from './apps.screen';
 import {
   APP_ORIGIN,
   APP_PAGE_URL,
+  ICON_DATA_URL,
+  ICON_URL,
   MANIFEST_URL,
   failAppFrame,
   fakeAppFrame,
   fakeAppPage,
   fakeInstallations,
   fakeSessionStart,
+  imageSources,
   installation,
   labs,
   manifest,
@@ -1284,6 +1287,54 @@ describe('Managing apps', () => {
       .element(appsScreen.historyEntries().nth(2))
       .toHaveTextContent('Installed by Jamie Larson');
     expect(new URL(readApi.requests[0].url).searchParams.get('include')).toBe('history');
+  });
+
+  // The icon URL isn't faked, so a request to it would fail the test.
+  it('draws an app’s own icon from the copy Ghost stored, never from the app', async () => {
+    const withIcon = installation({
+      manifest: manifest({ icon: { url: ICON_URL } }),
+      icon_data_url: ICON_DATA_URL,
+    });
+    fakeInstallations([withIcon]);
+    fakeDetails(withIcon);
+
+    await renderAdminApp('/apps', { labs });
+
+    await expect.element(appsScreen.row('Podcast')).toBeVisible();
+    const row = appsScreen.row('Podcast').element();
+    expect(imageSources(row)).toEqual([ICON_DATA_URL]);
+    await expect.poll(() => row.querySelector('img')!.naturalWidth).toBeGreaterThan(0);
+    expect(imageSources(appsScreen.sidebarApps().element())).toEqual([ICON_DATA_URL]);
+
+    await appsScreen.rowActions('Podcast').click();
+    await appsScreen.detailsMenuItem().click();
+
+    await expect.element(appsScreen.details()).toHaveTextContent('Example Audio');
+    expect(imageSources(appsScreen.details().element())).toEqual([ICON_DATA_URL]);
+  });
+
+  it('draws the default icon for an app’s own icon without a stored copy', async () => {
+    fakeInstallations([installation({ manifest: manifest({ icon: { url: ICON_URL } }) })]);
+
+    await renderAdminApp('/apps', { labs });
+
+    await expect.element(appsScreen.row('Podcast')).toBeVisible();
+    const row = appsScreen.row('Podcast').element();
+    expect(imageSources(row)).toEqual([]);
+    expect(row.querySelector('svg.lucide-app-window')).not.toBeNull();
+    expect(imageSources(appsScreen.sidebarApps().element())).toEqual([]);
+  });
+
+  it('draws the default icon for a stored copy that isn’t an image data URL', async () => {
+    fakeInstallations([
+      installation({ manifest: manifest({ icon: { url: ICON_URL } }), icon_data_url: ICON_URL }),
+    ]);
+
+    await renderAdminApp('/apps', { labs });
+
+    await expect.element(appsScreen.row('Podcast')).toBeVisible();
+    expect(imageSources(appsScreen.row('Podcast').element())).toEqual([]);
+    expect(imageSources(appsScreen.sidebarApps().element())).toEqual([]);
   });
 
   it('uninstalls an app from the list, after saying integration keys stay', async () => {

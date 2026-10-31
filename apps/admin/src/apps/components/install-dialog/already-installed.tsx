@@ -20,7 +20,7 @@ export const AlreadyInstalled: React.FC<{
   <>
     <DialogHeader className="gap-3">
       <Inline gap="md">
-        <AppIcon manifest={preview.manifest} size="lg" />
+        <AppIcon app={preview} size="lg" />
         <DialogTitle>{preview.manifest.name} is already installed</DialogTitle>
       </Inline>
       <DialogDescription>Nothing has changed since it was approved.</DialogDescription>

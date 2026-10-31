@@ -41,14 +41,19 @@ describe('createAppFetcher', function () {
     createAppFetcher({ request: got, getLocalhostAlias: () => alias });
 
   describe('reading', function () {
-    it('reads the text a URL serves, asking for the given type', async function () {
+    it('reads what a URL serves and its type, asking for the given type', async function () {
       nock('https://podcast.example.com', { reqheaders: { accept: 'text/plain' } })
         .get('/ghost-app.json')
-        .reply(200, 'Hello');
+        .reply(200, 'Hello', { 'content-type': 'text/plain; charset=utf-8' });
 
       const result = await fetcher()(APP_URL, OPTIONS);
 
-      assert.deepEqual(result, { success: true, url: APP_URL, text: 'Hello' });
+      assert.deepEqual(result, {
+        success: true,
+        url: APP_URL,
+        body: Buffer.from('Hello'),
+        contentType: 'text/plain; charset=utf-8',
+      });
     });
 
     it('reports a URL it can’t read as unreachable, without a request', async function () {
@@ -101,7 +106,12 @@ describe('createAppFetcher', function () {
 
       const result = await fetcher()(url, OPTIONS);
 
-      assert.deepEqual(result, { success: true, url: APP_URL, text: 'Hello' });
+      assert.deepEqual(result, {
+        success: true,
+        url: APP_URL,
+        body: Buffer.from('Hello'),
+        contentType: null,
+      });
     });
 
     it('reports a request that gets no answer as unreachable, with why for the logs', async function () {
@@ -185,7 +195,8 @@ describe('createAppFetcher', function () {
       assert.deepEqual(result, {
         success: true,
         url: 'https://podcast.example.com/v2/ghost-app.json',
-        text: 'Hello',
+        body: Buffer.from('Hello'),
+        contentType: null,
       });
     });
 
@@ -358,7 +369,12 @@ describe('createAppFetcher', function () {
 
         const result = await fetcher()(APP_URL, OPTIONS);
 
-        assert.deepEqual(result, { success: true, url: APP_URL, text: 'Hello' });
+        assert.deepEqual(result, {
+          success: true,
+          url: APP_URL,
+          body: Buffer.from('Hello'),
+          contentType: null,
+        });
       },
     );
 
@@ -386,7 +402,8 @@ describe('createAppFetcher', function () {
       assert.deepEqual(result, {
         success: true,
         url: 'http://localhost:8787/ghost-app.json',
-        text: 'Hello',
+        body: Buffer.from('Hello'),
+        contentType: null,
       });
     });
 
@@ -408,7 +425,12 @@ describe('createAppFetcher', function () {
 
       const result = await fetcher({ alias })(APP_URL, OPTIONS);
 
-      assert.deepEqual(result, { success: true, url: APP_URL, text: 'Hello' });
+      assert.deepEqual(result, {
+        success: true,
+        url: APP_URL,
+        body: Buffer.from('Hello'),
+        contentType: null,
+      });
     });
 
     it('follows a redirect on localhost through the alias too, with the original host', async function () {
