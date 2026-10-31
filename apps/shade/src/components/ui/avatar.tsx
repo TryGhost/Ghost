@@ -72,11 +72,10 @@ interface AvatarProps extends React.ComponentPropsWithoutRef<typeof AvatarPrimit
 
 const Avatar = React.forwardRef<React.ElementRef<typeof AvatarPrimitive.Root>, AvatarProps>(
   ({ className, children, src, initials, colorSeed, ...props }, ref) => {
-    const { admin7Design, darkMode } = useShade();
+    const { admin7Design } = useShade();
     const hasInitials = !!initials;
     const seed = colorSeed || initials || '';
-    // admin7Design's tonal colours are light-mode only until dark mode gets its Admin 7 palette.
-    const tonal = hasInitials && admin7Design && !darkMode;
+    const tonal = hasInitials && admin7Design;
     const bgColor = hasInitials && !tonal ? stringToHslColor(seed, '45', '55') : undefined;
 
     return (

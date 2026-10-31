@@ -30,8 +30,8 @@
   --surface-elevated-2: var(--color-white);
   --surface-overlay: var(--color-white);
   --surface-overlay-foreground: var(--color-black);
-  --modal-backdrop: oklch(50% 0.012 85 / 0.2);
-  --form-sheet-backdrop: oklch(50% 0.012 85 / 0.08);
+  --modal-backdrop: oklch(50% 0.002 100 / 0.2);
+  --form-sheet-backdrop: oklch(50% 0.002 100 / 0.08);
   --preview-canvas: var(--color-gray-50);
   --preview-gradient-start: var(--color-gray-50);
   --preview-gradient-end: var(--color-gray-50);
@@ -47,7 +47,7 @@
   /* Frosted glass (the floating sidebar): a faint translucent fill over a
      backdrop blur, a light-catching outline, and a sheen along the top edge.
      The two shadows have matching layers so one interpolates into the other. */
-  --surface-glass: rgb(248 248 245 / 0.5);
+  --surface-glass: oklch(97.83% 0.0007 100 / 0.5);
   --border-glass: rgb(255 255 255 / 0.7);
   --surface-glass-highlight: linear-gradient(
     180deg,
@@ -134,11 +134,8 @@
 }
 
 /* admin7Design off: the previous palette and the tokens that changed with it.
-   Dark mode keeps them too until it gets its Admin 7 colours; the dark block
-   below still wins for every token it sets. Temporary: delete with the flag. */
-[data-admin7-design='false'],
-.dark,
-.dark [data-admin7-design] {
+   Temporary: delete with the flag, along with the previous dark block below. */
+[data-admin7-design='false'] {
   --color-black: oklch(20.38% 0.0067 258.4);
   --color-gray-50: oklch(98.54% 0.0013 286.4);
   --color-gray-100: oklch(96.97% 0.0017 247.8);
@@ -248,8 +245,117 @@
   --chart-purple: hsl(273 100% 64%);
 }
 
+/* Dark mode. With admin7Design off, the previous dark block below wins. */
 .dark,
 .dark [data-admin7-design] {
+  /* The near-neutral gray ramp is shared with light mode. Black keeps the
+     dark-mode lightness so surfaces built on it don't get darker. */
+  --color-black: oklch(20.38% 0.0008 100);
+
+  /* One-off colors (not in the standard color scale) */
+  --color-sidebar-bg: oklch(0.204 0.001 100);
+
+  --tab-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
+  --tab-active: color-mix(in oklab, oklch(36.77% 0.0018 100) 60%, transparent);
+  --button-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
+  --button-ghost-hover: var(--accent);
+  --interactive-hover: var(--button-hover);
+  --filter-bar-background: var(--surface-elevated-2);
+  --filter-bar-item-hover: var(--tab-hover);
+  --control-surface: transparent;
+  --control-readonly-surface: var(--color-gray-950);
+  --control-disabled-surface: var(--color-gray-950);
+  --control-border: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
+  --control-pressed-shadow: lch(0 0 0 / 0.07) 0px 1px 2px 0px inset;
+  --control-outline-shadow:
+    lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
+    lch(0 0 0 / 0.04) 0px 1px 1px 0px;
+  --control-outline-pressed-shadow:
+    lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
+    lch(0 0 0 / 0.04) 0px 1px 1px 0px, var(--control-pressed-shadow);
+  --table-row-hover: var(--color-sidebar-bg);
+  /* Mixed into the page background rather than a step off the blue ramp: at
+     dark-mode lightness the raw palette blues are far too saturated for a
+     whole row. */
+  --table-row-selected: color-mix(in oklab, var(--color-blue-700) 25%, var(--background));
+  --members-sticky-hover-bg: var(--table-row-hover);
+
+  --background: oklch(0.178 0.001 100);
+  --foreground: var(--color-gray-200);
+  --muted: var(--color-gray-900);
+  --muted-foreground: var(--color-gray-600);
+  --accent: var(--color-gray-900);
+  --accent-foreground: var(--color-gray-100);
+  --popover: var(--color-sidebar-bg);
+  --popover-foreground: var(--color-gray-400);
+  --border: color-mix(in oklab, var(--color-gray-900) 50%, transparent);
+  --input: var(--color-gray-900);
+  --card: var(--background);
+  --card-foreground: var(--color-gray-100);
+  --primary: var(--color-gray-200);
+  --primary-foreground: var(--color-black);
+  --secondary: var(--color-gray-900);
+  --secondary-foreground: var(--color-gray-100);
+  --destructive: var(--color-red-500);
+  /* Shapeshifter's red-500 is light enough for text on dark but too light for a
+     white label, so the destructive button gets a dark one. */
+  --destructive-foreground: var(--color-black);
+  --ring: var(--color-gray-900);
+  --surface-page: var(--color-black);
+  --surface-panel: var(--color-black);
+  --surface-panel-foreground: var(--color-gray-100);
+  --surface-elevated: var(--color-sidebar-bg);
+  --surface-elevated-foreground: var(--color-gray-100);
+  --surface-elevated-2: oklch(0.235 0.001 100);
+  --surface-overlay: var(--color-black);
+  --surface-overlay-foreground: var(--color-gray-400);
+  --preview-canvas: var(--color-black);
+  --preview-gradient-start: var(--color-gray-950);
+  --preview-gradient-end: var(--color-black);
+  --surface-inverse: var(--color-white);
+  --surface-inverse-foreground: var(--color-black);
+  --text-primary: var(--color-gray-200);
+  --text-secondary: var(--color-gray-400);
+  --text-tertiary: var(--color-gray-500);
+  --text-inverse: var(--color-black);
+  --border-subtle: var(--color-gray-900);
+  --border-default: var(--color-gray-950);
+  --border-strong: var(--color-gray-700);
+  --surface-glass: oklch(25% 0.001 100 / 0.55);
+  --border-glass: rgb(255 255 255 / 0.1);
+  --surface-glass-highlight: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 0.066) 0%,
+    rgb(255 255 255 / 0) 18%,
+    rgb(255 255 255 / 0) 85%,
+    rgb(255 255 255 / 0.018) 100%
+  );
+  --focus-ring: var(--color-gray-900);
+  --state-info: var(--color-blue-400);
+  --search-result-title: #8ab4f8;
+  --search-result-description: #bdc1c6;
+  --state-info-foreground: var(--color-black);
+  --state-success: var(--color-green-400);
+  --state-success-foreground: var(--color-black);
+  --state-warning: var(--color-yellow-400);
+  --state-warning-foreground: var(--color-black);
+  --state-danger: var(--color-red-500);
+  --state-danger-foreground: var(--color-black);
+  --chart-gray: var(--color-gray-700);
+  --sidebar-background: var(--color-sidebar-bg);
+  --sidebar-foreground: var(--color-gray-500);
+  --sidebar-primary: var(--color-gray-900);
+  --sidebar-primary-foreground: var(--color-white);
+  --sidebar-accent: var(--tab-active);
+  --sidebar-accent-foreground: var(--color-gray-100);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--color-gray-700);
+}
+
+/* admin7Design off in dark mode: today's dark values, exactly. Temporary:
+   delete with the flag. */
+.dark [data-admin7-design='false'] {
+  --color-black: oklch(20.38% 0.0067 258.4);
   /* Less-saturated gray scale for dark mode (lightness + hue preserved, chroma halved again) */
   --color-gray-50: oklch(98.54% 0.0003 286.4);
   --color-gray-100: oklch(96.97% 0.0004 247.8);

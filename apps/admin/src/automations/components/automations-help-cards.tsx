@@ -89,7 +89,7 @@ const AutomationsIconTile: React.FC = () => {
       )}
     >
       <LucideIcon.Zap
-        className={admin7Design ? 'text-purple-600 dark:text-[#8B5CF6]' : 'text-[#8B5CF6]'}
+        className={admin7Design ? 'text-purple-600' : 'text-[#8B5CF6]'}
         size={20}
         strokeWidth={1.5}
       />
@@ -108,7 +108,7 @@ const FeedbackIconTile: React.FC = () => {
       )}
     >
       <LucideIcon.MessageCircle
-        className={admin7Design ? 'text-green-600 dark:text-[#0EA5E9]' : 'text-[#0EA5E9]'}
+        className={admin7Design ? 'text-green-600' : 'text-[#0EA5E9]'}
         size={20}
         strokeWidth={1.5}
       />
