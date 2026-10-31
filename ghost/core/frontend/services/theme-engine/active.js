@@ -11,7 +11,7 @@
  * No properties marked with an _ should be used directly.
  *
  */
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const join = require('path').join;
 
 const _ = require('lodash');

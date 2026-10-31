@@ -3,7 +3,8 @@ import crypto from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
+import { createWriteStream } from 'node:fs';
 import sinon from 'sinon';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, it } from 'vitest';
 
@@ -27,7 +28,7 @@ describe('Site content import', function () {
   });
 
   afterAll(async function () {
-    await fs.remove(directory);
+    await fs.rm(directory, { recursive: true, force: true });
   });
 
   beforeEach(function () {
@@ -63,7 +64,7 @@ describe('Site content import', function () {
   async function archive(name: string, entries: Record<string, string | Buffer>) {
     const file = path.join(directory, name);
     const zip = new ZipArchive();
-    const written = pipeline(zip, fs.createWriteStream(file));
+    const written = pipeline(zip, createWriteStream(file));
     for (const [entry, content] of Object.entries(entries)) {
       zip.append(content, { name: entry });
     }

@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../utils/assertions');
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const configUtils = require('../../../../utils/config-utils');
 const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 

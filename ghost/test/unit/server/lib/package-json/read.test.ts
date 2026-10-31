@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 // @ts-expect-error This module lacks type definitions.
 import tmp from 'tmp';
 import { join } from 'path';
-import fs from 'fs-extra';
+import fs from 'node:fs';
 // @ts-expect-error This module lacks type definitions.
 import packageJSON from '../../../../../core/server/lib/package-json';
 
