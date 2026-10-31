@@ -1,3 +1,4 @@
+import type { SignupTriggerScope } from '@/automations/utils/trigger-rules';
 import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
 import { useAutomationPerformanceStats } from '@/automations/hooks/use-automation-performance-stats';
 import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
@@ -5,7 +6,6 @@ import React, { useId, useState } from 'react';
 import type {
   AutomationPerformanceStats,
   AutomationRunStatusFilter,
-  AutomationTrigger,
 } from '@tryghost/admin-x-framework/api/automations';
 import { formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
 import { mapAutomationEntryStats } from '@/automations/utils/automation-entry-stats';
@@ -199,7 +199,7 @@ const PerformanceContent: React.FC<{
 export const AutomationSidebar: React.FC<{
   automationId: string;
   description: string;
-  triggerTierScope: AutomationTrigger['trigger_tier_scope'];
+  triggerTierScope: SignupTriggerScope;
   triggerTierIds: readonly string[];
   tiers: readonly Tier[];
   performanceEnabled: boolean;
@@ -267,7 +267,6 @@ export const AutomationSidebar: React.FC<{
   let stopConditionDescription: string;
   switch (triggerTierScope) {
     case 'free':
-    case null:
       stopConditionDescription = 'Members stop early if they unsubscribe.';
       break;
     case 'all_paid':

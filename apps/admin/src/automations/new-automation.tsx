@@ -1,3 +1,4 @@
+import { signupTriggerRules } from './utils/trigger-rules';
 import React from 'react';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
@@ -157,13 +158,12 @@ const NewAutomationSession: React.FC<
         updated_at: '',
         actions: [],
         edges: [],
-        trigger_tier_scope: stripeEnabled ? null : 'free',
-        trigger_tier_ids: null,
+        trigger_rules: stripeEnabled ? [] : signupTriggerRules('free'),
       });
     }
     return <NewAutomationLoading />;
   }
-  if (initialAutomation.trigger_tier_scope === null) {
+  if (stripeEnabled && triggerTop === null) {
     return (
       <TriggerPicker
         automation={initialAutomation}
@@ -172,11 +172,14 @@ const NewAutomationSession: React.FC<
           if (trigger === 'paid_subscription_changed') {
             // A stand-in paid scope loads the paid tiers; the editor never saves it (NY-1733).
             setTierSelection({ from: [], to: [] });
-            setInitialAutomation({ ...initialAutomation, trigger_tier_scope: 'all_paid' });
+            setInitialAutomation({
+              ...initialAutomation,
+              trigger_rules: signupTriggerRules('all_paid'),
+            });
           } else {
             setInitialAutomation({
               ...initialAutomation,
-              trigger_tier_scope: trigger,
+              trigger_rules: signupTriggerRules(trigger),
             });
           }
         }}
