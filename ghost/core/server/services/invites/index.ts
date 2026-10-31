@@ -1,5 +1,8 @@
+import { lockStaffInvites } from '../../lib/staff-invite-usage';
 import { defineService } from '../../../kernel/define-service';
 import { Invites } from './invites';
+import InvitationLimiter from './invitation-limiter';
+import { limitService } from '../limits';
 
 export default defineService('Invites', () => {
   const settingsCache = require('../../../shared/settings-cache');
@@ -16,5 +19,10 @@ export default defineService('Invites', () => {
     urlUtils,
     models,
     logging,
+    invitationLimiter: new InvitationLimiter({
+      transaction: (callback) => models.Base.transaction(callback),
+      limitService,
+      lockStaffInvites,
+    }),
   });
 });

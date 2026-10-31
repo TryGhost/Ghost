@@ -1,4 +1,5 @@
 const validator = require('@tryghost/validator');
+const { lockStaffInvites } = require('../lib/staff-invite-usage');
 const ObjectId = require('bson-objectid').default;
 const ghostBookshelf = require('./base');
 const baseUtils = require('./base/utils');
@@ -661,7 +662,25 @@ const User = ghostBookshelf.Model.extend(
      * @extends ghostBookshelf.Model.add to manage all aspects of user signup
      * **See:** [ghostBookshelf.Model.add](base.js.html#Add)
      */
-    add: function add(dataToClone, unfilteredOptions) {
+    add: async function add(dataToClone, unfilteredOptions = {}) {
+      const isTrialStaffLimited = limitService.isLimited('limitTrialStaff');
+      // Imports and installation fixtures create users without sending invitation emails.
+      if (!isTrialStaffLimited || unfilteredOptions.importing || unfilteredOptions.migrating) {
+        return this.addWithRoles(dataToClone, unfilteredOptions);
+      }
+      if (unfilteredOptions.transacting) {
+        throw new errors.IncorrectUsageError({
+          message: 'Trial staff creation requires a fresh transaction.',
+        });
+      }
+      return ghostBookshelf.transaction(async (transacting) => {
+        await lockStaffInvites(transacting);
+        await limitService.errorIfWouldGoOverLimit('limitTrialStaff', { transacting });
+        return this.addWithRoles(dataToClone, { ...unfilteredOptions, transacting });
+      });
+    },
+
+    addWithRoles: function addWithRoles(dataToClone, unfilteredOptions) {
       const options = this.filterOptions(unfilteredOptions, 'add');
       const self = this;
       const data = JSON.parse(JSON.stringify(dataToClone));

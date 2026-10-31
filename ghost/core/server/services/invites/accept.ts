@@ -20,7 +20,7 @@ export type AcceptanceModels<Transaction = Knex.Transaction> = {
   Invite: {
     findOne(
       data: { token: string; status: 'sent' },
-      options: TransactionOptions<Transaction>,
+      options: { context: { internal: true }; transacting?: Transaction; forUpdate?: true },
     ): Promise<{
       get(key: 'expires'): number;
       get(key: 'email' | 'role_id'): string;
@@ -29,7 +29,7 @@ export type AcceptanceModels<Transaction = Knex.Transaction> = {
   };
   User: {
     findOne(data: { email: string }, options: TransactionOptions<Transaction>): Promise<unknown>;
-    add(
+    addWithRoles(
       data: { email: string; name: string; password: string; roles: string[] },
       options: TransactionOptions<Transaction>,
     ): Promise<unknown>;
@@ -46,14 +46,38 @@ const messages = {
   },
 };
 
+type StoredInvite<Transaction> = NonNullable<
+  Awaited<ReturnType<AcceptanceModels<Transaction>['Invite']['findOne']>>
+>;
+
+function validateInvite<Transaction>(
+  invite: StoredInvite<Transaction> | null,
+): asserts invite is StoredInvite<Transaction> {
+  if (!invite) {
+    throw new errors.NotFoundError({ message: tpl(messages.inviteNotFound) });
+  }
+  if (invite.get('expires') < Date.now()) {
+    throw new errors.NotFoundError({ message: tpl(messages.inviteExpired) });
+  }
+}
+
 export async function accept<Transaction>(
   invitation: Invitation,
   models: AcceptanceModels<Transaction>,
+  lockStaffUsage?: (transaction: Transaction) => Promise<void>,
 ): Promise<void> {
   const data = invitation.invitation[0];
   const inviteToken = security.url.decodeBase64(data.token);
 
+  // Reject invalid tokens before opening a transaction or waiting for the shared lock.
+  const candidate = await models.Invite.findOne(
+    { token: inviteToken, status: 'sent' },
+    { context: { internal: true } },
+  );
+  validateInvite(candidate);
+
   return models.Base.transaction(async (transacting) => {
+    await lockStaffUsage?.(transacting);
     const options: TransactionOptions<Transaction> = {
       context: { internal: true },
       transacting,
@@ -62,13 +86,8 @@ export async function accept<Transaction>(
 
     const invite = await models.Invite.findOne({ token: inviteToken, status: 'sent' }, options);
 
-    if (!invite) {
-      throw new errors.NotFoundError({ message: tpl(messages.inviteNotFound) });
-    }
-
-    if (invite.get('expires') < Date.now()) {
-      throw new errors.NotFoundError({ message: tpl(messages.inviteExpired) });
-    }
+    // A resend, revocation or expiry may have invalidated the preliminary lookup.
+    validateInvite(invite);
 
     const email = invite.get('email');
 
@@ -85,7 +104,8 @@ export async function accept<Transaction>(
 
     await invite.destroy(options);
 
-    await models.User.add(
+    // The validated invitation already occupies this seat, even after a large import.
+    await models.User.addWithRoles(
       {
         email,
         name: data.name,

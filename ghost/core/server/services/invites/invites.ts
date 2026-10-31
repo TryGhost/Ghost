@@ -1,3 +1,4 @@
+import type InvitationLimiter from './invitation-limiter';
 import * as security from '@tryghost/security';
 import tpl from '@tryghost/tpl';
 import type { GhostLogger } from '@tryghost/logging';
@@ -19,6 +20,7 @@ type InviteEmailData = {
 };
 
 type Dependencies = {
+  invitationLimiter: InvitationLimiter;
   settingsCache: { get(key: 'title'): string };
   settingsHelpers: { getDefaultEmailDomain(): string };
   mailService: {
@@ -86,6 +88,7 @@ export class Invites {
   private readonly urlUtils: Dependencies['urlUtils'];
   private readonly models: Dependencies['models'];
   private readonly logging: Dependencies['logging'];
+  private readonly invitationLimiter: InvitationLimiter;
 
   constructor({
     settingsCache,
@@ -94,6 +97,7 @@ export class Invites {
     urlUtils,
     models,
     logging,
+    invitationLimiter,
   }: Dependencies) {
     this.settingsCache = settingsCache;
     this.settingsHelpers = settingsHelpers;
@@ -101,94 +105,102 @@ export class Invites {
     this.urlUtils = urlUtils;
     this.models = models;
     this.logging = logging;
+    this.invitationLimiter = invitationLimiter;
   }
 
   accept(invitation: Invitation) {
-    return accept(invitation, this.models);
+    return accept(invitation, this.models, (transaction) =>
+      this.invitationLimiter.lockStaffUsage(transaction),
+    );
   }
 
   add({ api, InviteModel, invites, options, user }: AddInviteRequest): Promise<Invite> {
     let invite: Invite;
     let emailData: InviteEmailData;
 
-    return InviteModel.findOne({ email: invites[0].email }, options)
-      .then((existingInvite) => {
-        if (!existingInvite) {
-          return;
-        }
+    return this.invitationLimiter
+      .run(invites[0].email, (transacting) => {
+        const inviteOptions = transacting ? { ...options, transacting } : options;
+        return InviteModel.findOne({ email: invites[0].email }, inviteOptions)
+          .then((existingInvite) => {
+            if (!existingInvite) {
+              return;
+            }
 
-        return existingInvite.destroy(options);
-      })
-      .then(() => {
-        return InviteModel.add(invites[0], options);
-      })
-      .then((createdInvite) => {
-        invite = createdInvite;
+            return existingInvite.destroy(inviteOptions);
+          })
+          .then(() => {
+            return InviteModel.add(invites[0], inviteOptions);
+          })
+          .then((createdInvite) => {
+            invite = createdInvite;
 
-        const adminUrl = this.urlUtils.urlFor('admin', true);
+            const adminUrl = this.urlUtils.urlFor('admin', true);
 
-        if (user.name || user.email) {
-          emailData = {
-            blogName: this.settingsCache.get('title'),
-            invitedByName: user.name,
-            invitedByEmail: user.email,
-            resetLink: this.urlUtils.urlJoin(
-              adminUrl,
-              'signup',
-              security.url.encodeBase64(invite.get('token')),
-              '/',
-            ),
-            recipientEmail: invite.get('email'),
-          };
+            if (user.name || user.email) {
+              emailData = {
+                blogName: this.settingsCache.get('title'),
+                invitedByName: user.name,
+                invitedByEmail: user.email,
+                resetLink: this.urlUtils.urlJoin(
+                  adminUrl,
+                  'signup',
+                  security.url.encodeBase64(invite.get('token')),
+                  '/',
+                ),
+                recipientEmail: invite.get('email'),
+              };
 
-          return this.mailService.utils.generateContent({
-            data: emailData,
-            template: 'invite-user',
+              return this.mailService.utils.generateContent({
+                data: emailData,
+                template: 'invite-user',
+              });
+            } else {
+              emailData = {
+                blogName: this.settingsCache.get('title'),
+                invitedByEmail: `ghost@${this.settingsHelpers.getDefaultEmailDomain()}`,
+                resetLink: this.urlUtils.urlJoin(
+                  adminUrl,
+                  'signup',
+                  security.url.encodeBase64(invite.get('token')),
+                  '/',
+                ),
+                recipientEmail: invite.get('email'),
+              };
+
+              return this.mailService.utils.generateContent({
+                data: emailData,
+                template: 'invite-user-by-api-key',
+              });
+            }
+          })
+          .then((emailContent) => {
+            const payload = {
+              mail: [
+                {
+                  message: {
+                    to: invite.get('email'),
+                    replyTo: emailData.invitedByEmail,
+                    subject: emailData.invitedByName
+                      ? tpl(messages.invitedByName, {
+                          invitedByName: emailData.invitedByName,
+                          blogName: emailData.blogName,
+                        })
+                      : tpl(messages.invitedByNoName, {
+                          blogName: emailData.blogName,
+                        }),
+                    html: emailContent.html,
+                    text: emailContent.text,
+                  },
+                  options: {},
+                },
+              ],
+            };
+
+            return payload;
           });
-        } else {
-          emailData = {
-            blogName: this.settingsCache.get('title'),
-            invitedByEmail: `ghost@${this.settingsHelpers.getDefaultEmailDomain()}`,
-            resetLink: this.urlUtils.urlJoin(
-              adminUrl,
-              'signup',
-              security.url.encodeBase64(invite.get('token')),
-              '/',
-            ),
-            recipientEmail: invite.get('email'),
-          };
-
-          return this.mailService.utils.generateContent({
-            data: emailData,
-            template: 'invite-user-by-api-key',
-          });
-        }
       })
-      .then((emailContent) => {
-        const payload = {
-          mail: [
-            {
-              message: {
-                to: invite.get('email'),
-                replyTo: emailData.invitedByEmail,
-                subject: emailData.invitedByName
-                  ? tpl(messages.invitedByName, {
-                      invitedByName: emailData.invitedByName,
-                      blogName: emailData.blogName,
-                    })
-                  : tpl(messages.invitedByNoName, {
-                      blogName: emailData.blogName,
-                    }),
-                html: emailContent.html,
-                text: emailContent.text,
-              },
-              options: {},
-            },
-          ],
-        };
-
-        return api.mail.send(payload, { context: { internal: true } });
-      })
+      .then((payload) => api.mail.send(payload, { context: { internal: true } }))
       .then(() => {
         return InviteModel.edit(
           {
