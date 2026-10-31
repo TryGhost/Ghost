@@ -39,7 +39,10 @@ services:
         condition: service_completed_successfully
 
   tinybird-local:
-    image: tinybirdco/tinybird-local:latest@sha256:d3ad055060f9c778f17d6cbf5a262299de48cc94dffbb176c4bebe6865351623
+    # Preview of Tinybird's low-memory image: ~1.6GB less idle memory and ~35%
+    # smaller than :latest, small enough for the E2E runners' disk budget
+    # without a distilled build. Move back to :latest once it ships there.
+    image: tinybirdco/tinybird-local:low-memory-preview@sha256:317230ca524758760a2dac8c9f1a3a80b4e690ea5b59b9c52c93aeacaea0bd68
     container_name: ghost-dev-tinybird
     platform: linux/amd64
     stop_grace_period: 2s
