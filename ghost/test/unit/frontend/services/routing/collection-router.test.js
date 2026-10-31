@@ -93,6 +93,20 @@ describe('services/routing/CollectionRouter', function () {
       assert.equal(mountRouteSpy.args[3][0], '/:primary_tag/:slug.md');
     });
 
+    it('mounts <route>.md when data reads a single post or page', function () {
+      new CollectionRouter(
+        '/rubrique/',
+        { permalink: '/rubrique/:slug/', data: 'page.contact' },
+        RESOURCE_CONFIG,
+        routerCreatedSpy,
+      );
+
+      assert.deepEqual(mountRouteSpy.args.map(([path]) => path).slice(0, 2), [
+        '/rubrique/',
+        '/rubrique.md',
+      ]);
+    });
+
     it('router name', function () {
       const collectionRouter1 = new CollectionRouter(
         '/',
