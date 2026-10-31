@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { AdminLink } from '@/shared/admin-link';
+import { usePresence } from '@/shared/presence/use-presence';
 import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
 import { NotFound } from '@/shared/not-found';
@@ -186,6 +187,10 @@ function EditorContent({
     siteUrl: cardConfig.siteUrl,
     currentUserId: currentUser?.id,
   });
+  const presenceResource = session.persistedId
+    ? { id: session.persistedId, type: postType }
+    : undefined;
+  usePresence(presenceResource ? [presenceResource] : [], presenceResource);
   const [tkCount, setTkCount] = useState(0);
   const chromeEntrance = useScreenEntrance();
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
