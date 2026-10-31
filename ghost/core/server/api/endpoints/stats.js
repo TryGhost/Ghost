@@ -219,7 +219,17 @@ const controller = {
     headers: {
       cacheInvalidate: false,
     },
-    options: ['order', 'limit', 'page', 'after_id', 'after_date', 'date_from', 'date_to', 'timezone', 'newsletter_id'],
+    options: [
+      'order',
+      'limit',
+      'page',
+      'after_id',
+      'after_date',
+      'date_from',
+      'date_to',
+      'timezone',
+      'newsletter_id',
+    ],
     permissions: {
       docName: 'posts',
       method: 'browse',
@@ -249,7 +259,7 @@ const controller = {
     headers: {
       cacheInvalidate: false,
     },
-    options: ['newsletter_id', 'post_ids'],
+    options: ['newsletter_id', 'post_ids', 'fail_on_error'],
     permissions: {
       docName: 'posts',
       method: 'browse',
@@ -261,6 +271,7 @@ const controller = {
         options: {
           newsletter_id: frame.options.newsletter_id,
           post_ids: frame.options.post_ids,
+          fail_on_error: frame.options.fail_on_error,
         },
       };
     },

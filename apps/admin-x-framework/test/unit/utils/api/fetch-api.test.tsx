@@ -221,7 +221,9 @@ describe('useFetchApi', () => {
     const { result } = renderHook(() => useFetchApi(), { wrapper });
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('Offline'));
     const controller = new AbortController();
-    const request = result.current(`${baseUrl}/ghost/api/admin/test/`, { signal: controller.signal });
+    const request = result.current(`${baseUrl}/ghost/api/admin/test/`, {
+      signal: controller.signal,
+    });
     const rejection = expect(request).rejects.toMatchObject({ name: 'AbortError' });
     await vi.waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
     controller.abort();

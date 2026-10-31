@@ -250,12 +250,38 @@ describe('Stats service root', function () {
     sinon.assert.calledOnceWithExactly(cacheStubs.set, topKey, response);
 
     for (const page of [1, 2]) {
-      const pageKey = JSON.stringify({ method: 'getNewsletterBasicStats', options: { limit: 50, page } });
+      const pageKey = JSON.stringify({
+        method: 'getNewsletterBasicStats',
+        options: { limit: 50, page },
+      });
       assert.equal(await basicCache.get(pageKey, getResponse), null);
       await basicCache.set(pageKey, response);
     }
     sinon.assert.calledOnce(cacheStubs.get);
     sinon.assert.calledOnce(cacheStubs.set);
+  });
+
+  it('separates strict click requests from legacy requests in the API and cache', async function () {
+    const root = loadRoot();
+    await root.init();
+    const clicks = sandbox.stub(root.api.posts, 'getNewsletterClickStats').resolves({ data: [] });
+    const endpoint = loadEndpoint().newsletterClickStats as EndpointMethod & {
+      options: string[];
+      generateCacheKeyData(frame: object): unknown;
+    };
+    const options = { newsletter_id: 'newsletter-1', post_ids: 'post-1' };
+    const strict = { ...options, fail_on_error: 'true' };
+    assert.ok(endpoint.options.includes('fail_on_error'));
+    assert.notDeepEqual(
+      endpoint.generateCacheKeyData({ options }),
+      endpoint.generateCacheKeyData({ options: strict }),
+    );
+    await endpoint.query({ options });
+    await endpoint.query({ options: strict });
+    await endpoint.query({ options: { ...options, fail_on_error: true } });
+    assert.deepEqual(clicks.firstCall.args, ['newsletter-1', 'post-1', false]);
+    assert.deepEqual(clicks.secondCall.args, ['newsletter-1', 'post-1', true]);
+    assert.deepEqual(clicks.thirdCall.args, ['newsletter-1', 'post-1', true]);
   });
 
   it.each([

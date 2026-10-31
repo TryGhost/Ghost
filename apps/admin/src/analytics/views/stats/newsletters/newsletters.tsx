@@ -46,8 +46,7 @@ import {
   useNewsletterPeriodStats,
 } from '@/analytics/hooks/use-newsletter-period-stats';
 import {
-  useNewsletterBasicStatsWithRange,
-  useNewsletterClickStatsWithRange,
+  useNewsletterStatsWithRangeSplit,
   useSubscriberCountWithRange,
 } from '@/analytics/hooks/use-newsletter-stats-with-range';
 import type { TopNewslettersOrder } from '@/analytics/hooks/use-newsletter-stats-with-range';
@@ -72,8 +71,6 @@ const NewsletterTableRows: React.FC<{
 }> = React.memo(({ range, selectedNewsletterId, shouldFetchStats, sortBy }) => {
   const navigate = useNavigate();
   const { settings } = useAnalyticsData();
-  const emailTrackClicksEnabled = useEmailTrackClicks();
-  const emailTrackOpensEnabled = useEmailTrackOpens();
 
   const siteTimezone = getSiteTimezone(settings);
 
@@ -81,28 +78,16 @@ const NewsletterTableRows: React.FC<{
   const {
     data: newsletterStatsData,
     isLoading: isStatsLoading,
-  } = useNewsletterBasicStatsWithRange(
+    isClicksLoading,
+  } = useNewsletterStatsWithRangeSplit(
     range,
     sortBy, // Reactive to sort changes, but only affects this component
     selectedNewsletterId ? selectedNewsletterId : undefined,
     Boolean(shouldFetchStats),
   );
 
-  const postIds = useMemo(() => newsletterStatsData?.stats.map((post) => post.post_id) ?? [], [newsletterStatsData]);
-  const {
-    data: clickStatsData,
-    isLoading: isClicksLoading,
-    isError: isClicksError,
-    refetch: refetchClicks,
-  } = useNewsletterClickStatsWithRange(
-    selectedNewsletterId || undefined,
-    postIds,
-    Boolean(shouldFetchStats && emailTrackClicksEnabled && postIds.length),
-  );
-  const clicksByPost = useMemo(
-    () => new Map(clickStatsData?.stats.map((post) => [post.post_id, post]) ?? []),
-    [clickStatsData],
-  );
+  const emailTrackClicksEnabled = useEmailTrackClicks();
+  const emailTrackOpensEnabled = useEmailTrackOpens();
 
   // Data is already sorted by the API based on sortBy
   const sortedStats = useMemo(() => newsletterStatsData?.stats || [], [newsletterStatsData]);
@@ -173,15 +158,11 @@ const NewsletterTableRows: React.FC<{
               <TableCell className="text-right font-mono text-sm">
                 {isClicksLoading ? (
                   <span className="inline-block h-4 w-8 animate-pulse rounded bg-gray-200"></span>
-                ) : isClicksError ? (
-                  <Button className="h-auto p-0" title="Retry loading click statistics" variant="link" onClick={() => { void refetchClicks(); }}>
-                    Retry
-                  </Button>
                 ) : (
                   <>
-                    <span className="group-hover:hidden">{formatPercentage(clicksByPost.get(post.post_id)?.click_rate ?? 0)}</span>
+                    <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
                     <span className="hidden group-hover:visible! group-hover:block!">
-                      {formatNumber(clicksByPost.get(post.post_id)?.total_clicks ?? 0)}
+                      {formatNumber(post.total_clicks)}
                     </span>
                   </>
                 )}
@@ -205,9 +186,6 @@ const NewsletterTableRows: React.FC<{
   }, [
     sortedStats,
     isClicksLoading,
-    isClicksError,
-    clicksByPost,
-    refetchClicks,
     navigate,
     emailTrackClicksEnabled,
     emailTrackOpensEnabled,
@@ -445,22 +423,10 @@ const Newsletters: React.FC = () => {
   }, [subscriberStatsData, range]);
 
   // Create avgsData from newsletter stats for the bar charts, oldest send first
-  const avgsData: AvgsDataItem[] = useMemo(() => {
-    if (!newsletterStatsData?.stats) {
-      return [];
-    }
-
-    return [...newsletterStatsData.stats].reverse().map((stat) => ({
-      post_id: stat.post_id,
-      post_title: stat.post_title,
-      send_date: stat.send_date,
-      sent_to: stat.sent_to,
-      total_opens: stat.total_opens,
-      open_rate: stat.open_rate,
-      total_clicks: stat.total_clicks,
-      click_rate: stat.click_rate,
-    }));
-  }, [newsletterStatsData]);
+  const avgsData: AvgsDataItem[] = useMemo(
+    () => newsletterStatsData?.stats.slice().reverse() ?? [],
+    [newsletterStatsData],
+  );
 
   // Separate loading states for different sections
   const isKPIsLoading = isSubscriberStatsLoading;
@@ -489,20 +455,28 @@ const Newsletters: React.FC = () => {
             <CardContent>
               <NewsletterKPIs
                 avgsData={avgsData}
-                clickError={isClicksError ? 'Unable to load click statistics. Please try again.' : undefined}
+                clickError={
+                  isClicksError ? 'Unable to load click statistics. Please try again.' : undefined
+                }
                 initialTab={initialTab}
                 isAvgsLoading={isNewsletterStatsLoading}
                 isClicksLoading={isClicksLoading}
                 isLoading={isKPIsLoading}
-                periodError={isNewsletterStatsError
-                  ? newsletterStatsError instanceof UnsupportedNewsletterPaginationError
-                    ? 'Update Ghost to see newsletter statistics for the whole period.'
-                    : 'Unable to load newsletter statistics. Please try again.'
-                  : undefined}
+                periodError={
+                  isNewsletterStatsError
+                    ? newsletterStatsError instanceof UnsupportedNewsletterPaginationError
+                      ? 'Update Ghost to see newsletter statistics for the whole period.'
+                      : 'Unable to load newsletter statistics. Please try again.'
+                    : undefined
+                }
                 subscribersData={subscribersData}
                 totals={totals}
-                onRetryClickStats={() => { void refetchClicks(); }}
-                onRetryPeriodStats={() => { void refetchNewsletterStats(); }}
+                onRetryClickStats={() => {
+                  void refetchClicks();
+                }}
+                onRetryPeriodStats={() => {
+                  void refetchNewsletterStats();
+                }}
               />
             </CardContent>
           </Card>

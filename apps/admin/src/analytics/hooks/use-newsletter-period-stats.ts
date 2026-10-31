@@ -14,31 +14,33 @@ import {
 const PAGE_SIZE = 50;
 
 const basicPageSchema = z.object({
-  stats: z.array(z.object({
-    post_id: z.string().min(1),
-    post_title: z.string(),
-    send_date: z.string(),
-    sent_to: z.number(),
-    total_opens: z.number(),
-    open_rate: z.number(),
-  })),
+  stats: z.array(
+    z.object({
+      post_id: z.string().min(1),
+      post_title: z.string(),
+      send_date: z.string().min(1),
+      sent_to: z.number(),
+      total_opens: z.number(),
+      open_rate: z.number(),
+    }),
+  ),
   meta: z.object({
     pagination: z.object({
       page: z.number().int().positive(),
       limit: z.number().int().positive().max(PAGE_SIZE),
       next: z.number().int().positive().nullable(),
-      next_cursor: z.string().min(1).nullable(),
-      next_cursor_date: z.string().min(1).nullable(),
     }),
   }),
 });
 
 const clicksSchema = z.object({
-  stats: z.array(z.object({
-    post_id: z.string().min(1),
-    total_clicks: z.number(),
-    click_rate: z.number(),
-  })),
+  stats: z.array(
+    z.object({
+      post_id: z.string().min(1),
+      total_clicks: z.number(),
+      click_rate: z.number(),
+    }),
+  ),
 });
 
 export class UnsupportedNewsletterPaginationError extends Error {}
@@ -74,24 +76,20 @@ export async function fetchNewsletterPeriodStats(
       params.after_id = cursor;
       params.after_date = cursorDate!;
     }
-    const raw = await fetchApi<unknown>(apiUrl('/stats/newsletter-basic-stats/', params), { signal });
+    const raw = await fetchApi<unknown>(apiUrl('/stats/newsletter-basic-stats/', params), {
+      signal,
+    });
     signal.throwIfAborted();
-    if (typeof raw === 'object' && raw !== null && !Array.isArray(raw) && 'stats' in raw) {
-      const meta = 'meta' in raw ? raw.meta : undefined;
-      if (meta === undefined || (typeof meta === 'object' && meta !== null && !Array.isArray(meta) && !('pagination' in meta))) {
-        throw new UnsupportedNewsletterPaginationError('Newsletter pagination is unavailable');
-      }
+    const response = raw as { stats?: unknown; meta?: { pagination?: unknown } } | null;
+    if (Array.isArray(response?.stats) && response?.meta?.pagination === undefined) {
+      throw new UnsupportedNewsletterPaginationError('Newsletter pagination is unavailable');
     }
     const basic = basicPageSchema.parse(raw);
     const { pagination } = basic.meta;
     if (
       pagination.page !== page ||
       basic.stats.length > pagination.limit ||
-      (pagination.next !== null &&
-        (pagination.next !== page + 1 || basic.stats.length !== pagination.limit ||
-          pagination.next_cursor !== basic.stats.at(-1)?.post_id ||
-          pagination.next_cursor_date !== basic.stats.at(-1)?.send_date.replace('T', ' ').replace(/Z$/, ''))) ||
-      (pagination.next === null && (pagination.next_cursor !== null || pagination.next_cursor_date !== null))
+      (pagination.next !== null && (pagination.next !== page + 1 || basic.stats.length === 0))
     ) {
       throw new Error('Invalid newsletter statistics pagination');
     }
@@ -107,9 +105,10 @@ export async function fetchNewsletterPeriodStats(
     if (pagination.next === null) {
       return { stats, meta: {} };
     }
+    const last = basic.stats.at(-1)!;
     page = pagination.next;
-    cursor = pagination.next_cursor;
-    cursorDate = pagination.next_cursor_date;
+    cursor = last.post_id;
+    cursorDate = last.send_date.replace('T', ' ').replace(/Z$/, '');
   }
 }
 
@@ -122,19 +121,17 @@ export async function fetchNewsletterPeriodClicks(
   const stats: z.infer<typeof clicksSchema>['stats'] = [];
   for (let offset = 0; offset < postIds.length; offset += PAGE_SIZE) {
     signal.throwIfAborted();
-    const ids = new Set(postIds.slice(offset, offset + PAGE_SIZE));
-    const clicks = clicksSchema.parse(await fetchApi<unknown>(apiUrl('/stats/newsletter-click-stats/', {
-      newsletter_id: newsletterId,
-      post_ids: [...ids].join(','),
-    }), { signal })).stats;
+    const clicks = clicksSchema.parse(
+      await fetchApi<unknown>(
+        apiUrl('/stats/newsletter-click-stats/', {
+          newsletter_id: newsletterId,
+          post_ids: postIds.slice(offset, offset + PAGE_SIZE).join(','),
+          fail_on_error: 'true',
+        }),
+        { signal },
+      ),
+    ).stats;
     signal.throwIfAborted();
-    const seen = new Set<string>();
-    for (const click of clicks) {
-      if (!ids.has(click.post_id) || seen.has(click.post_id)) {
-        throw new Error('Invalid newsletter click statistics');
-      }
-      seen.add(click.post_id);
-    }
     stats.push(...clicks);
   }
   return stats;
@@ -161,13 +158,25 @@ export function useNewsletterPeriodStats(
     queryKey: [newsletterBasicStatsDataType, 'period', newsletterId, dateFrom, dateTo, timezone],
     enabled: enabled && !!newsletterId,
     retry: false,
-    queryFn: ({ signal }) => fetchNewsletterPeriodStats(fetchApi, newsletterId!, dateFrom, dateTo, timezone, signal),
+    queryFn: ({ signal }) =>
+      fetchNewsletterPeriodStats(fetchApi, newsletterId!, dateFrom, dateTo, timezone, signal),
   });
 
-  const postIds = useMemo(() => result.data?.stats.map((item) => item.post_id) ?? [], [result.data]);
+  const postIds = useMemo(
+    () => result.data?.stats.map((item) => item.post_id) ?? [],
+    [result.data],
+  );
   const shouldFetchClicks = enabled && clickTrackingEnabled && !!newsletterId && postIds.length > 0;
   const clickResult = useQuery({
-    queryKey: [newsletterClickStatsDataType, 'period', newsletterId, dateFrom, dateTo, timezone, shouldFetchClicks ? postIds : []],
+    queryKey: [
+      newsletterClickStatsDataType,
+      'period',
+      newsletterId,
+      dateFrom,
+      dateTo,
+      timezone,
+      shouldFetchClicks ? postIds : [],
+    ],
     enabled: shouldFetchClicks,
     retry: false,
     queryFn: ({ signal }) => fetchNewsletterPeriodClicks(fetchApi, newsletterId!, postIds, signal),

@@ -873,7 +873,8 @@ class PostsStatsService {
       let cursorDate;
       if (paginated && page > 1) {
         if (
-          typeof options.after_id !== 'string' || !options.after_id ||
+          typeof options.after_id !== 'string' ||
+          !options.after_id ||
           typeof options.after_date !== 'string' ||
           !/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d{1,6})?$/.test(options.after_date)
         ) {
@@ -965,19 +966,15 @@ class PostsStatsService {
         return { data: results };
       }
 
-      const cursorSendDate = results.length > limit ? results[limit - 1].send_date : null;
-      const nextCursorDate = cursorSendDate instanceof Date
-        ? cursorSendDate.toISOString().replace('T', ' ').replace('Z', '')
-        : cursorSendDate?.replace('T', ' ').replace(/Z$/, '') ?? null;
       return {
         data: results.slice(0, limit),
-        meta: { pagination: {
-          page,
-          limit,
-          next: results.length > limit ? page + 1 : null,
-          next_cursor: results.length > limit ? results[limit - 1].post_id : null,
-          next_cursor_date: nextCursorDate,
-        } },
+        meta: {
+          pagination: {
+            page,
+            limit,
+            next: results.length > limit ? page + 1 : null,
+          },
+        },
       };
     } catch (error) {
       logging.error(`Error fetching newsletter basic stats for newsletter ${newsletterId}:`, error);
@@ -993,9 +990,10 @@ class PostsStatsService {
    *
    * @param {string} newsletterId - ID of the newsletter to get click stats for
    * @param {Array<string>|string} postIds - Array of post IDs or comma-separated string of post IDs to get click data for
+   * @param {boolean} [failOnError] - Propagate database failures when true
    * @returns {Promise<{data: Array}>} The newsletter click stats
    */
-  async getNewsletterClickStats(newsletterId, postIds = []) {
+  async getNewsletterClickStats(newsletterId, postIds = [], failOnError = false) {
     try {
       // Handle postIds as either array or comma-separated string
       let postIdsArray = [];
@@ -1038,7 +1036,10 @@ class PostsStatsService {
       return { data: results };
     } catch (error) {
       logging.error(`Error fetching newsletter click stats for newsletter ${newsletterId}:`, error);
-      throw error;
+      if (failOnError) {
+        throw error;
+      }
+      return { data: [] };
     }
   }
 

@@ -131,8 +131,6 @@ const Newsletter: React.FC = () => {
   const {
     stats,
     averageStats,
-    isClickStatsLoading,
-    refetchClickStats,
     topLinks,
     isLoading: isNewsletterStatsLoading,
     refetchTopLinks,
@@ -302,14 +300,12 @@ const Newsletter: React.FC = () => {
 
   // "Clicked" Chart
   const clickedChartData: NewsletterRadialChartData[] = [
-    ...(averageStats.clickedRate === null
-      ? []
-      : [{
-          datatype: 'Average',
-          value: averageStats.clickedRate,
-          fill: 'url(#gradientGray)',
-          color: 'var(--chart-gray)',
-        }]),
+    {
+      datatype: 'Average',
+      value: averageStats.clickedRate,
+      fill: 'url(#gradientGray)',
+      color: 'var(--chart-gray)',
+    },
     {
       datatype: 'This newsletter',
       value: stats.clickedRate,
@@ -492,13 +488,7 @@ const Newsletter: React.FC = () => {
                     {emailTrackClicksEnabled && (
                       <div className="group/block relative px-6 transition-all hover:bg-muted/25">
                         <BlockTooltip
-                          avgValue={
-                            isClickStatsLoading
-                              ? 'Loading...'
-                              : averageStats.clickedRate === null
-                                ? 'Unavailable'
-                                : formatPercentage(averageStats.clickedRate)
-                          }
+                          avgValue={formatPercentage(averageStats.clickedRate)}
                           dataColor="var(--chart-teal)"
                           value={formatPercentage(stats.clickedRate)}
                         />
@@ -511,24 +501,6 @@ const Newsletter: React.FC = () => {
                           size={chartSize}
                           tooltip={false}
                         />
-                        {isClickStatsLoading ? (
-                          <div className="text-center text-sm text-muted-foreground" role="status">
-                            Loading average click rate...
-                          </div>
-                        ) : averageStats.clickedRate === null && (
-                          <div className="text-center text-sm text-muted-foreground" role="status">
-                            <span>Unable to load average click rate.</span>{' '}
-                            <Button
-                              className="h-auto p-0"
-                              variant="link"
-                              onClick={() => {
-                                void refetchClickStats();
-                              }}
-                            >
-                              Retry click statistics
-                            </Button>
-                          </div>
-                        )}
                       </div>
                     )}
                   </div>

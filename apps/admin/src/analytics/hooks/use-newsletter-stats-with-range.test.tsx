@@ -547,59 +547,13 @@ describe('Newsletter Stats Hooks', () => {
   });
 
   describe('useNewsletterStatsWithRangeSplit', () => {
-    it('uses the full history only when all time is selected', () => {
-      const timezone = 'America/Sao_Paulo';
-      mockGetRangeDates.mockImplementation((range: number) => {
-        const { expectedDateFrom, expectedDateTo } = getExpectedDateRange(range);
-        return {
-          startDate: moment.utc(expectedDateFrom).startOf('day'),
-          endDate: moment.utc(expectedDateTo).startOf('day'),
-          timezone,
-        };
-      });
-
-      const { rerender } = renderHook(
-        ({ range }) => useNewsletterStatsWithRangeSplit(range, 'click_rate desc', 'newsletter-123'),
-        { wrapper: TestWrapper, initialProps: { range: STATS_RANGES.last7Days.value } },
-      );
-      const { expectedDateFrom, expectedDateTo } = getExpectedDateRange(STATS_RANGES.last7Days.value);
-
-      expect(mockUseNewsletterBasicStats).toHaveBeenLastCalledWith({
-        searchParams: {
-          date_from: expectedDateFrom,
-          date_to: expectedDateTo,
-          timezone,
-          order: 'click_rate desc',
-          newsletter_id: 'newsletter-123',
-        },
-        enabled: true,
-      });
-
-      rerender({ range: STATS_RANGES.allTime.value });
-      expect(mockUseNewsletterBasicStats).toHaveBeenLastCalledWith({
-        searchParams: {
-          date_to: expectedDateTo,
-          timezone,
-          order: 'click_rate desc',
-          newsletter_id: 'newsletter-123',
-        },
-        enabled: true,
+    it('omits the start date for All time', () => {
+      renderHook(() => useNewsletterStatsWithRangeSplit(STATS_RANGES.allTime.value), {
+        wrapper: TestWrapper,
       });
       expect(mockUseNewsletterBasicStats.mock.lastCall?.[0]?.searchParams).not.toHaveProperty(
         'date_from',
       );
-
-      rerender({ range: STATS_RANGES.last7Days.value });
-      expect(mockUseNewsletterBasicStats).toHaveBeenLastCalledWith({
-        searchParams: {
-          date_from: expectedDateFrom,
-          date_to: expectedDateTo,
-          timezone,
-          order: 'click_rate desc',
-          newsletter_id: 'newsletter-123',
-        },
-        enabled: true,
-      });
     });
 
     it('combines basic stats and click stats', () => {

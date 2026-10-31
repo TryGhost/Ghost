@@ -49,7 +49,7 @@ interface BarTooltipProps {
   showClicks: boolean;
 }
 
-const BarTooltipContent = ({ active, payload, showClicks }: BarTooltipProps) => {
+export const BarTooltipContent = ({ active, payload, showClicks }: BarTooltipProps) => {
   if (!active || !payload?.length) {
     return null;
   }
@@ -84,9 +84,13 @@ const BarTooltipContent = ({ active, payload, showClicks }: BarTooltipProps) => 
         <div className="mb-1 flex w-full justify-between">
           <span className="font-medium text-muted-foreground">Clicks</span>
           <div className="ml-2 w-full text-right font-mono">
-            {currentItem.total_clicks === undefined || currentItem.click_rate === undefined ? '—' : (
+            {currentItem.total_clicks === undefined || currentItem.click_rate === undefined ? (
+              '—'
+            ) : (
               <>
-                <span className="text-muted-foreground">{formatNumber(currentItem.total_clicks)} / </span>
+                <span className="text-muted-foreground">
+                  {formatNumber(currentItem.total_clicks)} /{' '}
+                </span>
                 {formatPercentage(currentItem.click_rate)}
               </>
             )}
@@ -352,7 +356,11 @@ const NewsletterKPIs: React.FC<{
               className={isAvgsLoading || isClicksLoading ? 'opacity-50' : ''}
               color={tabConfig['avg-click-rate'].color}
               label="Avg. click rate"
-              value={periodError || clickError || isAvgsLoading || isClicksLoading ? '—' : formatPercentage(avgClickRate)}
+              value={
+                periodError || clickError || isAvgsLoading || isClicksLoading
+                  ? '—'
+                  : formatPercentage(avgClickRate)
+              }
             />
           </KpiTabTrigger>
         )}
@@ -380,7 +388,11 @@ const NewsletterKPIs: React.FC<{
                 className={isAvgsLoading || isClicksLoading ? 'opacity-50' : ''}
                 color={tabConfig['avg-click-rate'].color}
                 label="Avg. click rate"
-                value={periodError || clickError || isAvgsLoading || isClicksLoading ? '—' : formatPercentage(avgClickRate)}
+                value={
+                  periodError || clickError || isAvgsLoading || isClicksLoading
+                    ? '—'
+                    : formatPercentage(avgClickRate)
+                }
               />
             )}
           </KpiDropdownButton>
@@ -418,9 +430,17 @@ const NewsletterKPIs: React.FC<{
           (currentTab === 'avg-click-rate' && emailTrackClicksEnabled)) && (
           <>
             {activeError ? (
-              <div className="flex h-[320px] flex-col items-center justify-center gap-3" role="alert">
+              <div
+                className="flex h-[320px] flex-col items-center justify-center gap-3"
+                role="alert"
+              >
                 <p>{activeError}</p>
-                <Button variant="outline" onClick={periodError ? onRetryPeriodStats : onRetryClickStats}>Retry</Button>
+                <Button
+                  variant="outline"
+                  onClick={periodError ? onRetryPeriodStats : onRetryClickStats}
+                >
+                  Retry
+                </Button>
               </div>
             ) : activeLoading ? (
               <div className="h-[320px] w-full items-center justify-center">

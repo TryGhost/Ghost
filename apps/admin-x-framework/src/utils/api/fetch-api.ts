@@ -366,12 +366,19 @@ export const useFetchApi = () => {
               await new Promise<void>((resolve, reject) => {
                 const abortRetry = () => {
                   clearTimeout(retryTimer);
-                  reject(signal?.aborted ? new DOMException('Aborted', 'AbortError') : new TimeoutError());
+                  reject(
+                    signal?.aborted
+                      ? new DOMException('Aborted', 'AbortError')
+                      : new TimeoutError(),
+                  );
                 };
-                const retryTimer = setTimeout(() => {
-                  controller.signal.removeEventListener('abort', abortRetry);
-                  resolve();
-                }, retryPeriods[attempts] || retryPeriods[retryPeriods.length - 1]);
+                const retryTimer = setTimeout(
+                  () => {
+                    controller.signal.removeEventListener('abort', abortRetry);
+                    resolve();
+                  },
+                  retryPeriods[attempts] || retryPeriods[retryPeriods.length - 1],
+                );
                 if (controller.signal.aborted) {
                   abortRetry();
                 } else {

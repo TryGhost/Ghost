@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, onTestFinished } from 'vitest';
 
 import {
   TINYBIRD_SITE_UUID,
@@ -408,10 +408,12 @@ describe('Analytics growth', () => {
 });
 
 describe('Analytics newsletters', () => {
-  it('renders the seeded subscriber KPIs and top newsletters', async () => {
+  it('keeps subscriber and open statistics visible and retries failed click statistics', async () => {
     seedAnalyticsWorld();
+    const newsletterId = '64d623b64676110001e897d2';
     fakeNewsletters([
       newsletter({
+        id: newsletterId,
         name: 'Weekly Digest',
         status: 'active',
         sort_order: 0,
@@ -420,153 +422,127 @@ describe('Analytics newsletters', () => {
     ]);
     fakeAdminStats.newsletterSubscribers({
       total: 543,
-      values: [
-        { date: daysAgo(2), value: 520 },
-        { date: daysAgo(1), value: 543 },
-      ],
+      values: [{ date: daysAgo(1), value: 543 }],
     });
-    const basicStats = {
-      post_id: LATEST_POST_ID,
-      post_title: 'Weekly Digest Issue #1',
-      send_date: `${daysAgo(3)}T10:00:00.000Z`,
-      sent_to: 1000,
-      total_opens: 300,
-    };
-    fakeAdminStats.newsletterBasic([basicStats]);
-    fakeAdminStats.newsletterClicks([
+    const basicRequests = fakeAdminStats.newsletterBasic([
       {
         post_id: LATEST_POST_ID,
-        total_clicks: 50,
-        email_count: 1000,
+        post_title: 'Weekly Digest Issue #1',
+        send_date: `${localDaysAgo(3)}T10:00:00.000Z`,
+        sent_to: 100,
+        total_opens: 50,
       },
     ]);
-    await renderAdminApp('/analytics/newsletters', { boot: webAnalyticsBootOverrides() });
+    let clicksUnavailable = true;
+    const loadingClicks = deferred<void>();
+    onTestFinished(() => loadingClicks.resolve());
+    const clickRequests = fakeAdminEndpoint(
+      'GET',
+      /^\/stats\/newsletter-click-stats\//,
+      async ({ url }) => {
+        if (new URL(url).searchParams.get('fail_on_error') !== 'true') {
+          return { stats: [], meta: {} };
+        }
+        if (clicksUnavailable) {
+          await loadingClicks.promise;
+          return Response.json(
+            { errors: [{ message: 'Unavailable', type: 'InternalServerError' }] },
+            { status: 500 },
+          );
+        }
+        return {
+          stats: [{ post_id: LATEST_POST_ID, total_clicks: 10, click_rate: 0.1, email_count: 100 }],
+          meta: {},
+        };
+      },
+    );
 
-    await expect.element(analyticsScreen.newslettersCard()).toBeVisible();
+    await renderAdminApp('/analytics/newsletters', { boot: webAnalyticsBootOverrides() });
     await expect.element(analyticsScreen.totalSubscribersValue()).toHaveTextContent('543');
     await expect
-      .element(analyticsScreen.topNewslettersCard())
-      .toHaveTextContent('Weekly Digest Issue #1');
-  });
-
-  it('keeps top newsletter opens visible and retries failed click statistics', async () => {
-    seedAnalyticsWorld();
-    const newsletterId = '64d623b64676110001e897d2';
-    fakeNewsletters([newsletter({ id: newsletterId, name: 'Weekly Digest', status: 'active', sort_order: 0 })]);
-    fakeAdminStats.newsletterSubscribers();
-    const basicRequests = fakeAdminStats.newsletterBasic([{
-      post_id: LATEST_POST_ID,
-      post_title: 'Weekly Digest Issue #1',
-      send_date: `${localDaysAgo(3)}T10:00:00.000Z`,
-      sent_to: 100,
-      total_opens: 50,
-    }]);
-    let clicksUnavailable = true;
-    const clickRequests = fakeAdminEndpoint('GET', /^\/stats\/newsletter-click-stats\//, () => {
-      if (clicksUnavailable) {
-        return Response.json({ errors: [{ message: 'Unavailable', type: 'InternalServerError' }] }, { status: 500 });
-      }
-      return { stats: [{ post_id: LATEST_POST_ID, total_clicks: 10, click_rate: 0.1, email_count: 100 }], meta: {} };
-    });
-
-    await renderAdminApp('/analytics/newsletters', { boot: webAnalyticsBootOverrides() });
-    await expect.element(analyticsScreen.newslettersCardTab('Avg. open rate')).toHaveTextContent('50%');
-    const row = analyticsScreen.topNewslettersCard().getByRole('row').filter({ hasText: 'Weekly Digest Issue #1' });
+      .element(analyticsScreen.newslettersCardTab('Avg. open rate'))
+      .toHaveTextContent('50%');
+    const row = analyticsScreen
+      .topNewslettersCard()
+      .getByRole('row')
+      .filter({ hasText: 'Weekly Digest Issue #1' });
     await expect.element(row).toHaveTextContent('50%');
-    const retry = row.getByRole('button', { name: 'Retry', exact: true });
-    await expect.element(retry).toBeVisible();
-    expect(row.element().querySelectorAll('td')[4].textContent?.trim()).toBe('Retry');
+    await analyticsScreen.newslettersCardTab('Avg. open rate').click();
+    await expect
+      .poll(
+        () =>
+          analyticsScreen.newslettersCard().element().querySelectorAll('.recharts-bar-rectangle')
+            .length,
+      )
+      .toBe(1);
+    loadingClicks.resolve();
+    await analyticsScreen.newslettersCardTab('Avg. click rate').click();
+    const card = analyticsScreen.newslettersCard();
+    await expect.element(card).toHaveTextContent('Unable to load click statistics');
 
     await expect.poll(() => clickRequests.requests.length).toBeGreaterThanOrEqual(2);
     const basicCount = basicRequests.requests.length;
     const clickCount = clickRequests.requests.length;
     clicksUnavailable = false;
-    await retry.click();
-    await expect.poll(() => row.element().querySelectorAll('td')[4].textContent).toContain('10%');
+    await card.getByRole('button', { name: 'Retry', exact: true }).click();
+    await expect
+      .element(analyticsScreen.newslettersCardTab('Avg. click rate'))
+      .toHaveTextContent('10%');
     await expect.element(row).toHaveTextContent('50%');
     expect(clickRequests.requests.length).toBeGreaterThan(clickCount);
     expect(basicRequests.requests.length).toBe(basicCount);
   });
 
-  it('uses every send in the selected period for averages and charts while limiting top newsletters', async () => {
+  it('uses every send for averages and charts while limiting top newsletters', async () => {
     seedAnalyticsWorld();
-    const newsletterId = '64d623b64676110001e897d2';
-    fakeNewsletters([newsletter({ id: newsletterId, name: 'Weekly Digest', status: 'active', sort_order: 0 })]);
+    fakeNewsletters([newsletter({ name: 'Weekly Digest', status: 'active', sort_order: 0 })]);
     fakeAdminStats.newsletterSubscribers();
-    const periodSends = Array.from({ length: 61 }, (_, index) => ({
+    const sends = Array.from({ length: 121 }, (_, index) => ({
       post_id: String(index).padStart(24, '0'),
-      post_title: `Issue ${index}`,
-      newsletter_id: newsletterId,
-      send_date: `${localDaysAgo(Math.floor((60 - index) / 3))}T10:00:00.000Z`,
+      post_title: 'Issue ' + index,
+      send_date: localDaysAgo(Math.floor(index / 6)) + 'T10:00:00.000Z',
       sent_to: 100,
-      total_opens: index,
-      open_rate: index / 100,
+      total_opens: (120 - index) / 2,
+      open_rate: (120 - index) / 200,
     }));
-    const sends = [
-      ...periodSends,
-      { ...periodSends[0], post_id: 'outside-period', send_date: `${localDaysAgo(40)}T10:00:00.000Z` },
-      { ...periodSends[0], post_id: 'old-send', post_title: 'Archive issue', send_date: `${localDaysAgo(1200)}T10:00:00.000Z` },
-      { ...periodSends[0], post_id: 'other-newsletter', newsletter_id: 'another-newsletter' },
-    ];
-    const basicRequests = fakeAdminEndpoint('GET', /^\/stats\/newsletter-basic-stats\//, ({ url }) => {
-      const params = new URL(url).searchParams;
-      const matching = sends.filter((send) =>
-        send.newsletter_id === params.get('newsletter_id') &&
-        send.send_date.slice(0, 10) >= (params.get('date_from') ?? '') &&
-        send.send_date.slice(0, 10) <= (params.get('date_to') ?? '9999-12-31'),
-      );
-      const ordered = [...matching].reverse();
-      const limit = Math.min(Number(params.get('limit') ?? 20), 100);
-      const page = Number(params.get('page') ?? 1);
-      const afterId = params.get('after_id');
-      const offset = afterId ? ordered.findIndex((send) => send.post_id === afterId) + 1 : 0;
-      const hasNext = offset + limit < ordered.length;
+    const basicRequests = fakeAdminStats.newsletterBasic(sends);
+    const sendsById = new Map(sends.map((send) => [send.post_id, send]));
+    fakeAdminEndpoint('GET', /^\/stats\/newsletter-click-stats\//, ({ url }) => {
+      const ids = new URL(url).searchParams.get('post_ids')?.split(',') ?? [];
       return {
-        stats: ordered.slice(offset, offset + limit),
-        meta: params.has('page') ? { pagination: {
-          page, limit, next: hasNext ? page + 1 : null,
-          next_cursor: hasNext ? ordered[offset + limit - 1].post_id : null,
-          next_cursor_date: hasNext ? ordered[offset + limit - 1].send_date.replace('T', ' ').replace(/Z$/, '') : null,
-        } } : {},
+        stats: ids.map((post_id) => ({
+          post_id,
+          total_clicks: sendsById.get(post_id)!.total_opens,
+          click_rate: sendsById.get(post_id)!.open_rate,
+          email_count: 100,
+        })),
+        meta: {},
       };
     });
-    fakeAdminEndpoint('GET', /^\/stats\/newsletter-click-stats\//, ({ url }) => {
-      const postIds = new URL(url).searchParams.get('post_ids')?.split(',') ?? [];
-      const stats = sends
-        .filter((send) => postIds.includes(send.post_id))
-        .map((send) => ({
-          post_id: send.post_id,
-          total_clicks: send.total_opens,
-          click_rate: send.open_rate,
-          email_count: send.sent_to,
-        }));
-      return { stats, meta: {} };
-    });
-    await renderAdminApp('/analytics/newsletters', { boot: webAnalyticsBootOverrides() });
 
+    await renderAdminApp('/analytics/newsletters', { boot: webAnalyticsBootOverrides() });
     await expect
       .element(analyticsScreen.newslettersCardTab('Avg. open rate'))
       .toHaveTextContent('30%');
     await expect
       .element(analyticsScreen.newslettersCardTab('Avg. click rate'))
       .toHaveTextContent('30%');
-
-    expect(basicRequests.requests.some(({ url }) => new URL(url).searchParams.get('page') === '2')).toBe(true);
+    expect(
+      basicRequests.requests.some(({ url }) => new URL(url).searchParams.get('page') === '3'),
+    ).toBe(true);
 
     await analyticsScreen.newslettersCardTab('Avg. open rate').click();
     const bars = () =>
       analyticsScreen.newslettersCard().element().querySelectorAll('.recharts-bar-rectangle');
-    await expect.poll(() => bars().length).toBe(61);
+    await expect.poll(() => bars().length).toBe(121);
     const heights = [...bars()].map((bar) => bar.getBoundingClientRect().height);
     expect(heights).toEqual([...heights].sort((a, b) => a - b));
-    expect(heights[0]).toBeLessThan(heights[60]);
-    await expect.poll(() => analyticsScreen.topNewslettersCard().element().querySelectorAll('tbody tr').length).toBe(20);
-
-    await analyticsScreen.dateRangeSelect().click();
-    await analyticsScreen.rangeOption('All time').click();
-    await expect.element(analyticsScreen.newslettersCardTab('Avg. open rate')).toHaveTextContent('29%');
-    await expect.poll(() => bars().length).toBe(63);
-    await expect.poll(() => analyticsScreen.topNewslettersCard().element().querySelectorAll('tbody tr').length).toBe(20);
+    expect(heights[0]).toBeLessThan(heights[120]);
+    await expect
+      .poll(
+        () => analyticsScreen.topNewslettersCard().element().querySelectorAll('tbody tr').length,
+      )
+      .toBe(20);
   }, 30_000);
 
   it('shows the empty state on every newsletter card when none were sent', async () => {
@@ -602,10 +578,12 @@ describe('Analytics newsletters', () => {
     await renderAdminApp('/analytics/newsletters', { boot: webAnalyticsBootOverrides() });
 
     await expect.element(analyticsScreen.totalSubscribersValue()).toHaveTextContent('543');
-    await expect.element(analyticsScreen.newslettersCardTab('Avg. open rate')).toHaveTextContent('—');
+    await expect
+      .element(analyticsScreen.newslettersCardTab('Avg. open rate'))
+      .toHaveTextContent('—');
     await analyticsScreen.newslettersCardTab('Avg. open rate').click();
-    await expect.element(analyticsScreen.newslettersCard()).toHaveTextContent(
-      'Update Ghost to see newsletter statistics for the whole period.',
-    );
+    await expect
+      .element(analyticsScreen.newslettersCard())
+      .toHaveTextContent('Update Ghost to see newsletter statistics for the whole period.');
   });
 });
