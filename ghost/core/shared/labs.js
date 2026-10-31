@@ -64,6 +64,7 @@ const PRIVATE_FEATURES = [
   'paywallImprovements',
   'machinePayments',
   'apps',
+  'storedPostMetadata',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
