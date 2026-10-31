@@ -1,4 +1,6 @@
 const assert = require('node:assert/strict');
+const sinon = require('sinon');
+const DomainEvents = require('@tryghost/domain-events');
 const testUtils = require('../../utils');
 const { Product } = require('../../../core/server/models/product');
 const { Offer } = require('../../../core/server/models/offer');
@@ -16,6 +18,9 @@ const OffersAPI = require('../../../core/server/services/offers/application/offe
 describe('OffersAPI', function () {
   beforeAll(testUtils.teardownDb);
   beforeEach(testUtils.setup('roles'));
+  afterEach(function () {
+    sinon.restore();
+  });
   afterEach(testUtils.teardownDb);
 
   let context, product, api;
@@ -131,6 +136,40 @@ describe('OffersAPI', function () {
       });
 
       assert.deepEqual(result, []);
+    });
+  });
+
+  describe('#createOffer', function () {
+    it('dispatches the created event once the offer row is committed', async function () {
+      const committed = [];
+      sinon.stub(DomainEvents, 'dispatch').callsFake((event) => {
+        // Read outside the API's transaction: the row is visible only after it commits.
+        committed.push(Offer.findOne({ id: event.data.offer.id }, { require: false }));
+      });
+
+      const offer = await api.createOffer({
+        name: 'Spring',
+        code: 'spring',
+        display_title: 'Spring sale',
+        display_description: '',
+        type: 'percent',
+        amount: 20,
+        cadence: 'month',
+        currency: null,
+        duration: 'once',
+        redemption_type: 'signup',
+        status: 'active',
+        tier: { id: product.get('id') },
+      });
+      await DomainEvents.allSettled();
+
+      sinon.assert.calledOnce(DomainEvents.dispatch);
+      const [event] = DomainEvents.dispatch.firstCall.args;
+      assert.equal(event.constructor.name, 'OfferCreatedEvent');
+      assert.equal(event.data.offer.id, offer.id);
+      const [row] = await Promise.all(committed);
+      assert.ok(row, 'The offer row was not committed when its event was dispatched');
+      assert.equal(row.get('code'), 'spring');
     });
   });
 });

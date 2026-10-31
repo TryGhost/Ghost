@@ -10219,8 +10219,8 @@ services:
           undefined redirectManager; afterward it returns that manager's bound handler. API
           methods are async and receiver-dependent, returning DTOs, arrays or null for absent
           offers. Deep modules expose constructible implementation/value classes and event
-          identities. There is no reset/shutdown/readiness API. Domain/API tests exercise deep
-          implementations; they do not pin root shape, unbound use or pre-init behavior.
+          identities. There is no reset/shutdown/readiness API. Root units pin the shape and the
+          pre-init throw; consumer units pin per-request endpoint reads with their receivers.
         sources:
           - core/server/services/offers/index.js
           - core/server/services/offers/service.js
@@ -10229,6 +10229,8 @@ services:
           - core/server/services/offers/application/offer-mapper.ts
           - core/server/web/shared/dynamic-redirect-manager.js
         tests:
+          - test/unit/server/services/offers/index.test.ts
+          - test/unit/server/services/offers/consumers.test.ts
           - test/unit/server/services/offers/application/offers-api.test.js
           - test/unit/server/services/offers/domain/models/offer.test.js
       construction:
@@ -10239,13 +10241,15 @@ services:
           init. That module first subscribes to two offer events, then loads existing offers
           and adds temporary redirects, including archived offers. Boot is the only production
           root init caller found. No idempotency guard, shared pending promise or rollback
-          protects concurrent/repeated construction. These publication details are source-only.
+          protects concurrent/repeated construction. Root units pin publication before the load,
+          subscription order, the unfiltered load and rebuilding on each init.
         sources:
           - core/server/services/offers/service.js
           - core/server/services/offers/offers-module.js
           - core/server/services/offers/offer-bookshelf-repository.js
           - core/boot.js
-        tests: []
+        tests:
+          - test/unit/server/services/offers/index.test.ts
       consumers:
         summary: >-
           Admin and Content endpoints retain the root and dereference api per request; frontend
@@ -10256,7 +10260,9 @@ services:
           Admin/Content HTTP tests pin create/read/edit/archive, validation and projection; members
           tests cover availability
           and discount rules with Stripe mocked. The bulk-redemption integration constructs its
-          own API. No test found pins root replacement or offer-event-to-frontend redirect wiring.
+          own API. Units pin per-request endpoint reads, the site app reading the middleware once
+          at setup, Members receiving the API value at construction, and offer-event-to-redirect
+          wiring through a real redirect manager over faked models.
         sources:
           - core/server/api/endpoints/offers.js
           - core/server/api/endpoints/offers-public.js
@@ -10268,6 +10274,8 @@ services:
           - core/server/services/members/members-api/repositories/member-repository.js
           - core/server/services/members/members-api/controllers/router-controller.js
         tests:
+          - test/unit/server/services/offers/consumers.test.ts
+          - test/unit/server/services/offers/index.test.ts
           - test/e2e-api/admin/offers.test.js
           - test/e2e-api/content/offers.test.js
           - test/e2e-api/members/member-offers.test.js
@@ -10278,21 +10286,25 @@ services:
           mounting, members composition and readiness. This runs even with frontend disabled.
           The exported API can already be used while initial repository loading is pending;
           external callers receive no readiness guard. Boot propagates init rejection, while
-          already-published API/managers/subscriptions remain. Current HTTP tests use completed
-          boot; there are no pending-load, rejected-load or partial-publication lifecycle tests.
+          already-published API/managers/subscriptions remain. Units pin the frontend phase
+          awaiting offers after themes, the API published during a pending load and a rejected
+          load leaving the API and subscriptions in place.
         sources:
           - core/boot.js
           - core/server/services/offers/service.js
           - core/server/services/offers/offers-module.js
           - core/frontend/web/site.js
         tests:
+          - test/unit/boot/init-services-for-frontend.test.ts
+          - test/unit/server/services/offers/index.test.ts
           - test/e2e-api/admin/offers.test.js
           - test/e2e-api/content/offers.test.js
       lifetime:
         summary: >-
           Re-init replaces published API/manager, but mounted middleware and members collaborators
           retain earlier objects. Each old OffersModule remains reachable through its event
-          listeners, so later events update old and new redirect maps. Rows/redemptions persist
+          listeners, so later events update old and new redirect maps, as root units pin.
+          Rows/redemptions persist
           independently; API reads query afresh with no root cache or operation serialization.
           Code-change events remove the old redirect and add the new one; archiving has no
           redirect-removal event. Transaction-scoped uniqueness checks and DB unique name/code/
@@ -10308,6 +10320,7 @@ services:
           - core/frontend/web/site.js
           - core/server/services/members/api.js
         tests:
+          - test/unit/server/services/offers/index.test.ts
           - test/e2e-api/admin/offers.test.js
       configuration:
         summary: >-
@@ -10319,7 +10332,9 @@ services:
           and maps status to active; availability additionally filters tier/cadence/type/redemptions.
           Unit and HTTP tests cover these policies and DTO boundaries. Real repository tests
           pin status/type mapping, redemption counts and last-redeemed values, not same-instance root
-          reconfiguration. Config replacement in tests is not production hot reload.
+          reconfiguration. Units pin the 302/max-age zero response, query strings, the per-request
+          subdirectory and the status/redemption_type transform. Config replacement in tests is
+          not production hot reload.
         sources:
           - core/server/services/offers/service.js
           - core/server/web/shared/dynamic-redirect-manager.js
@@ -10330,6 +10345,8 @@ services:
           - core/server/services/offers/offer-bookshelf-repository.js
           - core/shared/config/validated.ts
         tests:
+          - test/unit/server/services/offers/index.test.ts
+          - test/unit/server/services/offers/offer-bookshelf-repository.test.ts
           - test/unit/server/services/offers/domain/models/offer.test.js
           - test/unit/server/services/offers/application/offers-api.test.js
           - test/e2e-api/admin/offers.test.js
@@ -10343,9 +10360,10 @@ services:
           event dispatch to transaction.executionPromise without awaiting it or handling rejection;
           nontransactional save dispatches immediately. Subscriber work, including payment-owned
           Stripe calls and coupon-ID persistence, is not awaited by API success. There is no
-          unsubscribe or pending-work drain. Tests with fake transactions do not prove commit/
-          rollback delivery; the members redemption case proves a row exists inside its real
-          transaction, not offer-event ordering or provider rollback.
+          unsubscribe or pending-work drain. A real-database API test pins created-event dispatch
+          after commit, and a repository unit pins that no rejection handler is attached; rollback
+          delivery is not exercised with a real transaction. The members redemption case proves a
+          row exists inside its real transaction, not provider rollback.
         sources:
           - core/server/services/offers/offers-module.js
           - core/server/services/offers/offer-bookshelf-repository.js
@@ -10355,6 +10373,8 @@ services:
           - core/server/ghost-server.ts
           - package.json
         tests:
+          - test/unit/server/services/offers/offer-bookshelf-repository.test.ts
+          - test/integration/services/offers-api.test.js
           - test/unit/server/services/offers/application/offers-api.test.js
           - test/e2e-api/members/member-offers.test.js
       failures:
@@ -10362,14 +10382,15 @@ services:
           Repository model/query failures normally propagate, while domain reconstruction errors
           log/report and yield null, so lists/startup omit malformed offers and reads can appear
           absent. A real repository test pins omission/logging of a signup offer with a missing
-          product, not every malformed row or startup/read fallback. Count/last-redemption queries
+          product; units add its Sentry report, the direct-read null and its omission at startup,
+          not every malformed row. Count/last-redemption queries
           run outside that catch. API validation rejects;
           HTTP read/edit translates absent results to 404. Coupon import catches duplicate-key
           save errors, rereads the coupon offer and returns it or throws a logged InternalServerError;
           other save failures escape. Unit fakes pin these branches, not a real database race.
           Redirect callback failures are caught by DomainEvents; failed startup does not undo
-          listeners/maps. Partial init, post-commit failures and failed rollback delivery remain
-          source-only; successful HTTP create is not proof of coupon provisioning completion.
+          listeners/maps, as root units pin. Post-commit failures and failed rollback delivery
+          remain source-only; successful HTTP create is not proof of coupon provisioning completion.
         sources:
           - core/server/services/offers/service.js
           - core/server/services/offers/offers-module.js
@@ -10380,22 +10401,25 @@ services:
           - core/server/services/members/members-api/services/payments-service.js
           - package.json
         tests:
+          - test/unit/server/services/offers/index.test.ts
+          - test/unit/server/services/offers/offer-bookshelf-repository.test.ts
           - test/unit/server/services/offers/application/offers-api.test.js
           - test/e2e-api/admin/offers.test.js
           - test/integration/services/offer-bookshelf-repository.test.js
     unverified: []
     blockers:
       - >-
-        Pin root export/pre-init behavior, pending and failed initialization, repeated/concurrent
-        init and retained frontend/members consumers. New composition must deliberately preserve
+        Concurrent init is unpinned; root shape, pending, failed and repeated init and retained
+        frontend/Members consumers are pinned by units. New composition must deliberately preserve
         or change publication timing and old listener/manager ownership, with cleanup evidence.
       - >-
-        Add real frontend redirect contracts for initial rows, created/changed codes, archived
-        offers, query strings and subdirectories. Shared redirect-helper or API tests do not prove
-        offer-event wiring, startup races, or behavior after replacing the published manager.
+        Redirect contracts for initial rows, created/changed codes, archived offers, query strings
+        and subdirectories are pinned through the root with a real redirect manager over faked
+        models; no HTTP test proves them through the mounted site app and a real database.
       - >-
-        Cover actual transaction commit/rollback and event delivery, including unhandled rejection
-        from the detached executionPromise.then chain and payment coupon failures after commit.
+        Cover rollback with a real transaction, including the unhandled rejection from the detached
+        executionPromise.then chain, and payment coupon failures after commit. Commit-then-dispatch
+        and the missing rejection handler are pinned.
         Define pending DB/provider work ownership before adding shutdown; no root drain exists.
       - >-
         Test concurrent coupon import and retention activation with the real database. Simulated
