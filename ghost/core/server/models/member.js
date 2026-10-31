@@ -701,7 +701,7 @@ const Member = ghostBookshelf.Model.extend(
       const query = ghostBookshelf
         .knex('members_labels')
         .select('id')
-        .where('label_id', data.labelId)
+        .whereIn('label_id', data.labelIds || [data.labelId])
         .whereIn('member_id', data.memberIds);
 
       if (unfilteredOptions.transacting) {

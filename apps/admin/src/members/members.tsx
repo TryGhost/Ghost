@@ -39,6 +39,7 @@ const SEARCH_DEBOUNCE_MS = 250;
 const MEMBERS_HELP_CARDS_LIMIT = 6;
 
 interface MembersPageProps {
+  canRemoveMultipleLabels: boolean;
   emailAnalyticsEnabled: boolean;
   hasStripeEnabled: boolean;
   membershipsEnabled: boolean;
@@ -46,6 +47,7 @@ interface MembersPageProps {
 }
 
 const MembersPage: React.FC<MembersPageProps> = ({
+  canRemoveMultipleLabels,
   emailAnalyticsEnabled,
   hasStripeEnabled,
   membershipsEnabled,
@@ -238,6 +240,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
                     {!isAdmin7 && headerFilters}
                     <MembersActions
                       canBulkDelete={canBulkDelete}
+                      canRemoveMultipleLabels={canRemoveMultipleLabels}
                       hasFilterOrSearch={hasFilterOrSearch}
                       memberCount={totalMembers}
                       nql={nql}
@@ -401,6 +404,7 @@ const Members: React.FC = () => {
 
   return (
     <MembersPage
+      canRemoveMultipleLabels={configData.config.capabilities?.membersBulkRemoveLabels === true}
       emailAnalyticsEnabled={emailAnalyticsEnabled}
       hasStripeEnabled={hasStripeEnabled}
       membershipsEnabled={membershipsEnabled}

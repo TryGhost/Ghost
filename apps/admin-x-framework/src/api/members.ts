@@ -673,9 +673,10 @@ export function useBrowseMembersInfinite(
 
 // Bulk operations
 export interface BulkEditAction {
-  type: 'addLabel' | 'removeLabel' | 'unsubscribe';
+  type: 'addLabel' | 'removeLabel' | 'removeLabels' | 'unsubscribe';
   meta?: {
     label?: { id: string };
+    labels?: Array<{ id: string }>;
   };
   newsletter?: string | null;
 }
@@ -688,6 +689,17 @@ export interface BulkOperationResponseType {
     };
     unsuccessfulIds?: string[];
     errors?: Array<{ id?: string; message: string }>;
+  };
+}
+
+export interface BulkEditResponseType {
+  bulk: {
+    action: BulkEditAction['type'];
+    meta: {
+      stats: { successful: number; unsuccessful: number };
+      errors: Array<{ id?: string; message: string }>;
+      unsuccessfulData: unknown[];
+    };
   };
 }
 
@@ -722,7 +734,7 @@ function buildBulkMemberSearchParams({
 }
 
 export const useBulkEditMembers = createMutation<
-  BulkOperationResponseType,
+  BulkEditResponseType,
   { filter?: string; search?: string; all?: boolean; action: BulkEditAction }
 >({
   method: 'PUT',

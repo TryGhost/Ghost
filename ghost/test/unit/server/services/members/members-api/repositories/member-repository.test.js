@@ -227,6 +227,46 @@ describe('MemberRepository', function () {
     });
   });
 
+  describe('bulkEdit multi-label removal', function () {
+    it('reuses the supplied transaction and preserves the member filter and search', async function () {
+      const transacting = {};
+      const context = { internal: true };
+      const mongoTransformer = () => {};
+      const distinct = sinon.stub().resolves([{ id: 'member-id' }]);
+      Member.getFilteredCollectionQuery = sinon.stub().returns({
+        select: sinon.stub().returns({ distinct }),
+      });
+      Member.getLabelRelations = sinon.stub().resolves([{ id: 'relation-id' }]);
+      const result = { successful: 1, unsuccessful: 0, errors: [], unsuccessfulData: [] };
+      Member.bulkDestroy = sinon.stub().resolves(result);
+      const labels = [{ id: 'aaaaaaaaaaaaaaaaaaaaaaaa' }, { id: 'bbbbbbbbbbbbbbbbbbbbbbbb' }];
+
+      const actual = await buildRepo().bulkEdit(
+        { action: 'removeLabels', meta: { labels } },
+        { filter: 'label:[alpha]', search: 'member', context, mongoTransformer, transacting },
+      );
+
+      assert.equal(actual, result);
+      sinon.assert.notCalled(Member.transaction);
+      sinon.assert.calledOnceWithExactly(Member.getFilteredCollectionQuery, {
+        filter: 'label:[alpha]',
+        search: 'member',
+        context,
+        mongoTransformer,
+        transacting,
+      });
+      sinon.assert.calledOnceWithExactly(
+        Member.getLabelRelations,
+        { labelIds: labels.map((label) => label.id), memberIds: ['member-id'] },
+        { transacting },
+      );
+      sinon.assert.calledOnceWithExactly(Member.bulkDestroy, ['relation-id'], 'members_labels', {
+        transacting,
+        throwErrors: true,
+      });
+    });
+  });
+
   describe('#resolveContextSource', function () {
     it('Maps context to source', function () {
       const repo = buildRepo();

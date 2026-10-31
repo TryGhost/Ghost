@@ -1229,7 +1229,7 @@ module.exports = class MemberRepository {
   async bulkEdit(data, options) {
     const { all, filter, search } = options;
 
-    if (!['unsubscribe', 'addLabel', 'removeLabel'].includes(data.action)) {
+    if (!['unsubscribe', 'addLabel', 'removeLabel', 'removeLabels'].includes(data.action)) {
       throw new errors.IncorrectUsageError({
         message: 'Unsupported bulk action',
       });
@@ -1247,6 +1247,40 @@ module.exports = class MemberRepository {
       // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
       Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
     }
+
+    if (data.action === 'removeLabels') {
+      const labels = data.meta?.labels;
+      if (
+        !Array.isArray(labels) ||
+        labels.length === 0 ||
+        Object.hasOwn(data.meta, 'label') ||
+        labels.some((label) => typeof label?.id !== 'string' || !/^[a-f\d]{24}$/i.test(label.id))
+      ) {
+        throw new errors.BadRequestError({ message: 'A valid list of label IDs is required' });
+      }
+
+      const removeLabels = async (transacting) => {
+        const memberRows = await this._Member
+          .getFilteredCollectionQuery({ ...filterOptions, transacting })
+          .select('members.id')
+          .distinct();
+        const memberIds = memberRows.map((row) => row.id);
+        const relations = await this._Member.getLabelRelations(
+          { labelIds: labels.map((label) => label.id), memberIds },
+          { transacting },
+        );
+        return this._Member.bulkDestroy(
+          relations.map((row) => row.id),
+          'members_labels',
+          { transacting, throwErrors: true },
+        );
+      };
+
+      return options.transacting
+        ? removeLabels(options.transacting)
+        : this._Member.transaction(removeLabels);
+    }
+
     const memberRows = await this._Member
       .getFilteredCollectionQuery(filterOptions)
       .select('members.id')

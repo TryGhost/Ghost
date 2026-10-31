@@ -50,6 +50,7 @@ describe('Config API', function () {
           },
         })
         .expect(({ body }) => {
+          assert.equal(body.config.capabilities.membersBulkRemoveLabels, true);
           const { labs } = body.config;
           assert.ok(
             labs && typeof labs === 'object' && !Array.isArray(labs),
