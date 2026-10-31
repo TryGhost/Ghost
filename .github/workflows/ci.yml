@@ -166,6 +166,7 @@ jobs:
               - '.github/actions/**'
               - '.github/scripts/**'
               - 'tools/scripts/**'
+              - 'docker/koenig-playwright/**'
             docs:
               - 'ghost/core/server/services/service-inventory.yaml'
               - '**/*.md'
@@ -1093,9 +1094,7 @@ jobs:
   job_apps_acceptance-tests:
     # Admin is by far the largest suite here and is CPU-bound; the other apps
     # are not starved on the default runner. See job_acceptance-tests above.
-    # Koenig's Firefox media tests need libavcodec60, which Ubuntu 26.04 no
-    # longer provides. Keep that matrix entry on Ubuntu 24.04.
-    runs-on: ${{ matrix.app == '@tryghost/koenig-lexical' && 'ubuntu-24.04' || (github.repository_owner == 'TryGhost' && github.repository != 'TryGhost/Ghost' && matrix.app == '@tryghost/admin') && 'ubuntu-latest-4-cores' || 'ubuntu-latest' }}
+    runs-on: ${{ (github.repository_owner == 'TryGhost' && github.repository != 'TryGhost/Ghost' && matrix.app == '@tryghost/admin') && 'ubuntu-latest-4-cores' || 'ubuntu-latest' }}
     needs: [job_setup]
     if: needs.job_setup.outputs.affected_playwright_matrix != '[]'
     name: App Playwright Acceptance Tests (${{ matrix.app }} ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
@@ -1119,81 +1118,74 @@ jobs:
           store-cache: 'false'
 
       - name: Setup Playwright
+        if: matrix.app != '@tryghost/koenig-lexical'
         uses: ./.github/actions/setup-playwright
         with:
           browsers: ${{ matrix.app == '@tryghost/admin' && 'chromium' || 'chromium firefox webkit' }}
 
-      # Cache the msttcorefonts .ttf files so only a cache miss hits the
-      # SourceForge download that regularly hangs the koenig-lexical job. Save
-      # is a separate step right after the fonts are in place, so a later codec
-      # or test failure on a cache-miss run still populates the cache.
-      - name: Restore MS core fonts cache
+      # Use the installed version as the image pin: catalog/lockfile updates
+      # automatically update both sides of the Playwright protocol together.
+      - name: Resolve Koenig Playwright image
         if: matrix.app == '@tryghost/koenig-lexical'
-        id: mscorefonts-cache
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/msttcorefonts
-          key: msttcorefonts-ttf-v1
-      - name: Install Koenig editor test fonts
+        id: koenig-playwright
+        run: |
+          version=$(node -p "require('@playwright/test/package.json').version")
+          {
+            echo "version=$version"
+            echo "image=mcr.microsoft.com/playwright:v${version}-noble"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Set up Koenig browser image builder
+        if: matrix.app == '@tryghost/koenig-lexical'
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Build Koenig browser image
         if: matrix.app == '@tryghost/koenig-lexical'
         timeout-minutes: 10
-        env:
-          DEBIAN_FRONTEND: noninteractive
-          DEBCONF_NONINTERACTIVE_SEEN: 'true'
-        run: |
-          FONT_CACHE="$HOME/.cache/msttcorefonts"
-          FONT_DIR=/usr/share/fonts/truetype/msttcorefonts
-          sudo mkdir -p "$FONT_DIR"
-          if ls "$FONT_CACHE"/*.ttf >/dev/null 2>&1; then
-            echo "Restoring MS core fonts from cache"
-            sudo cp "$FONT_CACHE"/*.ttf "$FONT_DIR"/
-          else
-            echo "Cache miss — installing msttcorefonts from apt"
-            sudo sh -c "echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections"
-            sudo apt-get update -yq -o Acquire::Retries=3 -o Acquire::http::Timeout=30
-            installed=
-            for i in 1 2 3; do
-              if sudo timeout -k 5 120 apt-get install -yq \
-                   -o Acquire::Retries=3 -o Acquire::http::Timeout=30 msttcorefonts; then
-                installed=1; break
-              fi
-              echo "msttcorefonts attempt $i failed/stuck, retrying..."; sleep 5
-            done
-            if [ -z "$installed" ]; then
-              echo "msttcorefonts failed after 3 attempts"; exit 1
-            fi
-            mkdir -p "$FONT_CACHE"
-            cp "$FONT_DIR"/*.ttf "$FONT_CACHE"/
-          fi
-          sudo fc-cache -f
-      - name: Save MS core fonts cache
-        if: matrix.app == '@tryghost/koenig-lexical' && steps.mscorefonts-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
-          path: ~/.cache/msttcorefonts
-          key: msttcorefonts-ttf-v1
-      - name: Install Koenig editor test media codecs
+          context: ./docker/koenig-playwright
+          load: true
+          tags: koenig-playwright:ci
+          build-args: PLAYWRIGHT_IMAGE=${{ steps.koenig-playwright.outputs.image }}
+          cache-from: type=gha,scope=koenig-playwright-${{ steps.koenig-playwright.outputs.version }}
+          cache-to: type=gha,scope=koenig-playwright-${{ steps.koenig-playwright.outputs.version }},mode=max
+
+      - name: Start Koenig browsers
         if: matrix.app == '@tryghost/koenig-lexical'
-        timeout-minutes: 10
-        env:
-          DEBIAN_FRONTEND: noninteractive
-        # The runner image already has Firefox's other libraries; `playwright install-deps`
-        # also pulls ~20MB of fonts the video-card tests don't use.
-        # Worst case 3 × (65 + 125 + 5) = 585s stays inside timeout-minutes.
+        timeout-minutes: 1
         run: |
-          for i in 1 2 3; do
-            if sudo timeout -k 5 60 apt-get update -yq \
-                 -o Acquire::Retries=3 -o Acquire::http::Timeout=30 &&
-               sudo timeout -k 5 120 apt-get install -yq --no-install-recommends \
-                 -o Acquire::Retries=3 -o Acquire::http::Timeout=30 libavcodec60; then
+          # Mount the installed JS CLI at the same path as on the host. Only
+          # the browsers run in Docker; Vite, pnpm and Node tests stay on host.
+          docker run --detach --name koenig-playwright --init --ipc=host \
+            --publish 127.0.0.1:3000:3000 \
+            --mount "type=bind,source=$GITHUB_WORKSPACE,target=$GITHUB_WORKSPACE,readonly" \
+            --workdir "$GITHUB_WORKSPACE" \
+            koenig-playwright:ci \
+            node node_modules/@playwright/test/cli.js run-server --host 0.0.0.0 --port 3000
+          for _ in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:3000/ >/dev/null; then
               exit 0
             fi
-            echo "libavcodec60 attempt $i failed/stuck, retrying..."; sleep 5
+            sleep 1
           done
-          echo "libavcodec60 failed after 3 attempts"; exit 1
+          docker logs koenig-playwright
+          exit 1
 
       - name: Run Playwright tests
+        env:
+          PW_TEST_CONNECT_WS_ENDPOINT: ${{ matrix.app == '@tryghost/koenig-lexical' && 'ws://127.0.0.1:3000/' || '' }}
+          # Forward browser loopback requests to the host's Vite test server.
+          PW_TEST_CONNECT_EXPOSE_NETWORK: ${{ matrix.app == '@tryghost/koenig-lexical' && '<loopback>' || '' }}
         run: pnpm nx run ${{ matrix.app }}:test:acceptance --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+
+      - name: Stop Koenig browsers
+        if: always() && matrix.app == '@tryghost/koenig-lexical'
+        run: |
+          if docker container inspect koenig-playwright >/dev/null 2>&1; then
+            docker logs koenig-playwright
+            docker rm --force koenig-playwright
+          fi
 
       - name: Get App Name
         if: always()

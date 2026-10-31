@@ -40,6 +40,14 @@ async function getFilterPatterns(filterName: string): Promise<string[]> {
 }
 
 describe('CI path filters', () => {
+  it('runs acceptance tests when the Koenig browser image changes', async () => {
+    const patterns = await getFilterPatterns('ci');
+    assert.ok(
+      picomatch(patterns, { dot: true })('docker/koenig-playwright/Dockerfile'),
+      'browser image changes must expand the acceptance matrix',
+    );
+  });
+
   it('selects repository automation from its tools workspace', async () => {
     for (const name of ['shared', 'ci']) {
       const patterns = await getFilterPatterns(name);
