@@ -1093,7 +1093,9 @@ jobs:
   job_apps_acceptance-tests:
     # Admin is by far the largest suite here and is CPU-bound; the other apps
     # are not starved on the default runner. See job_acceptance-tests above.
-    runs-on: ${{ (github.repository_owner == 'TryGhost' && github.repository != 'TryGhost/Ghost' && matrix.app == '@tryghost/admin') && 'ubuntu-latest-4-cores' || 'ubuntu-latest' }}
+    # Koenig's Firefox media tests need libavcodec60, which Ubuntu 26.04 no
+    # longer provides. Keep that matrix entry on Ubuntu 24.04.
+    runs-on: ${{ matrix.app == '@tryghost/koenig-lexical' && 'ubuntu-24.04' || (github.repository_owner == 'TryGhost' && github.repository != 'TryGhost/Ghost' && matrix.app == '@tryghost/admin') && 'ubuntu-latest-4-cores' || 'ubuntu-latest' }}
     needs: [job_setup]
     if: needs.job_setup.outputs.affected_playwright_matrix != '[]'
     name: App Playwright Acceptance Tests (${{ matrix.app }} ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
