@@ -45,6 +45,7 @@ describe('Tinybird Client', function () {
       request: mockRequest,
       settingsCache: mockSettingsCache,
       tinybirdService: mockTinybirdService,
+      logging: { error: sinon.stub() },
     });
   });
 

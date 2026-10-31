@@ -406,7 +406,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const recommendationsService = require('./server/services/recommendations').default;
   const emailAddressService = require('./server/services/email-address');
   const newsletters = require('./server/services/newsletters').default;
-  const statsService = require('./server/services/stats');
+  const statsService = require('./server/services/stats').default;
   const explorePingService = require('./server/services/explore-ping').default;
   const users = require('./server/services/users').default;
   const domainEvents = require('@tryghost/domain-events');
@@ -451,6 +451,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   await newsletters.init();
   // Recommendations reads the ready Mentions instance during initialization.
   await mentionsService.init();
+  // Explore captures the ready Stats aggregate during initialization.
+  await statsService.init();
 
   await Promise.all([
     identityTokens.init(),
@@ -487,7 +489,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     contentImport.init(),
     donationService.init(),
     recommendationsService.init(),
-    statsService.init(),
     explorePingService.init(),
     users.init(),
     machinePaymentsService.init(),

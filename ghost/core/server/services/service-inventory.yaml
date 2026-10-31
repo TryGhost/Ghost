@@ -314,7 +314,7 @@ services:
           - core/frontend/web/middleware/handle-image-sizes.js
           - core/server/services/settings/settings-service.js
           - core/server/services/themes/validate.js
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/posts-public/index.ts
           - core/server/services/tags-public/index.ts
           - core/server/services/link-redirection/index.ts
@@ -3773,7 +3773,7 @@ services:
           - core/server/services/explore-ping/index.ts
           - core/server/services/explore-ping/explore-ping-service.ts
           - core/server/services/members/service.js
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
         tests:
           - test/unit/server/services/explore-ping/index.test.ts
           - test/e2e-server/boot-explore-ping.isolated.test.ts
@@ -3782,8 +3782,8 @@ services:
           Boot awaits init in its required service Promise.all after database/settings setup,
           before app mounting and readiness, including backend-only boot. The factory constructs
           in every environment and starts the ping only in production/development. Member stats
-          already exists at import; stats init appears earlier in the same Promise.all list and
-          currently sets api without awaiting. Init launches the ping synchronously and resolves
+          already exists at import; boot awaits the Stats root before this Promise.all and the
+          factory passes its ready aggregate. Init launches the ping synchronously and resolves
           without awaiting payload collection or HTTP completion. Root
           units apply the real configuration policy per environment, including development, and
           show init resolving while post statistics and the request are held pending. The
@@ -3795,7 +3795,7 @@ services:
           - core/shared/config/helpers.ts
           - core/server/services/explore-ping/index.ts
           - core/server/services/members/service.js
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
         tests:
           - test/unit/server/services/explore-ping/index.test.ts
           - test/e2e-server/boot-explore-ping.isolated.test.ts
@@ -13543,44 +13543,45 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
-      complexity: complex
+      complexity: straightforward
       modelImpact: fits
       reason: >-
-        Publish the stats API and optional cache atomically, and move nested Tinybird
-        initialization into an explicit boot dependency. Endpoints capture the cache at
-        module load while the API captures a Tinybird client during construction, so
-        consumer timing and identity need coordinated changes. One ready aggregate fits the
-        helper once those boundaries are explicit.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        The boot-owned defineService root applies the Tinybird gates, builds the shared query
+        client, assembles the API over the shared connection, URL service, URL helpers and
+        logging, and publishes it with the optional cache:stats adapter as one ready aggregate.
+        initServices awaits it after Newsletters and before the group containing Explore, which
+        receives the ready aggregate. The Admin endpoint can load before init: one shared cache
+        forwarder resolves the published cache per request, missing when none is configured so
+        the pipeline runs the query once, and each query reads the API per request. No extras or different
+        instance lifetime are needed.
+      reviewedAt: 8cba94a138a69cbb7e496424591575daab11a529
       sources:
-        - core/server/services/stats/service.js
+        - core/server/services/stats/index.ts
         - core/server/services/stats/stats-service.js
         - core/server/api/endpoints/stats.js
+        - core/server/services/explore-ping/index.ts
+        - core/boot.js
         - core/server/services/tinybird/tinybird-service-wrapper.js
       dependencies:
-        complexity: complex
+        complexity: straightforward
         reason: >-
-          StatsService.create assembles query services and replaces Tinybird's shared current
-          client. The Stats request client then holds that instance, while the token endpoint can
-          replace it and Automations reads the latest instance when creating its own client. Live
-          request configuration and captured authentication can therefore diverge; DI needs an
-          explicit ownership and refresh contract.
+          The root now wires every application dependency: it initializes Tinybird under the
+          existing gates, builds the query client with the published instance, and passes knex,
+          the URL service, URL helpers, logging and the client into StatsService.create, which only
+          assembles the query services. Implementations import nothing but errors and the kernel
+          clock. The query client still keeps the Tinybird instance from init while rereading
+          endpoint and site settings; the root unit pins that mixed lifetime.
         preparation:
           - >-
-            Characterize Tinybird replacement and configuration refresh across Stats, the token
-            endpoint and Automations before choosing boot-owned readiness and an injected optional
-            capability.
-          - >-
             Choose a shared owner for the Tinybird request-client factory used by Stats and
-            Automations, retaining their different availability gates and transport behavior.
-          - >-
-            Remove config/request/settings fallback requires and inject logger/URL helpers through
-            query services; route existing Moment operations through the shared clock.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+            Automations, retaining their different availability gates and transport behavior;
+            Automations still builds its own client from the deep factory per operation.
+        reviewedAt: 8cba94a138a69cbb7e496424591575daab11a529
         sources:
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/stats-service.js
           - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/posts-stats-service.js
@@ -13588,25 +13589,25 @@ services:
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/api/endpoints/tinybird.js
     entryPoints:
-      - stats/index.js
+      - stats/index.ts
       - stats/utils/tinybird.ts
     notes: >-
-      Boot publishes a composite statistics API before obtaining its optional cache. Preserve
-      retained API/cache/query-client relationships and method-specific empty/error results.
+      Boot awaits one aggregate of the statistics API and its optional cache before Explore.
+      Preserve retained API/cache/query-client relationships and method-specific empty/error
+      results.
     contracts:
       exports:
         summary: >-
-          CommonJS exports one wrapper with mutable api/cache initially null and receiver-dependent
-          async init resolving undefined. The deep StatsService constructor/create factory exposes
-          six mutable collaborators and async forwarding methods; Explore reaches api.mrr directly.
+          The defineService root exports init and a guarded service aggregate with mutable
+          api/cache. The deep StatsService constructor/create factory exposes six mutable
+          collaborators and async forwarding methods; Explore reaches service.api.mrr directly.
           The separate deep Tinybird module exports create returning receiver-independent
           buildRequest/parseResponse/fetch closures. Factory units assert class identity/client
-          presence; selected HTTP responses pin data/meta serialization. The root unit pins null
-          api/cache before init, the undefined init result and the Admin endpoint calling the
-          published api as receiver; the barrel shape remains source-only.
+          presence; selected HTTP responses pin data/meta serialization. The root unit pins the
+          guarded service before and during init, the undefined init result and the Admin
+          endpoint calling the published api as receiver.
         sources:
-          - core/server/services/stats/index.js
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/stats-service.js
           - core/server/services/stats/utils/tinybird.ts
           - core/server/services/explore-ping/explore-ping-service.ts
@@ -13617,18 +13618,17 @@ services:
           - test/e2e-api/admin/stats.test.js
       construction:
         summary: >-
-          Import constructs only the wrapper. First init synchronously builds six collaborators
-          from shared knex/models/URL and publishes api, then conditionally obtains cache:stats.
-          Although init is async, it contains no await; later calls return when api is truthy.
-          StatsService.create conditionally initializes Tinybird and creates a query client for
-          web analytics, without running a statistics query. Three factory tests stub Tinybird
-          init and assert its gate and client presence. The root unit builds the real wrapper
-          over the shared connection and URL service and pins synchronous api publication,
-          cache:stats acquisition after it, Tinybird gating through the root, one query client
-          shared by posts and content, a connection failure leaving nothing published before a
-          successful retry, and a cache failure leaving api published.
+          Import declares only the root. init builds six collaborators from shared knex/URL/URL
+          helpers/logging, obtains cache:stats when enabled and publishes both as one aggregate
+          once the factory returns; later calls retain it. The root conditionally initializes
+          Tinybird and creates one query client for web analytics, without running a statistics
+          query, and create only assembles the six query services from the injected set. The
+          root unit builds the real root over the shared connection and URL service and pins the
+          guarded service during init, cache:stats acquisition, Tinybird gating through the root,
+          one query client shared by posts and content, and connection or cache failures leaving
+          nothing published before a successful retry rebuilds the aggregate.
         sources:
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/stats-service.js
           - core/server/services/stats/mrr-stats-service.js
           - core/server/services/stats/members-stats-service.js
@@ -13642,16 +13642,19 @@ services:
           - test/unit/server/services/stats/index.test.ts
       consumers:
         summary: >-
-          Boot initializes the wrapper; lazy Admin stats endpoint construction captures cache,
-          while each query reads api live. Explore retains the wrapper and reads api.mrr under
+          Boot awaits the root before Explore constructs with its ready aggregate; the Admin
+          stats endpoint loads without touching the root, and each request resolves
+          service.cache through a shared forwarder and reads service.api. Explore retains the aggregate and reads api.mrr under
           its growth/live-Stripe gates. Automations destructures the deep query factory and
           supplies its current Tinybird instance per operation. Real Admin HTTP snapshots pin
           counts/MRR/subscriptions/referrers and selected empty-input shapes; trial/incomplete
           subscription tests compare before/after results. Several top-post/referrer/growth
           tests assert only array shape, and invalid-ID cases do not assert empty counts.
           Explore units inject the stats graph; automation composition is separately recorded
-          under Tinybird. The root unit pins the Admin endpoint capturing the wrapper's cache at
-          load and reading api per query, rejecting with TypeError before init. Configured
+          under Tinybird. The root unit pins the Admin endpoint loading before init, rejecting a
+          query until init, and forwarding to the published cache, the API per request and the
+          query directly once the cache is null; the app-allowlist unit loads Admin routes with
+          no boot. Configured
           stats-cache hits/identity/keys are not covered here.
         sources:
           - core/boot.js
@@ -13668,17 +13671,18 @@ services:
           - test/e2e-api/admin/automations.test.ts
       startup:
         summary: >-
-          After model/settings setup and awaited Stripe startup, boot calls stats.init in its
-          service Promise.all before Explore init, jobs registration/start and HTTP readiness.
-          Captured knex and settings must be usable before queries; API construction before
-          stats init captures a null cache even if api later becomes available. Factory errors
-          reject boot; cache acquisition can fail after api publication. Existing HTTP suites
-          exercise successful real boot and queries; the root unit covers early endpoint import,
-          repeated init and failure of either initialization stage with injected failures, not
-          real deferred readiness or reboot.
+          After model/settings setup, awaited Stripe startup and Newsletters, boot awaits
+          stats.init before the service Promise.all that holds Explore, then jobs
+          registration/start and HTTP readiness. Captured knex and settings must be usable before
+          queries; reading the service before init throws, but the Admin endpoint reads it only
+          per request. Factory errors, including cache
+          acquisition, reject boot without publishing. Existing HTTP suites exercise successful
+          real boot and queries; the root unit covers early endpoint import, repeated init and
+          failure of either construction stage with injected failures, not real deferred
+          readiness or reboot.
         sources:
           - core/boot.js
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/stats-service.js
           - core/server/api/endpoints/stats.js
           - core/server/web/api/endpoints/admin/routes.js
@@ -13689,18 +13693,19 @@ services:
           - test/e2e-server/services/stats/mrr-stats-service.test.js
       lifetime:
         summary: >-
-          The first published api/cache graph persists through subsequent init calls; no reset,
+          The first published aggregate persists through subsequent init calls; no reset,
           shutdown or rebind exists. Components retain database/URL/query clients. The query
           client retains its token service while rereading config/settings facades; existing
           consumer units assert old token identity with new endpoint/site values and a new
-          client's replacement token. Endpoint/pipeline retains the captured cache object;
+          client's replacement token. The pipeline retains the endpoint's forwarder, which
+          resolves the aggregate's cache per request;
           stats installs no invalidation listener. Adapter-manager clearCache does not update
           retained references. The root unit pins the retained api across repeated init with no
           later cache acquisition, and the query client keeping its Tinybird instance while
           rereading endpoint and site settings. Pending query, cache refresh and stop/reboot
           behavior is source-only.
         sources:
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/stats-service.js
           - core/server/services/stats/utils/tinybird.ts
           - core/server/api/endpoints/stats.js
@@ -13711,8 +13716,10 @@ services:
           - test/unit/server/services/stats/index.test.ts
       configuration:
         summary: >-
-          Initialization captures cache enablement and web-analytics client presence; the factory
-          also initializes Tinybird whenever stats config is truthy, without a labs gate. Request-time
+          Initialization captures cache enablement and web-analytics client presence; the root
+          also initializes Tinybird whenever stats config is truthy, without a labs gate. Default
+          windows and today come from the kernel clock through native UTC day helpers; DB values,
+          caller dates and timezone-aware boundaries still go through the clock's Moment export. Request-time
           date/filter options and config/settings lookups differ from those captured choices;
           test config replacement is not production hot reload. Member forwarding maps dateFrom
           to startDate; missing newsletter IDs return method-specific empty values. Real SQLite
@@ -13725,7 +13732,7 @@ services:
           schema and injected provider/URL collaborators, not complete root/MySQL composition.
         sources:
           - core/server/services/stats/stats-service.js
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/utils/date-utils.js
           - core/server/services/stats/mrr-stats-service.js
@@ -13747,8 +13754,8 @@ services:
           - test/e2e-server/services/stats/mrr-stats-service.test.js
       resources:
         summary: >-
-          Components borrow knex/URL/query clients and own no pool, timer or subscription;
-          the passed models facade is unused. Independent
+          Components borrow knex/URL/query clients and the shared logger and own no pool, timer
+          or subscription. Independent
           queries do not share a snapshot; enrichment fans out lookups, and date ranges can
           allocate uncapped daily series. Shared request-external owns agents; query options ask
           for 35-second timeout/zero retries, with POST AbortSignal. Optional cache adapters can
@@ -13756,7 +13763,7 @@ services:
           Units assert query-client options with fake HTTP; SQLite/HTTP statistics assertions
           do not prove query cancellation, transport/cache release or consistent concurrent reads.
         sources:
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/posts-stats-service.js
           - core/server/services/stats/content-stats-service.js
@@ -13770,7 +13777,8 @@ services:
           - test/unit/server/services/stats/utils/tinybird.test.js
       failures:
         summary: >-
-          A failed cache acquisition leaves api published and suppresses retry. Uncaught
+          A failed cache acquisition rejects init without publishing, and a later init rebuilds
+          the whole aggregate, including Tinybird initialization and a new query client. Uncaught
           MRR/member/subscription/referrer query failures reject; posts/content methods commonly
           log and substitute different empty arrays, objects or zero-series shapes. Content
           has false url_exists when missing/not-ready, unlike posts' true default; thrown URL
@@ -13778,11 +13786,11 @@ services:
           its fetch catch; caught transport/parse errors return null. Posts view queries backfill
           on absent/empty provider data but return empty data on rejected fetch. Selected units
           pin fake provider/URL failure and fallback results. The first two content client tests
-          invoke only stubs; they prove no production transport behavior. The root unit pins the
-          failed-cache guard and the connection-failure retry with injected failures; real cache
-          errors and many nested query failure channels lack assertions.
+          invoke only stubs; they prove no production transport behavior. The root unit pins both
+          construction failures and their retries with injected failures; real cache errors and
+          many nested query failure channels lack assertions.
         sources:
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/mrr-stats-service.js
           - core/server/services/stats/members-stats-service.js
@@ -13798,11 +13806,9 @@ services:
     unverified: []
     blockers:
       - >-
-        Root identity, return/receiver behavior, synchronous publication and optional-cache
-        acquisition across first, repeated and failed init are pinned in the root unit;
-        stop/reboot is not. The published-api guard currently prevents recovery after a cache
-        failure and is pinned as-is; define that lifecycle explicitly before changing
-        initialization or retaining old database/provider references.
+        Stop/reboot is not pinned: the aggregate persists across the e2e lane's reboots with the
+        settings and Tinybird instance captured at first init, and a retry after a failed init
+        rebuilds Tinybird's shared instance and a new query client.
       - >-
         Add real configured-cache consumer tests for early/later endpoint construction, shared
         identity, hits, invalidation/expiry, authorization and option isolation. The API pipeline
@@ -15212,23 +15218,24 @@ services:
           and settings site_uuid; no guard or shared instance reuse exists. Only the wrapper
           constructs it in production; units construct it directly. Construction captures
           flags and site ID, retains the config subtree and starts empty token-cache fields,
-          without signing or contacting Tinybird. StatsService.create conditionally initializes
-          the root, then creates a separate query client for web analytics using the published
-          instance. Factory units stub init and assert its gate plus client presence; the
+          without signing or contacting Tinybird. The Stats root conditionally initializes it
+          through initializeTinybirdForStats, then creates a separate query client for web
+          analytics using the published instance. Stats root units stub init and assert its gate
+          plus client presence; the
           retained-consumer test uses the real root and asserts replacement identity. Nested
           construction and absence of provider I/O at init are otherwise source-established.
         sources:
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/services/tinybird/tinybird-service.js
-          - core/server/services/stats/stats-service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/utils/tinybird.ts
         tests:
-          - test/unit/server/services/stats/stats.test.ts
+          - test/unit/server/services/stats/index.test.ts
           - test/unit/server/services/tinybird/consumer-configuration.test.ts
       consumers:
         summary: >-
           Three production root consumers were found: the Admin token endpoint initializes
-          on each request, StatsService.create initializes and captures instance, and the
+          on each request, the Stats root initializes and captures instance, and the
           automations API reads the current instance without initializing it. Stats passes
           its query client to posts/content statistics; automations builds clients for browse,
           performance, runs and member search. No production deep implementation constructor
@@ -15241,7 +15248,7 @@ services:
           - core/server/api/endpoints/tinybird.js
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/api/endpoints/utils/serializers/output/tinybird.js
-          - core/server/services/stats/stats-service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/posts-stats-service.js
           - core/server/services/stats/content-stats-service.js
@@ -15256,7 +15263,7 @@ services:
           - test/e2e-api/admin/automation-member-search.test.ts
       startup:
         summary: >-
-          Boot has no direct Tinybird init; its awaited stats.init calls StatsService.create.
+          Boot has no direct Tinybird init; its awaited stats.init calls initializeTinybirdForStats.
           That initializes Tinybird when web_analytics_enabled or tinybird:stats config is
           truthy. The query client itself is created only for web analytics. The wrapper
           requires settings site_uuid even
@@ -15269,12 +15276,12 @@ services:
           it does not prove complete boot ordering or later gate transitions.
         sources:
           - core/boot.js
-          - core/server/services/stats/service.js
-          - core/server/services/stats/stats-service.js
+          - core/server/services/stats/index.ts
+          - core/server/services/stats/utils/tinybird.ts
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/services/automations/automations-api.ts
         tests:
-          - test/unit/server/services/stats/stats.test.ts
+          - test/unit/server/services/stats/index.test.ts
           - test/e2e-api/admin/automations.test.ts
       lifetime:
         summary: >-
@@ -16052,7 +16059,7 @@ services:
           - core/server/services/members/api.js
           - core/server/services/mentions/index.ts
           - core/server/services/slack-ping/index.ts
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/webhooks/index.js
         tests:
           - test/integration/url-serialization.test.js
