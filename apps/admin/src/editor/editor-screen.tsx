@@ -116,8 +116,6 @@ function EditorHeader({
       {/* The back link shows its arrow alone, its destination named only to assistive tech. */}
       <PageHeader.Action
         className="bg-background/80 backdrop-blur-sm max-[500px]:aspect-square max-[500px]:gap-0 max-[500px]:px-0"
-        fallbackSize="icon-sm"
-        fallbackVariant="ghost"
         label={backLabel}
         tooltip={false}
         asChild
@@ -422,8 +420,6 @@ function EditorContent({
           : 'bg-background/80 backdrop-blur-sm'
       }
       data-testid={settingsMenuToggle}
-      fallbackSize="sm"
-      fallbackVariant="ghost"
       label="Settings"
       tooltip={false}
       iconOnly

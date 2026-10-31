@@ -1,4 +1,3 @@
-import { useShade } from '@/providers/shade-context';
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
@@ -21,12 +20,8 @@ function TooltipProvider({
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
   const inputState = React.useRef({ suppressFocus: false, windowBlurred: false });
-  const { isAdmin7 } = useShade();
 
   React.useEffect(() => {
-    if (!isAdmin7) {
-      return;
-    }
     const suppressFocus = () => {
       inputState.current.suppressFocus = true;
     };
@@ -51,11 +46,11 @@ function TooltipProvider({
       window.removeEventListener('blur', onWindowBlur);
       document.removeEventListener('keydown', onKeyDown, true);
     };
-  }, [isAdmin7]);
+  }, []);
 
   return (
-    <TooltipInputContext.Provider value={isAdmin7 ? inputState : null}>
-      <TooltipPrimitive.Provider delayDuration={isAdmin7 ? 1000 : 700} {...props}>
+    <TooltipInputContext.Provider value={inputState}>
+      <TooltipPrimitive.Provider delayDuration={1000} {...props}>
         {children}
       </TooltipPrimitive.Provider>
     </TooltipInputContext.Provider>
@@ -68,7 +63,6 @@ function Tooltip({
   onOpenChange,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Root>) {
-  const { isAdmin7 } = useShade();
   const inputState = React.useContext(TooltipInputContext);
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen);
   const open = controlledOpen ?? uncontrolledOpen;
@@ -85,20 +79,20 @@ function Tooltip({
   );
 
   React.useEffect(() => {
-    if (!isAdmin7 || !open) {
+    if (!open) {
       return;
     }
     const close = () => handleOpenChange(false);
     window.addEventListener('blur', close);
     return () => window.removeEventListener('blur', close);
-  }, [isAdmin7, open, handleOpenChange]);
+  }, [open, handleOpenChange]);
 
   return (
     <TooltipPrimitive.Root
       {...props}
       defaultOpen={defaultOpen}
-      open={isAdmin7 ? open : controlledOpen}
-      onOpenChange={isAdmin7 ? handleOpenChange : onOpenChange}
+      open={open}
+      onOpenChange={handleOpenChange}
     />
   );
 }
@@ -148,16 +142,12 @@ const TooltipContent = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Content>,
   TooltipContentProps
 >(({ className, sideOffset = 4, variant, ...props }, ref) => {
-  const { isAdmin7 } = useShade();
   return (
     <TooltipPrimitive.Portal>
       <ShadeScope>
         <TooltipPrimitive.Content
           ref={ref}
-          className={cn(
-            tooltipContentVariants({ variant: variant ?? (isAdmin7 ? 'white' : 'default') }),
-            className,
-          )}
+          className={cn(tooltipContentVariants({ variant: variant ?? 'white' }), className)}
           sideOffset={sideOffset}
           {...props}
         />

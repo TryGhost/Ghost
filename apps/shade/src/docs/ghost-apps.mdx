@@ -101,7 +101,7 @@ import {ShadeApp} from '@tryghost/shade/app';
 </ShadeApp>
 ```
 
-Leave `isAdmin7` at its default. It isn't Admin's `admin7Design` Labs flag: Admin passes `isAdmin7` on every route whatever the flag says, and it sets the current control shapes and header details. The flag changes Admin's own frame and large page titles.
+Leave `admin7Design` at its default. It mirrors Admin's `admin7Design` Labs flag while Admin 7 rolls out; an app always gets the Admin 7 design.
 
 Don't add `PageChromeProvider`. Large titles depend on the `admin7Design` flag, the user's role and the width of Admin's window, and an app can see none of them, so an app keeps the default compact title.
 
@@ -189,6 +189,6 @@ These are for Admin and for changing Shade itself; skip them in an app:
 
 - [Contributing to Shade](https://github.com/TryGhost/Ghost/blob/main/apps/shade/CONTRIBUTING.md), including its layers.
 - Introduction's [Admin 7 milestones](?path=/docs/overview-introduction--docs#admin-7-milestones) and the page header's [Compatibility and rollout](?path=/docs/patterns-page-header--design-contract#compatibility-and-rollout).
-- Every `fallback*` prop, such as `fallbackStyle`, `fallbackVariant`, `fallbackSize` and `fallbackClassName`. They preserve older Admin screens; an app uses the defaults.
+- `Filters.Trigger`'s `fallbackStyle` prop. It keeps the funnel icon on Admin's analytics screens; an app uses the default.
 
 </div>

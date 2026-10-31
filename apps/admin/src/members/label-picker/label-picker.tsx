@@ -12,7 +12,6 @@ import {
   CommandList,
   CommandSeparator,
 } from '@tryghost/shade/components';
-import { useShade } from '@tryghost/shade/app';
 import { EditRow } from './edit-row';
 import { type Label } from '@tryghost/admin-x-framework/api/labels';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
@@ -121,7 +120,6 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
   isCreating,
   onSearchClear,
 }) => {
-  const { isAdmin7 } = useShade();
   const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
   const normalizedSearch = search.trim().toLowerCase();
   const visibleLabels = normalizedSearch
@@ -169,7 +167,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
       {[...groups].map(([group, groupLabels], index) => (
         <React.Fragment key={group}>
           {index > 0 && <CommandSeparator className="my-1" />}
-          <CommandGroup className={cn(isAdmin7 && 'p-0')} heading={group || undefined}>
+          <CommandGroup className="p-0" heading={group || undefined}>
             {groupLabels.map((label) =>
               editingLabelId === label.id ? (
                 <EditRow
@@ -194,7 +192,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
         </React.Fragment>
       ))}
       {showCreate && (
-        <CommandGroup className={cn('[&_[cmdk-group-heading]]:hidden', isAdmin7 && 'p-0')}>
+        <CommandGroup className={cn('[&_[cmdk-group-heading]]:hidden', 'p-0')}>
           <CommandItem disabled={isCreating} onSelect={() => void handleCreate()}>
             <LucideIcon.Plus className="mt-0.5 size-4 self-start" />
             <span className="min-w-0 [overflow-wrap:anywhere]">
@@ -215,16 +213,12 @@ interface SelectedPillsProps {
 }
 
 const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => {
-  const { isAdmin7 } = useShade();
   return (
     <>
       {labels.map((label) => (
         <Badge
           key={label.id}
-          className={cn(
-            'cursor-pointer gap-1 pr-1',
-            isAdmin7 && cn(tokenFieldClasses.chip, 'bg-secondary'),
-          )}
+          className={cn('cursor-pointer gap-1 pr-1', cn(tokenFieldClasses.chip, 'bg-secondary'))}
           variant="outline"
           asChild
         >
@@ -238,8 +232,8 @@ const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => {
             }}
             onKeyDown={(event) => event.stopPropagation()}
           >
-            <span className={cn(isAdmin7 && 'min-w-0 [overflow-wrap:anywhere]')}>{label.name}</span>
-            <LucideIcon.X className={cn('size-3', isAdmin7 && 'mt-0.5 shrink-0 self-start')} />
+            <span className="min-w-0 [overflow-wrap:anywhere]">{label.name}</span>
+            <LucideIcon.X className={cn('size-3', 'mt-0.5 shrink-0 self-start')} />
           </button>
         </Badge>
       ))}
@@ -310,7 +304,6 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
   onDelete,
   placeholder = 'Search labels...',
 }) => {
-  const { isAdmin7 } = useShade();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -403,12 +396,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
       >
         <div
           ref={refs.setReference}
-          className={cn(
-            isAdmin7
-              ? tokenFieldClasses.field
-              : 'flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-control-border bg-control-surface px-3 py-1 text-control transition-colors focus-within:border-focus-ring focus-within:ring-2 focus-within:ring-focus-ring/25',
-            'relative pr-8',
-          )}
+          className={cn(tokenFieldClasses.field, 'relative pr-8')}
           onClick={() => {
             inputRef.current?.focus();
             setOpen(true);
@@ -422,12 +410,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
             }}
           />
           <CommandInput
-            className={cn(
-              'size-auto rounded-none py-0',
-              isAdmin7
-                ? tokenFieldClasses.input
-                : 'min-w-20 flex-1 bg-transparent text-control outline-hidden placeholder:text-muted-foreground',
-            )}
+            className={cn('size-auto rounded-none py-0', tokenFieldClasses.input)}
             value={search}
             asChild
             onFocus={() => setOpen(true)}
@@ -445,9 +428,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
               placeholder={selectedLabels.length === 0 ? placeholder : ''}
             />
           </CommandInput>
-          <LucideIcon.ChevronDown
-            className={cn(tokenFieldClasses.chevron, !isAdmin7 && 'top-2.5')}
-          />
+          <LucideIcon.ChevronDown className={tokenFieldClasses.chevron} />
         </div>
         {open && (
           // As wide as its longest row, from the field's width up to 480px, past which a
@@ -456,7 +437,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
             ref={refs.setFloating}
             className={cn(
               'z-50 w-max max-w-[min(480px,calc(100vw-32px))] border bg-white shadow-md dark:bg-gray-950',
-              isAdmin7 ? 'rounded-menu' : 'rounded-md',
+              'rounded-menu',
             )}
             style={floatingStyles}
           >

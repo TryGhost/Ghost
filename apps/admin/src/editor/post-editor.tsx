@@ -209,7 +209,7 @@ export function PostEditor({
   writingFocus,
   font,
 }: PostEditorProps) {
-  const { darkMode, isAdmin7 } = useFocusContext();
+  const { darkMode } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
   const scrollPaneRef = useRef<HTMLDivElement>(null);
   const writingAreaRef = useRef<HTMLDivElement>(null);
@@ -602,9 +602,8 @@ export function PostEditor({
               as="span"
               className={buttonVariants({
                 variant: null,
-                size: isAdmin7 ? 'default' : 'sm',
+                size: 'default',
                 shape: 'pill',
-                isAdmin7,
                 className:
                   'bg-background/80 px-3 text-(length:--text-control) text-text-secondary backdrop-blur-sm',
               })}

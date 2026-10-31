@@ -21,7 +21,6 @@ import {
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
-import { useShade } from '@tryghost/shade/app';
 import { useCustomFieldDefinitionsIncludingArchived } from '@/shared/member-custom-fields/use-definitions';
 import { memberCustomFieldIdentity } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -40,7 +39,6 @@ interface MembersFiltersProps {
   onFiltersChange: (filters: Filter[]) => void;
   savedViews?: MemberView[];
   activeView?: MemberView | null;
-  iconOnly?: boolean;
 }
 
 const EMPTY_OFFERS: typeof buildOfferOptions extends (offers: infer T) => unknown ? T : never = [];
@@ -91,7 +89,6 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   onFiltersChange,
   savedViews = [],
   activeView,
-  iconOnly = false,
 }) => {
   const { data: offersData } = useBrowseOffers({});
   const { data: newslettersData } = useBrowseNewsletters({ searchParams: { limit: '100' } });
@@ -192,17 +189,13 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
   });
 
   const hasFilters = filters.length > 0;
-  const { isAdmin7 } = useShade();
 
   const clearAndSaveButtons = hasFilters ? (
     <FilterBar.Actions data-testid="members-filter-actions" gap="sm">
       <FilterBar.Action
-        className={cn(
-          'hidden items-center lg:inline-flex',
-          !isAdmin7 && 'text-muted-foreground hover:text-foreground',
-        )}
+        className="hidden items-center lg:inline-flex"
         type="button"
-        variant={isAdmin7 ? 'ghost' : 'outline'}
+        variant="ghost"
         onClick={() => onFiltersChange([])}
       >
         Clear
@@ -220,7 +213,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
 
   const filterControls = (
     <Filters
-      addButton={<Filters.Trigger collapseLabel={iconOnly} fallbackClassName="bg-background" />}
+      addButton={<Filters.Trigger />}
       allowMultiple={true}
       className={cn('[&>button]:order-last', hasFilters ? 'sm:!pr-40' : 'w-auto')}
       clearButton={clearAndSaveButtons}
