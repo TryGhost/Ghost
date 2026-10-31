@@ -22,6 +22,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   // the automations tests, not this boot orchestration harness.
   const automations = sinon.stub();
   const reschedule = sinon.stub().resolves();
+  // Initializing the post-scheduling root constructs the scheduler.
+  const postScheduling = sinon.stub().resolves();
   const jobsService = { start };
   const genericService = {
     init: async () => {},
@@ -30,7 +32,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     handleImportJob() {},
     service: {},
   };
-  const scheduler = { run() {}, rescheduleOnBoot };
+  const schedulerRun = sinon.stub();
+  const scheduler = { run: schedulerRun, rescheduleOnBoot };
   // Permissive: initServices has many dependencies, and only those listed here matter to these
   // tests. Every other dependency gets a generic service.
   const initServices = loadBootFunction(
@@ -65,7 +68,9 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
         init: media,
         getInstance: () => ({}),
       },
-      './server/services/post-scheduling': { default: { rescheduleAll: reschedule } },
+      './server/services/post-scheduling': {
+        default: { init: postScheduling, service: { rescheduleAll: reschedule } },
+      },
       './server/services/jobs-service/register-job-handlers': { default: register },
       './server/services/automations': { automationsService: { init: automations } },
     },
@@ -88,6 +93,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     start,
     automations,
     reschedule,
+    postScheduling,
+    schedulerRun,
   };
 }
 
@@ -120,6 +127,34 @@ it('initializes dependencies and starts jobs before calling automations init', a
   }
   sinon.assert.callOrder(boot.register, boot.start, boot.automations, boot.reschedule);
   sinon.assert.calledOnce(boot.automations);
+});
+
+it('constructs post scheduling before running the scheduling adapter or initializing Stripe', async function () {
+  const boot = createServicesHarness();
+  await boot.initServices();
+
+  sinon.assert.calledOnce(boot.postScheduling);
+  sinon.assert.callOrder(boot.postScheduling, boot.schedulerRun, boot.stripe);
+  sinon.assert.calledOnce(boot.reschedule);
+});
+
+it('propagates a post scheduling construction failure before running the scheduling adapter', async function () {
+  const boot = createServicesHarness();
+  const failure = new Error('post scheduling construction failed');
+  boot.postScheduling.rejects(failure);
+
+  await assert.rejects(boot.initServices(), (error) => error === failure);
+
+  for (const dependency of [
+    boot.schedulerRun,
+    boot.stripe,
+    boot.gifts,
+    boot.register,
+    boot.start,
+  ]) {
+    sinon.assert.notCalled(dependency);
+  }
+  sinon.assert.notCalled(boot.reschedule);
 });
 
 it('does not reschedule posts when the scheduling adapter opts out', async function () {

@@ -11,6 +11,10 @@ const { getSignedAdminToken } = require('../../../../../core/server/adapters/sch
 const {
   getSchedulerIdempotencyKey,
 } = require('../../../../../core/server/adapters/scheduling/get-scheduler-idempotency-key');
+const {
+  buildSignedJob,
+} = require('../../../../../core/server/adapters/scheduling/build-signed-job');
+const { createLoggingFake } = require('../../../../utils/logging-utils');
 const PostScheduling =
   require('../../../../../core/server/services/post-scheduling/post-scheduling').default;
 const nock = require('nock');
@@ -21,6 +25,7 @@ const postScheduling = require('../../../../../core/server/services/posts/post-s
 describe('PostScheduling', function () {
   let adapter;
   let internalKeys;
+  let collaborators;
 
   beforeEach(function () {
     adapter = new SchedulingDefault();
@@ -42,6 +47,13 @@ describe('PostScheduling', function () {
     internalKeys = new Map([
       ['ghost-scheduler', Promise.resolve({ id: 'integrationUniqueId', secret: 'aaaa' })],
     ]);
+    collaborators = {
+      models: { Post },
+      events,
+      logging: createLoggingFake(),
+      buildSignedJob,
+      getSchedulerIdempotencyKey,
+    };
   });
 
   afterEach(function () {
@@ -102,7 +114,12 @@ describe('PostScheduling', function () {
         .query(true)
         .reply(200);
 
-      new PostScheduling({ apiUrl: 'http://scheduler.local:1111/', internalKeys, adapter });
+      new PostScheduling({
+        apiUrl: 'http://scheduler.local:1111/',
+        internalKeys,
+        adapter,
+        ...collaborators,
+      });
 
       events.emit('post.scheduled', post);
       await new Promise((resolve) => {
@@ -166,6 +183,7 @@ describe('PostScheduling', function () {
         apiUrl: 'http://scheduler.local:1111/',
         internalKeys: keys,
         adapter,
+        ...collaborators,
       });
       await service.rescheduleAll();
       sinon.assert.calledOnce(adapter.schedule);
@@ -238,6 +256,7 @@ describe('PostScheduling', function () {
         apiUrl: 'http://scheduler.local:1111/',
         internalKeys,
         adapter,
+        ...collaborators,
       });
 
       await service.rescheduleAll({ previousKey: { id: 'k1', secret: 'ccccdddd' } });
@@ -267,6 +286,7 @@ describe('PostScheduling', function () {
         apiUrl: 'http://scheduler.local:1111/',
         internalKeys,
         adapter,
+        ...collaborators,
       });
       await service.rescheduleAll({ previousKey: { id: 'k1', secret: 'ccccdddd' } });
 
@@ -290,6 +310,7 @@ describe('PostScheduling', function () {
         apiUrl: 'http://scheduler.local:1111/',
         internalKeys,
         adapter,
+        ...collaborators,
       });
       await service.rescheduleAll();
 
@@ -315,6 +336,7 @@ describe('PostScheduling', function () {
         apiUrl: 'http://scheduler.local:1111/',
         internalKeys,
         adapter,
+        ...collaborators,
       });
       await service.rescheduleAll();
 
@@ -337,6 +359,7 @@ describe('PostScheduling', function () {
         apiUrl: 'http://scheduler.local:1111/',
         internalKeys,
         adapter,
+        ...collaborators,
       });
       await service.rescheduleAll({ previousKey: { id: 'k1', secret: 'ccccdddd' } });
 
