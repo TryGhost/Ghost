@@ -125,46 +125,46 @@ export default function UnsubscribePage() {
     doAction('showPopupNotification', notification);
   };
 
-  const updateCommentNotifications = async (enabled) => {
+  const updateMemberPreference = async (update, successMessage) => {
     let updatedData;
     if (loggedInMember) {
       // when we have a member logged in, we need to update the newsletters in the context
-      await doAction('updateNewsletterPreference', { enableCommentNotifications: enabled });
-      updatedData = { ...loggedInMember, enable_comment_notifications: enabled };
+      const result = await doAction('updateNewsletterPreference', { ...update, successMessage });
+      updatedData = result?.member;
     } else {
       updatedData = await updateMemberNewsletters({
         api,
         memberUuid: pageData.uuid,
         key: pageData.key,
-        enableCommentNotifications: enabled,
+        ...update,
       });
+      doAction(
+        'showPopupNotification',
+        updatedData
+          ? { action: 'updated:success', message: successMessage }
+          : {
+              action: 'updateNewsletter:failed',
+              status: 'error',
+              message: t('Failed to update newsletter settings'),
+            },
+      );
     }
-    setMember(updatedData);
-    doAction('showPopupNotification', {
-      action: 'updated:success',
-      message: t('Comment preferences updated.'),
-    });
+    if (updatedData) {
+      setMember(updatedData);
+    }
   };
 
-  const updateUpdatesAndAnnouncements = async (enabled) => {
-    let updatedData;
-    if (loggedInMember) {
-      await doAction('updateNewsletterPreference', { enableUpdatesAndAnnouncements: enabled });
-      updatedData = { ...loggedInMember, enable_updates_and_announcements: enabled };
-    } else {
-      updatedData = await updateMemberNewsletters({
-        api,
-        memberUuid: pageData.uuid,
-        key: pageData.key,
-        enableUpdatesAndAnnouncements: enabled,
-      });
-    }
-    setMember(updatedData);
-    doAction('showPopupNotification', {
-      action: 'updated:success',
-      message: t('Email preferences updated.'),
-    });
-  };
+  const updateCommentNotifications = (enabled) =>
+    updateMemberPreference(
+      { enableCommentNotifications: enabled },
+      t('Comment preferences updated.'),
+    );
+
+  const updateUpdatesAndAnnouncements = (enabled) =>
+    updateMemberPreference(
+      { enableUpdatesAndAnnouncements: enabled },
+      t('Email preferences updated.'),
+    );
 
   const unsubscribeAll = async () => {
     let updatedMember;
@@ -315,7 +315,7 @@ export default function UnsubscribePage() {
 
   const HeaderNotification = () => {
     if (pageData.comments && commentsEnabled) {
-      const hideClassName = hasInteracted ? 'gh-portal-hide' : '';
+      const hideClassName = hasInteracted || enableCommentNotifications ? 'gh-portal-hide' : '';
       return (
         <>
           <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}>
@@ -332,7 +332,8 @@ export default function UnsubscribePage() {
       );
     }
     if (pageData.updatesAndAnnouncements && canChangeUpdatesAndAnnouncements) {
-      const hideClassName = hasInteracted ? 'gh-portal-hide' : '';
+      const hideClassName =
+        hasInteracted || enableUpdatesAndAnnouncements !== false ? 'gh-portal-hide' : '';
       return (
         <>
           <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}>
