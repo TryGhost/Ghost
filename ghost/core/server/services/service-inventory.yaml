@@ -10692,14 +10692,17 @@ services:
           async rescheduleAll({previousKey} = {}), resolving undefined after database/key
           lookup and adapter call submission, not after those calls settle. The deep module
           default-exports the constructor; production constructs it only in the root. There
-          is no init/reset/stop export. Class tests invoke rescheduleAll directly but do not
-          assert root export shape, singleton identity or pending-adapter completion semantics.
+          is no init/reset/stop export. Root units pin the default export as the one instance
+          built on first load and reused by later requires; class units pin rescheduleAll's
+          undefined result. Pending-adapter completion semantics remain unasserted.
         sources:
           - core/server/services/post-scheduling/index.ts
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/boot.js
         tests:
           - test/unit/server/services/post-scheduling/post-scheduling.test.js
+          - test/unit/server/services/post-scheduling/index.test.ts
+          - test/unit/server/services/post-scheduling/post-scheduling-jobs.test.ts
       construction:
         summary: >-
           Import captures the Admin API URL, resolves the adapter-manager's cached scheduling
@@ -10707,9 +10710,11 @@ services:
           retains URL/adapter/internal-keys, adds six common-event listeners for scheduled,
           rescheduled and unscheduled posts/pages, then registers itself on the adapter.
           Boot makes a separate error-capture wrapper around the same cached adapter; auth
-          retains the underlying adapter for rotation. Constructor does not start it. The
-          class unit titled starts the adapter only checks a post.scheduled job's arguments
-          with run/execution/network stubbed; it does not assert registration or root identity.
+          retains the underlying adapter for rotation. Constructor does not start it. Root
+          units pin one adapter lookup, the absolute Admin API URL, registration with the
+          default export, one listener per event and a failed load (internal keys not ready)
+          subscribing nothing; class units pin exactly six listeners, registration after
+          subscribing and one listener set per instance.
         sources:
           - core/server/services/post-scheduling/index.ts
           - core/server/services/post-scheduling/post-scheduling.ts
@@ -10719,6 +10724,8 @@ services:
           - core/boot.js
         tests:
           - test/unit/server/services/post-scheduling/post-scheduling.test.js
+          - test/unit/server/services/post-scheduling/index.test.ts
+          - test/unit/server/services/post-scheduling/post-scheduling-jobs.test.ts
       consumers:
         summary: >-
           Boot directly rebuilds the root. Post model changes emit the six subscribed event
@@ -10731,6 +10738,9 @@ services:
           early/missing resources no-op, late unforced requests fail and overlapping requests
           yield one published response and one email row. A deferred-read unit additionally
           pins the overlap no-op while the first publish is pending; neither proves adapter delivery.
+          Class units drive each of the six handlers with fake models and pin the whole job
+          payload, previous-timestamp use and unschedule/schedule order; real model events are
+          not driven through commit or rollback.
         sources:
           - core/boot.js
           - core/server/models/post.js
@@ -10744,6 +10754,7 @@ services:
         tests:
           - test/legacy/api/admin/schedules.test.js
           - test/unit/server/services/post-scheduling/post-scheduling.test.js
+          - test/unit/server/services/post-scheduling/post-scheduling-jobs.test.ts
           - test/unit/server/auth/reset-authentication.test.ts
       startup:
         summary: >-
@@ -10754,8 +10765,9 @@ services:
           is truthy. Rebuilding queries scheduled posts and pages concurrently and then reads
           the scheduler key. Boot harness tests keep jobs.start unresolved and assert neither
           automations nor rescheduling runs, propagate its rejection, and assert opt-out skips
-          rescheduling. Modules are fakes, so real adapter readiness/root import ordering and
-          outstanding adapter operations are not protected by those assertions.
+          rescheduling. They also pin that the root loads before the adapter runs and Stripe
+          initializes, and that a load failure stops boot before either. Modules are fakes, so
+          real adapter readiness and outstanding adapter operations are not protected.
         sources:
           - core/boot.js
           - core/server/services/post-scheduling/index.ts
@@ -10772,8 +10784,10 @@ services:
           running flag are process state. Normal rebuild unschedules then schedules using
           bootstrap=true, except adapters declaring strict-true idempotency dedupe skip the
           unschedule. Rotation always unschedules with the previous key and bootstrap=false.
-          Class units assert those calls/flags, stable selected job keys and changed keys for
-          time/key changes; they do not prove remote completion order, durable dedupe or restart.
+          Class units assert those calls/flags, interleaving and posts-before-pages order, the
+          dedupe flag read per rebuild, stable job keys and changed keys for time/key changes;
+          root units pin the retained adapter after the adapter cache changes. They do not
+          prove remote completion order, durable dedupe or restart.
         sources:
           - core/server/services/post-scheduling/post-scheduling.ts
           - core/server/adapters/scheduling/scheduling-default.ts
@@ -10781,6 +10795,8 @@ services:
           - core/kernel/adapter-manager/adapter-manager.ts
         tests:
           - test/unit/server/services/post-scheduling/post-scheduling.test.js
+          - test/unit/server/services/post-scheduling/index.test.ts
+          - test/unit/server/services/post-scheduling/post-scheduling-jobs.test.ts
       configuration:
         summary: >-
           Root captures the URL and resolved adapter at import; later adapter-manager cache
@@ -10791,8 +10807,10 @@ services:
           callback URL/time determine the namespaced hash. JWTs start ten minutes before
           publish and normally expire six hours after; sufficiently overdue jobs instead
           expire six hours from signing, so later rebuilds can change their URL/hash even
-          without changing the key or publish time. Tests compare selected arguments/hash
-          behavior, not JWT boundaries or that overdue case.
+          without changing the key or publish time. Class units pin the JWT claims, the
+          per-event key read, the overdue key change and Moment's parsing (Dates, offsets,
+          zone-less strings as UTC, undefined as now, null as a logged failure); root units
+          pin the URL read once at load.
         sources:
           - core/server/services/post-scheduling/index.ts
           - core/server/services/post-scheduling/post-scheduling.ts
@@ -10806,6 +10824,8 @@ services:
           - core/shared/config/loader.ts
         tests:
           - test/unit/server/services/post-scheduling/post-scheduling.test.js
+          - test/unit/server/services/post-scheduling/index.test.ts
+          - test/unit/server/services/post-scheduling/post-scheduling-jobs.test.ts
           - test/unit/server/adapters/scheduling/get-scheduler-idempotency-key.test.ts
       resources:
         summary: >-
@@ -10838,8 +10858,11 @@ services:
           Unschedule/schedule are not awaited, so persistent-adapter completion can reorder.
           Default HTTP requests have five-second timeout/no client retries; only status 503
           schedules up to 30 delayed retries, 404 is ignored and other errors are logged.
-          Decorator units assert selected reporting/redaction and rejection handling; they
-          do not establish whole-root recovery, and the two-retry unit does not pin exhaustion.
+          Decorator units assert selected reporting/redaction and rejection handling; root
+          units pin that the root's adapter reports through that decorator, and class units
+          pin per-handler logging, a reschedule stopping at a failed unschedule, rebuild
+          rejection and listeners kept when registration throws. They do not establish
+          whole-root recovery, and the two-retry unit does not pin exhaustion.
         sources:
           - core/server/services/post-scheduling/index.ts
           - core/server/services/post-scheduling/post-scheduling.ts
@@ -10849,28 +10872,27 @@ services:
           - core/server/auth/reset-authentication.ts
         tests:
           - test/unit/server/adapters/scheduling/error-capture.test.ts
+          - test/unit/server/services/post-scheduling/index.test.ts
+          - test/unit/server/services/post-scheduling/post-scheduling-jobs.test.ts
           - test/unit/server/adapters/scheduling/scheduling-default.test.js
     unverified: []
     blockers:
       - >-
-        Protect root/default export identity, six listener registrations and adapter registration
-        through repeated construction, failed import and stop/reboot. Define ownership of
-        listener removal, scheduler timers, pending HTTP work and adapter rebinding; none is
-        supplied by the existing root or default adapter.
+        Define ownership of listener removal, scheduler timers, pending HTTP work and adapter
+        rebinding across stop/reboot; none is supplied by the existing root or default adapter.
+        Root units pin today's retained adapter after the adapter cache changes.
       - >-
         Cover real post/page schedule, reschedule and unschedule events through commit/rollback
-        and overlapping edits, including previous timestamp preservation and key failures.
-        The constructor unit drives only post.scheduled; manually called HTTP callbacks do not
-        establish queue registration or event completion ordering.
+        and overlapping edits. Class units drive the six handlers with fake models; manually
+        called HTTP callbacks do not establish queue registration or event completion ordering.
       - >-
         Characterize real adapter readiness and outstanding operations during boot/rotation,
         rejection, shutdown and partial rebuild. Invocation-order assertions do not protect
         remote unschedule/schedule completion order or persistence; root calls intentionally
         return before adapter promises settle.
       - >-
-        Protect scheduled callback signing/expiry and recovery for jobs overdue by more than
-        six hours. Their generated expiry and URL/hash can change with the clock, which is
-        outside the existing same-job key assertions and can affect dedupe or cancellation.
+        Decide recovery for jobs overdue by more than six hours. Class units pin that their
+        expiry, URL and hash change with the clock, which can affect dedupe or cancellation.
       - >-
         Preserve callback no-op/force/authentication/cache behavior with the separate posts
         owner, and cover publish failure/retry, process restart and cross-process duplicate
