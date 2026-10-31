@@ -48,7 +48,9 @@ initializer merely to keep its directory.
 
 Read `.dependency-cruiser.cjs` and `.oxlintrc.json` on the actual base. The
 `service-dependencies` rule covers every implementation file in the directory,
-not just the main class. Only the top-level wiring `index.ts` is exempt.
+not just the main class. Only the top-level wiring `index.ts` is exempt; the
+full audit also exempts a legacy `index.js` root, so a migration that leaves
+JavaScript in that root is not yet checked by lint.
 Implementations must not retrieve collaborators through their own root.
 
 Wire application instances, models, logging, `DomainEvents` and configured
