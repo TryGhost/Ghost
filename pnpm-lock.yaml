@@ -2107,8 +2107,8 @@ importers:
   ghost:
     dependencies:
       '@aws-sdk/client-s3':
-        specifier: 3.1157.0
-        version: 3.1157.0
+        specifier: 3.1158.0
+        version: 3.1158.0
       '@breejs/later':
         specifier: 'catalog:'
         version: 4.2.0
@@ -4672,8 +4672,8 @@ packages:
     resolution: {integrity: sha512-DSo+EqLq2PkS8gjit311LliRrYzydneP6vRhxMzDh9c8P3wWGzHf4fjmQN3d8sl4qh+aMqzn9+o+gZZo4+uqIQ==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/client-s3@3.1157.0':
-    resolution: {integrity: sha512-fbZIxqZVzK/PMLj9az3+ieAcYdZhzpTrfIVAnrE4PnRc1C6SokMDnaxAJycKTNmzLlY1fvmlItZWBDPUEFlGLQ==}
+  '@aws-sdk/client-s3@3.1158.0':
+    resolution: {integrity: sha512-ytaS0QeydANmiLo20kXtAKHKxEriqVgtIC7WnRXfjYEgH3yfjxaxJvYEWQKLU0g8Fpb1Um287KfBIO/eg6aqXA==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/client-sesv2@3.1127.0':
@@ -16958,7 +16958,7 @@ snapshots:
       '@smithy/types': 4.19.0
       tslib: 2.8.1
 
-  '@aws-sdk/client-s3@3.1157.0':
+  '@aws-sdk/client-s3@3.1158.0':
     dependencies:
       '@aws-sdk/checksums': 3.1001.6
       '@aws-sdk/core': 3.978.6
