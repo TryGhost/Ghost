@@ -1,4 +1,8 @@
-import { comparableTriggerRules, getTriggerTierIds } from './utils/trigger-rules';
+import {
+  comparableTriggerRules,
+  getTriggerTierIds,
+  subscriptionChangedSelectionFromRules,
+} from './utils/trigger-rules';
 import { HostLimitError } from '@tryghost/admin-x-framework/errors';
 import { useBrowseConfig, upgradeRoute } from '@tryghost/admin-x-framework/api/config';
 import { LimitModalContent } from '@/settings/api';
@@ -27,6 +31,7 @@ import { useAddAutomation, useEditAutomation } from '@tryghost/admin-x-framework
 import type {
   AutomationDetail,
   AutomationStatus,
+  AutomationTriggerRule,
 } from '@tryghost/admin-x-framework/api/automations';
 import { dequal } from 'dequal';
 import { isEmptyEmailLexical } from './utils';
@@ -34,7 +39,7 @@ import { toast } from 'sonner';
 import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { navigateTo } from '@/utils/navigation';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
-import type { AutomationEditState, TierSelection } from './types';
+import type { AutomationEditState } from './types';
 import { hasMissingTierSelection } from './utils/tier-selection';
 import { isAutomationStatusActive } from './utils/is-automation-status-active';
 import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
@@ -56,10 +61,10 @@ const editableSlice = (automation: AutomationDetail) => ({
 
 const getTriggerErrors = (
   automation: AutomationDetail,
-  tierSelection: TierSelection | undefined,
+  triggerType: AutomationTriggerRule['trigger_type'] | undefined,
 ): Record<string, string> => {
-  if (tierSelection) {
-    return hasMissingTierSelection(tierSelection)
+  if (triggerType === 'paid_subscription_changed') {
+    return hasMissingTierSelection(subscriptionChangedSelectionFromRules(automation.trigger_rules))
       ? { [TRIGGER_CANVAS_ID]: 'Select at least one tier.' }
       : {};
   }
@@ -100,7 +105,7 @@ const AutomationEditorContent: React.FC<{
   creation?: {
     initialAutomation: AutomationDetail;
     triggerTop?: number;
-    tierSelection?: TierSelection;
+    triggerType: AutomationTriggerRule['trigger_type'];
     onCreated: (id: string) => void;
   };
 }> = ({ automationId, creation }) => {
@@ -147,8 +152,10 @@ const AutomationEditorContent: React.FC<{
   const [draft, setDraft] = React.useState<AutomationDetail | undefined>(
     creation?.initialAutomation,
   );
-  // Kept outside the draft until the API can hold it (NY-1733).
-  const [tierSelection, setTierSelection] = React.useState(creation?.tierSelection);
+  // Preserve the trigger type even when every rule is removed from the draft.
+  const [triggerType, setTriggerType] = React.useState<
+    AutomationTriggerRule['trigger_type'] | undefined
+  >(creation?.triggerType);
   React.useEffect(() => {
     if (!automation) {
       return;
@@ -156,6 +163,7 @@ const AutomationEditorContent: React.FC<{
 
     setSavedAutomation((currentAutomation) => currentAutomation ?? automation);
     setDraft((currentDraft) => currentDraft ?? automation);
+    setTriggerType((currentType) => currentType ?? automation.trigger_rules[0]?.trigger_type);
   }, [automation]);
   const isEditorLoading = !draft && !isReadError;
   const isEditorError = !draft && isReadError;
@@ -184,7 +192,7 @@ const AutomationEditorContent: React.FC<{
 
       const nextErrors = {
         ...getActionErrors(next),
-        ...getTriggerErrors(next, tierSelection),
+        ...getTriggerErrors(next, triggerType),
       };
       return Object.fromEntries(
         Object.entries(oldErrors).filter(([actionId]) => nextErrors[actionId]),
@@ -192,23 +200,6 @@ const AutomationEditorContent: React.FC<{
     });
     setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
   };
-
-  const onTierSelectionChange = React.useCallback((next: TierSelection) => {
-    setValidationFeedback(null);
-    setTierSelection(next);
-    setActionErrors((oldErrors) =>
-      oldErrors[TRIGGER_CANVAS_ID] && !hasMissingTierSelection(next)
-        ? Object.fromEntries(
-            Object.entries(oldErrors).filter(([stepId]) => stepId !== TRIGGER_CANVAS_ID),
-          )
-        : oldErrors,
-    );
-    setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
-  }, []);
-  const triggerTierSelection = React.useMemo(
-    () => (tierSelection ? { value: tierSelection, onChange: onTierSelectionChange } : undefined),
-    [tierSelection, onTierSelectionChange],
-  );
 
   const validateForAction = (
     automationToValidate: AutomationDetail,
@@ -221,7 +212,7 @@ const AutomationEditorContent: React.FC<{
     }
     const nextActionErrors = {
       ...(action === 'publish' ? getActionErrors(automationToValidate) : {}),
-      ...getTriggerErrors(automationToValidate, tierSelection),
+      ...getTriggerErrors(automationToValidate, triggerType),
     };
     if (Object.keys(nextActionErrors).length > 0 || invalidWaitIds.size > 0) {
       setActionErrors(nextActionErrors);
@@ -285,14 +276,6 @@ const AutomationEditorContent: React.FC<{
       setEditState(errorState);
       toast.error('Automation couldn’t be saved');
     };
-
-    // The API would save the draft's stand-in scope instead, until NY-1733.
-    if (tierSelection) {
-      handleSaveError(
-        new Error('Saving a paid subscription changed trigger is not supported yet.'),
-      );
-      return;
-    }
 
     setEditState(requestState);
 
@@ -577,7 +560,7 @@ const AutomationEditorContent: React.FC<{
           savedAutomation ? getTriggerTierIds(savedAutomation.trigger_rules) : []
         }
         selectedRunId={selectedRunId}
-        tierSelection={triggerTierSelection}
+        triggerType={triggerType}
         onChange={onDraftChange}
         onDiscardBlockedEmailNavigation={(closeEmailModal) => {
           onEmailDirtyChange(false);
@@ -676,13 +659,13 @@ const AutomationEditor: React.FC = () => {
     <ScreenEntranceProvider>
       {automationId === 'new' || automationId === session.createdId ? (
         <NewAutomation key={session.key}>
-          {(initialAutomation, triggerTop, tierSelection) => (
+          {({ automation: initialAutomation, triggerType, triggerTop }) => (
             <AutomationEditorContent
               automationId={null}
               creation={{
                 initialAutomation,
                 triggerTop,
-                tierSelection,
+                triggerType,
                 onCreated: (createdId) => setSession((current) => ({ ...current, createdId })),
               }}
             />
