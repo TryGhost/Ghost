@@ -292,7 +292,7 @@
     "better-sqlite3": "catalog:"
   },
   "overrides": {
-    "cron-validate": "1.4.5"
+    "cron-validate": "1.5.3"
   },
   "engines": {
     "cli": "^1.29.1",
