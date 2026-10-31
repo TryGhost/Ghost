@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import {assertHTML, createDataTransfer, ctrlOrCmd, dragMouse, focusEditor, getEditorState, html, initialize, insertCard} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
@@ -577,6 +578,76 @@ test.describe('Gallery card', async () => {
             expect(editorState.root.children.map(node => node.type)).toEqual(['gallery', 'gallery']);
             expect(fileNames(editorState.root.children[0])).toEqual(['retreat-1.jpg', 'Koenig-editor-1.png', 'retreat-2.jpg']);
             expect(fileNames(editorState.root.children[1])).toEqual(['Koenig-editor-1.png']);
+        });
+    });
+
+    test.describe('images with the same file name', function () {
+        const fixturePath = fixture => path.relative(process.cwd(), __dirname + `/../fixtures/${fixture}`);
+
+        async function dropImagesNamedImagePng(fixtures) {
+            const dataTransfer = await createDataTransfer(page, fixtures.map(fixture => ({
+                filePath: fixturePath(fixture),
+                fileName: 'image.png',
+                fileType: fixture.endsWith('.jpeg') ? 'image/jpeg' : 'image/png'
+            })));
+            await page.getByTestId('gallery-container').dispatchEvent('drop', {dataTransfer});
+        }
+
+        async function waitForUploads(count) {
+            await page.waitForFunction((expected) => {
+                const gallery = window.lexicalEditor.getEditorState().toJSON().root.children[0];
+                return gallery.images.length === expected;
+            }, count);
+            await expect(page.getByTestId('progress-bar')).not.toBeVisible();
+        }
+
+        const gallerySrcs = async () => (await getEditorState(page)).root.children[0].images.map(image => image.src);
+
+        test.beforeEach(async () => {
+            await focusEditor(page);
+            await insertCard(page, {cardName: 'gallery'});
+        });
+
+        test('uploads every image when several are dropped at once', async function () {
+            const fixtures = ['large-image.png', 'large-image.jpeg'];
+            await dropImagesNamedImagePng(fixtures);
+            await waitForUploads(2);
+
+            const srcs = await gallerySrcs();
+            expect(srcs).toEqual(fixtures.map(() => expect.any(String)));
+
+            // the fixtures differ in size, so this checks each image got its own file's upload
+            const uploadedSizes = await page.evaluate(urls => Promise.all(
+                urls.map(async url => (await (await fetch(url)).blob()).size)
+            ), srcs);
+            expect(uploadedSizes).toEqual(fixtures.map(fixture => fs.statSync(fixturePath(fixture)).size));
+        });
+
+        test('adding an image does not replace an existing one', async function () {
+            await dropImagesNamedImagePng(['large-image-0.png']);
+            await waitForUploads(1);
+            const [existingSrc] = await gallerySrcs();
+
+            await dropImagesNamedImagePng(['large-image-1.png']);
+            await waitForUploads(2);
+
+            const srcs = await gallerySrcs();
+            expect(srcs[0]).toBe(existingSrc);
+            expect(srcs[1]).toBeTruthy();
+            expect(srcs[1]).not.toBe(existingSrc);
+        });
+
+        test('deleting an image keeps the others', async function () {
+            await dropImagesNamedImagePng(['large-image-0.png', 'large-image-1.png', 'large-image-2.png']);
+            await waitForUploads(3);
+            const [first, , third] = await gallerySrcs();
+
+            const secondImage = page.getByTestId('gallery-image').nth(1);
+            await secondImage.hover();
+            await secondImage.getByRole('button', {name: 'Delete'}).click();
+
+            await expect(page.getByTestId('gallery-image')).toHaveCount(2);
+            await expect.poll(gallerySrcs).toEqual([first, third]);
         });
     });
 

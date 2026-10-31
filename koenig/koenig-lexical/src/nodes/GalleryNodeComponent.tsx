@@ -45,7 +45,7 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
     }
 
     const deleteImage = (imageToDelete) => {
-        const newImages = images.filter(image => image.fileName !== imageToDelete.fileName);
+        const newImages = images.filter(image => image !== imageToDelete);
         recalculateImageRows(newImages);
         setImages(newImages);
         setNodeImages(newImages);
@@ -64,14 +64,14 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
             return;
         }
 
-        const newImages = [...images];
+        const previewImages = [];
 
         // create preview images and capture dimensions
         for (const file of strippedFiles) {
             const previewSrc = URL.createObjectURL(file);
             const {width, height} = await getImageDimensions(previewSrc);
 
-            newImages.push({
+            previewImages.push({
                 fileName: file.name,
                 previewSrc,
                 width,
@@ -79,6 +79,7 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
             });
         }
 
+        const newImages = [...images, ...previewImages];
         recalculateImageRows(newImages);
 
         // show preview images immediately
@@ -86,21 +87,25 @@ export function GalleryNodeComponent({nodeKey, captionEditor, captionEditorIniti
 
         // start uploads
         const uploadResult = await imageUploader.upload(strippedFiles);
-        const uploadedImages = [...newImages];
 
         if (!uploadResult) {
             setErrorMessage('Something went wrong while uploading images. Please refresh the page and try again');
             return;
         }
 
-        uploadResult.forEach((result) => {
-            const image = uploadedImages.find(i => i.fileName === result.fileName);
+        // file names aren't unique so match each result to a different preview
+        // from this upload only
+        const unmatchedPreviews = [...previewImages];
 
-            if (!image) {
+        uploadResult.forEach((result) => {
+            const index = unmatchedPreviews.findIndex(i => i.fileName === result.fileName);
+
+            if (index === -1) {
                 console.error('Uploaded image not found in images array. Filename:', result.fileName);
                 return;
             }
 
+            const [image] = unmatchedPreviews.splice(index, 1);
             image.src = result.url;
         });
 
