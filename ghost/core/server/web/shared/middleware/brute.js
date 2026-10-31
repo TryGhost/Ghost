@@ -1,11 +1,23 @@
 const url = require('url');
 const spamPrevention = require('./api/spam-prevention');
+const { limitService } = require('../../../services/limits');
 
 /**
  * We set ignoreIP to false, because we tell brute-knex to use `req.ip`.
  * We can use `req.ip`, because express trust proxy option is enabled.
  */
 module.exports = {
+  staffInviteLimiter(req, res, next) {
+    if (!limitService.isLimited('inviteEmails')) {
+      return next();
+    }
+    return spamPrevention.staffInviteBlock().getMiddleware({
+      ignoreIP: true,
+      key(_req, _res, done) {
+        done('staff_invite_requests');
+      },
+    })(req, res, next);
+  },
   // Limit authentication work across all upgrade routes, before staff identity
   // is available. This is separate from the stricter per-user POST budget.
   upgradeApiLimiter(req, res, next) {

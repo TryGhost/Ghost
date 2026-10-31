@@ -1,5 +1,9 @@
 {
     "core": {
+        "staff_invitation_emails": {
+            "defaultValue": null,
+            "type": "object"
+        },
         "last_mentions_report_email_timestamp": {
             "defaultValue": null,
             "type": "string"
