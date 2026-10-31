@@ -4,6 +4,7 @@ const Mention = require('../../../../../core/server/services/mentions/mention');
 const MentionsAPI = require('../../../../../core/server/services/mentions/mentions-api');
 const InMemoryMentionRepository = require('../../../../../core/server/services/mentions/in-memory-mention-repository');
 const sinon = require('sinon');
+const { createLoggingFake } = require('../../../../utils/logging-utils');
 const cheerio = require('cheerio/slim');
 
 const mockRoutingService = {
@@ -43,14 +44,18 @@ function addMinutes(date, minutes) {
 }
 
 describe('MentionsAPI', function () {
+  let logging;
+
   beforeEach(function () {
     sinon.restore();
+    logging = createLoggingFake();
   });
 
   it('Can generate a mentions report', async function () {
     // this.retries(1);
     const repository = new InMemoryMentionRepository();
     const api = new MentionsAPI({
+      logging,
       repository,
       routingService: mockRoutingService,
       resourceService: mockResourceService,
@@ -75,6 +80,7 @@ describe('MentionsAPI', function () {
   it('Can list paginated mentions', async function () {
     const repository = new InMemoryMentionRepository();
     const api = new MentionsAPI({
+      logging,
       repository,
       routingService: mockRoutingService,
       resourceService: mockResourceService,
@@ -99,6 +105,7 @@ describe('MentionsAPI', function () {
   it('Can list all mentions', async function () {
     const repository = new InMemoryMentionRepository();
     const api = new MentionsAPI({
+      logging,
       repository,
       routingService: mockRoutingService,
       resourceService: mockResourceService,
@@ -122,6 +129,7 @@ describe('MentionsAPI', function () {
   it('Can list filtered mentions', async function () {
     const repository = new InMemoryMentionRepository();
     const api = new MentionsAPI({
+      logging,
       repository,
       routingService: mockRoutingService,
       resourceService: mockResourceService,
@@ -152,6 +160,7 @@ describe('MentionsAPI', function () {
   it('Can list mentions in descending order', async function () {
     const repository = new InMemoryMentionRepository();
     const api = new MentionsAPI({
+      logging,
       repository,
       routingService: mockRoutingService,
       resourceService: mockResourceService,
@@ -192,6 +201,7 @@ describe('MentionsAPI', function () {
   it('Can list mentions in ascending order', async function () {
     const repository = new InMemoryMentionRepository();
     const api = new MentionsAPI({
+      logging,
       repository,
       routingService: mockRoutingService,
       resourceService: mockResourceService,
@@ -244,6 +254,7 @@ describe('MentionsAPI', function () {
     fetchStub.onCall(7).rejects(new Error('fail')); // refresh source2 fail 3 → deleted
 
     const api = new MentionsAPI({
+      logging,
       repository,
       routingService: mockRoutingService,
       resourceService: mockResourceService,
@@ -294,6 +305,7 @@ describe('MentionsAPI', function () {
     transientErr.statusCode = 429;
 
     const api = new MentionsAPI({
+      logging,
       repository,
       routingService: mockRoutingService,
       resourceService: mockResourceService,
@@ -316,11 +328,16 @@ describe('MentionsAPI', function () {
 
     const page = await api.listMentions({ limit: 'all' });
     assert.equal(page.meta.pagination.total, 1, 'Mention should not be deleted on transient error');
+    sinon.assert.calledOnceWithExactly(
+      logging.warn,
+      sinon.match('[Webmention Revalidation] Transient error fetching https://source.com/'),
+    );
   });
 
   it('Increments hard failure count but does not delete when count < 3', async function () {
     const repository = new InMemoryMentionRepository();
     const api = new MentionsAPI({
+      logging,
       repository,
       routingService: mockRoutingService,
       resourceService: mockResourceService,
@@ -343,6 +360,10 @@ describe('MentionsAPI', function () {
 
     const page = await api.listMentions({ limit: 'all' });
     assert.equal(page.meta.pagination.total, 1, 'Mention should survive a single hard failure');
+    sinon.assert.calledOnceWithExactly(
+      logging.warn,
+      sinon.match('[Webmention Revalidation] Hard failure 1/3 for https://source.com/'),
+    );
   });
 
   it('Successful fetch after failures resets the failure count', async function () {
@@ -356,6 +377,7 @@ describe('MentionsAPI', function () {
     fetchStub.onCall(5).rejects(new Error('fail')); // refresh 5: hard failure 2
 
     const api = new MentionsAPI({
+      logging,
       repository,
       routingService: mockRoutingService,
       resourceService: mockResourceService,
@@ -389,6 +411,7 @@ describe('MentionsAPI', function () {
   it('Can handle updating mentions', async function () {
     const repository = new InMemoryMentionRepository();
     const api = new MentionsAPI({
+      logging,
       repository,
       routingService: mockRoutingService,
       resourceService: mockResourceService,
@@ -418,6 +441,7 @@ describe('MentionsAPI', function () {
   it('Gives new mentions an empty payload', async function () {
     const repository = new InMemoryMentionRepository();
     const api = new MentionsAPI({
+      logging,
       repository,
       routingService: mockRoutingService,
       resourceService: mockResourceService,
@@ -435,6 +459,7 @@ describe('MentionsAPI', function () {
   it('Will error if the target page does not exist', async function () {
     const repository = new InMemoryMentionRepository();
     const api = new MentionsAPI({
+      logging,
       repository,
       routingService: {
         async pageExists() {
@@ -463,6 +488,7 @@ describe('MentionsAPI', function () {
     sinon.stub(cheerio, 'load').throws(new Error('Test error'));
 
     const api = new MentionsAPI({
+      logging,
       repository,
       routingService: {
         async pageExists() {
@@ -482,6 +508,7 @@ describe('MentionsAPI', function () {
   it('Will only store resource if if the resource type is post', async function () {
     const repository = new InMemoryMentionRepository();
     const api = new MentionsAPI({
+      logging,
       repository,
       routingService: mockRoutingService,
       resourceService: {
@@ -512,6 +539,7 @@ describe('MentionsAPI', function () {
   it('Will delete an existing mention if the target page does not exist', async function () {
     const repository = new InMemoryMentionRepository();
     const api = new MentionsAPI({
+      logging,
       repository,
       routingService: {
         pageExists: sinon.stub().onFirstCall().resolves(true).onSecondCall().resolves(false),
@@ -559,6 +587,7 @@ describe('MentionsAPI', function () {
   it('Will delete and restore an existing mention if the source page does not exist', async function () {
     const repository = new InMemoryMentionRepository();
     const api = new MentionsAPI({
+      logging,
       repository,
       routingService: mockRoutingService,
       resourceService: {
@@ -619,6 +648,10 @@ describe('MentionsAPI', function () {
       });
 
       assert.equal(page.data.length, 0);
+      sinon.assert.calledWith(
+        logging.warn,
+        sinon.match('[Webmention Revalidation] Deleting mention after 3 consecutive failures'),
+      );
       break checkMentionDeleted;
     }
 
@@ -640,6 +673,7 @@ describe('MentionsAPI', function () {
   it('Will delete and restore an existing mention if the target url is not present on the source page', async function () {
     const repository = new InMemoryMentionRepository();
     const api = new MentionsAPI({
+      logging,
       repository,
       routingService: mockRoutingService,
       resourceService: {
@@ -708,6 +742,7 @@ describe('MentionsAPI', function () {
   it('Will throw for new mentions if the source page is not found', async function () {
     const repository = new InMemoryMentionRepository();
     const api = new MentionsAPI({
+      logging,
       repository,
       routingService: mockRoutingService,
       resourceService: {

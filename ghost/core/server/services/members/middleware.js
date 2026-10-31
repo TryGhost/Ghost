@@ -9,7 +9,7 @@ const { formatNewsletterResponse } = require('./utils');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const onHeaders = require('on-headers');
-const tiersService = require('../tiers/service');
+const tiers = require('../tiers').default;
 const config = require('../../../shared/config');
 const settingsHelpers = require('../settings-helpers');
 const { timingSafeStringEqual } = require('../../../shared/timing-safe-string-equal');
@@ -24,7 +24,7 @@ const messages = {
 };
 
 const getFreeTier = async function getFreeTier() {
-  const response = await tiersService.api.browse();
+  const response = await tiers.service.api.browse();
   const freeTier = response.data.find((tier) => tier.type === 'free');
   return freeTier;
 };

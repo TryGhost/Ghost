@@ -116,9 +116,8 @@ const appRoutes: RouteObject[] = [
     lazy: lazyComponent(lazyAutomationEditorScreen),
   },
   {
-    // Covers both edit (`:tagSlug`) and create (the sentinel `new`) —
-    // Ember's router declared `/tags/new` before `/tags/:tag_slug`, so a
-    // tag with the literal slug "new" was already unreachable.
+    // Covers both edit (`:tagSlug`) and create (the sentinel `new`), so a tag
+    // with the literal slug "new" is unreachable.
     path: '/tags/:tagSlug',
     handle: { requiresAccess: canManageTags } satisfies AccessRouteHandle,
     lazy: lazyComponent(lazyTagDetailScreen),

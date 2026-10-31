@@ -7,9 +7,7 @@ import {
 import type { PostListItem } from './hooks/use-posts-list';
 
 /**
- * Which metric columns a row shows. Ported from `list-item-analytics.hbs` and
- * the `showEmail*Analytics` / `showAttributionAnalytics` computeds in
- * `apps/ember-admin/app/models/post.js`.
+ * Which metric columns a row shows.
  *
  * Genuinely fiddly, and invisible unless you happen to have a site configured
  * the wrong way — hence the exhaustive table.
@@ -145,10 +143,9 @@ describe('the Members column', () => {
     expect(keys(post(), settings({ membersTrackSources: true }), 'posts')).toContain('members');
   });
 
-  // The column's gate in the template is only "source tracking on, and
-  // published". The invite-only and email-only exclusions belong to
-  // `showAttributionAnalytics`, which decides the *trailing button*, not this
-  // column — Ember shows a Members number here on an invite-only site.
+  // The column's gate is only "source tracking on, and published". The
+  // invite-only and email-only exclusions decide the *trailing button*, not
+  // this column.
   it('shows on an invite-only site, where the analytics button does not', () => {
     const inviteOnly = settings({ membersTrackSources: true, isMembersInviteOnly: true });
 
@@ -176,9 +173,8 @@ describe('the Members column', () => {
 });
 
 describe('contributors', () => {
-  // Ember gates opens/clicks on `!isContributor` inside the computeds, but
-  // the Visitors and Members columns are gated in the template on the site
-  // settings alone — a contributor does see those on their own posts.
+  // Opens and clicks are hidden from contributors, but the Visitors and
+  // Members columns are gated on the site settings alone.
   it('see no newsletter rates, but do see the site-level columns', () => {
     const shown = keys(
       emailed(),
@@ -254,8 +250,7 @@ describe('hasPostAnalyticsPage', () => {
     expect(hasPostAnalyticsPage(emailedPost, tracked, 'pages', true)).toBe(false);
   });
 
-  // The distinction the Ember computed makes and the columns don't: web
-  // analytics alone does not earn a post an analytics page.
+  // Web analytics alone does not earn a post an analytics page.
   it('is false when only the Visitors column shows', () => {
     const webOnlyPost = { id: '1', status: 'published' } as PostListItem;
     const onlyWeb = settings({ webAnalyticsEnabled: true, membersTrackSources: false });

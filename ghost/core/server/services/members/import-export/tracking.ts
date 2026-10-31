@@ -56,7 +56,7 @@ export function importExportTracking(tracer: Tracer) {
         /**
          * Records the export once `streamed` settles, which is after the stream has been handed
          * back, so an export that breaks off part way counts as failed although the publisher's
-         * download had already begun. Settles on its own: the export logs its own outcome.
+         * download had already begun. Settles on its own, as the span logs a failure.
          */
         ended(streamed: Promise<unknown>): void {
           tracer

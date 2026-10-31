@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
-import path from 'node:path';
+import createKnex from 'knex';
 import sinon from 'sinon';
 
+// require, not import: the root and its collaborators are CommonJS and the stubs below must
+// land on the same module instances the root reads at init.
 const ObjectID = require('bson-objectid').default;
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
@@ -11,6 +13,9 @@ const urlUtils = require('../../../../../core/shared/url-utils').default;
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const urlService = require('../../../../../core/server/services/url');
 const oembedService = require('../../../../../core/server/services/oembed');
+const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
+const InMemoryJobsBackend =
+  require('../../../../../core/server/adapters/jobs/InMemoryJobsBackend').default;
 const MentionController = require('../../../../../core/server/services/mentions/mention-controller');
 const WebmentionMetadata = require('../../../../../core/server/services/mentions/webmention-metadata');
 const MentionsAPI = require('../../../../../core/server/services/mentions/mentions-api');
@@ -33,42 +38,55 @@ const POST_EVENTS = [
 
 describe('Mentions service root', function () {
   const sandbox = sinon.createSandbox();
-  const rootDirectory = path.resolve(__dirname, '../../../../../core/server/services/mentions');
-  // The root is a CommonJS facade behind index.js; both entries must reload
-  // together so each test starts from the import-time shape.
-  const rootModules = [require.resolve(rootDirectory), path.join(rootDirectory, 'service.js')];
+  const rootPath = require.resolve('../../../../../core/server/services/mentions');
+  const jobsServicePath = require.resolve('../../../../../core/server/services/jobs-service');
+  const knex = createKnex({
+    client: 'better-sqlite3',
+    connection: { filename: ':memory:' },
+    pool: { min: 1, max: 1 },
+    useNullAsDefault: true,
+  });
   let savedModules: (NodeJS.Module | undefined)[];
   let previousListeners: Record<string, Function[]>;
   let root: ReturnType<typeof loadRoot>;
-  let jobsService: { dispatch: sinon.SinonStub };
+  let backend: InstanceType<typeof InMemoryJobsBackend>;
+  let dispatch: sinon.SinonStub;
   let getSiteUrl: sinon.SinonStub;
   let urlFor: sinon.SinonStub;
   let getSetting: sinon.SinonStub;
   let mentionFindOne: sinon.SinonStub;
   let mentionAdd: sinon.SinonStub;
   let fetchOembedData: sinon.SinonStub;
-  let dispatch: sinon.SinonStub;
+  let dispatchDomainEvent: sinon.SinonStub;
+
+  function loadRoot() {
+    return require(rootPath).default;
+  }
 
   const sourceUrl = new URL('https://source.example/a-post-that-links-here/');
   const targetUrl = new URL('https://publication.example/target-post/');
   const targetPostId = '6400000000000000000000a1';
 
-  function loadRoot() {
-    return require(rootDirectory);
-  }
+  afterAll(async function () {
+    await knex.destroy();
+  });
 
   beforeEach(function () {
     // The unit project shares one module registry, so each test loads a fresh
-    // root and restores the original for the files that captured it.
-    savedModules = rootModules.map((modulePath) => require.cache[modulePath]);
-    for (const modulePath of rootModules) {
+    // root and jobs service, and restores the originals for the files that
+    // captured them. The root reads the jobs instance when init runs.
+    savedModules = [rootPath, jobsServicePath].map((modulePath) => require.cache[modulePath]);
+    for (const modulePath of [rootPath, jobsServicePath]) {
       delete require.cache[modulePath];
     }
     previousListeners = Object.fromEntries(
       POST_EVENTS.map((eventName) => [eventName, events.listeners(eventName)]),
     );
     sandbox.stub(logging);
-    jobsService = { dispatch: sandbox.stub().resolves() };
+    backend = new InMemoryJobsBackend();
+    sandbox.stub(adapterManager, 'getAdapter').withArgs('jobs').returns(backend);
+    const jobsService = require(jobsServicePath).init({ knex, config: { get: () => undefined } });
+    dispatch = sandbox.stub(jobsService, 'dispatch').resolves();
     getSiteUrl = sandbox.stub(urlUtils, 'getSiteUrl').returns('https://publication.example/');
     urlFor = sandbox.stub(urlUtils, 'urlFor');
     urlFor.withArgs('home', true).returns('https://publication.example/');
@@ -99,23 +117,27 @@ describe('Mentions service root', function () {
       body: `<p>Read <a href="${targetUrl.href}">this</a>.</p>`,
       contentType: 'text/html',
     });
-    dispatch = sandbox.stub(DomainEvents, 'dispatch');
+    dispatchDomainEvent = sandbox.stub(DomainEvents, 'dispatch');
     root = loadRoot();
   });
 
-  afterEach(function () {
+  afterEach(async function () {
     for (const eventName of POST_EVENTS) {
       for (const listener of ownedListeners(eventName)) {
         events.removeListener(eventName, listener);
       }
     }
-    sandbox.restore();
-    rootModules.forEach((modulePath, index) => {
-      delete require.cache[modulePath];
-      if (savedModules[index]) {
-        require.cache[modulePath] = savedModules[index];
-      }
-    });
+    try {
+      await backend.shutdown({ timeoutMs: 0 });
+    } finally {
+      sandbox.restore();
+      [rootPath, jobsServicePath].forEach((modulePath, index) => {
+        delete require.cache[modulePath];
+        if (savedModules[index]) {
+          require.cache[modulePath] = savedModules[index];
+        }
+      });
+    }
   });
 
   function ownedListeners(eventName: string) {
@@ -127,8 +149,6 @@ describe('Mentions service root', function () {
   function ownedListenerCount() {
     return POST_EVENTS.reduce((count, eventName) => count + ownedListeners(eventName).length, 0);
   }
-
-  type FakePost = ReturnType<typeof fakePost>;
 
   function fakePost({
     html,
@@ -158,45 +178,34 @@ describe('Mentions service root', function () {
     };
   }
 
+  type FakePost = ReturnType<typeof fakePost>;
+
   async function firePostPublished(post: FakePost) {
     const [listener] = ownedListeners('post.published');
     assert.ok(listener, 'init must register a post.published listener');
     await listener(post, {});
   }
 
-  it('publishes a controller and metadata at import and nothing else before init', function () {
-    assert.ok(root.controller instanceof MentionController);
-    assert.ok(root.metadata instanceof WebmentionMetadata);
-    assert.equal(root.api, null);
-    assert.equal(root.repository, null);
-    assert.equal(root.sendingService, null);
-    assert.equal(root.didInit, false);
+  it('publishes nothing and registers no listeners before init', function () {
+    assert.throws(() => root.service, /Mentions used before init\(\)/);
     assert.equal(ownedListenerCount(), 0);
   });
 
-  it('rejects browse and receive through the import-time controller before init', async function () {
-    await assert.rejects(root.controller.browse({ options: {} }), TypeError);
-    await assert.rejects(
-      root.controller.receive({ data: { source: sourceUrl.href, target: targetUrl.href } }),
-      TypeError,
-    );
-  });
-
-  it('publishes the api, repository and sending service synchronously when init is called', async function () {
-    const pending = root.init({ jobsService });
-
-    // Recommendations reads api and sendingService in the same Promise.all
-    // expression as this init in boot, before this promise settles.
-    assert.ok(root.api instanceof MentionsAPI);
-    assert.ok(root.repository instanceof BookshelfMentionRepository);
-    assert.ok(root.sendingService instanceof MentionSendingService);
-    assert.equal(root.didInit, true);
+  it('publishes the api, repository, controller, metadata and sending service once init resolves', async function () {
+    const pending = root.init();
+    assert.throws(() => root.service, /Mentions used before init\(\)/);
 
     assert.equal(await pending, undefined);
+
+    assert.ok(root.service.api instanceof MentionsAPI);
+    assert.ok(root.service.repository instanceof BookshelfMentionRepository);
+    assert.ok(root.service.controller instanceof MentionController);
+    assert.ok(root.service.metadata instanceof WebmentionMetadata);
+    assert.ok(root.service.sendingService instanceof MentionSendingService);
   });
 
   it('registers one bound sendForPost listener for each post and page event', async function () {
-    await root.init({ jobsService });
+    await root.init();
 
     for (const eventName of POST_EVENTS) {
       const owned = ownedListeners(eventName);
@@ -206,50 +215,48 @@ describe('Mentions service root', function () {
     }
   });
 
-  it('dispatches a process-webmention job through the jobs service given to init', async function () {
-    await root.init({ jobsService });
+  it('dispatches a process-webmention job through the jobs service read during init', async function () {
+    await root.init();
 
-    await root.controller.receive({ data: { source: sourceUrl.href, target: targetUrl.href } });
+    await root.service.controller.receive({
+      data: { source: sourceUrl.href, target: targetUrl.href },
+    });
 
-    sinon.assert.calledOnce(jobsService.dispatch);
-    const job = jobsService.dispatch.firstCall.args[0];
+    sinon.assert.calledOnce(dispatch);
+    const job = dispatch.firstCall.args[0];
     assert.ok(job instanceof ProcessWebmentionJob);
     assert.equal(job.source, sourceUrl.href);
     assert.equal(job.target, targetUrl.href);
   });
 
-  it('retains the same instances, listeners and jobs service across repeated init', async function () {
-    await root.init({ jobsService });
-    const { api, repository, sendingService, controller, metadata } = root;
-    const laterJobsService = { dispatch: sandbox.stub().resolves() };
+  it('retains the same instances and listeners across repeated init', async function () {
+    await root.init();
+    const { api, repository, sendingService, controller, metadata } = root.service;
 
-    await root.init({ jobsService: laterJobsService });
-    await root.controller.receive({ data: { source: sourceUrl.href, target: targetUrl.href } });
+    await root.init();
 
-    assert.equal(root.api, api);
-    assert.equal(root.repository, repository);
-    assert.equal(root.sendingService, sendingService);
-    assert.equal(root.controller, controller);
-    assert.equal(root.metadata, metadata);
+    assert.equal(root.service.api, api);
+    assert.equal(root.service.repository, repository);
+    assert.equal(root.service.sendingService, sendingService);
+    assert.equal(root.service.controller, controller);
+    assert.equal(root.service.metadata, metadata);
     assert.equal(ownedListenerCount(), POST_EVENTS.length);
-    sinon.assert.calledOnce(jobsService.dispatch);
-    sinon.assert.notCalled(laterJobsService.dispatch);
   });
 
   it('resolves browse resources through the Post model', async function () {
-    await root.init({ jobsService });
+    await root.init();
     const withResource = fakeMentionModel({ resource_id: targetPostId });
     const withoutResource = fakeMentionModel({ resource_id: null });
     sandbox.stub(models.Mention, 'findPage').resolves({
       data: [withResource, withoutResource],
       meta: { pagination: { page: 1, pages: 1, limit: 15, total: 2, prev: null, next: null } },
     });
-    const targetPost: Record<string, string> = { title: 'Target Post', type: 'post' };
     const findPost = sandbox.stub(models.Post, 'findOne').resolves({
-      get: (property: string) => targetPost[property],
+      get: (property: string) =>
+        ({ title: 'Target Post', type: 'post' })[property as 'title' | 'type'],
     });
 
-    const result = await root.controller.browse({ options: {} });
+    const result = await root.service.controller.browse({ options: {} });
 
     sinon.assert.calledOnceWithExactly(findPost, { id: targetPostId });
     assert.equal(result.data[0].resource.id.toHexString(), targetPostId);
@@ -260,18 +267,18 @@ describe('Mentions service root', function () {
   });
 
   it('reads the privacy setting when a post event fires rather than at init', async function () {
-    await root.init({ jobsService });
+    await root.init();
     const post = fakePost({ html: '<a href="https://other.example/article">Read</a>' });
 
     getSetting.withArgs('is_private').returns(true);
     await firePostPublished(post);
-    sinon.assert.notCalled(jobsService.dispatch);
+    sinon.assert.notCalled(dispatch);
 
     getSetting.withArgs('is_private').returns(false);
     await firePostPublished(post);
 
-    sinon.assert.calledOnce(jobsService.dispatch);
-    const job = jobsService.dispatch.firstCall.args[0];
+    sinon.assert.calledOnce(dispatch);
+    const job = dispatch.firstCall.args[0];
     assert.ok(job instanceof SendWebmentionsJob);
     assert.equal(job.sourceUrl, 'https://publication.example/source-post/');
     assert.deepEqual(job.links, ['https://other.example/article']);
@@ -279,7 +286,7 @@ describe('Mentions service root', function () {
   });
 
   it('reads the site URL when filtering links rather than at init', async function () {
-    await root.init({ jobsService });
+    await root.init();
     urlFor.withArgs('home', true).returns('https://moved.example/');
 
     await firePostPublished(
@@ -292,17 +299,20 @@ describe('Mentions service root', function () {
       }),
     );
 
-    sinon.assert.calledOnce(jobsService.dispatch);
-    assert.deepEqual(jobsService.dispatch.firstCall.args[0].links, [
+    sinon.assert.calledOnce(dispatch);
+    assert.deepEqual(dispatch.firstCall.args[0].links, [
       'https://publication.example/own',
       'https://other.example/article',
     ]);
   });
 
   it('processes a webmention through the wired repository, routing, resource lookup and metadata', async function () {
-    await root.init({ jobsService });
+    await root.init();
 
-    await root.controller.processWebmention({ source: sourceUrl.href, target: targetUrl.href });
+    await root.service.controller.processWebmention({
+      source: sourceUrl.href,
+      target: targetUrl.href,
+    });
 
     sinon.assert.calledOnce(fetchOembedData);
     assert.equal(fetchOembedData.firstCall.args[0], sourceUrl.href);
@@ -326,8 +336,8 @@ describe('Mentions service root', function () {
     assert.equal(row.source_favicon, 'https://source.example/favicon.ico');
     assert.equal(row.verified, true);
     assert.equal(row.deleted, false);
-    sinon.assert.calledOnce(dispatch);
-    const event = dispatch.firstCall.args[0];
+    sinon.assert.calledOnce(dispatchDomainEvent);
+    const event = dispatchDomainEvent.firstCall.args[0];
     assert.ok(event instanceof MentionCreatedEvent);
     assert.equal(event.data.mention.verified, true);
     assert.equal(event.data.mention.source.href, sourceUrl.href);
@@ -335,14 +345,14 @@ describe('Mentions service root', function () {
   });
 
   it('compares webmention targets against the site URL captured at init', async function () {
-    await root.init({ jobsService });
+    await root.init();
     getSiteUrl.returns('https://moved.example/');
 
-    await root.api.processWebmention({ source: sourceUrl, target: targetUrl });
+    await root.service.api.processWebmention({ source: sourceUrl, target: targetUrl });
     sinon.assert.calledOnce(mentionAdd);
 
     await assert.rejects(
-      root.api.processWebmention({
+      root.service.api.processWebmention({
         source: sourceUrl,
         target: new URL('https://moved.example/target-post/'),
       }),
@@ -351,25 +361,19 @@ describe('Mentions service root', function () {
     sinon.assert.calledOnce(mentionAdd);
   });
 
-  it('leaves didInit set with a partial facade when construction fails and does not retry', async function () {
+  it('publishes nothing when construction fails and allows an explicit retry', async function () {
     getSiteUrl.returns('not a url');
 
-    await assert.rejects(root.init({ jobsService }), TypeError);
+    await assert.rejects(root.init(), TypeError);
 
-    // Current behaviour: the flag is set before construction, so the failed
-    // attempt publishes only what it built and a later init does nothing.
-    assert.equal(root.didInit, true);
-    assert.ok(root.repository instanceof BookshelfMentionRepository);
-    assert.equal(root.api, null);
-    assert.equal(root.sendingService, null);
+    assert.throws(() => root.service, /Mentions used before init\(\)/);
     assert.equal(ownedListenerCount(), 0);
 
     getSiteUrl.returns('https://publication.example/');
-    await root.init({ jobsService });
+    await root.init();
 
-    assert.equal(root.api, null);
-    assert.equal(root.sendingService, null);
-    assert.equal(ownedListenerCount(), 0);
+    assert.ok(root.service.sendingService instanceof MentionSendingService);
+    assert.equal(ownedListenerCount(), POST_EVENTS.length);
   });
 
   function fakeMentionModel({ resource_id }: { resource_id: string | null }) {

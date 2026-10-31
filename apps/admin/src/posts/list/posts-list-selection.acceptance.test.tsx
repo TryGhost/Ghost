@@ -106,8 +106,8 @@ describe('Posts list selection', () => {
       .toEqual(['First post', 'Second post', 'Third post']);
   });
 
-  // Backwards takes the anchor with it, where forwards excludes it — the
-  // asymmetry is Ember's, and it is invisible to a count-only assertion.
+  // Backwards takes the anchor with it, where forwards excludes it — an
+  // asymmetry invisible to a count-only assertion.
   it('selects a backward range including the anchor', async () => {
     await renderList();
 
@@ -209,8 +209,8 @@ describe('Posts list selection', () => {
   describe.each([{ role: 'Author' as const }, { role: 'Contributor' as const }])(
     'as $role',
     ({ role }) => {
-      // Ember disables the whole SelectionList for these roles — they have no
-      // bulk actions, so a selection would be an affordance leading nowhere.
+      // These roles have no bulk actions, so a selection would be an
+      // affordance leading nowhere.
       it('cannot select a row at all', async () => {
         await renderList(asRole(role));
 
@@ -230,9 +230,7 @@ describe('Posts list selection', () => {
   );
 
   /**
-   * Ember clears the selection on every model refresh (`clearSelection()` in
-   * PostsRoute#setupController), and all five query params are
-   * `refreshModel: true` — so changing a filter always drops the selection.
+   * Changing a filter always drops the selection.
    *
    * Keeping it would be worse than untidy. After Cmd+A the selection is
    * *inverted* and bounded by the list's filter, and that filter is rebuilt
@@ -277,7 +275,7 @@ describe('Posts list selection', () => {
   });
 
   /**
-   * Ember's `[data-ctrl]` mode. Holding a modifier takes the list out of
+   * Holding a modifier takes the list out of
    * "links" and into "selectable rows" — the cursor changes and children stop
    * taking pointer events, so a click lands on the row. Without it the list
    * still *behaves* correctly (the handlers preventDefault) but gives no sign

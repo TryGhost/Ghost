@@ -1,8 +1,7 @@
 import type { PostResource } from '@/posts/list/post-resource';
 
 /**
- * Toast wording for post actions, ported from the `messages` table and
- * `#getToastMessage` in `apps/ember-admin/app/components/posts-list/context-menu.js`.
+ * Toast wording for post actions.
  *
  * A table rather than inline strings because these are the only feedback a bulk
  * action gives, and the singular and plural forms differ in ways that aren't
@@ -23,7 +22,7 @@ export type PostActionMessageKey =
 
 interface MessageForms {
   single: string;
-  /** Absent where Ember has no plural — the action is single-only. */
+  /** Absent where the action is single-only. */
   multiple?: string;
 }
 
@@ -42,8 +41,7 @@ const MESSAGES: Record<PostActionMessageKey, MessageForms> = {
   tagsAdded: { single: 'Tags added', multiple: 'Tags added to {count} {type}s' },
   tagAdded: { single: 'Tag added', multiple: 'Tag added to {count} {type}s' },
   duplicated: { single: '{Type} duplicated', multiple: '{count} {type}s duplicated' },
-  // Hardcoded "Post" in Ember, even on a page. Ported as-is — it is a visible
-  // string.
+  // "Post" even on a page.
   copiedPostUrl: { single: 'Post link copied' },
   copiedPreviewUrl: { single: 'Preview link copied' },
 };
@@ -58,7 +56,7 @@ export function getPostActionMessage(
     count: number;
     resource: PostResource;
     /**
-     * Ember branches on `isSingle` here, not on the count — the same
+     * Branches on `isSingle`, not on the count — the same
      * predicate the confirmation modal uses. Without it the modal can say
      * "these posts" and the toast that follows say "Post deleted".
      */
@@ -66,8 +64,8 @@ export function getPostActionMessage(
   },
 ): string {
   const forms = MESSAGES[key];
-  // Falls back to the singular where Ember has no plural, rather than
-  // interpolating `undefined` into the toast as Ember would.
+  // Falls back to the singular where there is no plural, rather than
+  // interpolating `undefined` into the toast.
   const template = (isSingle ? forms.single : forms.multiple) ?? forms.single;
 
   const type = resource === 'pages' ? 'page' : 'post';

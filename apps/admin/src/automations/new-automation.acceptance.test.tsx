@@ -103,7 +103,7 @@ describe('New automation', () => {
     });
   });
 
-  it('starts a fresh creation session when navigating from the saved route to new', async () => {
+  it('starts a fresh creation session after returning to the automations list', async () => {
     fakeAutomations([]);
     const create = serveCreation();
     const edit = fakeAdminEndpoint('PUT', '/automations/created/', {
@@ -118,7 +118,8 @@ describe('New automation', () => {
     await expect.element(button('Save')).toBeDisabled();
     await expect.poll(unsavedChangesGuarded).toBe(false);
 
-    window.location.hash = '#/automations/new';
+    await page.getByRole('link', { name: 'Back to automations' }).click();
+    await button('New automation').click();
     await expect
       .element(page.getByRole('textbox', { name: 'Wait for', exact: true }))
       .not.toBeInTheDocument();

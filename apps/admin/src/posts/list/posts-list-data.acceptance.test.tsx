@@ -170,7 +170,7 @@ describe('Posts list data', () => {
     expect(window.location.hash).toContain('order=updated_at');
   });
 
-  // Ember forces authors and contributors onto their own posts regardless of
+  // Authors and contributors are forced onto their own posts regardless of
   // the author param. Without this they'd see everyone's.
   describe.each([{ role: 'Author' as const }, { role: 'Contributor' as const }])(
     'as $role',

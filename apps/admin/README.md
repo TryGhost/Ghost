@@ -58,9 +58,11 @@ the first Settings visit from waiting on its code when preloading has finished. 
 browser never fetches a module again after loading it failed, so when that code
 fails to load the admin reloads at the same route. It reloads at most once a
 minute and not while the browser is offline; within that minute a failed screen
-is left on screen, where Admin's own screens offer Reload. Sentry gets each
-automatic reload as a warning, grouped apart from the failures left on screen,
-which are reported as errors.
+is left on screen, where Admin's own screens offer Reload, as they do when they
+crash for any other reason. The search modal fails inside its own dialog,
+leaving the rest of the admin in place. Sentry gets each automatic reload as a
+warning, grouped apart from the failures left on screen, which are reported as
+errors.
 
 ### Automation run history
 

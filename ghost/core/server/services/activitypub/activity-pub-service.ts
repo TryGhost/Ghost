@@ -1,5 +1,6 @@
 import ObjectID from 'bson-objectid';
 import { Knex } from 'knex';
+import type { GhostLogger } from '@tryghost/logging';
 import { IdentityTokenService } from '../identity-tokens/identity-token-service';
 
 type ExpectedWebhook = {
@@ -9,22 +10,16 @@ type ExpectedWebhook = {
   secret: string;
 };
 
-interface Logger {
-  info(message: string): void;
-  warn(message: string): void;
-  error(message: string): void;
-}
-
 export class ActivityPubService {
   private knex: Knex;
   private siteUrl: URL;
-  private logging: Logger;
+  private logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
   private identityTokenService: IdentityTokenService;
 
   constructor(
     knex: Knex,
     siteUrl: URL,
-    logging: Logger,
+    logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>,
     identityTokenService: IdentityTokenService,
   ) {
     this.knex = knex;

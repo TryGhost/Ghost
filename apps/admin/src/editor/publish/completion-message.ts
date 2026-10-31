@@ -102,9 +102,8 @@ export function describeRejectedAction(
 }
 
 /**
- * Turns a non-success completion into the confirm step's inline error.
- * Ported from `publish-flow/confirm.js` :108-138, re-expressed over the
- * engine's completion kinds rather than raw transport errors.
+ * Turns a non-success completion into the confirm step's inline error, from
+ * the engine's completion kinds rather than raw transport errors.
  */
 export function describeCompletionFailure(completion: SaveCompletion): CompletionFailure | null {
   if (completion.kind === 'saved') {

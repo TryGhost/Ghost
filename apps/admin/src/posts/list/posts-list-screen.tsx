@@ -86,8 +86,8 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   // Scheduled times read in the site's timezone, not the browser's.
   const timezone = getSettingValue<string>(settingsData?.settings, 'timezone') ?? undefined;
   const isContributor = Boolean(currentUser && isContributorUser(currentUser));
-  // Ember's `isAdmin` — Owner or Administrator. Decides whether a row's
-  // trailing button offers Analytics, and whether views can be saved.
+  // Owner or Administrator. Decides whether a row's trailing button offers
+  // Analytics, and whether views can be saved.
   const isAdmin = Boolean(currentUser && hasAdminAccess(currentUser));
 
   const settings = settingsData?.settings ?? null;
@@ -140,7 +140,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   const { largeTitles } = usePageChrome();
 
   // Authors and contributors only ever see their own posts, whatever the
-  // `author` param says — matching PostsRoute#model in the Ember app.
+  // `author` param says.
   const isRestrictedAuthor = Boolean(currentUser && isAuthorOrContributor(currentUser));
   const ownAuthorSlug = currentUser && isRestrictedAuthor ? currentUser.slug : null;
 
@@ -177,7 +177,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
   } | null>(null);
 
   // Selection is a bulk-edit affordance, and authors and contributors have no
-  // bulk actions — Ember disables the whole SelectionList for them.
+  // bulk actions, so selection is disabled for them.
   const selection = usePostSelection({
     orderedIds: items.map((item) => item.id),
     // Bounds an inverted selection: after Cmd+A a bulk action sends this
@@ -187,8 +187,8 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     suspended: pendingBulkAction !== null,
   });
 
-  // The menu describes the selection, not the row under the cursor. Ember's
-  // `availableModels` — the selected rows that are actually loaded.
+  // The menu describes the selection, not the row under the cursor: the
+  // selected rows that are actually loaded.
   //
   // Depends on `selection.state` rather than `selection`, which is a fresh
   // object literal every render and would make this memo a no-op.
@@ -224,9 +224,9 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     [menuPosts, resource, isAdmin, membersEnabled],
   );
 
-  // Ember gates this on `isSingle` — one *selected* post — not on "one loaded
-  // post". After Cmd+A on a view with a single loaded row, everything is
-  // selected, and offering to gift-link it would be wrong.
+  // Gated on one *selected* post, not on "one loaded post". After Cmd+A on a
+  // view with a single loaded row, everything is selected, and offering to
+  // gift-link it would be wrong.
   const giftLinkPost = isSinglePostSelected(selectionState) ? menuPosts[0] : undefined;
   const menuGiftLinkPostId =
     giftLinkPost && canCopyGiftLink({ user: currentUser, post: giftLinkPost })
@@ -249,7 +249,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     onEdited: (remainingIds) => {
       setPendingBulkAction(null);
       // Not a full clear: the rows still on screen stay selected, so a
-      // second action can follow the first. Ember's clearUnavailableItems.
+      // second action can follow the first.
       selection.keepOnly(remainingIds);
     },
   });
@@ -269,8 +269,8 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
     posts: menuPosts,
     onShareAsGift: setGiftLinkPostId,
     onBulkAction: (key, snapshot) => {
-      // Feature and unfeature apply straight away in Ember — no
-      // confirmation, because they are trivially reversible.
+      // Feature and unfeature apply straight away with no confirmation,
+      // because they are trivially reversible.
       if (key === 'feature' || key === 'unfeature') {
         void bulkActions.run(key, snapshot);
         return;
@@ -391,8 +391,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                 <ul
                   // Held modifier: children take no pointer
                   // events, so clicks land on the row and not
-                  // the anchor inside it (Ember's
-                  // `[data-ctrl]` rules). `data-ignore-select`
+                  // the anchor inside it. `data-ignore-select`
                   // opts back out. Border here, not on the
                   // header: the header is full-bleed and a
                   // border there runs wider than the rows.

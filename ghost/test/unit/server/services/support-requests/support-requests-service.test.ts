@@ -5,6 +5,7 @@ import {
   SupportRequestsService,
   type SupportRequest,
 } from '../../../../../core/server/services/support-requests/support-requests-service';
+import { createLoggingFake } from '../../../../utils/logging-utils';
 
 type RequestOptions = ReturnType<typeof buildSignedWebhookRequest>;
 
@@ -46,18 +47,14 @@ describe('SupportRequestsService', function () {
     configValues?: Record<string, unknown>;
     request?: (url: string, options: RequestOptions) => Promise<unknown>;
   } = {}) {
-    const errorMessages: string[] = [];
-    const infoMessages: string[] = [];
+    const logging = createLoggingFake();
     const service = new SupportRequestsService({
       config: { get: (key: string) => configValues[key] },
-      logging: {
-        info: (message: string) => infoMessages.push(message),
-        error: (message: string) => errorMessages.push(message),
-      },
+      logging,
       request,
     });
 
-    return { service, errorMessages, infoMessages };
+    return { service, logging };
   }
 
   function captureRequests() {
@@ -84,7 +81,7 @@ describe('SupportRequestsService', function () {
   });
 
   it('throws an IncorrectUsageError when the secret is missing while the URL is configured', async function () {
-    const { service, errorMessages } = createService({
+    const { service, logging } = createService({
       configValues: {
         'hostSettings:supportRequest:webhookUrl': webhookUrl,
         'hostSettings:siteId': '12345',
@@ -93,13 +90,15 @@ describe('SupportRequestsService', function () {
 
     await assert.rejects(service.send(supportRequest), { errorType: 'IncorrectUsageError' });
 
-    assert.deepEqual(errorMessages, [
-      'Support request is misconfigured: hostSettings:supportRequest:webhookSecret is missing while hostSettings:supportRequest:webhookUrl is set.',
+    assert.deepEqual(logging.error.args, [
+      [
+        'Support request is misconfigured: hostSettings:supportRequest:webhookSecret is missing while hostSettings:supportRequest:webhookUrl is set.',
+      ],
     ]);
   });
 
   it('throws an IncorrectUsageError when the site id is missing while the URL is configured', async function () {
-    const { service, errorMessages } = createService({
+    const { service, logging } = createService({
       configValues: {
         'hostSettings:supportRequest:webhookUrl': webhookUrl,
         'hostSettings:supportRequest:webhookSecret': webhookSecret,
@@ -108,8 +107,10 @@ describe('SupportRequestsService', function () {
 
     await assert.rejects(service.send(supportRequest), { errorType: 'IncorrectUsageError' });
 
-    assert.deepEqual(errorMessages, [
-      'Support request is misconfigured: hostSettings:siteId is missing while hostSettings:supportRequest:webhookUrl is set.',
+    assert.deepEqual(logging.error.args, [
+      [
+        'Support request is misconfigured: hostSettings:siteId is missing while hostSettings:supportRequest:webhookUrl is set.',
+      ],
     ]);
   });
 
@@ -127,7 +128,7 @@ describe('SupportRequestsService', function () {
 
   it('sends the request as a signed support_request event without retries', async function () {
     const { captured, request } = captureRequests();
-    const { service, infoMessages } = createService({ request });
+    const { service, logging } = createService({ request });
 
     await service.send(supportRequest);
 
@@ -137,7 +138,9 @@ describe('SupportRequestsService', function () {
 
     assert.equal(url, webhookUrl);
     assert.equal(options.method, 'POST');
-    assert.deepEqual(infoMessages, ['Sending support request to "https://support.example.com"']);
+    assert.deepEqual(logging.info.args, [
+      ['Sending support request to "https://support.example.com"'],
+    ]);
     assert.deepEqual(JSON.parse(options.body), {
       type: 'support_request',
       siteId: '12345',
@@ -159,7 +162,7 @@ describe('SupportRequestsService', function () {
   });
 
   it('logs a sanitized URL and throws a generic 502 when the request fails', async function () {
-    const { service, errorMessages } = createService({
+    const { service, logging } = createService({
       request: async () => {
         throw Object.assign(
           new Error(
@@ -175,8 +178,8 @@ describe('SupportRequestsService', function () {
       message: 'Failed to send the support request. Please try again later.',
     });
 
-    assert.deepEqual(errorMessages, [
-      'Failed to send support request to "https://support.example.com": HTTP 500',
+    assert.deepEqual(logging.error.args, [
+      ['Failed to send support request to "https://support.example.com": HTTP 500'],
     ]);
   });
 });

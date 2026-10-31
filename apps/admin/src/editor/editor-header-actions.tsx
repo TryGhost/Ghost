@@ -223,7 +223,7 @@ export function EditorHeaderActions({
   useSaveShortcut(() => void feedback.save());
 
   // Core 301-redirects a published or sent post away from /p/:uuid/ and drops the
-  // audience query, so Ember offers a preview only while the post is a draft.
+  // audience query, so a preview is offered only while the post is a draft.
   const isDraft = post.status === 'draft';
 
   // Preview, Publish, Unpublish, Unschedule and their shortcuts open nothing while
@@ -262,7 +262,7 @@ export function EditorHeaderActions({
     isDraft && persistedId !== null,
   );
 
-  // Ember saves a dirty draft before previewing it and leaves every other post as it is.
+  // A dirty draft is saved before previewing; every other post is left as it is.
   const saveBeforePreview = useCallback(async () => {
     if (session.publishTime.status !== 'draft' || !session.isDirty()) {
       return;
@@ -506,7 +506,7 @@ function PublishActions({
   // button is the only way into the flow from there.
   usePublishShortcut(openPublishFlow, isDraft && inputs.isReady && !preview.open);
 
-  // Ember routes a sent post to the update flow from its status line, not the header.
+  // A sent post reaches the update flow from its status line, not the header.
   const offersUpdateFlow = !isDraft && post.status !== 'sent';
   const sentOpensUpdateFlow = post.status === 'sent' && post.email?.status !== 'failed';
 

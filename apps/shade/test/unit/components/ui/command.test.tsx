@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { beforeAll, describe, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 
 import {
@@ -36,8 +35,8 @@ describe('Command Components', () => {
     const input = screen.getByTestId('command-input');
     const item = screen.getByTestId('command-item');
 
-    assert.match(input.className, /text-\(length:--text-control\)/);
-    assert.doesNotMatch(input.className, /text-sm/);
-    assert.match(item.className, /text-\(length:--text-control\)/);
+    expect(input.className).toMatch(/text-\(length:--text-control\)/);
+    expect(input.className).not.toMatch(/text-sm/);
+    expect(item.className).toMatch(/text-\(length:--text-control\)/);
   });
 });

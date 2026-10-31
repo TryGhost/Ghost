@@ -91,6 +91,7 @@ export class ProductNode extends BaseProductNode {
                     description={this.productDescription}
                     descriptionEditor={this.__productDescriptionEditor}
                     descriptionEditorInitialState={this.__productDescriptionEditorInitialState}
+                    imgAlt={this.productImageAlt}
                     imgHeight={this.productImageHeight}
                     imgSrc={this.productImageSrc}
                     imgWidth={this.productImageWidth}

@@ -3,6 +3,7 @@ import { promisify } from 'node:util';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import * as errors from '@tryghost/errors';
+import type { GhostLogger } from '@tryghost/logging';
 import {
   getPublicKeyInfo,
   getPublicKeyInfoFromPublicKey,
@@ -33,11 +34,6 @@ export interface SigningKeyProvider {
 interface Keypair {
   publicKey: string;
   privateKey: string;
-}
-
-interface Logger {
-  info(message: string): void;
-  warn(message: string): void;
 }
 
 interface SettingsCache {
@@ -147,7 +143,7 @@ export class SigningKeyService {
   private settingsCache: SettingsCache;
   private Settings: SettingsModel;
   private transaction: Transaction;
-  private logging: Logger;
+  private logging: Pick<GhostLogger, 'info' | 'warn'>;
   private generateKeypair: () => Promise<Keypair>;
   private onRotationStarted?: () => Promise<void>;
 
@@ -162,7 +158,7 @@ export class SigningKeyService {
     settingsCache: SettingsCache;
     Settings: SettingsModel;
     transaction: Transaction;
-    logging: Logger;
+    logging: Pick<GhostLogger, 'info' | 'warn'>;
     generateKeypair?: () => Promise<Keypair>;
     /** Called after rotate() publishes a new key, so something advances it. */
     onRotationStarted?: () => Promise<void>;

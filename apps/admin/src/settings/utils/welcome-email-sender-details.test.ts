@@ -1,4 +1,3 @@
-import * as assert from 'assert/strict';
 import { resolveWelcomeEmailSenderDetails } from '@/settings/utils/welcome-email-sender-details';
 import type { Config } from '@tryghost/admin-x-framework/api/config';
 
@@ -41,9 +40,9 @@ describe('resolveWelcomeEmailSenderDetails', function () {
       supportEmailAddress: 'support@example.com',
     });
 
-    assert.equal(result.senderNameInput, 'Free Sender');
-    assert.equal(result.senderEmailInput, 'free@example.com');
-    assert.equal(result.replyToEmailInput, 'free-reply@example.com');
+    expect(result.senderNameInput).toBe('Free Sender');
+    expect(result.senderEmailInput).toBe('free@example.com');
+    expect(result.replyToEmailInput).toBe('free-reply@example.com');
   });
 
   it('uses support address placeholder when newsletter reply-to is support', function () {
@@ -60,7 +59,7 @@ describe('resolveWelcomeEmailSenderDetails', function () {
       supportEmailAddress: 'support@example.com',
     });
 
-    assert.equal(result.replyToEmailPlaceholder, 'support@example.com');
+    expect(result.replyToEmailPlaceholder).toBe('support@example.com');
   });
 
   it('uses sender-email placeholder when newsletter reply-to is newsletter', function () {
@@ -77,8 +76,8 @@ describe('resolveWelcomeEmailSenderDetails', function () {
       supportEmailAddress: 'noreply@example.com',
     });
 
-    assert.equal(result.senderEmailPlaceholder, 'test@example.com');
-    assert.equal(result.replyToEmailPlaceholder, 'test@example.com');
+    expect(result.senderEmailPlaceholder).toBe('test@example.com');
+    expect(result.replyToEmailPlaceholder).toBe('test@example.com');
   });
 
   it('uses explicit newsletter reply-to placeholder when set', function () {
@@ -95,7 +94,7 @@ describe('resolveWelcomeEmailSenderDetails', function () {
       supportEmailAddress: 'support@example.com',
     });
 
-    assert.equal(result.replyToEmailPlaceholder, 'custom-reply@example.com');
+    expect(result.replyToEmailPlaceholder).toBe('custom-reply@example.com');
   });
 
   it('keeps automated reply-to prefill over placeholder', function () {
@@ -119,7 +118,7 @@ describe('resolveWelcomeEmailSenderDetails', function () {
       supportEmailAddress: 'support@example.com',
     });
 
-    assert.equal(result.replyToEmailInput, 'prefilled-reply@example.com');
-    assert.equal(result.resolvedReplyToEmail, 'prefilled-reply@example.com');
+    expect(result.replyToEmailInput).toBe('prefilled-reply@example.com');
+    expect(result.resolvedReplyToEmail).toBe('prefilled-reply@example.com');
   });
 });

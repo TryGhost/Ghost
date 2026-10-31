@@ -220,6 +220,7 @@ export function PostEditor({
   const editorApiRef = useRef<KoenigInstance | null>(null);
   const skipFocusEditorRef = useRef(false);
   const [wordCount, setWordCount] = useState(0);
+  const [selectionWordCount, setSelectionWordCount] = useState<number | null>(null);
   const chromeEntrance = useScreenEntrance();
   const [bodyTkCount, setBodyTkCount] = useState(0);
   const [featureImageTkCount, setFeatureImageTkCount] = useState(0);
@@ -571,6 +572,7 @@ export function PostEditor({
             onChange={onLexicalChange}
             onSecondaryChange={onSecondaryChange}
             onSecondaryError={onSecondaryError}
+            onSelectionWordCountChange={setSelectionWordCount}
             onTkCountChange={setBodyTkCount}
             onWordCountChange={setWordCount}
           />
@@ -610,6 +612,7 @@ export function PostEditor({
               tone="secondary"
               weight="medium"
             >
+              {selectionWordCount === null ? null : `${formatNumber(selectionWordCount)} of `}
               {formatNumber(wordCount)} {wordCount === 1 ? 'word' : 'words'}
             </Text>
           )}

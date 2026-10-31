@@ -19,6 +19,7 @@ import {
   type TestAppKeys,
   type TestKey,
 } from '../../../../utils/app-identity';
+import { createLoggingFake } from '../../../../utils/logging-utils';
 
 const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
 const ORIGIN = 'https://podcast.example.com';
@@ -83,10 +84,10 @@ function setup({
   const fetchFromApp = vi.fn<FetchFromApp>(async (url, options: AppFetchOptions) =>
     backend(options.body!, url),
   );
-  const warn = vi.fn();
+  const logging = createLoggingFake();
   const checker = createIdentityChecker({
     fetchFromApp,
-    logging: { warn },
+    logging,
     getTrustConfig: () => trust,
     getAllowLocalhost: () => trust.trustLoopback,
     now: () => NOW,
@@ -94,7 +95,7 @@ function setup({
   /** Challenges the manifest URL's origin, then checks the loaded manifest. */
   const checkIdentity = (manifest: LoadedManifest, pinned: PinnedIdentity | null) =>
     checker.check(manifest, pinned, checker.challenge(manifest.manifestUrl));
-  return { checker, checkIdentity, fetchFromApp, warn };
+  return { checker, checkIdentity, fetchFromApp, warn: logging.warn };
 }
 
 const pinned = (overrides: Partial<PinnedIdentity> = {}): PinnedIdentity => ({
@@ -214,7 +215,7 @@ describe('createIdentityChecker', function () {
         code: 'APP_CHALLENGE_UNREACHABLE',
         context: ORIGIN,
       });
-      assert.deepEqual(warn.mock.calls, [[`Could not challenge the app at ${ORIGIN}`], [cause]]);
+      assert.deepEqual(warn.args, [[`Could not challenge the app at ${ORIGIN}`], [cause]]);
     });
 
     it('reports an error status, or a redirect, as unreachable with the status', async function () {
