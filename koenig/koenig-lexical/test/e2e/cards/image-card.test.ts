@@ -120,6 +120,36 @@ test.describe('Image card', async () => {
         await expect(page.locator('img')).toHaveAttribute('src', /blob:/);
     });
 
+    test('can edit alt text without removing the image card on mobile', async function ({browser}) {
+        const context = await browser.newContext({
+            hasTouch: true,
+            isMobile: true,
+            viewport: {
+                width: 390,
+                height: 844
+            }
+        });
+        const mobilePage = await context.newPage();
+        const filePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+
+        try {
+            await initialize({page: mobilePage});
+            await focusEditor(mobilePage);
+            await insertCard(mobilePage, {cardName: 'image'});
+            await mobilePage.locator('input[name="image-input"]').setInputFiles(filePath);
+
+            await expect(mobilePage.getByTestId('image-card-populated')).toBeVisible();
+            await expect(mobilePage.getByTestId('alt-toggle-button')).toBeVisible();
+
+            await mobilePage.getByTestId('alt-toggle-button').tap();
+
+            await expect(mobilePage.locator('[data-kg-card="image"]')).toBeVisible();
+            await expect(mobilePage.getByTestId('image-caption-editor')).toHaveValue('');
+        } finally {
+            await context.close();
+        }
+    });
+
     test('renders image card node', async function () {
         await insertEmptyImageCard(page);
 
