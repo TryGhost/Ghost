@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import { IncorrectUsageError } from '@tryghost/errors';
+import { pipeline } from '@tryghost/api-framework';
 
 const config = require('../../../../../core/shared/config');
 const settingsCache = require('../../../../../core/shared/settings-cache');
@@ -48,6 +49,23 @@ describe('Stats service root', function () {
     return Object.fromEntries(
       Object.entries(controller).filter(([, value]) => typeof value === 'object' && value !== null),
     ) as Record<string, EndpointMethod>;
+  }
+
+  // Builds the endpoint's methods through the real API pipeline, with permissions
+  // allowed and the query result passed straight through as the response.
+  function buildAdminMethods() {
+    return pipeline(require(ENDPOINT_PATH), {
+      permissions: { handle: sandbox.stub().resolves() },
+      serializers: {
+        output: {
+          default: {
+            all(response: unknown, _apiConfig: unknown, frame: { response: unknown }) {
+              frame.response = response;
+            },
+          },
+        },
+      },
+    });
   }
 
   beforeEach(function () {
@@ -236,6 +254,47 @@ describe('Stats service root', function () {
     assert.equal(await statsCache.set('key', history), undefined);
     sinon.assert.calledOnce(adapter.get);
     sinon.assert.calledOnce(adapter.set);
+  });
+
+  it('caches a stats request built by the API pipeline when the stats cache is enabled', async function () {
+    getConfig.withArgs('hostSettings:statsCache:enabled').returns(true);
+    const root = loadRoot();
+    // The pipeline builds the method from the controller before boot initializes Stats.
+    const api = buildAdminMethods();
+    await root.init();
+    const history = { data: ['subscriptions'] };
+    const query = sandbox.stub(root.service.api, 'getSubscriptionCountHistory').resolves(history);
+    const adapter = root.service.cache as { get: sinon.SinonStub; set: sinon.SinonStub };
+
+    adapter.get.resolves(undefined);
+    assert.deepEqual(await api.subscriptions(), history);
+    sinon.assert.calledOnce(query);
+    sinon.assert.calledOnce(adapter.get);
+    sinon.assert.calledOnceWithExactly(adapter.set, adapter.get.firstCall.args[0], history);
+
+    adapter.get.resolves(history);
+    assert.deepEqual(await api.subscriptions(), history);
+    sinon.assert.calledOnce(query);
+  });
+
+  it('runs a stats request built by the API pipeline once per call without a stats cache', async function () {
+    const root = loadRoot();
+    const api = buildAdminMethods();
+    await root.init();
+    assert.equal(root.service.cache, null);
+    const history = { data: ['subscriptions'] };
+    const query = sandbox.stub(root.service.api, 'getSubscriptionCountHistory').resolves(history);
+
+    assert.deepEqual(await api.subscriptions(), history);
+    sinon.assert.calledOnce(query);
+    assert.deepEqual(await api.subscriptions(), history);
+    sinon.assert.calledTwice(query);
+
+    // An empty response is not mistaken for a cache hit and run a second time.
+    query.resetHistory();
+    query.resolves(null);
+    assert.equal(await api.subscriptions(), null);
+    sinon.assert.calledOnce(query);
   });
 
   it.each([
