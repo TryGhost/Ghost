@@ -414,6 +414,143 @@ describe('PostsStatsService', function () {
     assert.ok(service, 'Service instance should exist');
   });
 
+  const sendNewsletterId = 'newsletter-1';
+  const sentAt = '2026-01-10 12:00:00';
+  const addNewsletterSend = (id, published_at = sentAt, newsletter_id = sendNewsletterId) =>
+    _createPostWithDetails(id, id, 'sent', { newsletter_id, published_at });
+
+  it('paginates newsletter sends with a stable order', async function () {
+    for (const id of [
+      'newsletter-c',
+      'newsletter-a',
+      'newsletter-b',
+      'newsletter-d',
+      'newsletter-e',
+    ]) {
+      await addNewsletterSend(id);
+      await _createEmailStats(id, 100, 50);
+    }
+    await addNewsletterSend('other-newsletter', sentAt, 'newsletter-2');
+    const options = {
+      order: 'date desc',
+      limit: 2,
+      date_from: '2026-01-10',
+      date_to: '2026-01-10',
+    };
+    const getPage = (page, previous) => {
+      const last = previous?.data.at(-1);
+      return service.getNewsletterBasicStats(sendNewsletterId, {
+        ...options,
+        page,
+        after_id: last?.post_id,
+        after_date: last?.send_date.replace('T', ' ').replace(/Z$/, ''),
+      });
+    };
+    const ids = (result) => result.data.map((row) => row.post_id);
+    const first = await getPage(1);
+    await db('posts').where('id', 'newsletter-e').del();
+    await db('posts').where('id', 'newsletter-d').update({ published_at: '2026-01-09 12:00:00' });
+    const second = await getPage(2, first);
+    const third = await getPage(3, second);
+    assert.deepEqual(ids(first), ['newsletter-e', 'newsletter-d']);
+    assert.deepEqual(ids(second), ['newsletter-c', 'newsletter-b']);
+    assert.deepEqual(ids(third), ['newsletter-a']);
+    assert.equal(first.data[0].open_rate, 0.5);
+    assert.deepEqual(first.meta.pagination, { page: 1, limit: 2, next: 2 });
+    assert.equal(first.data.at(-1).send_date, sentAt);
+    assert.equal(second.meta.pagination.next, 3);
+    assert.equal(third.meta.pagination.next, null);
+    assert.deepEqual(third.meta.pagination, { page: 3, limit: 2, next: null });
+    assert.equal((await service.getNewsletterBasicStats(sendNewsletterId, options)).data.length, 2);
+    await db('posts').where('id', 'newsletter-d').del();
+    assert.deepEqual(ids(await getPage(2, first)), ['newsletter-c', 'newsletter-b']);
+  });
+
+  it('rejects paginated requests with non-date ordering from the first page', async function () {
+    for (const order of ['open_rate desc', 'click_rate desc']) {
+      await assert.rejects(
+        service.getNewsletterBasicStats(sendNewsletterId, { page: 1, order }),
+        /date-ordered/i,
+      );
+    }
+    await assert.rejects(
+      service.getNewsletterBasicStats(sendNewsletterId, {
+        page: 2,
+        order: 'date desc',
+        after_id: 'post-1',
+      }),
+      /date-ordered cursor/i,
+    );
+  });
+
+  it('limits top newsletter statistics to 20 sends by default', async function () {
+    for (let index = 0; index < 25; index += 1) {
+      await addNewsletterSend('top-' + index);
+    }
+    const result = await service.getNewsletterBasicStats(sendNewsletterId);
+    assert.equal(result.data.length, 20);
+    assert.equal(result.meta, undefined);
+  });
+
+  it('distinguishes no clicks from a failure to query newsletter statistics', async function () {
+    assert.deepEqual(await service.getNewsletterClickStats(sendNewsletterId, ['post-1']), {
+      data: [],
+    });
+    await addNewsletterSend('post-click');
+    await _createEmailStats('post-click', 2, 1);
+    await db('redirects').insert({ id: 'redirect-1', post_id: 'post-click' });
+    await db('members_click_events').insert({
+      id: 'click-1',
+      member_id: 'member-1',
+      redirect_id: 'redirect-1',
+    });
+    const clicks = await service.getNewsletterClickStats(sendNewsletterId, ['post-click']);
+    assert.equal(clicks.data[0].click_rate, 0.5);
+
+    const queryError = new Error('Database query failed');
+    const failingKnex = {
+      raw: () => null,
+      select: () => {
+        throw queryError;
+      },
+    };
+    const failingService = new PostsStatsService({ knex: failingKnex, logging });
+    await assert.rejects(
+      failingService.getNewsletterBasicStats(sendNewsletterId, { page: 1 }),
+      queryError,
+    );
+    assert.deepEqual(await failingService.getNewsletterClickStats(sendNewsletterId, ['post-1']), {
+      data: [],
+    });
+    await assert.rejects(
+      failingService.getNewsletterClickStats(sendNewsletterId, ['post-1'], true),
+      queryError,
+    );
+  });
+
+  it('filters newsletter sends using local calendar boundaries', async function () {
+    const sends = [
+      ['before', '2026-01-10 02:59:59'],
+      ['start', '2026-01-10 03:00:00'],
+      ['end', '2026-01-11 02:59:59'],
+      ['after', '2026-01-11 03:00:00'],
+    ];
+    for (const [id, date] of sends) {
+      await addNewsletterSend(id, date);
+    }
+    const result = await service.getNewsletterBasicStats(sendNewsletterId, {
+      page: 1,
+      limit: 20,
+      date_from: '2026-01-10',
+      date_to: '2026-01-10',
+      timezone: 'America/Sao_Paulo',
+    });
+    assert.deepEqual(
+      result.data.map((row) => row.post_id),
+      ['end', 'start'],
+    );
+  });
+
   // _enrichWithTitles assigns `url_exists` based on the urlService lookup.
   // The fixtures above always return truthy, so the falsy branch was
   // unreached. Pin both branches here so the future migration to a

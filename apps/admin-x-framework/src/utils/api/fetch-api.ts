@@ -22,6 +22,7 @@ export interface RequestOptions {
   };
   credentials?: 'include' | 'omit' | 'same-origin';
   timeout?: number;
+  signal?: AbortSignal;
   retry?: boolean;
   /** Resolve the raw response body instead of parsing it as JSON/text */
   responseType?: ResponseType;
@@ -279,6 +280,7 @@ export const useFetchApi = () => {
         body,
         credentials = 'include',
         timeout,
+        signal,
         retry = true,
         responseType,
         sessionExpiryRedirect = true,
@@ -287,6 +289,12 @@ export const useFetchApi = () => {
     ): Promise<ResponseData> => {
       /* eslint-enable @typescript-eslint/no-explicit-any */
       const controller = new AbortController();
+      const cancelRequest = () => controller.abort();
+      if (signal?.aborted) {
+        cancelRequest();
+      } else {
+        signal?.addEventListener('abort', cancelRequest);
+      }
 
       const requestInit: InternalRequestInit = {
         method,
@@ -355,11 +363,27 @@ export const useFetchApi = () => {
               retryableErrors.some((errorClass) => error instanceof errorClass) &&
               retryingMs <= maxRetryingMs
             ) {
-              await new Promise((resolve) => {
-                setTimeout(
-                  resolve,
+              await new Promise<void>((resolve, reject) => {
+                const abortRetry = () => {
+                  clearTimeout(retryTimer);
+                  reject(
+                    signal?.aborted
+                      ? new DOMException('Aborted', 'AbortError')
+                      : new TimeoutError(),
+                  );
+                };
+                const retryTimer = setTimeout(
+                  () => {
+                    controller.signal.removeEventListener('abort', abortRetry);
+                    resolve();
+                  },
                   retryPeriods[attempts] || retryPeriods[retryPeriods.length - 1],
                 );
+                if (controller.signal.aborted) {
+                  abortRetry();
+                } else {
+                  controller.signal.addEventListener('abort', abortRetry, { once: true });
+                }
               });
               attempts += 1;
               continue;
@@ -377,6 +401,9 @@ export const useFetchApi = () => {
               'name' in error &&
               error.name === 'AbortError'
             ) {
+              if (signal?.aborted) {
+                throw error;
+              }
               throw new TimeoutError();
             }
 
@@ -402,6 +429,7 @@ export const useFetchApi = () => {
         }
       } finally {
         clearTimeout(timeoutHandle);
+        signal?.removeEventListener('abort', cancelRequest);
       }
 
       // Used for type checking

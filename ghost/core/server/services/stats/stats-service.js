@@ -206,6 +206,7 @@ class StatsService {
    * @param {Object} options
    * @param {string} [options.newsletter_id] - ID of the specific newsletter to get stats for
    * @param {string} [options.post_ids] - Comma-separated string of post IDs to get click data for
+   * @param {boolean|string} [options.fail_on_error] - Propagate database failures when true
    * @returns {Promise<{data: Object[]}>}
    */
   async getNewsletterClickStats(options = {}) {
@@ -218,7 +219,8 @@ class StatsService {
     }
 
     // Return newsletter click stats for the specific newsletter and posts
-    const result = await this.posts.getNewsletterClickStats(newsletterId, postIds);
+    const failOnError = options.fail_on_error === true || options.fail_on_error === 'true';
+    const result = await this.posts.getNewsletterClickStats(newsletterId, postIds, failOnError);
     return result;
   }
 
