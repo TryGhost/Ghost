@@ -20,6 +20,12 @@ ids and a server timestamp; names and avatars come from the staff users list.
   polling for the session, so an older backend without the endpoint costs one
   request. Other failures back off exponentially up to 60 seconds and clear
   what is shown.
+- Indicators are a second flag, `editorPresence`. The editor header shows the
+  other staff on the open document as avatars with an overflow count, named
+  from the staff users list, which is read only once someone is present. Users
+  missing from that list are not shown. Hovering or focusing the cluster names
+  everyone in one sentence, "Alex and Sam have this post open". Below the `sm`
+  breakpoint one avatar with a count badge stands for everyone.
 
 ## Modules
 
@@ -27,4 +33,7 @@ ids and a server timestamp; names and avatars come from the staff users list.
 - `use-presence.ts` runs the poller for a set of resources and exposes `active`.
 - `use-visible-resources.ts` collects `[data-presence-id]` rows on screen.
 - `use-presence-by-resource.ts` groups `active` by resource id for list rows.
-- `presence-api.ts` holds the request and response shapes and the leave call.
+- `presence-api.ts` validates responses; requests live in the framework's
+  `api/presence` module.
+- `present-users.ts` turns active entries into named, ordered users.
+- `presence-avatars.tsx` renders them.

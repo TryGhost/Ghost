@@ -12,6 +12,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { AdminLink } from '@/shared/admin-link';
 import { usePresence } from '@/shared/presence/use-presence';
+import { PresenceAvatars } from '@/shared/presence/presence-avatars';
 import { getPostListReturnUrl } from '@/posts/api';
 import { reloadAdmin } from '@/auth/api';
 import { NotFound } from '@/shared/not-found';
@@ -190,7 +191,8 @@ function EditorContent({
   const presenceResource = session.persistedId
     ? { id: session.persistedId, type: postType }
     : undefined;
-  usePresence(presenceResource ? [presenceResource] : [], presenceResource);
+  const presence = usePresence(presenceResource ? [presenceResource] : [], presenceResource);
+  const showPresence = useFeatureFlag('editorPresence');
   const [tkCount, setTkCount] = useState(0);
   const chromeEntrance = useScreenEntrance();
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
@@ -475,6 +477,9 @@ function EditorContent({
               ) : null}
               <Box className="col-start-3 ml-auto" data-writing-focus={writingFocus}>
                 <PageHeader.ActionGroup className="gap-x-[calc(var(--spacing)*3*(1-var(--editor-settings-progress)))] editor-settings-motion-[column-gap]">
+                  {showPresence ? (
+                    <PresenceAvatars active={presence.active} resourceType={postType} />
+                  ) : null}
                   <EditorHeaderActions
                     bottomBar={bottomBar}
                     currentUser={currentUser}
