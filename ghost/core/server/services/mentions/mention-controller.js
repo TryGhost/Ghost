@@ -1,4 +1,3 @@
-const logging = require('@tryghost/logging');
 const ProcessWebmentionJob = require('./process-webmention-job').default;
 
 /**
@@ -29,6 +28,9 @@ const ProcessWebmentionJob = require('./process-webmention-job').default;
  */
 
 module.exports = class MentionController {
+  /** @type {import('@tryghost/logging').GhostLogger} */
+  #logging;
+
   /** @type {import('./mentions-api')} */
   #api;
 
@@ -37,6 +39,14 @@ module.exports = class MentionController {
 
   /** @type {IMentionResourceService} */
   #mentionResourceService;
+
+  /**
+   * @param {object} deps
+   * @param {import('@tryghost/logging').GhostLogger} deps.logging
+   */
+  constructor({ logging }) {
+    this.#logging = logging;
+  }
 
   /**
    * @param {object} deps
@@ -122,7 +132,7 @@ module.exports = class MentionController {
    * @returns {Promise<void>}
    */
   async receive(frame) {
-    logging.info('[Webmention] ' + JSON.stringify(frame.data));
+    this.#logging.info('[Webmention] ' + JSON.stringify(frame.data));
     const { source, target } = frame.data;
     await this.#jobsService.dispatch(new ProcessWebmentionJob({ source, target }));
   }
@@ -138,7 +148,7 @@ module.exports = class MentionController {
         target: new URL(target),
       });
     } catch (err) {
-      logging.error(err, '[Webmention] Failed processing webmention');
+      this.#logging.error(err, '[Webmention] Failed processing webmention');
     }
   }
 };

@@ -31,19 +31,19 @@ describe('deriveMemberDetailBackPath', () => {
     );
   });
 
-  it('treats any /members-prefixed path as internal (intentional Ember parity)', () => {
-    // The guard is a prefix check, matching the Ember controller. A value like
+  it('treats any /members-prefixed path as internal', () => {
+    // The guard is a prefix check. A value like
     // `/members.evil.com` therefore passes — harmless because it renders as a
     // same-origin `#/members.evil.com` hash link (SPA 404), never a cross-origin
     // redirect. This test pins that intentional behaviour so it isn't "tightened"
-    // without a deliberate decision to diverge from Ember.
+    // without a deliberate decision.
     expect(deriveMemberDetailBackPath(`?back=${encodeURIComponent('/members.evil.com')}`)).toBe(
       '/members.evil.com',
     );
   });
 
   it('falls back to a post-scoped members list when only a post param is present', () => {
-    // Mirrors the Ember controller: /members?post=<encodeURIComponent(post)>
+    // /members?post=<encodeURIComponent(post)>
     expect(deriveMemberDetailBackPath('?post=abc%20123')).toBe('/members?post=abc%20123');
   });
 

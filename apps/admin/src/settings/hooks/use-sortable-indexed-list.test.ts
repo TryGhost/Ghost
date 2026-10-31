@@ -1,7 +1,6 @@
-import assert from 'node:assert/strict';
 import useSortableIndexedList from '@/settings/hooks/use-sortable-indexed-list';
 import { act, renderHook } from '@testing-library/react';
-import { describe, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 describe('useSortableIndexedList', () => {
   // Mock initial items and blank item
@@ -24,8 +23,7 @@ describe('useSortableIndexedList', () => {
     );
 
     // Assert initial items setup correctly
-    assert.deepEqual(
-      result.current.items,
+    expect(result.current.items).toStrictEqual(
       initialItems.map((item, index) => ({ item, id: index.toString() })),
     );
   });
@@ -51,7 +49,7 @@ describe('useSortableIndexedList', () => {
     });
 
     // Assert items updated correctly after adding new item
-    assert.deepEqual(items, [...initialItems, { name: 'New Item' }]);
+    expect(items).toStrictEqual([...initialItems, { name: 'New Item' }]);
   });
 
   it('should update an item', () => {
@@ -74,7 +72,7 @@ describe('useSortableIndexedList', () => {
     });
 
     // Assert item updated correctly
-    assert.deepEqual(items[0], { name: 'Updated Item 1' });
+    expect(items[0]).toStrictEqual({ name: 'Updated Item 1' });
   });
 
   it('builds consecutive updates in one event on each other', () => {
@@ -99,7 +97,7 @@ describe('useSortableIndexedList', () => {
       result.current.updateItem('0', (current) => ({ name: `${current.name}!` }));
     });
 
-    assert.deepEqual(items[0], { name: 'Committed!' });
+    expect(items[0]).toStrictEqual({ name: 'Committed!' });
   });
 
   it('should remove an item', () => {
@@ -122,7 +120,7 @@ describe('useSortableIndexedList', () => {
     });
 
     // Assert item removed correctly
-    assert.deepEqual(items, [initialItems[1]]);
+    expect(items).toStrictEqual([initialItems[1]]);
   });
 
   it('should move an item', () => {
@@ -145,7 +143,7 @@ describe('useSortableIndexedList', () => {
     });
 
     // Assert item moved correctly
-    assert.deepEqual(items, [initialItems[1], initialItems[0]]);
+    expect(items).toStrictEqual([initialItems[1], initialItems[0]]);
   });
 
   it('should not setItems for deeply equal items regardless of property order', () => {
@@ -170,7 +168,7 @@ describe('useSortableIndexedList', () => {
       },
     );
 
-    assert.equal(setItems.mock.calls.length, 0);
+    expect(setItems.mock.calls.length).toBe(0);
 
     // Re-render with items in different order but same content
     rerender({
@@ -179,6 +177,6 @@ describe('useSortableIndexedList', () => {
     });
 
     // Expect no additional calls because the items are deeply equal
-    assert.equal(setItems.mock.calls.length, 0);
+    expect(setItems.mock.calls.length).toBe(0);
   });
 });

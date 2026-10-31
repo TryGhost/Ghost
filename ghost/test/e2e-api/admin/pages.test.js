@@ -196,6 +196,7 @@ describe('Pages API', function () {
       const page = {
         title: 'Test Page',
         status: 'published',
+        show_title_and_feature_image: false,
       };
 
       const { body: pageBody } = await agent
@@ -216,7 +217,12 @@ describe('Pages API', function () {
         .post(`/pages/${pageResponse.id}/copy?formats=mobiledoc,lexical`)
         .expectStatus(201)
         .matchBodySnapshot({
-          pages: [Object.assign({}, matchPageShallowIncludes, { published_at: null })],
+          pages: [
+            Object.assign({}, matchPageShallowIncludes, {
+              published_at: null,
+              show_title_and_feature_image: false,
+            }),
+          ],
         })
         .matchHeaderSnapshot({
           'content-version': anyContentVersion,

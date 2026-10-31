@@ -77,6 +77,13 @@ reuses the service dependency policy in `.dependency-cruiser.cjs`; see the
 [services guide](../../../ghost/core/server/services/README.md#dependency-boundaries)
 for its scope and limits. There is no ESLint equivalent enabled.
 
+The Oxlint-only `ghost/prefer-canonical-types` rule rejects hand-written copies
+of a library type in Ghost Core, matched by shape rather than name. It covers
+type aliases, interfaces, inline object types and JSDoc object types. It ships
+with one shape: an object whose members are only log-level methods, which should
+be `GhostLogger` from `@tryghost/logging`. Add further shape and canonical-type
+pairs to the table in `../oxlint/rules/prefer-canonical-types.ts`.
+
 Run `pnpm lint` from the repository root to run both linters. CI does the same
 checks. When adding a workspace or changing a source/test scope, update the
 Oxlint overrides as well as the workspace's ESLint config. Use `oxlint-disable`

@@ -13,7 +13,7 @@ const moment = require('moment');
  */
 
 /**
- * @typedef {import('@tryghost/logging')} logging
+ * @typedef {import('@tryghost/logging').GhostLogger} logging
  */
 
 /**

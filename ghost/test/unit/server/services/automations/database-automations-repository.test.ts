@@ -1224,7 +1224,7 @@ describe('automations repository', function () {
     });
   });
 
-  describe('browse', function () {
+  describe('browse archived automations', function () {
     it('includes archived automations in browse results', async function () {
       const initial = await getAutomationBySlug('member-welcome-email-free');
       await repo.edit(initial.id, { status: 'archived' });
@@ -3072,11 +3072,16 @@ describe('automations repository', function () {
       clickedAt?: Date;
       automationRunStepId?: string;
     } = {}): Promise<void> => {
-      await repo.trackEmailClicked({
-        automationActionRevisionId: firstRevisionId,
-        automationRunStepId,
-        memberId,
-        clickedAt,
+      await knex.transaction(async (transacting) => {
+        await repo.trackEmailClicked(
+          {
+            automationActionRevisionId: firstRevisionId,
+            automationRunStepId,
+            memberId,
+            clickedAt,
+          },
+          { transacting },
+        );
       });
     };
 

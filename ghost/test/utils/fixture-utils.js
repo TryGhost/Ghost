@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs-extra');
 const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
+const { IncorrectUsageError } = require('@tryghost/errors');
 const KnexMigrator = require('knex-migrator');
 // Resolve MigratorConfig.js from the package root, not process.cwd() — see db-utils.js.
 const knexMigrator = new KnexMigrator({ knexMigratorFilePath: path.join(__dirname, '../..') });
@@ -1059,7 +1060,18 @@ const getFixtureOps = (toDos) => {
   });
 
   fixtureOps.push(() => {
-    return require('../../core/server/services/tiers').repository?.init();
+    const tiers = require('../../core/server/services/tiers').default;
+    let service;
+    try {
+      service = tiers.service;
+    } catch (error) {
+      // Before Ghost boots there is no tier cache to reload; boot loads these rows itself.
+      if (error instanceof IncorrectUsageError) {
+        return;
+      }
+      throw error;
+    }
+    return service.repository.init();
   });
 
   return fixtureOps;

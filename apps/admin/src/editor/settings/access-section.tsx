@@ -127,8 +127,8 @@ export function AccessSection({ session, postType }: AccessSectionProps) {
       next.add(id);
     }
     const patch = { visibility: 'tiers', tiers: tiersFromSelection(options, next) };
-    // Each save of a published post writes a revision; as in Ember, a tier pick
-    // outside a draft waits for the next settings save or Update.
+    // Each save of a published post writes a revision, so a tier pick outside a
+    // draft waits for the next settings save or Update.
     if (session.publishTime.status !== 'draft') {
       session.stageSettings(patch);
       return;

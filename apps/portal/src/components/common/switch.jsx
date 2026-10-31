@@ -105,7 +105,9 @@ function Switch({
       return;
     }
 
-    setIsChecked(event.target.checked);
+    if (!presentational) {
+      setIsChecked(event.target.checked);
+    }
     onToggle(event, event.target.checked);
   };
 

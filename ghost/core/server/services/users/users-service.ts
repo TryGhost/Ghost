@@ -1,49 +1,81 @@
-// @ts-check
-const ObjectId = require('bson-objectid').default;
+import ObjectId from 'bson-objectid';
+import errors from '@tryghost/errors';
+import type { Knex } from 'knex';
+import type { removeAuthorFromRevisions } from '../../lib/post-revisions';
+import type { PostsBulkAddTagsEvent } from '../../../shared/events-ts';
 
-/**
- * @TODO: pass these in as dependencies
- */
-const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
+type SluggedModel = {
+  get(attribute: 'id' | 'slug'): string;
+};
 
-/**
- * @typedef {Object} IModels
- * @prop {Object} Base
- * @prop {(callback: function) => Promise} Base.transaction
- * @prop {Object} Post
- * @prop {(frameOptions: Object) => Promise} Post.reassignByAuthor
- * @prop {Object} ApiKey
- * @prop {(Object) => Promise} ApiKey.destroy
- * @prop {Object} ApiKey.NotFoundError
- * @prop {Object} User
- * @prop {(Object) => Promise} User.destroy
- * @prop {(Object) => Promise} User.findAll
- * @prop {Object} Session
- * @prop {(Object) => Promise} Session.findAll
- */
+type LockableUser = {
+  lock(options: object): Promise<unknown>;
+};
 
-/**
- * @typedef {Object} IAuth
- * @prop {Object} setup
- * @prop {(isComplete: boolean) => () => Promise} setup.assertSetupCompleted
- * @prop {Object} passwordreset
- * @prop {(email: string, apiSettings: Object, transcation?: Object) => Promise<string>} passwordreset.generateToken
- * @prop {(token: string, apiMail: Object) => Promise} passwordreset.sendResetNotification
- */
+type Models = {
+  Base: {
+    knex: Knex;
+    transaction<T>(callback: (transacting: Knex.Transaction) => Promise<T>): Promise<T>;
+  };
+  User: {
+    findAll(options: object): Promise<{ models: LockableUser[] }>;
+    findOne(data: object, options: object): Promise<SluggedModel | null>;
+    destroy(options: object): Promise<unknown>;
+  };
+  Tag: {
+    findOne(data: object, options: object): Promise<SluggedModel | null>;
+    add(data: object, options: object): Promise<SluggedModel>;
+  };
+  Post: {
+    addActions(type: string, postIds: string[], options: object): Promise<unknown>;
+    reassignByAuthor(options: object): Promise<unknown>;
+  };
+  ApiKey: {
+    destroy(options: object): Promise<unknown>;
+    NotFoundError: new (...args: never[]) => Error;
+  };
+  PostRevision: Parameters<typeof removeAuthorFromRevisions>[0];
+};
 
-class Users {
-  /**
-   * @param {Object} dependencies
-   * @param {IModels} dependencies.models
-   * @param {IAuth} dependencies.auth
-   * @param {Object} dependencies.apiMail
-   * @param {Object} dependencies.apiSettings
-   */
-  constructor({ models, auth, apiMail, apiSettings }) {
+type UsersServiceDependencies = {
+  models: Models;
+  DomainEvents: { dispatch(event: PostsBulkAddTagsEvent): void };
+  PostsBulkAddTagsEvent: typeof PostsBulkAddTagsEvent;
+  removeAuthorFromRevisions: typeof removeAuthorFromRevisions;
+};
+
+type FrameOptions = {
+  transacting?: Knex.Transaction;
+  [key: string]: unknown;
+};
+
+type UserFrameOptions = FrameOptions & {
+  id: string;
+  context?: unknown;
+};
+
+type AssignTagOptions = {
+  id: string;
+  context?: unknown;
+  transacting: Knex.Transaction;
+};
+
+export class UsersService {
+  models: Models;
+  DomainEvents: UsersServiceDependencies['DomainEvents'];
+  PostsBulkAddTagsEvent: typeof PostsBulkAddTagsEvent;
+  removeAuthorFromRevisions: typeof removeAuthorFromRevisions;
+
+  constructor({
+    models,
+    DomainEvents,
+    PostsBulkAddTagsEvent,
+    removeAuthorFromRevisions,
+  }: UsersServiceDependencies) {
     this.models = models;
-    this.auth = auth;
-    this.apiMail = apiMail;
-    this.apiSettings = apiSettings;
+    this.DomainEvents = DomainEvents;
+    this.PostsBulkAddTagsEvent = PostsBulkAddTagsEvent;
+    this.removeAuthorFromRevisions = removeAuthorFromRevisions;
 
     this.assignTagToUserPosts = this.assignTagToUserPosts.bind(this);
   }
@@ -57,12 +89,9 @@ class Users {
    * blasting unsolicited "your password has been reset" emails to people
    * who are not actively signing in, while still funnelling everyone
    * through a fresh password before they regain access.
-   *
-   * @param {Object} frameOptions
-   * @returns {Promise<{count: number}>}
    */
-  async lockAll(frameOptions) {
-    const lockUsers = async (txOptions) => {
+  async lockAll(frameOptions: FrameOptions): Promise<{ count: number }> {
+    const lockUsers = async (txOptions: FrameOptions) => {
       // Every staff user has their password rotated. user.lock()
       // preserves `inactive` status for suspended users so they remain
       // on the suspended-signin path; everyone else transitions to
@@ -81,7 +110,7 @@ class Users {
     return { count: users.length };
   }
 
-  async assignTagToUserPosts({ id, context, transacting }) {
+  async assignTagToUserPosts({ id, context, transacting }: AssignTagOptions): Promise<void> {
     // get author slug
     const author = await this.models.User.findOne(
       {
@@ -93,9 +122,12 @@ class Users {
         transacting,
       },
     );
+    if (!author) {
+      throw new errors.NotFoundError({ message: `User ${id} not found` });
+    }
 
     // get list of posts that need the tag assigned
-    const userPosts = await this.models.Base.knex('posts_authors')
+    const userPosts = await this.models.Base.knex<{ post_id: string }>('posts_authors')
       .transacting(transacting)
       .where('author_id', id)
       .select('post_id');
@@ -129,11 +161,11 @@ class Users {
       );
       createdTag = true;
     }
+    const tagId = tag.get('id');
 
     // filter out posts that already have the tag if we didn't need to create one
     if (!createdTag) {
-      const tagId = tag.get('id');
-      const taggedPostIds = await this.models.Base.knex('posts_tags')
+      const taggedPostIds = await this.models.Base.knex<{ post_id: string }>('posts_tags')
         .transacting(transacting)
         .where('tag_id', tagId)
         .select('post_id');
@@ -154,7 +186,7 @@ class Users {
         usersPostIds.map((postId) => ({
           id: new ObjectId().toHexString(),
           post_id: postId,
-          tag_id: tag.get('id'),
+          tag_id: tagId,
           sort_order: 0,
         })),
       );
@@ -163,43 +195,30 @@ class Users {
     await this.models.Post.addActions('edited', usersPostIds, { transacting, context });
 
     // dispatch event to ensure collections are updated
-    const { PostsBulkAddTagsEvent } = require('../../shared/events-ts');
-    DomainEvents.dispatch(PostsBulkAddTagsEvent.create(usersPostIds));
+    this.DomainEvents.dispatch(this.PostsBulkAddTagsEvent.create(usersPostIds));
   }
 
-  /**
-   *
-   * @param {Object} frameOptions
-   * @param {string} frameOptions.id - user ID to destroy
-   * @param {Object} frameOptions.context - frame context to perform the action
-   * @returns
-   */
-  async destroyUser(frameOptions) {
+  async destroyUser(frameOptions: UserFrameOptions): Promise<void> {
     return this.models.Base.transaction(async (t) => {
       frameOptions.transacting = t;
 
-      const { PostRevisions } = require('../lib/post-revisions');
-
       // null author field for users' post revisions
-      const postRevisions = new PostRevisions({
-        model: this.models.PostRevision,
-      });
-      await postRevisions.removeAuthorFromRevisions(frameOptions.id, {
-        transacting: frameOptions.transacting,
+      await this.removeAuthorFromRevisions(this.models.PostRevision, frameOptions.id, {
+        transacting: t,
       });
 
       // create a #author-slug tag and assign it to their posts
       await this.assignTagToUserPosts({
         id: frameOptions.id,
         context: frameOptions.context,
-        transacting: frameOptions.transacting,
+        transacting: t,
       });
 
       // reassign posts to owner user
       await this.models.Post.reassignByAuthor({
         id: frameOptions.id,
         context: frameOptions.context,
-        transacting: frameOptions.transacting,
+        transacting: t,
       });
 
       // delete user
@@ -221,5 +240,3 @@ class Users {
     });
   }
 }
-
-module.exports = Users;

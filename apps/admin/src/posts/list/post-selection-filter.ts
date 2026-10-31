@@ -3,8 +3,7 @@
  *
  * This is what bulk actions send to the server — `DELETE /posts/?filter=…` and
  * `PUT /posts/bulk?filter=…` — so it is the string with the largest blast
- * radius in the whole screen. Ported branch-for-branch from the `filter` getter
- * in `apps/ember-admin/app/components/posts-list/selection-list.js`.
+ * radius in the whole screen.
  *
  * The reason it isn't just a list of ids: after Cmd+A the selection is
  * *inverted* — "everything matching the list's filter, except these" — and may

@@ -62,7 +62,7 @@ export const tagDetailScreen = {
   confirmDeleteButton: () => page.getByTestId(sel.confirmDeleteTag),
   deleteConfirmationText: () => page.getByText(sel.deleteTagConfirmationText),
 
-  // Ember's ConfirmUnsavedChangesModal copy and actions.
+  // Unsaved-changes confirmation copy and actions.
   leaveConfirmationText: () => page.getByText('Are you sure you want to leave this page?'),
   stayButton: () => page.getByRole('button', { name: 'Stay' }),
   leaveButton: () => page.getByRole('button', { name: 'Leave' }),

@@ -1,6 +1,28 @@
-const DomainEvents = require('@tryghost/domain-events');
-const MentionCreatedEvent = require('../mentions/mention-created-event');
-const logging = require('@tryghost/logging');
+const PATH_SUFFIX = '/.well-known/recommendations.json';
+
+/**
+ * @param {URL} url
+ */
+function isRecommendationUrl(url) {
+  return url.pathname.endsWith(PATH_SUFFIX);
+}
+
+/**
+ * @typedef {object} RecommendationServiceWrapperDeps
+ * @property {{get(key: string): unknown}} config
+ * @property {Pick<import('@tryghost/logging').GhostLogger, 'info' | 'error'>} logging
+ * @property {{captureException(err: unknown): void}} sentry
+ * @property {{relativeToAbsolute(url: string): string}} urlUtils
+ * @property {object} models
+ * @property {{GhostMailer: new () => {send(message: object): Promise<unknown>}}} mail
+ * @property {object} externalRequest
+ * @property {{subscribe(Event: unknown, handler: (event: unknown) => Promise<void>): void}} DomainEvents
+ * @property {unknown} MentionCreatedEvent
+ * @property {import('../mentions').default} mentions
+ * @property {object} oembedService
+ * @property {import('../settings/settings-service')} settings
+ * @property {import('../staff')} staffService
+ */
 
 class RecommendationServiceWrapper {
   /**
@@ -43,16 +65,36 @@ class RecommendationServiceWrapper {
    */
   incomingRecommendationService;
 
+  /** @type {RecommendationServiceWrapperDeps} */
+  #deps;
+
+  /**
+   * @param {RecommendationServiceWrapperDeps} deps
+   */
+  constructor(deps) {
+    this.#deps = deps;
+  }
+
   init() {
     if (this.repository) {
       return;
     }
 
-    const config = require('../../../shared/config');
-    const urlUtils = require('../../../shared/url-utils').default;
-    const models = require('../../models');
-    const sentry = require('../../../shared/sentry');
-    const settings = require('../settings');
+    const {
+      config,
+      logging,
+      sentry,
+      urlUtils,
+      models,
+      mail,
+      externalRequest,
+      DomainEvents,
+      MentionCreatedEvent,
+      mentions,
+      oembedService,
+      settings,
+      staffService,
+    } = this.#deps;
     const RecommendationEnablerService = require('./recommendation-enabler-service');
 
     const {
@@ -68,14 +110,8 @@ class RecommendationServiceWrapper {
       RecommendationMetadataService,
     } = require('./service');
 
-    const mentions = require('../mentions');
-
-    if (!mentions.sendingService || !mentions.api) {
-      // oxlint-disable-next-line ghost/ghost-custom/no-native-error
-      throw new Error(
-        'MentionSendingService not intialized, but this is a dependency of RecommendationServiceWrapper. Check boot order.',
-      );
-    }
+    // Boot awaits Mentions before this group; reading the facade earlier throws.
+    const mentionsFacade = mentions.service;
 
     const wellknownService = new WellknownService({
       urlUtils,
@@ -86,20 +122,20 @@ class RecommendationServiceWrapper {
 
     this.repository = new BookshelfRecommendationRepository(models.Recommendation, {
       sentry,
+      logging,
     });
 
     this.clickEventRepository = new BookshelfClickEventRepository(models.RecommendationClickEvent, {
       sentry,
+      logging,
     });
     this.subscribeEventRepository = new BookshelfClickEventRepository(
       models.RecommendationSubscribeEvent,
       {
         sentry,
+        logging,
       },
     );
-
-    const oembedService = require('../oembed');
-    const externalRequest = require('../../../server/lib/request-external.js');
 
     const recommendationMetadataService = new RecommendationMetadataService({
       oembedService,
@@ -110,13 +146,13 @@ class RecommendationServiceWrapper {
       repository: this.repository,
       recommendationEnablerService,
       wellknownService,
-      mentionSendingService: mentions.sendingService,
+      mentionSendingService: mentionsFacade.sendingService,
       clickEventRepository: this.clickEventRepository,
       subscribeEventRepository: this.subscribeEventRepository,
       recommendationMetadataService,
+      logging,
     });
 
-    const mail = require('../../lib/mail');
     const mailer = new mail.GhostMailer();
     const emailService = {
       async send(to, subject, html, text) {
@@ -130,7 +166,7 @@ class RecommendationServiceWrapper {
     };
 
     this.incomingRecommendationService = new IncomingRecommendationService({
-      mentionsApi: mentions.api,
+      mentionsApi: mentionsFacade.api,
       recommendationService: this.service,
       emailService,
       async getEmailRecipients() {
@@ -143,8 +179,9 @@ class RecommendationServiceWrapper {
         });
       },
       emailRenderer: new IncomingRecommendationEmailRenderer({
-        staffService: require('../staff'),
+        staffService,
       }),
+      logging,
     });
 
     this.controller = new RecommendationController({
@@ -166,14 +203,8 @@ class RecommendationServiceWrapper {
       this.incomingRecommendationService.init().catch(logging.error);
     }
 
-    const PATH_SUFFIX = '/.well-known/recommendations.json';
-
-    function isRecommendationUrl(url) {
-      return url.pathname.endsWith(PATH_SUFFIX);
-    }
-
     // Add mapper to WebmentionMetadata
-    mentions.metadata.addMapper((url) => {
+    mentionsFacade.metadata.addMapper((url) => {
       if (isRecommendationUrl(url)) {
         // Strip p
         const newUrl = new URL(url.toString());

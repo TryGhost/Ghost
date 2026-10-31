@@ -155,6 +155,7 @@ export const AUTOMATION_STEP_TERMINAL_STATUSES = [
   'failed',
   'finished',
   'member changed status',
+  'member changed tier',
   'member unsubscribed',
 ] as const;
 
@@ -284,8 +285,8 @@ export type AutomationsRepository = {
       memberId: string;
       clickedAt: Readonly<Date>;
     },
-    transactionOptions?: {
-      transacting?: Knex.Transaction;
+    transactionOptions: {
+      transacting: Knex.Transaction;
     },
   ): Promise<void>;
 };

@@ -96,6 +96,24 @@ describe('Switch', () => {
     expect(input).not.toHaveAttribute('aria-label');
   });
 
+  test('in presentational mode, shows the checked prop instead of toggling itself', () => {
+    const mockOnToggle = vi.fn();
+    const { container, rerender } = render(
+      <Switch id="pres-switch" onToggle={mockOnToggle} checked={true} presentational={true} />,
+    );
+    const input = container.querySelector('input[type="checkbox"]');
+
+    fireEvent.click(input);
+
+    expect(mockOnToggle).toHaveBeenCalledWith(expect.anything(), false);
+    expect(input).toBeChecked();
+
+    rerender(
+      <Switch id="pres-switch" onToggle={mockOnToggle} checked={false} presentational={true} />,
+    );
+    expect(input).not.toBeChecked();
+  });
+
   test('non-presentational mode keeps the input accessible', () => {
     const { container } = render(<Switch id="acc-switch" label="Accessible" onToggle={() => {}} />);
     const wrapper = container.querySelector('.gh-portal-for-switch');

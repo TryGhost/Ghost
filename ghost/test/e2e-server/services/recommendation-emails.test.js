@@ -1,7 +1,7 @@
 const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
 const assert = require('node:assert/strict');
-const mentionsService = require('../../../core/server/services/mentions');
-const recommendationsService = require('../../../core/server/services/recommendations');
+const mentionsService = require('../../../core/server/services/mentions').default;
+const recommendationsService = require('../../../core/server/services/recommendations').default;
 
 let agent;
 const DomainEvents = require('@tryghost/domain-events');
@@ -46,7 +46,7 @@ describe('Incoming Recommendation Emails', function () {
     assert.ok(webmention.verified);
 
     // Save to repository
-    await mentionsService.repository.save(webmention);
+    await mentionsService.service.repository.save(webmention);
 
     await DomainEvents.allSettled();
 
@@ -78,7 +78,7 @@ describe('Incoming Recommendation Emails', function () {
       createdAt: new Date(5000),
     });
 
-    await recommendationsService.repository.save(recommendation);
+    await recommendationsService.service.repository.save(recommendation);
 
     const webmention = await Mention.create({
       source: 'https://www.otherghostsite.com/.well-known/recommendations.json',
@@ -100,7 +100,7 @@ describe('Incoming Recommendation Emails', function () {
     assert.ok(webmention.verified);
 
     // Save to repository
-    await mentionsService.repository.save(webmention);
+    await mentionsService.service.repository.save(webmention);
 
     await DomainEvents.allSettled();
 
@@ -139,7 +139,7 @@ describe('Incoming Recommendation Emails', function () {
     assert.ok(webmention.verified);
 
     // Save to repository
-    await mentionsService.repository.save(webmention);
+    await mentionsService.service.repository.save(webmention);
 
     await DomainEvents.allSettled();
 
@@ -167,7 +167,7 @@ describe('Incoming Recommendation Emails', function () {
     assert.ok(!webmention.verified);
 
     // Save to repository
-    await mentionsService.repository.save(webmention);
+    await mentionsService.service.repository.save(webmention);
 
     await DomainEvents.allSettled();
 

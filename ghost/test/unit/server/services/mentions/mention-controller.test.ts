@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import { describe, it, beforeEach, afterEach } from 'vitest';
-import logging from '@tryghost/logging';
+import { createLoggingFake } from '../../../../utils/logging-utils';
 // Required, not imported: the controller requires the same module, and an ESM
 // import would give this test a second copy of the class to compare against.
 const ProcessWebmentionJob =
@@ -12,13 +12,13 @@ describe('MentionController', function () {
   let controller: any;
   let api: { processWebmention: sinon.SinonStub };
   let jobsService: { dispatch: sinon.SinonStub };
-  let loggingStub: sinon.SinonStubbedInstance<typeof logging>;
+  let logging: ReturnType<typeof createLoggingFake>;
 
   beforeEach(async function () {
     api = { processWebmention: sinon.stub().resolves() };
     jobsService = { dispatch: sinon.stub().resolves() };
-    loggingStub = sinon.stub(logging);
-    controller = new MentionController();
+    logging = createLoggingFake();
+    controller = new MentionController({ logging });
     await controller.init({ api, jobsService, mentionResourceService: { getByID: sinon.stub() } });
   });
 
@@ -50,11 +50,7 @@ describe('MentionController', function () {
         target: 'https://target.com/post/',
       });
 
-      sinon.assert.calledWith(
-        loggingStub.error,
-        error,
-        '[Webmention] Failed processing webmention',
-      );
+      sinon.assert.calledWith(logging.error, error, '[Webmention] Failed processing webmention');
     });
 
     it('swallows and logs an unparseable url', async function () {
@@ -65,7 +61,7 @@ describe('MentionController', function () {
 
       sinon.assert.notCalled(api.processWebmention);
       sinon.assert.calledWith(
-        loggingStub.error,
+        logging.error,
         sinon.match.instanceOf(Error),
         '[Webmention] Failed processing webmention',
       );

@@ -294,6 +294,61 @@ it('allows the debug tracing library without allowing sibling packages', (t) => 
   );
 });
 
+it('allows the cheerio slim entry required by Mentions without allowing the main entry', (t) => {
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: "require('cheerio/slim');",
+    [`${alpha}/rejected.ts`]: "import 'cheerio';",
+  });
+  f.write(
+    'node_modules/cheerio/package.json',
+    JSON.stringify({
+      name: 'cheerio',
+      main: 'dist/commonjs/index.js',
+      exports: { '.': './dist/commonjs/index.js', './slim': './dist/commonjs/slim.js' },
+    }),
+  );
+  f.write('node_modules/cheerio/dist/commonjs/index.js', 'module.exports = {};');
+  f.write('node_modules/cheerio/dist/commonjs/slim.js', 'module.exports = {};');
+  const graph = f.graph();
+  assert.ok(
+    edges(graph).some(
+      ([from, , to]) =>
+        from === `${alpha}/approved.js` && to === 'node_modules/cheerio/dist/commonjs/slim.js',
+    ),
+  );
+  assert.deepEqual(violations(graph), [
+    ['service-dependencies', `${alpha}/rejected.ts`, 'node_modules/cheerio/dist/commonjs/index.js'],
+  ]);
+});
+
+it('allows the cheerio slim ESM entry required by Mentions without allowing the ESM main entry', (t) => {
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: "import 'cheerio/slim';",
+    [`${alpha}/rejected.ts`]: "import 'cheerio';",
+  });
+  f.write(
+    'node_modules/cheerio/package.json',
+    JSON.stringify({
+      name: 'cheerio',
+      type: 'module',
+      main: 'dist/esm/index.js',
+      exports: { '.': './dist/esm/index.js', './slim': './dist/esm/slim.js' },
+    }),
+  );
+  f.write('node_modules/cheerio/dist/esm/index.js', 'export {};');
+  f.write('node_modules/cheerio/dist/esm/slim.js', 'export {};');
+  const graph = f.graph();
+  assert.ok(
+    edges(graph).some(
+      ([from, , to]) =>
+        from === `${alpha}/approved.js` && to === 'node_modules/cheerio/dist/esm/slim.js',
+    ),
+  );
+  assert.deepEqual(violations(graph), [
+    ['service-dependencies', `${alpha}/rejected.ts`, 'node_modules/cheerio/dist/esm/index.js'],
+  ]);
+});
+
 it('allows the magic-link constructor required by Newsletters without allowing its siblings', (t) => {
   const approved = 'ghost/core/server/lib/magic-link/magic-link.js';
   const rejected = 'ghost/core/server/lib/magic-link/other.js';
@@ -308,6 +363,93 @@ it('allows the magic-link constructor required by Newsletters without allowing i
     edges(graph).some(([from, , to]) => from === `${alpha}/approved.js` && to === approved),
   );
   assert.deepEqual(violations(graph), [['service-dependencies', `${alpha}/rejected.ts`, rejected]]);
+});
+
+it('allows the exact libraries required by Comments without allowing siblings', (t) => {
+  const approved = [
+    '@tryghost/mongo-utils',
+    '@tryghost/mongo-utils/index.js',
+    '@tryghost/html-to-plaintext',
+    '@tryghost/html-to-plaintext/index.js',
+    'handlebars',
+    'handlebars/lib/index.js',
+  ];
+  const rejected = [
+    '@tryghost/mongo-utils/other',
+    '@tryghost/mongo-utils-extra',
+    '@tryghost/html-to-plaintext/other',
+    '@tryghost/html-to-plaintext-extra',
+    'handlebars/other',
+    'handlebars-extra',
+  ];
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: approved.map((name) => `require('${name}');`).join('\n'),
+    [`${alpha}/rejected.ts`]: rejected.map((name) => `import '${name}';`).join('\n'),
+  });
+  for (const [name, main] of [
+    ['@tryghost/mongo-utils', 'index.js'],
+    ['@tryghost/mongo-utils-extra', 'index.js'],
+    ['@tryghost/html-to-plaintext', 'index.js'],
+    ['@tryghost/html-to-plaintext-extra', 'index.js'],
+    ['handlebars', 'lib/index.js'],
+    ['handlebars-extra', 'index.js'],
+  ]) {
+    f.write(`node_modules/${name}/package.json`, JSON.stringify({ name, main }));
+    f.write(`node_modules/${name}/${main}`, 'module.exports = {};');
+    f.write(`node_modules/${name}/other.js`, 'module.exports = {};');
+  }
+  const graph = f.graph();
+  assert.deepEqual(
+    [
+      ...new Set(
+        edges(graph)
+          .filter(([from]) => from === `${alpha}/approved.js`)
+          .map(([, , to]) => to),
+      ),
+    ].sort(),
+    [
+      'node_modules/@tryghost/html-to-plaintext/index.js',
+      'node_modules/@tryghost/mongo-utils/index.js',
+      'node_modules/handlebars/lib/index.js',
+    ],
+  );
+  assert.deepEqual(
+    violations(graph),
+    [
+      'node_modules/@tryghost/mongo-utils/other.js',
+      'node_modules/@tryghost/mongo-utils-extra/index.js',
+      'node_modules/@tryghost/html-to-plaintext/other.js',
+      'node_modules/@tryghost/html-to-plaintext-extra/index.js',
+      'node_modules/handlebars/other.js',
+      'node_modules/handlebars-extra/index.js',
+    ]
+      .map((to) => ['service-dependencies', `${alpha}/rejected.ts`, to])
+      .sort(),
+  );
+});
+
+it('allows the CSS inlining helper required by Staff without allowing its siblings', (t) => {
+  const approved = 'ghost/core/server/lib/email-rendering/inline-css.ts';
+  const rejected = [
+    'ghost/core/server/lib/email-rendering/finalize.ts',
+    'ghost/core/server/lib/email-rendering/inline-css-extra.ts',
+  ] as const;
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: "require('../../lib/email-rendering/inline-css');",
+    [`${alpha}/rejected.ts`]:
+      "import '../../lib/email-rendering/finalize'; import '../../lib/email-rendering/inline-css-extra';",
+    [approved]: 'export const inlineCss = (html: string) => html;',
+    [rejected[0]]: 'export {};',
+    [rejected[1]]: 'export {};',
+  });
+  const graph = f.graph();
+  assert.ok(
+    edges(graph).some(([from, , to]) => from === `${alpha}/approved.js` && to === approved),
+  );
+  assert.deepEqual(
+    violations(graph),
+    rejected.map((to) => ['service-dependencies', `${alpha}/rejected.ts`, to]).sort(),
+  );
 });
 
 it('rejects outside dependencies, own roots and unresolved imports without folder or package-prefix escapes', (t) => {

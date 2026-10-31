@@ -1,5 +1,20 @@
+import * as Sentry from '@sentry/react';
 import { type ReactNode, Suspense, lazy, useCallback, useEffect, useState } from 'react';
+import { useLocation } from '@tryghost/admin-x-framework';
+import {
+  Button,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@tryghost/shade/components';
+import { reloadAdmin } from '@/auth/api';
+import { reloadAfterChunkLoadError } from '@/chunk-load-recovery';
 import { useAdminSidebarVisibility } from '@/layout/sidebar-visibility';
+import ErrorBoundary from '@/settings/components/error-boundary';
 import { OpenGlobalSearchContext } from './global-search-context';
 import { isSearchShortcut } from './search-shortcut';
 
@@ -9,12 +24,40 @@ const GlobalSearchModal = lazy(loadGlobalSearchModal);
 
 const OPEN_DIALOG = ':is([role="dialog"], [role="alertdialog"])[data-state="open"]';
 
+interface SearchModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+/** Stands in for a search modal that failed, so the rest of the admin keeps working. */
+function SearchError({ open, onOpenChange }: SearchModalProps) {
+  const { pathname, search } = useLocation();
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Search didn&apos;t load</DialogTitle>
+          <DialogDescription>Reload Ghost Admin to try again.</DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Close</Button>
+          </DialogClose>
+          <Button onClick={() => reloadAdmin(`${pathname}${search}`)}>Reload</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 /**
  * Owns the Cmd-K search modal: its open state, the Cmd/Ctrl+K shortcut, and
  * the lazily loaded modal.
  */
 export function GlobalSearchProvider({ children }: { children: ReactNode }) {
   const canSearch = useAdminSidebarVisibility();
+  const location = useLocation();
 
   // `count` remounts the modal on each open so it starts with an empty term
   const [modal, setModal] = useState({ open: false, count: 0 });
@@ -56,9 +99,22 @@ export function GlobalSearchProvider({ children }: { children: ReactNode }) {
     <OpenGlobalSearchContext.Provider value={canSearch ? openSearch : null}>
       {children}
       {modal.count > 0 && (
-        <Suspense fallback={null}>
-          <GlobalSearchModal key={modal.count} open={modal.open} onOpenChange={setOpen} />
-        </Suspense>
+        <ErrorBoundary
+          key={modal.count}
+          fallback={<SearchError open={modal.open} onOpenChange={setOpen} />}
+          name="search"
+          onError={(error, info) => {
+            if (!reloadAfterChunkLoadError(error, location)) {
+              Sentry.captureException(error, {
+                contexts: { react: { componentStack: info.componentStack } },
+              });
+            }
+          }}
+        >
+          <Suspense fallback={null}>
+            <GlobalSearchModal open={modal.open} onOpenChange={setOpen} />
+          </Suspense>
+        </ErrorBoundary>
       )}
     </OpenGlobalSearchContext.Provider>
   );

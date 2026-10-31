@@ -108,7 +108,7 @@ function PopoverBody({
     try {
       await deletePostView(activeView);
       onClose();
-      // Ember navigates back to the clean route after deleting. Staying
+      // Navigates back to the clean route after deleting. Staying
       // put would leave you on the deleted view's URL, watching its
       // sidebar entry vanish while the button flips back to "Save as
       // view" — where saving would simply re-create it.

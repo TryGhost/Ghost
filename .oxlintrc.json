@@ -9,6 +9,7 @@
     "restriction": "off",
     "nursery": "off"
   },
+  "plugins": ["vitest"],
   "jsPlugins": [
     {
       "name": "ghost",
@@ -24,6 +25,29 @@
     }
   ],
   "overrides": [
+    {
+      "files": ["**/*.test.{js,jsx,ts,tsx}"],
+      "rules": {
+        "vitest/no-focused-tests": "error",
+        "vitest/no-identical-title": "error"
+      }
+    },
+    {
+      "files": ["apps/**/*.test.{js,jsx,ts,tsx}", "apps/*/test/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["assert", "assert/*", "node:assert", "node:assert/*"],
+                "message": "App tests assert with Vitest expect. A failing node:assert on a React DOM node inspects the whole fiber tree and can crash the worker."
+              }
+            ]
+          }
+        ]
+      }
+    },
     {
       "files": ["apps/admin/src/**/*.{ts,tsx}"],
       "rules": {
@@ -201,6 +225,7 @@
       "files": [
         "ghost/core/server/services/app-installations/index.ts",
         "ghost/core/server/services/audience-feedback/index.ts",
+        "ghost/core/server/services/comments/index.ts",
         "ghost/core/server/services/custom-theme-settings/index.ts",
         "ghost/core/server/services/donations/index.ts",
         "ghost/core/server/services/explore-ping/index.ts",
@@ -212,14 +237,19 @@
         "ghost/core/server/services/invites/index.ts",
         "ghost/core/server/services/link-redirection/index.ts",
         "ghost/core/server/services/member-attribution/index.ts",
+        "ghost/core/server/services/mentions/index.ts",
         "ghost/core/server/services/newsletters/index.ts",
         "ghost/core/server/services/posts-public/index.ts",
+        "ghost/core/server/services/recommendations/index.ts",
         "ghost/core/server/services/signing-keys/index.ts",
         "ghost/core/server/services/slack-ping/index.ts",
+        "ghost/core/server/services/stats/index.ts",
         "ghost/core/server/services/stripe-checkout-config/index.ts",
         "ghost/core/server/services/support-requests/index.ts",
         "ghost/core/server/services/tags-public/index.ts",
-        "ghost/core/server/services/upgrades/index.ts"
+        "ghost/core/server/services/upgrades/index.ts",
+        "ghost/core/server/services/users/index.ts",
+        "ghost/core/server/services/tiers/index.ts"
       ],
       "rules": {
         "ghost/service-root-shape": [
@@ -234,6 +264,12 @@
       "files": ["ghost/core/server/services/*/index.ts"],
       "rules": {
         "ghost/no-injected-service-libraries": "error"
+      }
+    },
+    {
+      "files": ["ghost/core/**/*.{js,ts}"],
+      "rules": {
+        "ghost/prefer-canonical-types": "error"
       }
     }
   ],

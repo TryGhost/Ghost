@@ -667,13 +667,9 @@ class StaffServiceEmails {
       ...sharedData,
     });
 
-    const juice = require('juice');
+    const { inlineCss } = require('../../lib/email-rendering/inline-css');
 
-    return juice(html, {
-      inlinePseudoElements: true,
-      removeStyleTags: true,
-      resolveCSSVariables: false,
-    });
+    return inlineCss(html);
   }
 
   async renderText(templateName, data) {

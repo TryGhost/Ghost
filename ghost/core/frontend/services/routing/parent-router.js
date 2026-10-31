@@ -83,6 +83,11 @@ class ParentRouter {
    * @private
    */
   _respectDominantRouter(req, res, next, slug) {
+    // Markdown exports use their registered permalink even when HTML has a custom route.
+    if (req.route?.path.endsWith('.md')) {
+      return next();
+    }
+
     const siteRouter = this._getSiteRouter(req);
     let targetRoute = null;
 

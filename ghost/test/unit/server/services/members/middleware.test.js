@@ -6,7 +6,7 @@ const sinon = require('sinon');
 
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const config = require('../../../../../core/shared/config');
-const tiersService = require('../../../../../core/server/services/tiers/service');
+const tiersService = require('../../../../../core/server/services/tiers').default;
 const membersService = require('../../../../../core/server/services/members');
 const membersMiddleware = require('../../../../../core/server/services/members/middleware');
 const models = require('../../../../../core/server/models');
@@ -359,8 +359,6 @@ describe('Members Service Middleware', function () {
     const hmacSecret = crypto.randomBytes(64).toString('base64');
     const freeTierId = '000000000000000000000001';
 
-    let originalTiersApi;
-
     beforeEach(function () {
       req = { headers: {}, member: null };
       res = {
@@ -373,13 +371,14 @@ describe('Members Service Middleware', function () {
       };
       next = sinon.stub();
 
-      // tiersService.api is null until init() runs; assign a mock directly
-      originalTiersApi = tiersService.api;
-      tiersService.api = /** @type {any} */ ({
-        browse: sinon.stub().resolves({
-          data: [{ id: freeTierId, type: 'free' }],
-        }),
-      });
+      // tiersService.service throws until init() runs; stub it directly
+      sinon.stub(tiersService, 'service').get(() => ({
+        api: {
+          browse: sinon.stub().resolves({
+            data: [{ id: freeTierId, type: 'free' }],
+          }),
+        },
+      }));
 
       sinon
         .stub(config, 'get')
@@ -390,7 +389,6 @@ describe('Members Service Middleware', function () {
     });
 
     afterEach(function () {
-      tiersService.api = originalTiersApi;
       sinon.restore();
     });
 

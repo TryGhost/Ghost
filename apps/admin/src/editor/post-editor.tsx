@@ -220,6 +220,7 @@ export function PostEditor({
   const editorApiRef = useRef<KoenigInstance | null>(null);
   const skipFocusEditorRef = useRef(false);
   const [wordCount, setWordCount] = useState(0);
+  const [selectionWordCount, setSelectionWordCount] = useState<number | null>(null);
   const chromeEntrance = useScreenEntrance();
   const [bodyTkCount, setBodyTkCount] = useState(0);
   const [featureImageTkCount, setFeatureImageTkCount] = useState(0);
@@ -443,7 +444,7 @@ export function PostEditor({
         <Stack
           ref={writingAreaRef}
           className={cn(
-            'min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] [--kg-breakout-adjustment:var(--editor-breakout-inset,0px)] lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))] lg:[--kg-breakout-adjustment:calc(var(--editor-breakout-inset,0px)+(var(--editor-settings-width,0px)+var(--spacing)*3)*var(--editor-settings-progress,0))]',
+            'min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] [--kg-breakout-adjustment:var(--editor-breakout-inset,0px)] max-[500px]:px-8 lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))] lg:[--kg-breakout-adjustment:calc(var(--editor-breakout-inset,0px)+(var(--editor-settings-width,0px)+var(--spacing)*3)*var(--editor-settings-progress,0))]',
             chromeEntrance && 'screen-enter-rise',
           )}
           gap="none"
@@ -571,6 +572,7 @@ export function PostEditor({
             onChange={onLexicalChange}
             onSecondaryChange={onSecondaryChange}
             onSecondaryError={onSecondaryError}
+            onSelectionWordCountChange={setSelectionWordCount}
             onTkCountChange={setBodyTkCount}
             onWordCountChange={setWordCount}
           />
@@ -610,6 +612,7 @@ export function PostEditor({
               tone="secondary"
               weight="medium"
             >
+              {selectionWordCount === null ? null : `${formatNumber(selectionWordCount)} of `}
               {formatNumber(wordCount)} {wordCount === 1 ? 'word' : 'words'}
             </Text>
           )}
