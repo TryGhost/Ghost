@@ -1,4 +1,3 @@
-import * as assert from 'assert/strict';
 import {
   MAX_RETENTION_OFFER_NAME_LENGTH,
   generateRetentionOfferName,
@@ -15,7 +14,7 @@ describe('generateRetentionOfferName', function () {
       'deadbeef',
     );
 
-    assert.equal(name, 'Retention 35% off forever (deadbeef)');
+    expect(name).toBe('Retention 35% off forever (deadbeef)');
   });
 
   it('handles once offers', function () {
@@ -28,7 +27,7 @@ describe('generateRetentionOfferName', function () {
       'deadbeef',
     );
 
-    assert.equal(name, 'Retention 10% off once (deadbeef)');
+    expect(name).toBe('Retention 10% off once (deadbeef)');
   });
 
   it('handles repeating offers', function () {
@@ -41,7 +40,7 @@ describe('generateRetentionOfferName', function () {
       'deadbeef',
     );
 
-    assert.equal(name, 'Retention 25% off for 2 mo (deadbeef)');
+    expect(name).toBe('Retention 25% off for 2 mo (deadbeef)');
   });
 
   it('handles free months offers', function () {
@@ -54,7 +53,7 @@ describe('generateRetentionOfferName', function () {
       'deadbeef',
     );
 
-    assert.equal(name, 'Retention 3 months free (deadbeef)');
+    expect(name).toBe('Retention 3 months free (deadbeef)');
   });
 
   it('keeps the full hash at the maximum validated month count', function () {
@@ -67,9 +66,9 @@ describe('generateRetentionOfferName', function () {
       'deadbeef',
     );
 
-    assert.equal(name, 'Retention 99% off for 99 mo (deadbeef)');
-    assert.equal(name.length <= MAX_RETENTION_OFFER_NAME_LENGTH, true);
-    assert.equal(name.endsWith('(deadbeef)'), true);
+    expect(name).toBe('Retention 99% off for 99 mo (deadbeef)');
+    expect(name.length <= MAX_RETENTION_OFFER_NAME_LENGTH).toBe(true);
+    expect(name.endsWith('(deadbeef)')).toBe(true);
   });
 
   it('truncates the hash when the full name would exceed 40 characters', function () {
@@ -82,7 +81,7 @@ describe('generateRetentionOfferName', function () {
       'deadbeefcafebabe',
     );
 
-    assert.equal(name, 'Retention 99% off for 99 mo (deadbeefca)');
-    assert.equal(name.length, MAX_RETENTION_OFFER_NAME_LENGTH);
+    expect(name).toBe('Retention 99% off for 99 mo (deadbeefca)');
+    expect(name.length).toBe(MAX_RETENTION_OFFER_NAME_LENGTH);
   });
 });

@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { Calendar } from '../../../../src/components/ui/calendar';
 import { render } from '../../utils/test-utils';
 
@@ -15,9 +14,9 @@ describe('Calendar today', () => {
     render(<Calendar defaultMonth={today} mode="range" today={today} />);
 
     const button = dayButton(today);
-    assert.equal(button.dataset.today, 'true');
+    expect(button.dataset.today).toBe('true');
     // No background of its own, which would read as a selected day
-    assert.ok(!button.closest('td')!.className.includes('bg-accent'));
+    expect(button.closest('td')!.className).not.toContain('bg-accent');
   });
 });
 
@@ -26,14 +25,14 @@ describe('Calendar week edges', () => {
     render(<Calendar defaultMonth={today} mode="single" selected={sunday} today={today} />);
 
     const cell = dayButton(sunday).closest('td')!;
-    assert.equal(cell.dataset.selected, 'true');
+    expect(cell.dataset.selected).toBe('true');
     // The rounding where a week starts or ends is only for a range's band
     const edgeRules = cell.className
       .split(' ')
       .filter((name) => name.includes('first-child') || name.includes('last-child'));
-    assert.ok(edgeRules.length > 0);
+    expect(edgeRules.length > 0).toBeTruthy();
     for (const rule of edgeRules) {
-      assert.ok(rule.includes('data-range-middle=true'), rule);
+      expect(rule, rule).toContain('data-range-middle=true');
     }
   });
 });

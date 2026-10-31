@@ -93,6 +93,7 @@ function getTinybirdClient() {
       request: requestExternal.extend({ retry: { limit: 0 } }),
       settingsCache,
       tinybirdService,
+      logging,
     });
   } catch (error) {
     logging.error('Error preparing Tinybird automation stats client:', error);

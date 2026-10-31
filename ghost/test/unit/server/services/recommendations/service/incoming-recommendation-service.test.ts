@@ -1,5 +1,6 @@
 import assert from 'assert/strict';
 import sinon from 'sinon';
+import { createLoggingFake } from '../../../../../utils/logging-utils';
 import {
   IncomingRecommendationEmailRenderer,
   IncomingRecommendationService,
@@ -12,8 +13,10 @@ describe('IncomingRecommendationService', function () {
   let clock: sinon.SinonFakeTimers;
   let send: sinon.SinonStub;
   let readRecommendationByUrl: sinon.SinonStub;
+  let logging: ReturnType<typeof createLoggingFake>;
 
   beforeEach(function () {
+    logging = createLoggingFake();
     refreshMentions = sinon.stub().resolves();
     send = sinon.stub().resolves();
     readRecommendationByUrl = sinon.stub().resolves(null);
@@ -39,7 +42,7 @@ describe('IncomingRecommendationService', function () {
             email: 'example@example.com',
           },
         ]),
-      logging: { info() {}, error() {} },
+      logging,
     });
     clock = sinon.useFakeTimers();
   });
@@ -73,10 +76,16 @@ describe('IncomingRecommendationService', function () {
       try {
         process.env.NODE_ENV = 'nottesting';
 
-        refreshMentions.rejects(new Error('test'));
+        const error = new Error('test');
+        refreshMentions.rejects(error);
         await service.init();
-        clock.tick(1000 * 60 * 60 * 24);
+        await clock.tickAsync(1000 * 60 * 60 * 24);
         sinon.assert.calledOnce(refreshMentions);
+        sinon.assert.calledOnceWithExactly(
+          logging.error,
+          'Failed to update incoming recommendations on boot',
+          error,
+        );
       } finally {
         process.env.NODE_ENV = saved;
       }
@@ -99,7 +108,8 @@ describe('IncomingRecommendationService', function () {
     });
 
     it('ignores when mention not convertable to incoming recommendation', async function () {
-      readRecommendationByUrl.rejects(new Error('test'));
+      const error = new Error('test');
+      readRecommendationByUrl.rejects(error);
       await service.sendRecommendationEmail({
         id: 'test',
         source: new URL('https://example.com'),
@@ -111,6 +121,11 @@ describe('IncomingRecommendationService', function () {
         sourceFeaturedImage: new URL('https://example.com/featured.png'),
       });
       sinon.assert.notCalled(send);
+      sinon.assert.calledOnceWithExactly(
+        logging.error,
+        'Failed to parse mention to incoming recommendation data type',
+        error,
+      );
     });
   });
 
@@ -165,7 +180,7 @@ describe('IncomingRecommendationService', function () {
               email: 'example@example.com',
             },
           ]),
-        logging: { info() {}, error() {} },
+        logging,
       });
     });
 

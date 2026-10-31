@@ -249,8 +249,8 @@ catalogs:
       specifier: 1100.3.8
       version: 1100.3.8
     '@pnpm/workspace.workspace-manifest-reader':
-      specifier: 1100.1.5
-      version: 1100.1.5
+      specifier: 1100.3.1
+      version: 1100.3.1
     '@quilted/threads':
       specifier: 4.1.0
       version: 4.1.0
@@ -303,8 +303,8 @@ catalogs:
       specifier: 7.120.4
       version: 7.120.4
     '@sentry/vite-plugin':
-      specifier: 5.3.0
-      version: 5.3.0
+      specifier: 5.4.1
+      version: 5.4.1
     '@storybook/addon-docs':
       specifier: 10.4.6
       version: 10.4.6
@@ -324,8 +324,8 @@ catalogs:
       specifier: 4.3.3
       version: 4.3.3
     '@tanstack/react-query':
-      specifier: 5.101.4
-      version: 5.101.4
+      specifier: 5.105.0
+      version: 5.105.0
     '@tanstack/react-virtual':
       specifier: 3.14.13
       version: 3.14.13
@@ -480,14 +480,14 @@ catalogs:
       specifier: 4.1.12
       version: 4.1.12
     '@x402/core':
-      specifier: 2.27.0
-      version: 2.27.0
+      specifier: 2.28.0
+      version: 2.28.0
     '@x402/evm':
-      specifier: 2.27.0
-      version: 2.27.0
+      specifier: 2.28.0
+      version: 2.28.0
     '@x402/hono':
-      specifier: 2.27.0
-      version: 2.27.0
+      specifier: 2.28.0
+      version: 2.28.0
     ajv:
       specifier: 8.20.0
       version: 8.20.0
@@ -699,8 +699,8 @@ catalogs:
       specifier: 18.3.1
       version: 18.3.1
     react-router:
-      specifier: 7.18.4
-      version: 7.18.4
+      specifier: 7.18.5
+      version: 7.18.5
     remark-cli:
       specifier: 12.0.1
       version: 12.0.1
@@ -937,7 +937,7 @@ importers:
         version: 0.1.11(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.101.4(@types/react@18.3.31)(react@18.3.1)
+        version: 5.105.0(@types/react@18.3.31)(react@18.3.1)
       '@tryghost/admin-x-framework':
         specifier: workspace:*
         version: link:../admin-x-framework
@@ -964,7 +964,7 @@ importers:
         version: 7.80.0(@types/react@18.3.31)(react@18.3.1)
       react-router:
         specifier: 'catalog:'
-        version: 7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 7.18.5(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
         specifier: 'catalog:'
         version: 2.0.8(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1073,7 +1073,7 @@ importers:
         version: 2.0.0
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.101.4(@types/react@18.3.31)(react@18.3.1)
+        version: 5.105.0(@types/react@18.3.31)(react@18.3.1)
       '@tanstack/react-virtual':
         specifier: 'catalog:'
         version: 3.14.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1181,7 +1181,7 @@ importers:
         version: 18.3.1(react@18.3.1)
       react-router:
         specifier: 'catalog:'
-        version: 7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 7.18.5(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-svg-map:
         specifier: 2.2.0
         version: 2.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1212,7 +1212,7 @@ importers:
         version: link:../../tools/configs/eslint-react
       '@sentry/vite-plugin':
         specifier: 'catalog:'
-        version: 5.3.0(rollup@4.62.2)(supports-color@10.2.2)
+        version: 5.4.1(rollup@4.62.2)(supports-color@10.2.2)
       '@tailwindcss/vite':
         specifier: 'catalog:'
         version: 4.3.3(vite@8.1.3(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
@@ -1345,7 +1345,7 @@ importers:
         version: 7.120.4(@types/react@18.3.31)(react@18.3.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.101.4(@types/react@18.3.31)(react@18.3.1)
+        version: 5.105.0(@types/react@18.3.31)(react@18.3.1)
       '@tryghost/adapter-base-upgrade':
         specifier: workspace:*
         version: link:../../packages/adapters/upgrade-base
@@ -1384,7 +1384,7 @@ importers:
         version: 18.3.1(react@18.3.1)
       react-router:
         specifier: 'catalog:'
-        version: 7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 7.18.5(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
         specifier: 'catalog:'
         version: 2.0.8(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -2107,8 +2107,8 @@ importers:
   ghost:
     dependencies:
       '@aws-sdk/client-s3':
-        specifier: 3.1157.0
-        version: 3.1157.0
+        specifier: 3.1158.0
+        version: 3.1158.0
       '@breejs/later':
         specifier: 'catalog:'
         version: 4.2.0
@@ -2300,13 +2300,13 @@ importers:
         version: 3.5.18(supports-color@10.2.2)
       '@x402/core':
         specifier: 'catalog:'
-        version: 2.27.0
+        version: 2.28.0
       '@x402/evm':
         specifier: 'catalog:'
-        version: 2.27.0
+        version: 2.28.0
       '@x402/hono':
         specifier: 'catalog:'
-        version: 2.27.0(hono@4.13.14)
+        version: 2.28.0(hono@4.13.14)
       archiver:
         specifier: 8.0.0
         version: 8.0.0
@@ -2359,8 +2359,8 @@ importers:
         specifier: 2.8.6
         version: 2.8.6
       countries-and-timezones:
-        specifier: 3.9.0
-        version: 3.9.0
+        specifier: 3.11.0
+        version: 3.11.0
       cron-validate:
         specifier: 1.4.5
         version: 1.4.5
@@ -3572,8 +3572,8 @@ importers:
         specifier: 0.15.0
         version: 0.15.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-router-dom:
-        specifier: 7.18.4
-        version: 7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 7.18.5
+        version: 7.18.5(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-slider:
         specifier: 2.0.6
         version: 2.0.6(react@18.3.1)
@@ -4586,7 +4586,7 @@ importers:
         version: 1100.3.8(@pnpm/logger@1100.0.0)
       '@pnpm/workspace.workspace-manifest-reader':
         specifier: 'catalog:'
-        version: 1100.1.5
+        version: 1100.3.1
       '@sentry/bundler-plugin-core':
         specifier: 'catalog:'
         version: 5.3.0(supports-color@10.2.2)
@@ -4672,8 +4672,8 @@ packages:
     resolution: {integrity: sha512-DSo+EqLq2PkS8gjit311LliRrYzydneP6vRhxMzDh9c8P3wWGzHf4fjmQN3d8sl4qh+aMqzn9+o+gZZo4+uqIQ==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/client-s3@3.1157.0':
-    resolution: {integrity: sha512-fbZIxqZVzK/PMLj9az3+ieAcYdZhzpTrfIVAnrE4PnRc1C6SokMDnaxAJycKTNmzLlY1fvmlItZWBDPUEFlGLQ==}
+  '@aws-sdk/client-s3@3.1158.0':
+    resolution: {integrity: sha512-ytaS0QeydANmiLo20kXtAKHKxEriqVgtIC7WnRXfjYEgH3yfjxaxJvYEWQKLU0g8Fpb1Um287KfBIO/eg6aqXA==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/client-sesv2@3.1127.0':
@@ -6948,10 +6948,6 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  '@pnpm/constants@1101.0.0':
-    resolution: {integrity: sha512-jJQU6y8lhic2at0+W246+tMDdEqhbS1WSRlTjmIXeXrrWU2rAbhixi11loE+lI3f/E1Ci1+3i5N6ewOumeNJdg==}
-    engines: {node: '>=22.13'}
-
   '@pnpm/constants@1102.0.1':
     resolution: {integrity: sha512-vLulGZ3iRt6kHcwbGYckrUF2Rd18nfGtpFjyRgbKmEyxLcZmFTBOWKFZSEyS3VVnxFEI7bTPNOGmRC0lD4U1qg==}
     engines: {node: '>=22.13'}
@@ -6964,10 +6960,6 @@ packages:
 
   '@pnpm/deps.peer-range@1100.1.2':
     resolution: {integrity: sha512-PFGNtptMRhqQd7FogcaCsfMpCkvDhFQVuO3+BnMw0PByAUPjXpE7jJMIGduRUSETb2E/zDr2PZ13cXO2OQiAeQ==}
-    engines: {node: '>=22.13'}
-
-  '@pnpm/error@1100.1.1':
-    resolution: {integrity: sha512-dqFXd5jTgBkGkwwI6AO9ON/WBXlQ8LIMRyyRysgSshix1XDyYjMmk7+bdPLuY2gjpB95j0Wu9Xq+3l7uuGZToQ==}
     engines: {node: '>=22.13'}
 
   '@pnpm/error@1100.2.2':
@@ -6996,10 +6988,6 @@ packages:
     resolution: {integrity: sha512-10rRwfC9ffkuS4RugetHD+AiNZLdg9ZVv0rkbr/8o14EW6Vh6ZwFwAfTOlkp3Eyse8518jVFvXXPKQKyeh9kNw==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/types@1101.9.0':
-    resolution: {integrity: sha512-lB2aSB2h950UX1GX3JW4AZ86xjXD92YJbV92IBSQqHXXZdiemoVKADLA2cDQ4/wKeS7djY8fkITM6X+6iYF62A==}
-    engines: {node: '>=22.13'}
-
   '@pnpm/types@1102.1.3':
     resolution: {integrity: sha512-uFm6fYunXaWeZs6um75cZefbmzszpaWdf8257a57HgyvodfEHugUKokUS/OEY1Xu15O9kWWlml8EbfX+sRdE/Q==}
     engines: {node: '>=22.13'}
@@ -7018,8 +7006,8 @@ packages:
     resolution: {integrity: sha512-lEvwougkILMozWY/7wN1/uyxrOZJfOHSzmeaFBKa69EhzjoqM0Qn9bE+PrFiMr5xUEc1sln3en6bNh4kQJdfSw==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/workspace.workspace-manifest-reader@1100.1.5':
-    resolution: {integrity: sha512-NMUVtTcyY8vm9xPMmpWRtWaCTdO3JyaHrm1AHdCpTQUhvhemLnULrSp5LG36o6BqUOF/P/cj/i8j97vDOypO5A==}
+  '@pnpm/workspace.workspace-manifest-reader@1100.3.1':
+    resolution: {integrity: sha512-FggIroCEbuVuJUdjb4gJspTYF/19sHrEB6dBTa2PHl3ajVWfwTK69R1zmA3OOZ/hVuQ0TvPvCFfqOuN06cM6YA==}
     engines: {node: '>=22.13'}
 
   '@pnpm/yaml.document-sync@1100.0.2':
@@ -7974,6 +7962,18 @@ packages:
     resolution: {integrity: sha512-L5T60sWdAI3qWwdg3Ptwek/0TY59PERrxyqp4XMUkroayQvGd9r5dIW9Q1kSeXX9iJ442nXbFZKAOyCKV4Z13Q==}
     engines: {node: '>= 18'}
 
+  '@sentry/bundler-plugins@10.77.1':
+    resolution: {integrity: sha512-8UDNLdbtvr6loVfzQntl8DHR08bpI7o5F9xy3NcP4QslZfj6ItIvkYs/9oFAJB36IiyZvgl8q/IMFigCnBm/2Q==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      rollup: '>=3.2.0'
+      webpack: '>=5.0.0'
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+      webpack:
+        optional: true
+
   '@sentry/cli-darwin@2.58.6':
     resolution: {integrity: sha512-udAVvcyfNa0R+95GvPz/+43/N3TC0TYKdkQ7D7jhPSzbcMc7l2fxRNN5yB3UpCA5fWFnW4toeaqwDBhb/Wh3LA==}
     engines: {node: '>=10'}
@@ -8026,6 +8026,14 @@ packages:
     engines: {node: '>= 10'}
     hasBin: true
 
+  '@sentry/conventions@0.16.0':
+    resolution: {integrity: sha512-fO9PLmHdVURcSPUpWCItWAtgKiMwGdJHbovoSEyLplX5sxs2ugvI4CBPTrkkgqhObnZOD0CnWBKDzSVQYBKEyQ==}
+    engines: {node: '>=14'}
+
+  '@sentry/core@10.77.1':
+    resolution: {integrity: sha512-2bEVJKl73kIKJcwPg+n3OkPYqwuOIF2eRXu2IGm6aTsL1B4gfGRb7/nDZrz28C1cgpVnH8jCvcys/Ts3Iq6Suw==}
+    engines: {node: '>=18'}
+
   '@sentry/core@7.120.4':
     resolution: {integrity: sha512-TXu3Q5kKiq8db9OXGkWyXUbIxMMuttB5vJ031yolOl5T/B69JRyAoKuojLBjRv1XX583gS1rSSoX8YXX7ATFGA==}
     engines: {node: '>=8'}
@@ -8052,15 +8060,6 @@ packages:
     resolution: {integrity: sha512-FW8sPenNFfnO/K7sncsSTX4rIVak9j7VUiLIagJrcqZIC7d1dInFNjy8CdVJUlyz3Y3TOgIl3L3+ZpjfyMnaZg==}
     engines: {node: '>=12'}
 
-  '@sentry/rollup-plugin@5.3.0':
-    resolution: {integrity: sha512-hgPGPYdQJ/G1cGYOxAb7d4z3V+/k/E5/P/5TFPEEBLuIbFFk+JG0CISUDJdzXJjO382Lb99PBJuXGbueBmO79w==}
-    engines: {node: '>= 18'}
-    peerDependencies:
-      rollup: '>=3.2.0'
-    peerDependenciesMeta:
-      rollup:
-        optional: true
-
   '@sentry/types@7.120.4':
     resolution: {integrity: sha512-cUq2hSSe6/qrU6oZsEP4InMI5VVdD86aypE+ENrQ6eZEVLTCYm1w6XhW1NvIu3UuWh7gZec4a9J7AFpYxki88Q==}
     engines: {node: '>=8'}
@@ -8069,8 +8068,8 @@ packages:
     resolution: {integrity: sha512-zCKpyDIWKHwtervNK2ZlaK8mMV7gVUijAgFeJStH+CU/imcdquizV3pFLlSQYRswG+Lbyd6CT/LGRh3IbtkCFw==}
     engines: {node: '>=8'}
 
-  '@sentry/vite-plugin@5.3.0':
-    resolution: {integrity: sha512-qcoSzo4n2MulVQ70UUPLq6dTleb2a2HwL2wuwvAgWhPChrYTuk6A6mDg6aQb9fairPAwFPiU9PzOANpoDJcz1A==}
+  '@sentry/vite-plugin@5.4.1':
+    resolution: {integrity: sha512-poFfn3sQbSFaZpXH8CG27D0eNtDD64wFEniQCb853e7huko9vOl4UP3BjT3vsrnmVuRqagnbxItza10MOC7ysA==}
     engines: {node: '>= 18'}
 
   '@sidvind/better-ajv-errors@7.0.0':
@@ -8131,6 +8130,7 @@ packages:
   '@smithy/core@3.37.0':
     resolution: {integrity: sha512-97imTcCyiPd8k0e9+ts/Sp0W65Dn9Ti357J7M09Ov4tI8Q1JDJVFSoAJtjEVKqfHEr3Pdo2jfolqKCaaiszH0g==}
     engines: {node: '>=18.0.0'}
+    deprecated: Deprecated due to a bug in custom logger data redaction. See https://github.com/aws/aws-sdk-js-v3/issues/8393.
 
   '@smithy/credential-provider-imds@4.5.2':
     resolution: {integrity: sha512-A9uSdn72ozbRUSit0eib0TW7nXuNPlaeM0zcGkJ+nE6tFcSDbnmtwoxbTCFBukVQcszDAyvsd7+rTduPTXpygg==}
@@ -8436,13 +8436,13 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7 || ^8
 
-  '@tanstack/query-core@5.101.4':
-    resolution: {integrity: sha512-gNwcvOJcRbLWPOLG/2OBm+zM+Yv+MKsXKEOWC57USuZDEsI71hEErQsiEGx5wX9rzWWkfwM0fVSPoiIFSsxfiw==}
+  '@tanstack/query-core@5.105.0':
+    resolution: {integrity: sha512-7p56vRmT/z4UJ6sctGIdl5WRUQyUv53IUpUwEKi2g97zMbO7zh8ZsCLffGAvCPBR4xD72e3VXsDyLwXHhoNTMQ==}
 
-  '@tanstack/react-query@5.101.4':
-    resolution: {integrity: sha512-yRg2pfOCxIs4ZJW3XYYHU/WgtD04FHSnfHlpRT7h7pR77hwkdRG4wxbKe4aq6P0RvXUTBSQpQeadS1SUYUe+KA==}
+  '@tanstack/react-query@5.105.0':
+    resolution: {integrity: sha512-y+hMuDERvgg6ay1da0V1a6ZC0ZONt7dELxSFkqRZuwm7p1TTZs0MoXrPlBRflIpRoYjvzQVYxycnLImpFLhWrw==}
     peerDependencies:
-      '@types/react': '*'
+      '@types/react': ^18 || ^19
       react: ^18 || ^19
     peerDependenciesMeta:
       '@types/react':
@@ -9440,19 +9440,19 @@ packages:
   '@webcontainer/env@1.1.1':
     resolution: {integrity: sha512-6aN99yL695Hi9SuIk1oC88l9o0gmxL1nGWWQ/kNy81HigJ0FoaoTXpytCj6ItzgyCEwA9kF1wixsTuv5cjsgng==}
 
-  '@x402/core@2.27.0':
-    resolution: {integrity: sha512-UbxCKnoTsg5nQX9fYER3g9tt5l80jHm1IZOmDczQRqE0cwskls5r+VAAj0iUQfHVshnpv0qo/rLFI7UntqL96g==}
+  '@x402/core@2.28.0':
+    resolution: {integrity: sha512-Da/7zKxCKqpBoB4Msc9tFgkAv7tJTD8nG+DSSm+QdXAyJS4PQsmgVSKe17rDJTtlu0pwNbLcOje6MyQ6kaDkig==}
 
-  '@x402/evm@2.27.0':
-    resolution: {integrity: sha512-WKVFq5VaSrDJfo6lHNG7/4hT0iZdpsmd53W/a+gZqmE1CiVT8wyRpwIPue4f/YKqNfgHHhZ00AcfPho0xLr2eQ==}
+  '@x402/evm@2.28.0':
+    resolution: {integrity: sha512-BZuoaCKMoPQQuMTa4oibvoyI06WdCpgrzgdicUu8d+5NBMAfWb6LAmSQf1KkeiS8C+25/+2JGB4cHSL0VLGnSA==}
 
-  '@x402/extensions@2.27.0':
-    resolution: {integrity: sha512-eGBZZCTNtJsbzYoOe72Mfo/HN7Ir4i8+gmBUQ3ScrTiO91Q0bscO6LjGg2d3oJiFQ6g+YVXn+5fLxCEwoqgFsA==}
+  '@x402/extensions@2.28.0':
+    resolution: {integrity: sha512-M3SVxO8DJnx7gpok/ODQp803jr21s1XrCMholNw0hSgOVvSPRksfTZ+CUNfJwteNaHmaAxGjPelXWBhTCMD9oQ==}
 
-  '@x402/hono@2.27.0':
-    resolution: {integrity: sha512-ySXqPl32IcctPBbDIuX3+sjJfwNpCE3lsEt4F0PE30VyIYrnmQ/VrSCkMp456AzR9WagV+gqna3cwxEr70/s0g==}
+  '@x402/hono@2.28.0':
+    resolution: {integrity: sha512-tR/AegvCpluj4AX1uYpqt0Ak7e3RcA2QE9GYrPCzwZTxv2z7gYUl7xE/olaxxDEiEb/yRmlsNAxmL81cARjeKw==}
     peerDependencies:
-      '@x402/paywall': ^2.27.0
+      '@x402/paywall': ^2.28.0
       hono: ^4.0.0
     peerDependenciesMeta:
       '@x402/paywall':
@@ -10577,8 +10577,8 @@ packages:
       typescript:
         optional: true
 
-  countries-and-timezones@3.9.0:
-    resolution: {integrity: sha512-3upkVtUfZgdp5xOQI/Deg1ye73ae6bygJMO4UvtUi6wLjwcj7cBqx2PzSZ1VL8i5iveBbjhsQp2Judx7kPKivA==}
+  countries-and-timezones@3.11.0:
+    resolution: {integrity: sha512-amqnHZJyuaFol6Z9gmyDb/D5cS6OSZUMfT6Ovj2HMmEBykHfwfA6dih59rulQ2kWynW7XeCAOzJr60hWL64Anw==}
     engines: {node: '>=8.x', npm: '>=5.x'}
 
   country-flag-icons@1.6.20:
@@ -14962,15 +14962,15 @@ packages:
       '@types/react':
         optional: true
 
-  react-router-dom@7.18.4:
-    resolution: {integrity: sha512-yrfmJHIpDG7taCpqKjT1G5B6q3O2K+RN8/fgNf0lTjCwiPbQ0ei6vXX9ZjQR+7ld8Tr7Z5xmyMnZ8YJrphWQUw==}
+  react-router-dom@7.18.5:
+    resolution: {integrity: sha512-9HcfDMU6JJ/fp6gJZYGwNE6RknVGS4kBjH1HkNw959mCJi70TVwdipQWv2FEol9uGpi+SZTFtVpJPtEQfayeOw==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       react: '>=18'
       react-dom: '>=18'
 
-  react-router@7.18.4:
-    resolution: {integrity: sha512-PUPQcMhMGRAslLcvtlPz/kmzBEWPhLdgLFrL7pLNepBL6dX0lWj4WD2cUYVgYCuT3jxvghYFg81cDTj44DhetQ==}
+  react-router@7.18.5:
+    resolution: {integrity: sha512-dTgvcXDOrLPrlLHrcZAqWveiK1hMSqN+rGAJzegP8HtmNkfRxOoshGWBNX3ZJ0cZjOHkRdlUJtaIhZMLLyGyPw==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       '@types/react': '*'
@@ -16970,7 +16970,7 @@ snapshots:
       '@smithy/types': 4.19.0
       tslib: 2.8.1
 
-  '@aws-sdk/client-s3@3.1157.0':
+  '@aws-sdk/client-s3@3.1158.0':
     dependencies:
       '@aws-sdk/checksums': 3.1001.6
       '@aws-sdk/core': 3.978.6
@@ -19045,8 +19045,6 @@ snapshots:
     dependencies:
       playwright: 1.64.1
 
-  '@pnpm/constants@1101.0.0': {}
-
   '@pnpm/constants@1102.0.1': {}
 
   '@pnpm/core-loggers@1101.0.4(@pnpm/logger@1100.0.0)':
@@ -19057,10 +19055,6 @@ snapshots:
   '@pnpm/deps.peer-range@1100.1.2':
     dependencies:
       semver: 7.8.5
-
-  '@pnpm/error@1100.1.1':
-    dependencies:
-      '@pnpm/constants': 1101.0.0
 
   '@pnpm/error@1100.2.2':
     dependencies:
@@ -19102,8 +19096,6 @@ snapshots:
     dependencies:
       strip-comments-strings: 1.2.0
 
-  '@pnpm/types@1101.9.0': {}
-
   '@pnpm/types@1102.1.3': {}
 
   '@pnpm/workspace.project-manifest-reader@1100.1.5(@pnpm/logger@1100.0.0)':
@@ -19136,11 +19128,11 @@ snapshots:
 
   '@pnpm/workspace.spec-parser@1100.0.1': {}
 
-  '@pnpm/workspace.workspace-manifest-reader@1100.1.5':
+  '@pnpm/workspace.workspace-manifest-reader@1100.3.1':
     dependencies:
-      '@pnpm/constants': 1101.0.0
-      '@pnpm/error': 1100.1.1
-      '@pnpm/types': 1101.9.0
+      '@pnpm/constants': 1102.0.1
+      '@pnpm/error': 1100.2.2
+      '@pnpm/types': 1102.1.3
       read-yaml-file: 3.0.0
 
   '@pnpm/yaml.document-sync@1100.0.2':
@@ -20062,6 +20054,21 @@ snapshots:
       - encoding
       - supports-color
 
+  '@sentry/bundler-plugins@10.77.1(rollup@4.62.2)(supports-color@10.2.2)':
+    dependencies:
+      '@babel/core': 7.29.7(supports-color@10.2.2)
+      '@sentry/cli': 2.58.6(supports-color@10.2.2)
+      '@sentry/core': 10.77.1
+      dotenv: 17.4.2
+      find-up: 5.0.0
+      glob: 13.0.6
+      magic-string: 0.30.21
+    optionalDependencies:
+      rollup: 4.62.2
+    transitivePeerDependencies:
+      - encoding
+      - supports-color
+
   '@sentry/cli-darwin@2.58.6':
     optional: true
 
@@ -20105,6 +20112,12 @@ snapshots:
     transitivePeerDependencies:
       - encoding
       - supports-color
+
+  '@sentry/conventions@0.16.0': {}
+
+  '@sentry/core@10.77.1':
+    dependencies:
+      '@sentry/conventions': 0.16.0
 
   '@sentry/core@7.120.4':
     dependencies:
@@ -20155,30 +20168,20 @@ snapshots:
       '@sentry/types': 7.120.4
       '@sentry/utils': 7.120.4
 
-  '@sentry/rollup-plugin@5.3.0(rollup@4.62.2)(supports-color@10.2.2)':
-    dependencies:
-      '@sentry/bundler-plugin-core': 5.3.0(supports-color@10.2.2)
-      magic-string: 0.30.21
-    optionalDependencies:
-      rollup: 4.62.2
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
-
   '@sentry/types@7.120.4': {}
 
   '@sentry/utils@7.120.4':
     dependencies:
       '@sentry/types': 7.120.4
 
-  '@sentry/vite-plugin@5.3.0(rollup@4.62.2)(supports-color@10.2.2)':
+  '@sentry/vite-plugin@5.4.1(rollup@4.62.2)(supports-color@10.2.2)':
     dependencies:
-      '@sentry/bundler-plugin-core': 5.3.0(supports-color@10.2.2)
-      '@sentry/rollup-plugin': 5.3.0(rollup@4.62.2)(supports-color@10.2.2)
+      '@sentry/bundler-plugins': 10.77.1(rollup@4.62.2)(supports-color@10.2.2)
     transitivePeerDependencies:
       - encoding
       - rollup
       - supports-color
+      - webpack
 
   '@sidvind/better-ajv-errors@7.0.0(ajv@8.20.0)':
     dependencies:
@@ -20539,11 +20542,11 @@ snapshots:
       tailwindcss: 4.3.3
       vite: 8.1.3(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0)
 
-  '@tanstack/query-core@5.101.4': {}
+  '@tanstack/query-core@5.105.0': {}
 
-  '@tanstack/react-query@5.101.4(@types/react@18.3.31)(react@18.3.1)':
+  '@tanstack/react-query@5.105.0(@types/react@18.3.31)(react@18.3.1)':
     dependencies:
-      '@tanstack/query-core': 5.101.4
+      '@tanstack/query-core': 5.105.0
       react: 18.3.1
     optionalDependencies:
       '@types/react': 18.3.31
@@ -21817,25 +21820,25 @@ snapshots:
 
   '@webcontainer/env@1.1.1': {}
 
-  '@x402/core@2.27.0':
+  '@x402/core@2.28.0':
     dependencies:
       zod: 3.25.76
 
-  '@x402/evm@2.27.0':
+  '@x402/evm@2.28.0':
     dependencies:
-      '@x402/core': 2.27.0
+      '@x402/core': 2.28.0
       viem: 2.55.11
       zod: 3.25.76
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@x402/extensions@2.27.0':
+  '@x402/extensions@2.28.0':
     dependencies:
       '@noble/curves': 1.9.7
       '@scure/base': 1.2.6
       '@signinwithethereum/siwe': 4.2.0(viem@2.55.11)
-      '@x402/core': 2.27.0
+      '@x402/core': 2.28.0
       ajv: 8.20.0
       jose: 5.10.0
       tweetnacl: 1.0.3
@@ -21846,10 +21849,10 @@ snapshots:
       - ethers
       - utf-8-validate
 
-  '@x402/hono@2.27.0(hono@4.13.14)':
+  '@x402/hono@2.28.0(hono@4.13.14)':
     dependencies:
-      '@x402/core': 2.27.0
-      '@x402/extensions': 2.27.0
+      '@x402/core': 2.28.0
+      '@x402/extensions': 2.28.0
       hono: 4.13.14
     transitivePeerDependencies:
       - bufferutil
@@ -22957,7 +22960,7 @@ snapshots:
     optionalDependencies:
       typescript: '@typescript/typescript6@6.0.2'
 
-  countries-and-timezones@3.9.0: {}
+  countries-and-timezones@3.11.0: {}
 
   country-flag-icons@1.6.20(@types/react@18.3.31)(react@18.3.1):
     optionalDependencies:
@@ -28094,15 +28097,15 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.31
 
-  react-router-dom@7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-router-dom@7.18.5(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      react-router: 7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-router: 7.18.5(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
       - '@types/react'
 
-  react-router@7.18.4(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-router@7.18.5(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       cookie: 1.1.1
       react: 18.3.1

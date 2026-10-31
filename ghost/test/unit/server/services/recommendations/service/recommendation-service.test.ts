@@ -11,6 +11,7 @@ import {
 import { InMemoryRepository } from '../../../../../../core/server/lib/in-memory-repository';
 import { InMemoryRecommendationRepository } from './in-memory-recommendation-repository';
 import sinon from 'sinon';
+import { createLoggingFake } from '../../../../../utils/logging-utils';
 
 class InMemoryClickEventRepository<
   T extends ClickEvent | SubscribeEvent,
@@ -27,8 +28,10 @@ describe('RecommendationService', function () {
   let enabled = 'false';
   let clock: sinon.SinonFakeTimers;
   let fetchMetadataStub: sinon.SinonStub<any[], Promise<RecommendationMetadata>>;
+  let logging: ReturnType<typeof createLoggingFake>;
 
   beforeEach(function () {
+    logging = createLoggingFake();
     enabled = 'false';
     fetchMetadataStub = sinon.stub().resolves({
       title: 'Test',
@@ -65,7 +68,7 @@ describe('RecommendationService', function () {
       recommendationMetadataService: {
         fetch: fetchMetadataStub,
       } as unknown as RecommendationMetadataService,
-      logging: { info() {}, error() {} },
+      logging,
     });
     clock = sinon.useFakeTimers();
   });
@@ -110,10 +113,16 @@ describe('RecommendationService', function () {
       try {
         process.env.NODE_ENV = 'production';
         const spy = sinon.stub(service, 'updateAllRecommendationsMetadata');
-        spy.rejects(new Error('test'));
+        const error = new Error('test');
+        spy.rejects(error);
         await service.init();
-        clock.tick(1000 * 60 * 60 * 24);
+        await clock.tickAsync(1000 * 60 * 60 * 24);
         sinon.assert.calledOnce(spy);
+        sinon.assert.calledOnceWithExactly(
+          logging.error,
+          '[Recommendations] Failed to update all recommendations metadata on boot',
+          error,
+        );
       } finally {
         process.env.NODE_ENV = saved;
       }
@@ -138,7 +147,8 @@ describe('RecommendationService', function () {
       try {
         process.env.NODE_ENV = 'production';
         const spy = sinon.stub(service, '_updateRecommendationMetadata');
-        spy.rejects(new Error('This is a test'));
+        const error = new Error('This is a test');
+        spy.rejects(error);
         await service.init();
         clock.tick(1000 * 60 * 60 * 24);
         clock.restore();
@@ -147,6 +157,11 @@ describe('RecommendationService', function () {
           setTimeout(() => resolve(true), 50);
         });
         sinon.assert.calledOnce(spy);
+        sinon.assert.calledOnceWithExactly(
+          logging.error,
+          '[Recommendations] Failed to save updated metadata for recommendation http://localhost/1',
+          error,
+        );
       } finally {
         process.env.NODE_ENV = saved;
       }
@@ -367,7 +382,8 @@ describe('RecommendationService', function () {
     });
 
     it('Returns undefined recommendation metadata if metadata fails to fetch', async function () {
-      fetchMetadataStub.rejects(new Error('Metadata failed to fetch'));
+      const error = new Error('Metadata failed to fetch');
+      fetchMetadataStub.rejects(error);
 
       const response = await service.checkRecommendation(new URL('http://localhost/newone'));
       assert.deepEqual(response, {
@@ -378,6 +394,11 @@ describe('RecommendationService', function () {
         oneClickSubscribe: false,
         url: new URL('http://localhost/newone'),
       });
+      sinon.assert.calledOnceWithExactly(
+        logging.error,
+        '[Recommendations] Failed to fetch metadata for url http://localhost/newone',
+        error,
+      );
     });
   });
 

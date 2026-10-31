@@ -1,3 +1,4 @@
+import CopyLinkButton from './copy-link-button';
 import FlagIcon from '../../../images/icons/flag.svg?react';
 import React from 'react';
 import { type Comment, useAppContext } from '../../../app-context';
@@ -23,6 +24,12 @@ const NotAuthorContextMenu: React.FC<Props> = ({ comment, close }) => {
 
   return (
     <div className="flex w-full flex-col gap-0.5">
+      <CopyLinkButton
+        className={itemClassName}
+        close={close}
+        comment={comment}
+        iconClassName={iconClassName}
+      />
       <button className={itemClassName} type="button" onClick={openModal}>
         <FlagIcon aria-hidden="true" className={iconClassName} />
         <span className="hidden sm:inline">{t('Report comment')}</span>

@@ -1,6 +1,5 @@
-const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../../shared/url-utils').default;
+const { moment } = require('../../../kernel/clock');
 
 // Import source normalization from ReferrersStatsService
 const { normalizeSource } = require('./referrers-stats-service');
@@ -83,11 +82,15 @@ class PostsStatsService {
    * @param {import('knex').Knex} deps.knex - Database client
    * @param {object} [deps.tinybirdClient] - Tinybird client for analytics
    * @param {object} [deps.urlService] - URL service for checking URL existence
+   * @param {object} deps.urlUtils - URL helpers for absolute image URLs
+   * @param {object} deps.logging
    */
   constructor(deps) {
     this.knex = deps.knex;
     this.tinybirdClient = deps.tinybirdClient;
     this.urlService = deps.urlService;
+    this.urlUtils = deps.urlUtils;
+    this.logging = deps.logging;
   }
 
   /**
@@ -211,7 +214,7 @@ class PostsStatsService {
 
       return { data: transformedResults.slice(0, limit) };
     } catch (error) {
-      logging.error('Error fetching top posts by attribution:', error);
+      this.logging.error('Error fetching top posts by attribution:', error);
       return { data: [] };
     }
   }
@@ -407,7 +410,7 @@ class PostsStatsService {
 
       return { data: finalResults.slice(0, limit) };
     } catch (error) {
-      logging.error(`Error fetching referrers for post ${postId}:`, error);
+      this.logging.error(`Error fetching referrers for post ${postId}:`, error);
       return { data: [] };
     }
   }
@@ -456,7 +459,7 @@ class PostsStatsService {
         ],
       };
     } catch (error) {
-      logging.error(`Error fetching growth stats for post ${postId}:`, error);
+      this.logging.error(`Error fetching growth stats for post ${postId}:`, error);
       return { data: [] };
     }
   }
@@ -809,7 +812,7 @@ class PostsStatsService {
 
       return { data: results };
     } catch (error) {
-      logging.error(`Error fetching newsletter stats for newsletter ${newsletterId}:`, error);
+      this.logging.error(`Error fetching newsletter stats for newsletter ${newsletterId}:`, error);
       return { data: [] };
     }
   }
@@ -977,7 +980,10 @@ class PostsStatsService {
         },
       };
     } catch (error) {
-      logging.error(`Error fetching newsletter basic stats for newsletter ${newsletterId}:`, error);
+      this.logging.error(
+        `Error fetching newsletter basic stats for newsletter ${newsletterId}:`,
+        error,
+      );
       if (options.page !== undefined) {
         throw error;
       }
@@ -1035,7 +1041,10 @@ class PostsStatsService {
 
       return { data: results };
     } catch (error) {
-      logging.error(`Error fetching newsletter click stats for newsletter ${newsletterId}:`, error);
+      this.logging.error(
+        `Error fetching newsletter click stats for newsletter ${newsletterId}:`,
+        error,
+      );
       if (failOnError) {
         throw error;
       }
@@ -1128,7 +1137,7 @@ class PostsStatsService {
         ],
       };
     } catch (error) {
-      logging.error(`Error fetching subscriber stats for newsletter ${newsletterId}:`, error);
+      this.logging.error(`Error fetching subscriber stats for newsletter ${newsletterId}:`, error);
       return {
         data: [
           {
@@ -1185,8 +1194,6 @@ class PostsStatsService {
    * @returns {Array<{date: string, value: number}>} Dense array with all dates filled
    */
   _fillMissingDates(values, startDate, endDate, timezone = 'UTC', startingValue = 0) {
-    const moment = require('moment-timezone');
-
     // If no date range provided, return as-is
     if (!startDate || !endDate) {
       return values || [];
@@ -1278,7 +1285,7 @@ class PostsStatsService {
 
           visitors = visitorData?.[0]?.visits || 0;
         } catch (error) {
-          logging.error('Error fetching visitor data from Tinybird:', error);
+          this.logging.error('Error fetching visitor data from Tinybird:', error);
         }
       }
 
@@ -1297,7 +1304,7 @@ class PostsStatsService {
         ],
       };
     } catch (error) {
-      logging.error(`Error fetching post stats for post ${postId}:`, error);
+      this.logging.error(`Error fetching post stats for post ${postId}:`, error);
       return { data: [] };
     }
   }
@@ -1417,7 +1424,7 @@ class PostsStatsService {
               title: post.title,
               published_at: post.published_at,
               feature_image: post.feature_image
-                ? urlUtils.transformReadyToAbsolute(post.feature_image)
+                ? this.urlUtils.transformReadyToAbsolute(post.feature_image)
                 : post.feature_image,
               status: post.status,
               authors: post.authors,
@@ -1520,7 +1527,7 @@ class PostsStatsService {
           title: post.title,
           published_at: post.published_at,
           feature_image: post.feature_image
-            ? urlUtils.transformReadyToAbsolute(post.feature_image)
+            ? this.urlUtils.transformReadyToAbsolute(post.feature_image)
             : post.feature_image,
           status: post.status,
           authors: post.authors,
@@ -1539,7 +1546,7 @@ class PostsStatsService {
       // Combine both sets of posts
       return { data: [...postsWithViews, ...additionalPostsWithZeroViews] };
     } catch (error) {
-      logging.error('Error fetching top posts views:', error);
+      this.logging.error('Error fetching top posts views:', error);
       return { data: [] };
     }
   }
@@ -1610,7 +1617,7 @@ class PostsStatsService {
 
       return combinedResults;
     } catch (error) {
-      logging.error('Error fetching member attribution counts:', error);
+      this.logging.error('Error fetching member attribution counts:', error);
       return postIds.map((postId) => ({
         post_id: postId,
         free_members: 0,
@@ -1640,7 +1647,7 @@ class PostsStatsService {
 
       return memberCounts;
     } catch (error) {
-      logging.error('Error fetching member counts:', error);
+      this.logging.error('Error fetching member counts:', error);
       return {};
     }
   }
@@ -1678,7 +1685,7 @@ class PostsStatsService {
 
       return visitorCounts;
     } catch (error) {
-      logging.error('Error fetching visitor counts from Tinybird:', error);
+      this.logging.error('Error fetching visitor counts from Tinybird:', error);
       return {};
     }
   }
@@ -1716,7 +1723,7 @@ class PostsStatsService {
 
       return clickCounts;
     } catch (error) {
-      logging.error('Error fetching click counts:', error);
+      this.logging.error('Error fetching click counts:', error);
       return {};
     }
   }

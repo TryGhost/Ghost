@@ -5,7 +5,7 @@ module.exports = class MentionDiscoveryService {
   /**
    * @param {object} deps
    * @param {import('got')} deps.externalRequest
-   * @param {import('@tryghost/logging')} deps.logging
+   * @param {import('@tryghost/logging').GhostLogger} deps.logging
    */
   constructor({ externalRequest, logging }) {
     this.#externalRequest = externalRequest;

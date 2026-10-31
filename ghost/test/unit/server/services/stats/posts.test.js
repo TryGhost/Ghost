@@ -2,6 +2,8 @@ const knex = require('knex').default;
 const assert = require('node:assert/strict');
 const moment = require('moment-timezone');
 const PostsStatsService = require('../../../../../core/server/services/stats/posts-stats-service');
+const logging = require('@tryghost/logging');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 const {
   applyBetterSqlite3Patches,
 } = require('../../../../../core/server/data/db/better-sqlite3-patches');
@@ -363,7 +365,7 @@ describe('PostsStatsService', function () {
       },
     };
 
-    service = new PostsStatsService({ knex: db, urlService: mockUrlService });
+    service = new PostsStatsService({ knex: db, logging, urlUtils, urlService: mockUrlService });
 
     // Create default users for test data
     await _createUser('user1', 'John Doe');
@@ -412,9 +414,9 @@ describe('PostsStatsService', function () {
     assert.ok(service, 'Service instance should exist');
   });
 
-  const newsletterId = 'newsletter-1';
+  const sendNewsletterId = 'newsletter-1';
   const sentAt = '2026-01-10 12:00:00';
-  const addNewsletterSend = (id, published_at = sentAt, newsletter_id = newsletterId) =>
+  const addNewsletterSend = (id, published_at = sentAt, newsletter_id = sendNewsletterId) =>
     _createPostWithDetails(id, id, 'sent', { newsletter_id, published_at });
 
   it('paginates newsletter sends with a stable order', async function () {
@@ -437,7 +439,7 @@ describe('PostsStatsService', function () {
     };
     const getPage = (page, previous) => {
       const last = previous?.data.at(-1);
-      return service.getNewsletterBasicStats(newsletterId, {
+      return service.getNewsletterBasicStats(sendNewsletterId, {
         ...options,
         page,
         after_id: last?.post_id,
@@ -459,7 +461,7 @@ describe('PostsStatsService', function () {
     assert.equal(second.meta.pagination.next, 3);
     assert.equal(third.meta.pagination.next, null);
     assert.deepEqual(third.meta.pagination, { page: 3, limit: 2, next: null });
-    assert.equal((await service.getNewsletterBasicStats(newsletterId, options)).data.length, 2);
+    assert.equal((await service.getNewsletterBasicStats(sendNewsletterId, options)).data.length, 2);
     await db('posts').where('id', 'newsletter-d').del();
     assert.deepEqual(ids(await getPage(2, first)), ['newsletter-c', 'newsletter-b']);
   });
@@ -467,12 +469,12 @@ describe('PostsStatsService', function () {
   it('rejects paginated requests with non-date ordering from the first page', async function () {
     for (const order of ['open_rate desc', 'click_rate desc']) {
       await assert.rejects(
-        service.getNewsletterBasicStats(newsletterId, { page: 1, order }),
+        service.getNewsletterBasicStats(sendNewsletterId, { page: 1, order }),
         /date-ordered/i,
       );
     }
     await assert.rejects(
-      service.getNewsletterBasicStats(newsletterId, {
+      service.getNewsletterBasicStats(sendNewsletterId, {
         page: 2,
         order: 'date desc',
         after_id: 'post-1',
@@ -485,13 +487,15 @@ describe('PostsStatsService', function () {
     for (let index = 0; index < 25; index += 1) {
       await addNewsletterSend('top-' + index);
     }
-    const result = await service.getNewsletterBasicStats(newsletterId);
+    const result = await service.getNewsletterBasicStats(sendNewsletterId);
     assert.equal(result.data.length, 20);
     assert.equal(result.meta, undefined);
   });
 
   it('distinguishes no clicks from a failure to query newsletter statistics', async function () {
-    assert.deepEqual(await service.getNewsletterClickStats(newsletterId, ['post-1']), { data: [] });
+    assert.deepEqual(await service.getNewsletterClickStats(sendNewsletterId, ['post-1']), {
+      data: [],
+    });
     await addNewsletterSend('post-click');
     await _createEmailStats('post-click', 2, 1);
     await db('redirects').insert({ id: 'redirect-1', post_id: 'post-click' });
@@ -500,26 +504,26 @@ describe('PostsStatsService', function () {
       member_id: 'member-1',
       redirect_id: 'redirect-1',
     });
-    const clicks = await service.getNewsletterClickStats(newsletterId, ['post-click']);
+    const clicks = await service.getNewsletterClickStats(sendNewsletterId, ['post-click']);
     assert.equal(clicks.data[0].click_rate, 0.5);
 
     const queryError = new Error('Database query failed');
-    const knex = {
+    const failingKnex = {
       raw: () => null,
       select: () => {
         throw queryError;
       },
     };
-    const failingService = new PostsStatsService({ knex });
+    const failingService = new PostsStatsService({ knex: failingKnex, logging });
     await assert.rejects(
-      failingService.getNewsletterBasicStats(newsletterId, { page: 1 }),
+      failingService.getNewsletterBasicStats(sendNewsletterId, { page: 1 }),
       queryError,
     );
-    assert.deepEqual(await failingService.getNewsletterClickStats(newsletterId, ['post-1']), {
+    assert.deepEqual(await failingService.getNewsletterClickStats(sendNewsletterId, ['post-1']), {
       data: [],
     });
     await assert.rejects(
-      failingService.getNewsletterClickStats(newsletterId, ['post-1'], true),
+      failingService.getNewsletterClickStats(sendNewsletterId, ['post-1'], true),
       queryError,
     );
   });
@@ -534,7 +538,7 @@ describe('PostsStatsService', function () {
     for (const [id, date] of sends) {
       await addNewsletterSend(id, date);
     }
-    const result = await service.getNewsletterBasicStats(newsletterId, {
+    const result = await service.getNewsletterBasicStats(sendNewsletterId, {
       page: 1,
       limit: 20,
       date_from: '2026-01-10',
@@ -555,6 +559,8 @@ describe('PostsStatsService', function () {
     function svcWithUrlLookup(lookup) {
       return new PostsStatsService({
         knex: db,
+        logging,
+        urlUtils,
         urlService: {
           hasFinished: () => true,
           resolveUrl: async (path) => lookup(path),
@@ -1188,7 +1194,7 @@ describe('PostsStatsService', function () {
 
   describe('getTopPostsViews', function () {
     it('returns latest posts with zero views when no Tinybird client exists', async function () {
-      service = new PostsStatsService({ knex: db }); // No Tinybird client
+      service = new PostsStatsService({ knex: db, logging, urlUtils }); // No Tinybird client
       const result = await service.getTopPostsViews({
         date_from: '2025-01-01',
         date_to: '2025-01-31',
@@ -1281,7 +1287,12 @@ describe('PostsStatsService', function () {
         fetch: () => Promise.resolve([]), // No views data
       };
 
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       const result = await service.getTopPostsViews({
         date_from: '2025-01-01',
@@ -1441,7 +1452,12 @@ describe('PostsStatsService', function () {
         },
       };
 
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       const result = await service.getTopPostsViews({
         date_from: '2025-01-01',
@@ -1533,7 +1549,12 @@ describe('PostsStatsService', function () {
           return Promise.resolve([]);
         },
       };
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       await service.getTopPostsViews({
         date_from: '2025-01-01',
@@ -1555,7 +1576,12 @@ describe('PostsStatsService', function () {
       const mockTinybirdClient = {
         fetch: () => Promise.reject(new Error('Tinybird error')),
       };
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       const result = await service.getTopPostsViews({
         date_from: '2025-01-01',
@@ -1578,7 +1604,12 @@ describe('PostsStatsService', function () {
           return Promise.resolve([]);
         },
       };
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       // Create posts with UUIDs
       await db('posts').truncate();
@@ -1655,7 +1686,12 @@ describe('PostsStatsService', function () {
           return Promise.resolve([]);
         },
       };
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       // Create posts with UUIDs
       await db('posts').truncate();
@@ -1716,7 +1752,12 @@ describe('PostsStatsService', function () {
           return Promise.resolve([]);
         },
       };
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       // Create posts with UUIDs
       await db('posts').truncate();
@@ -1833,7 +1874,12 @@ describe('PostsStatsService', function () {
         },
       };
 
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       const result = await service.getTopPostsViews({
         date_from: '2025-01-01',
@@ -1872,7 +1918,12 @@ describe('PostsStatsService', function () {
           return Promise.resolve([]);
         },
       };
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       // Create posts and users
       await db('posts').truncate();
@@ -1948,7 +1999,7 @@ describe('PostsStatsService', function () {
     });
 
     it('filters out pages when no Tinybird client exists (fallback)', async function () {
-      service = new PostsStatsService({ knex: db }); // No Tinybird client
+      service = new PostsStatsService({ knex: db, logging, urlUtils }); // No Tinybird client
 
       // Create posts and pages
       await db('posts').truncate();
@@ -2016,7 +2067,12 @@ describe('PostsStatsService', function () {
       const mockTinybirdClient = {
         fetch: () => Promise.resolve([]), // No views data
       };
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       // Create posts and pages
       await db('posts').truncate();
@@ -2087,7 +2143,12 @@ describe('PostsStatsService', function () {
             { post_uuid: 'post-uuid1', visits: 1000 }, // Only one post has views
           ]),
       };
-      service = new PostsStatsService({ knex: db, tinybirdClient: mockTinybirdClient });
+      service = new PostsStatsService({
+        knex: db,
+        logging,
+        urlUtils,
+        tinybirdClient: mockTinybirdClient,
+      });
 
       // Create posts and pages
       await db('posts').truncate();

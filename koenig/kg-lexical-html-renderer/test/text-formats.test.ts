@@ -86,6 +86,36 @@ describe('Format combinations', function () {
         input: `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"(","type":"text","version":1},{"detail":0,"format":3,"mode":"normal","style":"","text":"italic+bold","type":"text","version":1},{"detail":0,"format":2,"mode":"normal","style":"","text":" italic","type":"text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":")","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
         output: `<p>(<em><strong>italic+bold</strong> italic</em>)</p>`
     }));
+
+    it('bold ending before italic', shouldRender({
+        input: `{"root":{"children":[{"children":[{"detail":0,"format":1,"mode":"normal","style":"","text":"Strong ","type":"text","version":1},{"detail":0,"format":3,"mode":"normal","style":"","text":"Both","type":"text","version":1},{"detail":0,"format":2,"mode":"normal","style":"","text":" Italic","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
+        output: `<p><strong>Strong <em>Both</em></strong><em> Italic</em></p>`
+    }));
+
+    it('italic ending before bold', shouldRender({
+        input: `{"root":{"children":[{"children":[{"detail":0,"format":2,"mode":"normal","style":"","text":"Italic ","type":"text","version":1},{"detail":0,"format":3,"mode":"normal","style":"","text":"Both","type":"text","version":1},{"detail":0,"format":1,"mode":"normal","style":"","text":" Strong","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
+        output: `<p><em>Italic <strong>Both</strong></em><strong> Strong</strong></p>`
+    }));
+
+    it('middle format ending before inner format', shouldRender({
+        input: `{"root":{"children":[{"children":[{"detail":0,"format":1,"mode":"normal","style":"","text":"A","type":"text","version":1},{"detail":0,"format":3,"mode":"normal","style":"","text":"B","type":"text","version":1},{"detail":0,"format":11,"mode":"normal","style":"","text":"C","type":"text","version":1},{"detail":0,"format":9,"mode":"normal","style":"","text":"D","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
+        output: `<p><strong>A<em>B<u>C</u></em><u>D</u></strong></p>`
+    }));
+
+    it('bold ending before highlight', shouldRender({
+        input: `{"root":{"children":[{"children":[{"detail":0,"format":1,"mode":"normal","style":"","text":"Strong ","type":"text","version":1},{"detail":0,"format":129,"mode":"normal","style":"","text":"Both","type":"text","version":1},{"detail":0,"format":128,"mode":"normal","style":"","text":" Highlight","type":"text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":" Plain","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
+        output: `<p><strong>Strong <mark>Both</mark></strong><mark> Highlight</mark> Plain</p>`
+    }));
+
+    it('bold ending before italic across a linebreak', shouldRender({
+        input: `{"root":{"children":[{"children":[{"detail":0,"format":1,"mode":"normal","style":"","text":"Strong ","type":"text","version":1},{"detail":0,"format":3,"mode":"normal","style":"","text":"Both","type":"text","version":1},{"type":"linebreak","version":1},{"detail":0,"format":2,"mode":"normal","style":"","text":"Italic","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
+        output: `<p><strong>Strong <em>Both</em></strong><br><em>Italic</em></p>`
+    }));
+
+    it('bold ending before italic ahead of a link', shouldRender({
+        input: `{"root":{"children":[{"children":[{"detail":0,"format":1,"mode":"normal","style":"","text":"Strong ","type":"text","version":1},{"detail":0,"format":3,"mode":"normal","style":"","text":"Both","type":"text","version":1},{"detail":0,"format":2,"mode":"normal","style":"","text":" Italic ","type":"text","version":1},{"children":[{"detail":0,"format":2,"mode":"normal","style":"","text":"link","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","version":1,"rel":null,"target":null,"url":"https://example.com"}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`,
+        output: `<p><strong>Strong <em>Both</em></strong><em> Italic </em><a href="https://example.com"><em>link</em></a></p>`
+    }));
 });
 
 describe('Formats with linebreaks', function () {

@@ -1,5 +1,4 @@
 import WelcomeEmailPreviewContent from '@/settings/email-design/welcome-email-preview-content';
-import assert from 'node:assert/strict';
 import { DEFAULT_EMAIL_DESIGN } from '@/settings/email-design/types';
 import { EmailDesignProvider } from '@/settings/email-design/email-design-provider';
 import { LinkStyleField } from '@/settings/email-design/design-fields/link-style-field';
@@ -20,7 +19,7 @@ describe('Welcome email link styles', function () {
       </EmailDesignProvider>,
     );
 
-    assert.ok(screen.getByRole('radio', { name: 'Regular' }));
+    expect(screen.getByRole('radio', { name: 'Regular' })).toBeTruthy();
   });
 
   it('does not italicize links when the regular style is selected', function () {
@@ -36,6 +35,6 @@ describe('Welcome email link styles', function () {
 
     const link = screen.getByRole('link', { name: 'quick guide' });
 
-    assert.equal(link.classList.contains('italic'), false);
+    expect(link.classList.contains('italic')).toBe(false);
   });
 });

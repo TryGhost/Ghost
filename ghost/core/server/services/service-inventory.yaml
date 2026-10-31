@@ -314,7 +314,7 @@ services:
           - core/frontend/web/middleware/handle-image-sizes.js
           - core/server/services/settings/settings-service.js
           - core/server/services/themes/validate.js
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/posts-public/index.ts
           - core/server/services/tags-public/index.ts
           - core/server/services/link-redirection/index.ts
@@ -3773,7 +3773,7 @@ services:
           - core/server/services/explore-ping/index.ts
           - core/server/services/explore-ping/explore-ping-service.ts
           - core/server/services/members/service.js
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
         tests:
           - test/unit/server/services/explore-ping/index.test.ts
           - test/e2e-server/boot-explore-ping.isolated.test.ts
@@ -3782,8 +3782,8 @@ services:
           Boot awaits init in its required service Promise.all after database/settings setup,
           before app mounting and readiness, including backend-only boot. The factory constructs
           in every environment and starts the ping only in production/development. Member stats
-          already exists at import; stats init appears earlier in the same Promise.all list and
-          currently sets api without awaiting. Init launches the ping synchronously and resolves
+          already exists at import; boot awaits the Stats root before this Promise.all and the
+          factory passes its ready aggregate. Init launches the ping synchronously and resolves
           without awaiting payload collection or HTTP completion. Root
           units apply the real configuration policy per environment, including development, and
           show init resolving while post statistics and the request are held pending. The
@@ -3795,7 +3795,7 @@ services:
           - core/shared/config/helpers.ts
           - core/server/services/explore-ping/index.ts
           - core/server/services/members/service.js
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
         tests:
           - test/unit/server/services/explore-ping/index.test.ts
           - test/e2e-server/boot-explore-ping.isolated.test.ts
@@ -13543,44 +13543,45 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
-      complexity: complex
+      complexity: straightforward
       modelImpact: fits
       reason: >-
-        Publish the stats API and optional cache atomically, and move nested Tinybird
-        initialization into an explicit boot dependency. Endpoints capture the cache at
-        module load while the API captures a Tinybird client during construction, so
-        consumer timing and identity need coordinated changes. One ready aggregate fits the
-        helper once those boundaries are explicit.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        The boot-owned defineService root applies the Tinybird gates, builds the shared query
+        client, assembles the API over the shared connection, URL service, URL helpers and
+        logging, and publishes it with the optional cache:stats adapter as one ready aggregate.
+        initServices awaits it after Newsletters and before the group containing Explore, which
+        receives the ready aggregate. The Admin endpoint can load before init: one shared cache
+        forwarder resolves the published cache per request, missing when none is configured so
+        the pipeline runs the query once, and each query reads the API per request. No extras or different
+        instance lifetime are needed.
+      reviewedAt: 8cba94a138a69cbb7e496424591575daab11a529
       sources:
-        - core/server/services/stats/service.js
+        - core/server/services/stats/index.ts
         - core/server/services/stats/stats-service.js
         - core/server/api/endpoints/stats.js
+        - core/server/services/explore-ping/index.ts
+        - core/boot.js
         - core/server/services/tinybird/tinybird-service-wrapper.js
       dependencies:
-        complexity: complex
+        complexity: straightforward
         reason: >-
-          StatsService.create assembles query services and replaces Tinybird's shared current
-          client. The Stats request client then holds that instance, while the token endpoint can
-          replace it and Automations reads the latest instance when creating its own client. Live
-          request configuration and captured authentication can therefore diverge; DI needs an
-          explicit ownership and refresh contract.
+          The root now wires every application dependency: it initializes Tinybird under the
+          existing gates, builds the query client with the published instance, and passes knex,
+          the URL service, URL helpers, logging and the client into StatsService.create, which only
+          assembles the query services. Implementations import nothing but errors and the kernel
+          clock. The query client still keeps the Tinybird instance from init while rereading
+          endpoint and site settings; the root unit pins that mixed lifetime.
         preparation:
           - >-
-            Characterize Tinybird replacement and configuration refresh across Stats, the token
-            endpoint and Automations before choosing boot-owned readiness and an injected optional
-            capability.
-          - >-
             Choose a shared owner for the Tinybird request-client factory used by Stats and
-            Automations, retaining their different availability gates and transport behavior.
-          - >-
-            Remove config/request/settings fallback requires and inject logger/URL helpers through
-            query services; route existing Moment operations through the shared clock.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+            Automations, retaining their different availability gates and transport behavior;
+            Automations still builds its own client from the deep factory per operation.
+        reviewedAt: 8cba94a138a69cbb7e496424591575daab11a529
         sources:
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/stats-service.js
           - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/posts-stats-service.js
@@ -13588,25 +13589,25 @@ services:
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/api/endpoints/tinybird.js
     entryPoints:
-      - stats/index.js
+      - stats/index.ts
       - stats/utils/tinybird.ts
     notes: >-
-      Boot publishes a composite statistics API before obtaining its optional cache. Preserve
-      retained API/cache/query-client relationships and method-specific empty/error results.
+      Boot awaits one aggregate of the statistics API and its optional cache before Explore.
+      Preserve retained API/cache/query-client relationships and method-specific empty/error
+      results.
     contracts:
       exports:
         summary: >-
-          CommonJS exports one wrapper with mutable api/cache initially null and receiver-dependent
-          async init resolving undefined. The deep StatsService constructor/create factory exposes
-          six mutable collaborators and async forwarding methods; Explore reaches api.mrr directly.
+          The defineService root exports init and a guarded service aggregate with mutable
+          api/cache. The deep StatsService constructor/create factory exposes six mutable
+          collaborators and async forwarding methods; Explore reaches service.api.mrr directly.
           The separate deep Tinybird module exports create returning receiver-independent
           buildRequest/parseResponse/fetch closures. Factory units assert class identity/client
-          presence; selected HTTP responses pin data/meta serialization. The root unit pins null
-          api/cache before init, the undefined init result and the Admin endpoint calling the
-          published api as receiver; the barrel shape remains source-only.
+          presence; selected HTTP responses pin data/meta serialization. The root unit pins the
+          guarded service before and during init, the undefined init result and the Admin
+          endpoint calling the published api as receiver.
         sources:
-          - core/server/services/stats/index.js
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/stats-service.js
           - core/server/services/stats/utils/tinybird.ts
           - core/server/services/explore-ping/explore-ping-service.ts
@@ -13617,18 +13618,17 @@ services:
           - test/e2e-api/admin/stats.test.js
       construction:
         summary: >-
-          Import constructs only the wrapper. First init synchronously builds six collaborators
-          from shared knex/models/URL and publishes api, then conditionally obtains cache:stats.
-          Although init is async, it contains no await; later calls return when api is truthy.
-          StatsService.create conditionally initializes Tinybird and creates a query client for
-          web analytics, without running a statistics query. Three factory tests stub Tinybird
-          init and assert its gate and client presence. The root unit builds the real wrapper
-          over the shared connection and URL service and pins synchronous api publication,
-          cache:stats acquisition after it, Tinybird gating through the root, one query client
-          shared by posts and content, a connection failure leaving nothing published before a
-          successful retry, and a cache failure leaving api published.
+          Import declares only the root. init builds six collaborators from shared knex/URL/URL
+          helpers/logging, obtains cache:stats when enabled and publishes both as one aggregate
+          once the factory returns; later calls retain it. The root conditionally initializes
+          Tinybird and creates one query client for web analytics, without running a statistics
+          query, and create only assembles the six query services from the injected set. The
+          root unit builds the real root over the shared connection and URL service and pins the
+          guarded service during init, cache:stats acquisition, Tinybird gating through the root,
+          one query client shared by posts and content, and connection or cache failures leaving
+          nothing published before a successful retry rebuilds the aggregate.
         sources:
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/stats-service.js
           - core/server/services/stats/mrr-stats-service.js
           - core/server/services/stats/members-stats-service.js
@@ -13642,16 +13642,19 @@ services:
           - test/unit/server/services/stats/index.test.ts
       consumers:
         summary: >-
-          Boot initializes the wrapper; lazy Admin stats endpoint construction captures cache,
-          while each query reads api live. Explore retains the wrapper and reads api.mrr under
+          Boot awaits the root before Explore constructs with its ready aggregate; the Admin
+          stats endpoint loads without touching the root, and each request resolves
+          service.cache through a shared forwarder and reads service.api. Explore retains the aggregate and reads api.mrr under
           its growth/live-Stripe gates. Automations destructures the deep query factory and
           supplies its current Tinybird instance per operation. Real Admin HTTP snapshots pin
           counts/MRR/subscriptions/referrers and selected empty-input shapes; trial/incomplete
           subscription tests compare before/after results. Several top-post/referrer/growth
           tests assert only array shape, and invalid-ID cases do not assert empty counts.
           Explore units inject the stats graph; automation composition is separately recorded
-          under Tinybird. The root unit pins the Admin endpoint capturing the wrapper's cache at
-          load and reading api per query, rejecting with TypeError before init. Configured
+          under Tinybird. The root unit pins the Admin endpoint loading before init, rejecting a
+          query until init, and forwarding to the published cache, the API per request and the
+          query directly once the cache is null; the app-allowlist unit loads Admin routes with
+          no boot. Configured
           stats-cache hits/identity/keys are not covered here.
         sources:
           - core/boot.js
@@ -13668,17 +13671,18 @@ services:
           - test/e2e-api/admin/automations.test.ts
       startup:
         summary: >-
-          After model/settings setup and awaited Stripe startup, boot calls stats.init in its
-          service Promise.all before Explore init, jobs registration/start and HTTP readiness.
-          Captured knex and settings must be usable before queries; API construction before
-          stats init captures a null cache even if api later becomes available. Factory errors
-          reject boot; cache acquisition can fail after api publication. Existing HTTP suites
-          exercise successful real boot and queries; the root unit covers early endpoint import,
-          repeated init and failure of either initialization stage with injected failures, not
-          real deferred readiness or reboot.
+          After model/settings setup, awaited Stripe startup and Newsletters, boot awaits
+          stats.init before the service Promise.all that holds Explore, then jobs
+          registration/start and HTTP readiness. Captured knex and settings must be usable before
+          queries; reading the service before init throws, but the Admin endpoint reads it only
+          per request. Factory errors, including cache
+          acquisition, reject boot without publishing. Existing HTTP suites exercise successful
+          real boot and queries; the root unit covers early endpoint import, repeated init and
+          failure of either construction stage with injected failures, not real deferred
+          readiness or reboot.
         sources:
           - core/boot.js
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/stats-service.js
           - core/server/api/endpoints/stats.js
           - core/server/web/api/endpoints/admin/routes.js
@@ -13689,18 +13693,19 @@ services:
           - test/e2e-server/services/stats/mrr-stats-service.test.js
       lifetime:
         summary: >-
-          The first published api/cache graph persists through subsequent init calls; no reset,
+          The first published aggregate persists through subsequent init calls; no reset,
           shutdown or rebind exists. Components retain database/URL/query clients. The query
           client retains its token service while rereading config/settings facades; existing
           consumer units assert old token identity with new endpoint/site values and a new
-          client's replacement token. Endpoint/pipeline retains the captured cache object;
+          client's replacement token. The pipeline retains the endpoint's forwarder, which
+          resolves the aggregate's cache per request;
           stats installs no invalidation listener. Adapter-manager clearCache does not update
           retained references. The root unit pins the retained api across repeated init with no
           later cache acquisition, and the query client keeping its Tinybird instance while
           rereading endpoint and site settings. Pending query, cache refresh and stop/reboot
           behavior is source-only.
         sources:
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/stats-service.js
           - core/server/services/stats/utils/tinybird.ts
           - core/server/api/endpoints/stats.js
@@ -13711,8 +13716,10 @@ services:
           - test/unit/server/services/stats/index.test.ts
       configuration:
         summary: >-
-          Initialization captures cache enablement and web-analytics client presence; the factory
-          also initializes Tinybird whenever stats config is truthy, without a labs gate. Request-time
+          Initialization captures cache enablement and web-analytics client presence; the root
+          also initializes Tinybird whenever stats config is truthy, without a labs gate. Default
+          windows and today come from the kernel clock through native UTC day helpers; DB values,
+          caller dates and timezone-aware boundaries still go through the clock's Moment export. Request-time
           date/filter options and config/settings lookups differ from those captured choices;
           test config replacement is not production hot reload. Member forwarding maps dateFrom
           to startDate; missing newsletter IDs return method-specific empty values. Real SQLite
@@ -13725,7 +13732,7 @@ services:
           schema and injected provider/URL collaborators, not complete root/MySQL composition.
         sources:
           - core/server/services/stats/stats-service.js
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/utils/date-utils.js
           - core/server/services/stats/mrr-stats-service.js
@@ -13747,8 +13754,8 @@ services:
           - test/e2e-server/services/stats/mrr-stats-service.test.js
       resources:
         summary: >-
-          Components borrow knex/URL/query clients and own no pool, timer or subscription;
-          the passed models facade is unused. Independent
+          Components borrow knex/URL/query clients and the shared logger and own no pool, timer
+          or subscription. Independent
           queries do not share a snapshot; enrichment fans out lookups, and date ranges can
           allocate uncapped daily series. Shared request-external owns agents; query options ask
           for 35-second timeout/zero retries, with POST AbortSignal. Optional cache adapters can
@@ -13756,7 +13763,7 @@ services:
           Units assert query-client options with fake HTTP; SQLite/HTTP statistics assertions
           do not prove query cancellation, transport/cache release or consistent concurrent reads.
         sources:
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/posts-stats-service.js
           - core/server/services/stats/content-stats-service.js
@@ -13770,7 +13777,8 @@ services:
           - test/unit/server/services/stats/utils/tinybird.test.js
       failures:
         summary: >-
-          A failed cache acquisition leaves api published and suppresses retry. Uncaught
+          A failed cache acquisition rejects init without publishing, and a later init rebuilds
+          the whole aggregate, including Tinybird initialization and a new query client. Uncaught
           MRR/member/subscription/referrer query failures reject; posts/content methods commonly
           log and substitute different empty arrays, objects or zero-series shapes. Content
           has false url_exists when missing/not-ready, unlike posts' true default; thrown URL
@@ -13778,11 +13786,11 @@ services:
           its fetch catch; caught transport/parse errors return null. Posts view queries backfill
           on absent/empty provider data but return empty data on rejected fetch. Selected units
           pin fake provider/URL failure and fallback results. The first two content client tests
-          invoke only stubs; they prove no production transport behavior. The root unit pins the
-          failed-cache guard and the connection-failure retry with injected failures; real cache
-          errors and many nested query failure channels lack assertions.
+          invoke only stubs; they prove no production transport behavior. The root unit pins both
+          construction failures and their retries with injected failures; real cache errors and
+          many nested query failure channels lack assertions.
         sources:
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/mrr-stats-service.js
           - core/server/services/stats/members-stats-service.js
@@ -13798,11 +13806,9 @@ services:
     unverified: []
     blockers:
       - >-
-        Root identity, return/receiver behavior, synchronous publication and optional-cache
-        acquisition across first, repeated and failed init are pinned in the root unit;
-        stop/reboot is not. The published-api guard currently prevents recovery after a cache
-        failure and is pinned as-is; define that lifecycle explicitly before changing
-        initialization or retaining old database/provider references.
+        Stop/reboot is not pinned: the aggregate persists across the e2e lane's reboots with the
+        settings and Tinybird instance captured at first init, and a retry after a failed init
+        rebuilds Tinybird's shared instance and a new query client.
       - >-
         Add real configured-cache consumer tests for early/later endpoint construction, shared
         identity, hits, invalidation/expiry, authorization and option isolation. The API pipeline
@@ -14872,19 +14878,21 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
       modelImpact: fits
       reason: >-
-        Await repository priming, construct the API and publish both together instead of
-        exposing the repository before API construction succeeds. The repository owns its
-        in-memory tier state but no startup subscriptions or worker. Preserve the retained
-        graph and update API consumers after boot readiness; the existing helper covers this
-        asynchronous factory.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        The boot-owned defineService root builds the repository over the Product model and
+        DomainEvents, awaits its priming, builds the API over it and publishes both together as
+        one service. initServices awaits it in the group with Members after constructing Gifts.
+        The Members API and gift services are built before it is ready, so each reads the tiers
+        API through a getter at use. The repository owns its in-memory tier state but no startup
+        subscriptions or worker; no extras are needed.
+      reviewedAt: c03e84fdc7e91db2310a785fbd2e5a6233da6c42
       sources:
-        - core/server/services/tiers/service.js
+        - core/server/services/tiers/index.ts
         - core/server/services/tiers/tier-repository.js
         - core/server/api/endpoints/tiers.js
         - core/boot.js
@@ -14905,67 +14913,75 @@ services:
             including Members middleware and payment-event subscriptions.
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
-          - core/server/services/tiers/service.js
+          - core/server/services/tiers/index.ts
           - core/server/services/tiers/tier-repository.js
-          - core/server/services/tiers/in-memory-tier-repository.js
+          - test/unit/server/services/tiers/in-memory-tier-repository.ts
           - core/server/services/members/middleware.js
           - core/server/services/members/service.js
           - core/server/services/stripe-checkout-config/index.ts
     entryPoints:
-      - tiers/index.js
-      - tiers/service.js
+      - tiers/index.ts
     notes: >-
-      Boot owns the tier repository and API. Tier data is cached; members also deep-imports the
-      wrapper.
+      Migration inspected c03e84fdc7e91db2310a785fbd2e5a6233da6c42 with the characterization from
+      the preceding tests-only commit. Boot owns the tier repository and API; tier data is
+      cached. The members deep import of the wrapper is gone and the in-memory repository now
+      sits beside the TiersAPI units. NQL and bson-objectid stay imported where used as allowed
+      libraries. auditedAt and the dependency assessment retain historical provenance.
     contracts:
       exports:
         summary: >-
-          Source establishes that CommonJS index and service export the same mutable wrapper
-          instance, with receiver-dependent async init and no shutdown/reset. repository and api
-          are absent before initialization and become public properties. The API exposes async
+          The TypeScript root default-exports a defineService root with async init and no
+          shutdown/reset. Its service, holding api and repository, throws IncorrectUsageError
+          before initialization. The API exposes async
           browse/read/readDefaultTier/add/edit; browse returns one-page metadata, read returns
           null for a missing valid ID and readDefaultTier can return undefined. API units use
           the separate in-memory repository: they assert edited name, archived status, browse
-          counts and a default-tier name, but only a truthy add/read result. Root export
-          identity, property timing and missing-result shapes are source-only.
+          counts and a default-tier name, but only a truthy add/read result. Root units pin the
+          service throwing before init and API operations needing the API as receiver. Missing-result shapes are source-only.
         sources:
-          - core/server/services/tiers/index.js
-          - core/server/services/tiers/service.js
+          - core/server/services/tiers/index.ts
           - core/server/services/tiers/tiers-api.js
           - core/server/services/tiers/tier-repository.js
-          - core/server/services/tiers/in-memory-tier-repository.js
+          - test/unit/server/services/tiers/in-memory-tier-repository.ts
         tests:
+          - test/unit/server/services/tiers/index.test.ts
           - test/unit/server/services/tiers/tiers-api.test.js
       construction:
         summary: >-
-          The wrapper is constructed at import; init lazily creates TierRepository with Product
-          and DomainEvents, and a slug collaborator calling Product.generateSlug. It awaits
-          loading products with benefits, publishes repository then TiersAPI. This is the only
+          The root's factory creates TierRepository with Product and DomainEvents, and a slug
+          collaborator calling Product.generateSlug. It awaits loading products with benefits,
+          then builds TiersAPI and returns both for publication together. This is the only
           production construction path found for these two implementations. Deep Tier and event
           classes support that graph; the in-memory tier repository is used by API units, not
-          production composition. These wiring and publication claims are source-only; fully
-          booted HTTP tests do not isolate construction.
+          production composition. Root units pin the benefits load, the API reading through the
+          published repository, TierCreatedEvent dispatch through DomainEvents, and slugs from
+          the current Product model while the repository saves through the model read at init.
         sources:
-          - core/server/services/tiers/service.js
+          - core/server/services/tiers/index.ts
           - core/server/services/tiers/tier-repository.js
           - core/server/services/tiers/tiers-api.js
           - core/server/services/tiers/tier.js
-          - core/server/services/tiers/in-memory-tier-repository.js
-        tests: []
+          - test/unit/server/services/tiers/in-memory-tier-repository.ts
+        tests:
+          - test/unit/server/services/tiers/index.test.ts
       consumers:
         summary: >-
           Source searches found boot, Admin/Content tier endpoints, post/page/
           preview/email-post serializers, members imports/access middleware/controllers, gifts
-          and Stripe checkout previews. These consumers retain the wrapper and resolve api at
-          use; members middleware deep-imports service.js, while payments deep-imports three
-          tier event classes. The preview callback resolves the current api.read for each
+          and Stripe checkout previews. These consumers resolve the service's api at use; the
+          Members API and gift services receive a getter that does so, and payments deep-imports
+          three tier event classes. The preview callback resolves the current api.read for each
           request. Its HTTP tests assert refusal of free, absent and malformed tiers, but do not
           test replacing the tiers API. Admin HTTP assertions cover serialized browse/add/edit
           fields, visibility and null trial-day updates, plus a persisted benefit capitalization
           check. Content HTTP assertions cover active/visibility filtering. The gift delivery
           unit proves API lookup at send time with an injected wrapper whose api is assigned
-          after construction. It does not initialize the real root; other retained-consumer and
-          event paths are source-checked rather than comprehensively protected by those tests.
+          after construction. Consumer units pin per-call API reads with the API as receiver for
+          both endpoints, the four post/page/preview/email-post serializers, the members
+          access-cookie middleware and the Stripe Checkout readTier callback, and that the
+          members API and gift services read the root's current API at each access. The members importer's tier lookups are covered
+          only through the Admin members import HTTP suite; payment-event paths remain
+          source-checked.
         sources:
           - core/boot.js
           - core/server/api/endpoints/tiers.js
@@ -14993,23 +15009,32 @@ services:
           - test/e2e-api/content/tiers.test.js
           - test/unit/server/services/gifts/gift-delivery-service.test.ts
           - test/e2e-api/admin/stripe-checkout-preview.test.ts
+          - test/e2e-api/admin/members-import.test.js
+          - test/unit/server/services/tiers/consumers.test.ts
       startup:
         summary: >-
-          Source establishes that initServices awaits Stripe, constructs gifts with the tiers
-          wrapper, then awaits tiers.init alongside members.init. Tier loading must complete
-          before that group and boot can finish; members and gifts deliberately retain the
-          wrapper before its API is available. There is no pending-init promise: the guard only
-          checks an already-published api, so overlapping calls can each load and publish a
-          graph. These ordering and concurrency contracts have no focused test. HTTP fixtures
-          separately call repository.init after inserting fixture rows; that refresh is not
-          evidence that calling the guarded wrapper again reloads tiers.
+          Source establishes that initServices awaits Stripe, constructs gifts with a tiers getter,
+          then awaits tiers.init alongside members.init. Tier loading must complete before that
+          group and boot can finish; members and gifts deliberately hold getters before the
+          service is available. defineService shares one pending initialization between
+          overlapping calls, as its kernel units cover. Root units pin publication only after priming resolves, nothing published and a
+          retry loading again after priming or API construction rejects, sequential init
+          retaining both instances without reloading, and overlapping calls settling with an API
+          over the published repository. Boot units pin gifts constructed before tiers.init
+          starts, and jobs waiting for tiers.init and not starting when it rejects. HTTP fixtures
+          separately call the service's repository.init after inserting fixture rows when the
+          root is initialized; that refresh is not evidence that calling init again reloads
+          tiers.
         sources:
           - core/boot.js
-          - core/server/services/tiers/service.js
+          - core/server/services/tiers/index.ts
           - core/server/services/members/members-api/members-api.js
           - core/server/services/gifts/index.ts
           - test/utils/fixture-utils.js
-        tests: []
+        tests:
+          - test/unit/boot/init-services.test.ts
+          - test/unit/kernel/define-service.test.ts
+          - test/unit/server/services/tiers/index.test.ts
       lifetime:
         summary: >-
           Source establishes that successful sequential init calls retain the repository and API
@@ -15023,7 +15048,7 @@ services:
           call counts, a truthy read and no findOne; they do not establish clone isolation,
           saved values, reload or concurrent behavior.
         sources:
-          - core/server/services/tiers/service.js
+          - core/server/services/tiers/index.ts
           - core/server/services/tiers/tier-repository.js
           - core/server/services/tiers/tier.js
           - core/server/services/tiers/tiers-api.js
@@ -15041,7 +15066,7 @@ services:
           Admin HTTP asserts invalid-price rejection and null trial becoming zero. These tests
           do not cover zero-price edits.
         sources:
-          - core/server/services/tiers/service.js
+          - core/server/services/tiers/index.ts
           - core/server/services/tiers/tier-repository.js
           - core/server/services/tiers/tiers-api.js
           - core/server/services/tiers/tier.js
@@ -15061,7 +15086,7 @@ services:
           and cleanup facts come from source, not the repository stub or HTTP response
           assertions.
         sources:
-          - core/server/services/tiers/service.js
+          - core/server/services/tiers/index.ts
           - core/server/services/tiers/tier-repository.js
           - core/server/services/tiers/tier.js
           - core/server/services/tiers/tier-created-event.js
@@ -15075,7 +15100,7 @@ services:
       failures:
         summary: >-
           Source establishes propagated repository-load/slug/validation/database failures. A
-          load failure before publication leaves the wrapper retryable. Failed row conversion
+          load failure before publication leaves the root retryable. Failed row conversion
           during repository reload can retain the old store with a cleared/part-filled ID set. A
           rejected Product write prevents normal cache replacement and event dispatch, but no
           transaction joins cached tier state, tier persistence, async Stripe work and its
@@ -15086,20 +15111,17 @@ services:
           remaining failure/recovery paths are source-only, not demonstrated fault-injection or
           provider-completion contracts.
         sources:
-          - core/server/services/tiers/service.js
+          - core/server/services/tiers/index.ts
           - core/server/services/tiers/tier-repository.js
           - core/server/services/tiers/tiers-api.js
           - core/server/services/tiers/tier.js
           - core/server/services/members/members-api/services/payments-service.js
         tests:
+          - test/unit/server/services/tiers/index.test.ts
           - test/unit/server/services/tiers/tiers-api.test.js
           - test/e2e-api/admin/tiers.test.js
     unverified: []
     blockers:
-      - >-
-        Pin real root identity, pre-init access, boot prerequisites, concurrent initialization,
-        sequential no-op behavior and partial-publication recovery. Include retained members/
-        gifts consumers; a late-bound fake wrapper does not prove real boot wiring.
       - >-
         Characterize production repository clone boundaries, external-write/reload behavior,
         failed reload ID/store consistency, write races, database normalization/timestamps and
@@ -15196,23 +15218,24 @@ services:
           and settings site_uuid; no guard or shared instance reuse exists. Only the wrapper
           constructs it in production; units construct it directly. Construction captures
           flags and site ID, retains the config subtree and starts empty token-cache fields,
-          without signing or contacting Tinybird. StatsService.create conditionally initializes
-          the root, then creates a separate query client for web analytics using the published
-          instance. Factory units stub init and assert its gate plus client presence; the
+          without signing or contacting Tinybird. The Stats root conditionally initializes it
+          through initializeTinybirdForStats, then creates a separate query client for web
+          analytics using the published instance. Stats root units stub init and assert its gate
+          plus client presence; the
           retained-consumer test uses the real root and asserts replacement identity. Nested
           construction and absence of provider I/O at init are otherwise source-established.
         sources:
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/services/tinybird/tinybird-service.js
-          - core/server/services/stats/stats-service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/utils/tinybird.ts
         tests:
-          - test/unit/server/services/stats/stats.test.ts
+          - test/unit/server/services/stats/index.test.ts
           - test/unit/server/services/tinybird/consumer-configuration.test.ts
       consumers:
         summary: >-
           Three production root consumers were found: the Admin token endpoint initializes
-          on each request, StatsService.create initializes and captures instance, and the
+          on each request, the Stats root initializes and captures instance, and the
           automations API reads the current instance without initializing it. Stats passes
           its query client to posts/content statistics; automations builds clients for browse,
           performance, runs and member search. No production deep implementation constructor
@@ -15225,7 +15248,7 @@ services:
           - core/server/api/endpoints/tinybird.js
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/api/endpoints/utils/serializers/output/tinybird.js
-          - core/server/services/stats/stats-service.js
+          - core/server/services/stats/index.ts
           - core/server/services/stats/utils/tinybird.ts
           - core/server/services/stats/posts-stats-service.js
           - core/server/services/stats/content-stats-service.js
@@ -15240,7 +15263,7 @@ services:
           - test/e2e-api/admin/automation-member-search.test.ts
       startup:
         summary: >-
-          Boot has no direct Tinybird init; its awaited stats.init calls StatsService.create.
+          Boot has no direct Tinybird init; its awaited stats.init calls initializeTinybirdForStats.
           That initializes Tinybird when web_analytics_enabled or tinybird:stats config is
           truthy. The query client itself is created only for web analytics. The wrapper
           requires settings site_uuid even
@@ -15253,12 +15276,12 @@ services:
           it does not prove complete boot ordering or later gate transitions.
         sources:
           - core/boot.js
-          - core/server/services/stats/service.js
-          - core/server/services/stats/stats-service.js
+          - core/server/services/stats/index.ts
+          - core/server/services/stats/utils/tinybird.ts
           - core/server/services/tinybird/tinybird-service-wrapper.js
           - core/server/services/automations/automations-api.ts
         tests:
-          - test/unit/server/services/stats/stats.test.ts
+          - test/unit/server/services/stats/index.test.ts
           - test/e2e-api/admin/automations.test.ts
       lifetime:
         summary: >-
@@ -16036,7 +16059,7 @@ services:
           - core/server/services/members/api.js
           - core/server/services/mentions/index.ts
           - core/server/services/slack-ping/index.ts
-          - core/server/services/stats/service.js
+          - core/server/services/stats/index.ts
           - core/server/services/webhooks/index.js
         tests:
           - test/integration/url-serialization.test.js
@@ -16199,7 +16222,7 @@ services:
       reviewedAt: b7cad8406041d09d9e4085c5f981f958d454fc76
       sources:
         - core/server/services/users/index.ts
-        - core/server/services/users/users-service.js
+        - core/server/services/users/users-service.ts
         - core/server/api/endpoints/users.js
         - core/server/api/endpoints/authentication.js
         - core/boot.js
@@ -16208,7 +16231,7 @@ services:
         complexity: straightforward
         reason: >-
           The root composes models, the domain event dispatcher, the PostsBulkAddTagsEvent
-          constructor and the PostRevisions helper class in index.ts; the implementation
+          constructor and the removeAuthorFromRevisions function in index.ts; the implementation
           receives them instead of requiring them. ObjectId generation stays an allowlisted
           library import. The endpoints no longer resolve the mail and settings API
           collaborators on the service's behalf.
@@ -16216,7 +16239,7 @@ services:
         reviewedAt: b7cad8406041d09d9e4085c5f981f958d454fc76
         sources:
           - core/server/services/users/index.ts
-          - core/server/services/users/users-service.js
+          - core/server/services/users/users-service.ts
           - core/server/api/endpoints/users.js
           - core/server/api/endpoints/authentication.js
           - core/server/lib/post-revisions.ts
@@ -16234,7 +16257,7 @@ services:
       exports:
         summary: >-
           The TypeScript root default-exports a defineService initializer with init and a
-          guarded service getter plus a type-only UsersService interface; there are no extras.
+          guarded service getter typed by the UsersService class; there are no extras.
           The ready instance exposes lockAll, assignTagToUserPosts and destroyUser; only
           assignTagToUserPosts is bound. lockAll resolves an object with count, while tagging
           and destruction resolve without a result. Units pin the readiness guard, detached
@@ -16243,22 +16266,22 @@ services:
         sources:
           - core/kernel/define-service.ts
           - core/server/services/users/index.ts
-          - core/server/services/users/users-service.js
+          - core/server/services/users/users-service.ts
         tests:
           - test/unit/server/services/users/users-service.test.js
           - test/unit/server/services/users/index.test.ts
       construction:
         summary: >-
-          Import declares the root without resolving runtime collaborators. The factory
-          requires the implementation, models, the domain event dispatcher, the event
-          constructor and the revisions helper class, then returns one Users synchronously.
-          destroyUser still constructs a PostRevisions helper around the PostRevision model per
-          call. The endpoints capture the root at import and read its service per request.
-          Units pin the captured models reference, the per-call helper and that an endpoint
+          Import declares the root and loads the implementation without resolving its runtime
+          collaborators. The factory requires models, the domain event dispatcher, the event
+          constructor and the revision author-removal function, then returns one UsersService
+          synchronously. destroyUser passes the PostRevision model and its transaction to that
+          function per call. The endpoints capture the root at import and read its service per request.
+          Units pin the captured models reference, the per-call helper arguments and that an endpoint
           import before readiness does not evaluate the guarded getter.
         sources:
           - core/server/services/users/index.ts
-          - core/server/services/users/users-service.js
+          - core/server/services/users/users-service.ts
           - core/server/api/endpoints/authentication.js
           - core/server/api/endpoints/users.js
           - core/server/lib/post-revisions.ts
@@ -16280,7 +16303,7 @@ services:
           - core/server/auth/reset-authentication.ts
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/services/users/index.ts
-          - core/server/services/users/users-service.js
+          - core/server/services/users/users-service.ts
         tests:
           - test/e2e-api/admin/users.test.js
           - test/legacy/api/admin/users.test.js
@@ -16326,7 +16349,7 @@ services:
           unasserted.
         sources:
           - core/server/services/users/index.ts
-          - core/server/services/users/users-service.js
+          - core/server/services/users/users-service.ts
           - core/server/api/endpoints/users.js
           - core/server/api/endpoints/authentication.js
         tests:
@@ -16341,7 +16364,7 @@ services:
           with sort_order zero. Unit tests pin reuse/skip behavior and HTTP tests pin tag name
           and position; they do not cover concurrent tag creation or author changes.
         sources:
-          - core/server/services/users/users-service.js
+          - core/server/services/users/users-service.ts
         tests:
           - test/unit/server/services/users/users-service.test.js
           - test/legacy/api/admin/users.test.js
@@ -16358,7 +16381,7 @@ services:
           carrying only newly tagged ids; HTTP tests prove selected persisted outcomes. Full
           rollback, event settlement and shutdown drain stay unasserted.
         sources:
-          - core/server/services/users/users-service.js
+          - core/server/services/users/users-service.ts
           - core/server/lib/post-revisions.ts
           - core/server/models/user.js
           - core/server/models/relations/authors.js
@@ -16383,7 +16406,7 @@ services:
           stage fails; success tests and fake-transaction short-circuit tests do not establish
           rollback or those partial-failure responses.
         sources:
-          - core/server/services/users/users-service.js
+          - core/server/services/users/users-service.ts
           - core/server/api/endpoints/users.js
           - core/server/auth/reset-authentication.ts
           - core/server/api/endpoints/authentication.js
