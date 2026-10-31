@@ -130,6 +130,44 @@ describe('members import completion email', function () {
     );
   });
 
+  it('carries the newsletters column only when the submitted file did', function () {
+    const withColumn = build([
+      {
+        email: 'x@example.com',
+        subscribed: true,
+        complimentary_plan: false,
+        labels: [],
+        newsletters: [{ name: 'Daily News' }, { name: 'Weekly Digest' }],
+        error: 'nope',
+        errors: ['nope'],
+      },
+    ]).attachments[0].content;
+    const [header, row] = withColumn.split('\r\n');
+    assert.ok(
+      header.includes('newsletters'),
+      'file with the column produces a report with the column',
+    );
+    assert.ok(
+      row.includes('"Daily News,Weekly Digest"'),
+      'the failed values are echoed for fixing',
+    );
+
+    const withoutColumn = build([
+      {
+        email: 'x@example.com',
+        subscribed: true,
+        complimentary_plan: false,
+        labels: [],
+        error: 'nope',
+        errors: ['nope'],
+      },
+    ]).attachments[0].content;
+    assert.ok(
+      !withoutColumn.split('\r\n')[0].includes('newsletters'),
+      'a file that never spoke about newsletters produces a report that stays silent too, so re-uploading it cannot unsubscribe anyone',
+    );
+  });
+
   it('escapes CSV-injection characters so a spreadsheet cannot run them', function () {
     const report = build([
       {

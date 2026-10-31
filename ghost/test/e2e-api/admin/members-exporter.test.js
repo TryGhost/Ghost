@@ -60,7 +60,7 @@ async function testOutput(member, asserts, filters = []) {
 
     assert.match(
       res.text,
-      /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/,
+      /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id,newsletters/,
     );
 
     const csv = Papa.parse(res.text, { header: true });
@@ -153,6 +153,7 @@ describe('Members API — exportCSV', function () {
         assert.equal(row.subscribed_to_emails, 'false');
         assert.equal(row.complimentary_plan, '');
         assert.equal(row.tiers, '');
+        assert.equal(row.newsletters, '');
       },
       ['filter=subscribed:false'],
     );
@@ -298,15 +299,14 @@ describe('Members API — exportCSV', function () {
   });
 
   it('Can export newsletters', async function () {
-    // Create a new member with a product
+    const active = newsletters.find((n) => n.get('status') === 'active');
+    const archived = newsletters.find((n) => n.get('status') === 'archived');
+    assertExists(active);
+    assertExists(archived);
     const member = await createMember({
       name: 'Test member',
       note: 'Just a note',
-      newsletters: [
-        {
-          id: newsletters[0].id,
-        },
-      ],
+      newsletters: [{ id: active.id }, { id: archived.id }],
     });
 
     await testOutput(
@@ -317,6 +317,10 @@ describe('Members API — exportCSV', function () {
         assert.equal(row.complimentary_plan, '');
         assert.equal(row.labels, '');
         assert.equal(row.tiers, '');
+        assert.equal(
+          row.newsletters.split(',').sort().join(','),
+          [active.get('name'), archived.get('name')].sort().join(','),
+        );
       },
       ['filter=subscribed:true'],
     );

@@ -21,6 +21,7 @@ export const FIELD_MAPPINGS = [
   { label: 'Stripe Customer ID', value: 'stripe_customer_id' },
   { label: 'Complimentary plan', value: 'complimentary_plan' },
   { label: 'Labels', value: 'labels' },
+  { label: 'Newsletters', value: 'newsletters' },
   { label: 'Created at', value: 'created_at' },
   { label: 'Gift ID', value: 'gift_id' },
 ];
@@ -35,6 +36,7 @@ const SUPPORTED_TYPES = [
   'complimentary_plan',
   'stripe_customer_id',
   'labels',
+  'newsletters',
   'created_at',
   'gift_id',
 ];

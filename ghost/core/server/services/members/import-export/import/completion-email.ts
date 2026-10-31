@@ -79,6 +79,8 @@ type ErrorReportRow = {
   labels: string;
   tiers: '';
   gift_id: string | null;
+  // Only when the submitted file had the column, so a re-upload says no more than it did.
+  newsletters?: string;
   error: string;
 };
 
@@ -107,6 +109,7 @@ function toErrorReportRow(row: ImportErrorRow): ErrorReportRow {
     labels: stringifyLabels(row.labels),
     tiers: '',
     gift_id: row.gift_id || null,
+    ...(row.newsletters === undefined ? {} : { newsletters: stringifyLabels(row.newsletters) }),
     error: humaniseError(row),
   };
 }

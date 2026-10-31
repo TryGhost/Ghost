@@ -9,6 +9,19 @@ function splitLabels(cell: string): Label[] {
   return cell ? cell.split(',').map((name) => ({ name })) : [];
 }
 
+// Names are matched, never created, so padding is not part of one. A repeat would be a
+// duplicate member-newsletter pair, which the unique constraint rejects.
+function splitNewsletterNames(cell: string): Label[] {
+  if (!cell) {
+    return [];
+  }
+  const names = cell
+    .split(',')
+    .map((name) => name.trim())
+    .filter(Boolean);
+  return [...new Set(names)].map((name) => ({ name }));
+}
+
 // An empty cell (or the literal 'undefined') reads as absent, not as a value -- so an
 // empty created_at is a missing date, not the invalid empty string.
 const optionalCell = z
@@ -34,6 +47,7 @@ export const memberImportRowSchema = z
     created_at: optionalCell,
     import_tier: optionalCell,
     gift_id: optionalCell,
+    newsletters: z.string().transform(splitNewsletterNames).optional(),
     labels: z.string().default('').transform(splitLabels),
   })
   .loose();

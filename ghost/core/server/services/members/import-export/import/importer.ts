@@ -47,7 +47,10 @@ interface MemberModel {
   id: string;
   name: string;
   note: string;
-  related(relation: string): { toJSON(): Array<{ name: string }>; length: number };
+  related(relation: string): {
+    toJSON(): Array<{ name: string; status?: string }>;
+    length: number;
+  };
 }
 
 // Reads a source into import rows. The CSV reader is the only implementation today;
@@ -439,6 +442,19 @@ class MembersCSVImporter<Plan> {
     const { defaultTier, activeMetafields } = prepared;
     const tierIdCache = new Map();
     const archivableStripePriceIds: string[] = [];
+    // Names resolve against active newsletters only: an import never creates one.
+    let newsletterIdByName = new Map<string, string>();
+    if (rows.some((row) => row.newsletters !== undefined)) {
+      const activeNewsletters = await this._knex('newsletters')
+        .select('id', 'name')
+        .where('status', 'active');
+      newsletterIdByName = new Map(
+        activeNewsletters.map((newsletter: { id: string; name: string }) => [
+          newsletter.name,
+          newsletter.id,
+        ]),
+      );
+    }
     // Copied per row: the member model stamps ids and trims names onto these in
     // place, and each row runs in its own transaction that can roll back. A
     // caller can hand in a nameless label, which the model would drop anyway.
@@ -497,6 +513,7 @@ class MembersCSVImporter<Plan> {
           created_at: createdAt,
           labels: [...row.labels, ...cloneGlobalLabels()],
         };
+        const requested = requestedNewsletters(row, newsletterIdByName);
         const existingMember = row.email
           ? await this._members.get(
               { email: row.email },
@@ -507,11 +524,20 @@ class MembersCSVImporter<Plan> {
         if (existingMember) {
           const existingLabels = existingMember.related('labels').toJSON();
           const existingNewsletters = existingMember.related('newsletters');
-          if (existingNewsletters.length > 0 && memberValues.subscribed) {
-            memberValues.newsletters = existingNewsletters.toJSON();
-          }
-          if (!existingNewsletters.length && memberValues.subscribed) {
-            memberValues.subscribed = false;
+          const hasActiveNewsletter = existingNewsletters
+            .toJSON()
+            .some((newsletter) => newsletter.status === 'active');
+          // Never subscribes a member with no active newsletter. The repository keeps
+          // archived subscriptions when it replaces the active ones.
+          if (requested && hasActiveNewsletter) {
+            memberValues.newsletters = requested;
+          } else {
+            if (existingNewsletters.length > 0 && memberValues.subscribed) {
+              memberValues.newsletters = existingNewsletters.toJSON();
+            }
+            if (!existingNewsletters.length && memberValues.subscribed) {
+              memberValues.subscribed = false;
+            }
           }
           if (!row.name) {
             memberValues.name = existingMember.name;
@@ -527,6 +553,9 @@ class MembersCSVImporter<Plan> {
             { ...options, id: existingMember.id },
           );
         } else {
+          if (requested) {
+            memberValues.newsletters = requested;
+          }
           member = await this._members.create(
             memberValues,
             Object.assign({}, options, { context: CREATE_CONTEXT }),
@@ -668,6 +697,21 @@ class MembersCSVImporter<Plan> {
       });
     }
   }
+}
+
+// The active newsletters a row names, or undefined to leave them to the subscribed rules:
+// a blank cell, names matching no active newsletter, or subscribed_to_emails=false.
+function requestedNewsletters(
+  row: MemberImportRow,
+  idByName: Map<string, string>,
+): Array<{ id: string }> | undefined {
+  if (row.newsletters === undefined || row.subscribed === false) {
+    return undefined;
+  }
+  const ids = row.newsletters
+    .map((newsletter) => idByName.get(newsletter.name))
+    .filter((id): id is string => id !== undefined);
+  return ids.length > 0 ? ids.map((id) => ({ id })) : undefined;
 }
 
 const ValueRefusal = z.object({ property: z.string(), message: z.string() });
