@@ -5,8 +5,9 @@ import apDashedLinesDark from '@assets/images/onboarding/ap-dashed-lines-dark.pn
 import flipboardAvatar from '@assets/images/onboarding/avatar-flipboard.png';
 import vergeAvatar from '@assets/images/onboarding/avatar-verge.png';
 import { Avatar, AvatarFallback, AvatarImage, Button, Separator } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useNavigateWithBasePath } from '@src/hooks/use-navigate-with-base-path';
+import { useShade } from '@tryghost/shade/app';
 
 const Reply: React.FC<{
   avatarNo: number;
@@ -45,11 +46,19 @@ const Reaction: React.FC<{
   timestamp: string;
   children?: ReactNode;
 }> = ({ type, names, timestamp, children }) => {
+  const { admin7Design } = useShade();
+
   return (
     <div>
       <div className="flex w-full items-start gap-3">
         <div
-          className={`flex size-9 max-h-9 min-h-9 max-w-9 min-w-9 items-center justify-center rounded-full bg-gradient-to-t text-white ${type === 'like' ? 'from-pink-400 to-pink-600' : 'from-blue-400 to-blue-600'}`}
+          className={`flex size-9 max-h-9 min-h-9 max-w-9 min-w-9 items-center justify-center rounded-full text-white ${
+            admin7Design
+              ? type === 'like'
+                ? 'bg-pink-500'
+                : 'bg-blue-500'
+              : `bg-gradient-to-t ${type === 'like' ? 'from-pink-400 to-pink-600' : 'from-blue-400 to-blue-600'}`
+          }`}
         >
           {type === 'like' ? <LucideIcon.Heart size={20} /> : <LucideIcon.Repeat size={20} />}
         </div>
@@ -73,6 +82,7 @@ const Reaction: React.FC<{
 };
 
 const Step2: React.FC = () => {
+  const { admin7Design } = useShade();
   const navigate = useNavigateWithBasePath();
 
   return (
@@ -104,7 +114,10 @@ const Step2: React.FC = () => {
           </div>
         </div>
         <Button
-          className="min-w-60 bg-gradient-to-r from-purple-500 to-[#6A1AD6] hover:opacity-90 dark:text-white"
+          className={cn(
+            'min-w-60 hover:opacity-90 dark:text-white',
+            admin7Design ? 'bg-purple-600' : 'bg-gradient-to-r from-purple-500 to-[#6A1AD6]',
+          )}
           size="lg"
           onClick={() => navigate('/welcome/3')}
         >
@@ -114,7 +127,12 @@ const Step2: React.FC = () => {
       <div className="mt-8 flex h-full max-h-[670px] flex-col items-stretch justify-end">
         <div className="relative -mx-14 mt-5 w-[calc(100%+112px)] overflow-y-hidden mask-b-from-80% px-14 pt-8">
           <div className="relative mx-auto h-[694px] w-full max-w-xl rounded-2xl border border-gray-200/70 bg-white shadow-xl dark:border-gray-900 dark:bg-[#101114] dark:shadow-xl dark:shadow-[#1e1b4b]/10">
-            <div className="animate-onboarding-followers absolute -top-4 -right-8 flex h-8 items-center gap-1.5 rounded-full bg-gradient-to-t from-black to-gray-900 px-3 font-semibold text-white opacity-0">
+            <div
+              className={cn(
+                'animate-onboarding-followers absolute -top-4 -right-8 flex h-8 items-center gap-1.5 rounded-full px-3 font-semibold text-white opacity-0',
+                admin7Design ? 'bg-black' : 'bg-gradient-to-t from-black to-gray-900',
+              )}
+            >
               <LucideIcon.TrendingUp size={18} />
               270 followers this week
             </div>

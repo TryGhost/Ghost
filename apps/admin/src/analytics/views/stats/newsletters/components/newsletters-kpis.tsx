@@ -35,6 +35,7 @@ import {
 import { useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
 import { useEmailTrackClicks, useEmailTrackOpens } from '@tryghost/admin-x-framework/api/settings';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
+import { useShade } from '@tryghost/shade/app';
 
 interface BarTooltipPayload {
   value: number;
@@ -115,6 +116,8 @@ const NewsletterKPIs: React.FC<{
   isAvgsLoading,
   initialTab = 'total-subscribers',
 }) => {
+  // admin7Design charts are flat: solid fills, no gradients.
+  const { admin7Design } = useShade();
   const [currentTab, setCurrentTab] = useState(initialTab);
   const [isHoveringClickable, setIsHoveringClickable] = useState(false);
   const { range } = useAnalytics();
@@ -435,12 +438,12 @@ const NewsletterKPIs: React.FC<{
                         <stop
                           offset="0%"
                           stopColor={tabConfig[currentTab].color}
-                          stopOpacity={0.8}
+                          stopOpacity={admin7Design ? 1 : 0.8}
                         />
                         <stop
                           offset="100%"
                           stopColor={tabConfig[currentTab].color}
-                          stopOpacity={0.6}
+                          stopOpacity={admin7Design ? 1 : 0.6}
                         />
                       </linearGradient>
                     </defs>

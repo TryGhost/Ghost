@@ -4,13 +4,15 @@ import apNodes from '@assets/images/onboarding/ap-nodes.png';
 import apNodesDark from '@assets/images/onboarding/ap-nodes-dark.png';
 import { Button, Skeleton } from '@tryghost/shade/components';
 import { H3 } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { sanitizeHtml } from '@src/utils/content-formatters';
 import { useAccountForUser } from '@src/hooks/use-activity-pub-queries';
 import { useBrowseUsers } from '@tryghost/admin-x-framework/api/users';
 import { useNavigateWithBasePath } from '@src/hooks/use-navigate-with-base-path';
+import { useShade } from '@tryghost/shade/app';
 
 const Step1: React.FC = () => {
+  const { admin7Design } = useShade();
   const { data: account } = useAccountForUser('index', 'me');
   const { data: { users, meta } = { users: [] }, isLoading: usersLoading } = useBrowseUsers();
   const navigate = useNavigateWithBasePath();
@@ -59,7 +61,7 @@ const Step1: React.FC = () => {
             </div>
           </div>
           <Button
-            className={`min-w-60 bg-gradient-to-r from-purple-500 to-[#6A1AD6] hover:opacity-90 dark:text-white`}
+            className={`min-w-60 ${admin7Design ? 'bg-purple-600' : 'bg-gradient-to-r from-purple-500 to-[#6A1AD6]'} hover:opacity-90 dark:text-white`}
             size="lg"
             onClick={() => navigate('/welcome/2')}
           >
@@ -75,7 +77,14 @@ const Step1: React.FC = () => {
             className="absolute top-[calc(-280px)] left-1/2 hidden w-full max-w-[1300px] min-w-[1240px] -translate-x-1/2 dark:visible! dark:block!"
             src={apNodesDark}
           />
-          <div className="relative mx-auto mt-0 flex w-96 flex-col gap-3 rounded-lg bg-white p-6 shadow-xl before:absolute before:inset-[80px] before:-z-10 before:rounded-full before:bg-[radial-gradient(circle,#4b5563,#6b7280,#9ca3af)] before:blur-[1000px] xxl:mt-[calc(-280px+20vw)] min-[1800px]:mt-14 dark:border dark:border-gray-950 dark:bg-[#101114] dark:shadow-[#1e1b4b]/5 dark:before:bg-[radial-gradient(circle,#6366f1,#a855f7,#ec4899)]">
+          <div
+            className={cn(
+              'relative mx-auto mt-0 flex w-96 flex-col gap-3 rounded-lg bg-white p-6 shadow-xl before:absolute before:inset-[80px] before:-z-10 before:rounded-full before:blur-[1000px] xxl:mt-[calc(-280px+20vw)] min-[1800px]:mt-14 dark:border dark:border-gray-950 dark:bg-[#101114] dark:shadow-[#1e1b4b]/5',
+              admin7Design
+                ? 'before:bg-gray-500 dark:before:bg-purple-500'
+                : 'before:bg-[radial-gradient(circle,#4b5563,#6b7280,#9ca3af)] dark:before:bg-[radial-gradient(circle,#6366f1,#a855f7,#ec4899)]',
+            )}
+          >
             <div className="flex items-start justify-between">
               <APAvatar
                 author={
@@ -97,7 +106,7 @@ const Step1: React.FC = () => {
             <div className="flex flex-col items-start gap-1">
               <H3>{account?.name || <Skeleton className="w-24" />}</H3>
               <div
-                className={`relative -mx-3 h-8 max-w-[calc(100%+24px)] px-3 text-lg font-medium before:absolute before:inset-0 before:rounded-full before:bg-gradient-to-r before:from-[#CFB0FF66] before:to-[#B6E8FF66] before:opacity-0 ${!usersLoading && 'before:animate-onboarding-handle-bg'} dark:before:from-[#CFB0FF20] dark:before:to-[#B6E8FF20]`}
+                className={`relative -mx-3 h-8 max-w-[calc(100%+24px)] px-3 text-lg font-medium before:absolute before:inset-0 before:rounded-full ${admin7Design ? 'before:bg-purple-200/40' : 'before:bg-gradient-to-r before:from-[#CFB0FF66] before:to-[#B6E8FF66]'} before:opacity-0 ${!usersLoading && 'before:animate-onboarding-handle-bg'} ${admin7Design ? 'dark:before:bg-purple-200/10' : 'dark:before:from-[#CFB0FF20] dark:before:to-[#B6E8FF20]'}`}
               >
                 <div className="relative flex h-full items-center gap-1">
                   <span className="truncate">
