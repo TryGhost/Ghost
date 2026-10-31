@@ -1,3 +1,5 @@
+import type { GhostLogger } from '@tryghost/logging';
+
 export type ExternalMediaFailureStage = 'download' | 'extract' | 'unsupported' | 'storage';
 
 export interface ExternalMediaStored {
@@ -27,11 +29,7 @@ export interface ExternalMediaInlinerDependencies {
   UserModel: object;
   /** Picks the storage for a file, or null if no storage accepts it. */
   getMediaStorage: (extension: string, fileBuffer: Buffer) => Promise<unknown>;
-  logging: {
-    info(...args: unknown[]): void;
-    warn(...args: unknown[]): void;
-    error(...args: unknown[]): void;
-  };
+  logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
   /** External HTTP client with SSRF protection; see lib/request-external. */
   request: (
     url: string,
