@@ -193,7 +193,7 @@ services:
         application. Existing row/helper tests do not make this root migration-ready.
   adapter-manager:
     kind: directory
-    disposition: relocate
+    disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -2543,7 +2543,7 @@ services:
         selected rows and mail values, not exactly-once delivery or drain.
   email-address:
     kind: directory
-    disposition: relocate
+    disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -4671,7 +4671,7 @@ services:
         test config changes do not establish replacement behavior or production hot reload.
   identity-tokens:
     kind: directory
-    disposition: relocate
+    disposition: retain
     status: audited
     auditedAt: 5dae46983fe5423a900214dfc1906f5d14e637d2
     migration:
@@ -5286,7 +5286,8 @@ services:
         unproven; do not introduce those guarantees as part of initializer adoption.
   internal-keys:
     kind: directory
-    disposition: relocate
+    disposition: retain
+    futureHome: core/server/auth/internal-keys
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -5818,7 +5819,7 @@ services:
         authority, forwarded name/password and the expiry boundary without real persistence.
   jobs-service:
     kind: directory
-    disposition: relocate
+    disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -6030,7 +6031,7 @@ services:
         ordering and failures outside the tested jobs-start boundary remain open.
   limits.ts:
     kind: file
-    disposition: relocate
+    disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -10330,7 +10331,7 @@ services:
         and preserve the distinction between durable offer creation and later coupon provisioning.
   permissions:
     kind: directory
-    disposition: relocate
+    disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -11092,7 +11093,8 @@ services:
         Preserve their existing owners and behavior unless the migration changes them.
   posts-public:
     kind: directory
-    disposition: relocate
+    disposition: retain
+    futureHome: core/server/api/endpoints/utils/public-response-cache
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -11696,7 +11698,7 @@ services:
         shared socket ownership or timeout completion.
   remote-flags:
     kind: directory
-    disposition: relocate
+    disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -12192,7 +12194,7 @@ services:
         the comments case does not prove each uploaded collection is activated.
   settings:
     kind: directory
-    disposition: relocate
+    disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -12451,7 +12453,7 @@ services:
         config snapshots/live reads and actual default-sender fallback without copying the stale name.
   settings-helpers:
     kind: directory
-    disposition: relocate
+    disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -12704,7 +12706,8 @@ services:
         that guard. These source risks have not been reproduced by this audit.
   signing-keys:
     kind: directory
-    disposition: relocate
+    disposition: retain
+    futureHome: core/server/auth/signing-keys
     migrated: true
     extras:
       scheduleCheckJob:
@@ -12916,7 +12919,7 @@ services:
         are evicted rather than returning the same rejected promise.
   slack-notifications:
     kind: directory
-    disposition: relocate
+    disposition: retain
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -14312,7 +14315,8 @@ services:
     blockers: []
   tags-public:
     kind: directory
-    disposition: relocate
+    disposition: retain
+    futureHome: core/server/api/endpoints/utils/public-response-cache
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
