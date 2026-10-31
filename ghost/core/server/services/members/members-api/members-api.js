@@ -292,7 +292,8 @@ module.exports = function MembersAPI({
     if (member) {
       if (oldEmail && (!type || type === 'updateEmail')) {
         // user exists but wants to change their email address
-        await users.update({ email }, { id: member.id });
+        const isSuppressed = (await emailSuppressionList.getSuppressionData(email))?.suppressed;
+        await users.update({ email, email_disabled: !!isSuppressed }, { id: member.id });
         await MemberLoginEvent.add({ member_id: member.id });
         return getMemberIdentityData(email);
       }
