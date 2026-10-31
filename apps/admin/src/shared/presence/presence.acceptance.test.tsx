@@ -90,4 +90,26 @@ describe('presence polling', () => {
       .toHaveValue('Older backend');
     await expect.poll(() => presence.requests.length).toBe(1);
   });
+
+  it('polls the rows of a list reached by leaving the editor', async () => {
+    fakeEditorChrome();
+    fakePostRead('Presence example');
+    fakeLeave();
+    fakePostsListScreen();
+    fakePosts([post({ id: POST_ID, title: 'Presence example', status: 'draft' })]);
+    const presence = fakePresence();
+    await renderAdminApp(`/editor/post/${POST_ID}`, POLLING_ON);
+    await expect.poll(() => presence.requests.length).toBeGreaterThan(0);
+    await page.getByRole('link', { name: 'Posts', exact: true }).click();
+    await expect.element(page.getByText('Presence example')).toBeVisible();
+    await expect
+      .poll(() =>
+        presence.requests.some(
+          ({ body }) =>
+            !('editing' in (body as { presence: Array<Record<string, unknown>> }).presence[0]) &&
+            JSON.stringify(body).includes(POST_ID),
+        ),
+      )
+      .toBe(true);
+  });
 });
