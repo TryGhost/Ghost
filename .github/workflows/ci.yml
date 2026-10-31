@@ -1177,18 +1177,20 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         # The runner image already has Firefox's other libraries; `playwright install-deps`
         # also pulls ~20MB of fonts the video-card tests don't use.
+        # The package name tracks the image's FFmpeg (libavcodec60 on 24.04, libavcodec62 on 26.04).
         # Worst case 3 × (65 + 125 + 5) = 585s stays inside timeout-minutes.
         run: |
           for i in 1 2 3; do
             if sudo timeout -k 5 60 apt-get update -yq \
                  -o Acquire::Retries=3 -o Acquire::http::Timeout=30 &&
+               codec=$(apt-cache pkgnames libavcodec | grep -m1 -xE 'libavcodec[0-9]+') &&
                sudo timeout -k 5 120 apt-get install -yq --no-install-recommends \
-                 -o Acquire::Retries=3 -o Acquire::http::Timeout=30 libavcodec60; then
+                 -o Acquire::Retries=3 -o Acquire::http::Timeout=30 "$codec"; then
               exit 0
             fi
-            echo "libavcodec60 attempt $i failed/stuck, retrying..."; sleep 5
+            echo "libavcodec attempt $i failed/stuck, retrying..."; sleep 5
           done
-          echo "libavcodec60 failed after 3 attempts"; exit 1
+          echo "libavcodec failed after 3 attempts"; exit 1
 
       - name: Run Playwright tests
         run: pnpm nx run ${{ matrix.app }}:test:acceptance --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
