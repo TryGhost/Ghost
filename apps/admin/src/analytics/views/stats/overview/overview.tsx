@@ -281,7 +281,7 @@ const Overview: React.FC = () => {
               )}
             >
               <LucideIcon.ChartColumnIncreasing
-                className="text-[#00BBA7]"
+                className={admin7Design ? 'text-blue-600 dark:text-[#00BBA7]' : 'text-[#00BBA7]'}
                 size={20}
                 strokeWidth={1.5}
               />
@@ -300,7 +300,11 @@ const Overview: React.FC = () => {
                   : 'bg-gradient-to-tl from-[#FDC700]/20 to-[#FF2056]/20',
               )}
             >
-              <LucideIcon.Globe className="text-[#FE9A00]" size={20} strokeWidth={1.5} />
+              <LucideIcon.Globe
+                className={admin7Design ? 'text-yellow-600 dark:text-[#FE9A00]' : 'text-[#FE9A00]'}
+                size={20}
+                strokeWidth={1.5}
+              />
             </div>
           </HelpCard>
         </div>

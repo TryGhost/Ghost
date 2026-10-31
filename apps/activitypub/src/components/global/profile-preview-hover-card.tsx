@@ -192,7 +192,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
           ) : !hasLoadingError && bio ? (
             <div
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(bio) }}
-              className="leading-tight dark:text-gray-300 [&_.invisible]:hidden [&_a]:text-[#00a4eb] [&_a:hover]:underline"
+              className="leading-tight dark:text-gray-300 [&_.invisible]:hidden [&_a]:text-blue-600 [&_a:hover]:underline"
             />
           ) : null}
         </div>

@@ -53,7 +53,11 @@ const MembersHelpCards: React.FC = () => {
               : 'bg-gradient-to-tr from-[#22C55E]/20 to-[#84CC16]/20',
           )}
         >
-          <LucideIcon.UserPlus className="text-[#16A34A]" size={20} strokeWidth={1.5} />
+          <LucideIcon.UserPlus
+            className={admin7Design ? 'text-green-600 dark:text-[#16A34A]' : 'text-[#16A34A]'}
+            size={20}
+            strokeWidth={1.5}
+          />
         </div>
       </MembersHelpCard>
 
@@ -70,7 +74,11 @@ const MembersHelpCards: React.FC = () => {
               : 'bg-gradient-to-tl from-[#A855F7]/20 to-[#EC4899]/20',
           )}
         >
-          <LucideIcon.Mail className="text-[#DB2777]" size={20} strokeWidth={1.5} />
+          <LucideIcon.Mail
+            className={admin7Design ? 'text-purple-600 dark:text-[#DB2777]' : 'text-[#DB2777]'}
+            size={20}
+            strokeWidth={1.5}
+          />
         </div>
       </MembersHelpCard>
     </div>

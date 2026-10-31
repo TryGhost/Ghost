@@ -4,20 +4,23 @@ import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/
 
 export type { SharedView } from '@/members/api';
 
+// Palette variables so the dots follow the admin7Design palette; flag off they
+// resolve to the previous hex values. Teal has no palette family and orange is
+// off the previous orange ramp, so both stay literal.
 export function getColorHex(color: string): string {
   const colorMap: Record<string, string> = {
-    midgrey: '#7C8B9A',
-    blue: '#14b8ff',
-    green: '#30cf43',
-    red: '#f50b23',
+    midgrey: 'var(--color-gray-700)',
+    blue: 'var(--color-blue-500)',
+    green: 'var(--color-green-500)',
+    red: 'var(--color-red-500)',
     teal: '#4dcddc',
-    purple: '#8e42ff',
-    yellow: '#ffb41f',
+    purple: 'var(--color-purple-500)',
+    yellow: 'var(--color-yellow-500)',
     orange: '#fe8b05',
-    pink: '#fb2d8d',
+    pink: 'var(--color-pink-500)',
   };
 
-  return colorMap[color] || '#7C8B9A';
+  return colorMap[color] || 'var(--color-gray-700)';
 }
 
 export function useSharedViews(route?: string) {

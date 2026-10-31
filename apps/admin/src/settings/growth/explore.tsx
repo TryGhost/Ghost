@@ -165,7 +165,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({ keywords }) => {
           </div>
           <div
             className={cn(
-              '-mx-5 -mb-5 flex items-center justify-between gap-4 rounded-b-xl border-t border-[rgba(142,66,255,0.1)] p-6 px-7 md:-mx-7 md:-mb-7',
+              '-mx-5 -mb-5 flex items-center justify-between gap-4 rounded-b-xl border-t border-purple-500/10 p-6 px-7 md:-mx-7 md:-mb-7',
               admin7Design
                 ? 'bg-purple-500/5'
                 : 'bg-gradient-to-tr from-[rgba(142,66,255,0.07)] to-[rgba(142,66,255,0.02)]',

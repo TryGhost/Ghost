@@ -88,7 +88,11 @@ const AutomationsIconTile: React.FC = () => {
         admin7Design ? 'bg-purple-500/20' : 'bg-gradient-to-tr from-[#8B5CF6]/20 to-[#EC4899]/20',
       )}
     >
-      <LucideIcon.Zap className="text-[#8B5CF6]" size={20} strokeWidth={1.5} />
+      <LucideIcon.Zap
+        className={admin7Design ? 'text-purple-600 dark:text-[#8B5CF6]' : 'text-[#8B5CF6]'}
+        size={20}
+        strokeWidth={1.5}
+      />
     </div>
   );
 };
@@ -103,7 +107,11 @@ const FeedbackIconTile: React.FC = () => {
         admin7Design ? 'bg-green-500/20' : 'bg-gradient-to-tl from-[#10B981]/20 to-[#0EA5E9]/20',
       )}
     >
-      <LucideIcon.MessageCircle className="text-[#0EA5E9]" size={20} strokeWidth={1.5} />
+      <LucideIcon.MessageCircle
+        className={admin7Design ? 'text-green-600 dark:text-[#0EA5E9]' : 'text-[#0EA5E9]'}
+        size={20}
+        strokeWidth={1.5}
+      />
     </div>
   );
 };

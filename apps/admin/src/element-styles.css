@@ -124,6 +124,11 @@ body:where(.react-admin) {
   line-height: 1em;
 }
 
+/* admin7Design on, light mode: the palette's pink. Dark mode keeps the literal. */
+:where(html:not(.dark) body.react-admin [data-admin7-design='true']) code {
+  color: var(--color-pink-600);
+}
+
 :where(body.react-admin) pre {
   overflow: auto;
   margin: 1.6em 0;
