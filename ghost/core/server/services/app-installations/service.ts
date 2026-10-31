@@ -12,6 +12,7 @@ import {
   type ManifestWrite,
 } from './decide-on-manifest';
 import { approvalManifestIds, buildHistory } from './history';
+import type { IdentityChecker, PinnedIdentity, StartedChallenge } from './identity-check';
 import type { LoadedManifest, LoadManifest } from './load-manifest';
 import type { AppInstallationStatus } from './schema';
 
@@ -27,6 +28,11 @@ export interface AppInstallationPreview {
    * ahead if neither changed since the review.
    */
   digest: string;
+  /**
+   * The app's origin, if the site's configuration trusts it so it skipped the challenge.
+   * Empty when it answered the challenge.
+   */
+  trusted_origins: string[];
   /**
    * The site's existing installation of this app, if any, with its approved manifest and
    * the changes the reviewed manifest would make.
@@ -75,15 +81,25 @@ function uninstalled() {
 }
 
 /**
- * The app's manifest URL doesn't serve a usable manifest for this app. Nothing is written,
- * so the app opens again once the URL serves one.
+ * The app's manifest URL doesn't serve a usable manifest for this app, or one that passes
+ * the identity check. The session fails with the failure's own code, which Admin reads to
+ * tell an app that's down or broken from one Ghost couldn't confirm. Nothing is written, so
+ * the app opens again once the URL serves one.
  */
-function unavailable(why: string) {
+function unavailable(err: InstanceType<typeof errors.ValidationError>) {
   return new errors.ConflictError({
-    message: 'This app is unavailable.',
-    context: why,
-    code: 'APP_UNAVAILABLE',
+    message: err.message,
+    context: err.context,
+    code: err.code ?? 'APP_UNAVAILABLE',
   });
+}
+
+/** A loaded manifest that has passed the identity check. */
+interface CheckedManifest {
+  loaded: LoadedManifest;
+  trustedOrigins: string[];
+  /** The installation it was checked against, which the preview shows, if there is one. */
+  installation: Installation | null;
 }
 
 /** The reviewed manifest is for a different app than the installed one. */
@@ -98,6 +114,7 @@ export class AppInstallationsService {
   private repository: AppInstallationsRepository;
   private recordAction: RecordAppInstallationAction;
   private loadManifest: LoadManifest;
+  private identity: IdentityChecker;
   /** Re-checks in progress, by installation ID. Sessions that start together share one. */
   private rechecking = new Map<string, Promise<void>>();
 
@@ -105,14 +122,17 @@ export class AppInstallationsService {
     knex,
     recordAction,
     loadManifest,
+    identity,
   }: {
     knex: Knex;
     recordAction: RecordAppInstallationAction;
     loadManifest: LoadManifest;
+    identity: IdentityChecker;
   }) {
     this.repository = new AppInstallationsRepository(knex);
     this.recordAction = recordAction;
     this.loadManifest = loadManifest;
+    this.identity = identity;
   }
 
   /** Lists installed apps, suspended ones included. Uninstalled apps aren't listed. */
@@ -138,9 +158,13 @@ export class AppInstallationsService {
     return installation;
   }
 
-  /** Fetches and checks an app's manifest, for the publisher to review. Stores nothing. */
+  /**
+   * Fetches and checks an app's manifest, and runs the identity check, for the publisher to
+   * review. Stores nothing.
+   */
   async preview(manifestUrl: string): Promise<AppInstallationPreview> {
-    return this.previewOf(await this.loadManifest(manifestUrl));
+    const { loaded, started } = await this.load(manifestUrl);
+    return this.previewOf(await this.review(loaded, started));
   }
 
   /** Installs an app after the publisher has reviewed its manifest, as previewed. */
@@ -148,7 +172,7 @@ export class AppInstallationsService {
     context: RequestContext,
     { manifestUrl, digest }: { manifestUrl: string; digest: string },
   ): Promise<Installation> {
-    const loaded = await this.fetchReviewed(manifestUrl, digest);
+    const { loaded } = await this.fetchReviewed(manifestUrl, digest);
     const installation = await this.repository.insert(loaded);
     await this.recordAction({
       context,
@@ -185,16 +209,10 @@ export class AppInstallationsService {
     if (current.status === 'uninstalled') {
       throw uninstalled();
     }
-    const loaded = await this.fetchReviewed(manifestUrl, digest);
-    if (loaded.manifest.id !== current.app_id) {
-      throw forAnotherApp(loaded.manifest.id);
-    }
+    const checked = await this.fetchReviewed(manifestUrl, digest, current);
+    const { loaded } = checked;
     if (current.revision !== revision) {
-      // The review is out of date, which asks for a new one, unless the app has been
-      // uninstalled during the fetch and there's nothing left to review.
-      throw (await this.currentInstallation(id))
-        ? await this.changedSinceReview(loaded)
-        : uninstalled();
+      throw await this.changedSinceReview(checked, id);
     }
 
     const write = approvalWrite({
@@ -202,12 +220,12 @@ export class AppInstallationsService {
       pending: await this.pendingManifestOf(current),
       loaded,
     });
-    const stored = await this.store(current, write);
+    const stored = await this.store(current, write, loaded);
     if (stored.status === 'uninstalled') {
       throw uninstalled();
     }
     if (stored.status === 'changed') {
-      throw await this.changedSinceReview(loaded);
+      throw await this.changedSinceReview(checked, id);
     }
     const approved = stored.value;
     if (approved) {
@@ -272,12 +290,61 @@ export class AppInstallationsService {
     );
   }
 
-  private async previewOf(loaded: LoadedManifest): Promise<AppInstallationPreview> {
-    const current = await this.repository.currentInstallationOf(loaded.manifest.id);
+  /** What the site holds an installation's manifests to: its key, and the newest signing. */
+  private pinnedIdentityOf(installation: Installation): PinnedIdentity {
+    return {
+      identityKeyThumbprint: installation.identity_key_thumbprint,
+      signedAt: installation.manifest_signed_at,
+      signedDigest: installation.manifest_signed_digest,
+    };
+  }
+
+  /**
+   * Loads a manifest with its origin's challenge already on the way, so the two requests
+   * run together rather than one after the other.
+   */
+  private async load(
+    manifestUrl: string,
+  ): Promise<{ loaded: LoadedManifest; started: StartedChallenge }> {
+    const started = this.identity.challenge(manifestUrl);
+    return { loaded: await this.loadManifest(manifestUrl), started };
+  }
+
+  /**
+   * Runs the identity check on a manifest a publisher is to review, against `installation`,
+   * or else the site's installation of that app, if it has one. Without one, a manifest
+   * signed with the same key as an ended installation is still held to its newest signing,
+   * so uninstalling and installing again can't bring back an older manifest.
+   */
+  private async review(
+    loaded: LoadedManifest,
+    started: StartedChallenge,
+    installation?: Installation,
+  ): Promise<CheckedManifest> {
+    const current =
+      installation ?? (await this.repository.currentInstallationOf(loaded.manifest.id)) ?? null;
+    let pinned: PinnedIdentity | null = current ? this.pinnedIdentityOf(current) : null;
+    if (!current) {
+      const ended = await this.repository.lastSignedAtOf(
+        loaded.manifest.id,
+        loaded.identityKeyThumbprint,
+      );
+      pinned = ended ? { identityKeyThumbprint: loaded.identityKeyThumbprint, ...ended } : null;
+    }
+    const { trustedOrigins } = await this.identity.check(loaded, pinned, started);
+    return { loaded, trustedOrigins, installation: current };
+  }
+
+  private previewOf({
+    loaded,
+    trustedOrigins,
+    installation: current,
+  }: CheckedManifest): AppInstallationPreview {
     return {
       manifest_url: loaded.manifestUrl,
       manifest: loaded.manifest,
       digest: loaded.digest,
+      trusted_origins: trustedOrigins,
       // The approved manifest shown is the one the changes were computed from, so the
       // review matches the list of changes.
       installation: current
@@ -294,28 +361,44 @@ export class AppInstallationsService {
   }
 
   /**
-   * Fetches the manifest again and checks its digest matches the one the publisher
-   * reviewed. If it doesn't, the error carries a new preview so they can review the new
-   * version.
+   * Fetches the manifest again, runs the identity check again, and checks its digest
+   * matches the one the publisher reviewed. For an existing installation, the manifest must
+   * be for its app, and is checked against its pinned keys. If the digest doesn't match,
+   * the error carries a new preview so they can review the new version.
    */
-  private async fetchReviewed(manifestUrl: string, digest: string): Promise<LoadedManifest> {
-    const loaded = await this.loadManifest(manifestUrl);
+  private async fetchReviewed(
+    manifestUrl: string,
+    digest: string,
+    installation?: Installation,
+  ): Promise<CheckedManifest> {
+    const { loaded, started } = await this.load(manifestUrl);
+    if (installation && loaded.manifest.id !== installation.app_id) {
+      throw forAnotherApp(loaded.manifest.id);
+    }
+    const checked = await this.review(loaded, started, installation);
     if (loaded.digest !== digest) {
       throw new errors.ConflictError({
         message: 'The app changed while it was being reviewed.',
         code: 'APP_MANIFEST_CHANGED',
-        errorDetails: await this.previewOf(loaded),
+        errorDetails: this.previewOf(checked),
       });
     }
-    return loaded;
+    return checked;
   }
 
-  /** The installation changed since the review, so the error carries a new preview. */
-  private async changedSinceReview(loaded: LoadedManifest) {
+  /**
+   * The installation changed since the review, so the error carries a new preview of it as
+   * it is now, unless it has been uninstalled and there's nothing left to review.
+   */
+  private async changedSinceReview(checked: CheckedManifest, id: string) {
+    const installation = await this.currentInstallation(id);
+    if (!installation) {
+      return uninstalled();
+    }
     return new errors.ConflictError({
       message: 'The installation changed while the app was being reviewed.',
       code: 'APP_INSTALLATION_CHANGED',
-      errorDetails: await this.previewOf(loaded),
+      errorDetails: this.previewOf({ ...checked, installation }),
     });
   }
 
@@ -330,11 +413,17 @@ export class AppInstallationsService {
   }
 
   /**
-   * Applies a write planned from `current`, unless the installation changed since. Returns
-   * the newly approved or pending manifest's ID, or null for `nothing`.
+   * Applies a write planned from `current`, unless the installation changed since, and
+   * records when `loaded`, which passed the identity check, was signed. Returns the newly
+   * approved or pending manifest's ID, or null for `nothing`.
    */
-  private store(current: Installation, write: ManifestWrite): Promise<WriteOutcome<string | null>> {
+  private store(
+    current: Installation,
+    write: ManifestWrite,
+    loaded: LoadedManifest,
+  ): Promise<WriteOutcome<string | null>> {
     return this.repository.whileUnchanged(current, async (locked) => {
+      await locked.raiseSignedAt(loaded);
       switch (write.kind) {
         case 'nothing':
           return null;
@@ -377,9 +466,10 @@ export class AppInstallationsService {
    * manifest, which suspends the app. No person made these changes, so nothing goes into
    * the staff history; the manifest rows record them.
    *
-   * If the manifest can't be loaded, or it's for a different app, the app is broken or its
-   * URL now serves someone else. The session then fails as unavailable instead of running
-   * the approved manifest.
+   * If the manifest can't be loaded, fails the identity check, or is for a different app,
+   * the app is broken or its URL now serves someone else. The session then fails instead of
+   * running the approved manifest, with the failure's own code. The challenge goes out with
+   * the manifest fetch, so a session start waits for one round trip to the app, not two.
    *
    * Everything is looked up by installation ID, never app ID, so a re-check that started
    * before an uninstall can't bring that installation back or change a newer installation
@@ -394,23 +484,22 @@ export class AppInstallationsService {
 
     let loaded: LoadedManifest;
     try {
-      loaded = await this.loadManifest(before.manifest_url);
+      let started: StartedChallenge;
+      ({ loaded, started } = await this.load(before.manifest_url));
       if (loaded.manifest.id !== before.app_id) {
         throw new errors.ValidationError({
           message: `${before.manifest_url} now serves ${loaded.manifest.id}.`,
           code: 'APP_MANIFEST_OTHER_APP',
         });
       }
+      await this.identity.check(loaded, this.pinnedIdentityOf(before), started);
     } catch (err) {
       // A ValidationError means the app served something that can't be used. Anything else
       // is a fault in Ghost, which fails the session as it is.
       if (!(err instanceof errors.ValidationError)) {
         throw err;
       }
-      return this.unavailableUnlessChanged(
-        before,
-        `${err.code}: ${err.message}${err.context ? ` (${err.context})` : ''}`,
-      );
+      return this.unavailableUnlessChanged(before, err);
     }
 
     const write = recheckWrite({
@@ -418,7 +507,7 @@ export class AppInstallationsService {
       pending: await this.pendingManifestOf(before),
       loaded,
     });
-    const stored = await this.store(before, write);
+    const stored = await this.store(before, write, loaded);
     if (stored.status === 'uninstalled') {
       throw notInstalled();
     }
@@ -431,11 +520,14 @@ export class AppInstallationsService {
   }
 
   /**
-   * Fails the session as unavailable, saying `why` in the error's context, which the request
-   * log records. If the installation changed while the manifest was loading, it may no
-   * longer use that URL, so the session returns the installation as it is instead.
+   * Fails the session with why the manifest couldn't be used in the error's context, which
+   * the request log records. If the installation changed while the manifest was loading, it
+   * may no longer use that URL, so the session returns the installation as it is instead.
    */
-  private async unavailableUnlessChanged(before: Installation, why: string): Promise<void> {
+  private async unavailableUnlessChanged(
+    before: Installation,
+    err: InstanceType<typeof errors.ValidationError>,
+  ): Promise<void> {
     const current = await this.currentInstallation(before.id);
     if (!current) {
       throw notInstalled();
@@ -443,6 +535,6 @@ export class AppInstallationsService {
     if (current.revision !== before.revision) {
       return;
     }
-    throw unavailable(why);
+    throw unavailable(err);
   }
 }

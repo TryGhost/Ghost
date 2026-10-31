@@ -10,6 +10,10 @@ const manifest = (overrides: Partial<AppManifest> = {}): AppManifest => ({
   accent_color: '#ff5500',
   icon: { name: 'audio-lines' },
   surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/admin' }],
+  manifest_url: 'https://podcast.example.com/ghost-app.json',
+  identity_key: { kty: 'OKP', crv: 'Ed25519', x: 'xQcVt_FXHEk7Uv4dKhUL2nR5DwwsLVW4pu2il-5sX_s' },
+  backend_key: { kty: 'OKP', crv: 'Ed25519', x: 'H7aU67-okztSJD3-0znkVDiCU-izOI3I851CZX8XDyk' },
+  development: false,
   ...overrides,
 });
 
@@ -51,10 +55,11 @@ describe('describeChanges', () => {
     ]);
   });
 
-  it('shows an app that moved as where its page runs, not as a row of its own', () => {
+  it('shows an app that moved as its new install link, and where its page runs', () => {
     const reviewed = {
       manifest_url: 'https://podcast.example.net/ghost-app.json',
       manifest: manifest({
+        manifest_url: 'https://podcast.example.net/ghost-app.json',
         surfaces: [{ type: 'admin_page', url: 'https://podcast.example.net/admin' }],
       }),
     };
@@ -65,8 +70,41 @@ describe('describeChanges', () => {
         { path: 'surfaces[0].url', requires_approval: true },
       ]).map(({ label, before, after }) => [label, before, after]),
     ).toEqual([
+      [
+        'Install link',
+        'https://podcast.example.com/ghost-app.json',
+        'https://podcast.example.net/ghost-app.json',
+      ],
       ['Page in Admin', 'https://podcast.example.com/admin', 'https://podcast.example.net/admin'],
     ]);
+  });
+
+  it('shows a switch to or from a development build', () => {
+    const reviewed = { ...approved, manifest: manifest({ development: true }) };
+
+    expect(
+      describeChanges(approved, reviewed, [{ path: 'development', requires_approval: true }]).map(
+        ({ label, before, after }) => [label, before, after],
+      ),
+    ).toEqual([['Development build', 'No', 'Yes']]);
+  });
+
+  // A publisher can't judge a key, and a new backend key applies without a review anyway.
+  it('leaves out a new backend key', () => {
+    const reviewed = {
+      ...approved,
+      manifest: manifest({
+        backend_key: {
+          kty: 'OKP',
+          crv: 'Ed25519',
+          x: 'Z_QKSqF5_5W5r2LfGwj1UyVOFyFew44-bMShKMwpCfo',
+        },
+      }),
+    };
+
+    expect(
+      describeChanges(approved, reviewed, [{ path: 'backend_key.x', requires_approval: false }]),
+    ).toEqual([]);
   });
 
   it('shows an icon as one change, whether it is named or served by the app', () => {

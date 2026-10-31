@@ -13,6 +13,18 @@ export const devOptions: ParseManifestOptions = {
   allowLocalhost: true,
 };
 
+export const IDENTITY_KEY = {
+  kty: 'OKP',
+  crv: 'Ed25519',
+  x: 'xQcVt_FXHEk7Uv4dKhUL2nR5DwwsLVW4pu2il-5sX_s',
+} as const;
+
+export const BACKEND_KEY = {
+  kty: 'OKP',
+  crv: 'Ed25519',
+  x: 'H7aU67-okztSJD3-0znkVDiCU-izOI3I851CZX8XDyk',
+} as const;
+
 export function manifest(overrides: Record<string, unknown> = {}) {
   return {
     id: 'com.example.podcast',
@@ -22,8 +34,20 @@ export function manifest(overrides: Record<string, unknown> = {}) {
     accent_color: '#FF5500',
     icon: { url: '/icon.svg' },
     surfaces: [{ type: 'admin_page', url: '/admin' }],
+    manifest_url: 'https://podcast.example.com/ghost-app.json',
+    identity_key: IDENTITY_KEY,
+    backend_key: BACKEND_KEY,
+    development: false,
     ...overrides,
   };
+}
+
+export function devManifest(overrides: Record<string, unknown> = {}) {
+  return manifest({
+    manifest_url: 'http://localhost:8787/ghost-app.json',
+    development: true,
+    ...overrides,
+  });
 }
 
 export function errorsOf(input: unknown, parseOptions = options) {
