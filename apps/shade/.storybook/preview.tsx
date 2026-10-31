@@ -48,9 +48,11 @@ const customViewports = {
 const StorybookSchemeDecorator = ({
   Story,
   scheme,
+  admin7Design,
 }: {
   Story: React.ComponentType;
   scheme: string;
+  admin7Design: boolean;
 }) => {
   React.useEffect(() => {
     const isDark = scheme === 'dark';
@@ -74,9 +76,10 @@ const StorybookSchemeDecorator = ({
         // overflow: 'unset',
         background: scheme === 'dark' ? '#131416' : '',
       }}
+      data-admin7-design={admin7Design}
     >
       {/* 👇 Decorators in Storybook also accept a function. Replace <Story/> with Story() to enable it  */}
-      <ShadeProvider darkMode={scheme === 'dark'}>
+      <ShadeProvider admin7Design={admin7Design} darkMode={scheme === 'dark'}>
         <Story />
       </ShadeProvider>
     </div>
@@ -135,9 +138,15 @@ const preview: Preview = {
   },
   decorators: [
     (Story, context) => {
-      let { scheme } = context.globals;
+      let { scheme, admin7Design } = context.globals;
 
-      return <StorybookSchemeDecorator Story={Story} scheme={scheme} />;
+      return (
+        <StorybookSchemeDecorator
+          admin7Design={admin7Design !== 'off'}
+          Story={Story}
+          scheme={scheme}
+        />
+      );
     },
   ],
   globalTypes: {
@@ -148,6 +157,20 @@ const preview: Preview = {
       toolbar: {
         icon: 'mirror',
         items: ['light', 'dark'],
+        dynamicTitle: true,
+      },
+    },
+    admin7Design: {
+      name: 'admin7Design',
+      description: "Preview Admin's admin7Design Labs flag on or off",
+      defaultValue: 'on',
+      toolbar: {
+        title: 'admin7Design',
+        icon: 'flag',
+        items: [
+          { value: 'on', title: 'admin7Design on' },
+          { value: 'off', title: 'admin7Design off' },
+        ],
         dynamicTitle: true,
       },
     },

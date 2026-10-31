@@ -268,20 +268,12 @@
   --tw-shadow: 0 30px 58px -12px rgb(0 0 0 / 0.4);
 }
 
-/* The current design is Shade's default. The flag-off scope is temporary rollout
-   compatibility and is repeated on portals, never inherited through body. */
-.shade,
-[data-admin7='true'] {
+/* Shade surfaces, portals included (ShadeScope repeats the class), use the
+   rounder control and menu radii. */
+.shade {
   --radius-control: var(--radius-lg);
   --radius-control-sm: var(--radius-md);
   --radius-menu: calc(var(--radius-lg) + 0.2rem);
   --radius-menu-item: var(--radius-lg);
   --radius-trend-badge: var(--radius-lg);
-}
-[data-admin7='false'] {
-  --radius-control: var(--radius-md);
-  --radius-control-sm: var(--radius-sm);
-  --radius-menu: var(--radius-md);
-  --radius-menu-item: var(--radius-xs);
-  --radius-trend-badge: var(--radius-xs);
 }

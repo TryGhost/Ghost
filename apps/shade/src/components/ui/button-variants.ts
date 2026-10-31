@@ -26,68 +26,47 @@ const buttonVariants = cva(
         icon: 'size-9',
         'icon-sm': 'size-7 p-0 [&_svg]:size-3',
       },
-      isAdmin7: { true: '', false: '' },
       shape: {
         rounded: 'rounded-control',
         pill: 'rounded-full',
       },
     },
     compoundVariants: [
+      { variant: 'secondary', className: 'bg-tab-active hover:bg-secondary' },
       {
-        isAdmin7: false,
-        variant: 'secondary',
-        className: 'bg-secondary hover:bg-secondary/80',
-      },
-      { isAdmin7: true, variant: 'secondary', className: 'bg-tab-active hover:bg-secondary' },
-      { isAdmin7: false, variant: 'destructive-ghost', className: 'hover:bg-accent' },
-      {
-        isAdmin7: true,
         variant: 'destructive-ghost',
         className:
           'hover:bg-destructive/10 enabled:active:bg-destructive/10 enabled:aria-expanded:bg-destructive/10',
       },
       {
-        isAdmin7: false,
-        variant: 'subtle',
-        className:
-          'border border-control-border bg-transparent hover:bg-button-hover hover:text-accent-foreground',
-      },
-      {
-        isAdmin7: true,
         variant: 'subtle',
         className: 'hover:bg-accent hover:text-accent-foreground',
       },
       {
-        isAdmin7: true,
         variant: ['secondary', 'ghost', 'destructive-ghost', 'subtle'],
         className:
           'enabled:active:shadow-control-pressed enabled:aria-expanded:shadow-control-pressed',
       },
       {
-        isAdmin7: true,
         variant: 'secondary',
         className: 'enabled:active:bg-secondary enabled:aria-expanded:bg-secondary',
       },
       {
-        isAdmin7: true,
         variant: ['ghost', 'subtle'],
         className:
           'enabled:active:bg-accent enabled:aria-expanded:bg-accent enabled:aria-expanded:text-accent-foreground',
       },
       {
-        isAdmin7: true,
         variant: 'ghost',
         className:
           'hover:bg-button-ghost-hover enabled:active:bg-button-ghost-hover enabled:aria-expanded:bg-button-ghost-hover',
       },
       {
-        isAdmin7: true,
         variant: 'default',
         size: ['default', 'sm', 'lg'],
         className: 'px-4',
       },
       {
-        isAdmin7: true,
         variant: [
           'destructive',
           'outline',
@@ -101,13 +80,11 @@ const buttonVariants = cva(
         className: 'px-3',
       },
       {
-        isAdmin7: true,
         variant: 'outline',
         className:
           'border-0 shadow-control-outline enabled:active:shadow-control-outline-pressed enabled:aria-expanded:shadow-control-outline-pressed enabled:aria-expanded:bg-button-hover',
       },
       {
-        isAdmin7: true,
         size: 'icon',
         className: 'size-(--control-height) aspect-square p-0',
       },
@@ -116,7 +93,6 @@ const buttonVariants = cva(
       variant: 'default',
       size: 'default',
       shape: 'pill',
-      isAdmin7: true,
     },
   },
 );

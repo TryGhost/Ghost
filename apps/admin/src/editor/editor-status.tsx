@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Text } from '@tryghost/shade/primitives';
 import { Button, buttonVariants } from '@tryghost/shade/components';
-import { useShade } from '@tryghost/shade/app';
 import { cn, formatNumber } from '@tryghost/shade/utils';
 import { membersCountString, useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import {
@@ -251,7 +250,6 @@ export function EditorStatus({
   onOpenUpdateFlow,
   onRetrySave,
 }: EditorStatusProps) {
-  const { isAdmin7 } = useShade();
   const timezone = useSiteTimezone();
   const isSaving = useSavingHold(state.kind === 'saving' || state.kind === 'pending-coalesced');
   const [isHovered, setIsHovered] = useState(false);
@@ -286,14 +284,11 @@ export function EditorStatus({
       className={cn(
         buttonVariants({
           variant: null,
-          size: isAdmin7 ? 'default' : 'sm',
+          size: 'default',
           shape: 'pill',
-          isAdmin7,
         }),
         'pointer-events-auto h-auto max-w-full min-w-0 items-start justify-self-start bg-background/80 px-3 text-(length:--text-control) whitespace-normal text-text-secondary backdrop-blur-sm',
-        isAdmin7
-          ? 'min-h-(--control-height) py-[calc((var(--control-height)-1lh)/2)]'
-          : 'min-h-7 py-[calc((--spacing(7)-1lh)/2)]',
+        'min-h-(--control-height) py-[calc((var(--control-height)-1lh)/2)]',
       )}
       data-testid={editorStatus}
       tone="secondary"
