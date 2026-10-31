@@ -480,8 +480,8 @@ catalogs:
       specifier: 4.1.12
       version: 4.1.12
     '@x402/core':
-      specifier: 2.28.0
-      version: 2.28.0
+      specifier: 2.29.0
+      version: 2.29.0
     '@x402/evm':
       specifier: 2.28.0
       version: 2.28.0
@@ -931,7 +931,7 @@ importers:
     dependencies:
       '@hookform/resolvers':
         specifier: 5.9.2
-        version: 5.9.2(@sinclair/typebox@0.34.49)(@standard-schema/spec@1.1.0)(ajv@8.20.0)(react-hook-form@7.80.0(@types/react@18.3.31)(react@18.3.1))(zod@4.6.7)
+        version: 5.9.2(@sinclair/typebox@0.34.49)(@standard-schema/spec@1.1.0)(ajv@8.20.0)(react-hook-form@7.80.0(@types/react@18.3.31)(react@18.3.1))(yup@1.7.1)(zod@4.6.7)
       '@radix-ui/react-form':
         specifier: 'catalog:'
         version: 0.1.11(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1703,7 +1703,7 @@ importers:
         version: 3.2.2(@types/react@18.3.31)(react@18.3.1)
       '@hookform/resolvers':
         specifier: 5.9.2
-        version: 5.9.2(@sinclair/typebox@0.34.49)(@standard-schema/spec@1.1.0)(ajv@8.20.0)(react-hook-form@7.80.0(@types/react@18.3.31)(react@18.3.1))(zod@4.6.7)
+        version: 5.9.2(@sinclair/typebox@0.34.49)(@standard-schema/spec@1.1.0)(ajv@8.20.0)(react-hook-form@7.80.0(@types/react@18.3.31)(react@18.3.1))(yup@1.7.1)(zod@4.6.7)
       '@number-flow/react':
         specifier: 0.6.2
         version: 0.6.2(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -2300,7 +2300,7 @@ importers:
         version: 3.5.18(supports-color@10.2.2)
       '@x402/core':
         specifier: 'catalog:'
-        version: 2.28.0
+        version: 2.29.0
       '@x402/evm':
         specifier: 'catalog:'
         version: 2.28.0
@@ -9511,6 +9511,9 @@ packages:
 
   '@x402/core@2.28.0':
     resolution: {integrity: sha512-Da/7zKxCKqpBoB4Msc9tFgkAv7tJTD8nG+DSSm+QdXAyJS4PQsmgVSKe17rDJTtlu0pwNbLcOje6MyQ6kaDkig==}
+
+  '@x402/core@2.29.0':
+    resolution: {integrity: sha512-fkS0JqVwHgczteDlwItLRipOlIzm28U9HWLvYnYpnNbfmepoBT/4ux7LjrR0xGD51JHoC8/r+Qo7uCfoAQYeuw==}
 
   '@x402/evm@2.28.0':
     resolution: {integrity: sha512-BZuoaCKMoPQQuMTa4oibvoyI06WdCpgrzgdicUu8d+5NBMAfWb6LAmSQf1KkeiS8C+25/+2JGB4cHSL0VLGnSA==}
@@ -18009,7 +18012,7 @@ snapshots:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
 
-  '@hookform/resolvers@5.9.2(@sinclair/typebox@0.34.49)(@standard-schema/spec@1.1.0)(ajv@8.20.0)(react-hook-form@7.80.0(@types/react@18.3.31)(react@18.3.1))(zod@4.6.7)':
+  '@hookform/resolvers@5.9.2(@sinclair/typebox@0.34.49)(@standard-schema/spec@1.1.0)(ajv@8.20.0)(react-hook-form@7.80.0(@types/react@18.3.31)(react@18.3.1))(yup@1.7.1)(zod@4.6.7)':
     dependencies:
       '@standard-schema/utils': 0.3.0
       react-hook-form: 7.80.0(@types/react@18.3.31)(react@18.3.1)
@@ -18017,6 +18020,7 @@ snapshots:
       '@sinclair/typebox': 0.34.49
       '@standard-schema/spec': 1.1.0
       ajv: 8.20.0
+      yup: 1.7.1
       zod: 4.6.7
 
   '@html-validate/stylish@6.0.0': {}
@@ -21898,6 +21902,10 @@ snapshots:
   '@x402/core@2.28.0':
     dependencies:
       zod: 3.25.76
+
+  '@x402/core@2.29.0':
+    dependencies:
+      zod: 4.6.7
 
   '@x402/evm@2.28.0':
     dependencies:

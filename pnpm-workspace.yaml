@@ -243,7 +243,7 @@ catalog:
   shell-quote: 1.11.0
   unidecode: 1.1.0
   mppx: 0.6.20
-  '@x402/core': 2.28.0
+  '@x402/core': 2.29.0
   '@x402/evm': 2.28.0
   '@x402/hono': 2.28.0
   hono: 4.13.14
