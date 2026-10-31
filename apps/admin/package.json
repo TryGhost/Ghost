@@ -102,7 +102,7 @@
     "@vitest/browser-playwright": "catalog:",
     "d3-geo": "catalog:",
     "eslint": "catalog:",
-    "eslint-plugin-no-relative-import-paths": "1.6.1",
+    "eslint-plugin-no-relative-import-paths": "1.7.3",
     "jsdom": "catalog:",
     "msw": "catalog:",
     "sirv": "catalog:",

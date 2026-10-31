@@ -49,7 +49,7 @@
     "dotenv": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",
-    "eslint-plugin-no-relative-import-paths": "1.6.1",
+    "eslint-plugin-no-relative-import-paths": "1.7.3",
     "eslint-plugin-playwright": "2.10.4",
     "express": "catalog:",
     "knex": "catalog:",
