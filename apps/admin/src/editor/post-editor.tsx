@@ -441,10 +441,12 @@ export function PostEditor({
         {/* Beside the settings panel, the breakout adjustment adds the panel and the
             margin before it at their resting values; while the panel moves, the
             cards are sized from the layout instead (above). */}
+        {/* The header keeps 12px below its buttons, so sticky card indicators stop
+            8px below the back button. */}
         <Stack
           ref={writingAreaRef}
           className={cn(
-            'min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] [--kg-breakout-adjustment:var(--editor-breakout-inset,0px)] max-[500px]:px-8 lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))] lg:[--kg-breakout-adjustment:calc(var(--editor-breakout-inset,0px)+(var(--editor-settings-width,0px)+var(--spacing)*3)*var(--editor-settings-progress,0))]',
+            'min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] [--kg-breakout-adjustment:var(--editor-breakout-inset,0px)] [--kg-indicator-sticky-top:calc(var(--editor-overlap,0px)-4px)] max-[500px]:px-8 lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))] lg:[--kg-breakout-adjustment:calc(var(--editor-breakout-inset,0px)+(var(--editor-settings-width,0px)+var(--spacing)*3)*var(--editor-settings-progress,0))]',
             chromeEntrance && 'screen-enter-rise',
           )}
           gap="none"

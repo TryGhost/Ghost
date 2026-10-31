@@ -1,4 +1,5 @@
 import {assertPrettifiesTo, createDocument, dom, html} from '../test-utils/index.js';
+import {buildDefaultVisibility} from '../../src/utils/visibility.js';
 import {$getRoot, LexicalEditor} from 'lexical';
 import {createHeadlessEditor} from '@lexical/headless';
 import {$generateNodesFromDOM} from '@lexical/html';
@@ -114,7 +115,8 @@ describe('EmbedNode', function () {
             const embedNodeDataset = embedNode.getDataset();
 
             expect(embedNodeDataset).toEqual({
-                ...dataset
+                ...dataset,
+                visibility: buildDefaultVisibility()
             });
         }));
     });
@@ -146,9 +148,16 @@ describe('EmbedNode', function () {
     });
 
     describe('hasEditMode', function () {
+        it('returns false', editorTest(function () {
+            const embedNode = $createEmbedNode(dataset);
+            expect(embedNode.hasEditMode()).toBe(false);
+        }));
+    });
+
+    describe('hasVisibility', function () {
         it('returns true', editorTest(function () {
             const embedNode = $createEmbedNode(dataset);
-            expect(embedNode.hasEditMode()).toBe(true);
+            expect(embedNode.hasVisibility()).toBe(true);
         }));
     });
 
@@ -206,7 +215,8 @@ describe('EmbedNode', function () {
                 embedType: dataset.embedType,
                 html: dataset.html,
                 metadata: dataset.metadata,
-                caption: dataset.caption
+                caption: dataset.caption,
+                visibility: buildDefaultVisibility()
             });
         }));
     });
@@ -390,6 +400,65 @@ describe('EmbedNode', function () {
             node.caption = 'Test caption';
 
             expect(node.getTextContent()).toBe('Test caption\n\n');
+        }));
+    });
+    describe('visibility', function () {
+        it('renders nothing when hidden from email', editorTest(function () {
+            exportOptions.target = 'email';
+
+            const node = $createEmbedNode(dataset);
+            node.visibility = {
+                web: {nonMember: true, memberSegment: 'status:free,status:-free'},
+                email: {memberSegment: ''}
+            };
+
+            const {element, type} = node.exportDOM(editor, exportOptions);
+
+            expect(type).toBe('inner');
+            expect((element as HTMLElement).innerHTML).toBe('');
+        }));
+
+        it('wraps the card in a segment when limited to a member segment in email', editorTest(function () {
+            exportOptions.target = 'email';
+
+            const node = $createEmbedNode(dataset);
+            node.visibility = {
+                web: {nonMember: true, memberSegment: 'status:free,status:-free'},
+                email: {memberSegment: 'status:-free'}
+            };
+
+            const {element} = node.exportDOM(editor, exportOptions);
+            const output = (element as HTMLElement).outerHTML;
+
+            expect(output).toContain('data-gh-segment="status:-free"');
+            expect(output).toContain('kg-visibility-wrapper');
+        }));
+
+        it('renders nothing when hidden from web', editorTest(function () {
+            const node = $createEmbedNode(dataset);
+            node.visibility = {
+                web: {nonMember: false, memberSegment: ''},
+                email: {memberSegment: 'status:free,status:-free'}
+            };
+
+            const {element, type} = node.exportDOM(editor, exportOptions);
+
+            expect(type).toBe('inner');
+            expect((element as HTMLElement).innerHTML).toBe('');
+        }));
+
+        it('wraps the card in a gated block when limited to a member segment on web', editorTest(function () {
+            const node = $createEmbedNode(dataset);
+            node.visibility = {
+                web: {nonMember: false, memberSegment: 'status:free,status:-free'},
+                email: {memberSegment: 'status:free,status:-free'}
+            };
+
+            const {element, type} = node.exportDOM(editor, exportOptions);
+
+            expect(type).toBe('value');
+            expect((element as HTMLTextAreaElement).value).toContain('<!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free" -->');
+            expect((element as HTMLTextAreaElement).value).toContain('<!--kg-gated-block:end-->');
         }));
     });
 });
