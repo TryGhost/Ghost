@@ -227,6 +227,38 @@ describe('ToggleNode', function () {
             expect(nodes[0].heading).toBe('Heading');
             expect(nodes[0].content).toBe('Content');
         }));
+
+        it('preserves rich heading and content through export and import', editorTest(function () {
+            const payload = {
+                heading: 'Read <em>more</em>',
+                content: '<p>Read <a href="https://example.com/doc">documentation</a></p><p><strong>Second</strong> paragraph</p>'
+            };
+            const toggleNode = $createToggleNode(payload);
+            const {element} = toggleNode.exportDOM(editor, exportOptions);
+            const document = createDocument((element as HTMLElement).outerHTML);
+            const nodes = $generateNodesFromDOM(editor, document) as ToggleNode[];
+
+            expect(nodes).toHaveLength(1);
+            expect(nodes[0].heading).toBe(payload.heading);
+            expect(nodes[0].content).toBe(payload.content);
+        }));
+
+        it('preserves escaped characters as text when imported and rendered', editorTest(function () {
+            const document = createDocument(html`
+                <div class="kg-card kg-toggle-card">
+                    <h4 class="kg-toggle-heading-text">Fish &amp; &lt;chips&gt;</h4>
+                    <div class="kg-toggle-content">Example: &lt;em&gt;not emphasis&lt;/em&gt; &amp; text</div>
+                </div>
+            `);
+            const nodes = $generateNodesFromDOM(editor, document) as ToggleNode[];
+            expect(nodes).toHaveLength(1);
+            const {element} = nodes[0].exportDOM(editor, exportOptions);
+            const rendered = element as HTMLElement;
+
+            expect(rendered.querySelector('.kg-toggle-heading-text')?.textContent).toBe('Fish & <chips>');
+            expect(rendered.querySelector('.kg-toggle-content')?.textContent).toBe('Example: <em>not emphasis</em> & text');
+            expect(rendered.querySelector('.kg-toggle-content em')).toBeNull();
+        }));
     });
 
     describe('getTextContent', function () {
