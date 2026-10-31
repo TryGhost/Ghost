@@ -13554,8 +13554,8 @@ services:
         logging, and publishes it with the optional cache:stats adapter as one ready aggregate.
         initServices awaits it after Newsletters and before the group containing Explore, which
         receives the ready aggregate. The Admin endpoint can load before init: one shared cache
-        forwarder resolves the published cache per request, falling through to the query when
-        none is configured, and each query reads the API per request. No extras or different
+        forwarder resolves the published cache per request, missing when none is configured so
+        the pipeline runs the query once, and each query reads the API per request. No extras or different
         instance lifetime are needed.
       reviewedAt: 8cba94a138a69cbb7e496424591575daab11a529
       sources:

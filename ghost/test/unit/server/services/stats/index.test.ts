@@ -228,10 +228,11 @@ describe('Stats service root', function () {
     sinon.assert.calledOnce(replacement.getSubscriptionCountHistory);
     sinon.assert.calledOnce(getSubscriptionCountHistory);
 
-    // Without a cache the request runs its query and stores nothing.
+    // Without a cache every lookup misses, so the pipeline runs the query once
+    // itself, and nothing is stored.
     root.service.cache = null;
-    assert.equal(await statsCache.get('key', fetchData), history);
-    sinon.assert.calledOnce(fetchData);
+    assert.equal(await statsCache.get('key', fetchData), undefined);
+    sinon.assert.notCalled(fetchData);
     assert.equal(await statsCache.set('key', history), undefined);
     sinon.assert.calledOnce(adapter.get);
     sinon.assert.calledOnce(adapter.set);

@@ -1,7 +1,8 @@
 import { defineService } from '../../../kernel/define-service';
 
 type StatsAggregate = {
-  // The stats service is untyped JavaScript.
+  // The stats services are JavaScript outside the TypeScript build, so their
+  // JSDoc types aren't visible here until they're converted.
   api: any;
   cache: object | null;
 };

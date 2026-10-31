@@ -1,4 +1,5 @@
 import errors from '@tryghost/errors';
+import type { GhostLogger } from '@tryghost/logging';
 import type { ConfigInstance } from '../../../../shared/config/loader';
 
 type StatsConfig = {
@@ -17,10 +18,6 @@ type SettingsCache = {
 
 type TinybirdService = {
   getToken(): { token?: string } | null | undefined;
-};
-
-type Logging = {
-  error(...args: unknown[]): void;
 };
 
 type QueryValue =
@@ -68,7 +65,7 @@ type TinybirdDependencies = {
   request: RequestClient;
   settingsCache: SettingsCache;
   tinybirdService: TinybirdService;
-  logging: Logging;
+  logging: Pick<GhostLogger, 'error'>;
 };
 
 type TinybirdGateDependencies = {

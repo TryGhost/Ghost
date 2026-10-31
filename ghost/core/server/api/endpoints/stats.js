@@ -2,11 +2,12 @@ const statsService = require('../../services/stats').default;
 
 // The API pipeline keeps each method's cache by reference when it builds the
 // controller, before boot initializes Stats. Resolve the optional stats cache
-// per request instead: without one, the query runs uncached.
+// per request instead. Without one, a miss lets the pipeline run the query
+// once itself, as it does for a method with no cache.
 const statsCache = {
   get(key, fetchData) {
     const adapter = statsService.service.cache;
-    return adapter ? adapter.get(key, fetchData) : fetchData();
+    return adapter ? adapter.get(key, fetchData) : undefined;
   },
   set(key, value) {
     const adapter = statsService.service.cache;
