@@ -79,7 +79,7 @@ catalog:
   '@radix-ui/react-tooltip': 1.2.11
   '@sentry/bundler-plugin-core': 5.3.0
   '@sentry/react': 7.120.4
-  '@sentry/vite-plugin': 5.3.0
+  '@sentry/vite-plugin': 5.4.1
   '@storybook/addon-docs': 10.4.6
   '@storybook/addon-links': 10.4.6
   '@storybook/preact-vite': 10.4.6
