@@ -2143,6 +2143,36 @@ describe('PostsStatsService', function () {
       );
     });
 
+    it('starts a range that begins before any subscribers at the day before the first change', async function () {
+      const newsletterId = 'newsletter1';
+
+      await _createNewsletter(newsletterId, 'Test Newsletter');
+      await _createMember('member1');
+      await _createMemberNewsletterSubscription('member1', newsletterId);
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member1',
+        true,
+        new Date('2024-01-02T10:00:00Z'),
+      );
+
+      // All time asks from 2013; this newsletter's first subscriber came in 2024
+      const result = await service.getNewsletterSubscriberStats(newsletterId, {
+        date_from: '2013-01-01',
+        date_to: '2024-01-03',
+        timezone: 'UTC',
+      });
+
+      assert.deepEqual(
+        result.data[0].values.map(({ date, value }) => [date, value]),
+        [
+          ['2024-01-01', 0],
+          ['2024-01-02', 1],
+          ['2024-01-03', 1],
+        ],
+      );
+    });
+
     it('should handle empty date range', async function () {
       const newsletterId = 'newsletter1';
 
