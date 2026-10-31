@@ -1,0 +1,1048 @@
+import type { AutomationRun, AutomationRunMetrics, EnrollmentPoint, RunStep } from './types';
+import {
+  engagedUpsell,
+  leadMagnetDelivery,
+  paidUpgradeNudge,
+  welcomeSeries,
+  winbackLapsed,
+} from './automations';
+
+// ---------------------------------------------------------------------------
+// Run + metrics data — OWNED (net-new) shapes. Each automation gets an
+// enrollment funnel, a daily enrollments series, and a set of member runs whose
+// steps reference the automation's real action ids.
+// ---------------------------------------------------------------------------
+
+/** Build a daily series ending on a fixed date (deterministic — no "now"). */
+function daysSeries(endDate: string, counts: number[]): EnrollmentPoint[] {
+  const end = new Date(`${endDate}T00:00:00Z`);
+  return counts.map((count, i) => {
+    const d = new Date(end);
+    d.setUTCDate(end.getUTCDate() - (counts.length - 1 - i));
+    return { date: d.toISOString().slice(0, 10), count };
+  });
+}
+
+type RunData = { metrics: AutomationRunMetrics; runs: AutomationRun[] };
+
+// ---------------------------------------------------------------------------
+// Run expansion — each scenario above is hand-authored with a handful of runs,
+// one per interesting shape (in-progress, completed, exited-early, etc.), so
+// they're easy to reason about individually. Real automations run against
+// thousands of members, so a list of 3-5 reads as too sparse to get a feel for
+// scanning/searching/selecting at scale. expandRunsByStatus pads a scenario's runs out
+// to `targetCount` by re-cycling the hand-authored ones onto new member
+// identities (shifting their timestamps back in history) — it's fine, even
+// expected, for these synthetic members to repeat the same journeys.
+// ---------------------------------------------------------------------------
+
+const NAME_POOL: { first: string; last: string }[] = [
+  { first: 'Owen', last: 'Brooks' },
+  { first: 'Maya', last: 'Chen' },
+  { first: 'Diego', last: 'Ramirez' },
+  { first: 'Freya', last: 'Nilsson' },
+  { first: 'Kwame', last: 'Asante' },
+  { first: 'Lucia', last: 'Moreno' },
+  { first: 'Ravi', last: 'Patel' },
+  { first: 'Aisling', last: 'Byrne' },
+  { first: 'Hana', last: 'Kobayashi' },
+  { first: 'Theo', last: 'Marchetti' },
+  { first: 'Zara', last: 'Hussain' },
+  { first: 'Callum', last: 'Fraser' },
+  { first: 'Amara', last: 'Okonkwo' },
+  { first: 'Felix', last: 'Bauer' },
+  { first: 'Nadia', last: 'Petrova' },
+  { first: 'Silas', last: 'Thorne' },
+  { first: 'Elin', last: 'Karlsson' },
+  { first: 'Jonah', last: 'Whitfield' },
+  { first: 'Priyanka', last: 'Rao' },
+  { first: 'Micah', last: 'Reyes' },
+  { first: 'Saoirse', last: 'Kelly' },
+  { first: 'Dimitri', last: 'Volkov' },
+  { first: 'Lena', last: 'Novak' },
+  { first: 'Amir', last: 'Farouk' },
+];
+
+function buildSyntheticMember(automationId: string, index: number): AutomationRun['member'] {
+  const { first } = NAME_POOL[index % NAME_POOL.length];
+  // Once the pool wraps, recombine rather than number: each cycle pairs every
+  // first name with a different surname (offset by the cycle, stepped by a
+  // number coprime with most pool sizes), so the list keeps reading as people —
+  // "Maya Chen 2" read as test data, which is what a demo mustn't look like.
+  const cycle = Math.floor(index / NAME_POOL.length);
+  const { last } = NAME_POOL[(index + cycle * 7) % NAME_POOL.length];
+  const name = `${first} ${last}`;
+  const email = `${first.toLowerCase()}.${last.toLowerCase()}${cycle > 0 ? cycle + 1 : ''}@example.com`;
+  return { id: `mem_${automationId}_${index}`, name, email };
+}
+
+/** Shift an ISO timestamp back by `days`, or pass through null. */
+function shiftIso(iso: string | null, days: number): string | null {
+  if (!iso) {
+    return null;
+  }
+  const d = new Date(iso);
+  d.setUTCDate(d.getUTCDate() - days);
+  return d.toISOString();
+}
+
+// Failures don't clone. Everything else about a template repeats happily —
+// synthetic members retracing the same journey is the point — but a delivery
+// failure is meant to be the rare one you have to go looking for, and cloning the
+// template that carries it turned every exited run in the scenario into a broken
+// send. So a clone of a failed template gets an ordinary member-driven exit
+// instead, and its step loses the flag that marks which send broke.
+function cloneStep(step: RunStep, days: number): RunStep {
+  const next: RunStep = {
+    ...step,
+    occurred_at: shiftIso(step.occurred_at, days),
+    detail: step.failed ? 'Unsubscribed' : step.detail,
+  };
+  delete next.failed;
+  return next;
+}
+
+function cloneRunForMember(
+  template: AutomationRun,
+  automationId: string,
+  index: number,
+  // How far back to move it. Defaults to pushing each synthetic run further
+  // back than the last, so the list reads as an ongoing history rather than a
+  // pile of same-day runs.
+  days = 14 + index * 3,
+): AutomationRun {
+  const failedTemplate = template.steps.some((step) => step.failed);
+  return {
+    ...template,
+    id: `run_${automationId}_${index}`,
+    automation_id: automationId,
+    member: buildSyntheticMember(automationId, index),
+    exit_reason: failedTemplate ? 'unsubscribed' : template.exit_reason,
+    enrolled_at: shiftIso(template.enrolled_at, days)!,
+    completed_at: shiftIso(template.completed_at, days),
+    steps: template.steps.map((step) => cloneStep(step, days)),
+  };
+}
+
+// Pads each status up to `perStatus` members — the demo's filtered views (press
+// "Completed" and see who) have to fill the screen, and cycling the whole base
+// evenly left the rarer statuses at five or six rows under a card reporting
+// hundreds. Clones come from runs of the same status, so each keeps a history
+// that belongs to it.
+//
+// In-progress clones stay recent — a few days back, since they're still
+// mid-flow — and skip a template sitting on a SEND (no detail on its current
+// step): that state is deliberately rare (see run_sarah), and copies would make
+// it common. Finished runs spread further into the past.
+function expandRunsByStatus(
+  automationId: string,
+  baseRuns: AutomationRun[],
+  perStatus: number,
+): AutomationRun[] {
+  const out = [...baseRuns];
+  let index = 0;
+  for (const status of ['in_progress', 'completed', 'exited_early'] as const) {
+    const ofStatus = baseRuns.filter((run) => run.status === status);
+    if (ofStatus.length === 0) {
+      continue;
+    }
+    const waiting = ofStatus.filter(
+      (run) =>
+        status !== 'in_progress' ||
+        run.steps.some((step) => step.state === 'current' && step.detail),
+    );
+    const templates = waiting.length > 0 ? waiting : ofStatus;
+    for (let k = 0; ofStatus.length + k < perStatus; k += 1) {
+      const days = status === 'in_progress' ? 1 + Math.floor(k / 3) : 14 + k * 3;
+      out.push(cloneRunForMember(templates[k % templates.length], automationId, index, days));
+      index += 1;
+    }
+  }
+  return out;
+}
+
+const RUNS_PER_STATUS = 20;
+
+// --- Welcome series (healthy) ---------------------------------------------
+
+const welcomeMetrics: AutomationRunMetrics = {
+  automation_id: welcomeSeries.id,
+  enrollments: 1432,
+  in_progress: 118,
+  completed: 1225,
+  exited_early: 89,
+  last_enrolled_at: '2026-07-21T07:12:00Z',
+  enrollments_by_day: daysSeries(
+    '2026-07-21',
+    [
+      18, 20, 21, 23, 22, 25, 27, 26, 29, 31, 30, 32, 33, 34, 33, 35, 36, 35, 34, 33, 31, 32, 30,
+      29, 30, 28, 27, 28, 26, 27,
+    ],
+  ),
+};
+
+const welcomeRunsBase: AutomationRun[] = [
+  {
+    id: 'run_sarah',
+    automation_id: welcomeSeries.id,
+    member: { id: 'mem_sarah', name: 'Sarah Lin', email: 'sarah.lin@example.com' },
+    status: 'in_progress',
+    enrolled_at: '2026-07-12T09:04:00Z',
+    completed_at: null,
+    current_action_id: 'act_tips_email',
+    exit_reason: null,
+    steps: [
+      {
+        action_id: 'act_welcome_email',
+        state: 'done',
+        occurred_at: '2026-07-12T09:04:00Z',
+        detail: 'Opened (1 link)',
+      },
+      {
+        action_id: 'act_wait_3d',
+        state: 'done',
+        occurred_at: '2026-07-12T09:05:00Z',
+        detail: 'Waited 3 days',
+      },
+      // The one run whose frontier sits on a SEND rather than a wait — the email
+      // is in flight: Ghost has submitted it and no delivery has come back yet.
+      //
+      // This used to read `occurred_at: null, detail: 'Sends Jul 17'`, which is a
+      // scheduled email, not a sending one — a member with a future send date is
+      // still waiting, and the marker belonged on the wait above. It made
+      // "sending" look like the ordinary state of an in-progress run when it's
+      // the opposite: submission to delivery is seconds, so at any given moment
+      // roughly nobody is here.
+      //
+      // Kept as a fixture anyway, at a deliberately unrealistic one-in-forty, so
+      // the state is reviewable at all. No detail: the card already says
+      // "Sending email", and there is nothing true to add until Mailgun answers.
+      {
+        action_id: 'act_tips_email',
+        state: 'current',
+        occurred_at: '2026-07-15T09:06:00Z',
+        detail: null,
+      },
+      { action_id: 'act_week1_email', state: 'upcoming', occurred_at: null, detail: null },
+    ],
+  },
+  {
+    id: 'run_marcus',
+    automation_id: welcomeSeries.id,
+    member: { id: 'mem_marcus', name: 'Marcus Webb', email: 'marcus.webb@example.com' },
+    status: 'completed',
+    enrolled_at: '2026-07-08T15:22:00Z',
+    completed_at: '2026-07-14T15:30:00Z',
+    current_action_id: null,
+    exit_reason: null,
+    steps: [
+      {
+        action_id: 'act_welcome_email',
+        state: 'done',
+        occurred_at: '2026-07-08T15:22:00Z',
+        detail: 'Opened',
+      },
+      {
+        action_id: 'act_wait_3d',
+        state: 'done',
+        occurred_at: '2026-07-08T15:23:00Z',
+        detail: 'Waited 3 days',
+      },
+      {
+        action_id: 'act_tips_email',
+        state: 'done',
+        occurred_at: '2026-07-11T15:23:00Z',
+        detail: 'Opened (2 links)',
+      },
+      {
+        action_id: 'act_week1_email',
+        state: 'done',
+        occurred_at: '2026-07-14T15:23:00Z',
+        detail: 'Opened',
+      },
+    ],
+  },
+  {
+    // The exit this flow exists to produce: a free member who starts paying
+    // leaves the free welcome flow (and enters the paid one). 'upgraded' belongs
+    // HERE and only here among the two production flows — a member in the paid
+    // flow is already paying, so there is nothing for them to upgrade to.
+    //
+    // First of the exited templates, and recent, so it's near the top of the
+    // list when the demo filters to exits.
+    id: 'run_leo',
+    automation_id: welcomeSeries.id,
+    member: { id: 'mem_leo', name: 'Leo Hartmann', email: 'leo.hartmann@example.com' },
+    status: 'exited_early',
+    enrolled_at: '2026-07-17T13:26:00Z',
+    completed_at: null,
+    current_action_id: null,
+    exit_reason: 'upgraded',
+    steps: [
+      {
+        action_id: 'act_welcome_email',
+        state: 'done',
+        occurred_at: '2026-07-17T13:26:00Z',
+        detail: 'Opened (upgraded)',
+      },
+      { action_id: 'act_wait_3d', state: 'skipped', occurred_at: null, detail: null },
+      { action_id: 'act_tips_email', state: 'skipped', occurred_at: null, detail: null },
+      { action_id: 'act_week1_email', state: 'skipped', occurred_at: null, detail: null },
+    ],
+  },
+  {
+    id: 'run_priya',
+    automation_id: welcomeSeries.id,
+    member: { id: 'mem_priya', name: 'Priya Nair', email: 'priya.nair@example.com' },
+    status: 'exited_early',
+    enrolled_at: '2026-07-10T11:47:00Z',
+    completed_at: null,
+    current_action_id: null,
+    exit_reason: 'unsubscribed',
+    steps: [
+      {
+        action_id: 'act_welcome_email',
+        state: 'done',
+        occurred_at: '2026-07-10T11:47:00Z',
+        detail: 'Unsubscribed',
+      },
+      { action_id: 'act_wait_3d', state: 'skipped', occurred_at: null, detail: null },
+      { action_id: 'act_tips_email', state: 'skipped', occurred_at: null, detail: null },
+      { action_id: 'act_week1_email', state: 'skipped', occurred_at: null, detail: null },
+    ],
+  },
+  {
+    // The publisher turned the automation off while this member was partway
+    // through. Seeded rather than generated — turning an automation off in the
+    // proto doesn't retire its in-flight runs — so the state is reviewable
+    // without the behaviour existing.
+    id: 'run_dara',
+    automation_id: welcomeSeries.id,
+    member: { id: 'mem_dara', name: 'Dara Whitfield', email: 'dara.whitfield@example.com' },
+    status: 'exited_early',
+    enrolled_at: '2026-07-09T16:02:00Z',
+    completed_at: null,
+    current_action_id: null,
+    exit_reason: 'ended_by_publisher',
+    steps: [
+      {
+        action_id: 'act_welcome_email',
+        state: 'done',
+        occurred_at: '2026-07-09T16:02:00Z',
+        detail: 'Opened',
+      },
+      {
+        action_id: 'act_wait_3d',
+        state: 'done',
+        occurred_at: '2026-07-09T16:03:00Z',
+        detail: 'Waited 3 days',
+      },
+      { action_id: 'act_tips_email', state: 'skipped', occurred_at: null, detail: null },
+      { action_id: 'act_week1_email', state: 'skipped', occurred_at: null, detail: null },
+    ],
+  },
+  {
+    id: 'run_tom',
+    automation_id: welcomeSeries.id,
+    member: { id: 'mem_tom', name: 'Tom Okafor', email: 'tom.okafor@example.com' },
+    status: 'completed',
+    enrolled_at: '2026-06-30T08:15:00Z',
+    completed_at: '2026-07-07T08:20:00Z',
+    current_action_id: null,
+    exit_reason: null,
+    steps: [
+      {
+        action_id: 'act_welcome_email',
+        state: 'done',
+        occurred_at: '2026-06-30T08:15:00Z',
+        detail: 'Opened',
+      },
+      {
+        action_id: 'act_wait_3d',
+        state: 'done',
+        occurred_at: '2026-06-30T08:16:00Z',
+        detail: 'Waited 3 days',
+      },
+      {
+        action_id: 'act_tips_email',
+        state: 'done',
+        occurred_at: '2026-07-03T08:16:00Z',
+        detail: 'Opened',
+      },
+      {
+        action_id: 'act_week1_email',
+        state: 'done',
+        occurred_at: '2026-07-07T08:16:00Z',
+        detail: 'Opened (1 link)',
+      },
+    ],
+  },
+  {
+    // Just enrolled (minutes ago) — the fresh end of the "started" range.
+    id: 'run_noah',
+    automation_id: welcomeSeries.id,
+    member: { id: 'mem_noah', name: 'Noah Bennett', email: 'noah.bennett@example.com' },
+    status: 'in_progress',
+    enrolled_at: '2026-07-21T09:06:00Z',
+    completed_at: null,
+    current_action_id: 'act_wait_3d',
+    exit_reason: null,
+    steps: [
+      {
+        action_id: 'act_welcome_email',
+        state: 'done',
+        occurred_at: '2026-07-21T09:06:00Z',
+        detail: 'Delivered',
+      },
+      {
+        action_id: 'act_wait_3d',
+        state: 'current',
+        occurred_at: '2026-07-21T09:07:00Z',
+        detail: 'Resumes Jul 24',
+      },
+      { action_id: 'act_tips_email', state: 'upcoming', occurred_at: null, detail: null },
+      { action_id: 'act_week1_email', state: 'upcoming', occurred_at: null, detail: null },
+    ],
+  },
+  {
+    // Enrolled a few hours ago — the middle of the range.
+    id: 'run_elena',
+    automation_id: welcomeSeries.id,
+    member: { id: 'mem_elena', name: 'Elena Ross', email: 'elena.ross@example.com' },
+    status: 'in_progress',
+    enrolled_at: '2026-07-21T05:20:00Z',
+    completed_at: null,
+    current_action_id: 'act_wait_3d',
+    exit_reason: null,
+    steps: [
+      {
+        action_id: 'act_welcome_email',
+        state: 'done',
+        occurred_at: '2026-07-21T05:20:00Z',
+        detail: 'Opened',
+      },
+      {
+        action_id: 'act_wait_3d',
+        state: 'current',
+        occurred_at: '2026-07-21T05:21:00Z',
+        detail: 'Resumes Jul 24',
+      },
+      { action_id: 'act_tips_email', state: 'upcoming', occurred_at: null, detail: null },
+      { action_id: 'act_week1_email', state: 'upcoming', occurred_at: null, detail: null },
+    ],
+  },
+];
+
+// --- Paid upgrade nudge (steady state) ------------------------------------
+
+const upgradeMetrics: AutomationRunMetrics = {
+  automation_id: paidUpgradeNudge.id,
+  enrollments: 412,
+  in_progress: 61,
+  completed: 320,
+  exited_early: 31,
+  last_enrolled_at: '2026-07-21T05:55:00Z',
+  enrollments_by_day: daysSeries(
+    '2026-07-21',
+    [
+      9, 10, 10, 11, 11, 12, 11, 12, 13, 12, 13, 13, 12, 13, 14, 13, 13, 12, 13, 13, 12, 13, 14, 13,
+      13, 12, 13, 14, 13, 13,
+    ],
+  ),
+};
+
+const upgradeRunsBase: AutomationRun[] = [
+  {
+    id: 'run_mila',
+    automation_id: paidUpgradeNudge.id,
+    member: { id: 'mem_mila', name: 'Mila Cho', email: 'mila.cho@example.com' },
+    status: 'completed',
+    enrolled_at: '2026-07-09T10:00:00Z',
+    completed_at: '2026-07-14T10:05:00Z',
+    current_action_id: null,
+    exit_reason: null,
+    steps: [
+      {
+        action_id: 'act_up_email',
+        state: 'done',
+        occurred_at: '2026-07-09T10:00:00Z',
+        detail: 'Opened (1 link)',
+      },
+      {
+        action_id: 'act_up_wait',
+        state: 'done',
+        occurred_at: '2026-07-09T10:01:00Z',
+        detail: 'Waited 5 days',
+      },
+      {
+        action_id: 'act_up_email2',
+        state: 'done',
+        occurred_at: '2026-07-14T10:01:00Z',
+        detail: 'Opened',
+      },
+    ],
+  },
+  {
+    id: 'run_ben',
+    automation_id: paidUpgradeNudge.id,
+    member: { id: 'mem_ben', name: 'Ben Ortiz', email: 'ben.ortiz@example.com' },
+    status: 'exited_early',
+    enrolled_at: '2026-07-16T14:20:00Z',
+    completed_at: null,
+    current_action_id: null,
+    // Unsubscribed, not 'upgraded': this is the PAID welcome flow, and its
+    // members are already paying. It was 'upgraded' until the phase 1 demo
+    // caught it — that exit is the free flow's (see run_leo).
+    exit_reason: 'unsubscribed',
+    steps: [
+      {
+        action_id: 'act_up_email',
+        state: 'done',
+        occurred_at: '2026-07-16T14:20:00Z',
+        detail: 'Unsubscribed',
+      },
+      { action_id: 'act_up_wait', state: 'skipped', occurred_at: null, detail: null },
+      { action_id: 'act_up_email2', state: 'skipped', occurred_at: null, detail: null },
+    ],
+  },
+  {
+    // Enrolled minutes ago — also the only in-progress shape in this scenario.
+    id: 'run_yuki',
+    automation_id: paidUpgradeNudge.id,
+    member: { id: 'mem_yuki', name: 'Yuki Tanaka', email: 'yuki.tanaka@example.com' },
+    status: 'in_progress',
+    enrolled_at: '2026-07-21T09:01:00Z',
+    completed_at: null,
+    current_action_id: 'act_up_wait',
+    exit_reason: null,
+    steps: [
+      {
+        action_id: 'act_up_email',
+        state: 'done',
+        occurred_at: '2026-07-21T09:01:00Z',
+        detail: 'Opened',
+      },
+      {
+        action_id: 'act_up_wait',
+        state: 'current',
+        occurred_at: '2026-07-21T09:02:00Z',
+        detail: 'Resumes Jul 26',
+      },
+      { action_id: 'act_up_email2', state: 'upcoming', occurred_at: null, detail: null },
+    ],
+  },
+  {
+    // Enrolled a few hours ago — the middle of the range.
+    id: 'run_diego',
+    automation_id: paidUpgradeNudge.id,
+    member: { id: 'mem_diego_up', name: 'Diego Salas', email: 'diego.salas@example.com' },
+    status: 'in_progress',
+    enrolled_at: '2026-07-21T02:10:00Z',
+    completed_at: null,
+    current_action_id: 'act_up_wait',
+    exit_reason: null,
+    steps: [
+      {
+        action_id: 'act_up_email',
+        state: 'done',
+        occurred_at: '2026-07-21T02:10:00Z',
+        detail: 'Opened (1 link)',
+      },
+      {
+        action_id: 'act_up_wait',
+        state: 'current',
+        occurred_at: '2026-07-21T02:11:00Z',
+        detail: 'Resumes Jul 26',
+      },
+      { action_id: 'act_up_email2', state: 'upcoming', occurred_at: null, detail: null },
+    ],
+  },
+];
+
+// --- Lead magnet (campaign-shaped) -----------------------------------------
+//
+// The one scenario whose enrollment curve isn't a steady trickle. A welcome flow
+// is fed by whatever the site's signups do, so its chart is close to flat; a lead
+// magnet is fed by wherever the magnet was promoted, so it spikes when the
+// campaign ran and decays afterwards. Worth having one of each in the fixtures —
+// the chart is the left pane's headline, and a prototype where every automation
+// draws the same gentle slope can't show that it means anything.
+const leadMagnetMetrics: AutomationRunMetrics = {
+  automation_id: leadMagnetDelivery.id,
+  enrollments: 640,
+  in_progress: 42,
+  completed: 561,
+  exited_early: 37,
+  last_enrolled_at: '2026-07-21T08:40:00Z',
+  enrollments_by_day: daysSeries(
+    '2026-07-21',
+    [
+      8, 9, 7, 11, 10, 12, 14, 13, 45, 62, 51, 38, 29, 24, 21, 19, 18, 16, 17, 15, 14, 16, 13, 12,
+      14, 11, 13, 12, 10, 11,
+    ],
+  ),
+};
+
+const leadMagnetRunsBase: AutomationRun[] = [
+  {
+    // The ordinary happy path: took the guide, opened the follow-up.
+    id: 'run_nora',
+    automation_id: leadMagnetDelivery.id,
+    member: { id: 'mem_nora', name: 'Nora Whitlock', email: 'nora.whitlock@example.com' },
+    status: 'completed',
+    enrolled_at: '2026-07-11T13:02:00Z',
+    completed_at: '2026-07-14T13:06:00Z',
+    current_action_id: null,
+    exit_reason: null,
+    steps: [
+      {
+        action_id: 'act_lm_deliver',
+        state: 'done',
+        occurred_at: '2026-07-11T13:02:00Z',
+        detail: 'Opened (1 link)',
+      },
+      {
+        action_id: 'act_lm_wait',
+        state: 'done',
+        occurred_at: '2026-07-11T13:03:00Z',
+        detail: 'Waited 3 days',
+      },
+      {
+        action_id: 'act_lm_followup',
+        state: 'done',
+        occurred_at: '2026-07-14T13:03:00Z',
+        detail: 'Opened',
+      },
+    ],
+  },
+  {
+    // The lead magnet's signature failure, and the reason this fixture has one:
+    // took the download, left before the follow-up. Every publisher running a
+    // giveaway asks what share of people do this, and the run list is where the
+    // answer lives.
+    id: 'run_garrett',
+    automation_id: leadMagnetDelivery.id,
+    member: { id: 'mem_garrett', name: 'Garrett Doyle', email: 'garrett.doyle@example.com' },
+    status: 'exited_early',
+    enrolled_at: '2026-07-15T18:44:00Z',
+    completed_at: null,
+    current_action_id: null,
+    exit_reason: 'unsubscribed',
+    steps: [
+      {
+        action_id: 'act_lm_deliver',
+        state: 'done',
+        occurred_at: '2026-07-15T18:44:00Z',
+        detail: 'Opened (1 link)',
+      },
+      {
+        action_id: 'act_lm_wait',
+        state: 'done',
+        occurred_at: '2026-07-15T18:52:00Z',
+        detail: 'Unsubscribed',
+      },
+      { action_id: 'act_lm_followup', state: 'skipped', occurred_at: null, detail: null },
+    ],
+  },
+  {
+    // Mid-wait, enrolled this morning.
+    id: 'run_imani',
+    automation_id: leadMagnetDelivery.id,
+    member: { id: 'mem_imani', name: 'Imani Clarke', email: 'imani.clarke@example.com' },
+    status: 'in_progress',
+    enrolled_at: '2026-07-21T08:40:00Z',
+    completed_at: null,
+    current_action_id: 'act_lm_wait',
+    exit_reason: null,
+    steps: [
+      {
+        action_id: 'act_lm_deliver',
+        state: 'done',
+        occurred_at: '2026-07-21T08:40:00Z',
+        detail: 'Opened (1 link)',
+      },
+      {
+        action_id: 'act_lm_wait',
+        state: 'current',
+        occurred_at: '2026-07-21T08:41:00Z',
+        detail: 'Resumes Jul 24',
+      },
+      { action_id: 'act_lm_followup', state: 'upcoming', occurred_at: null, detail: null },
+    ],
+  },
+  {
+    // Took the guide and never opened it — delivered, unopened, still in the
+    // flow. The quiet majority of any giveaway, and a state the other two
+    // scenarios don't carry.
+    id: 'run_soren',
+    automation_id: leadMagnetDelivery.id,
+    member: { id: 'mem_soren', name: 'Soren Vidal', email: 'soren.vidal@example.com' },
+    status: 'in_progress',
+    enrolled_at: '2026-07-20T21:15:00Z',
+    completed_at: null,
+    current_action_id: 'act_lm_wait',
+    exit_reason: null,
+    steps: [
+      {
+        action_id: 'act_lm_deliver',
+        state: 'done',
+        occurred_at: '2026-07-20T21:15:00Z',
+        detail: 'Delivered',
+      },
+      {
+        action_id: 'act_lm_wait',
+        state: 'current',
+        occurred_at: '2026-07-20T21:16:00Z',
+        detail: 'Resumes Jul 23',
+      },
+      { action_id: 'act_lm_followup', state: 'upcoming', occurred_at: null, detail: null },
+    ],
+  },
+];
+
+// --- Winback (the one that mostly doesn't work) ----------------------------
+//
+// Deliberately the weakest funnel in the fixtures. Everything else here
+// completes: a welcome flow finishes because finishing only means the last email
+// went out. A winback finishes the same way and still failed — the member read
+// all of it and stayed gone. So this is the scenario where `completed` is the
+// boring number and `exited_early` is the good one, because exiting a winback
+// means the exit reason was 'upgraded': they started paying again.
+//
+// Worth having in the set for exactly that reason. Every other automation here
+// would have a publisher reading the funnel top to bottom; this one is a
+// standing argument that the funnel isn't the whole story, which the run list
+// and its exit reasons are what answer.
+const winbackMetrics: AutomationRunMetrics = {
+  automation_id: winbackLapsed.id,
+  enrollments: 312,
+  in_progress: 66,
+  completed: 211,
+  exited_early: 35,
+  last_enrolled_at: '2026-07-20T16:30:00Z',
+  enrollments_by_day: daysSeries(
+    '2026-07-21',
+    [4, 3, 5, 4, 6, 5, 4, 7, 5, 6, 4, 5, 8, 6, 5, 4, 6, 5, 7, 5, 4, 6, 5, 4, 5, 7, 4, 5, 6, 4],
+  ),
+};
+
+const winbackRunsBase: AutomationRun[] = [
+  {
+    // The one that worked. Exits on the offer email because they took it —
+    // 'upgraded' here means they started paying again, which is the whole point
+    // of the flow and the only outcome worth calling a success.
+    id: 'run_priya',
+    automation_id: winbackLapsed.id,
+    member: { id: 'mem_priya', name: 'Priya Raman', email: 'priya.raman@example.com' },
+    status: 'exited_early',
+    enrolled_at: '2026-06-18T09:00:00Z',
+    completed_at: null,
+    current_action_id: null,
+    exit_reason: 'upgraded',
+    steps: [
+      {
+        action_id: 'act_wb_wait',
+        state: 'done',
+        occurred_at: '2026-06-18T09:00:00Z',
+        detail: 'Waited 14 days',
+      },
+      {
+        action_id: 'act_wb_email',
+        state: 'done',
+        occurred_at: '2026-07-02T09:02:00Z',
+        detail: 'Opened (1 link)',
+      },
+      {
+        action_id: 'act_wb_wait2',
+        state: 'done',
+        occurred_at: '2026-07-02T09:03:00Z',
+        detail: 'Resubscribed',
+      },
+      { action_id: 'act_wb_offer', state: 'skipped', occurred_at: null, detail: null },
+    ],
+  },
+  {
+    // The common one: read both, came back for neither. Completed, and a
+    // failure — which is the distinction this scenario exists to make.
+    id: 'run_tomas',
+    automation_id: winbackLapsed.id,
+    member: { id: 'mem_tomas', name: 'Tomas Lindqvist', email: 'tomas.lindqvist@example.com' },
+    status: 'completed',
+    enrolled_at: '2026-06-05T14:10:00Z',
+    completed_at: '2026-07-10T14:16:00Z',
+    current_action_id: null,
+    exit_reason: null,
+    steps: [
+      {
+        action_id: 'act_wb_wait',
+        state: 'done',
+        occurred_at: '2026-06-05T14:10:00Z',
+        detail: 'Waited 14 days',
+      },
+      {
+        action_id: 'act_wb_email',
+        state: 'done',
+        occurred_at: '2026-06-19T14:12:00Z',
+        detail: 'Opened',
+      },
+      {
+        action_id: 'act_wb_wait2',
+        state: 'done',
+        occurred_at: '2026-06-19T14:13:00Z',
+        detail: 'Waited 21 days',
+      },
+      {
+        action_id: 'act_wb_offer',
+        state: 'done',
+        occurred_at: '2026-07-10T14:13:00Z',
+        detail: 'Opened (1 link)',
+      },
+    ],
+  },
+  {
+    // Out for good. A lapsed member being emailed about coming back is the
+    // likeliest unsubscribe in the whole fixture set, and the flow should show
+    // that it costs something to run.
+    id: 'run_delphine',
+    automation_id: winbackLapsed.id,
+    member: { id: 'mem_delphine', name: 'Delphine Roy', email: 'delphine.roy@example.com' },
+    status: 'exited_early',
+    enrolled_at: '2026-06-24T08:30:00Z',
+    completed_at: null,
+    current_action_id: null,
+    exit_reason: 'unsubscribed',
+    steps: [
+      {
+        action_id: 'act_wb_wait',
+        state: 'done',
+        occurred_at: '2026-06-24T08:30:00Z',
+        detail: 'Waited 14 days',
+      },
+      {
+        action_id: 'act_wb_email',
+        state: 'done',
+        occurred_at: '2026-07-08T08:32:00Z',
+        detail: 'Unsubscribed',
+      },
+      { action_id: 'act_wb_wait2', state: 'skipped', occurred_at: null, detail: null },
+      { action_id: 'act_wb_offer', state: 'skipped', occurred_at: null, detail: null },
+    ],
+  },
+  {
+    // Mid-flow, in the long second wait — where most of this automation's
+    // in-progress runs genuinely sit, because 21 days is most of the flow.
+    id: 'run_marcus_wb',
+    automation_id: winbackLapsed.id,
+    member: { id: 'mem_marcus_wb', name: 'Marcus Webb', email: 'marcus.webb@example.com' },
+    status: 'in_progress',
+    enrolled_at: '2026-06-29T11:45:00Z',
+    completed_at: null,
+    current_action_id: 'act_wb_wait2',
+    exit_reason: null,
+    steps: [
+      {
+        action_id: 'act_wb_wait',
+        state: 'done',
+        occurred_at: '2026-06-29T11:45:00Z',
+        detail: 'Waited 14 days',
+      },
+      {
+        action_id: 'act_wb_email',
+        state: 'done',
+        occurred_at: '2026-07-13T11:47:00Z',
+        detail: 'Delivered',
+      },
+      {
+        action_id: 'act_wb_wait2',
+        state: 'current',
+        occurred_at: '2026-07-13T11:48:00Z',
+        detail: 'Resumes Aug 3',
+      },
+      { action_id: 'act_wb_offer', state: 'upcoming', occurred_at: null, detail: null },
+    ],
+  },
+];
+
+// --- Engaged-reader upsell (segment-driven) --------------------------------
+//
+// The two-step flow in the set, and the shortest. Its interest isn't the funnel
+// — a wait and one email doesn't have much of one — it's the EXIT reasons: an
+// upsell that works exits as 'upgraded', and one that annoys exits as
+// 'unsubscribed'. Both are in here, because both are what a publisher is
+// actually deciding between when they turn this on.
+//
+// The enrollment curve is the steadiest of the five: people cross an engagement
+// threshold at whatever rate they read, which doesn't spike the way a campaign
+// or a cancellation wave does.
+const upsellMetrics: AutomationRunMetrics = {
+  automation_id: engagedUpsell.id,
+  enrollments: 548,
+  in_progress: 40,
+  completed: 449,
+  exited_early: 59,
+  last_enrolled_at: '2026-07-21T06:20:00Z',
+  enrollments_by_day: daysSeries(
+    '2026-07-21',
+    [
+      16, 17, 15, 18, 17, 19, 18, 16, 17, 19, 18, 20, 19, 17, 18, 20, 19, 18, 17, 19, 18, 20, 18,
+      17, 19, 18, 17, 19, 18, 17,
+    ],
+  ),
+};
+
+const upsellRunsBase: AutomationRun[] = [
+  {
+    // It worked — read it, upgraded. The outcome the whole segment exists for.
+    id: 'run_esme',
+    automation_id: engagedUpsell.id,
+    member: { id: 'mem_esme', name: 'Esme Aldridge', email: 'esme.aldridge@example.com' },
+    status: 'exited_early',
+    enrolled_at: '2026-07-14T07:30:00Z',
+    completed_at: null,
+    current_action_id: null,
+    exit_reason: 'upgraded',
+    steps: [
+      {
+        action_id: 'act_seg_wait',
+        state: 'done',
+        occurred_at: '2026-07-14T07:30:00Z',
+        detail: 'Waited 1 day',
+      },
+      {
+        action_id: 'act_seg_email',
+        state: 'done',
+        occurred_at: '2026-07-15T07:32:00Z',
+        detail: 'Opened (upgraded)',
+      },
+    ],
+  },
+  {
+    // Read it, stayed free. The overwhelming majority, and not a failure — they
+    // are still an engaged reader who now knows the option exists.
+    id: 'run_joaquin',
+    automation_id: engagedUpsell.id,
+    member: { id: 'mem_joaquin', name: 'Joaquin Vega', email: 'joaquin.vega@example.com' },
+    status: 'completed',
+    enrolled_at: '2026-07-16T12:05:00Z',
+    completed_at: '2026-07-17T12:09:00Z',
+    current_action_id: null,
+    exit_reason: null,
+    steps: [
+      {
+        action_id: 'act_seg_wait',
+        state: 'done',
+        occurred_at: '2026-07-16T12:05:00Z',
+        detail: 'Waited 1 day',
+      },
+      {
+        action_id: 'act_seg_email',
+        state: 'done',
+        occurred_at: '2026-07-17T12:07:00Z',
+        detail: 'Opened',
+      },
+    ],
+  },
+  {
+    // Didn't want to be sold to. The cost of running this, on the record.
+    id: 'run_beatriz',
+    automation_id: engagedUpsell.id,
+    member: { id: 'mem_beatriz', name: 'Beatriz Nunes', email: 'beatriz.nunes@example.com' },
+    status: 'exited_early',
+    enrolled_at: '2026-07-18T19:40:00Z',
+    completed_at: null,
+    current_action_id: null,
+    exit_reason: 'unsubscribed',
+    steps: [
+      {
+        action_id: 'act_seg_wait',
+        state: 'done',
+        occurred_at: '2026-07-18T19:40:00Z',
+        detail: 'Waited 1 day',
+      },
+      {
+        action_id: 'act_seg_email',
+        state: 'done',
+        occurred_at: '2026-07-19T19:42:00Z',
+        detail: 'Unsubscribed',
+      },
+    ],
+  },
+  {
+    // In the wait, crossed the threshold this morning.
+    id: 'run_anders',
+    automation_id: engagedUpsell.id,
+    member: { id: 'mem_anders', name: 'Anders Holm', email: 'anders.holm@example.com' },
+    status: 'in_progress',
+    enrolled_at: '2026-07-21T06:20:00Z',
+    completed_at: null,
+    current_action_id: 'act_seg_wait',
+    exit_reason: null,
+    steps: [
+      {
+        action_id: 'act_seg_wait',
+        state: 'current',
+        occurred_at: '2026-07-21T06:20:00Z',
+        detail: 'Resumes Jul 22',
+      },
+      { action_id: 'act_seg_email', state: 'upcoming', occurred_at: null, detail: null },
+    ],
+  },
+];
+
+const welcomeRuns = expandRunsByStatus(welcomeSeries.id, welcomeRunsBase, RUNS_PER_STATUS);
+const upgradeRuns = expandRunsByStatus(paidUpgradeNudge.id, upgradeRunsBase, RUNS_PER_STATUS);
+const leadMagnetRuns = expandRunsByStatus(
+  leadMagnetDelivery.id,
+  leadMagnetRunsBase,
+  RUNS_PER_STATUS,
+);
+const winbackRuns = expandRunsByStatus(winbackLapsed.id, winbackRunsBase, RUNS_PER_STATUS);
+const upsellRuns = expandRunsByStatus(engagedUpsell.id, upsellRunsBase, RUNS_PER_STATUS);
+
+// --- Registry + accessor ---------------------------------------------------
+
+const runData: Record<string, RunData> = {
+  [welcomeSeries.id]: { metrics: welcomeMetrics, runs: welcomeRuns },
+  [paidUpgradeNudge.id]: { metrics: upgradeMetrics, runs: upgradeRuns },
+  [leadMagnetDelivery.id]: { metrics: leadMagnetMetrics, runs: leadMagnetRuns },
+  [winbackLapsed.id]: { metrics: winbackMetrics, runs: winbackRuns },
+  [engagedUpsell.id]: { metrics: upsellMetrics, runs: upsellRuns },
+};
+
+function emptyMetrics(automationId: string): AutomationRunMetrics {
+  return {
+    automation_id: automationId,
+    enrollments: 0,
+    in_progress: 0,
+    completed: 0,
+    exited_early: 0,
+    last_enrolled_at: null,
+    enrollments_by_day: daysSeries(
+      '2026-07-21',
+      Array.from({ length: 30 }, () => 0),
+    ),
+  };
+}
+
+/**
+ * The runs and metrics for an automation.
+ *
+ * Never undefined: an automation with no fixtures — which today means any one you
+ * just created — gets a zeroed funnel and an empty run list, which is a designed
+ * state rather than a missing one. This used to return the
+ * whole scenario including the automation itself, but automations now come from
+ * the store (which can hold ones that were never fixtures), so this owns only the
+ * half that is still hand-authored.
+ */
+export function getRunData(id: string): { metrics: AutomationRunMetrics; runs: AutomationRun[] } {
+  return runData[id] ?? { metrics: emptyMetrics(id), runs: [] };
+}
+
+// An id that is deliberately absent from the registry above, so the empty state can
+// be reached on purpose rather than only by making a new automation.
+//
+// It used to be a fixture — a "Cancellation survey" that was published with nobody
+// enrolled. That automation is gone (see mockAutomations), and the empty state it
+// existed to demonstrate is not: getRunData zeroes anything it doesn't recognise, so
+// a bare id is all it ever needed to be.
+export const emptyScenarioId = 'auto_empty';
