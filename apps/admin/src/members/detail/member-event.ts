@@ -231,10 +231,21 @@ function metafieldChangeAction(event: MetafieldChangeEvent): string {
 }
 
 function getAction(event: RawMemberEvent, hasMultipleNewsletters: boolean): string | undefined {
-  if (
-    event.type === 'signup_event' ||
-    (event.type === 'subscription_event' && event.data.type === 'created' && event.data.signup)
-  ) {
+  if (event.type === 'signup_event') {
+    switch (event.data.source) {
+      case 'admin':
+        return 'signed up via manual entry';
+      case 'api':
+        return 'signed up via API';
+      case 'import':
+        return 'signed up via import';
+      case 'system':
+        return 'signed up via system';
+      default:
+        return 'signed up';
+    }
+  }
+  if (event.type === 'subscription_event' && event.data.type === 'created' && event.data.signup) {
     return 'signed up';
   }
   if (event.type === 'login_event') {
