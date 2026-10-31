@@ -137,10 +137,11 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
   const embedPreviewUrl = config.security?.embedPreviewUrl || undefined;
   const { darkMode } = useFocusContext();
   const editorResource = useMemo(() => loadKoenig(), []);
-  const [transistorEnabled, unsplashEnabled] = getSettingValues<boolean>(settings, [
-    'transistor',
-    'unsplash',
-  ]);
+  const [transistorEnabled, unsplashEnabled, smartQuotesEnabled] = getSettingValues<boolean>(
+    settings,
+    ['transistor', 'unsplash', 'editor_smart_quotes'],
+  );
+  const [locale] = getSettingValues<string>(settings, ['locale']);
 
   const cardConfig = useMemo(
     () => ({
@@ -153,7 +154,9 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
       searchLinks,
       feature: {
         transistor: transistorEnabled,
+        smartQuotes: smartQuotesEnabled,
       },
+      locale,
       visibilitySettings: 'none',
     }),
     [
@@ -166,6 +169,8 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
       fetchAutocompleteLinks,
       searchLinks,
       transistorEnabled,
+      smartQuotesEnabled,
+      locale,
     ],
   );
 

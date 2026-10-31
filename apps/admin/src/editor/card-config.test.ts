@@ -99,7 +99,7 @@ describe('buildPostCardConfig', () => {
       klipy: null,
       pinturaConfig: null,
       renderLabels: true,
-      feature: { transistor: false, paywallImprovements: false },
+      feature: { transistor: false, paywallImprovements: false, smartQuotes: false },
       deprecated: { headerV1: true },
       membersEnabled: true,
       siteTitle: 'Test Site',
@@ -204,13 +204,26 @@ describe('buildPostCardConfig', () => {
   it('reads feature flags from settings and labs', () => {
     const cardConfig = buildPostCardConfig(
       sources({
-        settings: settingsFrom({ ...baseSettings, transistor: true }),
+        settings: settingsFrom({ ...baseSettings, transistor: true, editor_smart_quotes: true }),
         config: { ...config, labs: { paywallImprovements: true } },
       }),
       ports,
     );
 
-    expect(cardConfig.feature).toEqual({ transistor: true, paywallImprovements: true });
+    expect(cardConfig.feature).toEqual({
+      transistor: true,
+      paywallImprovements: true,
+      smartQuotes: true,
+    });
+  });
+
+  it('passes the publication language to the editor', () => {
+    const cardConfig = buildPostCardConfig(
+      sources({ settings: settingsFrom({ ...baseSettings, locale: 'de' }) }),
+      ports,
+    );
+
+    expect(cardConfig.locale).toBe('de');
   });
 
   it('treats invite-only member signup as members disabled', () => {
