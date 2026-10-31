@@ -6,8 +6,6 @@ import {
   AccordionItem,
   AccordionTrigger,
   Avatar,
-  AvatarFallback,
-  AvatarImage,
   Badge,
   Button,
   Tabs,
@@ -17,21 +15,12 @@ import {
 } from '@tryghost/shade/components';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { formatNumber } from '@tryghost/shade/utils';
+import { memberAvatarProps } from '@/members/api';
 import { type FailureGroup, groupFailures } from './group-failures';
 
 const RECIPIENTS_PER_PAGE = 20;
 
 type Filter = 'all' | EmailRecipientFailure['severity'];
-
-function initials(value: string) {
-  return (value || 'U')
-    .split(' ')
-    .filter(Boolean)
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-}
 
 function Recipient({
   failure,
@@ -44,10 +33,12 @@ function Recipient({
   const email = failure.email_recipient?.member_email || '';
   const identity = (
     <Inline align="center" gap="md">
-      <Avatar className="size-8">
-        <AvatarImage src={failure.member?.avatar_image || undefined} />
-        <AvatarFallback>{initials(name || email)}</AvatarFallback>
-      </Avatar>
+      <Avatar
+        aria-hidden="true"
+        className="size-8"
+        {...memberAvatarProps({ name, email })}
+        src={failure.member?.avatar_image}
+      />
       <Stack gap="none">
         <span className="font-medium">{name || email}</span>
         {name && <span className="text-muted-foreground">{email}</span>}
