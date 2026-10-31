@@ -31,9 +31,12 @@ export function MediaUploader({
     errors,
     onRemoveMedia = () => {},
     additionalActions,
-    setFileInputRef
+    setFileInputRef,
+    filePicker
 }) {
     const fileInputRef = useRef(null);
+    // What clicking the empty placeholder does: choosing a file, unless the caller offers more
+    const pickFile = filePicker ?? (() => openFileSelection({fileInputRef}));
 
     const onFileInputRef = (element) => {
         fileInputRef.current = element;
@@ -60,7 +63,7 @@ export function MediaUploader({
                     desc={isEditing ? desc : ''}
                     errorDataTestId="media-upload-errors"
                     errors={errors}
-                    filePicker={() => openFileSelection({fileInputRef})}
+                    filePicker={pickFile}
                     icon={icon}
                     isDraggedOver={dragHandler?.isDraggedOver}
                     placeholderRef={dragHandler?.setRef}
@@ -129,6 +132,7 @@ MediaUploader.propTypes = {
     desc: PropTypes.string,
     dragHandler: PropTypes.shape({isDraggedOver: PropTypes.bool, setRef: PropTypes.func}),
     errors: PropTypes.arrayOf(PropTypes.shape({message: PropTypes.string})),
+    filePicker: PropTypes.func,
     icon: PropTypes.string,
     imgClassName: PropTypes.string,
     isEditing: PropTypes.bool,

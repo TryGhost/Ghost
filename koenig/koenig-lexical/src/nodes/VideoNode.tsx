@@ -94,12 +94,15 @@ export class VideoNode extends BaseVideoNode {
                     captionEditorInitialState={this.__captionEditorInitialState}
                     cardWidth={cardWidth}
                     customThumbnail={this.customThumbnailSrc}
+                    height={this.height}
                     initialFile={this.__initialFile}
                     isLoopChecked={this.loop}
                     nodeKey={this.getKey()}
+                    src={this.src}
                     thumbnail={this.thumbnailSrc}
                     totalDuration={this.formattedDuration}
                     triggerFileDialog={this.__triggerFileDialog}
+                    width={this.width}
                 />
             </KoenigCardWrapper>
         );

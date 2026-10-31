@@ -25,7 +25,8 @@ function PopulatedVideoCard({
     onCardWidthChange,
     isEditing,
     thumbnailMimeTypes,
-    thumbnailDragHandler = {}
+    thumbnailDragHandler = {},
+    onPickCustomThumbnail
 }) {
     const progressStyle = {
         width: `${videoUploader.progress?.toFixed(0)}%`
@@ -98,6 +99,7 @@ function PopulatedVideoCard({
                             borderStyle={'rounded'}
                             dataTestId="custom-thumbnail-replace"
                             errors={customThumbnailUploader.errors}
+                            filePicker={onPickCustomThumbnail}
                             icon='file'
                             isDraggedOver={thumbnailDragHandler.isDraggedOver}
                             isLoading={customThumbnailUploader.isLoading}
@@ -210,7 +212,8 @@ PopulatedVideoCard.propTypes = {
     onCardWidthChange: PropTypes.func,
     isEditing: PropTypes.bool,
     thumbnailMimeTypes: PropTypes.array,
-    thumbnailDragHandler: PropTypes.object
+    thumbnailDragHandler: PropTypes.object,
+    onPickCustomThumbnail: PropTypes.func
 };
 
 EmptyVideoCard.propTypes = {

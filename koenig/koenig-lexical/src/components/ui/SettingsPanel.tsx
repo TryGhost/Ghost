@@ -275,7 +275,7 @@ export function ColorPickerSetting({label, isExpanded, onSwatchChange, onPickerC
     );
 }
 
-export function MediaUploadSetting({className, imgClassName, label, hideLabel, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, errors = [], progress, onRemoveMedia, icon, desc, size, type, stacked, borderStyle, mimeTypes, isPinturaEnabled, openImageEditor, setFileInputRef}) {
+export function MediaUploadSetting({className, imgClassName, label, hideLabel, onFileChange, isDraggedOver, placeholderRef, src, alt, isLoading, errors = [], progress, onRemoveMedia, icon, desc, size, type, stacked, borderStyle, mimeTypes, isPinturaEnabled, openImageEditor, setFileInputRef, filePicker}) {
     return (
         <div className={clsx(className, !stacked && 'flex justify-between gap-3')} data-testid="media-upload-setting">
             <div className={hideLabel ? 'sr-only' : 'mb-2 shrink-0 text-sm font-medium tracking-normal text-grey-900 dark:text-grey-400'}>{label}</div>
@@ -290,6 +290,7 @@ export function MediaUploadSetting({className, imgClassName, label, hideLabel, o
                 desc={desc}
                 dragHandler={{isDraggedOver, setRef: placeholderRef}}
                 errors={errors}
+                filePicker={filePicker}
                 icon={icon}
                 imgClassName={imgClassName}
                 isLoading={isLoading}
