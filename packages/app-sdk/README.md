@@ -117,7 +117,8 @@ time.
   Any other name is refused, `newsletter`, `email_segment` and `source`
   included, however it's written.
 - `codeinjection_head` and `codeinjection_foot` are refused with any value, even
-  `null`, on posts, pages and tags: leave them out of the body.
+  `null`, on the post, page or tag you write: leave them out of the body.
+  Deeper in the body, such as on a post's tags, only `null` is allowed.
 - `mobiledoc` must be `null` or left out: it's deprecated and Ghost 7.0 removes
   it. Write `lexical` instead.
 - The SDK and Admin set the body's content type themselves; an app can't set
@@ -135,15 +136,16 @@ await ghost.fetch(`/posts/${id}/`, {
 });
 ```
 
-The tags you send replace the post's tags. The tags you read come back with
-`codeinjection_head` and `codeinjection_foot` too, so send each as `{ id }`, or
-`{ name }` for a new one:
+The tags you send replace the post's tags. You can send back the tags you read,
+and add `{ name }` for a new one. Ghost uses only each tag's `id`, `name` and
+`slug`:
 
 ```ts
-const tags = posts[0].tags.map(({ id }) => ({ id }));
 await ghost.fetch(`/posts/${id}/`, {
   method: 'PUT',
-  body: { posts: [{ updated_at: posts[0].updated_at, tags: [...tags, { name: 'Featured' }] }] },
+  body: {
+    posts: [{ updated_at: posts[0].updated_at, tags: [...posts[0].tags, { name: 'Featured' }] }],
+  },
 });
 ```
 
