@@ -4,7 +4,6 @@ import sinon from 'sinon';
 
 // Match the CommonJS root and consumers used by boot and the API framework.
 const db = require('../../../../../core/server/data/db');
-const models = require('../../../../../core/server/models');
 // The access consumer imports members, which reads database metadata at import.
 // Load that unrelated dependency before replacing gift-links' database binding.
 require('../../../../../core/server/services/members');
@@ -39,7 +38,6 @@ describe('gift-links root with its API consumers', function () {
   let knex: sinon.SinonStub<[string], typeof query>;
   let currentKnex: typeof knex;
   let getKnex: sinon.SinonSpy<[], typeof knex>;
-  let addAction: sinon.SinonStub;
 
   beforeEach(function () {
     originalModules = new Map(Object.entries(require.cache));
@@ -51,7 +49,6 @@ describe('gift-links root with its API consumers', function () {
     currentKnex = knex;
     getKnex = sandbox.spy(() => currentKnex);
     sandbox.stub(db, 'knex').get(getKnex);
-    addAction = sandbox.stub(models.Action, 'add').resolves();
   });
 
   afterEach(function () {
@@ -73,7 +70,6 @@ describe('gift-links root with its API consumers', function () {
     assert.throws(() => root.service, /Gift Links used before init/);
     sinon.assert.notCalled(getKnex);
     sinon.assert.notCalled(knex);
-    sinon.assert.notCalled(addAction);
 
     const readyKnex = sandbox.stub<[string], typeof query>().returns(query);
     currentKnex = readyKnex;
@@ -89,7 +85,6 @@ describe('gift-links root with its API consumers', function () {
     sinon.assert.calledOnce(getKnex);
     sinon.assert.calledOnceWithExactly(readyKnex, 'post_gift_links');
     sinon.assert.notCalled(knex);
-    sinon.assert.notCalled(addAction);
   });
 
   it('lets the earlier public access consumer resolve a token through the initialized service', async function () {
@@ -130,30 +125,28 @@ describe('gift-links root with its API consumers', function () {
 
     assert.equal(frame.giftLinkPostId, undefined);
     sinon.assert.calledOnce(query.first);
-    sinon.assert.notCalled(addAction);
   });
 
-  it('lets the earlier Admin controller remove links and record the action through the wired model', async function () {
+  it('lets the earlier Admin controller remove links and raise the change through the wired service', async function () {
     const controller = require(CONTROLLER_PATH);
     const root: Root = require(ROOT_PATH).default;
     assert.throws(() => root.service, /Gift Links used before init/);
     await root.init();
+    const raised: unknown[] = [];
+    root.service.events.react(async (actor, event) => {
+      raised.push({ actor, event });
+    });
 
     const result = await controller.removeAll.query({ options: { context: { user: 'actor-id' } } });
 
     assert.deepEqual(result, { count: 2 });
     sinon.assert.calledOnceWithExactly(knex, 'post_gift_links');
     sinon.assert.calledOnceWithExactly(query.del);
-    sinon.assert.calledOnceWithExactly(
-      addAction,
+    assert.deepEqual(raised, [
       {
-        event: 'deleted',
-        resource_type: 'gift_link',
-        resource_id: null,
-        actor_type: 'user',
-        actor_id: 'actor-id',
+        actor: { type: 'user', id: 'actor-id' },
+        event: { type: 'GiftLinksRevoked', change: 'edited', count: 2 },
       },
-      { autoRefresh: false },
-    );
+    ]);
   });
 });
