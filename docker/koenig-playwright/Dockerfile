@@ -1,6 +1,9 @@
 # check=skip=InvalidDefaultArgInFrom
-# The workflow supplies the exact version of the installed @playwright/test.
+# The workflow supplies the catalog's Playwright version and repository Node pin.
 ARG PLAYWRIGHT_IMAGE
+ARG NODE_VERSION
+FROM node:${NODE_VERSION}-bookworm-slim AS node
+
 FROM ${PLAYWRIGHT_IMAGE} AS fonts
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -30,6 +33,18 @@ RUN set -eu; \
     cp -a package/usr/share/doc/ttf-mscorefonts-installer /usr/share/doc/
 
 FROM ${PLAYWRIGHT_IMAGE}
+
+# Use Ghost's Node pin instead of the Node version bundled with Playwright.
+COPY --from=node /usr/local/ /usr/local/
+ENV COREPACK_HOME=/opt/corepack \
+    pnpm_config_enable_global_virtual_store=false
+COPY package.json /opt/koenig-runner/package.json
+RUN cd /opt/koenig-runner \
+    && corepack enable pnpm \
+    && corepack install \
+    && pnpm --version \
+    && chmod -R a+rX /opt/corepack
+ENV COREPACK_ENABLE_NETWORK=0
 
 # Upstream supplies the browsers and codecs. Add only Koenig's fonts and their
 # license documentation, leaving the installer and build tools in the first stage.

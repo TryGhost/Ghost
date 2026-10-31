@@ -1,0 +1,3 @@
+# The test image only needs the root manifest to install pinned pnpm.
+**
+!package.json

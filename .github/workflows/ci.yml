@@ -1109,6 +1109,8 @@ jobs:
       - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
+          # Koenig installs native dependencies inside its test image.
+          install: ${{ matrix.app != '@tryghost/koenig-lexical' }}
           trust-lockfile: 'true'
           # Each matrix leg only Playwright-tests one app, so scope the install to that
           # app's dependency subgraph instead of the whole monorepo (which drags in
@@ -1123,13 +1125,14 @@ jobs:
         with:
           browsers: ${{ matrix.app == '@tryghost/admin' && 'chromium' || 'chromium firefox webkit' }}
 
-      # Use the installed version as the image pin: catalog/lockfile updates
-      # automatically update both sides of the Playwright protocol together.
+      # The catalog is the only Playwright version pin. The container checks
+      # that its fresh lockfile install resolves to that same version.
       - name: Resolve Koenig Playwright image
         if: matrix.app == '@tryghost/koenig-lexical'
         id: koenig-playwright
         run: |
-          version=$(node -p "require('@playwright/test/package.json').version")
+          version=$(yq '.catalog["@playwright/test"]' pnpm-workspace.yaml)
+          test -n "$version" && test "$version" != null
           {
             echo "version=$version"
             echo "image=mcr.microsoft.com/playwright:v${version}-noble"
@@ -1144,46 +1147,59 @@ jobs:
         timeout-minutes: 10
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
-          context: ./docker/koenig-playwright
+          context: .
+          file: docker/koenig-playwright/Dockerfile
           load: true
           tags: koenig-playwright:ci
-          build-args: PLAYWRIGHT_IMAGE=${{ steps.koenig-playwright.outputs.image }}
+          build-args: |
+            PLAYWRIGHT_IMAGE=${{ steps.koenig-playwright.outputs.image }}
+            NODE_VERSION=${{ env.NODE_VERSION }}
           cache-from: type=gha,scope=koenig-playwright-${{ steps.koenig-playwright.outputs.version }}
           cache-to: type=gha,scope=koenig-playwright-${{ steps.koenig-playwright.outputs.version }},mode=max
 
-      - name: Start Koenig browsers
+      - name: Run Koenig Playwright tests
         if: matrix.app == '@tryghost/koenig-lexical'
-        timeout-minutes: 1
+        timeout-minutes: 15
+        env:
+          PLAYWRIGHT_VERSION: ${{ steps.koenig-playwright.outputs.version }}
+          SHARD_INDEX: ${{ matrix.shardIndex }}
+          SHARD_TOTAL: ${{ matrix.shardTotal }}
         run: |
-          # Mount the installed JS CLI at the same path as on the host. Only
-          # the browsers run in Docker; Vite, pnpm and Node tests stay on host.
-          docker run --detach --name koenig-playwright --init --ipc=host \
-            --publish 127.0.0.1:3000:3000 \
-            --mount "type=bind,source=$GITHUB_WORKSPACE,target=$GITHUB_WORKSPACE,readonly" \
+          # Install and run in one environment, including tests that launch a
+          # browser directly. The writable bind keeps reports on the runner.
+          docker run --rm --name koenig-playwright --init --ipc=host \
+            --user "$(id -u):$(id -g)" \
+            --mount "type=bind,source=$GITHUB_WORKSPACE,target=$GITHUB_WORKSPACE" \
+            --mount "type=bind,source=$GITHUB_EVENT_PATH,target=$GITHUB_EVENT_PATH,readonly" \
             --workdir "$GITHUB_WORKSPACE" \
-            koenig-playwright:ci \
-            node node_modules/@playwright/test/cli.js run-server --host 0.0.0.0 --port 3000
-          for _ in {1..30}; do
-            if curl --fail --silent http://127.0.0.1:3000/ >/dev/null; then
-              exit 0
-            fi
-            sleep 1
-          done
-          docker logs koenig-playwright
-          exit 1
+            --env HOME=/tmp/koenig-home \
+            --env CI --env FORCE_COLOR --env DISABLE_V8_COMPILE_CACHE \
+            --env NX_NATIVE_COMMAND_RUNNER \
+            --env NX_BRANCH --env NX_CI_EXECUTION_ID --env NX_CI_EXECUTION_ENV \
+            --env GITHUB_ACTIONS --env GITHUB_WORKSPACE --env GITHUB_REPOSITORY \
+            --env GITHUB_SHA --env GITHUB_REF --env GITHUB_HEAD_REF --env GITHUB_BASE_REF \
+            --env GITHUB_EVENT_NAME --env GITHUB_EVENT_PATH --env GITHUB_RUN_ID --env GITHUB_RUN_ATTEMPT \
+            --env GITHUB_SERVER_URL \
+            --env PLAYWRIGHT_VERSION --env SHARD_INDEX --env SHARD_TOTAL \
+            koenig-playwright:ci bash -euc '
+              mkdir -p "$HOME"
+              pnpm install --frozen-lockfile --no-runtime --trust-lockfile --filter @tryghost/koenig-lexical...
+              installed=$(node -p "require(\"@playwright/test/package.json\").version")
+              if [ "$installed" != "$PLAYWRIGHT_VERSION" ]; then
+                echo "::error::Installed Playwright $installed does not match image version $PLAYWRIGHT_VERSION"
+                exit 1
+              fi
+              pnpm nx run @tryghost/koenig-lexical:test:acceptance --shard="$SHARD_INDEX/$SHARD_TOTAL"
+            '
 
       - name: Run Playwright tests
-        env:
-          PW_TEST_CONNECT_WS_ENDPOINT: ${{ matrix.app == '@tryghost/koenig-lexical' && 'ws://127.0.0.1:3000/' || '' }}
-          # Forward browser loopback requests to the host's Vite test server.
-          PW_TEST_CONNECT_EXPOSE_NETWORK: ${{ matrix.app == '@tryghost/koenig-lexical' && '<loopback>' || '' }}
+        if: matrix.app != '@tryghost/koenig-lexical'
         run: pnpm nx run ${{ matrix.app }}:test:acceptance --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
-      - name: Stop Koenig browsers
+      - name: Stop Koenig test container
         if: always() && matrix.app == '@tryghost/koenig-lexical'
         run: |
           if docker container inspect koenig-playwright >/dev/null 2>&1; then
-            docker logs koenig-playwright
             docker rm --force koenig-playwright
           fi
 
@@ -1194,7 +1210,11 @@ jobs:
         # resolve the project root since apps live in apps/* and koenig/*
         run: |
           APP_NAME="${{ matrix.app }}"
-          APP_ROOT=$(pnpm nx show project ${{ matrix.app }} --json | jq -r .root)
+          if [ "$APP_NAME" = '@tryghost/koenig-lexical' ]; then
+            APP_ROOT=koenig/koenig-lexical
+          else
+            APP_ROOT=$(pnpm nx show project ${{ matrix.app }} --json | jq -r .root)
+          fi
           {
             echo "name=${APP_NAME#@tryghost/}"
             echo "root=$APP_ROOT"
