@@ -6,9 +6,9 @@ description: Migrate one existing Ghost Core service to the boot-owned defineSer
 # Migrate one service
 
 Prepare a small, behavior-preserving migration of one existing service. This is
-an execution workflow, not the final service-authoring guide or permission to
-redesign a service's lifecycle. Read current repository guidance rather than
-copying an earlier migration blindly.
+an execution workflow, not permission to redesign a service's lifecycle. The
+[services guide](../../../ghost/core/server/services/README.md) is the authoring
+guide; read it rather than copying an earlier migration blindly.
 
 ## 1. Establish the starting point
 
@@ -46,12 +46,16 @@ Confirm the capability belongs in services. A reusable constructor or helper
 without an application-owned instance belongs elsewhere; do not add an empty
 initializer merely to keep its directory.
 
-Read `.dependency-cruiser.cjs` and `.oxlintrc.json` on the actual base. Where the
-service DI ratchet is present, its scope includes every implementation file in
-the directory, not just the main class. Only the top-level wiring `index.ts` is
-exempt. Implementations must not retrieve collaborators through their own root.
+Read `.dependency-cruiser.cjs` and `.oxlintrc.json` on the actual base. The
+`service-dependencies` rule covers every implementation file in the directory,
+not just the main class. Only the top-level wiring `index.ts` is exempt in lint.
+`pnpm gx services audit` also exempts a legacy `index.js` root, so its output
+omits that root's imports.
+Implementations must not retrieve collaborators through their own root.
 
-Wire application instances, models, logging and configured adapters in the root.
+Wire application instances, models, logging, `DomainEvents` and configured
+adapters in the root. The guide's dependency boundaries cover `fs`, lodash,
+deferred lookups and live configuration reads.
 Keep approved libraries imported where used and use explicit type-only imports.
 Type injected logging as `GhostLogger` (or a `Pick` of it) from
 `@tryghost/logging`, never a hand-written shape; class tests inject
@@ -70,8 +74,8 @@ needed; do not widen the rule merely to make lint pass. Normal inventory and
 root-shape opt-ins still belong in each migration.
 
 Preserve late acquisition with getters/factories when dependencies are unavailable
-at boot. If audit scripts exist, inspect their detailed output: findings may not
-make the audit command fail, and a summary may omit unresolved/own-root imports.
+at boot. Inspect `pnpm gx services report <name>` and the full
+`pnpm gx services audit` output: a summary may omit unresolved/own-root imports.
 
 ## 3. Establish coverage before changing production
 
@@ -112,7 +116,8 @@ when existing tests protect it.
 ## 4. Make the smallest initializer change
 
 - Create a TypeScript top-level `index.ts` default-exporting `defineService`
-  from the kernel. Return one fully ready instance from its factory.
+  from the kernel. Return one fully ready instance from its factory, or one
+  typed object when several objects are built together.
 - Expose normal operations on `.service`. Keep classes and implementation
   contracts in implementation files; root named exports are type-only.
 - Use optional `extras` only for justified transitional concerns. Catalogue each
@@ -153,8 +158,7 @@ Do not restore manual totals or erase unrelated backlog items.
 
 Opt the root into `ghost/service-root-shape` in `.oxlintrc.json` as required by
 the current configuration; the tooling scope check must agree with the inventory.
-Once the DI ratchet is present, `migrated: true` also opts implementations into
-its normal boundary checks. Do not claim enforcement passed if that policy was
+`migrated: true` also opts implementations into the boundary checks. Do not claim enforcement passed if that policy was
 only checked in a temporary integration or is still awaiting merge.
 
 Run focused tests before/after, relevant real consumer/DB checks, root-shape and
