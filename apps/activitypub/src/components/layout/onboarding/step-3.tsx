@@ -17,10 +17,11 @@ import tangleAvatar from '@assets/images/onboarding/avatar-tangle.png';
 import tangleCover from '@assets/images/onboarding/cover-tangle.png';
 import { Avatar, AvatarFallback, AvatarImage, Button, Separator } from '@tryghost/shade/components';
 import { H1 } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useAccountForUser, useTopicsForUser } from '@src/hooks/use-activity-pub-queries';
 import { useNavigateWithBasePath } from '@src/hooks/use-navigate-with-base-path';
 import { useOnboardingStatus } from './onboarding';
+import { useShade } from '@tryghost/shade/app';
 
 const MenuItem: React.FC<{
   children?: ReactNode;
@@ -338,6 +339,7 @@ const Reader: React.FC = () => {
 };
 
 const Step3: React.FC = () => {
+  const { admin7Design } = useShade();
   const [activeTab, setActiveTab] = useState(1);
   const [isHovering, setIsHovering] = useState(false);
   const { setOnboarded } = useOnboardingStatus();
@@ -378,7 +380,10 @@ const Step3: React.FC = () => {
           </div>
         </div>
         <Button
-          className="min-w-60 bg-gradient-to-r from-purple-500 to-[#6A1AD6] hover:opacity-90 dark:text-white"
+          className={cn(
+            'min-w-60 hover:opacity-90 dark:text-white',
+            admin7Design ? 'bg-purple-600' : 'bg-gradient-to-r from-purple-500 to-[#6A1AD6]',
+          )}
           size="lg"
           onClick={handleComplete}
         >

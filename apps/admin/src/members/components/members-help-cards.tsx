@@ -1,5 +1,6 @@
 import React from 'react';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { useShade } from '@tryghost/shade/app';
 
 interface MembersHelpCardProps {
   children: React.ReactNode;
@@ -35,6 +36,8 @@ const iconCardClass =
   'flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md p-4 opacity-80 transition-all group-hover/card:opacity-100';
 
 const MembersHelpCards: React.FC = () => {
+  const { admin7Design } = useShade();
+
   return (
     <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-2">
       <MembersHelpCard
@@ -42,7 +45,14 @@ const MembersHelpCards: React.FC = () => {
         title="Building your audience with subscriber signups"
         url="https://ghost.org/resources/build-audience-subscriber-signups/"
       >
-        <div className={cn(iconCardClass, 'bg-gradient-to-tr from-[#22C55E]/20 to-[#84CC16]/20')}>
+        <div
+          className={cn(
+            iconCardClass,
+            admin7Design
+              ? 'bg-green-500/20'
+              : 'bg-gradient-to-tr from-[#22C55E]/20 to-[#84CC16]/20',
+          )}
+        >
           <LucideIcon.UserPlus className="text-[#16A34A]" size={20} strokeWidth={1.5} />
         </div>
       </MembersHelpCard>
@@ -52,7 +62,14 @@ const MembersHelpCards: React.FC = () => {
         title="Get your first 100 email subscribers"
         url="https://ghost.org/resources/first-100-email-subscribers/"
       >
-        <div className={cn(iconCardClass, 'bg-gradient-to-tl from-[#A855F7]/20 to-[#EC4899]/20')}>
+        <div
+          className={cn(
+            iconCardClass,
+            admin7Design
+              ? 'bg-purple-500/20'
+              : 'bg-gradient-to-tl from-[#A855F7]/20 to-[#EC4899]/20',
+          )}
+        >
           <LucideIcon.Mail className="text-[#DB2777]" size={20} strokeWidth={1.5} />
         </div>
       </MembersHelpCard>

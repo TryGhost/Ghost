@@ -12,7 +12,7 @@ import {
   Separator,
   Switch,
 } from '@tryghost/shade/components';
-import { LucideIcon, abbreviateNumber } from '@tryghost/shade/utils';
+import { LucideIcon, abbreviateNumber, cn } from '@tryghost/shade/utils';
 import {
   type Setting,
   getSettingValue,
@@ -23,10 +23,12 @@ import { SettingGroupContent } from '@tryghost/shade/patterns';
 import { useBrowseMembers } from '@tryghost/admin-x-framework/api/members';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useShade } from '@tryghost/shade/app';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { withErrorBoundary } from '@/settings/components/with-error-boundary';
 
 const Explore: React.FC<{ keywords: string[] }> = ({ keywords }) => {
+  const { admin7Design } = useShade();
   const { settings } = useGlobalData();
   const { mutateAsync: editSettings } = useEditSettings();
   const handleError = useHandleError();
@@ -161,7 +163,14 @@ const Explore: React.FC<{ keywords: string[] }> = ({ keywords }) => {
               </a>
             </div>
           </div>
-          <div className="-mx-5 -mb-5 flex items-center justify-between gap-4 rounded-b-xl border-t border-[rgba(142,66,255,0.1)] bg-gradient-to-tr from-[rgba(142,66,255,0.07)] to-[rgba(142,66,255,0.02)] p-6 px-7 md:-mx-7 md:-mb-7">
+          <div
+            className={cn(
+              '-mx-5 -mb-5 flex items-center justify-between gap-4 rounded-b-xl border-t border-[rgba(142,66,255,0.1)] p-6 px-7 md:-mx-7 md:-mb-7',
+              admin7Design
+                ? 'bg-purple-500/5'
+                : 'bg-gradient-to-tr from-[rgba(142,66,255,0.07)] to-[rgba(142,66,255,0.02)]',
+            )}
+          >
             <div className="flex flex-col">
               <span className="font-medium">Get featured on the Ghost.org homepage</span>
               <span className="text-pretty text-black/80 dark:text-white/80">

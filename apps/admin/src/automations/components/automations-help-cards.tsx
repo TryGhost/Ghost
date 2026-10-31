@@ -3,6 +3,7 @@ import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useFeaturebase } from '@tryghost/admin-x-framework';
+import { useShade } from '@tryghost/shade/app';
 
 const FORUM_URL = 'https://forum.ghost.org';
 const HELP_URL = 'https://ghost.org/help/automations-beta';
@@ -74,17 +75,38 @@ const HelpButtonCard: React.FC<HelpButtonCardProps> = ({
   </button>
 );
 
-const AutomationsIconTile: React.FC = () => (
-  <div className="flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-tr from-[#8B5CF6]/20 to-[#EC4899]/20 p-4 opacity-80 transition-all group-hover/card:opacity-100">
-    <LucideIcon.Zap className="text-[#8B5CF6]" size={20} strokeWidth={1.5} />
-  </div>
-);
+const iconTileClass =
+  'flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md p-4 opacity-80 transition-all group-hover/card:opacity-100';
 
-const FeedbackIconTile: React.FC = () => (
-  <div className="flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-tl from-[#10B981]/20 to-[#0EA5E9]/20 p-4 opacity-80 transition-all group-hover/card:opacity-100">
-    <LucideIcon.MessageCircle className="text-[#0EA5E9]" size={20} strokeWidth={1.5} />
-  </div>
-);
+const AutomationsIconTile: React.FC = () => {
+  const { admin7Design } = useShade();
+
+  return (
+    <div
+      className={cn(
+        iconTileClass,
+        admin7Design ? 'bg-purple-500/20' : 'bg-gradient-to-tr from-[#8B5CF6]/20 to-[#EC4899]/20',
+      )}
+    >
+      <LucideIcon.Zap className="text-[#8B5CF6]" size={20} strokeWidth={1.5} />
+    </div>
+  );
+};
+
+const FeedbackIconTile: React.FC = () => {
+  const { admin7Design } = useShade();
+
+  return (
+    <div
+      className={cn(
+        iconTileClass,
+        admin7Design ? 'bg-green-500/20' : 'bg-gradient-to-tl from-[#10B981]/20 to-[#0EA5E9]/20',
+      )}
+    >
+      <LucideIcon.MessageCircle className="text-[#0EA5E9]" size={20} strokeWidth={1.5} />
+    </div>
+  );
+};
 
 const FEEDBACK_TITLE = 'Share your feedback';
 const FEEDBACK_DESCRIPTION =
