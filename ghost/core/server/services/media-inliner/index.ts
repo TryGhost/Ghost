@@ -2,9 +2,10 @@ import { defineService } from '../../../kernel/define-service';
 import type ExternalMediaInliner from './external-media-inliner';
 
 // Runs in the required services phase, after the models and storage adapters
-// exist. The adapters are retained from init; the upload policy is read on
-// every selection because the e2e lane boots Ghost repeatedly in one process
-// with changed configuration.
+// exist. The upload policy and the active storage adapter are read on every
+// selection because the e2e lane boots Ghost repeatedly in one process with
+// changed configuration. The adapter manager caches each adapter, so a repeat
+// lookup returns the same instance until the configuration changes.
 export default defineService('Media inliner', (): ExternalMediaInliner => {
   const MediaInliner = require('./external-media-inliner');
   const models = require('../../models');
@@ -16,9 +17,11 @@ export default defineService('Media inliner', (): ExternalMediaInliner => {
     isSvgExtension,
   } = require('../../lib/image/image-content');
 
-  const mediaStorage = adapterManager.getAdapter('storage:media');
-  const imageStorage = adapterManager.getAdapter('storage:images');
-  const fileStorage = adapterManager.getAdapter('storage:files');
+  // Resolved here so a missing or broken adapter fails init rather than the
+  // first import.
+  adapterManager.getAdapter('storage:media');
+  adapterManager.getAdapter('storage:images');
+  adapterManager.getAdapter('storage:files');
 
   return new MediaInliner({
     PostModel: models.Post,
@@ -47,14 +50,14 @@ export default defineService('Media inliner', (): ExternalMediaInliner => {
           isSvgExtension(extension) ||
           (await isAllowedImageContent(fileBuffer, imageExtensions))
         ) {
-          return imageStorage;
+          return adapterManager.getAdapter('storage:images');
         }
 
         return null;
       } else if (config.get('uploads').media.extensions.includes(extension)) {
-        return mediaStorage;
+        return adapterManager.getAdapter('storage:media');
       } else if (config.get('uploads').files.extensions.includes(extension)) {
-        return fileStorage;
+        return adapterManager.getAdapter('storage:files');
       } else {
         return null;
       }

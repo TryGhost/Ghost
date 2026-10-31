@@ -125,9 +125,10 @@ describe('Media inliner service root', function () {
     );
   });
 
-  it('keeps the published inliner when a later init cannot resolve storage', async function () {
+  it('keeps the published inliner and does not resolve storage again on a later init', async function () {
     await root.init();
     const published = root.service;
+    const lookupsAtInit = getAdapter.callCount;
     getAdapter.withArgs('storage:media').throws(new Error('Media storage unavailable'));
 
     // Whether the second call rejects or shares the first attempt, the inliner
@@ -135,13 +136,10 @@ describe('Media inliner service root', function () {
     await root.init().catch(() => undefined);
 
     assert.equal(root.service, published);
-    assert.equal(
-      await published.getMediaStorage('.mp4', Buffer.alloc(0)),
-      storages['storage:media'],
-    );
+    assert.equal(getAdapter.callCount, lookupsAtInit);
   });
 
-  it('reads the upload extension policy on each storage selection while retaining the adapters resolved at init', async function () {
+  it('reads the upload extension policy and the active storage adapter on each storage selection', async function () {
     await root.init();
     const retained = root.service;
     const mediaStorage = storages['storage:media'];
@@ -152,15 +150,17 @@ describe('Media inliner service root', function () {
     assert.equal(await retained.getMediaStorage('.webm', Buffer.alloc(0)), null);
 
     // The e2e lane boots Ghost repeatedly in one process, so a root that
-    // captured the extension lists at construction would keep stale policy.
+    // captured the extension lists or the adapters at construction would keep
+    // stale policy and save to the previous store.
     uploads = { ...uploads, media: { extensions: ['.webm'] } };
-    storages['storage:media'] = { type: 'replacement' };
-    storages['storage:images'] = { type: 'replacement' };
+    const replacementMedia = { type: 'replacement media' };
+    const replacementImages = { type: 'replacement images' };
+    storages['storage:media'] = replacementMedia;
+    storages['storage:images'] = replacementImages;
 
     assert.equal(await retained.getMediaStorage('.mp4', Buffer.alloc(0)), null);
-    assert.equal(await retained.getMediaStorage('.webm', Buffer.alloc(0)), mediaStorage);
-    assert.equal(await retained.getMediaStorage('.svg', Buffer.alloc(0)), imageStorage);
-    sinon.assert.calledThrice(getAdapter);
+    assert.equal(await retained.getMediaStorage('.webm', Buffer.alloc(0)), replacementMedia);
+    assert.equal(await retained.getMediaStorage('.svg', Buffer.alloc(0)), replacementImages);
   });
 
   it('retains the published inliner on repeated init, so the registered job handler keeps using it', async function () {
