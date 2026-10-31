@@ -1,20 +1,17 @@
 const nql = require('@tryghost/nql');
 
-/**
- * @typedef {import('./tier')} Tier
- */
+interface StoredTier {
+  id: { toHexString(): string; equals(other: unknown): boolean };
+  status: string;
+  type: string;
+}
 
-class InMemoryTierRepository {
-  /** @type {Tier[]} */
-  #store = [];
-  /** @type {Object.<string, true>} */
-  #ids = {};
+/** Keeps tiers in memory for the TiersAPI units; production uses TierRepository. */
+export class InMemoryTierRepository<Tier extends StoredTier> {
+  #store: Tier[] = [];
+  #ids: Record<string, true> = {};
 
-  /**
-   * @param {Tier} tier
-   * @returns {any}
-   */
-  toPrimitive(tier) {
+  toPrimitive(tier: Tier) {
     return {
       ...tier,
       active: tier.status === 'active',
@@ -23,11 +20,7 @@ class InMemoryTierRepository {
     };
   }
 
-  /**
-   * @param {Tier} linkClick
-   * @returns {Promise<void>}
-   */
-  async save(tier) {
+  async save(tier: Tier): Promise<void> {
     if (this.#ids[tier.id.toHexString()]) {
       const existing = this.#store.findIndex((item) => {
         return item.id.equals(tier.id);
@@ -39,22 +32,13 @@ class InMemoryTierRepository {
     }
   }
 
-  /**
-   * @param {import('bson-objectid').default} id
-   * @returns {Promise<Tier>}
-   */
-  async getById(id) {
+  async getById(id: unknown): Promise<Tier | undefined> {
     return this.#store.find((item) => {
       return item.id.equals(id);
     });
   }
 
-  /**
-   * @param {object} [options]
-   * @param {string} [options.filter]
-   * @returns {Promise<Tier[]>}
-   */
-  async getAll(options = {}) {
+  async getAll(options: { filter?: unknown } = {}): Promise<Tier[]> {
     const filter = nql();
     filter.filter = options.filter || {};
     return this.#store.slice().filter((item) => {
@@ -62,5 +46,3 @@ class InMemoryTierRepository {
     });
   }
 }
-
-module.exports = InMemoryTierRepository;

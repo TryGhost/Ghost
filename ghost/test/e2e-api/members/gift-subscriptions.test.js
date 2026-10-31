@@ -10,7 +10,7 @@ const {
 const { stripeMocker } = require('../../utils/e2e-framework-mock-manager');
 const models = require('../../../core/server/models');
 const membersService = require('../../../core/server/services/members');
-const tiersService = require('../../../core/server/services/tiers');
+const tiersService = require('../../../core/server/services/tiers').default;
 const urlUtils = require('../../../core/shared/url-utils').default;
 const { anyErrorId } = matchers;
 
@@ -1837,7 +1837,7 @@ describe('Gift Subscriptions', function () {
     });
 
     it('Returns 403 when gift tier is archived', async function () {
-      const archivedTier = await tiersService.api.add({
+      const archivedTier = await tiersService.service.api.add({
         name: `Archived Gift Tier ${continueSequence + 1}`,
         type: 'paid',
         currency: 'USD',
@@ -1851,7 +1851,7 @@ describe('Gift Subscriptions', function () {
         tierId: archivedTier.id.toHexString(),
       });
 
-      await tiersService.api.edit(archivedTier.id.toHexString(), { status: 'archived' });
+      await tiersService.service.api.edit(archivedTier.id.toHexString(), { status: 'archived' });
 
       await membersAgent
         .post('/api/create-stripe-checkout-session/')
