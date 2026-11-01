@@ -147,15 +147,17 @@ describe('SSO sign-in', function () {
         .expect(assertPasswordSigninDisabled);
     });
 
-    it('blocks resetting authentication', async function () {
-      await agent
-        .post('authentication/reset/')
-        .expectStatus(403)
-        .expect(assertPasswordSigninDisabled);
-    });
-
     it('leaves setup status readable', async function () {
       await agent.get('authentication/setup/').expectStatus(200);
+    });
+
+    it('allows resetting authentication', async function () {
+      await agent
+        .post('authentication/reset/')
+        .expectStatus(200)
+        .expect(({ body }) => {
+          assert.ok(body.security_action[0].users_locked > 0);
+        });
     });
   });
 });

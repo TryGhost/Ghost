@@ -17,6 +17,7 @@ import {
   configResponse,
   tag,
   tier,
+  siteResponse,
   type StaffUser,
 } from '@test-utils/acceptance';
 import { offersScreen } from '@/settings/offers.screen';
@@ -135,6 +136,22 @@ describe('Advanced settings', () => {
       .click();
 
     await expect.poll(() => api.requests.length).toBe(1);
+  });
+
+  it('asks staff to sign in again with SSO after resetting authentication', async () => {
+    fakeSettingsScreens();
+    const site = siteResponse();
+    site.site.sso_signin_url = 'https://idp.example.com/ghost/start';
+    await renderAdminApp('/settings/advanced', { boot: { browseSite: { response: site } } });
+
+    const resetAuth = page.getByTestId('reset-all-authentication');
+    await expect
+      .element(resetAuth)
+      .toHaveTextContent(/require everyone to sign in again with SSO\./);
+    await resetAuth.getByRole('button', { name: 'Reset all authentication' }).click();
+    await expect
+      .element(settingsScreen.confirmationModal())
+      .toHaveTextContent(/You will be signed out and must sign in again with SSO\./);
   });
 
   it('resets all gift links and reports the affected count', async () => {

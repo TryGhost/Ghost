@@ -494,12 +494,7 @@ module.exports = function apiRoutes() {
   router.post('/authentication/setup', http(api.authentication.setup));
   router.put('/authentication/setup', mw.authAdminApi, http(api.authentication.updateSetup));
   router.get('/authentication/setup', http(api.authentication.isSetup));
-  router.post(
-    '/authentication/reset',
-    mw.authAdminApi,
-    mw.passwordSigninEnabled,
-    http(api.authentication.reset),
-  );
+  router.post('/authentication/reset', mw.authAdminApi, http(api.authentication.reset));
 
   // ## Images
   router.post(

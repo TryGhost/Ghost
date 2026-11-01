@@ -56,9 +56,13 @@ module.exports = MySSO;
 
 Override `getSigninPage()` to make SSO the only way staff sign in. It returns
 `{url, label}`, or `null` (the default) to keep password sign-in. With a
-sign-in page, Ghost refuses password sign-in, password resets, invites and
-resetting all authentication, and Admin shows a button linking to `url`
-instead of the password form. `label` is the button text.
+sign-in page, Ghost refuses password sign-in, password resets and invites, and
+Admin shows a button linking to `url` instead of the password form. `label` is
+the button text.
+
+Resetting all authentication locks every staff user. With a sign-in page,
+Ghost unlocks a locked user when they sign in through the adapter, so return
+locked users from `getUserForIdentity()` for them to get back in.
 
 ### Installing and activating
 

@@ -90,12 +90,14 @@ getSigninPage() {
 ```
 
 With a sign-in page, the endpoints that sign in, verify, reset or set a
-password, accept or create invites, and reset all authentication return 403.
-Resetting all authentication would lock staff out with no password reset to
-get back in. `/site` returns `sso_signin_url` and `sso_signin_label`, and
-Admin shows a single sign-in button in place of those screens and hides the
-controls that use them. Setup stays open, so a new site can still create its
-Owner. Existing sessions, Staff Access Tokens and integrations keep working.
+password, and accept or create invites return 403. `/site` returns
+`sso_signin_url` and `sso_signin_label`, and Admin shows a single sign-in
+button in place of those screens and hides the controls that use them.
+Resetting all authentication still locks every staff user, and signing in
+through the SSO adapter unlocks them, so the adapter has to return locked
+users. Suspended users stay suspended. Setup stays open, so a new site can
+still create its Owner. Existing sessions, Staff Access Tokens and
+integrations keep working.
 
 See [`auth/sso-signin.ts`](../../ghost/core/server/auth/sso-signin.ts).
 

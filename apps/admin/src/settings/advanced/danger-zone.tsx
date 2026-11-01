@@ -13,6 +13,7 @@ import { formatNumber } from '@tryghost/shade/utils';
 import { getGhostPaths } from '@tryghost/admin-x-framework/helpers';
 import { toast } from 'sonner';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
+import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useDeleteAllContent } from '@tryghost/admin-x-framework/api/db';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useQueryClient } from '@tryghost/admin-x-framework';
@@ -28,13 +29,19 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({ keywords }) => {
   const handleError = useHandleError();
   const { totalUsers } = useStaffUsers();
   const { confirm } = useConfirmation();
+  const { siteData } = useGlobalData();
+  const ssoSignin = Boolean(siteData.sso_signin_url);
 
+  const signBackIn = (whose: string) =>
+    ssoSignin
+      ? 'must sign in again with SSO'
+      : `must reset ${whose} password before signing back in`;
   const resetAuthStaffSentence =
     totalUsers === 1
-      ? 'You will be signed out and must reset your password before signing back in.'
+      ? `You will be signed out and ${signBackIn('your')}.`
       : totalUsers > 1
-        ? `All ${totalUsers} staff users, including you, will be signed out and must reset their password before signing back in.`
-        : 'All staff users, including you, will be signed out and must reset their password before signing back in.';
+        ? `All ${totalUsers} staff users, including you, will be signed out and ${signBackIn('their')}.`
+        : `All staff users, including you, will be signed out and ${signBackIn('their')}.`;
 
   const handleDeleteAllContent = () => {
     confirm({
@@ -143,8 +150,9 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({ keywords }) => {
           <ActionListItemContent className="py-3 pr-6">
             <div>Reset all authentication</div>
             <div className="text-sm text-muted-foreground">
-              Rotate every API key, sign out every staff user, and require a password reset. Use
-              after a suspected credential compromise.
+              Rotate every API key, sign out every staff user, and require{' '}
+              {ssoSignin ? 'everyone to sign in again with SSO' : 'a password reset'}. Use after a
+              suspected credential compromise.
             </div>
           </ActionListItemContent>
           <ActionListItemActions>
