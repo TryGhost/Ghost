@@ -48,7 +48,7 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall, pins })
                 scope="row"
               >
                 <Inline gap="lg">
-                  <AppIcon manifest={manifest} size="lg" />
+                  <AppIcon app={installation} size="lg" />
                   <span className="min-w-0">
                     <Inline gap="xs">
                       <Link className="text-md font-semibold" to={appRoute(id)}>
