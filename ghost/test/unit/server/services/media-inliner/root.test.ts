@@ -218,6 +218,31 @@ describe('Media inliner service root', function () {
     assert.equal(converted.filename, 'image-heic.jpg');
   });
 
+  it('loads the HEIC codec only once a file needs converting', async function () {
+    // Resolved from the root so this is the module instance its loader requires.
+    const codecPath = require.resolve('heic-convert', { paths: [path.dirname(modulePaths[0])] });
+    const savedCodec = require.cache[codecPath];
+    delete require.cache[codecPath];
+
+    try {
+      await root.init();
+      await root.service.extractFileDataFromResponse('https://cdn.example/logo.png', pngResponse());
+
+      assert.equal(require.cache[codecPath], undefined);
+
+      await root.service.extractFileDataFromResponse('https://cdn.example/image.heic', {
+        body: fs.readFileSync(path.join(__dirname, 'test/fixtures/image.heic')),
+        headers: {},
+      });
+
+      assert.ok(require.cache[codecPath]);
+    } finally {
+      if (savedCodec) {
+        require.cache[codecPath] = savedCodec;
+      }
+    }
+  });
+
   it('lets each import run cache downloads over its own captured inliner rather than sharing a root-wide cache', async function () {
     uploads.images.extensions = ['.png'];
     storages['storage:images'] = {

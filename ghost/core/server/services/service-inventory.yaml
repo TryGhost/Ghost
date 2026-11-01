@@ -7108,9 +7108,12 @@ services:
         The boot-owned default root returns one ready ExternalMediaInliner once the storage
         adapters and models exist; boot registers the job handler with that instance and
         content import reads it per run. Repeated init now retains the instance, which no
-        production path relied on changing. Storage selection still reads the uploads policy
-        on every call over the adapters resolved at init.
-      reviewedAt: b7cad8406041d09d9e4085c5f981f958d454fc76
+        production path relied on changing; a second boot in one process no longer
+        re-resolves the adapters, so a storage adapter broken between boots fails at its first
+        selection instead of at boot. Storage selection reads the uploads policy and looks up
+        the active adapter on every call; init still resolves all three so a broken adapter
+        fails the first boot.
+      reviewedAt: 940a713d06d08ca9294bb767e8419cbd58f7b13e
       sources:
         - core/server/services/media-inliner/index.ts
         - core/server/services/media-inliner/external-media-inliner.js
@@ -7247,14 +7250,15 @@ services:
           - test/unit/server/services/media-inliner/external-media-inliner-seams.test.ts
       configuration:
         summary: >-
-          Storage adapter identities are captured at init; allowed upload extensions are read
-          through config.get per selection inside the root's selector. Images take precedence and need allowed contents,
+          Init resolves the three storage adapters so a broken one fails boot; the root's
+          selector then reads allowed upload extensions through config.get and looks up the
+          active adapter through the adapter manager on each selection. Images take precedence and need allowed contents,
           with SVG sanitization before selection; media/files use extension membership. Network
           agent options are captured when request-external loads, while its environment/site-URL
           guards read the accessor per request. These are immutable-config access/capture rules,
           not production hot reload. Root units cover storage choices and pin that a retained
-          inliner reads a replaced uploads policy on each selection while keeping the adapters
-          resolved at init; class units cover SVG, conversions, URL formatting, CDN paths and
+          inliner reads a replaced uploads policy and returns the replaced adapters on each
+          selection; class units cover SVG, conversions, URL formatting, CDN paths and
           regex matching. Body patterns are regexes with bounded VM execution; simple fields use
           literal startsWith(domain). Seam units pin that distinction for one pattern domain and
           that the sniffed file type wins over Content-Type and the URL.
@@ -7323,7 +7327,7 @@ services:
     blockers:
       - >-
         Pending validation/downloads across a configuration change remain unpinned; the
-        selection policy is read per call and the adapters are retained from init.
+        selection policy and the active adapter are read per call.
       - >-
         Overlapping jobs/imports, atomic writes, cleanup of stored files after a failed model
         write and exactly-once downloads remain unestablished. Per-resource best-effort
