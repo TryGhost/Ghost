@@ -154,4 +154,25 @@ describe('{{comments}} helper', function () {
     );
     assert.equal(rendered, undefined);
   });
+
+  it('returns undefined when comments_enabled is false on post', async function () {
+    settingsCacheGetStub.withArgs('members_enabled').returns(true);
+    settingsCacheGetStub.withArgs('comments_enabled').returns('all');
+
+    const rendered = await comments.call(
+      {
+        comment_id: 'post_test',
+        id: 'post_id_123',
+        access: true,
+        comments_enabled: false,
+      },
+      {
+        hash: {},
+        data: {
+          site: {},
+        },
+      },
+    );
+    assert.equal(rendered, undefined);
+  });
 });

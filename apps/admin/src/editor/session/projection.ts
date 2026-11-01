@@ -37,6 +37,7 @@ export function newPostProjection(currentUserId?: string): EditablePostProjectio
     twitter_title: null,
     twitter_description: null,
     show_title_and_feature_image: null,
+    comments_enabled: true,
     updated_at: null,
   };
 }
@@ -78,6 +79,12 @@ export function projectionOf(record: EditorRecord): EditablePostProjection {
       'show_title_and_feature_image' in record
         ? (record.show_title_and_feature_image ?? null)
         : null,
+    comments_enabled:
+      'comments_enabled' in record &&
+      record.comments_enabled !== null &&
+      record.comments_enabled !== undefined
+        ? Boolean(record.comments_enabled)
+        : true,
     updated_at: record.updated_at,
   };
 }
