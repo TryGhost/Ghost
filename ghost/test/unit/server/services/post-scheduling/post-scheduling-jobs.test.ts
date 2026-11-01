@@ -136,8 +136,14 @@ describe('PostScheduling jobs', function () {
     return { service, handlers, adapter, internalKeys, error };
   }
 
-  function handler(handlers: Record<string, unknown>, name: EventName) {
-    const list = handlers[name] as Array<(model: unknown) => Promise<void>>;
+  function constructed(options: Parameters<typeof construct>[0] = {}) {
+    const result = construct(options);
+    assert.ok(result.service, 'construction must succeed');
+    return { ...result, service: result.service };
+  }
+
+  function handler(handlers: ReturnType<typeof construct>['handlers'], name: EventName) {
+    const list = handlers[name] ?? [];
     assert.equal(list.length, 1, `${name} must have exactly one listener`);
     return list[0];
   }
@@ -168,8 +174,8 @@ describe('PostScheduling jobs', function () {
     });
 
     it('registers with the adapter only after subscribing, and keeps the listeners when registration throws', function () {
-      // Pinned as today's partial-startup state: nothing unwinds the
-      // subscriptions when registration fails.
+      // The class leaves its listeners subscribed when registration fails;
+      // the root removes them before its init rejects.
       const failure = new Error('register failed');
       const adapter = fakeAdapter({ register: sinon.stub().throws(failure) });
 
@@ -420,11 +426,11 @@ describe('PostScheduling jobs', function () {
           (options as { filter: string }).filter.endsWith('type:post') ? [overdue, onTime] : [],
         );
       const adapter = fakeAdapter({ dedupesByIdempotencyKey: true });
-      const { service } = construct({ adapter });
+      const { service } = constructed({ adapter });
 
-      await service!.rescheduleAll();
+      await service.rescheduleAll();
       sinon.clock.tick(60_000);
-      await service!.rescheduleAll();
+      await service.rescheduleAll();
 
       const [lateFirst, soonFirst, lateSecond, soonSecond] = adapter.schedule.args.map(
         ([job]) => job,
@@ -493,9 +499,9 @@ describe('PostScheduling jobs', function () {
 
     it('loads scheduled posts and pages through the Post model', async function () {
       const findAll = stubScheduled();
-      const { service } = construct();
+      const { service } = constructed();
 
-      assert.equal(await service!.rescheduleAll(), undefined);
+      assert.equal(await service.rescheduleAll(), undefined);
 
       sinon.assert.calledTwice(findAll);
       assert.deepEqual(
@@ -524,9 +530,9 @@ describe('PostScheduling jobs', function () {
         unschedule: sinon.stub().callsFake((...args) => calls.push(['unschedule', ...args])),
       });
       const internalKeys = fakeKeys(KEY);
-      const { service } = construct({ adapter, internalKeys });
+      const { service } = constructed({ adapter, internalKeys });
 
-      await service!.rescheduleAll();
+      await service.rescheduleAll();
 
       sinon.assert.calledOnceWithExactly(internalKeys.get, 'ghost-scheduler');
       const job = (resource: 'posts' | 'pages', id: string, offset: number) =>
@@ -544,10 +550,10 @@ describe('PostScheduling jobs', function () {
     it('only schedules on boot when the adapter dedupes by idempotency key, read at call time', async function () {
       stubScheduled({ posts: [post('p1', 60_000)] });
       const adapter = fakeAdapter();
-      const { service } = construct({ adapter });
+      const { service } = constructed({ adapter });
 
       Object.assign(adapter, { dedupesByIdempotencyKey: true });
-      await service!.rescheduleAll();
+      await service.rescheduleAll();
 
       sinon.assert.notCalled(adapter.unschedule);
       sinon.assert.calledOnceWithExactly(
@@ -560,9 +566,9 @@ describe('PostScheduling jobs', function () {
       stubScheduled({ pages: [post('g1', 60_000)] });
       const previousKey = { id: 'scheduler-key-id', secret: '9999888877776666' };
       const adapter = fakeAdapter({ dedupesByIdempotencyKey: true });
-      const { service } = construct({ adapter });
+      const { service } = constructed({ adapter });
 
-      await service!.rescheduleAll({ previousKey });
+      await service.rescheduleAll({ previousKey });
 
       const job = {
         resource: 'pages',
@@ -583,17 +589,17 @@ describe('PostScheduling jobs', function () {
       const loadFailure = new Error('database down');
       sandbox.stub(models.Post, 'findAll').rejects(loadFailure);
       const adapter = fakeAdapter();
-      const { service } = construct({ adapter });
-      await assert.rejects(service!.rescheduleAll(), (err) => err === loadFailure);
+      const { service } = constructed({ adapter });
+      await assert.rejects(service.rescheduleAll(), (err) => err === loadFailure);
 
       sandbox.restore();
       stubScheduled({ posts: [post('p1', 60_000)] });
       const keyFailure = new Error('no key');
-      const failing = construct({
+      const failing = constructed({
         adapter,
         internalKeys: { get: sinon.stub().rejects(keyFailure) },
       });
-      await assert.rejects(failing.service!.rescheduleAll(), (err) => err === keyFailure);
+      await assert.rejects(failing.service.rescheduleAll(), (err) => err === keyFailure);
 
       sinon.assert.notCalled(adapter.schedule);
       sinon.assert.notCalled(adapter.unschedule);

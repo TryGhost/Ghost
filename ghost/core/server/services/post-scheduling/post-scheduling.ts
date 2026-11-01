@@ -6,13 +6,18 @@ import type { buildSignedJob } from '../../adapters/scheduling/build-signed-job'
 import type { SchedulingAdapter } from '../../adapters/scheduling/error-capture';
 import type { getSchedulerIdempotencyKey } from '../../adapters/scheduling/get-scheduler-idempotency-key';
 
-// Bookshelf models have no TS declarations, so post rows stay loosely typed.
+// Bookshelf models have no TS declarations; these are the attributes scheduling reads.
+type ScheduledModel = {
+  get(attribute: 'id' | 'published_at'): string | Date | null;
+  previous(attribute: 'published_at'): string | Date | null;
+};
+
 interface PostModel {
-  findAll(options: { filter: string; columns: string[] }): Promise<any[]>;
+  findAll(options: { filter: string; columns: string[] }): Promise<Iterable<ScheduledModel>>;
 }
 
 export interface PostSchedulingEvents {
-  on(eventName: string, listener: (model: any) => Promise<void>): unknown;
+  on(eventName: string, listener: (model: ScheduledModel) => Promise<void>): unknown;
 }
 
 export interface PostSchedulingDeps {
@@ -57,7 +62,7 @@ export default class PostScheduling {
     this.#getSchedulerIdempotencyKey = getSchedulerIdempotencyKey;
 
     SCHEDULED_RESOURCES.forEach((resource) => {
-      events.on(`${resource}.scheduled`, async (model: any) => {
+      events.on(`${resource}.scheduled`, async (model) => {
         try {
           const key = await internalKeys.get('ghost-scheduler');
           this.#adapter.schedule(this.#normalize({ model, key, resourceType: resource }));
@@ -76,7 +81,7 @@ export default class PostScheduling {
 
       // Reschedule = matched unschedule + fresh schedule, because tokens
       // are signed against the published_at timestamp.
-      events.on(`${resource}.rescheduled`, async (model: any) => {
+      events.on(`${resource}.rescheduled`, async (model) => {
         try {
           const key = await internalKeys.get('ghost-scheduler');
           this.#adapter.unschedule(
@@ -96,7 +101,7 @@ export default class PostScheduling {
         }
       });
 
-      events.on(`${resource}.unscheduled`, async (model: any) => {
+      events.on(`${resource}.unscheduled`, async (model) => {
         try {
           const key = await internalKeys.get('ghost-scheduler');
           this.#adapter.unschedule(
@@ -163,7 +168,7 @@ export default class PostScheduling {
     }
   }
 
-  async #loadScheduledResources(): Promise<Record<ScheduledResource, any[]>> {
+  async #loadScheduledResources(): Promise<Record<ScheduledResource, Iterable<ScheduledModel>>> {
     const entries = await Promise.all(
       SCHEDULED_RESOURCES.map(async (resourceType) => {
         const found = await this.#models.Post.findAll({
@@ -181,7 +186,7 @@ export default class PostScheduling {
       model,
       resourceType,
       key,
-    }: { model: any; resourceType: ScheduledResource; key: InternalApiKey },
+    }: { model: ScheduledModel; resourceType: ScheduledResource; key: InternalApiKey },
     event: '' | 'unscheduled' = '',
   ): SchedulerJob {
     const resource = `${resourceType}s`;

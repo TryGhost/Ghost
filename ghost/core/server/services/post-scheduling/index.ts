@@ -20,7 +20,7 @@ export default defineService('Post Scheduling', () => {
 
   // The constructor subscribes before registering with the adapter. Record the
   // subscriptions so a failed construction can remove them before init rejects.
-  const subscriptions: [string, (model: unknown) => Promise<void>][] = [];
+  const subscriptions: [string, Parameters<PostSchedulingEvents['on']>[1]][] = [];
   const subscriber: PostSchedulingEvents = {
     on(eventName, listener) {
       events.on(eventName, listener);

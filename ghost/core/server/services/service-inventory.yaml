@@ -216,14 +216,14 @@ services:
         complexity: complex
         reason: >-
           The manager already accepts config, base classes and a loader, but its supporting modules
-          share config and Node resolution with the build-time validator. Image helpers and
-          scheduling also acquire adapters during import. Moving the singleton behind readiness must
-          preserve those callers, lazy adapter loading and cached identities.
+          share config and Node resolution with the build-time validator. Image helpers and the
+          authentication endpoint also acquire adapters during import. Moving the singleton behind
+          readiness must preserve those callers, lazy adapter loading and cached identities.
         preparation:
           - >-
-            Move eager getAdapter calls in image and scheduling composition behind adapter-manager
-            readiness before adopting a guarded service getter.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+            Move eager getAdapter calls in image helpers and the authentication endpoint behind
+            adapter-manager readiness before adopting a guarded service getter.
+        reviewedAt: 15ae7ce1df8ac9172329f5c05a37bd156de0c88b
         sources:
           - core/server/services/adapter-manager/index.ts
           - core/kernel/adapter-manager/adapter-manager.ts
