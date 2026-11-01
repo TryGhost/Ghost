@@ -9144,9 +9144,16 @@ services:
           - core/server/services/milestones/milestone-queries.js
     entryPoints:
       - milestones/index.js
+      - milestones/slack-notifications/index.js
     notes: >-
       Preserve background startup, captured milestone configuration and live Stripe eligibility.
       Scheduling, failure and cleanup gaps remain migration blockers.
+      Slack notifications live in slack-notifications/ as the private milestone notification
+      handler: they subscribe only to MilestoneCreatedEvent and read milestones host settings.
+      Boot still initializes them separately during required-service startup; migrating
+      Milestones must take over that subscription and its disposal. Their previous contract
+      audit is recorded at https://github.com/TryGhost/Ghost/blob/33b8dabf2114676d68028d6f86c194
+      5af4e7409c/ghost/core/server/services/service-inventory.yaml#L12917.
     contracts:
       exports:
         summary: >-
@@ -9189,11 +9196,11 @@ services:
           - core/server/services/milestones/bookshelf-milestone-repository.js
           - core/server/services/staff/staff-service.js
           - core/server/services/staff/staff-service-emails.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
+          - core/server/services/milestones/slack-notifications/slack-notifications-service.js
         tests:
           - test/unit/server/services/milestones/milestone.test.ts
           - test/unit/server/services/staff/index.test.js
-          - test/unit/server/services/slack-notifications/index.test.js
+          - test/unit/server/services/milestones/slack-notifications/index.test.js
       startup:
         summary: >-
           Boot starts background services after mounting the app and notifying readiness,
@@ -9258,7 +9265,7 @@ services:
           - core/boot.js
           - core/server/ghost-server.ts
           - core/server/services/staff/staff-service.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
+          - core/server/services/milestones/slack-notifications/slack-notifications-service.js
         tests: []
       failures:
         summary: >-
@@ -9275,9 +9282,9 @@ services:
           - core/server/services/milestones/bookshelf-milestone-repository.js
           - core/boot.js
           - core/server/services/staff/staff-service.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
+          - core/server/services/milestones/slack-notifications/slack-notifications-service.js
         tests:
-          - test/unit/server/services/slack-notifications/slack-notifications-service.test.js
+          - test/unit/server/services/milestones/slack-notifications/slack-notifications-service.test.js
     unverified: []
     blockers:
       - >-
@@ -9307,6 +9314,26 @@ services:
         Add a production repository-to-event-to-notification contract. Staff/Slack tests
         dispatch events manually, implementation tests use the fake repository and E2E
         does not assert delivery; removing Bookshelf event dispatch could escape those tests.
+      - >-
+        Slack notifications: Add wrapper contracts for exact exports, repeated init, changed
+        configuration, disabled first init, partial subscription failure/retry and retained
+        callbacks across restart. The existing root test proves one successful event reaches a
+        webhook, not listener count, configuration lifetime or boot readiness.
+      - >-
+        Slack notifications: Correct the threshold test: it sets isEnabled false and omits
+        minThreshold, so its no-send assertion does not establish threshold behavior. Cover
+        equality, values either side of the threshold, wrapper fallback and invalid parsing
+        through real composition.
+      - >-
+        Slack notifications: Characterize sender/request failures through the real subscriber,
+        including malformed events, timeouts and pending sends during stop. Tests named Throws for
+        invalid or absent URLs only assert logging after a resolved call; preserve that behavior
+        unless changing it separately. Test-mode request overrides do not prove production
+        transport behavior.
+      - >-
+        Slack notifications: Decide listener removal, pending-send drain and shared HTTP-agent
+        ownership. Current class tests create subscribers directly; successful callbacks and fake
+        requests do not establish disposal, duplicate delivery prevention or restart behavior.
   newsletters:
     kind: directory
     disposition: retain
@@ -12914,197 +12941,6 @@ services:
         not root scheduling, shutdown or crypto-generation failure paths. The public-jwk
         failure test only checks repeated rejection, so it does not prove failed entries
         are evicted rather than returning the same rejected promise.
-  slack-notifications:
-    kind: directory
-    disposition: relocate
-    status: audited
-    auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
-    migration:
-      complexity: complex
-      modelImpact: fits
-      reason: >-
-        The guarded notification instance fits the helper, but its anonymous domain-event
-        subscription has no disposer in the current event-bus API. Establish owned,
-        removable registration before relying on partial-start retry; preserve captured
-        notification configuration and logged delivery failures. This is subscription
-        ownership work rather than evidence for a kernel hook.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
-      sources:
-        - core/server/services/slack-notifications/service.js
-        - core/server/services/slack-notifications/slack-notifications-service.js
-        - core/boot.js
-      dependencies:
-        complexity: straightforward
-        reason: >-
-          Both notification classes already accept logger/config/event-bus or URL dependencies.
-          Remaining imports are the milestone event contract plus transport, validator, version and
-          Moment in the formatter. These are bounded constructor changes; consuming a milestone
-          event does not require an initialized Milestones service.
-        preparation:
-          - >-
-            Wire the milestone event contract, transport, validator and version from index.ts; keep
-            errors direct and use the existing clock compatibility export for Moment.
-          - >-
-            Move service.js composition into index.ts while preserving captured enablement/threshold
-            settings and subscription behavior.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
-        sources:
-          - core/server/services/slack-notifications/service.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
-          - core/server/services/slack-notifications/slack-notifications.js
-          - core/server/services/milestones/milestone-created-event.js
-    entryPoints:
-      - slack-notifications/index.js
-    notes: >-
-      Planned relocation under Milestones as its private Slack notification handler:
-      subscriptions, thresholds and message content all concern milestone events. Boot retains
-      configuration/startup, and any reusable Slack transport can remain separate from milestone
-      policy. No source has moved. Preserve captured milestone notification settings and event
-      delivery. Listener disposal, shared HTTP resources and partial initialization remain
-      migration blockers.
-    contracts:
-      exports:
-        summary: >-
-          The CommonJS root forwards one eagerly constructed wrapper exposing synchronous
-          init. Its api is a private field; neither api nor service is public, and init
-          returns no instance. The wrapper constructor has a static create factory; separate
-          implementation files export subscriber and sender classes used directly by tests.
-        sources:
-          - core/server/services/slack-notifications/index.js
-          - core/server/services/slack-notifications/service.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
-          - core/server/services/slack-notifications/slack-notifications.js
-        tests: []
-      construction:
-        summary: >-
-          First init builds SlackNotifications and SlackNotificationsService, assigns the
-          private api, then subscribes it to the shared DomainEvents bus. Both objects and
-          the subscription are created even when notifications are disabled. The wrapper is
-          the only runtime composition path found; later init calls return if api exists.
-          Loading the sender also loads the shared external-request client.
-        sources:
-          - core/server/services/slack-notifications/service.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
-          - core/server/services/slack-notifications/slack-notifications.js
-          - core/server/lib/request-external.js
-        tests:
-          - test/unit/server/services/slack-notifications/index.test.js
-      consumers:
-        summary: >-
-          Boot is the only runtime wrapper caller. Milestone repository saves dispatch
-          MilestoneCreatedEvent after persistence without awaiting notification delivery.
-          The subscriber accepts enabled notifications with a webhook URL and a value
-          strictly greater than minThreshold. The sender skips initial and skipped reasons,
-          formats eligible milestone data and posts it to the captured webhook. There is no
-          direct HTTP, CLI or job caller of this root.
-        sources:
-          - core/boot.js
-          - core/server/services/milestones/milestone.js
-          - core/server/services/milestones/bookshelf-milestone-repository.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
-          - core/server/services/slack-notifications/slack-notifications.js
-        tests:
-          - test/unit/server/services/slack-notifications/index.test.js
-          - test/unit/server/services/slack-notifications/slack-notifications-service.test.js
-          - test/unit/server/services/slack-notifications/slack-notifications.test.js
-      startup:
-        summary: >-
-          Required-service boot invokes init while building its Promise.all prerequisites,
-          before readiness and the later background milestone run. Subscription completes
-          synchronously and does not check webhook reachability or send a notification.
-          Importing the wrapper alone installs no listener. Synchronous init failures abort
-          dependent startup; disabled configuration still installs the subscriber.
-        sources:
-          - core/boot.js
-          - core/server/services/slack-notifications/service.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
-        tests: []
-      lifetime:
-        summary: >-
-          Repeated wrapper init retains its private api, sender and captured configuration,
-          preventing another subscription on that wrapper. Neither wrapper nor subscriber
-          exposes reset or shutdown. Direct subscriber subscribeEvents calls add another
-          callback each time, and the shared bus retains those callbacks across server stop.
-          There is no queue, deduplication or serialization of concurrent event deliveries.
-        sources:
-          - core/server/services/slack-notifications/service.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
-          - core/server/ghost-server.ts
-          - core/boot.js
-        tests: []
-      configuration:
-        summary: >-
-          First init captures site URL, enabled-and-URL truthiness, webhook URL and a parsed
-          threshold, defaulting falsy threshold values to zero. A truthy nonnumeric string
-          parses to NaN and suppresses delivery; the directly constructed subscriber applies
-          no such fallback. The sender reads NODE_ENV and version when sending. Its shared
-          request helper captures agent options and test hooks at import but reads config
-          environment and site URL during request checks. Its request timeout is 10 seconds,
-          overridden to 5 seconds by the import-time test hook.
-        sources:
-          - core/server/services/slack-notifications/service.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
-          - core/server/services/slack-notifications/slack-notifications.js
-          - core/server/lib/request-external.js
-        tests:
-          - test/unit/server/services/slack-notifications/slack-notifications.test.js
-          - test/unit/server/lib/request-external.test.js
-      resources:
-        summary: >-
-          The subscriber owns a milestone callback but retains no unsubscribe handle, and
-          boot registers no cleanup for it. Delivery uses shared configurable HTTP/HTTPS agents, with keep-alive enabled by default,
-          owned by request-external, with DNS checks, pooled sockets and per-request timeout
-          work. Neither this wrapper nor the helper exposes a disposal hook. The root owns
-          no database connection or timer and does not track, cancel or drain pending sends.
-          DomainEvents.allSettled tracks test deliveries only; it supplies no production drain.
-        sources:
-          - core/server/services/slack-notifications/slack-notifications-service.js
-          - core/server/services/slack-notifications/slack-notifications.js
-          - core/server/lib/request-external.js
-          - core/boot.js
-          - core/server/ghost-server.ts
-        tests:
-          - test/unit/server/services/slack-notifications/slack-notifications-service.test.js
-      failures:
-        summary: >-
-          Construction failures before api assignment permit another init attempt, but a
-          subscription failure leaves api assigned and later init skips retry. Sender send
-          logs URL_MISSING_INVALID and resolves for absent, non-string or invalid URLs;
-          request failures reject direct sender calls. The subscriber catches and logs
-          formatting or send rejection without propagating it to milestone persistence.
-          Malformed event data can reject before its local catch; the shared DomainEvents
-          subscriber wrapper catches and logs that rejection. There is no service-level
-          retry or replay; transport failures use the shared request helper's policies.
-        sources:
-          - core/server/services/slack-notifications/service.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
-          - core/server/services/slack-notifications/slack-notifications.js
-          - core/server/lib/request-external.js
-          - core/server/services/milestones/bookshelf-milestone-repository.js
-        tests:
-          - test/unit/server/services/slack-notifications/slack-notifications-service.test.js
-          - test/unit/server/services/slack-notifications/slack-notifications.test.js
-    unverified: []
-    blockers:
-      - >-
-        Add wrapper contracts for exact exports, repeated init, changed configuration, disabled
-        first init, partial subscription failure/retry and retained callbacks across restart.
-        The existing root test proves one successful event reaches a webhook, not listener
-        count, configuration lifetime or boot readiness.
-      - >-
-        Correct the threshold test: it sets isEnabled false and omits minThreshold, so its
-        no-send assertion does not establish threshold behavior. Cover equality, values either
-        side of the threshold, wrapper fallback and invalid parsing through real composition.
-      - >-
-        Characterize sender/request failures through the real subscriber, including malformed
-        events, timeouts and pending sends during stop. Tests named Throws for invalid or
-        absent URLs only assert logging after a resolved call; preserve that behavior unless
-        changing it separately. Test-mode request overrides do not prove production transport
-        behavior.
-      - >-
-        Decide listener removal, pending-send drain and shared HTTP-agent ownership. Current
-        class tests create subscribers directly; successful callbacks and fake requests do
-        not establish disposal, duplicate delivery prevention or restart behavior.
   slack-ping:
     kind: directory
     disposition: retain
