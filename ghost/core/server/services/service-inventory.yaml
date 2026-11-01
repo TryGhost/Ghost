@@ -1075,8 +1075,8 @@ services:
           scheduler registration, launches an unawaited immediate enqueue, then publishes its
           private guard. No DB query or poll is required to finish for publication. Subscribing or
           registering can fail after earlier subscriptions exist, without rollback. API stats
-          calls construct short-lived Tinybird clients; polling lazily initializes the retained
-          welcome-email wrapper. Units construct the class with fake events/scheduler and check
+          calls construct short-lived Tinybird clients; the service passes the ready
+          welcome-email instance to both pollers. Units construct the class with fake events/scheduler and check
           two subscriptions after repeated init; they do not assert root import acquisition,
           retained collaborator identity or partial-init cleanup/retry.
         sources:
@@ -2676,8 +2676,8 @@ services:
       startup:
         summary: >-
           Foreground boot initializes email-address after core settings and before Stripe,
-          members and email-service construction. Welcome-email construction and automated-email
-          request handlers also call init defensively. Most consumers have no use-before-init
+          members and email-service construction. Automated-email request handlers also call init
+          defensively; Member welcome emails asserts the policy is ready instead. Most consumers have no use-before-init
           guard; captured undefined dependencies would remain undefined. Initialization is
           synchronous composition without asynchronous readiness or validation of configuration.
         sources:
@@ -6650,8 +6650,8 @@ services:
           request infrastructure; click processing itself calls its database method. Init
           requires initialized link redirection, builds post-link/click repositories and the
           implementation with borrowed models, redirect instances, DomainEvents and a transaction
-          callback, then awaits subscription setup. Boot and welcome-email rendering call init;
-          no separate production deep constructor was found. Root tests inject automation calls
+          callback, then awaits subscription setup. Boot calls init; Member welcome emails asserts it
+          is ready and borrows the instance. No separate production deep constructor was found. Root tests inject automation calls
           and model/transaction stubs, so successful wiring is asserted without real commit.
         sources:
           - core/server/services/link-tracking/index.js
@@ -7621,15 +7621,15 @@ services:
       complexity: complex
       modelImpact: fits
       reason: >-
-        Boot initializes the root after the email-address policy, members and link tracking are
-        ready and before job handlers and automation polling start. The factory builds the
+        Boot initializes the root after the email-address policy and link tracking are ready,
+        which it asserts, and before job handlers and automation polling start. The factory builds the
         translator, token provider, mailers, renderer and implementation once and subscribes
         the locale listener last, so a failed attempt leaves nothing to unwind and an explicit
         retry builds a fresh graph. Stripe and the endpoints read the ready instance per call
         and the automations service passes it to both pollers. Welcome content and sender
         refresh stay explicit operations on the instance, and legacy welcome and general
         automation sends keep their separate transports.
-      reviewedAt: b7cad8406041d09d9e4085c5f981f958d454fc76
+      reviewedAt: 8715e47358c171bce60337108ac325cb56bc43e5
       sources:
         - core/server/services/member-welcome-emails/index.ts
         - core/server/services/member-welcome-emails/member-welcome-email-service.js
@@ -13773,8 +13773,7 @@ services:
             Inject SDK and rate-limit factories plus logging/config/translation/event dependencies,
             retaining configuration-time acquisition and live tax-policy behavior.
           - >-
-            Separate one-time graph construction from configure/reconfigure and remove Welcome
-            Emails' call-site initialization after its boot owner is established.
+            Separate one-time graph construction from configure/reconfigure.
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
           - core/server/services/stripe/service.js
@@ -13816,7 +13815,7 @@ services:
           Import eagerly constructs the service, API, migrations, webhook and billing managers,
           four event services and controller. Picked models and the API object are retained.
           Getter dependencies defer members repositories, donation repository, gifts service,
-          staff emails until handler work; welcome-email capability is initialized on demand.
+          staff emails until handler work; the welcome-email check reads the ready root per call.
           The API holds no checkout config: whatever opens each Checkout session passes the
           checkout the checkout-config's checkout service decided. The SDK
           client and two rate buckets are acquired by each successful non-null API configure. No

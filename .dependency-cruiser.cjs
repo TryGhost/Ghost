@@ -63,7 +63,7 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/image/image-content\\.ts$', // Image extension and content predicates; no application instances.
   '^ghost/core/server/lib/image/svg-sanitizer\\.ts$', // SVG buffer sanitization; no application instances.
   '^ghost/core/server/services/jobs-service/job\\.ts$', // Job base class, not the running service.
-  '^@tryghost/kg-default-nodes$|^koenig/kg-default-nodes/(src|build)/index\\.(ts|js)$', // Koenig replacement-string helpers; no application instances.
+  '^@tryghost/kg-default-nodes$|^koenig/kg-default-nodes/(src/index\\.ts|build/(cjs|esm)/index\\.js)$', // Whole Koenig default-nodes entry (node classes, renderers and the replacement-string helpers welcome emails use); the package has no narrower export and holds no application instances.
   '^ghost/core/server/lib/email-rendering/email-design\\.js$', // Email design token computation from supplied settings.
   '^ghost/core/server/lib/email-rendering/finalize\\.ts$', // Email CSS inlining and plaintext generation; no application instances.
   '^ghost/core/server/lib/mail/format-address-for-delivery\\.ts$', // Mailbox formatting for delivery; no sender policy or application instances.
