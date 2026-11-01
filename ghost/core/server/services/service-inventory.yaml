@@ -8888,7 +8888,7 @@ services:
           serializer URL helper, settings, DomainEvents, logging and the oEmbed root (which
           acquires its image-storage adapter and providers), reads the jobs instance, then
           constructs the Bookshelf repository, metadata, discovery, resource, routing (site
-          URL captured here), API and controller, awaits controller.init, builds the sender
+          URL captured here), API and controller with all its collaborators, builds the sender
           with per-call callbacks and the post-URL helpers, registers listeners last and
           returns the facade. Root units drive the real wiring:
           receive dispatches ProcessWebmentionJob through the jobs service given to init,
@@ -9073,7 +9073,7 @@ services:
         summary: >-
           Root units pin construction failure: init rejects, the service stays unavailable,
           no listeners are registered, and an explicit later init constructs again.
-          controller.init is awaited inside create. Receive dispatch errors
+          The synchronous create has no awaited step. Receive dispatch errors
           propagate, whereas controller processing and sender event-preparation errors
           are logged/swallowed. Discovery fetch and parser failures warn and return null;
           individual POST failures are logged and later targets continue. Discovery units

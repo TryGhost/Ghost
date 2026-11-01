@@ -18,8 +18,12 @@ describe('MentionController', function () {
     api = { processWebmention: sinon.stub().resolves() };
     jobsService = { dispatch: sinon.stub().resolves() };
     logging = createLoggingFake();
-    controller = new MentionController({ logging });
-    await controller.init({ api, jobsService, mentionResourceService: { getByID: sinon.stub() } });
+    controller = new MentionController({
+      logging,
+      api,
+      jobsService,
+      mentionResourceService: { getByID: sinon.stub() },
+    });
   });
 
   afterEach(function () {

@@ -43,21 +43,15 @@ module.exports = class MentionController {
   /**
    * @param {object} deps
    * @param {import('@tryghost/logging').GhostLogger} deps.logging
-   */
-  constructor({ logging }) {
-    this.#logging = logging;
-  }
-
-  /**
-   * @param {object} deps
    * @param {import('./mentions-api')} deps.api
    * @param {import('../jobs-service/jobs-service').JobsService} deps.jobsService
    * @param {IMentionResourceService} deps.mentionResourceService
    */
-  async init(deps) {
-    this.#api = deps.api;
-    this.#jobsService = deps.jobsService;
-    this.#mentionResourceService = deps.mentionResourceService;
+  constructor({ logging, api, jobsService, mentionResourceService }) {
+    this.#logging = logging;
+    this.#api = api;
+    this.#jobsService = jobsService;
+    this.#mentionResourceService = mentionResourceService;
   }
 
   /**
