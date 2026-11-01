@@ -22,7 +22,6 @@ import {
   useMembersFetching,
 } from '@tryghost/admin-x-framework/api/members';
 import type { Member } from '@tryghost/admin-x-framework/api/members';
-import { useShade } from '@tryghost/shade/app';
 
 interface MemberActionsMenuProps {
   member: Member;
@@ -43,7 +42,6 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({
   member,
   allowLeaveWithUnsavedChanges,
 }) => {
-  const { isAdmin7 } = useShade();
   const mapVisible = React.useContext(MemberMapContext);
   const { data: currentUser } = useCurrentUser();
   const [showImpersonate, setShowImpersonate] = React.useState(false);
@@ -100,14 +98,14 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({
             data-testid="member-actions-impersonate"
             onSelect={() => setShowImpersonate(true)}
           >
-            {isAdmin7 && <LucideIcon.LogIn aria-hidden="true" />}
+            <LucideIcon.LogIn aria-hidden="true" />
             Impersonate
           </DropdownMenuItem>
           <DropdownMenuItem
             data-testid="member-actions-logout"
             onSelect={() => setShowLogout(true)}
           >
-            {isAdmin7 && <LucideIcon.LogOut aria-hidden="true" />}
+            <LucideIcon.LogOut aria-hidden="true" />
             Sign out of all devices
           </DropdownMenuItem>
           <DropdownMenuItem
@@ -115,12 +113,11 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({
             disabled={commentingBusy}
             onSelect={() => void onCommentingSelect()}
           >
-            {isAdmin7 &&
-              (commentingDisabled ? (
-                <LucideIcon.MessageCircle aria-hidden="true" />
-              ) : (
-                <LucideIcon.MessageCircleOff aria-hidden="true" />
-              ))}
+            {commentingDisabled ? (
+              <LucideIcon.MessageCircle aria-hidden="true" />
+            ) : (
+              <LucideIcon.MessageCircleOff aria-hidden="true" />
+            )}
             {commentingLabel}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
@@ -129,7 +126,7 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({
             data-testid="member-actions-delete"
             onSelect={() => setShowDelete(true)}
           >
-            {isAdmin7 && <LucideIcon.Trash2 aria-hidden="true" />}
+            <LucideIcon.Trash2 aria-hidden="true" />
             Delete member
           </DropdownMenuItem>
         </DropdownMenuContent>

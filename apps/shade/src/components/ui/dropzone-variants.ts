@@ -30,14 +30,13 @@ const dropzoneBaseVariants = cva(
 // Keep the exported variants function useful outside the component, with current defaults.
 function dropzoneVariants(
   props: Parameters<typeof dropzoneBaseVariants>[0] = {},
-  isAdmin7 = true,
-  shape: ControlShape = isAdmin7 ? 'pill' : 'rounded',
+  shape: ControlShape = 'pill',
 ) {
   return cn(
     dropzoneBaseVariants(props),
-    props.variant === 'button' && buttonVariants({ isAdmin7, shape, variant: 'outline' }),
+    props.variant === 'button' && buttonVariants({ shape, variant: 'outline' }),
     props.variant === 'buttonSecondary' &&
-      buttonVariants({ isAdmin7, shape, size: 'sm', variant: 'secondary' }),
+      buttonVariants({ shape, size: 'sm', variant: 'secondary' }),
     props.className,
   );
 }

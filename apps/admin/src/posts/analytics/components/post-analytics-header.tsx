@@ -52,7 +52,6 @@ import { useCanManageGiftLink } from '@/posts/analytics/hooks/use-can-manage-gif
 import { postsDataType, useDeletePost } from '@tryghost/admin-x-framework/api/posts';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
-import { useShade } from '@tryghost/shade/app';
 import { useQueryClient } from '@tanstack/react-query';
 
 /**
@@ -81,7 +80,6 @@ interface PostAnalyticsHeaderProps {
 }
 
 const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, children }) => {
-  const { isAdmin7 } = useShade();
   // Where list pages show their titles large (admin7Design), the post's title
   // goes large too, a step down as it can run long, under the same space.
   const { largeTitles } = usePageChrome();
@@ -308,20 +306,11 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                   {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                   {!isPostLoading && (
                     <PageHeader.ActionGroup>
-                      {isAdmin7 ? (
-                        <>
-                          {moreActions}
-                          {shareAction && (
-                            <PageHeader.ActionGroup.Primary>
-                              {shareAction}
-                            </PageHeader.ActionGroup.Primary>
-                          )}
-                        </>
-                      ) : (
-                        <>
+                      {moreActions}
+                      {shareAction && (
+                        <PageHeader.ActionGroup.Primary>
                           {shareAction}
-                          {moreActions}
-                        </>
+                        </PageHeader.ActionGroup.Primary>
                       )}
                     </PageHeader.ActionGroup>
                   )}

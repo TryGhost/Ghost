@@ -2,7 +2,6 @@ import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from '@tryghost/admin-x-framework';
 import { Button } from '@tryghost/shade/components';
-import { useShade } from '@tryghost/shade/app';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { Inline, Text } from '@tryghost/shade/primitives';
 import { cn } from '@tryghost/shade/utils';
@@ -93,8 +92,6 @@ type HeaderItem =
       shortcut?: string;
       /** The post's main action, Publish or Update, in the header's success colour. */
       emphasis?: boolean;
-      /** Unpublish and Unschedule keep their quieter button. */
-      quiet?: boolean;
       /** A contributor's Save keeps its plain button. */
       plain?: boolean;
     }
@@ -110,7 +107,6 @@ const EMPHASIS_BUTTON =
  * keeps an open flow and its choices.
  */
 function HeaderItems({ items, bottomBar }: { items: HeaderItem[]; bottomBar: HTMLElement | null }) {
-  const { isAdmin7 } = useShade();
   const atBottom = !!bottomBar;
   // The bar's rightmost action, Publish, Update or Save, is its primary button.
   const lastAction = items.map((item) => item.kind).lastIndexOf('action');
@@ -128,7 +124,7 @@ function HeaderItems({ items, bottomBar }: { items: HeaderItem[]; bottomBar: HTM
           </Text>
           <Button
             className="bg-background/80 backdrop-blur-sm"
-            size={isAdmin7 ? 'default' : 'sm'}
+            size="default"
             variant="ghost"
             onClick={item.onRetry}
           >
@@ -139,12 +135,7 @@ function HeaderItems({ items, bottomBar }: { items: HeaderItem[]; bottomBar: HTM
     }
     if (item.plain || (atBottom && index === lastAction)) {
       return (
-        <Button
-          key={item.id}
-          disabled={item.disabled}
-          size={isAdmin7 ? 'default' : 'sm'}
-          onClick={item.onSelect}
-        >
+        <Button key={item.id} disabled={item.disabled} size="default" onClick={item.onSelect}>
           {item.label}
         </Button>
       );
@@ -154,8 +145,6 @@ function HeaderItems({ items, bottomBar }: { items: HeaderItem[]; bottomBar: HTM
         key={item.id}
         className={cn('bg-background/80 backdrop-blur-sm', item.emphasis && EMPHASIS_BUTTON)}
         disabled={item.disabled}
-        fallbackSize="sm"
-        fallbackVariant={item.quiet ? 'ghost' : undefined}
         label={item.label}
         shortcut={atBottom ? undefined : item.shortcut}
         onClick={item.onSelect}
@@ -587,7 +576,6 @@ function PublishActions({
                 // The update flow is built from the publish inputs; a click before
                 // they load would open it unasked once they do.
                 disabled: !inputs.isReady,
-                quiet: true,
                 onSelect: openUpdateFlow,
               } satisfies HeaderItem,
             ]

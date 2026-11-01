@@ -12,7 +12,6 @@ import {
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Stack } from '@/components/primitives';
-import ShadeApp from '@/shade-app';
 import { useShade } from '@/providers/shade-context';
 import { formatNumber } from '@/utils';
 import { FilterBar } from '@/components/patterns/filter-bar';
@@ -164,7 +163,7 @@ function MembersHeader({
               </PageHeader.ActionGroup.MobileMenu>
             )}
             <PageHeader.ActionGroup.Primary>
-              <PageHeader.Action fallbackVariant="default" label="New member">
+              <PageHeader.Action label="New member">
                 <Plus />
                 <span className="hidden sm:inline">New member</span>
               </PageHeader.Action>
@@ -367,31 +366,5 @@ export const DisabledActions: Story = {
         </PageHeader.Action>
       </PageHeader.ActionGroup.Primary>
     </PageHeader.ActionGroup>
-  ),
-};
-export const Admin7Disabled: Story = {
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'The provider with Admin 7 disabled preserves the old control appearance and disables new header tooltips. Existing pages retain their historical action order locally.',
-      },
-    },
-  },
-  render: () => (
-    <ShadeApp darkMode={false} isAdmin7={false}>
-      <PageHeader.ActionGroup>
-        <PageHeader.Action label="Sort" tooltip>
-          <ArrowUpDown />
-          Newest first
-        </PageHeader.Action>
-        <PageHeader.ActionGroup.Primary>
-          <PageHeader.Action fallbackVariant="default" label="New post">
-            <Plus />
-            New post
-          </PageHeader.Action>
-        </PageHeader.ActionGroup.Primary>
-      </PageHeader.ActionGroup>
-    </ShadeApp>
   ),
 };

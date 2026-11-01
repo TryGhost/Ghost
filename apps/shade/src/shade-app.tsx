@@ -13,14 +13,17 @@ export const SHADE_APP_NAMESPACES = 'shade shade-admin shade-activitypub';
 export interface ShadeAppProps extends React.HTMLProps<HTMLDivElement> {
   darkMode: boolean;
   controlShape?: ControlShape;
-  /** Admin supplies the effective flag; isolated Shade previews use the new design. */
-  isAdmin7?: boolean;
+  /**
+   * Admin's `admin7Design` Labs flag. Admin passes the flag's value; isolated Shade
+   * previews and standalone apps default to the Admin 7 design. Removed with the flag.
+   */
+  admin7Design?: boolean;
 }
 
 const ShadeApp: React.FC<ShadeAppProps> = ({
   darkMode,
   controlShape,
-  isAdmin7 = true,
+  admin7Design = true,
   className,
   children,
   ...props
@@ -28,8 +31,8 @@ const ShadeApp: React.FC<ShadeAppProps> = ({
   const appClassName = clsx('shade', className);
 
   return (
-    <div className={appClassName} {...props} data-admin7={isAdmin7}>
-      <ShadeProvider controlShape={controlShape} darkMode={darkMode} isAdmin7={isAdmin7}>
+    <div className={appClassName} {...props} data-admin7-design={admin7Design}>
+      <ShadeProvider admin7Design={admin7Design} controlShape={controlShape} darkMode={darkMode}>
         {children}
       </ShadeProvider>
     </div>

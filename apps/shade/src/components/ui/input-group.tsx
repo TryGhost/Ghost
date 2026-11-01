@@ -4,7 +4,6 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { inputGroupVariants } from '@/components/ui/input-group-variants';
-import { useShade } from '@/providers/shade-context';
 
 export interface InputGroupProps
   extends React.ComponentProps<'div'>, VariantProps<typeof inputGroupVariants> {}
@@ -47,16 +46,13 @@ function InputGroupAddon({
   align = 'inline-start',
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof inputGroupAddonVariants>) {
-  const { isAdmin7 } = useShade();
   return (
     <div
       className={cn(
         inputGroupAddonVariants({ align }),
-        isAdmin7 &&
-          align === 'inline-end' &&
+        align === 'inline-end' &&
           'has-[>button[data-size$=xs]]:mr-0 has-[>button[data-size$=xs]]:pr-[calc((var(--control-height)-24px)/2-1px)]',
-        isAdmin7 &&
-          align === 'inline-start' &&
+        align === 'inline-start' &&
           'has-[>button[data-size$=xs]]:ml-0 has-[>button[data-size$=xs]]:pl-[calc((var(--control-height)-24px)/2-1px)]',
         className,
       )}
@@ -96,15 +92,13 @@ const InputGroupButton = React.forwardRef<
   HTMLButtonElement,
   Omit<React.ComponentProps<typeof Button>, 'size'> & VariantProps<typeof inputGroupButtonVariants>
 >(({ className, type = 'button', variant = 'ghost', size = 'xs', ...props }, ref) => {
-  const { isAdmin7 } = useShade();
   return (
     <Button
       ref={ref}
       className={cn(
         inputGroupButtonVariants({ size }),
-        isAdmin7 ? (size === 'xs' ? 'text-sm!' : 'text-(length:--text-control)') : 'text-control',
-        isAdmin7 &&
-          (size === 'xs' || size === 'icon-xs') &&
+        size === 'xs' ? 'text-sm!' : 'text-(length:--text-control)',
+        (size === 'xs' || size === 'icon-xs') &&
           'data-[control-shape=rounded]:rounded-[calc(var(--radius-control)-(var(--control-height)-24px)/2)]',
         className,
       )}
