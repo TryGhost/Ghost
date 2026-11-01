@@ -2,6 +2,10 @@ const _ = require('lodash');
 const { ValidationError } = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const tpl = require('@tryghost/tpl');
+const {
+  ANNOUNCEMENT_BACKGROUND_VALUES,
+  ANNOUNCEMENT_VISIBILITY_VALUES,
+} = require('../../../../../data/schema/default-settings/announcement.values');
 
 const messages = {
   invalidEmailReceived: 'Please send a valid email',
@@ -22,7 +26,6 @@ const navigationItemVisibilityValues = [
   'free_members',
   'none',
 ];
-const announcementVisibilityValues = ['visitors', 'free_members', 'paid_members'];
 const navUrlRegex = new RegExp(/^(\/|#|[a-zA-Z0-9-]+:)/);
 const iconUrlRegex = new RegExp(/^(\/|__GHOST_URL__\/)/);
 const iconUrlOptions = { require_protocol: true, protocols: ['http', 'https'] };
@@ -201,7 +204,7 @@ module.exports = {
 
         if (visibilityValues.length) {
           visibilityValues.forEach((visibilityValue) => {
-            if (!announcementVisibilityValues.includes(visibilityValue)) {
+            if (!ANNOUNCEMENT_VISIBILITY_VALUES.includes(visibilityValue)) {
               const visibilityError = new ValidationError({
                 message: tpl(messages.invalidAnnouncementVisibilityValueReceived),
                 property: setting.key,
@@ -215,7 +218,7 @@ module.exports = {
       if (setting.key === 'announcement_background') {
         const announcementBackgroundValue = setting.value;
 
-        if (!['accent', 'dark', 'light'].includes(announcementBackgroundValue)) {
+        if (!ANNOUNCEMENT_BACKGROUND_VALUES.includes(announcementBackgroundValue)) {
           const visibilityError = new ValidationError({
             message: tpl(messages.invalidAnnouncementBackgroundValueReceived),
             property: setting.key,

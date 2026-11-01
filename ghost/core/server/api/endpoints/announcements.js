@@ -1,9 +1,11 @@
 const settingsCache = require('../../../shared/settings-cache');
+const {
+  ANNOUNCEMENT_VISIBILITY,
+} = require('../../data/schema/default-settings/announcement.values');
 
 /**
  * Returns the announcement for the current viewer, or undefined when it is hidden from them.
- * Visibility values are 'visitors' (no member), 'free_members' and 'paid_members' (any
- * non-free status). Allowed values are validated by the settings input validator.
+ * Paid members are any non-free status, including comped.
  *
  * @param {{status: string}} [member]
  * @returns {{announcement: string, announcement_background: string} | undefined}
@@ -18,9 +20,11 @@ function getAnnouncementForViewer(member) {
   }
 
   const visible =
-    (visibilities.includes('visitors') && !member) ||
-    (visibilities.includes('free_members') && member?.status === 'free') ||
-    (visibilities.includes('paid_members') && member && member.status !== 'free');
+    (visibilities.includes(ANNOUNCEMENT_VISIBILITY.VISITORS) && !member) ||
+    (visibilities.includes(ANNOUNCEMENT_VISIBILITY.FREE_MEMBERS) && member?.status === 'free') ||
+    (visibilities.includes(ANNOUNCEMENT_VISIBILITY.PAID_MEMBERS) &&
+      member &&
+      member.status !== 'free');
 
   if (visible) {
     return {
