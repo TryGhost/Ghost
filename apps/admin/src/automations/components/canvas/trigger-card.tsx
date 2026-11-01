@@ -1,6 +1,15 @@
-import { signupTriggerRules, type SignupTriggerScope } from '@/automations/utils/trigger-rules';
+import {
+  getTriggerTierIds,
+  signupTriggerRules,
+  selectedPaidTierRules,
+  subscriptionChangedRulesFromSelection,
+  subscriptionChangedSelectionFromRules,
+} from '@/automations/utils/trigger-rules';
 import React, { useId } from 'react';
-import type { AutomationTrigger } from '@tryghost/admin-x-framework/api/automations';
+import type {
+  AutomationTrigger,
+  AutomationTriggerRule,
+} from '@tryghost/admin-x-framework/api/automations';
 import type { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import {
   Button,
@@ -21,15 +30,10 @@ import { isTierSelectionEmpty, updateFromSelection } from '@/automations/utils/t
 
 export type TriggerData = {
   tierQuery: Pick<ReturnType<typeof useBrowseTiers>, 'data' | 'isLoading' | 'isError' | 'refetch'>;
-  scope: SignupTriggerScope;
-  tierIds: readonly string[];
+  triggerType: AutomationTriggerRule['trigger_type'];
+  rules: readonly AutomationTriggerRule[];
   savedTierIds: readonly string[];
   onUpdate: (trigger: AutomationTrigger) => void;
-  // Set for the `paid_subscription_changed` trigger, which replaces the tier scope with From and To.
-  tierSelection?: {
-    value: TierSelection;
-    onChange: (next: TierSelection) => void;
-  };
 };
 
 function tierQueryNotice({ isLoading, isError, refetch }: TriggerData['tierQuery']) {
@@ -49,29 +53,37 @@ function tierQueryNotice({ isLoading, isError, refetch }: TriggerData['tierQuery
   return undefined;
 }
 
+function getTierOptions({ tierQuery, rules, savedTierIds }: TriggerData) {
+  const selectedTierIds = getTriggerTierIds(rules);
+  // Offer active tiers, and keep archived tiers that belong to this automation.
+  return (tierQuery.data?.tiers ?? [])
+    .filter(
+      (tier) =>
+        tier.type === 'paid' &&
+        (tier.active || savedTierIds.includes(tier.id) || selectedTierIds.includes(tier.id)),
+    )
+    .map((tier) => ({ id: tier.id, name: tier.active ? tier.name : `${tier.name} (archived)` }));
+}
+
 const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> = ({
   trigger,
   errorMessage,
 }) => {
   const id = useId();
-  const { data, isLoading } = trigger.tierQuery;
-  const tiers = (data?.tiers ?? []).filter(
-    (tier) =>
-      tier.type === 'paid' &&
-      (tier.active || trigger.savedTierIds.includes(tier.id) || trigger.tierIds.includes(tier.id)),
+  const { isLoading } = trigger.tierQuery;
+  const tierIds = getTriggerTierIds(trigger.rules);
+  const tiers = getTierOptions(trigger);
+  const selected = tierIds.map(
+    (tierId) =>
+      tiers.find((tier) => tier.id === tierId) ?? {
+        id: tierId,
+        name: isLoading ? 'Loading tier...' : 'Unavailable tier',
+      },
   );
-  const tierName = (tier: (typeof tiers)[number]) =>
-    tier.active ? tier.name : `${tier.name} (archived)`;
-  const selected = trigger.tierIds.map((tierId) => {
-    const tier = tiers.find((item) => item.id === tierId);
-    return {
-      id: tierId,
-      name: tier ? tierName(tier) : isLoading ? 'Loading tier...' : 'Unavailable tier',
-    };
-  });
-  const updateTiers = (tierIds: string[]) =>
+  const scope = trigger.rules[0]?.scope ?? 'specific_paid_tier';
+  const updateTiers = (nextTierIds: string[]) =>
     trigger.onUpdate({
-      trigger_rules: signupTriggerRules('selected_paid', tierIds),
+      trigger_rules: selectedPaidTierRules(nextTierIds),
     });
 
   return (
@@ -80,11 +92,11 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
         Triggered when a new or free member starts:
       </Label>
       <Select
-        value={trigger.scope}
-        onValueChange={(scope) => {
-          if (scope === 'all_paid') {
-            trigger.onUpdate({ trigger_rules: signupTriggerRules(scope) });
-          } else if (scope === 'selected_paid') {
+        value={scope}
+        onValueChange={(nextScope) => {
+          if (nextScope === 'any_paid_tier') {
+            trigger.onUpdate({ trigger_rules: signupTriggerRules('paid_subscription_started') });
+          } else if (nextScope === 'specific_paid_tier') {
             updateTiers([]);
           }
         }}
@@ -93,11 +105,11 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
           <SelectValue />
         </SelectTrigger>
         <SelectContent className="nodrag nopan nowheel">
-          <SelectItem value="all_paid">Any paid tier</SelectItem>
-          <SelectItem value="selected_paid">Specific tier(s)</SelectItem>
+          <SelectItem value="any_paid_tier">Any paid tier</SelectItem>
+          <SelectItem value="specific_paid_tier">Specific tier(s)</SelectItem>
         </SelectContent>
       </Select>
-      {trigger.scope === 'selected_paid' && (
+      {scope === 'specific_paid_tier' && (
         <ChipPicker
           describedBy={errorMessage ? `${id}-error` : undefined}
           emptyMessage={tiers.length === 0 ? 'No paid tiers available.' : 'No tiers found'}
@@ -107,7 +119,7 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
           invalid={Boolean(errorMessage)}
           matches={(tier, term) => tier.name.toLowerCase().includes(term.toLowerCase())}
           notice={tierQueryNotice(trigger.tierQuery)}
-          options={tiers.map((tier) => ({ id: tier.id, name: tierName(tier) }))}
+          options={tiers}
           placeholder="Select tiers..."
           renderOption={(tier, { chosen }) => (
             <>
@@ -116,10 +128,8 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
             </>
           )}
           selected={selected}
-          onAdd={(tier) => updateTiers([...trigger.tierIds, tier.id])}
-          onRemove={(removedId) =>
-            updateTiers(trigger.tierIds.filter((tierId) => tierId !== removedId))
-          }
+          onAdd={(tier) => updateTiers([...tierIds, tier.id])}
+          onRemove={(removedId) => updateTiers(tierIds.filter((tierId) => tierId !== removedId))}
         />
       )}
       {errorMessage && (
@@ -131,16 +141,17 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
   );
 };
 
-const SubscriptionChangedPicker: React.FC<{
-  tierSelection: NonNullable<TriggerData['tierSelection']>;
-  tierQuery: TriggerData['tierQuery'];
-  errorMessage?: string;
-}> = ({ tierSelection, tierQuery, errorMessage }) => {
+const SubscriptionChangedPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> = ({
+  trigger,
+  errorMessage,
+}) => {
   const id = useId();
-  const { value, onChange } = tierSelection;
-  const tiers = (tierQuery.data?.tiers ?? [])
-    .filter((tier) => tier.type === 'paid' && tier.active)
-    .map((tier) => ({ id: tier.id, name: tier.name }));
+  const { tierQuery, rules, onUpdate } = trigger;
+  const value = subscriptionChangedSelectionFromRules(rules);
+  const onChange = (selection: TierSelection) =>
+    onUpdate({ trigger_rules: subscriptionChangedRulesFromSelection(selection) });
+  const tiers = getTierOptions(trigger);
+  const missingTierLabel = tierQuery.isLoading ? 'Loading tier...' : 'Unavailable tier';
   const fromTierIds = value.from === 'any_paid' ? [] : value.from;
   const notice = tierQueryNotice(tierQuery);
   const emptyMessage = tiers.length === 0 ? 'No paid tiers available.' : 'No tiers found';
@@ -161,6 +172,7 @@ const SubscriptionChangedPicker: React.FC<{
           inputId={`${id}-from`}
           inputLabel="From"
           invalid={Boolean(errorMessage) && isTierSelectionEmpty(value.from)}
+          missingTierLabel={missingTierLabel}
           notice={notice}
           placeholder="Select tiers..."
           standalone={{ value: 'any_paid', label: 'Any paid tier' }}
@@ -179,6 +191,7 @@ const SubscriptionChangedPicker: React.FC<{
           inputId={`${id}-to`}
           inputLabel="To"
           invalid={Boolean(errorMessage) && isTierSelectionEmpty(value.to)}
+          missingTierLabel={missingTierLabel}
           notice={notice}
           placeholder="Select tiers..."
           standalone={{ value: 'downgraded_to_free', label: 'Free' }}
@@ -204,29 +217,20 @@ const SubscriptionChangedPicker: React.FC<{
 };
 
 function getTriggerPresentation(trigger: TriggerData, errorMessage?: string) {
-  if (trigger.tierSelection) {
-    return {
-      title: 'Paid subscription changed',
-      Icon: LucideIcon.ArrowRightLeft,
-      content: (
-        <SubscriptionChangedPicker
-          errorMessage={errorMessage}
-          tierQuery={trigger.tierQuery}
-          tierSelection={trigger.tierSelection}
-        />
-      ),
-    };
-  }
-
-  switch (trigger.scope) {
-    case 'all_paid':
-    case 'selected_paid':
+  switch (trigger.triggerType) {
+    case 'paid_subscription_changed':
+      return {
+        title: 'Paid subscription changed',
+        Icon: LucideIcon.ArrowRightLeft,
+        content: <SubscriptionChangedPicker errorMessage={errorMessage} trigger={trigger} />,
+      };
+    case 'paid_subscription_started':
       return {
         title: 'Paid subscription started',
         Icon: LucideIcon.CreditCard,
         content: <PaidTierPicker errorMessage={errorMessage} trigger={trigger} />,
       };
-    case 'free':
+    case 'free_signup':
       return {
         title: 'Free member signed up',
         Icon: LucideIcon.UserPlus,
@@ -237,8 +241,8 @@ function getTriggerPresentation(trigger: TriggerData, errorMessage?: string) {
         ),
       };
     default: {
-      const _exhaustive: never = trigger.scope;
-      throw new Error(`Unknown automation trigger scope: ${String(_exhaustive)}`);
+      const _exhaustive: never = trigger.triggerType;
+      throw new Error(`Unknown automation trigger type: ${String(_exhaustive)}`);
     }
   }
 }

@@ -1,10 +1,11 @@
-import type { SignupTriggerScope } from '@/automations/utils/trigger-rules';
+import { getTriggerTierIds } from '@/automations/utils/trigger-rules';
 import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
 import { useAutomationPerformanceStats } from '@/automations/hooks/use-automation-performance-stats';
 import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
 import React, { useId, useState } from 'react';
 import type {
   AutomationPerformanceStats,
+  AutomationTriggerRule,
   AutomationRunStatusFilter,
 } from '@tryghost/admin-x-framework/api/automations';
 import { formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
@@ -196,11 +197,61 @@ const PerformanceContent: React.FC<{
   );
 };
 
+function getStopConditionDescription({
+  triggerType,
+  triggerRules,
+  tiers,
+}: {
+  triggerType: AutomationTriggerRule['trigger_type'];
+  triggerRules: readonly AutomationTriggerRule[];
+  tiers: readonly Tier[];
+}): string {
+  // Lifecycle runs stay eligible while the member matches a destination tier.
+  const eligibilityRules =
+    triggerType === 'paid_subscription_changed'
+      ? triggerRules.filter((rule) => rule.direction === 'to')
+      : triggerRules;
+  if (eligibilityRules.length === 0) {
+    // No destination has been selected yet (or a signup's tier selection was cleared).
+    return 'Members stop early if they unsubscribe or leave the selected tiers.';
+  }
+  const eligibilityScope = eligibilityRules[0].scope;
+  const eligibleTierIds = getTriggerTierIds(eligibilityRules);
+  switch (eligibilityScope) {
+    case 'free':
+      return 'Members stop early if they unsubscribe or start a paid subscription.';
+    case null:
+      return 'Members stop early if they unsubscribe.';
+    case 'any_paid_tier':
+      return 'Members stop early if they unsubscribe or leave any paid tier.';
+    case 'specific_paid_tier': {
+      const triggerNamesById = new Map(tiers.map((tier) => [tier.id, tier.name]));
+      const tierNames = eligibleTierIds
+        .map((id) => triggerNamesById.get(id))
+        .filter((tierName): tierName is string => tierName !== undefined);
+      let tierDescription = 'selected tiers';
+      if (tierNames.length === 1 && tierNames.length === eligibleTierIds.length) {
+        tierDescription = `${tierNames[0]} tier`;
+      } else if (tierNames.length > 1 && tierNames.length === eligibleTierIds.length) {
+        const tierList = new Intl.ListFormat('en', { style: 'long', type: 'disjunction' }).format(
+          tierNames,
+        );
+        tierDescription = `${tierList} tiers`;
+      }
+      return `Members stop early if they unsubscribe or leave the ${tierDescription}.`;
+    }
+    default: {
+      const _exhaustive: never = eligibilityScope;
+      throw new Error(`Unknown automation stop condition: ${String(_exhaustive)}`);
+    }
+  }
+}
+
 export const AutomationSidebar: React.FC<{
   automationId: string;
   description: string;
-  triggerTierScope: SignupTriggerScope;
-  triggerTierIds: readonly string[];
+  triggerRules: readonly AutomationTriggerRule[];
+  triggerType: AutomationTriggerRule['trigger_type'];
   tiers: readonly Tier[];
   performanceEnabled: boolean;
   metadata: AutomationMetadata;
@@ -215,8 +266,8 @@ export const AutomationSidebar: React.FC<{
 }> = ({
   automationId,
   description,
-  triggerTierScope,
-  triggerTierIds,
+  triggerRules,
+  triggerType,
   tiers,
   performanceEnabled,
   metadata,
@@ -264,36 +315,11 @@ export const AutomationSidebar: React.FC<{
     setHasOpened(true);
   }
 
-  let stopConditionDescription: string;
-  switch (triggerTierScope) {
-    case 'free':
-      stopConditionDescription = 'Members stop early if they unsubscribe.';
-      break;
-    case 'all_paid':
-      stopConditionDescription = 'Members stop early if they unsubscribe or leave any paid tier.';
-      break;
-    case 'selected_paid': {
-      const triggerNamesById = new Map(tiers.map((tier) => [tier.id, tier.name]));
-      const tierNames = triggerTierIds
-        .map((id) => triggerNamesById.get(id))
-        .filter((tierName): tierName is string => tierName !== undefined);
-      let tierDescription = 'selected tiers';
-      if (tierNames.length === 1 && tierNames.length === triggerTierIds.length) {
-        tierDescription = `${tierNames[0]} tier`;
-      } else if (tierNames.length > 1 && tierNames.length === triggerTierIds.length) {
-        const tierList = new Intl.ListFormat('en', { style: 'long', type: 'disjunction' }).format(
-          tierNames,
-        );
-        tierDescription = `${tierList} tiers`;
-      }
-      stopConditionDescription = `Members stop early if they unsubscribe or leave the ${tierDescription}.`;
-      break;
-    }
-    default: {
-      const _exhaustive: never = triggerTierScope;
-      throw new Error(`Unknown automation trigger scope: ${String(_exhaustive)}`);
-    }
-  }
+  const stopConditionDescription = getStopConditionDescription({
+    triggerType,
+    triggerRules,
+    tiers,
+  });
 
   return (
     <>

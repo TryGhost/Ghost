@@ -1,4 +1,3 @@
-import { scopeFromTriggerRules, getTriggerTierIds } from '@/automations/utils/trigger-rules';
 import '@xyflow/react/dist/style.css';
 import AddStepEdge, { type AddStepEdgeData } from './add-step-edge';
 import EmailContentModal from '@/automations/components/email-modal/email-content-modal';
@@ -172,7 +171,7 @@ type BuildGraphParams = {
   connectIn: boolean;
   automation: AutomationDetail;
   savedTriggerTierIds: readonly string[];
-  tierSelection?: TriggerData['tierSelection'];
+  triggerType: TriggerData['triggerType'];
   tierQuery: TriggerData['tierQuery'];
   onChange: (next: AutomationDetail) => void;
   nodeSizes: Record<string, { width: number; height: number }>;
@@ -194,7 +193,7 @@ const buildGraph = ({
   connectIn,
   automation,
   savedTriggerTierIds,
-  tierSelection,
+  triggerType,
   tierQuery,
   onChange,
   nodeSizes,
@@ -244,11 +243,10 @@ const buildGraph = ({
       data: {
         trigger: {
           tierQuery,
-          scope: scopeFromTriggerRules(automation.trigger_rules),
-          tierIds: getTriggerTierIds(automation.trigger_rules),
+          triggerType,
+          rules: automation.trigger_rules,
           savedTierIds: savedTriggerTierIds,
           onUpdate: (trigger) => onChange({ ...automation, ...trigger }),
-          tierSelection,
         },
         errorMessage: actionErrors[TRIGGER_CANVAS_ID],
         onInteract: () => onInteract(TRIGGER_CANVAS_ID),
@@ -400,7 +398,7 @@ type AutomationCanvasProps = {
   onWaitValidityChange: (stepId: string, valid: boolean) => void;
   automation?: AutomationDetail;
   savedTriggerTierIds?: readonly string[];
-  tierSelection?: TriggerData['tierSelection'];
+  triggerType?: TriggerData['triggerType'];
   isEmailNavigationBlocked?: boolean;
   isLoading: boolean;
   isError: boolean;
@@ -428,7 +426,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   initialTriggerTop,
   actionErrors = {},
   savedTriggerTierIds = [],
-  tierSelection,
+  triggerType,
   onWaitValidityChange,
   automation,
   isEmailNavigationBlocked = false,
@@ -469,22 +467,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const [newStepId, setNewStepId] = useState<string | null>(null);
   const [emailModalMode, setEmailModalMode] = useState<EmailModalMode>('edit');
   const [deleteConfirmationActionId, setDeleteConfirmationActionId] = useState<string | null>(null);
-  const triggerTierScope = automation ? scopeFromTriggerRules(automation.trigger_rules) : undefined;
-  let tiersEnabled: boolean;
-  switch (triggerTierScope) {
-    case 'all_paid':
-    case 'selected_paid':
-      tiersEnabled = true;
-      break;
-    case 'free':
-    case undefined:
-      tiersEnabled = false;
-      break;
-    default: {
-      const _exhaustive: never = triggerTierScope;
-      throw new Error(`Unknown automation trigger scope: ${String(_exhaustive)}`);
-    }
-  }
+  const tiersEnabled =
+    triggerType === 'paid_subscription_started' || triggerType === 'paid_subscription_changed';
   const {
     data: tierData,
     isLoading: tiersLoading,
@@ -717,7 +701,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   }, [connecting]);
 
   const graph = useMemo(() => {
-    if (!automation) {
+    if (!automation || !triggerType) {
       return null;
     }
     return buildGraph({
@@ -725,7 +709,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       connectIn: connecting,
       automation,
       savedTriggerTierIds,
-      tierSelection,
+      triggerType,
       tierQuery,
       onChange,
       nodeSizes,
@@ -745,7 +729,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     actionErrors,
     connecting,
     savedTriggerTierIds,
-    tierSelection,
+    triggerType,
     tierQuery,
     onChange,
     automation,
@@ -839,7 +823,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     );
   }
 
-  if (isError || !automation || !graph) {
+  if (isError || !automation || !graph || !triggerType) {
     return (
       <div className="flex flex-1 items-start justify-center bg-surface-page px-4 py-8">
         <Banner className="max-w-md" role="alert" variant="destructive">
@@ -873,8 +857,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         selectedRunId={selectedRunId}
         selectedTab={sidebar.tab === 'unknown' ? 'settings' : sidebar.tab}
         tiers={tierData?.tiers ?? []}
-        triggerTierIds={getTriggerTierIds(automation.trigger_rules)}
-        triggerTierScope={scopeFromTriggerRules(automation.trigger_rules)}
+        triggerRules={automation.trigger_rules}
+        triggerType={triggerType}
         onDescriptionChange={(description) => onChange({ ...automation, description })}
         onOpenChange={setAutomationSidebarOpen}
         onSelectRun={handleSelectRun}

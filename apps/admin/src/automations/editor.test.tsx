@@ -2097,14 +2097,21 @@ describe('AutomationEditor', () => {
     { status: 'active', label: 'Turn off', action: 'turn off' },
   ] as const)(
     'blocks $label with no selected paid tiers even without run analytics',
-    async ({ status, label, action }) => {
+    ({ status, label, action }) => {
       mockUseReadAutomation.mockReturnValue({
         data: {
           automations: [
             {
               ...automationDetail,
               status,
-              trigger_rules: [],
+              trigger_rules: [
+                {
+                  trigger_type: 'paid_subscription_started',
+                  scope: 'specific_paid_tier',
+                  product_id: 'bronze',
+                  direction: null,
+                },
+              ],
             },
           ],
         },
@@ -2113,7 +2120,7 @@ describe('AutomationEditor', () => {
       });
 
       renderEditor();
-      await stageLocalEdit();
+      fireEvent.click(screen.getByRole('button', { name: 'Remove Unavailable tier' }));
       fireEvent.click(screen.getByRole('button', { name: label }));
 
       expect(screen.getByText(`Fix all issues to ${action} this automation.`)).toBeVisible();
