@@ -117,7 +117,6 @@ describe('PostScheduling jobs', function () {
         events,
         logging,
         buildSignedJob,
-        getSchedulerIdempotencyKey,
       });
     } catch (err) {
       error = err;

@@ -11,9 +11,6 @@ export default defineService('Post Scheduling', () => {
   const adapterManager = require('../adapter-manager').default;
   const { withErrorCapture } = require('../../adapters/scheduling/error-capture');
   const { buildSignedJob } = require('../../adapters/scheduling/build-signed-job');
-  const {
-    getSchedulerIdempotencyKey,
-  } = require('../../adapters/scheduling/get-scheduler-idempotency-key');
   const models = require('../../models');
   const events = require('../../lib/common/events');
   const urlUtils = require('../../../shared/url-utils').default;
@@ -37,7 +34,6 @@ export default defineService('Post Scheduling', () => {
       events: subscriber,
       logging,
       buildSignedJob,
-      getSchedulerIdempotencyKey,
     });
   } catch (err) {
     for (const [eventName, listener] of subscriptions) {

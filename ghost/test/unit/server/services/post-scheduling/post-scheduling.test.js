@@ -52,7 +52,6 @@ describe('PostScheduling', function () {
       events,
       logging: createLoggingFake(),
       buildSignedJob,
-      getSchedulerIdempotencyKey,
     };
   });
 

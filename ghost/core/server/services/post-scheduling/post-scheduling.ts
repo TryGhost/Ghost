@@ -4,7 +4,7 @@ import { moment } from '../../../kernel/clock';
 import type { InternalApiKey, InternalKeys } from '../internal-keys';
 import type { buildSignedJob } from '../../adapters/scheduling/build-signed-job';
 import type { SchedulingAdapter } from '../../adapters/scheduling/error-capture';
-import type { getSchedulerIdempotencyKey } from '../../adapters/scheduling/get-scheduler-idempotency-key';
+import { getSchedulerIdempotencyKey } from '../../adapters/scheduling/get-scheduler-idempotency-key';
 
 // Bookshelf models have no TS declarations; these are the attributes scheduling reads.
 type ScheduledModel = {
@@ -13,7 +13,7 @@ type ScheduledModel = {
 };
 
 interface PostModel {
-  findAll(options: { filter: string; columns: string[] }): Promise<Iterable<ScheduledModel>>;
+  findAll(options: { filter: string; columns: string[] }): Promise<ScheduledModel[]>;
 }
 
 export interface PostSchedulingEvents {
@@ -28,7 +28,6 @@ export interface PostSchedulingDeps {
   events: PostSchedulingEvents;
   logging: Pick<GhostLogger, 'error'>;
   buildSignedJob: typeof buildSignedJob;
-  getSchedulerIdempotencyKey: typeof getSchedulerIdempotencyKey;
 }
 
 // Pages live in the posts table with type:'page', so both types are
@@ -42,7 +41,6 @@ export default class PostScheduling {
   readonly #internalKeys: InternalKeys;
   readonly #models: PostSchedulingDeps['models'];
   readonly #buildSignedJob: PostSchedulingDeps['buildSignedJob'];
-  readonly #getSchedulerIdempotencyKey: PostSchedulingDeps['getSchedulerIdempotencyKey'];
 
   constructor({
     apiUrl,
@@ -52,17 +50,15 @@ export default class PostScheduling {
     events,
     logging,
     buildSignedJob,
-    getSchedulerIdempotencyKey,
   }: PostSchedulingDeps) {
     this.#apiUrl = apiUrl;
     this.#adapter = adapter;
     this.#internalKeys = internalKeys;
     this.#models = models;
     this.#buildSignedJob = buildSignedJob;
-    this.#getSchedulerIdempotencyKey = getSchedulerIdempotencyKey;
 
     SCHEDULED_RESOURCES.forEach((resource) => {
-      events.on(`${resource}.scheduled`, async (model) => {
+      events.on(`${resource}.scheduled`, async (model: any) => {
         try {
           const key = await internalKeys.get('ghost-scheduler');
           this.#adapter.schedule(this.#normalize({ model, key, resourceType: resource }));
@@ -81,7 +77,7 @@ export default class PostScheduling {
 
       // Reschedule = matched unschedule + fresh schedule, because tokens
       // are signed against the published_at timestamp.
-      events.on(`${resource}.rescheduled`, async (model) => {
+      events.on(`${resource}.rescheduled`, async (model: any) => {
         try {
           const key = await internalKeys.get('ghost-scheduler');
           this.#adapter.unschedule(
@@ -101,7 +97,7 @@ export default class PostScheduling {
         }
       });
 
-      events.on(`${resource}.unscheduled`, async (model) => {
+      events.on(`${resource}.unscheduled`, async (model: any) => {
         try {
           const key = await internalKeys.get('ghost-scheduler');
           this.#adapter.unschedule(
@@ -168,7 +164,7 @@ export default class PostScheduling {
     }
   }
 
-  async #loadScheduledResources(): Promise<Record<ScheduledResource, Iterable<ScheduledModel>>> {
+  async #loadScheduledResources(): Promise<Record<ScheduledResource, any[]>> {
     const entries = await Promise.all(
       SCHEDULED_RESOURCES.map(async (resourceType) => {
         const found = await this.#models.Post.findAll({
@@ -186,7 +182,7 @@ export default class PostScheduling {
       model,
       resourceType,
       key,
-    }: { model: ScheduledModel; resourceType: ScheduledResource; key: InternalApiKey },
+    }: { model: any; resourceType: ScheduledResource; key: InternalApiKey },
     event: '' | 'unscheduled' = '',
   ): SchedulerJob {
     const resource = `${resourceType}s`;
@@ -208,11 +204,7 @@ export default class PostScheduling {
       // so re-registering the same job (e.g. a boot rebuild) yields the same
       // key, while a reschedule or key rotation yields a new one.
       getIdempotencyKey: (url) =>
-        this.#getSchedulerIdempotencyKey({
-          namespace: 'post-scheduling',
-          date: new Date(time),
-          url,
-        }),
+        getSchedulerIdempotencyKey({ namespace: 'post-scheduling', date: new Date(time), url }),
     });
   }
 }

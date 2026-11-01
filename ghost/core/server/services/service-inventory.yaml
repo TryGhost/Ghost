@@ -10647,9 +10647,9 @@ services:
       modelImpact: fits
       reason: >-
         The boot-owned defineService root constructs the scheduler with models, the event bus,
-        logging and the signed-job helpers injected. The constructor installs six listeners and
-        registers itself with the shared adapter; a failed construction removes its listeners
-        before init rejects. initServices awaits init before running that adapter and later
+        logging and the signed-job builder injected; the stateless idempotency-key helper is an
+        exact library allowance. The constructor installs six listeners and registers itself with
+        the shared adapter; a failed construction removes its listeners before init rejects. initServices awaits init before running that adapter and later
         reads the service to rebuild jobs, while key rotation still invokes the retained
         rescheduler. Job completion and normal adapter drain remain separate; no extras.
       reviewedAt: deba02cdbded8b78f24adfb79bebf2790b275c8e
