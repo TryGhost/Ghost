@@ -455,4 +455,55 @@ describe('Members Signin', function () {
       });
     });
   });
+
+  describe('Email address change', function () {
+    async function changeEmail(oldEmail, newEmail) {
+      const magicLink = await membersService.api.getMagicLink(newEmail, 'updateEmail', {
+        oldEmail,
+      });
+      const token = new URL(magicLink).searchParams.get('token');
+
+      await membersAgent.get(`/?token=${token}`).expectStatus(302);
+
+      return await getMemberByEmail(newEmail);
+    }
+
+    it('Re-enables email when the new address is not suppressed', async function () {
+      const member = await models.Member.add({
+        email: 'suppressed-old@test.com',
+        email_disabled: true,
+      });
+      const suppression = await models.Suppression.add({
+        email: 'suppressed-old@test.com',
+        reason: 'bounce',
+      });
+
+      try {
+        const updatedMember = await changeEmail('suppressed-old@test.com', 'clean-new@test.com');
+        assert.equal(updatedMember.get('email_disabled'), false);
+      } finally {
+        await models.Member.destroy({ id: member.id });
+        await models.Suppression.destroy({ id: suppression.id });
+      }
+    });
+
+    it('Disables email when the new address is suppressed', async function () {
+      const member = await models.Member.add({
+        email: 'clean-old@test.com',
+        email_disabled: false,
+      });
+      const suppression = await models.Suppression.add({
+        email: 'suppressed-new@test.com',
+        reason: 'spam',
+      });
+
+      try {
+        const updatedMember = await changeEmail('clean-old@test.com', 'suppressed-new@test.com');
+        assert.equal(updatedMember.get('email_disabled'), true);
+      } finally {
+        await models.Member.destroy({ id: member.id });
+        await models.Suppression.destroy({ id: suppression.id });
+      }
+    });
+  });
 });
