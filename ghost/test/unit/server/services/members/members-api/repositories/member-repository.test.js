@@ -1990,27 +1990,72 @@ describe('MemberRepository', function () {
       });
       sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
         event: 'membership_started',
+        source: 'member',
         memberId: 'member_id_123',
         memberEmail: 'test@example.com',
         memberStatus: 'paid',
+        previousMemberStatus: null,
         memberTierIds: ['bronze'],
       });
+    });
+
+    it.each([
+      ['admin', { user: 'admin' }],
+      ['API', { api_key: true }],
+      ['import', { import: true }],
+      ['importer', { importer: true }],
+      ['system', { internal: true }],
+    ])(
+      'does not send a welcome email for a member created by %s',
+      async function (_source, context) {
+        const repo = buildRepo();
+        const member = { id: 'member', get: () => 'member@example.com' };
+        await repo.triggerMembershipStartedAutomation({
+          member,
+          memberStatus: 'free',
+          bookshelfOptions: { context },
+        });
+        sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
+      },
+    );
+
+    it('does not send another welcome email when a gifted member becomes paid', async function () {
+      const member = buildSignupMember([{ id: 'bronze' }]);
+      const repo = buildRepo();
+      await repo.triggerMembershipStartedAutomation({
+        member,
+        memberStatus: 'paid',
+        previousMemberStatus: 'gift',
+        bookshelfOptions: {},
+      });
+      sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
     });
   });
 
   describe('create - automation integration', function () {
-    it('triggers an automation event for free signup', async function () {
-      const repo = buildRepo();
-      await repo.create({ email: 'test@example.com', name: 'Test Member' }, {});
-
-      sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
-        event: 'membership_started',
-        memberId: 'member_id_123',
-        memberEmail: 'test@example.com',
-        memberStatus: 'free',
-        memberTierIds: [],
-      });
-    });
+    it.each([
+      ['member', {}],
+      ['admin', { user: true }],
+      ['api', { api_key: true }],
+      ['import', { import: true }],
+      ['import', { importer: true }],
+      ['system', { internal: true }],
+    ])(
+      'triggers an automation for free signup with the %s source',
+      async function (source, context) {
+        const repo = buildRepo();
+        await repo.create({ email: 'test@example.com' }, { context });
+        sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
+          event: 'membership_started',
+          source,
+          memberId: 'member_id_123',
+          memberEmail: 'test@example.com',
+          memberStatus: 'free',
+          previousMemberStatus: null,
+          memberTierIds: [],
+        });
+      },
+    );
 
     describe('legacy automations', function () {
       it('creates automation run for free member signup (free welcome email)', async function () {
@@ -2054,9 +2099,11 @@ describe('MemberRepository', function () {
 
         sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
           event: 'membership_started',
+          source: 'member',
           memberId: 'member_id_123',
           memberEmail: 'test@example.com',
           memberStatus: 'free',
+          previousMemberStatus: null,
           memberTierIds: [],
         });
         sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
@@ -2372,9 +2419,11 @@ describe('MemberRepository', function () {
 
       sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
         event: 'membership_started',
+        source: 'member',
         memberId: 'member_id_123',
         memberEmail: 'test@example.com',
         memberStatus: 'paid',
+        previousMemberStatus: 'free',
         memberTierIds: [],
       });
     });
@@ -2471,9 +2520,11 @@ describe('MemberRepository', function () {
 
         sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
           event: 'membership_started',
+          source: 'member',
           memberId: 'member_id_123',
           memberEmail: 'test@example.com',
           memberStatus: 'paid',
+          previousMemberStatus: 'free',
           memberTierIds: [],
         });
         sinon.assert.notCalled(WelcomeEmailAutomationRun.add);

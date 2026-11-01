@@ -280,11 +280,17 @@ module.exports = class MemberRepository {
    * @param {object} options
    * @param {MemberModel} options.member
    * @param {'free' | 'paid'} options.memberStatus
+   * @param {'free' | 'paid' | 'comped' | 'gift' | null} options.previousMemberStatus
    * @param {object} options.bookshelfOptions
    * @param {Knex.Transaction} [options.bookshelfOptions.transacting]
    * @returns {Promise<void>}
    */
-  async #triggerMembershipStartedAutomation({ member, memberStatus, bookshelfOptions }) {
+  async #triggerMembershipStartedAutomation({
+    member,
+    memberStatus,
+    previousMemberStatus,
+    bookshelfOptions,
+  }) {
     const memberId = member.id;
     const memberEmail = member.get('email');
     const memberTierIds = await getMemberTierIds(member, memberStatus, bookshelfOptions);
@@ -292,9 +298,11 @@ module.exports = class MemberRepository {
     const trigger = async () => {
       await this._automationsApi.trigger({
         event: 'membership_started',
+        source: this._resolveContextSource(bookshelfOptions.context || {}),
         memberId,
         memberEmail,
         memberStatus,
+        previousMemberStatus,
         memberTierIds,
       });
     };
@@ -362,20 +370,39 @@ module.exports = class MemberRepository {
   /**
    * Trigger an automation for member signup.
    *
-   * Callers are responsible for any eligibility gating (member status, source, etc.)
-   * before calling this.
-   *
    * @param {object} options
    * @param {MemberModel} options.member
    * @param {'free' | 'paid'} options.memberStatus
+   * @param {'free' | 'paid' | 'comped' | 'gift' | null} [options.previousMemberStatus]
    * @param {object} options.bookshelfOptions
    * @returns {Promise<void>}
    */
-  async triggerMembershipStartedAutomation({ member, memberStatus, bookshelfOptions }) {
-    await Promise.all([
-      this.#triggerMembershipStartedAutomation({ member, memberStatus, bookshelfOptions }),
-      this.#triggerMembershipStartedLegacyAutomation(member.id, memberStatus, bookshelfOptions),
-    ]);
+  async triggerMembershipStartedAutomation({
+    member,
+    memberStatus,
+    previousMemberStatus = null,
+    bookshelfOptions,
+  }) {
+    const promises = [
+      this.#triggerMembershipStartedAutomation({
+        member,
+        memberStatus,
+        previousMemberStatus,
+        bookshelfOptions,
+      }),
+    ];
+
+    const source = this._resolveContextSource(bookshelfOptions.context || {});
+    const shouldTriggerLegacyAutomation =
+      WELCOME_EMAIL_SOURCES.includes(source) &&
+      !(memberStatus === 'paid' && previousMemberStatus === 'gift');
+    if (shouldTriggerLegacyAutomation) {
+      promises.push(
+        this.#triggerMembershipStartedLegacyAutomation(member.id, memberStatus, bookshelfOptions),
+      );
+    }
+
+    await Promise.all(promises);
   }
 
   /**
@@ -627,7 +654,7 @@ module.exports = class MemberRepository {
         await this.triggerMembershipStartedAutomation({
           member: newMember,
           memberStatus: 'free',
-          bookshelfOptions: { transacting },
+          bookshelfOptions: { context, transacting },
         });
 
         return newMember;
@@ -646,6 +673,14 @@ module.exports = class MemberRepository {
         },
         memberAddOptions,
       );
+      if (isFreeSignup) {
+        await this.#triggerMembershipStartedAutomation({
+          member,
+          memberStatus: 'free',
+          previousMemberStatus: null,
+          bookshelfOptions: memberAddOptions,
+        });
+      }
     }
 
     if (!eventData.created_at) {
@@ -2113,21 +2148,11 @@ module.exports = class MemberRepository {
         options,
       );
 
-      const context = options?.context || {};
-      const source = this._resolveContextSource(context);
-
-      // Enqueue automation if:
-      // 1. The source is allowed to trigger automations
-      // 2. The member status changed to 'paid'
-      // 3. The previous status wasn't 'gift', as gift members already received the paid welcome email on redemption
-      if (
-        WELCOME_EMAIL_SOURCES.includes(source) &&
-        updatedMember.get('status') === 'paid' &&
-        updatedMember._previousAttributes.status !== 'gift'
-      ) {
+      if (updatedMember.get('status') === 'paid') {
         await this.triggerMembershipStartedAutomation({
           member: memberModel,
           memberStatus: 'paid',
+          previousMemberStatus: updatedMember._previousAttributes.status,
           bookshelfOptions: options,
         });
       }
