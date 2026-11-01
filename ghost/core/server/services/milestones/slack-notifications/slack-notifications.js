@@ -1,6 +1,6 @@
 const validator = require('@tryghost/validator');
 const errors = require('@tryghost/errors');
-const externalRequest = require('../../lib/request-external');
+const externalRequest = require('../../../lib/request-external');
 const ghostVersion = require('@tryghost/version');
 const moment = require('moment');
 

@@ -1,9 +1,9 @@
-const { configUtils } = require('../../../../utils/e2e-framework');
+const { configUtils } = require('../../../../../utils/e2e-framework');
 const assert = require('node:assert/strict');
 const nock = require('nock');
 const DomainEvents = require('@tryghost/domain-events');
-const MilestoneCreatedEvent = require('../../../../../core/server/services/milestones/milestone-created-event');
-const slackNotifications = require('../../../../../core/server/services/slack-notifications');
+const MilestoneCreatedEvent = require('../../../../../../core/server/services/milestones/milestone-created-event');
+const slackNotifications = require('../../../../../../core/server/services/milestones/slack-notifications');
 
 describe('Slack Notifications Service', function () {
   let scope;

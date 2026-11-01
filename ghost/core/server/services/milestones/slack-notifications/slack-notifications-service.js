@@ -1,4 +1,4 @@
-const MilestoneCreatedEvent = require('../milestones/milestone-created-event');
+const MilestoneCreatedEvent = require('../milestone-created-event');
 
 /**
  * @typedef {import('../milestones/milestone')} Milestone
