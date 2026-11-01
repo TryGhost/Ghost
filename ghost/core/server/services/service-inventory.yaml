@@ -1421,7 +1421,7 @@ services:
           - test/e2e-api/admin/member-commenting.test.js
           - test/e2e-api/members-comments/comments.test.js
           - test/e2e-api/members-comments/post-access.test.js
-          - test/unit/api/canary/utils/serializers/output/mapper.test.js
+          - test/unit/api/endpoints/utils/serializers/output/mapper.test.js
       startup:
         summary: >-
           Boot awaits comments.init in the service Promise.all array alongside members and
@@ -1448,7 +1448,7 @@ services:
           - test/unit/server/services/comments/index.test.ts
           - test/integration/services/comments-service.test.js
           - test/e2e-api/members-comments/comments.test.js
-          - test/unit/api/canary/utils/serializers/output/mapper.test.js
+          - test/unit/api/endpoints/utils/serializers/output/mapper.test.js
           - test/unit/kernel/define-service.test.ts
       lifetime:
         summary: >-
@@ -8215,7 +8215,7 @@ services:
           - test/unit/server/services/members/import-export/import/spool.test.ts
           - test/integration/services/members/clean-tokens.test.js
           - test/integration/services/members/clean-expired-comped.test.ts
-          - test/unit/api/canary/utils/serializers/output/members-export-csv.test.ts
+          - test/unit/api/endpoints/utils/serializers/output/members-export-csv.test.ts
           - test/e2e-api/admin/members-exporter.test.js
       failures:
         summary: >-
