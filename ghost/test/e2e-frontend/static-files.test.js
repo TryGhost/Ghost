@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const os = require('os');
 const path = require('path');
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const { agentProvider, fixtureManager } = require('../utils/e2e-framework');
 const config = require('../../core/shared/config');
 
@@ -44,10 +44,11 @@ describe('Static files', function () {
     });
 
     afterAll(function () {
-      fs.removeSync(tmpDir);
+      fs.rmSync(tmpDir, { recursive: true, force: true });
       for (const urlPath of uploadedPaths) {
-        fs.removeSync(
+        fs.rmSync(
           path.join(config.getContentPath('files'), urlPath.replace(/^\/content\/files\//, '')),
+          { recursive: true, force: true },
         );
       }
     });

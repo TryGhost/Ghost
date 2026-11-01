@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import _ from 'lodash';
 import crypto from 'crypto';
-import fs from 'fs-extra';
+import fs from 'node:fs';
 import path from 'path';
 import { config } from '../../../../utils/config-utils';
 import fixtures from '../../../../../core/server/data/schema/fixtures/fixtures.json';

@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const exporter = require('../../../../../core/server/data/exporter');
 const dbBackup = require('../../../../../core/server/data/db/backup');
 const configUtils = require('../../../../utils/config-utils');

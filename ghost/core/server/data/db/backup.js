@@ -1,6 +1,6 @@
 // # Backup Database
 // Provides for backing up the database before making potentially destructive changes
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 
 const path = require('path');
 const config = require('../../../shared/config');
@@ -32,14 +32,17 @@ const readBackup = async (filename) => {
     urlUtils.urlJoin(config.get('paths').contentPath, 'data', sanitized),
   );
 
-  const exists = await fs.pathExists(backupPath);
-
-  if (exists) {
-    const backupFile = await fs.readFile(backupPath, 'utf8');
-    return JSON.parse(backupFile);
-  } else {
-    return null;
+  let backupFile;
+  try {
+    backupFile = await fs.readFile(backupPath, 'utf8');
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      return null;
+    }
+    throw err;
   }
+
+  return JSON.parse(backupFile);
 };
 
 /**

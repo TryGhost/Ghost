@@ -9,7 +9,7 @@
  *
  */
 const _ = require('lodash');
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const join = require('path').join;
 const errors = require('@tryghost/errors');
 const parse = require('./parse');
@@ -130,7 +130,7 @@ async function readPackage(packagePath, packageName) {
  * @returns {Promise<PackageList>}
  */
 async function readPackages(packagePath) {
-  const files = await fs.promises.readdir(packagePath, { withFileTypes: true });
+  const files = await fs.readdir(packagePath, { withFileTypes: true });
   const packages = await Promise.all(
     files.map(async (file) => {
       // Filter out things which are not packages by regex

@@ -5,7 +5,7 @@ import supertest from 'supertest';
 import moment from 'moment';
 import { afterAll, beforeAll } from 'vitest';
 
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
 const settingsCache = require('../../core/shared/settings-cache');
@@ -49,7 +49,7 @@ async function writeAndActivateOverrideTheme() {
   const themesPath = configUtils.config.getContentPath('themes');
   for (const [relPath, contents] of Object.entries(THEME_FILES)) {
     const filePath = path.join(themesPath, OVERRIDE_THEME, relPath);
-    await fs.ensureDir(path.dirname(filePath));
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
     await fs.writeFile(filePath, contents);
   }
   await themeActivator.loadAndActivate(OVERRIDE_THEME);
