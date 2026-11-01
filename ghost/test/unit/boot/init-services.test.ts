@@ -154,11 +154,23 @@ it('passes the eager email suppression list to email analytics before calling it
   sinon.assert.callOrder(boot.analytics, boot.emailSuppressionList.init);
 });
 
-it('constructs post scheduling before running the scheduling adapter or initializing Stripe', async function () {
+it('waits for post scheduling before running the scheduling adapter or initializing Stripe', async function () {
   const boot = createServicesHarness();
-  await boot.initServices();
+  const ready = Promise.withResolvers<void>();
+  boot.postScheduling.returns(ready.promise);
+  const startup = boot.initServices();
 
-  sinon.assert.calledOnce(boot.postScheduling);
+  try {
+    // Drain runnable promise continuations while the dependency stays unresolved.
+    await setImmediate();
+    sinon.assert.calledOnce(boot.postScheduling);
+    sinon.assert.notCalled(boot.schedulerRun);
+    sinon.assert.notCalled(boot.stripe);
+  } finally {
+    ready.resolve();
+    await startup;
+  }
+
   sinon.assert.callOrder(boot.postScheduling, boot.schedulerRun, boot.stripe);
   sinon.assert.calledOnce(boot.reschedule);
 });
