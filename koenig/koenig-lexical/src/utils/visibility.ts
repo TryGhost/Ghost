@@ -1,3 +1,4 @@
+import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {buildDefaultVisibility} from '@tryghost/kg-default-nodes/visibility';
 
 export const VISIBILITY_SETTINGS = {
@@ -6,6 +7,31 @@ export const VISIBILITY_SETTINGS = {
     EMAIL_ONLY: 'email only',
     NONE: 'none'
 };
+
+export function isVisibilityEnabled(cardConfig) {
+    return (cardConfig?.visibilitySettings ?? VISIBILITY_SETTINGS.WEB_AND_EMAIL) !== VISIBILITY_SETTINGS.NONE;
+}
+
+// an image, gallery or embed placeholder has no content to hide yet
+function isPlaceholderCard(cardNode) {
+    return cardNode.isEmpty?.() === true
+        || cardNode.src === ''
+        || (Array.isArray(cardNode.images) && cardNode.images.length === 0);
+}
+
+// Cards without an edit mode of their own (image, gallery, embed) still open
+// their settings panel in edit mode when visibility is something to edit
+export function cardHasEditMode(cardNode, cardConfig) {
+    if (!$isKoenigCard(cardNode)) {
+        return false;
+    }
+
+    if (cardNode.hasEditMode()) {
+        return true;
+    }
+
+    return cardNode.hasVisibility?.() === true && isVisibilityEnabled(cardConfig) && !isPlaceholderCard(cardNode);
+}
 
 export function parseVisibilityToToggles(visibility) {
     visibility = visibility || buildDefaultVisibility();

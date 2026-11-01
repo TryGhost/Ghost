@@ -13,23 +13,35 @@ function isMobile() {
     return window.innerWidth < 768 && window.innerHeight > window.innerWidth;
 }
 
-const getSelectedCardOrigin = () => {
-    const cardElement = document.querySelector('[data-kg-card-editing="true"]');
-    if (!cardElement) {
-        return {x: 0, y: 0};
-    }
-    const containerRect = cardElement.getBoundingClientRect();
+// panels are shown for cards that are being edited, and for cards that are
+// only selected (e.g. the visibility panel on media cards), so both need to be
+// found here and in getInitialPosition - otherwise the two disagree about the
+// origin and the panel is positioned offscreen
+const getPanelCardElement = () => {
+    return document.querySelector('[data-kg-card-editing="true"]')
+        || document.querySelector('[data-kg-card-selected="true"]');
+};
 
-    // if the card element has a transform applied (e.g. wide cards) our panel elem becomes positioned
-    // relative to the card element rather than the window
-    const cardStyles = window.getComputedStyle(cardElement);
+// if the card element has a transform applied (e.g. wide cards) our panel elem becomes positioned
+// relative to the card element rather than the window
+const getCardOrigin = (cardElement) => {
     const origin = {x: 0, y: 0};
+
+    if (!cardElement) {
+        return origin;
+    }
+
+    const cardStyles = window.getComputedStyle(cardElement);
     if (cardStyles.transform !== 'none') {
+        const containerRect = cardElement.getBoundingClientRect();
         origin.x = containerRect.left;
         origin.y = containerRect.top;
     }
+
     return origin;
 };
+
+const getSelectedCardOrigin = () => getCardOrigin(getPanelCardElement());
 
 function getWindowWidthAdjustment(panelElem) {
     if (!panelElem) {
@@ -127,9 +139,7 @@ export default function useSettingsPanelReposition({positionToRef} = {}, cardWid
 
     const getInitialPosition = useCallback((panelElem) => {
         const panelHeight = panelElem.offsetHeight;
-        const cardElement = positionToRef ||
-                    document.querySelector('[data-kg-card-editing="true"]') ||
-                    document.querySelector('[data-kg-card-selected="true"]');
+        const cardElement = positionToRef || getPanelCardElement();
         if (!cardElement) {
             return;
         }
@@ -154,16 +164,7 @@ export default function useSettingsPanelReposition({positionToRef} = {}, cardWid
         // position to right of panel
         let x = containerRect.right + CARD_SPACING;
 
-        // if the card element has a transform applied (e.g. wide cards) our panel elem becomes positioned
-        // relative to the card element rather than the window
-        const cardStyles = window.getComputedStyle(cardElement);
-        const origin = {x: 0, y: 0};
-        if (cardStyles.transform !== 'none') {
-            origin.x = containerRect.left;
-            origin.y = containerRect.top;
-        }
-
-        return keepWithinSpacingOnResize(panelElem, {x, y, origin});
+        return keepWithinSpacingOnResize(panelElem, {x, y, origin: getCardOrigin(cardElement)});
     }, [positionToRef]);
 
     const onResize = useCallback((panelElem) => {

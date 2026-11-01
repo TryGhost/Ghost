@@ -5,6 +5,7 @@ import useFileDragAndDrop from '../hooks/useFileDragAndDrop';
 import {$getNodeByKey} from 'lexical';
 import {ActionToolbar} from '../components/ui/ActionToolbar';
 import {AudioCard} from '../components/ui/cards/AudioCard';
+import {CardSettingsPanel} from '../components/CardSettingsPanel';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar.jsx';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {audioUploadHandler} from '../utils/audioUploadHandler';
@@ -141,11 +142,13 @@ export function AudioNodeComponent({duration, initialFile, nodeKey, src, thumbna
                         hide={!cardConfig.createSnippet}
                         icon="snippet"
                         isActive={false}
-                        label="Snippet"
+                        label="Save as snippet"
                         onClick={() => setShowSnippetToolbar(true)}
                     />
                 </ToolbarMenu>
             </ActionToolbar>
+
+            <CardSettingsPanel />
         </>
     );
 }
