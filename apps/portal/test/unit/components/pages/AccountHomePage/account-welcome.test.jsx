@@ -18,6 +18,29 @@ const setup = (overrides) => {
 };
 
 describe('AccountWelcome', () => {
+  describe.each([
+    { membersSignupAccess: 'all' },
+    { membersSignupAccess: 'paid' },
+    { membersSignupAccess: 'invite' },
+  ])('free members when signup access is $membersSignupAccess', ({ membersSignupAccess }) => {
+    const member = getMemberData({ status: 'free', paid: false, subscriptions: [] });
+
+    test('can view plans', () => {
+      const site = getSiteData({ membersSignupAccess });
+      const { queryByRole } = setup({ site, member });
+
+      expect(queryByRole('button', { name: 'View plans' })).toBeInTheDocument();
+    });
+
+    test('see no plans button when no paid prices are on', () => {
+      const site = getSiteData({ membersSignupAccess, portalPlans: ['free', 'monthly'] });
+      const noPricesSite = { ...site, portal_plans: ['free'] };
+      const { queryByRole } = setup({ site: noPricesSite, member });
+
+      expect(queryByRole('button', { name: 'View plans' })).not.toBeInTheDocument();
+    });
+  });
+
   test('shows gift expiry message for gift members', () => {
     const products = getProductsData({ numOfProducts: 1 });
     const site = getSiteData({ products, portalProducts: products.map((p) => p.id) });
