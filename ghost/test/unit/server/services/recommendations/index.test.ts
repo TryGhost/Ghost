@@ -4,8 +4,7 @@ import { IncorrectUsageError } from '@tryghost/errors';
 import sinon from 'sinon';
 import type { IncomingRecommendationService as IncomingService } from '../../../../../core/server/services/recommendations/service/incoming-recommendation-service';
 
-// Use the same classes and dependency objects as the CommonJS root.
-const RecommendationServiceWrapper = require('../../../../../core/server/services/recommendations/recommendation-service-wrapper');
+// Use the same classes and dependency objects as the root.
 const {
   BookshelfRecommendationRepository,
   BookshelfClickEventRepository,
@@ -35,6 +34,11 @@ type UrlMapper = (url: URL) => URL | undefined;
 
 const DISABLED_MESSAGE = '[Recommendations] Background refreshes are disabled via config';
 const RECOMMENDATION_SOURCE = 'https://other.example/.well-known/recommendations.json';
+
+// Bookshelf repositories keep their model and Sentry client as protected fields.
+function bound(repository: unknown): { Model: unknown; sentry: unknown } {
+  return repository as { Model: unknown; sentry: unknown };
+}
 
 function mention(source: string, verified = true): Mention & { verified: boolean } {
   return {
@@ -80,7 +84,7 @@ describe('Recommendations service root', function () {
     // mentions metadata and event bus, which other files in this worker also use.
     addMapper = sandbox.stub();
     mentionsReady = true;
-    // Boot awaits the Mentions root before this wrapper runs; reading it earlier throws.
+    // Boot awaits the Mentions root before this root runs; reading it earlier throws.
     sandbox.stub(mentionsRoot, 'service').get(() => {
       if (!mentionsReady) {
         throw new IncorrectUsageError({
@@ -134,32 +138,35 @@ describe('Recommendations service root', function () {
   it('publishes repositories, services and controllers wired to the shared models and helpers', async function () {
     assert.equal(await root.init(), undefined);
 
-    const wrapper = root.service;
-    assert.ok(wrapper instanceof RecommendationServiceWrapper);
-    assert.ok(wrapper.repository instanceof BookshelfRecommendationRepository);
-    assert.equal(wrapper.repository.Model, models.Recommendation);
-    assert.equal(wrapper.repository.sentry, sentry);
-    assert.ok(wrapper.clickEventRepository instanceof BookshelfClickEventRepository);
-    assert.equal(wrapper.clickEventRepository.Model, models.RecommendationClickEvent);
-    assert.equal(wrapper.clickEventRepository.sentry, sentry);
-    // The subscribe repository is the click repository class bound to the subscribe model.
-    assert.ok(wrapper.subscribeEventRepository instanceof BookshelfClickEventRepository);
-    assert.equal(wrapper.subscribeEventRepository.Model, models.RecommendationSubscribeEvent);
-    assert.equal(wrapper.subscribeEventRepository.sentry, sentry);
+    // Consumers read only the three controllers; the graph behind them is reached through them.
+    const published = root.service;
+    assert.deepEqual(Object.keys(published).sort(), [
+      'controller',
+      'incomingRecommendationController',
+      'wellknownController',
+    ]);
+    const service = published.controller.service;
+    assert.ok(service instanceof RecommendationService);
+    assert.equal(published.wellknownController.service, service);
+    const incoming = published.incomingRecommendationController.service;
+    assert.ok(incoming instanceof IncomingRecommendationService);
 
-    assert.ok(wrapper.service instanceof RecommendationService);
-    assert.equal(wrapper.service.repository, wrapper.repository);
-    assert.equal(wrapper.service.clickEventRepository, wrapper.clickEventRepository);
-    assert.equal(wrapper.service.subscribeEventRepository, wrapper.subscribeEventRepository);
-    assert.equal(wrapper.service.mentionSendingService, sendingService);
-    assert.equal(wrapper.service.wellknownService.urlUtils, urlUtils);
-    assert.ok(wrapper.incomingRecommendationService instanceof IncomingRecommendationService);
-    assert.equal(wrapper.controller.service, wrapper.service);
-    assert.equal(wrapper.wellknownController.service, wrapper.service);
+    assert.ok(service.repository instanceof BookshelfRecommendationRepository);
+    assert.equal(bound(service.repository).Model, models.Recommendation);
+    assert.equal(bound(service.repository).sentry, sentry);
+    assert.ok(service.clickEventRepository instanceof BookshelfClickEventRepository);
+    assert.equal(bound(service.clickEventRepository).Model, models.RecommendationClickEvent);
+    assert.equal(bound(service.clickEventRepository).sentry, sentry);
+    // The subscribe repository is the click repository class bound to the subscribe model.
+    assert.ok(service.subscribeEventRepository instanceof BookshelfClickEventRepository);
     assert.equal(
-      wrapper.incomingRecommendationController.service,
-      wrapper.incomingRecommendationService,
+      bound(service.subscribeEventRepository).Model,
+      models.RecommendationSubscribeEvent,
     );
+    assert.equal(bound(service.subscribeEventRepository).sentry, sentry);
+    assert.notEqual(service.subscribeEventRepository, service.clickEventRepository);
+    assert.equal(service.mentionSendingService, sendingService);
+    assert.equal(service.wellknownService.urlUtils, urlUtils);
   });
 
   it('rejects init without publishing anything while Mentions is not ready, and initializes once it is', async function () {
@@ -175,7 +182,7 @@ describe('Recommendations service root', function () {
 
     mentionsReady = true;
     assert.equal(await root.init(), undefined);
-    assert.equal(root.service.service.mentionSendingService, sendingService);
+    assert.equal(root.service.controller.service.mentionSendingService, sendingService);
   });
 
   for (const enabled of [undefined, true] as const) {
@@ -193,8 +200,11 @@ describe('Recommendations service root', function () {
         sinon.assert.calledOnce(outgoingInit);
         sinon.assert.calledOnce(incomingInit);
         assert.equal(await initialization, undefined);
-        assert.equal(outgoingInit.firstCall.thisValue, root.service.service);
-        assert.equal(incomingInit.firstCall.thisValue, root.service.incomingRecommendationService);
+        assert.equal(outgoingInit.firstCall.thisValue, root.service.controller.service);
+        assert.equal(
+          incomingInit.firstCall.thisValue,
+          root.service.incomingRecommendationController.service,
+        );
         sinon.assert.notCalled(info);
       } finally {
         outgoing.resolve();
@@ -211,7 +221,7 @@ describe('Recommendations service root', function () {
     sinon.assert.notCalled(outgoingInit);
     sinon.assert.notCalled(incomingInit);
     sinon.assert.calledOnceWithExactly(info, DISABLED_MESSAGE);
-    assert.ok(root.service.service instanceof RecommendationService);
+    assert.ok(root.service.controller.service instanceof RecommendationService);
     installedMapper();
     installedHandler();
   });
@@ -225,53 +235,79 @@ describe('Recommendations service root', function () {
 
     sinon.assert.calledOnceWithExactly(error, failure);
     sinon.assert.calledOnce(incomingInit);
-    assert.ok(root.service.service instanceof RecommendationService);
+    assert.ok(root.service.controller.service instanceof RecommendationService);
   });
 
   it('retains the first graph and installs the mapper and subscriber once across repeated init', async function () {
     await root.init();
-    const wrapper = root.service;
+    const published = root.service;
 
     assert.equal(await root.init(), undefined);
 
-    assert.equal(root.service, wrapper);
+    assert.equal(root.service, published);
     sinon.assert.calledOnce(addMapper);
     sinon.assert.calledOnce(subscribe);
     sinon.assert.calledOnce(outgoingInit);
     sinon.assert.calledOnce(incomingInit);
   });
 
-  it('rejects init with a construction failure, publishes nothing and builds a fresh graph on retry', async function () {
-    const failure = new Error('Click event model unavailable');
-    const original = Object.getOwnPropertyDescriptor(models, 'RecommendationClickEvent');
-    assert.ok(original);
-    Object.defineProperty(models, 'RecommendationClickEvent', {
-      configurable: true,
-      get() {
-        throw failure;
+  // An early model lookup and the mailer, constructed after both outgoing services
+  // and repositories, bracket the composition that must finish before any side effect.
+  for (const [step, breakConstruction] of [
+    [
+      'the click event model lookup',
+      (failure: Error) => {
+        const original = Object.getOwnPropertyDescriptor(models, 'RecommendationClickEvent');
+        assert.ok(original);
+        Object.defineProperty(models, 'RecommendationClickEvent', {
+          configurable: true,
+          get() {
+            throw failure;
+          },
+        });
+        return () => Object.defineProperty(models, 'RecommendationClickEvent', original);
       },
+    ],
+    [
+      'the incoming notification mailer',
+      (failure: Error) => {
+        const GhostMailer = sandbox.stub(mail, 'GhostMailer').throws(failure);
+        return () => GhostMailer.restore();
+      },
+    ],
+  ] as const) {
+    it(`rejects init when ${step} throws, without subscribing or starting refreshes, and builds a fresh graph on retry`, async function () {
+      const failure = new Error('Construction failed');
+      const restore = breakConstruction(failure);
+
+      try {
+        await assert.rejects(root.init(), (err: unknown) => err === failure);
+      } finally {
+        restore();
+      }
+
+      assert.throws(() => root.service, IncorrectUsageError);
+      sinon.assert.notCalled(addMapper);
+      sinon.assert.notCalled(subscribe);
+      sinon.assert.notCalled(outgoingInit);
+      sinon.assert.notCalled(incomingInit);
+      sinon.assert.notCalled(info);
+
+      // The failed attempt is discarded, so a retry composes a complete graph once.
+      assert.equal(await root.init(), undefined);
+      const service = root.service.controller.service;
+      assert.ok(service.repository instanceof BookshelfRecommendationRepository);
+      assert.equal(bound(service.clickEventRepository).Model, models.RecommendationClickEvent);
+      assert.ok(
+        root.service.incomingRecommendationController.service instanceof
+          IncomingRecommendationService,
+      );
+      sinon.assert.calledOnce(addMapper);
+      sinon.assert.calledOnce(subscribe);
+      sinon.assert.calledOnce(outgoingInit);
+      sinon.assert.calledOnce(incomingInit);
     });
-
-    try {
-      await assert.rejects(root.init(), (err: unknown) => err === failure);
-    } finally {
-      Object.defineProperty(models, 'RecommendationClickEvent', original);
-    }
-
-    assert.throws(() => root.service, IncorrectUsageError);
-    sinon.assert.notCalled(addMapper);
-    sinon.assert.notCalled(subscribe);
-    sinon.assert.notCalled(outgoingInit);
-
-    // The failed attempt is discarded, so a retry composes a complete graph once.
-    assert.equal(await root.init(), undefined);
-    assert.ok(root.service.repository instanceof BookshelfRecommendationRepository);
-    assert.equal(root.service.clickEventRepository.Model, models.RecommendationClickEvent);
-    assert.ok(root.service.service instanceof RecommendationService);
-    sinon.assert.calledOnce(addMapper);
-    sinon.assert.calledOnce(subscribe);
-    sinon.assert.calledOnce(outgoingInit);
-  });
+  }
 
   it('maps recommendation well-known URLs to their site for mentions metadata', async function () {
     await root.init();
@@ -288,12 +324,12 @@ describe('Recommendations service root', function () {
     assert.equal(source.href, 'https://other.example/blog/.well-known/recommendations.json?ref=a');
   });
 
-  it('emails a verified recommendation mention through the wrapper’s current incoming service', async function () {
+  it('emails a verified recommendation mention through the published incoming service', async function () {
     await root.init();
     const handler = installedHandler();
-    const sendRecommendationEmail = sandbox.stub().resolves();
-    // The callback reads the wrapper field when the event fires, not the service it had at init.
-    root.service.incomingRecommendationService = { sendRecommendationEmail };
+    const sendRecommendationEmail = sandbox
+      .stub(root.service.incomingRecommendationController.service, 'sendRecommendationEmail')
+      .resolves();
     const received = mention(RECOMMENDATION_SOURCE);
 
     await handler({ data: { mention: received } });
@@ -312,8 +348,9 @@ describe('Recommendations service root', function () {
     it(`does not email ${description}`, async function () {
       await root.init();
       const handler = installedHandler();
-      const sendRecommendationEmail = sandbox.stub().resolves();
-      root.service.incomingRecommendationService = { sendRecommendationEmail };
+      const sendRecommendationEmail = sandbox
+        .stub(root.service.incomingRecommendationController.service, 'sendRecommendationEmail')
+        .resolves();
 
       await handler({ data: { mention: ignored } });
 
@@ -340,9 +377,11 @@ describe('Recommendations service root', function () {
       sandbox.define(staff, 'api', staffApi);
     }
     const send = sandbox.stub(mail.GhostMailer.prototype, 'send').resolves({});
-    const getByUrl = sandbox.stub(root.service.repository, 'getByUrl').resolves(null);
+    const getByUrl = sandbox
+      .stub(root.service.controller.service.repository, 'getByUrl')
+      .resolves(null);
 
-    await root.service.incomingRecommendationService.sendRecommendationEmail(
+    await root.service.incomingRecommendationController.service.sendRecommendationEmail(
       mention(RECOMMENDATION_SOURCE),
     );
 
@@ -393,9 +432,9 @@ describe('Recommendations service root', function () {
       meta: { pagination: { page: 2, limit: 1, pages: 2, total: 2, next: null, prev: 1 } },
     });
     const getByUrl = sandbox
-      .stub(root.service.repository, 'getByUrl')
-      .callsFake(async (url: unknown) =>
-        (url as URL).href === 'https://third.example/' ? { plain: { id: 'existing' } } : null,
+      .stub(root.service.controller.service.repository, 'getByUrl')
+      .callsFake(async (url: URL) =>
+        url.href === 'https://third.example/' ? ({ plain: { id: 'existing' } } as never) : null,
       );
 
     const result = await root.service.incomingRecommendationController.browse({
@@ -454,7 +493,7 @@ describe('Recommendations service root', function () {
       },
     });
 
-    const metadata = await root.service.service.recommendationMetadataService.fetch(
+    const metadata = await root.service.controller.service.recommendationMetadataService.fetch(
       new URL('https://other.example/'),
     );
 
@@ -475,7 +514,7 @@ describe('Recommendations service root', function () {
   describe('recommendations_enabled setting', function () {
     it('reads the current setting synchronously on every call as a string', async function () {
       await root.init();
-      const enabler = root.service.service.recommendationEnablerService;
+      const enabler = root.service.controller.service.recommendationEnablerService;
 
       assert.equal(enabler.getSetting(), 'false');
 
@@ -493,7 +532,7 @@ describe('Recommendations service root', function () {
       let settled = false;
 
       try {
-        const result = root.service.service.recommendationEnablerService
+        const result = root.service.controller.service.recommendationEnablerService
           .setSetting('true')
           .then(() => {
             settled = true;
