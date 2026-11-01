@@ -29,19 +29,18 @@ function cardTemplate({node}: {node: ToggleNodeData}) {
 }
 
 function emailCardTemplate({node}: {node: ToggleNodeData}) {
+    // Keep user content out of the whitespace-compacting html tag.
     return (
         html`
         <table cellspacing="0" cellpadding="0" border="0" width="100%" class="kg-toggle-card">
             <tbody>
                 <tr>
                     <td class="kg-toggle-heading">
-                        <h4>${node.heading}</h4>
+                        <h4>` + node.heading + html`</h4>
                     </td>
                 </tr>
                 <tr>
-                    <td class="kg-toggle-content">
-                        ${node.content}
-                    </td>
+                    <td class="kg-toggle-content">` + node.content + html`</td>
                 </tr>
             </tbody>
         </table>
