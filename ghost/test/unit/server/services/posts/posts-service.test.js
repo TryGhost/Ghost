@@ -310,7 +310,7 @@ describe('Posts Service', function () {
         Post: {
           findOne: sinon.stub(),
           edit: sinon.stub(),
-          transaction: sinon.stub().callsFake(async (save) => save(transacting)),
+          editTransaction: sinon.stub().callsFake(async (save) => save(transacting)),
         },
         Member: {
           findPage: sinon.stub(),
@@ -406,7 +406,7 @@ describe('Posts Service', function () {
 
     it('sends the email after the transaction commits and before responding', async function () {
       let committed = false;
-      mockModels.Post.transaction.callsFake(async (save) => {
+      mockModels.Post.editTransaction.callsFake(async (save) => {
         const result = await save(transacting);
         committed = true;
         return result;
@@ -442,7 +442,7 @@ describe('Posts Service', function () {
           options: { id: 'post-123', transacting: callerTransacting },
         });
 
-        sinon.assert.notCalled(mockModels.Post.transaction);
+        sinon.assert.notCalled(mockModels.Post.editTransaction);
         sinon.assert.calledOnceWithMatch(postEmailHandlerStub.createOrRetryEmail, sinon.match.any, {
           transacting: callerTransacting,
         });
