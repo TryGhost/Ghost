@@ -294,9 +294,15 @@ class OfferBookshelfRepository {
       if (options.transacting) {
         // Only dispatch the event after the transaction has finished
         // Because else the offer won't be committed to the database yet
-        options.transacting.executionPromise.then(() => {
-          DomainEvents.dispatch(event);
-        });
+        options.transacting.executionPromise.then(
+          () => {
+            DomainEvents.dispatch(event);
+          },
+          () => {
+            // Rolled back: the offer was never stored, so there is nothing to announce.
+            // The transaction's caller already receives the error.
+          },
+        );
       } else {
         DomainEvents.dispatch(event);
       }
