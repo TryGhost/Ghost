@@ -239,6 +239,8 @@ describe('Media inliner service root', function () {
     } finally {
       if (savedCodec) {
         require.cache[codecPath] = savedCodec;
+      } else {
+        delete require.cache[codecPath];
       }
     }
   });
