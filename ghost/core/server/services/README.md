@@ -110,6 +110,31 @@ roots. The rule covers static imports, `require()`, literal dynamic imports and
 re-exports. All implementation source inside a service is checked, including
 nested folders named `test` or `fixtures`.
 
+Some dependencies look like libraries but are treated as instances:
+
+- `@tryghost/domain-events` is a process-wide event bus. Roots inject it, and
+  the event classes they publish, as [comments](comments/index.ts) and
+  [users](users/index.ts) do.
+- Implementations don't import `fs`. A root that needs files passes a loader
+  limited to those files, like `readTemplate` in the comments root.
+- Lodash is allowed only as individual functions, such as `lodash/isEmpty`.
+  Plain JavaScript is often simpler.
+
+Require models, the database and other services inside the `create` callback
+rather than at module scope, so importing a root doesn't depend on how far boot
+has got. Keep each dependency's existing timing:
+
+- When a dependency is set up later in boot, pass a function that looks it up
+  on use and say why in a comment.
+  [Stripe Checkout config](stripe-checkout-config/index.ts) reaches Stripe,
+  tiers and members this way.
+- When a setting or config value is read on each use today, pass a function
+  rather than the value, as [member attribution](member-attribution/index.ts)
+  does for `outbound_link_tagging`. Capturing it in `create` changes when edits
+  take effect.
+- A dependency loaded with `require()` in a TypeScript root has no type. Keep
+  its type with `typeof import()`, as the users root does for post revisions.
+
 Type injected logging as `GhostLogger`, or a `Pick<GhostLogger, ...>` of the
 methods used, with `import type { GhostLogger } from '@tryghost/logging'`. In
 JSDoc, use `import('@tryghost/logging').GhostLogger`. Do not hand-write a logger
@@ -339,14 +364,46 @@ ready instance. Boot awaits the root's `init()`; consumers then read `.service`.
 The kernel guide describes the full contract, including concurrent calls and
 explicit retries after failure.
 
+### What `create` returns
+
+Return one ready instance. When a service is a set of objects built together,
+such as an API and its controller, return them as one object with a declared
+type, as [Stripe Checkout config](stripe-checkout-config/index.ts) does with
+`StripeCheckoutServices`.
+
+`.service` returns that same object for the life of the process, and consumers
+may hold on to it. Don't replace it or its members after `init()`.
+
+Keep the service's state on the instance. An extra that needs the ready
+instance reads it through the root's `service` getter, as
+[signing keys](signing-keys/index.ts) does, rather than keeping a second
+module variable with its own guard.
+
+### Startup work and boot order
+
+Await any work callers rely on before returning, such as loading data
+(`repository.init()` in [tiers](tiers/index.ts)) or applying a due key rotation
+(`check()` in signing keys).
+
+Initialize a root after everything its `create` callback reads. Say what it
+needs in a comment above `defineService` and keep that order in `boot.js`. For
+example, recommendations reads the Mentions root during `create`, so boot
+initializes Mentions first. Roots that don't depend on each other can start
+together.
+
+### Failed startup
+
 If startup fails partway through, the `create` callback must release resources
 it already acquired before passing the error back. The helper cannot remove the
 callback's listeners or close its connections. A retry runs the callback again,
 so resources left by the failed attempt could remain active alongside any new
 instance.
 
-For example, the [IndexNow callback](indexnow-ping/index.ts) removes any partially
-registered listeners before rethrowing a subscription error:
+The simplest approach is to acquire resources last, so nothing after them can
+fail. [Mentions](mentions/index.ts) starts listening for events as its final
+step. When that isn't possible, undo the partial work before rethrowing. The
+[IndexNow callback](indexnow-ping/index.ts) removes any partially registered
+listeners before rethrowing a subscription error:
 
 ```ts
 try {
