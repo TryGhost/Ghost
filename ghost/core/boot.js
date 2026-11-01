@@ -397,7 +397,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const mentionsService = require('./server/services/mentions').default;
   const tagsPublic = require('./server/services/tags-public').default;
   const postsPublic = require('./server/services/posts-public').default;
-  const mediaInliner = require('./server/services/media-inliner');
+  const mediaInliner = require('./server/services/media-inliner').default;
   const contentImport = require('./server/services/content-import');
   const donationService = require('./server/services/donations').default;
   const giftService = require('./server/services/gifts');
@@ -512,7 +512,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     jobsService,
     memberJobs,
     giftService: giftService.service,
-    mediaInliner: mediaInliner.getInstance(),
+    mediaInliner: mediaInliner.service,
     mentionsController: mentionsService.service.controller,
     mentionsSendingService: mentionsService.service.sendingService,
     membersService,

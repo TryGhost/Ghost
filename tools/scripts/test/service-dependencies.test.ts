@@ -273,6 +273,65 @@ it('allows the exact libraries required by Member Attribution without allowing s
   );
 });
 
+it('allows the exact libraries and image helpers required by Media inliner without allowing siblings', (t) => {
+  const approved = [
+    'mime-types',
+    'path',
+    'node:path',
+    'vm',
+    'node:vm',
+    '../../lib/image/image-content',
+    '../../lib/image/svg-sanitizer',
+  ];
+  const rejected = [
+    'mime-types/other',
+    'mime-types-extra',
+    'node:fs',
+    '../../lib/image/image-formats',
+    '../../lib/image/svg-sanitizer-extra',
+  ];
+  const f = fixture(t, {
+    [`${alpha}/approved.js`]: approved.map((name) => `require('${name}');`).join('\n'),
+    [`${alpha}/rejected.ts`]: rejected.map((name) => `import '${name}';`).join('\n'),
+    'ghost/core/server/lib/image/image-content.ts': 'export const isSvgExtension = () => false;',
+    'ghost/core/server/lib/image/svg-sanitizer.ts': 'export const sanitizeSvgBuffer = () => null;',
+    'ghost/core/server/lib/image/image-formats.ts': 'export const getImageFormat = () => null;',
+    'ghost/core/server/lib/image/svg-sanitizer-extra.ts': 'export {};',
+  });
+  for (const name of ['mime-types', 'mime-types-extra']) {
+    f.write(`node_modules/${name}/package.json`, JSON.stringify({ name, main: 'index.js' }));
+    f.write(`node_modules/${name}/index.js`, 'module.exports = {};');
+    f.write(`node_modules/${name}/other.js`, 'module.exports = {};');
+  }
+  const graph = f.graph();
+  // The bare and node: forms of a built-in resolve to one edge each.
+  assert.deepEqual(
+    edges(graph)
+      .filter(([from]) => from === `${alpha}/approved.js`)
+      .map(([, , to]) => to)
+      .sort(),
+    [
+      'ghost/core/server/lib/image/image-content.ts',
+      'ghost/core/server/lib/image/svg-sanitizer.ts',
+      'node_modules/mime-types/index.js',
+      'path',
+      'vm',
+    ],
+  );
+  assert.deepEqual(
+    violations(graph),
+    [
+      'node_modules/mime-types/other.js',
+      'node_modules/mime-types-extra/index.js',
+      'fs',
+      'ghost/core/server/lib/image/image-formats.ts',
+      'ghost/core/server/lib/image/svg-sanitizer-extra.ts',
+    ]
+      .map((to) => ['service-dependencies', `${alpha}/rejected.ts`, to])
+      .sort(),
+  );
+});
+
 it('allows the debug tracing library without allowing sibling packages', (t) => {
   const f = fixture(t, {
     [`${alpha}/approved.js`]:
