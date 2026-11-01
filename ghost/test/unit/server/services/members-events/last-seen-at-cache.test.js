@@ -5,12 +5,12 @@ const moment = require('moment-timezone');
 
 describe('LastSeenAtCache', function () {
   let clock;
-  beforeAll(function () {
-    clock = sinon.useFakeTimers();
-  });
 
+  // Tests that depend on the time install their own clock. Restore it after
+  // each test, so a shared clock cannot still be installed when one of them runs.
   afterEach(function () {
-    clock.restore();
+    clock?.restore();
+    clock = undefined;
   });
 
   describe('constructor', function () {
