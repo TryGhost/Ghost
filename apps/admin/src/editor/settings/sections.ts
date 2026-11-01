@@ -10,6 +10,7 @@ export const SETTINGS_SECTION_ORDER = [
   'authors',
   'template',
   'show-title-and-feature-image',
+  'comments-enabled',
   'featured',
   'post-history',
   'code-injection',
