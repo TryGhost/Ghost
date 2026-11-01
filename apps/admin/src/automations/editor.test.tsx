@@ -413,8 +413,7 @@ vi.mock('@xyflow/react', async () => {
 const automationDetail: AutomationDetail = {
   id: 'automation-id-1',
   slug: 'member-welcome-email-free',
-  trigger_tier_scope: 'free',
-  trigger_tier_ids: null,
+  trigger_rules: [{ trigger_type: 'free_signup', scope: null, product_id: null, direction: null }],
   name: 'Free member welcome flow',
   description: 'Welcome new free members.',
   status: 'active',
@@ -1719,7 +1718,14 @@ describe('AutomationEditor', () => {
           {
             ...automationDetail,
             slug: 'member-welcome-email-paid',
-            trigger_tier_scope: 'all_paid',
+            trigger_rules: [
+              {
+                trigger_type: 'paid_subscription_started',
+                scope: 'any_paid_tier',
+                product_id: null,
+                direction: null,
+              },
+            ],
             name: 'Paid member welcome flow',
           },
         ],
@@ -2098,8 +2104,7 @@ describe('AutomationEditor', () => {
             {
               ...automationDetail,
               status,
-              trigger_tier_scope: 'selected_paid',
-              trigger_tier_ids: [],
+              trigger_rules: [],
             },
           ],
         },

@@ -1,3 +1,4 @@
+import { scopeFromTriggerRules, getTriggerTierIds } from '@/automations/utils/trigger-rules';
 import '@xyflow/react/dist/style.css';
 import AddStepEdge, { type AddStepEdgeData } from './add-step-edge';
 import EmailContentModal from '@/automations/components/email-modal/email-content-modal';
@@ -243,8 +244,8 @@ const buildGraph = ({
       data: {
         trigger: {
           tierQuery,
-          scope: automation.trigger_tier_scope,
-          tierIds: automation.trigger_tier_ids ?? [],
+          scope: scopeFromTriggerRules(automation.trigger_rules),
+          tierIds: getTriggerTierIds(automation.trigger_rules),
           savedTierIds: savedTriggerTierIds,
           onUpdate: (trigger) => onChange({ ...automation, ...trigger }),
           tierSelection,
@@ -468,7 +469,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const [newStepId, setNewStepId] = useState<string | null>(null);
   const [emailModalMode, setEmailModalMode] = useState<EmailModalMode>('edit');
   const [deleteConfirmationActionId, setDeleteConfirmationActionId] = useState<string | null>(null);
-  const triggerTierScope = automation?.trigger_tier_scope;
+  const triggerTierScope = automation ? scopeFromTriggerRules(automation.trigger_rules) : undefined;
   let tiersEnabled: boolean;
   switch (triggerTierScope) {
     case 'all_paid':
@@ -476,7 +477,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       tiersEnabled = true;
       break;
     case 'free':
-    case null:
     case undefined:
       tiersEnabled = false;
       break;
@@ -873,8 +873,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         selectedRunId={selectedRunId}
         selectedTab={sidebar.tab === 'unknown' ? 'settings' : sidebar.tab}
         tiers={tierData?.tiers ?? []}
-        triggerTierIds={automation.trigger_tier_ids ?? []}
-        triggerTierScope={automation.trigger_tier_scope}
+        triggerTierIds={getTriggerTierIds(automation.trigger_rules)}
+        triggerTierScope={scopeFromTriggerRules(automation.trigger_rules)}
         onDescriptionChange={(description) => onChange({ ...automation, description })}
         onOpenChange={setAutomationSidebarOpen}
         onSelectRun={handleSelectRun}

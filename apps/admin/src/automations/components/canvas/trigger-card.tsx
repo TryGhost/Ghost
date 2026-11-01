@@ -1,3 +1,4 @@
+import { signupTriggerRules, type SignupTriggerScope } from '@/automations/utils/trigger-rules';
 import React, { useId } from 'react';
 import type { AutomationTrigger } from '@tryghost/admin-x-framework/api/automations';
 import type { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
@@ -20,7 +21,7 @@ import { isTierSelectionEmpty, updateFromSelection } from '@/automations/utils/t
 
 export type TriggerData = {
   tierQuery: Pick<ReturnType<typeof useBrowseTiers>, 'data' | 'isLoading' | 'isError' | 'refetch'>;
-  scope: AutomationTrigger['trigger_tier_scope'];
+  scope: SignupTriggerScope;
   tierIds: readonly string[];
   savedTierIds: readonly string[];
   onUpdate: (trigger: AutomationTrigger) => void;
@@ -70,8 +71,7 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
   });
   const updateTiers = (tierIds: string[]) =>
     trigger.onUpdate({
-      trigger_tier_scope: 'selected_paid',
-      trigger_tier_ids: tierIds,
+      trigger_rules: signupTriggerRules('selected_paid', tierIds),
     });
 
   return (
@@ -80,10 +80,10 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
         Triggered when a new or free member starts:
       </Label>
       <Select
-        value={trigger.scope ?? undefined}
+        value={trigger.scope}
         onValueChange={(scope) => {
           if (scope === 'all_paid') {
-            trigger.onUpdate({ trigger_tier_scope: scope, trigger_tier_ids: null });
+            trigger.onUpdate({ trigger_rules: signupTriggerRules(scope) });
           } else if (scope === 'selected_paid') {
             updateTiers([]);
           }
@@ -227,7 +227,6 @@ function getTriggerPresentation(trigger: TriggerData, errorMessage?: string) {
         content: <PaidTierPicker errorMessage={errorMessage} trigger={trigger} />,
       };
     case 'free':
-    case null:
       return {
         title: 'Free member signed up',
         Icon: LucideIcon.UserPlus,

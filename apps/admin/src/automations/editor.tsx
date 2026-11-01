@@ -1,3 +1,4 @@
+import { comparableTriggerRules, getTriggerTierIds } from './utils/trigger-rules';
 import { HostLimitError } from '@tryghost/admin-x-framework/errors';
 import { useBrowseConfig, upgradeRoute } from '@tryghost/admin-x-framework/api/config';
 import { LimitModalContent } from '@/settings/api';
@@ -48,8 +49,7 @@ const editableSlice = (automation: AutomationDetail) => ({
   name: automation.name,
   description: automation.description,
   status: automation.status,
-  trigger_tier_scope: automation.trigger_tier_scope,
-  trigger_tier_ids: automation.trigger_tier_ids ? [...automation.trigger_tier_ids].sort() : null,
+  trigger_rules: comparableTriggerRules(automation.trigger_rules),
   actions: automation.actions,
   edges: automation.edges,
 });
@@ -63,7 +63,7 @@ const getTriggerErrors = (
       ? { [TRIGGER_CANVAS_ID]: 'Select at least one tier.' }
       : {};
   }
-  return automation.trigger_tier_scope === 'selected_paid' && !automation.trigger_tier_ids.length
+  return !automation.trigger_rules.length
     ? { [TRIGGER_CANVAS_ID]: 'Select at least one paid tier.' }
     : {};
 };
@@ -573,7 +573,9 @@ const AutomationEditorContent: React.FC<{
         isEmailNavigationBlocked={isEmailNavigationBlocked}
         isError={isEditorError}
         isLoading={isEditorLoading}
-        savedTriggerTierIds={savedAutomation?.trigger_tier_ids ?? []}
+        savedTriggerTierIds={
+          savedAutomation ? getTriggerTierIds(savedAutomation.trigger_rules) : []
+        }
         selectedRunId={selectedRunId}
         tierSelection={triggerTierSelection}
         onChange={onDraftChange}
