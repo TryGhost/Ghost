@@ -117,7 +117,7 @@ describe('createManifestLoader', function () {
       await loadManifest(MANIFEST_URL);
 
       assert.deepEqual(fetchFromApp.mock.calls, [
-        [MANIFEST_URL, { accept: 'application/json', maxBytes: 64 * 1024 }],
+        [MANIFEST_URL, { maxBytes: 64 * 1024, headers: { accept: 'application/json' } }],
       ]);
     });
 
@@ -223,6 +223,22 @@ describe('createManifestLoader', function () {
       });
       // Logged like every other unreachable manifest, so an operator can tell why.
       assert.deepEqual(warn.args, [
+        [`Could not load the app manifest at ${MANIFEST_URL}`],
+        [context],
+      ]);
+    });
+
+    it('reports a refused redirect as unreachable, with its status', async function () {
+      const { loadManifest, warn } = setup({
+        app: failing({ reason: 'redirect_refused', status: 302 }),
+      });
+      const context = `${MANIFEST_URL} answered with HTTP 302`;
+
+      await assert.rejects(loadManifest(MANIFEST_URL), {
+        code: 'APP_MANIFEST_UNREACHABLE',
+        context,
+      });
+      assert.deepEqual(warn.mock.calls, [
         [`Could not load the app manifest at ${MANIFEST_URL}`],
         [context],
       ]);

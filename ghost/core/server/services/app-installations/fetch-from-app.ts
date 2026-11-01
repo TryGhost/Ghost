@@ -12,8 +12,11 @@ const MAX_REDIRECTS = 3;
  *   the URL isn't one. `status` is the status it answered with, and the only part that may
  *   be shown, so a review can't be used to probe the server's network; `cause` is for the
  *   logs, so an operator can still tell a timeout from a certificate problem.
- * - `location_not_url`: a redirect whose Location isn't a URL.
- * - `redirected`: a redirect to another host, which is never followed.
+ * - `location_not_url`: with `redirect: 'follow'`, a redirect whose Location isn't a URL.
+ * - `redirected`: with `redirect: 'follow'`, a redirect to another host, which is never
+ *   followed.
+ * - `redirect_refused`: with `redirect: 'error'`, any 3xx response, wherever its Location
+ *   points. Nothing is fetched from the Location.
  * - `too_large`: a 2xx response larger than `maxBytes`. A large error page is `unreachable`
  *   instead, with its status.
  */
@@ -21,6 +24,7 @@ export type AppFetchFailure =
   | { reason: 'unreachable'; status?: number; cause: unknown }
   | { reason: 'location_not_url'; status: number }
   | { reason: 'redirected'; host: string }
+  | { reason: 'redirect_refused'; status: number }
   | { reason: 'too_large' };
 
 export type AppFetchResult =
@@ -32,10 +36,21 @@ export type AppFetchResult =
     }
   | { success: false; failure: AppFetchFailure };
 
-export type FetchFromApp = (
-  url: string,
-  options: { accept: string; maxBytes: number },
-) => Promise<AppFetchResult>;
+/** Shaped like fetch's options, with only what fetching from an app needs. */
+export interface AppFetchOptions {
+  maxBytes: number;
+  method?: 'GET' | 'POST';
+  body?: string;
+  // Only these two, so a caller can't replace the Host header the localhost alias sets.
+  headers: { accept: string; 'content-type'?: string };
+  /**
+   * `follow`, the default, follows redirects on the same host only, unlike fetch, which
+   * follows them anywhere. `error` refuses every redirect as `redirect_refused`.
+   */
+  redirect?: 'follow' | 'error';
+}
+
+export type FetchFromApp = (url: string, options: AppFetchOptions) => Promise<AppFetchResult>;
 
 const FailedRequest = z.object({
   code: z.unknown(),
@@ -64,6 +79,7 @@ function statusOf(err: unknown, { stoppedDownload }: { stoppedDownload: boolean 
 }
 
 const isSuccess = (status: number) => status >= 200 && status < 300;
+const isRedirect = (status: number) => status >= 300 && status < 400;
 
 /** A redirect may stay on the host it started on, or move it from HTTP to HTTPS. */
 function staysOnHost(from: URL, to: URL): boolean {
@@ -99,7 +115,10 @@ export function createAppFetcher({
   request: Got;
   getLocalhostAlias: () => string | null;
 }): FetchFromApp {
-  return async function fetchFromApp(url, { accept, maxBytes }) {
+  return async function fetchFromApp(
+    url,
+    { maxBytes, method = 'GET', body, headers, redirect = 'follow' },
+  ) {
     const start = URL.parse(url);
     if (!start) {
       return {
@@ -147,7 +166,9 @@ export function createAppFetcher({
     const abort = new AbortController();
 
     const pending = request(fetchUrl(current), {
-      headers: { accept, ...hostHeader(current) },
+      method,
+      body,
+      headers: { ...headers, ...hostHeader(current) },
       retry: { limit: 0 },
       maxRedirects: MAX_REDIRECTS,
       // One deadline for the whole fetch, redirects included. got's own timeout restarts
@@ -163,18 +184,24 @@ export function createAppFetcher({
       // is never followed at any status, so the rule holds whichever statuses got follows.
       // Only a 3xx is reported as a refused redirect; a Location on a successful response
       // or an error page is ignored.
-      followRedirect: (response) => {
-        const target = locationOf(response);
-        if (target === undefined || (target && staysOnHost(current, target))) {
-          return true;
-        }
-        if (response.statusCode >= 300 && response.statusCode < 400) {
-          refusedRedirect = target
-            ? { reason: 'redirected', host: target.host }
-            : { reason: 'location_not_url', status: response.statusCode };
-        }
-        return false;
-      },
+      //
+      // With `redirect: 'error'`, got follows nothing and resolves a 3xx, which is refused
+      // below.
+      followRedirect:
+        redirect === 'error'
+          ? false
+          : (response) => {
+              const target = locationOf(response);
+              if (target === undefined || (target && staysOnHost(current, target))) {
+                return true;
+              }
+              if (isRedirect(response.statusCode)) {
+                refusedRedirect = target
+                  ? { reason: 'redirected', host: target.host }
+                  : { reason: 'location_not_url', status: response.statusCode };
+              }
+              return false;
+            },
       hooks: {
         beforeRedirect: [
           (options, response) => {
@@ -219,6 +246,9 @@ export function createAppFetcher({
       // reported with its status. The status isn't known until the headers arrive, so the
       // download is stopped first and the two cases are told apart here.
       const answered = statusOf(err, { stoppedDownload: tooLarge });
+      if (redirect === 'error' && answered !== undefined && isRedirect(answered)) {
+        return { success: false, failure: { reason: 'redirect_refused', status: answered } };
+      }
       if (tooLarge && (answered === undefined || isSuccess(answered))) {
         return { success: false, failure: { reason: 'too_large' } };
       }
@@ -226,6 +256,9 @@ export function createAppFetcher({
     }
     if (refusedRedirect) {
       return { success: false, failure: refusedRedirect };
+    }
+    if (redirect === 'error' && isRedirect(status)) {
+      return { success: false, failure: { reason: 'redirect_refused', status } };
     }
     // got resolves a 304 rather than failing it, but it is no more a read than a 404.
     if (!isSuccess(status)) {

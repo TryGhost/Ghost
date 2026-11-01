@@ -21,7 +21,10 @@ type FetchManifest = (manifestUrl: string) => Promise<FetchedManifest>;
 // still tell a timeout from a certificate problem.
 function unreachable(
   manifestUrl: string,
-  failure: Extract<AppFetchFailure, { reason: 'unreachable' | 'location_not_url' }>,
+  failure: Extract<
+    AppFetchFailure,
+    { reason: 'unreachable' | 'location_not_url' | 'redirect_refused' }
+  >,
   logging: Pick<GhostLogger, 'warn'>,
 ): errors.ValidationError {
   let context = manifestUrl;
@@ -31,7 +34,7 @@ function unreachable(
     context = `${manifestUrl} answered with HTTP ${failure.status}`;
   }
   logging.warn(`Could not load the app manifest at ${manifestUrl}`);
-  // A Location that isn't a URL has no cause beyond the answer, so the answer is logged.
+  // A refused redirect has no cause beyond the answer, so the answer is logged.
   logging.warn(failure.reason === 'unreachable' ? failure.cause : context);
   return new errors.ValidationError({
     message: 'Could not load the app’s manifest.',
@@ -48,6 +51,7 @@ function manifestError(
   switch (failure.reason) {
     case 'unreachable':
     case 'location_not_url':
+    case 'redirect_refused':
       return unreachable(manifestUrl, failure, logging);
     case 'redirected':
       return new errors.ValidationError({
@@ -78,8 +82,8 @@ export function createManifestFetcher({
   return async function fetchManifest(manifestUrl) {
     // The text is decoded as UTF-8, which is what JSON should use.
     const fetched = await fetchFromApp(manifestUrl, {
-      accept: 'application/json',
       maxBytes: MANIFEST_MAX_BYTES,
+      headers: { accept: 'application/json' },
     });
     if (!fetched.success) {
       throw manifestError(manifestUrl, fetched.failure, logging);
