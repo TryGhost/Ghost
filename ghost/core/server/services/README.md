@@ -195,26 +195,30 @@ Do not store report totals in the inventory or infer kernel requirements from
 violation counts. Shared primitives need a demonstrated application-independent
 contract; feature-specific helpers stay with their owners.
 
-`disposition` records whether the entry is an application-owned instance whose
-lifecycle boot should manage, not where it will finally live: `retain` is a
-boot-owned service, `relocate` is supporting code that is not a service and
-leaves this directory as ordinary code, and `review` leaves that question
-unresolved. It does not record completed work. Every root is expected to move
-into its owning domain or shared module eventually; that move is separate from
-this migration, which adopts the initializer in place. A `retain` entry keeps
-its dependency, readiness and lifetime contracts wherever it later moves.
+`disposition` records what this migration does with the entry:
+
+- `migrate` adopts the boot-owned initializer in place.
+- `relocate` moves code that clearly is not a service and cannot be migrated
+  out of this directory. The entry is removed once it moves.
+- `split` separates parts with different owners. Its notes name each part's
+  owner, which part remains a service, and whether the split must come before
+  the initializer migration.
+- `review` leaves the decision open.
+
+It does not record completed work. Every root is expected to move into a domain
+eventually; that is separate from this migration. A migrated service keeps its
+dependency, readiness and lifetime contracts wherever it later moves.
 
 Base disposition on the capability's runtime responsibilities. Per-call
 construction, no initializer, a single consumer, or use of another service does
-not by itself make a root supporting code. If an ownership or split decision
-must come before the initializer migration, use `review` and keep
-initialization and dependency work applicable. Use `notes` to record intended
-ownership changes and distinguish them from the in-place migration assessment.
+not by itself make a root supporting code. An uncertain long-term home is not a
+reason to relocate: code that needs lifecycle management and has no other owner
+yet is a `migrate`. If the decision is still open, use `review` and keep
+initialization and dependency work applicable.
 
-`futureHome` optionally suggests a later destination, relative to `ghost`, for
-a boot-owned root that is not really a standalone service, such as a cache
-binding or credential store belonging to its consumer. It is a suggestion for
-work after this migration, not a planned move or an approved destination.
+`futureHome` optionally suggests where a `migrate` entry might live after this
+migration, relative to `ghost`, when it is not really a standalone service. It
+is a suggestion, not a planned move, and does not block the migration.
 
 Each entry records its intended ownership and audit status. `pending` means
 the contract audit has not started; `auditing` means evidence is incomplete;

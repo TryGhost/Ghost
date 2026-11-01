@@ -19,7 +19,7 @@ const inventorySchema = z.object({
     z
       .object({
         migrated: z.boolean().optional(),
-        disposition: z.enum(['retain', 'relocate', 'review']),
+        disposition: z.enum(['migrate', 'relocate', 'split', 'review']),
         futureHome: z.string().trim().min(1).optional(),
         notes: z.string().optional(),
         migration: assessment.extend({
@@ -81,8 +81,9 @@ function migrationStatus(entry?: Entry): MigrationStatus {
 }
 
 const ownership = {
-  retain: 'Boot-owned service',
-  relocate: 'Not a service',
+  migrate: 'Migrate',
+  relocate: 'Relocate',
+  split: 'Split',
   review: 'Undecided',
 } as const;
 
@@ -177,9 +178,9 @@ function list(rows: Service[]) {
 const groups: { name: string; label: string; matches: (row: Service) => boolean }[] = [
   { name: 'catalogued', label: 'Catalogued entries', matches: (row) => !!row.entry },
   {
-    name: 'retained',
-    label: 'Boot-owned service',
-    matches: (row) => row.entry?.disposition === 'retain',
+    name: 'migrate',
+    label: 'Migrate',
+    matches: (row) => row.entry?.disposition === 'migrate',
   },
   { name: 'migrated', label: 'Migrated', matches: (row) => row.migrationStatus === 'Migrated' },
   {
@@ -188,47 +189,42 @@ const groups: { name: string; label: string; matches: (row: Service) => boolean 
     matches: (row) => !!row.entry && !row.entry.migrated,
   },
   {
-    name: 'unmigrated-retained',
-    label: 'Unmigrated — boot-owned service',
-    matches: (row) => row.entry?.disposition === 'retain' && !row.entry.migrated,
+    name: 'to-migrate',
+    label: 'Left to migrate',
+    matches: (row) => row.entry?.disposition === 'migrate' && !row.entry.migrated,
   },
   {
-    name: 'relocation',
-    label: 'Not a service',
+    name: 'relocate',
+    label: 'Relocate',
     matches: (row) => row.entry?.disposition === 'relocate',
   },
   {
-    name: 'ownership-undecided',
+    name: 'split',
+    label: 'Split',
+    matches: (row) => row.entry?.disposition === 'split',
+  },
+  {
+    name: 'undecided',
     label: 'Undecided',
     matches: (row) => row.entry?.disposition === 'review',
-  },
-  {
-    name: 'migrated-retained',
-    label: 'Migrated — boot-owned service',
-    matches: (row) => row.entry?.disposition === 'retain' && !!row.entry.migrated,
-  },
-  {
-    name: 'migrated-relocation',
-    label: 'Migrated — Not a service',
-    matches: (row) => row.entry?.disposition === 'relocate' && !!row.entry.migrated,
   },
   {
     name: 'needs-preparation',
     label: 'Needs preparation',
     matches: (row) =>
-      row.entry?.disposition === 'retain' && row.migrationStatus === 'Needs preparation',
+      row.entry?.disposition === 'migrate' && row.migrationStatus === 'Needs preparation',
   },
   {
     name: 'straightforward',
     label: 'Straightforward migrations',
     matches: (row) =>
-      row.entry?.disposition === 'retain' && row.migrationStatus === 'Straightforward',
+      row.entry?.disposition === 'migrate' && row.migrationStatus === 'Straightforward',
   },
   {
     name: 'straightforward-with-violations',
     label: 'Straightforward — dependency violations',
     matches: (row) =>
-      row.entry?.disposition === 'retain' &&
+      row.entry?.disposition === 'migrate' &&
       row.migrationStatus === 'Straightforward' &&
       row.findings.length > 0,
   },
@@ -236,7 +232,7 @@ const groups: { name: string; label: string; matches: (row: Service) => boolean 
     name: 'straightforward-clear',
     label: 'Straightforward — no dependency violations',
     matches: (row) =>
-      row.entry?.disposition === 'retain' &&
+      row.entry?.disposition === 'migrate' &&
       row.migrationStatus === 'Straightforward' &&
       row.analyzed &&
       !row.findings.length,
@@ -247,10 +243,10 @@ const groups: { name: string; label: string; matches: (row: Service) => boolean 
     matches: (row) => !!row.entry && !row.entry.migrated && row.findings.length > 0,
   },
   {
-    name: 'unmigrated-retained-with-violations',
-    label: 'Unmigrated — boot-owned service with dependency violations',
+    name: 'to-migrate-with-violations',
+    label: 'Left to migrate with dependency violations',
     matches: (row) =>
-      row.entry?.disposition === 'retain' && !row.entry.migrated && row.findings.length > 0,
+      row.entry?.disposition === 'migrate' && !row.entry.migrated && row.findings.length > 0,
   },
   {
     name: 'migrated-with-violations',

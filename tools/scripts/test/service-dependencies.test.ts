@@ -32,8 +32,8 @@ function fixture(t: TestContext, files: Record<string, string>) {
     ),
     [`${services}/service-inventory.yaml`]: JSON.stringify({
       services: {
-        alpha: { kind: 'directory', disposition: 'retain', migrated: true },
-        legacy: { kind: 'directory', disposition: 'retain' },
+        alpha: { kind: 'directory', disposition: 'migrate', migrated: true },
+        legacy: { kind: 'directory', disposition: 'migrate' },
       },
     }),
     [config]: 'export const enabled = true; export interface Config {}',
@@ -118,10 +118,10 @@ it('enforces migrated services and reports all services through native Markdown 
       `${services}/service-inventory.yaml`,
       JSON.stringify({
         services: {
-          alpha: { kind: 'directory', disposition: 'retain' },
+          alpha: { kind: 'directory', disposition: 'migrate' },
           legacy: {
             kind: 'directory',
-            disposition: 'retain',
+            disposition: 'migrate',
             ...(migrated ? { migrated: true } : {}),
           },
         },

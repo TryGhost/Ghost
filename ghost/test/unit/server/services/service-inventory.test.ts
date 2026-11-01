@@ -59,7 +59,7 @@ const extraSchema = z
 const entry = z
   .object({
     kind: z.enum(['directory', 'file']),
-    disposition: z.enum(['retain', 'relocate', 'review']),
+    disposition: z.enum(['migrate', 'relocate', 'split', 'review']),
     futureHome: description.optional(),
     status: z.enum(['pending', 'auditing', 'audited']),
     migrated: z.literal(true).optional(),
@@ -228,7 +228,19 @@ describe('service migration inventory', function () {
           'An open model question requires a complex migration assessment',
         );
       }
+      if (service.futureHome) {
+        assert.equal(
+          service.disposition,
+          'migrate',
+          'Only entries marked for migration can suggest a future home',
+        );
+      }
       if (service.migrated) {
+        assert.notEqual(
+          service.disposition,
+          'relocate',
+          'A migrated service cannot be marked for relocation',
+        );
         assert.notEqual(
           service.migration.complexity,
           'not-applicable',
