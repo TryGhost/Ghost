@@ -10050,8 +10050,8 @@ services:
           undefined redirectManager; afterward it returns that manager's bound handler. API
           methods are async and receiver-dependent, returning DTOs, arrays or null for absent
           offers. Deep modules expose constructible implementation/value classes and event
-          identities. There is no reset/shutdown/readiness API. Domain/API tests exercise deep
-          implementations; they do not pin root shape, unbound use or pre-init behavior.
+          identities. There is no reset/shutdown/readiness API. Root units pin the shape and the
+          pre-init throw; consumer units pin per-request endpoint reads with their receivers.
         sources:
           - core/server/services/offers/index.js
           - core/server/services/offers/service.js
@@ -10060,6 +10060,8 @@ services:
           - core/server/services/offers/application/offer-mapper.ts
           - core/server/web/shared/dynamic-redirect-manager.js
         tests:
+          - test/unit/server/services/offers/index.test.ts
+          - test/unit/server/services/offers/consumers.test.ts
           - test/unit/server/services/offers/application/offers-api.test.js
           - test/unit/server/services/offers/domain/models/offer.test.js
       construction:
@@ -10070,13 +10072,15 @@ services:
           init. That module first subscribes to two offer events, then loads existing offers
           and adds temporary redirects, including archived offers. Boot is the only production
           root init caller found. No idempotency guard, shared pending promise or rollback
-          protects concurrent/repeated construction. These publication details are source-only.
+          protects concurrent/repeated construction. Root units pin publication before the load,
+          subscription order, the unfiltered load and rebuilding on each init.
         sources:
           - core/server/services/offers/service.js
           - core/server/services/offers/offers-module.js
           - core/server/services/offers/offer-bookshelf-repository.js
           - core/boot.js
-        tests: []
+        tests:
+          - test/unit/server/services/offers/index.test.ts
       consumers:
         summary: >-
           Admin and Content endpoints retain the root and dereference api per request; frontend
@@ -10087,7 +10091,11 @@ services:
           Admin/Content HTTP tests pin create/read/edit/archive, validation and projection; members
           tests cover availability
           and discount rules with Stripe mocked. The bulk-redemption integration constructs its
-          own API. No test found pins root replacement or offer-event-to-frontend redirect wiring.
+          own API. Units pin per-request endpoint reads, the site app reading the middleware once
+          at setup, Members receiving the API value at construction, and offer-event-to-redirect
+          wiring through a real redirect manager over faked models. A booted frontend test pins
+          startup rows, archived offers, query strings and Admin API create/code-change redirects
+          through the mounted site app and the database.
         sources:
           - core/server/api/endpoints/offers.js
           - core/server/api/endpoints/offers-public.js
@@ -10099,6 +10107,9 @@ services:
           - core/server/services/members/members-api/repositories/member-repository.js
           - core/server/services/members/members-api/controllers/router-controller.js
         tests:
+          - test/unit/server/services/offers/consumers.test.ts
+          - test/unit/server/services/offers/index.test.ts
+          - test/e2e-frontend/offer-redirects.test.ts
           - test/e2e-api/admin/offers.test.js
           - test/e2e-api/content/offers.test.js
           - test/e2e-api/members/member-offers.test.js
@@ -10109,21 +10120,25 @@ services:
           mounting, members composition and readiness. This runs even with frontend disabled.
           The exported API can already be used while initial repository loading is pending;
           external callers receive no readiness guard. Boot propagates init rejection, while
-          already-published API/managers/subscriptions remain. Current HTTP tests use completed
-          boot; there are no pending-load, rejected-load or partial-publication lifecycle tests.
+          already-published API/managers/subscriptions remain. Units pin the frontend phase
+          awaiting offers after themes, the API published during a pending load and a rejected
+          load leaving the API and subscriptions in place.
         sources:
           - core/boot.js
           - core/server/services/offers/service.js
           - core/server/services/offers/offers-module.js
           - core/frontend/web/site.js
         tests:
+          - test/unit/boot/init-services-for-frontend.test.ts
+          - test/unit/server/services/offers/index.test.ts
           - test/e2e-api/admin/offers.test.js
           - test/e2e-api/content/offers.test.js
       lifetime:
         summary: >-
           Re-init replaces published API/manager, but mounted middleware and members collaborators
           retain earlier objects. Each old OffersModule remains reachable through its event
-          listeners, so later events update old and new redirect maps. Rows/redemptions persist
+          listeners, so later events update old and new redirect maps, as root units pin.
+          Rows/redemptions persist
           independently; API reads query afresh with no root cache or operation serialization.
           Code-change events remove the old redirect and add the new one; archiving has no
           redirect-removal event. Transaction-scoped uniqueness checks and DB unique name/code/
@@ -10139,6 +10154,7 @@ services:
           - core/frontend/web/site.js
           - core/server/services/members/api.js
         tests:
+          - test/unit/server/services/offers/index.test.ts
           - test/e2e-api/admin/offers.test.js
       configuration:
         summary: >-
@@ -10150,7 +10166,9 @@ services:
           and maps status to active; availability additionally filters tier/cadence/type/redemptions.
           Unit and HTTP tests cover these policies and DTO boundaries. Real repository tests
           pin status/type mapping, redemption counts and last-redeemed values, not same-instance root
-          reconfiguration. Config replacement in tests is not production hot reload.
+          reconfiguration. Units pin the 302/max-age zero response, query strings, the per-request
+          subdirectory and the status/redemption_type transform. Config replacement in tests is
+          not production hot reload.
         sources:
           - core/server/services/offers/service.js
           - core/server/web/shared/dynamic-redirect-manager.js
@@ -10161,6 +10179,8 @@ services:
           - core/server/services/offers/offer-bookshelf-repository.js
           - core/shared/config/validated.ts
         tests:
+          - test/unit/server/services/offers/index.test.ts
+          - test/unit/server/services/offers/offer-bookshelf-repository.test.ts
           - test/unit/server/services/offers/domain/models/offer.test.js
           - test/unit/server/services/offers/application/offers-api.test.js
           - test/e2e-api/admin/offers.test.js
@@ -10174,9 +10194,10 @@ services:
           event dispatch to transaction.executionPromise without awaiting it or handling rejection;
           nontransactional save dispatches immediately. Subscriber work, including payment-owned
           Stripe calls and coupon-ID persistence, is not awaited by API success. There is no
-          unsubscribe or pending-work drain. Tests with fake transactions do not prove commit/
-          rollback delivery; the members redemption case proves a row exists inside its real
-          transaction, not offer-event ordering or provider rollback.
+          unsubscribe or pending-work drain. A real-database API test pins created-event dispatch
+          after commit, and a repository unit pins that no rejection handler is attached; rollback
+          delivery is not exercised with a real transaction. The members redemption case proves a
+          row exists inside its real transaction, not provider rollback.
         sources:
           - core/server/services/offers/offers-module.js
           - core/server/services/offers/offer-bookshelf-repository.js
@@ -10186,6 +10207,8 @@ services:
           - core/server/ghost-server.ts
           - package.json
         tests:
+          - test/unit/server/services/offers/offer-bookshelf-repository.test.ts
+          - test/integration/services/offers-api.test.js
           - test/unit/server/services/offers/application/offers-api.test.js
           - test/e2e-api/members/member-offers.test.js
       failures:
@@ -10193,14 +10216,15 @@ services:
           Repository model/query failures normally propagate, while domain reconstruction errors
           log/report and yield null, so lists/startup omit malformed offers and reads can appear
           absent. A real repository test pins omission/logging of a signup offer with a missing
-          product, not every malformed row or startup/read fallback. Count/last-redemption queries
+          product; units add its Sentry report, the direct-read null and its omission at startup,
+          not every malformed row. Count/last-redemption queries
           run outside that catch. API validation rejects;
           HTTP read/edit translates absent results to 404. Coupon import catches duplicate-key
           save errors, rereads the coupon offer and returns it or throws a logged InternalServerError;
           other save failures escape. Unit fakes pin these branches, not a real database race.
           Redirect callback failures are caught by DomainEvents; failed startup does not undo
-          listeners/maps. Partial init, post-commit failures and failed rollback delivery remain
-          source-only; successful HTTP create is not proof of coupon provisioning completion.
+          listeners/maps, as root units pin. Post-commit failures and failed rollback delivery
+          remain source-only; successful HTTP create is not proof of coupon provisioning completion.
         sources:
           - core/server/services/offers/service.js
           - core/server/services/offers/offers-module.js
@@ -10211,22 +10235,25 @@ services:
           - core/server/services/members/members-api/services/payments-service.js
           - package.json
         tests:
+          - test/unit/server/services/offers/index.test.ts
+          - test/unit/server/services/offers/offer-bookshelf-repository.test.ts
           - test/unit/server/services/offers/application/offers-api.test.js
           - test/e2e-api/admin/offers.test.js
           - test/integration/services/offer-bookshelf-repository.test.js
     unverified: []
     blockers:
       - >-
-        Pin root export/pre-init behavior, pending and failed initialization, repeated/concurrent
-        init and retained frontend/members consumers. New composition must deliberately preserve
+        Concurrent init is unpinned; root shape, pending, failed and repeated init and retained
+        frontend/Members consumers are pinned by units. New composition must deliberately preserve
         or change publication timing and old listener/manager ownership, with cleanup evidence.
       - >-
-        Add real frontend redirect contracts for initial rows, created/changed codes, archived
-        offers, query strings and subdirectories. Shared redirect-helper or API tests do not prove
-        offer-event wiring, startup races, or behavior after replacing the published manager.
+        Subdirectory redirects are pinned only through the root with a real redirect manager over
+        faked models. Initial rows, created/changed codes, archived offers and query strings are
+        also pinned through the mounted site app and a real database.
       - >-
-        Cover actual transaction commit/rollback and event delivery, including unhandled rejection
-        from the detached executionPromise.then chain and payment coupon failures after commit.
+        Cover rollback with a real transaction, including the unhandled rejection from the detached
+        executionPromise.then chain, and payment coupon failures after commit. Commit-then-dispatch
+        and the missing rejection handler are pinned.
         Define pending DB/provider work ownership before adding shutdown; no root drain exists.
       - >-
         Test concurrent coupon import and retention activation with the real database. Simulated
@@ -16662,14 +16689,18 @@ services:
           returns a fresh receiver-dependent WebhooksService with async add; the trigger class
           and serialize/payload/listener factories are private support. The endpoint retains
           one management instance and uses its add, while edit/destroy call the model directly.
-          HTTP tests cover selected management results; the one factory unit only asserts an
-          injected add error is rethrown. Exact root shape, returns and receivers are source-only.
+          HTTP tests cover selected management results. Root units pin the exact export, listen
+          only and returning undefined, with nothing registered before it; endpoint units pin add
+          through the management service, which reads the shared Webhook model per call, duplicate
+          rejection, the three foreign-key translations and rethrow of other failures.
         sources:
           - core/server/services/webhooks/index.js
           - core/server/services/webhooks/webhooks-service.js
           - core/server/services/webhooks/webhook-trigger.js
           - core/server/api/endpoints/webhooks.js
         tests:
+          - test/unit/server/services/webhooks/index.test.ts
+          - test/unit/server/api/endpoints/webhooks.test.ts
           - test/unit/server/services/webhooks/webhook-service.test.js
           - test/e2e-api/admin/webhooks.test.js
       construction:
@@ -16681,7 +16712,10 @@ services:
           The management endpoint constructs its own service at module evaluation, normally
           reached during lazy Admin router setup. No other production constructor/deep consumer
           was found. Units test injected trigger and serializer construction, including transport
-          choice; repeated real-root composition and dependency replacement are untested.
+          choice. Root units compose the real root: transport follows the config set before listen
+          (user agent on the wire), and URL relations and the members API are read when an event
+          is serialized. Whether a repeated listen's new trigger reaches any listener is not
+          observable through the root, since its listeners are not replaced (see lifetime).
         sources:
           - core/server/services/webhooks/index.js
           - core/server/services/webhooks/webhook-trigger.js
@@ -16692,6 +16726,8 @@ services:
           - core/server/web/api/endpoints/admin/app.js
           - core/shared/express.js
         tests:
+          - test/unit/server/services/webhooks/index.test.ts
+          - test/unit/server/api/endpoints/webhooks.test.ts
           - test/unit/server/services/webhooks/trigger.test.js
           - test/unit/server/services/webhooks/serialize.test.js
       consumers:
@@ -16699,7 +16735,8 @@ services:
           Boot calls listen. Common model events drive post/page/tag/member delivery; response
           finish with full cache invalidation emits site.changed. Listeners skip importing and
           launch trigger without awaiting it. The Admin endpoint separately adds definitions
-          and authorizes management. HTTP suites exercise selected publish/add/edit payloads
+          and authorizes management. Root units pin the 29-event mapping, one named listener per
+          event, lookups for the emitted event and import suppression. HTTP suites exercise selected publish/add/edit payloads
           through real API/model composition and a Nock-backed receiver; custom-field tests
           assert current/previous values and omissions. Import suppression is checked after
           importer settlement plus a bounded wait, not a webhook drain. These tests establish
@@ -16723,6 +16760,7 @@ services:
           - test/e2e-webhooks/zapier-custom-fields.test.ts
           - test/e2e-webhooks/posts-importer.test.ts
           - test/e2e-api/admin/webhooks.test.js
+          - test/unit/server/services/webhooks/index.test.ts
       startup:
         summary: >-
           Importing the root defers model/service construction until listen. Boot prepares
@@ -16730,8 +16768,9 @@ services:
           member access is deferred until serialization. Listen registers synchronously and
           does not wait for any delivery. Management construction has no boot hook and can
           occur on the first Admin request. Existing HTTP suites exercise a normal booted
-          pipeline, not explicit settings/member/URL readiness failures, listener registration
-          ordering or rollback after a later initializer fails.
+          pipeline. Boot units pin one listen after Mentions init, boot awaiting what it returns
+          before jobs and a failure stopping jobs. Explicit settings/member/URL readiness failures
+          and rollback after a later initializer fails remain untested.
         sources:
           - core/boot.js
           - core/server/services/webhooks/index.js
@@ -16740,6 +16779,8 @@ services:
           - core/server/web/api/app.js
           - core/server/web/api/endpoints/admin/routes.js
         tests:
+          - test/unit/boot/init-services.test.ts
+          - test/unit/server/services/webhooks/index.test.ts
           - test/e2e-webhooks/members.test.js
           - test/e2e-api/admin/webhooks.test.js
       lifetime:
@@ -16751,7 +16792,8 @@ services:
           can overlap without a shared queue. Models are retained by reference across async
           serialization. Model transactions defer event emission until committed=true, using
           mutable model state, not a persisted delivery record. Units assert one payload for
-          two hooks, not serial completion. Members HTTP tests capture an emitted model then
+          two hooks and serial delivery: the next request starts once the previous settles. Root
+          units pin that a repeated listen adds no listener. Members HTTP tests capture an emitted model then
           call the serializer directly; they do not prove rollback-safe network delivery.
         sources:
           - core/server/services/webhooks/index.js
@@ -16762,6 +16804,7 @@ services:
           - core/server/models/base/plugins/events.js
           - core/server/models/base/bookshelf.js
         tests:
+          - test/unit/server/services/webhooks/index.test.ts
           - test/unit/server/services/webhooks/trigger.test.js
           - test/e2e-api/members/webhooks.test.js
       configuration:
@@ -16774,7 +16817,11 @@ services:
           signs JSON body plus timestamp with HMAC-SHA256. Request options ask for two seconds
           and retry limit five outside tests, zero in tests; installed Got excludes POST from
           retry methods, so the limit alone does not enable retries. Units assert transport,
-          body/headers and exact signature; they do not assert production timing/retry policy.
+          exact request options and retry limits, body/headers and exact signature; root units
+          assert each transport's user agent and the safe-version Content-Version on the wire;
+          the integration suite shows @tryghost/request abandoning a target slower than two
+          seconds and not retrying a POST outside tests. request-external's test-only init hook
+          replaces the timeout, so its production timeout is source-only.
           Test config replacement does not establish hot reload of captured collaborators.
         sources:
           - core/server/services/webhooks/index.js
@@ -16786,6 +16833,8 @@ services:
         tests:
           - test/unit/server/services/webhooks/trigger.test.js
           - test/unit/server/services/webhooks/serialize.test.js
+          - test/unit/server/services/webhooks/index.test.ts
+          - test/integration/services/webhook-request.test.ts
           - test/e2e-webhooks/site.test.js
       resources:
         summary: >-
@@ -16795,8 +16844,9 @@ services:
           request-external owns shared keep-alive agents; @tryghost/request owns a shared DNS
           cache with unref'd cleanup timers. Neither is disposed by this root. Trigger awaits
           each request and a 410 destroy, but last-triggered edits are launched without awaiting
-          persistence. Success-only Nock transport tests use fake models/payload/limits and
-          prove POST routing for both clients, not socket cleanup or database completion.
+          persistence. Nock transport tests use fake models/payload/limits and prove POST routing
+          and outcomes for both clients, not socket cleanup or database completion; units pin that
+          the trigger does not wait for the last-triggered write.
         sources:
           - core/server/services/webhooks/index.js
           - core/server/services/webhooks/listen.js
@@ -16815,11 +16865,16 @@ services:
           trigger. Update/destroy rejection only warns. Source reveals a transport mismatch:
           default request-external retains HTTP status on error.response.statusCode, while
           onError reads error.statusCode for 410 removal and status persistence; the alternate
-          request wrapper flattens response fields. Existing tests inject shaped errors or only
-          intercept 200, so this is an uncovered source finding, not a reproduced delivery bug.
+          request wrapper flattens response fields. The integration suite reproduces it with real
+          Got errors and pins today's behavior: through request-external a 410 records an
+          undefined status instead of destroying the webhook, and other error statuses record
+          as undefined; through @tryghost/request a 410 destroys and a 500 records 500. Units pin
+          awaited 410 removal, write and removal failure warnings, failure continuation and
+          lookup failure logging.
           Management rejects duplicates and translates selected foreign-key errors; check/add
           has no atomic uniqueness guard. HTTP tests assert duplicate/orphan 422 and selected
-          management statuses; units assert payload failure logging and injected error text.
+          management statuses; units assert payload failure logging and injected error text,
+          and endpoint units assert duplicate and foreign-key translation.
         sources:
           - core/server/services/webhooks/webhook-trigger.js
           - core/server/services/webhooks/webhooks-service.js
@@ -16831,24 +16886,23 @@ services:
           - test/unit/server/services/webhooks/trigger.test.js
           - test/unit/server/services/webhooks/webhook-service.test.js
           - test/integration/services/webhook-request.test.ts
+          - test/unit/server/api/endpoints/webhooks.test.ts
           - test/e2e-api/admin/webhooks.test.js
     unverified: []
     blockers:
       - >-
-        Protect both real compositions, root exports, lazy management construction and repeated
-        listen/partial registration behavior. Decide how retained listener dependencies, captured
-        transport and event-time member access survive restart without duplicates or leaked listeners.
+        Partial registration after a failure part-way through listen is unpinned. Decide how
+        retained listener dependencies and captured transport survive restart without duplicates
+        or leaked listeners.
       - >-
-        Add real commit/rollback-to-delivery coverage and deferred-request assertions for ordering,
-        failure continuation and shutdown. Preserve import suppression and current/previous payloads
+        Add real commit/rollback-to-delivery coverage and shutdown assertions. Preserve import suppression and current/previous payloads
         without assuming mutable event models are snapshots or intercepted sends are durable.
         On committed=false the model retains ghostEvents; reuse would skip registering another
         transaction callback. No production reuse path or reproduction has been established.
       - >-
-        Reproduce and resolve default-transport error status handling, especially 410 deletion
-        and recorded status, using actual Got errors. Pin POST retry behavior, timeouts, transport
-        policy and signature compatibility; test overrides and success-only requests hide these gaps.
+        Resolve default-transport error status handling: request-external errors carry the status
+        on error.response, so a 410 is not deleted and the recorded status is undefined. Real Got
+        errors reproduce it; the tests pin today's behavior.
       - >-
-        Cover persistence failures, unawaited last-triggered writes, synchronous/post-preparation
-        exceptions and concurrent duplicate creation. Define delivery/replay and disposal ownership
+        Cover synchronous/post-preparation exceptions and concurrent duplicate creation. Define delivery/replay and disposal ownership
         before adding a lifecycle; existing code has no durable queue or drain.
