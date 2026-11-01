@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import ObjectID from 'bson-objectid';
 import sinon from 'sinon';
-import { afterEach, beforeAll } from 'vitest';
+import { afterAll, afterEach, beforeAll } from 'vitest';
 
 // require, not import: the suite must share the module instances Ghost boots with.
 const {
@@ -19,6 +19,7 @@ const ARCHIVED_ID = ObjectID().toHexString();
 describe('Offer redirects', function () {
   let adminAgent: any;
   let frontendAgent: any;
+  let ghostServer: any;
   let tierId: string;
 
   beforeAll(async function () {
@@ -43,7 +44,7 @@ describe('Offer redirects', function () {
       ]);
     });
     try {
-      ({ adminAgent, frontendAgent } = await agentProvider.getAgentsWithFrontend());
+      ({ adminAgent, frontendAgent, ghostServer } = await agentProvider.getAgentsWithFrontend());
     } finally {
       seed.restore();
     }
@@ -55,6 +56,11 @@ describe('Offer redirects', function () {
 
   afterEach(function () {
     mockManager.restore();
+  });
+
+  // Free the port: the next file in this worker may start a listener of its own.
+  afterAll(async function () {
+    await ghostServer?.stop();
   });
 
   it('redirects the code of an offer loaded at startup to its Portal offer', async function () {
