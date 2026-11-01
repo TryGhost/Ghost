@@ -483,8 +483,8 @@ catalogs:
       specifier: 2.29.0
       version: 2.29.0
     '@x402/evm':
-      specifier: 2.28.0
-      version: 2.28.0
+      specifier: 2.29.0
+      version: 2.29.0
     '@x402/hono':
       specifier: 2.28.0
       version: 2.28.0
@@ -2303,7 +2303,7 @@ importers:
         version: 2.29.0
       '@x402/evm':
         specifier: 'catalog:'
-        version: 2.28.0
+        version: 2.29.0
       '@x402/hono':
         specifier: 'catalog:'
         version: 2.28.0(hono@4.13.14)
@@ -9515,8 +9515,8 @@ packages:
   '@x402/core@2.29.0':
     resolution: {integrity: sha512-fkS0JqVwHgczteDlwItLRipOlIzm28U9HWLvYnYpnNbfmepoBT/4ux7LjrR0xGD51JHoC8/r+Qo7uCfoAQYeuw==}
 
-  '@x402/evm@2.28.0':
-    resolution: {integrity: sha512-BZuoaCKMoPQQuMTa4oibvoyI06WdCpgrzgdicUu8d+5NBMAfWb6LAmSQf1KkeiS8C+25/+2JGB4cHSL0VLGnSA==}
+  '@x402/evm@2.29.0':
+    resolution: {integrity: sha512-Gk4bJ6WoRR3jeT2+vERSPMSkSr1nRL5kjtVh14uoynRm8y+fGFH8xmvlGzuwKT0liA6OLjdr9xjZtN8i0WYk9g==}
 
   '@x402/extensions@2.28.0':
     resolution: {integrity: sha512-M3SVxO8DJnx7gpok/ODQp803jr21s1XrCMholNw0hSgOVvSPRksfTZ+CUNfJwteNaHmaAxGjPelXWBhTCMD9oQ==}
@@ -21907,11 +21907,11 @@ snapshots:
     dependencies:
       zod: 4.6.7
 
-  '@x402/evm@2.28.0':
+  '@x402/evm@2.29.0':
     dependencies:
-      '@x402/core': 2.28.0
+      '@x402/core': 2.29.0
       viem: 2.55.11
-      zod: 3.25.76
+      zod: 4.6.7
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
