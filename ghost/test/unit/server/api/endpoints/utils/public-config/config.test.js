@@ -10,6 +10,7 @@ const sinon = require('sinon');
 
 const allowedKeys = [
   'version',
+  'capabilities',
   'environment',
   'database',
   'mail',
@@ -44,6 +45,7 @@ describe('Public-config response builders', function () {
       const configProperties = getConfigProperties();
 
       assert.deepEqual(Object.keys(configProperties), allowedKeys);
+      assert.deepEqual(configProperties.capabilities, { membersBulkRemoveLabels: true });
     });
 
     it('should return GHOST_BUILD_VERSION as version when set', function () {

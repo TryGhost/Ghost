@@ -32,6 +32,7 @@ interface MembersActionsProps {
   nql?: string;
   search: string;
   canBulkDelete: boolean;
+  canRemoveMultipleLabels?: boolean;
   showMenu?: boolean;
   showNewMember?: boolean;
   onImportComplete?: (importResponse?: ImportResponse) => void;
@@ -44,6 +45,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
   nql,
   search,
   canBulkDelete,
+  canRemoveMultipleLabels = false,
   showMenu = true,
   showNewMember = true,
   onImportComplete,
@@ -110,14 +112,18 @@ const MembersActions: React.FC<MembersActionsProps> = ({
   const handleRemoveLabel = useCallback(
     async (labelIds: string[]) => {
       try {
-        for (const labelId of labelIds) {
-          await bulkEditAsync({
-            ...memberOperationParams,
-            action: {
-              type: 'removeLabel',
-              meta: { label: { id: labelId } },
-            },
-          });
+        if (labelIds.length > 1 && !canRemoveMultipleLabels) {
+          throw new Error('Removing multiple labels is not supported');
+        }
+        const result = await bulkEditAsync({
+          ...memberOperationParams,
+          action:
+            labelIds.length === 1
+              ? { type: 'removeLabel', meta: { label: { id: labelIds[0] } } }
+              : { type: 'removeLabels', meta: { labels: labelIds.map((id) => ({ id })) } },
+        });
+        if (result.bulk.meta.stats.unsuccessful > 0) {
+          throw new Error('Failed to remove labels');
         }
         setShowRemoveLabelModal(false);
         toast.success(
@@ -129,7 +135,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
         });
       }
     },
-    [bulkEditAsync, memberOperationParams],
+    [bulkEditAsync, canRemoveMultipleLabels, memberOperationParams],
   );
 
   const handleUnsubscribe = useCallback(
@@ -342,6 +348,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
         onOpenChange={setShowAddLabelModal}
       />
       <RemoveLabelModal
+        allowMultiple={canRemoveMultipleLabels}
         isLoading={isBulkEditing}
         memberCount={memberCount}
         nql={nql}

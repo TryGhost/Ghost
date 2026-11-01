@@ -10,6 +10,9 @@ interface JSONArray extends Array<string | number | boolean | Date | JSONObject 
 
 export type Config = {
   version: string;
+  capabilities?: {
+    membersBulkRemoveLabels?: boolean;
+  };
   environment: string;
   signupForm: {
     url: string;

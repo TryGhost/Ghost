@@ -3,6 +3,9 @@ const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
+const knex = require('knex');
+const ghostBookshelf = require('../../../../../../../core/server/models/base');
+const { Member: MemberModel } = require('../../../../../../../core/server/models/member');
 const labs = require('../../../../../../../core/shared/labs');
 const MemberRepository = require('../../../../../../../core/server/services/members/members-api/repositories/member-repository');
 const { SubscriptionCreatedEvent } = require('../../../../../../../core/shared/events');
@@ -224,6 +227,114 @@ describe('MemberRepository', function () {
     it('Does not error when subscription.plan is null', function () {
       const repo = buildRepo();
       repo.isComplimentarySubscription({});
+    });
+  });
+
+  describe('bulkEdit multi-label removal', function () {
+    it('removes labels for a large selection without exceeding SQLite parameter limits', async function () {
+      const db = knex({
+        client: 'better-sqlite3',
+        connection: { filename: ':memory:' },
+        useNullAsDefault: true,
+        pool: { min: 1, max: 1 },
+      });
+      try {
+        sinon.replace(ghostBookshelf, 'knex', db);
+        await db.schema.createTable('members_labels', (table) => {
+          table.string('id').primary();
+          table.string('member_id');
+          table.string('label_id');
+        });
+        const compileOptions = await db.raw('PRAGMA compile_options');
+        const option = compileOptions.find((row) =>
+          row.compile_options.startsWith('MAX_VARIABLE_NUMBER='),
+        );
+        const variableLimit = option ? Number(option.compile_options.split('=')[1]) : 999;
+        const memberIds = Array.from(
+          { length: Math.min(variableLimit - 1, 32765) },
+          (_, index) => `member-${index}`,
+        );
+        const labels = Array.from({ length: 1001 }, (_, index) => ({
+          id: index.toString(16).padStart(24, '0'),
+        }));
+        labels.push(labels[0]);
+        await db('members_labels').insert([
+          { id: 'first', member_id: memberIds[0], label_id: labels[0].id },
+          { id: 'last', member_id: memberIds.at(-1), label_id: labels.at(-2).id },
+          { id: 'other', member_id: 'other', label_id: labels[0].id },
+        ]);
+        let maxBindings = 0;
+        db.on('query', (query) => {
+          if (query.sql.startsWith('select') && query.sql.includes('members_labels')) {
+            maxBindings = Math.max(maxBindings, query.bindings.length);
+          }
+        });
+        const pluck = sinon.stub().resolves(memberIds);
+        Member.getFilteredCollectionQuery = sinon.stub().returns({
+          distinct: sinon.stub().returns({ pluck }),
+        });
+        Member.getLabelRelations = MemberModel.getLabelRelations;
+        Member.bulkDestroy = MemberModel.bulkDestroy.bind(MemberModel);
+        Member.transaction = (callback) => db.transaction(callback);
+
+        let result;
+        try {
+          result = await buildRepo().bulkEdit(
+            { action: 'removeLabels', meta: { labels } },
+            { all: true },
+          );
+        } catch (error) {
+          if (error.message.includes('too many SQL variables')) {
+            assert.fail('The label lookup exceeded SQLite parameter limits');
+          }
+          throw error;
+        }
+        assert.equal(result.successful, 2);
+        assert.equal(result.unsuccessful, 0);
+        assert.deepEqual(await db('members_labels').select('id'), [{ id: 'other' }]);
+        assert.ok(maxBindings <= 999, `Lookup used ${maxBindings} parameters`);
+        sinon.assert.calledOnce(Member.getFilteredCollectionQuery);
+      } finally {
+        await db.destroy();
+      }
+    }, 30000);
+
+    it('reuses the supplied transaction and preserves the member filter and search', async function () {
+      const transacting = {};
+      const context = { internal: true };
+      const mongoTransformer = () => {};
+      const pluck = sinon.stub().resolves(['member-id']);
+      Member.getFilteredCollectionQuery = sinon.stub().returns({
+        distinct: sinon.stub().returns({ pluck }),
+      });
+      Member.getLabelRelations = sinon.stub().resolves([{ id: 'relation-id' }]);
+      const result = { successful: 1, unsuccessful: 0, errors: [], unsuccessfulData: [] };
+      Member.bulkDestroy = sinon.stub().resolves(result);
+      const labels = [{ id: 'aaaaaaaaaaaaaaaaaaaaaaaa' }, { id: 'bbbbbbbbbbbbbbbbbbbbbbbb' }];
+
+      const actual = await buildRepo().bulkEdit(
+        { action: 'removeLabels', meta: { labels } },
+        { filter: 'label:[alpha]', search: 'member', context, mongoTransformer, transacting },
+      );
+
+      assert.equal(actual, result);
+      sinon.assert.notCalled(Member.transaction);
+      sinon.assert.calledOnceWithExactly(Member.getFilteredCollectionQuery, {
+        filter: 'label:[alpha]',
+        search: 'member',
+        context,
+        mongoTransformer,
+        transacting,
+      });
+      sinon.assert.calledOnceWithExactly(
+        Member.getLabelRelations,
+        { labelIds: labels.map((label) => label.id), memberIds: ['member-id'] },
+        { transacting },
+      );
+      sinon.assert.calledOnceWithExactly(Member.bulkDestroy, ['relation-id'], 'members_labels', {
+        transacting,
+        throwErrors: true,
+      });
     });
   });
 

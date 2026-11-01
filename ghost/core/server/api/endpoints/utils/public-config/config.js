@@ -55,6 +55,7 @@ const getTinybirdStatsPayload = (statsConfig, siteUuid) => {
 module.exports = function getConfigProperties() {
   const configProperties = {
     version: process.env.GHOST_BUILD_VERSION || ghostVersion.original,
+    capabilities: { membersBulkRemoveLabels: true },
     environment: config.get('env'),
     database: databaseInfo.getEngine(),
     mail: isPlainObject(config.get('mail')) ? config.get('mail').transport : '',
