@@ -228,13 +228,6 @@ describe('service migration inventory', function () {
           'An open model question requires a complex migration assessment',
         );
       }
-      if (service.futureHome) {
-        assert.equal(
-          service.disposition,
-          'migrate',
-          'Only entries marked for migration can suggest a future home',
-        );
-      }
       if (service.migrated) {
         assert.notEqual(
           service.disposition,

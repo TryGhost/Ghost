@@ -216,9 +216,10 @@ reason to relocate: code that needs lifecycle management and has no other owner
 yet is a `migrate`. If the decision is still open, use `review` and keep
 initialization and dependency work applicable.
 
-`futureHome` optionally suggests where a `migrate` entry might live after this
-migration, relative to `ghost`, when it is not really a standalone service. It
-is a suggestion, not a planned move, and does not block the migration.
+`futureHome` optionally suggests where an entry might live after this
+migration, relative to `ghost`, when its current or planned home is
+questionable. Any disposition can have one. It is a suggestion, not a planned
+move, and does not block the migration, relocation or split.
 
 Each entry records its intended ownership and audit status. `pending` means
 the contract audit has not started; `auditing` means evidence is incomplete;
