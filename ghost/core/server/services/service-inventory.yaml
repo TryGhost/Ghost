@@ -11454,17 +11454,18 @@ services:
       lifetime:
         summary: >-
           defineService retains the first ready controllers across repeated init and discards a
-          failed attempt, whose construction stops before the refreshes, mapper and subscription
-          are installed. Disabling later only changes the next factory run; it does not remove
-          the retained graph or stop work. Controllers, incoming service, outgoing service and
-          the event callback retain their collaborators, while the renderer rereads staff.api. Inner init methods have no repeat guard,
-          and their timers are not retained. The root test asserts repeated init retains the
-          controllers and installs the mapper, subscriber and inner initializers once, that a
-          construction failure rejects init, publishes nothing and lets a retry compose a
-          complete graph once, and that the event callback emails through the published incoming
-          service. Timer retention and dependency replacement in retained controllers remain
-          source-only. There is no reset or shutdown: the DomainEvents subscription, mentions
-          mapper and detached refreshes are never released, as before the wrapper was removed.
+          failed attempt, whose construction stops before the refreshes, mapper and subscription are
+          installed. Disabling later only changes the next factory run; it does not remove the
+          retained graph or stop work. Controllers, incoming service, outgoing service and the event
+          callback retain their collaborators, while the renderer rereads the Staff service through
+          a getter. Inner init methods have no repeat guard, and their timers are not retained. The
+          root test asserts repeated init retains the controllers and installs the mapper,
+          subscriber and inner initializers once, that a construction failure rejects init,
+          publishes nothing and lets a retry compose a complete graph once, and that the event
+          callback emails through the published incoming service. Timer retention and dependency
+          replacement in retained controllers remain source-only. There is no reset or shutdown: the
+          DomainEvents subscription, mentions mapper and detached refreshes are never released, as
+          before the wrapper was removed.
         sources:
           - core/server/services/recommendations/index.ts
           - core/server/services/recommendations/service/recommendation-service.ts
@@ -13080,6 +13081,7 @@ services:
           - core/server/services/staff/staff-service-emails.js
           - core/server/services/staff/email-template-files.ts
           - core/server/lib/email-rendering/inline-css.ts
+          - core/server/lib/mail/format-address-for-delivery.ts
           - core/server/services/gifts/index.ts
           - core/server/services/stripe/stripe-service.js
           - core/boot.js

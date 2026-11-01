@@ -55,7 +55,7 @@ describe('donations root with its Stripe consumer', function () {
       donationService: root,
       membersService: { api: { members: {} } },
       giftService: {},
-      staffService: { api: { emails: { notifyDonationReceived } } },
+      staffService: { service: { emails: { notifyDonationReceived } } },
       StripeWebhook: {},
     });
   });
