@@ -173,6 +173,13 @@ describe('Account Plan Page', () => {
         portal_signup_gift_promotion: true,
       },
     },
+    {
+      label: 'the site is invite-only',
+      site: {
+        ...getSiteData({ membersSignupAccess: 'invite' }),
+        portal_signup_gift_promotion: true,
+      },
+    },
   ])('hides the signup gift promotion when $label', ({ site }) => {
     const member = getMemberData({ paid: false });
     const { queryByRole } = customSetup({ site, member });

@@ -21,8 +21,8 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { ModalPage } from '@tryghost/shade/page-templates';
 import { getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
 import { getPaidActiveTiers, useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
-import { usePaidMembersEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { useGlobalData } from '@/settings/providers/global-data-context';
+import { useSettingsSectionVisibility } from '@/settings/hooks/use-section-visibility';
 
 interface PortalLinkPrefs {
   name: string;
@@ -49,7 +49,7 @@ const PortalLinks: React.FC = () => {
   const { siteData } = useGlobalData();
   const { data: { tiers: allTiers } = {} } = useBrowseTiers();
   const tiers = getPaidActiveTiers(allTiers || []);
-  const paidMembersEnabled = usePaidMembersEnabled();
+  const { giftSubscriptions: hasGiftLink } = useSettingsSectionVisibility();
 
   useEffect(() => {
     if (tiers?.length && !selectedTier) {
@@ -107,7 +107,7 @@ const PortalLinks: React.FC = () => {
                 name="Sign up"
                 value={isDataAttributes ? 'data-portal="signup"' : `${homePageURL}#/portal/signup`}
               />
-              {paidMembersEnabled && (
+              {hasGiftLink && (
                 <PortalLink
                   name="Gift subscriptions"
                   value={isDataAttributes ? 'data-portal="gift"' : `${homePageURL}#/portal/gift`}

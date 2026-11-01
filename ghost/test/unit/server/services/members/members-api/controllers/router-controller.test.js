@@ -1352,6 +1352,26 @@ describe('RouterController', function () {
         }
       });
 
+      it('throws DisabledFeatureError on invite-only sites', async function () {
+        const controller = createGiftController({
+          tiersService: paidTierService(),
+          settingsCache: {
+            get: sinon.stub().withArgs('members_signup_access').returns('invite'),
+          },
+        });
+
+        await assert.rejects(
+          controller.createCheckoutSession(
+            {
+              body: { type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {} },
+            },
+            mockRes,
+          ),
+          errors.DisabledFeatureError,
+        );
+        sinon.assert.notCalled(giftService.service.startCheckout);
+      });
+
       it('does not block paid members from purchasing gifts', async function () {
         const controller = createGiftController({
           tiersService: paidTierService(),
