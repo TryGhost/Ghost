@@ -405,6 +405,29 @@ describe('CheckoutSessionEventService', function () {
 
       assert.equal(savedDonationEvent.amount, 1000);
     });
+
+    it('rejects with the staff notification failure after saving the donation', async function () {
+      const service = createService();
+      const failure = new Error('staff email failed');
+      staffServiceEmails.notifyDonationReceived.rejects(failure);
+      memberRepository.get.resolves(null);
+
+      await assert.rejects(
+        service.handleDonationEvent({
+          amount_total: 1000,
+          currency: 'usd',
+          customer: null,
+          customer_details: { name: 'Test Name', email: 'donor@example.com' },
+          metadata: {},
+        }),
+        (error) => error === failure,
+      );
+
+      sinon.assert.callOrder(donationRepository.save, staffServiceEmails.notifyDonationReceived);
+      sinon.assert.calledOnceWithExactly(staffServiceEmails.notifyDonationReceived, {
+        donationPaymentEvent: donationRepository.save.firstCall.args[0],
+      });
+    });
   });
 
   describe('handleSetupEvent', function () {
