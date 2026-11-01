@@ -44,6 +44,8 @@ const useSettingGroup = ({
   const focusRef = useRef<HTMLInputElement>(null);
 
   const { siteData, settings } = useGlobalData();
+  const previousSettings = useRef(settings);
+  const latestSettings = useRef(settings);
   const { mutateAsync: editSettings } = useEditSettings();
   const handleError = useHandleError();
 
@@ -63,8 +65,14 @@ const useSettingGroup = ({
   } = useForm<LocalSetting[]>({
     initialState: settings || [],
     savingDelay,
-    onSave: async () => {
-      await editSettings?.(changedSettings());
+    onSave: async (submitted) => {
+      const response = await editSettings?.(
+        submitted.filter((setting) => setting.dirty).map(({ key, value }) => ({ key, value })),
+      );
+      const savedSettings =
+        response?.settings ?? submitted.map((setting) => ({ ...setting, dirty: false }));
+      latestSettings.current = savedSettings;
+      setFormState((current) => (current === submitted ? savedSettings : current));
     },
     onSaveError: handleError,
     onValidate,
@@ -82,27 +90,22 @@ const useSettingGroup = ({
     }
   }, [isEditing]);
 
-  // reset the local state when there's a new settings API response, unless currently editing
+  // Keep local edits when settings refresh, including after validation fails.
   useEffect(() => {
-    if (!isEditing) {
-      setFormState(() => settings);
+    const settingsChanged = previousSettings.current !== settings;
+    previousSettings.current = settings;
+    if (settingsChanged) {
+      latestSettings.current = settings;
+      if (!isEditing) {
+        setFormState((current) => (current.some((setting) => setting.dirty) ? current : settings));
+      }
     }
   }, [settings, isEditing, setFormState]);
-
-  const changedSettings = () => {
-    return localSettings
-      ?.filter((setting) => setting.dirty)
-      ?.map((setting) => {
-        return {
-          key: setting.key,
-          value: setting.value,
-        };
-      });
-  };
 
   // function to cancel the changes
   const handleCancel = () => {
     reset();
+    setFormState(() => latestSettings.current);
     setEditing(false);
   };
 
@@ -133,9 +136,12 @@ const useSettingGroup = ({
     saveState,
     focusRef,
     siteData,
-    handleSave: async () => {
-      const result = await handleSave();
+    handleSave: async (options) => {
+      const result = await handleSave(options);
       if (result) {
+        if (saveState !== 'unsaved' && !options?.force) {
+          setFormState(() => latestSettings.current);
+        }
         setEditing(false);
       }
       return result;

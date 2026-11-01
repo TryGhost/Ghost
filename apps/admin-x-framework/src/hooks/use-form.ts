@@ -28,6 +28,7 @@ export interface FormHook<State> {
   /**
    * Validate and save the state. Use the `force` option to save even when there are no changes made (e.g., initial state should be saveable)
    * Returns false if validation fails, a save is already pending, or the form changes while saving.
+   * A pending call submits nothing; a stale save may still have saved its earlier state. Save errors are thrown.
    */
   handleSave: SaveHandler;
   /**

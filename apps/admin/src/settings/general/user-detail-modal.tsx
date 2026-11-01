@@ -184,7 +184,7 @@ const UserDetailModalContent: React.FC<{
 
       // Sync the form with the saved user — the server may have
       // modified submitted values, e.g. sanitizing the slug
-      setFormState(() => savedUser);
+      setFormState((state) => (state === values ? savedUser : state));
 
       if (savedUser.slug !== user.slug) {
         // Keep the URL in sync with the new slug, replacing the

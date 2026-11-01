@@ -97,8 +97,9 @@ function NavigationModal() {
       }}
       onOk={async () => {
         if (navigation.validate() && secondaryNavigation.validate()) {
-          await handleSave();
-          updateRoute('navigation');
+          if (await handleSave()) {
+            updateRoute('navigation');
+          }
         }
       }}
     >

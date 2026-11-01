@@ -1,16 +1,35 @@
 import { type SaveHandler } from '@tryghost/admin-x-framework/hooks';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 export const useSaveButton = (handleSave: SaveHandler, fakeWhenUnchanged?: boolean) => {
   const [savingTitle, setSavingTitle] = useState('Save');
   const [isSaving, setIsSaving] = useState(false);
+  const pendingSave = useRef(false);
 
   const onSaveClick = async () => {
+    if (pendingSave.current) {
+      return;
+    }
+    pendingSave.current = true;
     setIsSaving(true);
     setSavingTitle('Saving');
 
     // Execute the save operation
-    await handleSave({ fakeWhenUnchanged });
+    let saved: boolean;
+    try {
+      saved = await handleSave({ fakeWhenUnchanged });
+    } catch (error) {
+      pendingSave.current = false;
+      setSavingTitle('Save');
+      setIsSaving(false);
+      throw error;
+    }
+    if (!saved) {
+      pendingSave.current = false;
+      setSavingTitle('Save');
+      setIsSaving(false);
+      return;
+    }
 
     // After a second, change the label to 'Saved'
     setTimeout(() => {
@@ -18,6 +37,7 @@ export const useSaveButton = (handleSave: SaveHandler, fakeWhenUnchanged?: boole
 
       // After yet another second, reset to 'Save'
       setTimeout(() => {
+        pendingSave.current = false;
         setSavingTitle('Save');
         setIsSaving(false);
       }, 1000);

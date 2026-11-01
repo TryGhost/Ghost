@@ -320,8 +320,9 @@ const Direct: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const onSubmit = async () => {
     try {
       toast.dismiss();
-      await handleSave();
-      onClose();
+      if (await handleSave()) {
+        onClose();
+      }
     } catch (e) {
       if (e instanceof JSONError) {
         toast.error('Failed to save settings', {

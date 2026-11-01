@@ -171,7 +171,10 @@ const PortalModal: React.FC = () => {
       await Promise.all(formState.tiers.filter(({ dirty }) => dirty).map((tier) => editTier(tier)));
       setFormState((state) => ({
         ...state,
-        tiers: formState.tiers.map((tier) => ({ ...tier, dirty: false })),
+        tiers:
+          state.tiers === formState.tiers
+            ? state.tiers.map((tier) => ({ ...tier, dirty: false }))
+            : state.tiers,
       }));
 
       const changedSettings = formState.settings.filter((setting) => setting.dirty);
@@ -183,7 +186,10 @@ const PortalModal: React.FC = () => {
       const { meta, settings: currentSettings } = await editSettings(changedSettings);
       setFormState((state) => ({
         ...state,
-        settings: formState.settings.map((setting) => ({ ...setting, dirty: false })),
+        settings:
+          state.settings === formState.settings
+            ? state.settings.map((setting) => ({ ...setting, dirty: false }))
+            : state.settings,
       }));
 
       if (meta?.sent_email_verification) {

@@ -44,14 +44,23 @@ export function useDesignForm() {
     onSave: async () => {
       if (formState.themeSettings?.some((setting) => setting.dirty)) {
         const response = await editThemeSettings(formState.themeSettings);
-        setFormState((state) => ({ ...state, themeSettings: response.custom_theme_settings }));
+        setFormState((state) => ({
+          ...state,
+          themeSettings:
+            state.themeSettings === formState.themeSettings
+              ? response.custom_theme_settings
+              : state.themeSettings,
+        }));
       }
 
       if (formState.settings.some((setting) => setting.dirty)) {
         const { settings: newSettings } = await editSettings(
           formState.settings.filter((setting) => setting.dirty),
         );
-        setFormState((state) => ({ ...state, settings: newSettings }));
+        setFormState((state) => ({
+          ...state,
+          settings: state.settings === formState.settings ? newSettings : state.settings,
+        }));
       }
     },
     onSaveError: handleError,
@@ -59,7 +68,12 @@ export function useDesignForm() {
 
   useEffect(() => {
     if (themeSettings) {
-      setFormState((state) => ({ ...state, themeSettings: themeSettings.custom_theme_settings }));
+      setFormState((state) => ({
+        ...state,
+        themeSettings: state.themeSettings?.some((setting) => setting.dirty)
+          ? state.themeSettings
+          : themeSettings.custom_theme_settings,
+      }));
     }
   }, [setFormState, themeSettings]);
 
