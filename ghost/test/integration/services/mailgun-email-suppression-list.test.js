@@ -39,10 +39,11 @@ describe('MailgunEmailSuppressionList', function () {
     sinon.restore();
   });
 
-  it('Members retains the eager suppression list root', async function () {
-    // Members captures the root object when its API is built during boot.
+  it('Members retains the ready suppression list', async function () {
+    // Members captures the ready instance when its API is built during boot.
     const membersService = require('../../../core/server/services/members');
-    const emailSuppressionList = require('../../../core/server/services/email-suppression-list');
+    const emailSuppressionList = require('../../../core/server/services/email-suppression-list')
+      .default.service;
 
     assert.equal(membersService.api.memberBREADService.emailSuppressionList, emailSuppressionList);
   });

@@ -3439,20 +3439,21 @@ services:
     kind: directory
     disposition: retain
     status: audited
+    migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: complex
       modelImpact: fits
       reason: >-
-        Move eager provider composition and two domain-event subscriptions into one owned
-        startup path. Members and analytics currently capture the eager instance before its
-        init, so preserve dependency order and adapt those consumers. Repeated init
-        duplicates handlers; introduce idempotent registration and partial-start cleanup
-        while retaining suppression failure behavior. A single retained instance fits once
-        those subscription responsibilities are explicit.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        The boot-owned defineService root builds one Mailgun client and provider with the shared
+        Suppression model, config, settings cache, database, logging, DomainEvents and both email
+        event classes, then registers the two subscriptions once. initServices awaits it after
+        Stats and before the group containing Members and Email Analytics, which read the
+        ready instance. A failed registration deactivates its own handlers, since DomainEvents
+        cannot remove a listener. No extras or different instance lifetime are needed.
+      reviewedAt: c03e84fdc7e91db2310a785fbd2e5a6233da6c42
       sources:
-        - core/server/services/email-suppression-list/service.js
+        - core/server/services/email-suppression-list/index.ts
         - core/server/services/email-suppression-list/mailgun-email-suppression-list.js
         - core/server/services/members/api.js
         - core/server/services/email-analytics/index.ts
@@ -3475,32 +3476,40 @@ services:
             non-allowlisted assertion helper explicitly rather than hiding it through the root.
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
-          - core/server/services/email-suppression-list/service.js
+          - core/server/services/email-suppression-list/index.ts
           - core/server/services/email-suppression-list/mailgun-email-suppression-list.js
           - core/server/services/email-suppression-list/email-suppression-list.js
           - core/server/services/members/api.js
           - core/server/services/email-analytics/index.ts
           - core/boot.js
     entryPoints:
-      - email-suppression-list/index.js
+      - email-suppression-list/index.ts
     notes: >-
-      Preserve eager provider composition, suppression fallback behavior and domain-event
-      subscription behavior.
+      Migration inspected c03e84fdc7e91db2310a785fbd2e5a6233da6c42 with the characterization from the preceding
+      tests-only commit. Boot owns the instance; Members, Email Analytics and the Admin endpoint
+      read the ready service. init no longer replaces the injected model; the implementation reads
+      the database through the injected db module for each query. The duplicated listeners the
+      tests-only commit pinned are resolved structurally: the root registers once and
+      subscribe() is idempotent. The data/event helper keeps node:assert/strict for its
+      constructor invariants under an exact allowance. auditedAt and the dependency assessment retain historical
+      provenance. Known gap, unchanged: removeEmail ignores the Mailgun client's false result, so
+      an unconfigured or failed provider deletion still reports success. Unsubscribe and
+      shutdown drain also remain outside this bounded change.
     contracts:
       exports:
         summary: >-
-          CommonJS root and service.js expose one MailgunEmailSuppressionList object with init,
+          The TypeScript root default-exports defineService with init and guarded service and no
+          extras. service is the retained MailgunEmailSuppressionList with subscribe,
           getSuppressionData, getBulkSuppressionData and three removal methods. Methods use their
           receiver; Suppression and apiClient are mutable public fields. The deep helper exports
           EmailSuppressionData and EmailSuppressedEvent; members imports the latter directly.
           Reads return suppressed/info with spam or fail reasons, and bulk results preserve
-          input order with an empty-array shortcut. Root tests pin one instance shared by
-          index.js and service.js. Provider tests pin single reads and the bulk contract: one
+          input order with an empty-array shortcut. Root tests pin the pre-init guard and one
+          retained instance. Provider tests pin single reads and the bulk contract: one
           interpolated filter with quotes left unescaped, input order, duplicates, case-sensitive
           matching and whole-result fallback on query or mapping failure.
         sources:
-          - core/server/services/email-suppression-list/index.js
-          - core/server/services/email-suppression-list/service.js
+          - core/server/services/email-suppression-list/index.ts
           - core/server/services/email-suppression-list/mailgun-email-suppression-list.js
           - core/server/services/email-suppression-list/email-suppression-list.js
           - core/server/services/members/members-api/members-api.js
@@ -3511,15 +3520,14 @@ services:
           - test/e2e-api/members/member-projection.test.ts
       construction:
         summary: >-
-          Module evaluation constructs one MailgunClient retaining config and settings accessors,
-          then one suppression list retaining that client and models.Suppression. Constructors
-          perform no provider requests or subscriptions; the SDK client is created later when
-          a removal asks for it. No other runtime construction of the suppression list was
-          found. init replaces even an injected Suppression field with the shared model.
-          Root tests pin the eager composition and that evaluation subscribes to nothing;
-          provider tests pin init's model replacement.
+          The root factory constructs one MailgunClient retaining config and settings accessors,
+          then one suppression list with the shared Suppression model, the db module, logging,
+          DomainEvents and both email event classes, and subscribes last. Constructors perform no
+          provider requests or subscriptions; the SDK client is created later when a removal
+          asks for it. No other runtime construction was found. Root tests pin the composition,
+          that evaluation subscribes to nothing and that the injected model is kept.
         sources:
-          - core/server/services/email-suppression-list/service.js
+          - core/server/services/email-suppression-list/index.ts
           - core/server/services/email-suppression-list/mailgun-email-suppression-list.js
           - core/server/lib/mailgun/mailgun-client.js
         tests:
@@ -3527,15 +3535,16 @@ services:
           - test/unit/server/services/email-suppression-list/mailgun-email-suppression-list.test.ts
       consumers:
         summary: >-
-          Members retains the root in its BREAD and account services: reads/browse attach local
-          suppression, add/email edits derive email_disabled, and account removal reenables mail.
-          Admin removal resolves the root at request time and checks its boolean result. Boot
-          injects it into newsletter analytics storage for provider complaint/unsubscribe cleanup.
+          Members retains the ready service in its BREAD and account services: reads/browse
+          attach local suppression, add/email edits derive email_disabled, and account removal
+          reenables mail. Admin removal reads the ready service at request time and checks its
+          boolean result. Boot injects it into newsletter analytics storage for provider
+          complaint/unsubscribe cleanup.
           EmailEventProcessor dispatches bounce/complaint events; this root persists suppression
           then emits EmailSuppressedEvent, whose members subscriber disables the address.
           Integration tests cover this chain with fetched provider events stubbed and pin that
-          Members retains the root object; the boot harness pins analytics receiving it before
-          its init. HTTP tests cover local projection/removal; storage unit tests inject cleanup
+          Members retains the ready instance; the boot harness pins analytics receiving it after
+          init. HTTP tests cover local projection/removal; storage unit tests inject cleanup
           stubs, not the root.
         sources:
           - core/boot.js
@@ -3558,15 +3567,16 @@ services:
           - test/unit/server/services/members/members-api/services/members-bread-service.test.js
       startup:
         summary: >-
-          Boot imports the root and calls init in the required service batch after core
-          settings/models and Stripe. Members and newsletter analytics capture it earlier in
-          that batch. init is async but contains no await: it refreshes the model and registers
-          both subscriptions synchronously, then resolves undefined. Queries/removals have no
-          readiness guard; only event handling requires init. Root tests pin reads and removal
-          before init; booted integration tests exercise the resulting composition. Partial
-          subscription failure is not characterized.
+          Boot awaits the root's init after Stats and before the service group, so Members
+          and Email Analytics read the ready service and a rejection stops their initialization.
+          The factory is synchronous and registers both subscriptions once; repeated or
+          concurrent init retains the first instance. A failed registration deactivates its
+          handlers and rejects; .service stays unavailable and a later init builds and subscribes
+          a fresh instance. Unit tests pin the guard, retention, failure and retry; the boot
+          harness pins the ordering; booted integration tests exercise the composition.
         sources:
           - core/boot.js
+          - core/server/services/email-suppression-list/index.ts
           - core/server/services/email-suppression-list/mailgun-email-suppression-list.js
           - core/server/services/members/service.js
           - core/server/services/email-analytics/index.ts
@@ -3576,15 +3586,15 @@ services:
           - test/unit/boot/init-services.test.ts
       lifetime:
         summary: >-
-          Module caching and retained consumer references keep the same root and MailgunClient.
-          Every init overwrites the model field and adds two fresh event handlers without a
-          guard, unsubscribe or shutdown. Old handlers read this.Suppression when invoked, so
-          model replacement affects them too. Persistence outlives the instance; duplicate rows
-          retain their original reason/time but still cause a new suppression event. Provider
-          tests pin two subscriptions per init, duplication on repeated init and handlers reading
-          the current model; the duplicate-row integration case proves member disabling.
+          defineService retains one root instance and MailgunClient for the process, including
+          across in-process reboots, and consumers retain that instance. Subscriptions are
+          registered once per instance with no unsubscribe or shutdown; handlers read
+          this.Suppression when invoked. Persistence outlives the instance; duplicate rows retain
+          their original reason/time but still cause a new suppression event. Provider tests pin
+          single registration, deactivation after a failed registration and handlers reading the
+          current model; the duplicate-row integration case proves member disabling.
         sources:
-          - core/server/services/email-suppression-list/service.js
+          - core/server/services/email-suppression-list/index.ts
           - core/server/services/email-suppression-list/mailgun-email-suppression-list.js
           - core/server/models/suppression.js
           - core/server/data/schema/schema.js
@@ -3603,7 +3613,7 @@ services:
           client rereading config and settings; provider tests pin removal against the primary
           domain. Configuration changes between the three awaited provider calls are untested.
         sources:
-          - core/server/services/email-suppression-list/service.js
+          - core/server/services/email-suppression-list/index.ts
           - core/server/services/email-suppression-list/mailgun-email-suppression-list.js
           - core/server/lib/mailgun/mailgun-client.js
           - core/shared/config/validated.ts
@@ -3613,8 +3623,8 @@ services:
           - test/unit/server/services/email-suppression-list/mailgun-email-suppression-list.test.ts
       resources:
         summary: >-
-          The root owns two shared DomainEvents subscriptions per init and borrows the shared
-          model/database pool. Removal creates transient SDK clients and HTTP work; no root
+          The root owns two shared DomainEvents subscriptions for its one instance and borrows
+          the shared model/database pool. Removal creates transient SDK clients and HTTP work; no root
           timer, transport handle, pending-work registry or disposal API exists. The installed
           SDK forwards the timeout to its HTTP client. DomainEvents dispatch does not await
           consumers and catches/logs rejected handlers; allSettled tracks test delivery only.
@@ -3654,10 +3664,9 @@ services:
     unverified: []
     blockers:
       - >-
-        Partial init (a failing second subscription) is not characterized. Each init duplicates
-        listeners (pinned as incidental) and there is no unsubscribe or production drain. Pin
-        concurrent event/removal behavior and separate persistence/member-write failures before
-        introducing disposal or changing event ordering.
+        There is no unsubscribe or production drain; a failed registration leaves inactive
+        listeners on the shared bus. Pin concurrent event/removal behavior and separate
+        persistence/member-write failures before introducing disposal or changing event ordering.
       - >-
         Resolve the provider-to-root failure contract: MailgunClient resolves false for
         unconfigured or failed deletion and removeEmail ignores it, reporting success (pinned

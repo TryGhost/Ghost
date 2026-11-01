@@ -18,7 +18,7 @@ const offersService = require('../offers');
 const tiers = require('../tiers').default;
 const newsletters = require('../newsletters').default;
 const memberAttributionService = require('../member-attribution').default;
-const emailSuppressionList = require('../email-suppression-list');
+const emailSuppressionList = require('../email-suppression-list').default;
 const commentsService = require('../comments').default;
 const emailAddressService = require('../email-address');
 const giftService = require('../gifts');
@@ -272,7 +272,7 @@ function createApiInstance(config) {
     labsService: labsService,
     newslettersService: newsletters.service,
     memberAttributionService: memberAttributionService.service,
-    emailSuppressionList,
+    emailSuppressionList: emailSuppressionList.service,
     settingsCache,
     sentry,
     settingsHelpers,

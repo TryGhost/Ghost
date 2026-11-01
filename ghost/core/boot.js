@@ -391,7 +391,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const membersEvents = require('./server/services/members-events');
   const linkTracking = require('./server/services/link-tracking');
   const audienceFeedback = require('./server/services/audience-feedback').default;
-  const emailSuppressionList = require('./server/services/email-suppression-list');
+  const emailSuppressionList = require('./server/services/email-suppression-list').default;
   const emailService = require('./server/services/email-service');
   const emailAnalytics = require('./server/services/email-analytics');
   const mentionsService = require('./server/services/mentions').default;
@@ -453,6 +453,8 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   await mentionsService.init();
   // Explore captures the ready Stats aggregate during initialization.
   await statsService.init();
+  // Members and Email Analytics capture the ready suppression list during initialization.
+  await emailSuppressionList.init();
 
   await Promise.all([
     identityTokens.init(),
@@ -472,7 +474,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
       config,
       db,
       domainEvents,
-      emailSuppressionList,
+      emailSuppressionList: emailSuppressionList.service,
       giftDeliveryService,
       membersRepository: members.api.members,
       models,
@@ -483,7 +485,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     webhooks.listen(),
     comments.init(),
     linkTracking.init(),
-    emailSuppressionList.init(),
     slackNotifications.init(),
     mediaInliner.init(),
     contentImport.init(),
