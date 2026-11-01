@@ -206,18 +206,6 @@ it('waits for member attribution initialization before initializing staff', asyn
   sinon.assert.callOrder(boot.memberAttribution, boot.staff, boot.register);
 });
 
-it('propagates a staff initialization error without starting dependent work', async function () {
-  const boot = createServicesHarness();
-  const failure = new Error('staff initialization failed');
-  boot.staff.rejects(failure);
-
-  await assert.rejects(boot.initServices(), (error) => error === failure);
-
-  sinon.assert.notCalled(boot.register);
-  sinon.assert.notCalled(boot.start);
-  sinon.assert.notCalled(boot.automations);
-});
-
 it('propagates a synchronous recommendations initialization error without starting dependent work', async function () {
   const boot = createServicesHarness();
   const failure = new Error('recommendations initialization failed');
@@ -283,6 +271,7 @@ for (const dependency of [
   'memberWelcomeEmails',
   'tiers',
   'webhooks',
+  'staff',
 ] as const) {
   it(`waits for ${dependency} initialization to finish before registering or starting jobs`, async function () {
     const boot = createServicesHarness();
