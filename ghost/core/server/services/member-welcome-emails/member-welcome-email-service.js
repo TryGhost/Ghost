@@ -1,20 +1,7 @@
-const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../../shared/url-utils').default;
-const settingsCache = require('../../../shared/settings-cache');
-const verifyEmailTemplate = require('../newsletters/emails/verify-email');
 const MagicLink = require('../../lib/magic-link/magic-link');
-const sentry = require('../../../shared/sentry');
-const emailAddressService = require('../email-address');
-const settingsHelpers = require('../settings-helpers');
 const { parseMailbox } = require('@tryghost/parse-email-address/mailbox');
 const { formatAddressForDelivery } = require('../../lib/mail/format-address-for-delivery');
-const mail = require('../../lib/mail');
-const MailgunClient = require('../../lib/mailgun/mailgun-client');
-const config = require('../../../shared/config');
-const labs = require('../../../shared/labs');
-const { Automation, EmailDesignSetting, Newsletter } = require('../../models');
-const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
 const {
   AUTOMATION_EMAIL_TAG,
   DEFAULT_EMAIL_DESIGN_SETTING_SLUG,
@@ -56,6 +43,15 @@ const getSenderDetails = (designSettingsJson) => {
 };
 
 class MemberWelcomeEmailService {
+  /** @type {Pick<import('@tryghost/logging').GhostLogger, 'info' | 'warn'>} */
+  #logging;
+  #config;
+  #labs;
+  #settingsCache;
+  #urlUtils;
+  #models;
+  #emailAddressService;
+  #settingsHelpers;
   #transactionalMailer;
   #bulkMailer;
   #renderer;
@@ -63,11 +59,53 @@ class MemberWelcomeEmailService {
   #memberWelcomeEmails = { free: null, paid: null };
   #defaultNewsletterSenderOptions = null;
 
-  constructor({ t, dir, singleUseTokenProvider }) {
-    emailAddressService.init();
-    this.#transactionalMailer = new mail.GhostMailer();
-    this.#bulkMailer = new MailgunClient({ config, settings: settingsCache });
-    this.#renderer = new MemberWelcomeEmailRenderer({ t, dir });
+  /**
+   * @param {object} deps
+   * @param {Pick<import('@tryghost/logging').GhostLogger, 'info' | 'warn'>} deps.logging
+   * @param {object} deps.config
+   * @param {object} deps.labs
+   * @param {object} deps.sentry
+   * @param {object} deps.settingsCache
+   * @param {object} deps.urlUtils
+   * @param {object} deps.models
+   * @param {object} deps.models.Automation
+   * @param {object} deps.models.EmailDesignSetting
+   * @param {object} deps.models.Newsletter
+   * @param {object} deps.emailAddressService - The ready email address policy instance
+   * @param {object} deps.settingsHelpers
+   * @param {{send: (message: object) => Promise<unknown>}} deps.transactionalMailer
+   * @param {{send: (message: object, recipientData: object, replacements: unknown[]) => Promise<unknown>}} deps.bulkMailer
+   * @param {import('./member-welcome-email-renderer')} deps.renderer
+   * @param {(options: {url: string, email: string}) => string} deps.verifyEmailTemplate
+   * @param {object} deps.singleUseTokenProvider
+   */
+  constructor({
+    logging,
+    config,
+    labs,
+    sentry,
+    settingsCache,
+    urlUtils,
+    models,
+    emailAddressService,
+    settingsHelpers,
+    transactionalMailer,
+    bulkMailer,
+    renderer,
+    verifyEmailTemplate,
+    singleUseTokenProvider,
+  }) {
+    this.#logging = logging;
+    this.#config = config;
+    this.#labs = labs;
+    this.#settingsCache = settingsCache;
+    this.#urlUtils = urlUtils;
+    this.#models = models;
+    this.#emailAddressService = emailAddressService;
+    this.#settingsHelpers = settingsHelpers;
+    this.#transactionalMailer = transactionalMailer;
+    this.#bulkMailer = bulkMailer;
+    this.#renderer = renderer;
 
     const getSigninURL = (token) => {
       const adminUrl = urlUtils.urlFor('admin', true);
@@ -111,14 +149,14 @@ class MemberWelcomeEmailService {
   }
 
   #getSiteSettings() {
-    const icon = settingsCache.get('icon');
+    const icon = this.#settingsCache.get('icon');
 
     return {
-      title: settingsCache.get('title') || 'Ghost',
-      url: urlUtils.urlFor('home', true),
-      accentColor: settingsCache.get('accent_color') || '#15212A',
+      title: this.#settingsCache.get('title') || 'Ghost',
+      url: this.#urlUtils.urlFor('home', true),
+      accentColor: this.#settingsCache.get('accent_color') || '#15212A',
       iconUrl: icon
-        ? urlUtils.urlFor(
+        ? this.#urlUtils.urlFor(
             'image',
             {
               image: icon,
@@ -126,27 +164,27 @@ class MemberWelcomeEmailService {
             true,
           )
         : null,
-      locale: settingsCache.get('locale') || 'en',
+      locale: this.#settingsCache.get('locale') || 'en',
     };
   }
 
   async #getDefaultNewsletterSenderOptions() {
-    const newsletter = await Newsletter.getDefaultNewsletter();
+    const newsletter = await this.#models.Newsletter.getDefaultNewsletter();
     if (!newsletter) {
       return {};
     }
 
-    let senderName = settingsCache.get('title') || '';
+    let senderName = this.#settingsCache.get('title') || '';
     if (newsletter.get('sender_name')) {
       senderName = newsletter.get('sender_name');
     }
 
-    let fromAddress = settingsHelpers.getNoReplyAddress();
+    let fromAddress = this.#settingsHelpers.getNoReplyAddress();
     if (newsletter.get('sender_email')) {
       fromAddress = newsletter.get('sender_email');
     }
 
-    const fromAddresses = emailAddressService.service.getAddress({
+    const fromAddresses = this.#emailAddressService.getAddress({
       from: {
         address: fromAddress,
         name: senderName || undefined,
@@ -158,14 +196,11 @@ class MemberWelcomeEmailService {
     let replyTo = null;
 
     if (replyToSetting === 'support') {
-      replyTo = settingsHelpers.getMembersSupportAddress();
-    } else if (
-      replyToSetting === 'newsletter' &&
-      !emailAddressService.service.managedEmailEnabled
-    ) {
+      replyTo = this.#settingsHelpers.getMembersSupportAddress();
+    } else if (replyToSetting === 'newsletter' && !this.#emailAddressService.managedEmailEnabled) {
       replyTo = from;
     } else {
-      const addresses = emailAddressService.service.getAddress({
+      const addresses = this.#emailAddressService.getAddress({
         from: {
           address: fromAddress,
           name: senderName || undefined,
@@ -200,7 +235,7 @@ class MemberWelcomeEmailService {
   async #getEffectiveSenderOptions(automatedSender = {}) {
     const defaultOptions = await this.#getSenderOptions();
     const defaultFrom =
-      parseMailbox(defaultOptions.from || '') || emailAddressService.service.defaultFromEmail;
+      parseMailbox(defaultOptions.from || '') || this.#emailAddressService.defaultFromEmail;
     const defaultReplyTo = defaultOptions.replyTo
       ? parseMailbox(defaultOptions.replyTo)
       : undefined;
@@ -209,7 +244,7 @@ class MemberWelcomeEmailService {
     const senderEmail = trimValue(automatedSender.senderEmail) || defaultFrom.address;
     const senderReplyTo = trimValue(automatedSender.senderReplyTo);
 
-    const addresses = emailAddressService.service.getAddress({
+    const addresses = this.#emailAddressService.getAddress({
       from: {
         address: senderEmail,
         ...(senderName ? { name: senderName } : {}),
@@ -228,14 +263,14 @@ class MemberWelcomeEmailService {
   }
 
   async #loadWelcomeEmailsCollection() {
-    return Automation.findAll({
+    return this.#models.Automation.findAll({
       filter: WELCOME_EMAIL_FILTER,
       withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting'],
     });
   }
 
   async #getDefaultEmailDesignSettings() {
-    const designSettings = await EmailDesignSetting.findOne({
+    const designSettings = await this.#models.EmailDesignSetting.findOne({
       slug: DEFAULT_EMAIL_DESIGN_SETTING_SLUG,
     });
 
@@ -280,7 +315,7 @@ class MemberWelcomeEmailService {
       };
     }
 
-    const validated = emailAddressService.service.validate(value, validationType);
+    const validated = this.#emailAddressService.validate(value, validationType);
     if (!validated.allowed) {
       throw new errors.ValidationError({
         message: `You cannot set ${field} to ${value}`,
@@ -329,7 +364,7 @@ class MemberWelcomeEmailService {
     this.#magicLinkService.transporter = {
       sendMail: (message) => {
         if (process.env.NODE_ENV !== 'production') {
-          logging.warn(message.text);
+          this.#logging.warn(message.text);
         }
 
         return this.#transactionalMailer.send({
@@ -353,7 +388,7 @@ class MemberWelcomeEmailService {
     this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
 
     for (const [memberStatus, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
-      const row = await Automation.findOne(
+      const row = await this.#models.Automation.findOne(
         { slug },
         {
           withRelated: [
@@ -423,7 +458,7 @@ class MemberWelcomeEmailService {
     }
 
     const name = member?.name ? `${member.name} at ` : '';
-    logging.info(
+    this.#logging.info(
       {
         system: {
           event:
@@ -465,7 +500,7 @@ class MemberWelcomeEmailService {
         break;
       case 'automation': {
         tags = [AUTOMATION_EMAIL_TAG];
-        const mailgunTagFromConfig = config.get('bulkEmail:mailgun:tag');
+        const mailgunTagFromConfig = this.#config.get('bulkEmail:mailgun:tag');
         if (typeof mailgunTagFromConfig === 'string' && mailgunTagFromConfig.length > 0) {
           tags.push(mailgunTagFromConfig);
         }
@@ -630,7 +665,7 @@ class MemberWelcomeEmailService {
     automationRunStepId,
   }) {
     const designSettings = email.designSettingId
-      ? await EmailDesignSetting.findOne({ id: email.designSettingId })
+      ? await this.#models.EmailDesignSetting.findOne({ id: email.designSettingId })
       : null;
     const designSettingsJson = designSettings?.id ? designSettings.toJSON() : null;
 
@@ -640,8 +675,8 @@ class MemberWelcomeEmailService {
     // controller), just like newsletters. Preview/test sends render separately and never reach
     // this path.
     const unsubscribeUrl =
-      labs.isSet('automations') && member.uuid
-        ? settingsHelpers.createUnsubscribeUrl(member.uuid, { updatesAndAnnouncements: true })
+      this.#labs.isSet('automations') && member.uuid
+        ? this.#settingsHelpers.createUnsubscribeUrl(member.uuid, { updatesAndAnnouncements: true })
         : null;
     const unsubscribe = unsubscribeUrl
       ? { url: unsubscribeUrl, oneClickUrl: unsubscribeUrl }
@@ -671,7 +706,10 @@ class MemberWelcomeEmailService {
       return false;
     }
 
-    const row = await Automation.findOne({ slug }, { withRelated: ['welcomeEmailAutomatedEmail'] });
+    const row = await this.#models.Automation.findOne(
+      { slug },
+      { withRelated: ['welcomeEmailAutomatedEmail'] },
+    );
     if (!row) {
       return false;
     }
@@ -686,7 +724,7 @@ class MemberWelcomeEmailService {
     memberEmail = 'jamie@example.com',
     requireWelcomeEmail = false,
   }) {
-    const automation = await Automation.findOne(
+    const automation = await this.#models.Automation.findOne(
       { id: automationId },
       {
         withRelated: [
@@ -837,7 +875,7 @@ class MemberWelcomeEmailService {
       await this.#prepareSharedSenderUpdate(attrs);
 
     if (Object.keys(attrsToPersist).length > 0) {
-      await EmailDesignSetting.edit(attrsToPersist, { id: designSettings.id });
+      await this.#models.EmailDesignSetting.edit(attrsToPersist, { id: designSettings.id });
     }
 
     await this.#sendSharedSenderVerifications(emailsToVerify);
@@ -875,7 +913,7 @@ class MemberWelcomeEmailService {
     };
 
     const designSettings = await this.#getDefaultEmailDesignSettings();
-    await EmailDesignSetting.edit(attrs, { id: designSettings.id });
+    await this.#models.EmailDesignSetting.edit(attrs, { id: designSettings.id });
 
     const response = await this.#loadWelcomeEmailsCollection();
     return {
@@ -888,37 +926,4 @@ class MemberWelcomeEmailService {
   }
 }
 
-class MemberWelcomeEmailServiceWrapper {
-  init() {
-    if (this.api) {
-      return;
-    }
-
-    if (!this.i18n) {
-      const i18nLib = require('@tryghost/i18n').default;
-      const events = require('../../lib/common/events');
-
-      this.i18n = i18nLib(settingsCache.get('locale') || 'en', 'ghost');
-
-      events.on('settings.locale.edited', (model) => {
-        this.i18n.changeLanguage(model.get('value'));
-      });
-    }
-
-    const SingleUseTokenProvider = require('../members/single-use-token-provider');
-    const models = require('../../models');
-
-    this.api = new MemberWelcomeEmailService({
-      t: this.i18n.t,
-      dir: this.i18n.dir.bind(this.i18n),
-      singleUseTokenProvider: new SingleUseTokenProvider({
-        SingleUseTokenModel: models.SingleUseToken,
-        validityPeriod: 24 * 60 * 60 * 1000,
-        validityPeriodAfterUsage: 10 * 60 * 1000,
-        maxUsageCount: 7,
-      }),
-    });
-  }
-}
-
-module.exports = new MemberWelcomeEmailServiceWrapper();
+module.exports = MemberWelcomeEmailService;

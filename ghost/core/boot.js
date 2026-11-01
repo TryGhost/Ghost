@@ -408,6 +408,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const statsService = require('./server/services/stats').default;
   const explorePingService = require('./server/services/explore-ping').default;
   const users = require('./server/services/users').default;
+  const memberWelcomeEmails = require('./server/services/member-welcome-emails').default;
   const domainEvents = require('@tryghost/domain-events');
   const { automationsService } = require('./server/services/automations');
   const automationsApi = require('./server/services/automations/automations-api');
@@ -491,6 +492,9 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     users.init(),
     machinePaymentsService.init(),
   ]);
+  // Member welcome emails captures the ready Email address and Link tracking instances during
+  // initialization, and automation polling sends through it once jobs start.
+  await memberWelcomeEmails.init();
 
   debug('Begin: Register job handlers');
   const registerJobHandlers =

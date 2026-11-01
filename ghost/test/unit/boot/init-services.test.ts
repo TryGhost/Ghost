@@ -20,6 +20,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const memberAttribution = sinon.stub().resolves();
   // Staff initializes synchronously and captures the ready attribution service.
   const staff = sinon.stub();
+  const linkTracking = sinon.stub().resolves();
+  const memberWelcomeEmails = sinon.stub().resolves();
   const register = sinon.stub();
   const start = sinon.stub().resolves();
   // Production init returns before its first poll. Poll behavior belongs to
@@ -68,6 +70,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/tiers': { default: { init: tiers } },
       './server/services/member-attribution': { default: { init: memberAttribution } },
       './server/services/staff': { init: staff },
+      './server/services/link-tracking': { init: linkTracking },
+      './server/services/member-welcome-emails': { default: { init: memberWelcomeEmails } },
       './server/services/media-inliner': { default: { init: media, service: {} } },
       './server/services/post-scheduling': { default: { rescheduleAll: reschedule } },
       './server/services/jobs-service/register-job-handlers': { default: register },
@@ -91,6 +95,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     tiers,
     memberAttribution,
     staff,
+    linkTracking,
+    memberWelcomeEmails,
     register,
     start,
     automations,
@@ -230,7 +236,40 @@ it('constructs gifts over the tiers root before tiers initialization starts', as
   sinon.assert.callOrder(boot.gifts, boot.tiers);
 });
 
-for (const dependency of ['mentions', 'media', 'email', 'donations', 'tiers'] as const) {
+it('waits for link tracking before initializing member welcome emails, then initializes it before jobs', async function () {
+  const boot = createServicesHarness();
+  const ready = Promise.withResolvers<void>();
+  boot.linkTracking.returns(ready.promise);
+  const startup = boot.initServices();
+
+  try {
+    await setImmediate();
+    sinon.assert.calledOnce(boot.linkTracking);
+    sinon.assert.notCalled(boot.memberWelcomeEmails);
+    sinon.assert.notCalled(boot.register);
+  } finally {
+    ready.resolve();
+    await startup;
+  }
+
+  sinon.assert.calledOnce(boot.memberWelcomeEmails);
+  sinon.assert.callOrder(
+    boot.emailAddress,
+    boot.linkTracking,
+    boot.memberWelcomeEmails,
+    boot.register,
+    boot.automations,
+  );
+});
+
+for (const dependency of [
+  'mentions',
+  'media',
+  'email',
+  'donations',
+  'memberWelcomeEmails',
+  'tiers',
+] as const) {
   it(`waits for ${dependency} initialization to finish before registering or starting jobs`, async function () {
     const boot = createServicesHarness();
     const ready = Promise.withResolvers<void>();

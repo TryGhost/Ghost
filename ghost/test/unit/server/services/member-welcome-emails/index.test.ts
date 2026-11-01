@@ -11,12 +11,13 @@ const mail = require('../../../../../core/server/lib/mail');
 const MailgunClient = require('../../../../../core/server/lib/mailgun/mailgun-client');
 const lexicalLib = require('../../../../../core/server/lib/lexical');
 const emailAddressService = require('../../../../../core/server/services/email-address');
+const linkTracking = require('../../../../../core/server/services/link-tracking');
 const StripeService = require('../../../../../core/server/services/stripe/stripe-service');
 const automatedEmails = require('../../../../../core/server/api/endpoints/automated-emails');
 const automationEmailPreviews = require('../../../../../core/server/api/endpoints/automation-email-previews');
 const constants = require('../../../../../core/server/services/member-welcome-emails/constants');
-const barrel = require('../../../../../core/server/services/member-welcome-emails');
-const wrapper = require('../../../../../core/server/services/member-welcome-emails/service');
+const MemberWelcomeEmailService = require('../../../../../core/server/services/member-welcome-emails/member-welcome-email-service');
+const root = require('../../../../../core/server/services/member-welcome-emails').default;
 
 const { MESSAGES } = constants;
 
@@ -81,23 +82,27 @@ function newsletter(sender: string) {
   });
 }
 
-/**
- * Initializes a wrapper of the exported class without touching the shared event emitter,
- * which other files in this worker also listen on.
- */
-function initWrapper(target = new wrapper.constructor()) {
-  const on = sinon.stub(events, 'on');
-  try {
-    target.init();
-    return { wrapper: target, on, localeListener: on.firstCall?.args[1] };
-  } finally {
-    on.restore();
-  }
-}
+const automationEmail = {
+  email: { designSettingId: 'design-id', lexical: lexical('Hello'), subject: 'Automation' },
+  member,
+  memberStatus: 'free',
+  trackOpens: true,
+  trackClicks: false,
+  automationActionRevisionId: 'revision-id',
+  automationRunStepId: 'step-id',
+};
 
+// The root retains one instance for the process. The initialization suite boots it first, and
+// later suites boot it themselves when run alone, always through a stubbed emitter so the shared
+// bus never gets a listener from this file. They reload it to reset the caches they exercise.
 describe('Member welcome emails root', function () {
   const settings: Attributes = {};
   let sendTransactional: sinon.SinonStub;
+  let localeListener: (model: { get: (key: string) => string }) => unknown;
+
+  beforeAll(function () {
+    emailAddressService.init();
+  });
 
   beforeEach(function () {
     Object.assign(settings, { title: 'Test Site', locale: 'en', accent_color: '#15212A' });
@@ -115,89 +120,91 @@ describe('Member welcome emails root', function () {
     }
   });
 
-  describe('shape', function () {
-    it('exports the wrapper singleton as service and spreads the constants from the barrel', function () {
-      assert.equal(barrel.service, wrapper);
-      assert.deepEqual(Object.keys(barrel).sort(), ['service', ...Object.keys(constants)].sort());
-      for (const [name, value] of Object.entries(constants)) {
-        assert.equal(barrel[name], value);
-      }
-    });
-
-    it('exposes a synchronous init with no api or i18n before the first call', function () {
-      const fresh = new wrapper.constructor();
-
-      assert.equal(typeof fresh.init, 'function');
-      assert.equal(fresh.api, undefined);
-      assert.equal(fresh.i18n, undefined);
-
-      assert.equal(initWrapper(fresh).wrapper.init(), undefined);
-      assert.ok(fresh.api);
-    });
-  });
+  // init is idempotent, so after the initialization suite this only returns the retained instance.
+  async function initRoot() {
+    const on = sinon.stub(events, 'on');
+    sinon.define(linkTracking, 'service', { addAutomationTrackingToUrl: sinon.stub() });
+    try {
+      await root.init();
+    } finally {
+      on.restore();
+    }
+  }
 
   describe('initialization', function () {
-    it('builds a ghost-namespace translator for the configured locale and follows locale edits', async function () {
-      settings.locale = 'fr';
-
-      const { wrapper: fresh, on, localeListener } = initWrapper();
-
-      sinon.assert.calledOnceWithExactly(on, 'settings.locale.edited', sinon.match.func);
-      assert.equal(fresh.i18n.language, 'fr');
-
-      await localeListener({ get: (key: string) => (key === 'value' ? 'de' : undefined) });
-
-      assert.equal(fresh.i18n.language, 'de');
+    it('exposes only init and a guarded service getter', function () {
+      assert.deepEqual(Object.keys(root).sort(), ['init', 'service']);
+      assert.equal(typeof root.init, 'function');
+      assert.throws(() => root.service, {
+        errorType: 'IncorrectUsageError',
+        message: /Member welcome emails used before init\(\)/,
+      });
     });
 
-    it('renders welcome emails with the translator it built, so locale edits reach the footer', async function () {
-      const { wrapper: fresh, localeListener } = initWrapper();
+    it('rejects init while link tracking is not ready and leaves no locale listener behind', async function () {
+      const on = sinon.stub(events, 'on');
+
+      await assert.rejects(root.init(), /Link tracking must be initialized/);
+
+      sinon.assert.notCalled(on);
+      assert.throws(() => root.service, { errorType: 'IncorrectUsageError' });
+    });
+
+    it('builds the service for the configured locale with one locale listener once dependencies are ready', async function () {
+      settings.locale = 'fr';
+      sinon.define(linkTracking, 'service', { addAutomationTrackingToUrl: sinon.stub() });
+      const on = sinon.stub(events, 'on');
+
+      await root.init();
+
+      sinon.assert.calledOnceWithExactly(on, 'settings.locale.edited', sinon.match.func);
+      localeListener = on.firstCall.args[1];
+      assert.ok(root.service instanceof MemberWelcomeEmailService);
+    });
+
+    it('retains the same instance and listener across repeated init', async function () {
+      const on = sinon.stub(events, 'on');
+      const service = root.service;
+
+      await root.init();
+      await Promise.all([root.init(), root.init()]);
+
+      assert.equal(root.service, service);
+      sinon.assert.notCalled(on);
+    });
+
+    it('has no welcome content to send until loadMemberWelcomeEmails runs', async function () {
+      const findAutomation = sinon.stub(models.Automation, 'findOne').resolves(welcomeRow());
+
+      await assert.rejects(root.service.send({ member, memberStatus: 'free' }), {
+        message: MESSAGES.NO_MEMBER_WELCOME_EMAIL,
+      });
+
+      sinon.assert.notCalled(findAutomation);
+      sinon.assert.notCalled(sendTransactional);
+    });
+
+    it('renders with the translator it built for the configured locale and follows locale edits', async function () {
       sinon.stub(models.Newsletter, 'getDefaultNewsletter').resolves(newsletter('First'));
       sinon.stub(models.Automation, 'findOne').resolves(welcomeRow());
-      await fresh.api.loadMemberWelcomeEmails();
+      await root.service.loadMemberWelcomeEmails();
       const french = i18nLib('fr', 'ghost').t('Manage your preferences');
       assert.notEqual(french, 'Manage your preferences');
 
-      await fresh.api.send({ member, memberStatus: 'free' });
-      await localeListener({ get: () => 'fr' });
-      await fresh.api.send({ member, memberStatus: 'free' });
+      await root.service.send({ member, memberStatus: 'free' });
+      await localeListener({ get: (key) => (key === 'value' ? 'en' : '') });
+      await root.service.send({ member, memberStatus: 'free' });
 
       // The HTML entity-encodes accents, so the finalized plaintext carries the footer label.
-      assert.ok(sendTransactional.firstCall.args[0].text.includes('Manage your preferences'));
-      assert.ok(sendTransactional.secondCall.args[0].text.includes(french));
-    });
-
-    it('keeps one api across repeated init and one translator and listener across api resets', function () {
-      const on = sinon.stub(events, 'on');
-      const fresh = new wrapper.constructor();
-
-      fresh.init();
-      const api = fresh.api;
-      const i18n = fresh.i18n;
-      fresh.init();
-
-      assert.equal(fresh.api, api);
-      assert.equal(fresh.i18n, i18n);
-
-      // Tests reset api to rebuild the implementation; the translator and its listener stay.
-      fresh.api = null;
-      fresh.init();
-
-      assert.ok(fresh.api);
-      assert.notEqual(fresh.api, api);
-      assert.equal(fresh.i18n, i18n);
-      sinon.assert.calledOnce(on);
+      assert.ok(sendTransactional.firstCall.args[0].text.includes(french));
+      assert.ok(sendTransactional.secondCall.args[0].text.includes('Manage your preferences'));
     });
   });
 
-  describe('caller-owned initialization', function () {
-    let previousApi: unknown;
+  describe('ready service consumers', function () {
     let api: Record<string, sinon.SinonStub>;
-    let init: sinon.SinonStub;
 
     beforeEach(function () {
-      previousApi = wrapper.api;
-      wrapper.api = undefined;
       api = {
         isMemberWelcomeEmailActive: sinon.stub().resolves(true),
         previewEmail: sinon.stub().resolves({ html: '<p>Preview</p>' }),
@@ -207,18 +214,11 @@ describe('Member welcome emails root', function () {
         previewAutomationEmail: sinon.stub().resolves({ html: '<p>Preview</p>' }),
         sendTestAutomationEmail: sinon.stub().resolves(),
       };
-      // Without the caller's init there is no api to read.
-      init = sinon.stub(wrapper, 'init').callsFake(() => {
-        wrapper.api = api;
-      });
+      sinon.stub(root, 'service').get(() => api);
       sinon.stub(models.EmailDesignSetting, 'findOne').resolves(designSettings);
     });
 
-    afterEach(function () {
-      wrapper.api = previousApi;
-    });
-
-    it('initializes the wrapper before Stripe checks whether the paid welcome email is active', async function () {
+    it('lets Stripe ask the ready service whether the paid welcome email is active', async function () {
       const stripe = new StripeService({
         labs: {},
         tracking: {},
@@ -235,9 +235,7 @@ describe('Member welcome emails root', function () {
         await stripe.webhookController.checkoutSessionEventService.deps.isPaidWelcomeEmailActive();
 
       assert.equal(active, true);
-      sinon.assert.calledOnce(init);
       sinon.assert.calledOnceWithExactly(api.isMemberWelcomeEmailActive, 'paid');
-      sinon.assert.callOrder(init, api.isMemberWelcomeEmailActive);
     });
 
     const frame = {
@@ -305,12 +303,10 @@ describe('Member welcome emails root', function () {
         },
       ],
     ] as const) {
-      it(`initializes the wrapper before ${endpoint} reads the api`, async function () {
+      it(`forwards ${endpoint} to the ready service`, async function () {
         await controller.query(frame);
 
-        sinon.assert.calledOnce(init);
         sinon.assert.calledOnceWithExactly(api[method], expected);
-        sinon.assert.callOrder(init, api[method]);
       });
     }
   });
@@ -321,40 +317,22 @@ describe('Member welcome emails root', function () {
     let getDefaultNewsletter: sinon.SinonStub;
     let sendBulk: sinon.SinonStub;
 
-    beforeEach(function () {
-      ({
-        wrapper: { api },
-      } = initWrapper());
+    beforeEach(async function () {
+      await initRoot();
+      api = root.service;
       findAutomation = sinon.stub(models.Automation, 'findOne').resolves(welcomeRow());
       getDefaultNewsletter = sinon
         .stub(models.Newsletter, 'getDefaultNewsletter')
         .resolves(newsletter('First'));
       sinon.stub(models.EmailDesignSetting, 'findOne').resolves(designSettings);
       sendBulk = sinon.stub(MailgunClient.prototype, 'send').resolves({ id: '<bulk-id>' });
-    });
-
-    const sendAutomationEmail = () =>
-      api.sendAutomationEmail({
-        email: { designSettingId: 'design-id', lexical: lexical('Hello'), subject: 'Automation' },
-        member,
-        memberStatus: 'free',
-        trackOpens: true,
-        trackClicks: false,
-        automationActionRevisionId: 'revision-id',
-        automationRunStepId: 'step-id',
-      });
-
-    it('has no welcome content to send until loadMemberWelcomeEmails runs', async function () {
-      await assert.rejects(api.send({ member, memberStatus: 'free' }), {
-        message: MESSAGES.NO_MEMBER_WELCOME_EMAIL,
-      });
-
-      sinon.assert.notCalled(findAutomation);
-      sinon.assert.notCalled(sendTransactional);
+      // Start each case from freshly loaded content and sender options.
+      await api.loadMemberWelcomeEmails();
+      findAutomation.resetHistory();
+      getDefaultNewsletter.resetHistory();
     });
 
     it('sends the content captured by the last load and refreshes it on the next load', async function () {
-      await api.loadMemberWelcomeEmails();
       findAutomation.resolves(welcomeRow({ subject: 'Edited {site_title}' }));
 
       await api.send({ member, memberStatus: 'free' });
@@ -366,26 +344,25 @@ describe('Member welcome emails root', function () {
     });
 
     it('memoizes the default newsletter sender until welcome emails are reloaded', async function () {
-      await sendAutomationEmail();
+      await api.sendAutomationEmail(automationEmail);
       getDefaultNewsletter.resolves(newsletter('Second'));
-      await sendAutomationEmail();
+      await api.sendAutomationEmail(automationEmail);
 
-      sinon.assert.calledOnce(getDefaultNewsletter);
+      sinon.assert.notCalled(getDefaultNewsletter);
       for (const call of sendBulk.getCalls()) {
         assert.equal(call.args[0].from, '"First Sender" <first@example.com>');
         assert.equal(call.args[0].replyTo, 'first-reply@example.com');
       }
 
       await api.loadMemberWelcomeEmails();
-      await sendAutomationEmail();
+      await api.sendAutomationEmail(automationEmail);
 
-      sinon.assert.calledTwice(getDefaultNewsletter);
+      sinon.assert.calledOnce(getDefaultNewsletter);
       assert.equal(sendBulk.thirdCall.args[0].from, '"Second Sender" <second@example.com>');
       assert.equal(sendBulk.thirdCall.args[0].replyTo, 'second-reply@example.com');
     });
 
     it('refreshes the sender cache for test sends without reloading welcome content', async function () {
-      await api.loadMemberWelcomeEmails();
       getDefaultNewsletter.resolves(newsletter('Second'));
       findAutomation.resolves(welcomeRow({ subject: 'Edited {site_title}' }));
 
@@ -397,7 +374,7 @@ describe('Member welcome emails root', function () {
       });
       await api.send({ member, memberStatus: 'free' });
 
-      sinon.assert.calledTwice(getDefaultNewsletter);
+      sinon.assert.calledOnce(getDefaultNewsletter);
       const [testSend, welcomeSend] = sendTransactional.getCalls().map((call) => call.args[0]);
       assert.equal(testSend.to, 'owner@example.com');
       assert.equal(testSend.subject, '[Test] Test Test Site');
@@ -407,8 +384,6 @@ describe('Member welcome emails root', function () {
     });
 
     it('reads site settings when each email is sent', async function () {
-      await api.loadMemberWelcomeEmails();
-
       await api.send({ member, memberStatus: 'free' });
       settings.title = 'Renamed Site';
       await api.send({ member, memberStatus: 'free' });
@@ -422,29 +397,18 @@ describe('Member welcome emails root', function () {
     let api: Record<string, (...args: unknown[]) => Promise<unknown>>;
     let findDesign: sinon.SinonStub;
 
-    beforeEach(function () {
-      ({
-        wrapper: { api },
-      } = initWrapper());
+    beforeEach(async function () {
+      await initRoot();
+      api = root.service;
       sinon.stub(models.Automation, 'findOne').resolves(welcomeRow());
       sinon.stub(models.Newsletter, 'getDefaultNewsletter').resolves(newsletter('First'));
       findDesign = sinon.stub(models.EmailDesignSetting, 'findOne').resolves(designSettings);
+      await api.loadMemberWelcomeEmails();
+      findDesign.resetHistory();
     });
-
-    const sendAutomationEmail = () =>
-      api.sendAutomationEmail({
-        email: { designSettingId: 'design-id', lexical: lexical('Hello'), subject: 'Automation' },
-        member,
-        memberStatus: 'free',
-        trackOpens: true,
-        trackClicks: false,
-        automationActionRevisionId: 'revision-id',
-        automationRunStepId: 'step-id',
-      });
 
     it('sends the legacy welcome email through the transactional mailer only', async function () {
       const sendBulk = sinon.stub(MailgunClient.prototype, 'send').resolves({ id: '<bulk-id>' });
-      await api.loadMemberWelcomeEmails();
 
       const result = await api.send({ member, memberStatus: 'free' });
 
@@ -465,8 +429,8 @@ describe('Member welcome emails root', function () {
       const response = { id: '<bulk-id>' };
       const sendBulk = sinon.stub(MailgunClient.prototype, 'send').resolves(response);
 
-      const result = await sendAutomationEmail();
-      await sendAutomationEmail();
+      const result = await api.sendAutomationEmail(automationEmail);
+      await api.sendAutomationEmail(automationEmail);
 
       assert.equal(result, response);
       sinon.assert.notCalled(sendTransactional);
@@ -485,7 +449,7 @@ describe('Member welcome emails root', function () {
     });
 
     it('resolves null without a fallback send when bulk mail is not configured', async function () {
-      const result = await sendAutomationEmail();
+      const result = await api.sendAutomationEmail(automationEmail);
 
       assert.equal(result, null);
       sinon.assert.notCalled(sendTransactional);
@@ -510,10 +474,9 @@ describe('Member welcome emails root', function () {
     let editDesign: sinon.SinonStub;
     let validate: sinon.SinonStub;
 
-    beforeEach(function () {
-      ({
-        wrapper: { api },
-      } = initWrapper());
+    beforeEach(async function () {
+      await initRoot();
+      api = root.service;
       Object.assign(token, { created_at: new Date(), first_used_at: null, used_count: 0 });
       tokenModel = {
         get: (key) => token[key as keyof typeof token],
