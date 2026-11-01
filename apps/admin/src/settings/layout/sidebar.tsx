@@ -420,6 +420,13 @@ const Sidebar: React.FC = () => {
             onClick={handleSectionClick}
           />
           <NavItem
+            icon={<LucideIcon.TextQuote />}
+            keywords={generalSearchKeywords.editor}
+            navid="editor"
+            title="Editor"
+            onClick={handleSectionClick}
+          />
+          <NavItem
             icon={<LucideIcon.UserPen />}
             keywords={generalSearchKeywords.users}
             navid="staff"
