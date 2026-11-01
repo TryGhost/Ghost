@@ -75,7 +75,7 @@
     "lint": "pnpm run '/^lint:(server|kernel|shared|frontend|test)$/'"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.1158.0",
+    "@aws-sdk/client-s3": "3.1159.0",
     "@breejs/later": "catalog:",
     "@extractus/oembed-extractor": "catalog:",
     "@faker-js/faker": "catalog:",
@@ -292,7 +292,7 @@
     "better-sqlite3": "catalog:"
   },
   "overrides": {
-    "cron-validate": "1.4.5"
+    "cron-validate": "1.5.3"
   },
   "engines": {
     "cli": "^1.29.1",

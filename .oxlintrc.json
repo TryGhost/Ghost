@@ -33,6 +33,22 @@
       }
     },
     {
+      "files": ["apps/**/*.test.{js,jsx,ts,tsx}", "apps/*/test/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["assert", "assert/*", "node:assert", "node:assert/*"],
+                "message": "App tests assert with Vitest expect. A failing node:assert on a React DOM node inspects the whole fiber tree and can crash the worker."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "files": ["apps/admin/src/**/*.{ts,tsx}"],
       "rules": {
         "local/no-hardcoded-ghost-paths": "error"
@@ -227,6 +243,7 @@
         "ghost/core/server/services/recommendations/index.ts",
         "ghost/core/server/services/signing-keys/index.ts",
         "ghost/core/server/services/slack-ping/index.ts",
+        "ghost/core/server/services/stats/index.ts",
         "ghost/core/server/services/stripe-checkout-config/index.ts",
         "ghost/core/server/services/support-requests/index.ts",
         "ghost/core/server/services/tags-public/index.ts",

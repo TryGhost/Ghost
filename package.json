@@ -89,7 +89,7 @@
     "knip": "catalog:",
     "lint-staged": "catalog:",
     "markdownlint-cli2": "catalog:",
-    "nx": "23.3.0",
+    "nx": "23.3.1",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "remark-cli": "catalog:",
@@ -112,7 +112,7 @@
   "engines": {
     "node": "^22.23.1 || ^24.20.0"
   },
-  "packageManager": "pnpm@12.10.1+sha512.ba40a37eb1a370d60fea8c4cf1d364c13bcccef518e98ad2bcee954f539d38da37458e58261a3fa55e06523450ea0ffff9f497b135be41f2c15c1642bacace6c",
+  "packageManager": "pnpm@12.16.1+sha512.091d1dee7927575661b25dab3c2ae31cafc1c54d6b71ed6a6600cf0c1cb10434a447eae14015f1b23e2e6bedeed79df94a932e2164d2832280dce3fb32f656d1",
   "monorepo": {
     "public": false,
     "internalPackages": true,

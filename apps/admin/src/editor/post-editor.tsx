@@ -444,7 +444,7 @@ export function PostEditor({
         <Stack
           ref={writingAreaRef}
           className={cn(
-            'min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] [--kg-breakout-adjustment:var(--editor-breakout-inset,0px)] lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))] lg:[--kg-breakout-adjustment:calc(var(--editor-breakout-inset,0px)+(var(--editor-settings-width,0px)+var(--spacing)*3)*var(--editor-settings-progress,0))]',
+            'min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] [--kg-breakout-adjustment:var(--editor-breakout-inset,0px)] max-[500px]:px-8 lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))] lg:[--kg-breakout-adjustment:calc(var(--editor-breakout-inset,0px)+(var(--editor-settings-width,0px)+var(--spacing)*3)*var(--editor-settings-progress,0))]',
             chromeEntrance && 'screen-enter-rise',
           )}
           gap="none"
