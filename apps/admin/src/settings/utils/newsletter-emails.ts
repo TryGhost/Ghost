@@ -1,4 +1,3 @@
-// NOTE: duplicated in apps/admin/src/automations/components/email-modal/newsletter-emails.ts — the email design modal needs it in both apps until Automations GAs; keep in sync
 import {
   type Config,
   hasSendingDomain,

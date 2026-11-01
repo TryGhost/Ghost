@@ -1,7 +1,7 @@
 import type { AutomationRunHistory } from '@tryghost/admin-x-framework/api/automation-run-history';
 import { formatNumber } from '@tryghost/shade/utils';
 import { emailTextExcerpt } from './history-email-preview';
-import { WELCOME_EMAIL_SLUGS } from './default-welcome-email-values';
+import { WELCOME_EMAIL_SLUGS } from '@/settings/api';
 
 export type HistoryEmail = { subject: string | null; text: string };
 
