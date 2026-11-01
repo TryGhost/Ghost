@@ -215,6 +215,26 @@ describe('ToggleNode', function () {
                 </table>
             `);
         }));
+
+        it('preserves spaces between formatted heading words for email', editorTest(function () {
+            const heading = '<strong>Heading</strong> <em>words</em>';
+            const toggleNode = $createToggleNode({heading, content: 'Content'});
+            const {element} = toggleNode.exportDOM(editor, {...exportOptions, target: 'email'});
+            const renderedHeading = (element as HTMLElement).querySelector('.kg-toggle-heading h4');
+
+            expect(renderedHeading?.textContent).toBe('Heading words');
+            expect(renderedHeading?.innerHTML).toBe(heading);
+        }));
+
+        it('preserves spaces between formatted content words for email', editorTest(function () {
+            const content = '<p><strong>Hello</strong> <em>world</em></p>';
+            const toggleNode = $createToggleNode({heading: 'Heading', content});
+            const {element} = toggleNode.exportDOM(editor, {...exportOptions, target: 'email'});
+            const renderedContent = (element as HTMLElement).querySelector('.kg-toggle-content');
+
+            expect(renderedContent?.textContent?.trim()).toBe('Hello world');
+            expect(renderedContent?.querySelector('p')?.outerHTML).toBe(content);
+        }));
     });
 
     describe('importDOM', function () {
