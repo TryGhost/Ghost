@@ -466,18 +466,16 @@ services:
         distinct from optional static boot validation; neither proves remote readiness.
   announcement-bar-service:
     kind: directory
-    disposition: review
+    disposition: relocate
     status: audited
     auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     migration:
-      complexity: complex
-      modelImpact: fits
+      complexity: not-applicable
+      modelImpact: not-applicable
       reason: >-
-        Ownership must be decided before migration: this eager settings resolver has no boot
-        entry and currently serves the announcements endpoint. If retained as an
-        application-owned capability, construction and live settings callbacks fit the
-        helper. Do not add initialization solely to justify its location; the open placement
-        decision makes it unsuitable as the next simple pilot.
+        Not a service: this settings resolver has no boot entry, owns no resources and
+        answers one controller's query for the current member. Relocate it to the
+        announcements endpoint rather than adding initialization to justify its location.
       reviewedAt: 61ac1e5058fa4657def92d7b362e197314b1a88d
       sources:
         - core/server/services/announcement-bar-service/index.js
@@ -501,8 +499,10 @@ services:
     entryPoints:
       - announcement-bar-service/index.js
     notes: >-
-      Preserve live settings, request-local member visibility and the validator's deep class
-      import when moving composition to boot. This instance owns no background resources.
+      Planned relocation: the resolver moves into the announcements controller, its only
+      caller, and the visibility values move to shared endpoint utilities used by both the
+      controller and the settings input validator. Preserve live settings reads and
+      request-local member visibility. This instance owns no background resources.
     contracts:
       exports:
         summary: >-
