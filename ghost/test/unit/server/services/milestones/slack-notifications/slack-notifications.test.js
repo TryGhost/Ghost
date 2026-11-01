@@ -1,9 +1,9 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const SlackNotifications = require('../../../../../core/server/services/slack-notifications/slack-notifications');
+const SlackNotifications = require('../../../../../../core/server/services/milestones/slack-notifications/slack-notifications');
 const nock = require('nock');
 const ObjectId = require('bson-objectid').default;
-const externalRequest = require('../../../../../core/server/lib/request-external');
+const externalRequest = require('../../../../../../core/server/lib/request-external');
 const ghostVersion = require('@tryghost/version');
 
 describe('SlackNotifications', function () {
