@@ -155,6 +155,7 @@ export type Post = Override<
     uuid: string;
     status?: PostStatus;
     count?: PostCount;
+    comments_enabled?: boolean;
   }
 > &
   PostEmailFields;
@@ -213,7 +214,7 @@ export type ContentEditableData = Override<
 >;
 
 export type PostEditableData = ContentEditableData &
-  Partial<Pick<Post, 'status' | 'email_subject' | 'email_only'>>;
+  Partial<Pick<Post, 'status' | 'email_subject' | 'email_only' | 'comments_enabled'>>;
 
 export type PageEditableData = ContentEditableData &
   Partial<Pick<Page, 'status' | 'show_title_and_feature_image'>>;

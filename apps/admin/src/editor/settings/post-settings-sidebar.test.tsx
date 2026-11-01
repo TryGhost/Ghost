@@ -1,11 +1,19 @@
-import { render } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { PostCardConfig } from '@/editor/card-config';
+import type { User } from '@tryghost/admin-x-framework/api/users';
+import { settingsCommentsEnabledToggle } from '@tryghost/test-data/selectors/editor';
+import type { PostCardConfig, PostType } from '@/editor/card-config';
 import type { EditorSessionHandle } from '@/editor/session/use-editor-session';
 import { PostSettingsSidebar } from './post-settings-sidebar';
 
 const mocks = vi.hoisted(() => ({
-  port: {},
+  port: {
+    settings: {
+      featured: false,
+      comments_enabled: true,
+    },
+    editSettings: vi.fn(),
+  },
   urlSection: vi.fn(() => null),
 }));
 
@@ -28,18 +36,35 @@ vi.mock('./template-section', () => ({ TemplateSection: () => null }));
 vi.mock('./url-section', () => ({ UrlSection: mocks.urlSection }));
 
 const CARD_CONFIG = {} as PostCardConfig;
+const ADMIN_USER = {
+  roles: [{ name: 'Administrator' }],
+} as unknown as User;
+const CONTRIBUTOR_USER = {
+  roles: [{ name: 'Contributor' }],
+} as unknown as User;
 
 function handle(kind: 'idle' | 'debouncing') {
   return { state: { kind } } as EditorSessionHandle;
 }
 
-function Sidebar({ session, siteUrl }: { session: EditorSessionHandle; siteUrl: string }) {
+function Sidebar({
+  session,
+  siteUrl,
+  postType = 'post',
+  currentUser = ADMIN_USER,
+}: {
+  session: EditorSessionHandle;
+  siteUrl: string;
+  postType?: PostType;
+  currentUser?: User;
+}) {
   return (
     <PostSettingsSidebar
       cardConfig={CARD_CONFIG}
+      currentUser={currentUser}
       featureImage={null}
       hasInlineExcerpt={true}
-      postType="post"
+      postType={postType}
       session={session}
       siteUrl={siteUrl}
     />
@@ -60,5 +85,51 @@ describe('PostSettingsSidebar renders', () => {
     rerender(<Sidebar session={handle('debouncing')} siteUrl="https://example.org" />);
 
     expect(mocks.urlSection).toHaveBeenCalledTimes(2);
+  });
+
+  it('renders Enable comments toggle for posts when user can manage post', () => {
+    mocks.port.settings.comments_enabled = true;
+    render(
+      <Sidebar
+        currentUser={ADMIN_USER}
+        postType="post"
+        session={handle('idle')}
+        siteUrl="https://example.com"
+      />,
+    );
+
+    const toggle = screen.getByTestId(settingsCommentsEnabledToggle);
+    expect(toggle).toBeInTheDocument();
+    expect(screen.getByLabelText('Enable comments')).toBeInTheDocument();
+
+    fireEvent.click(toggle);
+    expect(mocks.port.editSettings).toHaveBeenCalledWith({ comments_enabled: false });
+  });
+
+  it('hides Enable comments toggle for pages', () => {
+    render(
+      <Sidebar
+        currentUser={ADMIN_USER}
+        postType="page"
+        session={handle('idle')}
+        siteUrl="https://example.com"
+      />,
+    );
+
+    expect(screen.queryByTestId(settingsCommentsEnabledToggle)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Enable comments')).not.toBeInTheDocument();
+  });
+
+  it('hides Enable comments toggle for contributors', () => {
+    render(
+      <Sidebar
+        currentUser={CONTRIBUTOR_USER}
+        postType="post"
+        session={handle('idle')}
+        siteUrl="https://example.com"
+      />,
+    );
+
+    expect(screen.queryByTestId(settingsCommentsEnabledToggle)).not.toBeInTheDocument();
   });
 });

@@ -88,7 +88,11 @@ into the {body} tag of the default.hbs template --}}
 
     {{#if comments}}
         <section class="article-comments gh-canvas">
-            {{comments}}
+            {{#if comments_enabled}}
+                {{comments}}
+            {{else}}
+                <p class="comments-closed">{{t "Comments are closed for this post."}}</p>
+            {{/if}}
         </section>
     {{/if}}
 
