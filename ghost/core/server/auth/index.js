@@ -22,4 +22,8 @@ module.exports = {
   get resetAuthentication() {
     return require('./reset-authentication').default;
   },
+
+  get ssoSignin() {
+    return require('./sso-signin');
+  },
 };

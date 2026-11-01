@@ -8,6 +8,15 @@ export interface User {
 }
 
 /**
+ * Where staff sign in when the adapter replaces password sign-in. `label` is
+ * the text of the sign-in button.
+ */
+export interface SigninPage {
+  url: string;
+  label?: string;
+}
+
+/**
  * A small set of user lookups that Ghost injects into the SSO adapter, so that
  * adapter implementations can resolve users without reaching into Ghost's model
  * layer directly.
@@ -82,6 +91,15 @@ export abstract class SSOBase<Token, Lookup> implements SSOAdapter<Token, Lookup
    */
   protected async getOwnerUser(): Promise<User | null> {
     return this.#users.getOwner();
+  }
+
+  /**
+   * Return a sign-in page to replace password sign-in: Ghost then refuses
+   * passwords, password resets and invites, and Admin links staff to the page.
+   * Defaults to null, which keeps password sign-in.
+   */
+  getSigninPage(): SigninPage | null {
+    return null;
   }
 
   abstract getRequestCredentials(request: Request): Promise<Token | null>;

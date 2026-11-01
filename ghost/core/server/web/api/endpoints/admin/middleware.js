@@ -7,6 +7,7 @@ const apiMw = require('../../middleware');
 const messages = {
   apiTokenBlocked: 'API tokens do not have permission to access this endpoint',
   staffTokenBlocked: 'Staff tokens are not allowed to access this endpoint',
+  passwordSigninDisabled: 'Password sign-in is disabled, sign in with SSO instead',
 };
 
 /**
@@ -144,3 +145,19 @@ module.exports.publicAdminApi = [
   shared.middleware.prettyUrls,
   tokenPermissionCheck,
 ];
+
+/**
+ * Blocks password sign-in, reset and invite endpoints when the SSO adapter has a `signinUrl`
+ *
+ * @type {RequestHandler}
+ */
+module.exports.passwordSigninEnabled = function passwordSigninEnabled(req, res, next) {
+  if (auth.ssoSignin.getSSOSignin()) {
+    return next(
+      new errors.NoPermissionError({
+        message: tpl(messages.passwordSigninDisabled),
+      }),
+    );
+  }
+  next();
+};

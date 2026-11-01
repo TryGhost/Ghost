@@ -52,6 +52,14 @@ class MySSO extends SSOBase {
 module.exports = MySSO;
 ```
 
+### Replacing password sign-in
+
+Override `getSigninPage()` to make SSO the only way staff sign in. It returns
+`{url, label}`, or `null` (the default) to keep password sign-in. With a
+sign-in page, Ghost refuses password sign-in, password resets, invites and
+resetting all authentication, and returns the page from `/site` as
+`sso_signin_url` and `sso_signin_label`.
+
 ### Installing and activating
 
 Place the adapter at `content/adapters/sso/MySSO/index.js` and activate it in

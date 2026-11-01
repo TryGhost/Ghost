@@ -38,6 +38,10 @@ describe('adapter-base-sso', function () {
     assert.ok(Object.isFrozen(store.requiredFns), 'requiredFns should be frozen');
   });
 
+  it('keeps password sign-in unless the adapter returns a sign-in page', function () {
+    assert.equal(new TestSSO().getSigninPage(), null);
+  });
+
   describe('user repository', function () {
     it('resolves users by email through the injected repository', async function () {
       const owner: User = { id: 'owner-id', email: 'owner@example.com' };
