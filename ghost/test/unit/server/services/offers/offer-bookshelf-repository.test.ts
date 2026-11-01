@@ -149,13 +149,18 @@ describe('OfferBookshelfRepository', function () {
       const offer = await newOffer();
       // A real rolled-back transaction rejects this promise. Save chains only a fulfilment
       // handler, so that rejection surfaces as an unhandled rejection; a stub keeps it out of
-      // the test run while pinning that no handler is attached.
-      const executionPromise = { then: sinon.stub().returns(new Promise(() => {})) };
+      // the test run while pinning that no handler is attached, on this promise or the one
+      // its then returns.
+      const chained = { then: sinon.stub(), catch: sinon.stub(), finally: sinon.stub() };
+      const executionPromise = { then: sinon.stub().returns(chained) };
 
       await repository.save(offer, { transacting: { executionPromise } });
 
       sinon.assert.calledOnce(executionPromise.then);
       assert.equal(executionPromise.then.firstCall.args.length, 1);
+      sinon.assert.notCalled(chained.then);
+      sinon.assert.notCalled(chained.catch);
+      sinon.assert.notCalled(chained.finally);
       sinon.assert.notCalled(dispatch);
     });
   });

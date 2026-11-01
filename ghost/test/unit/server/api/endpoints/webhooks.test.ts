@@ -69,7 +69,7 @@ describe('Webhooks Admin endpoint', function () {
   for (const [label, failure] of [
     ['MySQL', { errno: 1452 }],
     ['SQLite', { code: 'SQLITE_CONSTRAINT', message: 'FOREIGN KEY constraint failed' }],
-    ['SQLite foreign key', { code: 'SQLITE_CONSTRAINT_FOREIGNKEY' }],
+    ['SQLite extended-code', { code: 'SQLITE_CONSTRAINT_FOREIGNKEY' }],
   ] as const) {
     it(`reports a missing integration from a ${label} foreign key failure`, async function () {
       const endpoint = loadEndpoint();
