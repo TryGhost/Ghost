@@ -12315,7 +12315,7 @@ services:
       server code. The cache and caller-owned settings operations retain their distinct
       lifetimes. Settle ownership of protected setting mutations, verification delivery and
       feature-specific side effects separately; these are not API presentation merely
-      because endpoints invoke them. No source has moved. Preserve per-boot cache
+      because endpoints invoke them. No source has moved. Reassess initialization after separating ownership rather than migrating this root in place. Preserve per-boot cache
       rebuilding, synchronous retained readers and separate caller-owned BREAD instances.
       Utility consumers also run before ordinary service boot.
     contracts:
@@ -12560,7 +12560,7 @@ services:
       their existing feature owners; sender defaults to shared sender policy. Only common settings
       access/calculated-field bindings stay with Shared settings. Boot injects feature-owned
       calculation callbacks so Shared does not import server features. Preserve early evaluation
-      without forcing feature services to initialize first. No source has moved. Preserve the
+      without forcing feature services to initialize first. No source has moved. Split before the initializer migration rather than migrating this facade in place; the remaining calculated-field bindings move with the settings split. Preserve the
       shared facade, exposed cache reference and calculated-field bindings. Helper reads, frozen
       URL inputs and caller-owned result caches have different lifetimes.
     contracts:
