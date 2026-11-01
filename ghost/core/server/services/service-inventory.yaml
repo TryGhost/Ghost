@@ -322,7 +322,7 @@ services:
           - core/server/auth/session/index.js
           - core/server/services/route-settings/index.js
           - core/server/services/custom-redirects/index.js
-          - core/server/services/media-inliner/service.js
+          - core/server/services/media-inliner/index.ts
           - core/server/services/oembed/service.js
           - core/server/services/jobs-service/index.ts
           - core/server/services/members/import-export/index.ts
@@ -7101,65 +7101,63 @@ services:
   media-inliner:
     kind: directory
     disposition: migrate
+    migrated: true
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
       complexity: straightforward
       modelImpact: fits
       reason: >-
-        The constructor captures shared models and a storage-selection callback without
-        starting work or owning resources. Return one retained inliner after adapters are
-        ready, then register jobs with that instance and adapt getInstance consumers.
-        Current init replaces the object, but no production replacement requirement was
-        found; cover retention and per-call storage selection explicitly.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
+        The boot-owned default root returns one ready ExternalMediaInliner once the storage
+        adapters and models exist; boot registers the job handler with that instance and
+        content import reads it per run. Repeated init now retains the instance, which no
+        production path relied on changing; a second boot in one process no longer
+        re-resolves the adapters, so a storage adapter broken between boots fails at its first
+        selection instead of at boot. Storage selection reads the uploads policy and looks up
+        the active adapter on every call; init still resolves all three so a broken adapter
+        fails the first boot.
+      reviewedAt: 940a713d06d08ca9294bb767e8419cbd58f7b13e
       sources:
-        - core/server/services/media-inliner/service.js
+        - core/server/services/media-inliner/index.ts
         - core/server/services/media-inliner/external-media-inliner.js
         - core/server/services/jobs-service/register-job-handlers.ts
         - core/boot.js
-        - test/unit/server/services/media-inliner/service.test.ts
+        - test/unit/server/services/media-inliner/root.test.ts
       dependencies:
         complexity: straightforward
         reason: >-
-          Models and live storage selection already use a constructor seam. The remaining request,
-          logging, URL/image helpers and codecs can use that seam too. Preserve the existing
-          first-use file-type/HEIC loading and per-call upload configuration; these are bounded
-          wiring changes, not a dependency cycle.
-        preparation:
-          - >-
-            Move service.js composition into index.ts and pass request, logging, image/URL helpers
-            and utility operations into ExternalMediaInliner.
-          - >-
-            Supply lazy file-type/HEIC loaders and the bounded-regex operation from the root,
-            preserving import-error behavior and current codec loading timing.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
+          The root composes models, the three storage adapters, live upload configuration,
+          logging, the external request client, URL utilities and lazy file-type and HEIC
+          loaders in index.ts; the implementation receives them through its constructor and
+          keeps first-use loading and the fallback on a failed file-type load. mime-types, path,
+          node:vm and the shared image-content and svg-sanitizer helpers are stateless and stay
+          imported directly under exact allowances; no disallowed dependency remains.
+        preparation: []
+        reviewedAt: b7cad8406041d09d9e4085c5f981f958d454fc76
         sources:
-          - core/server/services/media-inliner/index.js
-          - core/server/services/media-inliner/service.js
+          - core/server/services/media-inliner/index.ts
           - core/server/services/media-inliner/external-media-inliner.js
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/boot.js
     entryPoints:
-      - media-inliner/index.js
+      - media-inliner/index.ts
     notes: >-
       Preserve the boot-owned inliner, retained job handlers and per-import media consumers.
-      Root replacement and shared transport/storage ownership need contracts before lifecycle
-      migration; successful job completion does not mean every resource was inlined.
+      Shared transport/storage ownership needs contracts before any disposal is added;
+      successful job completion does not mean every resource was inlined.
     contracts:
       exports:
         summary: >-
-          The CommonJS index re-exports a stable object with receiver-independent async init
-          and synchronous getInstance. getInstance throws IncorrectUsageError until publication;
-          there is no shutdown/reset. The deep module exports ExternalMediaInliner, including
-          receiver-dependent importUrl and inline plus processing helpers and static findMatches.
-          importUrl resolves stored/failed result objects; inline resolves undefined. Unit tests
-          pin injected importUrl stages and helpers. Root units pin getInstance throwing
-          IncorrectUsageError before init, init resolving undefined and getInstance then returning
-          the same ready inliner synchronously.
+          The TypeScript root default-exports a defineService initializer with init and a
+          service getter that throws IncorrectUsageError until the inliner is published; there
+          is no shutdown/reset and no extras. The deep module exports ExternalMediaInliner,
+          including receiver-dependent importUrl and inline plus processing helpers and static
+          findMatches. importUrl resolves stored/failed result objects; inline resolves undefined.
+          Unit tests pin injected importUrl stages and helpers. Root units pin the getter throwing
+          before init, init resolving undefined and the getter then returning the same ready
+          inliner synchronously.
         sources:
-          - core/server/services/media-inliner/index.js
-          - core/server/services/media-inliner/service.js
+          - core/server/services/media-inliner/index.ts
           - core/server/services/media-inliner/external-media-inliner.js
           - core/server/services/media-inliner/types.ts
         tests:
@@ -7167,16 +7165,18 @@ services:
           - test/unit/server/services/media-inliner/root.test.ts
       construction:
         summary: >-
-          Importing the root creates no inliner. Every init loads the class/models, obtains
-          media/image/file adapters and creates a new inliner with retained models and a storage
-          callback. The async function has no await, so assignment occurs before its fulfilled
-          promise is returned. Construction only stores references, but importing its request
-          dependency creates shared HTTP/HTTPS agents. Root tests stub adapter lookup and exercise
-          the resulting selector, and pin that import resolves no adapter, that init resolves the
-          three storage adapters once and publishes one inliner, and that an adapter lookup
-          failure publishes nothing and allows an explicit retry.
+          Importing the root creates no inliner. The first init loads the class, models and
+          collaborators, obtains the media/image/file adapters and creates one inliner with
+          retained models, logging, the external request client, URL utilities, lazy codec
+          loaders and a storage callback; later init calls return the same instance. The factory
+          is synchronous, so the kernel publishes once its promise settles. Construction only
+          stores references, but requiring the request client creates shared HTTP/HTTPS agents.
+          Root tests stub adapter lookup and exercise the resulting selector, and pin that import
+          resolves no adapter, that init resolves the three storage adapters once and publishes
+          one inliner, that an adapter lookup failure publishes nothing and allows an explicit
+          retry, and that the root's loaders convert a HEIC download.
         sources:
-          - core/server/services/media-inliner/service.js
+          - core/server/services/media-inliner/index.ts
           - core/server/services/media-inliner/external-media-inliner.js
           - core/server/lib/request-external.js
         tests:
@@ -7184,16 +7184,16 @@ services:
           - test/unit/server/services/media-inliner/root.test.ts
       consumers:
         summary: >-
-          Boot passes the current instance to a retained external-media job handler. Admin
+          Boot passes the ready service to a retained external-media job handler. Admin
           db.inlineMedia dispatches explicit/default domains and returns after enqueue, not
-          completion. Content import instead reads getInstance when creating each run's
+          completion. Content import instead reads the service getter when creating each run's
           PostMediaInliner, which retains that instance and caches URL promises across its rows.
           Handler/endpoint units use stubs; a real job integration proves a stored feature-image
           URL and completion log. CSV HTTP tests cover real referenced-media composition,
           reuse, skipped local URLs and unsupported-row isolation, with network interception.
           Root units register the real handler with the published inliner and show it keeps
           that inliner across a later init, and that a PostMediaInliner over the published
-          inliner caches per run while a later run reads the current instance.
+          inliner caches per run while a later run downloads the same URL again.
         sources:
           - core/boot.js
           - core/server/services/jobs-service/register-job-handlers.ts
@@ -7212,16 +7212,16 @@ services:
       startup:
         summary: >-
           Required boot initialization awaits media init in the service Promise.all before
-          retrieving the instance, registering job handlers and starting job delivery. Rejection
+          reading the service, registering job handlers and starting job delivery. Rejection
           prevents those later steps but does not undo other services' concurrent initialization.
-          Direct getInstance has only a publication guard; the class accepts incomplete injected
-          dependencies. Boot units pin that pending media init blocks handler registration and
-          job start and that its rejection propagates without starting them; root units pin
-          adapter lookup failure publishing nothing and a later init succeeding. Construction
-          acquires nothing, so there is no partial-startup cleanup to pin.
+          The service getter has only the kernel's publication guard; the class accepts
+          incomplete injected dependencies. Boot units pin that pending media init blocks handler
+          registration and job start and that its rejection propagates without starting them;
+          root units pin adapter lookup failure publishing nothing and a later init succeeding.
+          Construction acquires nothing, so there is no partial-startup cleanup to pin.
         sources:
           - core/boot.js
-          - core/server/services/media-inliner/service.js
+          - core/server/services/media-inliner/index.ts
           - core/server/services/media-inliner/external-media-inliner.js
           - core/server/services/jobs-service/register-job-handlers.ts
         tests:
@@ -7231,19 +7231,19 @@ services:
           - test/unit/server/services/media-inliner/root.test.ts
       lifetime:
         summary: >-
-          Each successful init replaces the root instance, without disposing the previous one.
-          A failed init before assignment leaves any old instance available. Previously registered
-          handlers and running imports retain old instances; future getInstance calls return the
-          replacement. The inliner has no shared URL cache or concurrency guard; inline downloads
-          duplicate occurrences independently. Content import owns a separate cache per run.
-          Deep module caches retain the file-type function and reusable VM context; match input
-          references are cleared in finally. Root units pin replacement on repeated init as
-          incidental, a registered handler and an import run keeping the inliner they captured,
-          the published inliner surviving a later failed init, and no root-wide URL cache: a
-          second import run downloads a URL the first run already stored. Seam units pin that
-          every occurrence in one body downloads again. Restart remains unasserted.
+          The kernel retains the first published inliner across later init calls, so handlers,
+          running imports and later reads share one instance; a failed first init publishes
+          nothing and a later explicit init runs the factory again. The inliner has no shared URL
+          cache or concurrency guard; inline downloads duplicate occurrences independently.
+          Content import owns a separate cache per run. Each inliner retains the file-type
+          function after its first download; the deep module keeps a reusable VM context whose
+          match inputs are cleared in finally. Root units pin retention across repeated init, a
+          registered handler and an import run keeping the inliner, the published inliner
+          surviving a later failed init, and no root-wide URL cache: a second import run downloads
+          a URL the first run already stored. Seam units pin that every occurrence in one body
+          downloads again. Restart remains unasserted.
         sources:
-          - core/server/services/media-inliner/service.js
+          - core/server/services/media-inliner/index.ts
           - core/server/services/media-inliner/external-media-inliner.js
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/server/services/content-import/index.ts
@@ -7253,19 +7253,20 @@ services:
           - test/unit/server/services/media-inliner/external-media-inliner-seams.test.ts
       configuration:
         summary: >-
-          Storage adapter identities are captured at init; allowed upload extensions are read
-          through config.get per selection. Images take precedence and need allowed contents,
+          Init resolves the three storage adapters so a broken one fails boot; the root's
+          selector then reads allowed upload extensions through config.get and looks up the
+          active adapter through the adapter manager on each selection. Images take precedence and need allowed contents,
           with SVG sanitization before selection; media/files use extension membership. Network
           agent options are captured when request-external loads, while its environment/site-URL
           guards read the accessor per request. These are immutable-config access/capture rules,
           not production hot reload. Root units cover storage choices and pin that a retained
-          inliner reads a replaced uploads policy on each selection while keeping the adapters
-          resolved at init; class units cover SVG, conversions, URL formatting, CDN paths and
+          inliner reads a replaced uploads policy and returns the replaced adapters on each
+          selection; class units cover SVG, conversions, URL formatting, CDN paths and
           regex matching. Body patterns are regexes with bounded VM execution; simple fields use
           literal startsWith(domain). Seam units pin that distinction for one pattern domain and
           that the sniffed file type wins over Content-Type and the URL.
         sources:
-          - core/server/services/media-inliner/service.js
+          - core/server/services/media-inliner/index.ts
           - core/server/services/media-inliner/external-media-inliner.js
           - core/server/lib/image/image-content.ts
           - core/server/lib/image/svg-sanitizer.ts
@@ -7278,9 +7279,9 @@ services:
           - test/unit/server/services/media-inliner/external-media-inliner-seams.test.ts
       resources:
         summary: >-
-          The inliner borrows models, storage and shared request agents. It buffers each download,
-          may load the HEIC codec and writes files before updating models, without a transaction
-          or rollback linking those effects. It owns no timer/listener, pending-request registry
+          The inliner borrows models, storage and the shared request client the root injects. It
+          buffers each download, may load the HEIC codec through the root's loader and writes
+          files before updating models, without a transaction or rollback linking those effects. It owns no timer/listener, pending-request registry
           or cancellation/drain hook. Jobs owns queued work and delegates shutdown to its backend;
           no media-specific abort is passed to downloads. Request defaults include redirects and
           a 10-second timeout; test mode changes timeout/retries. Existing intercepted requests,
@@ -7288,7 +7289,7 @@ services:
           production retry policy, socket disposal or orphan-file cleanup.
         sources:
           - core/server/services/media-inliner/external-media-inliner.js
-          - core/server/services/media-inliner/service.js
+          - core/server/services/media-inliner/index.ts
           - core/server/lib/request-external.js
           - core/server/services/jobs-service/jobs-service.ts
           - core/boot.js
@@ -7309,14 +7310,14 @@ services:
           download failure leaving that post untouched while later posts proceed, query failures
           rejecting inline before any write or after earlier writes, the HEIC codec required on
           first conversion only, a codec that cannot load escaping as an extraction failure, and
-          a conversion failure keeping the original bytes and extension. A failing file-type
-          import falls into the same fallback as an unrecognised buffer; it is not pinned
-          because the dynamic import has no seam. Handler units pin rejection forwarding. CSV
+          a conversion failure keeping the original bytes and extension, and a failed file-type
+          load falling back to Content-Type and retried on the next download. Handler units pin
+          rejection forwarding. CSV
           tests prove row isolation for unsupported files and no post after an injected
           unexpected throw, not rollback of already-stored remote media or every error stage.
         sources:
           - core/server/services/media-inliner/external-media-inliner.js
-          - core/server/services/media-inliner/service.js
+          - core/server/services/media-inliner/index.ts
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/server/services/content-import/import/media.ts
           - core/server/services/content-import/import/importer.ts
@@ -7328,12 +7329,8 @@ services:
     unverified: []
     blockers:
       - >-
-        Repeated init is pinned as replacement, which nothing in production relies on; retained
-        handlers and import runs keep the inliner they captured. Adopting an idempotency guard
-        changes that one assertion, not any consumer contract.
-      - >-
         Pending validation/downloads across a configuration change remain unpinned; the
-        selection policy is read per call and the adapters are retained from init.
+        selection policy and the active adapter are read per call.
       - >-
         Overlapping jobs/imports, atomic writes, cleanup of stored files after a failed model
         write and exactly-once downloads remain unestablished. Per-resource best-effort
@@ -9164,9 +9161,16 @@ services:
           - core/server/services/milestones/milestone-queries.js
     entryPoints:
       - milestones/index.js
+      - milestones/slack-notifications/index.js
     notes: >-
       Preserve background startup, captured milestone configuration and live Stripe eligibility.
       Scheduling, failure and cleanup gaps remain migration blockers.
+      Slack notifications live in slack-notifications/ as the private milestone notification
+      handler: they subscribe only to MilestoneCreatedEvent and read milestones host settings.
+      Boot still initializes them separately during required-service startup; migrating
+      Milestones must take over that subscription and its disposal. Their previous contract
+      audit is recorded at
+      https://github.com/TryGhost/Ghost/blob/33b8dabf2114676d68028d6f86c1945af4e7409c/ghost/core/server/services/service-inventory.yaml#L12917.
     contracts:
       exports:
         summary: >-
@@ -9209,11 +9213,11 @@ services:
           - core/server/services/milestones/bookshelf-milestone-repository.js
           - core/server/services/staff/staff-service.js
           - core/server/services/staff/staff-service-emails.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
+          - core/server/services/milestones/slack-notifications/slack-notifications-service.js
         tests:
           - test/unit/server/services/milestones/milestone.test.ts
           - test/unit/server/services/staff/index.test.js
-          - test/unit/server/services/slack-notifications/index.test.js
+          - test/unit/server/services/milestones/slack-notifications/index.test.js
       startup:
         summary: >-
           Boot starts background services after mounting the app and notifying readiness,
@@ -9278,7 +9282,7 @@ services:
           - core/boot.js
           - core/server/ghost-server.ts
           - core/server/services/staff/staff-service.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
+          - core/server/services/milestones/slack-notifications/slack-notifications-service.js
         tests: []
       failures:
         summary: >-
@@ -9295,9 +9299,9 @@ services:
           - core/server/services/milestones/bookshelf-milestone-repository.js
           - core/boot.js
           - core/server/services/staff/staff-service.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
+          - core/server/services/milestones/slack-notifications/slack-notifications-service.js
         tests:
-          - test/unit/server/services/slack-notifications/slack-notifications-service.test.js
+          - test/unit/server/services/milestones/slack-notifications/slack-notifications-service.test.js
     unverified: []
     blockers:
       - >-
@@ -9327,6 +9331,26 @@ services:
         Add a production repository-to-event-to-notification contract. Staff/Slack tests
         dispatch events manually, implementation tests use the fake repository and E2E
         does not assert delivery; removing Bookshelf event dispatch could escape those tests.
+      - >-
+        Slack notifications: Add wrapper contracts for exact exports, repeated init, changed
+        configuration, disabled first init, partial subscription failure/retry and retained
+        callbacks across restart. The existing root test proves one successful event reaches a
+        webhook, not listener count, configuration lifetime or boot readiness.
+      - >-
+        Slack notifications: Correct the threshold test: it sets isEnabled false and omits
+        minThreshold, so its no-send assertion does not establish threshold behavior. Cover
+        equality, values either side of the threshold, wrapper fallback and invalid parsing
+        through real composition.
+      - >-
+        Slack notifications: Characterize sender/request failures through the real subscriber,
+        including malformed events, timeouts and pending sends during stop. Tests named Throws for
+        invalid or absent URLs only assert logging after a resolved call; preserve that behavior
+        unless changing it separately. Test-mode request overrides do not prove production
+        transport behavior.
+      - >-
+        Slack notifications: Decide listener removal, pending-send drain and shared HTTP-agent
+        ownership. Current class tests create subscribers directly; successful callbacks and fake
+        requests do not establish disposal, duplicate delivery prevention or restart behavior.
   newsletters:
     kind: directory
     disposition: migrate
@@ -12955,197 +12979,6 @@ services:
         not root scheduling, shutdown or crypto-generation failure paths. The public-jwk
         failure test only checks repeated rejection, so it does not prove failed entries
         are evicted rather than returning the same rejected promise.
-  slack-notifications:
-    kind: directory
-    disposition: relocate
-    status: audited
-    auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
-    migration:
-      complexity: complex
-      modelImpact: fits
-      reason: >-
-        The guarded notification instance fits the helper, but its anonymous domain-event
-        subscription has no disposer in the current event-bus API. Establish owned,
-        removable registration before relying on partial-start retry; preserve captured
-        notification configuration and logged delivery failures. This is subscription
-        ownership work rather than evidence for a kernel hook.
-      reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
-      sources:
-        - core/server/services/slack-notifications/service.js
-        - core/server/services/slack-notifications/slack-notifications-service.js
-        - core/boot.js
-      dependencies:
-        complexity: straightforward
-        reason: >-
-          Both notification classes already accept logger/config/event-bus or URL dependencies.
-          Remaining imports are the milestone event contract plus transport, validator, version and
-          Moment in the formatter. These are bounded constructor changes; consuming a milestone
-          event does not require an initialized Milestones service.
-        preparation:
-          - >-
-            Wire the milestone event contract, transport, validator and version from index.ts; keep
-            errors direct and use the existing clock compatibility export for Moment.
-          - >-
-            Move service.js composition into index.ts while preserving captured enablement/threshold
-            settings and subscription behavior.
-        reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
-        sources:
-          - core/server/services/slack-notifications/service.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
-          - core/server/services/slack-notifications/slack-notifications.js
-          - core/server/services/milestones/milestone-created-event.js
-    entryPoints:
-      - slack-notifications/index.js
-    notes: >-
-      Planned relocation under Milestones as its private Slack notification handler:
-      subscriptions, thresholds and message content all concern milestone events. Boot retains
-      configuration/startup, and any reusable Slack transport can remain separate from milestone
-      policy. No source has moved. Preserve captured milestone notification settings and event
-      delivery. Listener disposal, shared HTTP resources and partial initialization remain
-      migration blockers.
-    contracts:
-      exports:
-        summary: >-
-          The CommonJS root forwards one eagerly constructed wrapper exposing synchronous
-          init. Its api is a private field; neither api nor service is public, and init
-          returns no instance. The wrapper constructor has a static create factory; separate
-          implementation files export subscriber and sender classes used directly by tests.
-        sources:
-          - core/server/services/slack-notifications/index.js
-          - core/server/services/slack-notifications/service.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
-          - core/server/services/slack-notifications/slack-notifications.js
-        tests: []
-      construction:
-        summary: >-
-          First init builds SlackNotifications and SlackNotificationsService, assigns the
-          private api, then subscribes it to the shared DomainEvents bus. Both objects and
-          the subscription are created even when notifications are disabled. The wrapper is
-          the only runtime composition path found; later init calls return if api exists.
-          Loading the sender also loads the shared external-request client.
-        sources:
-          - core/server/services/slack-notifications/service.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
-          - core/server/services/slack-notifications/slack-notifications.js
-          - core/server/lib/request-external.js
-        tests:
-          - test/unit/server/services/slack-notifications/index.test.js
-      consumers:
-        summary: >-
-          Boot is the only runtime wrapper caller. Milestone repository saves dispatch
-          MilestoneCreatedEvent after persistence without awaiting notification delivery.
-          The subscriber accepts enabled notifications with a webhook URL and a value
-          strictly greater than minThreshold. The sender skips initial and skipped reasons,
-          formats eligible milestone data and posts it to the captured webhook. There is no
-          direct HTTP, CLI or job caller of this root.
-        sources:
-          - core/boot.js
-          - core/server/services/milestones/milestone.js
-          - core/server/services/milestones/bookshelf-milestone-repository.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
-          - core/server/services/slack-notifications/slack-notifications.js
-        tests:
-          - test/unit/server/services/slack-notifications/index.test.js
-          - test/unit/server/services/slack-notifications/slack-notifications-service.test.js
-          - test/unit/server/services/slack-notifications/slack-notifications.test.js
-      startup:
-        summary: >-
-          Required-service boot invokes init while building its Promise.all prerequisites,
-          before readiness and the later background milestone run. Subscription completes
-          synchronously and does not check webhook reachability or send a notification.
-          Importing the wrapper alone installs no listener. Synchronous init failures abort
-          dependent startup; disabled configuration still installs the subscriber.
-        sources:
-          - core/boot.js
-          - core/server/services/slack-notifications/service.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
-        tests: []
-      lifetime:
-        summary: >-
-          Repeated wrapper init retains its private api, sender and captured configuration,
-          preventing another subscription on that wrapper. Neither wrapper nor subscriber
-          exposes reset or shutdown. Direct subscriber subscribeEvents calls add another
-          callback each time, and the shared bus retains those callbacks across server stop.
-          There is no queue, deduplication or serialization of concurrent event deliveries.
-        sources:
-          - core/server/services/slack-notifications/service.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
-          - core/server/ghost-server.ts
-          - core/boot.js
-        tests: []
-      configuration:
-        summary: >-
-          First init captures site URL, enabled-and-URL truthiness, webhook URL and a parsed
-          threshold, defaulting falsy threshold values to zero. A truthy nonnumeric string
-          parses to NaN and suppresses delivery; the directly constructed subscriber applies
-          no such fallback. The sender reads NODE_ENV and version when sending. Its shared
-          request helper captures agent options and test hooks at import but reads config
-          environment and site URL during request checks. Its request timeout is 10 seconds,
-          overridden to 5 seconds by the import-time test hook.
-        sources:
-          - core/server/services/slack-notifications/service.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
-          - core/server/services/slack-notifications/slack-notifications.js
-          - core/server/lib/request-external.js
-        tests:
-          - test/unit/server/services/slack-notifications/slack-notifications.test.js
-          - test/unit/server/lib/request-external.test.js
-      resources:
-        summary: >-
-          The subscriber owns a milestone callback but retains no unsubscribe handle, and
-          boot registers no cleanup for it. Delivery uses shared configurable HTTP/HTTPS agents, with keep-alive enabled by default,
-          owned by request-external, with DNS checks, pooled sockets and per-request timeout
-          work. Neither this wrapper nor the helper exposes a disposal hook. The root owns
-          no database connection or timer and does not track, cancel or drain pending sends.
-          DomainEvents.allSettled tracks test deliveries only; it supplies no production drain.
-        sources:
-          - core/server/services/slack-notifications/slack-notifications-service.js
-          - core/server/services/slack-notifications/slack-notifications.js
-          - core/server/lib/request-external.js
-          - core/boot.js
-          - core/server/ghost-server.ts
-        tests:
-          - test/unit/server/services/slack-notifications/slack-notifications-service.test.js
-      failures:
-        summary: >-
-          Construction failures before api assignment permit another init attempt, but a
-          subscription failure leaves api assigned and later init skips retry. Sender send
-          logs URL_MISSING_INVALID and resolves for absent, non-string or invalid URLs;
-          request failures reject direct sender calls. The subscriber catches and logs
-          formatting or send rejection without propagating it to milestone persistence.
-          Malformed event data can reject before its local catch; the shared DomainEvents
-          subscriber wrapper catches and logs that rejection. There is no service-level
-          retry or replay; transport failures use the shared request helper's policies.
-        sources:
-          - core/server/services/slack-notifications/service.js
-          - core/server/services/slack-notifications/slack-notifications-service.js
-          - core/server/services/slack-notifications/slack-notifications.js
-          - core/server/lib/request-external.js
-          - core/server/services/milestones/bookshelf-milestone-repository.js
-        tests:
-          - test/unit/server/services/slack-notifications/slack-notifications-service.test.js
-          - test/unit/server/services/slack-notifications/slack-notifications.test.js
-    unverified: []
-    blockers:
-      - >-
-        Add wrapper contracts for exact exports, repeated init, changed configuration, disabled
-        first init, partial subscription failure/retry and retained callbacks across restart.
-        The existing root test proves one successful event reaches a webhook, not listener
-        count, configuration lifetime or boot readiness.
-      - >-
-        Correct the threshold test: it sets isEnabled false and omits minThreshold, so its
-        no-send assertion does not establish threshold behavior. Cover equality, values either
-        side of the threshold, wrapper fallback and invalid parsing through real composition.
-      - >-
-        Characterize sender/request failures through the real subscriber, including malformed
-        events, timeouts and pending sends during stop. Tests named Throws for invalid or
-        absent URLs only assert logging after a resolved call; preserve that behavior unless
-        changing it separately. Test-mode request overrides do not prove production transport
-        behavior.
-      - >-
-        Decide listener removal, pending-send drain and shared HTTP-agent ownership. Current
-        class tests create subscribers directly; successful callbacks and fake requests do
-        not establish disposal, duplicate delivery prevention or restart behavior.
   slack-ping:
     kind: directory
     disposition: migrate

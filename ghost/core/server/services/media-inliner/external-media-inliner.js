@@ -1,8 +1,5 @@
 const mime = require('mime-types');
-const request = require('../../lib/request-external');
-const urlUtils = require('../../../shared/url-utils').default;
 const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
 const string = require('@tryghost/string');
 const path = require('path');
 const { isSvgExtension } = require('../../lib/image/image-content');
@@ -36,16 +33,6 @@ function matchAllWithTimeout(content, regex, timeout) {
   }
 }
 
-let fileTypeFromBuffer;
-
-async function getFileTypeFromBuffer(buffer) {
-  if (!fileTypeFromBuffer) {
-    ({ fileTypeFromBuffer } = await import('file-type'));
-  }
-
-  return fileTypeFromBuffer(buffer);
-}
-
 class ExternalMediaInliner {
   /** @type {object} */
   #PostModel;
@@ -59,21 +46,53 @@ class ExternalMediaInliner {
   /** @type {object} */
   #UserModel;
 
+  /** @type {import('./types').ExternalMediaInlinerDependencies['logging']} */
+  #logging;
+
+  /** @type {import('./types').ExternalMediaInlinerDependencies['request']} */
+  #request;
+
+  /** @type {import('./types').ExternalMediaInlinerDependencies['urlUtils']} */
+  #urlUtils;
+
+  /** @type {import('./types').ExternalMediaInlinerDependencies['loadFileType']} */
+  #loadFileType;
+
+  /** @type {import('./types').ExternalMediaInlinerDependencies['loadHeicConvert']} */
+  #loadHeicConvert;
+
+  /** @type {((buffer: Buffer) => Promise<{ext: string} | undefined>) | undefined} */
+  #fileTypeFromBuffer;
+
   /**
    *
-   * @param {Object} deps
-   * @param {Object} deps.PostModel - Post model
-   * @param {Object} deps.PostMetaModel - PostMeta model
-   * @param {Object} deps.TagModel - Tag model
-   * @param {Object} deps.UserModel - User model
-   * @param {(extension: string, fileBuffer: Buffer) => Promise<import('ghost-storage-base').StorageBase | null>} deps.getMediaStorage - picks the storage for a file, or null if no storage accepts it
+   * @param {import('./types').ExternalMediaInlinerDependencies} deps
    */
   constructor(deps) {
     this.#PostModel = deps.PostModel;
     this.#PostMetaModel = deps.PostMetaModel;
     this.#TagModel = deps.TagModel;
     this.#UserModel = deps.UserModel;
+    this.#logging = deps.logging;
+    this.#request = deps.request;
+    this.#urlUtils = deps.urlUtils;
+    this.#loadFileType = deps.loadFileType;
+    this.#loadHeicConvert = deps.loadHeicConvert;
     this.getMediaStorage = deps.getMediaStorage;
+  }
+
+  /**
+   * Loads file-type on the first download rather than at boot. A failed load
+   * is not retained, so the next download tries again.
+   *
+   * @param {Buffer} buffer
+   */
+  async #getFileTypeFromBuffer(buffer) {
+    if (!this.#fileTypeFromBuffer) {
+      ({ fileTypeFromBuffer: this.#fileTypeFromBuffer } = await this.#loadFileType());
+    }
+
+    return this.#fileTypeFromBuffer(buffer);
   }
 
   /**
@@ -91,7 +110,7 @@ class ExternalMediaInliner {
     // Encode raw characters but keep existing %XX escapes intact
     requestURL = encodeURI(requestURL).replace(/%25([0-9a-f]{2})/gi, '%$1');
     try {
-      const response = await request(requestURL, {
+      const response = await this.#request(requestURL, {
         followRedirect: true,
         responseType: 'buffer',
       });
@@ -99,8 +118,8 @@ class ExternalMediaInliner {
       return response;
     } catch (error) {
       // NOTE: add special case for 404s
-      logging.error(`Error downloading remote media: ${requestURL}`);
-      logging.error(
+      this.#logging.error(`Error downloading remote media: ${requestURL}`);
+      this.#logging.error(
         new errors.DataImportError({
           err: error,
         }),
@@ -123,7 +142,7 @@ class ExternalMediaInliner {
     // Attempt to get the file extension from the file itself
     // If that fails, or if `.ext` is undefined, get the extension from the file path in the catch
     try {
-      const fileInfo = await getFileTypeFromBuffer(body);
+      const fileInfo = await this.#getFileTypeFromBuffer(body);
       extension = fileInfo.ext;
     } catch {
       const headers = response.headers;
@@ -137,10 +156,11 @@ class ExternalMediaInliner {
 
     // If the file is heic or heif, attempt to convert it to jpeg
     if (extension === 'heic' || extension === 'heif') {
-      // Lazy: pulls in libheif-js, a WASM codec costing ~50ms to load at boot.
-      // Deliberately outside the try — a missing codec is not a conversion error,
-      // and swallowing it would store an unconvertible .heic in its place.
-      const convert = require('heic-convert');
+      // Lazy: the root's loader pulls in libheif-js, a WASM codec costing ~50ms
+      // to load at boot. Deliberately outside the try — a missing codec is not a
+      // conversion error, and swallowing it would store an unconvertible .heic
+      // in its place.
+      const convert = this.#loadHeicConvert();
 
       try {
         body = await convert({
@@ -150,8 +170,8 @@ class ExternalMediaInliner {
 
         extension = 'jpg';
       } catch (error) {
-        logging.error(`Error converting file to JPEG: ${requestURL}`);
-        logging.error(
+        this.#logging.error(`Error converting file to JPEG: ${requestURL}`);
+        this.#logging.error(
           new errors.DataImportError({
             err: error,
           }),
@@ -192,7 +212,7 @@ class ExternalMediaInliner {
       const sanitized = await sanitizeSvgBuffer(media.fileBuffer, media.extension === '.svgz');
 
       if (!sanitized) {
-        logging.warn(`Could not sanitize SVG file: ${media.filename}`);
+        this.#logging.warn(`Could not sanitize SVG file: ${media.filename}`);
         return null;
       }
 
@@ -204,13 +224,13 @@ class ExternalMediaInliner {
     try {
       storage = await this.getMediaStorage(media.extension, media.fileBuffer);
     } catch (error) {
-      logging.warn(`Could not determine storage adapter for file: ${media.filename}`);
-      logging.error(error);
+      this.#logging.warn(`Could not determine storage adapter for file: ${media.filename}`);
+      this.#logging.error(error);
       return null;
     }
 
     if (!storage) {
-      logging.warn(`No storage adapter found for file extension: ${media.extension}`);
+      this.#logging.warn(`No storage adapter found for file extension: ${media.extension}`);
       return null;
     } else {
       // @NOTE: this is extremely convoluted and should live on a
@@ -225,7 +245,7 @@ class ExternalMediaInliner {
       const targetPath = path.relative(storage.storagePath, uniqueFileName);
       const filePath = await storage.saveRaw(media.fileBuffer, targetPath);
 
-      return urlUtils.toTransformReady(filePath);
+      return this.#urlUtils.toTransformReady(filePath);
     }
   }
 
@@ -379,7 +399,7 @@ class ExternalMediaInliner {
         }
         // Skip only this pattern so replacements from other domains are kept
         timedOutDomains.add(domain);
-        logging.error(err);
+        this.#logging.error(err);
         continue;
       }
 
@@ -391,7 +411,7 @@ class ExternalMediaInliner {
           // NOTE: does not account for duplicate images in content
           //       in those cases would be processed twice
           content = content.replace(src, replacementUrl);
-          logging.info(`Inlined media: ${src} -> ${replacementUrl}`);
+          this.#logging.info(`Inlined media: ${src} -> ${replacementUrl}`);
         }
       }
     }
@@ -419,7 +439,7 @@ class ExternalMediaInliner {
 
           if (replacementUrl) {
             updatedFields[field] = replacementUrl;
-            logging.info(`Added media to inline: ${src} -> ${replacementUrl}`);
+            this.#logging.info(`Added media to inline: ${src} -> ${replacementUrl}`);
           }
         }
       }
@@ -436,7 +456,7 @@ class ExternalMediaInliner {
    * @param {string[]} domains - domains to inline media from
    */
   async inlineSimpleFields(resources, model, fields, domains) {
-    logging.info(
+    this.#logging.info(
       `Starting inlining external media for ${resources?.length} resources and with ${fields.join(', ')} fields`,
     );
 
@@ -453,8 +473,8 @@ class ExternalMediaInliner {
           });
         }
       } catch (err) {
-        logging.error(`Error inlining media for: ${resource.id}`);
-        logging.error(
+        this.#logging.error(`Error inlining media for: ${resource.id}`);
+        this.#logging.error(
           new errors.DataImportError({
             err,
           }),
@@ -471,7 +491,7 @@ class ExternalMediaInliner {
     const posts = await this.#PostModel.findAll({ context: { internal: true } });
     const postsInilingFields = ['feature_image'];
 
-    logging.info(`Starting inlining external media for posts: ${posts?.length}`);
+    this.#logging.info(`Starting inlining external media for posts: ${posts?.length}`);
 
     // A pattern that timed out once is likely to time out again, so stop
     // applying it rather than spending the timeout on every remaining post.
@@ -515,8 +535,8 @@ class ExternalMediaInliner {
           });
         }
       } catch (err) {
-        logging.error(`Error inlining media for post: ${post.id}`);
-        logging.error(
+        this.#logging.error(`Error inlining media for post: ${post.id}`);
+        this.#logging.error(
           new errors.DataImportError({
             err,
           }),
@@ -545,7 +565,7 @@ class ExternalMediaInliner {
 
     await this.inlineSimpleFields(users, this.#UserModel, userInliningFields, domains);
 
-    logging.info('Finished inlining external media for posts, tags, and users');
+    this.#logging.info('Finished inlining external media for posts, tags, and users');
   }
 }
 
