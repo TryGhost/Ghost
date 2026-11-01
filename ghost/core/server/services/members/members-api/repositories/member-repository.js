@@ -1260,11 +1260,10 @@ module.exports = class MemberRepository {
       }
 
       const removeLabels = async (transacting) => {
-        const memberRows = await this._Member
+        const memberIds = await this._Member
           .getFilteredCollectionQuery({ ...filterOptions, transacting })
-          .select('members.id')
-          .distinct();
-        const memberIds = memberRows.map((row) => row.id);
+          .distinct()
+          .pluck('members.id');
         const relationIds = [];
         // Both IN lists share SQLite's parameter limit, which can be as low as 999.
         const labelChunks = _.chunk(_.uniq(labels.map((label) => label.id)), 400);

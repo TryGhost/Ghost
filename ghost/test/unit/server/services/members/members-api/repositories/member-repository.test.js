@@ -269,9 +269,9 @@ describe('MemberRepository', function () {
             maxBindings = Math.max(maxBindings, query.bindings.length);
           }
         });
-        const distinct = sinon.stub().resolves(memberIds.map((id) => ({ id })));
+        const pluck = sinon.stub().resolves(memberIds);
         Member.getFilteredCollectionQuery = sinon.stub().returns({
-          select: sinon.stub().returns({ distinct }),
+          distinct: sinon.stub().returns({ pluck }),
         });
         Member.getLabelRelations = MemberModel.getLabelRelations;
         Member.bulkDestroy = MemberModel.bulkDestroy.bind(MemberModel);
@@ -303,9 +303,9 @@ describe('MemberRepository', function () {
       const transacting = {};
       const context = { internal: true };
       const mongoTransformer = () => {};
-      const distinct = sinon.stub().resolves([{ id: 'member-id' }]);
+      const pluck = sinon.stub().resolves(['member-id']);
       Member.getFilteredCollectionQuery = sinon.stub().returns({
-        select: sinon.stub().returns({ distinct }),
+        distinct: sinon.stub().returns({ pluck }),
       });
       Member.getLabelRelations = sinon.stub().resolves([{ id: 'relation-id' }]);
       const result = { successful: 1, unsuccessful: 0, errors: [], unsuccessfulData: [] };
