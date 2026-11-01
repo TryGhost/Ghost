@@ -9152,8 +9152,8 @@ services:
       handler: they subscribe only to MilestoneCreatedEvent and read milestones host settings.
       Boot still initializes them separately during required-service startup; migrating
       Milestones must take over that subscription and its disposal. Their previous contract
-      audit is recorded at https://github.com/TryGhost/Ghost/blob/33b8dabf2114676d68028d6f86c194
-      5af4e7409c/ghost/core/server/services/service-inventory.yaml#L12917.
+      audit is recorded at
+      https://github.com/TryGhost/Ghost/blob/33b8dabf2114676d68028d6f86c1945af4e7409c/ghost/core/server/services/service-inventory.yaml#L12917.
     contracts:
       exports:
         summary: >-
