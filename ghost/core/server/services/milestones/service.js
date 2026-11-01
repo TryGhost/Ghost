@@ -31,6 +31,9 @@ module.exports = {
    */
   async init() {
     if (!this.api) {
+      // Slack notifications only handle events from milestone checks, so they start here.
+      require('./slack-notifications').init();
+
       const db = require('../../data/db');
       const MilestoneQueries = require('./milestone-queries');
 

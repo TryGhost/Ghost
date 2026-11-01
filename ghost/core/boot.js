@@ -397,7 +397,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const mentionsService = require('./server/services/mentions').default;
   const tagsPublic = require('./server/services/tags-public').default;
   const postsPublic = require('./server/services/posts-public').default;
-  const slackNotifications = require('./server/services/milestones/slack-notifications');
   const mediaInliner = require('./server/services/media-inliner').default;
   const contentImport = require('./server/services/content-import');
   const donationService = require('./server/services/donations').default;
@@ -484,7 +483,6 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     comments.init(),
     linkTracking.init(),
     emailSuppressionList.init(),
-    slackNotifications.init(),
     mediaInliner.init(),
     contentImport.init(),
     donationService.init(),
