@@ -21,6 +21,8 @@ module.exports = {
         'sentry_dsn',
         'sentry_env',
         'site_uuid',
+        'sso_signin_url',
+        'sso_signin_label',
       ]),
     };
   },

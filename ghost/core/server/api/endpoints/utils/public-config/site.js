@@ -2,6 +2,7 @@ const ghostVersion = require('@tryghost/version');
 const settingsCache = require('../../../../../shared/settings-cache');
 const config = require('../../../../../shared/config');
 const urlUtils = require('../../../../../shared/url-utils').default;
+const auth = require('../../../../auth');
 
 module.exports = function getSiteProperties() {
   const siteProperties = {
@@ -33,6 +34,12 @@ module.exports = function getSiteProperties() {
     }
 
     siteProperties.sentry_env = environment;
+  }
+
+  const ssoSignin = auth.ssoSignin.getSSOSignin();
+  if (ssoSignin) {
+    siteProperties.sso_signin_url = ssoSignin.url;
+    siteProperties.sso_signin_label = ssoSignin.label;
   }
 
   return siteProperties;

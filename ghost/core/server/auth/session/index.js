@@ -51,6 +51,18 @@ function getOriginOfRequest(req) {
 
 const mailer = new GhostMailer();
 
+/**
+ * With password sign-in disabled, signing in through the SSO adapter is how a
+ * user locked by resetting all authentication gets back in
+ */
+async function unlockUser({ id }) {
+  const user = await models.User.findOne({ id, status: 'locked' });
+  if (user) {
+    user.set({ status: 'active' });
+    await user.save();
+  }
+}
+
 const sessionService = createSessionService({
   getOriginOfRequest,
   getSession: expressSession.getSession,
@@ -100,7 +112,12 @@ module.exports.createSessionFromToken = () => {
 
   return sessionFromToken({
     callNextWithError: false,
-    createSession: sessionService.createVerifiedSessionForUser,
+    async createSession(req, res, user) {
+      if (ssoAdapter.getSigninPage()) {
+        await unlockUser(user);
+      }
+      return sessionService.createVerifiedSessionForUser(req, res, user);
+    },
     findUserByLookup: ssoAdapter.getUserForIdentity.bind(ssoAdapter),
     getLookupFromToken: ssoAdapter.getIdentityFromCredentials.bind(ssoAdapter),
     getTokenFromRequest: ssoAdapter.getRequestCredentials.bind(ssoAdapter),

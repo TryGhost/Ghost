@@ -129,7 +129,12 @@ module.exports = function apiRoutes() {
   router.get('/users/email/:email', mw.authAdminApi, http(api.users.read));
   router.get('/users/:id/token', mw.authAdminApi, http(api.users.readStaffToken));
 
-  router.put('/users/password', mw.authAdminApi, http(api.users.changePassword));
+  router.put(
+    '/users/password',
+    mw.authAdminApi,
+    mw.passwordSigninEnabled,
+    http(api.users.changePassword),
+  );
   router.put('/users/owner', mw.authAdminApi, http(api.users.transferOwnership));
   router.put('/users/:id', mw.authAdminApi, http(api.users.edit));
   router.put('/users/:id/token', mw.authAdminApi, http(api.users.regenerateStaffToken));
@@ -443,6 +448,7 @@ module.exports = function apiRoutes() {
   // We don't need auth when creating a new session (logging in)
   router.post(
     '/session',
+    mw.passwordSigninEnabled,
     shared.middleware.brute.globalBlock,
     shared.middleware.brute.userLogin,
     http(api.session.add),
@@ -450,10 +456,16 @@ module.exports = function apiRoutes() {
   router.delete('/session', mw.authAdminApi, http(api.session.delete));
   router.post(
     '/session/verify',
+    mw.passwordSigninEnabled,
     shared.middleware.brute.sendVerificationCode,
     http(api.session.sendVerification),
   );
-  router.put('/session/verify', shared.middleware.brute.userVerification, http(api.session.verify));
+  router.put(
+    '/session/verify',
+    mw.passwordSigninEnabled,
+    shared.middleware.brute.userVerification,
+    http(api.session.verify),
+  );
 
   // ## Identity
   router.get('/identities', mw.authAdminApi, http(api.identities.read));
@@ -461,17 +473,23 @@ module.exports = function apiRoutes() {
   // ## Authentication
   router.post(
     '/authentication/password_reset',
+    mw.passwordSigninEnabled,
     shared.middleware.brute.globalReset,
     shared.middleware.brute.userReset,
     http(api.authentication.generateResetToken),
   );
   router.put(
     '/authentication/password_reset',
+    mw.passwordSigninEnabled,
     shared.middleware.brute.globalBlock,
     auth.session.initSession,
     http(api.authentication.resetPassword),
   );
-  router.post('/authentication/invitation', http(api.authentication.acceptInvitation));
+  router.post(
+    '/authentication/invitation',
+    mw.passwordSigninEnabled,
+    http(api.authentication.acceptInvitation),
+  );
   router.get('/authentication/invitation', http(api.authentication.isInvitation));
   router.post('/authentication/setup', http(api.authentication.setup));
   router.put('/authentication/setup', mw.authAdminApi, http(api.authentication.updateSetup));
@@ -515,7 +533,7 @@ module.exports = function apiRoutes() {
   // ## Invites
   router.get('/invites', mw.authAdminApi, http(api.invites.browse));
   router.get('/invites/:id', mw.authAdminApi, http(api.invites.read));
-  router.post('/invites', mw.authAdminApi, http(api.invites.add));
+  router.post('/invites', mw.authAdminApi, mw.passwordSigninEnabled, http(api.invites.add));
   router.delete('/invites/:id', mw.authAdminApi, http(api.invites.destroy));
 
   // ## Redirects

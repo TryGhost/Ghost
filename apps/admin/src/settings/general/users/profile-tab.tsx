@@ -38,7 +38,7 @@ const BasicInputs: React.FC<UserDetailProps> = ({ errors, clearError, user, setU
           <FieldDescription>Used for notifications</FieldDescription>
         )}
       </Field>
-      <ChangePasswordForm user={user} />
+      {!siteData.sso_signin_url && <ChangePasswordForm user={user} />}
       {hasAdminAccess(currentUser) && <RoleSelector setUserData={setUserData} user={user} />}
       <Field data-invalid={Boolean(errors?.name) || undefined}>
         <FieldLabel htmlFor="staff-name">Full name</FieldLabel>

@@ -17,6 +17,9 @@ export type SiteData = {
   /** Present only when the server has client error reporting configured. */
   sentry_dsn?: string;
   sentry_env?: string;
+  /** Present only when password sign-in is replaced by the SSO adapter. */
+  sso_signin_url?: string;
+  sso_signin_label?: string;
 };
 
 export interface SiteResponseType {

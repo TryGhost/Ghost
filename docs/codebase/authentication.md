@@ -78,6 +78,29 @@ The current flow lives in
 with request middleware in
 [`auth/session/middleware.js`](../../ghost/core/server/auth/session/middleware.js).
 
+### Single sign-on
+
+An `sso` adapter can turn password sign-in off by returning a sign-in page
+from `getSigninPage()`:
+
+```js
+getSigninPage() {
+    return {url: 'https://idp.example.com/ghost/start', label: 'Sign in with Example →'};
+}
+```
+
+With a sign-in page, the endpoints that sign in, verify, reset or set a
+password, and accept or create invites return 403. `/site` returns
+`sso_signin_url` and `sso_signin_label`, and Admin shows a single sign-in
+button in place of those screens and hides the controls that use them.
+Resetting all authentication still locks every staff user, and signing in
+through the SSO adapter unlocks them, so the adapter has to return locked
+users. Suspended users stay suspended. Setup stays open, so a new site can
+still create its Owner. Existing sessions, Staff Access Tokens and
+integrations keep working.
+
+See [`auth/sso-signin.ts`](../../ghost/core/server/auth/sso-signin.ts).
+
 ### Staff Access Tokens
 
 A staff user can authenticate directly to the Admin API with their unique Staff
