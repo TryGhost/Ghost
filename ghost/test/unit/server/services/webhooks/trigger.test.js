@@ -370,5 +370,54 @@ describe('Webhook Service', function () {
       assert.ok(logLine.includes('status=none'));
       assert.ok(logLine.includes('error_code=unknown'));
     });
+
+    // request-external is Got, whose HTTP errors carry the status only on the response.
+    describe('with a status only on the response', function () {
+      let webhookModel;
+
+      beforeEach(function () {
+        webhookModel = { id: 'abc123', get: sinon.stub() };
+        webhookModel.get
+          .withArgs('event')
+          .returns('post.added')
+          .withArgs('target_url')
+          .returns('https://example.com/hook');
+      });
+
+      function httpError(statusCode) {
+        return Object.assign(new Error(`Response code ${statusCode}`), {
+          code: 'ERR_NON_2XX_3XX_RESPONSE',
+          response: { statusCode },
+        });
+      }
+
+      it('destroys the webhook when the target answers 410', async function () {
+        const infoStub = sinon.stub(logging, 'info');
+        try {
+          await errorTrigger.onError(webhookModel)(httpError(410));
+        } finally {
+          infoStub.restore();
+        }
+
+        sinon.assert.calledOnceWithExactly(
+          models.Webhook.destroy,
+          { id: 'abc123' },
+          { context: { internal: true } },
+        );
+        sinon.assert.notCalled(models.Webhook.edit);
+        sinon.assert.notCalled(loggingStub);
+      });
+
+      it('records and logs the status of other error responses', function () {
+        errorTrigger.onError(webhookModel)(httpError(500));
+
+        sinon.assert.notCalled(models.Webhook.destroy);
+        sinon.assert.calledOnce(models.Webhook.edit);
+        const [data] = models.Webhook.edit.args[0];
+        assert.equal(data.last_triggered_status, 500);
+        assert.equal(data.last_triggered_error, 'Request failed: ERR_NON_2XX_3XX_RESPONSE');
+        assert.ok(loggingStub.args[0][0].includes('status=500'));
+      });
+    });
   });
 });

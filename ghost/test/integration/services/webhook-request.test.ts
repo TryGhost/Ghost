@@ -110,4 +110,50 @@ describe('Webhook delivery', function () {
       );
     });
   });
+
+  // The two clients shape HTTP errors differently, so each one is checked
+  // against a real response.
+  describe('error responses', function () {
+    const clients = [
+      { name: '@tryghost/request', allowWebhookInternalIPs: true },
+      { name: 'request-external', allowWebhookInternalIPs: false },
+    ];
+
+    for (const client of clients) {
+      describe(`using ${client.name}`, function () {
+        beforeEach(function () {
+          configUtils.set('security:allowWebhookInternalIPs', client.allowWebhookInternalIPs);
+          configUtils.set('env', 'development'); // bypass IP validation in request-external
+          setupWebhookModel();
+        });
+
+        it('destroys the webhook when the target answers 410', async function () {
+          nock(WEBHOOK_TARGET).post(WEBHOOK_PATH).reply(410);
+          const trigger = new WebhookTrigger({ models, payload, limitService });
+
+          await trigger.trigger(WEBHOOK_EVENT, {});
+
+          sinon.assert.calledOnceWithExactly(
+            models.Webhook.destroy,
+            { id: 'webhook-test-id' },
+            { context: { internal: true } },
+          );
+          sinon.assert.notCalled(models.Webhook.edit);
+        });
+
+        it('records the status of other error responses', async function () {
+          nock(WEBHOOK_TARGET).post(WEBHOOK_PATH).reply(500);
+          const trigger = new WebhookTrigger({ models, payload, limitService });
+
+          await trigger.trigger(WEBHOOK_EVENT, {});
+
+          sinon.assert.notCalled(models.Webhook.destroy);
+          sinon.assert.calledOnce(models.Webhook.edit);
+          const [data] = models.Webhook.edit.args[0];
+          assert.equal(data.last_triggered_status, 500);
+          assert.equal(data.last_triggered_error, 'Request failed: ERR_NON_2XX_3XX_RESPONSE');
+        });
+      });
+    }
+  });
 });

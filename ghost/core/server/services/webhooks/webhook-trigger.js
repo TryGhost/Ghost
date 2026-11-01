@@ -85,7 +85,11 @@ class WebhookTrigger {
 
   onError(webhook) {
     return (err) => {
-      if (err.statusCode === 410) {
+      // request-external (Got) keeps the status on the response, while
+      // @tryghost/request also copies it onto the error.
+      const statusCode = err.statusCode ?? err.response?.statusCode;
+
+      if (statusCode === 410) {
         logging.info(
           `Webhook destroyed (410 response) for "${webhook.get('event')}" with url "${webhook.get('target_url')}".`,
         );
@@ -94,12 +98,12 @@ class WebhookTrigger {
       }
 
       this.update(webhook, {
-        statusCode: err.statusCode,
+        statusCode,
         error: `Request failed: ${err.code || 'unknown'}`,
       });
 
       logging.error(
-        `[WEBHOOK_DELIVERY_FAILURE] url=${webhook.get('target_url') || 'unknown'} status=${err.statusCode || 'none'} error_code=${err.code || 'unknown'} message=${err.message || ''}`,
+        `[WEBHOOK_DELIVERY_FAILURE] url=${webhook.get('target_url') || 'unknown'} status=${statusCode || 'none'} error_code=${err.code || 'unknown'} message=${err.message || ''}`,
         err,
       );
     };
