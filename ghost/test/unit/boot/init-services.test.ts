@@ -18,8 +18,8 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   const donations = sinon.stub().resolves();
   const tiers = sinon.stub().resolves();
   const memberAttribution = sinon.stub().resolves();
-  // Staff initializes synchronously and captures the ready attribution service.
-  const staff = sinon.stub();
+  // Staff captures the ready attribution service.
+  const staff = sinon.stub().resolves();
   const linkTracking = sinon.stub().resolves();
   const memberWelcomeEmails = sinon.stub().resolves();
   const register = sinon.stub();
@@ -69,7 +69,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/donations': { default: { init: donations } },
       './server/services/tiers': { default: { init: tiers } },
       './server/services/member-attribution': { default: { init: memberAttribution } },
-      './server/services/staff': { init: staff },
+      './server/services/staff': { default: { init: staff } },
       './server/services/link-tracking': { init: linkTracking },
       './server/services/member-welcome-emails': { default: { init: memberWelcomeEmails } },
       './server/services/media-inliner': { default: { init: media, service: {} } },
@@ -202,18 +202,6 @@ it('waits for member attribution initialization before initializing staff', asyn
   sinon.assert.callOrder(boot.memberAttribution, boot.staff, boot.register);
 });
 
-it('propagates a staff initialization error without starting dependent work', async function () {
-  const boot = createServicesHarness();
-  const failure = new Error('staff initialization failed');
-  boot.staff.throws(failure);
-
-  await assert.rejects(boot.initServices(), (error) => error === failure);
-
-  sinon.assert.notCalled(boot.register);
-  sinon.assert.notCalled(boot.start);
-  sinon.assert.notCalled(boot.automations);
-});
-
 it('propagates a synchronous recommendations initialization error without starting dependent work', async function () {
   const boot = createServicesHarness();
   const failure = new Error('recommendations initialization failed');
@@ -269,6 +257,7 @@ for (const dependency of [
   'donations',
   'memberWelcomeEmails',
   'tiers',
+  'staff',
 ] as const) {
   it(`waits for ${dependency} initialization to finish before registering or starting jobs`, async function () {
     const boot = createServicesHarness();

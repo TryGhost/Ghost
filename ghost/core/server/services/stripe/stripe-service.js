@@ -115,7 +115,7 @@ module.exports = class StripeService {
         return giftService.service;
       },
       get staffServiceEmails() {
-        return staffService.api.emails;
+        return staffService.service.emails;
       },
       sendSignupEmail(email) {
         return membersService.api.sendEmailWithMagicLink({
