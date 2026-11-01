@@ -20,6 +20,10 @@ const PARTIALS = {
 
 export type StaffEmailTemplateName = keyof typeof TEMPLATES;
 
+function isTemplateName(name: string): name is StaffEmailTemplateName {
+  return Object.hasOwn(TEMPLATES, name);
+}
+
 export interface StaffEmailTemplateFiles {
   /** Reads one HTML template; rejects for a name outside the fixed set. */
   readTemplate(name: string): Promise<string>;
@@ -40,12 +44,12 @@ export function createStaffEmailTemplateFiles({
 }): StaffEmailTemplateFiles {
   return {
     async readTemplate(name) {
-      if (!Object.hasOwn(TEMPLATES, name)) {
+      if (!isTemplateName(name)) {
         throw new IncorrectUsageError({
           message: `Unknown staff email template: ${name}`,
         });
       }
-      return readFile(TEMPLATES[name as StaffEmailTemplateName]);
+      return readFile(TEMPLATES[name]);
     },
     readPartials() {
       return Object.entries(PARTIALS).map(([name, file]) => ({
