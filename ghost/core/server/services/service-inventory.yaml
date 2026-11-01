@@ -9161,15 +9161,14 @@ services:
           - core/server/services/milestones/milestone-queries.js
     entryPoints:
       - milestones/index.js
-      - milestones/slack-notifications/index.js
     notes: >-
       Preserve background startup, captured milestone configuration and live Stripe eligibility.
       Scheduling, failure and cleanup gaps remain migration blockers.
       Slack notifications live in slack-notifications/ as the private milestone notification
       handler: they subscribe only to MilestoneCreatedEvent and read milestones host settings.
-      Boot still initializes them separately during required-service startup; migrating
-      Milestones must take over that subscription and its disposal. Their previous contract
-      audit is recorded at
+      First Milestones init starts them before any check can create a milestone, so boot no
+      longer initializes them separately; migrating Milestones must also own their disposal.
+      Their previous contract audit is recorded at
       https://github.com/TryGhost/Ghost/blob/33b8dabf2114676d68028d6f86c1945af4e7409c/ghost/core/server/services/service-inventory.yaml#L12917.
     contracts:
       exports:
@@ -9225,12 +9224,15 @@ services:
           Milestones are started at the end of that sequence after earlier awaited services;
           initAndRun is itself unawaited. Direct run needs api initialized, whereas initAndRun
           initializes it before scheduling. Initialization performs composition, not a
-          milestone query or readiness check.
+          milestone query or readiness check. First init also starts the private Slack
+          notification subscriber once, before any check can dispatch a milestone event.
         sources:
           - core/boot.js
           - core/server/services/milestones/service.js
+          - core/server/services/milestones/slack-notifications/service.js
         tests:
           - test/unit/boot/init-background-services.test.ts
+          - test/unit/server/services/milestones/index.test.ts
           - test/e2e-server/services/milestones.test.js
       lifetime:
         summary: >-
