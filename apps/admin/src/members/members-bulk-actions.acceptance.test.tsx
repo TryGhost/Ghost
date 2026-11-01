@@ -13,7 +13,6 @@ import { membersScreen } from './members.screen';
 
 const bulkResponse = {
   bulk: {
-    action: 'removeLabels',
     meta: { stats: { successful: 2, unsuccessful: 0 }, errors: [], unsuccessfulData: [] },
   },
 };

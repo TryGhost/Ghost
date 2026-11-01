@@ -1265,15 +1265,24 @@ module.exports = class MemberRepository {
           .select('members.id')
           .distinct();
         const memberIds = memberRows.map((row) => row.id);
-        const relations = await this._Member.getLabelRelations(
-          { labelIds: labels.map((label) => label.id), memberIds },
-          { transacting },
-        );
-        return this._Member.bulkDestroy(
-          relations.map((row) => row.id),
-          'members_labels',
-          { transacting, throwErrors: true },
-        );
+        const relationIds = [];
+        // Both IN lists share SQLite's parameter limit, which can be as low as 999.
+        const labelChunks = _.chunk(_.uniq(labels.map((label) => label.id)), 400);
+        for (const memberChunk of _.chunk(memberIds, 400)) {
+          for (const labelChunk of labelChunks) {
+            const relations = await this._Member.getLabelRelations(
+              { labelIds: labelChunk, memberIds: memberChunk },
+              { transacting },
+            );
+            for (const relation of relations) {
+              relationIds.push(relation.id);
+            }
+          }
+        }
+        return this._Member.bulkDestroy(relationIds, 'members_labels', {
+          transacting,
+          throwErrors: true,
+        });
       };
 
       return options.transacting

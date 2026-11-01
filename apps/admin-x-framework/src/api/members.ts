@@ -1,5 +1,6 @@
 import { InfiniteData, useIsFetching, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
+import { z } from 'zod';
 import {
   Meta,
   createInfiniteQuery,
@@ -692,16 +693,18 @@ export interface BulkOperationResponseType {
   };
 }
 
-export interface BulkEditResponseType {
-  bulk: {
-    action: BulkEditAction['type'];
-    meta: {
-      stats: { successful: number; unsuccessful: number };
-      errors: Array<{ id?: string; message: string }>;
-      unsuccessfulData: unknown[];
-    };
-  };
-}
+const BulkEditResponseSchema = z.looseObject({
+  bulk: z.looseObject({
+    meta: z.looseObject({
+      stats: z.looseObject({
+        successful: z.number().int().nonnegative(),
+        unsuccessful: z.number().int().nonnegative(),
+      }),
+    }),
+  }),
+});
+
+export type BulkEditResponseType = z.infer<typeof BulkEditResponseSchema>;
 
 function buildBulkMemberSearchParams({
   filter,
@@ -747,6 +750,7 @@ export const useBulkEditMembers = createMutation<
     },
   }),
   searchParams: buildBulkMemberSearchParams,
+  parseResponse: (data) => BulkEditResponseSchema.parse(data),
   invalidateQueries: { dataType },
 });
 
