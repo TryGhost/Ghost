@@ -16,6 +16,8 @@ const membersMiddleware = require('../../../../../core/server/services/members/m
 const signingKeys = require('../../../../../core/server/services/signing-keys').default;
 const newsletters = require('../../../../../core/server/services/newsletters').default;
 const memberAttribution = require('../../../../../core/server/services/member-attribution').default;
+const emailSuppressionList =
+  require('../../../../../core/server/services/email-suppression-list').default;
 const stripeCheckoutConfig =
   require('../../../../../core/server/services/stripe-checkout-config').default;
 
@@ -152,6 +154,7 @@ describe('Tiers consumers', function () {
       sandbox.stub(signingKeys, 'service').get(() => ({ forPurpose: () => ({}) }));
       sandbox.stub(newsletters, 'service').get(() => ({}));
       sandbox.stub(memberAttribution, 'service').get(() => ({}));
+      sandbox.stub(emailSuppressionList, 'service').get(() => ({}));
       sandbox.stub(stripeCheckoutConfig, 'service').get(() => ({ checkouts: {} }));
       forget(membersApiFactoryPath);
       const createApiInstance = require(membersApiFactoryPath);

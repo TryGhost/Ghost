@@ -44,7 +44,7 @@ class MailgunEmailSuppressionList {
    * @param {IMailgunAPIClient} deps.apiClient
    * @param {{knex: import('knex').Knex}} deps.db read for each query
    * @param {Pick<import('@tryghost/logging').GhostLogger, 'error' | 'info'>} deps.logging
-   * @param {{subscribe: Function, dispatch: (event: unknown) => void}} deps.domainEvents
+   * @param {Pick<typeof import('@tryghost/domain-events'), 'subscribe' | 'dispatch'>} deps.domainEvents
    * @param {typeof import('../email-service/events/email-bounced-event').EmailBouncedEvent} deps.EmailBouncedEvent
    * @param {typeof import('../email-service/events/spam-complaint-event').SpamComplaintEvent} deps.SpamComplaintEvent
    */

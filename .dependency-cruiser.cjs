@@ -45,7 +45,7 @@ const serviceDependencyAllowlist = [
   '^cheerio/slim$|(^|/)node_modules/cheerio/dist/(esm|commonjs)/slim\\.js$', // HTML parsing and selection over supplied strings; only the slim entry, no application instances or I/O.
   '^(node:)?crypto$', // Cryptographic algorithms and key generation.
   '^(node:)?util$', // Node utilities, including promisify.
-  '^(node:)?assert/strict$', // Node strict assertions for constructor invariants; no application instances.
+  '^(node:)?assert/strict$', // Node strict assertions; no application instances.
   '^ghost/core/kernel/clock\\.ts$', // Shared clock helpers and legacy date compatibility.
   '^ghost/core/server/lib/db-types/date\\.ts$', // Database date codec.
   '^ghost/core/server/lib/db-types/boolean\\.ts$', // Database boolean codec.

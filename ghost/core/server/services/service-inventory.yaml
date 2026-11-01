@@ -3448,7 +3448,7 @@ services:
         The boot-owned defineService root builds one Mailgun client and provider with the shared
         Suppression model, config, settings cache, database, logging, DomainEvents and both email
         event classes, then registers the two subscriptions once. initServices awaits it after
-        Newsletters and before the group containing Members and Email Analytics, which read the
+        Stats and before the group containing Members and Email Analytics, which read the
         ready instance. A failed registration deactivates its own handlers, since DomainEvents
         cannot remove a listener. No extras or different instance lifetime are needed.
       reviewedAt: c03e84fdc7e91db2310a785fbd2e5a6233da6c42
@@ -3567,7 +3567,7 @@ services:
           - test/unit/server/services/members/members-api/services/members-bread-service.test.js
       startup:
         summary: >-
-          Boot awaits the root's init after Newsletters and before the service group, so Members
+          Boot awaits the root's init after Stats and before the service group, so Members
           and Email Analytics read the ready service and a rejection stops their initialization.
           The factory is synchronous and registers both subscriptions once; repeated or
           concurrent init retains the first instance. A failed registration deactivates its
