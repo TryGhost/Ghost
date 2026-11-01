@@ -1268,8 +1268,8 @@ importers:
         specifier: 'catalog:'
         version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
       eslint-plugin-no-relative-import-paths:
-        specifier: 1.6.1
-        version: 1.6.1
+        specifier: 1.7.3
+        version: 1.7.3
       jsdom:
         specifier: 'catalog:'
         version: 30.0.1(@noble/hashes@1.8.0)
@@ -2077,8 +2077,8 @@ importers:
         specifier: 'catalog:'
         version: 4.0.1(@typescript-eslint/eslint-plugin@8.71.1(@typescript-eslint/parser@8.71.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(@typescript-eslint/parser@8.71.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(ts-declaration-location@1.0.7(@typescript/typescript6@6.0.2))
       eslint-plugin-no-relative-import-paths:
-        specifier: 1.6.1
-        version: 1.6.1
+        specifier: 1.7.3
+        version: 1.7.3
       eslint-plugin-playwright:
         specifier: 2.12.1
         version: 2.12.1(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))
@@ -11382,8 +11382,8 @@ packages:
       typescript:
         optional: true
 
-  eslint-plugin-no-relative-import-paths@1.6.1:
-    resolution: {integrity: sha512-YZNeOnsOrJcwhFw0X29MXjIzu2P/f5X2BZDPWw1R3VUYBRFxNIh77lyoL/XrMU9ewZNQPcEvAgL/cBOT1P330A==}
+  eslint-plugin-no-relative-import-paths@1.7.3:
+    resolution: {integrity: sha512-vEpNX0fvhoHdBu8eI05+XXYswnGHW2HJYmnJJeR8zOwgo59GgWv98z22XyZvMEHHcjSX4yGX2Ni/GyxGpBjfgw==}
 
   eslint-plugin-playwright@2.12.1:
     resolution: {integrity: sha512-JhavNuYBIq7SE/Zg9Esf9RGHkXoDbzrEKS383cowzMyvZ4JMbmdNCN6CoW+RU1Cjzwcoea1tou0je58uXmT/9A==}
@@ -23916,7 +23916,7 @@ snapshots:
       ts-declaration-location: 1.0.7(@typescript/typescript6@6.0.2)
       typescript: '@typescript/typescript6@6.0.2'
 
-  eslint-plugin-no-relative-import-paths@1.6.1: {}
+  eslint-plugin-no-relative-import-paths@1.7.3: {}
 
   eslint-plugin-playwright@2.12.1(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2)):
     dependencies:
