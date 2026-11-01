@@ -17,6 +17,20 @@ const defaultCtx = {
   paidMembersEnabled: false,
 };
 
+describe('member creation source', () => {
+  it.each([
+    ['admin', 'signed up via manual entry'],
+    ['api', 'signed up via API'],
+    ['import', 'signed up via import'],
+    ['system', 'signed up via system'],
+    ['member', 'signed up'],
+  ])('describes creation from %s', (source, action) => {
+    const parsed = parseMemberEvent(ev('signup_event', { source }), defaultCtx);
+    expect(parsed.action).toBe(action);
+    expect(parsed.actionTitle).toBe(action);
+  });
+});
+
 describe('parseMemberEvent — subject', () => {
   it('uses member.name when trimmed non-empty', () => {
     const parsed = parseMemberEvent(
