@@ -10360,12 +10360,13 @@ services:
           Each graph owns redirects and two shared DomainEvents subscriptions, borrowing models
           and database transactions. create/update/list start their own transaction; getOffer
           and ensureOfferForStripeCoupon reuse a supplied transaction. Repository save attaches
-          event dispatch to transaction.executionPromise without awaiting it or handling rejection;
+          event dispatch to transaction.executionPromise without awaiting it; a rollback dispatches
+          nothing and its rejection is handled there, leaving the error to the caller;
           nontransactional save dispatches immediately. Subscriber work, including payment-owned
           Stripe calls and coupon-ID persistence, is not awaited by API success. There is no
           unsubscribe or pending-work drain. A real-database API test pins created-event dispatch
-          after commit, and a repository unit pins that no rejection handler is attached; rollback
-          delivery is not exercised with a real transaction. The members redemption case proves a
+          after commit, and a rollback after the save with no dispatch, no stored row and no
+          unhandled rejection; a repository unit pins the same. The members redemption case proves a
           row exists inside its real transaction, not provider rollback.
         sources:
           - core/server/services/offers/offers-module.js
@@ -10392,8 +10393,9 @@ services:
           save errors, rereads the coupon offer and returns it or throws a logged InternalServerError;
           other save failures escape. Unit fakes pin these branches, not a real database race.
           Redirect callback failures are caught by DomainEvents; failed startup does not undo
-          listeners/maps, as root units pin. Post-commit failures and failed rollback delivery
-          remain source-only; successful HTTP create is not proof of coupon provisioning completion.
+          listeners/maps, as root units pin. A rolled-back save dispatches nothing, as the
+          real-database API test pins. Post-commit failures remain source-only; successful HTTP
+          create is not proof of coupon provisioning completion.
         sources:
           - core/server/services/offers/service.js
           - core/server/services/offers/offers-module.js
@@ -10409,6 +10411,7 @@ services:
           - test/unit/server/services/offers/application/offers-api.test.js
           - test/e2e-api/admin/offers.test.js
           - test/integration/services/offer-bookshelf-repository.test.js
+          - test/integration/services/offers-api.test.js
     unverified: []
     blockers:
       - >-
@@ -10420,9 +10423,8 @@ services:
         faked models. Initial rows, created/changed codes, archived offers and query strings are
         also pinned through the mounted site app and a real database.
       - >-
-        Cover rollback with a real transaction, including the unhandled rejection from the detached
-        executionPromise.then chain, and payment coupon failures after commit. Commit-then-dispatch
-        and the missing rejection handler are pinned.
+        Cover payment coupon failures after commit. Commit-then-dispatch and rollback without
+        dispatch or an unhandled rejection are pinned with a real transaction.
         Define pending DB/provider work ownership before adding shutdown; no root drain exists.
       - >-
         Test concurrent coupon import and retention activation with the real database. Simulated
