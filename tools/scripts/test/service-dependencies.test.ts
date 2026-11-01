@@ -588,6 +588,22 @@ it('allows the delivery address formatter required by Member welcome emails with
   assert.deepEqual(violations(graph), [['service-dependencies', `${alpha}/rejected.ts`, rejected]]);
 });
 
+it('allows the scheduler idempotency key helper required by Post scheduling without allowing its siblings', (t) => {
+  const approved = 'ghost/core/server/adapters/scheduling/get-scheduler-idempotency-key.ts';
+  const rejected = 'ghost/core/server/adapters/scheduling/build-signed-job.ts';
+  const f = fixture(t, {
+    [`${alpha}/approved.ts`]: "import '../../adapters/scheduling/get-scheduler-idempotency-key';",
+    [`${alpha}/rejected.ts`]: "import '../../adapters/scheduling/build-signed-job';",
+    [approved]: 'export const getSchedulerIdempotencyKey = () => "";',
+    [rejected]: 'export const buildSignedJob = () => ({});',
+  });
+  const graph = f.graph();
+  assert.ok(
+    edges(graph).some(([from, , to]) => from === `${alpha}/approved.ts` && to === approved),
+  );
+  assert.deepEqual(violations(graph), [['service-dependencies', `${alpha}/rejected.ts`, rejected]]);
+});
+
 it('rejects outside dependencies, own roots and unresolved imports without folder or package-prefix escapes', (t) => {
   const imports = {
     'require.ts': "require('../../../shared/config');",

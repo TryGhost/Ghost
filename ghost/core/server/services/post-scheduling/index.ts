@@ -1,13 +1,44 @@
-import PostScheduling from './post-scheduling';
-import internalKeys from '../internal-keys';
-import adapterManager from '../adapter-manager';
-import { withErrorCapture } from '../../adapters/scheduling/error-capture';
+import { defineService } from '../../../kernel/define-service';
+import type PostSchedulingClass from './post-scheduling';
+import type { PostSchedulingEvents } from './post-scheduling';
 
-// CJS modules without TS declarations — typed loosely at the boundary.
-const urlUtils = require('../../../shared/url-utils').default;
+// Boot initializes this before running the scheduling adapter. The scheduler
+// keeps the adapter, Admin API URL and listeners from its first initialization.
+export default defineService('Post Scheduling', () => {
+  const logging = require('@tryghost/logging');
+  const PostScheduling: typeof PostSchedulingClass = require('./post-scheduling').default;
+  const internalKeys = require('../internal-keys').default;
+  const adapterManager = require('../adapter-manager').default;
+  const { withErrorCapture } = require('../../adapters/scheduling/error-capture');
+  const { buildSignedJob } = require('../../adapters/scheduling/build-signed-job');
+  const models = require('../../models');
+  const events = require('../../lib/common/events');
+  const urlUtils = require('../../../shared/url-utils').default;
 
-export default new PostScheduling({
-  apiUrl: urlUtils.urlFor('api', { type: 'admin' }, true),
-  adapter: withErrorCapture(adapterManager.getAdapter('scheduling')),
-  internalKeys: internalKeys.service,
+  // The constructor subscribes before registering with the adapter. Record the
+  // subscriptions so a failed construction can remove them before init rejects.
+  const subscriptions: [string, Parameters<PostSchedulingEvents['on']>[1]][] = [];
+  const subscriber: PostSchedulingEvents = {
+    on(eventName, listener) {
+      events.on(eventName, listener);
+      subscriptions.push([eventName, listener]);
+    },
+  };
+
+  try {
+    return new PostScheduling({
+      apiUrl: urlUtils.urlFor('api', { type: 'admin' }, true),
+      adapter: withErrorCapture(adapterManager.getAdapter('scheduling')),
+      internalKeys: internalKeys.service,
+      models,
+      events: subscriber,
+      logging,
+      buildSignedJob,
+    });
+  } catch (err) {
+    for (const [eventName, listener] of subscriptions) {
+      events.removeListener(eventName, listener);
+    }
+    throw err;
+  }
 });

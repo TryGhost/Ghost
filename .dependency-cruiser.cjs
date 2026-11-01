@@ -67,6 +67,7 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/email-rendering/email-design\\.js$', // Email design token computation from supplied settings.
   '^ghost/core/server/lib/email-rendering/finalize\\.ts$', // Email CSS inlining and plaintext generation; no application instances.
   '^ghost/core/server/lib/mail/format-address-for-delivery\\.ts$', // Mailbox formatting for delivery; no sender policy or application instances.
+  '^ghost/core/server/adapters/scheduling/get-scheduler-idempotency-key\\.ts$', // Hashes a job's fire time and URL into a scheduler idempotency key; no application instances.
 ];
 
 /*
