@@ -2712,6 +2712,10 @@ module.exports = {
     // and what tells two versions apart without parsing them. Defined by
     // services/app-installations/load-manifest.ts.
     digest: { type: 'string', maxlength: 64, nullable: false },
+    // A sanitized copy of the app's SVG icon, taken when the row was added, so staff
+    // browsers never request it from the app. Null for a named icon. Defined by
+    // services/app-installations/fetch-icon.ts.
+    icon_svg: { type: 'text', maxlength: 65535, nullable: true },
     // How the row was added: the app was installed, an Administrator approved changes, the
     // re-check applied a newer manifest or stored one for approval (`update`), or the
     // re-check lifted a suspension because the app reverted the pending changes (`resume`).

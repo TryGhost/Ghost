@@ -17,6 +17,7 @@ export const InstallationFields = DbAppInstallation.pick({
 export const ApprovedManifestFields = DbAppInstallationManifest.pick({
   manifest_url: true,
   manifest: true,
+  icon_svg: true,
 });
 
 /**

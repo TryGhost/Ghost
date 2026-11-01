@@ -12,6 +12,7 @@ const AppInstallationResource = z.object({
   manifest_url: z.string(),
   // It was checked when it was read, and parsing it again could rewrite its URLs.
   manifest: z.custom<AppManifest>(),
+  icon_svg: z.string().nullable(),
   created_at: z.date(),
   updated_at: z.date().nullable(),
   history: z.array(z.custom<AppInstallationHistoryEntry>()).optional(),

@@ -31,7 +31,7 @@ const HistoryManifestRow = DbAppInstallationManifest.pick({
 
 const ManifestContentRow = DbAppInstallationManifest.pick({ id: true, manifest: true });
 
-const ManifestDigestRow = DbAppInstallationManifest.pick({ digest: true });
+const DigestAndIconRow = DbAppInstallationManifest.pick({ digest: true, icon_svg: true });
 
 const HistoryActionRow = z
   .object({
@@ -76,6 +76,7 @@ export interface AddedRow {
   loaded: LoadedManifest;
   source: z.infer<typeof AppInstallationManifestSource>;
   requiresApproval: boolean;
+  iconSvg: string | null;
 }
 
 /** Every write to an installation moves its revision on, which ends its app sessions. */
@@ -97,7 +98,7 @@ class LockedInstallation {
   }
 
   /** Adds a manifest row for the installation, and returns its ID. */
-  async addManifest({ loaded, source, requiresApproval }: AddedRow): Promise<string> {
+  async addManifest({ loaded, source, requiresApproval, iconSvg }: AddedRow): Promise<string> {
     const id = new ObjectId().toHexString();
     await this.trx(MANIFESTS).insert({
       id,
@@ -105,6 +106,7 @@ class LockedInstallation {
       manifest_url: loaded.manifestUrl,
       manifest: loaded.serialised,
       digest: loaded.digest,
+      icon_svg: iconSvg,
       source,
       requires_approval: requiresApproval,
       created_at: toDatabaseDate(new Date()),
@@ -176,14 +178,14 @@ export class AppInstallationsRepository {
   }
 
   /**
-   * A manifest row's digest, by ID. The manifest itself isn't read, so a row stored under an
-   * older contract, which may no longer decode, can still be compared against.
+   * Reads only the digest and icon copy, skipping the manifest: a row stored under an older
+   * contract may no longer decode, but we still compare against it.
    */
-  async findDigest(id: string): Promise<string | undefined> {
+  async findDigestAndIcon(id: string): Promise<z.output<typeof DigestAndIconRow> | undefined> {
     const row = await this.knex(MANIFESTS)
       .where({ id })
-      .first<z.input<typeof ManifestDigestRow> | undefined>('digest');
-    return row ? z.decode(ManifestDigestRow, row).digest : undefined;
+      .first<z.input<typeof DigestAndIconRow> | undefined>('digest', 'icon_svg');
+    return row ? z.decode(DigestAndIconRow, row) : undefined;
   }
 
   /** An installation's manifest rows and staff actions, oldest first. */
@@ -249,7 +251,7 @@ export class AppInstallationsRepository {
    * second installation of the same app, so when two installs race, one succeeds and the
    * other gets `APP_ALREADY_INSTALLED`.
    */
-  async insert(loaded: LoadedManifest): Promise<Installation> {
+  async insert(loaded: LoadedManifest, iconSvg: string | null): Promise<Installation> {
     const { manifest } = loaded;
     const id = new ObjectId().toHexString();
     const manifestId = new ObjectId().toHexString();
@@ -265,6 +267,7 @@ export class AppInstallationsRepository {
       revision: 0,
       manifest_url: loaded.manifestUrl,
       manifest: loaded.serialised,
+      icon_svg: iconSvg,
       created_at: now,
       updated_at: now,
     };
@@ -286,6 +289,7 @@ export class AppInstallationsRepository {
             manifest_url: written.manifest_url,
             manifest: loaded.serialised,
             digest: loaded.digest,
+            icon_svg: iconSvg,
             source: 'install',
             requires_approval: false,
             created_at: now,

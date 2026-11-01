@@ -3,12 +3,14 @@ import logging from '@tryghost/logging';
 import { defineService } from '../../../kernel/define-service';
 import config from '../../../shared/config';
 import urlUtils from '../../../shared/url-utils';
+import { sanitizeSvgContent } from '../../lib/image/svg-sanitizer';
 import {
   actingContext,
   recordAppInstallationAction,
   type RecordAppInstallationAction,
 } from './actions';
 import { createAppFetcher } from './fetch-from-app';
+import { createIconFetcher } from './fetch-icon';
 import { createManifestLoader } from './load-manifest';
 import { AppInstallationsService } from './service';
 
@@ -63,6 +65,11 @@ export default defineService(
           ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],
           allowLocalhost: isDevelopment(),
         }),
+      }),
+      fetchIcon: createIconFetcher({
+        fetchFromApp,
+        logging,
+        sanitizeSvg: (svg) => sanitizeSvgContent(svg, { selfContained: true }),
       }),
     });
   },

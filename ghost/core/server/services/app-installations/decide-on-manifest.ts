@@ -76,19 +76,24 @@ export function decideOnManifest({ current, pending, loaded }: Manifests): Manif
   return { kind: changes.length === 0 ? 'unchanged' : 'apply', changes };
 }
 
+/** A new row before its icon is fetched. Only writes that add a row fetch it. */
+export type PlannedRow = Omit<AddedRow, 'iconSvg'>;
+
 /**
- * Prepare the write so that anything a new row needs can be done outside the transaction.
+ * Prepare the write so that e.g. the app's icon can be fetched outside the transaction.
  *
  * - `nothing`: no write.
  * - `approve_existing`: approve an existing row and clear any pending one.
  * - `add_approved`: add a row, approve it and clear any pending one.
  * - `add_pending`: add a row as the pending manifest, which suspends the installation.
+ *
+ * `Added` is a `PlannedRow` until the icon is fetched.
  */
-export type ManifestWrite =
+export type ManifestWrite<Added extends PlannedRow = PlannedRow> =
   | { kind: 'nothing' }
   | { kind: 'approve_existing'; manifestId: string }
-  | { kind: 'add_approved'; row: AddedRow }
-  | { kind: 'add_pending'; row: AddedRow };
+  | { kind: 'add_approved'; row: Added }
+  | { kind: 'add_pending'; row: Added };
 
 /**
  * Approving never leaves a manifest pending, so the staff history can't record an approval
