@@ -144,24 +144,25 @@ describe('OfferBookshelfRepository', function () {
       assert.ok(dispatch.firstCall.args[0] instanceof OfferCreatedEvent);
     });
 
-    it('waits on a rolled-back transaction with no rejection handler of its own', async function () {
+    it('dispatches nothing and leaves no unhandled rejection when the transaction rolls back', async function () {
       const repository = new OfferBookshelfRepository(fakeOfferModel(), fakeOfferRedemptionModel());
       const offer = await newOffer();
-      // A real rolled-back transaction rejects this promise. Save chains only a fulfilment
-      // handler, so that rejection surfaces as an unhandled rejection; a stub keeps it out of
-      // the test run while pinning that no handler is attached, on this promise or the one
-      // its then returns.
-      const chained = { then: sinon.stub(), catch: sinon.stub(), finally: sinon.stub() };
-      const executionPromise = { then: sinon.stub().returns(chained) };
+      const unhandled: unknown[] = [];
+      const onUnhandled = (reason: unknown) => unhandled.push(reason);
+      process.on('unhandledRejection', onUnhandled);
+      // A rolled-back transaction rejects its execution promise; its caller handles that error.
+      const executionPromise = Promise.reject(new Error('rolled back'));
+      executionPromise.catch(() => {});
 
-      await repository.save(offer, { transacting: { executionPromise } });
+      try {
+        await repository.save(offer, { transacting: { executionPromise } });
+        await setImmediate();
+      } finally {
+        process.off('unhandledRejection', onUnhandled);
+      }
 
-      sinon.assert.calledOnce(executionPromise.then);
-      assert.equal(executionPromise.then.firstCall.args.length, 1);
-      sinon.assert.notCalled(chained.then);
-      sinon.assert.notCalled(chained.catch);
-      sinon.assert.notCalled(chained.finally);
       sinon.assert.notCalled(dispatch);
+      assert.deepEqual(unhandled, []);
     });
   });
 
