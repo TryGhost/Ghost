@@ -92,9 +92,9 @@ const automationEmail = {
   automationRunStepId: 'step-id',
 };
 
-// The root retains one instance for the process. These suites run in file order: the
-// initialization suite boots it once (through a stubbed emitter so the shared bus never gets a
-// listener from this file) and later suites reload it to reset the caches they exercise.
+// The root retains one instance for the process. The initialization suite boots it first, and
+// later suites boot it themselves when run alone, always through a stubbed emitter so the shared
+// bus never gets a listener from this file. They reload it to reset the caches they exercise.
 describe('Member welcome emails root', function () {
   const settings: Attributes = {};
   let sendTransactional: sinon.SinonStub;
@@ -119,6 +119,17 @@ describe('Member welcome emails root', function () {
       delete settings[key];
     }
   });
+
+  // init is idempotent, so after the initialization suite this only returns the retained instance.
+  async function initRoot() {
+    const on = sinon.stub(events, 'on');
+    sinon.define(linkTracking, 'service', { addAutomationTrackingToUrl: sinon.stub() });
+    try {
+      await root.init();
+    } finally {
+      on.restore();
+    }
+  }
 
   describe('initialization', function () {
     it('exposes only init and a guarded service getter', function () {
@@ -307,6 +318,7 @@ describe('Member welcome emails root', function () {
     let sendBulk: sinon.SinonStub;
 
     beforeEach(async function () {
+      await initRoot();
       api = root.service;
       findAutomation = sinon.stub(models.Automation, 'findOne').resolves(welcomeRow());
       getDefaultNewsletter = sinon
@@ -386,6 +398,7 @@ describe('Member welcome emails root', function () {
     let findDesign: sinon.SinonStub;
 
     beforeEach(async function () {
+      await initRoot();
       api = root.service;
       sinon.stub(models.Automation, 'findOne').resolves(welcomeRow());
       sinon.stub(models.Newsletter, 'getDefaultNewsletter').resolves(newsletter('First'));
@@ -461,7 +474,8 @@ describe('Member welcome emails root', function () {
     let editDesign: sinon.SinonStub;
     let validate: sinon.SinonStub;
 
-    beforeEach(function () {
+    beforeEach(async function () {
+      await initRoot();
       api = root.service;
       Object.assign(token, { created_at: new Date(), first_used_at: null, used_count: 0 });
       tokenModel = {
