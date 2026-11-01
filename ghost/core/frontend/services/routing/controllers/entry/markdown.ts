@@ -53,9 +53,13 @@ function isPublic(entry: Entry): boolean {
   return entry.visibility === 'public';
 }
 
-function serveMarkdown(res: Response, entry: Entry) {
+function getContentLocation(res: EntryResponse, entry: Entry): string {
+  return res.routerOptions.markdownPath ?? getMarkdownPath(new URL(entry.url).pathname);
+}
+
+function serveMarkdown(res: EntryResponse, entry: Entry) {
   const llmsIndexUrl = urlUtils.urlFor({ relativeUrl: '/llms.txt' }, true);
-  res.set('Content-Location', getMarkdownPath(new URL(entry.url).pathname));
+  res.set('Content-Location', getContentLocation(res, entry));
   res.type('text/markdown');
   return res.send(renderEntryMarkdown(entry, { llmsIndexUrl }));
 }
@@ -78,7 +82,7 @@ function servePreviewMarkdown(res: EntryResponse, entry: Entry) {
   const llmsIndexUrl = urlUtils.urlFor({ relativeUrl: '/llms.txt' }, true);
   const subscribeUrl = urlUtils.urlFor({ relativeUrl: '/#/portal/signup' }, true);
 
-  res.set('Content-Location', getMarkdownPath(new URL(entry.url).pathname));
+  res.set('Content-Location', getContentLocation(res, entry));
   res.type('text/markdown');
   return res.send(
     renderEntryMarkdown(entry, {
@@ -124,7 +128,7 @@ async function servePaidMarkdown(req: Request, res: EntryResponse, entry: Entry)
   const resourceKind = getResourceKind(res);
   const resourceType = resourceKind === 'page' ? 'pages' : 'posts';
   const llmsIndexUrl = urlUtils.urlFor({ relativeUrl: '/llms.txt' }, true);
-  const contentLocation = getMarkdownPath(new URL(entry.url).pathname);
+  const contentLocation = getContentLocation(res, entry);
   const fetchRequest = toFetchRequest(req);
 
   const response = await machinePaymentsService.challengeOrFulfill(fetchRequest, {
@@ -169,7 +173,7 @@ export function isMdRequest(res: EntryResponse): boolean {
  */
 export async function serveMdRequest(req: Request, res: EntryResponse, entry: Entry) {
   if (!llmsEnabled(req)) {
-    return res.redirect(302, buildCanonicalUrl(req, entry));
+    return res.redirect(302, buildCanonicalUrl(req, entry, res.routerOptions.canonicalPath));
   }
 
   if (!isPublic(entry)) {
