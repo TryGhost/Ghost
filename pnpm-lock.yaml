@@ -486,8 +486,8 @@ catalogs:
       specifier: 2.29.0
       version: 2.29.0
     '@x402/hono':
-      specifier: 2.28.0
-      version: 2.28.0
+      specifier: 2.29.0
+      version: 2.29.0
     ajv:
       specifier: 8.20.0
       version: 8.20.0
@@ -2306,7 +2306,7 @@ importers:
         version: 2.29.0
       '@x402/hono':
         specifier: 'catalog:'
-        version: 2.28.0(hono@4.13.14)
+        version: 2.29.0(hono@4.13.14)
       archiver:
         specifier: 8.0.0
         version: 8.0.0
@@ -9509,23 +9509,20 @@ packages:
   '@webcontainer/env@1.1.1':
     resolution: {integrity: sha512-6aN99yL695Hi9SuIk1oC88l9o0gmxL1nGWWQ/kNy81HigJ0FoaoTXpytCj6ItzgyCEwA9kF1wixsTuv5cjsgng==}
 
-  '@x402/core@2.28.0':
-    resolution: {integrity: sha512-Da/7zKxCKqpBoB4Msc9tFgkAv7tJTD8nG+DSSm+QdXAyJS4PQsmgVSKe17rDJTtlu0pwNbLcOje6MyQ6kaDkig==}
-
   '@x402/core@2.29.0':
     resolution: {integrity: sha512-fkS0JqVwHgczteDlwItLRipOlIzm28U9HWLvYnYpnNbfmepoBT/4ux7LjrR0xGD51JHoC8/r+Qo7uCfoAQYeuw==}
 
   '@x402/evm@2.29.0':
     resolution: {integrity: sha512-Gk4bJ6WoRR3jeT2+vERSPMSkSr1nRL5kjtVh14uoynRm8y+fGFH8xmvlGzuwKT0liA6OLjdr9xjZtN8i0WYk9g==}
 
-  '@x402/extensions@2.28.0':
-    resolution: {integrity: sha512-M3SVxO8DJnx7gpok/ODQp803jr21s1XrCMholNw0hSgOVvSPRksfTZ+CUNfJwteNaHmaAxGjPelXWBhTCMD9oQ==}
+  '@x402/extensions@2.29.0':
+    resolution: {integrity: sha512-FCpjZ6QR6ZtHTRZBV7VHMt7tc66LnTrpKDERiL3atXlLu4PlmgiulHt9PWE+Ktm5iUbXr3dAYZu2e7XrVd/XgA==}
 
-  '@x402/hono@2.28.0':
-    resolution: {integrity: sha512-tR/AegvCpluj4AX1uYpqt0Ak7e3RcA2QE9GYrPCzwZTxv2z7gYUl7xE/olaxxDEiEb/yRmlsNAxmL81cARjeKw==}
+  '@x402/hono@2.29.0':
+    resolution: {integrity: sha512-ERZU+6CLVPQgRZMjHj24/PFBSYdCIg+Aji5fJnNAw3SDKdvFAC8WnNqgOoL8DL4kITc5ymOdjIYlUJP0ZC0lfw==}
     peerDependencies:
-      '@x402/paywall': ^2.28.0
-      hono: ^4.0.0
+      '@x402/paywall': ^2.29.0
+      hono: '>=4.13.7 <5.0.0'
     peerDependenciesMeta:
       '@x402/paywall':
         optional: true
@@ -16973,9 +16970,6 @@ packages:
     resolution: {integrity: sha512-dSvYKdvLsAHCDqPOhIwk/q5CvuWtTB3Dgpoe0uVEFjTzIOAmsQpprX25InCvrvJsirEbu1OHyy67n/kAj1Sw/w==}
     engines: {node: '>=18'}
 
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
-
   zod@4.6.7:
     resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
 
@@ -21899,10 +21893,6 @@ snapshots:
 
   '@webcontainer/env@1.1.1': {}
 
-  '@x402/core@2.28.0':
-    dependencies:
-      zod: 3.25.76
-
   '@x402/core@2.29.0':
     dependencies:
       zod: 4.6.7
@@ -21916,26 +21906,26 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@x402/extensions@2.28.0':
+  '@x402/extensions@2.29.0':
     dependencies:
       '@noble/curves': 1.9.7
       '@scure/base': 1.2.6
       '@signinwithethereum/siwe': 4.2.0(viem@2.55.11)
-      '@x402/core': 2.28.0
+      '@x402/core': 2.29.0
       ajv: 8.20.0
       jose: 5.10.0
       tweetnacl: 1.0.3
       viem: 2.55.11
-      zod: 3.25.76
+      zod: 4.6.7
     transitivePeerDependencies:
       - bufferutil
       - ethers
       - utf-8-validate
 
-  '@x402/hono@2.28.0(hono@4.13.14)':
+  '@x402/hono@2.29.0(hono@4.13.14)':
     dependencies:
-      '@x402/core': 2.28.0
-      '@x402/extensions': 2.28.0
+      '@x402/core': 2.29.0
+      '@x402/extensions': 2.29.0
       hono: 4.13.14
     transitivePeerDependencies:
       - bufferutil
@@ -30593,8 +30583,6 @@ snapshots:
       compress-commons: 7.0.1
       normalize-path: 3.0.0
       readable-stream: 4.7.0
-
-  zod@3.25.76: {}
 
   zod@4.6.7: {}
 
