@@ -5,7 +5,7 @@ exemplaryMigration: indexnow-ping
 services:
   activitypub:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -193,7 +193,7 @@ services:
         application. Existing row/helper tests do not make this root migration-ready.
   adapter-manager:
     kind: directory
-    disposition: relocate
+    disposition: split
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -466,18 +466,16 @@ services:
         distinct from optional static boot validation; neither proves remote readiness.
   announcement-bar-service:
     kind: directory
-    disposition: retain
+    disposition: relocate
     status: audited
     auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     migration:
-      complexity: complex
-      modelImpact: fits
+      complexity: not-applicable
+      modelImpact: not-applicable
       reason: >-
-        Ownership must be decided before migration: this eager settings resolver has no boot
-        entry and currently serves the announcements endpoint. If retained as an
-        application-owned capability, construction and live settings callbacks fit the
-        helper. Do not add initialization solely to justify its location; the open placement
-        decision makes it unsuitable as the next simple pilot.
+        Not a service: this settings resolver has no boot entry, owns no resources and
+        answers one controller's query for the current member. Relocate it to the
+        announcements endpoint rather than adding initialization to justify its location.
       reviewedAt: 61ac1e5058fa4657def92d7b362e197314b1a88d
       sources:
         - core/server/services/announcement-bar-service/index.js
@@ -501,8 +499,10 @@ services:
     entryPoints:
       - announcement-bar-service/index.js
     notes: >-
-      Preserve live settings, request-local member visibility and the validator's deep class
-      import when moving composition to boot. This instance owns no background resources.
+      Planned relocation: the resolver moves into the announcements controller, its only
+      caller, and the visibility values move to shared endpoint utilities used by both the
+      controller and the settings input validator. Preserve live settings reads and
+      request-local member visibility. This instance owns no background resources.
     contracts:
       exports:
         summary: >-
@@ -635,7 +635,7 @@ services:
         and successful bound calls.
   app-installations:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: auditing
     migrated: true
     extras:
@@ -731,7 +731,7 @@ services:
     blockers: []
   audience-feedback:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -982,7 +982,7 @@ services:
         same-process restart/config capture. Keep any new reload behavior separate from migration.
   automations:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -1282,7 +1282,7 @@ services:
         do not move further business policy into HTTP or make unrelated gaps pilot prerequisites.
   comments:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: b2716ee0e80e8320025cf0d1f028125f3205d08a
     migrated: true
@@ -1585,7 +1585,7 @@ services:
         and bulk-hide behavior covered when the root interface changes.
   content-import:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -1860,7 +1860,7 @@ services:
         gaps belong to this service's later work and do not gate the eight-service pilot.
   custom-redirects:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -2098,7 +2098,7 @@ services:
         of wrapper behavior or safe teardown.
   custom-theme-settings:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -2340,7 +2340,7 @@ services:
         atomicity. Existing HTTP copy coverage proves only the successful upload/activate path.
   donations:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: ad249f4fd584ca5921ef4a72fe44ae986d230264
     migrated: true
@@ -2543,7 +2543,7 @@ services:
         selected rows and mail values, not exactly-once delivery or drain.
   email-address:
     kind: directory
-    disposition: relocate
+    disposition: split
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -2779,7 +2779,7 @@ services:
         and mocked provider requests do not prove every failure or fallback-domain combination.
   email-analytics:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -3437,7 +3437,7 @@ services:
         not been reproduced and is not covered by the filter-string unit assertions.
   email-suppression-list:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -3677,7 +3677,7 @@ services:
         suppression deletion and member reenabling atomic.
   explore-ping:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     migrated: true
     auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
@@ -3917,7 +3917,7 @@ services:
         of the detached rejection remain uncharacterized.
   export-requests:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -4113,7 +4113,7 @@ services:
         repository and intercepted HTTP tests cannot prove remote completion.
   gift-links:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     migrated: true
     auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
@@ -4391,7 +4391,7 @@ services:
         currently wired through API support, not all contained in this root.
   gifts:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -4688,7 +4688,8 @@ services:
         test config changes do not establish replacement behavior or production hot reload.
   identity-tokens:
     kind: directory
-    disposition: relocate
+    disposition: migrate
+    futureHome: core/server/auth/identity-tokens
     status: audited
     auditedAt: 5dae46983fe5423a900214dfc1906f5d14e637d2
     migration:
@@ -4732,7 +4733,7 @@ services:
     entryPoints:
       - identity-tokens/index.js
     notes: >-
-      Planned relocation to server/auth/identity-tokens: Admin issuer, staff email/role claims and
+      Suggested future home after this migration: server/auth/identity-tokens; Admin issuer, staff email/role claims and
       short token expiry are authentication policy. ActivityPub consumes that identity capability
       rather than owning it. Preserve the configured service at its destination; no source has
       moved. Staff identity-token issuance is boot-owned; preserve the captured issuer and
@@ -4869,7 +4870,7 @@ services:
 
   indexnow-ping:
     kind: directory
-    disposition: retain
+    disposition: migrate
     migrated: true
     status: audited
     auditedAt: 5dae46983fe5423a900214dfc1906f5d14e637d2
@@ -5069,7 +5070,7 @@ services:
         HTTP classification tests do not establish these lifecycle contracts.
   integrations:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -5303,7 +5304,8 @@ services:
         unproven; do not introduce those guarantees as part of initializer adoption.
   internal-keys:
     kind: directory
-    disposition: relocate
+    disposition: migrate
+    futureHome: core/server/auth/internal-keys
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -5341,7 +5343,7 @@ services:
     entryPoints:
       - internal-keys/index.ts
     notes: >-
-      Planned relocation to server/auth/internal-keys: the scheduler/frontend credential map is
+      Suggested future home after this migration: server/auth/internal-keys; the scheduler/frontend credential map is
       authentication support, and authentication reset already owns its invalidation. The
       initializer migration remains valid; moving ownership must preserve the same ready map. No
       source has moved. Initializer migration reviewed against main
@@ -5525,7 +5527,7 @@ services:
         enforce valid keys at runtime.
   invites:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -5835,7 +5837,7 @@ services:
         authority, forwarded name/password and the expiry boundary without real persistence.
   jobs-service:
     kind: directory
-    disposition: relocate
+    disposition: split
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -6047,7 +6049,8 @@ services:
         ordering and failures outside the tested jobs-start boundary remain open.
   limits.ts:
     kind: file
-    disposition: relocate
+    disposition: migrate
+    futureHome: core/shared/limits
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -6089,7 +6092,7 @@ services:
     entryPoints:
       - limits.ts
     notes: >-
-      Planned split and relocation: Ghost-wide entitlement/quota policy belongs in
+      Suggested future home after this migration: Ghost-wide entitlement/quota policy belongs in
       core/shared/limits. The reusable limit engine stays in @tryghost/limit-service. Boot
       injects configuration and database dependencies so Shared does not import server code. No
       source has moved. Boot loads host policy into an eagerly exported, widely retained
@@ -6292,7 +6295,7 @@ services:
         conflict with the placement rules. Recorded facets do not establish migration readiness.
   link-redirection:
     kind: directory
-    disposition: retain
+    disposition: migrate
     migrated: true
     extras:
       linkRedirectRepository:
@@ -6574,7 +6577,7 @@ services:
         HTTP boundary; current method fakes do not establish those composition contracts.
   link-tracking:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -6838,7 +6841,7 @@ services:
         save replaces event_id after persistence; no constructor/getAll assertion pins these boundaries.
   machine-payments:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -7097,7 +7100,7 @@ services:
       - Add a coherent real-root HTTP/provider-fake/real-database contract for paid posts and pages, mixed tiers, signed-in previews, pricing/default currency, both-credential precedence and provider failures; existing HTTP tests stub fulfillment and deep orchestration tests stub persistence/providers.
   media-inliner:
     kind: directory
-    disposition: retain
+    disposition: migrate
     migrated: true
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -7338,7 +7341,7 @@ services:
         and orphan cleanup cannot be inferred from a bounded request or successful queue drain.
   member-attribution:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -7613,7 +7616,7 @@ services:
         no setting reload or expanded output contract is implied by this migration.
   member-welcome-emails:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -8322,7 +8325,7 @@ services:
         unrelated member business changes are not pilot prerequisites.
   members-events:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -8539,7 +8542,7 @@ services:
         behavior during the initialization migration.
   members-metafields:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -8807,7 +8810,7 @@ services:
         production consumers were removed.
   mentions:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -9133,7 +9136,7 @@ services:
         cleanup. These source-derived gaps are scoped to mentions, not pilot prerequisites.
   milestones:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -9367,7 +9370,7 @@ services:
         requests do not establish disposal, duplicate delivery prevention or restart behavior.
   newsletters:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -9630,7 +9633,7 @@ services:
         other legacy failures explicit rather than changing them during migration.
   notifications:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -9881,7 +9884,7 @@ services:
         or the unavailable errors.logError rejection handler.
   oembed:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -10154,7 +10157,7 @@ services:
         without assuming the HTTP fixtures cover every dependency resource or DNS failure.
   offers:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -10405,7 +10408,8 @@ services:
         and preserve the distinction between durable offer creation and later coupon provisioning.
   permissions:
     kind: directory
-    disposition: relocate
+    disposition: migrate
+    futureHome: core/server/auth/permissions
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -10450,7 +10454,7 @@ services:
     entryPoints:
       - permissions/index.js
     notes: >-
-      Planned relocation to server/auth/permissions: action maps, actor context and staff/API-key
+      Suggested future home after this migration: server/auth/permissions; action maps, actor context and staff/API-key
       roles belong with the existing authorization owner. This remains configured application
       policy, not Kernel machinery. Boot still owns readiness; no source has moved. Preserve
       boot-loaded action definitions, per-check permission loading and model overrides. Returned
@@ -10634,7 +10638,7 @@ services:
         provider loads already started by canThis; no cancellation or root drain is present.
   post-scheduling:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -10874,7 +10878,7 @@ services:
         does not prove provider delivery exactly once or default-adapter retry of every failure.
   posts:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     migration:
@@ -11167,7 +11171,8 @@ services:
         Preserve their existing owners and behavior unless the migration changes them.
   posts-public:
     kind: directory
-    disposition: relocate
+    disposition: migrate
+    futureHome: core/server/api/endpoints/utils/public-response-cache
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -11199,7 +11204,7 @@ services:
     entryPoints:
       - posts-public/index.ts
     notes: >-
-      Planned relocation to API-owned public-response-cache support: this root only selects the
+      Suggested future home after this migration: API-owned public-response-cache support; this root only selects the
       posts cache and subscribes to site invalidation; query, access and cache-key policy already
       live in the endpoint. Keep the boot-owned configured instance and readiness guard at the
       destination. No source has moved. The prior auditedAt records the pre-migration baseline.
@@ -11425,7 +11430,7 @@ services:
         shared response references have no direct assertions in the inspected cache cohort.
   recommendations:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migrated: true
@@ -11771,7 +11776,8 @@ services:
         shared socket ownership or timeout completion.
   remote-flags:
     kind: directory
-    disposition: relocate
+    disposition: migrate
+    futureHome: core/shared/labs
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -11810,7 +11816,7 @@ services:
     entryPoints:
       - remote-flags/index.ts
     notes: >-
-      Planned relocation alongside core/shared/labs and its flag-override store: remote rollout
+      Suggested future home after this migration: alongside core/shared/labs and its flag-override store; remote rollout
       policy is part of the same Ghost-wide feature-flag capability. Boot injects runtime
       dependencies and owns poller startup/shutdown; generic timers do not make the flag policy
       Kernel code. No source has moved. Preserve config-gated background polling, stable rollout
@@ -12267,7 +12273,7 @@ services:
         the comments case does not prove each uploaded collection is activated.
   settings:
     kind: directory
-    disposition: relocate
+    disposition: split
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -12326,7 +12332,7 @@ services:
       server code. The cache and caller-owned settings operations retain their distinct
       lifetimes. Settle ownership of protected setting mutations, verification delivery and
       feature-specific side effects separately; these are not API presentation merely
-      because endpoints invoke them. No source has moved. Preserve per-boot cache
+      because endpoints invoke them. No source has moved. Reassess initialization after separating ownership rather than migrating this root in place. Preserve per-boot cache
       rebuilding, synchronous retained readers and separate caller-owned BREAD instances.
       Utility consumers also run before ordinary service boot.
     contracts:
@@ -12526,7 +12532,7 @@ services:
         config snapshots/live reads and actual default-sender fallback without copying the stale name.
   settings-helpers:
     kind: directory
-    disposition: relocate
+    disposition: split
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -12571,7 +12577,7 @@ services:
       their existing feature owners; sender defaults to shared sender policy. Only common settings
       access/calculated-field bindings stay with Shared settings. Boot injects feature-owned
       calculation callbacks so Shared does not import server features. Preserve early evaluation
-      without forcing feature services to initialize first. No source has moved. Preserve the
+      without forcing feature services to initialize first. No source has moved. Split before the initializer migration rather than migrating this facade in place; the remaining calculated-field bindings move with the settings split. Preserve the
       shared facade, exposed cache reference and calculated-field bindings. Helper reads, frozen
       URL inputs and caller-owned result caches have different lifetimes.
     contracts:
@@ -12779,7 +12785,8 @@ services:
         that guard. These source risks have not been reproduced by this audit.
   signing-keys:
     kind: directory
-    disposition: relocate
+    disposition: migrate
+    futureHome: core/server/auth/signing-keys
     migrated: true
     extras:
       scheduleCheckJob:
@@ -12808,7 +12815,7 @@ services:
     entryPoints:
       - signing-keys/index.ts
     notes: >-
-      Planned relocation to server/auth/signing-keys: staff/member key purposes, publication/grace
+      Suggested future home after this migration: server/auth/signing-keys; staff/member key purposes, publication/grace
       periods and persisted rotation are authentication policy. Ordinary public-key conversion
       stays in server/lib/public-jwk; Boot owns construction and recurring-check activation, while
       the handler stays auth-owned. Preserve the migrated initializer at its destination; no
@@ -12991,7 +12998,7 @@ services:
         are evicted rather than returning the same rejected promise.
   slack-ping:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: ffda65ff64f78a7148f8cbf1d8c717d55bc5a65b
     migrated: true
@@ -13203,7 +13210,7 @@ services:
         initial custom title/icon values, but not every live-setting and suppression case.
   staff:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -13446,7 +13453,7 @@ services:
 
   stats:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -13740,7 +13747,7 @@ services:
         root does not reset this graph; no cancellation or cache/client disposal is exposed.
   stripe:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -14039,7 +14046,7 @@ services:
         composition.
   stripe-checkout-config:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: auditing
     migrated: true
     extras:
@@ -14138,7 +14145,7 @@ services:
     blockers: []
   support-requests:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: auditing
     migrated: true
     migration:
@@ -14216,7 +14223,8 @@ services:
     blockers: []
   tags-public:
     kind: directory
-    disposition: relocate
+    disposition: migrate
+    futureHome: core/server/api/endpoints/utils/public-response-cache
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -14248,7 +14256,7 @@ services:
     entryPoints:
       - tags-public/index.ts
     notes: >-
-      Planned relocation to API-owned public-response-cache support alongside the posts cache.
+      Suggested future home after this migration: API-owned public-response-cache support alongside the posts cache.
       This root only selects the tags cache and subscribes to site invalidation; tag querying is
       endpoint-owned. Boot still owns configured cache readiness, and generic adapter mechanics
       retain their own owner. No source has moved. The prior auditedAt records the pre-migration
@@ -14449,7 +14457,7 @@ services:
         resources without closing shared clients; selected fake-store tests do not establish this.
   themes:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:
@@ -14780,7 +14788,7 @@ services:
         obligations without making unrelated business fixes prerequisites for the pilot.
   tiers:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -15781,7 +15789,7 @@ services:
         of an overall deadline or of dependency-level retry/socket cleanup behavior.
   upgrades:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: auditing
     migrated: true
     migration:
@@ -16110,7 +16118,7 @@ services:
         Add resource-bound and concurrent-write coverage before changing enumeration/cleanup.
   users:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     migrated: true
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
@@ -16768,7 +16776,7 @@ services:
         API today; test-only allSettled and a request timeout do not establish shutdown drain.
   webhooks:
     kind: directory
-    disposition: retain
+    disposition: migrate
     status: audited
     auditedAt: bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e
     migration:

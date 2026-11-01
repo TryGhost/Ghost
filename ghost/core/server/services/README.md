@@ -195,20 +195,31 @@ Do not store report totals in the inventory or infer kernel requirements from
 violation counts. Shared primitives need a demonstrated application-independent
 contract; feature-specific helpers stay with their owners.
 
-`disposition` records the intended home of the current directory entry:
-`retain` keeps it here, `relocate` plans a move or split between other owners,
-and `review` leaves ownership undecided. It does not record completed work.
-A relocated capability can still be a configured runtime service; relocation
-does not make its initialization assessment `not-applicable`. Keep the entry
-until the directory actually leaves, and preserve its dependency, readiness
-and lifetime contracts at the destination. Use `notes` to describe the intended
-split and distinguish it from an earlier in-place migration assessment.
+`disposition` records what this migration does with the entry:
 
-Base disposition on the capability's responsibilities and intended owner. Per-call
+- `migrate` adopts the boot-owned initializer in place.
+- `relocate` moves code that clearly is not a service and cannot be migrated
+  out of this directory. The entry is removed once it moves.
+- `split` separates parts with different owners. Its notes name each part's
+  owner, which part remains a service, and whether the split must come before
+  the initializer migration.
+- `review` leaves the decision open.
+
+It does not record completed work. Every root is expected to move into a domain
+eventually; that is separate from this migration. A migrated service keeps its
+dependency, readiness and lifetime contracts wherever it later moves.
+
+Base disposition on the capability's runtime responsibilities. Per-call
 construction, no initializer, a single consumer, or use of another service does
-not by itself justify relocation. A feature-owned target list or an extractable
-helper also does not settle ownership of the whole root. If the owner is
-undecided, use `review` and keep initialization and dependency work applicable.
+not by itself make a root supporting code. An uncertain long-term home is not a
+reason to relocate: code that needs lifecycle management and has no other owner
+yet is a `migrate`. If the decision is still open, use `review` and keep
+initialization and dependency work applicable.
+
+`futureHome` optionally suggests where an entry might live after this
+migration, relative to `ghost`, when its current or planned home is
+questionable. Any disposition can have one. It is a suggestion, not a planned
+move, and does not block the migration, relocation or split.
 
 Each entry records its intended ownership and audit status. `pending` means
 the contract audit has not started; `auditing` means evidence is incomplete;
