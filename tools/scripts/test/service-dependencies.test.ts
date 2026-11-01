@@ -14,7 +14,7 @@ const alpha = `${services}/alpha`;
 const config = 'ghost/core/shared/config.ts';
 const resolver = 'tools/scripts/ci/service-dependency-resolver.mjs';
 const cli = fileURLToPath(
-  new URL('../../bin/dependency-cruise.mjs', import.meta.resolve('dependency-cruiser')),
+  new URL('../../bin/dependency-cruiser.mjs', import.meta.resolve('dependency-cruiser')),
 );
 
 function fixture(t: TestContext, files: Record<string, string>) {
