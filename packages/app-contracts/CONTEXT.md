@@ -15,8 +15,9 @@ Distinct from the built-in "internal apps" Ghost loads from its own source.
 _Avoid_: plugin, integration, extension
 
 **App ID**:
-The developer-chosen, reverse-domain identifier that is an app's identity
-wherever it is served from.
+The name a developer gives an app, in reverse-domain form. A site has at most
+one current installation per App ID, and saved cards find their app by it. It
+doesn't prove who made the app; the identity key does.
 _Avoid_: app key, slug
 
 **Publisher**:
@@ -24,24 +25,58 @@ The site's staff member who installs an app and approves changes to it.
 _Avoid_: user, owner, admin
 
 **Development app**:
-An app served from the machine Ghost runs on, accepted only while Ghost runs in
-development.
+An app whose signed manifest says it is in development, as every app on the
+developer's machine must. It changes how Ghost labels the app, never what Ghost
+checks.
 _Avoid_: local app, test app
+
+### Identity
+
+**Identity key**:
+The key an app's developer keeps offline and signs its manifest with. It says
+who made the app: a site keeps the one it installed an app with, and a manifest
+signed with any other key is a different app.
+_Avoid_: signing key, private key
+
+**Backend key**:
+The key an app's backend answers challenges with. The signed manifest names it,
+so the identity key vouches for it.
+_Avoid_: server key, API key
+
+**Challenge**:
+Ghost asking an origin to prove it holds the app's backend key, by signing a
+fresh nonce for that origin.
+_Avoid_: handshake, ping
+
+**Identity check**:
+What a manifest must pass before Ghost uses it: it is signed with the identity
+key it names, no earlier than the newest one the site has seen for the app, and
+the app's origin answers the challenge, unless the site trusts that origin.
+_Avoid_: verification, validation
 
 ### Manifests
 
 **Manifest**:
-The JSON document an app serves to describe itself to Ghost.
+The JSON document that describes an app to Ghost. An app serves it as a signed
+manifest.
 _Avoid_: config, app.json, descriptor
 
+**Signed manifest**:
+A manifest's exact bytes, signed with the app's identity key with the time it
+was signed: what an app serves. Ghost only reads a manifest out of a signed
+manifest it has verified.
+_Avoid_: JWS, envelope, signed config
+
 **Manifest URL**:
-The address a manifest is read from. It decides where every later version of
+The address a signed manifest is served from, which the manifest itself names;
+one read from anywhere else is refused. It decides where every later version of
 the manifest comes from, so it is part of what a publisher approves.
 _Avoid_: install URL, app URL
 
 **Parsed manifest**:
-A manifest Ghost has accepted, with every URL in it resolved to an absolute
-address. Manifests are compared and kept in this form.
+A manifest Ghost has accepted from a signed manifest it verified. Its paths are
+resolved against its manifest URL, so every URL in it is absolute. Manifests are
+compared and kept in this form.
 _Avoid_: validated manifest, resolved manifest
 
 **Ghost URLs**:
@@ -58,8 +93,8 @@ _Avoid_: extension point, slot, placement
 The surface that shows an app's own page inside Admin.
 
 **Served from**:
-The host an app's page loads from: where the app runs. It can differ from the
-host of its manifest URL.
+The host an app's page loads from: where the app runs. It is always the host
+of its manifest URL, since a surface is a path resolved against it.
 _Avoid_: app host, origin
 
 **Surface origin**:
@@ -77,9 +112,9 @@ _Avoid_: diff, update
 
 **Silent change**:
 A change that applies without the publisher approving it again. Only the
-description, the accent colour and the name of an icon Admin ships qualify;
-anything that says who the app is, or is a URL Ghost loads or links to, does
-not.
+description, the accent colour, the name of an icon Admin ships and the backend
+key qualify; anything else that says who the app is, or is a URL Ghost loads or
+links to, does not.
 _Avoid_: minor change, safe change
 
 **Move**:

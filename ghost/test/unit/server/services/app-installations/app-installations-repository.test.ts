@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
-import type { Knex } from 'knex';
+import createKnex, { type Knex } from 'knex';
 import { vi } from 'vitest';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import { AppInstallationsRepository } from '../../../../../core/server/services/app-installations/app-installations-repository';
 import type { Installation } from '../../../../../core/server/services/app-installations/codec';
 import type { LoadedManifest } from '../../../../../core/server/services/app-installations/load-manifest';
+import { FIXTURE_BACKEND_KEY, FIXTURE_IDENTITY_KEY } from '../../../../utils/app-identity';
 
 const manifest: AppManifest = {
   id: 'com.example.podcast',
@@ -14,6 +15,10 @@ const manifest: AppManifest = {
   accent_color: '#ff5500',
   icon: { name: 'audio-lines' },
   surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/admin' }],
+  manifest_url: 'https://podcast.example.com/ghost-app.json',
+  identity_key: FIXTURE_IDENTITY_KEY,
+  backend_key: FIXTURE_BACKEND_KEY,
+  development: false,
 };
 const loaded: LoadedManifest = {
   manifestUrl: 'https://podcast.example.com/ghost-app.json',
@@ -21,10 +26,15 @@ const loaded: LoadedManifest = {
   // Differs from what re-encoding the manifest gives, so a test can check the loader's text is stored.
   serialised: JSON.stringify(manifest, null, 2),
   digest: 'reviewed-digest',
+  identityKeyThumbprint: 'identity-thumbprint',
+  issuedAt: 1_800_000_000,
 };
 const installation: Installation = {
   id: 'installation',
   app_id: manifest.id,
+  identity_key_thumbprint: 'identity-thumbprint',
+  manifest_signed_at: 1_800_000_000,
+  manifest_signed_digest: 'reviewed-digest',
   status: 'active',
   manifest_id: 'approved',
   pending_manifest_id: null,
@@ -78,6 +88,8 @@ describe('AppInstallationsRepository insert', function () {
       trx.mock.calls.map(([table]) => table),
       ['app_installations', 'app_installation_manifests'],
     );
+    assert.equal(insert.mock.calls[0][0].manifest_signed_at, loaded.issuedAt);
+    assert.equal(insert.mock.calls[0][0].manifest_signed_digest, loaded.digest);
     assert.deepEqual(insert.mock.calls[1][0], {
       id: insert.mock.calls[0][0].manifest_id,
       installation_id: installed.id,
@@ -189,5 +201,93 @@ describe('AppInstallationsRepository whileUnchanged', function () {
       assert.deepEqual(result, { status: refused });
       assert.equal(wrote, false);
     }
+  });
+});
+
+describe('AppInstallationsRepository signed times', function () {
+  let knex: Knex;
+
+  beforeEach(async function () {
+    knex = createKnex({ client: 'better-sqlite3', connection: ':memory:', useNullAsDefault: true });
+    await knex.schema.createTable('app_installations', (table) => {
+      table.string('id').primary();
+      table.string('app_id');
+      table.string('identity_key_thumbprint');
+      table.string('status');
+      table.bigInteger('manifest_signed_at');
+      table.string('manifest_signed_digest');
+      table.integer('revision');
+    });
+    // Only the columns these read and write, so not a row the table's type would accept.
+    await knex
+      .insert([
+        row('installation', 'active', 100, 'first'),
+        row('ended', 'uninstalled', 300, 'third'),
+        row('older', 'uninstalled', 200, 'second'),
+        { ...row('another-key', 'uninstalled', 400, 'fourth'), identity_key_thumbprint: 'other' },
+      ])
+      .into('app_installations');
+  });
+
+  afterEach(async function () {
+    await knex.destroy();
+  });
+
+  function row(id: string, status: string, signedAt: number, digest: string) {
+    return {
+      id,
+      app_id: manifest.id,
+      identity_key_thumbprint: 'identity-thumbprint',
+      status,
+      manifest_signed_at: signedAt,
+      manifest_signed_digest: digest,
+      revision: 3,
+    };
+  }
+
+  const read = (id: string) =>
+    knex('app_installations')
+      .where({ id })
+      .first('manifest_signed_at', 'manifest_signed_digest', 'revision');
+
+  const raise = (issuedAt: number, digest: string) =>
+    new AppInstallationsRepository(knex).whileUnchanged(installation, (locked) =>
+      locked.raiseSignedAt({ ...loaded, issuedAt, digest }),
+    );
+
+  it('records a later signing under the lock, without moving the revision on', async function () {
+    assert.equal((await raise(200, 'second')).status, 'written');
+
+    assert.deepEqual(await read('installation'), {
+      manifest_signed_at: 200,
+      manifest_signed_digest: 'second',
+      revision: 3,
+    });
+  });
+
+  // Two re-checks may race; the later signing wins whichever writes last.
+  it('never lowers it, nor changes the digest at the same time', async function () {
+    await raise(50, 'older');
+    await raise(100, 'other');
+
+    assert.deepEqual(await read('installation'), {
+      manifest_signed_at: 100,
+      manifest_signed_digest: 'first',
+      revision: 3,
+    });
+  });
+
+  it('reads the newest signing among the app’s installations with the same key', async function () {
+    const repository = new AppInstallationsRepository(knex);
+
+    assert.deepEqual(await repository.lastSignedAtOf(manifest.id, 'identity-thumbprint'), {
+      signedAt: 300,
+      signedDigest: 'third',
+    });
+    assert.equal(await repository.lastSignedAtOf(manifest.id, 'unknown'), undefined);
+    assert.equal(
+      await repository.lastSignedAtOf('com.example.other', 'identity-thumbprint'),
+      undefined,
+    );
   });
 });

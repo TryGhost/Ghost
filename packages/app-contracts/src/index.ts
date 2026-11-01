@@ -10,19 +10,17 @@
  * that never validate anything. Validation lives in the contract's own entry point.
  */
 
+export {
+  UNCONFIRMED_APP_CODES,
+  isUnconfirmedAppCode,
+  type UnconfirmedAppCode,
+} from './identity/codes.ts';
 export { isGhostOrigin } from './manifest/ghost-origin.ts';
 export { APP_ID_MAX_LENGTH, isValidAppId } from './manifest/id.ts';
 export { URL_MAX_LENGTH } from './manifest/limits.ts';
 export { isLocalhost } from './manifest/localhost.ts';
 export { isPlainText, toPlainText } from './plain-text.ts';
-export {
-  appPageUrl,
-  isDevelopmentApp,
-  movedBetween,
-  servedFrom,
-  type AppMove,
-  type ServedManifest,
-} from './manifest/served-from.ts';
+export { appPageUrl, servedFrom } from './manifest/served-from.ts';
 export type {
   AppIcon,
   AppManifest,
@@ -32,6 +30,7 @@ export type {
   ParseManifestOptions,
   ParseManifestResult,
   ParseManifestUrlResult,
+  PublicKeyJwk,
 } from './manifest/index.ts';
 export {
   APP_ERROR_CODES,

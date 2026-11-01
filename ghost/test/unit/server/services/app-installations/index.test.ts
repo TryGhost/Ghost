@@ -19,16 +19,31 @@ const urlUtils = require('../../../../../core/shared/url-utils').default;
 const { AppInstallationsService } =
   require('../../../../../core/server/services/app-installations/service') as typeof import('../../../../../core/server/services/app-installations/service');
 type Root = typeof import('../../../../../core/server/services/app-installations').default;
+const { generateTestAppKeys, signTestManifest, answerTestChallenge } =
+  require('../../../../utils/app-identity') as typeof import('../../../../utils/app-identity');
+type TestAppKeys = import('../../../../utils/app-identity').TestAppKeys;
 
-const manifest = {
-  id: 'com.example.podcast',
-  name: 'Podcast',
-  description: 'Publish episodes.',
-  author: { name: 'Example Audio', url: 'https://example.com' },
-  accent_color: '#ff5500',
-  icon: { name: 'audio-lines' },
-  surfaces: [{ type: 'admin_page', url: '/admin' }],
-};
+const MANIFEST_URL = 'https://podcast.example/manifest.json';
+
+let keys: TestAppKeys;
+
+function manifestFor(manifestUrl: string) {
+  return {
+    id: 'com.example.podcast',
+    name: 'Podcast',
+    description: 'Publish episodes.',
+    author: { name: 'Example Audio', url: 'https://example.com' },
+    accent_color: '#ff5500',
+    icon: { name: 'audio-lines' },
+    surfaces: [{ type: 'admin_page', url: '/admin' }],
+    manifest_url: manifestUrl,
+    identity_key: keys.identity.publicJwk,
+    backend_key: keys.backend.publicJwk,
+    development: new URL(manifestUrl).hostname === 'localhost',
+  };
+}
+
+const manifest = { id: 'com.example.podcast' };
 
 describe('App installations composition root', function () {
   const sandbox = sinon.createSandbox();
@@ -37,6 +52,10 @@ describe('App installations composition root', function () {
   let readKnex: sinon.SinonStub;
   let query: sinon.SinonStub;
   let request: sinon.SinonStub;
+
+  beforeAll(async function () {
+    keys = await generateTestAppKeys();
+  });
 
   beforeEach(function () {
     previousModules = new Map(
@@ -48,19 +67,34 @@ describe('App installations composition root', function () {
     const builder = {
       join: sandbox.stub().returnsThis(),
       where: sandbox.stub().returnsThis(),
+      orderBy: sandbox.stub().returnsThis(),
       first: sandbox.stub().resolves(undefined),
     };
     query = sandbox.stub().returns(builder);
     readKnex = sandbox.stub().returns(query as unknown as Knex);
     sandbox.stub(db, 'knex').get(readKnex);
-    // Substitute only the outbound transport; keep the real fetcher and manifest validation.
+    // Substitute only the outbound transport; keep the real fetcher, manifest validation and
+    // identity check. It serves the signed manifest, and answers challenges as the app's
+    // backend.
     require(requestPath);
-    request = sandbox.stub().callsFake(() =>
-      Object.assign(Promise.resolve({ statusCode: 200 }), {
-        on: () => {},
-        text: async () => JSON.stringify(manifest),
-      }),
-    );
+    request = sandbox
+      .stub()
+      .callsFake((url: URL, options: { body?: string; headers: { host?: string } }) => {
+        // As the browser would see it, without the localhost alias.
+        const asked = new URL(url.href);
+        if (options.headers.host) {
+          asked.host = options.headers.host;
+        }
+        const text = options.body
+          ? answerTestChallenge(options.body, keys.backend, asked.href)
+          : signTestManifest(manifestFor(asked.href), keys.identity).then((signed) =>
+              JSON.stringify(signed),
+            );
+        return Object.assign(Promise.resolve({ statusCode: 200 }), {
+          on: () => {},
+          text: () => text,
+        });
+      });
     sandbox.replace(require.cache[requestPath]!, 'exports', request);
     root = require(rootPath).default;
   });
@@ -115,7 +149,7 @@ describe('App installations composition root', function () {
     assert.deepEqual(await installations.browse.query(), []);
     const result = await previews.add.query({
       data: {
-        app_installation_previews: [{ manifest_url: 'https://podcast.example/manifest.json' }],
+        app_installation_previews: [{ manifest_url: MANIFEST_URL }],
       },
     });
     assert.equal(result.manifest.id, manifest.id);
@@ -179,6 +213,17 @@ describe('App installations composition root', function () {
     sinon.assert.calledOnceWithExactly(error, failure);
   });
 
+  // Found at boot, rather than failing every app.
+  it('refuses to start with trusted origins that aren’t origins', async function () {
+    const getConfig = sandbox.stub(config, 'get').callThrough();
+    getConfig.withArgs('apps').returns({ trustedOrigins: ['https://app.example.net/ghost'] });
+
+    await assert.rejects(root.init(), {
+      errorType: 'InternalServerError',
+      code: 'APP_CONFIG_INVALID',
+    });
+  });
+
   it('reads manifest rules and the development localhost alias per operation', async function () {
     const getConfig = sandbox.stub(config, 'get').callThrough();
     getConfig.withArgs('env').returns('development');
@@ -204,14 +249,15 @@ describe('App installations composition root', function () {
     await assert.rejects(service.preview('https://podcast.example/manifest.json'), {
       errorType: 'ValidationError',
     });
-    sinon.assert.calledThrice(request);
+    // The manifest, and the challenge that goes out with it.
+    sinon.assert.callCount(request, 4);
     assert.equal(request.lastCall.args[0].hostname, 'podcast.example');
     // The Admin URL is a separate rule from the site URL.
     urlFor.withArgs('admin', true).returns('https://admin.example/ghost/');
     await assert.rejects(service.preview('https://admin.example/manifest.json'), {
       errorType: 'ValidationError',
     });
-    sinon.assert.callCount(request, 4);
+    sinon.assert.callCount(request, 6);
     assert.equal(request.lastCall.args[0].hostname, 'admin.example');
     assert.equal(root.service, service);
   });

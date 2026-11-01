@@ -4,11 +4,19 @@ import { isGhostOrigin } from './ghost-origin.ts';
 import { URL_MAX_LENGTH } from './limits.ts';
 import { isLocalhost } from './localhost.ts';
 
+export const FRAGMENT_PROBLEM = 'Expected a URL without a fragment';
+
 /**
- * Checks a URL after it has been resolved, never before: a relative value can resolve to
- * another scheme or host, and only the result says what Ghost would load. The length is
- * measured here for the same reason, as the resolved URL is what is stored and checked
- * again later: a short relative path can resolve to more than the limit.
+ * Whether an address carries a fragment, even an empty one, which the parsed URL's `hash`
+ * hides. A fragment never reaches the server, so a manifest address with one is a mistake or
+ * a second spelling of the same address.
+ */
+export const hasFragment = (address: string) => address.includes('#');
+
+/**
+ * Checks a URL once the URL parser has read it, so the rules apply to the URL Ghost would
+ * use. The length is measured on the parsed URL for the same reason, as that is what is
+ * stored and checked again later.
  */
 export function checkResolvedUrl(url: URL, allowLocalhost: boolean): string | null {
   if (url.href.length > URL_MAX_LENGTH) {
@@ -29,10 +37,14 @@ export function checkResolvedUrl(url: URL, allowLocalhost: boolean): string | nu
 }
 
 export interface UrlRules {
-  base: URL;
   /** The URLs Ghost itself is served from, which no loaded URL may share an origin with. */
   ghostUrls: string[];
   allowLocalhost: boolean;
+  /**
+   * The address the manifest was fetched from, already checked, which the paths in it
+   * resolve against.
+   */
+  base: string;
 }
 
 /**
@@ -41,40 +53,58 @@ export interface UrlRules {
  */
 export type UrlField = (linkOnly?: boolean) => z.ZodType<string, string>;
 
+const PATH_PROBLEM = 'Expected a path on the manifest’s own origin, such as /admin';
+
+function isManifestItself(url: URL, base: string): boolean {
+  return url.pathname === new URL(base).pathname;
+}
+
 /**
- * A URL Ghost will load: resolved against the manifest's own URL, and never on an origin
- * Ghost is served from. `linkOnly` lifts that last rule for a URL that is only ever
- * linked to, which a publisher's own app may well point at their own site.
+ * A URL in the manifest. What Ghost loads is written as a path, resolved against the
+ * address the manifest was fetched from, so an app is one origin: the one Ghost fetches
+ * the manifest from and challenges is the one every surface runs on. The manifest names
+ * that address as its signed `manifest_url`, so the resolved URLs are as fixed as if they
+ * were written out. A loaded URL never shares an origin with Ghost.
+ *
+ * `linkOnly` marks a URL that is only ever linked to, never loaded, which is absolute and
+ * may be anywhere, the publisher's own site included.
  */
-export function urlField({ base, ghostUrls, allowLocalhost }: UrlRules, linkOnly = false) {
-  return z
-    .string('Expected a URL, or a path relative to the manifest')
-    .min(1, 'Expected a URL, or a path relative to the manifest')
-    .transform((value, ctx) => {
-      let url: URL;
-      try {
-        url = new URL(value, base);
-      } catch {
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Expected a URL, or a path relative to the manifest',
-        });
-        return z.NEVER;
-      }
-      const problem = checkResolvedUrl(url, allowLocalhost);
+export function urlField({ ghostUrls, allowLocalhost, base }: UrlRules, linkOnly = false) {
+  if (linkOnly) {
+    return z.string('Expected an absolute URL').transform((value, ctx) => {
+      const url = URL.parse(value);
+      const problem = url ? checkResolvedUrl(url, allowLocalhost) : 'Expected an absolute URL';
       if (problem) {
         ctx.addIssue({ code: 'custom', message: problem });
         return z.NEVER;
       }
-      if (!linkOnly && isGhostOrigin(url, ghostUrls)) {
-        ctx.addIssue({
-          code: 'custom',
-          message: 'Expected an address other than the one Ghost itself is served from',
-        });
-        return z.NEVER;
-      }
-      return url.href;
+      return url!.href;
     });
+  }
+  const origin = new URL(base).origin;
+  return z.string(PATH_PROBLEM).transform((value, ctx) => {
+    // A path, or a path-relative reference. A URL with a scheme, or a `//host` one, names
+    // its own origin, which the manifest's would then not be. An empty one, or one that's
+    // only a query or fragment, would be the manifest itself.
+    const url = URL.canParse(value) ? null : URL.parse(value, base);
+    if (!url || url.origin !== origin || isManifestItself(url, base)) {
+      ctx.addIssue({ code: 'custom', message: PATH_PROBLEM });
+      return z.NEVER;
+    }
+    const problem = checkResolvedUrl(url, allowLocalhost);
+    if (problem) {
+      ctx.addIssue({ code: 'custom', message: problem });
+      return z.NEVER;
+    }
+    if (isGhostOrigin(url, ghostUrls)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Expected an address other than the one Ghost itself is served from',
+      });
+      return z.NEVER;
+    }
+    return url.href;
+  });
 }
 
 /**
