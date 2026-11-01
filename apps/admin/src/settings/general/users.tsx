@@ -328,13 +328,13 @@ const Users: React.FC<{ keywords: string[]; highlight?: boolean }> = ({
     fetchNextInvitePage,
   } = useStaffUsers();
   const { updateRoute } = useSettingsNavigation();
-  const { settings, config, currentUser } = useGlobalData();
+  const { settings, config, currentUser, siteData } = useGlobalData();
 
   const showInviteModal = () => {
     updateRoute('staff/invite');
   };
 
-  const buttons = (
+  const buttons = siteData.sso_signin_url ? null : (
     <Button
       className="mt-[-5px]"
       size="sm"

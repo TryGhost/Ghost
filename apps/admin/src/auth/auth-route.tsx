@@ -1,9 +1,11 @@
 import { createContext, lazy, Suspense, useContext, useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from '@tryghost/admin-x-framework';
+import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import { isAuthPath } from '@tryghost/admin-x-framework/helpers';
 import { toast } from 'sonner';
 import { useSetupStatus } from './client/auth-client';
 import { rememberSigninRedirect } from './signin-redirect';
+import SSOSignin from './sso-signin';
 
 const screens = {
   signin: lazy(() => import('./signin')),
@@ -15,6 +17,13 @@ const screens = {
 };
 
 export type AuthScreen = keyof typeof screens;
+
+const PASSWORD_SCREENS: Partial<Record<AuthScreen, true>> = {
+  signin: true,
+  signinVerify: true,
+  reset: true,
+  signup: true,
+};
 
 // Set by the signed-out shell; auth routes rendered anywhere else are being
 // visited by someone who is signed in.
@@ -39,10 +48,21 @@ function SignedInRedirect({ screen }: { screen: AuthScreen }) {
 
 export function AuthRoute({ screen }: { screen: AuthScreen }) {
   const signedOut = useContext(SignedOutContext);
+  const site = useBrowseSite({ defaultErrorHandler: false });
   const Screen = screens[screen];
 
   if (!signedOut && screen !== 'signout') {
     return <SignedInRedirect screen={screen} />;
+  }
+  if (PASSWORD_SCREENS[screen]) {
+    // Avoids flashing the password form before we know whether SSO replaces it
+    if (site.isLoading) {
+      return null;
+    }
+    const { title, sso_signin_url: url, sso_signin_label: label } = site.data?.site ?? {};
+    if (url) {
+      return <SSOSignin label={label} title={title} url={url} />;
+    }
   }
   return (
     <Suspense fallback={null}>
