@@ -466,7 +466,7 @@ services:
         distinct from optional static boot validation; neither proves remote readiness.
   announcement-bar-service:
     kind: directory
-    disposition: migrate
+    disposition: review
     status: audited
     auditedAt: c2999f4e13da6360bceced808bb52c4a04b5ad03
     migration:

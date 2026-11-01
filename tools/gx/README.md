@@ -138,9 +138,10 @@ shows one table with `MIGRATION`, `COUNT` and `GROUP` columns. Disposition
 are counted independently. See the [services README](../../ghost/core/server/services/README.md)
 for what each disposition means.
 
-**Migrate** comprises three groups:
+Migration progress has three groups:
 
-- **Migrated:** marked `migrated: true`.
+- **Migrated:** marked `migrated: true`, whatever the disposition, so this
+  group can overlap Relocate and Split.
 - **Needs preparation:** not migrated, and either assessment is
   complex or identifies a possible model change.
 - **Straightforward:** not migrated, both assessments are
