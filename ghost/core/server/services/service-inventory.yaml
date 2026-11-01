@@ -10262,7 +10262,9 @@ services:
           and discount rules with Stripe mocked. The bulk-redemption integration constructs its
           own API. Units pin per-request endpoint reads, the site app reading the middleware once
           at setup, Members receiving the API value at construction, and offer-event-to-redirect
-          wiring through a real redirect manager over faked models.
+          wiring through a real redirect manager over faked models. A booted frontend test pins
+          startup rows, archived offers, query strings and Admin API create/code-change redirects
+          through the mounted site app and the database.
         sources:
           - core/server/api/endpoints/offers.js
           - core/server/api/endpoints/offers-public.js
@@ -10276,6 +10278,7 @@ services:
         tests:
           - test/unit/server/services/offers/consumers.test.ts
           - test/unit/server/services/offers/index.test.ts
+          - test/e2e-frontend/offer-redirects.test.ts
           - test/e2e-api/admin/offers.test.js
           - test/e2e-api/content/offers.test.js
           - test/e2e-api/members/member-offers.test.js
@@ -10413,9 +10416,9 @@ services:
         frontend/Members consumers are pinned by units. New composition must deliberately preserve
         or change publication timing and old listener/manager ownership, with cleanup evidence.
       - >-
-        Redirect contracts for initial rows, created/changed codes, archived offers, query strings
-        and subdirectories are pinned through the root with a real redirect manager over faked
-        models; no HTTP test proves them through the mounted site app and a real database.
+        Subdirectory redirects are pinned only through the root with a real redirect manager over
+        faked models. Initial rows, created/changed codes, archived offers and query strings are
+        also pinned through the mounted site app and a real database.
       - >-
         Cover rollback with a real transaction, including the unhandled rejection from the detached
         executionPromise.then chain, and payment coupon failures after commit. Commit-then-dispatch
