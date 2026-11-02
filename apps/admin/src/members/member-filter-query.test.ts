@@ -83,6 +83,18 @@ describe('member-filter-query', () => {
     );
   });
 
+  it('writes labels a member holds every one of as an NQL all-of list, and reads it back', () => {
+    const predicates: FilterPredicate[] = [
+      { id: '1', field: 'label', operator: 'is-all', values: ['vip', 'founder'] },
+    ];
+    const filter = serializeMemberFilters(predicates, 'UTC', memberFields);
+
+    expect(filter).toBe('label:[founder+vip]');
+    expect(stripIds(parseMemberFilter(filter, 'UTC', memberFields))).toEqual([
+      { field: 'label', operator: 'is-all', values: ['founder', 'vip'] },
+    ]);
+  });
+
   it('parses legacy scalar label filters into set predicates', () => {
     expect(stripIds(parseMemberFilter('label:vip', 'UTC', memberFields))).toEqual([
       { field: 'label', operator: 'is-any', values: ['vip'] },
