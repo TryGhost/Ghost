@@ -413,8 +413,7 @@ vi.mock('@xyflow/react', async () => {
 const automationDetail: AutomationDetail = {
   id: 'automation-id-1',
   slug: 'member-welcome-email-free',
-  trigger_tier_scope: 'free',
-  trigger_tier_ids: null,
+  trigger_rules: [{ trigger_type: 'free_signup', scope: null, product_id: null, direction: null }],
   name: 'Free member welcome flow',
   description: 'Welcome new free members.',
   status: 'active',
@@ -576,8 +575,6 @@ describe('AutomationEditor', () => {
             {
               ...automationDetail,
               ...payload,
-              trigger_tier_scope: 'free',
-              trigger_tier_ids: null,
               id: mockAddMutation.mutate.mock.calls.length === 1 ? 'created' : 'created-2',
             },
           ],
@@ -1719,7 +1716,14 @@ describe('AutomationEditor', () => {
           {
             ...automationDetail,
             slug: 'member-welcome-email-paid',
-            trigger_tier_scope: 'all_paid',
+            trigger_rules: [
+              {
+                trigger_type: 'paid_subscription_started',
+                scope: 'any_paid_tier',
+                product_id: null,
+                direction: null,
+              },
+            ],
             name: 'Paid member welcome flow',
           },
         ],
@@ -2091,15 +2095,21 @@ describe('AutomationEditor', () => {
     { status: 'active', label: 'Turn off', action: 'turn off' },
   ] as const)(
     'blocks $label with no selected paid tiers even without run analytics',
-    async ({ status, label, action }) => {
+    ({ status, label, action }) => {
       mockUseReadAutomation.mockReturnValue({
         data: {
           automations: [
             {
               ...automationDetail,
               status,
-              trigger_tier_scope: 'selected_paid',
-              trigger_tier_ids: [],
+              trigger_rules: [
+                {
+                  trigger_type: 'paid_subscription_started',
+                  scope: 'specific_paid_tier',
+                  product_id: 'bronze',
+                  direction: null,
+                },
+              ],
             },
           ],
         },
@@ -2108,7 +2118,7 @@ describe('AutomationEditor', () => {
       });
 
       renderEditor();
-      await stageLocalEdit();
+      fireEvent.click(screen.getByRole('button', { name: 'Remove Unavailable tier' }));
       fireEvent.click(screen.getByRole('button', { name: label }));
 
       expect(screen.getByText(`Fix all issues to ${action} this automation.`)).toBeVisible();
