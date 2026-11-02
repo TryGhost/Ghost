@@ -110,8 +110,8 @@ export interface EmailContentModalProps {
   automationId: string;
   emailDraft: EmailDraft;
   initialMode?: EmailModalMode;
-  // The step whose card the editor opens from and closes into.
-  originStepId: string;
+  // Returns the email card used to animate the editor open and closed.
+  getEmailCardElement: () => HTMLElement | null;
   onClose: () => void;
   // Called when the close animation starts; onClose runs when it ends.
   onCloseStart?: () => void;
@@ -131,12 +131,12 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
   automationId,
   initialMode = 'edit',
   emailDraft,
-  originStepId,
+  getEmailCardElement,
   onClose,
   onCloseStart,
   onChange,
 }) => {
-  const { panelRef, close: closeIntoCard } = useExpandFromCard(originStepId);
+  const { panelRef, close: closeIntoCard } = useExpandFromCard(getEmailCardElement);
   const subjectRef = useRef<HTMLInputElement>(null);
   const closeEditor = useCallback(() => {
     onCloseStart?.();

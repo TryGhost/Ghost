@@ -435,13 +435,19 @@ describe('Editable email cards', () => {
         name: /^(Show|Hide) automation sidebar$/,
       });
       const edit = () => emailCards().nth(0).getByRole('button', { name: 'Edit email content' });
+      const card = emailCards().first().element();
+      const canvas = page.getByRole('region', { name: 'Editing canvas' }).element();
 
       await edit().click();
       await expect.element(emailEditor()).toBeVisible();
       await expect.element(sidebarToggle).toHaveAttribute('aria-expanded', 'false');
+      expect(getComputedStyle(card).visibility).toBe('hidden');
+      expect(canvas.closest('[inert]')).not.toBeNull();
       await userEvent.keyboard('{Escape}');
       await expect(emailEditor()).toHaveCount(0);
       await expect.element(sidebarToggle).toHaveAttribute('aria-expanded', 'true');
+      expect(getComputedStyle(card).visibility).toBe('visible');
+      expect(canvas.closest('[inert]')).toBeNull();
 
       // A click on the canvas around the panel minimizes it too.
       await edit().click();

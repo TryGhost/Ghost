@@ -36,8 +36,8 @@ export const AutomationCanvasControls: React.FC<{ isHidden?: boolean }> = ({
   return (
     <Controls
       className={cn(
-        'gap-1 overflow-hidden rounded-md bg-surface-elevated p-0.5 text-foreground shadow-sm transition-transform duration-200 ease-in-out motion-reduce:transition-none',
-        isHidden && 'translate-y-[calc(100%+2rem)]',
+        'gap-1 overflow-hidden rounded-md bg-surface-elevated p-0.5 text-foreground shadow-sm transition-[transform,translate,opacity] duration-200 ease-in-out motion-reduce:transition-none',
+        isHidden && 'translate-y-[calc(100%+2rem)] opacity-0',
       )}
       orientation="horizontal"
       showFitView={false}
