@@ -249,14 +249,10 @@ const AppFrame: React.FC<{
       fetchAdminApi: createAdminApiFetch({ apiRoot: new URL(apiUrl('/')), ghostVersion }),
       navigate: (next, { replace, move: appMove }) =>
         navigateForApp(appPathRoute(id, next, entryPath), { replace, state: { appMove } }),
-      // The editor's back link leads to the app, at the route it was on. Admin sets this, not the
-      // app.
-      open: (place, from) =>
+      // Wherever the app opens, Admin records the way back to it. The app can't set this.
+      open: (place, appPath) =>
         navigateForApp(placeRoute(place), {
-          state:
-            'post' in place || 'page' in place
-              ? editorReturnState(appPathRoute(id, from, entryPath))
-              : undefined,
+          state: editorReturnState(appPathRoute(id, appPath, entryPath)),
         }),
     }),
   );

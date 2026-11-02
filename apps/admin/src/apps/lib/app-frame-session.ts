@@ -49,10 +49,11 @@ export interface AppFrameSessionOptions {
   navigate: (path: string, options: AppMoveOptions) => boolean;
   /**
    * Called when the app asks to open a place in Admin. The place is already validated as one Admin
-   * offers. `from` is the app's route when it asked, which a place can lead back to. Admin navigates
-   * there and returns whether it did. It doesn't navigate while the publisher is leaving the app.
+   * offers. `appPath` is the app's route when it asked, which a place can lead back to. Admin
+   * navigates there and returns whether it did. It doesn't navigate while the publisher is leaving
+   * the app.
    */
-  open: (place: Place, from: string) => boolean;
+  open: (place: Place, appPath: string) => boolean;
 }
 
 export interface AppFrameSession {
