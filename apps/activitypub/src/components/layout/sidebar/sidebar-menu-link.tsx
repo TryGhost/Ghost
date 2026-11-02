@@ -7,7 +7,9 @@ import {
   useNavigationStack,
 } from '@tryghost/admin-x-framework';
 import { cn, formatNumber } from '@tryghost/shade/utils';
+import { useShade } from '@tryghost/shade/app';
 
+import { sidebarMenuLinkClassName } from './sidebar-menu-link-class';
 import { useAppBasePath } from '@src/hooks/use-app-base-path';
 
 interface SidebarButtonProps extends ButtonProps {
@@ -28,10 +30,8 @@ const SidebarMenuLink = React.forwardRef<HTMLButtonElement, SidebarButtonProps>(
     const isActive =
       fullPath && (location.pathname === fullPath || location.pathname.startsWith(`${fullPath}/`));
 
-    const linkClass = cn(
-      'h-8 justify-start font-medium text-gray-800 dark:text-gray-500 dark:hover:bg-gray-950/70 [&_svg]:size-[18px]',
-      isActive && 'bg-gray-100 font-semibold text-black dark:bg-gray-950/70 dark:text-white',
-    );
+    const { admin7Design } = useShade();
+    const linkClass = sidebarMenuLinkClassName({ admin7Design, isActive: Boolean(isActive) });
 
     const badge =
       count && count > 0 ? (

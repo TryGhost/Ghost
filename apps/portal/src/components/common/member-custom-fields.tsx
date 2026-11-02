@@ -244,6 +244,7 @@ function DrawnField(props: FieldProps) {
   return matchShape(props.field.type, {
     scalar: ({ leaf }) => <ScalarField {...props} leaf={leaf} />,
     record: (_structure, type) => <RecordField {...props} type={type} />,
+    set: () => null,
   });
 }
 

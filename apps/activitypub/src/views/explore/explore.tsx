@@ -7,7 +7,7 @@ import TopicFilter, { type Topic } from '@src/components/topic-filter';
 import { type Account, type ExploreAccount } from '@src/api/activitypub';
 import { Button, LoadingIndicator, Skeleton } from '@tryghost/shade/components';
 import { H4 } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { openLinksInNewTab, sanitizeHtml, stripHtml } from '@src/utils/content-formatters';
 import {
   useAccountForUser,
@@ -16,6 +16,7 @@ import {
 import { useNavigateWithBasePath } from '@src/hooks/use-navigate-with-base-path';
 import { useOnboardingStatus } from '@src/components/layout/onboarding';
 import { useParams } from '@tryghost/admin-x-framework';
+import { useShade } from '@tryghost/shade/app';
 
 interface ExploreProfileProps {
   profile: ExploreAccount;
@@ -114,6 +115,7 @@ export const ExploreProfile: React.FC<
 };
 
 const Explore: React.FC = () => {
+  const { admin7Design } = useShade();
   const { isExplainerClosed, setExplainerClosed } = useOnboardingStatus();
   const params = useParams<{ topic?: string }>();
   const navigate = useNavigateWithBasePath();
@@ -168,7 +170,14 @@ const Explore: React.FC = () => {
   return (
     <Layout>
       {!isExplainerClosed && (
-        <div className="relative mb-6 flex items-start gap-1 rounded-md bg-gradient-to-r from-[#CFB0FF66] to-[#B6E8FF66] p-4 pr-10 dark:from-[#CFB0FF20] dark:to-[#B6E8FF20]">
+        <div
+          className={cn(
+            'relative mb-6 flex items-start gap-1 rounded-md p-4 pr-10',
+            admin7Design
+              ? 'bg-purple-200/40 dark:bg-purple-200/10'
+              : 'bg-gradient-to-r from-[#CFB0FF66] to-[#B6E8FF66] dark:from-[#CFB0FF20] dark:to-[#B6E8FF20]',
+          )}
+        >
           <div className="min-w-[46px]">
             <LucideIcon.Sprout className="text-purple" size={46} strokeWidth={0.75} />
           </div>

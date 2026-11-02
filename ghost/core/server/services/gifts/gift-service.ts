@@ -66,11 +66,11 @@ interface MemberRepository {
     options?: Record<string, unknown>,
   ): Promise<MemberModel | null>;
   update(data: Record<string, unknown>, options?: Record<string, unknown>): Promise<unknown>;
-  triggerMembershipStartedAutomation(
-    member: MemberModel,
-    memberStatus: 'free' | 'paid',
-    options?: Record<string, unknown>,
-  ): Promise<unknown>;
+  triggerMembershipStartedAutomation(options: {
+    member: MemberModel;
+    memberStatus: 'free' | 'paid';
+    bookshelfOptions: Record<string, unknown>;
+  }): Promise<unknown>;
 }
 
 type Tier = Omit<GiftCheckoutTier, 'currency'> & {
@@ -944,8 +944,10 @@ export class GiftService {
     await this.deps.giftDeliveryService.cancelPendingForGift(redeemed.token, { transacting });
 
     // Gift members receive the paid welcome email, as they receive access to paid content
-    await this.deps.memberRepository.triggerMembershipStartedAutomation(member, 'paid', {
-      transacting,
+    await this.deps.memberRepository.triggerMembershipStartedAutomation({
+      member,
+      memberStatus: 'paid',
+      bookshelfOptions: { transacting },
     });
 
     return { redeemed, member };

@@ -159,9 +159,11 @@ describe('database automations repository', function () {
       const memberId = ObjectId().toHexString();
       await api.trigger({
         event: 'membership_started',
+        source: 'member' as const,
         memberId,
         memberEmail: await insertMember(memberId),
         memberStatus: 'paid',
+        previousMemberStatus: null,
         memberTierIds: [ObjectId().toHexString()],
       });
       const runs = await knex('automation_runs').where({
@@ -177,9 +179,11 @@ describe('database automations repository', function () {
       const memberId = ObjectId().toHexString();
       await api.trigger({
         event: 'membership_started',
+        source: 'member' as const,
         memberId,
         memberEmail: await insertMember(memberId),
         memberStatus: 'paid',
+        previousMemberStatus: null,
         memberTierIds: selectedTierIds,
       });
       const runs = await knex('automation_runs').where({
@@ -222,9 +226,11 @@ describe('database automations repository', function () {
         const api = createApi();
         const triggerOptions = {
           event: 'membership_started' as const,
+          source: 'member' as const,
           memberId,
           memberEmail,
           memberStatus: 'free' as const,
+          previousMemberStatus: null,
           memberTierIds: [],
         };
         const triggers = Promise.all([api.trigger(triggerOptions), api.trigger(triggerOptions)]);
@@ -279,9 +285,11 @@ describe('database automations repository', function () {
       const triggers = memberIds.map((memberId, index) =>
         api.trigger({
           event: 'membership_started',
+          source: 'member' as const,
           memberId,
           memberEmail: memberEmails[index],
           memberStatus: 'free',
+          previousMemberStatus: null,
           memberTierIds: [],
         }),
       );
@@ -317,9 +325,11 @@ describe('database automations repository', function () {
       for (const memberId of [ObjectId().toHexString(), ObjectId().toHexString()]) {
         await api.trigger({
           event: 'membership_started',
+          source: 'member' as const,
           memberId,
           memberEmail: await insertMember(memberId),
           memberStatus: 'paid',
+          previousMemberStatus: null,
           memberTierIds: selectedTierIds,
         });
       }

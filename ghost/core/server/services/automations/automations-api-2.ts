@@ -14,6 +14,8 @@ type DomainEvents = { dispatch: (event: unknown) => unknown };
 
 type Labs = { isSet(key: 'automations'): boolean };
 
+type MemberStatus = 'free' | 'paid' | 'gift' | 'comped';
+
 /**
  * A collection of various automations operations.
  *
@@ -44,40 +46,92 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
 
     requestPoll,
 
-    trigger: async ({
-      event,
-      memberEmail,
-      memberId,
-      memberStatus,
-      memberTierIds,
-    }: ReadonlyDeep<{
-      event: 'membership_started';
-      memberEmail: string;
-      memberId: string;
-      memberStatus: 'free' | 'paid';
-      memberTierIds: string[];
-    }>): Promise<void> => {
+    trigger: async (
+      input: ReadonlyDeep<
+        {
+          source: 'member' | 'admin' | 'api' | 'import' | 'system';
+          memberEmail: string;
+          memberId: string;
+          memberStatus: MemberStatus;
+          memberTierIds: string[];
+        } & (
+          | { event: 'membership_started'; previousMemberStatus: MemberStatus | null }
+          | {
+              event: 'paid_subscription_changed';
+              previousMemberStatus: MemberStatus;
+              previousMemberTierIds: string[];
+            }
+        )
+      >,
+    ): Promise<void> => {
+      const {
+        event,
+        source,
+        memberEmail,
+        memberId,
+        memberStatus,
+        memberTierIds,
+        previousMemberStatus,
+      } = input;
+
       // TypeScript makes this impossible in theory, but in practice there are
       // untyped callers (and TypeScript doesn't have a sound type system
       // anyway). This check is defense-in-depth.
-      if (event !== 'membership_started') {
-        throw new errors.IncorrectUsageError({
-          message: 'Member signup is the only supported event right now. More may be added later',
-        });
+      if (event !== 'membership_started' && event !== 'paid_subscription_changed') {
+        throw new errors.IncorrectUsageError({ message: 'Unsupported automation trigger event.' });
       }
 
       if (!labs.isSet('automations')) {
         return;
       }
 
+      if (source !== 'member' || memberStatus === 'comped') {
+        return;
+      }
+
+      let findFirstActionOptions: Parameters<typeof repository.findFirstActionRevisions>[1];
+      switch (event) {
+        case 'membership_started':
+          if (memberStatus === 'paid' && previousMemberStatus === 'gift') {
+            return;
+          }
+          findFirstActionOptions = {
+            event,
+            memberStatus: memberStatus === 'gift' ? 'paid' : memberStatus,
+            memberTierIds,
+          };
+          break;
+        case 'paid_subscription_changed': {
+          const hadPaidAccess = previousMemberStatus === 'paid' || previousMemberStatus === 'gift';
+          if (!hadPaidAccess) {
+            return;
+          }
+          const lostTierAccess = input.previousMemberTierIds.some(
+            (id) => !memberTierIds.includes(id),
+          );
+          if (!lostTierAccess) {
+            return;
+          }
+          findFirstActionOptions = {
+            event,
+            memberStatus: memberStatus === 'gift' ? 'paid' : memberStatus,
+            memberTierIds,
+            previousMemberTierIds: input.previousMemberTierIds,
+          };
+          break;
+        }
+        default: {
+          const _exhaustive: never = event;
+          throw new errors.IncorrectUsageError({
+            message: `Unexpected automation event: ${_exhaustive}`,
+          });
+        }
+      }
+
       const didEnroll = await repository.withTransaction(async (trx) => {
         await repository.lockMember(trx, memberId);
 
-        const firstActions = await repository.findFirstActionRevisions(
-          trx,
-          memberStatus,
-          memberTierIds,
-        );
+        const firstActions = await repository.findFirstActionRevisions(trx, findFirstActionOptions);
 
         const runsToInsert: RunToInsert[] = [];
         const stepsToInsert: RunStepToInsert[] = [];

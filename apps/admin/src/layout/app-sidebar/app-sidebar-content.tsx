@@ -9,12 +9,7 @@ import NavApps from './nav-apps';
 import NavGhostPro from './nav-ghost-pro';
 import NavSettings from './nav-settings';
 import { useSidebarBannerState } from './hooks/use-sidebar-banner-state';
-
-// Inactive items' icons sit a step lighter than their labels; hover restores the full colour
-const ADMIN7_NAV_ICON_CLASS_NAME = [
-  '[&_[data-sidebar=menu-button][data-active=false]:not(:hover)>svg]:text-gray-900',
-  'dark:[&_[data-sidebar=menu-button][data-active=false]:not(:hover)>svg]:text-gray-600',
-].join(' ');
+import { ADMIN7_NAV_ICON_CLASS_NAME } from './nav-icon-class';
 
 interface AppSidebarContentProps {
   /** Laid out for the floating sidebar: its own padding, banners in the flow. */

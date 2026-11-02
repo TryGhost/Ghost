@@ -99,6 +99,7 @@ export type FieldTypePresentation<T extends FieldType> = {
 const fieldTypePresentation: { [T in FieldType]: FieldTypePresentation<T> } = {
   short_text: { label: 'Short text', icon: LucideIcon.Type },
   long_text: { label: 'Long text', icon: LucideIcon.AlignLeft },
+  list: { label: 'List', icon: LucideIcon.List },
   address: {
     label: 'Address',
     icon: LucideIcon.MapPin,
@@ -231,6 +232,7 @@ export const memberCustomFieldParts = (type: FieldType): MemberCustomFieldPart[]
         fullRow: fullRow.includes(key),
       }));
     },
+    set: () => null,
   });
 
 /**
@@ -292,9 +294,9 @@ const partRuns = new Map(FIELD_TYPE_IDS.map((type) => [type, partRunsFor(type)])
 
 /**
  * A member's value for one field as a single readable line: the string itself for a
- * scalar, and for a composite its parts joined the way that type reads — e.g.
- * "1 Main St, 12 apt B, New York, NY 00001, US". Missing parts drop out, so a partial
- * value still reads naturally.
+ * scalar, for a composite its parts joined the way that type reads — e.g.
+ * "1 Main St, 12 apt B, New York, NY 00001, US" — and for a list the options picked. Missing
+ * parts drop out, so a partial value still reads naturally.
  *
  * Empty string for a value that is not the shape its type declares: the type decides
  * which shape is readable, so a composite reads only from its parts and a scalar only
@@ -329,6 +331,11 @@ export const formatMemberCustomFieldValue = (
         .filter(Boolean)
         .join(', ');
     },
+    // In the order the server reads them back, which is the field's own.
+    set: () =>
+      Array.isArray(value)
+        ? value.filter((option): option is string => typeof option === 'string').join(', ')
+        : '',
   });
 
 const MemberCustomFieldList = z.array(MetafieldDefinitionSchema);
