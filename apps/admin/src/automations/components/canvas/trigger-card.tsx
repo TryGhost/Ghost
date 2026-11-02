@@ -139,9 +139,17 @@ const SubscriptionChangedPicker: React.FC<{
   const id = useId();
   const { value, onChange } = tierSelection;
   const tiers = (tierQuery.data?.tiers ?? [])
-    .filter((tier) => tier.type === 'paid' && tier.active)
-    .map((tier) => ({ id: tier.id, name: tier.name }));
+    .filter((tier) => tier.type === 'paid')
+    .map((tier) => ({
+      id: tier.id,
+      name: tier.active ? tier.name : `${tier.name} (archived)`,
+      active: tier.active,
+    }));
   const fromTierIds = value.from === 'any_paid' ? [] : value.from;
+  const toTierIds = value.to === 'downgraded_to_free' ? [] : value.to;
+  const toTiers = tiers.filter(
+    (tier) => !fromTierIds.includes(tier.id) && (tier.active || toTierIds.includes(tier.id)),
+  );
   const notice = tierQueryNotice(tierQuery);
   const emptyMessage = tiers.length === 0 ? 'No paid tiers available.' : 'No tiers found';
   const describedBy = errorMessage ? `${id}-error` : undefined;
@@ -182,7 +190,7 @@ const SubscriptionChangedPicker: React.FC<{
           notice={notice}
           placeholder="Select tiers..."
           standalone={{ value: 'downgraded_to_free', label: 'Free' }}
-          tiers={tiers.filter((tier) => !fromTierIds.includes(tier.id))}
+          tiers={toTiers}
           value={value.to}
           onChange={(to) => onChange({ ...value, to })}
         />
