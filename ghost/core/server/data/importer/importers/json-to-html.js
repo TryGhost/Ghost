@@ -208,7 +208,10 @@ const cleanCsvHTML = (data) => {
 
   // Blockquotes need to have some sort of wrapping elements around all contents
   // Wrap all content in <p> tags. The HTML to Mobiledoc parse can handle duplicate <p> tags.
-  data = data.replace(/<blockquote.*?>(.*?)<\/blockquote>/gm, '<blockquote><p>$1</p></blockquote>');
+  data = data.replace(
+    /<blockquote[^>]*>((?:(?!<\/?blockquote).)*?)<\/blockquote>/g,
+    '<blockquote><p>$1</p></blockquote>',
+  );
 
   // These exports have a lot of <p><br></p> that we don't want
   data = data.replace(/<p><br><\/p>/gm, '');
