@@ -101,6 +101,8 @@ import {ShadeApp} from '@tryghost/shade/app';
 </ShadeApp>
 ```
 
+`ShadeApp` also renders the toaster. Show toasts with `toast` from `@tryghost/shade/components`, such as `toast.success('Saved')`. Don't add `sonner` as a dependency: a second copy of it shows nothing.
+
 Leave `admin7Design` at its default. It mirrors Admin's `admin7Design` Labs flag while Admin 7 rolls out; an app always gets the Admin 7 design.
 
 Don't add `PageChromeProvider`. Large titles depend on the `admin7Design` flag, the user's role and the width of Admin's window, and an app can see none of them, so an app keeps the default compact title.
