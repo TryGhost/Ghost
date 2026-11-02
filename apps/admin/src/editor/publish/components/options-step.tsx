@@ -133,7 +133,7 @@ export function OptionsStep({
       <Stack gap="none">
         <Text
           as="h2"
-          className="text-5xl leading-tighter tracking-tight text-state-success"
+          className="text-5xl leading-tighter tracking-tight text-publish-accent"
           weight="bold"
         >
           Ready, set, publish.

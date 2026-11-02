@@ -70,6 +70,9 @@
   --search-result-description: #4d5156;
   --state-info-foreground: var(--color-black);
   --state-success: var(--color-green-700);
+  /* Publishing is a celebration: brighter than --state-success, which has to pass
+     AA as small text. */
+  --publish-accent: var(--color-green-600);
   --state-success-foreground: var(--color-black);
   --state-warning: var(--color-yellow-700);
   --state-warning-foreground: var(--color-black);
@@ -253,6 +256,7 @@
   --surface-glass: rgb(248 248 248 / 0.5);
   --state-info: var(--color-blue-500);
   --state-success: var(--color-green-500);
+  --publish-accent: var(--state-success);
   --state-warning: var(--color-yellow-500);
   --badge-warning: color-mix(in oklab, var(--state-warning) 20%, transparent);
   --badge-warning-hover: color-mix(in oklab, var(--state-warning) 30%, transparent);
@@ -305,6 +309,8 @@
 
   /* One-off colors (not in the standard color scale) */
   --color-sidebar-bg: oklch(0.204 0.002 255);
+
+  --publish-accent: var(--state-success);
 
   /* Fields are filled in dark mode too. */
   --field-surface: color-mix(in oklab, var(--color-gray-900) 70%, transparent);

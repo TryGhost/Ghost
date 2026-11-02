@@ -75,7 +75,7 @@ export function ConfirmStep({
       <Stack gap="none">
         <Text
           as="h2"
-          className="text-5xl leading-tighter tracking-tight text-state-success"
+          className="text-5xl leading-tighter tracking-tight text-publish-accent"
           weight="bold"
         >
           Ready, set, publish.
@@ -135,7 +135,7 @@ export function ConfirmStep({
           Back to settings
         </Button>
         <Button
-          className="ml-auto h-auto min-h-11 max-w-full bg-state-success py-2 whitespace-normal text-white hover:bg-state-success/90"
+          className="ml-auto h-auto min-h-11 max-w-full bg-publish-accent py-2 whitespace-normal text-white hover:bg-publish-accent/90"
           data-testid={publishConfirm}
           disabled={status === 'running'}
           size="lg"
