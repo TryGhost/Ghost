@@ -110,6 +110,21 @@ describe('Paid subscription changed trigger', () => {
     await expect.element(to()).toHaveAttribute('placeholder', 'Select tiers...');
   });
 
+  it('focuses each field from its label without opening its list', async () => {
+    await start({ automations: true, automationsLifecycleTriggers: true });
+    await pickTrigger();
+    await from().click();
+    await expect.element(page.getByRole('listbox')).toBeVisible();
+
+    await page.getByText('From', { exact: true }).click();
+    await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+    await expect.element(from()).toHaveFocus();
+
+    await page.getByText('To', { exact: true }).click();
+    await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+    await expect.element(to()).toHaveFocus();
+  });
+
   it('asks for both fields before saving', async () => {
     const create = await start({ automations: true, automationsLifecycleTriggers: true });
     await pickTrigger();

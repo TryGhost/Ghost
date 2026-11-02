@@ -48,6 +48,12 @@ function tierQueryNotice({ isLoading, isError, refetch }: TriggerData['tierQuery
   return undefined;
 }
 
+// Labels only focus their control, as a forwarded click would open these dropdowns.
+const focusControl = (controlId: string) => (event: React.MouseEvent) => {
+  event.preventDefault();
+  document.getElementById(controlId)?.focus();
+};
+
 const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> = ({
   trigger,
   errorMessage,
@@ -76,7 +82,8 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
 
   return (
     <Stack className="nowheel" gap="sm">
-      <Label className="leading-normal font-normal" htmlFor={`${id}-scope`}>
+      {/* Not linked with htmlFor, which would carry the label's hover onto the Select. */}
+      <Label className="leading-normal font-normal" onClick={focusControl(`${id}-scope`)}>
         Triggered when a new or free member starts:
       </Label>
       <Select
@@ -152,7 +159,11 @@ const SubscriptionChangedPicker: React.FC<{
         Triggered when a member&apos;s subscription changes:
       </Text>
       <Stack gap="sm">
-        <Label className="leading-normal font-normal" htmlFor={`${id}-from`}>
+        <Label
+          className="leading-normal font-normal"
+          htmlFor={`${id}-from`}
+          onClick={focusControl(`${id}-from`)}
+        >
           From
         </Label>
         <TierScopePicker<'any_paid'>
@@ -170,7 +181,11 @@ const SubscriptionChangedPicker: React.FC<{
         />
       </Stack>
       <Stack gap="sm">
-        <Label className="leading-normal font-normal" htmlFor={`${id}-to`}>
+        <Label
+          className="leading-normal font-normal"
+          htmlFor={`${id}-to`}
+          onClick={focusControl(`${id}-to`)}
+        >
           To
         </Label>
         <TierScopePicker<'downgraded_to_free'>
