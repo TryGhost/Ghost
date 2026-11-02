@@ -10197,8 +10197,9 @@ services:
           Stripe calls and coupon-ID persistence, is not awaited by API success. There is no
           unsubscribe or pending-work drain. A real-database API test pins created-event dispatch
           after commit, and a rollback after the save with no dispatch, no stored row and no
-          unhandled rejection; a repository unit pins the same. The members redemption case proves a
-          row exists inside its real transaction, not provider rollback.
+          unhandled rejection; a repository unit pins the missing dispatch and rejection. The
+          members redemption case proves a row exists inside its real transaction, not provider
+          rollback.
         sources:
           - core/server/services/offers/offers-module.js
           - core/server/services/offers/offer-bookshelf-repository.js
