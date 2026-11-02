@@ -641,7 +641,11 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       queue,
       failFirst = false,
       run = async () => {},
-    }: { queue?: string; failFirst?: boolean; run?: (job: GreetJob) => Promise<void> } = {}) {
+    }: {
+      queue?: string;
+      failFirst?: boolean;
+      run?: (job: GreetJob) => Promise<void | 'interrupted'>;
+    } = {}) {
       const backend = new RecordingBackend({ failFirst });
       const store = new JobsOutbox({ knex });
       const relay = new OutboxRelay({
@@ -661,7 +665,7 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       const delivered: GreetJob[] = [];
       const handler = async (job: GreetJob) => {
         delivered.push(job);
-        await run(job);
+        return run(job);
       };
       if (queue) {
         service.handle(GreetJob, handler, { queue, concurrency: 1 });
@@ -724,6 +728,27 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
 
       assert.ok(await waitFor(() => delivered.length === 1), 'the job ran');
       assert.ok(await waitFor(async () => (await countRows()) === 0), 'a dead job leaves no row');
+    });
+
+    it('keeps the row of a job that was interrupted', async function () {
+      // One lane slot, so once the second job settles the first has been processed
+      const { service, delivered } = buildActiveService({
+        queue: 'serial',
+        run: async (job) => (job.name === 'interrupted' ? 'interrupted' : undefined),
+      });
+      await service.start();
+
+      await service.dispatch(new GreetJob({ name: 'interrupted' }));
+      await service.dispatch(new GreetJob({ name: 'finished' }));
+
+      assert.ok(await waitFor(() => delivered.length === 2), 'both jobs ran');
+      assert.ok(
+        await waitFor(async () => (await countRows()) === 1),
+        'the finished job removed its row',
+      );
+      const [row] = await knex(TABLE).select('envelope', 'submitted_at');
+      assert.match(row.envelope, /interrupted/);
+      assert.ok(row.submitted_at, 'the interrupted job keeps its row for a later hand-over');
     });
 
     it('hands over again, at start, a row a previous process had submitted', async function () {

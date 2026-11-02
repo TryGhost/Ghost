@@ -135,7 +135,9 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
   private async _deliver({ job, settleAs }: QueuedJob): Promise<void> {
     let settlement: JobSettlement;
     try {
-      await this._processor!(job);
+      if ((await this._processor!(job)) === 'interrupted') {
+        return;
+      }
       settlement = { status: 'completed' };
     } catch (err) {
       logging.error(`Job "${job.type}" delivery failed`, err);
