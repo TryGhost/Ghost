@@ -1,7 +1,7 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import { z } from 'zod';
-import { Queue, UnrecoverableError, Worker } from 'bullmq';
+import { DelayedError, Queue, UnrecoverableError, Worker } from 'bullmq';
 import type { Job as BullJob, JobsOptions, RedisOptions } from 'bullmq';
 import { JobsBackendBase } from '@tryghost/adapter-base-jobs';
 import type { RedisConnection } from 'bullmq';
@@ -252,7 +252,7 @@ export default class BullMQJobsBackend extends JobsBackendBase {
       prefix: this._prefix,
       defaultJobOptions: this._jobOptions,
     });
-    const worker = new Worker(name, (bullJob) => this._deliver(bullJob), {
+    const worker = new Worker(name, (bullJob, token) => this._deliver(bullJob, token), {
       connection: this._workerConnection(),
       prefix: this._prefix,
       concurrency,
@@ -371,7 +371,7 @@ export default class BullMQJobsBackend extends JobsBackendBase {
     }
   }
 
-  private async _deliver(bullJob: BullJob<unknown>): Promise<void> {
+  private async _deliver(bullJob: BullJob<unknown>, token?: string): Promise<void> {
     const parsed = jobEnvelopeSchema.safeParse(bullJob.data);
     if (!parsed.success) {
       const message = tpl(messages.invalidPayload, { id: bullJob.id });
@@ -386,13 +386,22 @@ export default class BullMQJobsBackend extends JobsBackendBase {
       () => undefined,
     );
     this._inflight.add(tracked);
+    let result;
     try {
-      await delivery;
+      result = await delivery;
     } catch (err) {
       logging.error(`Job "${envelope.type}" delivery failed`, err);
       throw err;
     } finally {
       this._inflight.delete(tracked);
+    }
+    if (result === 'interrupted') {
+      // Back in the queue without counting as an attempt and without settling.
+      // It waits a lock duration first: an interrupted job usually means this
+      // worker is shutting down, and it must not pick the job straight back up.
+      await bullJob.moveToDelayed(Date.now() + this._lockDuration, token);
+      // oxlint-disable-next-line ghost/ghost-custom/ghost-error-usage
+      throw new DelayedError();
     }
   }
 
