@@ -3,6 +3,7 @@ import cronValidate from 'cron-validate';
 import ObjectID from 'bson-objectid';
 import type { Knex } from 'knex';
 import type {
+  JobSettlement,
   JobsBackendBase,
   JobEnvelope,
   DispatchEnvelope,
@@ -25,6 +26,7 @@ export interface OutboxStore {
     entry: { id: string; envelope: DispatchEnvelope },
     options?: { transacting?: Knex.Transaction },
   ): Promise<void>;
+  releaseSubmitted(): Promise<void>;
 }
 
 export interface OutboxRelayLike {
@@ -32,9 +34,14 @@ export interface OutboxRelayLike {
   stop(): Promise<void>;
 }
 
+export interface OutboxTrackerLike {
+  onSettled(id: string, settlement: JobSettlement): Promise<void>;
+}
+
 export interface JobsOutboxWiring {
   store: OutboxStore;
   relay: OutboxRelayLike;
+  tracker: OutboxTrackerLike;
 }
 
 export interface DispatchOptions {
@@ -208,8 +215,13 @@ export class JobsService {
     await this.#backend.start({
       processor: (envelope) => this.#process(envelope),
       queues: Object.fromEntries(this.#queues),
+      onSettled: this.#outbox?.tracker.onSettled,
     });
     if (this.#outbox) {
+      // Rows submitted before this start belong to a process that has gone,
+      // so their jobs may be lost. That holds while a site never runs two
+      // processes at once; more than one would need to know who owns a row.
+      await this.#outbox.store.releaseSubmitted();
       this.#outbox.relay.start();
     } else if (this.#logOutboxUnavailable) {
       this.#logging.warn(
