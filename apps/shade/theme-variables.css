@@ -80,6 +80,20 @@
   --state-warning-surface: var(--color-yellow-200);
   --state-warning-border: transparent;
   --state-warning-fill: var(--color-yellow-400);
+  /* Banners are a flat color with darker shades of it for text, as in Shapeshifter's
+     page headers: step 200 behind steps 800 and 700. */
+  --banner-info-surface: var(--color-blue-200);
+  --banner-info-foreground: var(--color-blue-800);
+  --banner-info-secondary: var(--color-blue-700);
+  --banner-success-surface: var(--color-green-200);
+  --banner-success-foreground: var(--color-green-800);
+  --banner-success-secondary: var(--color-green-700);
+  --banner-warning-surface: var(--state-warning-surface);
+  --banner-warning-foreground: var(--color-yellow-800);
+  --banner-warning-secondary: var(--color-yellow-700);
+  --banner-destructive-surface: var(--color-red-200);
+  --banner-destructive-foreground: var(--color-red-800);
+  --banner-destructive-secondary: var(--color-red-700);
   --state-warning-foreground: var(--color-black);
   /* A 20% tint of the dark yellow-700 reads beige, so the warning Badge gets
      its own clean pale yellow */
@@ -322,6 +336,18 @@
   --state-warning-surface: var(--color-yellow-900);
   --state-warning-border: transparent;
   --state-warning-fill: var(--state-warning);
+  --banner-info-surface: var(--color-blue-900);
+  --banner-info-foreground: var(--color-blue-300);
+  --banner-info-secondary: var(--color-blue-300);
+  --banner-success-surface: var(--color-green-900);
+  --banner-success-foreground: var(--color-green-300);
+  --banner-success-secondary: var(--color-green-300);
+  --banner-warning-surface: var(--state-warning-surface);
+  --banner-warning-foreground: var(--color-yellow-300);
+  --banner-warning-secondary: var(--color-yellow-300);
+  --banner-destructive-surface: var(--color-red-900);
+  --banner-destructive-foreground: var(--color-red-300);
+  --banner-destructive-secondary: var(--color-red-300);
 
   /* Fields are filled in dark mode too. */
   --field-surface: color-mix(in oklab, var(--color-gray-900) 70%, transparent);

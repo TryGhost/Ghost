@@ -140,7 +140,8 @@ preserves the docked sidebar and the separate Settings sidebar.
 The `admin7Design` milestone also fills text-entry fields with no border and 4px
 corners, gives 16px icons a shared stroke and sets column headers in a small
 uppercase label style. Fields inside a tinted panel with the `fields-on-tint`
-class are white with a thin border instead. Checkboxes, radios, Filter bar items
+class are white with a thin border instead. Colored banners are a flat color with
+darker shades of it for text and no outline. Checkboxes, radios, Filter bar items
 and Koenig keep their current look, and other icon sizes keep their own stroke.
 
 The `admin7CustomizeFromViewSite` experiment adds Customize to the frame's top

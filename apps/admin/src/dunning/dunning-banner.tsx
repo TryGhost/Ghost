@@ -36,7 +36,9 @@ export function DunningBanner() {
           ? 'border-state-danger/40 bg-state-danger/10'
           : 'border-state-warning-border bg-state-warning-surface',
       )}
+      data-slot="banner"
       data-testid="dunning-banner"
+      data-variant={state.urgent ? 'destructive' : 'warning'}
       gap="md"
       justify="between"
       role="alert"

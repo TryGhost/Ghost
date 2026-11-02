@@ -97,7 +97,9 @@ function EmailSizeBanner({ post }: { post: PublishFlowPost }) {
     <Inline
       align="start"
       className="border-b border-border-default bg-state-warning-surface p-4"
+      data-slot="banner"
       data-testid={postPreviewEmailSizeWarning}
+      data-variant="warning"
       gap="md"
     >
       <LucideIcon.MailWarning className="size-5 shrink-0 text-state-warning" />
