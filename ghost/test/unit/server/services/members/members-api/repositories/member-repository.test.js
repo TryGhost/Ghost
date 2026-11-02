@@ -1983,7 +1983,11 @@ describe('MemberRepository', function () {
     it('triggers automations with paid tiers', async function () {
       const member = buildSignupMember([{ id: 'bronze' }]);
       const repo = buildRepo();
-      await repo.triggerMembershipStartedAutomation(member, 'paid', {});
+      await repo.triggerMembershipStartedAutomation({
+        member,
+        memberStatus: 'paid',
+        bookshelfOptions: {},
+      });
       sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
         event: 'membership_started',
         memberId: 'member_id_123',

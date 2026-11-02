@@ -277,13 +277,14 @@ module.exports = class MemberRepository {
   }
 
   /**
-   * @param {MemberModel} member
-   * @param {'free' | 'paid'} memberStatus
-   * @param {object} bookshelfOptions
-   * @param {Knex.Transaction} [bookshelfOptions.transacting]
+   * @param {object} options
+   * @param {MemberModel} options.member
+   * @param {'free' | 'paid'} options.memberStatus
+   * @param {object} options.bookshelfOptions
+   * @param {Knex.Transaction} [options.bookshelfOptions.transacting]
    * @returns {Promise<void>}
    */
-  async #triggerMembershipStartedAutomation(member, memberStatus, bookshelfOptions) {
+  async #triggerMembershipStartedAutomation({ member, memberStatus, bookshelfOptions }) {
     const memberId = member.id;
     const memberEmail = member.get('email');
     const memberTierIds = await getMemberTierIds(member, memberStatus, bookshelfOptions);
@@ -364,14 +365,15 @@ module.exports = class MemberRepository {
    * Callers are responsible for any eligibility gating (member status, source, etc.)
    * before calling this.
    *
-   * @param {MemberModel} member
-   * @param {'free' | 'paid'} memberStatus
-   * @param {object} bookshelfOptions
+   * @param {object} options
+   * @param {MemberModel} options.member
+   * @param {'free' | 'paid'} options.memberStatus
+   * @param {object} options.bookshelfOptions
    * @returns {Promise<void>}
    */
-  async triggerMembershipStartedAutomation(member, memberStatus, bookshelfOptions) {
+  async triggerMembershipStartedAutomation({ member, memberStatus, bookshelfOptions }) {
     await Promise.all([
-      this.#triggerMembershipStartedAutomation(member, memberStatus, bookshelfOptions),
+      this.#triggerMembershipStartedAutomation({ member, memberStatus, bookshelfOptions }),
       this.#triggerMembershipStartedLegacyAutomation(member.id, memberStatus, bookshelfOptions),
     ]);
   }
@@ -622,8 +624,10 @@ module.exports = class MemberRepository {
           { ...memberAddOptions, transacting },
         );
 
-        await this.triggerMembershipStartedAutomation(newMember, 'free', {
-          transacting,
+        await this.triggerMembershipStartedAutomation({
+          member: newMember,
+          memberStatus: 'free',
+          bookshelfOptions: { transacting },
         });
 
         return newMember;
@@ -2121,7 +2125,11 @@ module.exports = class MemberRepository {
         updatedMember.get('status') === 'paid' &&
         updatedMember._previousAttributes.status !== 'gift'
       ) {
-        await this.triggerMembershipStartedAutomation(memberModel, 'paid', options);
+        await this.triggerMembershipStartedAutomation({
+          member: memberModel,
+          memberStatus: 'paid',
+          bookshelfOptions: options,
+        });
       }
     }
 
