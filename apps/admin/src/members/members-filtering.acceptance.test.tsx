@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { page } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import {
   currentRoute,
@@ -129,6 +129,65 @@ describe('Members list', () => {
     expect(fieldsApi.requests.map((request) => request.filter)).toEqual(
       fieldsApi.requests.map(() => 'status:[active,archived]'),
     );
+  });
+
+  it('filters a list field by the options picked, the way labels are', async () => {
+    fakeMemberCustomFields([
+      {
+        namespace: CUSTOM_NAMESPACE,
+        key: KeySchema.parse('favourite_animals'),
+        name: 'Favourite animals',
+        type: 'list',
+        settings: { options: ['Dog', 'Cat'], multiple: true },
+        status: 'active',
+        access: { member: 'none' },
+        created_at: '2026-08-05T00:00:00.000Z',
+        updated_at: null,
+      },
+    ]);
+    const membersApi = fakeMembers(({ filter }) =>
+      filter ? [member({ name: 'Dog Lover' })] : [member({ name: 'Dog Lover' }), member()],
+    );
+    await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+
+    await membersScreen.addMultiselectFilter('Favourite animals', ['Dog']);
+
+    await expect(membersApi).toHaveSentFilter(
+      "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dog'])",
+    );
+    await expect(membersScreen.memberRows()).toHaveCount(1);
+  });
+
+  // Whether a member answered a list at all takes no options, so the filter shows none for it.
+  it('filters a list field by whether a member answered it, with no options to pick', async () => {
+    fakeMemberCustomFields([
+      {
+        namespace: CUSTOM_NAMESPACE,
+        key: KeySchema.parse('favourite_animals'),
+        name: 'Favourite animals',
+        type: 'list',
+        settings: { options: ['Dog', 'Cat'], multiple: true },
+        status: 'active',
+        access: { member: 'none' },
+        created_at: '2026-08-05T00:00:00.000Z',
+        updated_at: null,
+      },
+    ]);
+    const membersApi = fakeMembers(({ filter }) =>
+      filter ? [member({ name: 'Unanswered' })] : [member({ name: 'Unanswered' }), member()],
+    );
+    await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+
+    await membersScreen.addMultiselectFilter('Favourite animals', ['Dog']);
+    await userEvent.keyboard('{Escape}');
+    await page.getByRole('button', { name: 'is any of', exact: true }).click();
+    await membersScreen.menuItem('is not set').click();
+
+    await expect(membersApi).toHaveSentFilter("metafields.identity:-'custom.favourite_animals'");
+    await expect
+      .element(page.getByRole('button', { name: 'Dog', exact: true }))
+      .not.toBeInTheDocument();
+    await expect(membersScreen.memberRows()).toHaveCount(1);
   });
 
   // The deploy-compatibility rule in apps/admin/README.md: an Admin deployed ahead of a

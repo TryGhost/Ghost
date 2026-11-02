@@ -158,17 +158,20 @@ export function customFieldDescriptor(definition: CustomFieldDefinition): FieldD
           defaultOperator: 'is-set',
         },
       }),
+    // A list is filtered as a whole, by the options it holds, the way labels are.
     set: () =>
       domainField({
         key: metafieldFieldId(definition),
         icon: 'text',
-        semantics: customFieldSemantics([]),
-        operators: customFieldOperators([]),
-        addressing: customFieldAddressing(definition),
+        semantics: customFieldSemantics(['set']),
+        operators: customFieldOperators(['set']),
+        addressing: customFieldAddressing(definition, 'whole-field'),
         ui: {
           label: definition.name,
-          type: 'custom',
-          defaultOperator: 'is-set',
+          type: 'multiselect',
+          searchable: true,
+          className: 'w-64',
+          defaultOperator: 'is-any',
         },
       }),
   });
