@@ -12,6 +12,7 @@ export type KoenigLexicalModule = {
   EmojiPickerPlugin: KoenigComponent;
   HtmlOutputPlugin: KoenigComponent;
   WordCountPlugin: KoenigComponent;
+  SelectionWordCountPlugin: KoenigComponent;
   TKCountPlugin: KoenigComponent;
   EmailEditor: KoenigComponent;
   DEFAULT_NODES: unknown;

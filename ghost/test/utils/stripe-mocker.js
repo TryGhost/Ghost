@@ -163,7 +163,7 @@ class StripeMocker {
     // Fix for now, because of importing order breaking some things when they are not initialized
     members = require('../../core/server/services/members');
     stripeService = require('../../core/server/services/stripe');
-    tiers = require('../../core/server/services/tiers');
+    tiers = require('../../core/server/services/tiers').default;
     models = require('../../core/server/models');
   }
 
@@ -209,7 +209,7 @@ class StripeMocker {
     if (!product) {
       throw new Error('Product not found with slug ' + tierSlug);
     }
-    const tier = await tiers.api.read(product.id);
+    const tier = await tiers.service.api.read(product.id);
     const payments = members.api.paymentsService;
     const { id } = await payments.createPriceForTierCadence(tier, cadence);
     return this.#getData(this.prices, id)[1];
@@ -225,7 +225,7 @@ class StripeMocker {
    * @returns {Promise<object>} - The created product object.
    */
   async createTier({ name, currency, monthly_price, yearly_price }) {
-    const result = await tiers.api.add({
+    const result = await tiers.service.api.add({
       name: name ?? 'Tier ' + this.#generateRandomId(),
       type: 'paid',
       currency: currency.toUpperCase(),

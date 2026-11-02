@@ -18,17 +18,15 @@ interface AddTagModalProps {
 }
 
 /**
- * Bulk "Add a tag", ported from
- * `apps/ember-admin/app/components/posts-list/modals/add-tag.hbs`.
+ * Bulk "Add a tag".
  *
- * Ember allows creating a tag inline (`@allowCreation={{true}}`) and refuses to
- * submit with none selected. Both are kept: a tag typed but not matching any
- * existing one is offered as a new one, and the server creates it.
+ * Allows creating a tag inline and refuses to submit with none selected: a tag
+ * typed but not matching any existing one is offered as a new one, and the
+ * server creates it.
  *
- * Tags already on the selected posts are deliberately **not** shown. An earlier
- * version listed them ticked and disabled, which read as a set you could edit
- * while offering no way to untick one — this action can only add. Ember shows
- * only what you are adding, and so does this.
+ * Tags already on the selected posts are deliberately **not** shown: listing
+ * them ticked and disabled reads as a set you could edit while offering no way
+ * to untick one — this action can only add.
  */
 export function AddTagModal({ isRunning, onConfirm, onCancel }: AddTagModalProps) {
   const [selected, setSelected] = useState<PickedTag[]>([]);
@@ -79,8 +77,6 @@ export function AddTagModal({ isRunning, onConfirm, onCancel }: AddTagModalProps
             Cancel
           </Button>
           <Button
-            // Ember's modal reports "Select at least one tag"; a
-            // disabled button says the same thing sooner.
             disabled={isRunning || selected.length === 0}
             onClick={() => {
               onConfirm(selected);

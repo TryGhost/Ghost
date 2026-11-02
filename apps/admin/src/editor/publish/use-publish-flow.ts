@@ -275,7 +275,7 @@ export function usePublishFlow({
     retryEligibility.isFetchedAfterMount &&
     sending?.status === 'failed' &&
     sending.retryable === true;
-  // Ember's "Check retry availability": an unread eligibility is said so, not hidden.
+  // "Check retry availability": an unread eligibility is said so, not hidden.
   // Without an email id there is nothing to read, so the check reloads the post for one.
   const retryEligibilityFailed =
     step === 'email-error' &&

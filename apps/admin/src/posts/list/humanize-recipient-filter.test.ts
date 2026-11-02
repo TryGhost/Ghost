@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { humanizeRecipientFilter } from './humanize-recipient-filter';
 
-// Ported from apps/ember-admin/app/helpers/humanize-recipient-filter.js.
-
 describe('humanizeRecipientFilter', () => {
   it('names both statuses together as everyone', () => {
     expect(humanizeRecipientFilter('status:free,status:-free')).toBe('All subscribers');

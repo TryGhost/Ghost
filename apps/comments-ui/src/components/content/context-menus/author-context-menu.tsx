@@ -1,3 +1,4 @@
+import CopyLinkButton from './copy-link-button';
 import PencilIcon from '../../../images/icons/pencil.svg?react';
 import React from 'react';
 import TrashIcon from '../../../images/icons/trash.svg?react';
@@ -27,6 +28,12 @@ const AuthorContextMenu: React.FC<Props> = ({ comment, close, toggleEdit }) => {
 
   return (
     <div className="flex w-full flex-col gap-0.5">
+      <CopyLinkButton
+        className={itemClassName}
+        close={close}
+        comment={comment}
+        iconClassName={iconClassName}
+      />
       <button className={itemClassName} data-testid="edit" type="button" onClick={toggleEdit}>
         <PencilIcon aria-hidden="true" className={iconClassName} />
         <span>{t('Edit')}</span>

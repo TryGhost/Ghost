@@ -1,4 +1,4 @@
-const commentsService = require('../../services/comments');
+const commentsService = require('../../services/comments').default;
 const errors = require('@tryghost/errors');
 
 function validateCommentData(data) {
@@ -47,7 +47,7 @@ const controller = {
     },
     permissions: true,
     async query(frame) {
-      return await commentsService.controller.adminEdit(frame);
+      return await commentsService.service.controller.adminEdit(frame);
     },
   },
   browse: {
@@ -74,7 +74,7 @@ const controller = {
     },
     permissions: true,
     async query(frame) {
-      return await commentsService.controller.adminBrowse(frame);
+      return await commentsService.service.controller.adminBrowse(frame);
     },
   },
   browseAll: {
@@ -87,7 +87,7 @@ const controller = {
       method: 'browse',
     },
     async query(frame) {
-      return await commentsService.controller.adminBrowseAll(frame);
+      return await commentsService.service.controller.adminBrowseAll(frame);
     },
   },
   add: {
@@ -125,7 +125,7 @@ const controller = {
       frame.options.context.internal = true;
 
       const result = data.parent_id
-        ? await commentsService.api.replyToComment(
+        ? await commentsService.service.api.replyToComment(
             data.parent_id,
             data.in_reply_to_id,
             data.member_id,
@@ -133,7 +133,7 @@ const controller = {
             frame.options,
             validatedCreatedAt,
           )
-        : await commentsService.api.commentOnPost(
+        : await commentsService.service.api.commentOnPost(
             data.post_id,
             data.member_id,
             data.html,
@@ -141,7 +141,7 @@ const controller = {
             validatedCreatedAt,
           );
 
-      commentsService.controller.setCacheInvalidationHeaders(result, frame);
+      commentsService.service.controller.setCacheInvalidationHeaders(result, frame);
 
       return result;
     },

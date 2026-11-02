@@ -180,7 +180,27 @@ export const fakeAdminStats = {
       stats: newsletterBasicStat.many(stats),
       meta: {},
     } satisfies NewsletterBasicStatsResponseType;
-    return fakeAdminEndpoint('GET', endpoint('/stats/newsletter-basic-stats/'), response);
+    return fakeAdminEndpoint('GET', endpoint('/stats/newsletter-basic-stats/'), ({ url }) => {
+      const params = new URL(url).searchParams;
+      const limit = Number(params.get('limit') ?? 20);
+      if (!params.has('page')) {
+        return { ...response, stats: response.stats.slice(0, limit) };
+      }
+      const page = Number(params.get('page'));
+      const afterId = params.get('after_id');
+      const offset = afterId ? response.stats.findIndex((stat) => stat.post_id === afterId) + 1 : 0;
+      const hasNext = offset + limit < response.stats.length;
+      return {
+        stats: response.stats.slice(offset, offset + limit),
+        meta: {
+          pagination: {
+            page,
+            limit,
+            next: hasNext ? page + 1 : null,
+          },
+        },
+      };
+    });
   },
 
   newsletterClicks(stats: Array<InputOf<typeof newsletterClickStat>> = []): EndpointCapture {

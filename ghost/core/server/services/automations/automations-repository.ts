@@ -155,6 +155,7 @@ export const AUTOMATION_STEP_TERMINAL_STATUSES = [
   'failed',
   'finished',
   'member changed status',
+  'member changed tier',
   'member unsubscribed',
 ] as const;
 
@@ -199,7 +200,6 @@ export type AutomationRunMember = {
 
 export type AutomationsRepository = {
   browse(): Promise<Page<AutomationSummary>>;
-  getNumberOfAutomations(): Promise<number>;
   exists(id: string): Promise<boolean>;
   getById(id: string): Promise<Automation | null>;
   getRunHistory(automationId: string, runId: string): Promise<AutomationRunHistory | null>;
@@ -285,8 +285,8 @@ export type AutomationsRepository = {
       memberId: string;
       clickedAt: Readonly<Date>;
     },
-    transactionOptions?: {
-      transacting?: Knex.Transaction;
+    transactionOptions: {
+      transacting: Knex.Transaction;
     },
   ): Promise<void>;
 };

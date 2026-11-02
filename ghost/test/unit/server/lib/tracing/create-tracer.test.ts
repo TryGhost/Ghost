@@ -14,6 +14,7 @@ const shipping = () =>
 function recording(metric = (_name: string, _value: unknown) => Promise.resolve(null)) {
   const shipped: { metric: string; document: unknown }[] = [];
   const logged: unknown[] = [];
+  const lines: unknown[][] = [];
   const tracer = createTracer({
     transport: {
       metric(name, value) {
@@ -22,12 +23,13 @@ function recording(metric = (_name: string, _value: unknown) => Promise.resolve(
       },
     },
     logging: {
-      error(fields: unknown) {
-        logged.push(LogFields.parse(fields).event.name);
+      error(...args: unknown[]) {
+        lines.push(args);
+        logged.push(LogFields.parse(args[0]).event.name);
       },
     },
   });
-  return { tracer, shipped, logged };
+  return { tracer, shipped, logged, lines };
 }
 
 describe('createTracer', function () {
@@ -57,12 +59,65 @@ describe('createTracer', function () {
         metric: 'ghost-spans',
         document: {
           '@timestamp': expect.any(Number),
+          trace: { id: expect.stringMatching(/^[0-9a-f]{32}$/) },
+          span: { id: expect.stringMatching(/^[0-9a-f]{16}$/) },
           event: { name: 'test.operation', outcome: 'failure', duration: expect.any(Number) },
           error: { type },
           labels: { test_kind: 'plain' },
           numeric_labels: {},
         },
       })),
+    );
+  });
+
+  it('logs a failure’s exception under the span’s name and ids, with the error as the line and the span’s attributes', async function () {
+    const { tracer, shipped, lines } = recording();
+    const failure = new Error('Lost the connection');
+
+    await assert.rejects(
+      tracer.track('test.operation', async (span) => {
+        span.setAttribute('design', 'applied');
+        span.setAttribute('rows', 3);
+        throw failure;
+      }),
+      (err) => err === failure,
+    );
+
+    await shipping();
+    const [{ document }] = z
+      .array(z.object({ document: z.object({ trace: z.unknown(), span: z.unknown() }) }))
+      .parse(shipped);
+    assert.deepEqual(lines, [
+      [
+        {
+          event: { name: 'test.operation.exception' },
+          err: failure,
+          trace: document.trace,
+          span: document.span,
+          error: { type: 'Error' },
+          labels: { design: 'applied' },
+          numeric_labels: { rows: 3 },
+        },
+      ],
+    ]);
+  });
+
+  it('logs what was thrown as the line’s message when it isn’t an error', async function () {
+    const { tracer, lines } = recording();
+
+    for (const failure of ['Stripe is down', null]) {
+      await assert.rejects(
+        tracer.track('test.operation', async () => {
+          throw failure;
+        }),
+        (err) => err === failure,
+      );
+    }
+
+    const Logged = z.array(z.tuple([z.object({ err: z.instanceof(Error) })]));
+    assert.deepEqual(
+      Logged.parse(lines).map(([{ err }]) => err.message),
+      ['Stripe is down', 'null'],
     );
   });
 

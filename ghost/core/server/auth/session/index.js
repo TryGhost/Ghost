@@ -4,7 +4,7 @@ const { sessionFromToken } = require('./session-from-token');
 const createSessionMiddleware = require('./middleware');
 const settingsCache = require('../../../shared/settings-cache');
 const { GhostMailer } = require('../../lib/mail');
-const { t } = require('../../services/i18n');
+const { t } = require('../../../shared/i18n');
 
 const expressSession = require('./express-session');
 

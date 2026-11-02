@@ -42,7 +42,7 @@ const calculateTotals = (
     };
   }
 
-  // Use current totals from API meta if available (like Ember), otherwise use latest time series data
+  // Use current totals from API meta if available, otherwise use latest time series data
   const currentTotals = memberCountTotals || memberData[memberData.length - 1];
   const latest =
     memberData.length > 0
@@ -51,7 +51,7 @@ const calculateTotals = (
 
   const latestMrr = mrrData.length > 0 ? mrrData[mrrData.length - 1] : { mrr: 0 };
 
-  // Calculate total members using current totals (like Ember dashboard)
+  // Calculate total members using current totals
   const totalMembers =
     currentTotals.free + currentTotals.paid + currentTotals.comped + (currentTotals.gift ?? 0);
 
@@ -390,13 +390,13 @@ export const useGrowthStats = (range: number) => {
     [isMemberCountLoading, isMrrLoading, isSubscriptionLoading],
   );
 
-  // Process subscription data for real subscription events (like Ember dashboard)
+  // Process subscription data for real subscription events
   const subscriptionData = useMemo(() => {
     if (!subscriptionStatsResponse?.stats) {
       return [];
     }
 
-    // Merge subscription stats by date (like Ember's mergeStatsByDate)
+    // Merge subscription stats by date
     const mergedByDate = subscriptionStatsResponse.stats.reduce(
       (acc, current) => {
         const dateKey = current.date;

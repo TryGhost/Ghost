@@ -1,5 +1,7 @@
 import assert from 'assert/strict';
 import crypto from 'crypto';
+import sinon from 'sinon';
+import { createLoggingFake } from '../../../../utils/logging-utils';
 import { ExportRequestsService } from '../../../../../core/server/services/export-requests/export-requests-service';
 
 describe('ExportRequestsService', function () {
@@ -30,11 +32,7 @@ describe('ExportRequestsService', function () {
       config: {
         get: (key: string) => values[key],
       },
-      logging: {
-        info: () => {},
-        warn: () => {},
-        error: () => {},
-      },
+      logging: createLoggingFake(),
       request,
       ...overrides,
     };
@@ -64,16 +62,10 @@ describe('ExportRequestsService', function () {
   });
 
   it('throws an IncorrectUsageError when the secret is missing while the URL is configured', async function () {
-    let errorMessage: string | undefined;
+    const logging = createLoggingFake();
     const service = createService(
       {
-        logging: {
-          info: () => {},
-          warn: () => {},
-          error: (message: string) => {
-            errorMessage = message;
-          },
-        },
+        logging,
       },
       {
         'hostSettings:export:webhookUrl': webhookUrl,
@@ -92,23 +84,17 @@ describe('ExportRequestsService', function () {
       },
     );
 
-    assert.equal(
-      errorMessage,
+    sinon.assert.calledOnceWithExactly(
+      logging.error,
       'Export request is misconfigured: hostSettings:export:webhookSecret is missing while hostSettings:export:webhookUrl is set.',
     );
   });
 
   it('throws an IncorrectUsageError when the site id is missing while the URL is configured', async function () {
-    let errorMessage: string | undefined;
+    const logging = createLoggingFake();
     const service = createService(
       {
-        logging: {
-          info: () => {},
-          warn: () => {},
-          error: (message: string) => {
-            errorMessage = message;
-          },
-        },
+        logging,
       },
       {
         'hostSettings:export:webhookUrl': webhookUrl,
@@ -127,8 +113,8 @@ describe('ExportRequestsService', function () {
       },
     );
 
-    assert.equal(
-      errorMessage,
+    sinon.assert.calledOnceWithExactly(
+      logging.error,
       'Export request is misconfigured: hostSettings:siteId is missing while hostSettings:export:webhookUrl is set.',
     );
   });
@@ -160,15 +146,9 @@ describe('ExportRequestsService', function () {
   it('sends a POST request with the signed payload', async function () {
     let requestUrl: string | undefined;
     let requestOptions: any;
-    let infoMessage: string | undefined;
+    const logging = createLoggingFake();
     const service = createService({
-      logging: {
-        info: (message: string) => {
-          infoMessage = message;
-        },
-        warn: () => {},
-        error: () => {},
-      },
+      logging,
       request: async (url: string, options: unknown) => {
         requestUrl = url;
         requestOptions = options;
@@ -183,8 +163,8 @@ describe('ExportRequestsService', function () {
 
     assert.equal(requestUrl, webhookUrl);
     assert.equal(requestOptions.method, 'POST');
-    assert.equal(
-      infoMessage,
+    sinon.assert.calledOnceWithExactly(
+      logging.info,
       'Requesting export generation from "https://export-generator.example.com"',
     );
 
@@ -263,15 +243,9 @@ describe('ExportRequestsService', function () {
   });
 
   it('logs a sanitized URL and throws a generic 502 when the request fails', async function () {
-    let errorMessage: string | undefined;
+    const logging = createLoggingFake();
     const service = createService({
-      logging: {
-        info: () => {},
-        warn: () => {},
-        error: (message: string) => {
-          errorMessage = message;
-        },
-      },
+      logging,
       request: async () => {
         throw Object.assign(
           new Error(
@@ -294,8 +268,8 @@ describe('ExportRequestsService', function () {
       },
     );
 
-    assert.equal(
-      errorMessage,
+    sinon.assert.calledOnceWithExactly(
+      logging.error,
       'Failed to request export generation from "https://export-generator.example.com": HTTP 500',
     );
   });

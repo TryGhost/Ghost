@@ -1,10 +1,8 @@
-import { Button } from '@tryghost/shade/components';
 import React from 'react';
 import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { useCommentFilterFields } from '@/comments/use-comment-filter-fields';
 import { useMemberValueSource, usePostResourceValueSource } from '@/shared/filter-sources';
-import { useShade } from '@tryghost/shade/app';
 
 interface CommentsFiltersProps {
   filters: Filter[];
@@ -17,7 +15,6 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
   siteTimezone,
   onFiltersChange,
 }) => {
-  const { isAdmin7 } = useShade();
   const postValueSource = usePostResourceValueSource();
   const memberValueSource = useMemberValueSource();
   const filterFields = useCommentFilterFields({
@@ -28,21 +25,12 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
 
   const hasFilters = filters.length > 0;
 
-  const filterBarActions = isAdmin7 ? (
+  const filterBarActions = (
     <FilterBar.Actions>
       <FilterBar.Action type="button" variant="ghost" onClick={() => onFiltersChange([])}>
         Clear
       </FilterBar.Action>
     </FilterBar.Actions>
-  ) : (
-    <Button
-      className="sm:absolute sm:top-0 sm:right-0"
-      type="button"
-      variant="outline"
-      onClick={() => onFiltersChange([])}
-    >
-      Clear
-    </Button>
   );
 
   return (

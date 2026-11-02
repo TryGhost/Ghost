@@ -53,7 +53,7 @@ describe('getMemberEditableSlice', () => {
     ).toEqual({ name: '', email: '', note: '', labels: [], newsletters: [] });
   });
 
-  it('trims name and email (matching Ember blur-trim) but preserves note whitespace', () => {
+  it('trims name and email but preserves note whitespace', () => {
     expect(
       getMemberEditableSlice({ name: '  Ada  ', email: ' ada@x.co ', note: '  hi  ' }),
     ).toEqual({ name: 'Ada', email: 'ada@x.co', note: '  hi  ', labels: [], newsletters: [] });
@@ -259,8 +259,8 @@ describe('getMemberSuppressionInfo', () => {
   });
 
   it('shows the banner without a label when suppressed but the info block is missing', () => {
-    // Ember still renders "Email disabled" + the Re-enable button in this case
-    // (e.g. email_disabled=true after the Mailgun row was cleaned), so we do too.
+    // "Email disabled" + the Re-enable button still render in this case
+    // (e.g. email_disabled=true after the Mailgun row was cleaned).
     expect(getMemberSuppressionInfo({ suppressed: true })).toEqual({ label: null });
   });
 
@@ -342,7 +342,6 @@ describe('isValidMemberEmail', () => {
 });
 
 describe('getDefaultNewsletterIdsForNewMember', () => {
-  // Ported from Ember's rule (`gh-member-settings-form.js:236-237`):
   // `subscribe_on_signup: true` AND `visibility: 'members'`. A drift on
   // either condition would silently either over-subscribe (privacy risk if
   // a paid newsletter leaks to a free member) or under-subscribe (marketing
@@ -413,7 +412,7 @@ describe('getNoteCharactersLeft', () => {
     expect(getNoteCharactersLeft('👍👍👍')).toBe(NOTE_MAX_LENGTH - 3);
   });
 
-  it('goes negative when the soft limit is exceeded (matching Ember)', () => {
+  it('goes negative when the soft limit is exceeded', () => {
     expect(getNoteCharactersLeft('x'.repeat(520))).toBe(-20);
   });
 });

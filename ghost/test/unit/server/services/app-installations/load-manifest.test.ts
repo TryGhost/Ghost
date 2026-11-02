@@ -10,6 +10,7 @@ import {
   createManifestLoader,
   type ManifestRules,
 } from '../../../../../core/server/services/app-installations/load-manifest';
+import { createLoggingFake } from '../../../../utils/logging-utils';
 
 const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
 
@@ -63,13 +64,13 @@ function setup({
   rules = RULES,
 }: { app?: App; rules?: ManifestRules } = {}) {
   const fetchFromApp = vi.fn<FetchFromApp>(async (url) => app(url));
-  const warn = vi.fn();
+  const logging = createLoggingFake();
   const loadManifest = createManifestLoader({
     fetchFromApp,
-    logging: { warn },
+    logging,
     getManifestRules: () => rules,
   });
-  return { loadManifest, fetchFromApp, warn };
+  return { loadManifest, fetchFromApp, warn: logging.warn };
 }
 
 describe('createManifestLoader', function () {
@@ -188,7 +189,7 @@ describe('createManifestLoader', function () {
         message: 'Could not load the app’s manifest.',
         context: MANIFEST_URL,
       });
-      assert.deepEqual(warn.mock.calls, [
+      assert.deepEqual(warn.args, [
         [`Could not load the app manifest at ${MANIFEST_URL}`],
         [cause],
       ]);
@@ -204,7 +205,7 @@ describe('createManifestLoader', function () {
         code: 'APP_MANIFEST_UNREACHABLE',
         context: `${MANIFEST_URL} answered with HTTP 404`,
       });
-      assert.deepEqual(warn.mock.calls, [
+      assert.deepEqual(warn.args, [
         [`Could not load the app manifest at ${MANIFEST_URL}`],
         [cause],
       ]);
@@ -221,7 +222,7 @@ describe('createManifestLoader', function () {
         context,
       });
       // Logged like every other unreachable manifest, so an operator can tell why.
-      assert.deepEqual(warn.mock.calls, [
+      assert.deepEqual(warn.args, [
         [`Could not load the app manifest at ${MANIFEST_URL}`],
         [context],
       ]);

@@ -22,18 +22,15 @@ type Run = {
 type MemberStatus = keyof typeof MEMBER_WELCOME_EMAIL_SLUGS;
 
 type MemberWelcomeEmailService = {
-  init: () => unknown;
-  api: {
-    loadMemberWelcomeEmails: () => PromiseLike<unknown>;
-    send: (options: {
-      member: {
-        name: undefined | null | string;
-        email: string;
-        uuid: string;
-      };
-      memberStatus: MemberStatus;
-    }) => PromiseLike<unknown>;
-  };
+  loadMemberWelcomeEmails: () => PromiseLike<unknown>;
+  send: (options: {
+    member: {
+      name: undefined | null | string;
+      email: string;
+      uuid: string;
+    };
+    memberStatus: MemberStatus;
+  }) => PromiseLike<unknown>;
 };
 
 type MemberModel = {
@@ -240,7 +237,7 @@ async function processRun({
       return;
     }
 
-    await memberWelcomeEmailService.api.send({
+    await memberWelcomeEmailService.send({
       member: {
         name: member.get('name'),
         email: member.get('email'),
@@ -304,8 +301,7 @@ export async function welcomeEmailAutomationPoll(options: PollOptions): Promise<
     return;
   }
 
-  memberWelcomeEmailService.init();
-  await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
+  await memberWelcomeEmailService.loadMemberWelcomeEmails();
 
   await Promise.allSettled(runs.map((run) => processRun({ run, ...options })));
 

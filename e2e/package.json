@@ -50,7 +50,7 @@
     "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",
     "eslint-plugin-no-relative-import-paths": "1.6.1",
-    "eslint-plugin-playwright": "2.10.4",
+    "eslint-plugin-playwright": "2.12.1",
     "express": "catalog:",
     "knex": "catalog:",
     "stripe": "8.222.0",

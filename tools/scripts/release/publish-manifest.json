@@ -39,7 +39,7 @@
     "name": "@tryghost/shade",
     "path": "apps/shade",
     "versioning": "prerelease",
-    "distTag": "alpha",
+    "distTag": "latest",
     "installArgs": "--ignore-scripts"
   },
   {
@@ -52,6 +52,6 @@
     "name": "@tryghost/app-sdk",
     "path": "packages/app-sdk",
     "versioning": "prerelease",
-    "distTag": "alpha"
+    "distTag": "latest"
   }
 ]

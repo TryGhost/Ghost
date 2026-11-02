@@ -1,9 +1,13 @@
 import assert from 'node:assert/strict';
+import { z } from 'zod';
 import type * as Framework from '../../utils/e2e-framework';
 
-// Required rather than imported, so the test shares the module instances Ghost boots with.
+// Required rather than imported, so the test shares the module instances Ghost boots with, and
+// the mock manager's restore undoes its stubs.
 const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
+const logging = require('@tryghost/logging');
+const sinon = require('sinon');
 
 type Agents = Awaited<ReturnType<typeof Framework.agentProvider.getAgentsForMembers>>;
 
@@ -180,6 +184,35 @@ describe('Checkout session outcomes', function () {
       sessions().map((session) => session.error),
       [{ type: 'email_invalid' }],
     );
+  });
+
+  it('logs a failed session’s exception once, with Stripe’s message as the line and the span’s ids', async function () {
+    const reason = 'Your account cannot currently make live charges.';
+    const errors = sinon.stub(logging, 'error');
+    stripeMocker.checkoutSessionError = { type: 'invalid_request_error', message: reason };
+    await startCheckout(400);
+
+    // A line carries the reason as its own error, or as the error in its fields.
+    const CarriesReason = z.union([
+      z.object({ message: z.literal(reason) }),
+      z.object({ err: z.object({ message: z.literal(reason) }) }),
+    ]);
+    const lines = errors.args.filter(
+      ([first]: unknown[]) => CarriesReason.safeParse(first).success,
+    );
+    const [session] = sessions();
+    // No message of its own, so Ghost's logger makes the error's message the line.
+    expect(lines).toMatchObject([
+      [
+        {
+          event: { name: 'stripe_checkout.session.exception' },
+          trace: session.trace,
+          span: session.span,
+          error: { type: 'StripeInvalidRequestError' },
+          labels: { design: 'none' },
+        },
+      ],
+    ]);
   });
 
   it('records nothing for a preview, which is not a buyer’s session', async function () {

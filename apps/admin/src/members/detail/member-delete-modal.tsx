@@ -29,14 +29,13 @@ interface MemberDeleteModalProps {
 }
 
 /**
- * Confirms permanent member deletion. Mirrors Ember `delete-member` exactly:
+ * Confirms permanent member deletion:
  *   - Shows the "Also cancel subscription in Stripe" toggle iff the member has
  *     at least one cancelable Stripe subscription
  *     (`hasCancelableStripeSubscription`).
  *   - Confirm button label switches to "Delete member + Cancel subscription"
  *     when the checkbox is on, so the admin sees the two-op flow.
- *   - On success, navigates to /members (Ember `controllers/member.js:184`
- *     `router.transitionTo(membersListPath)`).
+ *   - On success, navigates to /members.
  *
  * Uses Shade Dialog rather than AlertDialog because it needs to host the
  * checkbox and a dynamic confirm label — behaviours AlertDialog's simpler
@@ -62,7 +61,7 @@ const MemberDeleteModal: React.FC<MemberDeleteModalProps> = ({
   }, [open]);
 
   const showCancelStripeToggle = hasCancelableStripeSubscription(member);
-  // Members can be created without an email (Ember has the same gap). Fall
+  // Members can be created without an email. Fall
   // back through name → "this member" so we never render `<strong></strong>`
   // in the confirmation body or a bare " was deleted." in the toast.
   const displayIdentity = member.email || member.name || 'this member';

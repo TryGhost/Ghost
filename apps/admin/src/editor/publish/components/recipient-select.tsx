@@ -51,9 +51,8 @@ function SegmentCount({ filter }: { filter: string | null }) {
 }
 
 /**
- * Ported from `gh-members-recipient-select`: free/paid checkboxes plus an
- * optional "Specific people" segment selection, all expressed as one NQL
- * recipient filter.
+ * Free/paid checkboxes plus an optional "Specific people" segment selection,
+ * all expressed as one NQL recipient filter.
  */
 export function RecipientSelect({
   filter,

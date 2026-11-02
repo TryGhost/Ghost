@@ -1,4 +1,3 @@
-import * as assert from 'assert/strict';
 import {
   cn,
   debounce,
@@ -8,13 +7,13 @@ import {
   formatDuration,
   formatPercentage,
 } from '@/lib/utils';
-import { vi } from 'vitest';
+import { expect, vi } from 'vitest';
 
 describe('utils', function () {
   describe('cn function', function () {
     it('merges class names correctly', function () {
       const result = cn('class1', 'class2');
-      assert.equal(result, 'class1 class2');
+      expect(result).toBe('class1 class2');
     });
 
     it('handles conditional classes', function () {
@@ -22,12 +21,12 @@ describe('utils', function () {
         class2: true,
         class3: false,
       });
-      assert.equal(result, 'class1 class2');
+      expect(result).toBe('class1 class2');
     });
 
     it('merges tailwind classes intelligently', function () {
       const result = cn('p-2 bg-red-500', 'p-4');
-      assert.equal(result, 'bg-red-500 p-4');
+      expect(result).toBe('bg-red-500 p-4');
     });
   });
 
@@ -49,10 +48,10 @@ describe('utils', function () {
       const debouncedIncrement = debounce(increment, 100);
 
       debouncedIncrement();
-      assert.equal(counter, 0, 'Function should not be called immediately');
+      expect(counter, 'Function should not be called immediately').toBe(0);
 
       vi.advanceTimersByTime(150);
-      assert.equal(counter, 1, 'Function should be called after the delay');
+      expect(counter, 'Function should be called after the delay').toBe(1);
     });
 
     it('only calls the function once if called multiple times within the wait period', function () {
@@ -67,10 +66,10 @@ describe('utils', function () {
       debouncedIncrement();
       debouncedIncrement();
 
-      assert.equal(counter, 0, 'Function should not be called immediately');
+      expect(counter, 'Function should not be called immediately').toBe(0);
 
       vi.advanceTimersByTime(150);
-      assert.equal(counter, 1, 'Function should only be called once');
+      expect(counter, 'Function should only be called once').toBe(1);
     });
 
     it('calls the function immediately if immediate is true', function () {
@@ -82,55 +81,55 @@ describe('utils', function () {
       const debouncedIncrement = debounce(increment, 100, true);
 
       debouncedIncrement();
-      assert.equal(counter, 1, 'Function should be called immediately');
+      expect(counter, 'Function should be called immediately').toBe(1);
     });
   });
 
   describe('kebabToPascalCase function', function () {
     it('converts kebab-case to PascalCase', function () {
       const result = kebabToPascalCase('hello-world');
-      assert.equal(result, 'HelloWorld');
+      expect(result).toBe('HelloWorld');
     });
 
     it('handles multiple hyphens', function () {
       const result = kebabToPascalCase('hello-beautiful-world');
-      assert.equal(result, 'HelloBeautifulWorld');
+      expect(result).toBe('HelloBeautifulWorld');
     });
 
     it('handles uppercase letters', function () {
       const result = kebabToPascalCase('hello-World');
-      assert.equal(result, 'HelloWorld');
+      expect(result).toBe('HelloWorld');
     });
 
     it('handles numbers', function () {
       const result = kebabToPascalCase('hello-world-123');
-      assert.equal(result, 'HelloWorld123');
+      expect(result).toBe('HelloWorld123');
     });
 
     it('handles underscore too', function () {
       const result = kebabToPascalCase('hello_world');
-      assert.equal(result, 'HelloWorld');
+      expect(result).toBe('HelloWorld');
     });
   });
 
   describe('formatNumber function', function () {
     it('formats a number with thousand separators', function () {
       let formatted = formatNumber(1000);
-      assert.equal(formatted, '1,000');
+      expect(formatted).toBe('1,000');
 
       formatted = formatNumber(1234567);
-      assert.equal(formatted, '1,234,567');
+      expect(formatted).toBe('1,234,567');
 
       formatted = formatNumber(1234.56);
-      assert.equal(formatted, '1,235'); // Should round
+      expect(formatted).toBe('1,235'); // Should round
     });
 
     it('preserves decimal precision when fraction-digit options are provided', function () {
       const options = { maximumFractionDigits: 2 };
 
-      assert.equal(formatNumber(5.5, options), '5.5');
-      assert.equal(formatNumber(5.99, options), '5.99');
-      assert.equal(formatNumber(1234.56, options), '1,234.56');
+      expect(formatNumber(5.5, options)).toBe('5.5');
+      expect(formatNumber(5.99, options)).toBe('5.99');
+      expect(formatNumber(1234.56, options)).toBe('1,234.56');
     });
   });
 
@@ -160,7 +159,7 @@ describe('utils', function () {
       [-Infinity, '0'],
       [NaN, '0'],
     ])('formats %s as %s', (input, expected) => {
-      assert.equal(abbreviateNumber(input), expected);
+      expect(abbreviateNumber(input)).toBe(expected);
     });
   });
 
@@ -168,69 +167,69 @@ describe('utils', function () {
     it('formats duration in seconds properly', function () {
       // Only seconds
       let formatted = formatDuration(45);
-      assert.equal(formatted, '45s');
+      expect(formatted).toBe('45s');
 
       // Minutes and seconds
       formatted = formatDuration(65);
-      assert.equal(formatted, '1m 5s');
+      expect(formatted).toBe('1m 5s');
 
       // Hours, minutes, and seconds
       formatted = formatDuration(3665);
-      assert.equal(formatted, '1h 1m 5s');
+      expect(formatted).toBe('1h 1m 5s');
     });
 
     it('handles edge cases correctly', function () {
       // Zero values in various positions
       let formatted = formatDuration(3600);
-      assert.equal(formatted, '1h 0m 0s');
+      expect(formatted).toBe('1h 0m 0s');
 
       formatted = formatDuration(60);
-      assert.equal(formatted, '1m 0s');
+      expect(formatted).toBe('1m 0s');
     });
   });
 
   describe('formatPercentage function', function () {
     it('formats a decimal as a percentage', function () {
       let formatted = formatPercentage(0.123);
-      assert.equal(formatted, '12%');
+      expect(formatted).toBe('12%');
 
       formatted = formatPercentage(0.789);
-      assert.equal(formatted, '79%');
+      expect(formatted).toBe('79%');
 
       formatted = formatPercentage(1);
-      assert.equal(formatted, '100%');
+      expect(formatted).toBe('100%');
     });
 
     it('formats zero percentage', function () {
       const formatted = formatPercentage(0);
-      assert.equal(formatted, '0%');
+      expect(formatted).toBe('0%');
     });
 
     it('formats very small percentages with 2 decimal places', function () {
       let formatted = formatPercentage(0.0005);
-      assert.equal(formatted, '0.05%');
+      expect(formatted).toBe('0.05%');
 
       formatted = formatPercentage(0.0009);
-      assert.equal(formatted, '0.09%');
+      expect(formatted).toBe('0.09%');
     });
 
     it('formats small percentages with 1 decimal place', function () {
       let formatted = formatPercentage(0.005);
-      assert.equal(formatted, '0.5%');
+      expect(formatted).toBe('0.5%');
 
       formatted = formatPercentage(0.009);
-      assert.equal(formatted, '0.9%');
+      expect(formatted).toBe('0.9%');
     });
 
     it('formats large percentages with thousand separators', function () {
       let formatted = formatPercentage(10);
-      assert.equal(formatted, '1,000%');
+      expect(formatted).toBe('1,000%');
 
       formatted = formatPercentage(12.34567);
-      assert.equal(formatted, '1,235%');
+      expect(formatted).toBe('1,235%');
 
       formatted = formatPercentage(100);
-      assert.equal(formatted, '10,000%');
+      expect(formatted).toBe('10,000%');
     });
   });
 });

@@ -23,11 +23,10 @@ interface MemberImpersonateModalProps {
 
 /**
  * Modal that fetches a 24-hour signin/impersonation URL for the given member and
- * lets the admin copy it. Matches Ember `modal-impersonate-member`:
+ * lets the admin copy it:
  *   - Fetches lazily (only when the modal opens) so the URL isn't minted on every
  *     page render.
- *   - Copy button flashes "Copied" for 1s (Ember's `copySigninUrl` task uses the
- *     same 1s window).
+ *   - Copy button flashes "Copied" for 1s.
  */
 const MemberImpersonateModal: React.FC<MemberImpersonateModalProps> = ({
   open,
@@ -36,8 +35,7 @@ const MemberImpersonateModal: React.FC<MemberImpersonateModalProps> = ({
 }) => {
   const queryClient = useQueryClient();
   // On every modal open, drop the cached signin URL so we don't serve a stale
-  // (potentially expired 24-hour) link from a previous open. Ember's original
-  // modal fetches fresh in didInsertElement — this reproduces that guarantee.
+  // (potentially expired 24-hour) link from a previous open.
   React.useEffect(() => {
     if (open) {
       queryClient.removeQueries({ queryKey: ['MemberSigninUrlResponseType'] });

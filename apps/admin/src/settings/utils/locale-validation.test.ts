@@ -1,126 +1,125 @@
-import * as assert from 'assert/strict';
 import { validateLocale } from '@/settings/utils/locale-validation';
 
 describe('validateLocale', function () {
   describe('valid locales', function () {
     it('accepts simple two-letter language codes', function () {
       const result = validateLocale('en');
-      assert.equal(result, null);
+      expect(result).toBeNull();
     });
 
     it('accepts three-letter language codes', function () {
       const result = validateLocale('eng');
-      assert.equal(result, null);
+      expect(result).toBeNull();
     });
 
     it('accepts language with region', function () {
-      assert.equal(validateLocale('en-US'), null);
-      assert.equal(validateLocale('pt-BR'), null);
-      assert.equal(validateLocale('zh-CN'), null);
+      expect(validateLocale('en-US')).toBeNull();
+      expect(validateLocale('pt-BR')).toBeNull();
+      expect(validateLocale('zh-CN')).toBeNull();
     });
 
     it('accepts language with script', function () {
-      assert.equal(validateLocale('zh-Hans'), null);
-      assert.equal(validateLocale('zh-Hant'), null);
-      assert.equal(validateLocale('sr-Latn'), null);
+      expect(validateLocale('zh-Hans')).toBeNull();
+      expect(validateLocale('zh-Hant')).toBeNull();
+      expect(validateLocale('sr-Latn')).toBeNull();
     });
 
     it('accepts language with script and region', function () {
-      assert.equal(validateLocale('zh-Hans-CN'), null);
-      assert.equal(validateLocale('sr-Latn-RS'), null);
+      expect(validateLocale('zh-Hans-CN')).toBeNull();
+      expect(validateLocale('sr-Latn-RS')).toBeNull();
     });
 
     it('accepts private use tags', function () {
-      assert.equal(validateLocale('x-custom'), null);
-      assert.equal(validateLocale('x-private'), null);
+      expect(validateLocale('x-custom')).toBeNull();
+      expect(validateLocale('x-private')).toBeNull();
     });
 
     it('accepts language with private use extension', function () {
-      assert.equal(validateLocale('en-x-custom'), null);
+      expect(validateLocale('en-x-custom')).toBeNull();
     });
 
     it('accepts numeric region codes', function () {
-      assert.equal(validateLocale('es-419'), null);
+      expect(validateLocale('es-419')).toBeNull();
     });
 
     it('accepts variant subtags', function () {
-      assert.equal(validateLocale('sl-rozaj'), null);
-      assert.equal(validateLocale('de-CH-1901'), null);
+      expect(validateLocale('sl-rozaj')).toBeNull();
+      expect(validateLocale('de-CH-1901')).toBeNull();
     });
 
     it('is case-insensitive', function () {
-      assert.equal(validateLocale('EN'), null);
-      assert.equal(validateLocale('en-us'), null);
-      assert.equal(validateLocale('ZH-HANS'), null);
+      expect(validateLocale('EN')).toBeNull();
+      expect(validateLocale('en-us')).toBeNull();
+      expect(validateLocale('ZH-HANS')).toBeNull();
     });
 
     it('trims whitespace', function () {
-      assert.equal(validateLocale('  en  '), null);
+      expect(validateLocale('  en  ')).toBeNull();
     });
 
     it('accepts grandfathered tags', function () {
-      assert.equal(validateLocale('i-klingon'), null);
-      assert.equal(validateLocale('zh-min-nan'), null);
-      assert.equal(validateLocale('en-GB-oed'), null);
+      expect(validateLocale('i-klingon')).toBeNull();
+      expect(validateLocale('zh-min-nan')).toBeNull();
+      expect(validateLocale('en-GB-oed')).toBeNull();
     });
   });
 
   describe('invalid locales', function () {
     it('rejects empty strings', function () {
       const result = validateLocale('');
-      assert.equal(result, 'Enter a value');
+      expect(result).toBe('Enter a value');
     });
 
     it('rejects whitespace-only strings', function () {
       const result = validateLocale('   ');
-      assert.equal(typeof result, 'string');
+      expect(typeof result).toBe('string');
     });
 
     it('rejects single character language codes', function () {
       const result = validateLocale('e');
-      assert.equal(typeof result, 'string');
+      expect(typeof result).toBe('string');
     });
 
     it('rejects language codes longer than 3 characters', function () {
       const result = validateLocale('english');
-      assert.equal(typeof result, 'string');
+      expect(typeof result).toBe('string');
     });
 
     it('rejects codes starting with hyphen', function () {
       const result = validateLocale('-en');
-      assert.equal(typeof result, 'string');
+      expect(typeof result).toBe('string');
     });
 
     it('rejects codes ending with hyphen', function () {
       const result = validateLocale('en-');
-      assert.equal(typeof result, 'string');
+      expect(typeof result).toBe('string');
     });
 
     it('rejects consecutive hyphens', function () {
       const result = validateLocale('en--US');
-      assert.equal(typeof result, 'string');
+      expect(typeof result).toBe('string');
     });
 
     it('rejects invalid characters', function () {
       const result = validateLocale('en_US');
-      assert.equal(typeof result, 'string');
+      expect(typeof result).toBe('string');
     });
 
     it('rejects special characters', function () {
-      assert.notEqual(validateLocale('en@US'), null);
-      assert.notEqual(validateLocale('en.US'), null);
-      assert.notEqual(validateLocale('en/US'), null);
+      expect(validateLocale('en@US')).not.toBeNull();
+      expect(validateLocale('en.US')).not.toBeNull();
+      expect(validateLocale('en/US')).not.toBeNull();
     });
 
     it('rejects common English words', function () {
-      assert.notEqual(validateLocale('english'), null);
-      assert.notEqual(validateLocale('french'), null);
-      assert.notEqual(validateLocale('spanish'), null);
+      expect(validateLocale('english')).not.toBeNull();
+      expect(validateLocale('french')).not.toBeNull();
+      expect(validateLocale('spanish')).not.toBeNull();
     });
 
     it('rejects private use prefix without subtag', function () {
       const result = validateLocale('x');
-      assert.equal(typeof result, 'string');
+      expect(typeof result).toBe('string');
     });
   });
 });

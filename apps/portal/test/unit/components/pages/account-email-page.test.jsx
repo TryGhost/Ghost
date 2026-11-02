@@ -153,6 +153,7 @@ describe('Account Email Page', () => {
     fireEvent.click(getA('switch-input')[0]);
     expect(mockA).toHaveBeenCalledWith('updateNewsletterPreference', {
       enableCommentNotifications: true,
+      successMessage: 'Comment preferences updated.',
     });
     unmount();
 
@@ -164,6 +165,7 @@ describe('Account Email Page', () => {
     fireEvent.click(getB('switch-input')[0]);
     expect(mockB).toHaveBeenCalledWith('updateNewsletterPreference', {
       enableCommentNotifications: false,
+      successMessage: 'Comment preferences updated.',
     });
   });
 
@@ -313,6 +315,7 @@ describe('Account Email Page', () => {
     fireEvent.keyDown(commentsRow, { key: 'Enter' });
     expect(mockDoActionFn).toHaveBeenCalledWith('updateNewsletterPreference', {
       enableCommentNotifications: true,
+      successMessage: 'Comment preferences updated.',
     });
   });
 

@@ -2,8 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { getAccessModalTitle, getBulkConfirmCopy } from './post-bulk-modal-copy';
 
 /**
- * Wording for the three confirmation modals, ported from
- * `apps/ember-admin/app/components/posts-list/modals/*.hbs`.
+ * Wording for the three confirmation modals.
  *
  * A single post is named in quotes; several are counted. The count is the
  * *selection* count, so after Cmd+A it reads the server total rather than the
@@ -65,10 +64,10 @@ describe('getBulkConfirmCopy', () => {
   });
 
   /**
-   * Ember decides singular from `isSingle` — one id selected *and not
-   * inverted* — not from the count. Cmd+A on a one-post view is an inverted
-   * selection of one, and Ember still says "these posts". Deriving it from
-   * the count alone would name a post the user may not have meant to.
+   * Singular comes from `isSingle` — one id selected *and not inverted* — not
+   * from the count. Cmd+A on a one-post view is an inverted selection of one,
+   * and still says "these posts". Deriving it from the count alone would name
+   * a post the user may not have meant to.
    */
   it('stays plural for an inverted selection of one', () => {
     const copy = getBulkConfirmCopy('delete', {
@@ -82,7 +81,7 @@ describe('getBulkConfirmCopy', () => {
     expect(copy.body).toBe('You’re about to delete 1 posts. This is permanent! We warned you, k?');
   });
 
-  // Ember's task button swaps to a present-participle while the request runs.
+  // The button swaps to a present participle while the request runs.
   it('offers a running label for each action', () => {
     expect(getBulkConfirmCopy('delete', { count: 1, resource: 'posts' }).runningLabel).toBe(
       'Deleting',
@@ -103,7 +102,7 @@ describe('getAccessModalTitle', () => {
     );
   });
 
-  // Ember appends the count only when the selection is not single.
+  // The count is appended only when the selection is not single.
   it('counts the posts when several are selected', () => {
     expect(getAccessModalTitle({ count: 7, resource: 'posts', isSingle: false })).toBe(
       'Change post access for 7 posts',

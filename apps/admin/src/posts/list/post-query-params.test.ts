@@ -9,9 +9,9 @@ import {
   getStatusesForType,
 } from './post-query-params';
 
-// Ported from apps/ember-admin/app/routes/posts.js. These strings go straight
-// into API filters, and the same builder feeds the inverted "select all" filter
-// that bulk delete runs against, so the exact output matters.
+// These strings go straight into API filters, and the same builder feeds the
+// inverted "select all" filter that bulk delete runs against, so the exact
+// output matters.
 
 describe('getStatusesForType', () => {
   it('returns every status when no type is set', () => {
@@ -58,16 +58,13 @@ describe('buildAllFilter', () => {
     );
   });
 
-  // Ember's isBlank counts whitespace-only strings, so `?tag=%20%20` has to
-  // produce no clause here too or the strings stop matching.
-  it('treats a whitespace-only value as blank, like Ember', () => {
+  it('treats a whitespace-only value as blank', () => {
     expect(buildAllFilter({ tag: '   ', author: ' ' })).toBe(
       'status:[draft,scheduled,published,sent]',
     );
   });
 
-  // Key order is load-bearing only in that it must stay stable; this locks
-  // the order Ember produced.
+  // Key order is load-bearing only in that it must stay stable.
   it('orders clauses tag, visibility, status, featured, authors', () => {
     expect(
       buildAllFilter({ tag: 'news', visibility: 'paid', type: 'featured', author: 'jo' }),
@@ -84,7 +81,7 @@ describe('buildAllFilter', () => {
   });
 
   it('passes the paid+tiers visibility value through untouched', () => {
-    // Ember treats this as an opaque option value, not as structure.
+    // An opaque option value, not structure.
     expect(buildAllFilter({ visibility: '[paid,tiers]' })).toBe(
       'visibility:[paid,tiers]+status:[draft,scheduled,published,sent]',
     );
@@ -190,7 +187,7 @@ describe('getBucketOrder', () => {
 });
 
 describe('getBucketSearchParams', () => {
-  it('requests 30 per page, matching Ember', () => {
+  it('requests 30 per page', () => {
     expect(getBucketSearchParams('draft', {})).toMatchObject({ limit: '30' });
   });
 

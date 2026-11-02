@@ -27,8 +27,7 @@ export function useHashLinkNavigationGuard(when: boolean, claim: () => boolean) 
       if (!whenRef.current || event.defaultPrevented) {
         return;
       }
-      // Preserve new-tab/new-window behavior for modified clicks,
-      // matching the Ember handler.
+      // Preserve new-tab/new-window behavior for modified clicks.
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
         return;
       }

@@ -1,7 +1,7 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const { generateGiftPreviewImage } = require('./image');
-const { t } = require('../../services/i18n');
+const { t } = require('../../../shared/i18n');
 
 function getCadenceLabel(cadence, duration) {
   if (cadence === 'year') {

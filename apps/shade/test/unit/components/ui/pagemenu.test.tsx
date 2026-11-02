@@ -1,6 +1,5 @@
-import assert from 'assert/strict';
 import { useState } from 'react';
-import { beforeAll, describe, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { PageMenu, PageMenuItem } from '../../../../src/components/ui/pagemenu';
 import { render } from '../../utils/test-utils';
@@ -17,10 +16,9 @@ describe('PageMenu Component', () => {
       </PageMenu>,
     );
 
-    assert.equal(isActive('First'), false);
-    assert.equal(isActive('Second'), true);
-    assert.equal(
-      screen.getByRole('button', { name: 'Second' }).getAttribute('aria-current'),
+    expect(isActive('First')).toBe(false);
+    expect(isActive('Second')).toBe(true);
+    expect(screen.getByRole('button', { name: 'Second' }).getAttribute('aria-current')).toBe(
       'page',
     );
   });
@@ -37,9 +35,9 @@ describe('PageMenu Component', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Second' }));
 
-    assert.deepEqual(handleValueChange.mock.calls, [['second']]);
-    assert.equal(isActive('First'), true);
-    assert.equal(isActive('Second'), false);
+    expect(handleValueChange.mock.calls).toStrictEqual([['second']]);
+    expect(isActive('First')).toBe(true);
+    expect(isActive('Second')).toBe(false);
   });
 
   it('follows the parent when controlled', () => {
@@ -57,8 +55,8 @@ describe('PageMenu Component', () => {
     render(<TestMenu />);
     fireEvent.click(screen.getByRole('button', { name: 'Second' }));
 
-    assert.equal(isActive('First'), false);
-    assert.equal(isActive('Second'), true);
+    expect(isActive('First')).toBe(false);
+    expect(isActive('Second')).toBe(true);
   });
 
   it('tracks its own selection from defaultValue when uncontrolled', () => {
@@ -71,13 +69,13 @@ describe('PageMenu Component', () => {
       </PageMenu>,
     );
 
-    assert.equal(isActive('First'), true);
+    expect(isActive('First')).toBe(true);
 
     fireEvent.click(screen.getByRole('button', { name: 'Second' }));
 
-    assert.deepEqual(handleValueChange.mock.calls, [['second']]);
-    assert.equal(isActive('First'), false);
-    assert.equal(isActive('Second'), true);
+    expect(handleValueChange.mock.calls).toStrictEqual([['second']]);
+    expect(isActive('First')).toBe(false);
+    expect(isActive('Second')).toBe(true);
   });
 
   it('does not report a change when the active item is clicked again', () => {
@@ -91,7 +89,7 @@ describe('PageMenu Component', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'First' }));
 
-    assert.equal(handleValueChange.mock.calls.length, 0);
+    expect(handleValueChange.mock.calls.length).toBe(0);
   });
 
   it('runs the item onClick and lets it cancel the selection', () => {
@@ -109,9 +107,9 @@ describe('PageMenu Component', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Second' }));
 
-    assert.equal(handleClick.mock.calls.length, 1);
-    assert.equal(handleValueChange.mock.calls.length, 0);
-    assert.equal(isActive('First'), true);
+    expect(handleClick.mock.calls.length).toBe(1);
+    expect(handleValueChange.mock.calls.length).toBe(0);
+    expect(isActive('First')).toBe(true);
   });
 
   describe('when items overflow', () => {
@@ -127,7 +125,7 @@ describe('PageMenu Component', () => {
     // all of its items into the overflow dropdown.
     const getOverflowTrigger = async () => {
       await waitFor(() =>
-        assert.equal(screen.queryAllByRole('button', { hidden: false }).length, 1),
+        expect(screen.queryAllByRole('button', { hidden: false }).length).toBe(1),
       );
       return screen.getByRole('button');
     };
@@ -146,12 +144,12 @@ describe('PageMenu Component', () => {
       );
 
       const trigger = await getOverflowTrigger();
-      assert.equal(trigger.textContent, 'Second');
-      assert.match(trigger.className, /bg-accent/);
+      expect(trigger.textContent).toBe('Second');
+      expect(trigger.className).toMatch(/bg-accent/);
 
       await openOverflow();
-      assert.match(screen.getByRole('menuitem', { name: 'Second' }).className, /bg-accent/);
-      assert.doesNotMatch(screen.getByRole('menuitem', { name: 'First' }).className, /bg-accent/);
+      expect(screen.getByRole('menuitem', { name: 'Second' }).className).toMatch(/bg-accent/);
+      expect(screen.getByRole('menuitem', { name: 'First' }).className).not.toMatch(/bg-accent/);
     });
 
     it('selects a hidden item when uncontrolled', async () => {
@@ -167,8 +165,8 @@ describe('PageMenu Component', () => {
       await openOverflow();
       fireEvent.click(screen.getByRole('menuitem', { name: 'Second' }));
 
-      assert.deepEqual(handleValueChange.mock.calls, [['second']]);
-      assert.equal((await getOverflowTrigger()).textContent, 'Second');
+      expect(handleValueChange.mock.calls).toStrictEqual([['second']]);
+      expect((await getOverflowTrigger()).textContent).toBe('Second');
     });
 
     it('reports a hidden item but keeps a controlled value', async () => {
@@ -184,8 +182,8 @@ describe('PageMenu Component', () => {
       await openOverflow();
       fireEvent.click(screen.getByRole('menuitem', { name: 'Second' }));
 
-      assert.deepEqual(handleValueChange.mock.calls, [['second']]);
-      assert.equal((await getOverflowTrigger()).textContent, 'First');
+      expect(handleValueChange.mock.calls).toStrictEqual([['second']]);
+      expect((await getOverflowTrigger()).textContent).toBe('First');
     });
 
     it('passes the click event to a hidden item and lets it cancel the selection', async () => {
@@ -204,8 +202,8 @@ describe('PageMenu Component', () => {
       await openOverflow();
       fireEvent.click(screen.getByRole('menuitem', { name: 'Second' }));
 
-      assert.equal(handleClick.mock.calls.length, 1);
-      assert.equal(handleValueChange.mock.calls.length, 0);
+      expect(handleClick.mock.calls.length).toBe(1);
+      expect(handleValueChange.mock.calls.length).toBe(0);
     });
 
     it('does not select a disabled hidden item', async () => {
@@ -223,12 +221,12 @@ describe('PageMenu Component', () => {
 
       await openOverflow();
       const item = screen.getByRole('menuitem', { name: 'Second' });
-      assert.equal(item.getAttribute('aria-disabled'), 'true');
+      expect(item.getAttribute('aria-disabled')).toBe('true');
 
       fireEvent.click(item);
 
-      assert.equal(handleClick.mock.calls.length, 0);
-      assert.equal(handleValueChange.mock.calls.length, 0);
+      expect(handleClick.mock.calls.length).toBe(0);
+      expect(handleValueChange.mock.calls.length).toBe(0);
     });
   });
 });

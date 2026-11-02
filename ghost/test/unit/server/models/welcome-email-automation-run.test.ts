@@ -13,16 +13,16 @@ describe('Unit: models/welcome-email-automation-run', function () {
   });
 
   describe('defaults', function () {
-    it('sets stepAttempts to 0', function () {
+    it('sets step_attempts to 0', function () {
       const model = new WelcomeEmailAutomationRun();
       const defaults = model.defaults();
-      assert.equal(defaults.stepAttempts, 0);
+      assert.equal(defaults.step_attempts, 0);
     });
 
-    it('returns only stepAttempts as a default', function () {
+    it('returns only step_attempts as a default', function () {
       const model = new WelcomeEmailAutomationRun();
       const defaults = model.defaults();
-      assert.deepEqual(Object.keys(defaults), ['stepAttempts']);
+      assert.deepEqual(Object.keys(defaults), ['step_attempts']);
     });
   });
 

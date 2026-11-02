@@ -586,7 +586,7 @@ describe('Posts API', function () {
     assert.equal(model.get('newsletter_id'), null);
   });
 
-  it(`Can't change the newsletter of a post from the post body`, async function () {
+  it(`Can't change the newsletter of a post from the post body using a newsletter object`, async function () {
     const post = {
       newsletter: {
         id: testUtils.DataGenerator.Content.newsletters[0].id,

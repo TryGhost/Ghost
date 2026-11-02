@@ -11,9 +11,8 @@ import {
 } from './post-row-copy';
 import type { PostListItem } from './hooks/use-posts-list';
 
-// Every string a row renders, as pure functions. Ported from
-// apps/ember-admin/app/components/posts-list/list-item-analytics.hbs and its
-// helpers. Parity lives here, and it is the part hand-testing is worst at.
+// Every string a row renders, as pure functions: the part hand-testing is
+// worst at.
 
 const post = (overrides: Partial<PostListItem> = {}): PostListItem => ({
   id: 'p1',
@@ -57,8 +56,8 @@ describe('getPostAuthorNames', () => {
 });
 
 describe('getPostDateField', () => {
-  // Drafts and scheduled posts have no meaningful published_at, so Ember
-  // shows when they were last touched instead.
+  // Drafts and scheduled posts have no meaningful published_at, so they
+  // show when they were last touched instead.
   it.each([
     ['draft', 'updated_at'],
     ['scheduled', 'updated_at'],
@@ -126,7 +125,7 @@ describe('getPostMetaParts', () => {
 });
 
 describe('getPostDateTooltip', () => {
-  // Ember prefixes the title attribute so the date has context.
+  // The title attribute is prefixed so the date has context.
   it('says "Updated" for a draft', () => {
     expect(
       getPostDateTooltip(
@@ -223,7 +222,7 @@ describe('getPostStatusDetail', () => {
     expect(getPostStatusDetail(post({ status: 'draft' }), { timezone })).toBeNull();
   });
 
-  // Revealed on hover in Ember.
+  // Revealed on hover.
   it('names the recipient count for a post that was emailed', () => {
     expect(
       getPostStatusDetail(

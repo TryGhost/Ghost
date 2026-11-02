@@ -1,5 +1,6 @@
 import * as security from '@tryghost/security';
 import tpl from '@tryghost/tpl';
+import type { GhostLogger } from '@tryghost/logging';
 import { accept, type AcceptanceModels, type Invitation } from './accept';
 
 type Invite = {
@@ -33,7 +34,7 @@ type Dependencies = {
     urlJoin(...parts: string[]): string;
   };
   models: AcceptanceModels;
-  logging: { warn(message: string): void };
+  logging: Pick<GhostLogger, 'warn'>;
 };
 
 type AddInviteRequest = {

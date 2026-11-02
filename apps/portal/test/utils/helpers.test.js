@@ -254,7 +254,7 @@ describe('Helpers - ', () => {
       const currency2 = 'usd';
       expect(isSameCurrency(currency1, currency2)).toBe(true);
     });
-    test('can match currencies with case mismatch', () => {
+    test('does not match different currencies', () => {
       const currency1 = 'eur';
       const currency2 = 'usd';
       expect(isSameCurrency(currency1, currency2)).toBe(false);

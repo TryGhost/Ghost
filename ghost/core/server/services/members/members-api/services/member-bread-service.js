@@ -757,7 +757,7 @@ module.exports = class MemberBREADService {
     await this.memberRepository.saveCommenting(memberId, updated, 'commenting_disabled', context);
 
     if (hideComments) {
-      await this.commentsService.api.bulkUpdateStatus(
+      await this.commentsService.service.api.bulkUpdateStatus(
         `member_id:'${memberId}'+status:published`,
         'hidden',
       );

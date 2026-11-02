@@ -1,10 +1,15 @@
-const logging = require('@tryghost/logging');
-
 module.exports = class MentionDiscoveryService {
   #externalRequest;
+  #logging;
 
-  constructor({ externalRequest }) {
+  /**
+   * @param {object} deps
+   * @param {import('got')} deps.externalRequest
+   * @param {import('@tryghost/logging').GhostLogger} deps.logging
+   */
+  constructor({ externalRequest, logging }) {
     this.#externalRequest = externalRequest;
+    this.#logging = logging;
   }
 
   /**
@@ -28,7 +33,7 @@ module.exports = class MentionDiscoveryService {
       });
       return await this.getEndpointFromResponse(response);
     } catch (error) {
-      logging.warn(`Error fetching ${url.href} to discover webmention endpoint`, error);
+      this.#logging.warn(`Error fetching ${url.href} to discover webmention endpoint`, error);
       return null;
     }
   }

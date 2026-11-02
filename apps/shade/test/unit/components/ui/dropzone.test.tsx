@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { describe, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { Dropzone } from '../../../../src/components/ui/dropzone';
 import { render } from '../../utils/test-utils';
@@ -21,8 +20,8 @@ describe('Dropzone Component', () => {
 
     const trigger = screen.getByRole('button', { name: /select or drop a csv file/i });
 
-    assert.ok(trigger, 'Drop target should be rendered as a keyboard-focusable button');
-    assert.equal(trigger.getAttribute('tabindex'), '0', 'Drop target should be tabbable');
+    expect(trigger, 'Drop target should be rendered as a keyboard-focusable button').toBeTruthy();
+    expect(trigger.getAttribute('tabindex'), 'Drop target should be tabbable').toBe('0');
   });
 
   it('opens the file dialog when activated with the keyboard', async () => {
@@ -39,10 +38,8 @@ describe('Dropzone Component', () => {
       fireEvent.keyDown(dropTarget, { key: 'Enter', code: 'Enter', keyCode: 13, charCode: 13 });
 
       await waitFor(() => {
-        assert.equal(
-          clickSpy.mock.calls.length,
+        expect(clickSpy.mock.calls.length, 'Keyboard activation should open the file dialog').toBe(
           1,
-          'Keyboard activation should open the file dialog',
         );
       });
     } finally {
@@ -63,12 +60,12 @@ describe('Dropzone Component', () => {
 
     const input = screen.getByLabelText('Upload redirects file');
 
-    assert.ok(
+    expect(
       input instanceof HTMLInputElement,
       'Accessible upload label should resolve to the file input',
-    );
-    assert.equal(input.id, 'upload-redirects');
-    assert.equal(input.getAttribute('data-testid'), 'redirects-input');
+    ).toBeTruthy();
+    expect(input.id).toBe('upload-redirects');
+    expect(input.getAttribute('data-testid')).toBe('redirects-input');
   });
 
   it('uses the secondary button recipe for compact filled upload actions', () => {
@@ -76,8 +73,8 @@ describe('Dropzone Component', () => {
 
     const dropTarget = screen.getByRole('button', { name: 'Upload file' });
 
-    assert.match(dropTarget.className, /bg-secondary/);
-    assert.match(dropTarget.className, /h-7/);
+    expect(dropTarget.className).toMatch(/bg-secondary/);
+    expect(dropTarget.className).toMatch(/h-7/);
   });
 
   it('calls onDropAccepted for accepted files', async () => {
@@ -106,7 +103,7 @@ describe('Dropzone Component', () => {
     });
 
     await waitFor(() => {
-      assert.equal(onDropAccepted.mock.calls.length, 1, 'Accepted callback should be called once');
+      expect(onDropAccepted.mock.calls.length, 'Accepted callback should be called once').toBe(1);
     });
   });
 
@@ -136,7 +133,7 @@ describe('Dropzone Component', () => {
     });
 
     await waitFor(() => {
-      assert.equal(onDropRejected.mock.calls.length, 1, 'Rejected callback should be called once');
+      expect(onDropRejected.mock.calls.length, 'Rejected callback should be called once').toBe(1);
     });
   });
 
@@ -166,11 +163,10 @@ describe('Dropzone Component', () => {
     });
 
     await waitFor(() => {
-      assert.equal(
+      expect(
         onDropAccepted.mock.calls.length,
-        0,
         'Accepted callback should not run while disabled',
-      );
+      ).toBe(0);
     });
   });
 
@@ -184,13 +180,11 @@ describe('Dropzone Component', () => {
     const dropTarget = screen.getByRole('button', { name: /upload csv/i });
     const classes = dropTarget.className.split(/\s+/);
 
-    assert.ok(
-      classes.includes('pointer-events-none'),
-      'Disabled dropzone should apply pointer-events-none directly',
+    expect(classes, 'Disabled dropzone should apply pointer-events-none directly').toContain(
+      'pointer-events-none',
     );
-    assert.ok(
-      !classes.includes('hover:border-gray-400'),
-      'Disabled dropzone should not include hover border classes',
+    expect(classes, 'Disabled dropzone should not include hover border classes').not.toContain(
+      'hover:border-gray-400',
     );
   });
 
@@ -203,9 +197,9 @@ describe('Dropzone Component', () => {
 
     const dropTarget = screen.getByRole('button', { name: /upload csv/i });
 
-    assert.ok(
-      !dropTarget.className.includes('[&>*:not(input)]:pointer-events-none'),
+    expect(
+      dropTarget.className,
       'Dropzone should not force pointer-events-none on its child content',
-    );
+    ).not.toContain('[&>*:not(input)]:pointer-events-none');
   });
 });

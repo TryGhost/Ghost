@@ -319,6 +319,7 @@ describe('Automation run history API', function () {
     ['failed', 'exited_early', true],
     ['automation disabled', 'exited_early', false],
     ['member changed status', 'exited_early', false],
+    ['member changed tier', 'exited_early', false],
     ['member unsubscribed', 'exited_early', false],
   ])(
     'classifies %s history and preserves raw step states',

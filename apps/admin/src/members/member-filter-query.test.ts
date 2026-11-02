@@ -125,7 +125,7 @@ describe('member-filter-query', () => {
     ).toEqual(['name']);
   });
 
-  it('parses unwrapped Ember compounds at the root', () => {
+  it('parses unwrapped compounds at the root', () => {
     expect(
       stripIds(parseMemberFilter('subscribed:true+email_disabled:0', 'UTC', memberFields)),
     ).toEqual([{ field: 'subscribed', operator: 'is', values: ['subscribed'] }]);
@@ -141,7 +141,7 @@ describe('member-filter-query', () => {
     ).toEqual([{ field: 'newsletter_feedback', operator: '1', values: ['post_123'] }]);
   });
 
-  it('serializes canonical Ember member filters', () => {
+  it('serializes canonical member filters', () => {
     const predicates: FilterPredicate[] = [
       { id: '2', field: 'status', operator: 'is', values: ['paid'] },
       { id: '1', field: 'emails.post_id', operator: 'is', values: ['post_123'] },
@@ -177,7 +177,7 @@ describe('member-filter-query', () => {
     );
   });
 
-  it('parses legacy Ember member date URLs without ISO timezone markers', () => {
+  it('parses legacy member date URLs without ISO timezone markers', () => {
     const parsed = parseMemberFilter(
       "subscriptions.start_date:<='2022-02-01 23:59:59'",
       'UTC',
@@ -189,7 +189,7 @@ describe('member-filter-query', () => {
     ]);
   });
 
-  it('parses legacy Ember UTC date URLs relative to the site timezone', () => {
+  it('parses legacy UTC date URLs relative to the site timezone', () => {
     const parsed = parseMemberFilter(
       "subscriptions.start_date:<='2022-02-01 23:59:59'",
       'Europe/Stockholm',

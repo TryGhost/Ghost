@@ -99,8 +99,6 @@ const messages = {
   defaultEmailDesignSettingNotFound: 'Default automated email design setting not found.',
 };
 
-const DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE = DEFAULT_EMAIL_DESIGN_SETTING_SLUG;
-
 type AutomationRow = {
   id: string;
   slug: null | string;
@@ -250,12 +248,6 @@ export function createDatabaseAutomationsRepository({
           },
         };
       });
-    },
-
-    async getNumberOfAutomations() {
-      return await repository2.withConnection((connection) =>
-        repository2.getNumberOfAutomations(connection),
-      );
     },
 
     async exists(id) {
@@ -646,48 +638,39 @@ export function createDatabaseAutomationsRepository({
 
     async trackEmailClicked(
       { automationActionRevisionId, automationRunStepId, memberId, clickedAt },
-      { transacting } = {},
+      { transacting: trx },
     ) {
-      const trackClick = async (trx: Knex.Transaction) => {
-        await lockActionRevisions(trx, [automationActionRevisionId]);
+      await lockActionRevisions(trx, [automationActionRevisionId]);
 
-        const recipient = await trx('automated_email_recipients')
-          .select('id', 'clicked_at')
-          .where({
-            automation_action_revision_id: automationActionRevisionId,
-            automation_run_step_id: automationRunStepId,
-            member_id: memberId,
-            track_clicks: true,
-          })
-          .forUpdate()
-          .first();
+      const recipient = await trx('automated_email_recipients')
+        .select('id', 'clicked_at')
+        .where({
+          automation_action_revision_id: automationActionRevisionId,
+          automation_run_step_id: automationRunStepId,
+          member_id: memberId,
+          track_clicks: true,
+        })
+        .forUpdate()
+        .first();
 
-        if (!recipient || recipient.clicked_at !== null) {
-          return;
-        }
-
-        const updated = await trx('automated_email_recipients')
-          .where({ id: recipient.id })
-          .whereNull('clicked_at')
-          .update({ clicked_at: clickedAt });
-
-        if (updated === 0) {
-          return;
-        }
-
-        await trx('automation_action_revisions')
-          .where({ id: automationActionRevisionId })
-          .update({
-            email_clicked_count: trx.raw('COALESCE(email_clicked_count, 0) + 1'),
-          });
-      };
-
-      if (transacting) {
-        await trackClick(transacting);
+      if (!recipient || recipient.clicked_at !== null) {
         return;
       }
 
-      await knex.transaction(trackClick);
+      const updated = await trx('automated_email_recipients')
+        .where({ id: recipient.id })
+        .whereNull('clicked_at')
+        .update({ clicked_at: clickedAt });
+
+      if (updated === 0) {
+        return;
+      }
+
+      await trx('automation_action_revisions')
+        .where({ id: automationActionRevisionId })
+        .update({
+          email_clicked_count: trx.raw('COALESCE(email_clicked_count, 0) + 1'),
+        });
     },
   };
 }
@@ -816,6 +799,7 @@ function getRunHistoryStatus(steps: AutomationRunHistoryStep[]): AutomationRunHi
       case 'automation disabled':
       case 'failed':
       case 'member changed status':
+      case 'member changed tier':
       case 'member unsubscribed':
         if (status !== 'in_progress') {
           status = 'exited_early';
@@ -1592,7 +1576,7 @@ async function resolveEmailDesignSettingIds(
     !actions.some(
       (action) =>
         action.type === 'send_email' &&
-        action.data.email_design_setting_id === DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE,
+        action.data.email_design_setting_id === DEFAULT_EMAIL_DESIGN_SETTING_SLUG,
     )
   ) {
     return [...actions];
@@ -1603,7 +1587,7 @@ async function resolveEmailDesignSettingIds(
   return actions.map((action) => {
     if (
       action.type !== 'send_email' ||
-      action.data.email_design_setting_id !== DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE
+      action.data.email_design_setting_id !== DEFAULT_EMAIL_DESIGN_SETTING_SLUG
     ) {
       return action;
     }

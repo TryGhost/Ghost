@@ -12,7 +12,7 @@ export interface MemberGeolocation {
  *
  * (The members list has its own parse+format helper in `members-list-item.tsx`.
  * They diverge in both the fallback string — the list says "Unknown", the detail
- * screen matches Ember's "Unknown location" — and the control flow (the list also
+ * screen says "Unknown location" — and the control flow (the list also
  * derives an `isKnown` flag for muted styling), so they're kept separate for now.
  * A shared parser is a reasonable future cleanup.)
  */
@@ -31,7 +31,7 @@ export function parseMemberGeolocation(raw: string | null | undefined): MemberGe
 }
 
 /**
- * Human-readable member location, mirroring the Ember member-details template:
+ * Human-readable member location:
  * US members with a region show "Region, US"; everyone else shows their country;
  * anything missing falls back to "Unknown location".
  */
@@ -51,8 +51,8 @@ export function formatMemberLocation(rawGeolocation: string | null | undefined):
 
 /**
  * The signup referrer source for the "Signup info" block. Members created from the
- * admin carry the placeholder source "Created manually", which the Ember screen
- * hides — so we return null for it (and for any empty source).
+ * admin carry the placeholder source "Created manually", which is hidden — so we
+ * return null for it (and for any empty source).
  */
 export function getMemberReferrerSource(
   attribution: { referrer_source?: string | null } | null | undefined,

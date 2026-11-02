@@ -122,6 +122,7 @@ describe('KoenigPostEditor load', () => {
           observe();
         }}
         onSecondaryError={() => tracker.baselineFailed(id)}
+        onSelectionWordCountChange={NOOP}
         onTkCountChange={NOOP}
         onWordCountChange={NOOP}
       />,

@@ -44,9 +44,7 @@ import {
   AlertCircle,
   Calendar as CalendarIcon,
   Check,
-  Funnel,
   FunnelPlus,
-  ListFilter,
   ListFilterPlus,
   Loader2,
   Plus,
@@ -2640,10 +2638,9 @@ const FilterAddButton = forwardRef<
   React.ButtonHTMLAttributes<HTMLButtonElement> & { label?: string; icon?: React.ReactNode }
 >(({ className, label, icon, ...props }, ref) => {
   const context = useFilterContext();
-  const { controlShape, isAdmin7 } = useShade();
+  const { controlShape } = useShade();
   const isInFilterBar = useFilterBarContext();
-  const isPillFilterBar = isInFilterBar && isAdmin7;
-  const iconOnly = isPillFilterBar && context.hasFilters;
+  const iconOnly = isInFilterBar && context.hasFilters;
   const buttonLabel = label ?? context.addButtonText ?? context.i18n.addFilter;
 
   return (
@@ -2657,14 +2654,13 @@ const FilterAddButton = forwardRef<
           cursorPointer: context.cursorPointer,
           radius: context.controlRadius,
         }),
-        isPillFilterBar && 'h-7 text-sm! [&_svg]:size-3',
-        isAdmin7 && !isInFilterBar && 'font-medium',
-        isAdmin7 &&
-          (iconOnly
-            ? 'aspect-square border-0 !px-0 shadow-none'
-            : context.addButtonVariant === 'ghost' || context.addButtonVariant === 'secondary'
-              ? 'border-0 px-3 shadow-none active:shadow-none'
-              : 'border-0 px-3 shadow-control-outline active:shadow-control-outline-pressed'),
+        isInFilterBar && 'h-7 text-sm! [&_svg]:size-3',
+        !isInFilterBar && 'font-medium',
+        iconOnly
+          ? 'aspect-square border-0 !px-0 shadow-none'
+          : context.addButtonVariant === 'ghost' || context.addButtonVariant === 'secondary'
+            ? 'border-0 px-3 shadow-none active:shadow-none'
+            : 'border-0 px-3 shadow-control-outline active:shadow-control-outline-pressed',
         context.addButtonClassName,
         className,
       )}
@@ -2682,22 +2678,15 @@ const FilterAddButton = forwardRef<
 FilterAddButton.displayName = 'FilterAddButton';
 
 type FiltersTriggerProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  /** Collapse the previous header label below lg; the accessible name remains. */
-  collapseLabel?: boolean;
-  /** Temporary appearance choices for existing screens while Admin 7 is disabled. */
+  /** Icon once filters are applied: `funnel-plus` keeps the funnel; others use the list icon. */
   fallbackStyle?: 'list' | 'funnel' | 'funnel-plus';
-  fallbackClassName?: string;
 };
 
 const FiltersTrigger = forwardRef<HTMLButtonElement, FiltersTriggerProps>(
-  (
-    { collapseLabel = false, fallbackStyle = 'list', fallbackClassName, className, ...props },
-    ref,
-  ) => {
+  ({ fallbackStyle = 'list', className, ...props }, ref) => {
     const { hasFilters, keyboardShortcut } = useFilterContext();
-    const { isAdmin7 } = useShade();
 
-    if (isAdmin7 && !hasFilters) {
+    if (!hasFilters) {
       return (
         <PageHeader.FilterTrigger
           ref={ref}
@@ -2708,32 +2697,15 @@ const FiltersTrigger = forwardRef<HTMLButtonElement, FiltersTriggerProps>(
       );
     }
 
-    const iconStyle = isAdmin7 && fallbackStyle === 'funnel' ? 'list' : fallbackStyle;
-    const Icon =
-      iconStyle === 'list'
-        ? hasFilters
-          ? ListFilterPlus
-          : ListFilter
-        : hasFilters || fallbackStyle === 'funnel-plus'
-          ? FunnelPlus
-          : Funnel;
+    const iconStyle = fallbackStyle === 'funnel-plus' ? 'funnel-plus' : 'list';
+    const Icon = iconStyle === 'list' ? ListFilterPlus : FunnelPlus;
 
     return (
       <FilterAddButton
         ref={ref}
-        className={cn(
-          !isAdmin7 &&
-            cn(
-              collapseLabel &&
-                !hasFilters &&
-                'min-w-[34px] gap-0 !px-3 text-[0px] data-[control-shape=pill]:aspect-square data-[control-shape=pill]:h-(--control-height) data-[control-shape=pill]:!px-0 data-[control-shape=pill]:text-[0px]! lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base lg:data-[control-shape=pill]:aspect-auto lg:data-[control-shape=pill]:!px-3 lg:data-[control-shape=pill]:text-base! data-[control-shape=pill]:[&_svg]:size-4',
-              hasFilters && (fallbackStyle === 'list' ? 'gap-0 !px-3 text-[0px]' : 'border-none'),
-              fallbackClassName,
-            ),
-          className,
-        )}
+        className={className}
         icon={<Icon className={iconStyle === 'list' ? 'size-4' : undefined} />}
-        label={hasFilters ? 'Add filter' : 'Filter'}
+        label="Add filter"
         {...props}
       />
     );
@@ -2802,7 +2774,7 @@ export function Filters<T = unknown>({
   keyboardShortcut,
   onActiveFieldChange,
 }: FiltersProps<T>) {
-  const { controlShape, isAdmin7 } = useShade();
+  const { controlShape } = useShade();
   const [addFilterOpen, setAddFilterOpen] = useState(false);
   const [selectedFieldKeyForOptions, setSelectedFieldKeyForOptions] = useState<string | null>(null);
   const [tempSelectedValues, setTempSelectedValues] = useState<unknown[]>([]);
@@ -2816,7 +2788,7 @@ export function Filters<T = unknown>({
   const [fieldSearch, setFieldSearch] = useState('');
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const filterRadius = radius ?? 'md';
-  const controlRadius = radius ?? (isAdmin7 ? 'full' : 'md');
+  const controlRadius = radius ?? 'full';
 
   // Notify parent when active field changes
   useEffect(() => {
@@ -3130,7 +3102,7 @@ export function Filters<T = unknown>({
               key={filter.id}
               className={cn(
                 filterItemVariants({ variant }),
-                isAdmin7 && 'text-sm [--control-height:calc(var(--spacing)*7)] [&_*]:text-sm!',
+                'text-sm [--control-height:calc(var(--spacing)*7)] [&_*]:text-sm!',
               )}
               data-slot="filter-item"
             >
@@ -3313,9 +3285,9 @@ export function Filters<T = unknown>({
                   cursorPointer: cursorPointer,
                   radius: controlRadius,
                 }),
-                isAdmin7 && 'h-7 text-sm! [&_svg]:size-3',
+                'h-7 text-sm! [&_svg]:size-3',
                 'border-0 bg-transparent hover:bg-transparent hover:text-foreground',
-                isAdmin7 && 'px-3 shadow-control-outline active:shadow-control-outline-pressed',
+                'px-3 shadow-control-outline active:shadow-control-outline-pressed',
                 'sm:absolute sm:top-0 sm:right-0',
                 clearButtonClassName,
               )}

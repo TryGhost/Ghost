@@ -1,4 +1,3 @@
-import * as assert from 'assert/strict';
 import trackEvent from '@/settings/utils/analytics';
 
 describe('trackEvent', function () {
@@ -9,8 +8,8 @@ describe('trackEvent', function () {
     };
 
     window.plausible = (eventName, { props }) => {
-      assert.equal(eventName, 'Recommendation Added');
-      assert.deepEqual(props, {
+      expect(eventName).toBe('Recommendation Added');
+      expect(props).toStrictEqual({
         oneClickSubscribe: true,
       });
     };

@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { describe, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 import { Button } from '../../../../src/components/ui/button';
 import { render } from '../../utils/test-utils';
@@ -9,23 +8,23 @@ describe('Button Component', () => {
     render(<Button>Click me</Button>);
     const button = screen.getByRole('button', { name: /click me/i });
 
-    assert.ok(button, 'Button should be rendered');
-    assert.ok(button.className.includes('bg-primary'), 'Should have default variant class');
+    expect(button, 'Button should be rendered').toBeTruthy();
+    expect(button.className, 'Should have default variant class').toContain('bg-primary');
   });
 
   it('applies different variants correctly', () => {
     render(<Button variant="destructive">Destructive</Button>);
     const button = screen.getByRole('button', { name: /destructive/i });
 
-    assert.ok(button.className.includes('bg-destructive'), 'Should have destructive variant class');
+    expect(button.className, 'Should have destructive variant class').toContain('bg-destructive');
   });
 
   it('applies different sizes correctly', () => {
     render(<Button size="sm">Small</Button>);
     const button = screen.getByRole('button', { name: /small/i });
 
-    assert.ok(button.className.includes('h-7'), 'Should have small size class');
-    assert.ok(button.className.includes('text-sm!'), 'Should override the base control typography');
+    expect(button.className, 'Should have small size class').toContain('h-7');
+    expect(button.className, 'Should override the base control typography').toContain('text-sm!');
   });
 
   it('handles click events', () => {
@@ -35,15 +34,15 @@ describe('Button Component', () => {
     const button = screen.getByRole('button', { name: /click me/i });
     fireEvent.click(button);
 
-    assert.equal(handleClick.mock.calls.length, 1, 'Click handler should be called once');
+    expect(handleClick.mock.calls.length, 'Click handler should be called once').toBe(1);
   });
 
   it('renders disabled state correctly', () => {
     render(<Button disabled>Disabled</Button>);
     const button = screen.getByRole('button', { name: /disabled/i });
 
-    assert.ok(button.hasAttribute('disabled'), 'Button should be disabled');
-    assert.ok(button.className.includes('disabled:opacity-100'), 'Disabled primary stays opaque');
+    expect(button.hasAttribute('disabled'), 'Button should be disabled').toBeTruthy();
+    expect(button.className, 'Disabled primary stays opaque').toContain('disabled:opacity-100');
   });
 
   it('renders ChevronDown icon when variant is dropdown', () => {
@@ -52,7 +51,7 @@ describe('Button Component', () => {
 
     // Check if SVG is present (ChevronDown icon)
     const svg = button.querySelector('svg');
-    assert.ok(svg, 'Dropdown button should contain an SVG icon');
+    expect(svg, 'Dropdown button should contain an SVG icon').toBeTruthy();
   });
 
   it('renders as child component when asChild is true', () => {
@@ -63,8 +62,8 @@ describe('Button Component', () => {
     );
 
     const link = screen.getByRole('link', { name: /link button/i });
-    assert.ok(link, 'Should render as an anchor tag');
-    assert.equal(link.tagName.toLowerCase(), 'a', 'Should be an A element');
-    assert.equal(link.getAttribute('href'), 'https://example.com', 'Should have correct href');
+    expect(link, 'Should render as an anchor tag').toBeTruthy();
+    expect(link.tagName.toLowerCase(), 'Should be an A element').toBe('a');
+    expect(link.getAttribute('href'), 'Should have correct href').toBe('https://example.com');
   });
 });

@@ -42,10 +42,9 @@ describe('computeCompExpiryAt', () => {
 
   it('lands the custom expiry on the picked calendar day (regression: local-day parse)', () => {
     // Custom date is a native <input type="date"> value (`YYYY-MM-DD`, LOCAL
-    // calendar day). Ember's flow lands the resulting ISO on the picked day.
-    // Naive `new Date('2027-03-10')` would interpret as UTC midnight, and for
-    // admins west of UTC would then snap back to 2027-03-09 — this test pins
-    // that the picked day never drops.
+    // calendar day). Naive `new Date('2027-03-10')` would interpret as UTC
+    // midnight, and for admins west of UTC would then snap back to 2027-03-09 —
+    // this test pins that the picked day never drops.
     const iso = computeCompExpiryAt('custom', '2027-03-10');
     expect(iso).not.toBeNull();
     // Extract the ISO date part — it MUST be the picked day (never 03-09).

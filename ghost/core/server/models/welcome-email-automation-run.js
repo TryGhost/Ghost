@@ -5,7 +5,7 @@ const WelcomeEmailAutomationRun = ghostBookshelf.Model.extend({
 
   defaults() {
     return {
-      stepAttempts: 0,
+      step_attempts: 0,
     };
   },
 

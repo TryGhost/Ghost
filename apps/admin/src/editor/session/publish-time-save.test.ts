@@ -65,7 +65,7 @@ describe('publishedAtInFuture', () => {
     },
   );
 
-  it('refuses the current instant, as Ember’s isSameOrAfter does', () => {
+  it('refuses the current instant', () => {
     expect(publishedAtInFuture('draft', LOADED_AT, Date.parse(LOADED_AT))).toBe(true);
   });
 

@@ -283,7 +283,7 @@ module.exports = class MemberRepository {
    * @param {Knex.Transaction} [bookshelfOptions.transacting]
    * @returns {Promise<void>}
    */
-  async #triggerMemberSignupAutomation(member, memberStatus, bookshelfOptions) {
+  async #triggerMembershipStartedAutomation(member, memberStatus, bookshelfOptions) {
     const memberId = member.id;
     const memberEmail = member.get('email');
     const memberTierIds = await getMemberTierIds(member, memberStatus, bookshelfOptions);
@@ -320,7 +320,7 @@ module.exports = class MemberRepository {
    * @param {object} options
    * @returns {Promise<void>}
    */
-  async #triggerMemberSignupLegacyAutomation(memberId, memberStatus, options) {
+  async #triggerMembershipStartedLegacyAutomation(memberId, memberStatus, options) {
     if (!this._Automation || !this._WelcomeEmailAutomationRun) {
       return;
     }
@@ -369,10 +369,10 @@ module.exports = class MemberRepository {
    * @param {object} bookshelfOptions
    * @returns {Promise<void>}
    */
-  async triggerMemberSignupAutomation(member, memberStatus, bookshelfOptions) {
+  async triggerMembershipStartedAutomation(member, memberStatus, bookshelfOptions) {
     await Promise.all([
-      this.#triggerMemberSignupAutomation(member, memberStatus, bookshelfOptions),
-      this.#triggerMemberSignupLegacyAutomation(member.id, memberStatus, bookshelfOptions),
+      this.#triggerMembershipStartedAutomation(member, memberStatus, bookshelfOptions),
+      this.#triggerMembershipStartedLegacyAutomation(member.id, memberStatus, bookshelfOptions),
     ]);
   }
 
@@ -622,7 +622,7 @@ module.exports = class MemberRepository {
           { ...memberAddOptions, transacting },
         );
 
-        await this.triggerMemberSignupAutomation(newMember, 'free', {
+        await this.triggerMembershipStartedAutomation(newMember, 'free', {
           transacting,
         });
 
@@ -2121,7 +2121,7 @@ module.exports = class MemberRepository {
         updatedMember.get('status') === 'paid' &&
         updatedMember._previousAttributes.status !== 'gift'
       ) {
-        await this.triggerMemberSignupAutomation(memberModel, 'paid', options);
+        await this.triggerMembershipStartedAutomation(memberModel, 'paid', options);
       }
     }
 

@@ -10,14 +10,9 @@ import { routes } from '@src/routes';
 
 interface AppProps {
   framework: TopLevelFrameworkProps;
-  activityPubEnabled?: boolean;
 }
 
-const App: React.FC<AppProps> = ({ framework, activityPubEnabled }) => {
-  if (activityPubEnabled === false) {
-    return null;
-  }
-
+const App: React.FC<AppProps> = ({ framework }) => {
   return (
     <FrameworkProvider {...framework}>
       <RouterProvider prefix={'/'} routes={routes}>

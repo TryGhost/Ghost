@@ -10,7 +10,6 @@ const selectTriggerVariants = cva(
         secondary:
           'border-transparent bg-tab-active text-secondary-foreground shadow-none hover:bg-secondary',
       },
-      isAdmin7: { true: '', false: '' },
       shape: {
         rounded: 'rounded-control',
         pill: 'rounded-full',
@@ -18,18 +17,15 @@ const selectTriggerVariants = cva(
     },
     compoundVariants: [
       {
-        isAdmin7: true,
         variant: ['secondary', 'ghost'],
         className:
           'enabled:active:shadow-control-pressed enabled:aria-expanded:shadow-control-pressed',
       },
       {
-        isAdmin7: true,
         variant: 'ghost',
         className: 'enabled:active:bg-button-hover enabled:aria-expanded:bg-button-hover',
       },
       {
-        isAdmin7: true,
         variant: 'secondary',
         className: 'enabled:active:bg-secondary enabled:aria-expanded:bg-secondary',
       },
@@ -37,7 +33,6 @@ const selectTriggerVariants = cva(
     defaultVariants: {
       variant: 'default',
       shape: 'rounded',
-      isAdmin7: true,
     },
   },
 );

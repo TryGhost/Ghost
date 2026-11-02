@@ -247,7 +247,7 @@ body {
   --editor-display-tracking-scale: 0;
 }
 
-/* Shared Koenig wrappers must retain their layout without Ember styles. */
+/* Koenig's shared editor wrapper ships no layout of its own, so Admin sets it here. */
 .koenig-react-editor {
   max-width: 740px;
   margin: 0 auto;

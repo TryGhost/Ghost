@@ -39,10 +39,12 @@ describe('RouteError', () => {
     expect(reloadAdmin.mock.calls).toEqual([['/tags?type=internal']]);
   });
 
-  it('keeps the generic error page for other failures', async () => {
+  it('offers to reload the admin at a screen that crashed', async () => {
     renderFailedRoute(new Error('Route crashed'));
 
-    expect(await screen.findByText('Loading interrupted')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Reload' })).toBeNull();
+    expect(await screen.findByText(/Something went wrong on this screen/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
+
+    expect(reloadAdmin.mock.calls).toEqual([['/tags?type=internal']]);
   });
 });

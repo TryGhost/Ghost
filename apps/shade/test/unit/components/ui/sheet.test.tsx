@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 import {
   Sheet,
@@ -32,8 +31,8 @@ describe('Sheet Components', () => {
     );
 
     const trigger = screen.getByTestId('sheet-trigger');
-    assert.ok(trigger, 'Sheet trigger should be rendered');
-    assert.equal(trigger.textContent, 'Open Sheet', 'Trigger should have correct text');
+    expect(trigger, 'Sheet trigger should be rendered').toBeTruthy();
+    expect(trigger.textContent, 'Trigger should have correct text').toBe('Open Sheet');
   });
 
   it('applies custom className to SheetHeader correctly', () => {
@@ -50,8 +49,8 @@ describe('Sheet Components', () => {
     );
 
     const header = screen.getByTestId('sheet-header');
-    assert.ok(header.className.includes('custom-header-class'), 'Should have custom class');
-    assert.ok(header.className.includes('flex flex-col'), 'Should have default styling');
+    expect(header.className, 'Should have custom class').toContain('custom-header-class');
+    expect(header.className, 'Should have default styling').toContain('flex flex-col');
   });
 
   it('applies custom className to SheetFooter correctly', () => {
@@ -68,7 +67,7 @@ describe('Sheet Components', () => {
     );
 
     const footer = screen.getByTestId('sheet-footer');
-    assert.ok(footer.className.includes('custom-footer-class'), 'Should have custom class');
+    expect(footer.className, 'Should have custom class').toContain('custom-footer-class');
   });
 
   it('renders SheetTitle with correct styling', () => {
@@ -82,8 +81,8 @@ describe('Sheet Components', () => {
     );
 
     const title = screen.getByTestId('sheet-title');
-    assert.equal(title.textContent, 'Test Title', 'Should have correct text content');
-    assert.ok(title.className.includes('text-xl font-semibold'), 'Should have default styling');
+    expect(title.textContent, 'Should have correct text content').toBe('Test Title');
+    expect(title.className, 'Should have default styling').toContain('text-xl font-semibold');
   });
 
   it('renders SheetDescription with correct styling', () => {
@@ -97,10 +96,9 @@ describe('Sheet Components', () => {
     );
 
     const description = screen.getByTestId('sheet-description');
-    assert.equal(description.textContent, 'Test Description', 'Should have correct text content');
-    assert.ok(
-      description.className.includes('text-sm text-muted-foreground'),
-      'Should have default styling',
+    expect(description.textContent, 'Should have correct text content').toBe('Test Description');
+    expect(description.className, 'Should have default styling').toContain(
+      'text-sm text-muted-foreground',
     );
   });
 
@@ -121,10 +119,13 @@ describe('Sheet Components', () => {
     );
 
     // Verify that all components render
-    assert.ok(screen.getByTestId('sheet-content'), 'Sheet content should be rendered');
-    assert.ok(screen.getByTestId('sheet-header'), 'Sheet header should be rendered');
-    assert.ok(screen.getByTestId('sheet-title'), 'Sheet title should be rendered');
-    assert.ok(screen.getByTestId('sheet-description'), 'Sheet description should be rendered');
-    assert.ok(screen.getByTestId('sheet-footer'), 'Sheet footer should be rendered');
+    expect(screen.getByTestId('sheet-content'), 'Sheet content should be rendered').toBeTruthy();
+    expect(screen.getByTestId('sheet-header'), 'Sheet header should be rendered').toBeTruthy();
+    expect(screen.getByTestId('sheet-title'), 'Sheet title should be rendered').toBeTruthy();
+    expect(
+      screen.getByTestId('sheet-description'),
+      'Sheet description should be rendered',
+    ).toBeTruthy();
+    expect(screen.getByTestId('sheet-footer'), 'Sheet footer should be rendered').toBeTruthy();
   });
 });

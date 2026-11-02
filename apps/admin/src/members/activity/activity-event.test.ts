@@ -100,7 +100,7 @@ describe('full Activity event presentation', () => {
     },
   );
 
-  it('preserves Ember gift conversion for all currencies and formats duration and fractions', () => {
+  it('divides gift amounts by 100 for all currencies and formats duration and fractions', () => {
     const gift = event('gift_purchase_event', {
       amount: 123450,
       currency: 'jpy',

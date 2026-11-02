@@ -31,7 +31,7 @@ This lightweight image:
 This image is used automatically when running:
 
 ```bash
-pnpm dev:docker       # Starts Docker backend + React/shared/Portal watchers
+pnpm dev:docker       # Starts Docker backend + Admin/Portal watchers
 ```
 
 `pnpm dev` and its variants run Ghost on the host instead.

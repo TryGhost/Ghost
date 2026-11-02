@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useRef} from 'react';
 
-// TODO: this is a temporary fix, replacement for ember's id, need better solution
+// TODO: this is a temporary unique-id generator, need better solution
 function guidFor() {
     // create unique id
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {

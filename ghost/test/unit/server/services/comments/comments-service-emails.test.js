@@ -1,14 +1,10 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const emailService = require('../../../../../core/server/services/email-service');
-
-// The email helper destructures `t` from the i18n root at load time; the reply
-// notification subject calls it, so the root must be initialised first. The
-// init helper falls back to 'en' when the locale setting is not set.
-const i18n = require('../../../../../core/server/services/i18n');
-i18n.init();
-
+const i18nLib = require('@tryghost/i18n').default;
 const CommentsServiceEmails = require('../../../../../core/server/services/comments/comments-service-emails');
+const { createLoggingFake } = require('../../../../utils/logging-utils');
+
+const { t } = i18nLib('en', 'ghost');
 
 describe('Comments Service: CommentsServiceEmails', function () {
   afterEach(function () {
@@ -25,7 +21,7 @@ describe('Comments Service: CommentsServiceEmails', function () {
 
     const instance = new CommentsServiceEmails({
       config: {},
-      logging: {},
+      logging: createLoggingFake(),
       models: {},
       mailer: {},
       settingsCache: { get: sinon.stub() },
@@ -33,6 +29,9 @@ describe('Comments Service: CommentsServiceEmails', function () {
       urlService,
       urlUtils: {},
       labs: labsStub,
+      t,
+      createUnsubscribeUrl: sinon.stub(),
+      readTemplate: sinon.stub().resolves(''),
     });
 
     return { instance, urlService };
@@ -167,6 +166,9 @@ describe('Comments Service: CommentsServiceEmails', function () {
 
     const renderStub = sinon.stub().resolves({ html: 'h', text: 't' });
     const mailerSendStub = sinon.stub().resolves();
+    const createUnsubscribeUrl = sinon
+      .stub()
+      .returns('https://example.com/unsubscribe/?uuid=parent-uuid&comments=1');
 
     // Stub the URL service's getUrlForResource with a withArgs match:
     // the URL only resolves when a resource carrying the post's id
@@ -181,7 +183,7 @@ describe('Comments Service: CommentsServiceEmails', function () {
 
     const instance = new CommentsServiceEmails({
       config: {},
-      logging: { warn: sinon.stub() },
+      logging: createLoggingFake(),
       models: { Post, Member, User, Comment },
       mailer: { send: mailerSendStub },
       settingsCache: {
@@ -199,6 +201,9 @@ describe('Comments Service: CommentsServiceEmails', function () {
         urlJoin: (...parts) => parts.join(''),
       },
       labs: { isSet: sinon.stub().returns(false) },
+      t,
+      createUnsubscribeUrl,
+      readTemplate: sinon.stub().resolves(''),
     });
 
     instance.commentsServiceEmailRenderer.renderEmailTemplate = renderStub;
@@ -214,19 +219,9 @@ describe('Comments Service: CommentsServiceEmails', function () {
       getPostUrlSpy,
       renderStub,
       mailerSendStub,
+      createUnsubscribeUrl,
       urlService,
     };
-  }
-
-  // The reply notification builds its unsubscribe link through the Email
-  // service's renderer, which only exists once that service has initialised.
-  // Define it on the shared root for a test; sinon.restore removes it again.
-  function defineEmailRenderer() {
-    const createUnsubscribeUrl = sinon
-      .stub()
-      .returns('https://example.com/unsubscribe/?uuid=parent-uuid&comments=1');
-    sinon.define(emailService, 'renderer', { createUnsubscribeUrl });
-    return createUnsubscribeUrl;
   }
 
   // Characterisation tests for the three notification entry points. These
@@ -275,7 +270,6 @@ describe('Comments Service: CommentsServiceEmails', function () {
     });
 
     it('notifyParentCommentAuthor: threads the post URL for the reply into templateData', async function () {
-      defineEmailRenderer();
       const { instance, reply, renderStub, urlService } = buildHarness();
 
       await instance.notifyParentCommentAuthor(reply);
@@ -338,8 +332,7 @@ describe('Comments Service: CommentsServiceEmails', function () {
 
   describe('notifyParentCommentAuthor', function () {
     it('emails the parent comment author with the reply and an unsubscribe link', async function () {
-      const createUnsubscribeUrl = defineEmailRenderer();
-      const { instance, reply, renderStub, mailerSendStub } = buildHarness();
+      const { instance, reply, renderStub, mailerSendStub, createUnsubscribeUrl } = buildHarness();
 
       await instance.notifyParentCommentAuthor(reply);
 
@@ -363,7 +356,6 @@ describe('Comments Service: CommentsServiceEmails', function () {
     });
 
     it('puts the site title in the translated subject', async function () {
-      defineEmailRenderer();
       const { instance, reply, mailerSendStub } = buildHarness();
 
       await instance.notifyParentCommentAuthor(reply);
@@ -375,7 +367,6 @@ describe('Comments Service: CommentsServiceEmails', function () {
     });
 
     it('resolves with the notified parent member id', async function () {
-      defineEmailRenderer();
       const { instance, reply } = buildHarness();
 
       const notified = await instance.notifyParentCommentAuthor(reply);
@@ -383,21 +374,7 @@ describe('Comments Service: CommentsServiceEmails', function () {
       assert.equal(notified, 'parent-member-id');
     });
 
-    it('reads the unsubscribe link builder from the email service when sending, not at construction', async function () {
-      const { instance, reply, renderStub } = buildHarness();
-      defineEmailRenderer();
-
-      await instance.notifyParentCommentAuthor(reply);
-
-      const [, templateData] = renderStub.firstCall.args;
-      assert.equal(
-        templateData.profileUrl,
-        'https://example.com/unsubscribe/?uuid=parent-uuid&comments=1',
-      );
-    });
-
     it('looks up the parent comment by parent_id by default', async function () {
-      defineEmailRenderer();
       const { instance, reply, Comment } = buildHarness();
 
       await instance.notifyParentCommentAuthor(reply);
@@ -406,7 +383,6 @@ describe('Comments Service: CommentsServiceEmails', function () {
     });
 
     it('looks up the in_reply_to comment for an in_reply_to notification', async function () {
-      defineEmailRenderer();
       const { instance, reply, Comment } = buildHarness();
 
       await instance.notifyParentCommentAuthor(reply, { type: 'in_reply_to' });
@@ -415,7 +391,6 @@ describe('Comments Service: CommentsServiceEmails', function () {
     });
 
     it('uses a supplied parent comment without querying for it', async function () {
-      defineEmailRenderer();
       const { instance, reply, parentComment, Comment, mailerSendStub } = buildHarness();
 
       await instance.notifyParentCommentAuthor(reply, { parent: parentComment });
@@ -425,7 +400,6 @@ describe('Comments Service: CommentsServiceEmails', function () {
     });
 
     it('does not notify when the parent comment is not published', async function () {
-      defineEmailRenderer();
       const { instance, reply, mailerSendStub } = buildHarness({
         parentComment: { status: 'hidden' },
       });
@@ -437,7 +411,6 @@ describe('Comments Service: CommentsServiceEmails', function () {
     });
 
     it('does not notify a parent author who disabled comment notifications', async function () {
-      defineEmailRenderer();
       const { instance, reply, mailerSendStub } = buildHarness({
         parentMember: { enable_comment_notifications: false },
       });
@@ -449,7 +422,6 @@ describe('Comments Service: CommentsServiceEmails', function () {
     });
 
     it('does not notify a member replying to their own comment', async function () {
-      defineEmailRenderer();
       const { instance, reply, mailerSendStub } = buildHarness({
         parentMember: { id: 'member-id' },
       });
@@ -476,8 +448,6 @@ describe('Comments Service: CommentsServiceEmails', function () {
     });
 
     it('notifyParentCommentAuthor renders the reply date as a calendar day in the site timezone', async function () {
-      defineEmailRenderer();
-
       const auckland = buildHarness({ timezone: 'Pacific/Auckland' });
       await auckland.instance.notifyParentCommentAuthor(auckland.reply);
       assert.equal(auckland.renderStub.firstCall.args[1].replyDate, '2 Apr 2026');

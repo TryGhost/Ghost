@@ -50,7 +50,7 @@ from those same rows. The cards sum to the total entries count.
 - **In progress:** any pending step, provided every step has a known status.
 - **Completed:** all recorded steps finished.
 - **Exited early:** no pending steps, and at least one failed, automation-disabled,
-  member-status-changed, or member-unsubscribed step.
+  member-status-changed, member-tier-changed, or member-unsubscribed step.
 
 Runs with no recorded steps are excluded from both chart and cards. An unexpected
 step status fails the request, including when another step is pending. There is no

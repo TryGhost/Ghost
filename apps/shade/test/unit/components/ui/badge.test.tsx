@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 import { Badge } from '../../../../src/components/ui/badge';
 import { render } from '../../utils/test-utils';
@@ -9,56 +8,56 @@ describe('Badge Component', () => {
     render(<Badge>Default Badge</Badge>);
     const badge = screen.getByText('Default Badge');
 
-    assert.ok(badge, 'Badge should be rendered');
-    assert.ok(badge.className.includes('bg-primary'), 'Should have default variant class');
+    expect(badge, 'Badge should be rendered').toBeTruthy();
+    expect(badge.className, 'Should have default variant class').toContain('bg-primary');
   });
 
   it('applies different variants correctly', () => {
     render(<Badge variant="secondary">Secondary Badge</Badge>);
     const badge = screen.getByText('Secondary Badge');
 
-    assert.ok(badge.className.includes('bg-secondary'), 'Should have secondary variant class');
+    expect(badge.className, 'Should have secondary variant class').toContain('bg-secondary');
   });
 
   it('applies destructive variant correctly', () => {
     render(<Badge variant="destructive">Destructive Badge</Badge>);
     const badge = screen.getByText('Destructive Badge');
 
-    assert.ok(badge.className.includes('bg-destructive'), 'Should have destructive variant class');
+    expect(badge.className, 'Should have destructive variant class').toContain('bg-destructive');
   });
 
   it('applies success variant correctly', () => {
     render(<Badge variant="success">Success Badge</Badge>);
     const badge = screen.getByText('Success Badge');
 
-    assert.ok(badge.className.includes('bg-green'), 'Should have success variant class');
+    expect(badge.className, 'Should have success variant class').toContain('bg-green');
   });
 
   it('applies warning variant correctly', () => {
     render(<Badge variant="warning">Warning Badge</Badge>);
     const badge = screen.getByText('Warning Badge');
 
-    assert.ok(badge.className.includes('bg-state-warning'), 'Should have warning variant class');
+    expect(badge.className, 'Should have warning variant class').toContain('bg-state-warning');
   });
 
   it('applies outline variant correctly', () => {
     render(<Badge variant="outline">Outline Badge</Badge>);
     const badge = screen.getByText('Outline Badge');
 
-    assert.ok(badge.className.includes('text-foreground'), 'Should have outline variant class');
+    expect(badge.className, 'Should have outline variant class').toContain('text-foreground');
   });
 
   it('applies custom className correctly', () => {
     render(<Badge className="custom-class">Custom Badge</Badge>);
     const badge = screen.getByText('Custom Badge');
 
-    assert.ok(badge.className.includes('custom-class'), 'Should have custom class');
+    expect(badge.className, 'Should have custom class').toContain('custom-class');
   });
 
   it('passes additional props to the div element', () => {
     render(<Badge data-testid="badge-test">Test Badge</Badge>);
     const badge = screen.getByTestId('badge-test');
 
-    assert.equal(badge.textContent, 'Test Badge', 'Should render the text content');
+    expect(badge.textContent, 'Should render the text content').toBe('Test Badge');
   });
 });

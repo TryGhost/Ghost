@@ -1,8 +1,5 @@
 /**
  * Request contract for post/page reads and writes against the Admin API.
- *
- * Query params and payload shapes are ported from Ember's post/page adapters
- * and serializers.
  */
 
 /**

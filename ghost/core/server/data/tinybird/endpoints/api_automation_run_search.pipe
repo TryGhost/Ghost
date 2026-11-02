@@ -33,7 +33,7 @@ SQL >
         groupBitOr(toUInt8(multiIf(
             status = 'pending', 1,
             status = 'finished', 2,
-            status IN ('automation disabled', 'failed', 'member changed status', 'member unsubscribed'), 4,
+            status IN ('automation disabled', 'failed', 'member changed status', 'member changed tier', 'member unsubscribed'), 4,
             8
         ))) AS status_flags,
         max(status = 'failed') AS has_failed_step

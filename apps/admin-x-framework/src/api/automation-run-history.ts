@@ -49,6 +49,7 @@ export const AutomationRunHistorySchema = z.object({
           'failed',
           'automation disabled',
           'member changed status',
+          'member changed tier',
           'member unsubscribed',
         ]),
         action: HistoryActionSchema,
