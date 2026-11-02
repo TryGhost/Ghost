@@ -6,6 +6,7 @@ import type {
   JobSettlement,
   JobsBackendBase,
   JobEnvelope,
+  AttemptResult,
   DispatchEnvelope,
   JobsShutdownOptions,
   QueueDeclaration,
@@ -66,7 +67,7 @@ export interface JobsServiceOptions {
   logOutboxUnavailable?: boolean;
 }
 
-type Deliverer = (payload: string) => Promise<void> | void;
+type Deliverer = (payload: string) => ReturnType<JobHandler>;
 
 // Execution policy for a job type, declared where its handler is registered:
 // either no options (the type runs on the backend's shared default lane) or a
@@ -365,7 +366,7 @@ export class JobsService {
     return type;
   }
 
-  async #process(envelope: JobEnvelope): Promise<void> {
+  async #process(envelope: JobEnvelope): Promise<AttemptResult> {
     const deliver = this.#registry.get(envelope.type);
     if (!deliver) {
       // Fail the delivery so a durable backend can keep or retry the job, e.g.
@@ -379,8 +380,9 @@ export class JobsService {
     const startedAt = Date.now();
     this.#logging.info(`[Background Job] ${envelope.type} started`);
 
+    let result: void | 'interrupted';
     try {
-      await deliver(envelope.payload);
+      result = await deliver(envelope.payload);
     } catch (err) {
       this.#logging.error(
         err,
@@ -391,6 +393,10 @@ export class JobsService {
     }
 
     const durationMs = Date.now() - startedAt;
+    if (result === 'interrupted') {
+      this.#logging.info(`[Background Job] ${envelope.type} interrupted after ${durationMs}ms`);
+      return 'interrupted';
+    }
     this.#logging.info(
       {
         system: {

@@ -141,17 +141,24 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
     // A shutdown that times out replaces _held while this run is still going,
     // and a restart may hold the same id again for a new delivery
     const held = this._held;
-    let settlement: JobSettlement;
+    // An interrupted job has not settled, so it is left unreported
+    let settlement: JobSettlement | undefined;
     try {
-      await this._processor!(job);
-      settlement = { status: 'completed' };
+      if ((await this._processor!(job)) !== 'interrupted') {
+        settlement = { status: 'completed' };
+      }
     } catch (err) {
       logging.error(`Job "${job.type}" delivery failed`, err);
       // Nothing is retried, so a failure is final
       settlement = { status: 'dead', error: err };
     }
-    if (settleAs !== undefined) {
-      held.delete(settleAs);
+    if (settleAs === undefined) {
+      return;
+    }
+    // An interrupted job stops being held too, so its row goes stale and is
+    // handed over again once the lease runs out
+    held.delete(settleAs);
+    if (settlement) {
       await this._settle(settleAs, job.type, settlement);
     }
   }
