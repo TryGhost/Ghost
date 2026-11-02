@@ -235,12 +235,7 @@ const UserInviteActions: React.FC<{ invite: UserInvite }> = ({ invite }) => {
       setResendState('progress');
       // Hosts enable this policy after deploying server-side resend admission.
       // Retain the legacy flow for older backends without invitation limits.
-      if (
-        !(
-          config?.hostSettings?.limits?.limitTrialStaff ||
-          config?.hostSettings?.limits?.limitTrialStaffInvites
-        )
-      ) {
+      if (!(config?.hostSettings?.limits?.allStaff || config?.hostSettings?.limits?.inviteEmails)) {
         await deleteInvite(invite.id);
       }
       await addInvite({

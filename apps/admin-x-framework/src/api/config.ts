@@ -42,8 +42,8 @@ export type Config = {
       customIntegrations?: {
         disabled: boolean;
       };
-      limitTrialStaff?: { max?: number; error?: string };
-      limitTrialStaffInvites?: { max?: number; error?: string };
+      allStaff?: { max?: number; error?: string };
+      inviteEmails?: { maxPeriodic?: number; disabled?: boolean; error?: string };
       staff?: {
         max?: number;
         error?: string;

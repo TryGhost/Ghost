@@ -125,19 +125,20 @@ describe('Staff actions', () => {
       .element(settingsScreen.limitModal())
       .toHaveTextContent('Your plan does not support more staff');
   });
-  it('preserves the plan limit when un-suspending during a trial', async () => {
+  it('preserves the plan limit when un-suspending with allStaff configured', async () => {
     const owner = user('Owner');
     const author = user('Author', { status: 'inactive' });
     const { boot } = fakeStaffWorld({ currentUser: owner, users: [owner, author] });
     const config = configResponse();
     config.config.hostSettings = {
+      subscription: { start: '2026-10-10T00:00:00.000Z' },
       limits: {
-        limitTrialStaff: {
+        allStaff: {
           max: 10,
           error:
-            'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
+            'Your plan supports up to {{max}} staff, including pending invitations and Contributors.',
         },
-        limitTrialStaffInvites: { max: 15 },
+        inviteEmails: { maxPeriodic: 15 },
         staff: { max: 1, error: 'Your plan does not support more staff' },
       },
     };
@@ -151,19 +152,20 @@ describe('Staff actions', () => {
       .element(settingsScreen.limitModal())
       .toHaveTextContent('Your plan does not support more staff');
   });
-  it('reactivates an existing user at the trial staff cap without needing another seat', async () => {
+  it('reactivates an existing user at the total staff cap without needing another seat', async () => {
     const owner = user('Owner');
     const author = user('Author', { status: 'inactive' });
     const { boot } = fakeStaffWorld({ currentUser: owner, users: [owner, author] });
     const config = configResponse();
     config.config.hostSettings = {
+      subscription: { start: '2026-10-10T00:00:00.000Z' },
       limits: {
-        limitTrialStaff: {
+        allStaff: {
           max: 2,
           error:
-            'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
+            'Your plan supports up to {{max}} staff, including pending invitations and Contributors.',
         },
-        limitTrialStaffInvites: { max: 15 },
+        inviteEmails: { maxPeriodic: 15 },
         staff: { max: 2, error: 'Your plan does not support more staff' },
       },
     };

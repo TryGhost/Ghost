@@ -30,7 +30,7 @@ export interface Limiter {
 export interface UseLimiterOptions {
   /**
    * The limits this caller checks. Others are not loaded, and the staff lists are only read
-   * when `staff` is named. Pass a referentially stable array: it is a memo dependency.
+   * when `staff` or `allStaff` is named. Pass a referentially stable array: it is a memo dependency.
    */
   limits?: readonly string[];
   /** Applied to the count reads the limiter makes itself. */
@@ -45,7 +45,7 @@ function countEmailRecipients(emails: EmailsResponseType['emails']): number {
 export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions = {}): Limiter => {
   const { data: configData } = useBrowseConfig({ refetchOnMount: false });
   const config = configData?.config;
-  const wantsStaff = !wanted || wanted.includes('staff') || wanted.includes('limitTrialStaff');
+  const wantsStaff = !wanted || wanted.includes('staff') || wanted.includes('allStaff');
   const { data: { users } = { users: [] }, isLoading: usersLoading } = useBrowseUsers({
     enabled: wantsStaff,
   });
@@ -107,7 +107,7 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
     const limits = Object.fromEntries(
       Object.entries(config.hostSettings.limits).filter(([name, limit]) => {
         // Invitation email usage is authoritative on the server, not the pending-invite list.
-        if (name === 'limitTrialStaffInvites') {
+        if (name === 'inviteEmails') {
           return false;
         }
         if (wanted && !wanted.includes(name)) {
@@ -181,9 +181,8 @@ export const useLimiter = ({ limits: wanted, requestOptions }: UseLimiterOptions
       };
     }
 
-    if (limits.limitTrialStaff) {
-      limits.limitTrialStaff.currentCountQuery = () =>
-        Promise.resolve(users.length + invites.length);
+    if (limits.allStaff) {
+      limits.allStaff.currentCountQuery = () => Promise.resolve(users.length + invites.length);
     }
 
     limiter.loadLimits({

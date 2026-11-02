@@ -159,13 +159,14 @@ describe('Staff invitations', () => {
     const addApi = fakeAdminEndpoint('POST', '/invites/', { invites: [replacement] });
     const config = configResponse();
     config.config.hostSettings = {
+      subscription: { start: '2026-10-10T00:00:00.000Z' },
       limits: {
-        limitTrialStaff: {
+        allStaff: {
           max: 10,
           error:
-            'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
+            'Your plan supports up to {{max}} staff, including pending invitations and Contributors.',
         },
-        limitTrialStaffInvites: { max: 15 },
+        inviteEmails: { maxPeriodic: 15 },
       },
     };
     await renderAdminApp('/settings/staff?tab=invited', {
@@ -186,45 +187,58 @@ describe('Staff invitations', () => {
     await expect.element(settingsScreen.users().getByTestId('user-invite')).not.toBeInTheDocument();
   });
 
-  it('offers an upgrade on rejected resends without a billing iframe URL', async () => {
-    const existing = invite();
-    const { boot } = fakeStaffWorld({ invites: [existing] });
-    const config = configResponse();
-    config.config.hostSettings = {
-      billing: { enabled: true },
-      limits: {
-        limitTrialStaff: {
-          max: 10,
-          error:
-            'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
+  it.each([
+    {
+      name: 'monthly allowance',
+      inviteEmails: { maxPeriodic: 15 },
+      subscription: { start: '2026-10-10T00:00:00.000Z' },
+      message: 'Invitation allowance exhausted.',
+    },
+    {
+      name: 'expired subscription',
+      inviteEmails: { disabled: true },
+      subscription: undefined,
+      message: 'Your subscription has expired.',
+    },
+  ])(
+    'preserves a rejected resend and offers an upgrade for $name',
+    async ({ inviteEmails, subscription, message }) => {
+      const existing = invite();
+      const { boot } = fakeStaffWorld({ invites: [existing] });
+      const deleteApi = fakeAdminEndpoint('DELETE', `/invites/${existing.id}/`, {});
+      const config = configResponse();
+      config.config.hostSettings = {
+        subscription,
+        billing: { enabled: true },
+        limits: { inviteEmails },
+      };
+      fakeAdminEndpoint(
+        'POST',
+        '/invites/',
+        {
+          errors: [
+            {
+              type: 'HostLimitError',
+              message,
+            },
+          ],
         },
-        limitTrialStaffInvites: { max: 15 },
-      },
-    };
-    fakeAdminEndpoint(
-      'POST',
-      '/invites/',
-      {
-        errors: [
-          {
-            type: 'HostLimitError',
-            message: 'Trial invitation allowance exhausted.',
-          },
-        ],
-      },
-      { status: 403 },
-    );
-    await renderAdminApp('/settings/staff?tab=invited', {
-      boot: { ...boot, browseConfig: { response: config } },
-    });
-    const item = settingsScreen.users().getByTestId('user-invite');
-    await item.hover();
-    await item.getByRole('button', { name: 'Resend' }).click();
-    const toast = settingsScreen.errorToast();
-    await expect.element(toast).toHaveTextContent('Trial invitation allowance exhausted');
-    await toast.getByRole('button', { name: 'Upgrade', exact: true }).click();
-    await expect.poll(() => window.location.hash).toBe('#/pro');
-  });
+        { status: 403 },
+      );
+      await renderAdminApp('/settings/staff?tab=invited', {
+        boot: { ...boot, browseConfig: { response: config } },
+      });
+      const item = settingsScreen.users().getByTestId('user-invite');
+      await item.hover();
+      await item.getByRole('button', { name: 'Resend' }).click();
+      const toast = settingsScreen.errorToast();
+      await expect.element(toast).toHaveTextContent(message);
+      expect(deleteApi.requests).toHaveLength(0);
+      await expect.element(item.getByText(existing.email)).toBeVisible();
+      await toast.getByRole('button', { name: 'Upgrade', exact: true }).click();
+      await expect.poll(() => window.location.hash).toBe('#/pro');
+    },
+  );
 
   it('preserves the invitation and displays the wait when a resend is rate limited', async () => {
     const existing = invite();
@@ -246,13 +260,14 @@ describe('Staff invitations', () => {
     );
     const config = configResponse();
     config.config.hostSettings = {
+      subscription: { start: '2026-10-10T00:00:00.000Z' },
       limits: {
-        limitTrialStaff: {
+        allStaff: {
           max: 10,
           error:
-            'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
+            'Your plan supports up to {{max}} staff, including pending invitations and Contributors.',
         },
-        limitTrialStaffInvites: { max: 15 },
+        inviteEmails: { maxPeriodic: 15 },
       },
     };
     await renderAdminApp('/settings/staff?tab=invited', {
@@ -330,19 +345,20 @@ describe('Staff invitations', () => {
     await modal.getByRole('radio', { name: /^Contributor\b/ }).click();
     await expect(modal.getByText('Your plan does not support more staff')).toHaveCount(0);
   });
-  it('preserves a two-staff plan cap during trials while permitting Contributors', async () => {
+  it('preserves a two-staff plan cap alongside allStaff while permitting Contributors', async () => {
     const owner = user('Owner');
     const editor = user('Editor');
     const { boot } = fakeStaffWorld({ currentUser: owner, users: [owner, editor] });
     const config = configResponse();
     config.config.hostSettings = {
+      subscription: { start: '2026-10-10T00:00:00.000Z' },
       limits: {
-        limitTrialStaff: {
+        allStaff: {
           max: 10,
           error:
-            'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
+            'Your plan supports up to {{max}} staff, including pending invitations and Contributors.',
         },
-        limitTrialStaffInvites: { max: 15 },
+        inviteEmails: { maxPeriodic: 15 },
         staff: { max: 2, error: 'Your plan does not support more staff' },
       },
     };
@@ -357,7 +373,7 @@ describe('Staff invitations', () => {
     await modal.getByRole('radio', { name: /^Contributor\b/ }).click();
     await expect(modal.getByText('Your plan does not support more staff')).toHaveCount(0);
   });
-  it('blocks Contributors at the trial staff cap and offers an upgrade', async () => {
+  it('blocks Contributors at the total staff cap and offers an upgrade', async () => {
     const owner = user('Owner');
     const contributors = Array.from({ length: 9 }, (_, i) =>
       user('Contributor', { id: `contributor-${i}`, email: `contributor-${i}@test.com` }),
@@ -365,13 +381,14 @@ describe('Staff invitations', () => {
     const { boot } = fakeStaffWorld({ currentUser: owner, users: [owner, ...contributors] });
     const config = configResponse();
     config.config.hostSettings = {
+      subscription: { start: '2026-10-10T00:00:00.000Z' },
       limits: {
-        limitTrialStaff: {
+        allStaff: {
           max: 10,
           error:
-            'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
+            'Your plan supports up to {{max}} staff, including pending invitations and Contributors.',
         },
-        limitTrialStaffInvites: { max: 15 },
+        inviteEmails: { maxPeriodic: 15 },
         staff: { max: 2, error: 'Your plan does not support more staff' },
       },
       billing: { enabled: true, url: 'https://billing.example.com' },
@@ -380,50 +397,60 @@ describe('Staff invitations', () => {
       boot: { ...boot, browseConfig: { response: config } },
     });
     const modal = await openInviteModal();
-    await expect.element(modal).toHaveTextContent('Your trial supports up to 10 staff');
+    await expect.element(modal).toHaveTextContent('Your plan supports up to 10 staff');
     await modal.getByRole('link', { name: 'Upgrade to invite more people' }).click();
     await expect.poll(() => window.location.hash).toBe('#/pro');
   });
 
-  it('uses a configured upgrade route without requiring a billing iframe URL', async () => {
-    const { boot } = fakeStaffWorld();
-    const config = configResponse();
-    config.config.hostSettings = {
-      billing: { enabled: true, upgradeUrl: '#/pro/custom-upgrade' },
-      limits: {
-        limitTrialStaff: {
-          max: 10,
-          error:
-            'Your trial supports up to {{max}} staff, including pending invitations and Contributors.',
+  it.each([
+    {
+      name: 'monthly allowance',
+      inviteEmails: { maxPeriodic: 15 },
+      subscription: { start: '2026-10-10T00:00:00.000Z' },
+      message: 'Your plan allows 15 staff invitation emails per month, including resends.',
+    },
+    {
+      name: 'expired subscription',
+      inviteEmails: { disabled: true },
+      subscription: undefined,
+      message: 'Your subscription has expired.',
+    },
+  ])(
+    'shows the server rejection and configured upgrade route for $name',
+    async ({ inviteEmails, subscription, message }) => {
+      const { boot } = fakeStaffWorld();
+      const config = configResponse();
+      config.config.hostSettings = {
+        subscription,
+        billing: { enabled: true, upgradeUrl: '#/pro/custom-upgrade' },
+        limits: { inviteEmails },
+      };
+      fakeAdminEndpoint(
+        'POST',
+        '/invites/',
+        {
+          errors: [
+            {
+              type: 'HostLimitError',
+              message: 'Host Limit error, cannot save invite.',
+              context: message,
+            },
+          ],
         },
-        limitTrialStaffInvites: { max: 15 },
-      },
-    };
-    fakeAdminEndpoint(
-      'POST',
-      '/invites/',
-      {
-        errors: [
-          {
-            type: 'HostLimitError',
-            message: 'Host Limit error, cannot save invite.',
-            context: 'Your trial allows 15 staff invitation emails in total, including resends.',
-          },
-        ],
-      },
-      { status: 403 },
-    );
-    await renderAdminApp('/settings/staff', {
-      boot: { ...boot, browseConfig: { response: config } },
-    });
-    const modal = await openInviteModal();
-    await modal.getByLabelText('Email address').fill('new@example.com');
-    await modal.getByRole('button', { name: 'Send invitation' }).click();
-    await expect.element(modal).toHaveTextContent('Your trial allows 15 staff invitation emails');
-    await modal.getByRole('radio', { name: 'Editor', exact: true }).click();
-    await expect.element(modal).toHaveTextContent('Your trial allows 15 staff invitation emails');
-    await expect.element(modal.getByRole('button', { name: 'Send invitation' })).toBeDisabled();
-    await modal.getByRole('link', { name: 'Upgrade to invite more people' }).click();
-    await expect.poll(() => window.location.hash).toBe('#/pro/custom-upgrade');
-  });
+        { status: 403 },
+      );
+      await renderAdminApp('/settings/staff', {
+        boot: { ...boot, browseConfig: { response: config } },
+      });
+      const modal = await openInviteModal();
+      await modal.getByLabelText('Email address').fill('new@example.com');
+      await modal.getByRole('button', { name: 'Send invitation' }).click();
+      await expect.element(modal).toHaveTextContent(message);
+      await modal.getByRole('radio', { name: 'Editor', exact: true }).click();
+      await expect.element(modal).toHaveTextContent(message);
+      await expect.element(modal.getByRole('button', { name: 'Send invitation' })).toBeDisabled();
+      await modal.getByRole('link', { name: 'Upgrade to invite more people' }).click();
+      await expect.poll(() => window.location.hash).toBe('#/pro/custom-upgrade');
+    },
+  );
 });
