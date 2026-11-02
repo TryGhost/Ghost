@@ -208,6 +208,15 @@ describe('Members filtering by custom fields', function () {
       const [, both] = await animalLovers(['Dog'], ['Cat', 'Dog'], ['Cat']);
 
       const matched = await browse(
+        "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dog'+'Cat'])",
+      );
+      assert.deepEqual(matched, [both.email]);
+    });
+
+    it('finds members holding every one of several options, one filter for each', async function () {
+      const [, both] = await animalLovers(['Dog'], ['Cat', 'Dog'], ['Cat']);
+
+      const matched = await browse(
         "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dog'])+(metafields.identity:'custom.favourite_animals'+metafields.value:['Cat'])",
       );
       assert.deepEqual(matched, [both.email]);
