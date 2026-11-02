@@ -868,7 +868,8 @@ describe('Publish flow', () => {
       const list = page.getByRole('listbox').element();
       list.scrollTop = list.scrollHeight;
 
-      const retry = page.getByRole('button', { name: "Couldn't load more labels. Retry" });
+      await expect.element(page.getByText("Couldn't load more labels.")).toBeVisible();
+      const retry = page.getByRole('button', { name: 'Retry', exact: true });
       await expect.element(retry).toBeVisible();
       // The sentinel is still in view, yet the failed page is asked for once only.
       expect(pagesRequested(labelsApi).filter((pageNumber) => pageNumber === '2')).toHaveLength(1);

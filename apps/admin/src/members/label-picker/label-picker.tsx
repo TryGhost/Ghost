@@ -288,9 +288,12 @@ const LoadMoreSentinel: React.FC<LoadMoreSentinelProps> = ({ isLoading, itemCoun
     >
       {isLoading ? 'Loading more...' : null}
       {!isLoading && failed ? (
-        <Button size="sm" variant="link" onClick={requestPage}>
-          Couldn&apos;t load more labels. Retry
-        </Button>
+        <>
+          Couldn&apos;t load more labels.{' '}
+          <Button className="h-auto p-0" size="sm" variant="link" onClick={requestPage}>
+            Retry
+          </Button>
+        </>
       ) : null}
     </div>
   );
