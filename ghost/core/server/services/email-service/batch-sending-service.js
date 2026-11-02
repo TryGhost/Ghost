@@ -236,6 +236,7 @@ class BatchSendingService {
   /**
    * Sends an email after refetching it and acquiring its status lock.
    * @param {{emailId: string}} data Identifier of the email to refetch and lock.
+   * @returns {Promise<void | 'interrupted'>} 'interrupted' when shutdown stopped the send
    */
   async emailJob({ emailId }) {
     logging.info(`[Background Job] batch-sending-service-job started for email ${emailId}`);
@@ -316,7 +317,7 @@ class BatchSendingService {
         logging.info(
           `[Background Job] batch-sending-service-job send stopped because the container is shutting down — leaving email ${email.id} status=submitting so it can resume on next boot`,
         );
-        return;
+        return 'interrupted';
       }
       const ghostError = new errors.EmailError({
         err: e,
