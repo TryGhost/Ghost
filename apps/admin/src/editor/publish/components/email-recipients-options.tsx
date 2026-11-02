@@ -64,10 +64,6 @@ export function EmailRecipientsOptions({
     isError: tiersError,
     isFetchingNextPage: isFetchingNextTierPage,
   } = tiersQuery;
-  // Labels are not walked the same way: a site can have thousands, so the
-  // source serves a page and searches the server for the rest on demand.
-  const labelSource = useLabelValueSource({ queryOptions: LABEL_QUERY_OPTIONS });
-
   // Core caps `limit=all`, so the response can still contain a next page.
   // Tiers are few: exhaust them before offering any, to avoid a partial list.
   useEffect(() => {
@@ -78,6 +74,10 @@ export function EmailRecipientsOptions({
 
   const tiersSettled =
     !tiersQuery.isLoading && !isFetchingNextTierPage && (!hasNextTierPage || tiersError);
+
+  // Labels are not walked the same way: a site can have thousands, so the
+  // source serves a page and searches the server for the rest on demand.
+  const labelSource = useLabelValueSource({ queryOptions: LABEL_QUERY_OPTIONS });
 
   const stripeBoundary = stripeBoundarySchema.safeParse({ settingsData, configData });
   const paidAvailable = stripeBoundary.success
@@ -103,7 +103,6 @@ export function EmailRecipientsOptions({
     }
 
     const tiers = parseRecipientTiers(tiersError ? undefined : tiersData);
-    // A single paid tier adds nothing to a paid/free split, so it is hidden.
     if (tiers.length <= 1) {
       return [];
     }

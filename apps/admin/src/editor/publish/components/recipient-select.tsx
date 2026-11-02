@@ -171,8 +171,7 @@ export function RecipientSelect({
     name: option.label,
     group: LABELS_GROUP,
   }));
-  // The labels arrive from the source already matching the search; the tiers
-  // are few and already here, so they are narrowed to it in place.
+
   const normalizedSearch = search.trim().toLowerCase();
   const pickerLabels = [
     ...tierLabels.filter((label) => label.name.toLowerCase().includes(normalizedSearch)),
