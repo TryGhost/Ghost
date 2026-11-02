@@ -56,6 +56,25 @@ describe('InMemoryJobsBackend', function () {
       assert.deepEqual(settlements, [{ id: 'd1', status: 'dead', error }]);
     });
 
+    it('does not settle a job that was interrupted, so it can be handed over again', async function () {
+      const backend = new InMemoryJobsBackend();
+      const onSettled = sinon.stub();
+      const delivered = Promise.withResolvers<void>();
+      backend.start({
+        processor: async () => {
+          delivered.resolve();
+          return 'interrupted';
+        },
+        onSettled,
+      });
+
+      backend.enqueue('d1', dispatch({ type: 'job', payload: '{}' }));
+      await delivered.promise;
+      await backend.shutdown({ timeoutMs: 100 });
+
+      sinon.assert.notCalled(onSettled);
+    });
+
     it('keeps delivering when reporting a settlement fails', async function () {
       const error = sinon.stub(logging, 'error');
       const backend = new InMemoryJobsBackend();

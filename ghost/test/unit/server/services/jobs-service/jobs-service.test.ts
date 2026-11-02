@@ -42,10 +42,10 @@ class FakeBackend implements JobsBackendBase {
     this.shutdownCalls.push(options);
   }
 
-  async deliver(index = 0): Promise<void> {
+  async deliver(index = 0) {
     const { processor } = this;
     assert.ok(processor, 'processor must be wired via start()');
-    await processor(this.enqueued[index].envelope.payload.job);
+    return processor(this.enqueued[index].envelope.payload.job);
   }
 }
 
@@ -554,6 +554,25 @@ describe('JobsService', function () {
       assert.equal(event.system.job_type, 'greet');
       assert.equal(typeof event.system.duration_ms, 'number');
       assert.match(String(message), /^\[Background Job\] greet completed in \d+ms$/);
+    });
+
+    it('passes an interrupted delivery back to the backend, logged as interrupted, not failed', async function () {
+      const captured: unknown[] = [];
+      const sentry = { captureException: (err: unknown) => captured.push(err) };
+      const service = makeService({ sentry });
+      service.handle(GreetJob, async () => 'interrupted' as const);
+      await service.start();
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+      const result = await backend.deliver();
+
+      assert.equal(result, 'interrupted');
+      assert.equal(logger.calls.error.length, 0);
+      assert.deepEqual(captured, []);
+      assert.match(
+        String(logger.calls.info.at(-1)![0]),
+        /^\[Background Job\] greet interrupted after \d+ms$/,
+      );
     });
 
     it('does not log a completed event for a failed delivery', async function () {
