@@ -1,7 +1,7 @@
 import React from 'react';
 import moment from 'moment-timezone';
 import { Button, Card, CardContent, EmptyIndicator, Skeleton } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { isSafeHref } from './is-safe-href';
 import { parseMemberEvent } from './member-event';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
@@ -77,6 +77,40 @@ export const EventIcon: React.FC<{ iconName: string }> = ({ iconName }) => {
   }
 };
 
+// admin7Design: each kind of event gets a color pair, a flat step 200 with its step
+// 700 for the icon. Written out in full so Tailwind can see the classes. Anything
+// not listed, like profile changes and logins, stays neutral.
+const EMAIL_TONE =
+  'in-data-[admin7-design=true]:bg-blue-200 in-data-[admin7-design=true]:[&_svg]:text-blue-700';
+const GAIN_TONE =
+  'in-data-[admin7-design=true]:bg-green-200 in-data-[admin7-design=true]:[&_svg]:text-green-700';
+const LOSS_TONE =
+  'in-data-[admin7-design=true]:bg-red-200 in-data-[admin7-design=true]:[&_svg]:text-red-700';
+const WARNING_TONE =
+  'in-data-[admin7-design=true]:bg-yellow-200 in-data-[admin7-design=true]:[&_svg]:text-yellow-700';
+const ENGAGEMENT_TONE =
+  'in-data-[admin7-design=true]:bg-purple-200 in-data-[admin7-design=true]:[&_svg]:text-purple-700';
+const GIFT_TONE =
+  'in-data-[admin7-design=true]:bg-pink-200 in-data-[admin7-design=true]:[&_svg]:text-pink-700';
+
+const EVENT_TONES: Record<string, string> = {
+  'event-received-email': EMAIL_TONE,
+  'event-opened-email': EMAIL_TONE,
+  'event-sent-email': EMAIL_TONE,
+  'event-signed-up': GAIN_TONE,
+  'event-subscribed-to-email': GAIN_TONE,
+  'event-subscriptions': GAIN_TONE,
+  'event-unsubscribed-from-email': LOSS_TONE,
+  'event-canceled-subscription': LOSS_TONE,
+  'event-email-delivery-failed': LOSS_TONE,
+  'event-email-delivery-spam': WARNING_TONE,
+  'event-comment': ENGAGEMENT_TONE,
+  'event-click': ENGAGEMENT_TONE,
+  'event-more-like-this': ENGAGEMENT_TONE,
+  'event-less-like-this': ENGAGEMENT_TONE,
+  'event-gift': GIFT_TONE,
+};
+
 /** "View all member activity →" link to the member's full activity feed. */
 const ViewAllLink: React.FC<{ memberId: string; className?: string }> = ({
   memberId,
@@ -128,10 +162,15 @@ const ActivityRow: React.FC<{ event: ParsedMemberEvent }> = ({ event }) => {
 
   return (
     <div
-      className="flex items-start gap-3 py-3 in-data-[admin7-design=true]:py-4 in-data-[admin7-design=true]:first:pt-0"
+      className="flex items-start gap-3 py-3 in-data-[admin7-design=true]:items-center in-data-[admin7-design=true]:py-4 in-data-[admin7-design=true]:first:pt-0"
       data-testid="member-activity-event"
     >
-      <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted">
+      <div
+        className={cn(
+          'flex size-8 shrink-0 items-center justify-center rounded-full bg-muted',
+          EVENT_TONES[event.icon],
+        )}
+      >
         <EventIcon iconName={event.icon} />
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
