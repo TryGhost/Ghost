@@ -112,6 +112,9 @@
   --button-ghost-hover: color-mix(in oklab, var(--color-gray-700) 10%, transparent);
   /* An open or pressed outline Button or ghost Select reads like a selected tab */
   --button-pressed: var(--tab-active);
+  /* The gradient Banner's glow: Shapeshifter sky and indigo */
+  --banner-glow-start: var(--color-blue-400);
+  --banner-glow-end: var(--color-purple-500);
   --interactive-hover: var(--button-hover);
   --filter-bar-background: var(--color-gray-100);
   --filter-bar-item-hover: var(--color-gray-50);
@@ -246,6 +249,8 @@
   --chart-darkblue: hsl(226 91% 61%);
   --chart-purple: hsl(273 100% 64%);
   --button-pressed: var(--button-hover);
+  --banner-glow-start: rgb(75 225 226);
+  --banner-glow-end: rgb(202 103 255);
   --control-outline-shadow:
     lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
     lch(0 0 0 / 0.04) 0px 1px 1px 0px;

@@ -13,10 +13,10 @@ export function getColorHex(color: string): string {
     blue: 'var(--color-blue-500)',
     green: 'var(--color-green-500)',
     red: 'var(--color-red-500)',
-    teal: '#4dcddc',
+    teal: 'var(--saved-view-teal, #4dcddc)',
     purple: 'var(--color-purple-500)',
     yellow: 'var(--color-yellow-500)',
-    orange: '#fe8b05',
+    orange: 'var(--saved-view-orange, #fe8b05)',
     pink: 'var(--color-pink-500)',
   };
 

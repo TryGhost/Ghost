@@ -129,6 +129,14 @@ body:where(.react-admin) {
   line-height: 1em;
 }
 
+/* admin7Design on: saved-view dots with no palette family of their own take the
+   palette's coral and the charts' teal. Flag off falls back to the old literals
+   in shared-views.ts. */
+:where(body.react-admin [data-admin7-design='true']) {
+  --saved-view-teal: oklch(0.685 0.13 210);
+  --saved-view-orange: var(--color-orange-500);
+}
+
 /* admin7Design on: the palette's pink, a lighter step on dark backgrounds. */
 :where(body.react-admin [data-admin7-design='true']) code {
   color: var(--color-pink-600);
