@@ -121,6 +121,17 @@ describe('Automation trigger tiers', () => {
     expect(save.requests).toHaveLength(0);
   });
 
+  it('focuses the scope from its label without opening a list', async () => {
+    serve({ trigger_tier_scope: 'selected_paid', trigger_tier_ids: ['bronze'] });
+    await renderAdminApp('/automations/first', flags);
+    await picker().click();
+    await expect.element(page.getByRole('listbox', { name: 'Tiers', exact: true })).toBeVisible();
+
+    await page.getByText('Triggered when a new or free member starts:', { exact: true }).click();
+    await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+    await expect.element(scope()).toHaveFocus();
+  });
+
   it.each(['Save', 'Publish', 'Publish changes', 'Turn off'])(
     'persists selected tiers only when explicitly confirming %s',
     async (action) => {
