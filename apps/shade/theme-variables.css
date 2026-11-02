@@ -30,8 +30,8 @@
   --surface-elevated-2: var(--color-white);
   --surface-overlay: var(--color-white);
   --surface-overlay-foreground: var(--color-black);
-  --modal-backdrop: oklch(50% 0.006 255 / 0.2);
-  --form-sheet-backdrop: oklch(50% 0.006 255 / 0.08);
+  --modal-backdrop: oklch(50% 0.003 255 / 0.2);
+  --form-sheet-backdrop: oklch(50% 0.003 255 / 0.08);
   --preview-canvas: var(--color-gray-50);
   --preview-gradient-start: var(--color-gray-50);
   --preview-gradient-end: var(--color-gray-50);
@@ -47,7 +47,7 @@
   /* Frosted glass (the floating sidebar): a faint translucent fill over a
      backdrop blur, a light-catching outline, and a sheen along the top edge.
      The two shadows have matching layers so one interpolates into the other. */
-  --surface-glass: oklch(97.83% 0.0012 255 / 0.5);
+  --surface-glass: oklch(97.83% 0.0006 255 / 0.5);
   --border-glass: rgb(255 255 255 / 0.7);
   --surface-glass-highlight: linear-gradient(
     180deg,
@@ -250,13 +250,13 @@
 .dark [data-admin7-design] {
   /* The cool-neutral gray ramp is shared with light mode. Black keeps the
      dark-mode lightness so surfaces built on it don't get darker. */
-  --color-black: oklch(20.38% 0.004 255);
+  --color-black: oklch(20.38% 0.002 255);
 
   /* One-off colors (not in the standard color scale) */
-  --color-sidebar-bg: oklch(0.204 0.004 255);
+  --color-sidebar-bg: oklch(0.204 0.002 255);
 
   --tab-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
-  --tab-active: color-mix(in oklab, oklch(36.77% 0.0045 255) 60%, transparent);
+  --tab-active: color-mix(in oklab, oklch(36.77% 0.0022 255) 60%, transparent);
   --button-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
   --button-ghost-hover: var(--accent);
   --interactive-hover: var(--button-hover);
@@ -280,7 +280,7 @@
   --table-row-selected: color-mix(in oklab, var(--color-blue-700) 25%, var(--background));
   --members-sticky-hover-bg: var(--table-row-hover);
 
-  --background: oklch(0.178 0.004 255);
+  --background: oklch(0.178 0.002 255);
   --foreground: var(--color-gray-200);
   --muted: var(--color-gray-900);
   --muted-foreground: var(--color-gray-600);
@@ -306,7 +306,7 @@
   --surface-panel-foreground: var(--color-gray-100);
   --surface-elevated: var(--color-sidebar-bg);
   --surface-elevated-foreground: var(--color-gray-100);
-  --surface-elevated-2: oklch(0.235 0.004 255);
+  --surface-elevated-2: oklch(0.235 0.002 255);
   --surface-overlay: var(--color-black);
   --surface-overlay-foreground: var(--color-gray-400);
   --preview-canvas: var(--color-black);
@@ -321,7 +321,7 @@
   --border-subtle: var(--color-gray-900);
   --border-default: var(--color-gray-950);
   --border-strong: var(--color-gray-700);
-  --surface-glass: oklch(25% 0.004 255 / 0.55);
+  --surface-glass: oklch(25% 0.002 255 / 0.55);
   --border-glass: rgb(255 255 255 / 0.1);
   --surface-glass-highlight: linear-gradient(
     180deg,
