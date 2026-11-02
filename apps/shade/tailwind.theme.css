@@ -375,6 +375,7 @@
   --color-field-readonly-surface: var(--field-readonly-surface);
   --color-field-disabled-surface: var(--field-disabled-surface);
   --color-field-border: var(--field-border);
+  --color-field-chip-surface: var(--field-chip-surface);
   --color-dropzone-surface: var(--dropzone-surface);
 }
 

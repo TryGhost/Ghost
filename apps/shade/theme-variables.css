@@ -134,6 +134,7 @@
   --field-readonly-surface: var(--field-surface);
   --field-disabled-surface: var(--field-surface);
   --field-border: transparent;
+  --field-chip-surface: var(--color-gray-300);
   --dropzone-surface: var(--field-surface);
   --radius-field: var(--radius-sm);
   /* Stroke of 16px icons, in the icon's 24-unit grid: about 1.17px on screen. */
@@ -281,6 +282,7 @@
   --field-readonly-surface: var(--control-readonly-surface);
   --field-disabled-surface: var(--control-disabled-surface);
   --field-border: var(--control-border);
+  --field-chip-surface: var(--secondary);
   --dropzone-surface: transparent;
   --radius-field: var(--radius-control);
 }
@@ -297,6 +299,7 @@
 
   /* Fields are filled in dark mode too. */
   --field-surface: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
+  --field-chip-surface: color-mix(in oklab, var(--color-gray-800) 40%, var(--color-gray-900));
 
   --tab-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
   --tab-active: color-mix(in oklab, oklch(36.77% 0.0022 255) 60%, transparent);
@@ -403,6 +406,7 @@
    delete with the flag. */
 .dark [data-admin7-design='false'] {
   --field-surface: var(--control-surface);
+  --field-chip-surface: var(--secondary);
   --color-black: oklch(20.38% 0.0067 258.4);
   /* Less-saturated gray scale for dark mode (lightness + hue preserved, chroma halved again) */
   --color-gray-50: oklch(98.54% 0.0003 286.4);
