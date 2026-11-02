@@ -157,6 +157,7 @@ module.exports = class RouterController {
    * @param {any} deps.urlUtils
    * @param {any} deps.emailAddressService
    * @param {Pick<CheckoutService, 'read'>} deps.checkouts Decides the checkout a card update opens.
+   * @param {import('../../../stripe/tracking').StripeTracking} deps.tracking
    */
   constructor({
     offersAPI,
@@ -178,6 +179,7 @@ module.exports = class RouterController {
     emailAddressService,
     giftService,
     checkouts,
+    tracking,
   }) {
     this._offersAPI = offersAPI;
     this._paymentsService = paymentsService;
@@ -198,6 +200,7 @@ module.exports = class RouterController {
     this._emailAddressService = emailAddressService;
     this._giftService = giftService;
     this._checkouts = checkouts;
+    this._tracking = tracking;
   }
 
   async ensureStripe(_req, res, next) {
@@ -777,152 +780,155 @@ module.exports = class RouterController {
 
   async createCheckoutSession(req, res) {
     try {
-      const type = req.body.type ?? 'subscription';
-      const metadata = req.body.metadata ?? {};
-      const identity = req.body.identity;
-      const membersEnabled = true;
+      return await this._tracking.checkout(async (attempt) => {
+        const type = req.body.type ?? 'subscription';
+        const metadata = req.body.metadata ?? {};
+        const identity = req.body.identity;
+        const membersEnabled = true;
 
-      if (typeof type !== 'string' || !['subscription', 'donation', 'gift'].includes(type)) {
-        throw new BadRequestError({
-          message: tpl(messages.invalidType),
-        });
-      }
+        if (typeof type !== 'string' || !['subscription', 'donation', 'gift'].includes(type)) {
+          throw new BadRequestError({
+            message: tpl(messages.invalidType),
+          });
+        }
+        attempt.starting(type);
 
-      let member;
-      let isAuthenticated = false;
-      if (membersEnabled) {
-        if (identity) {
-          let claims;
-          try {
-            claims = await this._tokenService.decodeToken(identity);
-          } catch (err) {
-            logging.error({ event: { name: 'stripe_checkout.session.identity_invalid' }, err });
-            throw new UnauthorizedError({ err });
-          }
-          const email = claims && claims.sub;
-          if (email) {
+        let member;
+        let isAuthenticated = false;
+        if (membersEnabled) {
+          if (identity) {
+            let claims;
+            try {
+              claims = await this._tokenService.decodeToken(identity);
+            } catch (err) {
+              logging.error({ event: { name: 'stripe_checkout.session.identity_invalid' }, err });
+              throw new UnauthorizedError({ err });
+            }
+            const email = claims && claims.sub;
+            if (email) {
+              member = await this._memberRepository.get(
+                {
+                  email,
+                },
+                {
+                  withRelated: ['stripeCustomers', 'products'],
+                },
+              );
+              isAuthenticated = true;
+            }
+          } else if (req.body.customerEmail) {
             member = await this._memberRepository.get(
               {
-                email,
+                email: req.body.customerEmail,
               },
               {
                 withRelated: ['stripeCustomers', 'products'],
               },
             );
-            isAuthenticated = true;
           }
-        } else if (req.body.customerEmail) {
-          member = await this._memberRepository.get(
-            {
-              email: req.body.customerEmail,
-            },
-            {
-              withRelated: ['stripeCustomers', 'products'],
-            },
+        }
+
+        await this._setAttributionMetadata(metadata);
+
+        if (metadata.newsletters) {
+          metadata.newsletters = JSON.stringify(
+            await this._validateNewsletters(JSON.parse(metadata.newsletters)),
           );
         }
-      }
 
-      await this._setAttributionMetadata(metadata);
+        removeReservedCheckoutMetadata(metadata);
 
-      if (metadata.newsletters) {
-        metadata.newsletters = JSON.stringify(
-          await this._validateNewsletters(JSON.parse(metadata.newsletters)),
-        );
-      }
+        const siteUrl = this._urlUtils.getSiteUrl();
+        const successUrl = sanitizeReturnUrl(req.body.successUrl, siteUrl);
+        const cancelUrl = sanitizeReturnUrl(req.body.cancelUrl, siteUrl);
 
-      removeReservedCheckoutMetadata(metadata);
+        const options = {
+          successUrl,
+          cancelUrl,
+          email: req.body.customerEmail,
+          member,
+          metadata,
+          isAuthenticated,
+        };
 
-      const siteUrl = this._urlUtils.getSiteUrl();
-      const successUrl = sanitizeReturnUrl(req.body.successUrl, siteUrl);
-      const cancelUrl = sanitizeReturnUrl(req.body.cancelUrl, siteUrl);
-
-      const options = {
-        successUrl,
-        cancelUrl,
-        email: req.body.customerEmail,
-        member,
-        metadata,
-        isAuthenticated,
-      };
-
-      let response;
-      if (type === 'subscription') {
-        if (!membersEnabled) {
-          throw new BadRequestError({
-            message: tpl(messages.badRequest),
-          });
-        }
-
-        let tier;
-        let cadence;
-        let offer;
-        let giftTrialDays;
-
-        if (req.body.continueFromGift) {
-          if (!isAuthenticated || !member) {
-            throw new UnauthorizedError({
-              message: tpl(messages.signInRequired),
+        let response;
+        if (type === 'subscription') {
+          if (!membersEnabled) {
+            throw new BadRequestError({
+              message: tpl(messages.badRequest),
             });
           }
-          const continuation = await this._giftService.service.preparePaidContinuation({
-            memberId: member.id,
-            memberStatus: member.get('status'),
+
+          let tier;
+          let cadence;
+          let offer;
+          let giftTrialDays;
+
+          if (req.body.continueFromGift) {
+            if (!isAuthenticated || !member) {
+              throw new UnauthorizedError({
+                message: tpl(messages.signInRequired),
+              });
+            }
+            const continuation = await this._giftService.service.preparePaidContinuation({
+              memberId: member.id,
+              memberStatus: member.get('status'),
+            });
+
+            ({ tier, cadence } = await this._getSubscriptionCheckoutData({
+              tierId: continuation.tierId,
+              cadence: continuation.cadence,
+            }));
+            giftTrialDays = continuation.trialDays;
+          } else {
+            ({ tier, cadence, offer } = await this._getSubscriptionCheckoutData(req.body));
+          }
+
+          response = await this._createSubscriptionCheckoutSession({
+            ...options,
+            tier,
+            cadence,
+            offer,
+            giftTrialDays,
+            referrer: req.get('referer'),
           });
 
-          ({ tier, cadence } = await this._getSubscriptionCheckoutData({
-            tierId: continuation.tierId,
-            cadence: continuation.cadence,
-          }));
-          giftTrialDays = continuation.trialDays;
-        } else {
-          ({ tier, cadence, offer } = await this._getSubscriptionCheckoutData(req.body));
-        }
+          if (isAuthenticated && tier && tier.welcomePageURL) {
+            response.welcomePageUrl = tier.welcomePageURL;
+          }
+        } else if (type === 'donation') {
+          options.personalNote = parsePersonalNote(req.body.personalNote);
+          response = await this._createDonationCheckoutSession(options);
+        } else if (type === 'gift') {
+          if (!membersEnabled) {
+            throw new BadRequestError({
+              message: tpl(messages.badRequest),
+            });
+          }
 
-        response = await this._createSubscriptionCheckoutSession({
-          ...options,
-          tier,
-          cadence,
-          offer,
-          giftTrialDays,
-          referrer: req.get('referer'),
-        });
-
-        if (isAuthenticated && tier && tier.welcomePageURL) {
-          response.welcomePageUrl = tier.welcomePageURL;
-        }
-      } else if (type === 'donation') {
-        options.personalNote = parsePersonalNote(req.body.personalNote);
-        response = await this._createDonationCheckoutSession(options);
-      } else if (type === 'gift') {
-        if (!membersEnabled) {
-          throw new BadRequestError({
-            message: tpl(messages.badRequest),
+          response = await this._createGiftCheckoutSession({
+            ...options,
+            tierId: req.body.tierId,
+            offerId: req.body.offerId,
+            cadence: req.body.cadence,
+            duration: req.body.duration,
+            deliveryMethod: req.body.deliveryMethod,
+            recipientEmail: req.body.recipientEmail,
+            recipientName: req.body.recipientName,
+            buyerName: req.body.buyerName,
+            personalMessage: req.body.personalMessage,
+            deliveryDate: req.body.deliveryDate,
+            successUrl: siteUrl,
+            cancelUrl: options.cancelUrl || siteUrl,
           });
         }
 
-        response = await this._createGiftCheckoutSession({
-          ...options,
-          tierId: req.body.tierId,
-          offerId: req.body.offerId,
-          cadence: req.body.cadence,
-          duration: req.body.duration,
-          deliveryMethod: req.body.deliveryMethod,
-          recipientEmail: req.body.recipientEmail,
-          recipientName: req.body.recipientName,
-          buyerName: req.body.buyerName,
-          personalMessage: req.body.personalMessage,
-          deliveryDate: req.body.deliveryDate,
-          successUrl: siteUrl,
-          cancelUrl: options.cancelUrl || siteUrl,
+        res.writeHead(200, {
+          'Content-Type': 'application/json',
         });
-      }
 
-      res.writeHead(200, {
-        'Content-Type': 'application/json',
+        return res.end(JSON.stringify(response));
       });
-
-      return res.end(JSON.stringify(response));
     } catch (err) {
       // A Stripe error is answered with a 400 and the message "Unable to initiate checkout
       // session", which is the answer clients already handle: Portal recognises that message and

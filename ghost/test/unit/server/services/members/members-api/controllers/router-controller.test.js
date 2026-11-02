@@ -3,6 +3,12 @@ const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 
 const RouterController = require('../../../../../../../core/server/services/members/members-api/controllers/router-controller');
+const { createTracer } = require('../../../../../../../core/server/lib/tracing/create-tracer');
+const { stripeTracking } = require('../../../../../../../core/server/services/stripe/tracking');
+
+const tracking = stripeTracking(
+  createTracer({ transport: { metric: async () => null }, logging: { error() {} } }),
+);
 
 describe('RouterController', function () {
   let offersAPI;
@@ -103,6 +109,7 @@ describe('RouterController', function () {
   describe('createCheckoutSession', function () {
     it('passes offer metadata to payment link method', async function () {
       const routerController = new RouterController({
+        tracking,
         tiersService,
         paymentsService,
         offersAPI,
@@ -147,6 +154,7 @@ describe('RouterController', function () {
         { id: 'def456', name: 'Newsletter 2', status: 'active' },
       ]);
       const routerController = new RouterController({
+        tracking,
         tiersService,
         paymentsService,
         offersAPI,
@@ -195,6 +203,7 @@ describe('RouterController', function () {
 
     it('keeps an explicit empty newsletter list in the checkout metadata', async function () {
       const routerController = new RouterController({
+        tracking,
         tiersService,
         paymentsService,
         offersAPI,
@@ -243,6 +252,7 @@ describe('RouterController', function () {
         get: sinon.stub().resolves(null),
       };
       const routerController = new RouterController({
+        tracking,
         tiersService,
         paymentsService,
         offersAPI,
@@ -296,6 +306,7 @@ describe('RouterController', function () {
         get: sinon.stub().resolves(member),
       };
       const routerController = new RouterController({
+        tracking,
         tiersService,
         paymentsService,
         offersAPI,
@@ -376,6 +387,7 @@ describe('RouterController', function () {
       it('passes the request referer to the sign-in email for a logged-out paid member', async function () {
         const sendEmailWithMagicLink = sinon.stub().resolves();
         const routerController = new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -452,6 +464,7 @@ describe('RouterController', function () {
 
     it('sets ghostSignupContext to needs_magic_link_email when there is no member context or customer email', async function () {
       const routerController = new RouterController({
+        tracking,
         tiersService,
         paymentsService,
         offersAPI,
@@ -712,6 +725,7 @@ describe('RouterController', function () {
     describe('_createDonationCheckoutSession', function () {
       it('accepts requests with a personalNote included', async function () {
         const routerController = new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -767,6 +781,7 @@ describe('RouterController', function () {
       });
       it('accepts requests without a personalNote included', async function () {
         const routerController = new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -821,6 +836,7 @@ describe('RouterController', function () {
       });
       it('truncates too-long personal notes', async function () {
         const routerController = new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -875,6 +891,7 @@ describe('RouterController', function () {
       });
       it('bounds a personal note far past the limit', async function () {
         const routerController = new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -929,6 +946,7 @@ describe('RouterController', function () {
       });
       it('truncates personal notes that grow past the limit when sanitised', async function () {
         const routerController = new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -983,6 +1001,7 @@ describe('RouterController', function () {
       });
       it('silently discards invalid personal notes', async function () {
         const routerController = new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -1037,6 +1056,7 @@ describe('RouterController', function () {
       });
       it('strips any html from the personal note', async function () {
         const routerController = new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -1092,6 +1112,7 @@ describe('RouterController', function () {
 
       it('throws DisabledFeatureError when donations are not enabled', async function () {
         const routerController = new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -1134,6 +1155,7 @@ describe('RouterController', function () {
     describe('gift checkout', function () {
       function createGiftController(overrides = {}) {
         return new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -1390,6 +1412,7 @@ describe('RouterController', function () {
 
       function createSubscriptionController(overrides = {}) {
         return new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -1405,6 +1428,7 @@ describe('RouterController', function () {
 
       function createGiftReturnController(overrides = {}) {
         return new RouterController({
+          tracking,
           tiersService: {
             api: {
               read: sinon.stub().resolves({
@@ -1754,6 +1778,7 @@ describe('RouterController', function () {
 
     it('adds welcomePageUrl to response for authenticated members when tier has welcomePageURL', async function () {
       const routerController = new RouterController({
+        tracking,
         tiersService: {
           api: {
             read: sinon.stub().resolves({
@@ -1814,6 +1839,7 @@ describe('RouterController', function () {
 
     it('does not add welcomePageUrl to response when tier has no welcomePageURL', async function () {
       const routerController = new RouterController({
+        tracking,
         tiersService: {
           api: {
             read: sinon.stub().resolves({
