@@ -18,6 +18,7 @@ import KoenigSelectorPlugin from '../plugins/KoenigSelectorPlugin';
 import KoenigSnippetPlugin from '../plugins/KoenigSnippetPlugin';
 import ProductPlugin from '../plugins/ProductPlugin';
 import ReplacementStringsPlugin from '../plugins/ReplacementStringsPlugin';
+import SmartQuotesPlugin from '../plugins/SmartQuotesPlugin';
 import TransistorPlugin from '../plugins/TransistorPlugin';
 import {EMAIL_TRANSFORMERS} from '../plugins/MarkdownShortcutPlugin';
 import {ListPlugin} from '@lexical/react/LexicalListPlugin';
@@ -92,6 +93,7 @@ const EmailEditor = ({
                         <EmbedPlugin />
                         <EmailCtaPlugin />
                         <EmEnDashPlugin />
+                        <SmartQuotesPlugin />
                         <EmojiPickerPlugin />
                         <HorizontalRulePlugin />
                         <HtmlPlugin />

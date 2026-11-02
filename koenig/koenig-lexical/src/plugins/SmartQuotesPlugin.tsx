@@ -1,0 +1,316 @@
+import KoenigComposerContext from '../context/KoenigComposerContext';
+import {
+    $addUpdateTag,
+    $getSelection,
+    $hasUpdateTag,
+    $isElementNode,
+    $isLineBreakNode,
+    $isRangeSelection,
+    $isTextNode,
+    COMMAND_PRIORITY_HIGH,
+    KEY_DOWN_COMMAND,
+    LexicalEditor,
+    LexicalNode,
+    PASTE_COMMAND,
+    RangeSelection,
+    TextNode
+} from 'lexical';
+import {ExtendedTextNode} from '@tryghost/kg-default-nodes';
+import {QuoteStyle, closesAfterSpace, findMistypedQuote, getQuoteStyle, getSmartQuote, mayHaveMistypedQuote, smartenQuotes} from '../utils/smart-quotes';
+import {mergeRegister} from '@lexical/utils';
+import {useContext, useEffect} from 'react';
+import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
+
+// Replaces straight quotes with curly quotes and apostrophes as you type or paste
+// following https://smartquotesforsmartpeople.com, using the quotation marks of the
+// publication language (`cardConfig.locale`). Enabled with `cardConfig.feature.smartQuotes`.
+
+const SMART_QUOTES_PASTE_TAG = 'smart-quotes-paste';
+
+// text that precedes a node within the same paragraph/heading, crossing inline formatting and links
+function $getTextBeforeNode(node: LexicalNode): string {
+    let text = '';
+    let current: LexicalNode | null = node;
+
+    while (current) {
+        let sibling = current.getPreviousSibling();
+        while (sibling) {
+            if ($isLineBreakNode(sibling)) {
+                return '\n' + text;
+            }
+            text = sibling.getTextContent() + text;
+            sibling = sibling.getPreviousSibling();
+        }
+
+        const parent = current.getParent();
+        if (!parent || !parent.isInline()) {
+            break;
+        }
+        current = parent;
+    }
+
+    return text;
+}
+
+function $getTextBeforeSelection(selection: RangeSelection): string | null {
+    const start = selection.isBackward() ? selection.focus : selection.anchor;
+    const node = start.getNode();
+
+    if ($isTextNode(node)) {
+        return $getTextBeforeNode(node) + node.getTextContent().slice(0, start.offset);
+    }
+
+    // caret in an empty paragraph or between inline elements
+    if ($isElementNode(node)) {
+        return node.getChildren().slice(0, start.offset).map(child => child.getTextContent()).join('');
+    }
+
+    return null;
+}
+
+// don't touch code (including a `code span that's still being typed) or Ghost's {replacement, "strings"}
+function isInsideCodeOrReplacementString(selection: RangeSelection, textBefore: string): boolean {
+    return selection.hasFormat('code') || /`[^`]*$/.test(textBefore) || /\{[^}]*$/.test(textBefore);
+}
+
+// French opening quotes come with their own space («␣), so a space typed right after one is dropped
+function isSpaceAfterOpeningQuote(textBefore: string, style: QuoteStyle): boolean {
+    const spacing = style.spacing;
+    return !!spacing && (textBefore.endsWith(style.double[0] + spacing) || textBefore.endsWith(style.single[0] + spacing));
+}
+
+function $handleKeyDown(event: KeyboardEvent, editor: LexicalEditor, style: QuoteStyle): boolean {
+    if (
+        event.defaultPrevented ||
+        event.isComposing ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.key.length !== 1 ||
+        // ignore key presses inside card inputs, CodeMirror etc
+        event.target !== editor.getRootElement()
+    ) {
+        return false;
+    }
+
+    const isQuote = event.key === '"' || event.key === '\'';
+    const isWordCharacter = /[\p{L}\p{N}]/u.test(event.key);
+    const domSelection = window.getSelection();
+
+    // besides quotes we only need to act where a quote typed earlier turned out to be wrong:
+    // at the end of a word for ‘90s -> ’90s, or on a letter after a digit for 1990′s -> 1990’s.
+    // Check the DOM first so ordinary typing stays cheap.
+    if (!isQuote && isWordCharacter) {
+        const domTextBefore = domSelection?.anchorNode?.textContent?.slice(0, domSelection.anchorOffset) ?? '';
+        if (!mayHaveMistypedQuote(domTextBefore, style)) {
+            return false;
+        }
+    }
+
+    const selection = $getSelection();
+    if (!$isRangeSelection(selection)) {
+        return false;
+    }
+
+    // the caret may have moved without Lexical having processed the selectionchange yet
+    if (domSelection && domSelection.rangeCount > 0) {
+        selection.applyDOMRange(domSelection.getRangeAt(0));
+    }
+
+    let textBefore = $getTextBeforeSelection(selection);
+    if (textBefore === null || isInsideCodeOrReplacementString(selection, textBefore)) {
+        return false;
+    }
+
+    if (event.key === ' ' && selection.isCollapsed() && isSpaceAfterOpeningQuote(textBefore, style)) {
+        event.preventDefault();
+        return true;
+    }
+
+    // « Bonjour » typed with plain spaces: the space before a closing quote makes way for ours
+    if (isQuote && selection.isCollapsed() && closesAfterSpace(event.key, textBefore, style)) {
+        const node = selection.anchor.getNode();
+        if ($isTextNode(node) && selection.anchor.offset > 0) {
+            selection.anchor.set(node.getKey(), selection.anchor.offset - 1, 'text');
+            textBefore = textBefore.slice(0, -1);
+        }
+    }
+
+    const fixedQuote = selection.isCollapsed() && $fixMistypedQuote(selection, event.key, style);
+    if (fixedQuote) {
+        textBefore = $getTextBeforeSelection(selection) ?? textBefore;
+    }
+
+    if (!isQuote && !fixedQuote) {
+        return false;
+    }
+
+    event.preventDefault();
+    selection.insertText(isQuote ? getSmartQuote(event.key, textBefore, '', style) : event.key);
+    return true;
+}
+
+// corrects a quote typed before we knew what followed it, e.g. ‘90s -> ’90s
+function $fixMistypedQuote(selection: RangeSelection, nextChar: string, style: QuoteStyle): boolean {
+    const node = selection.anchor.getNode();
+    if (!$isTextNode(node)) {
+        return false;
+    }
+
+    const fix = findMistypedQuote(node.getTextContent().slice(0, selection.anchor.offset), nextChar, style);
+    if (!fix) {
+        return false;
+    }
+
+    node.spliceText(fix.index, 1, fix.replacement, false);
+    return true;
+}
+
+// Dead keys (e.g. US-International) and IMEs insert quotes through a composition rather than a
+// keydown we can intercept, so convert the quote once the composed text has been inserted
+function $smartenComposedQuote(quote: string, style: QuoteStyle): boolean {
+    const selection = $getSelection();
+    if (!$isRangeSelection(selection) || !selection.isCollapsed()) {
+        return false;
+    }
+
+    const node = selection.anchor.getNode();
+    const offset = selection.anchor.offset;
+    if (!$isTextNode(node) || node.getTextContent().charAt(offset - 1) !== quote) {
+        return false;
+    }
+
+    const textBefore = $getTextBeforeNode(node) + node.getTextContent().slice(0, offset - 1);
+    if (isInsideCodeOrReplacementString(selection, textBefore)) {
+        return true;
+    }
+
+    node.spliceText(offset - 1, 1, getSmartQuote(quote, textBefore, '', style), true);
+    $fixMistypedQuote(selection, quote, style);
+    return true;
+}
+
+// the text around the caret when a paste starts, which keeps its quotes as they were
+type PasteSurroundings = {key: string, prefix: string, suffix: string};
+
+function $getPasteSurroundings(): PasteSurroundings | null {
+    const selection = $getSelection();
+    if (!$isRangeSelection(selection)) {
+        return null;
+    }
+
+    const [start, end] = selection.isBackward() ? [selection.focus, selection.anchor] : [selection.anchor, selection.focus];
+    const startNode = start.getNode();
+    const endNode = end.getNode();
+
+    return {
+        key: startNode.getKey(),
+        prefix: $isTextNode(startNode) ? startNode.getTextContent().slice(0, start.offset) : '',
+        suffix: $isTextNode(endNode) ? endNode.getTextContent().slice(end.offset) : ''
+    };
+}
+
+// pasting inside a text node splits and merges it with the pasted text, so the transform also
+// sees text that was already there. Only convert the part between the existing prefix and suffix
+function $smartenPastedText(node: TextNode, surroundings: PasteSurroundings | null, style: QuoteStyle) {
+    if (!$hasUpdateTag(SMART_QUOTES_PASTE_TAG) || node.hasFormat('code')) {
+        return;
+    }
+
+    const text = node.getTextContent();
+    let start = 0;
+    let end = text.length;
+
+    if (surroundings) {
+        if (node.getKey() === surroundings.key && text.startsWith(surroundings.prefix)) {
+            start = surroundings.prefix.length;
+        }
+        if (surroundings.suffix && text.endsWith(surroundings.suffix) && text.length - surroundings.suffix.length >= start) {
+            end = text.length - surroundings.suffix.length;
+        }
+    }
+
+    const pasted = text.slice(start, end);
+    const smartened = smartenQuotes(pasted, $getTextBeforeNode(node) + text.slice(0, start), style);
+
+    if (smartened === pasted) {
+        return;
+    }
+
+    node.setTextContent(text.slice(0, start) + smartened + text.slice(end));
+
+    // quotes are usually replaced one character for one, but French spacing changes the length,
+    // so keep the caret after the pasted text
+    const delta = smartened.length - pasted.length;
+    const selection = $getSelection();
+    if (delta !== 0 && $isRangeSelection(selection)) {
+        for (const point of [selection.anchor, selection.focus]) {
+            if (point.key === node.getKey() && point.type === 'text' && point.offset >= end) {
+                point.set(point.key, point.offset + delta, 'text');
+            }
+        }
+    }
+}
+
+export const SmartQuotesPlugin = ({locale}: {locale?: string} = {}) => {
+    const [editor] = useLexicalComposerContext();
+    const {cardConfig} = useContext(KoenigComposerContext);
+    const enabled = cardConfig?.feature?.smartQuotes === true;
+    // quote styles are module constants so this is referentially stable
+    const style = getQuoteStyle(locale ?? cardConfig?.locale);
+
+    useEffect(() => {
+        if (!enabled) {
+            return;
+        }
+
+        let pasteSurroundings: PasteSurroundings | null = null;
+        const onPastedText = (node: TextNode) => $smartenPastedText(node, pasteSurroundings, style);
+
+        const onCompositionEnd = (event: CompositionEvent) => {
+            const quote = event.data;
+            if (quote !== '"' && quote !== '\'') {
+                return;
+            }
+            // Chrome and Safari have inserted the composed text by now but Firefox inserts it
+            // after compositionend, so try again on the next tick if the quote isn't there yet.
+            // history-merge keeps the conversion in the same undo step as the typed quote
+            editor.update(() => {
+                if (!$smartenComposedQuote(quote, style)) {
+                    setTimeout(() => {
+                        editor.update(() => $smartenComposedQuote(quote, style), {tag: 'history-merge'});
+                    });
+                }
+            }, {tag: 'history-merge'});
+        };
+
+        return mergeRegister(
+            editor.registerCommand(
+                KEY_DOWN_COMMAND,
+                (event, dispatchingEditor) => $handleKeyDown(event, dispatchingEditor, style),
+                COMMAND_PRIORITY_HIGH
+            ),
+            // tag the paste update so we only convert pasted text and not all existing content
+            editor.registerCommand(
+                PASTE_COMMAND,
+                () => {
+                    pasteSurroundings = $getPasteSurroundings();
+                    $addUpdateTag(SMART_QUOTES_PASTE_TAG);
+                    return false;
+                },
+                COMMAND_PRIORITY_HIGH
+            ),
+            editor.registerRootListener((rootElement, prevRootElement) => {
+                prevRootElement?.removeEventListener('compositionend', onCompositionEnd);
+                rootElement?.addEventListener('compositionend', onCompositionEnd);
+            }),
+            () => editor.getRootElement()?.removeEventListener('compositionend', onCompositionEnd),
+            editor.registerNodeTransform(TextNode, onPastedText),
+            // nested editors may not have ExtendedTextNode registered
+            editor.hasNode(ExtendedTextNode) ? editor.registerNodeTransform(ExtendedTextNode, onPastedText) : () => {}
+        );
+    }, [editor, enabled, style]);
+
+    return null;
+};
+
+export default SmartQuotesPlugin;

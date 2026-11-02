@@ -8,6 +8,15 @@ export const searchKeywords = {
   ],
   timeZone: ['general', 'time', 'date', 'site timezone', 'time zone'],
   publicationLanguage: ['general', 'publication language', 'locale'],
+  editor: [
+    'general',
+    'editor',
+    'writing',
+    'smart quotes',
+    'curly quotes',
+    'typography',
+    'apostrophes',
+  ],
   users: [
     'general',
     'users and permissions',

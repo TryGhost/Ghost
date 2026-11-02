@@ -30,6 +30,7 @@ export const explore = 'explore';
 export const network = 'network';
 export const tipsAndDonations = 'tips-and-donations';
 export const publicationLanguage = 'publication-language';
+export const editor = 'editor';
 export const timezone = 'timezone';
 export const socialAccounts = 'social-accounts';
 export const seoMeta = 'seometa';

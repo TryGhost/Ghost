@@ -1,6 +1,7 @@
 import React from 'react';
 
 import Analytics from '@/settings/membership/analytics';
+import Editor from './editor';
 import PublicationLanguage from './publication-language';
 import SEOMeta from './seo-meta';
 import SearchableSection from '@/settings/components/searchable-section';
@@ -18,6 +19,7 @@ const GeneralSettings: React.FC = () => {
       <TitleAndDescription keywords={searchKeywords.titleAndDescription} />
       <TimeZone keywords={searchKeywords.timeZone} />
       <PublicationLanguage keywords={searchKeywords.publicationLanguage} />
+      <Editor keywords={searchKeywords.editor} />
       <Users keywords={searchKeywords.users} />
       <SEOMeta keywords={searchKeywords.metadata} />
       <SocialAccounts keywords={searchKeywords.socialAccounts} />

@@ -88,6 +88,7 @@ export const settingsDefaults: Record<string, SettingValue> = {
   shared_views: '[]',
   editor_default_email_recipients: 'visibility',
   editor_default_email_recipients_filter: 'all',
+  editor_smart_quotes: true,
   announcement_content: null,
   announcement_visibility: '[]',
   announcement_background: 'dark',

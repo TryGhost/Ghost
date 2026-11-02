@@ -329,6 +329,10 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "editor_smart_quotes",
+      "value": true,
+    },
+    Object {
       "key": "announcement_content",
       "value": null,
     },
@@ -1252,6 +1256,10 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "editor_smart_quotes",
+      "value": true,
+    },
+    Object {
       "key": "announcement_content",
       "value": "<p>Great news coming soon!</p>",
     },
@@ -1726,6 +1734,10 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "editor_smart_quotes",
+      "value": true,
+    },
+    Object {
       "key": "announcement_content",
       "value": "<p>Great news coming soon!</p>",
     },
@@ -2198,6 +2210,10 @@ Object {
     Object {
       "key": "editor_default_email_recipients_filter",
       "value": "all",
+    },
+    Object {
+      "key": "editor_smart_quotes",
+      "value": true,
     },
     Object {
       "key": "announcement_content",
@@ -2719,6 +2735,10 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "editor_smart_quotes",
+      "value": true,
+    },
+    Object {
       "key": "announcement_content",
       "value": "<p>Great news coming soon!</p>",
     },
@@ -3190,6 +3210,10 @@ Object {
     Object {
       "key": "editor_default_email_recipients_filter",
       "value": "all",
+    },
+    Object {
+      "key": "editor_smart_quotes",
+      "value": true,
     },
     Object {
       "key": "announcement_content",
@@ -4214,6 +4238,10 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "editor_smart_quotes",
+      "value": true,
+    },
+    Object {
       "key": "announcement_content",
       "value": "<p>Great news coming soon!</p>",
     },
@@ -4688,6 +4716,10 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "editor_smart_quotes",
+      "value": true,
+    },
+    Object {
       "key": "announcement_content",
       "value": "<p>Great news coming soon!</p>",
     },
@@ -5160,6 +5192,10 @@ Object {
     Object {
       "key": "editor_default_email_recipients_filter",
       "value": "all",
+    },
+    Object {
+      "key": "editor_smart_quotes",
+      "value": true,
     },
     Object {
       "key": "announcement_content",
@@ -5640,6 +5676,10 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "editor_smart_quotes",
+      "value": true,
+    },
+    Object {
       "key": "announcement_content",
       "value": "<p>Great news coming soon!</p>",
     },
@@ -6111,6 +6151,10 @@ Object {
     Object {
       "key": "editor_default_email_recipients_filter",
       "value": "all",
+    },
+    Object {
+      "key": "editor_smart_quotes",
+      "value": true,
     },
     Object {
       "key": "announcement_content",
@@ -6589,6 +6633,10 @@ Object {
     Object {
       "key": "editor_default_email_recipients_filter",
       "value": "all",
+    },
+    Object {
+      "key": "editor_smart_quotes",
+      "value": true,
     },
     Object {
       "key": "announcement_content",
@@ -7457,6 +7505,10 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "editor_smart_quotes",
+      "value": true,
+    },
+    Object {
       "key": "announcement_content",
       "value": "<p>Great news coming soon!</p>",
     },
@@ -7929,6 +7981,10 @@ Object {
     Object {
       "key": "editor_default_email_recipients_filter",
       "value": "all",
+    },
+    Object {
+      "key": "editor_smart_quotes",
+      "value": true,
     },
     Object {
       "key": "announcement_content",
@@ -8406,6 +8462,10 @@ Object {
       "value": "all",
     },
     Object {
+      "key": "editor_smart_quotes",
+      "value": true,
+    },
+    Object {
       "key": "announcement_content",
       "value": "<p>Great news coming soon!</p>",
     },
@@ -8879,6 +8939,10 @@ Object {
     Object {
       "key": "editor_default_email_recipients_filter",
       "value": "all",
+    },
+    Object {
+      "key": "editor_smart_quotes",
+      "value": true,
     },
     Object {
       "key": "announcement_content",
@@ -9452,6 +9516,10 @@ Object {
     Object {
       "key": "editor_default_email_recipients_filter",
       "value": "all",
+    },
+    Object {
+      "key": "editor_smart_quotes",
+      "value": true,
     },
     Object {
       "key": "announcement_content",

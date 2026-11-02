@@ -41,6 +41,7 @@ export const settingsScreen = {
   network: () => page.getByTestId(sel.network),
   tipsAndDonations: () => page.getByTestId(sel.tipsAndDonations),
   publicationLanguage: () => page.getByTestId(sel.publicationLanguage),
+  editor: () => page.getByTestId(sel.editor),
   timezone: () => page.getByTestId(sel.timezone),
   socialAccounts: () => page.getByTestId(sel.socialAccounts),
   seoMeta: () => page.getByTestId(sel.seoMeta),
