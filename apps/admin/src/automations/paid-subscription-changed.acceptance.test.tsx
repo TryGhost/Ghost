@@ -67,7 +67,7 @@ describe('Paid subscription changed trigger', () => {
     await expect.element(from()).toHaveAttribute('placeholder', 'Select tiers...');
     await expect.element(to()).toHaveAttribute('placeholder', 'Select tiers...');
 
-    // Active paid tiers only, under the standalone option.
+    // Every paid tier can be a source, including archived tiers.
     await from().click();
     await expect
       .poll(() =>
@@ -76,7 +76,7 @@ describe('Paid subscription changed trigger', () => {
           .elements()
           .map((row) => row.textContent),
       )
-      .toEqual(['Any paid tier', 'Bronze', 'Gold']);
+      .toEqual(['Any paid tier', 'Bronze', 'Gold', 'Legacy (archived)']);
     await option('Bronze').click();
     await userEvent.keyboard('{Escape}');
 
