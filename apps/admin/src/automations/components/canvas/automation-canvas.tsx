@@ -494,6 +494,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     searchParams: { filter: 'type:paid', limit: 'all' },
     defaultErrorHandler: false,
     enabled: tiersEnabled,
+    staleTime: 0,
   });
   const tierQuery = useMemo(
     () => ({ data: tierData, isLoading: tiersLoading, isError: tiersError, refetch: refetchTiers }),
