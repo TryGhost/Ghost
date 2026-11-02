@@ -135,7 +135,7 @@
   --field-disabled-surface: var(--field-surface);
   --field-border: transparent;
   --dropzone-surface: var(--field-surface);
-  --radius-field: 2px;
+  --radius-field: var(--radius-sm);
   /* Stroke of 16px icons, in the icon's 24-unit grid: about 1.17px on screen. */
   --icon-stroke: 1.75;
   --control-pressed-shadow: lch(0 0 0 / 0.07) 0px 1px 2px 0px inset;

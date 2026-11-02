@@ -137,7 +137,7 @@ Settings, the editor, the automation editor, mobile and pages without a
 navigation inside the same sidebar, pinned without changing the stored mode. Mobile keeps the sidebar sheet, and the flag-off path
 preserves the docked sidebar and the separate Settings sidebar.
 
-The `admin7Design` milestone also fills text-entry fields with no border and 2px
+The `admin7Design` milestone also fills text-entry fields with no border and 4px
 corners, gives 16px icons a shared stroke and sets column headers in a small
 uppercase label style. Checkboxes, radios, Filter bar items and Koenig keep their
 current look, and other icon sizes keep their own stroke.
