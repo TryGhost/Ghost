@@ -356,6 +356,9 @@
   --color-button-hover: var(--button-hover);
   --color-button-ghost-hover: var(--button-ghost-hover);
   --color-button-pressed: var(--button-pressed);
+  --color-badge-warning: var(--badge-warning);
+  --color-badge-warning-hover: var(--badge-warning-hover);
+  --color-badge-warning-foreground: var(--badge-warning-foreground);
   --color-interactive-hover: var(--interactive-hover);
   --color-filter-bar-background: var(--filter-bar-background);
   --color-filter-bar-item-hover: var(--filter-bar-item-hover);

@@ -73,6 +73,11 @@
   --state-success-foreground: var(--color-black);
   --state-warning: var(--color-yellow-700);
   --state-warning-foreground: var(--color-black);
+  /* A 20% tint of the dark yellow-700 reads beige, so the warning Badge gets
+     its own clean pale yellow */
+  --badge-warning: var(--color-yellow-200);
+  --badge-warning-hover: var(--color-yellow-300);
+  --badge-warning-foreground: var(--color-yellow-700);
   --state-danger: var(--color-red-600);
   --state-danger-foreground: var(--color-black);
   --control-height: 32px;
@@ -231,6 +236,9 @@
   --state-info: var(--color-blue-500);
   --state-success: var(--color-green-500);
   --state-warning: var(--color-yellow-500);
+  --badge-warning: color-mix(in oklab, var(--state-warning) 20%, transparent);
+  --badge-warning-hover: color-mix(in oklab, var(--state-warning) 30%, transparent);
+  --badge-warning-foreground: var(--color-yellow-600);
   --state-danger: var(--color-red-500);
   --chart-1: hsl(201 100% 50%);
   --chart-2: hsl(201 88% 70%);
@@ -354,6 +362,9 @@
   --state-success-foreground: var(--color-black);
   --state-warning: var(--color-yellow-400);
   --state-warning-foreground: var(--color-black);
+  --badge-warning: color-mix(in oklab, var(--state-warning) 20%, transparent);
+  --badge-warning-hover: color-mix(in oklab, var(--state-warning) 30%, transparent);
+  --badge-warning-foreground: var(--color-yellow-600);
   --state-danger: var(--color-red-500);
   --state-danger-foreground: var(--color-black);
   --chart-gray: var(--color-gray-700);
