@@ -128,8 +128,9 @@
   --control-disabled-surface: var(--color-gray-100);
   --control-border: color-mix(in oklab, var(--color-gray-200), var(--color-gray-300));
   /* Text-entry fields are filled and borderless. Buttons, checkboxes and radios
-     keep the --control-* tokens above. */
-  --field-surface: var(--color-gray-100);
+     keep the --control-* tokens above. The fill sits between gray-100 and gray-200:
+     the Admin7Vision prototype's lightness in the cool gray hue. */
+  --field-surface: oklch(96.39% 0.0008 255);
   --field-readonly-surface: var(--field-surface);
   --field-disabled-surface: var(--field-surface);
   --field-border: transparent;
