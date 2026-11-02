@@ -13,7 +13,10 @@ import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-c
 
 export type EditableRecordValue = Partial<Record<string, string>>;
 
-export type EditableCustomFieldValue = string | EditableRecordValue;
+/** The options picked for a list, in the field's order. */
+export type EditableListValue = string[];
+
+export type EditableCustomFieldValue = string | EditableRecordValue | EditableListValue;
 
 export interface MemberEditableLabel {
   name: string;
@@ -72,6 +75,7 @@ export function emptyEditableValue(
   return matchShape<EditableCustomFieldValue>(field.type, {
     scalar: () => '',
     record: () => ({}),
+    set: () => [],
   });
 }
 
@@ -109,6 +113,7 @@ export function editableValueOf(
       );
       return Object.keys(record).length ? record : undefined;
     },
+    set: () => undefined,
   });
 }
 
@@ -287,12 +292,14 @@ function customFieldValueToSave(
     // string; leaving it out would leave it unchanged. A record with nothing left in it clears the
     // whole field, which the caller sends as `null`.
     record: ({ parts }) => {
-      if (typeof value === 'string') {
+      if (typeof value === 'string' || Array.isArray(value)) {
         return value;
       }
       const record = trimmedParts(parts, value);
       return Object.values(record).some((part) => part !== '') ? record : undefined;
     },
+    // A list is written whole, and one picking nothing clears it.
+    set: () => (Array.isArray(value) && value.length === 0 ? undefined : value),
   });
 }
 
