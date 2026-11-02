@@ -234,7 +234,7 @@ function getAction(event: RawMemberEvent, hasMultipleNewsletters: boolean): stri
   if (event.type === 'signup_event') {
     switch (event.data.source) {
       case 'admin':
-        return 'signed up via manual entry';
+        return 'signed up via Admin';
       case 'api':
         return 'signed up via API';
       case 'import':

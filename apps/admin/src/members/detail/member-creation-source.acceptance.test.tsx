@@ -4,7 +4,7 @@ import { fakeAdminEndpoint, fakeMembers, member, renderAdminApp } from '@test-ut
 
 describe('Member creation source', () => {
   it.each([
-    { name: 'manual entry', source: 'admin', action: 'Signed up via manual entry' },
+    { name: 'manual entry', source: 'admin', action: 'Signed up via Admin' },
     { name: 'API', source: 'api', action: 'Signed up via API' },
     { name: 'import', source: 'import', action: 'Signed up via import' },
     { name: 'system', source: 'system', action: 'Signed up via system' },
