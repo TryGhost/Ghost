@@ -118,6 +118,10 @@ export const BASE_GHOST_ENV = [
 
   // Disable browser-side Sentry reporting during tests
   'client_sentry__disabled=true',
+
+  // Fetch localhost app manifests from the host, as compose.dev.yaml does: inside the container,
+  // localhost is the container. The browser still loads the app's pages from localhost.
+  'apps__localhostAlias=host.docker.internal',
 ] as const;
 
 /**

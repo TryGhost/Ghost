@@ -1,0 +1,143 @@
+import { AppDetailsPage, AppPage, AppsPage, LoginPage } from '@/admin-pages';
+import { FixtureApp } from '@/helpers/services/apps';
+import { expect, installApp, test, withIsolatedPage } from '@/helpers/playwright';
+
+const POSTS_API = '**/ghost/api/admin/posts/**';
+
+test.describe('Ghost Admin - App install lifecycle', () => {
+  test.use({ labs: { apps: true } });
+
+  test('installs an app that opens and calls the Admin API', async ({ page, fixtureApp }) => {
+    const appsPage = new AppsPage(page);
+    const appPage = new AppPage(page);
+
+    await appsPage.gotoInstallLink(fixtureApp.manifestUrl);
+    await expect(appsPage.installDialog.modal).toContainText(fixtureApp.manifest.name);
+    await appsPage.installDialog.install();
+
+    await expect(appPage.frame).toBeVisible();
+    expect(await appPage.appPagePath()).toBe('/app.html');
+    const result = await appPage.bridgeFetch({ path: '/posts/' });
+    expect(result.status).toBe(200);
+    expect(JSON.parse(result.body ?? '')).toHaveProperty('posts');
+  });
+
+  test('refuses app requests to endpoints apps can’t use', async ({ page, fixtureApp }) => {
+    const appPage = new AppPage(page);
+    await installApp(page, fixtureApp.manifestUrl);
+
+    expect(await appPage.bridgeFetch({ path: '/db/' })).toEqual({
+      error: "blocked: Apps can't use GET /db/",
+    });
+    expect(await appPage.bridgeFetch({ path: '/users/me/token/' })).toEqual({
+      error: "blocked: Apps can't use GET /users/me/token/",
+    });
+  });
+
+  test('an uninstall from another Admin session ends the open app’s session, and reinstalling starts a new installation', async ({
+    page,
+    browser,
+    baseURL,
+    fixtureApp,
+    ghostAccountAdministrator,
+  }) => {
+    const appPage = new AppPage(page);
+    const detailsPage = new AppDetailsPage(page);
+    const installationId = await installApp(page, fixtureApp.manifestUrl);
+    const oldFrame = await appPage.appFrame();
+
+    // The app's call is still running when the session ends: its request is held, never answered.
+    await page.route(POSTS_API, () => {});
+    const held = page.waitForRequest(POSTS_API);
+    const aborted = page.waitForEvent('requestfailed', (request) =>
+      request.url().includes('/ghost/api/admin/posts/'),
+    );
+    await appPage.startBridgeFetch({ path: '/posts/' }, oldFrame);
+    await held;
+
+    await withIsolatedPage(browser, { baseURL }, async ({ page: otherPage }) => {
+      const loginPage = new LoginPage(otherPage);
+      await loginPage.goto();
+      await loginPage.signIn(ghostAccountAdministrator.email, ghostAccountAdministrator.password);
+
+      const otherDetailsPage = new AppDetailsPage(otherPage);
+      await otherDetailsPage.gotoDetails(installationId);
+      await otherDetailsPage.uninstall();
+    });
+
+    // Admin sees the change when the publisher comes back to the tab, and ends the session: the
+    // app's running call is cancelled and its frame removed.
+    await appPage.returnToTab();
+    await aborted;
+    await expect(appPage.notInstalled).toBeVisible();
+    expect(oldFrame.isDetached()).toBe(true);
+    await page.unrouteAll({ behavior: 'ignoreErrors' });
+
+    const reinstalledId = await installApp(page, fixtureApp.manifestUrl);
+    expect(reinstalledId).not.toBe(installationId);
+    expect(await appPage.sessionRevision()).toBe(0);
+
+    await appPage.gotoApp(installationId);
+    await expect(appPage.notInstalled).toBeVisible();
+    await detailsPage.gotoDetails(installationId);
+    await expect(detailsPage.details).toContainText('Uninstalled');
+    await detailsPage.gotoDetails(reinstalledId);
+    await expect(detailsPage.historyEntries).toHaveCount(1);
+    await expect(detailsPage.historyEntries).toContainText('Installed');
+  });
+
+  test('installs the app as it is now when it changed during the review', async ({
+    page,
+    fixtureApp,
+  }) => {
+    const appsPage = new AppsPage(page);
+    const appPage = new AppPage(page);
+    const { installDialog } = appsPage;
+
+    await appsPage.gotoInstallLink(fixtureApp.manifestUrl);
+    await expect(installDialog.installButton).toBeVisible();
+    fixtureApp.updateManifest({ description: 'Changed during the review.' });
+
+    const confirmed = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        new URL(response.url()).pathname === '/ghost/api/admin/apps/installations/',
+    );
+    await installDialog.installButton.click();
+    expect((await confirmed).status()).toBe(409);
+    await expect(installDialog.notice).toBeVisible();
+    await expect(installDialog.modal).toContainText('Changed during the review.');
+
+    await installDialog.install();
+    await expect(appPage.frame).toBeVisible();
+  });
+
+  test('moving an app through its install link updates the existing installation', async ({
+    page,
+    fixtureApp,
+  }) => {
+    const appsPage = new AppsPage(page);
+    const appPage = new AppPage(page);
+    const detailsPage = new AppDetailsPage(page);
+    const installationId = await installApp(page, fixtureApp.manifestUrl);
+    // The same app, now served from another host.
+    const movedApp = new FixtureApp({ appId: fixtureApp.manifest.id });
+    await movedApp.start();
+
+    try {
+      await appsPage.gotoInstallLink(movedApp.manifestUrl);
+      await expect(appsPage.installDialog.moveWarning).toBeVisible();
+      await appsPage.installDialog.approveChanges();
+
+      await appPage.gotoApp(installationId);
+      await expect(appPage.frame).toBeVisible();
+      await expect(appPage.frame).toHaveAttribute('src', `${movedApp.origin}/app.html`);
+      await detailsPage.gotoDetails(installationId);
+      await expect(detailsPage.historyEntries.first()).toContainText(
+        `Moved to ${new URL(movedApp.origin).host}`,
+      );
+    } finally {
+      await movedApp.stop();
+    }
+  });
+});

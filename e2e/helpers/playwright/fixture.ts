@@ -19,6 +19,7 @@ import { EmailClient, MailPit } from '@/helpers/services/email/mail-pit';
 import { FakeMailgunServer, MailgunTestService } from '@/helpers/services/mailgun';
 import { FakeStripeServer, StripeTestService, WebhookClient } from '@/helpers/services/stripe';
 import { FakeUpgradeHost } from '@/helpers/services/upgrade';
+import { FixtureApp } from '@/helpers/services/apps';
 import { GHOST_OWNER } from '@/helpers/environment/constants';
 import { GhostInstance, getEnvironmentManager, isAllowedHost } from '@/helpers/environment';
 import { SettingsService } from '@/helpers/services/settings/settings-service';
@@ -117,6 +118,9 @@ export interface GhostInstanceFixture {
   // Forces per-test isolation because Ghost boots against a per-test fake upgrade host.
   upgradeHostEnabled?: boolean;
   upgradeHost?: FakeUpgradeHost;
+  // An app the test can install. Its ID is unique to the test, so it never meets another test's
+  // installation in a shared per-file environment.
+  fixtureApp: FixtureApp;
   emailClient: EmailClient;
   ghostAccountOwner: User;
   ghostAccountAuthor: StaffAccount;
@@ -581,6 +585,16 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
 
     const service = new MailgunTestService(mailgunServer);
     await use(service);
+  },
+
+  fixtureApp: async ({}, use, testInfo) => {
+    const app = new FixtureApp({ appId: `org.ghost.e2e.app-${testInfo.testId}-${testInfo.retry}` });
+    await app.start();
+    debug('Fixture app started on port', app.port);
+
+    await use(app);
+
+    await app.stop();
   },
 
   emailClient: async ({}, use) => {
