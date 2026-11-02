@@ -3,15 +3,23 @@ import MembersActions from '@/members/components/members-actions';
 import { exportMembers } from '@/members/components/members-actions-helpers';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render as testingLibraryRender, screen } from '@testing-library/react';
+import { act, render as testingLibraryRender, screen } from '@testing-library/react';
+import { toast } from 'sonner';
 
 const render = (ui: React.ReactElement) => testingLibraryRender(ui, { wrapper: TooltipProvider });
 
 const importModalPropsRef: { current: Record<string, unknown> | null } = { current: null };
-const { mockBlobDownloadFromEndpoint, mockUseLocation, mockUseNavigate } = vi.hoisted(() => ({
-  mockBlobDownloadFromEndpoint: vi.fn(),
-  mockUseLocation: vi.fn(),
-  mockUseNavigate: vi.fn(),
+const removeLabelModalPropsRef: { current: Record<string, unknown> | null } = { current: null };
+const { mockBlobDownloadFromEndpoint, mockBulkEditAsync, mockUseLocation, mockUseNavigate } =
+  vi.hoisted(() => ({
+    mockBlobDownloadFromEndpoint: vi.fn(),
+    mockBulkEditAsync: vi.fn(),
+    mockUseLocation: vi.fn(),
+    mockUseNavigate: vi.fn(),
+  }));
+
+vi.mock('sonner', () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
 }));
 
 vi.mock('@tryghost/admin-x-framework', () => ({
@@ -29,7 +37,10 @@ vi.mock('@/members/components/bulk-action-modals', () => ({
     return React.createElement('div', { 'data-testid': 'import-members-modal' });
   },
   AddLabelModal: () => React.createElement('div'),
-  RemoveLabelModal: () => React.createElement('div'),
+  RemoveLabelModal: (props: Record<string, unknown>) => {
+    removeLabelModalPropsRef.current = props;
+    return React.createElement('div');
+  },
   UnsubscribeModal: () => React.createElement('div'),
   DeleteModal: () => React.createElement('div'),
 }));
@@ -43,7 +54,7 @@ vi.mock('@tryghost/admin-x-framework/api/newsletters', () => ({
 
 vi.mock('@tryghost/admin-x-framework/api/members', () => ({
   useBulkEditMembers: () => ({
-    mutateAsync: vi.fn(),
+    mutateAsync: mockBulkEditAsync,
     isPending: false,
   }),
   useBulkDeleteMembers: () => ({
@@ -70,7 +81,11 @@ const renderMembersActions = (props: Partial<React.ComponentProps<typeof Members
 describe('MembersActions', () => {
   beforeEach(() => {
     importModalPropsRef.current = null;
+    removeLabelModalPropsRef.current = null;
     mockBlobDownloadFromEndpoint.mockReset();
+    mockBulkEditAsync.mockReset();
+    vi.mocked(toast.success).mockReset();
+    vi.mocked(toast.error).mockReset();
     setLocation('/members');
     mockUseNavigate.mockReturnValue(vi.fn());
   });
@@ -155,6 +170,19 @@ describe('MembersActions', () => {
       'href',
       '#/members/new?back=%2Fmembers%3Ffilter%3Dlabel%253AVIP%26search%3Dalice',
     );
+  });
+
+  it('refuses to remove several labels when the server cannot remove them together', async () => {
+    renderMembersActions({ canRemoveMultipleLabels: false });
+    const onConfirm = removeLabelModalPropsRef.current?.onConfirm as (
+      labelIds: string[],
+    ) => Promise<void>;
+
+    await act(() => onConfirm(['label-1', 'label-2']));
+
+    expect(mockBulkEditAsync).not.toHaveBeenCalled();
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith('Failed to remove label', expect.anything());
   });
 
   it('can hide the member header actions without hiding import modal state', () => {
