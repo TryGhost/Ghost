@@ -283,6 +283,80 @@ describe('Members list', () => {
     await expect(membersScreen.memberRows()).toHaveCount(1);
   });
 
+  describe('a list field filtered by every option chosen', () => {
+    const animals = {
+      namespace: CUSTOM_NAMESPACE,
+      key: KeySchema.parse('favourite_animals'),
+      name: 'Favourite animals',
+      type: 'list' as const,
+      settings: { options: ['Dog', 'Cat'], multiple: true },
+      status: 'active' as const,
+      access: { member: 'none' as const },
+      created_at: '2026-08-05T00:00:00.000Z',
+      updated_at: null,
+    };
+    const BOTH = "(metafields.identity:'custom.favourite_animals'+metafields.value:['Cat'+'Dog'])";
+
+    it('finds members holding all of the options chosen', async () => {
+      fakeMemberCustomFields([animals]);
+      fakeAdminEndpoint('GET', '/members/metafields/custom/favourite_animals/values/', {
+        values: [],
+      });
+      const membersApi = fakeMembers(({ filter }) =>
+        filter ? [member({ name: 'Both' })] : [member({ name: 'Both' }), member()],
+      );
+      await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+
+      await membersScreen.addMultiselectFilter('Favourite animals', ['Dog', 'Cat']);
+      await userEvent.keyboard('{Escape}');
+      await page.getByRole('button', { name: 'is any of', exact: true }).click();
+      await membersScreen.menuItem('is all of').click();
+
+      await expect(membersApi).toHaveSentFilter(BOTH);
+      await expect(membersScreen.memberRows()).toHaveCount(1);
+    });
+
+    // Members keep every option they held when a field changes from taking several answers to
+    // one, so "is all of" can still match.
+    it('offers "is all of" on a list that takes one option', async () => {
+      fakeMemberCustomFields([{ ...animals, settings: { ...animals.settings, multiple: false } }]);
+      fakeAdminEndpoint('GET', '/members/metafields/custom/favourite_animals/values/', {
+        values: [],
+      });
+      fakeMembers([member()]);
+      await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+
+      await membersScreen.addMultiselectFilter('Favourite animals', ['Dog']);
+      await userEvent.keyboard('{Escape}');
+      await page.getByRole('button', { name: 'is any of', exact: true }).click();
+
+      await expect.element(membersScreen.menuItem('is all of')).toBeVisible();
+    });
+
+    it('reads a saved filter for all of the options back as one', async () => {
+      fakeMemberCustomFields([animals]);
+      fakeAdminEndpoint('GET', '/members/metafields/custom/favourite_animals/values/', {
+        values: [],
+      });
+      const membersApi = fakeMembers([member({ name: 'Both' })]);
+      const typed =
+        "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dog'+'Cat'])";
+      await renderAdminApp(`/members?filter=${encodeURIComponent(typed)}`, {
+        labs: { membersCustomFields: true },
+      });
+
+      await expect
+        .element(page.getByRole('button', { name: 'is all of', exact: true }))
+        .toBeVisible();
+      await expect
+        .element(page.getByRole('button', { name: '2 selected', exact: true }))
+        .toBeVisible();
+      // The saved filter names Dog first. Admin writes the filter again from the options it read
+      // back, sorted, so a filter naming Cat first shows both options were read.
+      await expect(membersApi).toHaveSentFilter(BOTH);
+    });
+  });
+
   // The deploy-compatibility rule in apps/admin/README.md: an Admin deployed ahead of a
   // Core without the definitions endpoint must keep filtering intact. Adding a filter swaps
   // the filter bar between its two placements, and each one asks for the definitions; the
