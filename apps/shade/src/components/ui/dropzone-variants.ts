@@ -11,7 +11,7 @@ const dropzoneBaseVariants = cva(
       variant: {
         default: cn(
           inputSurface('self'),
-          'border-2 border-dashed bg-transparent p-10 hover:border-border-strong',
+          'border-2 border-dashed bg-dropzone-surface p-10 hover:border-border-strong',
         ),
         filled: cn(
           inputSurface('self'),

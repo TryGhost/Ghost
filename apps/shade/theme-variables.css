@@ -127,6 +127,13 @@
   --control-readonly-surface: var(--color-gray-50);
   --control-disabled-surface: var(--color-gray-100);
   --control-border: color-mix(in oklab, var(--color-gray-200), var(--color-gray-300));
+  /* Text-entry fields are filled and borderless. Buttons, checkboxes and radios
+     keep the --control-* tokens above. */
+  --field-surface: var(--color-gray-100);
+  --field-readonly-surface: var(--field-surface);
+  --field-disabled-surface: var(--field-surface);
+  --field-border: transparent;
+  --dropzone-surface: var(--field-surface);
   --radius-field: 2px;
   --control-pressed-shadow: lch(0 0 0 / 0.07) 0px 1px 2px 0px inset;
   --control-outline-shadow:
@@ -267,6 +274,11 @@
     lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
     lch(0 0 0 / 0.04) 0px 1px 1px 0px, var(--control-pressed-shadow);
   --table-row-hover: var(--color-gray-50);
+  --field-surface: var(--control-surface);
+  --field-readonly-surface: var(--control-readonly-surface);
+  --field-disabled-surface: var(--control-disabled-surface);
+  --field-border: var(--control-border);
+  --dropzone-surface: transparent;
   --radius-field: var(--radius-control);
 }
 
@@ -279,6 +291,9 @@
 
   /* One-off colors (not in the standard color scale) */
   --color-sidebar-bg: oklch(0.204 0.002 255);
+
+  /* Fields are filled in dark mode too. */
+  --field-surface: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
 
   --tab-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
   --tab-active: color-mix(in oklab, oklch(36.77% 0.0022 255) 60%, transparent);
@@ -384,6 +399,7 @@
 /* admin7Design off in dark mode: today's dark values, exactly. Temporary:
    delete with the flag. */
 .dark [data-admin7-design='false'] {
+  --field-surface: var(--control-surface);
   --color-black: oklch(20.38% 0.0067 258.4);
   /* Less-saturated gray scale for dark mode (lightness + hue preserved, chroma halved again) */
   --color-gray-50: oklch(98.54% 0.0003 286.4);

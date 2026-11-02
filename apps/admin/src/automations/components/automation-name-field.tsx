@@ -36,7 +36,7 @@ const AutomationNameField: React.FC<AutomationNameFieldProps> = ({ value, onChan
         ref={inputRef}
         aria-label="Automation name"
         className={cn(
-          'col-start-1 row-start-1 h-8 min-w-0 border-transparent bg-transparent px-[7px] py-0 text-ellipsis hover:bg-accent focus-visible:bg-control-surface',
+          'col-start-1 row-start-1 h-8 min-w-0 border-transparent bg-transparent px-[7px] py-0 text-ellipsis hover:bg-accent focus-visible:bg-field-surface',
           TITLE_TYPE,
         )}
         maxLength={191}

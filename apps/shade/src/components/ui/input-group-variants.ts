@@ -9,7 +9,7 @@ const inputGroupVariants = cva(
     inputSurfaceClasses.invalidWithin,
 
     // Wrapper layout + group context (input-group specific).
-    'group/input-group relative flex w-full items-center outline-hidden data-[disabled=true]:bg-control-disabled-surface [&>[data-slot=input-group-control]]:bg-transparent',
+    'group/input-group relative flex w-full items-center outline-hidden data-[disabled=true]:bg-field-disabled-surface [&>[data-slot=input-group-control]]:bg-transparent',
     'h-(--control-height) has-[>textarea]:h-auto',
 
     // Variants based on alignment.
@@ -31,7 +31,7 @@ const inputGroupVariants = cva(
         ghost:
           'border-transparent bg-transparent shadow-none [--radius-field:var(--radius-control)] hover:bg-button-hover',
         secondary:
-          'border-transparent bg-tab-active text-secondary-foreground shadow-none [--radius-field:var(--radius-control)] hover:bg-secondary has-[[data-slot=input-group-control]:focus-visible]:bg-control-surface has-[[data-slot=input-group-control]:focus-visible]:hover:bg-control-surface has-[[data-slot=input-group-control]:not(:placeholder-shown)]:border-control-border has-[[data-slot=input-group-control]:not(:placeholder-shown)]:bg-control-surface has-[[data-slot=input-group-control]:not(:placeholder-shown)]:hover:bg-control-surface',
+          'border-transparent bg-tab-active text-secondary-foreground shadow-none [--radius-field:var(--radius-control)] hover:bg-secondary has-[[data-slot=input-group-control]:focus-visible]:bg-field-surface has-[[data-slot=input-group-control]:focus-visible]:hover:bg-field-surface has-[[data-slot=input-group-control]:not(:placeholder-shown)]:border-field-border has-[[data-slot=input-group-control]:not(:placeholder-shown)]:bg-field-surface has-[[data-slot=input-group-control]:not(:placeholder-shown)]:hover:bg-field-surface',
       },
       shape: {
         rounded: 'rounded-field',

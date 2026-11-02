@@ -123,7 +123,7 @@ const CopyFieldContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<H
       ref={ref}
       className={cn(
         inputSurface('within'),
-        'group/copy-field-content relative flex h-(--control-height) w-full items-center overflow-hidden bg-control-readonly-surface px-3 py-1 group-data-[disabled=true]/copy-field:cursor-not-allowed group-data-[disabled=true]/copy-field:opacity-50',
+        'group/copy-field-content relative flex h-(--control-height) w-full items-center overflow-hidden bg-field-readonly-surface px-3 py-1 group-data-[disabled=true]/copy-field:cursor-not-allowed group-data-[disabled=true]/copy-field:opacity-50',
         className,
       )}
       data-slot="copy-field-content"
@@ -166,7 +166,7 @@ const CopyFieldActions = React.forwardRef<HTMLElement, React.ComponentProps<type
       <Inline
         ref={ref}
         className={cn(
-          'absolute top-1/2 right-[1px] -translate-y-1/2 gap-px bg-control-readonly-surface pl-1 transition-opacity md:pointer-events-none md:opacity-0 md:group-focus-within/copy-field-content:pointer-events-auto md:group-focus-within/copy-field-content:opacity-100 md:group-hover/copy-field-content:pointer-events-auto md:group-hover/copy-field-content:opacity-100 [&_button]:h-6 [&_button:not([data-slot=copy-field-copy-button])]:bg-control-readonly-surface [&_button:not([data-slot=copy-field-copy-button])]:hover:bg-secondary [&_button[data-control-shape=rounded]]:rounded-sm',
+          'absolute top-1/2 right-[1px] -translate-y-1/2 gap-px bg-field-readonly-surface pl-1 transition-opacity md:pointer-events-none md:opacity-0 md:group-focus-within/copy-field-content:pointer-events-auto md:group-focus-within/copy-field-content:opacity-100 md:group-hover/copy-field-content:pointer-events-auto md:group-hover/copy-field-content:opacity-100 [&_button]:h-6 [&_button:not([data-slot=copy-field-copy-button])]:bg-field-readonly-surface [&_button:not([data-slot=copy-field-copy-button])]:hover:bg-secondary [&_button[data-control-shape=rounded]]:rounded-sm',
           className,
         )}
         data-slot="copy-field-actions"
