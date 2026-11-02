@@ -21,7 +21,8 @@ import {
   TooltipTrigger,
 } from '@tryghost/shade/components';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
-import { getEmailValidationErrors } from './validation';
+import { Inline, Stack } from '@tryghost/shade/primitives';
+import { type EmailDraft, getEmailValidationErrors } from './validation';
 import { useBrowseAutomatedEmails } from '@tryghost/admin-x-framework/api/automated-emails';
 import { useEmailPreview } from './use-email-preview';
 import { useEmailSenderDetails } from './use-sender-details';
@@ -49,7 +50,7 @@ const EmailPreviewModalContent = React.forwardRef<HTMLDivElement, EmailPreviewMo
     >
       <div className="sticky top-0 grid shrink-0 grid-cols-[1fr_auto] items-center rounded-t-xl bg-surface-elevated p-8">
         <h3 className="min-w-0 pr-4 text-md font-medium">{title}</h3>
-        <div className="flex items-center gap-2">{headerActions}</div>
+        <Inline gap="sm">{headerActions}</Inline>
         {headerBelow && <div className="col-span-2 mt-6">{headerBelow}</div>}
       </div>
       <div className="-ml-[72px] flex min-h-0 grow [scrollbar-gutter:stable] flex-col overflow-y-auto pl-[72px]">
@@ -107,9 +108,8 @@ const HeaderTooltip: React.FC<{ label: string; children: React.ReactElement }> =
 
 export interface EmailContentModalProps {
   automationId: string;
-  initialLexical: string;
+  emailDraft: EmailDraft;
   initialMode?: EmailModalMode;
-  initialSubject: string;
   // The step whose card the editor opens from and closes into.
   originStepId: string;
   onClose: () => void;
@@ -117,7 +117,7 @@ export interface EmailContentModalProps {
   onCloseStart?: () => void;
   // Applies edits to the automation draft as they're made. The automation's own
   // Save / Publish changes persists them.
-  onChange: (data: { subject: string; lexical: string }) => void;
+  onChange: (emailDraft: EmailDraft) => void;
 }
 
 // Koenig popups (link input, emoji picker, card settings) handle Escape
@@ -130,8 +130,7 @@ const isKoenigPortalFocused = () => {
 const EmailContentModal: React.FC<EmailContentModalProps> = ({
   automationId,
   initialMode = 'edit',
-  initialSubject,
-  initialLexical,
+  emailDraft,
   originStepId,
   onClose,
   onCloseStart,
@@ -143,36 +142,23 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
     onCloseStart?.();
     closeIntoCard(onClose);
   }, [closeIntoCard, onClose, onCloseStart]);
-  // initialLexical updates with every edit, so keep the value from open.
-  const [lexicalAtOpen] = useState(initialLexical || '');
   const { mutateAsync: previewAutomationEmail } = usePreviewAutomationEmail();
   const { data: automatedEmailsData } = useBrowseAutomatedEmails();
   const [showTestDropdown, setShowTestDropdown] = useState(false);
   const [mode, setMode] = useState<EmailModalMode>(automationId ? initialMode : 'edit');
-  const [formState, setFormState] = useState({
-    subject: initialSubject || '',
-    lexical: initialLexical || '',
-  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const hasEnteredInitialPreview = useRef(false);
-  const normalizedLexical = useRef<string>(initialLexical || '');
-  const hasEditorBeenFocused = useRef(false);
   const editorColumnRef = useRef<HTMLDivElement>(null);
   const automatedEmails = automatedEmailsData?.automated_emails || [];
   const { resolvedSenderName, resolvedSenderEmail, resolvedReplyToEmail, hasDistinctReplyTo } =
     useEmailSenderDetails(automatedEmails);
 
-  const formStateRef = useRef(formState);
-  useEffect(() => {
-    formStateRef.current = formState;
-  }, [formState]);
-
   // Completeness is only enforced when publishing the automation or sending a test email.
   const validateForTest = useCallback((): boolean => {
-    const newErrors = getEmailValidationErrors(formState);
+    const newErrors = getEmailValidationErrors(emailDraft);
     setErrors(newErrors);
     return Object.values(newErrors).every((error) => !error);
-  }, [formState]);
+  }, [emailDraft]);
   const { previewFrameState, enterPreview, exitPreview } = useEmailPreview({
     automationId,
     previewAutomationEmail,
@@ -184,8 +170,8 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
       return;
     }
     hasEnteredInitialPreview.current = true;
-    void enterPreview(formState);
-  }, [automationId, enterPreview, formState, initialMode]);
+    void enterPreview(emailDraft);
+  }, [automationId, enterPreview, emailDraft, initialMode]);
 
   const [dialogContentNode, setDialogContentNode] = useState<HTMLDivElement | null>(null);
 
@@ -237,35 +223,13 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
       setMode(nextMode);
 
       if (nextMode === 'preview') {
-        void enterPreview(formState);
+        void enterPreview(emailDraft);
       } else {
         setShowTestDropdown(false);
         exitPreview();
       }
     },
-    [automationId, enterPreview, exitPreview, formState],
-  );
-
-  // The editor normalizes content on mount (e.g., processing {name} templates),
-  // which triggers onChange even without user edits. We track whether the editor
-  // has ever been focused - normalization happens before focus is possible, so any
-  // onChange before first focus is normalization. After focus, we compare against
-  // the normalized baseline to tell an edit from a no-op.
-  // An unedited body returns the original lexical, so the draft isn't marked dirty.
-  const bodyToApply = useCallback(
-    (lexical: string) => (lexical === normalizedLexical.current ? lexicalAtOpen : lexical),
-    [lexicalAtOpen],
-  );
-  const handleEditorChange = useCallback(
-    (lexical: string) => {
-      setFormState((state) => ({ ...state, lexical }));
-      if (!hasEditorBeenFocused.current) {
-        normalizedLexical.current = lexical;
-        return;
-      }
-      onChange({ subject: formStateRef.current.subject, lexical: bodyToApply(lexical) });
-    },
-    [bodyToApply, onChange],
+    [automationId, enterPreview, exitPreview, emailDraft],
   );
 
   const subjectField = (
@@ -280,12 +244,11 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
           aria-invalid={Boolean(errors.subject)}
           aria-label="Subject line"
           data-testid="email-editor-subject"
-          value={formState.subject}
+          value={emailDraft.subject}
           onChange={(e) => {
             const subject = e.target.value;
-            setFormState((state) => ({ ...state, subject }));
             setErrors(({ subject: _cleared, ...rest }) => rest);
-            onChange({ subject, lexical: bodyToApply(formStateRef.current.lexical) });
+            onChange({ ...emailDraft, subject });
           }}
           onKeyDown={(event) => {
             // Tab moves into the body, as from a post's title.
@@ -374,7 +337,9 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                 data-testid="email-mode-toggle"
                 type="single"
                 value={mode}
-                onValueChange={(value) => value && handleModeChange(value as EmailModalMode)}
+                onValueChange={(nextMode) =>
+                  nextMode && handleModeChange(nextMode as EmailModalMode)
+                }
               >
                 <HeaderTooltip label="Content">
                   {/* The tooltip wraps the item, whose own data-state it would otherwise replace. */}
@@ -438,7 +403,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
           >
             {mode === 'preview' && (
               <EmailPreviewEmailHeader className="border-x-0 border-t-0 border-b">
-                <div className="flex flex-col gap-2">
+                <Stack gap="sm">
                   <div className="flex items-center py-1">
                     <div className="w-20 shrink-0 text-sm font-semibold">From:</div>
                     <div className="min-w-0 grow pr-4 text-sm">
@@ -457,32 +422,32 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                       {showTestDropdown && (
                         <TestEmailDropdown
                           automationId={automationId}
-                          lexical={formState.lexical}
-                          subject={formState.subject}
+                          lexical={emailDraft.lexical}
+                          subject={emailDraft.subject}
                           validateForm={validateForTest}
                         />
                       )}
                     </Popover>
                   </div>
                   {hasDistinctReplyTo && (
-                    <div className="flex items-center">
+                    <Inline gap="none">
                       <div className="w-20 shrink-0 text-sm font-semibold">Reply-to:</div>
                       <div className="grow text-sm text-muted-foreground">
                         {resolvedReplyToEmail}
                       </div>
-                    </div>
+                    </Inline>
                   )}
-                  <div className="flex items-center">
+                  <Inline gap="none">
                     <div className="w-20 shrink-0 text-sm font-semibold">Subject:</div>
                     <div className="grow">
                       <span
                         className={cn(
                           'block truncate text-sm',
-                          !formState.subject.trim() && 'text-muted-foreground',
+                          !emailDraft.subject.trim() && 'text-muted-foreground',
                         )}
                         data-testid="email-preview-subject"
                       >
-                        {formState.subject.trim() || 'No subject'}
+                        {emailDraft.subject.trim() || 'No subject'}
                       </span>
                       {errors.subject && (
                         <span className="mt-2 block text-xs text-destructive">
@@ -490,8 +455,8 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                         </span>
                       )}
                     </div>
-                  </div>
-                </div>
+                  </Inline>
+                </Stack>
               </EmailPreviewEmailHeader>
             )}
             <EmailPreviewBody
@@ -509,16 +474,13 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                   mode === 'preview' && 'hidden',
                 )}
                 data-testid="email-editor"
-                onFocus={() => {
-                  hasEditorBeenFocused.current = true;
-                }}
               >
                 {/* Bottom room so the last line and its + menu can scroll into view. */}
                 <EmailEditor
                   className="automation-email-editor pb-[30vh]"
+                  initialLexical={emailDraft.lexical}
                   placeholder="Begin writing your email..."
-                  value={formState.lexical}
-                  onChange={handleEditorChange}
+                  onChange={(lexical) => onChange({ ...emailDraft, lexical })}
                 />
               </div>
               {mode === 'preview' && <EmailPreviewFrame previewState={previewFrameState} />}

@@ -56,26 +56,24 @@ vi.mock('sonner', () => ({
 }));
 
 // Stub the email content editor modal — its real internals (Koenig + email API
-// hooks) are out of scope here. The stub exposes the seed props and a save button
-// so we can assert the canvas wiring (open → seed → onSave → draft → publish).
+// hooks) are out of scope here. The stub exposes the email draft and an edit button
+// so we can assert the canvas wiring (open → onChange → draft → publish).
 vi.mock('@/automations/components/email-modal/email-content-modal', () => {
   const EmailContentModalStub = ({
     initialMode,
-    initialSubject,
-    initialLexical,
+    emailDraft,
     onChange,
     onClose,
   }: {
     initialMode?: 'edit' | 'preview';
-    initialSubject: string;
-    initialLexical: string;
+    emailDraft: { subject: string; lexical: string };
     onChange: (data: { subject: string; lexical: string }) => void;
     onClose: () => void;
   }) => (
     <div data-testid="email-content-modal">
       <span data-testid="modal-initial-mode">{initialMode ?? 'edit'}</span>
-      <span data-testid="modal-initial-subject">{initialSubject}</span>
-      <span data-testid="modal-initial-lexical">{initialLexical}</span>
+      <span data-testid="modal-initial-subject">{emailDraft.subject}</span>
+      <span data-testid="modal-initial-lexical">{emailDraft.lexical}</span>
       <button
         data-testid="modal-edit"
         type="button"
@@ -2336,7 +2334,6 @@ describe('AutomationEditor', () => {
 
     const { router } = renderEditor(['/automations', '/automations/automation-id-1']);
 
-    await stageLocalEdit();
     fireEvent.click(screen.getByRole('button', { name: 'Edit email content' }));
     expect(router.state.location.search).toBe('?emailStep=action-email');
     fireEvent.click(await screen.findByTestId('modal-edit'));

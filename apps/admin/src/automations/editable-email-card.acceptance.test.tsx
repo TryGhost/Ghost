@@ -161,6 +161,49 @@ describe('Editable email cards', () => {
     }
   });
 
+  it('retries a failed save without closing or losing the email draft', async () => {
+    let fail = true;
+    const save = serve({
+      beforeSave: () =>
+        fail
+          ? new Response(
+              JSON.stringify({ errors: [{ message: 'Unavailable', type: 'InternalServerError' }] }),
+              { status: 500, headers: { 'Content-Type': 'application/json' } },
+            )
+          : undefined,
+    });
+    await renderAdminApp('/automations/first', flags);
+    await emailCards().first().getByRole('button', { name: 'Edit email content' }).click();
+    await emailEditorBody().fill('Keep this draft');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect.element(page.getByRole('button', { name: 'Retry', exact: true })).toBeEnabled();
+    await expect.element(emailEditorBody()).toHaveTextContent('Keep this draft');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    fail = false;
+    await page.getByRole('button', { name: 'Retry', exact: true }).click();
+    await expect.element(page.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
+    await expect.element(emailEditorBody()).toHaveTextContent('Keep this draft');
+    expect(save.requests).toHaveLength(2);
+    expect(save.requests[1].body).toEqual(save.requests[0].body);
+    await expect.poll(unsavedChangesGuarded).toBe(false);
+  });
+
+  it('keeps opening and undoing body edits clean', async () => {
+    serve();
+    await renderAdminApp('/automations/first', flags);
+    await emailCards().first().getByRole('button', { name: 'Edit email content' }).click();
+    await expect.element(emailEditorBody()).toHaveTextContent('Thanks for joining.');
+    await expect.element(page.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
+    await emailEditorBody().click();
+    await userEvent.keyboard('{End} extra');
+    await expect.element(emailEditorBody()).toHaveTextContent('Thanks for joining. extra');
+    await expect.element(page.getByRole('button', { name: 'Save', exact: true })).toBeEnabled();
+    await userEvent.keyboard('{ControlOrMeta>}z{/ControlOrMeta}');
+    await expect.element(emailEditorBody()).toHaveTextContent('Thanks for joining.');
+    await expect.element(page.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
+    await expect.poll(unsavedChangesGuarded).toBe(false);
+  });
+
   it('keeps email cards editable when run analytics is absent', async () => {
     serve();
     await renderAdminApp('/automations/first', { labs: { automations: true } });

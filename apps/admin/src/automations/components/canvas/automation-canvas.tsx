@@ -918,10 +918,13 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       </Box>
       {emailModalAction && automation && (
         <EmailContentModal
+          key={emailModalAction.id}
           automationId={automation.id}
-          initialLexical={emailModalAction.data.email_lexical}
+          emailDraft={{
+            subject: emailModalAction.data.email_subject,
+            lexical: emailModalAction.data.email_lexical,
+          }}
           initialMode={emailModalMode}
-          initialSubject={emailModalAction.data.email_subject}
           originStepId={emailModalAction.id}
           onChange={({ subject, lexical }) => {
             onChange(
