@@ -170,7 +170,7 @@ describe('MemberRepository', function () {
     };
 
     automationsApi = {
-      trigger: sinon.stub().resolves(),
+      notify: sinon.stub().resolves(),
     };
 
     productRepository = {
@@ -1970,7 +1970,7 @@ describe('MemberRepository', function () {
     });
   });
 
-  describe('triggerMembershipStartedAutomation', function () {
+  describe('notifyMembershipStartedAutomation', function () {
     const buildSignupMember = (products) => {
       const fetch = sinon.stub().resolves({ models: products });
       return {
@@ -1984,16 +1984,16 @@ describe('MemberRepository', function () {
       };
     };
 
-    it('triggers automations with paid tiers', async function () {
+    it('notifies the automations system with paid tiers', async function () {
       const member = buildSignupMember([{ id: 'bronze' }]);
       const repo = buildRepo();
-      await repo.triggerMembershipStartedAutomation({
+      await repo.notifyMembershipStartedAutomation({
         member,
         memberStatus: 'paid',
         bookshelfOptions: {},
       });
-      sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
-        event: 'membership_started',
+      sinon.assert.calledOnceWithExactly(automationsApi.notify, {
+        eventName: 'membership_started',
         source: 'member',
         memberId: 'member_id_123',
         memberEmail: 'test@example.com',
@@ -2014,7 +2014,7 @@ describe('MemberRepository', function () {
       async function (_source, context) {
         const repo = buildRepo();
         const member = { id: 'member', get: () => 'member@example.com' };
-        await repo.triggerMembershipStartedAutomation({
+        await repo.notifyMembershipStartedAutomation({
           member,
           memberStatus: 'free',
           bookshelfOptions: { context },
@@ -2026,7 +2026,7 @@ describe('MemberRepository', function () {
     it('does not send another welcome email when a gifted member becomes paid', async function () {
       const member = buildSignupMember([{ id: 'bronze' }]);
       const repo = buildRepo();
-      await repo.triggerMembershipStartedAutomation({
+      await repo.notifyMembershipStartedAutomation({
         member,
         memberStatus: 'paid',
         previousMemberStatus: 'gift',
@@ -2043,18 +2043,18 @@ describe('MemberRepository', function () {
     });
 
     it.each(['paid', 'gift'])(
-      'triggers automations when %s memberships become free',
+      'notifies the automations system when %s memberships become free',
       async function (previousStatus) {
         const repo = buildRepo();
-        await repo.triggerPaidSubscriptionChangedAutomation({
+        await repo.notifyPaidSubscriptionChangedAutomation({
           member: member('free'),
           previousStatus,
           previousTierIds: ['basic'],
           tierIds: [],
           options: {},
         });
-        sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
-          event: 'paid_subscription_changed',
+        sinon.assert.calledOnceWithExactly(automationsApi.notify, {
+          eventName: 'paid_subscription_changed',
           source: 'member',
           previousMemberStatus: previousStatus,
           memberId: 'member',
@@ -2072,18 +2072,18 @@ describe('MemberRepository', function () {
       ['paid', 'comped', [], {}, 'member'],
       ['paid', 'free', [], { user: 'admin' }, 'admin'],
     ])(
-      'triggers automations when %s memberships become %s',
+      'notifies the automations system when %s memberships become %s',
       async function (previousStatus, status, tierIds, context, source) {
         const repo = buildRepo();
-        await repo.triggerPaidSubscriptionChangedAutomation({
+        await repo.notifyPaidSubscriptionChangedAutomation({
           member: member(status),
           previousStatus,
           previousTierIds: ['basic'],
           tierIds,
           options: { context },
         });
-        sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
-          event: 'paid_subscription_changed',
+        sinon.assert.calledOnceWithExactly(automationsApi.notify, {
+          eventName: 'paid_subscription_changed',
           source,
           previousMemberStatus: previousStatus,
           memberId: 'member',
@@ -2105,12 +2105,12 @@ describe('MemberRepository', function () {
       ['import', { importer: true }],
       ['system', { internal: true }],
     ])(
-      'triggers an automation for free signup with the %s source',
+      'notifies the automations system about free signup with the %s source',
       async function (source, context) {
         const repo = buildRepo();
         await repo.create({ email: 'test@example.com' }, { context });
-        sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
-          event: 'membership_started',
+        sinon.assert.calledOnceWithExactly(automationsApi.notify, {
+          eventName: 'membership_started',
           source,
           memberId: 'member_id_123',
           memberEmail: 'test@example.com',
@@ -2161,8 +2161,8 @@ describe('MemberRepository', function () {
 
         await repo.create({ email: 'test@example.com', name: 'Test Member' }, {});
 
-        sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
-          event: 'membership_started',
+        sinon.assert.calledOnceWithExactly(automationsApi.notify, {
+          eventName: 'membership_started',
           source: 'member',
           memberId: 'member_id_123',
           memberEmail: 'test@example.com',
@@ -2457,7 +2457,7 @@ describe('MemberRepository', function () {
       sinon.restore();
     });
 
-    it('triggers an automation event for paid signup', async function () {
+    it('notifies the automations system about paid signup', async function () {
       Member.edit.resolves({
         attributes: { status: 'paid' },
         _previousAttributes: { status: 'free' },
@@ -2483,8 +2483,8 @@ describe('MemberRepository', function () {
         },
       );
 
-      sinon.assert.calledWithExactly(automationsApi.trigger, {
-        event: 'membership_started',
+      sinon.assert.calledWithExactly(automationsApi.notify, {
+        eventName: 'membership_started',
         source: 'member',
         memberId: 'member_id_123',
         memberEmail: 'test@example.com',
@@ -2494,7 +2494,7 @@ describe('MemberRepository', function () {
       });
     });
 
-    it('triggers automations when an admin upgrades a free member to paid', async function () {
+    it('notifies the automations system when an admin upgrades a free member to paid', async function () {
       Member.edit.resolves({
         id: 'member_id_123',
         attributes: { status: 'paid' },
@@ -2509,8 +2509,8 @@ describe('MemberRepository', function () {
         { context: { user: 'admin' }, transacting: { executionPromise: Promise.resolve() } },
       );
 
-      sinon.assert.calledWithExactly(automationsApi.trigger, {
-        event: 'membership_started',
+      sinon.assert.calledWithExactly(automationsApi.notify, {
+        eventName: 'membership_started',
         source: 'admin',
         memberId: 'member_id_123',
         memberEmail: 'test@example.com',
@@ -2557,8 +2557,8 @@ describe('MemberRepository', function () {
       );
 
       assert.deepEqual(Member.edit.firstCall.args[0].products, [{ id: 'gold' }]);
-      sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
-        event: 'paid_subscription_changed',
+      sinon.assert.calledOnceWithExactly(automationsApi.notify, {
+        eventName: 'paid_subscription_changed',
         source: 'member',
         memberId: 'member_id_123',
         memberEmail: 'test@example.com',
@@ -2660,8 +2660,8 @@ describe('MemberRepository', function () {
           },
         );
 
-        sinon.assert.calledWithExactly(automationsApi.trigger, {
-          event: 'membership_started',
+        sinon.assert.calledWithExactly(automationsApi.notify, {
+          eventName: 'membership_started',
           source: 'member',
           memberId: 'member_id_123',
           memberEmail: 'test@example.com',
