@@ -94,6 +94,25 @@ const serve = () => {
 };
 
 describe('Editable email cards', () => {
+  it('can insert a divider using the add-card button on a narrow screen', async () => {
+    serve();
+    await page.viewport(390, 844);
+    try {
+      await renderAdminApp('/automations/first', flags);
+      await emailCards().first().getByRole('button', { name: 'Edit email content' }).click();
+      await emailEditorBody().fill('');
+      await emailEditorBody().click();
+      const add = emailEditor().getByRole('button', { name: 'Add a card' });
+      await expect.element(add).toBeVisible();
+      await expect.poll(() => add.element().getBoundingClientRect().left).toBeGreaterThanOrEqual(0);
+      await add.click();
+      await page.getByRole('menuitem', { name: 'Divider', exact: true }).click();
+      await expect.element(emailEditor().getByRole('separator')).toBeVisible();
+    } finally {
+      await page.viewport(1280, 800);
+    }
+  });
+
   it('keeps email cards editable when run analytics is absent', async () => {
     serve();
     await renderAdminApp('/automations/first', { labs: { automations: true } });

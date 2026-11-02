@@ -504,8 +504,8 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
               <div
                 ref={editorColumnRef}
                 className={cn(
-                  // Keeps Koenig's + button 24px outside the panel's left edge at every breakpoint.
-                  'mx-auto w-full max-w-[600px] [&_[data-kg-plus-button]]:right-[calc(100%+56px)]! [&_[data-kg-plus-button]]:left-auto! [&_[data-kg-plus-button]>button]:bg-surface-elevated',
+                  // Keep the add-card button in the panel's gutter until there is room outside.
+                  'mx-auto w-full max-w-[600px] [&_[data-kg-plus-button]]:right-[calc(100%+8px)]! [&_[data-kg-plus-button]]:left-auto! lg:[&_[data-kg-plus-button]]:right-[calc(100%+56px)]! [&_[data-kg-plus-button]>button]:bg-surface-elevated',
                   mode === 'preview' && 'hidden',
                 )}
                 data-testid="email-editor"
