@@ -341,6 +341,7 @@ export const SHADE_TOKEN_NAMES = [
   'text-body-sm',
   'text-control',
   'text-control-lg',
+  'text-field',
   'text-lg',
   'text-md',
   'text-primary',
