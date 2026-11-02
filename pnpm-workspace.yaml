@@ -82,10 +82,11 @@ catalog:
   '@sentry/bundler-plugin-core': 5.3.0
   '@sentry/react': 7.120.4
   '@sentry/vite-plugin': 5.4.1
-  '@storybook/addon-docs': 10.4.6
-  '@storybook/addon-links': 10.4.6
-  '@storybook/preact-vite': 10.4.6
-  '@storybook/react-vite': 10.4.6
+  '@storybook/addon-docs': 10.6.5
+  '@storybook/addon-links': 10.6.5
+  '@storybook/preact-vite': 10.6.5
+  '@storybook/react': 10.6.5
+  '@storybook/react-vite': 10.6.5
   '@tailwindcss/postcss': 4.3.3
   '@tailwindcss/vite': 4.3.3
   '@tanstack/react-query': 5.105.0
@@ -161,6 +162,7 @@ catalog:
   eslint-plugin-react: 7.37.5
   eslint-plugin-react-hooks: 5.2.0
   eslint-plugin-react-refresh: 0.5.7
+  eslint-plugin-storybook: 10.6.5
   eslint-plugin-tailwindcss: 4.2.0
   express: 4.22.3
   flexsearch: 0.7.43
@@ -210,7 +212,7 @@ catalog:
   sirv: 3.0.2
   snakecase-keys: 9.0.2
   sonner: 2.0.8
-  storybook: 10.4.6
+  storybook: 10.6.5
   stylelint: 17.14.1
   supertest: 7.3.1
   tailwindcss: 4.3.3
@@ -231,7 +233,7 @@ catalog:
   typescript-eslint: 8.71.1
   undici: 8.12.3
   validator: 13.15.35
-  vite: 8.1.3
+  vite: 8.1.6
   vite-plugin-svgr: 5.2.0
   vitest: 4.1.12
   vitest-browser-react: 2.2.0
@@ -247,7 +249,7 @@ catalog:
   mppx: 0.6.20
   '@x402/core': 2.29.0
   '@x402/evm': 2.29.0
-  '@x402/hono': 2.28.0
+  '@x402/hono': 2.29.0
   hono: 4.13.14
   '@octokit/core': 7.0.8
   '@octokit/plugin-retry': 8.1.1
@@ -262,9 +264,9 @@ catalog:
   execa: 10.0.1
   remark-cli: 12.0.1
   remark-validate-links: 13.1.0
-  markdownlint-cli2: 0.23.3
+  markdownlint-cli2: 0.24.0
   parse-email-address: 0.0.5
-  nodemailer: 10.0.16
+  nodemailer: 10.1.7
   '@types/nodemailer': 8.0.2
   '@breejs/later': 4.2.0
   fastq: ^1.20.1
@@ -335,11 +337,12 @@ overrides:
   'markdown-it@>=14.0.0 <14.3.1': ^14.3.1
   'postcss-selector-parser@>=7.0.0 <7.1.6': ^7.1.6
   'proxy-addr@<2.0.8': ^2.0.8
+  're2js@>=2.2.0 <2.8.7': ^2.8.7
   'shell-quote@>=1.8.4 <1.11.0': ^1.11.0
   'source-map-js@<1.2.2': ^1.2.2
   'tinypool@<2.1.2': ^2.1.2
-  # nx 23.3.0 pins undici before the 7.29.1 security fixes
-  'nx>undici': 7.29.1
+  # nx 23.3.1 pins undici before the 7.30.1 security fixes
+  'nx>undici': 7.30.1
   # routing-related dependencies
   body-parser: 'catalog:'
   express: 'catalog:'
