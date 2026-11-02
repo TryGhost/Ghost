@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
+import { fakeAdminEndpoint, fakeAutomations, renderAdminApp } from '@test-utils/acceptance';
 import type {
   AutomationDetail,
   AutomationTrigger,
@@ -289,6 +289,23 @@ describe('Automation trigger tiers', () => {
       trigger_tier_scope: 'selected_paid',
       trigger_tier_ids: ['gold'],
     });
+  });
+
+  it('refreshes tiers when returning to the editor', async () => {
+    serve({ trigger_tier_scope: 'selected_paid', trigger_tier_ids: ['bronze'] });
+    fakeAutomations([]);
+    const tiers = [{ id: 'bronze', name: 'Bronze', type: 'paid', active: true }];
+    fakeAdminEndpoint('GET', /\/tiers\/\?/, () => ({ tiers }));
+
+    await renderAdminApp('/automations/first', flags);
+    await expect.element(chips()).toHaveTextContent('Bronze');
+    await page.getByRole('link', { name: 'Back to automations' }).click();
+    await expect.element(page.getByRole('heading', { name: 'No automations yet' })).toBeVisible();
+    tiers.push({ id: 'silver', name: 'Silver', type: 'paid', active: true });
+    window.history.back();
+    await expect.element(chips()).toHaveTextContent('Bronze');
+    await picker().click();
+    await expect.element(page.getByRole('option', { name: 'Silver', exact: true })).toBeVisible();
   });
 
   it('guards navigation with unsaved tier changes', async () => {
