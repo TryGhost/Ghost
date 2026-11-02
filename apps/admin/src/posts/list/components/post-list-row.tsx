@@ -228,6 +228,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
           // the row under the cursor look deselected.
           isSelected ? 'bg-table-row-selected select-none' : 'hover:bg-table-row-hover',
         )}
+        data-presence-id={post.id}
         data-selected={isSelected ? 'true' : undefined}
         data-testid="posts-list-item"
         onClickCapture={onSelectClick}
