@@ -366,6 +366,7 @@
   --color-filter-bar-background: var(--filter-bar-background);
   --color-filter-bar-item-hover: var(--filter-bar-item-hover);
   --color-table-row-hover: var(--table-row-hover);
+  --color-map-surface: var(--map-surface);
   --color-table-row-selected: var(--table-row-selected);
   --color-control-surface: var(--control-surface);
   --color-control-readonly-surface: var(--control-readonly-surface);

@@ -69,7 +69,7 @@ function LocationMap({
       <svg
         ref={svgRef}
         aria-hidden="true"
-        className={cn('size-full dark:bg-muted/45', admin7Design ? 'bg-gray-200' : 'bg-muted')}
+        className={cn('size-full dark:bg-muted/45', admin7Design ? 'bg-map-surface' : 'bg-muted')}
         data-map-kind="world"
         data-testid="member-location-map"
         preserveAspectRatio="xMidYMid slice"

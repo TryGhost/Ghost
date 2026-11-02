@@ -149,7 +149,10 @@
   --control-outline-pressed-shadow:
     lch(0 0 0 / 0.14) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
     lch(0 0 0 / 0.04) 0px 1px 1px 0px, var(--control-pressed-shadow);
-  --table-row-hover: var(--color-gray-100);
+  /* Between gray-50 and gray-100, and tuned by eye. */
+  --table-row-hover: oklch(98.3% 0.0005 255);
+  /* The sea on member maps: between gray-200 and the field fill, tuned by eye. */
+  --map-surface: oklch(95.5% 0.0008 255);
   /* Selected rows read as picked-out rather than merely hovered, so this is a
      hue change and not another step on the gray ramp - a darker gray would
      compete with --table-row-hover instead of contrasting with it. */
