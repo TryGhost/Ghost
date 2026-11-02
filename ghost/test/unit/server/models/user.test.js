@@ -28,18 +28,6 @@ describe('Unit: models/user', function () {
     });
   });
 
-  it('allows migration-owned transactions when trial invitation limits are enabled', async function () {
-    const { limitService } = require('../../../../core/server/services/limits');
-    sinon.stub(limitService, 'isLimited').withArgs('limitTrialStaff').returns(true);
-    const owner = { name: 'Ghost', email: 'ghost@example.com', status: 'inactive', roles: [] };
-    const options = { migrating: true, transacting: {}, context: { internal: true } };
-    const created = { id: 'owner' };
-    const addWithRoles = sinon.stub(models.User, 'addWithRoles').resolves(created);
-
-    assert.equal(await models.User.add(owner, options), created);
-    sinon.assert.calledOnceWithExactly(addWithRoles, owner, options);
-  });
-
   describe('lock method', function () {
     function lockUser(status) {
       const save = sinon.stub().resolves();

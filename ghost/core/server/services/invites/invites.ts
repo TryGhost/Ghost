@@ -108,9 +108,7 @@ export class Invites {
   }
 
   accept(invitation: Invitation) {
-    return accept(invitation, this.models, (transaction) =>
-      this.invitationLimiter.lockStaffUsage(transaction),
-    );
+    return accept(invitation, this.models);
   }
 
   add({ api, InviteModel, invites, options, user }: AddInviteRequest): Promise<Invite> {

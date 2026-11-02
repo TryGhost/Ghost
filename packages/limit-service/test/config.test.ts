@@ -13,9 +13,8 @@ describe('Config', function () {
     });
 
     interface MockOptions {
-        firstResult?: { count?: number | string | null };
+        firstResult?: Record<string, number | string | null>;
         unionResult?: unknown[];
-        rows?: unknown[];
     }
 
     function createMockKnex(options: MockOptions = {}): Knex & Mock {
@@ -24,17 +23,14 @@ describe('Config', function () {
             return chain;
         }
 
-        const rows = Promise.resolve(options.rows || []);
         const chain = {
-            then: rows.then.bind(rows),
-            limit: vi.fn(returnsChain),
             count: vi.fn(returnsChain),
             sum: vi.fn(returnsChain),
             where: vi.fn(returnsChain),
             whereExists: vi.fn(returnsChain),
             whereRaw: vi.fn(returnsChain),
             whereNull: vi.fn(returnsChain),
-            first: vi.fn().mockResolvedValue(options.firstResult || {count: 0}),
+            first: vi.fn().mockResolvedValue(options.firstResult),
             select: vi.fn(returnsChain),
             leftJoin: vi.fn(returnsChain),
             whereNot: vi.fn(returnsChain),
@@ -121,46 +117,49 @@ describe('Config', function () {
         });
     });
 
-    describe('limitTrialStaff', function () {
-        it.each([undefined, 0, 10, 25])('counts all seats with maximum %s', async function (max) {
-            const knex = createMockKnex({rows: [{id: 1}, {id: 2}]});
-            const countQuery = config.limitTrialStaff?.currentCountQuery;
+    describe('allStaff', function () {
+        it.each([
+            [{users: '2', invites: '3'}, 5],
+            [{users: 0, invites: 0}, 0]
+        ])('adds the user and invitation counts from %j', async function (firstResult, expected) {
+            const knex = createMockKnex({firstResult});
+            const countQuery = config.allStaff?.currentCountQuery;
             assertExists(countQuery);
-
-            assert.equal(await countQuery(knex, undefined, max), 4);
+            assert.equal(await countQuery(knex), expected);
             expect(knex).toHaveBeenCalledWith('users');
             expect(knex).toHaveBeenCalledWith('invites');
-            const chain = knex.mock.results[0]?.value;
-            assertExists(chain);
-            expect(chain.where).not.toHaveBeenCalled();
-            expect(chain.whereNot).not.toHaveBeenCalled();
-            expect(chain.leftJoin).not.toHaveBeenCalled();
-            if (max === undefined) {
-                expect(chain.limit).not.toHaveBeenCalled();
-            } else {
-                expect(chain.limit).toHaveBeenCalledTimes(2);
-                expect(chain.limit).toHaveBeenCalledWith(max + 1);
-            }
         });
     });
 
-    describe('limitTrialStaffInvites', function () {
-        it.each([undefined, 0, 15, 30])('counts invitation audit entries with maximum %s', async function (max) {
-            const knex = createMockKnex({rows: [{id: 1}, {id: 2}, {id: 3}]});
-            const countQuery = config.limitTrialStaffInvites?.currentCountQuery;
-            assertExists(countQuery);
+    describe('inviteEmails', function () {
+        const periodStart = '2026-10-10T10:00:00.000Z';
 
-            assert.equal(await countQuery(knex, undefined, max), 3);
-            expect(knex).toHaveBeenCalledWith('actions');
-            const chain = knex.mock.results[0]?.value;
-            assertExists(chain);
-            expect(chain.where).toHaveBeenCalledExactlyOnceWith({resource_type: 'invite', event: 'added'});
-            if (max === undefined) {
-                expect(chain.limit).not.toHaveBeenCalled();
-            } else {
-                expect(chain.limit).toHaveBeenCalledExactlyOnceWith(max + 1);
-            }
+        it('rejects a missing counter setting instead of granting a fresh allowance', async function () {
+            const query = config.inviteEmails?.currentCountQuery;
+            assertExists(query);
+            await assert.rejects(async () => query(createMockKnex(), periodStart), {
+                errorType: 'IncorrectUsageError',
+                message: 'Missing staff invitation email counter.'
+            });
         });
+
+        it.each([
+            [null, 0],
+            [JSON.stringify({periodStart, count: 7}), 7],
+            [JSON.stringify({periodStart: '2026-09-10T10:00:00.000Z', count: 15}), 0]
+        ])('reads saved usage %s for the current period', async function (value, count) {
+            const query = config.inviteEmails?.currentCountQuery;
+            assertExists(query);
+            assert.equal(await query(createMockKnex({firstResult: {value: value as string | null}}), periodStart), count);
+        });
+
+        it.each(['{broken', '{}', JSON.stringify({periodStart, count: -1}), JSON.stringify({periodStart: 42, count: 7})])(
+            'rejects invalid stored usage instead of granting a fresh allowance: %s', async function (value) {
+                const query = config.inviteEmails?.currentCountQuery;
+                assertExists(query);
+                await assert.rejects(async () => query(createMockKnex({firstResult: {value}}), periodStart));
+            }
+        );
     });
 
     describe('uploads', function () {

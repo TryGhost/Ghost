@@ -1,8 +1,8 @@
 const { addSetting } = require('../../utils');
 
 module.exports = addSetting({
-  key: 'staff_invitation_lock',
+  key: 'invite_emails_limit_usage',
   value: null,
-  type: 'string',
+  type: 'object',
   group: 'core',
 });

@@ -141,11 +141,7 @@ export class MaxLimit extends Limit {
     // Whatever database was supplied goes straight to the query. When none was, the query
     // is called without one and fails inside itself, which is the contract this has always
     // had and is not this class's to change.
-    return await this.currentCountQueryFn(
-      (options.transacting ?? this.db?.knex) as Knex,
-      undefined,
-      options.max || this.max,
-    );
+    return await this.currentCountQueryFn((options.transacting ?? this.db?.knex) as Knex);
   }
 
   async errorIfWouldGoOverLimit(options: CheckOptions = {}): Promise<void> {

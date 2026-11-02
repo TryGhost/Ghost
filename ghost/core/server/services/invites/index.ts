@@ -1,10 +1,11 @@
-import { lockStaffInvites } from '../../lib/staff-invite-usage';
+import { lastPeriodStart } from '@tryghost/limit-service';
+import config from '../../../shared/config';
 import { defineService } from '../../../kernel/define-service';
 import { Invites } from './invites';
 import InvitationLimiter from './invitation-limiter';
-import { limitService } from '../limits';
 
 export default defineService('Invites', () => {
+  const { limitService }: typeof import('../limits') = require('../limits');
   const settingsCache = require('../../../shared/settings-cache');
   const settingsHelpers = require('../settings-helpers');
   const mailService = require('../../lib/mail');
@@ -22,7 +23,11 @@ export default defineService('Invites', () => {
     invitationLimiter: new InvitationLimiter({
       transaction: (callback) => models.Base.transaction(callback),
       limitService,
-      lockStaffInvites,
+      Settings: models.Settings,
+      getPeriodStart: () =>
+        config.get('hostSettings:limits:inviteEmails:maxPeriodic') !== undefined
+          ? lastPeriodStart(config.get('hostSettings:subscription:start'), 'month')
+          : null,
     }),
   });
 });

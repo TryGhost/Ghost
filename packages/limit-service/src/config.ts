@@ -1,3 +1,4 @@
+import errors from '@tryghost/errors';
 import type { Knex, LimitConfig } from './types.ts';
 
 // NOTE: to support a new config in the limit service add an empty key-object pair in the export below.
@@ -60,30 +61,37 @@ const config: Record<string, LimitConfig> = {
             return result.length;
         }
     },
-    limitTrialStaff: {
-        currentCountQuery: async (knex: Knex, _periodStart?: string, max?: number) => {
-            // All roles and statuses occupy a trial seat.
-            const usersQuery = knex('users').select('id');
-            const invitesQuery = knex('invites').select('id');
-            if (max !== undefined) {
-                usersQuery.limit(max + 1);
-                invitesQuery.limit(max + 1);
-            }
-            const users = await usersQuery;
-            const invites = await invitesQuery;
-            return users.length + invites.length;
+    allStaff: {
+        currentCountQuery: async (knex: Knex) => {
+            // Read both counts in one statement so acceptance cannot move a seat between reads.
+            const result = await knex('users').select({
+                invites: knex('invites').count('id', {as: 'count'})
+            }).count('id', {as: 'users'}).first();
+            return Number(result.users) + Number(result.invites);
         }
     },
-    limitTrialStaffInvites: {
-        currentCountQuery: async (knex: Knex, _periodStart?: string, max?: number) => {
-            const query = knex('actions')
-                .select('id')
-                .where({resource_type: 'invite', event: 'added'});
-            // Bound returned rows; this does not bound rows scanned without an index.
-            if (max !== undefined) {
-                query.limit(max + 1);
+    inviteEmails: {
+        currentCountQuery: async (knex: Knex, periodStart?: string) => {
+            const setting = await knex('settings').select('value')
+                .where('key', 'invite_emails_limit_usage').first();
+            if (!setting) {
+                throw new errors.IncorrectUsageError({message: 'Missing staff invitation email counter.'});
             }
-            return (await query).length;
+            // A newly installed counter starts with a fresh allowance.
+            if (setting.value === null) {
+                return 0;
+            }
+            const counter = JSON.parse(setting.value);
+            const validCount = Number.isSafeInteger(counter?.count) && counter.count >= 0;
+            const validPeriodStart = counter?.periodStart === null ||
+                (typeof counter?.periodStart === 'string' && Number.isFinite(Date.parse(counter.periodStart)));
+            if (!validCount || !validPeriodStart) {
+                throw new errors.IncorrectUsageError({message: 'Invalid staff invitation email counter.'});
+            }
+            if (counter.periodStart !== (periodStart ?? null)) {
+                return 0;
+            }
+            return counter.count;
         }
     },
     customIntegrations: {},

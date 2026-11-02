@@ -21,7 +21,7 @@ describe('Settings', function () {
 
   // Allowlist: Only this list needs updating when a core setting is added/removed/renamed
   const coreSettingKeys = [
-    'staff_invitation_lock',
+    'invite_emails_limit_usage',
     'last_mentions_report_email_timestamp',
     'db_hash',
     'next_update_check',
