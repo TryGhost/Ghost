@@ -23,7 +23,9 @@ entries.
 ## A type made of existing blocks
 
 1. In [`src/structure.ts`](../src/structure.ts), add the type's id to `FIELD_TYPE_IDS`
-   and what it is composed of to `FIELD_STRUCTURES`.
+   and what it is composed of to `FIELD_STRUCTURES`. In [`src/index.ts`](../src/index.ts),
+   add what a field of it is set up with to `TYPED_SETTINGS`. The compiler fails until it
+   has the type.
 2. In Admin's [`fieldTypePresentation`](../../../apps/admin-x-framework/src/api/member-custom-fields.ts),
    give it a name and an icon. A record also gives a label for each part and says which
    parts take a full row of the form.

@@ -117,6 +117,25 @@ export type ValueOf<T extends FieldType> = T extends FieldType
   ? ValueOfStructure<StructureOf<T>>
   : never;
 
+/** What a field of each shape is set up with beyond its name. No shape has anything yet. */
+interface SettingsOfShape {
+  scalar: null;
+  record: null;
+}
+
+export type SettingsOf<T extends FieldType> = T extends FieldType
+  ? SettingsOfShape[ShapeOf<T>]
+  : never;
+
+/**
+ * A field's type together with what the field is set up with. They are one value because only the
+ * two together say what the field takes: a list field without its options has no answers to
+ * offer, and a short text field has no options to carry.
+ */
+export type TypedSettings = {
+  [T in FieldType]: { readonly type: T; readonly settings: SettingsOf<T> };
+}[FieldType];
+
 /**
  * Whether a value names a type this build knows. A site newer than an integration can send a type
  * the integration doesn't know, so check a type from the wire with this first. `constructor` and

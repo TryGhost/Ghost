@@ -8,7 +8,9 @@ import {
   type FieldTypeOfShape,
   type Leaf,
   type ListSource,
+  type SettingsOf,
   type TextSize,
+  type TypedSettings,
   type ValueOf,
 } from './structure.js';
 
@@ -39,11 +41,13 @@ export {
   type PartsOf,
   type RecordStructure,
   type ScalarStructure,
+  type SettingsOf,
   type ShapeHandlers,
   type ShapeOf,
   type StructureOf,
   type TextLeaf,
   type TextSize,
+  type TypedSettings,
   type ValueOf,
 } from './structure.js';
 
@@ -132,6 +136,62 @@ export const FIELD_STATUS = {
   active: 'active',
   archived: 'archived',
 } as const satisfies Record<FieldStatus, FieldStatus>;
+
+/** A field whose type has nothing to set up carries null, and a write may leave it out. */
+const NO_SETTINGS = z.null({ error: 'This type of field has no settings.' }).default(null);
+
+/**
+ * A type paired with its settings: checked against the rules of `written` when a field is
+ * written, and read back by `read` for their shape alone, so a rule tightened later never hides a
+ * field set up under the old one.
+ */
+const typedSettingsOf = <
+  T extends FieldType,
+  W extends z.ZodType<SettingsOf<T>, unknown>,
+  R extends z.ZodType<SettingsOf<T>, unknown>,
+>(
+  type: T,
+  written: W,
+  read: R,
+) => ({
+  written: z.object({ type: z.literal(type), settings: written }),
+  read: z.object({ type: z.literal(type), settings: read }),
+});
+
+/** What a field of each type is set up with, keyed so a type missing from it fails to compile. */
+const TYPED_SETTINGS = {
+  short_text: typedSettingsOf('short_text', NO_SETTINGS, NO_SETTINGS),
+  long_text: typedSettingsOf('long_text', NO_SETTINGS, NO_SETTINGS),
+  address: typedSettingsOf('address', NO_SETTINGS, NO_SETTINGS),
+} satisfies {
+  [T in FieldType]: Record<
+    'written' | 'read',
+    z.ZodType<{ type: T; settings: SettingsOf<T> }, unknown>
+  >;
+};
+
+const TYPE_ERROR = { error: 'Choose a type of custom field.' };
+
+// A union is never empty, so the catalog's first type is named apart from the rest.
+const [firstType, ...otherTypes] = FIELD_TYPE_IDS;
+
+/**
+ * A field's type and settings as a write states them, checked together and against the rules:
+ * the settings must be what that type is set up with, so a type with nothing to set up
+ * carries none.
+ */
+export const TypedSettingsInputSchema = z.discriminatedUnion(
+  'type',
+  [TYPED_SETTINGS[firstType].written, ...otherTypes.map((type) => TYPED_SETTINGS[type].written)],
+  TYPE_ERROR,
+) satisfies z.ZodType<TypedSettings, unknown>;
+
+/** A field's type and settings as they are read back: paired, but checked for their shape alone. */
+export const TypedSettingsSchema = z.discriminatedUnion(
+  'type',
+  [TYPED_SETTINGS[firstType].read, ...otherTypes.map((type) => TYPED_SETTINGS[type].read)],
+  TYPE_ERROR,
+) satisfies z.ZodType<TypedSettings, unknown>;
 
 /**
  * A field definition as the Admin and Members APIs return it. Ghost writes every definition through
