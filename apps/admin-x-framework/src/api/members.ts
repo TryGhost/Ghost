@@ -676,6 +676,7 @@ export interface BulkEditAction {
   type: 'addLabel' | 'removeLabel' | 'unsubscribe';
   meta?: {
     label?: { id: string };
+    labels?: { id: string }[];
   };
   newsletter?: string | null;
 }

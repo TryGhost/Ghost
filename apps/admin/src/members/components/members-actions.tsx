@@ -108,12 +108,20 @@ const MembersActions: React.FC<MembersActionsProps> = ({
   const handleRemoveLabel = useCallback(
     async (labelIds: string[]) => {
       try {
-        for (const labelId of labelIds) {
+        // The first request carries every label so the server removes them all from the
+        // members the filter selects now. Removing a label the filter matches on would
+        // otherwise leave later requests selecting nobody. Older servers read only `label`,
+        // so the remaining labels are still sent one at a time; on newer servers those
+        // requests find nothing left to remove.
+        for (const [index, labelId] of labelIds.entries()) {
           await bulkEditAsync({
             ...memberOperationParams,
             action: {
               type: 'removeLabel',
-              meta: { label: { id: labelId } },
+              meta: {
+                label: { id: labelId },
+                ...(index === 0 ? { labels: labelIds.map((id) => ({ id })) } : {}),
+              },
             },
           });
         }
