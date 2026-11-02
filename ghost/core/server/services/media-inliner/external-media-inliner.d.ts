@@ -1,7 +1,9 @@
-import type { ExternalMediaImportResult } from './types';
+import type { ExternalMediaImportResult, ExternalMediaInlinerDependencies } from './types';
 
 declare class ExternalMediaInliner {
-  constructor(deps: object);
+  constructor(deps: ExternalMediaInlinerDependencies);
+
+  getMediaStorage: ExternalMediaInlinerDependencies['getMediaStorage'];
 
   importUrl(sourceUrl: string): Promise<ExternalMediaImportResult>;
   inline(domains: string[]): Promise<void>;

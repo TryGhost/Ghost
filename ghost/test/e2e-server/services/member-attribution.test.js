@@ -25,18 +25,18 @@ describe('Member Attribution Service', function () {
     });
 
     it('gives Staff and Members the same ready attribution instance across later init calls', async function () {
-      const staff = require('../../../core/server/services/staff');
+      const staff = require('../../../core/server/services/staff').default;
       const members = require('../../../core/server/services/members');
       const service = memberAttributionService.service;
       assert.ok(service);
-      assert.equal(staff.api.memberAttributionService, service);
+      assert.equal(staff.service.memberAttributionService, service);
       assert.equal(members.api.memberBREADService.memberAttributionService, service);
       assert.equal(members.api.events._memberAttributionService, service);
 
       await memberAttributionService.init();
 
       assert.equal(memberAttributionService.service, service);
-      assert.equal(staff.api.memberAttributionService, service);
+      assert.equal(staff.service.memberAttributionService, service);
       assert.equal(members.api.memberBREADService.memberAttributionService, service);
       assert.equal(members.api.events._memberAttributionService, service);
     });

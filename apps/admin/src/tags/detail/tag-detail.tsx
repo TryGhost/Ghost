@@ -24,7 +24,6 @@ import { DetailPage, usePageChrome } from '@tryghost/shade/page-templates';
 import { DirtyConfirmDialog, PageHeader } from '@tryghost/shade/patterns';
 import { Link, useHandleError, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
-import { useShade } from '@tryghost/shade/app';
 import { NotFound } from '@/shared/not-found';
 import {
   buildTagSavePayload,
@@ -51,7 +50,6 @@ type TagImageFieldName = 'featureImage' | 'twitterImage' | 'ogImage';
 type SaveStatus = 'idle' | 'pending' | 'success' | 'error';
 
 const TagDetail: React.FC = () => {
-  const { isAdmin7 } = useShade();
   // Where list pages show their titles large (admin7Design), the tag's name
   // shows large under the breadcrumb, and the header sticks as the page
   // scrolls, like post analytics'.
@@ -409,7 +407,7 @@ const TagDetail: React.FC = () => {
                         <BreadcrumbPage>{isCreating ? 'New tag' : 'Edit tag'}</BreadcrumbPage>
                       </BreadcrumbItem>
                     ) : (
-                      <BreadcrumbItem className={isAdmin7 ? 'items-baseline gap-2' : 'gap-2'}>
+                      <BreadcrumbItem className="items-baseline gap-2">
                         {!isCreating && isLoading ? (
                           <Skeleton className="h-4 w-40" />
                         ) : (

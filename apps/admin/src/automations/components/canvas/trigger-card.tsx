@@ -48,6 +48,12 @@ function tierQueryNotice({ isLoading, isError, refetch }: TriggerData['tierQuery
   return undefined;
 }
 
+// Labels only focus their control, as a forwarded click would open these dropdowns.
+const focusControl = (controlId: string) => (event: React.MouseEvent) => {
+  event.preventDefault();
+  document.getElementById(controlId)?.focus();
+};
+
 const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> = ({
   trigger,
   errorMessage,
@@ -76,7 +82,8 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
 
   return (
     <Stack className="nowheel" gap="sm">
-      <Label className="leading-normal font-normal" htmlFor={`${id}-scope`}>
+      {/* Not linked with htmlFor, which would carry the label's hover onto the Select. */}
+      <Label className="leading-normal font-normal" onClick={focusControl(`${id}-scope`)}>
         Triggered when a new or free member starts:
       </Label>
       <Select
@@ -139,9 +146,17 @@ const SubscriptionChangedPicker: React.FC<{
   const id = useId();
   const { value, onChange } = tierSelection;
   const tiers = (tierQuery.data?.tiers ?? [])
-    .filter((tier) => tier.type === 'paid' && tier.active)
-    .map((tier) => ({ id: tier.id, name: tier.name }));
+    .filter((tier) => tier.type === 'paid')
+    .map((tier) => ({
+      id: tier.id,
+      name: tier.active ? tier.name : `${tier.name} (archived)`,
+      active: tier.active,
+    }));
   const fromTierIds = value.from === 'any_paid' ? [] : value.from;
+  const toTierIds = value.to === 'downgraded_to_free' ? [] : value.to;
+  const toTiers = tiers.filter(
+    (tier) => !fromTierIds.includes(tier.id) && (tier.active || toTierIds.includes(tier.id)),
+  );
   const notice = tierQueryNotice(tierQuery);
   const emptyMessage = tiers.length === 0 ? 'No paid tiers available.' : 'No tiers found';
   const describedBy = errorMessage ? `${id}-error` : undefined;
@@ -152,7 +167,11 @@ const SubscriptionChangedPicker: React.FC<{
         Triggered when a member&apos;s subscription changes:
       </Text>
       <Stack gap="sm">
-        <Label className="leading-normal font-normal" htmlFor={`${id}-from`}>
+        <Label
+          className="leading-normal font-normal"
+          htmlFor={`${id}-from`}
+          onClick={focusControl(`${id}-from`)}
+        >
           From
         </Label>
         <TierScopePicker<'any_paid'>
@@ -170,7 +189,11 @@ const SubscriptionChangedPicker: React.FC<{
         />
       </Stack>
       <Stack gap="sm">
-        <Label className="leading-normal font-normal" htmlFor={`${id}-to`}>
+        <Label
+          className="leading-normal font-normal"
+          htmlFor={`${id}-to`}
+          onClick={focusControl(`${id}-to`)}
+        >
           To
         </Label>
         <TierScopePicker<'downgraded_to_free'>
@@ -182,7 +205,7 @@ const SubscriptionChangedPicker: React.FC<{
           notice={notice}
           placeholder="Select tiers..."
           standalone={{ value: 'downgraded_to_free', label: 'Free' }}
-          tiers={tiers.filter((tier) => !fromTierIds.includes(tier.id))}
+          tiers={toTiers}
           value={value.to}
           onChange={(to) => onChange({ ...value, to })}
         />

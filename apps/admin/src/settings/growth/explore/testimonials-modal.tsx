@@ -17,6 +17,8 @@ import {
 } from '@tryghost/shade/components';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { SettingsModal } from '@tryghost/shade/patterns';
+import { cn } from '@tryghost/shade/utils';
+import { useShade } from '@tryghost/shade/app';
 import { memberAvatarProps } from '@/members/api';
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
@@ -30,6 +32,7 @@ interface FormState {
 }
 
 const TestimonialsModal = () => {
+  const { admin7Design } = useShade();
   const platformErrorId = React.useId();
   const { updateRoute } = useSettingsNavigation();
   const handleError = useHandleError();
@@ -123,7 +126,14 @@ const TestimonialsModal = () => {
     >
       <FieldGroup className="gap-8">
         <div className="flex items-stretch">
-          <div className="hidden w-full flex-col justify-between bg-gradient-to-tl from-gray-100/50 to-gray-100/80 p-8 dark:from-gray-900/40 dark:to-gray-900/60 [@media(min-width:905px)]:visible! [@media(min-width:905px)]:flex!">
+          <div
+            className={cn(
+              'hidden w-full flex-col justify-between p-8 [@media(min-width:905px)]:visible! [@media(min-width:905px)]:flex!',
+              admin7Design
+                ? 'bg-gray-100/65 dark:bg-gray-900/50'
+                : 'bg-gradient-to-tl from-gray-100/50 to-gray-100/80 dark:from-gray-900/40 dark:to-gray-900/60',
+            )}
+          >
             <div className="pr-6">
               <div className="relative rounded-xl bg-white px-3 py-2.5 text-md text-gray-700 italic shadow-lg before:absolute before:-bottom-1.5 before:left-5 before:block before:size-3 before:rotate-45 before:bg-white dark:bg-black dark:text-gray-300 dark:before:bg-black">
                 Moving to Ghost has proven to be one of the best business decisions we’ve made as an
@@ -184,7 +194,12 @@ const TestimonialsModal = () => {
           </div>
           <div className="flex grow flex-col justify-between gap-6 p-8 [@media(min-width:905px)]:min-w-[520px] [@media(min-width:940px)]:min-w-[460px]">
             <div>
-              <div className="flex size-[60px] items-center justify-center rounded-full bg-gradient-to-t from-[#CFB0FF] to-[#B27EFF]">
+              <div
+                className={cn(
+                  'flex size-[60px] items-center justify-center rounded-full',
+                  admin7Design ? 'bg-purple-300' : 'bg-gradient-to-t from-[#CFB0FF] to-[#B27EFF]',
+                )}
+              >
                 <svg
                   fill="none"
                   height="26"

@@ -24,15 +24,16 @@ import {
   formatPercentage,
   formatTimestamp,
   stringToHslColor,
+  stringToTonalAvatarClasses,
   useSimplePagination,
 } from '@tryghost/shade/utils';
+import { useShade } from '@tryghost/shade/app';
 import { formatMemberName, getMemberInitials } from '@/members/api';
 import { useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { usePostFeedback } from '@/posts/analytics/hooks/use-post-feedback';
 import { useState } from 'react';
 import PendingSendEmpty from '@/posts/analytics/email-sending-status/pending-send-empty';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
-import { useShade } from '@tryghost/shade/app';
 import { usePostAnalytics } from '@/posts/analytics/providers/post-analytics-context';
 
 interface FeedbackProps {
@@ -44,7 +45,7 @@ interface FeedbackProps {
 }
 
 const Feedback: React.FC<FeedbackProps> = ({ feedbackStats }) => {
-  const { isAdmin7 } = useShade();
+  const { admin7Design: tonalAvatars } = useShade();
   const { postId } = useParams();
   const navigate = useNavigate();
   const { isNewsletterDataHidden } = useEmailSendingStatusContext();
@@ -99,7 +100,7 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackStats }) => {
                 className="pb-3"
                 defaultValue="positive"
                 value={activeFeedbackTab}
-                variant={isAdmin7 ? 'button-sm' : 'button'}
+                variant="button-sm"
                 onValueChange={(value) => setActiveFeedbackTab(value as 'positive' | 'negative')}
               >
                 <TabsList className="gap-1">
@@ -155,10 +156,18 @@ const Feedback: React.FC<FeedbackProps> = ({ feedbackStats }) => {
                           />
                         )}
                         <AvatarFallback
-                          className="text-white"
-                          style={{
-                            backgroundColor: `${stringToHslColor(formatMemberName(item.member), '45', '55')}`,
-                          }}
+                          className={
+                            tonalAvatars
+                              ? stringToTonalAvatarClasses(formatMemberName(item.member))
+                              : 'text-white'
+                          }
+                          style={
+                            tonalAvatars
+                              ? undefined
+                              : {
+                                  backgroundColor: `${stringToHslColor(formatMemberName(item.member), '45', '55')}`,
+                                }
+                          }
                         >
                           {getMemberInitials(item.member)}
                         </AvatarFallback>

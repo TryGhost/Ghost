@@ -249,7 +249,7 @@ const Access: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       {isTrialMode && (
         <div className="-m-5 overflow-hidden p-5">
           <Banner
-            className="mb-2 flex w-full cursor-default flex-col gap-4 border-0 p-6 pt-5 transition-none hover:translate-y-0 hover:scale-100 hover:shadow-[-7px_-6px_42px_8px_rgb(75_225_226_/_28%),7px_6px_42px_8px_rgb(202_103_255_/_32%)] md:flex-row md:items-center md:justify-between dark:hover:shadow-[-7px_-6px_42px_8px_rgb(75_225_226_/_36%),7px_6px_42px_8px_rgb(202_103_255_/_38%)]"
+            className="mb-2 flex w-full cursor-default flex-col gap-4 border-0 p-6 pt-5 transition-none hover:translate-y-0 hover:scale-100 hover:shadow-[-7px_-6px_42px_8px_color-mix(in_oklab,var(--banner-glow-start)_28%,transparent),7px_6px_42px_8px_color-mix(in_oklab,var(--banner-glow-end)_32%,transparent)] md:flex-row md:items-center md:justify-between dark:hover:shadow-[-7px_-6px_42px_8px_color-mix(in_oklab,var(--banner-glow-start)_36%,transparent),7px_6px_42px_8px_color-mix(in_oklab,var(--banner-glow-end)_38%,transparent)]"
             size="lg"
             variant="gradient"
           >

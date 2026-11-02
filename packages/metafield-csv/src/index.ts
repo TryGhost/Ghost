@@ -81,6 +81,8 @@ export function csvColumnsForField(field: CsvField): CsvFieldColumn[] {
     scalar: () => [{ column: columnOf(field), part: null }],
     record: ({ parts }) =>
       Object.keys(parts).map((part) => ({ column: columnOf(field, part), part })),
+    // A list has no column yet, so it is left out of CSV.
+    set: () => [],
   });
 }
 
@@ -122,6 +124,7 @@ export function csvCellsForFields(
           cells[columnOf(field, part)] = toCell(composite[part]);
         }
       },
+      set: () => {},
     });
   }
 
@@ -188,6 +191,7 @@ export function fieldValuesFromCsvRow(
         }
         return Object.keys(composite).length > 0 ? composite : undefined;
       },
+      set: () => undefined,
     });
 
     if (value !== undefined) {

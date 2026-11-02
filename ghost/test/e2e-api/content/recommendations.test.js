@@ -13,9 +13,9 @@ describe('Recommendations Content API', function () {
     await agent.authenticate();
 
     // Clear placeholders
-    for (const recommendation of await recommendationsService.service.repository.getAll()) {
+    for (const recommendation of await recommendationsService.service.controller.service.repository.getAll()) {
       recommendation.delete();
-      await recommendationsService.service.repository.save(recommendation);
+      await recommendationsService.service.controller.service.repository.save(recommendation);
     }
 
     // Add 7 recommendations using the repository
@@ -31,7 +31,7 @@ describe('Recommendations Content API', function () {
         createdAt: new Date(i * 5000), // Reliable ordering
       });
 
-      await recommendationsService.service.repository.save(recommendation);
+      await recommendationsService.service.controller.service.repository.save(recommendation);
     }
   });
 

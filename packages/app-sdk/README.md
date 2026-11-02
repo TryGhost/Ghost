@@ -105,6 +105,7 @@ object ID, 24 lowercase hexadecimal characters; a slug is one path segment.
 | `users:read`       | `GET /users/`                                                                          |
 | `tiers:read`       | `GET /tiers/`                                                                          |
 | `newsletters:read` | `GET /newsletters/`                                                                    |
+| `site:read`        | `GET /site/`                                                                           |
 | `slugs:read`       | `GET /slugs/:type/:name/`, `GET /slugs/:type/:name/:id/`                               |
 
 An app can't ask Ghost to email a post, set a post's code injection or write

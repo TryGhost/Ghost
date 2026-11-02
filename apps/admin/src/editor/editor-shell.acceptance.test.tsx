@@ -297,7 +297,8 @@ function expectSmallScreenLayout(buttons: number) {
 function successColour() {
   const probe = document.createElement('span');
   probe.className = 'text-state-success';
-  document.body.append(probe);
+  // Inside the app's Shade scope, so it resolves the palette the app uses.
+  (document.querySelector('[data-admin7-design]') ?? document.body).append(probe);
   const colour = getComputedStyle(probe).color;
   probe.remove();
   return colour;

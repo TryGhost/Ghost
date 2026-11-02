@@ -31,6 +31,7 @@ import {
   resolveEffectiveRangeDays,
   sanitizeChartData,
 } from '@/shared/analytics/chart-helpers';
+import { useShade } from '@tryghost/shade/app';
 
 type PaidMembersChangeChartProps = {
   subscriptionData?: { date: string; signups: number; cancellations: number }[];
@@ -183,6 +184,8 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
   range,
   isLoading,
 }) => {
+  // admin7Design charts are flat: solid fills, no gradients.
+  const { admin7Design } = useShade();
   // State for user-selected resolution
   const [selectedResolution, setSelectedResolution] = useState<ResolutionOption>(() =>
     getDefaultResolution(range),
@@ -433,14 +436,30 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
               <Recharts.BarChart data={paidChangeChartData} stackOffset="sign">
                 <defs>
                   <linearGradient id="tealGradient" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor={'var(--color-new)'} stopOpacity={0.8} />
-                    <stop offset="100%" stopColor={'var(--color-new)'} stopOpacity={0.6} />
+                    <stop
+                      offset="0%"
+                      stopColor={'var(--color-new)'}
+                      stopOpacity={admin7Design ? 1 : 0.8}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor={'var(--color-new)'}
+                      stopOpacity={admin7Design ? 1 : 0.6}
+                    />
                   </linearGradient>
                 </defs>
                 <defs>
                   <linearGradient id="roseGradient" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor={'var(--color-cancelled)'} stopOpacity={0.6} />
-                    <stop offset="100%" stopColor={'var(--color-cancelled)'} stopOpacity={0.8} />
+                    <stop
+                      offset="0%"
+                      stopColor={'var(--color-cancelled)'}
+                      stopOpacity={admin7Design ? 1 : 0.6}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor={'var(--color-cancelled)'}
+                      stopOpacity={admin7Design ? 1 : 0.8}
+                    />
                   </linearGradient>
                 </defs>
                 <Recharts.CartesianGrid stroke="var(--border)" vertical={false} />

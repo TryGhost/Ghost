@@ -99,6 +99,7 @@ function columnFor(field: MemberCustomField): string | null {
   return matchShape(field.type, {
     scalar: () => memberCustomFieldCsvColumns([field])[0]?.value ?? null,
     record: () => null,
+    set: () => null,
   });
 }
 

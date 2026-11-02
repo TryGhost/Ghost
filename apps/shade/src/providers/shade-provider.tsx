@@ -47,14 +47,14 @@ const ToasterPortal = () => {
 
 interface ShadeProviderProps {
   darkMode: boolean;
-  isAdmin7?: boolean;
+  admin7Design?: boolean;
   controlShape?: ControlShape;
   children: React.ReactNode;
 }
 
 const ShadeProvider: React.FC<ShadeProviderProps> = ({
   darkMode,
-  isAdmin7 = true,
+  admin7Design = true,
   controlShape,
   children,
 }) => {
@@ -70,8 +70,8 @@ const ShadeProvider: React.FC<ShadeProviderProps> = ({
         isAnyTextFieldFocused,
         setFocusState,
         darkMode,
-        isAdmin7,
-        controlShape: controlShape ?? (isAdmin7 ? 'pill' : 'rounded'),
+        admin7Design,
+        controlShape: controlShape ?? 'pill',
       }}
     >
       <GlobalDirtyStateProvider>

@@ -85,6 +85,39 @@ const sharedDbConfig = {
   hookTimeout: 60000,
 };
 
+// Outbox off, as in production
+const bullmqEnv = {
+  ...sharedDbConfig.env,
+  adapters__jobs__active: 'BullMQJobsBackend',
+  adapters__jobs__BullMQJobsBackend__attempts: '3',
+  adapters__jobs__BullMQJobsBackend__backoff__delay: '100',
+  services__jobs__outbox__enabled: 'false',
+};
+
+// These pause Redis and kill its clients, so never run them alongside another
+// BullMQ project
+const bullmqScenarios = (name: string, outbox: boolean, include: string[]) => ({
+  ...sharedDbConfig,
+  name,
+  isolate: true,
+  fileParallelism: false,
+  include,
+  exclude: ['**/node_modules/**'],
+  globalSetup: ['./test/utils/vitest-globalsetup-services.ts'],
+  setupFiles: [...sharedDbConfig.setupFiles, './test/utils/vitest-setup-bullmq.ts'],
+  env: {
+    ...bullmqEnv,
+    services__jobs__outbox__enabled: String(outbox),
+    adapters__jobs__BullMQJobsBackend__lockDuration: '3000',
+    adapters__jobs__BullMQJobsBackend__stalledInterval: '1000',
+    adapters__jobs__BullMQJobsBackend__enqueueTimeoutMs: '500',
+    services__jobs__outbox__pollIntervalMs: '100',
+    services__jobs__outbox__submissionTimeoutMs: '1000',
+    services__jobs__outbox__retryDelayMs: '200',
+  },
+  testTimeout: 30000,
+});
+
 // Coverage gates per acceptance lane, selected by COVERAGE_LANE (set in the
 // test:ci:* scripts). Baselines measured against MySQL 8.0 + Redis + VersityGW,
 // minus ~2pt of headroom. Unset means no gate — ad-hoc local --coverage runs
@@ -265,6 +298,44 @@ export default defineConfig({
           // Matches the mocha `--timeout=15000` for the e2e suites.
           testTimeout: 15000,
         },
+      },
+      {
+        ssr: sharedSsrConfig,
+        test: {
+          ...sharedDbConfig,
+          name: 'bullmq-newsletters',
+          isolate: true,
+          include: [
+            'test/integration/services/email-service/batch-sending.test.js',
+            'test/integration/services/email-service/resume-interrupted-sends.test.js',
+            'test/integration/services/email-service/recipient-accounting.test.ts',
+            'test/integration/services/email-service/domain-warming.test.js',
+            'test/integration/services/email-service/cards.test.js',
+            'test/e2e-api/admin/email-retry.test.ts',
+            'test/e2e-api/admin/emails.test.js',
+            'test/e2e-server/click-tracking.isolated.test.js',
+            'test/e2e-bullmq/jobs-backend-cleanup.test.ts',
+          ],
+          exclude: ['**/node_modules/**'],
+          // Sets GHOST_TEST_REDIS_AVAILABLE, which vitest-setup-bullmq.ts requires
+          globalSetup: ['./test/utils/vitest-globalsetup-services.ts'],
+          setupFiles: [...sharedDbConfig.setupFiles, './test/utils/vitest-setup-bullmq.ts'],
+          env: bullmqEnv,
+          testTimeout: 15000,
+        },
+      },
+      {
+        ssr: sharedSsrConfig,
+        test: bullmqScenarios('bullmq-scenarios', true, [
+          'test/e2e-bullmq/newsletter-failures.test.ts',
+        ]),
+      },
+      {
+        ssr: sharedSsrConfig,
+        test: bullmqScenarios('bullmq-scenarios-outbox-off', false, [
+          'test/e2e-bullmq/newsletter-failures.test.ts',
+          'test/e2e-bullmq/boot-without-redis.test.ts',
+        ]),
       },
     ],
   },

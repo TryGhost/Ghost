@@ -1,5 +1,4 @@
 import BrandIcon from '@/shared/brand-icon/brand-icon';
-import { useShade } from '@tryghost/shade/app';
 import '@/settings/custom-fonts.css';
 import ColorPickerField from '@/settings/components/color-picker-field';
 import FormSection from '@/settings/components/form-section';
@@ -30,7 +29,7 @@ import {
   ImageUploadImage,
   ImageUploadPreview,
 } from '@tryghost/shade/patterns';
-import { Images, Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import { type SettingValue, getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { type Theme, useBrowseThemes } from '@tryghost/admin-x-framework/api/themes';
 import { formatNumber } from '@tryghost/shade/utils';
@@ -102,8 +101,6 @@ const GlobalSettings: React.FC<{
   values: GlobalSettingValues;
   updateSetting: (key: string, value: SettingValue) => void;
 }> = ({ values, updateSetting }) => {
-  const { isAdmin7 } = useShade();
-  const CoverSearchButton = isAdmin7 ? Button : ImageUploadAction;
   const { mutateAsync: uploadImage } = useUploadImage();
   const { settings } = useGlobalData();
   const [unsplashEnabled] = getSettingValues<boolean>(settings, ['unsplash']);
@@ -367,15 +364,15 @@ const GlobalSettings: React.FC<{
                 </ImageUploadDropzone>
                 {unsplashEnabled && (
                   <ImageUploadActions className="top-1 right-1 opacity-100">
-                    <CoverSearchButton
+                    <Button
                       aria-label="Select publication cover from Unsplash"
                       data-testid="toggle-unsplash-button"
                       size="icon"
                       variant="ghost"
                       onClick={() => setShowUnsplash(true)}
                     >
-                      {isAdmin7 ? <BrandIcon name="unsplash" size={16} /> : <Images />}
-                    </CoverSearchButton>
+                      <BrandIcon name="unsplash" size={16} />
+                    </Button>
                   </ImageUploadActions>
                 )}
               </>
