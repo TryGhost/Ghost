@@ -82,7 +82,7 @@ const buttonVariants = cva(
       {
         variant: 'outline',
         className:
-          'border-0 shadow-control-outline enabled:active:shadow-control-outline-pressed enabled:aria-expanded:shadow-control-outline-pressed enabled:aria-expanded:bg-button-hover',
+          'border-0 shadow-control-outline enabled:active:shadow-control-outline-pressed enabled:aria-expanded:shadow-control-outline-pressed enabled:active:bg-button-pressed enabled:aria-expanded:bg-button-pressed',
       },
       {
         size: 'icon',

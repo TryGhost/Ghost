@@ -67,9 +67,9 @@ const SIZES = {
 // Around the header row's icon, and the body's side padding, so the search
 // field and nav rows line up with the icon.
 const PADDING = 20;
-const PIN_BUTTON_SIZE = 28;
+const PIN_BUTTON_SIZE = 32;
 // Puts the pin glyph PADDING from the panel's right edge.
-const PIN_BUTTON_RIGHT = 14;
+const PIN_BUTTON_RIGHT = 12;
 /*
  * The capsule floats within the viewport, less any chrome framing the page
  * around it: `--floating-sidebar-offset-top`, `-left` and `-bottom` (0 unless
@@ -740,7 +740,7 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
                 aria-hidden={pinLocked || undefined}
                 aria-label={pinned ? unpinLabel : pinLabel}
                 className={cn(
-                  'absolute z-10 flex size-7 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-[opacity,color,background-color] duration-200 hover:bg-interactive-hover hover:text-foreground focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-hidden',
+                  'absolute z-10 flex size-8 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-[opacity,color,background-color] duration-200 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:outline-hidden',
                   // Follows the hover state, not pinning, so it hides when the
                   // pointer leaves a pinned panel too
                   open && !pinLocked

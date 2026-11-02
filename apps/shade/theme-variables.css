@@ -110,6 +110,8 @@
   /* Translucent so a ghost Button hover darkens whatever it sits on - an opaque
      gray-100 all but disappears on a --table-row-hover row. */
   --button-ghost-hover: color-mix(in oklab, var(--color-gray-700) 10%, transparent);
+  /* An open or pressed outline Button or ghost Select reads like a selected tab */
+  --button-pressed: var(--tab-active);
   --interactive-hover: var(--button-hover);
   --filter-bar-background: var(--color-gray-100);
   --filter-bar-item-hover: var(--color-gray-50);
@@ -119,12 +121,12 @@
   --control-border: color-mix(in oklab, var(--color-gray-200), var(--color-gray-300));
   --control-pressed-shadow: lch(0 0 0 / 0.07) 0px 1px 2px 0px inset;
   --control-outline-shadow:
-    lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
+    lch(0 0 0 / 0.14) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
     lch(0 0 0 / 0.04) 0px 1px 1px 0px;
   --control-outline-pressed-shadow:
-    lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
+    lch(0 0 0 / 0.14) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
     lch(0 0 0 / 0.04) 0px 1px 1px 0px, var(--control-pressed-shadow);
-  --table-row-hover: var(--color-gray-50);
+  --table-row-hover: var(--color-gray-100);
   /* Selected rows read as picked-out rather than merely hovered, so this is a
      hue change and not another step on the gray ramp - a darker gray would
      compete with --table-row-hover instead of contrasting with it. */
@@ -243,6 +245,14 @@
   --chart-blue: hsl(198 100% 51%);
   --chart-darkblue: hsl(226 91% 61%);
   --chart-purple: hsl(273 100% 64%);
+  --button-pressed: var(--button-hover);
+  --control-outline-shadow:
+    lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
+    lch(0 0 0 / 0.04) 0px 1px 1px 0px;
+  --control-outline-pressed-shadow:
+    lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
+    lch(0 0 0 / 0.04) 0px 1px 1px 0px, var(--control-pressed-shadow);
+  --table-row-hover: var(--color-gray-50);
 }
 
 /* Dark mode. With admin7Design off, the previous dark block below wins. */
