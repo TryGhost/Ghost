@@ -144,7 +144,7 @@ const MemberAddCompModal: React.FC<MemberAddCompModalProps> = ({ open, onOpenCha
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
             <Label htmlFor="comp-tier">Tier</Label>
             <Select value={selectedTierId} onValueChange={setSelectedTierId}>
               <SelectTrigger
@@ -164,7 +164,7 @@ const MemberAddCompModal: React.FC<MemberAddCompModalProps> = ({ open, onOpenCha
             </Select>
           </div>
 
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
             <Label htmlFor="comp-duration">Duration</Label>
             <Select
               value={duration}
@@ -192,7 +192,7 @@ const MemberAddCompModal: React.FC<MemberAddCompModalProps> = ({ open, onOpenCha
           </div>
 
           {duration === 'custom' && (
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
               <Label htmlFor="comp-custom-date">Expires on</Label>
               <Input
                 data-testid="comp-custom-date"
