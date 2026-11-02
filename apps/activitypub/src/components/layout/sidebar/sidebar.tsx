@@ -6,7 +6,8 @@ import Search from '@src/components/modals/search';
 import SearchInput from '../header/search-input';
 import SidebarMenuLink from './sidebar-menu-link';
 import { Button, Dialog, DialogContent, DialogTrigger } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { LucideIcon, cn } from '@tryghost/shade/utils';
+import { sidebarMenuLinkClassName } from './sidebar-menu-link-class';
 import { useAppBasePath } from '@src/hooks/use-app-base-path';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useFeatureFlags } from '@src/lib/feature-flags';
@@ -16,6 +17,7 @@ import {
   useResetNotificationsCountForUser,
   useTopicsForUser,
 } from '@src/hooks/use-activity-pub-queries';
+import { useShade } from '@tryghost/shade/app';
 
 interface SidebarProps {
   isMobileSidebarOpen: boolean;
@@ -24,6 +26,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isMobileSidebarOpen }) => {
   const { allFlags, flags } = useFeatureFlags();
+  const { admin7Design } = useShade();
   const [isSearchOpen, setIsSearchOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
   const { data: currentUser } = useCurrentUser();
@@ -95,7 +98,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileSidebarOpen }) => {
             </SidebarMenuLink>
             {showExternalExplore ? (
               <Button
-                className="inline-flex w-full items-center gap-2 px-3 py-2.5 text-left font-medium text-gray-800 transition-colors hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-gray-950/70"
+                className={
+                  admin7Design
+                    ? cn(
+                        sidebarMenuLinkClassName({ admin7Design }),
+                        'inline-flex w-full items-center gap-2 px-3 py-2.5 text-left',
+                      )
+                    : 'inline-flex w-full items-center gap-2 px-3 py-2.5 text-left font-medium text-gray-800 transition-colors hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-gray-950/70'
+                }
                 shape="rounded"
                 variant="ghost"
                 asChild

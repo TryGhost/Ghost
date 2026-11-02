@@ -30,6 +30,7 @@ import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation'
 import { useScrollSectionContext, useScrollSectionNav } from '@/settings/hooks/use-scroll-section';
 import { useSearch } from '@/settings/providers/settings-app-context';
 import ExitSettingsButton from '@/settings/components/exit-settings-button';
+import { ADMIN7_NAV_ICON_CLASS_NAME } from '@/layout/app-sidebar/nav-icon-class';
 
 interface NavItemProps {
   icon?: React.ReactNode;
@@ -387,7 +388,10 @@ const Sidebar: React.FC = () => {
         ref={scrollerRef}
         // pb-5 matches the sidebar's pt-5, so the last item rests as far from the
         // bottom edge as the search row sits from the top.
-        className="min-h-0 flex-1 overflow-y-auto px-5 pt-4 pb-5 [&>:last-child]:mb-0"
+        className={cn(
+          'min-h-0 flex-1 overflow-y-auto px-5 pt-4 pb-5 [&>:last-child]:mb-0',
+          floatingSidebar && ADMIN7_NAV_ICON_CLASS_NAME,
+        )}
         id="settings-sidebar-scroller"
         style={scrollFade}
       >

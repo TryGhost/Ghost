@@ -2,6 +2,7 @@
 // Countries and US states share one Natural Earth projection; no member data leaves this app.
 import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { useRevealOnMount } from '@/shared/use-reveal-on-mount';
+import { useShade } from '@tryghost/shade/app';
 import { Box } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { parseMemberGeolocation } from './member-detail-format';
@@ -18,6 +19,7 @@ function LocationMap({
   country: MapLocation;
   region?: string;
 }) {
+  const { admin7Design } = useShade();
   const isUS = country.id === 'us';
   const normalizedRegion =
     typeof region === 'string' ? region.trim().toLowerCase().replace(/^us-/, '') : '';
@@ -67,7 +69,7 @@ function LocationMap({
       <svg
         ref={svgRef}
         aria-hidden="true"
-        className="size-full bg-muted dark:bg-muted/45"
+        className={cn('size-full dark:bg-muted/45', admin7Design ? 'bg-gray-200' : 'bg-muted')}
         data-map-kind="world"
         data-testid="member-location-map"
         preserveAspectRatio="xMidYMid slice"

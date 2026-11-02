@@ -23,7 +23,7 @@ const selectTriggerVariants = cva(
       },
       {
         variant: 'ghost',
-        className: 'enabled:active:bg-button-hover enabled:aria-expanded:bg-button-hover',
+        className: 'enabled:active:bg-button-pressed enabled:aria-expanded:bg-button-pressed',
       },
       {
         variant: 'secondary',
