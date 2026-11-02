@@ -7,9 +7,10 @@ import { isContainedPath, type FetchMethod } from './rules.ts';
 // path next may read it as two segments.
 const ENCODED_SEPARATOR = /%2f|%5c/i;
 
-// Ghost still answers the API's old versioned addresses. Its rewrite looks for `ghost/api`
-// anywhere in the address, the query included, and removes a version from it, so a request
-// whose path or query mentions either could reach a route other than the one checked here.
+// Ghost still answers the API's old versioned addresses. Older versions of its rewrite look for
+// `ghost/api` anywhere in the address, the query included, and remove a version from it, so a
+// request whose path or query mentions either could reach a route other than the one checked
+// here. Admin can run against an older Ghost, so the check stays.
 const GHOST_API = /ghost\/api/i;
 const VERSION_SEGMENT = /^(?:v2|v3|v4|canary)$/i;
 
