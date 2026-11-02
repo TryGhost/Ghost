@@ -61,7 +61,7 @@ const Step1: React.FC = () => {
             </div>
           </div>
           <Button
-            className={`min-w-60 ${admin7Design ? 'bg-purple-600' : 'bg-gradient-to-r from-purple-500 to-[#6A1AD6]'} hover:opacity-90 dark:text-white`}
+            className={`min-w-60 ${admin7Design ? 'bg-purple-600 hover:bg-purple-600' : 'bg-gradient-to-r from-purple-500 to-[#6A1AD6]'} hover:opacity-90 dark:text-white`}
             size="lg"
             onClick={() => navigate('/welcome/2')}
           >

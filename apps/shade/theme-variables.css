@@ -364,7 +364,8 @@
   --state-warning-foreground: var(--color-black);
   --badge-warning: color-mix(in oklab, var(--state-warning) 20%, transparent);
   --badge-warning-hover: color-mix(in oklab, var(--state-warning) 30%, transparent);
-  --badge-warning-foreground: var(--color-yellow-600);
+  /* yellow-600 text falls below AA on the dark surfaces */
+  --badge-warning-foreground: var(--color-yellow-400);
   --state-danger: var(--color-red-500);
   --state-danger-foreground: var(--color-black);
   --chart-gray: var(--color-gray-700);
@@ -496,6 +497,7 @@
   --sidebar-accent-foreground: var(--color-gray-100);
   --sidebar-border: var(--border);
   --sidebar-ring: var(--color-gray-700);
+  --badge-warning-foreground: var(--color-yellow-600);
 }
 
 /* Stronger shadows in dark mode — default Tailwind values use ~10% black alpha,

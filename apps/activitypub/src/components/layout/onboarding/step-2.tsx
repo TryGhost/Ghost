@@ -116,7 +116,9 @@ const Step2: React.FC = () => {
         <Button
           className={cn(
             'min-w-60 hover:opacity-90 dark:text-white',
-            admin7Design ? 'bg-purple-600' : 'bg-gradient-to-r from-purple-500 to-[#6A1AD6]',
+            admin7Design
+              ? 'bg-purple-600 hover:bg-purple-600'
+              : 'bg-gradient-to-r from-purple-500 to-[#6A1AD6]',
           )}
           size="lg"
           onClick={() => navigate('/welcome/3')}

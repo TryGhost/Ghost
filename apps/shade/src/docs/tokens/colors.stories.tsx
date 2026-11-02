@@ -177,6 +177,8 @@ export const RawPalette: Story = {
 };
 
 export const Admin7Comparison: Story = {
+  // Light mode only: the comparison reads the light values
+  globals: { scheme: 'light' },
   render: () => (
     <div className="flex flex-col gap-10">
       <PaletteComparison

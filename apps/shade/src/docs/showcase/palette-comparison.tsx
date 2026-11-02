@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 
 /*
  * Compares the admin7Design palette with the previous one. The new values are
- * read from the document root, which always carries the light admin7Design
- * palette; the previous ones from a hidden `data-admin7-design="false"` scope.
- * Light mode only: dark mode keeps the previous palette in both states.
+ * read from the document root; the previous ones from a hidden
+ * `data-admin7-design="false"` scope. Light mode only: its story pins the light
+ * scheme, since dark mode has its own values on both sides.
  */
 
 type Pair = { label: string; text: string; background: string };
