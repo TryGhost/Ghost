@@ -115,9 +115,9 @@ const useHybridLabelValueSource = createHybridValueSource<Label, string>({
 });
 
 /**
- * Labels for a picker. Sites with up to a page of labels get the whole list up
- * front and filter it locally; larger sites search the server as the user types
- * and page through the matches, so no caller ever walks every page.
+ * Labels for a picker. A site with up to a page of labels gets the whole list
+ * and filters it locally. A larger site searches the server as the user types
+ * and pages through the matches, so no caller walks every page.
  */
 export function useLabelValueSource(options?: HybridValueSourceOptions): HybridValueSource<string> {
   return useHybridLabelValueSource(options);

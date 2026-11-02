@@ -758,8 +758,8 @@ describe('Publish flow', () => {
     const unquote = (value: string) => value.trim().replace(/^'(.*)'$/, '$1');
 
     /**
-     * Pages labels the way Core does, honouring a name search or a slug lookup.
-     * `failPagesOnce` answers the first request for each of those pages with a 500.
+     * Pages labels the way Core does, honoring a name search or a slug lookup.
+     * `failPagesOnce` answers the first request for each listed page with a 500.
      */
     function fakePagedLabels({ failPagesOnce = [] }: { failPagesOnce?: number[] } = {}) {
       const pagesToFail = new Set(failPagesOnce);
@@ -808,7 +808,7 @@ describe('Publish flow', () => {
       labelsApi.requests.map((request) => new URL(request.url).searchParams.get('page'));
 
     beforeEach(() => {
-      // One paid tier adds nothing to the free/paid split, so labels are the only segments.
+      // A single tier is hidden, so labels are the only segments.
       fakeAdminEndpoint('GET', /^\/tiers\/\?/, {
         tiers: [{ id: 'only-id', slug: 'only', name: 'Only tier', active: true }],
       });
@@ -849,8 +849,7 @@ describe('Publish flow', () => {
       await expect(page.getByRole('option', { name: 'Label 1', exact: true })).toHaveCount(0);
       const search = filtersRequested(labelsApi).find((filter) => filter?.startsWith('name:~'));
       expect(search).toContain('Label 150');
-      // The first page is kept on screen until the search answers, so the typing
-      // never scrolled the stale list into asking for its next page.
+      // The stale list stayed on screen while the search ran, so it never asked for its next page.
       expect(pagesRequested(labelsApi)).not.toContain('2');
     });
 
@@ -871,7 +870,7 @@ describe('Publish flow', () => {
       await expect.element(page.getByText("Couldn't load more labels.")).toBeVisible();
       const retry = page.getByRole('button', { name: 'Retry', exact: true });
       await expect.element(retry).toBeVisible();
-      // The sentinel is still in view, yet the failed page is asked for once only.
+      // The sentinel is still in view, yet the failed page was asked for once.
       expect(pagesRequested(labelsApi).filter((pageNumber) => pageNumber === '2')).toHaveLength(1);
 
       await retry.click();
@@ -929,7 +928,7 @@ describe('Publish flow', () => {
 
       const picker = page.getByTestId(publishRecipientSegments);
       await expect.element(picker.getByRole('button', { name: 'Remove Label 150' })).toBeVisible();
-      // Neither the raw id nor the checkbox shows while the tiers are on their way.
+      // Neither the raw id nor the checkbox shows while the tiers load.
       await expect(picker.getByRole('button', { name: /tier_id/ })).toHaveCount(0);
       await expect(page.getByLabelText('Specific people')).toHaveCount(0);
 
@@ -956,7 +955,7 @@ describe('Publish flow', () => {
       const lookup = filtersRequested(labelsApi).find((filter) => filter?.startsWith('slug:'));
       expect(lookup).toContain('label-150');
 
-      // The pill keeps its name while a search that does not match it is typed.
+      // The pill keeps its name under a search that doesn't match it.
       await picker.getByRole('combobox').fill('nothing like it');
       await expect.element(page.getByText('No labels found')).toBeVisible();
       await expect.element(picker.getByRole('button', { name: 'Remove Label 150' })).toBeVisible();

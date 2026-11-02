@@ -39,20 +39,9 @@ export interface RecipientSelectProps {
   /** The newsletter's own audience filter, used to scope the free/paid counts. */
   newsletterRecipientFilter: string | null;
   paidAvailable: boolean;
-  /** The paid tiers offered as segments, already grouped as active or archived. */
   tierOptions: SegmentOption[];
-  /**
-   * Whether the tiers are still being read. They are few and arrive in full
-   * before "Specific people" is offered, so a persisted tier segment is never
-   * shown by its raw id while its name is on the way.
-   */
+  /** "Specific people" waits for the tiers, so a saved tier is never shown by its raw id. */
   tiersLoading: boolean;
-  /**
-   * The site's labels. The source decides how they load: a site with up to a
-   * page of labels has them all at once, a larger site searches the server as
-   * the user types and pages as they scroll, so the picker never waits for
-   * every label before it can be used.
-   */
   labelSource: HybridValueSource<string>;
   onChange: (filter: string | null) => void;
 }
@@ -77,7 +66,6 @@ function labelSlug(segment: string): string | null {
     : null;
 }
 
-/** The slug a `label:` or `tier:` segment names; any other segment verbatim. */
 function segmentSlug(segment: string): string {
   for (const prefix of [LABEL_SEGMENT_PREFIX, TIER_SEGMENT_PREFIX]) {
     if (segment.startsWith(prefix)) {
@@ -107,10 +95,7 @@ interface SegmentPickerProps {
   onToggle: (segment: string) => void;
 }
 
-/**
- * Mounted only while "Specific people" is checked, so the search and the label
- * reads it drives reset with it.
- */
+/** Mounted only while "Specific people" is checked, so the search resets with it. */
 function SegmentPicker({
   tierOptions,
   tiersLoading,
@@ -120,7 +105,7 @@ function SegmentPicker({
 }: SegmentPickerProps) {
   const [search, setSearch] = useState('');
 
-  // Passed to the source so it names them even when the page or search leaves them out.
+  // The source names selected labels even when the page or search leaves them out.
   const selectedLabelSlugs = useMemo(
     () =>
       selected.flatMap((segment) => {
@@ -132,7 +117,7 @@ function SegmentPicker({
   const labelState = labelSource.useOptions({ query: search, selectedValues: selectedLabelSlugs });
 
   const tierRows = tierOptions.map((option) => toRow(option.segment, option.name, option.group));
-  // The source already narrows labels to the search; tiers are narrowed here.
+  // The source searches labels itself, so only the tiers need narrowing here.
   const visibleTierRows = filterOptionsByQuery(
     tierRows.map((row) => ({ value: row, label: row.name })),
     search,
@@ -141,8 +126,8 @@ function SegmentPicker({
     toRow(`${LABEL_SEGMENT_PREFIX}${option.value}`, option.label, LABELS_GROUP),
   );
 
-  // Pills are named from every known row, not only the search's. A tier segment
-  // waits for the tiers rather than appearing as its raw id first.
+  // Pills are named from every known row, not only those matching the search.
+  // A tier segment waits for the tiers rather than showing its raw id first.
   const knownRows = [...tierRows, ...labelRows];
   const selectedRows = selected.flatMap((segment) => {
     const row = knownRows.find((known) => known.slug === segment);
@@ -203,7 +188,6 @@ export function RecipientSelect({
   const [forceSpecific, setForceSpecific] = useState(false);
   const [previousSpecific, setPreviousSpecific] = useState<string[] | null>(null);
 
-  // The first label page says how many there are; the tiers, few and quick, are waited for.
   const hasLabels = (labelSource.probe.total ?? 0) > 0;
   const hasSpecificOptions = !tiersLoading && (tierOptions.length > 0 || hasLabels);
 

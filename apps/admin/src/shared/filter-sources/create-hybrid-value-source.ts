@@ -15,13 +15,10 @@ export type HybridValueSourceOptions = {
   queryOptions?: ValueSourceQueryOptions;
 };
 
-/**
- * What the first page said about the whole collection, for callers that need to
- * know whether there is anything to pick before anyone has typed a search.
- */
+/** What the first page reported about the whole collection, before any search is typed. */
 export type HybridProbeState = {
   isLoading: boolean;
-  /** The collection's size per the first page's pagination; undefined until it arrives. */
+  /** Undefined until the first page arrives. */
   total: number | undefined;
 };
 

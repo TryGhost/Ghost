@@ -102,7 +102,7 @@ interface LabelListItemsProps {
   labels: PickerLabel[];
   selectedSlugs: string[];
   search: string;
-  /** Whether the list narrows itself to the search; false when the source already did. */
+  /** False when the source already narrowed the list to the search. */
   shouldClientFilter: boolean;
   onToggle: (slug: string) => void;
   onEdit?: (id: string, name: string) => Promise<void>;
@@ -126,11 +126,9 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
 }) => {
   const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
   const normalizedSearch = search.trim().toLowerCase();
-  // A source that searches for itself hands over matches already, plus whatever
-  // is selected so the field can name it, and only the latter is checked against
-  // the search here. Narrowing the matches again would empty the list between a
-  // keystroke and its answer, and an empty list asks the source for the next
-  // page of the stale results.
+  // When the source searches for itself, only the selected labels are checked
+  // against the search here. Narrowing the matches again would empty the list
+  // between a keystroke and its answer, which asks for the next page of stale results.
   const matchesSearch = (label: PickerLabel) => label.name.toLowerCase().includes(normalizedSearch);
   const visibleLabels = normalizedSearch
     ? labels.filter((label) =>
@@ -217,11 +215,11 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
   );
 };
 
-// --- LoadMoreSentinel: asks for the next page once scrolled into view ---
+// --- Load-more sentinel: asks for the next page once scrolled into view ---
 
 interface LoadMoreSentinelProps {
   isLoading: boolean;
-  /** Rows shown; a page that adds none is taken as failed. */
+  /** A page that adds no rows is taken as failed. */
   itemCount: number;
   onVisible: () => void;
 }
@@ -231,10 +229,9 @@ interface PendingPage {
   started: boolean;
 }
 
-// Sits under the last row and asks for the next page when scrolled into view.
-// A page that loads without adding a row is taken as failed and offered as a
-// retry: the query client does not retry, and re-observing the still-visible
-// sentinel would ask again at once, with no pause between failures.
+// A failed page is offered as a retry rather than asked for again. The query
+// client doesn't retry, and re-observing the still-visible sentinel would ask
+// again at once, with no pause between failures.
 const LoadMoreSentinel: React.FC<LoadMoreSentinelProps> = ({ isLoading, itemCount, onVisible }) => {
   const ref = useRef<HTMLDivElement>(null);
   const pending = useRef<PendingPage | null>(null);
@@ -245,8 +242,8 @@ const LoadMoreSentinel: React.FC<LoadMoreSentinelProps> = ({ isLoading, itemCoun
     onVisible();
   }, [itemCount, onVisible]);
 
-  // Settling the asked-for page and observing happen in one effect, so a failed
-  // page is never observed for even one frame.
+  // One effect settles the pending page and observes, so a failed page is
+  // never observed, even for a frame.
   useEffect(() => {
     const page = pending.current;
     if (page) {
@@ -255,7 +252,7 @@ const LoadMoreSentinel: React.FC<LoadMoreSentinelProps> = ({ isLoading, itemCoun
         return;
       }
       if (!page.started && itemCount <= page.itemCount) {
-        // Asked for, not yet in flight.
+        // Requested, not yet in flight.
         return;
       }
       pending.current = null;

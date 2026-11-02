@@ -35,7 +35,6 @@ const stripeBoundarySchema = z.object({
   configData: z.looseObject({ config: z.looseObject({ stripeDirect: z.boolean() }) }),
 });
 
-/** The flow handles failures and expired sessions itself, for labels as for every other read. */
 const LABEL_QUERY_OPTIONS = {
   defaultErrorHandler: false,
   requestOptions: EDITOR_REQUEST_OPTIONS,
@@ -64,8 +63,8 @@ export function EmailRecipientsOptions({
     isError: tiersError,
     isFetchingNextPage: isFetchingNextTierPage,
   } = tiersQuery;
-  // Core caps `limit=all`, so the response can still contain a next page.
-  // Tiers are few: exhaust them before offering any, to avoid a partial list.
+  // Core caps `limit=all` at one page, so there may be a next page. Tiers are
+  // few, so read them all before offering any.
   useEffect(() => {
     if (hasNextTierPage && !isFetchingNextTierPage && !tiersError) {
       void fetchNextTierPage();
@@ -75,8 +74,8 @@ export function EmailRecipientsOptions({
   const tiersSettled =
     !tiersQuery.isLoading && !isFetchingNextTierPage && (!hasNextTierPage || tiersError);
 
-  // Labels are not walked the same way: a site can have thousands, so the
-  // source serves a page and searches the server for the rest on demand.
+  // Labels can number in the thousands, so they aren't walked. The source
+  // serves a page and searches the server for the rest.
   const labelSource = useLabelValueSource({ queryOptions: LABEL_QUERY_OPTIONS });
 
   const stripeBoundary = stripeBoundarySchema.safeParse({ settingsData, configData });

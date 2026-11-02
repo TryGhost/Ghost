@@ -10,9 +10,8 @@ import { useDebounce } from 'use-debounce';
 import { useMemo } from 'react';
 
 /**
- * How a source's own requests are issued. A caller that handles failures and
- * expired sessions itself (the editor) turns off the global error handler and
- * the transport's session-expiry redirect for every request the source makes.
+ * Options for the source's own requests. The editor turns off the global error
+ * handler and the session-expiry redirect, since it handles both itself.
  */
 export type ValueSourceQueryOptions = {
   defaultErrorHandler?: boolean;
