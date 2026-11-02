@@ -54,7 +54,7 @@ const headVariants = cva('relative align-middle', {
   variants: {
     variant: {
       default:
-        'h-(--control-height) px-2 text-left text-sm font-medium tracking-wide text-text-secondary [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+        'column-label h-(--control-height) px-2 text-left text-sm font-medium tracking-wide text-text-secondary [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
       cardhead: 'text-base font-normal [&>div]:px-0',
     },
   },
@@ -79,7 +79,7 @@ type TableHeadButtonProps = React.ComponentProps<typeof Button>;
 
 const TableHeadButton: React.FC<TableHeadButtonProps> = ({ className, children, ...props }) => {
   const buttonClassName = cn(
-    'gap-1 px-0 text-right text-sm leading-4 tracking-wide text-text-secondary uppercase hover:bg-transparent [&_svg]:size-4',
+    'column-label gap-1 px-0 text-right text-sm leading-4 tracking-wide text-text-secondary uppercase hover:bg-transparent [&_svg]:size-4',
     className,
   );
   return (

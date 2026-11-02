@@ -47,6 +47,18 @@
   }
 }
 
+/* admin7Design: the label style of column headers, whichever element holds
+   them. Comes after the utilities at their specificity, so it beats their text
+   classes but not a parent's, like the Members list's hidden sizing header. A
+   TableHead used as a row title is not a column header. */
+.column-label:where([data-admin7-design='true'] :not([scope='row'])) {
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .shade {
   line-height: 1.5;
   -ms-text-size-adjust: 100%;
