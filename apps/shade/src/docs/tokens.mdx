@@ -135,6 +135,8 @@ Outline `Button`s use `--control-border`, not `--border-default`. In dark mode i
 
 Text-entry fields, including inputs, textareas and select triggers, take their chrome from the `inputSurface` recipe: `--field-surface`, `--field-border` and `--radius-field`. With `admin7Design` on, they're filled and borderless with 4px corners, and fields you type in drop to `--control-surface` while focused, for contrast. With it off, these tokens follow `--control-surface`, `--control-border` and `--radius-control`. Checkboxes and radios use the recipe but keep a visible edge with `--control-surface` and `--border-strong`.
 
+A filled field reads as a dark well on a tinted panel. Give the panel the `fields-on-tint` class and all the fields inside it go back to `--control-surface` with a thin `--control-border`, and their chips use `--secondary`. Shade's `Sidebar` already has it.
+
 ## Icon stroke
 
 With `admin7Design` on, every 16px icon takes `--icon-stroke`, which overrides any stroke set on the icon. The value is in the icon's 24-unit grid rather than screen pixels, so 1.75 is about 1.17px at 16px. Other icon sizes keep their own stroke.

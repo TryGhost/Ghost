@@ -285,7 +285,7 @@ export function PostSettingsSidebar({
         <aside
           ref={asideRef}
           aria-label={open?.title ?? panelLabel}
-          className="my-2 mr-2 h-[calc(100%-var(--spacing)*4)] w-[calc(var(--editor-settings-width)-var(--spacing)*2)] overflow-hidden rounded-xl border border-border bg-sidebar max-[500px]:m-0 max-[500px]:h-full max-[500px]:w-(--editor-settings-width) max-[500px]:rounded-none max-[500px]:border-0"
+          className="fields-on-tint my-2 mr-2 h-[calc(100%-var(--spacing)*4)] w-[calc(var(--editor-settings-width)-var(--spacing)*2)] overflow-hidden rounded-xl border border-border bg-sidebar max-[500px]:m-0 max-[500px]:h-full max-[500px]:w-(--editor-settings-width) max-[500px]:rounded-none max-[500px]:border-0"
           data-testid={postSettingsSidebar}
         >
           <Stack
