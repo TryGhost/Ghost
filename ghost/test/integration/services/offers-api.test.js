@@ -171,5 +171,45 @@ describe('OffersAPI', function () {
       assert.ok(row, 'The offer row was not committed when its event was dispatched');
       assert.equal(row.get('code'), 'spring');
     });
+
+    it('dispatches nothing and leaves no unhandled rejection when the transaction rolls back after the save', async function () {
+      const dispatch = sinon.stub(DomainEvents, 'dispatch');
+      const unhandled = [];
+      const onUnhandled = (reason) => unhandled.push(reason);
+      process.on('unhandledRejection', onUnhandled);
+      // Fails after the offer row is saved inside the transaction, so the save rolls back.
+      const failure = new Error('archiving retention offers failed');
+      sinon.stub(api, 'archiveActiveRetentionOffers').rejects(failure);
+
+      try {
+        await assert.rejects(
+          api.createOffer({
+            name: 'Stay',
+            code: 'stay',
+            display_title: 'Stay with us',
+            display_description: '',
+            type: 'percent',
+            amount: 20,
+            cadence: 'month',
+            currency: null,
+            duration: 'once',
+            redemption_type: 'retention',
+            status: 'active',
+            tier: null,
+          }),
+          (error) => error === failure,
+        );
+        await DomainEvents.allSettled();
+        await new Promise((resolve) => {
+          setImmediate(resolve);
+        });
+      } finally {
+        process.off('unhandledRejection', onUnhandled);
+      }
+
+      sinon.assert.notCalled(dispatch);
+      assert.equal(await Offer.findOne({ code: 'stay' }, { require: false }), null);
+      assert.deepEqual(unhandled, []);
+    });
   });
 });
