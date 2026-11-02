@@ -64,8 +64,6 @@ export * from './components/ui/sidebar';
 export { useSidebar } from './components/ui/sidebar-context';
 export * from './components/ui/skeleton';
 export * from './components/ui/sonner';
-// The same sonner copy, and toast store, that ShadeApp's Toaster reads
-export { toast } from 'sonner';
 export * from './components/ui/sortable-list';
 export * from './components/ui/input-surface';
 export * from './components/ui/sticky-footer';
@@ -74,6 +72,7 @@ export * from './components/ui/table';
 export * from './components/ui/tabs';
 export * from './components/ui/tabs-variants';
 export * from './components/ui/textarea';
+export * from './components/ui/toast';
 export * from './components/ui/toggle-group';
 export * from './components/ui/tooltip';
 
