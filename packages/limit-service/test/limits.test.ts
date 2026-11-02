@@ -339,6 +339,13 @@ describe('Limit', function () {
             });
         });
 
+        it('passes an overridden maximum to the counting query', async function () {
+            const currentCountQuery = vi.fn().mockResolvedValue(16);
+            const limit = new MaxLimit({name: 'trial', config: {max: 15, currentCountQuery}, errors});
+            await limit.errorIfWouldGoOverLimit({max: 30});
+            expect(currentCountQuery).toHaveBeenCalledWith(undefined, undefined, 30);
+        });
+
         describe('Transactions', function () {
             it('passes undefined if no db or transacting option passed', async function () {
                 const config = {
@@ -359,7 +366,7 @@ describe('Limit', function () {
                 }
 
                 expect(config.currentCountQuery).toHaveBeenCalledTimes(2);
-                assertAlwaysCalledWith(config.currentCountQuery, undefined);
+                assertAlwaysCalledWith(config.currentCountQuery, undefined, undefined, 5);
             });
 
             it('passes default db if no transacting option passed', async function () {
@@ -382,7 +389,7 @@ describe('Limit', function () {
                 }
 
                 expect(config.currentCountQuery).toHaveBeenCalledTimes(2);
-                assertAlwaysCalledWith(config.currentCountQuery, db.knex);
+                assertAlwaysCalledWith(config.currentCountQuery, db.knex, undefined, 5);
             });
 
             it('passes transacting option', async function () {
@@ -406,7 +413,7 @@ describe('Limit', function () {
                 }
 
                 expect(config.currentCountQuery).toHaveBeenCalledTimes(2);
-                assertAlwaysCalledWith(config.currentCountQuery, transaction);
+                assertAlwaysCalledWith(config.currentCountQuery, transaction, undefined, 5);
             });
         });
 

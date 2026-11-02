@@ -35,12 +35,13 @@ export type Knex = (table: string) => QueryBuilder;
 export type Db = { knex?: Knex };
 
 /**
- * Counts what a limit is measured against. Supplied by whoever configures the limit, so the
- * package never learns what is being counted or where the number comes from.
+ * Counts resources using the supplied connection or transaction. Max limits also pass
+ * their effective maximum so queries can stop after proving the limit is exceeded.
  */
 export type CurrentCountQuery = (
   knex: Knex,
   periodStart?: string,
+  max?: number,
 ) => Promise<Count> | Count;
 
 /** Renders a count for a message, where the plain number is not what a reader wants. */

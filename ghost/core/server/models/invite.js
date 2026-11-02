@@ -23,6 +23,26 @@ const Invite = ghostBookshelf.Model.extend(
     actionsResourceType: 'invite',
     actionsExtraContext: ['status', 'role_id'],
 
+    onCreated(model, options) {
+      if (!limitService.isLimited('limitTrialStaffInvites')) {
+        return ghostBookshelf.Model.prototype.onCreated.call(this, model, options);
+      }
+
+      const action = model.getAction('added', options);
+      if (!options.transacting || !action) {
+        throw new errors.IncorrectUsageError({
+          message: 'Trial invitations require a transaction and an audit actor.',
+        });
+      }
+
+      // This entry is also the trial's email reservation. It must commit with
+      // the invitation and fail closed, unlike the general best-effort logger.
+      return ghostBookshelf.model('Action').add(action, {
+        transacting: options.transacting,
+        autoRefresh: false,
+      });
+    },
+
     toJSON: function (unfilteredOptions) {
       const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, unfilteredOptions);
 
