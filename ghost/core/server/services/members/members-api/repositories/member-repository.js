@@ -1070,8 +1070,8 @@ module.exports = class MemberRepository {
       }
     }
 
-    const previousAutomationStatus = initialMember.get('status');
-    const previousAutomationTierIds = shouldUpdateProducts
+    const previousMemberStatus = initialMember.get('status');
+    const previousMemberTierIds = shouldUpdateProducts
       ? initialMember.related('products').models.map((product) => product.id)
       : [];
     const member = await this._Member.edit(
@@ -1171,8 +1171,8 @@ module.exports = class MemberRepository {
     if (shouldUpdateProducts) {
       await this.triggerPaidSubscriptionChangedAutomation({
         member,
-        previousStatus: previousAutomationStatus,
-        previousTierIds: previousAutomationTierIds,
+        previousStatus: previousMemberStatus,
+        previousTierIds: previousMemberTierIds,
         tierIds: data.products.map((product) => product.id),
         options,
       });
