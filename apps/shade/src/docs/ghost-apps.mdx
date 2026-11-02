@@ -70,7 +70,7 @@ html {
 
 Shade's `styles.css` brings Tailwind's theme and utilities, Shade's base styles and its animations, so the app doesn't also `@import "tailwindcss"`.
 
-The `62.5%` root font size makes `1rem` equal 10px, as it is in Admin. Shade's spacing and type scale assume it; without it, every size comes out 1.6 times too big.
+The `62.5%` root font size makes `1rem` equal 10px, as it is in Admin. Shade's spacing and type scale assume it; without it, every size comes out 1.6 times too big. Breakpoints are the exception: they're px values, so `md:` starts at 640px whatever the root font size. [Tokens](?path=/docs/tokens-tokens-guide--docs) lists them all.
 
 ## Fonts
 
