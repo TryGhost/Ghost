@@ -409,6 +409,9 @@ export const State: Story = {
         { name: 'info', cssVar: '--state-info' },
         { name: 'success', cssVar: '--state-success' },
         { name: 'warning', cssVar: '--state-warning' },
+        { name: 'warning surface', cssVar: '--state-warning-surface' },
+        { name: 'warning border', cssVar: '--state-warning-border' },
+        { name: 'warning fill', cssVar: '--state-warning-fill' },
         { name: 'danger', cssVar: '--state-danger' },
       ]}
       title="State"

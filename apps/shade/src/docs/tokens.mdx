@@ -137,6 +137,10 @@ Text-entry fields, including inputs, textareas and select triggers, take their c
 
 A filled field reads as a dark well on a tinted panel. Give the panel the `fields-on-tint` class and all the fields inside it go back to `--control-surface` with a thin `--control-border`, and their chips use `--secondary`. Shade's `Sidebar` already has it.
 
+## Warning colors
+
+`--state-warning` is dark enough for text and icons on white. Don't tint it or use it as a fill, because it goes brown. Use `--state-warning-surface` for warning boxes, and `--state-warning-fill` for dots, stars, solid labels and card borders.
+
 ## Icon stroke
 
 With `admin7Design` on, every 16px icon takes `--icon-stroke`, which overrides any stroke set on the icon. The value is in the icon's 24-unit grid rather than screen pixels, so 1.75 is about 1.17px at 16px. Other icon sizes keep their own stroke.

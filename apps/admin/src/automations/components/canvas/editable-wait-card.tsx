@@ -30,7 +30,7 @@ export const EditableWaitCard: React.FC<
       aria-label={`Wait: ${formatWait(wait.hours)}`}
       className={cn(
         'nodrag nopan w-[400px] text-left',
-        warning && 'border-state-warning',
+        warning && 'border-state-warning-fill',
         isNew && 'animate-in duration-250 ease-out fade-in-0 zoom-in-90 motion-reduce:animate-none',
       )}
       gap="xl"

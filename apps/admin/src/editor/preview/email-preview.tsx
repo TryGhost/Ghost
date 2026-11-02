@@ -96,7 +96,7 @@ function EmailSizeBanner({ post }: { post: PublishFlowPost }) {
   return (
     <Inline
       align="start"
-      className="border-b border-border-default bg-state-warning/10 p-4"
+      className="border-b border-border-default bg-state-warning-surface p-4"
       data-testid={postPreviewEmailSizeWarning}
       gap="md"
     >

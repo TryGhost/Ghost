@@ -27,7 +27,7 @@ describe('Banner Component', () => {
   it.each([
     { variant: 'info' as const, expectedClass: 'bg-state-info/10' },
     { variant: 'success' as const, expectedClass: 'bg-state-success/10' },
-    { variant: 'warning' as const, expectedClass: 'bg-state-warning/10' },
+    { variant: 'warning' as const, expectedClass: 'bg-state-warning-surface' },
     { variant: 'destructive' as const, expectedClass: 'bg-state-danger/10' },
   ])('applies $variant variant correctly', ({ variant, expectedClass }) => {
     render(<Banner variant={variant}>Content</Banner>);

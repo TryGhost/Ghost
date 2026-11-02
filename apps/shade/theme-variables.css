@@ -75,6 +75,11 @@
   --publish-accent: var(--color-green-600);
   --state-success-foreground: var(--color-black);
   --state-warning: var(--color-yellow-700);
+  /* --state-warning is dark enough for text, so a tint or a solid mark made from it
+     goes brown. Boxes and marks use these yellows instead. */
+  --state-warning-surface: var(--color-yellow-200);
+  --state-warning-border: transparent;
+  --state-warning-fill: var(--color-yellow-400);
   --state-warning-foreground: var(--color-black);
   /* A 20% tint of the dark yellow-700 reads beige, so the warning Badge gets
      its own clean pale yellow */
@@ -258,6 +263,9 @@
   --state-success: var(--color-green-500);
   --publish-accent: var(--state-success);
   --state-warning: var(--color-yellow-500);
+  --state-warning-surface: color-mix(in oklab, var(--state-warning) 10%, transparent);
+  --state-warning-border: color-mix(in oklab, var(--state-warning) 40%, transparent);
+  --state-warning-fill: var(--state-warning);
   --badge-warning: color-mix(in oklab, var(--state-warning) 20%, transparent);
   --badge-warning-hover: color-mix(in oklab, var(--state-warning) 30%, transparent);
   --badge-warning-foreground: var(--color-yellow-600);
@@ -311,6 +319,9 @@
   --color-sidebar-bg: oklch(0.204 0.002 255);
 
   --publish-accent: var(--state-success);
+  --state-warning-surface: var(--color-yellow-900);
+  --state-warning-border: transparent;
+  --state-warning-fill: var(--state-warning);
 
   /* Fields are filled in dark mode too. */
   --field-surface: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
@@ -420,6 +431,8 @@
 /* admin7Design off in dark mode: today's dark values, exactly. Temporary:
    delete with the flag. */
 .dark [data-admin7-design='false'] {
+  --state-warning-surface: color-mix(in oklab, var(--state-warning) 10%, transparent);
+  --state-warning-border: color-mix(in oklab, var(--state-warning) 40%, transparent);
   --field-surface: var(--control-surface);
   --field-chip-surface: var(--secondary);
   --color-black: oklch(20.38% 0.0067 258.4);

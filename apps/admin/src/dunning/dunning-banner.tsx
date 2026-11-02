@@ -34,7 +34,7 @@ export function DunningBanner() {
         'flex-none border-b px-6 py-2.5',
         state.urgent
           ? 'border-state-danger/40 bg-state-danger/10'
-          : 'border-state-warning/40 bg-state-warning/10',
+          : 'border-state-warning-border bg-state-warning-surface',
       )}
       data-testid="dunning-banner"
       gap="md"
