@@ -109,8 +109,17 @@ export class JobsOutbox {
         return { status: 'failed', id, error };
       }
 
-      await trx(TABLE).where('id', id).delete();
+      // The row stays, marked submitted, until its job settles
+      await trx(TABLE).where('id', id).update({ submitted_at: new Date() });
       return { status: 'delivered', id, type, createdAt };
     });
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.#knex(TABLE).where('id', id).delete();
+  }
+
+  async releaseSubmitted(): Promise<void> {
+    await this.#knex(TABLE).whereNotNull('submitted_at').update({ submitted_at: null });
   }
 }
