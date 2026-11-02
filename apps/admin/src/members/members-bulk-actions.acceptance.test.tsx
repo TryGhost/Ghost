@@ -82,6 +82,7 @@ describe('Members bulk actions', () => {
         bulk: { action: 'addLabel', meta: { label: { id: existing.id } } },
       });
     expect(bulkApi.lastRequest?.url).toContain('filter=label%3A%5Bexisting%5D');
+    await expect.element(page.getByText('Label added successfully')).toBeVisible();
   });
 
   it('removes a label from filtered members', async () => {
@@ -208,5 +209,6 @@ describe('Members bulk actions', () => {
         bulk: { action: 'unsubscribe', meta: {} },
       });
     expect(bulkApi.lastRequest?.url).toContain('filter=label%3A%5Bexisting%5D');
+    await expect.element(page.getByText('Members unsubscribed successfully')).toBeVisible();
   });
 });
