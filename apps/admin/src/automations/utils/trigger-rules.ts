@@ -1,12 +1,36 @@
 import type { AutomationTriggerRule } from '@tryghost/admin-x-framework/api/automations';
 
-export function signupTriggerRules(
-  triggerType: 'free_signup' | 'paid_subscription_started',
-): AutomationTriggerRule[] {
+type TriggerRuleOptions =
+  | {
+      triggerType: 'free_signup' | 'paid_subscription_started';
+      scope?: never;
+      tierIds?: never;
+    }
+  | {
+      triggerType: 'paid_subscription_started';
+      scope: 'any_paid_tier';
+      tierIds?: never;
+    }
+  | {
+      triggerType: 'paid_subscription_started';
+      scope: 'specific_paid_tier';
+      tierIds: readonly string[];
+    };
+
+export function buildTriggerRules(options: TriggerRuleOptions): AutomationTriggerRule[] {
+  const { triggerType } = options;
   switch (triggerType) {
     case 'free_signup':
       return [{ trigger_type: triggerType, scope: null, product_id: null, direction: null }];
     case 'paid_subscription_started':
+      if (options.scope === 'specific_paid_tier') {
+        return options.tierIds.map((productId) => ({
+          trigger_type: triggerType,
+          scope: options.scope,
+          product_id: productId,
+          direction: null,
+        }));
+      }
       return [
         { trigger_type: triggerType, scope: 'any_paid_tier', product_id: null, direction: null },
       ];
@@ -15,15 +39,6 @@ export function signupTriggerRules(
       throw new Error(`Unknown signup trigger type: ${String(_exhaustive)}`);
     }
   }
-}
-
-export function selectedPaidTierRules(tierIds: readonly string[]): AutomationTriggerRule[] {
-  return tierIds.map((productId) => ({
-    trigger_type: 'paid_subscription_started',
-    scope: 'specific_paid_tier',
-    product_id: productId,
-    direction: null,
-  }));
 }
 
 export const getTriggerTierIds = (rules: readonly AutomationTriggerRule[]): string[] =>

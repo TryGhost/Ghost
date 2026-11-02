@@ -1,8 +1,4 @@
-import {
-  signupTriggerRules,
-  selectedPaidTierRules,
-  getTriggerTierIds,
-} from '@/automations/utils/trigger-rules';
+import { buildTriggerRules, getTriggerTierIds } from '@/automations/utils/trigger-rules';
 import React, { useId } from 'react';
 import type {
   AutomationTrigger,
@@ -86,7 +82,11 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
   });
   const updateTiers = (nextTierIds: string[]) =>
     trigger.onUpdate({
-      trigger_rules: selectedPaidTierRules(nextTierIds),
+      trigger_rules: buildTriggerRules({
+        triggerType: 'paid_subscription_started',
+        scope: 'specific_paid_tier',
+        tierIds: nextTierIds,
+      }),
     });
 
   return (
@@ -99,7 +99,12 @@ const PaidTierPicker: React.FC<{ trigger: TriggerData; errorMessage?: string }> 
         value={scope}
         onValueChange={(nextScope) => {
           if (nextScope === 'any_paid_tier') {
-            trigger.onUpdate({ trigger_rules: signupTriggerRules('paid_subscription_started') });
+            trigger.onUpdate({
+              trigger_rules: buildTriggerRules({
+                triggerType: 'paid_subscription_started',
+                scope: nextScope,
+              }),
+            });
           } else if (nextScope === 'specific_paid_tier') {
             updateTiers([]);
           }

@@ -1,4 +1,4 @@
-import { signupTriggerRules } from './utils/trigger-rules';
+import { buildTriggerRules } from './utils/trigger-rules';
 import React from 'react';
 import type {
   AutomationDetail,
@@ -169,7 +169,7 @@ const NewAutomationSession: React.FC<
         updated_at: '',
         actions: [],
         edges: [],
-        trigger_rules: stripeEnabled ? [] : signupTriggerRules('free_signup'),
+        trigger_rules: stripeEnabled ? [] : buildTriggerRules({ triggerType: 'free_signup' }),
       });
     }
     return <NewAutomationLoading />;
@@ -188,12 +188,12 @@ const NewAutomationSession: React.FC<
             setTierSelection({ from: [], to: [] });
             setInitialAutomation({
               ...initialAutomation,
-              trigger_rules: signupTriggerRules('paid_subscription_started'),
+              trigger_rules: buildTriggerRules({ triggerType: 'paid_subscription_started' }),
             });
           } else {
             setInitialAutomation({
               ...initialAutomation,
-              trigger_rules: signupTriggerRules(trigger),
+              trigger_rules: buildTriggerRules({ triggerType: trigger }),
             });
           }
         }}
