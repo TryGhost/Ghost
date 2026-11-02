@@ -48,6 +48,18 @@ export interface EditorPresenceServiceOptions {
 
 export const DEFAULT_ACTIVE_WINDOW_MS = 60_000;
 export const DEFAULT_RETENTION_MS = 60_000;
+/** Shorter than the idle poll cadence would drop readers between heartbeats. */
+export const MIN_RETENTION_MS = 30_000;
+/** Longer than this and a forgotten key is no longer "ephemeral" to the cache's operators. */
+export const MAX_RETENTION_MS = 10 * 60_000;
+
+/** The operator's `ttl` (seconds) on the `cache:presence` adapter, clamped; the default when absent or invalid. */
+export function resolveRetentionMs(ttlSeconds: unknown): number {
+  if (typeof ttlSeconds !== 'number' || !Number.isFinite(ttlSeconds) || ttlSeconds <= 0) {
+    return DEFAULT_RETENTION_MS;
+  }
+  return Math.min(MAX_RETENTION_MS, Math.max(MIN_RETENTION_MS, Math.round(ttlSeconds * 1000)));
+}
 
 type StoreOperation = 'touch' | 'read' | 'remove';
 
@@ -124,7 +136,9 @@ export class EditorPresenceService {
           ),
         );
       }
-      const stored = await this.fromStore('read', () => this.store.read(now - this.activeWindowMs));
+      const stored = await this.fromStore('read', () =>
+        this.store.read(now - this.activeWindowMs, this.retentionMs),
+      );
       this.record('presence-poll', started, { outcome: 'ok', write: Boolean(editing) });
 
       const active: ActivePresence[] = [];

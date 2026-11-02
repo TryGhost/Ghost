@@ -80,10 +80,14 @@ beyond that. Ids must be 24-character hex and `type` must be `post` or `page`.
 ## Windows
 
 - Active window (60s): heartbeats newer than this are reported.
-- Retention (60s): older members are trimmed on write and the key expires.
+- Retention (60s by default): older members are trimmed on write and the key
+  expires. The `ttl` (seconds) on the `cache:presence` adapter overrides it,
+  clamped to 30s–10min, so operators of a shared Redis set the ceiling.
 
-Both are options on the service; raising retention supports "last active N
-minutes ago" without a model change.
+Every write sets the key's expiry, and every read checks `TTL` and puts an
+expiry back on a key found without one (counted by `presence-ttl-repaired`).
+Nothing presence stores can outlive the retention, which matters on a
+`volatile-lru` instance where keys without an expiry are never evicted.
 
 ## Failure
 
@@ -98,4 +102,5 @@ clients treat 503 as a signal to back off.
 duration and outcome; `presence-rate-limited` counts refusals;
 `presence-degraded` records each store failure with the operation (`touch`,
 `read`, `remove`) and a reason (`noperm`, a socket error code, or the error
-name). No ids are recorded.
+name); `presence-ttl-repaired` counts reads that found the key without an
+expiry. No ids are recorded.

@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import {
+  DEFAULT_RETENTION_MS,
   EditorPresenceService,
+  MAX_RETENTION_MS,
+  MIN_RETENTION_MS,
+  resolveRetentionMs,
   type PresenceMetrics,
 } from '../../../../../core/server/services/editor-presence/editor-presence-service';
 import { MemoryPresenceStore } from '../../../../../core/server/services/editor-presence/memory-presence-store';
@@ -241,5 +245,20 @@ describe('EditorPresenceService', function () {
         ['remove', 'noperm'],
       ],
     );
+  });
+});
+
+describe('resolveRetentionMs', function () {
+  it('defaults when the adapter has no usable ttl', function () {
+    assert.equal(resolveRetentionMs(undefined), DEFAULT_RETENTION_MS);
+    assert.equal(resolveRetentionMs('60'), DEFAULT_RETENTION_MS);
+    assert.equal(resolveRetentionMs(0), DEFAULT_RETENTION_MS);
+    assert.equal(resolveRetentionMs(Number.NaN), DEFAULT_RETENTION_MS);
+  });
+
+  it('takes the adapter ttl in seconds, clamped to the allowed range', function () {
+    assert.equal(resolveRetentionMs(120), 120_000);
+    assert.equal(resolveRetentionMs(5), MIN_RETENTION_MS);
+    assert.equal(resolveRetentionMs(3_600), MAX_RETENTION_MS);
   });
 });

@@ -6,6 +6,7 @@ import type {
 /** In-memory stand-in for the sorted-set commands the store uses. */
 export class FakeRedisClient implements RedisPresenceClient {
   readonly sets = new Map<string, Map<string, number>>();
+  /** Expiry per key in milliseconds; absent means no expiry, as Redis reports with TTL -1. */
   readonly ttls = new Map<string, number>();
   readonly commands: string[] = [];
   failNext: Error | null = null;
@@ -17,6 +18,18 @@ export class FakeRedisClient implements RedisPresenceClient {
       this.sets.set(key, set);
     }
     return set;
+  }
+
+  private range(key: string, min: number | string, max: number | string): string[] {
+    const lower = min === '-inf' ? -Infinity : Number(min);
+    const upper = max === '+inf' ? Infinity : Number(max);
+    const flat: string[] = [];
+    for (const [member, score] of [...this.set(key)].sort((a, b) => a[1] - b[1])) {
+      if (score >= lower && score <= upper) {
+        flat.push(member, String(score));
+      }
+    }
+    return flat;
   }
 
   pipeline(): RedisPresencePipeline {
@@ -46,6 +59,22 @@ export class FakeRedisClient implements RedisPresenceClient {
         });
         return pipeline;
       },
+      zrangebyscore: (key, min, max) => {
+        this.commands.push('zrangebyscore');
+        queue.push(() => this.range(key, min, max));
+        return pipeline;
+      },
+      ttl: (key) => {
+        this.commands.push('ttl');
+        queue.push(() => {
+          if (this.set(key).size === 0) {
+            return -2;
+          }
+          const ms = this.ttls.get(key);
+          return ms === undefined ? -1 : Math.ceil(ms / 1000);
+        });
+        return pipeline;
+      },
       exec: async () => {
         if (this.failNext) {
           const error = this.failNext;
@@ -56,28 +85,6 @@ export class FakeRedisClient implements RedisPresenceClient {
       },
     };
     return pipeline;
-  }
-
-  async zrangebyscore(
-    key: string,
-    min: number | string,
-    max: number | string,
-    _withScores: 'WITHSCORES',
-  ): Promise<string[]> {
-    if (this.failNext) {
-      const error = this.failNext;
-      this.failNext = null;
-      throw error;
-    }
-    const lower = min === '-inf' ? -Infinity : Number(min);
-    const upper = max === '+inf' ? Infinity : Number(max);
-    const flat: string[] = [];
-    for (const [member, score] of [...this.set(key)].sort((a, b) => a[1] - b[1])) {
-      if (score >= lower && score <= upper) {
-        flat.push(member, String(score));
-      }
-    }
-    return flat;
   }
 
   async zrem(key: string, ...members: string[]): Promise<number> {

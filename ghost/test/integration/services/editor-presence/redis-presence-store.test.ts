@@ -36,14 +36,25 @@ describe.skipIf(process.env.GHOST_TEST_REDIS_AVAILABLE !== '1')(
       await store.touch('post:a:u1', now - 70_000, 60_000);
       await store.touch('post:a:u2', now, 60_000);
 
-      assert.deepEqual(await store.read(now - 60_000), [{ member: 'post:a:u2', ts: now }]);
-      assert.deepEqual(await store.read(0), [{ member: 'post:a:u2', ts: now }]);
+      assert.deepEqual(await store.read(now - 60_000, 60_000), [{ member: 'post:a:u2', ts: now }]);
+      assert.deepEqual(await store.read(0, 60_000), [{ member: 'post:a:u2', ts: now }]);
 
       const ttl = await cache.redisClient.pttl(store.key);
       assert.ok(ttl > 0 && ttl <= 60_000, `expected a TTL within 60s, got ${ttl}`);
 
       await store.remove('post:a:u2');
-      assert.deepEqual(await store.read(0), []);
+      assert.deepEqual(await store.read(0, 60_000), []);
+    });
+
+    it('puts an expiry back on a key that lost it', async function () {
+      await store.touch('post:a:u1', 1_000, 60_000);
+      await cache.redisClient.persist(store.key);
+      assert.equal(await cache.redisClient.pttl(store.key), -1);
+
+      await store.read(0, 60_000);
+
+      const ttl = await cache.redisClient.pttl(store.key);
+      assert.ok(ttl > 0 && ttl <= 60_000, `expected a TTL within 60s, got ${ttl}`);
     });
   },
 );

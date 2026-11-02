@@ -45,7 +45,7 @@ for (const { label, build } of scenarios) {
       await store.touch('post:a:u2', 5_000, RETENTION);
       await store.touch('post:b:u3', 9_000, RETENTION);
 
-      const read = await store.read(5_000);
+      const read = await store.read(5_000, RETENTION);
       assert.deepEqual(
         read.sort((x, y) => x.ts - y.ts),
         [
@@ -59,14 +59,16 @@ for (const { label, build } of scenarios) {
       const { store } = build();
       await store.touch('post:a:u1', 1_000, RETENTION);
       await store.touch('post:a:u1', 2_000, RETENTION);
-      assert.deepEqual(await store.read(0), [{ member: 'post:a:u1', ts: 2_000 }]);
+      assert.deepEqual(await store.read(0, RETENTION), [{ member: 'post:a:u1', ts: 2_000 }]);
     });
 
     it('trims members older than the retention on write', async function () {
       const { store } = build();
       await store.touch('post:a:u1', 1_000, RETENTION);
       await store.touch('post:a:u2', 1_000 + RETENTION + 1, RETENTION);
-      assert.deepEqual(await store.read(0), [{ member: 'post:a:u2', ts: 1_000 + RETENTION + 1 }]);
+      assert.deepEqual(await store.read(0, RETENTION), [
+        { member: 'post:a:u2', ts: 1_000 + RETENTION + 1 },
+      ]);
     });
 
     it('removes a member', async function () {
@@ -74,7 +76,7 @@ for (const { label, build } of scenarios) {
       await store.touch('post:a:u1', 1_000, RETENTION);
       await store.remove('post:a:u1');
       await store.remove('post:a:never');
-      assert.deepEqual(await store.read(0), []);
+      assert.deepEqual(await store.read(0, RETENTION), []);
     });
   });
 }
@@ -99,5 +101,44 @@ describe('RedisPresenceStore pipeline', function () {
     const store = new RedisPresenceStore({ client, key: 'presence:active' });
     client.failNext = new Error('READONLY');
     await assert.rejects(store.touch('post:a:u1', 1_000, RETENTION), /READONLY/);
+  });
+
+  it('reads the TTL alongside the members and repairs a key found without one', async function () {
+    const client = new FakeRedisClient();
+    let repaired = 0;
+    const store = new RedisPresenceStore({
+      client,
+      key: 'presence:active',
+      onTtlRepaired: () => {
+        repaired += 1;
+      },
+    });
+    // A key that exists without an expiry, as a partial write could leave behind.
+    client.sets.set('presence:active', new Map([['post:a:u1', 1_000]]));
+    assert.deepEqual(await store.read(0, RETENTION), [{ member: 'post:a:u1', ts: 1_000 }]);
+    assert.equal(client.ttls.get('presence:active'), RETENTION);
+    assert.equal(repaired, 1);
+    assert.deepEqual(client.commands, ['zrangebyscore', 'ttl', 'pexpire']);
+
+    await store.read(0, RETENTION);
+    assert.equal(repaired, 1);
+  });
+
+  it('does not touch the expiry of a key that has one, nor of a missing key', async function () {
+    const client = new FakeRedisClient();
+    let repaired = 0;
+    const store = new RedisPresenceStore({
+      client,
+      key: 'presence:active',
+      onTtlRepaired: () => {
+        repaired += 1;
+      },
+    });
+    assert.deepEqual(await store.read(0, RETENTION), []);
+    await store.touch('post:a:u1', 1_000, RETENTION);
+    const before = client.commands.length;
+    await store.read(0, RETENTION);
+    assert.equal(repaired, 0);
+    assert.deepEqual(client.commands.slice(before), ['zrangebyscore', 'ttl']);
   });
 });
