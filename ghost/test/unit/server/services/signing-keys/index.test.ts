@@ -196,7 +196,7 @@ describe('signing-keys root', function () {
     sandbox
       .stub(models.Settings, 'findOne')
       .callsFake(async ({ key }: { key: string }) =>
-        entries[key] ? { toJSON: () => entries[key] } : null,
+        entries[key] ? { get: () => entries[key].value, toJSON: () => entries[key] } : null,
       );
     return sandbox
       .stub(models.Settings, 'edit')
