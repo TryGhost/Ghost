@@ -5,6 +5,7 @@ import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
 import { TriggerCard } from './trigger-card';
 import type { TriggerData } from './trigger-card';
 import type { TierSelection } from '@/automations/types';
+import { buildTriggerRules } from '@/automations/utils/trigger-rules';
 
 const tier = (id: string, active: boolean, type = 'paid'): Tier => ({
   id,
@@ -29,7 +30,9 @@ const tiers = [
 ];
 
 function Picker({ initial }: { initial: TierSelection }) {
-  const [value, onChange] = useState(initial);
+  const [rules, setRules] = useState<TriggerData['rules']>(() =>
+    buildTriggerRules({ triggerType: 'paid_subscription_changed', selection: initial }),
+  );
   return (
     <TriggerCard
       trigger={{
@@ -39,18 +42,10 @@ function Picker({ initial }: { initial: TierSelection }) {
           isError: false,
           refetch: vi.fn<TriggerData['tierQuery']['refetch']>(),
         },
-        triggerType: 'paid_subscription_started',
-        rules: [
-          {
-            trigger_type: 'paid_subscription_started',
-            scope: 'any_paid_tier',
-            product_id: null,
-            direction: null,
-          },
-        ],
+        triggerType: 'paid_subscription_changed',
+        rules,
         savedTierIds: [],
-        onUpdate: vi.fn(),
-        tierSelection: { value, onChange },
+        onUpdate: (trigger) => setRules(trigger.trigger_rules),
       }}
     />
   );
