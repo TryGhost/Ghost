@@ -104,9 +104,11 @@ describe('automations API', function () {
       domainEvents = { dispatch: vi.fn<(event: unknown) => unknown>() };
       trigger = {
         event: 'membership_started',
+        source: 'member',
         memberEmail: 'member@example.com',
         memberId: ObjectId().toHexString(),
         memberStatus: 'free',
+        previousMemberStatus: null,
         memberTierIds: [],
       };
 
@@ -137,6 +139,7 @@ describe('automations API', function () {
         events.map(async (event) => {
           await expect(() =>
             api.trigger({
+              ...trigger,
               event: event as any,
               memberEmail: 'foo@example.com',
               memberId: 'abc',
@@ -163,6 +166,41 @@ describe('automations API', function () {
 
       expect(withTransaction).not.toHaveBeenCalled();
       expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+
+    it.each(['admin', 'api', 'import', 'system'] as const)(
+      'does nothing for %s signup sources',
+      async function (source) {
+        const withTransaction = vi.fn();
+        const api = createApi({ repository: { ...repository, withTransaction } });
+
+        await api.trigger({ ...trigger, source });
+
+        expect(withTransaction).not.toHaveBeenCalled();
+        expect(domainEvents.dispatch).not.toHaveBeenCalled();
+      },
+    );
+
+    it('does nothing for comped signups and gift-to-paid transitions', async function () {
+      const withTransaction = vi.fn();
+      const api = createApi({ repository: { ...repository, withTransaction } });
+
+      await api.trigger({ ...trigger, memberStatus: 'comped' });
+      await api.trigger({ ...trigger, memberStatus: 'paid', previousMemberStatus: 'gift' });
+
+      expect(withTransaction).not.toHaveBeenCalled();
+      expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+
+    it('matches gift signups against paid automations', async function () {
+      const findFirstActionRevisions = vi.fn().mockReturnValue([]);
+      const api = createApi({ repository: { ...repository, findFirstActionRevisions } });
+
+      await api.trigger({ ...trigger, memberStatus: 'gift', memberTierIds: ['tier'] });
+
+      expect(findFirstActionRevisions).toHaveBeenCalledExactlyOnceWith(expect.anything(), 'paid', [
+        'tier',
+      ]);
     });
 
     it('locks the member before any other repository operation', async function () {

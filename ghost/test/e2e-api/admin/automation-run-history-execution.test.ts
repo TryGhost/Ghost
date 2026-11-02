@@ -82,9 +82,11 @@ describe('Automation run history from the execution', function () {
     };
     await automationsApi2.trigger({
       event: 'membership_started',
+      source: 'member' as const,
       memberId: member.id,
       memberEmail: member.email,
       memberStatus: 'free',
+      previousMemberStatus: null,
       memberTierIds: [],
     });
     const automation = await db('automations')

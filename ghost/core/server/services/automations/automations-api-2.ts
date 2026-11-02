@@ -46,15 +46,19 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
 
     trigger: async ({
       event,
+      source,
       memberEmail,
       memberId,
       memberStatus,
       memberTierIds,
+      previousMemberStatus,
     }: ReadonlyDeep<{
       event: 'membership_started';
+      source: 'member' | 'admin' | 'api' | 'import' | 'system';
       memberEmail: string;
       memberId: string;
-      memberStatus: 'free' | 'paid';
+      memberStatus: 'free' | 'paid' | 'gift' | 'comped';
+      previousMemberStatus: 'free' | 'paid' | 'gift' | 'comped' | null;
       memberTierIds: string[];
     }>): Promise<void> => {
       // TypeScript makes this impossible in theory, but in practice there are
@@ -70,12 +74,20 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
         return;
       }
 
+      if (
+        source !== 'member' ||
+        memberStatus === 'comped' ||
+        (memberStatus === 'paid' && previousMemberStatus === 'gift')
+      ) {
+        return;
+      }
+
       const didEnroll = await repository.withTransaction(async (trx) => {
         await repository.lockMember(trx, memberId);
 
         const firstActions = await repository.findFirstActionRevisions(
           trx,
-          memberStatus,
+          memberStatus === 'gift' ? 'paid' : memberStatus,
           memberTierIds,
         );
 
