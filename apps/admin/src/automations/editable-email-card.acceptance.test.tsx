@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { fakeAdminEndpoint, renderAdminApp, settingsResponse } from '@test-utils/acceptance';
+import {
+  fakeAdminEndpoint,
+  renderAdminApp,
+  settingsResponse,
+  unsavedChangesGuarded,
+} from '@test-utils/acceptance';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import {
   detail,
@@ -81,19 +86,62 @@ const emailCards = () =>
     .getByRole('article', { name: /^Send email/ });
 const preview = (card: ReturnType<typeof emailCards>) =>
   card.getByRole('region', { name: 'Email message preview' });
-const serve = () => {
+const serve = ({
+  beforeSave,
+}: {
+  beforeSave?: () => void | Response | Promise<void>;
+} = {}) => {
   setup();
   fakeEmailEditorData();
   const data = workflow();
   fakeAdminEndpoint('GET', '/automations/first/', { automations: [data] });
-  return fakeAdminEndpoint('PUT', '/automations/first/', ({ body }) => ({
-    automations: [
-      { ...data, ...(body as { automations: Partial<AutomationDetail>[] }).automations[0] },
-    ],
-  }));
+  return fakeAdminEndpoint('PUT', '/automations/first/', async ({ body }) => {
+    const response = await beforeSave?.();
+    return (
+      response ?? {
+        automations: [
+          { ...data, ...(body as { automations: Partial<AutomationDetail>[] }).automations[0] },
+        ],
+      }
+    );
+  });
 };
 
 describe('Editable email cards', () => {
+  it('preserves a body edit made while saving with the email editor open', async () => {
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const save = serve({ beforeSave: () => held });
+    await renderAdminApp('/automations/first', flags);
+    await emailCards().first().getByRole('button', { name: 'Edit email content' }).click();
+    const body = emailEditorBody();
+    const saveButton = page.getByRole('button', { name: 'Save', exact: true });
+    const savedBody = (index: number) => {
+      const { automations } = save.requests[index].body as { automations: AutomationDetail[] };
+      const email = automations[0].actions[0];
+      return email.type === 'send_email' ? email.data.email_lexical : undefined;
+    };
+
+    await body.fill('First version');
+    try {
+      await saveButton.click();
+      await expect.poll(() => save.requests.length).toBe(1);
+      expect(savedBody(0)).toContain('First version');
+      await body.fill('Second version');
+    } finally {
+      release();
+    }
+
+    await expect.element(saveButton).toBeEnabled();
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    await saveButton.click();
+    await expect.poll(() => save.requests.length).toBe(2);
+    expect(savedBody(1)).toContain('Second version');
+    await expect.element(saveButton).toBeDisabled();
+  });
+
   it('can insert a divider using the add-card button on a narrow screen', async () => {
     serve();
     await page.viewport(390, 844);
