@@ -4,6 +4,7 @@ import {
   RouterProvider,
   type TopLevelFrameworkProps,
 } from '@tryghost/admin-x-framework';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { ShadeApp } from '@tryghost/shade/app';
 
 import App from './app.tsx';
@@ -35,14 +36,15 @@ const routeErrorElement = <RouteError />;
 
 function ThemedAdminApp() {
   const { resolvedTheme } = useThemeContext();
+  const admin7Design = useFeatureFlag('admin7Design');
   useMountedBodyClass();
 
   return (
     <ShadeApp
+      admin7Design={admin7Design}
       className="shade-admin"
       darkMode={resolvedTheme === 'dark'}
       data-react-admin-mounted
-      isAdmin7
     >
       <ScreenTransitionProvider>
         <App />

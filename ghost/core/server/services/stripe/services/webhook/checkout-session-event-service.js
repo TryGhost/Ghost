@@ -137,7 +137,13 @@ module.exports = class CheckoutSessionEventService {
    */
   async handlePaymentEvent(session) {
     if (hasConflictingCheckoutFlowMetadata(session)) {
-      logging.warn('Ignoring checkout session with conflicting payment flow metadata');
+      logging.warn(
+        {
+          event: { name: 'stripe_checkout.session.payment_flow_conflict' },
+          session_id: session.id,
+        },
+        'Ignored a checkout session marked as both a donation and a gift',
+      );
       return;
     }
 
@@ -376,8 +382,13 @@ module.exports = class CheckoutSessionEventService {
       if (metadataNewsletters) {
         try {
           memberData.newsletters = JSON.parse(metadataNewsletters);
-        } catch (e) {
-          logging.error(`Ignoring invalid newsletters data - ${metadataNewsletters}.`);
+        } catch (err) {
+          logging.error({
+            event: { name: 'stripe_checkout.session.newsletters_unreadable' },
+            err,
+            newsletters: metadataNewsletters,
+            session_id: session.id,
+          });
         }
       }
 

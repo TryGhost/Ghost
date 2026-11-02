@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { Box, Container, Grid, Inline, Stack, Text } from '../../../../src/components/primitives';
 import { screen } from '../../utils/test-utils';
 import { render } from '../../utils/test-utils';
@@ -9,12 +8,12 @@ describe('Primitives', () => {
     render(<Stack data-testid="stack">A</Stack>);
     const stack = screen.getByTestId('stack');
 
-    assert.equal(stack.tagName.toLowerCase(), 'div');
-    assert.ok(stack.className.includes('flex'));
-    assert.ok(stack.className.includes('flex-col'));
-    assert.ok(stack.className.includes('gap-3'));
-    assert.ok(stack.className.includes('items-stretch'));
-    assert.ok(stack.className.includes('justify-start'));
+    expect(stack.tagName.toLowerCase()).toBe('div');
+    expect(stack.className).toContain('flex');
+    expect(stack.className).toContain('flex-col');
+    expect(stack.className).toContain('gap-3');
+    expect(stack.className).toContain('items-stretch');
+    expect(stack.className).toContain('justify-start');
   });
 
   it('maps Stack custom gap/align/justify props to classes', () => {
@@ -25,22 +24,22 @@ describe('Primitives', () => {
     );
     const stack = screen.getByTestId('stack');
 
-    assert.ok(stack.className.includes('gap-6'));
-    assert.ok(stack.className.includes('items-center'));
-    assert.ok(stack.className.includes('justify-between'));
+    expect(stack.className).toContain('gap-6');
+    expect(stack.className).toContain('items-center');
+    expect(stack.className).toContain('justify-between');
   });
 
   it('maps Inline props and defaults to expected classes', () => {
     render(<Inline data-testid="inline">A</Inline>);
     const inline = screen.getByTestId('inline');
 
-    assert.equal(inline.tagName.toLowerCase(), 'div');
-    assert.ok(inline.className.includes('flex'));
-    assert.ok(inline.className.includes('flex-row'));
-    assert.ok(inline.className.includes('flex-nowrap'));
-    assert.ok(inline.className.includes('gap-3'));
-    assert.ok(inline.className.includes('items-center'));
-    assert.ok(inline.className.includes('justify-start'));
+    expect(inline.tagName.toLowerCase()).toBe('div');
+    expect(inline.className).toContain('flex');
+    expect(inline.className).toContain('flex-row');
+    expect(inline.className).toContain('flex-nowrap');
+    expect(inline.className).toContain('gap-3');
+    expect(inline.className).toContain('items-center');
+    expect(inline.className).toContain('justify-start');
   });
 
   it('renders Inline polymorphically with as and maps wrap', () => {
@@ -51,9 +50,9 @@ describe('Primitives', () => {
     );
     const inline = screen.getByTestId('inline');
 
-    assert.equal(inline.tagName.toLowerCase(), 'nav');
-    assert.ok(inline.className.includes('flex-wrap'));
-    assert.ok(inline.className.includes('gap-2'));
+    expect(inline.tagName.toLowerCase()).toBe('nav');
+    expect(inline.className).toContain('flex-wrap');
+    expect(inline.className).toContain('gap-2');
   });
 
   it('maps Box spacing and radius props to classes', () => {
@@ -64,19 +63,19 @@ describe('Primitives', () => {
     );
     const box = screen.getByTestId('box');
 
-    assert.ok(box.className.includes('p-5'));
-    assert.ok(box.className.includes('px-2'));
-    assert.ok(box.className.includes('py-6'));
-    assert.ok(box.className.includes('rounded-full'));
+    expect(box.className).toContain('p-5');
+    expect(box.className).toContain('px-2');
+    expect(box.className).toContain('py-6');
+    expect(box.className).toContain('rounded-full');
   });
 
   it('maps Container defaults and custom props to classes', () => {
     render(<Container data-testid="container">A</Container>);
     const container = screen.getByTestId('container');
 
-    assert.ok(container.className.includes('w-full'));
-    assert.ok(container.className.includes('max-w-page'));
-    assert.ok(container.className.includes('mx-auto'));
+    expect(container.className).toContain('w-full');
+    expect(container.className).toContain('max-w-page');
+    expect(container.className).toContain('mx-auto');
 
     render(
       <Container centered={false} data-testid="container-custom" paddingX="md" size="prose">
@@ -85,20 +84,20 @@ describe('Primitives', () => {
     );
     const custom = screen.getByTestId('container-custom');
 
-    assert.ok(custom.className.includes('max-w-prose'));
-    assert.ok(custom.className.includes('px-3'));
-    assert.ok(!custom.className.includes('mx-auto'));
+    expect(custom.className).toContain('max-w-prose');
+    expect(custom.className).toContain('px-3');
+    expect(custom.className).not.toContain('mx-auto');
   });
 
   it('maps Grid props to classes with defaults', () => {
     render(<Grid data-testid="grid">A</Grid>);
     const grid = screen.getByTestId('grid');
 
-    assert.ok(grid.className.includes('grid'));
-    assert.ok(grid.className.includes('grid-cols-1'));
-    assert.ok(grid.className.includes('gap-3'));
-    assert.ok(grid.className.includes('items-stretch'));
-    assert.ok(grid.className.includes('justify-start'));
+    expect(grid.className).toContain('grid');
+    expect(grid.className).toContain('grid-cols-1');
+    expect(grid.className).toContain('gap-3');
+    expect(grid.className).toContain('items-stretch');
+    expect(grid.className).toContain('justify-start');
 
     render(
       <Grid align="end" columns={3} data-testid="grid-custom" gap="2xl" justify="evenly">
@@ -107,21 +106,21 @@ describe('Primitives', () => {
     );
     const custom = screen.getByTestId('grid-custom');
 
-    assert.ok(custom.className.includes('grid-cols-3'));
-    assert.ok(custom.className.includes('gap-8'));
-    assert.ok(custom.className.includes('items-end'));
-    assert.ok(custom.className.includes('justify-evenly'));
+    expect(custom.className).toContain('grid-cols-3');
+    expect(custom.className).toContain('gap-8');
+    expect(custom.className).toContain('items-end');
+    expect(custom.className).toContain('justify-evenly');
   });
 
   it('maps Text defaults and polymorphic props to classes', () => {
     render(<Text data-testid="text">Hello</Text>);
     const text = screen.getByTestId('text');
 
-    assert.equal(text.tagName.toLowerCase(), 'p');
-    assert.ok(text.className.includes('text-md'));
-    assert.ok(text.className.includes('font-normal'));
-    assert.ok(text.className.includes('text-text-primary'));
-    assert.ok(text.className.includes('leading-body'));
+    expect(text.tagName.toLowerCase()).toBe('p');
+    expect(text.className).toContain('text-md');
+    expect(text.className).toContain('font-normal');
+    expect(text.className).toContain('text-text-primary');
+    expect(text.className).toContain('leading-body');
 
     render(
       <Text
@@ -138,11 +137,11 @@ describe('Primitives', () => {
     );
     const custom = screen.getByTestId('text-custom');
 
-    assert.equal(custom.tagName.toLowerCase(), 'h2');
-    assert.ok(custom.className.includes('text-2xl'));
-    assert.ok(custom.className.includes('font-bold'));
-    assert.ok(custom.className.includes('text-text-secondary'));
-    assert.ok(custom.className.includes('leading-heading'));
-    assert.ok(custom.className.includes('truncate'));
+    expect(custom.tagName.toLowerCase()).toBe('h2');
+    expect(custom.className).toContain('text-2xl');
+    expect(custom.className).toContain('font-bold');
+    expect(custom.className).toContain('text-text-secondary');
+    expect(custom.className).toContain('leading-heading');
+    expect(custom.className).toContain('truncate');
   });
 });

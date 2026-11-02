@@ -9,6 +9,7 @@ import {isEditorEmpty} from '../../../utils/isEditorEmpty';
 
 export function ProductCard({
     isEditing,
+    imgAlt,
     imgSrc,
     isButtonEnabled,
     buttonText,
@@ -20,6 +21,7 @@ export function ProductCard({
     onButtonUrlChange,
     onRatingToggle,
     imgDragHandler,
+    onImgAltChange,
     onImgChange,
     imgMimeTypes,
     imgUploader,
@@ -38,6 +40,7 @@ export function ProductCard({
         <>
             <div className="mx-auto my-4 flex w-full max-w-[550px] flex-col rounded-md border border-grey/40 p-5 font-sans dark:border-grey/20">
                 <ProductCardImage
+                    imgAlt={imgAlt}
                     imgDragHandler={imgDragHandler}
                     imgMimeTypes={imgMimeTypes}
                     imgSrc={imgSrc}
@@ -45,6 +48,7 @@ export function ProductCard({
                     isEditing={isEditing}
                     isPinturaEnabled={isPinturaEnabled}
                     openImageEditor={openImageEditor}
+                    onImgAltChange={onImgAltChange}
                     onImgChange={onImgChange}
                     onRemoveImage={onRemoveImage}
                 />
@@ -137,6 +141,7 @@ export function ProductCard({
 
 ProductCard.propTypes = {
     isEditing: PropTypes.bool,
+    imgAlt: PropTypes.string,
     imgSrc: PropTypes.string,
     isButtonEnabled: PropTypes.bool,
     buttonText: PropTypes.string,
@@ -147,6 +152,7 @@ ProductCard.propTypes = {
     onButtonTextChange: PropTypes.func,
     onButtonUrlChange: PropTypes.func,
     onRatingToggle: PropTypes.func,
+    onImgAltChange: PropTypes.func,
     onImgChange: PropTypes.func,
     onRemoveImage: PropTypes.func,
     imgDragHandler: PropTypes.object,

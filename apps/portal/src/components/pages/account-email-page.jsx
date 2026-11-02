@@ -111,12 +111,18 @@ export default function AccountEmailPage() {
           message: t('Email preferences updated.'),
         });
       }}
-      updateCommentNotifications={async (enabled) => {
-        doAction('updateNewsletterPreference', { enableCommentNotifications: enabled });
-      }}
-      updateUpdatesAndAnnouncements={async (enabled) => {
-        doAction('updateNewsletterPreference', { enableUpdatesAndAnnouncements: enabled });
-      }}
+      updateCommentNotifications={(enabled) =>
+        doAction('updateNewsletterPreference', {
+          enableCommentNotifications: enabled,
+          successMessage: t('Comment preferences updated.'),
+        })
+      }
+      updateUpdatesAndAnnouncements={(enabled) =>
+        doAction('updateNewsletterPreference', {
+          enableUpdatesAndAnnouncements: enabled,
+          successMessage: t('Email preferences updated.'),
+        })
+      }
       unsubscribeAll={() => {
         setSubscribedNewsletters([]);
         doAction('showPopupNotification', {

@@ -25,7 +25,7 @@ describe('WebmentionMetadata', function () {
   it('fetches mention metadata through the oEmbed service and maps the response', async function () {
     const fetchStub = sinon.stub(oembedService, 'fetchOembedDataFromUrl').resolves(oembedResponse);
     const fetchPageHtml = sinon.stub(oembedService, 'fetchPageHtml');
-    const webmentionMetadata = new WebmentionMetadata();
+    const webmentionMetadata = new WebmentionMetadata({ oembedService });
 
     const result = await webmentionMetadata.fetch(new URL('https://source.example/post/'));
 
@@ -52,7 +52,7 @@ describe('WebmentionMetadata', function () {
       ...oembedResponse,
       metadata: { ...oembedResponse.metadata, thumbnail: null, icon: undefined },
     });
-    const webmentionMetadata = new WebmentionMetadata();
+    const webmentionMetadata = new WebmentionMetadata({ oembedService });
 
     const result = await webmentionMetadata.fetch(new URL('https://source.example/post/'));
 
@@ -66,7 +66,7 @@ describe('WebmentionMetadata', function () {
       body: '<p>Original body</p>',
       contentType: 'text/html; charset=utf-8',
     });
-    const webmentionMetadata = new WebmentionMetadata();
+    const webmentionMetadata = new WebmentionMetadata({ oembedService });
     const original = new URL('https://source.example/.well-known/recommendations.json');
     // Mappers run until none matches, so a mapped URL is mapped again.
     webmentionMetadata.addMapper((url) => {
@@ -97,7 +97,7 @@ describe('WebmentionMetadata', function () {
     const error = new Error('Service Unavailable');
     error.response = { statusCode: 503 };
     sinon.stub(oembedService, 'fetchPageHtml').rejects(error);
-    const webmentionMetadata = new WebmentionMetadata();
+    const webmentionMetadata = new WebmentionMetadata({ oembedService });
     webmentionMetadata.addMapper((url) => {
       if (url.pathname === '/post/') {
         return new URL('https://source.example/');
@@ -121,7 +121,7 @@ describe('WebmentionMetadata', function () {
     };
 
     const fetchStub = sinon.stub(oembedService, 'fetchOembedDataFromUrl').rejects(error);
-    const webmentionMetadata = new WebmentionMetadata();
+    const webmentionMetadata = new WebmentionMetadata({ oembedService });
 
     await assert.rejects(
       () => webmentionMetadata.fetch(new URL('https://example.com')),
@@ -143,7 +143,7 @@ describe('WebmentionMetadata', function () {
     };
 
     sinon.stub(oembedService, 'fetchOembedDataFromUrl').rejects(error);
-    const webmentionMetadata = new WebmentionMetadata();
+    const webmentionMetadata = new WebmentionMetadata({ oembedService });
 
     await assert.rejects(
       () => webmentionMetadata.fetch(new URL('https://example.com')),
@@ -159,7 +159,7 @@ describe('WebmentionMetadata', function () {
     error.name = 'TimeoutError';
 
     sinon.stub(oembedService, 'fetchOembedDataFromUrl').rejects(error);
-    const webmentionMetadata = new WebmentionMetadata();
+    const webmentionMetadata = new WebmentionMetadata({ oembedService });
 
     await assert.rejects(
       () => webmentionMetadata.fetch(new URL('https://example.com')),
@@ -177,7 +177,7 @@ describe('WebmentionMetadata', function () {
     };
 
     sinon.stub(oembedService, 'fetchOembedDataFromUrl').rejects(error);
-    const webmentionMetadata = new WebmentionMetadata();
+    const webmentionMetadata = new WebmentionMetadata({ oembedService });
 
     await assert.rejects(
       () => webmentionMetadata.fetch(new URL('https://example.com')),

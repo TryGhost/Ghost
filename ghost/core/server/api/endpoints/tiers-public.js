@@ -1,4 +1,4 @@
-const tiersService = require('../../services/tiers');
+const tiers = require('../../services/tiers').default;
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -11,7 +11,7 @@ const controller = {
     options: ['limit', 'fields', 'filter', 'order', 'debug', 'page'],
     permissions: true,
     async query(frame) {
-      const page = await tiersService.api.browse(frame.options);
+      const page = await tiers.service.api.browse(frame.options);
 
       return page;
     },

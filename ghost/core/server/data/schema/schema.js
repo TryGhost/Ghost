@@ -2383,6 +2383,7 @@ module.exports = {
             'failed',
             'finished',
             'member changed status',
+            'member changed tier',
             'member unsubscribed',
           ],
         ],

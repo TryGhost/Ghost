@@ -1,6 +1,5 @@
 import React from 'react';
-import assert from 'assert/strict';
-import { describe, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 import { Banner } from '../../../../src/components/ui/banner';
 import { render } from '../../utils/test-utils';
@@ -14,15 +13,15 @@ describe('Banner Component', () => {
     render(<Banner>Test content</Banner>);
     const content = screen.getByText('Test content');
 
-    assert.ok(content, 'Banner should render children');
+    expect(content, 'Banner should render children').toBeTruthy();
   });
 
   it('applies default variant and size classes', () => {
     render(<Banner>Content</Banner>);
     const banner = screen.getByRole('status');
 
-    assert.ok(banner, 'Banner should be rendered with default role');
-    assert.ok(banner.className.includes('bg-surface-panel'), 'Should have default variant class');
+    expect(banner, 'Banner should be rendered with default role').toBeTruthy();
+    expect(banner.className, 'Should have default variant class').toContain('bg-surface-panel');
   });
 
   it.each([
@@ -34,25 +33,22 @@ describe('Banner Component', () => {
     render(<Banner variant={variant}>Content</Banner>);
     const banner = screen.getByRole('status');
 
-    assert.ok(banner.className.includes(expectedClass), `Should have ${expectedClass} class`);
+    expect(banner.className, `Should have ${expectedClass} class`).toContain(expectedClass);
   });
 
   it('gives the destructive variant a 20% danger border', () => {
     render(<Banner variant="destructive">Content</Banner>);
     const banner = screen.getByRole('status');
 
-    assert.ok(banner.className.includes('border-state-danger/20'), 'Should have a 20% border');
+    expect(banner.className, 'Should have a 20% border').toContain('border-state-danger/20');
   });
 
   it('applies gradient variant correctly', () => {
     render(<Banner variant="gradient">Content</Banner>);
     const banner = screen.getByRole('status');
 
-    assert.ok(
-      banner.className.includes('bg-surface-elevated'),
-      'Should have gradient variant class',
-    );
-    assert.ok(banner.className.includes('cursor-pointer'), 'Gradient variant should be clickable');
+    expect(banner.className, 'Should have gradient variant class').toContain('bg-surface-elevated');
+    expect(banner.className, 'Gradient variant should be clickable').toContain('cursor-pointer');
   });
 
   it.each([
@@ -62,14 +58,14 @@ describe('Banner Component', () => {
     render(<Banner size={size}>Content</Banner>);
     const banner = screen.getByRole('status');
 
-    assert.ok(banner.className.includes(expectedClass), `Should have ${expectedClass} class`);
+    expect(banner.className, `Should have ${expectedClass} class`).toContain(expectedClass);
   });
 
   it('applies correct role by default', () => {
     render(<Banner>Content</Banner>);
     const banner = screen.getByRole('status');
 
-    assert.equal(banner.getAttribute('role'), 'status', 'Should have status role by default');
+    expect(banner.getAttribute('role'), 'Should have status role by default').toBe('status');
     // Note: role="status" has implicit aria-live="polite", no need to set explicitly
   });
 
@@ -77,7 +73,7 @@ describe('Banner Component', () => {
     render(<Banner role="alert">Content</Banner>);
     const banner = screen.getByRole('alert');
 
-    assert.equal(banner.getAttribute('role'), 'alert', 'Should have alert role');
+    expect(banner.getAttribute('role'), 'Should have alert role').toBe('alert');
     // Note: role="alert" has implicit aria-live="assertive"
   });
 
@@ -89,9 +85,9 @@ describe('Banner Component', () => {
     );
 
     const banner = screen.getByRole('region');
-    assert.equal(banner.getAttribute('role'), 'region', 'Should have region role');
-    assert.equal(banner.getAttribute('aria-live'), 'assertive', 'Should have assertive aria-live');
-    assert.equal(banner.getAttribute('aria-label'), 'Test banner', 'Should have custom aria-label');
+    expect(banner.getAttribute('role'), 'Should have region role').toBe('region');
+    expect(banner.getAttribute('aria-live'), 'Should have assertive aria-live').toBe('assertive');
+    expect(banner.getAttribute('aria-label'), 'Should have custom aria-label').toBe('Test banner');
   });
 
   describe('Non-dismissible variant', () => {
@@ -102,7 +98,7 @@ describe('Banner Component', () => {
       render(<Banner dismissible={dismissible}>Content</Banner>);
       const dismissButton = screen.queryByLabelText('Dismiss notification');
 
-      assert.equal(dismissButton, null, 'Dismiss button should not be rendered');
+      expect(dismissButton, 'Dismiss button should not be rendered').toBeNull();
     });
   });
 
@@ -116,7 +112,7 @@ describe('Banner Component', () => {
       );
       const dismissButton = screen.getByLabelText('Dismiss notification');
 
-      assert.ok(dismissButton, 'Dismiss button should be rendered');
+      expect(dismissButton, 'Dismiss button should be rendered').toBeTruthy();
     });
 
     it('calls onDismiss when close button clicked', () => {
@@ -130,7 +126,7 @@ describe('Banner Component', () => {
       const dismissButton = screen.getByLabelText('Dismiss notification');
       fireEvent.click(dismissButton);
 
-      assert.equal(onDismiss.mock.calls.length, 1, 'onDismiss should be called once');
+      expect(onDismiss.mock.calls.length, 'onDismiss should be called once').toBe(1);
     });
 
     it('maintains stateless behavior - parent manages visibility', () => {
@@ -147,8 +143,8 @@ describe('Banner Component', () => {
       // Component is stateless, so it should still be visible after dismiss
       // Parent component is responsible for hiding/removing it
       const content = screen.getByText('Content');
-      assert.ok(content, 'Banner should still be rendered (parent manages visibility)');
-      assert.equal(onDismiss.mock.calls.length, 1, 'onDismiss should be called once');
+      expect(content, 'Banner should still be rendered (parent manages visibility)').toBeTruthy();
+      expect(onDismiss.mock.calls.length, 'onDismiss should be called once').toBe(1);
     });
 
     it('prevents propagation on dismiss click', () => {
@@ -165,7 +161,7 @@ describe('Banner Component', () => {
       const dismissButton = screen.getByLabelText('Dismiss notification');
       fireEvent.click(dismissButton);
 
-      assert.equal(parentClick.mock.calls.length, 0, 'Parent click handler should not be called');
+      expect(parentClick.mock.calls.length, 'Parent click handler should not be called').toBe(0);
     });
   });
 
@@ -176,21 +172,21 @@ describe('Banner Component', () => {
     const banner = screen.getByRole('status');
     fireEvent.click(banner);
 
-    assert.equal(bannerClick.mock.calls.length, 1, 'Banner click handler should be called');
+    expect(bannerClick.mock.calls.length, 'Banner click handler should be called').toBe(1);
   });
 
   it('applies custom className', () => {
     render(<Banner className="custom-class">Content</Banner>);
     const banner = screen.getByRole('status');
 
-    assert.ok(banner.className.includes('custom-class'), 'Should apply custom className');
+    expect(banner.className, 'Should apply custom className').toContain('custom-class');
   });
 
   it('forwards ref correctly', () => {
     const ref = React.createRef<HTMLDivElement>();
     render(<Banner ref={ref}>Content</Banner>);
 
-    assert.ok(ref.current, 'Ref should be forwarded');
+    expect(ref.current, 'Ref should be forwarded').toBeTruthy();
   });
 
   it('renders with region role when specified', () => {
@@ -201,11 +197,9 @@ describe('Banner Component', () => {
     );
     const banner = screen.getByRole('region');
 
-    assert.ok(banner, 'Banner should render with region role');
-    assert.equal(
-      banner.getAttribute('aria-label'),
+    expect(banner, 'Banner should render with region role').toBeTruthy();
+    expect(banner.getAttribute('aria-label'), 'Should have aria-label for region').toBe(
       'Important region',
-      'Should have aria-label for region',
     );
   });
 
@@ -217,12 +211,10 @@ describe('Banner Component', () => {
     );
 
     const banner = screen.getByRole('status');
-    assert.equal(
-      banner.getAttribute('data-testid'),
+    expect(banner.getAttribute('data-testid'), 'Should support data attributes').toBe(
       'test-banner',
-      'Should support data attributes',
     );
-    assert.equal(banner.getAttribute('id'), 'banner-id', 'Should support id attribute');
-    assert.ok(banner.style.marginTop, 'Should support style attribute');
+    expect(banner.getAttribute('id'), 'Should support id attribute').toBe('banner-id');
+    expect(banner.style.marginTop, 'Should support style attribute').toBeTruthy();
   });
 });

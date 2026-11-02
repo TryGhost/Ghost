@@ -265,7 +265,7 @@ describe('useMembersFilterState', () => {
     );
   });
 
-  it('reads Ember-style filter params and keeps search separate', () => {
+  it('reads NQL filter params and keeps search separate', () => {
     const { result } = renderHook(() => useMembersFilterState('UTC'), {
       wrapper: createWrapper('/?filter=status:paid&search=jamie'),
     });
@@ -282,7 +282,7 @@ describe('useMembersFilterState', () => {
     expect(result.current.hasFilterOrSearch).toBe(true);
   });
 
-  it('writes canonical Ember filter params', () => {
+  it('writes canonical filter params', () => {
     const { result } = renderHook(
       () => {
         const state = useMembersFilterState('UTC');

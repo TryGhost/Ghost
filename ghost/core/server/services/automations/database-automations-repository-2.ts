@@ -45,7 +45,7 @@ export const createDatabaseAutomationsRepository2 = ({
     },
 
     async findFirstActionRevisions(connection, memberStatus, memberTierIds) {
-      const rows = await connection('automations as automation')
+      const rows: unknown[] = await connection('automations as automation')
         .select(
           'automation.id as automation_id',
           'actions.id as action_id',

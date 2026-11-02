@@ -95,8 +95,8 @@ function KeyedPublishFlowModal({
   const [gatesPassed, setGatesPassed] = useState(false);
   const previewWarning = paywallImprovements ? getPublicPreviewWarning(post) : null;
 
-  // Ember checks the TK gate first and only reaches the preview warning when
-  // there are no TKs, so the two never stack.
+  // The TK gate runs first and the preview warning only when there are no TKs,
+  // so the two never stack.
   if (!gatesPassed && tkCount > 0) {
     return (
       <GateDialog

@@ -30,7 +30,7 @@ import type {
 import { dequal } from 'dequal';
 import { isEmptyEmailLexical } from './utils';
 import { toast } from 'sonner';
-import { useNavigate, useParams } from '@tryghost/admin-x-framework';
+import { useLocation, useMatches, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { navigateTo } from '@/utils/navigation';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { AutomationEditState, TierSelection } from './types';
@@ -655,19 +655,35 @@ const AutomationEditorContent: React.FC<{
 
 const AutomationEditor: React.FC = () => {
   const { id: automationId = '' } = useParams<{ id: string }>();
+  const location = useLocation();
+  // Matched params change on navigation even when their values do not; a native
+  // hash entry can reuse the location object.
+  const navigation = useMatches().at(-1)?.params;
 
   // Keep the creation session mounted when its first save replaces /new with the server ID.
   const [session, setSession] = React.useState({
     routeId: automationId,
     createdId: null as string | null,
     key: 0,
+    location,
+    navigation,
   });
-  if (automationId !== session.routeId) {
+  if (
+    automationId !== session.routeId ||
+    location !== session.location ||
+    navigation !== session.navigation
+  ) {
     const isFirstSave = session.routeId === 'new' && automationId === session.createdId;
+    // The router can render the create's URL replace and a later navigation as one,
+    // so the new-automation URL reached after the create is a new automation either way.
+    const isNewAfterCreate = automationId === 'new' && session.createdId !== null;
+    const keeps = isFirstSave || (automationId === session.routeId && !isNewAfterCreate);
     setSession({
       routeId: automationId,
-      createdId: isFirstSave ? session.createdId : null,
-      key: isFirstSave ? session.key : session.key + 1,
+      createdId: keeps ? session.createdId : null,
+      key: keeps ? session.key : session.key + 1,
+      location,
+      navigation,
     });
   }
   return (

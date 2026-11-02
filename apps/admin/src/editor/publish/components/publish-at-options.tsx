@@ -10,6 +10,7 @@ export interface PublishAtOptionsProps {
   timezone: string;
   onToggleScheduled: (isScheduled: boolean) => void;
   onSetScheduledAt: (date: Date) => void;
+  onRefusalChange?: (input: HTMLInputElement | null) => void;
 }
 
 export function PublishAtOptions({
@@ -17,6 +18,7 @@ export function PublishAtOptions({
   timezone,
   onToggleScheduled,
   onSetScheduledAt,
+  onRefusalChange,
 }: PublishAtOptionsProps) {
   const id = useId();
 
@@ -49,6 +51,7 @@ export function PublishAtOptions({
           timezone={timezone}
           value={state.scheduledAt}
           onChange={onSetScheduledAt}
+          onRefusalChange={onRefusalChange}
         />
       ) : null}
     </Grid>

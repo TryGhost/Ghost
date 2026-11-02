@@ -1030,6 +1030,7 @@ export default class App extends React.Component {
           });
         }, 2000);
       }
+      return updatedState;
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(`[Portal] Failed to dispatch action: ${action}`, error);

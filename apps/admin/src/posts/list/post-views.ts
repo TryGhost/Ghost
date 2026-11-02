@@ -18,7 +18,7 @@ import type { PostResource } from '@/posts/list/post-resource';
  * `@/members/api`; only the filter shape differs.
  */
 
-/** Ember picks one of these at random for a new view. */
+/** A new view gets one of these at random. */
 export const POST_VIEW_COLORS = [
   'midgrey',
   'blue',
@@ -78,7 +78,7 @@ export interface CanSavePostViewOptions {
 }
 
 /**
- * Ember's `showCustomViewManagement`: admin, on the posts screen, not on a
+ * Admin, on the posts screen, not on a
  * default view, and something actually filtered. Note that a sort alone counts
  * here, unlike the empty state's "showing all" check.
  */

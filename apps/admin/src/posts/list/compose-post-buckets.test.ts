@@ -41,9 +41,8 @@ describe('composePostBuckets', () => {
     expect(result.items).toEqual([]);
   });
 
-  // Ember's route returns RSVP.hash of all three models, so its template
-  // doesn't render until every first page has landed - it shows a skeleton
-  // instead. Matching that matters most in the common case below.
+  // Nothing renders until every first page has landed - a skeleton shows
+  // instead. That matters most in the common case below.
   it('keeps loading when an earlier bucket has answered but a later one has not', () => {
     const result = composePostBuckets<Item>([
       bucketResult({ bucket: 'scheduled', items: [item('s1')], total: 1 }),
@@ -93,7 +92,7 @@ describe('composePostBuckets', () => {
     expect(result.isLoading).toBe(false);
   });
 
-  // Ember drains each bucket fully before the next one renders.
+  // Each bucket drains fully before the next one renders.
   it('hides later buckets until the earlier ones are exhausted', () => {
     const result = composePostBuckets<Item>([
       bucketResult({ bucket: 'scheduled', items: [item('s1')], total: 40, hasNextPage: true }),

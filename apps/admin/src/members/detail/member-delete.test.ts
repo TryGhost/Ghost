@@ -2,12 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { getDeleteMemberButtonLabel, hasCancelableStripeSubscription } from './member-delete';
 import type { MemberSubscription } from '@tryghost/admin-x-framework/api/members';
 
-// Ember's `delete-member.js:22` allows the "Also cancel subscription in Stripe"
-// checkbox when the member has ANY subscription whose status is in this set —
-// even comp/gift entries (their sub.id is empty and the server call becomes a
-// no-op, but Ember doesn't gate the checkbox on classification, so we don't
-// either). Anything outside the set (e.g. `incomplete`, `canceled`, `paused`)
-// hides the checkbox.
+// The "Also cancel subscription in Stripe" checkbox shows when the member has
+// ANY subscription whose status is in this set — even comp/gift entries (their
+// sub.id is empty and the server call becomes a no-op; the checkbox isn't gated
+// on classification). Anything outside the set (e.g. `incomplete`, `canceled`,
+// `paused`) hides the checkbox.
 const ALLOWED = ['active', 'trialing', 'unpaid', 'past_due'];
 const DISALLOWED = ['incomplete', 'incomplete_expired', 'canceled', 'paused'];
 
@@ -41,7 +40,7 @@ describe('hasCancelableStripeSubscription', () => {
     expect(hasCancelableStripeSubscription({})).toBe(false);
   });
 
-  it.each(ALLOWED)('returns true for status %s (Ember allow-list)', (status) => {
+  it.each(ALLOWED)('returns true for status %s', (status) => {
     expect(hasCancelableStripeSubscription({ subscriptions: [makeSub(status)] })).toBe(true);
   });
 
@@ -64,8 +63,6 @@ describe('getDeleteMemberButtonLabel', () => {
   });
 
   it('returns the combined label when the cancel-Stripe box is checked', () => {
-    // Matches Ember `delete-member.hbs:44` — a subtle contract that hides the
-    // "actually two operations" nature of the flow behind a single button.
     expect(getDeleteMemberButtonLabel(true)).toBe('Delete member + Cancel subscription');
   });
 });

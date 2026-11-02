@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { type AvgsDataItem } from '@/analytics/views/stats/newsletters/newsletters';
 import {
   BarChartLoadingIndicator,
+  Button,
   type ChartConfig,
   ChartContainer,
   ChartTooltip,
@@ -45,9 +46,10 @@ interface BarTooltipProps {
   active?: boolean;
   payload?: BarTooltipPayload[];
   range?: number;
+  showClicks: boolean;
 }
 
-const BarTooltipContent = ({ active, payload }: BarTooltipProps) => {
+export const BarTooltipContent = ({ active, payload, showClicks }: BarTooltipProps) => {
   if (!active || !payload?.length) {
     return null;
   }
@@ -78,13 +80,23 @@ const BarTooltipContent = ({ active, payload }: BarTooltipProps) => {
         </div>
       </div>
 
-      <div className="mb-1 flex w-full justify-between">
-        <span className="font-medium text-muted-foreground">Clicks</span>
-        <div className="ml-2 w-full text-right font-mono">
-          <span className="text-muted-foreground">{formatNumber(currentItem.total_clicks)} / </span>
-          {formatPercentage(currentItem.click_rate)}
+      {showClicks && (
+        <div className="mb-1 flex w-full justify-between">
+          <span className="font-medium text-muted-foreground">Clicks</span>
+          <div className="ml-2 w-full text-right font-mono">
+            {currentItem.total_clicks === undefined || currentItem.click_rate === undefined ? (
+              '—'
+            ) : (
+              <>
+                <span className="text-muted-foreground">
+                  {formatNumber(currentItem.total_clicks)} /{' '}
+                </span>
+                {formatPercentage(currentItem.click_rate)}
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
@@ -106,6 +118,11 @@ const NewsletterKPIs: React.FC<{
   totals: Totals;
   isLoading: boolean;
   isAvgsLoading: boolean;
+  isClicksLoading: boolean;
+  periodError?: string;
+  clickError?: string;
+  onRetryPeriodStats: () => void;
+  onRetryClickStats: () => void;
   initialTab?: string;
 }> = ({
   subscribersData: allSubscribersData,
@@ -113,6 +130,11 @@ const NewsletterKPIs: React.FC<{
   totals,
   isLoading,
   isAvgsLoading,
+  isClicksLoading,
+  periodError,
+  clickError,
+  onRetryPeriodStats,
+  onRetryClickStats,
   initialTab = 'total-subscribers',
 }) => {
   const [currentTab, setCurrentTab] = useState(initialTab);
@@ -242,7 +264,7 @@ const NewsletterKPIs: React.FC<{
     // Include the avg line value so the y-axis always contains both the
     // tallest bar and the avg reference line.
     const avgForTab = currentTab === 'avg-open-rate' ? avgOpenRate : avgClickRate;
-    const bucketValue = Math.max(Math.max(...values), avgForTab);
+    const bucketValue = values.reduce((maximum, value) => Math.max(maximum, value), avgForTab);
 
     // Min is always 0. Upper limit:
     //   < 1%       → 1%
@@ -284,6 +306,8 @@ const NewsletterKPIs: React.FC<{
     (currentTab === 'avg-open-rate' && avgOpenRate > barDomain[0] && avgOpenRate < barDomain[1]) ||
     (currentTab === 'avg-click-rate' && avgClickRate > barDomain[0] && avgClickRate < barDomain[1]);
   const avgValue = currentTab === 'avg-open-rate' ? avgOpenRate : avgClickRate;
+  const activeError = periodError || (currentTab === 'avg-click-rate' ? clickError : undefined);
+  const activeLoading = isAvgsLoading || (currentTab === 'avg-click-rate' && isClicksLoading);
 
   return (
     <Tabs defaultValue={initialTab} variant="kpis">
@@ -316,7 +340,7 @@ const NewsletterKPIs: React.FC<{
               className={isAvgsLoading ? 'opacity-50' : ''}
               color={tabConfig['avg-open-rate'].color}
               label="Avg. open rate"
-              value={formatPercentage(avgOpenRate)}
+              value={periodError || isAvgsLoading ? '—' : formatPercentage(avgOpenRate)}
             />
           </KpiTabTrigger>
         )}
@@ -329,10 +353,14 @@ const NewsletterKPIs: React.FC<{
             }}
           >
             <KpiTabValue
-              className={isAvgsLoading ? 'opacity-50' : ''}
+              className={isAvgsLoading || isClicksLoading ? 'opacity-50' : ''}
               color={tabConfig['avg-click-rate'].color}
               label="Avg. click rate"
-              value={formatPercentage(avgClickRate)}
+              value={
+                periodError || clickError || isAvgsLoading || isClicksLoading
+                  ? '—'
+                  : formatPercentage(avgClickRate)
+              }
             />
           </KpiTabTrigger>
         )}
@@ -352,15 +380,19 @@ const NewsletterKPIs: React.FC<{
                 className={isAvgsLoading ? 'opacity-50' : ''}
                 color={tabConfig['avg-open-rate'].color}
                 label="Avg. open rate"
-                value={formatPercentage(avgOpenRate)}
+                value={periodError || isAvgsLoading ? '—' : formatPercentage(avgOpenRate)}
               />
             )}
             {currentTab === 'avg-click-rate' && emailTrackClicksEnabled && (
               <KpiTabValue
-                className={isAvgsLoading ? 'opacity-50' : ''}
+                className={isAvgsLoading || isClicksLoading ? 'opacity-50' : ''}
                 color={tabConfig['avg-click-rate'].color}
                 label="Avg. click rate"
-                value={formatPercentage(avgClickRate)}
+                value={
+                  periodError || clickError || isAvgsLoading || isClicksLoading
+                    ? '—'
+                    : formatPercentage(avgClickRate)
+                }
               />
             )}
           </KpiDropdownButton>
@@ -397,7 +429,20 @@ const NewsletterKPIs: React.FC<{
         {((currentTab === 'avg-open-rate' && emailTrackOpensEnabled) ||
           (currentTab === 'avg-click-rate' && emailTrackClicksEnabled)) && (
           <>
-            {isAvgsLoading ? (
+            {activeError ? (
+              <div
+                className="flex h-[320px] flex-col items-center justify-center gap-3"
+                role="alert"
+              >
+                <p>{activeError}</p>
+                <Button
+                  variant="outline"
+                  onClick={periodError ? onRetryPeriodStats : onRetryClickStats}
+                >
+                  Retry
+                </Button>
+              </div>
+            ) : activeLoading ? (
               <div className="h-[320px] w-full items-center justify-center">
                 <BarChartLoadingIndicator />
               </div>
@@ -469,7 +514,7 @@ const NewsletterKPIs: React.FC<{
                       )}
                     />
                     <ChartTooltip
-                      content={<BarTooltipContent />}
+                      content={<BarTooltipContent showClicks={!!emailTrackClicksEnabled} />}
                       cursor={false}
                       isAnimationActive={false}
                       position={{ y: 10 }}

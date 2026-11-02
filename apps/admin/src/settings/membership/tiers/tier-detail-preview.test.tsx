@@ -1,5 +1,4 @@
 import TierDetailPreview from '@/settings/membership/tiers/tier-detail-preview';
-import assert from 'node:assert/strict';
 import { render, screen } from '@testing-library/react';
 
 describe('TierDetailPreview', () => {
@@ -11,7 +10,7 @@ describe('TierDetailPreview', () => {
     };
     const { rerender } = render(<TierDetailPreview isFreeTier={false} tier={tier} />);
 
-    assert.equal(screen.getAllByText('Repeated benefit').length, 2);
+    expect(screen.getAllByText('Repeated benefit').length).toBe(2);
 
     rerender(
       <TierDetailPreview
@@ -20,14 +19,13 @@ describe('TierDetailPreview', () => {
       />,
     );
 
-    assert.equal(screen.getAllByText('Repeated benefit').length, 1);
-    assert.ok(screen.getByText('Other benefit'));
-    assert.equal(
+    expect(screen.getAllByText('Repeated benefit').length).toBe(1);
+    expect(screen.getByText('Other benefit')).toBeTruthy();
+    expect(
       consoleError.mock.calls.some((call) =>
         call.some((value) => String(value).includes('same key')),
       ),
-      false,
-    );
+    ).toBe(false);
 
     consoleError.mockRestore();
   });

@@ -1,5 +1,5 @@
-/* Element defaults Admin screens inherited from Ember's global stylesheet. Imported before Shade and
-   kept at element specificity so Shade's preflight and utilities still override them. */
+/* Element defaults for Admin screens. Imported before Shade and kept at element specificity so
+   Shade's preflight and utilities still override them. */
 
 body:where(.react-admin) {
   color: var(--color-gray-900);

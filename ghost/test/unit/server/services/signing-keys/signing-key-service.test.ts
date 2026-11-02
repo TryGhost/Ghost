@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import { SigningKeyService } from '../../../../../core/server/services/signing-keys/signing-key-service';
+import { createLoggingFake } from '../../../../utils/logging-utils';
 
 const { privateKey } = crypto.generateKeyPairSync('rsa', {
   modulusLength: 2048,
@@ -16,7 +17,7 @@ function createService(entries: Record<string, unknown>) {
       edit: async () => [],
     },
     transaction: (fn) => fn({} as never),
-    logging: { info() {}, warn() {} },
+    logging: createLoggingFake(),
   });
 }
 

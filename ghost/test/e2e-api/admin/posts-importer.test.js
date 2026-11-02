@@ -15,7 +15,7 @@ const nock = require('nock');
 const papaparse = require('papaparse');
 const models = require('../../../core/server/models');
 const contentImportService = require('../../../core/server/services/content-import');
-const mediaInlinerService = require('../../../core/server/services/media-inliner');
+const mediaInlinerService = require('../../../core/server/services/media-inliner').default;
 const {
   PostMediaInliner,
   isBlockedMediaUrl,
@@ -480,7 +480,7 @@ describe('Posts Importer API', function () {
     const imageUrl = `${siteUrl}/content/images/already-stored.jpg`;
     const unsplashUrl = 'https://images.unsplash.com/photo-123?fit=crop&w=1200';
     const gravatarUrl = 'https://www.gravatar.com/avatar/abc123?s=200';
-    const importUrl = sinon.spy(mediaInlinerService.getInstance(), 'importUrl');
+    const importUrl = sinon.spy(mediaInlinerService.service, 'importUrl');
     const filePath = await csvFile(
       'local-media.csv',
       [
@@ -611,7 +611,7 @@ describe('Posts Importer API', function () {
     await agent.loginAsOwner();
     const sourceUrl = 'https://unexpected-media-error.example/image.jpg';
     const importUrl = sinon
-      .stub(mediaInlinerService.getInstance(), 'importUrl')
+      .stub(mediaInlinerService.service, 'importUrl')
       .rejects(new Error('Unexpected media importer failure'));
     const filePath = await csvFile(
       'unexpected-media-error.csv',
@@ -652,7 +652,7 @@ describe('Posts Importer API', function () {
 
   it('Stores and rewrites wrapped image, media, and file assets before importing posts', async function () {
     await agent.loginAsOwner();
-    const importUrl = sinon.spy(mediaInlinerService.getInstance(), 'importUrl');
+    const importUrl = sinon.spy(mediaInlinerService.service, 'importUrl');
 
     const csv =
       'title,html,markdown,feature_image,og_image,twitter_image\n' +

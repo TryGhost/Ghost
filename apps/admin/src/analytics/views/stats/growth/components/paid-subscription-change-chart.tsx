@@ -215,7 +215,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
   }, [range, aggregationStrategy]);
 
   const paidChangeChartData = useMemo(() => {
-    // Use subscription data if available (like Ember dashboard), otherwise fall back to member data
+    // Use subscription data if available, otherwise fall back to member data
     if (subscriptionData && subscriptionData.length > 0) {
       // For "Today" range, show just the change for today
       if (range === 1) {

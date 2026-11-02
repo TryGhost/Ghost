@@ -186,7 +186,7 @@ export function PostSettingsSidebar({
   // Owner, Administrator and Editor manage featured and access.
   const canManagePost = !!currentUser && canAccessSettings(currentUser);
   const canTag = !!currentUser && !isContributorUser(currentUser);
-  // Ember hides the authors field from Authors and Contributors alike.
+  // The authors field is hidden from Authors and Contributors alike.
   const canCreditOthers = !!currentUser && !isAuthorOrContributor(currentUser);
   const subviews = useSubviewController();
   const [focusing, setFocusing] = useState<SettingsFieldReveal | null>(null);

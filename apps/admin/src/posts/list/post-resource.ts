@@ -15,9 +15,8 @@ interface PostResourceCopy {
   newLabel: string;
   newHref: string;
   /**
-   * Cold-start empty state. Wording is verbatim from the Ember templates,
-   * terminal full stops included — Ember shows a heading and a button with
-   * no supporting description.
+   * Cold-start empty state: a heading and a button with no supporting
+   * description. Terminal full stops are part of the copy.
    */
   emptyTitle: string;
   emptyAction: string;

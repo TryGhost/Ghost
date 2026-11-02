@@ -1,4 +1,5 @@
-const moment = require('moment');
+const { moment } = require('../../../kernel/clock');
+const { startOfUtcDayAgo, utcToday } = require('./utils/date-utils');
 
 class MrrStatsService {
   /**
@@ -41,7 +42,7 @@ class MrrStatsService {
     const knex = this.knex;
     const startDate = dateFrom
       ? moment.utc(dateFrom).startOf('day').utc().format('YYYY-MM-DD HH:mm:ss')
-      : moment.utc().subtract(90, 'days').startOf('day').utc().format('YYYY-MM-DD HH:mm:ss');
+      : startOfUtcDayAgo(90);
     const rows = await knex('members_paid_subscription_events')
       .select('currency')
       // In SQLite, DATE(created_at) would map to a string value, while DATE(created_at) would map to a JSDate object in MySQL
@@ -73,8 +74,8 @@ class MrrStatsService {
       return dateA - dateB || rowA.currency.localeCompare(rowB.currency);
     });
 
-    // Get today in UTC (default timezone)
-    const today = moment().format('YYYY-MM-DD');
+    // Get today in UTC
+    const today = utcToday();
 
     const results = [];
 

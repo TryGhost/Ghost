@@ -39,6 +39,14 @@ describe('MailgunEmailSuppressionList', function () {
     sinon.restore();
   });
 
+  it('Members retains the eager suppression list root', async function () {
+    // Members captures the root object when its API is built during boot.
+    const membersService = require('../../../core/server/services/members');
+    const emailSuppressionList = require('../../../core/server/services/email-suppression-list');
+
+    assert.equal(membersService.api.memberBREADService.emailSuppressionList, emailSuppressionList);
+  });
+
   it('Can handle permanent failure events with an error code of 605', async function () {
     const emailBatch = fixtureManager.get('email_batches', 0);
 

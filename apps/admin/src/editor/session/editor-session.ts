@@ -1073,8 +1073,8 @@ export function createEditorSession({
       restoringRevision = true;
       try {
         patchLive(revision);
-        // Ember's slug task bails once the post carries the revision's title, so a
-        // restore leaves the URL alone.
+        // The slug stops following a title the writer did not type, so a restore
+        // leaves the URL alone.
         slug.titleReplaced(revision.title);
 
         const completion = await engine.dispatch('explicit');

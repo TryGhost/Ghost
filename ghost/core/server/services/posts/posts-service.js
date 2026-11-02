@@ -21,6 +21,39 @@ const messages = {
   postNotFound: 'Post not found.',
 };
 
+const COPIED_POSTS_FIELDS = [
+  'title',
+  'mobiledoc',
+  'lexical',
+  'html',
+  'plaintext',
+  'feature_image',
+  'featured',
+  'show_title_and_feature_image',
+  'type',
+  'locale',
+  'visibility',
+  'email_recipient_filter',
+  'custom_excerpt',
+  'codeinjection_head',
+  'codeinjection_foot',
+  'custom_template',
+];
+
+const COPIED_POSTS_META_FIELDS = [
+  'og_image',
+  'og_title',
+  'og_description',
+  'twitter_image',
+  'twitter_title',
+  'twitter_description',
+  'meta_title',
+  'meta_description',
+  'frontmatter',
+  'feature_image_alt',
+  'feature_image_caption',
+];
+
 class PostsService {
   constructor({ urlUtils, models, isSet, stats, emailService, postsExporter }) {
     this.urlUtils = urlUtils;
@@ -584,23 +617,7 @@ class PostsService {
       frame.options,
     );
 
-    const newPostData = pick(existingPost.attributes, [
-      'title',
-      'mobiledoc',
-      'lexical',
-      'html',
-      'plaintext',
-      'feature_image',
-      'featured',
-      'type',
-      'locale',
-      'visibility',
-      'email_recipient_filter',
-      'custom_excerpt',
-      'codeinjection_head',
-      'codeinjection_foot',
-      'custom_template',
-    ]);
+    const newPostData = pick(existingPost.attributes, COPIED_POSTS_FIELDS);
 
     newPostData.title = `${existingPost.attributes.title} (Copy)`;
     newPostData.status = 'draft';
@@ -612,20 +629,7 @@ class PostsService {
     const existingPostMeta = existingPost.related('posts_meta');
 
     if (existingPostMeta.isNew() === false) {
-      newPostData.posts_meta = pick(existingPostMeta.attributes, [
-        'og_image',
-        'og_title',
-        'og_description',
-        'twitter_image',
-        'twitter_title',
-        'twitter_description',
-        'meta_title',
-        'meta_description',
-        'frontmatter',
-        'feature_image_alt',
-        'feature_image_caption',
-        'hide_title_and_feature_image',
-      ]);
+      newPostData.posts_meta = pick(existingPostMeta.attributes, COPIED_POSTS_META_FIELDS);
     }
 
     const existingPostTiers = existingPost.related('tiers');
@@ -652,3 +656,5 @@ class PostsService {
 }
 
 module.exports = PostsService;
+module.exports.COPIED_POSTS_FIELDS = COPIED_POSTS_FIELDS;
+module.exports.COPIED_POSTS_META_FIELDS = COPIED_POSTS_META_FIELDS;

@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const models = require('../../../core/server/models');
-const commentsService = require('../../../core/server/services/comments');
+const commentsService = require('../../../core/server/services/comments').default;
 const testUtils = require('../../utils');
 const { mockSetting, restore: restoreMocks } = require('../../utils/e2e-framework-mock-manager');
 
@@ -9,8 +9,8 @@ describe('CommentsService', function () {
   beforeEach(testUtils.setup('default'));
   afterEach(testUtils.teardownDb);
 
-  beforeEach(function () {
-    commentsService.init();
+  beforeEach(async function () {
+    await commentsService.init();
     mockSetting('comments_enabled', 'all');
   });
 
@@ -32,30 +32,30 @@ describe('CommentsService', function () {
   }
 
   describe('root', function () {
-    it('init returns undefined and publishes a controller bound to the api', function () {
-      const result = commentsService.init();
+    it('init resolves undefined and publishes a controller bound to the api', async function () {
+      const result = await commentsService.init();
 
-      // Compare the type: a failure message that inspects the wrapper would
+      // Compare the type: a failure message that inspects the service would
       // serialise the whole model graph.
       assert.equal(typeof result, 'undefined');
-      assert.equal(commentsService.controller.service, commentsService.api);
+      assert.equal(commentsService.service.controller.service, commentsService.service.api);
     });
 
-    it('repeated init replaces the api and the controller', function () {
-      const { api, controller } = commentsService;
+    it('repeated init retains the api and the controller', async function () {
+      const { api, controller } = commentsService.service;
 
-      commentsService.init();
+      await commentsService.init();
 
-      assert.notEqual(commentsService.api, api);
-      assert.notEqual(commentsService.controller, controller);
+      assert.equal(commentsService.service.api, api);
+      assert.equal(commentsService.service.controller, controller);
     });
 
     it('reads the comments_enabled setting on every access and treats unknown values as off', function () {
       mockSetting('comments_enabled', 'paid');
-      assert.equal(commentsService.api.enabled, 'paid');
+      assert.equal(commentsService.service.api.enabled, 'paid');
 
       mockSetting('comments_enabled', 'sometimes');
-      assert.equal(commentsService.api.enabled, 'off');
+      assert.equal(commentsService.service.api.enabled, 'off');
     });
 
     it('counts only published comments per post through the wired stats', async function () {
@@ -64,7 +64,9 @@ describe('CommentsService', function () {
       await testUtils.knex('comments').where({ id: hiddenComment.id }).update({ status: 'hidden' });
       const postId = comment.get('post_id');
 
-      const counts = await commentsService.controller.count({ options: { ids: postId } });
+      const counts = await commentsService.service.controller.count({
+        options: { ids: postId },
+      });
 
       assert.deepEqual(counts, { [postId]: 1 });
     });
@@ -113,15 +115,15 @@ describe('CommentsService', function () {
           status: 'hidden',
         });
 
-      const adminComments = await commentsService.api.getAdminComments({
+      const adminComments = await commentsService.service.api.getAdminComments({
         columns: ['id', 'pinned'],
         filter: `id:'${hiddenCommentId}'`,
       });
-      const publicComments = await commentsService.api.getComments({
+      const publicComments = await commentsService.service.api.getComments({
         columns: ['id', 'pinned'],
         filter: `id:'${commentId}'`,
       });
-      const regularComments = await commentsService.api.getComments({
+      const regularComments = await commentsService.service.api.getComments({
         columns: ['id'],
         filter: `id:'${commentId}'`,
       });

@@ -489,6 +489,60 @@ describe('Publish flow', () => {
     });
   });
 
+  it('schedules a time typed over the field', async () => {
+    const { dispatch } = await renderPublishFlow({
+      now: () => new Date('2026-09-03T05:00:00.000Z'),
+    });
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByLabelText('Schedule for later').click();
+    await publishScreen.scheduleTime().tripleClick();
+    await userEvent.keyboard('9:30');
+    await userEvent.tab();
+
+    await expect.element(publishScreen.scheduleTime()).toHaveValue('09:30');
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch.mock.calls[0][0]).toMatchObject({
+      kind: 'schedule',
+      options: { publishedAt: '2026-09-03T09:30:00.000Z' },
+    });
+  });
+
+  it('stays on the options while a typed time is refused', async () => {
+    const { dispatch } = await renderPublishFlow({
+      now: () => new Date('2026-09-03T20:00:00.000Z'),
+    });
+
+    await publishScreen.setting('publish-at').click();
+    await page.getByLabelText('Schedule for later').click();
+    await publishScreen.scheduleTime().tripleClick();
+    await userEvent.keyboard('2754');
+    // Left first: the message's row moves Continue, so a click from the field misses it here.
+    await userEvent.tab();
+
+    await expect
+      .element(publishScreen.scheduleTime())
+      .toHaveAccessibleDescription('Must be in format: "15:00"');
+    await publishScreen.continueButton().click();
+    await expect.element(publishScreen.scheduleTime()).toHaveFocus();
+    await expect(publishScreen.confirm()).toHaveCount(0);
+
+    // An emptied field puts back the time held, which Continue then reviews.
+    await publishScreen.scheduleTime().fill('');
+    await userEvent.tab();
+    await publishScreen.continueButton().click();
+    await publishScreen.confirmButton().click();
+
+    await expect.element(publishScreen.complete()).toBeInTheDocument();
+    expect(dispatch.mock.calls[0][0]).toMatchObject({
+      kind: 'schedule',
+      options: { publishedAt: '2026-09-03T20:10:00.000Z' },
+    });
+  });
+
   it('moves a typed past date up to the earliest time a post can be scheduled', async () => {
     await renderPublishFlow({ now: () => new Date('2026-09-03T20:00:00.000Z') });
 
@@ -501,7 +555,7 @@ describe('Publish flow', () => {
     await expect.element(publishScreen.scheduleTime()).toHaveValue('20:00');
   });
 
-  it('keeps the scheduled date while a typed one is refused', async () => {
+  it('stays on the options while a typed date is refused', async () => {
     const { dispatch } = await renderPublishFlow({
       now: () => new Date('2026-09-03T20:00:00.000Z'),
     });
@@ -529,6 +583,13 @@ describe('Publish flow', () => {
     expect(fields().top - radio().top).toBe(level);
     expect(message.getBoundingClientRect().left).toBe(fields().left);
 
+    // Continue takes the writer back to the date rather than past it.
+    await publishScreen.continueButton().click();
+    await expect.element(publishScreen.scheduleDate()).toHaveFocus();
+    await expect(publishScreen.confirm()).toHaveCount(0);
+
+    await publishScreen.scheduleDate().fill('');
+    await userEvent.tab();
     await publishScreen.continueButton().click();
     await publishScreen.confirmButton().click();
 

@@ -2,8 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { getPostActionMessage } from './post-action-messages';
 
 /**
- * The toast wording, ported from the `messages` table and `#getToastMessage` in
- * `apps/ember-admin/app/components/posts-list/context-menu.js`.
+ * The toast wording.
  *
  * Pinned in tests because these strings are the only feedback a bulk action
  * gives, they differ between one row and many in ways that aren't guessable,
@@ -55,11 +54,10 @@ describe('getPostActionMessage', () => {
     });
 
     /**
-     * Ember hardcodes "Post link copied" and "Preview link copied" with no
-     * interpolation, so copying a *page* link still says "Post". Ported
-     * as-is rather than quietly corrected: it is a visible string.
+     * "Post link copied" and "Preview link copied" have no interpolation, so
+     * copying a *page* link still says "Post".
      */
-    it('still says "Post link copied" on a page, as Ember does', () => {
+    it('still says "Post link copied" on a page', () => {
       expect(getPostActionMessage('copiedPostUrl', { count: 1, resource: 'pages' })).toBe(
         'Post link copied',
       );
@@ -69,8 +67,8 @@ describe('getPostActionMessage', () => {
     });
   });
 
-  // These are only ever reached from a single-post action, and Ember's table
-  // has no plural for them at all — it would interpolate `undefined`.
+  // These are only ever reached from a single-post action, and have no
+  // plural at all.
   it('keeps the copy messages singular whatever the count', () => {
     expect(getPostActionMessage('copiedPostUrl', { count: 9, resource: 'posts' })).toBe(
       'Post link copied',

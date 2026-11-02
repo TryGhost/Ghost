@@ -254,7 +254,7 @@ describe('Posts list bulk actions', () => {
       await expect.element(postsListScreen.dialogButton('Add')).toBeDisabled();
     });
 
-    // Ember allows creating a tag inline; the server creates one from a
+    // Tags can be created inline; the server creates one from a
     // name it does not recognise, so no id is sent.
     it('sends a typed tag that does not exist yet', async () => {
       fakePosts([post({ title: 'Target', status: 'draft' })]);

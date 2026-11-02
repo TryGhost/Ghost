@@ -13,7 +13,7 @@ interface PostsSortMenuProps {
  *
  * A sort has no operator, so "Sort is Newest first" would be a nonsense chip —
  * and `order` also feeds each status bucket's default ordering, which is data
- * plumbing rather than filtering. Ember shows it as its own dropdown too.
+ * plumbing rather than filtering.
  *
  * "Newest first" is the *absence* of an `order` param, not a value.
  */

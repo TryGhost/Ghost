@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
 import knex, { type Knex } from 'knex';
+import { mockSystemTime } from '../../../../../utils/clock-utils';
 
 const {
   getDateBoundaries,
   applyDateFilter,
+  utcToday,
+  startOfUtcDayAgo,
 } = require('../../../../../../core/server/services/stats/utils/date-utils');
 
 describe('Stats date utils', function () {
@@ -38,6 +41,30 @@ describe('Stats date utils', function () {
         dateFrom: null,
         dateTo: '2024-03-12T23:59:59.999Z',
       });
+    });
+  });
+
+  describe('current-day helpers', function () {
+    let clock: ReturnType<typeof mockSystemTime>;
+
+    beforeEach(function () {
+      // Late in the UTC day, so a local-time reading would already be tomorrow
+      // in zones ahead of UTC.
+      clock = mockSystemTime(new Date('2024-03-01T23:30:00.000Z'));
+    });
+
+    afterEach(function () {
+      clock.restore();
+    });
+
+    it('reports today as the UTC calendar date', function () {
+      assert.equal(utcToday(), '2024-03-01');
+    });
+
+    it('opens a window at the start of the UTC day the given number of days ago', function () {
+      assert.equal(startOfUtcDayAgo(0), '2024-03-01 00:00:00');
+      assert.equal(startOfUtcDayAgo(1), '2024-02-29 00:00:00');
+      assert.equal(startOfUtcDayAgo(90), '2023-12-02 00:00:00');
     });
   });
 

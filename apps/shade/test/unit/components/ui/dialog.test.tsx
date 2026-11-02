@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { describe, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, within } from '@testing-library/react';
 import {
   Dialog,
@@ -32,8 +31,8 @@ describe('Dialog Components', () => {
     );
 
     const trigger = screen.getByTestId('dialog-trigger');
-    assert.ok(trigger, 'Dialog trigger should be rendered');
-    assert.equal(trigger.textContent, 'Open Dialog', 'Trigger should have correct text');
+    expect(trigger, 'Dialog trigger should be rendered').toBeTruthy();
+    expect(trigger.textContent, 'Trigger should have correct text').toBe('Open Dialog');
   });
 
   it('pins the dialog to the window by default', () => {
@@ -47,7 +46,7 @@ describe('Dialog Components', () => {
     );
 
     const content = screen.getByTestId('dialog-content');
-    assert.ok(content.className.includes('fixed'), 'Should be fixed in the window');
+    expect(content.className, 'Should be fixed in the window').toContain('fixed');
   });
 
   it('scrolls the whole dialog with the backdrop when scroll is overlay', () => {
@@ -61,14 +60,13 @@ describe('Dialog Components', () => {
     );
 
     const content = screen.getByTestId('dialog-content');
-    assert.ok(!content.className.includes('fixed'), 'Should sit in the backdrop, not the window');
-    const overlay = content.closest('[data-slot="dialog-overlay"]');
-    assert.ok(overlay, 'The dialog should sit inside the backdrop');
-    assert.ok(
-      overlay.className.includes('overflow-y-auto'),
-      'The backdrop should be the scroll container',
+    expect(content.className, 'Should sit in the backdrop, not the window').not.toContain('fixed');
+    const overlay = content.closest('[data-slot="dialog-overlay"]')!;
+    expect(overlay, 'The dialog should sit inside the backdrop').toBeTruthy();
+    expect(overlay.className, 'The backdrop should be the scroll container').toContain(
+      'overflow-y-auto',
     );
-    assert.ok(overlay.className.includes('fixed'), 'The backdrop should cover the window');
+    expect(overlay.className, 'The backdrop should cover the window').toContain('fixed');
   });
 
   it('shows a non-modal overlay dialog and leaves the page behind it usable', () => {
@@ -82,13 +80,12 @@ describe('Dialog Components', () => {
     );
 
     const content = screen.getByTestId('dialog-content');
-    const scroller = content.closest<HTMLElement>('[data-slot="dialog-scroller"]');
-    assert.ok(scroller, 'The dialog should sit in a scroll container');
-    assert.ok(
-      scroller.className.includes('pointer-events-none'),
-      'Presses beside the dialog should reach the page',
+    const scroller = content.closest<HTMLElement>('[data-slot="dialog-scroller"]')!;
+    expect(scroller, 'The dialog should sit in a scroll container').toBeTruthy();
+    expect(scroller.className, 'Presses beside the dialog should reach the page').toContain(
+      'pointer-events-none',
     );
-    assert.ok(content.className.includes('pointer-events-auto'), 'The dialog should take presses');
+    expect(content.className, 'The dialog should take presses').toContain('pointer-events-auto');
   });
 
   it('closes an overlay dialog only when the backdrop is clicked, not just pressed', async () => {
@@ -107,17 +104,19 @@ describe('Dialog Components', () => {
     });
     const overlay = screen
       .getByTestId('dialog-content')
-      .closest<HTMLElement>('[data-slot="dialog-overlay"]');
-    assert.ok(overlay);
+      .closest<HTMLElement>('[data-slot="dialog-overlay"]')!;
+    expect(overlay).toBeTruthy();
 
     // Dragging the backdrop's scrollbar presses the backdrop but never clicks it.
     fireEvent.pointerDown(overlay, { button: 0 });
     fireEvent.pointerUp(overlay, { button: 0 });
-    assert.equal(onOpenChange.mock.calls.length, 0, 'A press alone should keep the dialog open');
+    expect(onOpenChange.mock.calls.length, 'A press alone should keep the dialog open').toBe(0);
 
     fireEvent.pointerDown(overlay, { button: 0 });
     fireEvent.click(overlay);
-    assert.deepEqual(onOpenChange.mock.calls, [[false]], 'A click on the backdrop should close');
+    expect(onOpenChange.mock.calls, 'A click on the backdrop should close').toStrictEqual([
+      [false],
+    ]);
   });
 
   it('applies custom className to DialogHeader correctly', () => {
@@ -134,8 +133,8 @@ describe('Dialog Components', () => {
     );
 
     const header = screen.getByTestId('dialog-header');
-    assert.ok(header.className.includes('custom-header-class'), 'Should have custom class');
-    assert.ok(header.className.includes('flex flex-col'), 'Should have default styling');
+    expect(header.className, 'Should have custom class').toContain('custom-header-class');
+    expect(header.className, 'Should have default styling').toContain('flex flex-col');
   });
 
   it('applies custom className to DialogFooter correctly', () => {
@@ -152,8 +151,8 @@ describe('Dialog Components', () => {
     );
 
     const footer = screen.getByTestId('dialog-footer');
-    assert.ok(footer.className.includes('custom-footer-class'), 'Should have custom class');
-    assert.ok(footer.className.includes('flex flex-col-reverse'), 'Should have default styling');
+    expect(footer.className, 'Should have custom class').toContain('custom-footer-class');
+    expect(footer.className, 'Should have default styling').toContain('flex flex-col-reverse');
   });
 
   it('renders DialogTitle with correct styling', () => {
@@ -167,12 +166,12 @@ describe('Dialog Components', () => {
     );
 
     const title = screen.getByTestId('dialog-title');
-    assert.equal(title.tagName.toLowerCase(), 'h2', 'Should be an h2 element');
-    assert.equal(title.textContent, 'Test Title', 'Should have correct text content');
-    assert.ok(
+    expect(title.tagName.toLowerCase(), 'Should be an h2 element').toBe('h2');
+    expect(title.textContent, 'Should have correct text content').toBe('Test Title');
+    expect(
       title.className.includes('text-xl') && title.className.includes('font-semibold'),
       'Should have default styling',
-    );
+    ).toBeTruthy();
   });
 
   it('applies custom className to DialogTitle correctly', () => {
@@ -188,7 +187,7 @@ describe('Dialog Components', () => {
     );
 
     const title = screen.getByTestId('dialog-title');
-    assert.ok(title.className.includes('custom-title-class'), 'Should have custom class');
+    expect(title.className, 'Should have custom class').toContain('custom-title-class');
   });
 
   it('renders DialogDescription with correct styling', () => {
@@ -202,11 +201,8 @@ describe('Dialog Components', () => {
     );
 
     const description = screen.getByTestId('dialog-description');
-    assert.equal(description.textContent, 'Test Description', 'Should have correct text content');
-    assert.ok(
-      description.className.includes('text-muted-foreground'),
-      'Should have default styling',
-    );
+    expect(description.textContent, 'Should have correct text content').toBe('Test Description');
+    expect(description.className, 'Should have default styling').toContain('text-muted-foreground');
   });
 
   it('applies custom className to DialogDescription correctly', () => {
@@ -222,7 +218,7 @@ describe('Dialog Components', () => {
     );
 
     const description = screen.getByTestId('dialog-description');
-    assert.ok(description.className.includes('custom-desc-class'), 'Should have custom class');
+    expect(description.className, 'Should have custom class').toContain('custom-desc-class');
   });
 
   it('tests Dialog structure with all components', () => {
@@ -245,18 +241,16 @@ describe('Dialog Components', () => {
     );
 
     const content = screen.getByTestId('dialog-content');
-    assert.ok(content, 'Dialog content should be rendered');
+    expect(content, 'Dialog content should be rendered').toBeTruthy();
 
     const title = within(content).getByTestId('dialog-title');
-    assert.ok(title, 'Dialog title should be rendered');
-    assert.equal(title.textContent, 'Testing Dialog', 'Title should have correct text');
+    expect(title, 'Dialog title should be rendered').toBeTruthy();
+    expect(title.textContent, 'Title should have correct text').toBe('Testing Dialog');
 
     const description = within(content).getByTestId('dialog-description');
-    assert.ok(description, 'Dialog description should be rendered');
-    assert.equal(
-      description.textContent,
+    expect(description, 'Dialog description should be rendered').toBeTruthy();
+    expect(description.textContent, 'Description should have correct text').toBe(
       'This is a dialog description',
-      'Description should have correct text',
     );
   });
 
@@ -277,12 +271,11 @@ describe('Dialog Components', () => {
     );
 
     const title = screen.getByTestId('custom-title');
-    assert.ok(title.className.includes('custom-title-class'), 'Title should have custom class');
+    expect(title.className, 'Title should have custom class').toContain('custom-title-class');
 
     const description = screen.getByTestId('custom-desc');
-    assert.ok(
-      description.className.includes('custom-desc-class'),
-      'Description should have custom class',
+    expect(description.className, 'Description should have custom class').toContain(
+      'custom-desc-class',
     );
   });
 
@@ -298,7 +291,7 @@ describe('Dialog Components', () => {
     );
 
     const dialogContent = screen.getByTestId('dialog-content');
-    assert.ok(dialogContent, 'Dialog content should be rendered');
+    expect(dialogContent, 'Dialog content should be rendered').toBeTruthy();
   });
 
   it('applies a custom className to DialogHeader', () => {
@@ -315,7 +308,7 @@ describe('Dialog Components', () => {
     );
 
     const dialogHeader = screen.getByTestId('dialog-header');
-    assert.ok(dialogHeader.className.includes('custom-header-class'), 'Should have custom class');
+    expect(dialogHeader.className, 'Should have custom class').toContain('custom-header-class');
   });
 
   it('applies a custom className to DialogFooter', () => {
@@ -332,7 +325,7 @@ describe('Dialog Components', () => {
     );
 
     const dialogFooter = screen.getByTestId('dialog-footer');
-    assert.ok(dialogFooter.className.includes('custom-footer-class'), 'Should have custom class');
+    expect(dialogFooter.className, 'Should have custom class').toContain('custom-footer-class');
   });
 
   it('renders DialogTitle with correct HTML structure and styling', () => {
@@ -346,11 +339,11 @@ describe('Dialog Components', () => {
     );
 
     const dialogTitle = screen.getByTestId('dialog-title');
-    assert.equal(dialogTitle.textContent, 'Test Title', 'Should render title text');
-    assert.ok(
+    expect(dialogTitle.textContent, 'Should render title text').toBe('Test Title');
+    expect(
       dialogTitle.className.includes('text-xl') && dialogTitle.className.includes('font-semibold'),
       'Should have default styling',
-    );
+    ).toBeTruthy();
   });
 
   it('renders DialogDescription with correct HTML structure and styling', () => {
@@ -364,14 +357,11 @@ describe('Dialog Components', () => {
     );
 
     const dialogDescription = screen.getByTestId('dialog-description');
-    assert.equal(
-      dialogDescription.textContent,
+    expect(dialogDescription.textContent, 'Should render description text').toBe(
       'Test Description',
-      'Should render description text',
     );
-    assert.ok(
-      dialogDescription.className.includes('text-muted-foreground'),
-      'Should have default styling',
+    expect(dialogDescription.className, 'Should have default styling').toContain(
+      'text-muted-foreground',
     );
   });
 
@@ -388,7 +378,7 @@ describe('Dialog Components', () => {
     );
 
     const dialogTitle = screen.getByTestId('dialog-title');
-    assert.ok(dialogTitle.className.includes('custom-title-class'), 'Should have custom class');
+    expect(dialogTitle.className, 'Should have custom class').toContain('custom-title-class');
   });
 
   it('applies a custom className to DialogDescription', () => {
@@ -404,9 +394,8 @@ describe('Dialog Components', () => {
     );
 
     const dialogDescription = screen.getByTestId('dialog-description');
-    assert.ok(
-      dialogDescription.className.includes('custom-description-class'),
-      'Should have custom class',
+    expect(dialogDescription.className, 'Should have custom class').toContain(
+      'custom-description-class',
     );
   });
 
@@ -429,24 +418,27 @@ describe('Dialog Components', () => {
     );
 
     // Verify that all components render
-    assert.ok(screen.getByTestId('dialog-content'), 'Dialog content should be rendered');
-    assert.ok(screen.getByTestId('dialog-header'), 'Dialog header should be rendered');
-    assert.ok(screen.getByTestId('dialog-title'), 'Dialog title should be rendered');
-    assert.ok(screen.getByTestId('dialog-description'), 'Dialog description should be rendered');
-    assert.ok(screen.getByTestId('dialog-footer'), 'Dialog footer should be rendered');
+    expect(screen.getByTestId('dialog-content'), 'Dialog content should be rendered').toBeTruthy();
+    expect(screen.getByTestId('dialog-header'), 'Dialog header should be rendered').toBeTruthy();
+    expect(screen.getByTestId('dialog-title'), 'Dialog title should be rendered').toBeTruthy();
+    expect(
+      screen.getByTestId('dialog-description'),
+      'Dialog description should be rendered',
+    ).toBeTruthy();
+    expect(screen.getByTestId('dialog-footer'), 'Dialog footer should be rendered').toBeTruthy();
 
     // Check the structure is correct
     const dialogContent = screen.getByTestId('dialog-content');
     const dialogHeader = screen.getByTestId('dialog-header');
     const dialogFooter = screen.getByTestId('dialog-footer');
 
-    assert.ok(
+    expect(
       dialogHeader.parentNode === dialogContent,
       'Header should be a direct child of content',
-    );
-    assert.ok(
+    ).toBeTruthy();
+    expect(
       dialogFooter.parentNode === dialogContent,
       'Footer should be a direct child of content',
-    );
+    ).toBeTruthy();
   });
 });

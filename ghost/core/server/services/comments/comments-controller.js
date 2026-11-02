@@ -1,4 +1,3 @@
-const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const nql = require('@tryghost/nql');
 const { splitFilter } = require('@tryghost/mongo-utils');
@@ -229,20 +228,21 @@ module.exports = class CommentsController {
    * @param {Frame} frame
    */
   async replies(frame) {
-    return this.service.getReplies(frame.options.id, _.omit(frame.options, 'id'));
+    const { id, ...options } = frame.options;
+
+    return this.service.getReplies(id, options);
   }
 
   /**
    * @param {Frame} frame
    */
   async adminReplies(frame) {
-    let options = {
+    const { id, ...options } = await this.#withImpersonationContext({
       ...frame.options,
       order: 'created_at asc', // we always want to load replies from oldest to newest
-    };
-    options = await this.#withImpersonationContext(options);
+    });
 
-    return this.service.getAdminReplies(frame.options.id, _.omit(options, 'id'));
+    return this.service.getAdminReplies(id, options);
   }
 
   /**

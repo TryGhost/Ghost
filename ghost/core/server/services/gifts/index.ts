@@ -44,8 +44,14 @@ export function init(options: GiftServiceInitOptions): void {
   } = require('../../models');
   const GiftCheckoutAdapter = require('./gift-checkout-adapter');
   const membersService = require('../members');
-  const tiersService = require('../tiers');
-  const staffService = require('../staff');
+  const tiers = require('../tiers').default;
+  // Boot builds gifts before tiers initializes, so gifts read the tiers API when they use it.
+  const tiersService = {
+    get api() {
+      return tiers.service.api;
+    },
+  };
+  const staffService = require('../staff').default;
   const DomainEvents = require('@tryghost/domain-events');
   const logging = require('@tryghost/logging');
   const { SubscriptionActivatedEvent } = require('../../../shared/events');
@@ -133,7 +139,7 @@ export function init(options: GiftServiceInitOptions): void {
     tiersService,
     giftEmailService,
     get staffServiceEmails() {
-      return staffService.api.emails;
+      return staffService.service.emails;
     },
     giftReminderScheduler,
     checkoutAdapter,

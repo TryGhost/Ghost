@@ -1,4 +1,3 @@
-import * as assert from 'node:assert/strict';
 import { JSONError } from '@tryghost/admin-x-framework/errors';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { useWelcomeEmailPreview } from '@/settings/membership/member-emails/use-welcome-email-preview';
@@ -60,10 +59,10 @@ describe('useWelcomeEmailPreview', function () {
       void result.current.enterPreview({ subject: '   ', lexical: '' });
     });
 
-    assert.equal(previewWelcomeEmail.mock.calls.length, 0);
-    assert.equal(result.current.previewState.status, 'invalid');
-    assert.equal(result.current.previewState.message, 'A subject is required');
-    assert.deepEqual(setErrors.mock.calls[0][0], {
+    expect(previewWelcomeEmail.mock.calls.length).toBe(0);
+    expect(result.current.previewState.status).toBe('invalid');
+    expect(result.current.previewState).toHaveProperty('message', 'A subject is required');
+    expect(setErrors.mock.calls[0][0]).toStrictEqual({
       subject: 'A subject is required',
       lexical: 'Email content is required',
     });
@@ -107,8 +106,8 @@ describe('useWelcomeEmailPreview', function () {
     });
 
     await waitFor(() => {
-      assert.equal(result.current.previewState.status, 'success');
-      assert.equal(result.current.previewState.preview.subject, 'Second subject');
+      expect(result.current.previewState.status).toBe('success');
+      expect(result.current.previewState).toHaveProperty('preview.subject', 'Second subject');
     });
 
     await act(async () => {
@@ -125,8 +124,8 @@ describe('useWelcomeEmailPreview', function () {
     });
 
     await waitFor(() => {
-      assert.equal(result.current.previewState.status, 'success');
-      assert.equal(result.current.previewState.preview.subject, 'Second subject');
+      expect(result.current.previewState.status).toBe('success');
+      expect(result.current.previewState).toHaveProperty('preview.subject', 'Second subject');
     });
   });
 
@@ -164,8 +163,8 @@ describe('useWelcomeEmailPreview', function () {
     });
 
     await waitFor(() => {
-      assert.equal(result.current.previewState.status, 'error');
-      assert.equal(result.current.previewState.message, 'Preview failed on the server');
+      expect(result.current.previewState.status).toBe('error');
+      expect(result.current.previewState).toHaveProperty('message', 'Preview failed on the server');
     });
   });
 
@@ -192,10 +191,16 @@ describe('useWelcomeEmailPreview', function () {
     });
 
     await waitFor(() => {
-      assert.equal(result.current.previewState.status, 'success');
-      assert.equal(result.current.previewState.preview.subject, 'Preview subject');
-      assert.match(result.current.previewState.preview.html, /target="_blank"/);
-      assert.match(result.current.previewState.preview.html, /rel="noopener noreferrer"/);
+      expect(result.current.previewState.status).toBe('success');
+      expect(result.current.previewState).toHaveProperty('preview.subject', 'Preview subject');
+      expect(result.current.previewState).toHaveProperty(
+        'preview.html',
+        expect.stringMatching(/target="_blank"/),
+      );
+      expect(result.current.previewState).toHaveProperty(
+        'preview.html',
+        expect.stringMatching(/rel="noopener noreferrer"/),
+      );
     });
   });
 });

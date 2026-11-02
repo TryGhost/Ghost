@@ -825,7 +825,7 @@ describe('StripeAPI', function () {
           },
         },
       };
-      sinon.stub(mockLabs, 'isSet');
+      mockLabsIsSet = sinon.stub(mockLabs, 'isSet');
       sinon.stub(stripe, 'Stripe').returns(mockStripe);
       api.configure({
         checkoutSessionSuccessUrl: '/success',

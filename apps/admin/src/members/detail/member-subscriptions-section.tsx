@@ -20,7 +20,7 @@ import type { SubscriptionKind } from './member-subscription';
 
 const formatPriceBlockAmount = (amount: number) => {
   const value = amount / 100;
-  // Match Ember: whole = no decimals, fractional = 2 decimals with locale separators.
+  // Whole = no decimals, fractional = 2 decimals with locale separators.
   return value.toLocaleString(
     undefined,
     value % 1 === 0 ? undefined : { minimumFractionDigits: 2, maximumFractionDigits: 2 },
@@ -153,7 +153,7 @@ const SubscriptionRow: React.FC<{
           {showDetails && <SubscriptionDetails sub={sub} />}
         </div>
       </div>
-      {/* Gift subs get no action menu (Ember parity). Comp subs get their
+      {/* Gift subs get no action menu. Comp subs get their
                 own menu with Remove complimentary; paid subs get Cancel/Continue +
                 Stripe links. */}
       {kind === 'paid' && <MemberSubscriptionActions memberId={member.id} subscription={sub} />}
@@ -165,10 +165,8 @@ const SubscriptionRow: React.FC<{
 };
 
 interface MemberSubscriptionsSectionProps {
-  // Optional so the create screen (/members/new) can render the empty state
-  // without a saved member yet — matches Ember, which renders the section
-  // + "No subscriptions" empty box on the New member screen when
-  // `paidMembersEnabled` (`gh-member-settings-form.hbs:82-92`).
+  // Optional so the create screen (/members/new) can render the
+  // "No subscriptions" empty state without a saved member yet.
   member?: Member;
   // True when there is at least one active paid tier the member could be
   // granted a comp on. Caller (`member-detail.tsx`) fetches tiers and computes.
@@ -178,11 +176,11 @@ interface MemberSubscriptionsSectionProps {
 /**
  * Read-only subscriptions block for the member-detail screen. Groups the member's
  * subscriptions by tier so a member with multiple subs to the same tier renders
- * under one heading (matches Ember). When there is nothing to show, nothing
+ * under one heading. When there is nothing to show, nothing
  * renders — the empty-state + "add complimentary" UI is Phase 6.
  *
  * The section heading sits **outside** the card (rendered by the parent) so the
- * card contents flow edge-to-edge without a nested header, matching Ember.
+ * card contents flow edge-to-edge without a nested header.
  */
 const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
   member,
@@ -191,8 +189,7 @@ const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
   const [showAddComp, setShowAddComp] = React.useState(false);
 
   // Create mode: no saved member yet, no subscriptions to enumerate, no
-  // add-comp affordance (Ember's `isAddComplimentaryAllowed` short-circuits
-  // on `isNew`). Render the empty state only. Early-returning here also
+  // add-comp affordance. Render the empty state only. Early-returning here also
   // narrows `member` to `Member` for the rest of the function so the
   // SubscriptionRow / MemberAddCompModal props type-check without a cast.
   if (!member) {
@@ -213,14 +210,12 @@ const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
   const groups = groupSubscriptionsByTier(subscriptions);
   const hasSubscriptions = groups.length > 0;
 
-  // Ember's `isAddComplimentaryAllowed`: paidMembersEnabled + not new + no
-  // tiers yet + at least one active paid tier exists. The isNew and
-  // paidMembersEnabled halves are covered by the guards above; combine the
-  // remaining conditions here.
+  // Adding a comp needs paidMembersEnabled + not new + no tiers yet + at least
+  // one active paid tier. The isNew and paidMembersEnabled halves are covered by
+  // the guards above; combine the remaining conditions here.
   const isAddCompAllowed = canAddComp && (member.tiers?.length ?? 0) === 0;
 
-  // The Add-complimentary button appears in TWO places, matching Ember exactly
-  // (`gh-member-settings-form.hbs:82-111,279-293`):
+  // The Add-complimentary button appears in TWO places:
   //   - As the empty-state affordance when there are no subs at all.
   //   - As a footer under existing subs when the member has active paid subs but
   //     no comp tier yet — that's the "cancel Stripe and comp on top" flow.
@@ -264,10 +259,7 @@ const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
             </>
           ) : (
             // EmptyIndicator (Shade) is the canonical "no
-            // items yet" box — mirrors Ember's
-            // `gh-members-no-subs` block (icon + heading)
-            // with the design-system's own icon/heading
-            // treatment.
+            // items yet" box.
             <div className="flex flex-col items-center gap-3 py-4">
               <EmptyIndicator title="No subscriptions">
                 <LucideIcon.CreditCard />

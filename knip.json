@@ -23,24 +23,15 @@
     "apps/activitypub": {
       "ignoreDependencies": ["tailwindcss"]
     },
-    "apps/admin": {
-      "ignoreDependencies": ["@tryghost/kg-unsplash-selector"]
-    },
     "apps/admin-x-framework": {
-      "ignoreDependencies": [
-        "@playwright/test",
-        "@tryghost/koenig-lexical",
-        "vite-plugin-css-injected-by-js"
-      ],
+      "ignoreDependencies": ["@playwright/test"],
       "entry": [
         "src/index.ts",
         "src/errors.ts",
         "src/helpers.ts",
         "src/hooks.ts",
-        "src/routing.ts",
         "src/api/*.ts",
         "src/utils/post-utils.ts",
-        "src/utils/nql.ts",
         "src/utils/get-site-timezone.ts",
         "src/vite.ts",
         "src/playwright.ts",

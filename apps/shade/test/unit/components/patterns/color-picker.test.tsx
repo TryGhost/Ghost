@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { beforeAll, describe, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 import ColorPicker, {
   ColorPickerFormat,
@@ -29,11 +28,11 @@ describe('ColorPicker Component', () => {
     // Regression: zero-value HSL components (e.g. lightness=0 for black)
     // were treated as falsy, causing the picker to fall back to defaults
     it('reflects black (#000000)', () => {
-      assert.equal(renderWithColor('#000000'), '#000000');
+      expect(renderWithColor('#000000')).toBe('#000000');
     });
 
     it('reflects grey (#808080)', () => {
-      assert.equal(renderWithColor('#808080'), '#808080');
+      expect(renderWithColor('#808080')).toBe('#808080');
     });
   });
 
@@ -68,10 +67,10 @@ describe('ColorPicker Component', () => {
 
       fireEvent.pointerDown(gradient, { clientX: 100, clientY: 100 });
 
-      assert.ok(
+      expect(
         handleChange.mock.calls.length > callsBefore,
         'Color should change after clicking the gradient',
-      );
+      ).toBeTruthy();
     });
 
     it('clicking top-left corner produces white', () => {
@@ -80,7 +79,7 @@ describe('ColorPicker Component', () => {
       fireEvent.pointerDown(gradient, { clientX: 0, clientY: 0 });
 
       const lastCall = handleChange.mock.calls[handleChange.mock.calls.length - 1];
-      assert.equal(lastCall[0].toUpperCase(), '#FFFFFF');
+      expect(lastCall[0].toUpperCase()).toBe('#FFFFFF');
     });
 
     it('clicking bottom-left corner produces black', () => {
@@ -89,7 +88,7 @@ describe('ColorPicker Component', () => {
       fireEvent.pointerDown(gradient, { clientX: 0, clientY: 200 });
 
       const lastCall = handleChange.mock.calls[handleChange.mock.calls.length - 1];
-      assert.equal(lastCall[0].toUpperCase(), '#000000');
+      expect(lastCall[0].toUpperCase()).toBe('#000000');
     });
 
     it('tracks one pointer throughout a drag and stops after release', () => {
@@ -100,11 +99,11 @@ describe('ColorPicker Component', () => {
       const dragCall = handleChange.mock.calls[handleChange.mock.calls.length - 1];
 
       fireEvent.pointerMove(gradient, { clientX: 40, clientY: 180, pointerId: 2 });
-      assert.deepEqual(handleChange.mock.calls[handleChange.mock.calls.length - 1], dragCall);
+      expect(handleChange.mock.calls[handleChange.mock.calls.length - 1]).toStrictEqual(dragCall);
 
       fireEvent.pointerUp(gradient, { pointerId: 1 });
       fireEvent.pointerMove(gradient, { clientX: 100, clientY: 100, pointerId: 1 });
-      assert.deepEqual(handleChange.mock.calls[handleChange.mock.calls.length - 1], dragCall);
+      expect(handleChange.mock.calls[handleChange.mock.calls.length - 1]).toStrictEqual(dragCall);
     });
   });
 
@@ -112,7 +111,7 @@ describe('ColorPicker Component', () => {
     it('displays the current color', () => {
       render(<ColorPicker defaultValue="#FF0000" />);
 
-      assert.ok(screen.getByDisplayValue('#FF0000'));
+      expect(screen.getByDisplayValue('#FF0000')).toBeTruthy();
     });
 
     it('updates color when a valid hex is entered', () => {
@@ -127,7 +126,7 @@ describe('ColorPicker Component', () => {
       fireEvent.change(input, { target: { value: '#00FF00' } });
 
       const lastCall = handleChange.mock.calls[handleChange.mock.calls.length - 1];
-      assert.equal(lastCall[0].toUpperCase(), '#00FF00');
+      expect(lastCall[0].toUpperCase()).toBe('#00FF00');
     });
 
     it('ignores invalid hex input', () => {
@@ -142,7 +141,7 @@ describe('ColorPicker Component', () => {
       const input = screen.getByDisplayValue('#FF0000');
       fireEvent.change(input, { target: { value: 'not-a-color' } });
 
-      assert.equal(handleChange.mock.calls.length, callsBefore);
+      expect(handleChange.mock.calls.length).toBe(callsBefore);
     });
   });
 
@@ -162,7 +161,7 @@ describe('ColorPicker Component', () => {
       );
 
       const lastCall = handleChange.mock.calls[handleChange.mock.calls.length - 1];
-      assert.equal(lastCall[0].toUpperCase(), '#00FF00');
+      expect(lastCall[0].toUpperCase()).toBe('#00FF00');
     });
   });
 });

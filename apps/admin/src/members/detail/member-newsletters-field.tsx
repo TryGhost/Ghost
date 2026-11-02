@@ -12,9 +12,8 @@ import type { Member } from '@tryghost/admin-x-framework/api/members';
 
 interface MemberNewslettersFieldProps {
   // Optional so the create screen (/members/new) can render the toggles
-  // without a saved member yet — matches Ember, which shows the newsletter
-  // preferences on new members (`gh-member-settings-form.hbs:74-80`).
-  // Suppression logic is skipped when the member doesn't exist.
+  // without a saved member yet. Suppression logic is skipped when the member
+  // doesn't exist.
   memberId?: string;
   emailSuppression?: Member['email_suppression'];
   subscribedIds: string[];
@@ -34,7 +33,7 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
   const suppression = memberId ? getMemberSuppressionInfo(emailSuppression) : null;
   const removeSuppression = useRemoveMemberEmailSuppression();
 
-  // Ember only shows active newsletters; archived ones are managed elsewhere and
+  // Only active newsletters are shown; archived ones are managed elsewhere and
   // must not be flipped through this UI. If a member is subscribed to an archived
   // newsletter, the server keeps it silently (`member-repository.js:791-798`).
   // TODO: pagination — `useBrowseNewsletters` is an infinite query but this field

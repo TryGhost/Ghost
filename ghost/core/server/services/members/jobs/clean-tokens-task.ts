@@ -1,10 +1,11 @@
 import type { Knex } from 'knex';
+import type { GhostLogger } from '@tryghost/logging';
 
 const moment = require('moment');
 
 interface CleanTokensDeps {
   db: { knex: Knex };
-  logging: { info(...args: unknown[]): void };
+  logging: Pick<GhostLogger, 'info'>;
 }
 
 async function cleanTokens({ db, logging }: CleanTokensDeps): Promise<number> {

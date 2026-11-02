@@ -21,13 +21,11 @@ interface MemberLogoutModalProps {
 }
 
 /**
- * Confirms the "Sign out of all devices" action. Ember parity:
- *   - Destructive intent — same red confirm button, plain "Sign out" label.
+ * Confirms the "Sign out of all devices" action:
+ *   - Destructive intent — red confirm button, plain "Sign out" label.
  *   - Success toast reads "<name-or-email> has been signed out from all devices."
- *     (Ember `logout-member.js:22`.)
  *   - We use a Shade AlertDialog (not Dialog) because there's no form state to
- *     manage and AlertDialog's stricter dismissal behaviour (no click-outside
- *     dismiss) matches Ember's destructive-modal semantics.
+ *     manage and a destructive confirm shouldn't dismiss on click-outside.
  */
 const MemberLogoutModal: React.FC<MemberLogoutModalProps> = ({ open, onOpenChange, member }) => {
   const logout = useMemberLogout();
@@ -48,7 +46,7 @@ const MemberLogoutModal: React.FC<MemberLogoutModalProps> = ({ open, onOpenChang
       open={open}
       onOpenChange={(next) => {
         // Block dismissal mid-request so the mutation always resolves before
-        // the modal closes — matches the `drop` semantics on Ember's task.
+        // the modal closes.
         if (logout.isPending) {
           return;
         }

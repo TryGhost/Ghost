@@ -4,7 +4,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const { lockAutomationLimit } = require('../../services/automations/automation-limit');
-const memberWelcomeEmailService = require('../../services/member-welcome-emails/service');
+const memberWelcomeEmails = require('../../services/member-welcome-emails').default;
 const emailAddressService = require('../../services/email-address');
 const {
   DEFAULT_EMAIL_DESIGN_SETTING_SLUG,
@@ -325,9 +325,8 @@ const controller = {
       method: 'edit',
     },
     async query(frame) {
-      memberWelcomeEmailService.init();
       const data = frame.data;
-      const result = await memberWelcomeEmailService.api.editSharedSenderOptions({
+      const result = await memberWelcomeEmails.service.editSharedSenderOptions({
         sender_name: data.sender_name,
         sender_email: data.sender_email,
         sender_reply_to: data.sender_reply_to,
@@ -351,10 +350,7 @@ const controller = {
     },
     data: ['token'],
     async query(frame) {
-      memberWelcomeEmailService.init();
-      const result = await memberWelcomeEmailService.api.verifySenderPropertyUpdate(
-        frame.data.token,
-      );
+      const result = await memberWelcomeEmails.service.verifySenderPropertyUpdate(frame.data.token);
       const defaultDesignSettings = await getDefaultEmailDesignSettings();
       return {
         ...result,
@@ -381,8 +377,7 @@ const controller = {
       method: 'edit',
     },
     async query(frame) {
-      memberWelcomeEmailService.init();
-      return await memberWelcomeEmailService.api.previewEmail({
+      return await memberWelcomeEmails.service.previewEmail({
         subject: frame.data.subject,
         lexical: frame.data.lexical,
         automatedEmailId: frame.options.id,
@@ -407,8 +402,7 @@ const controller = {
       method: 'edit',
     },
     async query(frame) {
-      memberWelcomeEmailService.init();
-      await memberWelcomeEmailService.api.sendTestEmail({
+      await memberWelcomeEmails.service.sendTestEmail({
         email: frame.data.email,
         subject: frame.data.subject,
         lexical: frame.data.lexical,

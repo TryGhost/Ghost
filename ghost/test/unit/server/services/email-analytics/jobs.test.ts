@@ -7,6 +7,7 @@ import EmailAnalyticsFetchLatestJob from '../../../../../core/server/services/em
 import { EmailAnalyticsJobScheduler } from '../../../../../core/server/services/email-analytics/jobs/email-analytics-job-scheduler';
 import { JobsService } from '../../../../../core/server/services/jobs-service/jobs-service';
 import InMemoryJobsBackend from '../../../../../core/server/adapters/jobs/InMemoryJobsBackend';
+import { createLoggingFake } from '../../../../utils/logging-utils';
 
 const registerJobHandlers =
   require('../../../../../core/server/services/jobs-service/register-job-handlers').default;
@@ -80,7 +81,7 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
 
   it('admits an overlapping tick while a sibling queue progresses', async function () {
     const backend = new InMemoryJobsBackend();
-    const jobsService = new JobsService({ backend, logging: { info() {}, error() {} } });
+    const jobsService = new JobsService({ backend, logging: createLoggingFake() });
     const siblingPipeline = pipelines.find((pipeline) => pipeline.wrapperName !== wrapperName)!;
     let release!: () => void;
     const wrapper = {
@@ -136,7 +137,7 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
     vi.stubEnv('NODE_ENV', 'production');
     const backend = new InMemoryJobsBackend();
     const enqueue = sinon.spy(backend, 'enqueue');
-    const jobsService = new JobsService({ backend, logging: { info() {}, error() {} } });
+    const jobsService = new JobsService({ backend, logging: createLoggingFake() });
     const newsletters = { startFetch: sinon.stub().resolves() };
     registerJobHandlers({ jobsService, [wrapperName]: newsletters });
     const scheduler = new EmailAnalyticsJobScheduler({

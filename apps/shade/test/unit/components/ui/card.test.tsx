@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 import {
   Card,
@@ -17,11 +16,10 @@ describe('Card Components', () => {
     render(<Card data-testid="card">Card Content</Card>);
     const card = screen.getByTestId('card');
 
-    assert.ok(card, 'Card should be rendered');
-    assert.equal(card.textContent, 'Card Content', 'Card should render its content');
-    assert.ok(
-      card.className.includes('rounded-xl border border-border-default'),
-      'Should have outline variant styling',
+    expect(card, 'Card should be rendered').toBeTruthy();
+    expect(card.textContent, 'Card should render its content').toBe('Card Content');
+    expect(card.className, 'Should have outline variant styling').toContain(
+      'rounded-xl border border-border-default',
     );
   });
 
@@ -33,10 +31,9 @@ describe('Card Components', () => {
     );
     const card = screen.getByTestId('card');
 
-    assert.ok(card, 'Card should be rendered');
-    assert.ok(
-      !card.className.includes('rounded-xl border'),
-      'Should not have outline variant styling',
+    expect(card, 'Card should be rendered').toBeTruthy();
+    expect(card.className, 'Should not have outline variant styling').not.toContain(
+      'rounded-xl border',
     );
   });
 
@@ -48,16 +45,15 @@ describe('Card Components', () => {
     );
     const card = screen.getByTestId('card');
 
-    assert.ok(card.className.includes('custom-card-class'), 'Should have custom class');
+    expect(card.className, 'Should have custom class').toContain('custom-card-class');
   });
 
   it('renders EmptyCard with the default container border', () => {
     render(<EmptyCard data-testid="empty-card">Empty Card</EmptyCard>);
 
     const card = screen.getByTestId('empty-card');
-    assert.ok(
-      card.className.includes('border border-border-default'),
-      'Should use the default container border',
+    expect(card.className, 'Should use the default container border').toContain(
+      'border border-border-default',
     );
   });
 
@@ -69,9 +65,9 @@ describe('Card Components', () => {
     );
 
     const header = screen.getByTestId('card-header');
-    assert.ok(header, 'CardHeader should be rendered');
-    assert.equal(header.textContent, 'Header Content', 'CardHeader should render its content');
-    assert.ok(header.className.includes('p-6'), 'Header should have appropriate padding');
+    expect(header, 'CardHeader should be rendered').toBeTruthy();
+    expect(header.textContent, 'CardHeader should render its content').toBe('Header Content');
+    expect(header.className, 'Header should have appropriate padding').toContain('p-6');
   });
 
   it('renders CardHeader with plain variant styling', () => {
@@ -82,9 +78,8 @@ describe('Card Components', () => {
     );
 
     const header = screen.getByTestId('card-header');
-    assert.ok(
-      header.className.includes('border-b border-border-default py-5'),
-      'Should have plain variant styling',
+    expect(header.className, 'Should have plain variant styling').toContain(
+      'border-b border-border-default py-5',
     );
   });
 
@@ -92,25 +87,20 @@ describe('Card Components', () => {
     render(<CardTitle data-testid="card-title">Card Title</CardTitle>);
 
     const title = screen.getByTestId('card-title');
-    assert.ok(title, 'CardTitle should be rendered');
-    assert.equal(title.textContent, 'Card Title', 'CardTitle should render its content');
-    assert.ok(title.className.includes('font-semibold'), 'Should have correct styling');
+    expect(title, 'CardTitle should be rendered').toBeTruthy();
+    expect(title.textContent, 'CardTitle should render its content').toBe('Card Title');
+    expect(title.className, 'Should have correct styling').toContain('font-semibold');
   });
 
   it('renders CardDescription with correct styling', () => {
     render(<CardDescription data-testid="card-description">Card Description</CardDescription>);
 
     const description = screen.getByTestId('card-description');
-    assert.ok(description, 'CardDescription should be rendered');
-    assert.equal(
-      description.textContent,
+    expect(description, 'CardDescription should be rendered').toBeTruthy();
+    expect(description.textContent, 'CardDescription should render its content').toBe(
       'Card Description',
-      'CardDescription should render its content',
     );
-    assert.ok(
-      description.className.includes('text-muted-foreground'),
-      'Should have correct styling',
-    );
+    expect(description.className, 'Should have correct styling').toContain('text-muted-foreground');
   });
 
   it('renders CardContent with correct styling based on Card variant', () => {
@@ -121,9 +111,9 @@ describe('Card Components', () => {
     );
 
     const content = screen.getByTestId('card-content');
-    assert.ok(content, 'CardContent should be rendered');
-    assert.equal(content.textContent, 'Content', 'CardContent should render its content');
-    assert.ok(content.className.includes('p-6 pt-0'), 'Should have outline variant styling');
+    expect(content, 'CardContent should be rendered').toBeTruthy();
+    expect(content.textContent, 'CardContent should render its content').toBe('Content');
+    expect(content.className, 'Should have outline variant styling').toContain('p-6 pt-0');
   });
 
   it('renders CardContent with plain variant styling', () => {
@@ -134,9 +124,8 @@ describe('Card Components', () => {
     );
 
     const content = screen.getByTestId('card-content');
-    assert.ok(
-      content.className.includes('border-b border-border-default'),
-      'Should have plain variant styling',
+    expect(content.className, 'Should have plain variant styling').toContain(
+      'border-b border-border-default',
     );
   });
 
@@ -148,9 +137,9 @@ describe('Card Components', () => {
     );
 
     const footer = screen.getByTestId('card-footer');
-    assert.ok(footer, 'CardFooter should be rendered');
-    assert.equal(footer.textContent, 'Footer Content', 'CardFooter should render its content');
-    assert.ok(footer.className.includes('p-6 pt-0'), 'Should have outline variant styling');
+    expect(footer, 'CardFooter should be rendered').toBeTruthy();
+    expect(footer.textContent, 'CardFooter should render its content').toBe('Footer Content');
+    expect(footer.className, 'Should have outline variant styling').toContain('p-6 pt-0');
   });
 
   it('renders CardFooter with plain variant styling', () => {
@@ -161,7 +150,7 @@ describe('Card Components', () => {
     );
 
     const footer = screen.getByTestId('card-footer');
-    assert.ok(footer.className.includes('py-5'), 'Should have plain variant styling');
+    expect(footer.className, 'Should have plain variant styling').toContain('py-5');
   });
 
   it('renders a complete Card with all subcomponents', () => {
@@ -176,11 +165,14 @@ describe('Card Components', () => {
       </Card>,
     );
 
-    assert.ok(screen.getByTestId('card'), 'Card should be rendered');
-    assert.ok(screen.getByTestId('card-header'), 'CardHeader should be rendered');
-    assert.ok(screen.getByTestId('card-title'), 'CardTitle should be rendered');
-    assert.ok(screen.getByTestId('card-description'), 'CardDescription should be rendered');
-    assert.ok(screen.getByTestId('card-content'), 'CardContent should be rendered');
-    assert.ok(screen.getByTestId('card-footer'), 'CardFooter should be rendered');
+    expect(screen.getByTestId('card'), 'Card should be rendered').toBeTruthy();
+    expect(screen.getByTestId('card-header'), 'CardHeader should be rendered').toBeTruthy();
+    expect(screen.getByTestId('card-title'), 'CardTitle should be rendered').toBeTruthy();
+    expect(
+      screen.getByTestId('card-description'),
+      'CardDescription should be rendered',
+    ).toBeTruthy();
+    expect(screen.getByTestId('card-content'), 'CardContent should be rendered').toBeTruthy();
+    expect(screen.getByTestId('card-footer'), 'CardFooter should be rendered').toBeTruthy();
   });
 });
