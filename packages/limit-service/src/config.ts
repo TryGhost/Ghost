@@ -1,3 +1,4 @@
+import errors from '@tryghost/errors';
 import type { Knex, LimitConfig } from './types.ts';
 
 // NOTE: to support a new config in the limit service add an empty key-object pair in the export below.
@@ -58,6 +59,39 @@ const config: Record<string, LimitConfig> = {
                 ]);
 
             return result.length;
+        }
+    },
+    allStaff: {
+        currentCountQuery: async (knex: Knex) => {
+            // Read both counts in one statement so acceptance cannot move a seat between reads.
+            const result = await knex('users').select({
+                invites: knex('invites').count('id', {as: 'count'})
+            }).count('id', {as: 'users'}).first();
+            return Number(result.users) + Number(result.invites);
+        }
+    },
+    inviteEmails: {
+        currentCountQuery: async (knex: Knex, periodStart?: string) => {
+            const setting = await knex('settings').select('value')
+                .where('key', 'staff_invitation_emails').first();
+            if (!setting) {
+                throw new errors.IncorrectUsageError({message: 'Missing staff invitation email counter.'});
+            }
+            // A newly installed counter starts with a fresh allowance.
+            if (setting.value === null) {
+                return 0;
+            }
+            const counter = JSON.parse(setting.value);
+            const validCount = Number.isSafeInteger(counter?.count) && counter.count >= 0;
+            const validPeriodStart = counter?.periodStart === null ||
+                (typeof counter?.periodStart === 'string' && Number.isFinite(Date.parse(counter.periodStart)));
+            if (!validCount || !validPeriodStart) {
+                throw new errors.IncorrectUsageError({message: 'Invalid staff invitation email counter.'});
+            }
+            if (counter.periodStart !== (periodStart ?? null)) {
+                return 0;
+            }
+            return counter.count;
         }
     },
     customIntegrations: {},
