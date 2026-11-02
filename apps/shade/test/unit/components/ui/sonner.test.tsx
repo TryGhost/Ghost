@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { afterEach, describe, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { act, render, screen } from '../../utils/test-utils';
 import { ShadeApp } from '../../../../src/app';
 import { toast } from '../../../../src/components';
@@ -12,9 +11,9 @@ describe('toast', () => {
   });
 
   it('is exported from the components entry', () => {
-    assert.equal(typeof toast, 'function');
-    assert.equal(typeof toast.success, 'function');
-    assert.equal(typeof toast.error, 'function');
+    expect(toast).toBeTypeOf('function');
+    expect(toast.success).toBeTypeOf('function');
+    expect(toast.error).toBeTypeOf('function');
   });
 
   it("shows toasts in ShadeApp's toaster", async () => {
@@ -32,7 +31,7 @@ describe('toast', () => {
       toast.error('Could not save');
     });
 
-    assert.ok(await screen.findByText('Saved the post'));
-    assert.ok(await screen.findByText('Could not save'));
+    expect(await screen.findByText('Saved the post')).toBeTruthy();
+    expect(await screen.findByText('Could not save')).toBeTruthy();
   });
 });
