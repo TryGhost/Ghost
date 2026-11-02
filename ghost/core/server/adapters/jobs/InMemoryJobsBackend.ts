@@ -1,10 +1,10 @@
 import errors from '@tryghost/errors';
-import ObjectID from 'bson-objectid';
 import fastq from 'fastq';
 import type { queueAsPromised } from 'fastq';
 import { JobsBackendBase } from '@tryghost/adapter-base-jobs';
 import type {
   JobProcessor,
+  JobSettlement,
   JobEnvelope,
   DispatchEnvelope,
   JobsStartOptions,
@@ -48,6 +48,12 @@ function delay(ms: number): Promise<void> {
   });
 }
 
+interface QueuedJob {
+  job: JobEnvelope;
+  // The id to report settlement under; recurring ticks have none
+  settleAs?: string;
+}
+
 interface RecurringTimer {
   clear(): void;
 }
@@ -59,9 +65,10 @@ interface RecurringTimer {
 // dropped.
 export default class InMemoryJobsBackend extends JobsBackendBase {
   private _processor: JobProcessor | null;
+  private _onSettled: JobsStartOptions['onSettled'];
   private _stopped: boolean;
   private _defaultConcurrency: number;
-  private _queues: Map<string, queueAsPromised<JobEnvelope>>;
+  private _queues: Map<string, queueAsPromised<QueuedJob>>;
   private _recurring: Map<string, RecurringTimer>;
 
   constructor(config: { concurrency?: unknown } = {}) {
@@ -73,11 +80,11 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
     this._recurring = new Map();
   }
 
-  private _makeQueue(concurrency: number): queueAsPromised<JobEnvelope> {
-    return fastq.promise((envelope: JobEnvelope) => this._deliver(envelope), concurrency);
+  private _makeQueue(concurrency: number): queueAsPromised<QueuedJob> {
+    return fastq.promise((queued: QueuedJob) => this._deliver(queued), concurrency);
   }
 
-  start({ processor, queues }: JobsStartOptions): void {
+  start({ processor, queues, onSettled }: JobsStartOptions): void {
     const declared = new Map<string, number>();
     for (const [name, { concurrency }] of Object.entries(queues ?? {})) {
       // A declaration the backend cannot satisfy must fail loudly here, never
@@ -93,6 +100,7 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
     // State only changes once every declaration is valid, so a rejected
     // start() never leaves a partially started backend that accepts work.
     this._processor = processor;
+    this._onSettled = onSettled;
     this._stopped = false;
     for (const [name, concurrency] of declared) {
       this._queues.set(name, this._makeQueue(concurrency));
@@ -100,6 +108,10 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
   }
 
   enqueue(id: string, envelope: DispatchEnvelope): void {
+    this._push(envelope, id);
+  }
+
+  private _push(envelope: DispatchEnvelope, settleAs?: string): void {
     if (this._stopped) {
       return;
     }
@@ -117,14 +129,29 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
       queue = this._makeQueue(this._defaultConcurrency);
       this._queues.set(name, queue);
     }
-    queue.push(job);
+    queue.push({ job, settleAs });
   }
 
-  private async _deliver(envelope: JobEnvelope): Promise<void> {
+  private async _deliver({ job, settleAs }: QueuedJob): Promise<void> {
+    let settlement: JobSettlement;
     try {
-      await this._processor!(envelope);
+      await this._processor!(job);
+      settlement = { status: 'completed' };
     } catch (err) {
-      logging.error(`Job "${envelope.type}" delivery failed`, err);
+      logging.error(`Job "${job.type}" delivery failed`, err);
+      // Nothing is retried, so a failure is final
+      settlement = { status: 'dead', error: err };
+    }
+    if (settleAs !== undefined) {
+      await this._settle(settleAs, job.type, settlement);
+    }
+  }
+
+  private async _settle(id: string, type: string, settlement: JobSettlement): Promise<void> {
+    try {
+      await this._onSettled?.(id, settlement);
+    } catch (err) {
+      logging.error(`Job "${type}" settled, but reporting it failed`, err);
     }
   }
 
@@ -149,7 +176,7 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
       // A throw inside a later timer callback would be an uncaughtException;
       // a recurring tick must never take the process down.
       try {
-        this.enqueue(new ObjectID().toHexString(), envelope);
+        this._push(envelope);
       } catch (err) {
         logging.error(`Recurring job "${job.type}" tick failed to enqueue`, err);
       }
@@ -186,5 +213,6 @@ export default class InMemoryJobsBackend extends JobsBackendBase {
     // abandoned in-flight deliveries against its concurrency limits.
     this._queues = new Map();
     this._processor = null;
+    this._onSettled = undefined;
   }
 }
