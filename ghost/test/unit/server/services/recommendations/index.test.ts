@@ -24,7 +24,7 @@ const mail = require('../../../../../core/server/lib/mail');
 const externalRequest = require('../../../../../core/server/lib/request-external');
 const oembedService = require('../../../../../core/server/services/oembed');
 const mentionsRoot = require('../../../../../core/server/services/mentions').default;
-const staff = require('../../../../../core/server/services/staff');
+const staff = require('../../../../../core/server/services/staff').default;
 const ROOT_PATH = require.resolve('../../../../../core/server/services/recommendations');
 
 type Root = (typeof import('../../../../../core/server/services/recommendations'))['default'];
@@ -367,15 +367,8 @@ describe('Recommendations service root', function () {
     ]);
     const renderHTML = sandbox.stub().resolves('<p>New recommendation</p>');
     const renderText = sandbox.stub().resolves('New recommendation');
-    // Staff publishes its API from its own init; the renderer reads it per email.
-    // Another file in this worker may already have initialized Staff, so replace
-    // the published API when it exists and define it otherwise.
-    const staffApi = { emails: { renderHTML, renderText } };
-    if (Object.hasOwn(staff, 'api')) {
-      sandbox.replace(staff, 'api', staffApi);
-    } else {
-      sandbox.define(staff, 'api', staffApi);
-    }
+    // The renderer reads the ready Staff service per email.
+    sandbox.stub(staff, 'service').get(() => ({ emails: { renderHTML, renderText } }));
     const send = sandbox.stub(mail.GhostMailer.prototype, 'send').resolves({});
     const getByUrl = sandbox
       .stub(root.service.controller.service.repository, 'getByUrl')

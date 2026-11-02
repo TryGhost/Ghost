@@ -13,6 +13,18 @@ const MilestoneCreatedEvent = require('../../../../../core/server/services/miles
 const DomainEvents = require('@tryghost/domain-events');
 
 const StaffService = require('../../../../../core/server/services/staff/staff-service');
+const { staffEmailTemplateFiles } = require('../../../../utils/staff-email-template-files');
+
+// The collaborators the root injects.
+const collaborators = {
+  events: {
+    MemberCreatedEvent,
+    SubscriptionActivatedEvent,
+    SubscriptionCancelledEvent,
+    MilestoneCreatedEvent,
+  },
+  templateFiles: staffEmailTemplateFiles,
+};
 
 function testCommonMailData({ mailStub, getEmailAlertUsersStub }) {
   sinon.assert.calledWith(
@@ -100,7 +112,7 @@ function testCommonPaidSubCancelMailData({ mailStub, getEmailAlertUsersStub }) {
 describe('StaffService', function () {
   describe('Constructor', function () {
     it("doesn't throw", function () {
-      new StaffService({});
+      new StaffService(collaborators);
     });
   });
 
@@ -168,6 +180,7 @@ describe('StaffService', function () {
         },
       ]);
       service = new StaffService({
+        ...collaborators,
         logging: {
           warn: loggingWarningStub,
           error: () => {},
@@ -207,6 +220,7 @@ describe('StaffService', function () {
 
       it('listens to events', async function () {
         service = new StaffService({
+          ...collaborators,
           logging: {
             warn: () => {},
             error: () => {},
@@ -341,6 +355,7 @@ describe('StaffService', function () {
         };
 
         service = new StaffService({
+          ...collaborators,
           logging: {
             warn: () => {},
             error: () => {},
