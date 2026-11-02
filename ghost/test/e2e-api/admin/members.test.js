@@ -4759,34 +4759,58 @@ describe('Members API Bulk operations', function () {
   });
 
   it('Rolls back a partial multi-label removal if the bulk delete fails', async function () {
-    const member = fixtureManager.get('members', 0);
-    await models.Member.edit(
-      { labels: [{ name: 'bulk-rollback-alpha' }, { name: 'bulk-rollback-zeta' }] },
-      { id: member.id },
-    );
-    const model = await models.Member.findOne({ id: member.id }, { withRelated: 'labels' });
+    const members = [fixtureManager.get('members', 0), fixtureManager.get('members', 1)];
+    for (const member of members) {
+      await models.Member.edit(
+        { labels: [{ name: 'bulk-rollback-alpha' }, { name: 'bulk-rollback-zeta' }] },
+        { id: member.id },
+      );
+    }
+    const model = await models.Member.findOne({ id: members[0].id }, { withRelated: 'labels' });
     const labels = model.relations.labels.models.map((label) => ({ id: label.id }));
+    const labelsBefore = await knex('members_labels')
+      .whereIn(
+        'member_id',
+        members.map((member) => member.id),
+      )
+      .select('id')
+      .orderBy('id');
+    // Like the real bulkDestroy, a failed batch is only thrown when throwErrors
+    // is set; otherwise the rows already deleted stay deleted.
     const destroy = sinon
       .stub(models.Member, 'bulkDestroy')
       .callsFake(async (ids, table, options) => {
-        assert.equal(options.throwErrors, true);
         await knex(table).where('id', ids[0]).transacting(options.transacting).del();
-        throw new Error('Simulated bulk delete failure');
+        const error = new Error('Simulated bulk delete failure');
+        if (options.throwErrors) {
+          throw error;
+        }
+        return {
+          successful: 1,
+          unsuccessful: ids.length - 1,
+          errors: [error],
+          unsuccessfulData: ids.slice(1),
+        };
       });
 
     try {
       await agent
-        .put(`/members/bulk/?filter=id:'${member.id}'`)
+        .put(`/members/bulk/?filter=id:[${members.map((member) => member.id).join(',')}]`)
         .body({ bulk: { action: 'removeLabels', meta: { labels } } })
         .expectStatus(500);
     } finally {
       destroy.restore();
     }
-    const updated = await models.Member.findOne({ id: member.id }, { withRelated: 'labels' });
-    assert.deepEqual(
-      updated.relations.labels.models.map((label) => label.id).sort(),
-      labels.map((label) => label.id).sort(),
-    );
+    sinon.assert.calledOnce(destroy);
+    const labelsAfter = await knex('members_labels')
+      .whereIn(
+        'member_id',
+        members.map((member) => member.id),
+      )
+      .select('id')
+      .orderBy('id');
+    assert.equal(labelsBefore.length, 4);
+    assert.deepEqual(labelsAfter, labelsBefore);
   });
 
   it('Can bulk delete a label from members', async function () {
