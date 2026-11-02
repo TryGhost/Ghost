@@ -1,4 +1,12 @@
+import { CONNECT_MESSAGE_TYPE, HELLO_MESSAGE_TYPE } from '@tryghost/app-contracts';
 import { FakeServer } from '@/helpers/services/fake-server';
+
+/**
+ * Ghost config for tests that install the fixture app. Ghost runs in a container, where localhost
+ * is the container, so it fetches localhost manifests from the host, as compose.dev.yaml sets up.
+ * The browser still loads the app's pages from localhost.
+ */
+export const FIXTURE_APP_CONFIG = { apps__localhostAlias: 'host.docker.internal' } as const;
 
 /** The manifest the fixture app serves. Its fields follow `@tryghost/app-contracts`' manifest. */
 export interface FixtureAppManifest {
@@ -42,6 +50,7 @@ export interface FixtureAppHooks {
  */
 const PAGE_SCRIPT = `
 (() => {
+  document.querySelector('[data-testid="fixture-app-path"]').textContent = location.pathname;
   const documentId = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
   const pending = new Map();
   let port;
@@ -68,7 +77,7 @@ const PAGE_SCRIPT = `
   };
 
   const hello = () => window.parent.postMessage(
-    { type: 'ghost-app:hello', sdk: 'e2e-fixture', document: documentId },
+    { type: ${JSON.stringify(HELLO_MESSAGE_TYPE)}, sdk: 'e2e-fixture', document: documentId },
     '*',
   );
   const helloTimer = window.setInterval(hello, 250);
@@ -76,7 +85,7 @@ const PAGE_SCRIPT = `
 
   window.addEventListener('message', (event) => {
     const [connectPort] = event.ports;
-    if (port || !connectPort || event.source !== window.parent || event.data?.type !== 'ghost-app:connect') {
+    if (port || !connectPort || event.source !== window.parent || event.data?.type !== ${JSON.stringify(CONNECT_MESSAGE_TYPE)}) {
       return;
     }
     window.clearInterval(helloTimer);
@@ -101,17 +110,15 @@ const PAGE_SCRIPT = `
 })();
 `;
 
-function pageHtml(path: string): string {
-  return `<!DOCTYPE html>
+const PAGE_HTML = `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="utf-8"><title>Fixture app</title></head>
 <body>
 <h1>Fixture app</h1>
-<p>Served from <code data-testid="fixture-app-path">${path}</code></p>
+<p>Served from <code data-testid="fixture-app-path"></code></p>
 <script>${PAGE_SCRIPT}</script>
 </body>
 </html>`;
-}
 
 /**
  * A small app for the apps E2E tests. It serves its manifest, which a test can change between
@@ -121,8 +128,7 @@ function pageHtml(path: string): string {
  * the page, which shows the path it was served from. A second fixture app with the same ID is the
  * same app served from another host, as when a developer's tunnel URL changes.
  *
- * Ghost runs in a container and fetches the manifest through `apps__localhostAlias`, while the
- * browser loads the page from `localhost` directly.
+ * Tests that install it boot Ghost with `FIXTURE_APP_CONFIG`.
  */
 export class FixtureApp extends FakeServer {
   manifest: FixtureAppManifest;
@@ -163,8 +169,8 @@ export class FixtureApp extends FakeServer {
       res.json(this.manifest);
     });
 
-    this.app.get(/\.html$/, (req, res) => {
-      res.type('html').send(pageHtml(req.path));
+    this.app.get(/\.html$/, (_req, res) => {
+      res.type('html').send(PAGE_HTML);
     });
   }
 }

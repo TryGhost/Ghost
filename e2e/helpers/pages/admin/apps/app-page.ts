@@ -17,8 +17,8 @@ export class AppPage extends AdminPage {
   readonly needsApproval: Locator;
   readonly notInstalled: Locator;
   readonly unavailable: Locator;
-  readonly tryAgainButton: Locator;
-  readonly reviewChangesButton: Locator;
+  /** The path the app's page was served from, which the fixture app shows. */
+  readonly appPagePath: Locator;
   readonly installDialog: AppInstallDialog;
 
   constructor(page: Page) {
@@ -27,11 +27,7 @@ export class AppPage extends AdminPage {
     this.needsApproval = page.getByTestId(sel.appNeedsApproval);
     this.notInstalled = page.getByTestId(sel.appNotInstalled);
     this.unavailable = page.getByTestId(sel.appUnavailable);
-    this.tryAgainButton = page.getByRole('button', { name: sel.tryAgainButton, exact: true });
-    this.reviewChangesButton = page.getByRole('button', {
-      name: sel.reviewChangesLink,
-      exact: true,
-    });
+    this.appPagePath = this.frame.contentFrame().getByTestId('fixture-app-path');
     this.installDialog = new AppInstallDialog(page);
   }
 
@@ -48,7 +44,7 @@ export class AppPage extends AdminPage {
     return match[1];
   }
 
-  /** The document in the app's frame. */
+  /** The document in the app's frame, to call into it or to check it's gone once its session ends. */
   async appFrame(): Promise<Frame> {
     const frame = await (await this.frame.elementHandle())?.contentFrame();
     if (!frame) {
@@ -57,25 +53,19 @@ export class AppPage extends AdminPage {
     return frame;
   }
 
-  /** The path the app's page was served from, which the fixture app shows. */
-  async appPagePath(): Promise<string | null> {
-    const frame = await this.appFrame();
-    return frame.getByTestId('fixture-app-path').textContent();
-  }
-
   /** The revision of the installation the app's session started on. */
-  async sessionRevision(frame?: Frame): Promise<number> {
-    const target = frame ?? (await this.appFrame());
-    return target.evaluate(async () => {
+  async sessionRevision(): Promise<number> {
+    const frame = await this.appFrame();
+    return frame.evaluate(async () => {
       const context = await (window as unknown as FixtureAppWindow).__fixtureApp.started;
       return context.session.revision;
     });
   }
 
   /** Has the app's page call the Admin API through the bridge. */
-  async bridgeFetch(request: BridgeFetchRequest, frame?: Frame): Promise<BridgeFetchResult> {
-    const target = frame ?? (await this.appFrame());
-    return target.evaluate(
+  async bridgeFetch(request: BridgeFetchRequest): Promise<BridgeFetchResult> {
+    const frame = await this.appFrame();
+    return frame.evaluate(
       (sent) => (window as unknown as FixtureAppWindow).__fixtureApp.fetch(sent),
       request,
     );
@@ -93,9 +83,12 @@ export class AppPage extends AdminPage {
 
   /**
    * Coming back to Admin's tab, which is when Admin reads the installation again and sees changes
-   * made elsewhere. Pages in a headless browser are always visible, so the event is dispatched.
+   * made elsewhere. Pages in a headless browser are always visible, so the event is dispatched,
+   * on the document as the browser does.
    */
   async returnToTab(): Promise<void> {
-    await this.page.evaluate(() => window.dispatchEvent(new Event('visibilitychange')));
+    await this.page.evaluate(() =>
+      document.dispatchEvent(new Event('visibilitychange', { bubbles: true })),
+    );
   }
 }

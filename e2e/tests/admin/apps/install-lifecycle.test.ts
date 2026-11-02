@@ -1,11 +1,11 @@
-import { AppDetailsPage, AppPage, AppsPage, LoginPage } from '@/admin-pages';
-import { FixtureApp } from '@/helpers/services/apps';
+import { AppDetailsPage, AppPage, AppsPage, LoginPage, SidebarPage } from '@/admin-pages';
+import { FIXTURE_APP_CONFIG, FixtureApp } from '@/helpers/services/apps';
 import { expect, installApp, test, withIsolatedPage } from '@/helpers/playwright';
 
 const POSTS_API = '**/ghost/api/admin/posts/**';
 
 test.describe('Ghost Admin - App install lifecycle', () => {
-  test.use({ labs: { apps: true } });
+  test.use({ config: FIXTURE_APP_CONFIG, labs: { apps: true } });
 
   test('installs an app that opens and calls the Admin API', async ({ page, fixtureApp }) => {
     const appsPage = new AppsPage(page);
@@ -16,7 +16,7 @@ test.describe('Ghost Admin - App install lifecycle', () => {
     await appsPage.installDialog.install();
 
     await expect(appPage.frame).toBeVisible();
-    expect(await appPage.appPagePath()).toBe('/app.html');
+    await expect(appPage.appPagePath).toHaveText('/app.html');
     const result = await appPage.bridgeFetch({ path: '/posts/' });
     expect(result.status).toBe(200);
     expect(JSON.parse(result.body ?? '')).toHaveProperty('posts');
@@ -59,6 +59,7 @@ test.describe('Ghost Admin - App install lifecycle', () => {
       const loginPage = new LoginPage(otherPage);
       await loginPage.goto();
       await loginPage.signIn(ghostAccountAdministrator.email, ghostAccountAdministrator.password);
+      await expect(new SidebarPage(otherPage).sidebar).toBeVisible();
 
       const otherDetailsPage = new AppDetailsPage(otherPage);
       await otherDetailsPage.gotoDetails(installationId);

@@ -1,4 +1,5 @@
 import { AppDetailsPage, AppPage, AppsPage } from '@/admin-pages';
+import { FIXTURE_APP_CONFIG } from '@/helpers/services/apps';
 import { Page } from '@playwright/test';
 import { expect, installApp, test } from '@/helpers/playwright';
 
@@ -14,7 +15,7 @@ async function reopenApp(page: Page, installationId: string) {
 }
 
 test.describe('Ghost Admin - App manifest updates', () => {
-  test.use({ labs: { apps: true } });
+  test.use({ config: FIXTURE_APP_CONFIG, labs: { apps: true } });
 
   test('applies a silent change when the app next opens', async ({ page, fixtureApp }) => {
     const appPage = new AppPage(page);
@@ -27,7 +28,7 @@ test.describe('Ghost Admin - App manifest updates', () => {
     await expect(appPage.frame).toBeVisible();
     await detailsPage.gotoDetails(installationId);
     await expect(detailsPage.description('A newer description.')).toBeVisible();
-    await expect(detailsPage.historyEntries.first()).toHaveText(/^Updated/);
+    await expect(detailsPage.historyEntries.first()).toHaveText(/^Updated(?!,)/);
   });
 
   test('suspends the app for a change that needs approval, and approving resumes it on the new manifest', async ({
@@ -48,7 +49,7 @@ test.describe('Ghost Admin - App manifest updates', () => {
     await appPage.installDialog.approveChanges();
 
     await expect(appPage.frame).toBeVisible();
-    expect(await appPage.appPagePath()).toBe('/app-v2.html');
+    await expect(appPage.appPagePath).toHaveText('/app-v2.html');
   });
 
   test('reverting a change before it is approved ends the suspension', async ({
@@ -68,7 +69,7 @@ test.describe('Ghost Admin - App manifest updates', () => {
     await reopenApp(page, installationId);
 
     await expect(appPage.frame).toBeVisible();
-    expect(await appPage.appPagePath()).toBe('/app.html');
+    await expect(appPage.appPagePath).toHaveText('/app.html');
     await detailsPage.gotoDetails(installationId);
     await expect(detailsPage.historyEntries.first()).toHaveText(/^Resumed, changes withdrawn/);
   });
@@ -82,7 +83,7 @@ test.describe('Ghost Admin - App manifest updates', () => {
     const installationId = await installApp(page, fixtureApp.manifestUrl);
     const installed = fixtureApp.manifest;
 
-    fixtureApp.updateManifest({ id: 'org.ghost.e2e.another-app', description: 'Another app.' });
+    fixtureApp.updateManifest({ id: `${installed.id}-another`, description: 'Another app.' });
     await reopenApp(page, installationId);
     await expect(appPage.unavailable).toBeVisible();
 

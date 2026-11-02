@@ -95,6 +95,8 @@ export interface GhostConfig {
   // limit is just configuration and a test wanting a new one should not also need a new
   // field here.
   [key: `hostSettings__${string}`]: string | undefined;
+  // Where Ghost fetches localhost app manifests from, for tests that install the fixture app.
+  apps__localhostAlias?: string;
 }
 
 export interface GhostInstanceFixture {

@@ -21,10 +21,6 @@ export class AppsPage extends AdminPage {
     this.notFound = page.getByRole('heading', { name: 'Page not found' });
   }
 
-  row(name: string): Locator {
-    return this.rows.filter({ hasText: name });
-  }
-
   async gotoInstallLink(manifestUrl: string): Promise<void> {
     await this.goto(`/ghost/#/apps/install?manifest=${encodeURIComponent(manifestUrl)}`);
   }

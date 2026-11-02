@@ -35,7 +35,8 @@
       "@/data-factory": ["./data-factory/index.ts"],
       "@/data-factory/*": ["./data-factory/*"],
       // Source, as the "source" export condition gives Ghost; Playwright can't take conditions.
-      "@tryghost/adapter-base-upgrade": ["../packages/adapters/upgrade-base/src/index.ts"]
+      "@tryghost/adapter-base-upgrade": ["../packages/adapters/upgrade-base/src/index.ts"],
+      "@tryghost/app-contracts": ["../packages/app-contracts/src/index.ts"]
     } /* Specify a set of entries that re-map imports to additional lookup locations. */,
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */
