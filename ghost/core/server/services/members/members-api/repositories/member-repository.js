@@ -1366,8 +1366,11 @@ module.exports = class MemberRepository {
       }
     }
     if (data.action === 'removeLabel') {
+      // Removing several labels in one request selects the members once, so removing a
+      // label the filter matches on can't drop members from the rest of the removal.
+      const labels = Array.isArray(data.meta.labels) ? data.meta.labels : [data.meta.label];
       const membersLabelsRows = await this._Member.getLabelRelations({
-        labelId: data.meta.label.id,
+        labelIds: labels.map((label) => label.id),
         memberIds,
       });
 
