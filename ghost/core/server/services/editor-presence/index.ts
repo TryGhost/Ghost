@@ -1,5 +1,5 @@
 import { defineService } from '../../../kernel/define-service';
-import { EditorPresenceService } from './editor-presence-service';
+import { EditorPresenceService, resolveRetentionMs } from './editor-presence-service';
 import { MemoryPresenceStore } from './memory-presence-store';
 import { RedisPresenceStore, type RedisPresenceClient } from './redis-presence-store';
 import type { PresenceStore } from './presence-store';
@@ -26,14 +26,21 @@ export default defineService('Editor Presence', () => {
   const metrics = require('@tryghost/metrics');
 
   const cache = adapterManager.getAdapter('cache:presence');
+  // The adapter's `ttl` (seconds) is the operator's override for how long a key may live.
+  const retentionMs = resolveRetentionMs((cache as { ttl?: unknown }).ttl);
   const store: PresenceStore = isRedisBacked(cache)
-    ? new RedisPresenceStore({ client: cache.redisClient, key: `${cache.rawKeyPrefix}active` })
+    ? new RedisPresenceStore({
+        client: cache.redisClient,
+        key: `${cache.rawKeyPrefix}active`,
+        onTtlRepaired: () => metrics.metric('presence-ttl-repaired', { feature: 'presence' }),
+      })
     : new MemoryPresenceStore();
-  logging.info(`Editor presence using ${store.kind} store`);
+  logging.info(`Editor presence using ${store.kind} store, retention ${retentionMs / 1000}s`);
 
   return new EditorPresenceService({
     store,
     metrics,
+    retentionMs,
     rateLimit: { limit: 12, windowMs: 10_000 },
   });
 });
