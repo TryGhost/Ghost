@@ -9,6 +9,7 @@ import {
   matchField,
   matchShape,
   partsOf,
+  refusedProperty,
   valueSchemaFor,
   type Address,
   TypedSettingsInputSchema,
@@ -341,6 +342,17 @@ describe('metafield-types catalog', function () {
   });
 
   describe('what a broken rule says', function () {
+    // Ghost names a refusal's property this way, and a form files what it finds under the same
+    // key, so a problem with one option lands beside that option.
+    it('names where a refusal points, down to the option', function () {
+      const result = TypedSettingsInputSchema.safeParse({
+        type: 'list',
+        settings: { options: ['Dog', 'Cat | Mouse'], multiple: true },
+      });
+      assert.equal(result.success, false);
+      assert.equal(refusedProperty(result.error?.issues[0]?.path ?? []), 'settings.options.1');
+    });
+
     const reasonFor = (
       type: FieldTypeOfShape<'scalar' | 'record'>,
       value: unknown,

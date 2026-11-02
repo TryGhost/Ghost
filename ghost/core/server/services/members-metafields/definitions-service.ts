@@ -8,6 +8,7 @@ import {
   FieldTypeSchema,
   TypedSettingsInputSchema,
   WRITTEN_SETTINGS,
+  refusedProperty,
   withTypedSettings,
   type TypedSettings,
 } from '@tryghost/metafield-types';
@@ -586,7 +587,7 @@ export class MetafieldDefinitionsService {
       if (!parsed.success) {
         throw new errors.ValidationError({
           message: parsed.error.issues[0].message,
-          property: parsed.error.issues[0].path[0]?.toString(),
+          property: propertyOf(parsed.error.issues[0].path),
         });
       }
       const patch = parsed.data;
@@ -623,7 +624,7 @@ export class MetafieldDefinitionsService {
       if (settings && !settings.success) {
         throw new errors.ValidationError({
           message: settings.error.issues[0].message,
-          property: 'settings',
+          property: propertyOf(settings.error.issues[0].path),
         });
       }
 
@@ -761,13 +762,14 @@ function usableKey(stated: string): Key {
   return key;
 }
 
-// The field a zod issue points at. Create validates an array, so an issue's path
-// is prefixed with the item's index (`[0, 'name']`); `property` names the field
-// that is wrong, so the numeric prefix is dropped. Which item it was is reported
-// separately by batchContext, keeping `property` the bare field name a client can
-// map straight onto its form input.
+// What a zod issue points at within one field, by its path, such as `name` or
+// `settings.options.2`, so a client can show it beside the input that set the value.
+// Create validates an array, so an issue's path is prefixed with the item's index
+// (`[0, 'name']`), which is dropped: which item it was is reported separately by
+// batchContext. An issue with the batch as a whole points at nothing.
 function propertyOf(path: PropertyKey[]): string | undefined {
-  return path.find((segment) => typeof segment === 'string');
+  const withinField = typeof path[0] === 'number' ? path.slice(1) : path;
+  return withinField.length > 0 ? refusedProperty(withinField) : undefined;
 }
 
 // Which definition of a batch an error belongs to. Only set when the request
