@@ -12,8 +12,10 @@ npm install @tryghost/metafield-types
 ## Entry points
 
 - `@tryghost/metafield-types/structure`: the type ids and what each type is composed
-  of. A type is one leaf, or a record of named leaves, and a leaf is text of a size or a
-  choice from a list, such as a country. It depends on nothing.
+  of. A type is one leaf, a record of named leaves, or a set of options its field
+  offers, and a leaf is text of a size or a choice from a list, such as a country. A
+  field of a set type is set up with its options, which a field carries as its
+  `settings`. It depends on nothing.
 - `@tryghost/metafield-types/countries`: the two-letter country codes the list of
   countries offers. It depends on nothing.
 - `@tryghost/metafield-types/identity`: how a field is named everywhere: its
@@ -22,7 +24,7 @@ npm install @tryghost/metafield-types
   check produces. It loads `zod/mini`, a small fraction of zod's size, so a
   browser app can check identities without paying for the rest.
 - `@tryghost/metafield-types`: the structure above, plus `valueSchemaFor(field)`,
-  the rule a value of a field must satisfy. The rules are built on
+  the rule a value of a field must satisfy given its type and settings. The rules are built on
   [zod](https://zod.dev), and only this entry point loads all of it, so an
   integration that only draws inputs can use `./structure` and `./countries`
   without loading zod at all.

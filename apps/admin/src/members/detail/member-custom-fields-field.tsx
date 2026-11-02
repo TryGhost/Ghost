@@ -205,7 +205,7 @@ const CustomFieldInput: React.FC<{
   disabled?: boolean;
   onChange: (value: EditableCustomFieldValue) => void;
 }> = ({ field, inputId, value, errors, disabled, onChange }) =>
-  matchShape(field.type, {
+  matchShape<React.ReactElement | null>(field.type, {
     scalar: ({ leaf }) => (
       <LeafInput
         disabled={disabled}
@@ -227,6 +227,7 @@ const CustomFieldInput: React.FC<{
         onChange={onChange}
       />
     ),
+    set: () => null,
   });
 
 /**
@@ -331,7 +332,7 @@ const MemberCustomFieldEditModal: React.FC<{
           {/* The dialog title names the field visually; this gives the
                         scalar control a real label association (a record's parts
                         carry their own labels). */}
-          {matchShape(field.type, { scalar: () => true, record: () => false }) && (
+          {matchShape(field.type, { scalar: () => true, record: () => false, set: () => true }) && (
             <Label className="sr-only" htmlFor={inputId}>
               {field.name}
             </Label>

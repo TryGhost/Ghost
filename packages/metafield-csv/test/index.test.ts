@@ -269,3 +269,14 @@ describe('reading metafield values from a CSV row', function () {
     );
   });
 });
+
+// A list has no column yet, so CSV leaves it out: it is written to no cell and read from none.
+describe('a list in CSV', function () {
+  const topics = customField('topics', 'list');
+
+  it('leaves a list out', function () {
+    assert.deepEqual(csvColumnsForField(topics), []);
+    assert.deepEqual(csvCellsForFields([topics], { custom: { topics: ['Travel'] } }), {});
+    assert.deepEqual(fieldValuesFromCsvRow([topics], { 'metafields.custom.topics': 'Travel' }), {});
+  });
+});
