@@ -101,6 +101,7 @@ const AutomationEditorContent: React.FC<{
   creation?: {
     initialAutomation: AutomationDetail;
     triggerTop?: number;
+    triggerType: AutomationTriggerRule['trigger_type'];
     tierSelection?: TierSelection;
     onCreated: (id: string) => void;
   };
@@ -151,7 +152,7 @@ const AutomationEditorContent: React.FC<{
   // Preserve the trigger type when every paid tier is removed from the draft.
   const [triggerType, setTriggerType] = React.useState<
     AutomationTriggerRule['trigger_type'] | undefined
-  >(creation?.initialAutomation.trigger_rules[0]?.trigger_type);
+  >(creation?.triggerType);
   // Kept outside the draft until the API can hold it (NY-1733).
   const [tierSelection, setTierSelection] = React.useState(creation?.tierSelection);
   React.useEffect(() => {
@@ -699,12 +700,13 @@ const AutomationEditor: React.FC = () => {
     <ScreenEntranceProvider>
       {automationId === 'new' || automationId === session.createdId ? (
         <NewAutomation key={session.key}>
-          {(initialAutomation, triggerTop, tierSelection) => (
+          {({ automation: initialAutomation, triggerTop, triggerType, tierSelection }) => (
             <AutomationEditorContent
               automationId={null}
               creation={{
                 initialAutomation,
                 triggerTop,
+                triggerType,
                 tierSelection,
                 onCreated: (createdId) => setSession((current) => ({ ...current, createdId })),
               }}

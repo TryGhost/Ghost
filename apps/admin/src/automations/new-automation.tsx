@@ -1,5 +1,9 @@
+import { signupTriggerRules } from './utils/trigger-rules';
 import React from 'react';
-import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
+import type {
+  AutomationDetail,
+  AutomationTriggerRule,
+} from '@tryghost/admin-x-framework/api/automations';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
@@ -16,12 +20,17 @@ import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import { ScreenEntranceContext } from '@/layout/screen-transition';
 import type { TierSelection } from './types';
 
-type PickedTrigger = 'free' | 'all_paid' | 'paid_subscription_changed';
+type PickedTrigger = AutomationTriggerRule['trigger_type'] | 'paid_subscription_changed';
 
 const TRIGGER_OPTIONS = [
-  ['free', LucideIcon.UserPlus, 'Free member signed up', 'When someone signs up as a free member'],
   [
-    'all_paid',
+    'free_signup',
+    LucideIcon.UserPlus,
+    'Free member signed up',
+    'When someone signs up as a free member',
+  ],
+  [
+    'paid_subscription_started',
     LucideIcon.CreditCard,
     'Paid subscription started',
     'When a new or free member starts a paid subscription',
@@ -126,13 +135,14 @@ const NewAutomationLoading: React.FC = () => {
 };
 
 type NewAutomationProps = {
-  // `triggerTop`: where the picker's card was, when a trigger was picked on it.
-  // `tierSelection`: set when the picked trigger was "Paid subscription changed".
-  children: (
-    automation: AutomationDetail,
-    triggerTop?: number,
-    tierSelection?: TierSelection,
-  ) => React.ReactNode;
+  children: (creation: {
+    automation: AutomationDetail;
+    triggerType: AutomationTriggerRule['trigger_type'];
+    // Where the picker's card was when the trigger was selected.
+    triggerTop?: number;
+    // Local-only state for the lifecycle trigger until its persistence is enabled.
+    tierSelection?: TierSelection;
+  }) => React.ReactNode;
 };
 
 const NewAutomationSession: React.FC<
@@ -145,6 +155,8 @@ const NewAutomationSession: React.FC<
   const [initialAutomation, setInitialAutomation] = React.useState<AutomationDetail | null>(null);
   // Where the trigger was picked, once it has been.
   const [triggerTop, setTriggerTop] = React.useState<number | null>(null);
+  const [triggerType, setTriggerType] =
+    React.useState<AutomationTriggerRule['trigger_type']>('free_signup');
   const [tierSelection, setTierSelection] = React.useState<TierSelection>();
   if (!initialAutomation) {
     if (isStripeReady) {
@@ -157,26 +169,31 @@ const NewAutomationSession: React.FC<
         updated_at: '',
         actions: [],
         edges: [],
-        trigger_tier_scope: stripeEnabled ? null : 'free',
-        trigger_tier_ids: null,
+        trigger_rules: stripeEnabled ? [] : signupTriggerRules('free_signup'),
       });
     }
     return <NewAutomationLoading />;
   }
-  if (initialAutomation.trigger_tier_scope === null) {
+  if (stripeEnabled && triggerTop === null) {
     return (
       <TriggerPicker
         automation={initialAutomation}
         onPick={(trigger, cardTop) => {
           setTriggerTop(cardTop);
+          setTriggerType(
+            trigger === 'paid_subscription_changed' ? 'paid_subscription_started' : trigger,
+          );
           if (trigger === 'paid_subscription_changed') {
-            // A stand-in paid scope loads the paid tiers; the editor never saves it (NY-1733).
+            // A stand-in signup trigger loads paid tiers; lifecycle saving remains blocked.
             setTierSelection({ from: [], to: [] });
-            setInitialAutomation({ ...initialAutomation, trigger_tier_scope: 'all_paid' });
+            setInitialAutomation({
+              ...initialAutomation,
+              trigger_rules: signupTriggerRules('paid_subscription_started'),
+            });
           } else {
             setInitialAutomation({
               ...initialAutomation,
-              trigger_tier_scope: trigger,
+              trigger_rules: signupTriggerRules(trigger),
             });
           }
         }}
@@ -187,10 +204,10 @@ const NewAutomationSession: React.FC<
   // header replacing it shouldn't play it a second time in the same visit.
   return triggerTop !== null ? (
     <ScreenEntranceContext.Provider value={false}>
-      {children(initialAutomation, triggerTop, tierSelection)}
+      {children({ automation: initialAutomation, triggerType, triggerTop, tierSelection })}
     </ScreenEntranceContext.Provider>
   ) : (
-    children(initialAutomation)
+    children({ automation: initialAutomation, triggerType })
   );
 };
 

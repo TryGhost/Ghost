@@ -830,7 +830,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     );
   }
 
-  if (isError || !automation || !graph || !triggerType) {
+  if (isError || !automation || !graph) {
     return (
       <div className="flex flex-1 items-start justify-center bg-surface-page px-4 py-8">
         <Banner className="max-w-md" role="alert" variant="destructive">
