@@ -19,3 +19,24 @@ export function parseRecipientTiers(tiersData: unknown): RecipientTier[] {
 
   return tiers.success ? tiers.data.tiers : [];
 }
+
+const labelOptionBoundarySchema = z.looseObject({ value: z.string(), label: z.string() });
+
+export type RecipientLabelOption = z.infer<typeof labelOptionBoundarySchema>;
+
+/**
+ * The labels the shared label source offers, each a slug and a name. An entry
+ * that is not that is dropped rather than reaching the picker, which would
+ * fail on it; the rest are kept.
+ */
+export function parseRecipientLabelOptions(options: unknown): RecipientLabelOption[] {
+  if (!Array.isArray(options)) {
+    return [];
+  }
+
+  return options.flatMap((option) => {
+    const parsed = labelOptionBoundarySchema.safeParse(option);
+
+    return parsed.success ? [parsed.data] : [];
+  });
+}

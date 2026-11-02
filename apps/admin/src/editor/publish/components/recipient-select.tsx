@@ -9,9 +9,9 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { formatNumber } from '@tryghost/shade/utils';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
-import { useId, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { LabelPicker } from '@/members/api';
-import type { HybridValueSource } from '@/shared/filter-sources';
+import { type HybridValueSource, filterOptionsByQuery } from '@/shared/filter-sources';
 import type { ComboboxOptionSource } from '@tryghost/shade/components';
 import {
   publishRecipientFree,
@@ -19,8 +19,10 @@ import {
   publishRecipientSegments,
   publishRecipientSpecific,
 } from '@tryghost/test-data/selectors/editor';
+import { parseRecipientLabelOptions } from './email-recipients-boundary';
 
 const LABEL_SEGMENT_PREFIX = 'label:';
+const TIER_SEGMENT_PREFIX = 'tier:';
 const LABELS_GROUP = 'Labels';
 
 export interface SegmentOption {
@@ -39,6 +41,12 @@ export interface RecipientSelectProps {
   paidAvailable: boolean;
   /** The paid tiers offered as segments, already grouped as active or archived. */
   tierOptions: SegmentOption[];
+  /**
+   * Whether the tiers are still being read. They are few and arrive in full
+   * before "Specific people" is offered, so a persisted tier segment is never
+   * shown by its raw id while its name is on the way.
+   */
+  tiersLoading: boolean;
   /**
    * The site's labels. The source decides how they load: a site with up to a
    * page of labels has them all at once, a larger site searches the server as
@@ -69,6 +77,113 @@ function labelSlug(segment: string): string | null {
     : null;
 }
 
+/** The slug a `label:` or `tier:` segment names; any other segment verbatim. */
+function segmentSlug(segment: string): string {
+  for (const prefix of [LABEL_SEGMENT_PREFIX, TIER_SEGMENT_PREFIX]) {
+    if (segment.startsWith(prefix)) {
+      return segment.slice(prefix.length);
+    }
+  }
+
+  return segment;
+}
+
+/** One row of the picker: a segment, the name it shows, and the heading it sits under. */
+interface SegmentRow {
+  id: string;
+  slug: string;
+  name: string;
+  group?: string;
+}
+
+function toRow(segment: string, name: string, group?: string): SegmentRow {
+  return { id: segment, slug: segment, name, group };
+}
+
+interface SegmentPickerProps {
+  tierOptions: SegmentOption[];
+  tiersLoading: boolean;
+  labelSource: HybridValueSource<string>;
+  /** The selected segments, canonical. */
+  selected: string[];
+  onToggle: (segment: string) => void;
+}
+
+/**
+ * The tier and label rows behind "Specific people". Mounted only while that is
+ * checked, so the search and the label reads it drives are reset with it: a
+ * writer who unchecks and re-checks it starts from the empty field they see.
+ */
+function SegmentPicker({
+  tierOptions,
+  tiersLoading,
+  labelSource,
+  selected,
+  onToggle,
+}: SegmentPickerProps) {
+  const [search, setSearch] = useState('');
+
+  // The selected labels ride along so the source resolves their names, whether
+  // or not the current page or search happens to include them.
+  const selectedLabelSlugs = useMemo(
+    () =>
+      selected.flatMap((segment) => {
+        const slug = labelSlug(segment);
+        return slug === null ? [] : [slug];
+      }),
+    [selected],
+  );
+  const labelState = labelSource.useOptions({ query: search, selectedValues: selectedLabelSlugs });
+
+  const tierRows = tierOptions.map((option) => toRow(option.segment, option.name, option.group));
+  // The labels arrive from the source already matching the search; the tiers
+  // are few and already here, so they are narrowed to it in place, matched the
+  // way the shared local sources match.
+  const visibleTierRows = filterOptionsByQuery(
+    tierRows.map((row) => ({ value: row, label: row.name })),
+    search,
+  ).map((option) => option.value);
+  const labelRows = parseRecipientLabelOptions(labelState.options).map((option) =>
+    toRow(`${LABEL_SEGMENT_PREFIX}${option.value}`, option.label, LABELS_GROUP),
+  );
+
+  // Named from everything known, not only what the search left, so a selected
+  // segment keeps its pill while the writer types. A segment nothing names is a
+  // label or tier the site no longer has and is shown as its slug; a tier
+  // segment waits for the tiers rather than appearing as its raw id first.
+  const knownRows = [...tierRows, ...labelRows];
+  const selectedRows = selected.flatMap((segment) => {
+    const row = knownRows.find((known) => known.slug === segment);
+    if (row) {
+      return [row];
+    }
+    if (tiersLoading && labelSlug(segment) === null) {
+      return [];
+    }
+    return [toRow(segment, segmentSlug(segment))];
+  });
+
+  const optionSource: ComboboxOptionSource<string> = {
+    // The picker renders the `labels` prop; the source supplies its loading,
+    // paging and search behaviour.
+    ...labelState,
+    isInitialLoad: tiersLoading || labelState.isInitialLoad,
+    shouldClientFilter: false,
+    onSearchChange: setSearch,
+  };
+
+  return (
+    <LabelPicker
+      labels={[...visibleTierRows, ...labelRows]}
+      optionSource={optionSource}
+      placeholder="Search labels and tiers..."
+      resolvedSelectedLabels={selectedRows}
+      selectedSlugs={selected}
+      onToggle={onToggle}
+    />
+  );
+}
+
 /**
  * Free/paid checkboxes plus an optional "Specific people" segment selection,
  * all expressed as one NQL recipient filter.
@@ -78,34 +193,31 @@ export function RecipientSelect({
   newsletterRecipientFilter,
   paidAvailable,
   tierOptions,
+  tiersLoading,
   labelSource,
   onChange,
 }: RecipientSelectProps) {
   const id = useId();
-  const parsed = parseRecipientFilter(filter);
-  const canonicalSegment = (segment: string) =>
-    tierOptions.find((option) => option.aliases?.includes(segment))?.segment ?? segment;
-  const segments = {
-    ...parsed,
-    specific: [...new Set(parsed.specific.map(canonicalSegment))],
-  };
+  const segments = useMemo(() => {
+    const parsed = parseRecipientFilter(filter);
+    const canonicalSegment = (segment: string) =>
+      tierOptions.find((option) => option.aliases?.includes(segment))?.segment ?? segment;
+
+    return {
+      ...parsed,
+      specific: [...new Set(parsed.specific.map(canonicalSegment))],
+    };
+  }, [filter, tierOptions]);
   // Remembers a selection across an off/on toggle, and keeps the picker open
   // when "Specific people" is checked with nothing selected yet.
   const [forceSpecific, setForceSpecific] = useState(false);
   const [previousSpecific, setPreviousSpecific] = useState<string[] | null>(null);
-  const [search, setSearch] = useState('');
 
-  // The selected labels ride along so the source resolves their names, whether
-  // or not the current page or search happens to include them.
-  const selectedLabelSlugs = segments.specific.flatMap((segment) => {
-    const slug = labelSlug(segment);
-    return slug === null ? [] : [slug];
-  });
-  const labelState = labelSource.useOptions({ query: search, selectedValues: selectedLabelSlugs });
   // One label is enough to offer the segment picker: the first page says how
-  // many there are without anyone waiting for the rest.
+  // many there are without anyone waiting for the rest. The tiers, few and
+  // quick, are waited for so the picker never opens without them.
   const hasLabels = (labelSource.probe.total ?? 0) > 0;
-  const hasSpecificOptions = tierOptions.length > 0 || hasLabels;
+  const hasSpecificOptions = !tiersLoading && (tierOptions.length > 0 || hasLabels);
 
   const specificChecked = forceSpecific || segments.specific.length > 0;
 
@@ -159,42 +271,6 @@ export function RecipientSelect({
   const scopedFilter = (segment: string) =>
     newsletterRecipientFilter ? `${newsletterRecipientFilter}+${segment}` : segment;
 
-  const tierLabels = tierOptions.map((option) => ({
-    id: option.segment,
-    slug: option.segment,
-    name: option.name,
-    group: option.group,
-  }));
-  const labelLabels = labelState.options.map((option) => ({
-    id: `${LABEL_SEGMENT_PREFIX}${option.value}`,
-    slug: `${LABEL_SEGMENT_PREFIX}${option.value}`,
-    name: option.label,
-    group: LABELS_GROUP,
-  }));
-
-  const normalizedSearch = search.trim().toLowerCase();
-  const pickerLabels = [
-    ...tierLabels.filter((label) => label.name.toLowerCase().includes(normalizedSearch)),
-    ...labelLabels,
-  ];
-  // Named from everything known, not only what the search left, so a selected
-  // segment keeps its pill while the writer types. A label the site no longer
-  // has is shown as its slug.
-  const resolvedSelectedLabels = segments.specific.map(
-    (segment) =>
-      [...tierLabels, ...labelLabels].find((label) => label.slug === segment) ?? {
-        id: segment,
-        slug: segment,
-        name: labelSlug(segment) ?? segment,
-      },
-  );
-  const optionSource: ComboboxOptionSource<string> = {
-    ...labelState,
-    options: pickerLabels.map((label) => ({ value: label.slug, label: label.name })),
-    shouldClientFilter: false,
-    onSearchChange: setSearch,
-  };
-
   return (
     <Stack gap="md">
       <Stack gap="sm">
@@ -242,12 +318,11 @@ export function RecipientSelect({
           <Text size="sm" weight="medium">
             Selection
           </Text>
-          <LabelPicker
-            labels={pickerLabels}
-            optionSource={optionSource}
-            placeholder="Search labels and tiers..."
-            resolvedSelectedLabels={resolvedSelectedLabels}
-            selectedSlugs={segments.specific}
+          <SegmentPicker
+            labelSource={labelSource}
+            selected={segments.specific}
+            tierOptions={tierOptions}
+            tiersLoading={tiersLoading}
             onToggle={toggleSegment}
           />
         </Stack>

@@ -132,6 +132,7 @@ export function EmailRecipientsOptions({
         newsletterRecipientFilter={newsletterRecipientFilter}
         paidAvailable={paidAvailable}
         tierOptions={tierOptions}
+        tiersLoading={!tiersSettled}
         onChange={onSetRecipientFilter}
       />
 
