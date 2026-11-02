@@ -2963,6 +2963,8 @@ services:
       - email-service/newsletter-email-event-storage.js
       - email-service/email-event-processor.js
     notes: >-
+      Decide who registers pre-stop and drain for in-flight sends before migrating: each
+      init attaches them to the server it receives, and defineService has no shutdown hook.
       Preserve the application-owned delivery wrapper, retained collaborators, newsletter
       queue and separate pre-stop/drain phases. Analytics separately constructs the two
       deep event-processing exports. Recorded facets include source-only lifecycle risks;
@@ -7836,8 +7838,10 @@ services:
       - members/jobs/index.js
       - members/single-use-token-provider.js
     notes: >-
-      Record the composite facade, retained API graph, per-init bindings and separate cleanup
-      jobs together. All facets are source-checked; selected operation tests do not establish a
+      Decide which parts are built once before migrating: the API and verification trigger
+      survive repeated init, while SSR, integrity-token and import/export collaborators are
+      rebuilt with the secrets and settings they capture. Record the composite facade,
+      retained API graph, per-init bindings and separate cleanup jobs together. All facets are source-checked; selected operation tests do not establish a
       uniform initialization, restart or drain contract.
     contracts:
       exports:
