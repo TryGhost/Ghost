@@ -3,9 +3,9 @@ import config from '../../../shared/config';
 import { defineService } from '../../../kernel/define-service';
 import { Invites } from './invites';
 import InvitationLimiter from './invitation-limiter';
-import { limitService } from '../limits';
 
 export default defineService('Invites', () => {
+  const { limitService }: typeof import('../limits') = require('../limits');
   const settingsCache = require('../../../shared/settings-cache');
   const settingsHelpers = require('../settings-helpers');
   const mailService = require('../../lib/mail');
