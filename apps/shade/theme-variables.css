@@ -135,6 +135,8 @@
   --field-disabled-surface: var(--field-surface);
   --field-border: transparent;
   --field-chip-surface: var(--color-gray-300);
+  --field-chip-internal-surface: transparent;
+  --field-chip-internal-border: var(--field-chip-surface);
   --dropzone-surface: var(--field-surface);
   --radius-field: var(--radius-sm);
   /* Stroke of 16px icons, in the icon's 24-unit grid: about 1.17px on screen. */
@@ -283,6 +285,8 @@
   --field-disabled-surface: var(--control-disabled-surface);
   --field-border: var(--control-border);
   --field-chip-surface: var(--secondary);
+  --field-chip-internal-surface: color-mix(in oklab, var(--secondary) 30%, transparent);
+  --field-chip-internal-border: var(--border);
   --dropzone-surface: transparent;
   --radius-field: var(--radius-control);
 }
