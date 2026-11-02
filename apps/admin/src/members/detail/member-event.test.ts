@@ -19,7 +19,7 @@ const defaultCtx = {
 
 describe('member creation source', () => {
   it.each([
-    ['admin', 'signed up via manual entry'],
+    ['admin', 'signed up via Admin'],
     ['api', 'signed up via API'],
     ['import', 'signed up via import'],
     ['system', 'signed up via system'],
