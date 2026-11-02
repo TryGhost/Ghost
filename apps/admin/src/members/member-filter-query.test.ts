@@ -456,6 +456,14 @@ describe('member-filter-query - custom fields', () => {
       values: ['', 'Ghost'],
       nql: "(metafields.identity:'custom.company'+metafields.value:-'Ghost')",
     },
+    // Every custom field value is text, and NQL reads an unquoted number as a number, so a value
+    // that looks like a number is still written quoted.
+    {
+      field: 'metafields.custom.company',
+      operator: 'is',
+      values: ['', '2025'],
+      nql: "(metafields.identity:'custom.company'+metafields.value:'2025')",
+    },
     {
       field: 'metafields.custom.company',
       operator: 'contains',

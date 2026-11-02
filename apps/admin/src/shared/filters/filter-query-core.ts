@@ -97,7 +97,16 @@ export function dispatchCompoundNode<TFields extends Record<string, FilterField>
   fields: TFields,
   timezone: string,
 ): ParsedPredicate | null {
-  for (const [key, definition] of Object.entries(fields)) {
+  // A field with a fixed key is asked before a pattern standing for many keys, as `resolveField`
+  // asks of a simple clause, so a field the catalog defines reads its own clauses rather than the
+  // pattern standing in for every field like it.
+  const entries = Object.entries(fields);
+  const ordered = [
+    ...entries.filter(([key]) => !key.includes(':')),
+    ...entries.filter(([key]) => key.includes(':')),
+  ];
+
+  for (const [key, definition] of ordered) {
     const parsed = definition.codec.parseCompound?.(node, {
       key,
       pattern: key,
