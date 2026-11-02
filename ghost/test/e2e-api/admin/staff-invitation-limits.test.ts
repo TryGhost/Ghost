@@ -36,7 +36,7 @@ describe('Trial staff invitation limits', function () {
     await dbUtils.truncate('brute');
     await dbUtils.truncate('actions');
     await dbUtils.truncate('invites');
-    await db.knex('settings').where('key', 'staff_invitation_emails').update({ value: null });
+    await db.knex('settings').where('key', 'invite_emails_limit_usage').update({ value: null });
     config.set('hostSettings:subscription', { start: new Date().toISOString() });
     config.set('hostSettings:limits', {
       allStaff: {
@@ -67,7 +67,7 @@ describe('Trial staff invitation limits', function () {
   });
 
   async function savedCount() {
-    const row = await db.knex('settings').where('key', 'staff_invitation_emails').first();
+    const row = await db.knex('settings').where('key', 'invite_emails_limit_usage').first();
     return JSON.parse(row.value ?? 'null')?.count ?? 0;
   }
 

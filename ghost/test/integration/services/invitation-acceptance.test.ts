@@ -105,7 +105,7 @@ describe('Invitation acceptance during limit checks', function () {
       });
 
       assert.equal(await countStaff(db.knex), initialSeats + 1);
-      const counter = await db.knex('settings').where('key', 'staff_invitation_emails').first();
+      const counter = await db.knex('settings').where('key', 'invite_emails_limit_usage').first();
       assert.equal(JSON.parse(counter.value).count, 1);
     });
   }

@@ -3,7 +3,7 @@ import type { Knex } from 'knex';
 import type { LimitService } from '@tryghost/limit-service';
 import type { Settings } from '../../models/settings';
 
-const INVITE_EMAIL_COUNTER_KEY = 'staff_invitation_emails';
+const INVITE_EMAIL_COUNTER_KEY = 'invite_emails_limit_usage';
 
 interface InvitationLimiterDeps {
   transaction: <T>(callback: (transaction: Knex.Transaction) => Promise<T>) => Promise<T>;

@@ -73,7 +73,7 @@ const config: Record<string, LimitConfig> = {
     inviteEmails: {
         currentCountQuery: async (knex: Knex, periodStart?: string) => {
             const setting = await knex('settings').select('value')
-                .where('key', 'staff_invitation_emails').first();
+                .where('key', 'invite_emails_limit_usage').first();
             if (!setting) {
                 throw new errors.IncorrectUsageError({message: 'Missing staff invitation email counter.'});
             }

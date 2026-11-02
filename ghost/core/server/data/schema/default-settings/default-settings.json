@@ -1,6 +1,6 @@
 {
   "core": {
-    "staff_invitation_emails": {
+    "invite_emails_limit_usage": {
       "defaultValue": null,
       "type": "object"
     },

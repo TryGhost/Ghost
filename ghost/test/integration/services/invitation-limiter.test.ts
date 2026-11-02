@@ -43,7 +43,7 @@ describe('Trial invitation admission', function () {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(new Date('2026-10-29T10:00:00Z'));
     config.set('hostSettings:subscription', { start: '2026-10-10T10:00:00Z' });
-    await db.knex('settings').where('key', 'staff_invitation_emails').update({ value: null });
+    await db.knex('settings').where('key', 'invite_emails_limit_usage').update({ value: null });
     await dbUtils.truncate('brute');
     await dbUtils.truncate('actions');
     await dbUtils.truncate('invites');
@@ -81,7 +81,7 @@ describe('Trial invitation admission', function () {
   }
 
   async function savedCounter() {
-    const row = await db.knex('settings').where('key', 'staff_invitation_emails').first();
+    const row = await db.knex('settings').where('key', 'invite_emails_limit_usage').first();
     return JSON.parse(row.value ?? 'null');
   }
 
@@ -120,21 +120,21 @@ describe('Trial invitation admission', function () {
   });
 
   it('initializes the internal lock setting and restores it on an existing site', async function () {
-    const initial = await db.knex('settings').where({ key: 'staff_invitation_emails' }).first();
+    const initial = await db.knex('settings').where({ key: 'invite_emails_limit_usage' }).first();
     assert.ok(initial);
     assert.equal(initial.group, 'core');
     assert.equal(initial.value, null);
     await db.knex('settings').where({ id: initial.id }).delete();
     await models.Settings.populateDefaults();
-    const restored = await db.knex('settings').where({ key: 'staff_invitation_emails' });
+    const restored = await db.knex('settings').where({ key: 'invite_emails_limit_usage' });
     assert.equal(restored.length, 1);
     assert.equal(restored[0].group, 'core');
     await models.Settings.populateDefaults();
-    assert.equal((await db.knex('settings').where({ key: 'staff_invitation_emails' })).length, 1);
+    assert.equal((await db.knex('settings').where({ key: 'invite_emails_limit_usage' })).length, 1);
   });
 
   it('fails closed if the lock setting is missing', async function () {
-    await db.knex('settings').where({ key: 'staff_invitation_emails' }).delete();
+    await db.knex('settings').where({ key: 'invite_emails_limit_usage' }).delete();
     try {
       await assert.rejects(
         limiter.run('missing-setting@example.com', () => assert.fail('Must not prepare an email')),
@@ -311,7 +311,7 @@ describe('Trial invitation admission', function () {
     const oldPeriod = dependencies.getPeriodStart();
     await db
       .knex('settings')
-      .where('key', 'staff_invitation_emails')
+      .where('key', 'invite_emails_limit_usage')
       .update({
         value: JSON.stringify({ periodStart: oldPeriod, count: 14 }),
       });
@@ -334,7 +334,7 @@ describe('Trial invitation admission', function () {
     const oldPeriod = dependencies.getPeriodStart();
     await db
       .knex('settings')
-      .where('key', 'staff_invitation_emails')
+      .where('key', 'invite_emails_limit_usage')
       .update({
         value: JSON.stringify({ periodStart: oldPeriod, count: 15 }),
       });
