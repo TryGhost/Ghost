@@ -603,16 +603,16 @@ describe('automations', function () {
     });
 
     it.each([
-      { from: 'any', before: 'Bronze', after: 'Silver', enrolls: true },
-      { from: 'any', before: 'Silver', after: 'Gold', enrolls: false },
-      { from: 'Bronze', before: 'Bronze', after: 'Silver', enrolls: true },
-      { from: 'Bronze', before: 'Silver', after: 'Gold', enrolls: false },
-      { from: 'Bronze', before: 'Platinum', after: 'Gold', enrolls: false },
-      { from: 'Bronze', before: 'Gold', after: 'Platinum', enrolls: false },
-      { from: 'Silver', before: 'Silver', after: 'Gold', enrolls: true },
+      { from: 'any', to: ['Silver', 'Gold'], before: 'Bronze', after: 'Silver', enrolls: true },
+      { from: 'any', to: ['Silver', 'Gold'], before: 'Silver', after: 'Gold', enrolls: false },
+      { from: 'Bronze', to: ['Silver', 'Gold'], before: 'Bronze', after: 'Silver', enrolls: true },
+      { from: 'Bronze', to: ['Silver', 'Gold'], before: 'Silver', after: 'Gold', enrolls: false },
+      { from: 'Bronze', to: ['Silver', 'Gold'], before: 'Platinum', after: 'Gold', enrolls: false },
+      { from: 'Bronze', to: ['Silver', 'Gold'], before: 'Gold', after: 'Platinum', enrolls: false },
+      { from: 'Silver', to: ['Gold'], before: 'Silver', after: 'Gold', enrolls: true },
     ])(
-      'starts automation: $enrolls when member changes from $before to $after (From: $from)',
-      async function ({ from, before, after, enrolls }) {
+      'starts paid_subscription_changed automation: $enrolls when member changes from $before to $after (From: $from)',
+      async function ({ from, to, before, after, enrolls }) {
         const tiers = new Map<
           string,
           { id: string; price: (typeof subscription.items.data)[number]['price'] }
@@ -653,7 +653,6 @@ describe('automations', function () {
           assert(result);
           return result;
         };
-        const destinations = from === 'Silver' ? ['Gold'] : ['Silver', 'Gold'];
         const response = await agent
           .post('/automations/')
           .body({
@@ -669,7 +668,7 @@ describe('automations', function () {
                     scope: from === 'any' ? 'any_paid_tier' : 'specific_paid_tier',
                     product_id: from === 'any' ? null : tier(from).id,
                   },
-                  ...destinations.map((name) => ({
+                  ...to.map((name) => ({
                     trigger_type: 'paid_subscription_changed',
                     direction: 'to',
                     scope: 'specific_paid_tier',
