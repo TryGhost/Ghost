@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import {
   DEFAULT_RETENTION_MS,
   EditorPresenceService,
-  MAX_RETENTION_MS,
   MIN_RETENTION_MS,
   resolveRetentionMs,
   type PresenceMetrics,
@@ -256,9 +255,9 @@ describe('resolveRetentionMs', function () {
     assert.equal(resolveRetentionMs(Number.NaN), DEFAULT_RETENTION_MS);
   });
 
-  it('takes the adapter ttl in seconds, clamped to the allowed range', function () {
+  it('takes the adapter ttl in seconds, no shorter than the idle heartbeat cadence', function () {
     assert.equal(resolveRetentionMs(120), 120_000);
+    assert.equal(resolveRetentionMs(3_600), 3_600_000);
     assert.equal(resolveRetentionMs(5), MIN_RETENTION_MS);
-    assert.equal(resolveRetentionMs(3_600), MAX_RETENTION_MS);
   });
 });
