@@ -682,10 +682,11 @@ describe('RouterController', function () {
         }
       });
 
-      it('returns a BadRequestError if fetching tier by tierId throws', async function () {
+      it('lets a failed tier read through, instead of answering that the tier does not exist', async function () {
+        const failure = new Error('Fail to fetch tier');
         tiersService = {
           api: {
-            read: sinon.stub().rejects(new Error('Fail to fetch tier')),
+            read: sinon.stub().rejects(failure),
           },
         };
 
@@ -699,20 +700,13 @@ describe('RouterController', function () {
           settingsHelpers,
         });
 
-        try {
-          await routerController._getSubscriptionCheckoutData({
-            tierId: 'invalid',
+        await assert.rejects(
+          routerController._getSubscriptionCheckoutData({
+            tierId: '0123456789abcdef01234567',
             cadence: 'year',
-          });
-
-          assert.fail('Expected function to throw BadRequestError');
-        } catch (error) {
-          assert(
-            error instanceof errors.BadRequestError,
-            'Error should be an instance of BadRequestError',
-          );
-          assert.equal(error.context, 'Tier with id "invalid" not found');
-        }
+          }),
+          (error) => error === failure,
+        );
       });
     });
     describe('_createDonationCheckoutSession', function () {
