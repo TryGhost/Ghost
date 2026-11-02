@@ -16,7 +16,7 @@ import React, {
 } from 'react';
 
 import { FieldDescription, FieldLabel } from '@/components/ui/field';
-import { inputSurface } from '@/components/ui/input-surface';
+import { inputSurface, inputSurfaceClasses } from '@/components/ui/input-surface';
 import { Stack } from '@/components/primitives/stack';
 import { cn } from '@/lib/utils';
 import { useFocusContext } from '@/providers/shade-context';
@@ -205,6 +205,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
 
   const styles = cn(
     inputSurface('within'),
+    inputSurfaceClasses.typingWithin,
     'peer order-2 w-full max-w-full overflow-hidden',
     clearBg && 'bg-transparent',
     height === 'full' && 'h-full',
