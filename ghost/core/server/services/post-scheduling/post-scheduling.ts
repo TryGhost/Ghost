@@ -13,7 +13,7 @@ type ScheduledModel = {
 };
 
 interface PostModel {
-  findAll(options: { filter: string; columns: string[] }): Promise<ScheduledModel[]>;
+  findAll(options: { filter: string; columns: string[] }): Promise<Iterable<ScheduledModel>>;
 }
 
 export interface PostSchedulingEvents {
@@ -164,7 +164,7 @@ export default class PostScheduling {
     }
   }
 
-  async #loadScheduledResources(): Promise<Record<ScheduledResource, any[]>> {
+  async #loadScheduledResources(): Promise<Record<ScheduledResource, Iterable<ScheduledModel>>> {
     const entries = await Promise.all(
       SCHEDULED_RESOURCES.map(async (resourceType) => {
         const found = await this.#models.Post.findAll({
