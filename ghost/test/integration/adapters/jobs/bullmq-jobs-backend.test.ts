@@ -504,6 +504,45 @@ describe.skipIf(!redisUp)('Integration: BullMQJobsBackend', function () {
       assert.deepEqual(settlements, [{ id: 'settle-stalled', status: 'dead' }]);
     });
 
+    it('puts an interrupted job back without using an attempt', async function () {
+      // A single attempt: if the interruption used it up, the job would fail
+      const backend = makeBackend({ attempts: 1 });
+      const { settlements, onSettled } = recorder();
+      let runs = 0;
+      await backend.start({
+        processor: async () => {
+          runs += 1;
+          return runs === 1 ? 'interrupted' : undefined;
+        },
+        onSettled,
+      });
+
+      await backend.enqueue('settle-interrupted', dispatch(job));
+      await waitFor(() => settlements.length === 1);
+      await backend.shutdown({ timeoutMs: 1000 });
+
+      assert.equal(runs, 2);
+      assert.deepEqual(settlements, [{ id: 'settle-interrupted', status: 'completed' }]);
+    });
+
+    it('waits a lock duration before running an interrupted job again', async function () {
+      // A worker that is shutting down must stop before the job comes due again
+      const backend = makeBackend({ lockDuration: 1000 });
+      const runAt: number[] = [];
+      await backend.start({
+        processor: async () => {
+          runAt.push(Date.now());
+          return runAt.length === 1 ? 'interrupted' : undefined;
+        },
+      });
+
+      await backend.enqueue('settle-interrupted-later', dispatch(job));
+      await waitFor(() => runAt.length === 2);
+      await backend.shutdown({ timeoutMs: 1000 });
+
+      assert.ok(runAt[1]! - runAt[0]! >= 1000, `ran again after ${runAt[1]! - runAt[0]!}ms`);
+    });
+
     it('does not report settlement for a recurring tick', async function () {
       const backend = makeBackend();
       const onSettled = sinon.stub();
