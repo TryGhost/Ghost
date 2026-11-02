@@ -12,6 +12,7 @@ import {
   open,
   close,
 } from './run-history.test-utils';
+import { editEmailSubject, fakeEmailEditorData } from './email-editor.test-utils';
 
 const lexical = JSON.stringify({
   root: {
@@ -60,8 +61,9 @@ describe('Historical email snippets', () => {
       },
     };
     respond(data);
+    fakeEmailEditorData();
     await renderAdminApp('/automations/first', flags);
-    await page.getByRole('textbox', { name: 'Subject line' }).fill('Unsaved subject');
+    await editEmailSubject(page.getByRole('article', { name: /^Send email/ }), 'Unsaved subject');
     await open();
     await select();
     await expect
@@ -74,7 +76,7 @@ describe('Historical email snippets', () => {
     expect(preview.element().querySelector('b')).toBeNull();
     await close();
     await expect
-      .element(page.getByRole('textbox', { name: 'Subject line' }))
-      .toHaveValue('Unsaved subject');
+      .element(page.getByRole('article', { name: 'Send email: Unsaved subject' }))
+      .toBeVisible();
   });
 });
