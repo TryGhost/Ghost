@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { autoUpdate, flip, offset, shift, size, useFloating } from '@floating-ui/react-dom';
 import {
   Badge,
+  Button,
   tokenFieldClasses,
   type ComboboxOptionSource,
   Command,
@@ -101,6 +102,8 @@ interface LabelListItemsProps {
   labels: PickerLabel[];
   selectedSlugs: string[];
   search: string;
+  /** False when the source already narrowed the list to the search. */
+  shouldClientFilter: boolean;
   onToggle: (slug: string) => void;
   onEdit?: (id: string, name: string) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
@@ -113,6 +116,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
   labels,
   selectedSlugs,
   search,
+  shouldClientFilter,
   onToggle,
   onEdit,
   onDelete,
@@ -122,8 +126,14 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
 }) => {
   const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
   const normalizedSearch = search.trim().toLowerCase();
+  // When the source searches for itself, only the selected labels are checked
+  // against the search here. Narrowing the matches again would empty the list
+  // between a keystroke and its answer, which asks for the next page of stale results.
+  const matchesSearch = (label: PickerLabel) => label.name.toLowerCase().includes(normalizedSearch);
   const visibleLabels = normalizedSearch
-    ? labels.filter((label) => label.name.toLowerCase().includes(normalizedSearch))
+    ? labels.filter((label) =>
+        shouldClientFilter || selectedSlugs.includes(label.slug) ? matchesSearch(label) : true,
+      )
     : labels;
   const showCreate = !!onCreate && canCreateLabel(labels, search);
   const groups = new Map<string, PickerLabel[]>();
@@ -202,6 +212,87 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
         </CommandGroup>
       )}
     </>
+  );
+};
+
+// --- Load-more sentinel: asks for the next page once scrolled into view ---
+
+interface LoadMoreSentinelProps {
+  isLoading: boolean;
+  /** A page that adds no rows is taken as failed. */
+  itemCount: number;
+  onVisible: () => void;
+}
+
+interface PendingPage {
+  itemCount: number;
+  started: boolean;
+}
+
+// A failed page is offered as a retry rather than asked for again. The query
+// client doesn't retry, and re-observing the still-visible sentinel would ask
+// again at once, with no pause between failures.
+const LoadMoreSentinel: React.FC<LoadMoreSentinelProps> = ({ isLoading, itemCount, onVisible }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const pending = useRef<PendingPage | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  const requestPage = useCallback(() => {
+    pending.current = { itemCount, started: false };
+    onVisible();
+  }, [itemCount, onVisible]);
+
+  // One effect settles the pending page and observes, so a failed page is
+  // never observed, even for a frame.
+  useEffect(() => {
+    const page = pending.current;
+    if (page) {
+      if (isLoading) {
+        page.started = true;
+        return;
+      }
+      if (!page.started && itemCount <= page.itemCount) {
+        // Requested, not yet in flight.
+        return;
+      }
+      pending.current = null;
+      const arrived = itemCount > page.itemCount;
+      setFailed(!arrived);
+      if (!arrived) {
+        return;
+      }
+    }
+
+    const node = ref.current;
+    if (!node || isLoading || failed || typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        requestPage();
+      }
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [failed, isLoading, itemCount, requestPage]);
+
+  return (
+    <div
+      ref={ref}
+      aria-live="polite"
+      className="py-2 text-center text-sm text-muted-foreground"
+      data-testid="label-picker-load-more"
+    >
+      {isLoading ? 'Loading more...' : null}
+      {!isLoading && failed ? (
+        <>
+          Couldn&apos;t load more labels.{' '}
+          <Button className="h-auto p-0" size="sm" variant="link" onClick={requestPage}>
+            Retry
+          </Button>
+        </>
+      ) : null}
+    </div>
   );
 };
 
@@ -337,12 +428,13 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     ],
   });
 
+  const { onSearchChange } = optionSource;
   const handleSearchChange = useCallback(
     (value: string) => {
       setSearch(value);
-      optionSource.onSearchChange?.(value);
+      onSearchChange?.(value);
     },
-    [optionSource],
+    [onSearchChange],
   );
 
   // Close on click outside — no Radix Popover portal needed since this
@@ -452,12 +544,22 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                   labels={labels}
                   search={search}
                   selectedSlugs={selectedSlugs}
+                  shouldClientFilter={optionSource.shouldClientFilter}
                   onCreate={onCreate}
                   onDelete={onDelete}
                   onEdit={onEdit}
                   onSearchClear={() => handleSearchChange('')}
                   onToggle={onToggle}
                 />
+                {optionSource.hasMore && (
+                  // A new search is a new list, so the sentinel starts over with it.
+                  <LoadMoreSentinel
+                    key={search}
+                    isLoading={optionSource.isLoadingMore}
+                    itemCount={labels.length}
+                    onVisible={optionSource.loadMore}
+                  />
+                )}
               </CommandList>
             )}
           </div>
