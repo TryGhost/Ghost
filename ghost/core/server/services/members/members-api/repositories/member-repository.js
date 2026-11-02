@@ -2115,6 +2115,8 @@ module.exports = class MemberRepository {
       logging.error(`Failed to update member - ${data.id} - with related products`);
       logging.error(e);
       updatedMember = await this._Member.edit({ status: status }, { ...options, id: data.id });
+      // The relation edit may have failed partially; report saved access, not the proposed tiers.
+      memberProducts = (await updatedMember.related('products').fetch(options)).toJSON();
     }
 
     // Cancelling (or reactivating) touches no `members` column, so mark the

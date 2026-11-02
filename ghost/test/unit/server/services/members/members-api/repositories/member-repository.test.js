@@ -2520,6 +2520,56 @@ describe('MemberRepository', function () {
       });
     });
 
+    it('does not report a tier upgrade when saving the new tier fails', async function () {
+      const silver = { id: 'silver', toJSON: () => ({ id: 'silver' }) };
+      const gold = { id: 'gold', toJSON: () => ({ id: 'gold' }) };
+      const originalMember = await Member.findOne();
+      const savedProducts = {
+        models: [silver],
+        toJSON: () => [{ id: 'silver' }],
+        fetch: sinon.stub().resolvesThis(),
+      };
+      const originalRelated = originalMember.related;
+      originalMember.related = (relation) =>
+        relation === 'products' ? savedProducts : originalRelated(relation);
+      productRepository.get.callsFake(async ({ stripe_price_id }) =>
+        stripe_price_id === 'old_price' ? silver : gold,
+      );
+      const updatedMember = {
+        id: 'member_id_123',
+        attributes: { status: 'paid' },
+        _previousAttributes: { status: 'paid' },
+        get: (key) => (key === 'status' ? 'paid' : 'test@example.com'),
+        related: () => savedProducts,
+      };
+      Member.edit.onFirstCall().rejects(new Error('Could not save products'));
+      Member.edit.onSecondCall().resolves(updatedMember);
+      const repo = buildRepo();
+      sinon.stub(repo, 'getSubscriptionByStripeID').resolves({
+        id: 'stripe_sub_id_123',
+        get: (key) =>
+          ({ stripe_price_id: 'old_price', status: 'active', cancel_at_period_end: false })[key],
+      });
+
+      await repo.linkSubscription(
+        { id: 'member_id_123', subscription: subscriptionData },
+        { transacting: { executionPromise: Promise.resolve() } },
+      );
+
+      assert.deepEqual(Member.edit.firstCall.args[0].products, [{ id: 'gold' }]);
+      sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
+        event: 'paid_subscription_changed',
+        source: 'member',
+        memberId: 'member_id_123',
+        memberEmail: 'test@example.com',
+        memberStatus: 'paid',
+        previousMemberStatus: 'paid',
+        memberTierIds: ['silver'],
+        previousMemberTierIds: ['silver'],
+      });
+      sinon.assert.notCalled(MemberProductEvent.add);
+    });
+
     describe('legacy automations', function () {
       it('creates automation run when member status changes to paid', async function () {
         Member.edit.resolves({
