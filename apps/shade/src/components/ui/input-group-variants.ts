@@ -27,13 +27,15 @@ const inputGroupVariants = cva(
     variants: {
       variant: {
         default: '',
-        ghost: 'border-transparent bg-transparent shadow-none hover:bg-button-hover',
+        // Ghost and secondary groups read as buttons until used, so they keep a button's corners.
+        ghost:
+          'border-transparent bg-transparent shadow-none [--radius-field:var(--radius-control)] hover:bg-button-hover',
         secondary:
-          'border-transparent bg-tab-active text-secondary-foreground shadow-none hover:bg-secondary has-[[data-slot=input-group-control]:focus-visible]:bg-control-surface has-[[data-slot=input-group-control]:focus-visible]:hover:bg-control-surface has-[[data-slot=input-group-control]:not(:placeholder-shown)]:border-control-border has-[[data-slot=input-group-control]:not(:placeholder-shown)]:bg-control-surface has-[[data-slot=input-group-control]:not(:placeholder-shown)]:hover:bg-control-surface',
+          'border-transparent bg-tab-active text-secondary-foreground shadow-none [--radius-field:var(--radius-control)] hover:bg-secondary has-[[data-slot=input-group-control]:focus-visible]:bg-control-surface has-[[data-slot=input-group-control]:focus-visible]:hover:bg-control-surface has-[[data-slot=input-group-control]:not(:placeholder-shown)]:border-control-border has-[[data-slot=input-group-control]:not(:placeholder-shown)]:bg-control-surface has-[[data-slot=input-group-control]:not(:placeholder-shown)]:hover:bg-control-surface',
       },
       shape: {
-        rounded: 'rounded-control',
-        pill: 'rounded-full has-[>[data-align=block-end]]:rounded-control has-[>[data-align=block-start]]:rounded-control has-[>textarea]:rounded-control',
+        rounded: 'rounded-field',
+        pill: 'rounded-full has-[>[data-align=block-end]]:rounded-field has-[>[data-align=block-start]]:rounded-field has-[>textarea]:rounded-field',
       },
     },
     defaultVariants: {

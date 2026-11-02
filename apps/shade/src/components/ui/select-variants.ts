@@ -6,12 +6,14 @@ const selectTriggerVariants = cva(
     variants: {
       variant: {
         default: '',
-        ghost: 'border-transparent bg-transparent shadow-none',
+        // Ghost and secondary triggers read as buttons, so they keep a button's corners.
+        ghost:
+          'border-transparent bg-transparent shadow-none [--radius-field:var(--radius-control)]',
         secondary:
-          'border-transparent bg-tab-active text-secondary-foreground shadow-none hover:bg-secondary',
+          'border-transparent bg-tab-active text-secondary-foreground shadow-none [--radius-field:var(--radius-control)] hover:bg-secondary',
       },
       shape: {
-        rounded: 'rounded-control',
+        rounded: 'rounded-field',
         pill: 'rounded-full',
       },
     },
