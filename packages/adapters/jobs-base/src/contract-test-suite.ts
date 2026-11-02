@@ -65,6 +65,25 @@ export function runJobsBackendContractTests(
       assert.deepEqual(received, [job]);
     });
 
+    it('reports a completed job under the id it was enqueued with', async function () {
+      const settled = deferred();
+      const settlements: Array<{ id: string; status: string }> = [];
+      const backend = makeBackend();
+      await backend.start({
+        processor: async () => {},
+        onSettled: async (id, settlement) => {
+          settlements.push({ id, status: settlement.status });
+          settled.resolve();
+        },
+      });
+
+      await backend.enqueue('dispatch-1', envelope);
+      await settled.promise;
+      await backend.shutdown({ timeoutMs: 1000 });
+
+      assert.deepEqual(settlements, [{ id: 'dispatch-1', status: 'completed' }]);
+    });
+
     it('resolves enqueue on acceptance, not on completion', async function () {
       let completed = false;
       const release = deferred();

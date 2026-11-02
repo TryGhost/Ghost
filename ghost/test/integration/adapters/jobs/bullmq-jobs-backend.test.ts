@@ -395,6 +395,136 @@ describe.skipIf(!redisUp)('Integration: BullMQJobsBackend', function () {
     assert.match(String(errorStub.firstCall.args[0]), /test-job/);
   });
 
+  describe('settlement', function () {
+    const retry = { attempts: 2, backoff: { type: 'fixed', delay: 10 } };
+
+    function recorder() {
+      const settlements: Array<{ id: string; status: string }> = [];
+      return {
+        settlements,
+        onSettled: async (id: string, settlement: { status: string }) => {
+          settlements.push({ id, status: settlement.status });
+        },
+      };
+    }
+
+    it('reports a job that succeeds as completed', async function () {
+      const backend = makeBackend();
+      const { settlements, onSettled } = recorder();
+      await backend.start({ processor: async () => {}, onSettled });
+
+      await backend.enqueue('settle-ok', dispatch(job));
+      await waitFor(() => settlements.length === 1);
+      await backend.shutdown({ timeoutMs: 1000 });
+
+      assert.deepEqual(settlements, [{ id: 'settle-ok', status: 'completed' }]);
+    });
+
+    it('reports a job that fails only once its attempts are used up', async function () {
+      sinon.stub(logging, 'error');
+      const backend = makeBackend(retry);
+      const { settlements, onSettled } = recorder();
+      let calls = 0;
+      await backend.start({
+        processor: async () => {
+          calls += 1;
+          throw new Error('boom');
+        },
+        onSettled,
+      });
+
+      await backend.enqueue('settle-dead', dispatch(job));
+      await waitFor(() => settlements.length === 1);
+      await backend.shutdown({ timeoutMs: 1000 });
+
+      assert.equal(calls, 2);
+      assert.deepEqual(settlements, [{ id: 'settle-dead', status: 'dead' }]);
+    });
+
+    it('reports a job that succeeds on a retry as completed, once', async function () {
+      sinon.stub(logging, 'error');
+      const backend = makeBackend(retry);
+      const { settlements, onSettled } = recorder();
+      let calls = 0;
+      await backend.start({
+        processor: async () => {
+          calls += 1;
+          if (calls === 1) {
+            throw new Error('boom');
+          }
+        },
+        onSettled,
+      });
+
+      await backend.enqueue('settle-retry', dispatch(job));
+      await waitFor(() => settlements.length === 1);
+      await delay(100);
+      await backend.shutdown({ timeoutMs: 1000 });
+
+      assert.deepEqual(settlements, [{ id: 'settle-retry', status: 'completed' }]);
+    });
+
+    it('reports an invalid payload as dead without retrying', async function () {
+      sinon.stub(logging, 'error');
+      const backend = makeBackend(retry);
+      const { settlements, onSettled } = recorder();
+      await backend.start({ processor: async () => {}, onSettled });
+
+      const queue = inspect(prefixes[prefixes.length - 1]!);
+      await queue.add('corrupt', { type: 42 }, { jobId: 'settle-corrupt', ...retry });
+      await waitFor(() => settlements.length === 1);
+      await queue.close();
+      await backend.shutdown({ timeoutMs: 1000 });
+
+      assert.deepEqual(settlements, [{ id: 'settle-corrupt', status: 'dead' }]);
+    });
+
+    it('reports a job that stalls more often than allowed as dead', async function () {
+      sinon.stub(logging, 'error');
+      const prefix = newPrefix();
+      const noStalls = { ...fastConfig, maxStalledCount: 0 };
+      const a = new BullMQJobsBackend({ connection, prefix, ...noStalls });
+      const b = new BullMQJobsBackend({ connection, prefix, ...noStalls });
+      const started = Promise.withResolvers<void>();
+      await a.start({
+        processor: () => {
+          started.resolve();
+          return new Promise<void>(() => {});
+        },
+      });
+      await a.enqueue('settle-stalled', dispatch(job));
+      await started.promise;
+      await a.shutdown({ timeoutMs: 50 });
+
+      const { settlements, onSettled } = recorder();
+      await b.start({ processor: async () => {}, onSettled });
+      await waitFor(() => settlements.length === 1, 8000);
+      await b.shutdown({ timeoutMs: 1000 });
+
+      assert.deepEqual(settlements, [{ id: 'settle-stalled', status: 'dead' }]);
+    });
+
+    it('does not report settlement for a recurring tick', async function () {
+      const backend = makeBackend();
+      const onSettled = sinon.stub();
+      let ticks = 0;
+      await backend.start({
+        processor: async () => {
+          ticks += 1;
+        },
+        onSettled,
+      });
+
+      await backend.scheduleRecurring(dispatch({ type: 'tick', payload: '{}' }), {
+        cron: '* * * * * *',
+      });
+      await waitFor(() => ticks >= 2, 5000);
+      await backend.shutdown({ timeoutMs: 1000 });
+
+      sinon.assert.notCalled(onSettled);
+    });
+  });
+
   describe('recurring schedules', function () {
     const recurring = (type: string): DispatchEnvelope => dispatch({ type, payload: '{}' });
 

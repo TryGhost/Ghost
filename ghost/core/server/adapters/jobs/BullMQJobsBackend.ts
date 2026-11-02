@@ -7,6 +7,7 @@ import { JobsBackendBase } from '@tryghost/adapter-base-jobs';
 import type { RedisConnection } from 'bullmq';
 import type {
   JobProcessor,
+  JobSettlement,
   DispatchEnvelope,
   JobsStartOptions,
   RecurringSchedule,
@@ -199,6 +200,7 @@ function delay(ms: number): Promise<void> {
 
 export default class BullMQJobsBackend extends JobsBackendBase {
   private _processor: JobProcessor | null;
+  private _onSettled: JobsStartOptions['onSettled'];
   private _stopped: boolean;
   private _prefix: string;
   private _connection: RedisOptions;
@@ -216,6 +218,7 @@ export default class BullMQJobsBackend extends JobsBackendBase {
     super();
     const resolved = parseConfig(config);
     this._processor = null;
+    this._onSettled = undefined;
     this._stopped = false;
     this._prefix = resolved.prefix;
     this._connection = resolved.connection;
@@ -270,10 +273,20 @@ export default class BullMQJobsBackend extends JobsBackendBase {
     }
     queue.on('error', (err) => logging.error(`Jobs queue "${name}" error`, err));
     worker.on('error', (err) => logging.error(`Jobs worker "${name}" error`, err));
+    worker.on('completed', (bullJob) => {
+      void this._settle(bullJob, { status: 'completed' });
+    });
+    worker.on('failed', (bullJob, err) => {
+      // BullMQ only marks a job finished once it will not retry it: attempts
+      // used up, an unrecoverable error, or too many stalls
+      if (bullJob?.finishedOn !== undefined) {
+        void this._settle(bullJob, { status: 'dead', error: err });
+      }
+    });
     return { queue, worker };
   }
 
-  start({ processor, queues }: JobsStartOptions): void {
+  start({ processor, queues, onSettled }: JobsStartOptions): void {
     const declared = new Map<string, number>();
     for (const [name, { concurrency }] of Object.entries(queues ?? {})) {
       if (concurrency !== undefined && (!Number.isInteger(concurrency) || concurrency < 1)) {
@@ -288,6 +301,7 @@ export default class BullMQJobsBackend extends JobsBackendBase {
     }
 
     this._processor = processor;
+    this._onSettled = onSettled;
     this._stopped = false;
     for (const [name, concurrency] of declared) {
       this._lanes.set(name, this._makeLane(name, concurrency));
@@ -342,6 +356,18 @@ export default class BullMQJobsBackend extends JobsBackendBase {
       ]);
     } finally {
       clearTimeout(timer);
+    }
+  }
+
+  private async _settle(bullJob: BullJob<unknown>, settlement: JobSettlement): Promise<void> {
+    // A scheduler's ticks were never enqueued
+    if (bullJob.repeatJobKey || bullJob.id === undefined) {
+      return;
+    }
+    try {
+      await this._onSettled?.(bullJob.id, settlement);
+    } catch (err) {
+      logging.error(`Job "${bullJob.name}" settled, but reporting it failed`, err);
     }
   }
 
@@ -443,5 +469,6 @@ export default class BullMQJobsBackend extends JobsBackendBase {
     }
     this._inflight = new Set();
     this._processor = null;
+    this._onSettled = undefined;
   }
 }
