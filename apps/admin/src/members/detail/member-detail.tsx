@@ -484,7 +484,9 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
             </MemberMapHeader>
           </DetailPage.Header>
 
-          <DetailPage.Body>
+          {/* The body scrolls, so it clips anything past its edges. Fields now run flush
+              to the left edge, so give their focus rings room to show. */}
+          <DetailPage.Body className="in-data-[admin7-design=true]:-mx-3 in-data-[admin7-design=true]:px-3">
             {loadError && (
               <div
                 className="flex flex-1 flex-col items-center justify-center gap-3"
