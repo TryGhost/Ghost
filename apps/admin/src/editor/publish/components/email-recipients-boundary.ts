@@ -24,11 +24,7 @@ const labelOptionBoundarySchema = z.looseObject({ value: z.string(), label: z.st
 
 export type RecipientLabelOption = z.infer<typeof labelOptionBoundarySchema>;
 
-/**
- * The labels the shared label source offers, each a slug and a name. An entry
- * that is not that is dropped rather than reaching the picker, which would
- * fail on it; the rest are kept.
- */
+/** The labels the shared source offers; a malformed entry is dropped and the rest kept. */
 export function parseRecipientLabelOptions(options: unknown): RecipientLabelOption[] {
   if (!Array.isArray(options)) {
     return [];

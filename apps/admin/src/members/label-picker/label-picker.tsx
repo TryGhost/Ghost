@@ -221,26 +221,20 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
 
 interface LoadMoreSentinelProps {
   isLoading: boolean;
-  /** How many rows the list shows; a page that added none did not arrive. */
+  /** Rows shown; a page that adds none is taken as failed. */
   itemCount: number;
   onVisible: () => void;
 }
 
-/** A page asked for, and the row count at the time, until its load has ended. */
 interface PendingPage {
   itemCount: number;
   started: boolean;
 }
 
-// A source that pages (a site with more labels than one page holds) exposes
-// `hasMore`; the sentinel sits under the last row and requests the next page
-// when the list is scrolled down to it, so the list fills as the user scrolls
-// rather than every page being fetched up front.
-//
-// A page whose load ended without adding a row did not arrive (the query
-// client does not retry). The sentinel is still in view then, and observing it
-// again would ask for the page at once, over and over with no pause between
-// failures, so it is offered as a retry instead.
+// Sits under the last row and asks for the next page when scrolled into view.
+// A page that loads without adding a row is taken as failed and offered as a
+// retry: the query client does not retry, and re-observing the still-visible
+// sentinel would ask again at once, with no pause between failures.
 const LoadMoreSentinel: React.FC<LoadMoreSentinelProps> = ({ isLoading, itemCount, onVisible }) => {
   const ref = useRef<HTMLDivElement>(null);
   const pending = useRef<PendingPage | null>(null);
@@ -251,8 +245,8 @@ const LoadMoreSentinel: React.FC<LoadMoreSentinelProps> = ({ isLoading, itemCoun
     onVisible();
   }, [itemCount, onVisible]);
 
-  // One effect settles the page asked for and then decides whether to watch
-  // for the next, so a failed page is never observed for even one frame.
+  // Settling the asked-for page and observing happen in one effect, so a failed
+  // page is never observed for even one frame.
   useEffect(() => {
     const page = pending.current;
     if (page) {
@@ -434,7 +428,6 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     ],
   });
 
-  // Keyed on the callback, not the source object, which callers rebuild every render.
   const { onSearchChange } = optionSource;
   const handleSearchChange = useCallback(
     (value: string) => {
@@ -559,7 +552,9 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                   onToggle={onToggle}
                 />
                 {optionSource.hasMore && (
+                  // A new search is a new list, so the sentinel starts over with it.
                   <LoadMoreSentinel
+                    key={search}
                     isLoading={optionSource.isLoadingMore}
                     itemCount={labels.length}
                     onVisible={optionSource.loadMore}
