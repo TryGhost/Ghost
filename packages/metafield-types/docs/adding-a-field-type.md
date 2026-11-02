@@ -63,8 +63,8 @@ Adding a block leads the compiler to everything written per block of its kind.
   `SettingsOf`, for what a field of it is set up with, its variant in `withTypedSettings`
   and the settings each caller gives it there (as written, as read back, and as Ghost's
   table holds them), and every `matchShape` and
-  `matchField` call, which are its rule, Ghost's row layout (how its rows are read), CSV
-  columns and cells, Admin's control, editor,
+  `matchField` call, which are its rule, Ghost's row layout (how its rows are read, and
+  where a filter finds its whole value), CSV columns and cells, Admin's control, editor,
   one-line value, filters and import mapping, and Portal's inputs, change detection and
   error placement. A value laid out unlike a string, a record or a list of strings also
   fails to compile where Ghost writes its rows.
@@ -92,5 +92,6 @@ options. A rule that depends on nothing but the type is built once per type; a s
 built from its field whenever it is asked for.
 
 A set keeps one row per option picked, under the SHA-256 of the option's text, so the same
-text is always the same row. An option is named by its text alone: removing one leaves members' answers as they
+text is always the same row and a filter naming an option's text finds it by the table's
+key. An option is named by its text alone: removing one leaves members' answers as they
 are, and offering the same text again makes it that option again.

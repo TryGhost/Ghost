@@ -1,13 +1,18 @@
 import { createHash } from 'node:crypto';
 import errors from '@tryghost/errors';
-import { FIELD_STRUCTURES, matchField, type TypedSettings } from '@tryghost/metafield-types';
+import {
+  FIELD_STRUCTURES,
+  matchField,
+  type FieldShape,
+  type TypedSettings,
+} from '@tryghost/metafield-types';
 import { type Part, SEPARATOR } from '@tryghost/metafield-types/identity';
 
 // How a value is laid out in rows, for every shape a type can have: a value is a tree, stored as
 // one row per leaf under the path of parts that leads to it, and a value with no parts is one row
 // at the root. A set is one row per option picked, each under a path its text gives. Reading a
-// field's rows back and writing a value's both follow the layouts here, so a shape added to the
-// catalog is laid out once, in this file.
+// field's rows back, writing a value's, and finding a value a filter names all follow the layouts
+// here, so a shape added to the catalog is laid out once, in this file.
 
 /** Empty rather than null, because the path is part of a value row's primary key. */
 export const ROOT_PATH = '';
@@ -24,7 +29,8 @@ export interface ValueRow {
 
 /**
  * The path a set keeps an option under: the SHA-256 of its text, in hex, so the same text is
- * always the same row. Hashed rather than the text itself because a path is part of that key, which has a length limit
+ * always the same row, and a filter naming an option's text finds the row by the table's key.
+ * Hashed rather than the text itself because a path is part of that key, which has a length limit
  * an option's text could pass, and because MySQL compares keys ignoring case and accents where
  * SQLite does not, so the text as a key would make "Café" and "cafe" one option on one database
  * and two on the other.
@@ -162,6 +168,28 @@ export function storedValueAs(
         : undefined;
     },
   });
+}
+
+/**
+ * Where each shape keeps a row whose text is its field's whole value, given that text, or null for
+ * a shape whose whole value is never the text of one row.
+ */
+const WHOLE_VALUE_PATH: { [S in FieldShape]: ((text: string) => string) | null } = {
+  scalar: () => ROOT_PATH,
+  record: null,
+  set: optionPath,
+};
+
+/**
+ * Every path a row holding one of `texts` as its field's whole value can be at, whatever the
+ * field's type. A filter names a field and a value but not the field's type, so it looks wherever
+ * a type could keep that value.
+ */
+export function pathsHolding(texts: readonly string[]): string[] {
+  const paths = Object.values(WHOLE_VALUE_PATH).flatMap((pathOfText) =>
+    pathOfText ? texts.map(pathOfText) : [],
+  );
+  return [...new Set(paths)];
 }
 
 /**
