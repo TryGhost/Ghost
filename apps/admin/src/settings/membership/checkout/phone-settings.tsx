@@ -17,12 +17,15 @@ const PhoneSettings: React.FC<{
   /** The fields chosen for every collected value, which no other value is offered. */
   chosenFields: Array<string | null>;
   errors: PhoneErrors;
+  /** Whether every checkout asks for it, whatever this says. */
+  alwaysAsked: boolean;
   onChange: (next: PhoneFormState) => void;
-}> = ({ state, tiers, fields, chosenFields, errors, onChange }) => {
+}> = ({ state, tiers, fields, chosenFields, errors, alwaysAsked, onChange }) => {
   const set = (next: Partial<PhoneFormState>) => onChange({ ...state, ...next });
 
   return (
     <CollectRow
+      alwaysAsked={alwaysAsked}
       id="checkout-collect-phone"
       label="Phone"
       state={state}
