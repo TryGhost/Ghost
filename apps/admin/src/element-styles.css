@@ -21,7 +21,7 @@ body:where(.react-admin) {
 
 /* admin7Design on: the neutral gray at the same lightness. */
 :where(html.dark body.react-admin [data-admin7-design='true']) ::selection {
-  background: oklch(47% 0.002 100 / 0.99);
+  background: oklch(47% 0.005 255 / 0.99);
 }
 
 /* Text */

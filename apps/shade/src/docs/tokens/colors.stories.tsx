@@ -244,7 +244,7 @@ export const Admin7Comparison: Story = {
     docs: {
       description: {
         story:
-          "The admin7Design palette next to the previous one, with WCAG contrast for the main text pairs (AA needs 4.5). Light mode only: dark mode keeps the previous palette until it gets its Admin 7 colours. Gray keeps Shade's lightness at each step with Shapeshifter's warm hue; the colour families are Shapeshifter's ramps.",
+          "The admin7Design palette next to the previous one, with WCAG contrast for the main text pairs (AA needs 4.5). Light mode only. Gray keeps Shade's lightness at each step with a slightly cool neutral tint; the colour families are Shapeshifter's ramps.",
       },
     },
   },
