@@ -104,10 +104,10 @@ and arrays. It reads the same allowlist and service scope as the boundary rule.
 Factories, forwarding callbacks, indirect aliases and separately assembled
 options objects still need review; this is not general data-flow analysis.
 
-Logging, settings, models, event buses and other service instances belong in the
-root wiring. Nested `index.ts` files are implementation files, not extra wiring
-roots. The rule covers static imports, `require()`, literal dynamic imports and
-re-exports. All implementation source inside a service is checked, including
+Logging, config, settings, models, event buses and other service instances
+belong in the root wiring. Nested `index.ts` files are implementation files, not
+extra wiring roots. The rule covers static imports, `require()`, literal dynamic
+imports and re-exports. All implementation source inside a service is checked, including
 nested folders named `test` or `fixtures`.
 
 Some dependencies look like libraries but are treated as instances:
@@ -156,6 +156,11 @@ changes to that marker as part of the migration.
 The allowlist names individual packages or files, with a reason for each.
 Review additions individually; do not allow whole shared directories or all
 `@tryghost/*` packages.
+
+When several services make the same call to a library, move that call into one
+shared file and allow the file rather than the library.
+[`inline-css.ts`](../lib/email-rendering/inline-css.ts) wraps `juice` with the
+options all three email renderers used.
 
 ### Migration reports
 
