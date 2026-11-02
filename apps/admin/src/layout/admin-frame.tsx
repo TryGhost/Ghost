@@ -14,7 +14,7 @@ export type AdminFrameMode = 'full' | 'site' | 'hidden' | 'off';
 
 const ADMIN_FRAME_TOP_BAR_HEIGHT = 44;
 const BEZEL = 8;
-const CARD_RADIUS = 10;
+const CARD_RADIUS = 12;
 
 /** The frame's timing, for motion choreographed with it. */
 const ADMIN_FRAME_TRANSITION = {
