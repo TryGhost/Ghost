@@ -561,8 +561,8 @@ catalogs:
       specifier: 0.5.7
       version: 0.5.7
     eslint-plugin-tailwindcss:
-      specifier: 4.2.0
-      version: 4.2.0
+      specifier: 4.4.0
+      version: 4.4.0
     execa:
       specifier: 10.0.1
       version: 10.0.1
@@ -4442,7 +4442,7 @@ importers:
         version: 10.4.6(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(storybook@10.4.6(@testing-library/dom@10.4.2)(@types/react@18.3.31)(prettier@3.9.10)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@10.2.2)
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
-        version: 4.2.0(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(tailwindcss@4.3.3)
+        version: 4.4.0(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(tailwindcss@4.3.3)
       globals:
         specifier: 'catalog:'
         version: 17.7.0
@@ -11425,8 +11425,8 @@ packages:
     peerDependencies:
       tailwindcss: ^3.4.0 || ^4.0.0
 
-  eslint-plugin-tailwindcss@4.2.0:
-    resolution: {integrity: sha512-TSygSjEL54Iks7K29FjvM9Lp03cpsYtbh3LJHnj/84FxCOYfLFuvQ+GioHOxgq19WGN5NbHPuvFDz/igIOEtbg==}
+  eslint-plugin-tailwindcss@4.4.0:
+    resolution: {integrity: sha512-cPyEIeBTVbPU30oQTm7pOqOYurb5vtGaGhRCajYsSUwpUS9fvswB13dOLDUjGJJ+Rt8ylXf4L0hrhLA7Hf7WTQ==}
     engines: {node: '>=20.19.0'}
     peerDependencies:
       eslint: ^9.0.0 || ^10.0.0
@@ -23974,7 +23974,7 @@ snapshots:
       tailwind-api-utils: 1.0.3(tailwindcss@3.4.19(tsx@4.23.15)(yaml@2.9.0))
       tailwindcss: 3.4.19(tsx@4.23.15)(yaml@2.9.0)
 
-  eslint-plugin-tailwindcss@4.2.0(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(tailwindcss@4.3.3):
+  eslint-plugin-tailwindcss@4.4.0(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(tailwindcss@4.3.3):
     dependencies:
       '@typescript-eslint/utils': 8.71.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
       eslint: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
