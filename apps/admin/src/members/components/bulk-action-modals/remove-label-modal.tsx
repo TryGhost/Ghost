@@ -61,11 +61,16 @@ export function RemoveLabelModal({
     onSelectionChange: setSelectedSlugs,
   });
 
+  // The list is the labels these members carry, so paging the site's labels to
+  // find them would walk every page on a large site. The first page and the
+  // search are offered; a label beyond them is reached by searching for it.
   const availableOptionSource = {
     ...picker.optionSource,
     options: picker.optionSource.options.filter((option) =>
       memberLabelSlugs.has(String(option.value)),
     ),
+    hasMore: false,
+    loadMore: () => {},
   };
 
   const handleOpenChange = useCallback(
