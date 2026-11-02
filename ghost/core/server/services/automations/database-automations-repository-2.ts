@@ -28,6 +28,44 @@ const selectExists = async (connection: Connection, query: Knex.QueryBuilder): P
   return Boolean(Number(row?.exists));
 };
 
+const applyMembershipStartedFilters = (
+  query: Knex.QueryBuilder,
+  connection: Connection,
+  memberStatus: Parameters<AutomationsRepository2<Connection>['findFirstActionRevisions']>[1],
+  memberTierIds: Parameters<AutomationsRepository2<Connection>['findFirstActionRevisions']>[2],
+): void => {
+  query.whereExists(
+    connection('automation_trigger_rules as rule')
+      .select('rule.id')
+      .where('rule.automation_id', connection.ref('automation.id'))
+      .where((builder) => {
+        switch (memberStatus) {
+          case 'free':
+            builder.where('rule.trigger_type', 'free_signup');
+            break;
+          case 'paid':
+            builder.where('rule.trigger_type', 'paid_subscription_started').where((paid) => {
+              paid.where('rule.scope', 'any_paid_tier');
+              if (memberTierIds.length > 0) {
+                paid.orWhere((specific) =>
+                  specific
+                    .where('rule.scope', 'specific_paid_tier')
+                    .whereIn('rule.product_id', memberTierIds),
+                );
+              }
+            });
+            break;
+          default: {
+            const _exhaustive: never = memberStatus;
+            throw new errors.InternalServerError({
+              message: `Unexpected member status: ${_exhaustive}`,
+            });
+          }
+        }
+      }),
+  );
+};
+
 /**
  * Create a database-backed automations repository. See `AutomationsRepository2`
  * for details on what should (and should not) be in here.
@@ -55,36 +93,9 @@ export const createDatabaseAutomationsRepository2 = ({
         )
         .innerJoin('automation_actions as actions', 'actions.automation_id', 'automation.id')
         .innerJoin('automation_action_revisions as revisions', 'revisions.action_id', 'actions.id')
-        .whereExists(
-          connection('automation_trigger_rules as rule')
-            .select('rule.id')
-            .where('rule.automation_id', connection.ref('automation.id'))
-            .where((builder) => {
-              switch (memberStatus) {
-                case 'free':
-                  builder.where('rule.trigger_type', 'free_signup');
-                  break;
-                case 'paid':
-                  builder.where('rule.trigger_type', 'paid_subscription_started').where((paid) => {
-                    paid.where('rule.scope', 'any_paid_tier');
-                    if (memberTierIds.length > 0) {
-                      paid.orWhere((specific) =>
-                        specific
-                          .where('rule.scope', 'specific_paid_tier')
-                          .whereIn('rule.product_id', memberTierIds),
-                      );
-                    }
-                  });
-                  break;
-                default: {
-                  const _exhaustive: never = memberStatus;
-                  throw new errors.InternalServerError({
-                    message: `Unexpected member status: ${_exhaustive}`,
-                  });
-                }
-              }
-            }),
-        )
+        .modify((query) => {
+          applyMembershipStartedFilters(query, connection, memberStatus, memberTierIds);
+        })
         .where('automation.status', 'active')
         .whereNull('actions.deleted_at')
         .whereNotExists(
