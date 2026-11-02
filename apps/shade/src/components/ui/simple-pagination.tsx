@@ -1,4 +1,3 @@
-import { useShade } from '@/providers/shade-context';
 import { cn } from '@/lib/utils';
 import React from 'react';
 import { Button, ButtonProps } from './button';
@@ -55,10 +54,9 @@ const SimplePaginationNavigation = React.forwardRef<
 SimplePaginationNavigation.displayName = 'SimplePaginationNavigation';
 
 const SimplePaginationPreviousButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'subtle', size, ...props }, ref) => {
-    const { isAdmin7 } = useShade();
+  ({ variant = 'subtle', size = 'icon', ...props }, ref) => {
     return (
-      <Button ref={ref} size={size ?? (isAdmin7 ? 'icon' : 'sm')} variant={variant} {...props}>
+      <Button ref={ref} size={size} variant={variant} {...props}>
         <ArrowLeft />
       </Button>
     );
@@ -68,10 +66,9 @@ const SimplePaginationPreviousButton = React.forwardRef<HTMLButtonElement, Butto
 SimplePaginationPreviousButton.displayName = 'SimplePaginationPreviousButton';
 
 const SimplePaginationNextButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = 'subtle', size, ...props }, ref) => {
-    const { isAdmin7 } = useShade();
+  ({ variant = 'subtle', size = 'icon', ...props }, ref) => {
     return (
-      <Button ref={ref} size={size ?? (isAdmin7 ? 'icon' : 'sm')} variant={variant} {...props}>
+      <Button ref={ref} size={size} variant={variant} {...props}>
         <ArrowRight />
       </Button>
     );

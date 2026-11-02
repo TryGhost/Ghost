@@ -1,5 +1,4 @@
 import { Button, Popover, PopoverContent, PopoverTrigger } from '@tryghost/shade/components';
-import { useFocusContext } from '@tryghost/shade/app';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import {
@@ -11,7 +10,6 @@ import { useEmailSize } from './use-email-size';
 
 /** The footer's flag for a post whose newsletter would be long enough to be clipped; a click or tap opens the details. */
 export function EmailSizeWarning({ post }: { post: PublishFlowPost }) {
-  const { isAdmin7 } = useFocusContext();
   const emailSize = useEmailSize(post);
 
   if (!emailSize?.overLimit) {
@@ -26,7 +24,7 @@ export function EmailSizeWarning({ post }: { post: PublishFlowPost }) {
           className="bg-background/80 text-state-warning backdrop-blur-sm hover:text-state-warning"
           data-testid={editorEmailSizeWarning}
           shape="pill"
-          size={isAdmin7 ? 'icon' : 'icon-sm'}
+          size="icon"
           type="button"
           variant="ghost"
         >

@@ -32,7 +32,6 @@ const rawPalettes = {
     '--color-green-700',
     '--color-green-800',
     '--color-green-900',
-    '--color-green-950',
   ]),
   blue: rawPalette([
     '--color-blue-50',
@@ -45,7 +44,6 @@ const rawPalettes = {
     '--color-blue-700',
     '--color-blue-800',
     '--color-blue-900',
-    '--color-blue-950',
   ]),
   purple: rawPalette([
     '--color-purple-50',
@@ -58,7 +56,6 @@ const rawPalettes = {
     '--color-purple-700',
     '--color-purple-800',
     '--color-purple-900',
-    '--color-purple-950',
   ]),
   pink: rawPalette([
     '--color-pink-50',
@@ -71,7 +68,6 @@ const rawPalettes = {
     '--color-pink-700',
     '--color-pink-800',
     '--color-pink-900',
-    '--color-pink-950',
   ]),
   red: rawPalette([
     '--color-red-50',
@@ -84,7 +80,6 @@ const rawPalettes = {
     '--color-red-700',
     '--color-red-800',
     '--color-red-900',
-    '--color-red-950',
   ]),
   orange: rawPalette([
     '--color-orange-50',
@@ -97,7 +92,6 @@ const rawPalettes = {
     '--color-orange-700',
     '--color-orange-800',
     '--color-orange-900',
-    '--color-orange-950',
   ]),
   yellow: rawPalette([
     '--color-yellow-50',
@@ -110,7 +104,6 @@ const rawPalettes = {
     '--color-yellow-700',
     '--color-yellow-800',
     '--color-yellow-900',
-    '--color-yellow-950',
   ]),
   lime: rawPalette([
     '--color-lime-50',
@@ -123,7 +116,6 @@ const rawPalettes = {
     '--color-lime-700',
     '--color-lime-800',
     '--color-lime-900',
-    '--color-lime-950',
   ]),
 };
 
@@ -177,7 +169,7 @@ export const RawPalette: Story = {
     docs: {
       description: {
         story:
-          'Raw palette. Brand palettes use the Tailwind-style 11-step scale: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950.',
+          'Raw palette. Colour families use a 10-step scale: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900. Gray adds 950.',
       },
     },
   },

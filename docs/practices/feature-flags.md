@@ -96,10 +96,13 @@ Admin 7 milestones use ordinary private Labs flags with stable, descriptive
 Follow the same registration and lifecycle as any other private flag.
 
 Read the current milestone's flag with `useFeatureFlag` at the boundary that
-owns the change, keeping any availability checks beside it. For shared design
-changes, pass the result to ShadeApp's `isAdmin7` prop. Components read
-`useShade().isAdmin7`; reuse this switch as milestones progress instead of
-adding a Shade prop for each milestone.
+owns the change, keeping any availability checks beside it. When a milestone
+changes shared design, Shade gets a switch named exactly after its flag: Admin
+passes `useFeatureFlag('admin7Design')` to ShadeApp's `admin7Design` prop,
+components read `useShade().admin7Design`, and tokens are scoped by the
+`data-admin7-design` attribute that ShadeApp and Shade's portals carry. Delete
+the switch together with its flag. Don't reuse one generic switch across
+milestones: a switch that outlives its flag no longer says what it controls.
 
 Keep shared appearance in Shade and page-specific structure in the page. Build
 the enabled design as the intended default so retiring a flag means removing
@@ -128,8 +131,7 @@ site places, search and the site's numbers (Online, Members and MRR, for staff
 with admin access), so View site and search leave the sidebar. The frame closes
 around the editor and automation editor, and its sides retract on View site. Inside the frame, list pages show their title
 large above a sticky header that takes it over as the page scrolls: Admin's
-layout turns this on through Shade's `PageChromeProvider` rather than
-`isAdmin7`, which stays on for the generally available pill controls.
+layout turns this on through Shade's `PageChromeProvider`.
 Settings, the editor, the automation editor, mobile and pages without a
 `PageHeader.Title` keep the usual header. Settings shows its
 navigation inside the same sidebar, pinned without changing the stored mode. Mobile keeps the sidebar sheet, and the flag-off path

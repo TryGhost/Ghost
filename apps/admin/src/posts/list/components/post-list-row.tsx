@@ -25,7 +25,6 @@ import { forwardRef, memo, useState } from 'react';
 import type { ComponentPropsWithoutRef, MouseEvent as ReactMouseEvent } from 'react';
 import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
 import type { PostResource } from '@/posts/list/post-resource';
-import { useShade } from '@tryghost/shade/app';
 
 interface PostListRowProps extends Omit<ComponentPropsWithoutRef<'li'>, 'onClick'> {
   post: PostListItem;
@@ -159,7 +158,6 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
     },
     ref,
   ) {
-    const { isAdmin7 } = useShade();
     const [isHovered, setIsHovered] = useState(false);
 
     const metaParts = getPostMetaParts(post, { timezone });
@@ -327,14 +325,12 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 // title away from the metrics too.
                 className={cn(
                   'my-4 shrink-0',
-                  isAdmin7 ? 'ms-8' : 'ms-2',
-                  isAdmin7
-                    ? 'text-muted-foreground hover:bg-background hover:text-foreground'
-                    : 'bg-control-surface px-4',
-                  isAdmin7 && isHovered && 'bg-background',
+                  'ms-8',
+                  'text-muted-foreground hover:bg-background hover:text-foreground',
+                  isHovered && 'bg-background',
                 )}
-                size={isAdmin7 ? 'icon' : undefined}
-                variant={isAdmin7 ? (isHovered ? 'outline' : 'ghost') : 'outline'}
+                size="icon"
+                variant={isHovered ? 'outline' : 'ghost'}
                 asChild
               >
                 <RowLink

@@ -11,7 +11,6 @@ const toggleVariants = cva(
         default: 'h-[calc(var(--control-height)-2px)] min-w-[26px] px-2',
         button: 'h-[calc(var(--control-height)-2px)] min-w-[32px] px-3',
       },
-      isAdmin7: { true: '', false: '' },
       shape: {
         rounded: 'rounded-control',
         pill: 'rounded-full',
@@ -19,7 +18,6 @@ const toggleVariants = cva(
     },
     compoundVariants: [
       {
-        isAdmin7: true,
         size: ['default', 'button'],
         className: 'h-[calc(var(--control-height)-4px)] data-[state=off]:hover:bg-transparent',
       },
@@ -28,7 +26,6 @@ const toggleVariants = cva(
       variant: 'default',
       size: 'default',
       shape: 'pill',
-      isAdmin7: true,
     },
   },
 );
