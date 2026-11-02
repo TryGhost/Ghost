@@ -56,6 +56,25 @@ describe('InMemoryJobsBackend', function () {
       assert.deepEqual(settlements, [{ id: 'd1', status: 'dead', error }]);
     });
 
+    it('does not settle a job that was interrupted, so it can be handed over again', async function () {
+      const backend = new InMemoryJobsBackend();
+      const onSettled = sinon.stub();
+      const delivered = Promise.withResolvers<void>();
+      backend.start({
+        processor: async () => {
+          delivered.resolve();
+          return 'interrupted';
+        },
+        onSettled,
+      });
+
+      backend.enqueue('d1', dispatch({ type: 'job', payload: '{}' }));
+      await delivered.promise;
+      await backend.shutdown({ timeoutMs: 100 });
+
+      sinon.assert.notCalled(onSettled);
+    });
+
     it('keeps delivering when reporting a settlement fails', async function () {
       const error = sinon.stub(logging, 'error');
       const backend = new InMemoryJobsBackend();
@@ -130,6 +149,26 @@ describe('InMemoryJobsBackend', function () {
       });
 
       assert.deepEqual(backend.heldIds(), ['d1']);
+      await backend.shutdown({ timeoutMs: 10 });
+    });
+
+    it('stops holding a job that reports it was interrupted, so its row is left to go stale', async function () {
+      const backend = new InMemoryJobsBackend();
+      const finished = Promise.withResolvers<void>();
+      backend.start({
+        processor: async () => {
+          finished.resolve();
+          return 'interrupted';
+        },
+      });
+
+      backend.enqueue('d1', dispatch({ type: 'job', payload: '{}' }));
+      await finished.promise;
+      await new Promise<void>((resolve) => {
+        setImmediate(resolve);
+      });
+
+      assert.deepEqual(backend.heldIds(), []);
       await backend.shutdown({ timeoutMs: 10 });
     });
 
