@@ -281,6 +281,15 @@ describe('ExplorePingService', function () {
   });
 
   describe('ping', function () {
+    it('does not ping for a localhost site URL', async function () {
+      configStub.get.withArgs('url').returns('http://localhost:2368');
+
+      await explorePingService.ping();
+
+      sinon.assert.notCalled(requestStub);
+      sinon.assert.notCalled(postsStub.stats.getTotalPostsPublished);
+    });
+
     it('does not ping if explore URL is not set', async function () {
       configStub.get.withArgs('explore:update_url').returns(null);
 

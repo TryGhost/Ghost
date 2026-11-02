@@ -1,4 +1,5 @@
 import type { GhostLogger } from '@tryghost/logging';
+import { isLocalhost } from '@tryghost/app-contracts/manifest';
 
 type SettingsCache = {
   get(key: string): unknown;
@@ -190,6 +191,10 @@ export class ExplorePingService {
 
     if (!this.settingsCache.get('explore_ping')) {
       this.logging.info('Explore ping disabled');
+      return;
+    }
+
+    if (isLocalhost(new URL(this.config.get('url') as string).hostname)) {
       return;
     }
 
