@@ -21,8 +21,8 @@ export interface PresenceStore {
   readonly kind: 'redis' | 'memory';
   /** Record a heartbeat and drop members last seen before `now - retentionMs`. */
   touch(member: string, now: number, retentionMs: number): Promise<void>;
-  /** Members with a heartbeat at or after `since`; a store may use `retentionMs` to repair a key without an expiry. */
-  read(since: number, retentionMs: number): Promise<StoredPresence[]>;
+  /** Members with a heartbeat at or after `since`. */
+  read(since: number): Promise<StoredPresence[]>;
   remove(member: string): Promise<void>;
 }
 
