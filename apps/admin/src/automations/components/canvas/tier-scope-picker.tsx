@@ -327,6 +327,7 @@ export function TierScopePicker<TStandalone extends string>({
           aria-label={inputId ? undefined : inputLabel}
           className={cn(
             tokenFieldClasses.input,
+            !nothingChosen && search === '' && 'min-w-0 not-focus:px-0',
             // No caret beside the standalone value until something is typed.
             standaloneChosen && search === '' && 'caret-transparent',
           )}
