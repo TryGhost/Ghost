@@ -34,7 +34,15 @@ const meta = {
   argTypes: {
     variant: {
       control: { type: 'select' },
-      options: ['default', 'gradient', 'info', 'success', 'warning', 'destructive'],
+      options: [
+        'default',
+        'gradient',
+        'gradient-inline',
+        'info',
+        'success',
+        'warning',
+        'destructive',
+      ],
     },
     size: {
       control: { type: 'select' },
@@ -288,6 +296,12 @@ export const AllVariants: Story = {
             <Sparkles className="size-4" />
           </span>
           <strong>Gradient</strong> - Cyan/purple gradient shadow with hover animation
+        </div>
+      </Banner>
+      <Banner variant="gradient-inline">
+        <div className="text-sm">
+          <strong>Gradient inline</strong> - Tighter glow with hover animation, for use among other
+          content
         </div>
       </Banner>
       <Banner variant="info">
