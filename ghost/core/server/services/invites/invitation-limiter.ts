@@ -19,28 +19,26 @@ export default class InvitationLimiter {
     this.deps = deps;
   }
 
-  private isLimited(): boolean {
-    return (
-      this.deps.limitService.isLimited('staff') ||
-      this.deps.limitService.isLimited('allStaff') ||
-      this.deps.limitService.isLimited('inviteEmails')
-    );
-  }
-
   async run<T>(
     invite: { email: string; role_id: string },
     prepare: (transaction?: Knex.Transaction) => Promise<T>,
   ): Promise<T> {
-    if (!this.isLimited()) {
+    const hasStaffLimit = this.deps.limitService.isLimited('staff');
+    const hasAllStaffLimit = this.deps.limitService.isLimited('allStaff');
+    const hasEmailLimit = this.deps.limitService.isLimited('inviteEmails');
+    const isLimited = hasStaffLimit || hasAllStaffLimit || hasEmailLimit;
+
+    if (!isLimited) {
       return prepare();
     }
     return this.deps.transaction(async (transaction) => {
       const options = { transacting: transaction };
-      const counterValue =
-        this.deps.limitService.isLimited('allStaff') ||
-        this.deps.limitService.isLimited('inviteEmails')
-          ? await this.getAndLockInviteEmailCounter(transaction)
-          : null;
+      let counterValue: string | null = null;
+      // Lock before counting so concurrent requests cannot claim the same remaining seat or email allowance.
+      if (hasAllStaffLimit || hasEmailLimit) {
+        counterValue = await this.getAndLockInviteEmailCounter(transaction);
+      }
+
       const email = invite.email.trim();
       const existingInvite = await transaction('invites')
         .where({ email })
@@ -54,14 +52,14 @@ export default class InvitationLimiter {
           code: 'USER_ALREADY_REGISTERED',
         });
       }
-      if (this.deps.limitService.isLimited('inviteEmails')) {
+      if (hasEmailLimit) {
         await this.reserveEmail(transaction, counterValue);
       }
       // Replacing a pending invitation does not occupy another seat, even after an import.
-      if (this.deps.limitService.isLimited('allStaff') && !existingInvite) {
+      if (hasAllStaffLimit && !existingInvite) {
         await this.deps.limitService.errorIfWouldGoOverLimit('allStaff', options);
       }
-      if (this.deps.limitService.isLimited('staff')) {
+      if (hasStaffLimit) {
         await this.checkStaffLimit(transaction, invite.role_id, existingInvite?.role_id);
       }
       return prepare(transaction);
