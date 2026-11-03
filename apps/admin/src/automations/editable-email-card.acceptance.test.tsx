@@ -271,7 +271,7 @@ describe('Editable email cards', () => {
     expect(saved.actions[2].data).toMatchObject({ email_subject: '', email_lexical: '' });
   });
 
-  it('opens the existing content editor and updates the preview after clearing the body', async () => {
+  it('contains long body text in the card preview and updates it after clearing the body', async () => {
     const save = serve();
     fakeAdminEndpoint('GET', '/automated_emails/', { automated_emails: [] });
     fakeAdminEndpoint('GET', '/newsletters/?filter=status%3Aactive&limit=1', { newsletters: [] });
@@ -285,9 +285,19 @@ describe('Editable email cards', () => {
     await emailCards().nth(0).getByRole('button', { name: 'Edit email content' }).click();
     await expect.element(emailEditor()).toBeVisible();
     await expect.element(emailEditorBody()).toHaveTextContent('Thanks for joining.');
-    await emailEditorBody().fill('Rewritten message');
+    const longWord = 'rwqaetsgrdxrweatszrdrqaewstzdrxwtaegsdxtweagdsaffdsafasdfsadfasd';
+    await emailEditorBody().fill(longWord);
     await minimizeEmailEditor();
-    await expect.element(preview(emailCards().nth(0))).toHaveTextContent('Rewritten message');
+    const card = emailCards().first();
+    const message = preview(card);
+    await expect.element(message).toHaveTextContent(longWord);
+    await expect
+      .poll(
+        () =>
+          message.element().getBoundingClientRect().right -
+          card.element().getBoundingClientRect().right,
+      )
+      .toBeLessThanOrEqual(0);
     await emailCards().nth(0).getByRole('button', { name: 'Edit email content' }).click();
     await expect.element(emailEditor()).toBeVisible();
     await emailEditorBody().fill('');
