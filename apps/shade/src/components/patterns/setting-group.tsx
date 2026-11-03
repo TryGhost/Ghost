@@ -56,7 +56,7 @@ const SettingGroupTitle = React.forwardRef<
   <Text
     ref={ref}
     as="h5"
-    className={cn('md:text-lg', className)}
+    className={cn('section-heading md:text-lg', className)}
     leading="supertight"
     weight="semibold"
     {...props}
@@ -71,7 +71,7 @@ const SettingGroupDescription = React.forwardRef<
   <Text
     ref={ref}
     className={cn(
-      'mr-5 hidden text-pretty group-data-[editing=false]/setting-group:block md:block',
+      'mr-5 hidden text-pretty group-data-[editing=false]/setting-group:block in-data-[admin7-design=true]:text-muted-foreground md:block',
       className,
     )}
     {...props}

@@ -120,7 +120,10 @@ const SubscriptionRow: React.FC<{
         <PriceBlock kind={kind} sub={sub} />
         <div className="min-w-0 flex-1 pt-2">
           <div className="flex items-center gap-2">
-            <span className="min-w-0 truncate font-semibold" data-testid="member-subscription-tier">
+            <span
+              className="min-w-0 truncate font-semibold in-data-[admin7-design=true]:text-md"
+              data-testid="member-subscription-tier"
+            >
               {sub.tier?.name ?? 'Subscription'}
             </span>
             <Badge
@@ -171,6 +174,8 @@ interface MemberSubscriptionsSectionProps {
   // True when there is at least one active paid tier the member could be
   // granted a comp on. Caller (`member-detail.tsx`) fetches tiers and computes.
   canAddComp: boolean;
+  // Admin 7 puts the section heading inside the card.
+  heading?: React.ReactNode;
 }
 
 /**
@@ -185,6 +190,7 @@ interface MemberSubscriptionsSectionProps {
 const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
   member,
   canAddComp,
+  heading,
 }) => {
   const [showAddComp, setShowAddComp] = React.useState(false);
 
@@ -196,6 +202,7 @@ const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
     return (
       <Card data-testid="member-subscriptions">
         <CardContent className="pt-6">
+          {heading}
           <div className="flex flex-col items-center gap-3 py-4">
             <EmptyIndicator title="No subscriptions">
               <LucideIcon.CreditCard />
@@ -230,6 +237,7 @@ const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
     <>
       <Card data-testid="member-subscriptions">
         <CardContent className="pt-6">
+          {heading}
           {hasSubscriptions ? (
             <>
               {groups.map((group) => (
