@@ -140,8 +140,9 @@ preserves the docked sidebar and the separate Settings sidebar.
 The `admin7Design` milestone also gives text-entry fields 4px corners and 14px
 text, gives 16px icons a shared stroke and sets column headers in a small
 uppercase label style. Colored banners are a flat color with
-darker shades of it for text and no outline. On member detail, sections sit under
-larger headings, with stats and list text following the prototype. Checkboxes, radios, Filter bar items
+darker shades of it for text and no outline. On member detail, the sidebar moves to
+the right with Engagement first, and sections sit under larger headings with a
+line across the top instead of a card. Checkboxes, radios, Filter bar items
 and Koenig keep their current look, and other icon sizes keep their own stroke.
 
 The `admin7CustomizeFromViewSite` experiment adds Customize to the frame's top

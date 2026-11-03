@@ -39,6 +39,7 @@ import {
   type TextSize,
 } from '@tryghost/metafield-types/structure';
 import { partOf } from '@/members/custom-fields/addressing';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import {
   formatMemberCustomFieldValue,
   memberCustomFieldIdentity,
@@ -389,6 +390,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
   metafields,
   disabled,
 }) => {
+  const admin7Design = useFeatureFlag('admin7Design');
   const { data, isLoading } = useCustomFieldDefinitions();
   const fields = data ?? [];
   const values = getEditableCustomFieldValues(metafields, fields);
@@ -407,11 +409,11 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
       <h3 className="section-heading text-base font-semibold" id="member-custom-fields-heading">
         Custom fields
       </h3>
-      <Card>
+      <Card variant={admin7Design ? 'ruled' : 'outline'}>
         {/* Rows are uniform (py-3, no first/last trims) so hover chips are all
                     the same height; the card's vertical padding is what gives the
                     first and last chips breathing room from the card edge. */}
-        <CardContent className="px-6 py-4">
+        <CardContent className={admin7Design ? 'pt-3' : 'px-6 py-4'}>
           <ul>
             {fields.map((field) => {
               // Null rather than an empty line, so an unset value shows its placeholder.
@@ -437,7 +439,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
                     // -mx/px + calc width: the hover tint bleeds past the text
                     // column like the settings rows, while the row text (and the
                     // li dividers) stay aligned with the rest of the card.
-                    className="group -mx-3 flex w-[calc(100%+1.5rem)] items-center justify-between gap-4 rounded-md p-3 text-left transition-colors hover:bg-table-row-hover disabled:cursor-not-allowed disabled:opacity-50"
+                    className="group -mx-3 flex w-[calc(100%+1.5rem)] items-center justify-between gap-4 rounded-md p-3 text-left transition-colors hover:bg-table-row-hover disabled:cursor-not-allowed disabled:opacity-50 in-data-[admin7-design=true]:py-4"
                     disabled={disabled}
                     type="button"
                     onClick={() => {
