@@ -125,6 +125,113 @@ async function openCreateForm(column: string) {
 }
 
 describe('Import members custom fields', () => {
+  describe('a list made from a column', () => {
+    const TOPICS_CSV =
+      'email,name,topics\nada@example.com,Ada,Film | Travel\ngrace@example.com,Grace,Cooking\n';
+
+    // A site that creates the list it is sent.
+    function fakeSiteCreatingLists() {
+      const topics: MemberCustomField = {
+        ...NICKNAME_FIELD,
+        key: KeySchema.parse('topics'),
+        name: 'Topics',
+        type: 'list',
+        settings: { options: ['Film', 'Travel', 'Cooking'], multiple: true },
+      };
+      const fields: MemberCustomField[] = [];
+      fakeMembers([member({ name: 'Ada Lovelace' })]);
+      fakeAdminEndpoint('GET', customFieldsBrowsePath, () => ({
+        members_metafields: fields,
+      }));
+      return fakeAdminEndpoint('POST', '/members/metafields/custom/', () => {
+        fields.push(topics);
+        return { members_metafields: [topics] };
+      });
+    }
+
+    it('starts a field for a column with several answers in a cell as a list of its answers', async () => {
+      const createApi = fakeSiteCreatingLists();
+      await renderAdminApp('/members', FLAGS);
+      await openMappingStep(TOPICS_CSV);
+
+      await openCreateForm('topics');
+      const form = createForm();
+      await expect.element(form.getByLabelText('Type')).toHaveTextContent('List');
+      await expect.element(form.getByRole('button', { name: 'Remove Cooking' })).toBeVisible();
+      await expect.element(form.getByLabelText('Allow multiple answers')).toBeChecked();
+      await form.getByRole('button', { name: 'Save' }).click();
+
+      await expect
+        .poll(() => createApi.lastRequest?.body)
+        .toEqual({
+          members_metafields: [
+            {
+              name: 'Topics',
+              type: 'list',
+              settings: { options: ['Film', 'Travel', 'Cooking'], multiple: true },
+              access: { member: 'none' },
+            },
+          ],
+        });
+      await expect.element(fieldSelect('topics')).toHaveTextContent('Topics');
+    });
+
+    it('suggests a column’s answers when its field is made a list, taking one answer when no cell holds several', async () => {
+      fakeSiteCreatingLists();
+      await renderAdminApp('/members', FLAGS);
+      await openMappingStep(
+        'email,name,topics\nada@example.com,Ada,Film\ngrace@example.com,Grace,Cooking\n',
+      );
+
+      await openCreateForm('topics');
+      const form = createForm();
+      await expect.element(form.getByLabelText('Type')).toHaveTextContent('Short text');
+      await form.getByLabelText('Type').click();
+      await page.getByRole('option', { name: /List/ }).click();
+
+      await expect.element(form.getByRole('button', { name: 'Remove Film' })).toBeVisible();
+      await expect.element(form.getByRole('button', { name: 'Remove Cooking' })).toBeVisible();
+      await expect.element(form.getByLabelText('Allow multiple answers')).not.toBeChecked();
+    });
+
+    it('reads an answer past the export’s formula guard, as the import does', async () => {
+      fakeSiteCreatingLists();
+      await renderAdminApp('/members', FLAGS);
+      // The export puts an apostrophe before a cell that starts the way a formula does.
+      await openMappingStep(
+        "email,name,topics\nada@example.com,Ada,'-Other | Film\ngrace@example.com,Grace,Cooking\n",
+      );
+
+      await openCreateForm('topics');
+      const form = createForm();
+      await expect.element(form.getByRole('button', { name: 'Remove -Other' })).toBeVisible();
+      await expect
+        .element(form.getByRole('button', { name: "Remove '-Other" }))
+        .not.toBeInTheDocument();
+    });
+
+    it('refuses a list for a column with more answers than a list can offer', async () => {
+      const createApi = fakeSiteCreatingLists();
+      await renderAdminApp('/members', FLAGS);
+      const rows = Array.from({ length: 101 }, (_, n) => `m${n}@example.com,Member,Topic ${n}`);
+      await openMappingStep(`email,name,topics\n${rows.join('\n')}\n`);
+
+      await openCreateForm('topics');
+      const form = createForm();
+      await form.getByLabelText('Type').click();
+      await page.getByRole('option', { name: /List/ }).click();
+
+      // Said as soon as List is chosen, rather than leaving a list the import would refuse
+      // rows of for the answers it couldn't hold.
+      const refusal = form.getByText(/this column holds more different answers than that/);
+      await expect.element(refusal).toBeVisible();
+      await expect.element(form.getByRole('button', { name: /^Remove / })).not.toBeInTheDocument();
+      await form.getByRole('button', { name: 'Save' }).click();
+      await expect.element(refusal).toBeVisible();
+      expect(createApi.requests).toHaveLength(0);
+    });
+  });
+
   it('creates a custom field for an unmatched column and maps the column onto it', async () => {
     const { createApi } = fakeCustomFieldsWorld();
     await renderAdminApp('/members', FLAGS);

@@ -33,6 +33,7 @@ import {
   MembersFieldMapping,
   columnsOf,
   suggestedFieldName,
+  listSuggestionFor,
 } from '@/members/components/bulk-action-modals/import-members/mapping';
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { type FieldTargetGroup } from '@/members/components/bulk-action-modals/import-members/field-targets';
@@ -360,7 +361,19 @@ export function MappingStep({
   const hasNextRecord = Boolean(fileData[dataPreviewIndex + 1]);
 
   const columnKeys = useMemo(() => columnsOf(fileData), [fileData]);
-  // What the column a field is being created for holds, read once rather than on every keystroke.
+  // What the column a field is being created for says about a list made from it, read once as the
+  // create form opens: from every row, since the whole file is already in memory, so the list
+  // holds every answer the import will meet.
+  const suggestList = useCallback(
+    () =>
+      listSuggestionFor(
+        createFieldForColumn === null
+          ? []
+          : fileData.map((record) => record[createFieldForColumn] ?? ''),
+      ),
+    [fileData, createFieldForColumn],
+  );
+
   const currentlyDisplayedData: MappingPreviewRow[] = mapping
     ? columnKeys.map((key) => ({
         key,
@@ -585,6 +598,7 @@ export function MappingStep({
                   nameError={nameError}
                   open={createFieldForColumn !== null}
                   saveError={saveError}
+                  suggestList={suggestList}
                   testId="import-create-custom-field"
                   types={memberCustomFieldUserTypes}
                   // Focus goes back to the column's field button as the popover closes.

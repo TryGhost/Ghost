@@ -9,11 +9,21 @@ import {
 } from '@/shared/member-custom-fields/custom-field-draft';
 import { CustomFieldForm } from '@/shared/member-custom-fields/custom-field-form';
 import { dequal } from 'dequal';
+import { matchField, matchShape, type SetSettings } from '@tryghost/metafield-types/structure';
 import { type RefObject, useState } from 'react';
 import type {
   MemberCustomFieldUserType,
   NewMemberCustomField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
+
+/**
+ * What the place a field is made from knows about a list made there, such as an import column's
+ * answers: the settings a list starts from and whether the field starts out as one, or why a list
+ * can't be made there at all.
+ */
+export type ListSuggestion =
+  | { readonly kind: 'list'; readonly settings: SetSettings; readonly startAsList: boolean }
+  | { readonly kind: 'refused'; readonly reason: string };
 
 interface CreateCustomFieldPopoverProps {
   open: boolean;
@@ -21,6 +31,9 @@ interface CreateCustomFieldPopoverProps {
   anchorRef: RefObject<HTMLElement>;
   // Where the name starts: an import's column header, or what was typed into a search.
   initialName: string;
+  // What this place knows about a list made here, such as the options an import column already
+  // holds. Asked once, as the popover opens.
+  suggestList?: () => ListSuggestion;
   // The types this place can use; one pins it.
   types: MemberCustomFieldUserType[];
   // The request in flight and what came back of it. Owned by the place, which runs the create:
@@ -42,9 +55,37 @@ interface CreateCustomFieldPopoverProps {
 }
 
 /**
+ * A draft that has just become a list, starting from the settings `suggestion` gives, or any other
+ * draft as it is.
+ */
+const suggestedFrom = (
+  suggestion: ListSuggestion | undefined,
+  draft: CustomFieldDraft,
+): CustomFieldDraft =>
+  matchField<CustomFieldDraft, CustomFieldDraft>(draft, {
+    scalar: () => draft,
+    record: () => draft,
+    set: (list) =>
+      suggestion?.kind === 'list' ? { ...list, settings: suggestion.settings } : list,
+  });
+
+const isList = (draft: CustomFieldDraft) =>
+  matchField<CustomFieldDraft, boolean>(draft, {
+    scalar: () => false,
+    record: () => false,
+    set: () => true,
+  });
+
+const isListType = (type: MemberCustomFieldUserType) =>
+  matchShape<boolean>(type.id, { scalar: () => false, record: () => false, set: () => true });
+
+/**
  * Where a field is made from anywhere outside Settings: a popover under the control it is for,
  * with Settings' form and buttons of its own. A field made in passing starts staff-only, and is
- * opened to members in Settings.
+ * opened to members in Settings. A place that knows what a list made there will hold, such as an
+ * import column, suggests its settings, so a publisher reviews what is already there rather than
+ * typing it out again. It can also start the field out as a list, or say why a list can't be made
+ * there, which the form shows under the type as soon as List is chosen.
  *
  * Opens leftward from the control, which sits in the right-hand column wherever it is used, and is
  * as tall as the room below or above allows, with the form scrolling inside it once a list's
@@ -55,6 +96,7 @@ export function CreateCustomFieldPopover({
   open,
   anchorRef,
   initialName,
+  suggestList,
   types,
   isSaving,
   nameError,
@@ -65,26 +107,36 @@ export function CreateCustomFieldPopover({
   onCancel,
   testId,
 }: CreateCustomFieldPopoverProps) {
-  const [initial] = useState<CustomFieldDraft>(() => ({
-    ...newDraft(types[0].id),
-    name: initialName,
-  }));
+  const [suggestion] = useState(() => suggestList?.());
+  const [initial] = useState<CustomFieldDraft>(() => {
+    const startType =
+      (suggestion?.kind === 'list' && suggestion.startAsList && types.find(isListType)) || types[0];
+    return suggestedFrom(suggestion, { ...newDraft(startType.id), name: initialName });
+  });
   const [draft, setDraft] = useState(initial);
   // The draft's own problems, found on Save. A refusal from the server comes in as nameError.
   const [errors, setErrors] = useState<CustomFieldDraftErrors>({});
   const isDirty = !dequal(draft, initial);
 
+  // Only a change of type suggests settings, so editing a suggested list keeps what was edited.
   const change = (update: (current: CustomFieldDraft) => CustomFieldDraft) => {
     if (canRetry) {
       onEdit();
     }
-    setDraft(update);
+    setDraft((current) => {
+      const next = update(current);
+      return next.type === current.type ? next : suggestedFrom(suggestion, next);
+    });
   };
+
+  // Under the type, as soon as List is chosen somewhere a list can't be made.
+  const typeProblem =
+    suggestion?.kind === 'refused' && isList(draft) ? suggestion.reason : undefined;
 
   const submit = () => {
     const found = customFieldDraftErrors(draft);
     setErrors(found);
-    if (Object.values(found).some(Boolean)) {
+    if (typeProblem || Object.values(found).some(Boolean)) {
       return;
     }
     onSubmit(newCustomField(draft));
@@ -168,7 +220,7 @@ export function CreateCustomFieldPopover({
         >
           <CustomFieldForm
             draft={draft}
-            errors={{ ...errors, name: errors.name ?? nameError ?? undefined }}
+            errors={{ ...errors, name: errors.name ?? nameError ?? undefined, type: typeProblem }}
             idPrefix={testId}
             saving={isSaving}
             types={types}
