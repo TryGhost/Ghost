@@ -702,7 +702,15 @@ export function useUnlikeMutationForUser(handle: string) {
       updateLikeCacheOnce(queryClient, id, false);
       updateNotificationsLikedCache(queryClient, handle, id, false);
     },
-    onError(error: { message: string; statusCode: number }) {
+    onError(error: { message: string; statusCode: number }, id) {
+      updateLikeCache(queryClient, id, true);
+      updateLikeCacheOnce(queryClient, id, true);
+      updateNotificationsLikedCache(queryClient, handle, id, true);
+
+      if (error.statusCode === 403) {
+        renderBlockedError();
+      }
+
       if (error.statusCode === 429) {
         renderRateLimitError();
       }
@@ -966,7 +974,13 @@ export function useDerepostMutationForUser(handle: string) {
       updateRepostCacheOnce(queryClient, id, false);
       updateNotificationsRepostCache(queryClient, handle, id, false);
     },
-    onError(error: { message: string; statusCode: number }) {
+    onError(error: { message: string; statusCode: number }, id) {
+      updateRepostCache(queryClient, id, true);
+      updateRepostCacheOnce(queryClient, id, true);
+      updateNotificationsRepostCache(queryClient, handle, id, true);
+      if (error.statusCode === 403) {
+        renderBlockedError();
+      }
       if (error.statusCode === 429) {
         renderRateLimitError();
       }
