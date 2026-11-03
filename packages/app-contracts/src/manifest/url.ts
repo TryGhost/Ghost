@@ -54,8 +54,12 @@ export interface UrlRules {
 export type UrlField = (linkOnly?: boolean) => z.ZodType<string, string>;
 
 const PATH_PROBLEM = 'Expected a path on the manifest’s own origin, such as /admin';
-const PLACEHOLDER_HOST = 'manifest.invalid';
-const PLACEHOLDER_BASE = `https://${PLACEHOLDER_HOST}/`;
+// Two, so a reference that names one of them still names a host other than the other's.
+const PLACEHOLDER_HOSTS = ['manifest-a.invalid', 'manifest-b.invalid'];
+
+/** Whether a reference names a host, in any of the URL parser's spellings of one. */
+const namesHost = (value: string) =>
+  PLACEHOLDER_HOSTS.some((host) => URL.parse(value, `https://${host}/`)?.host !== host);
 
 function isManifestItself(url: URL, base: string): boolean {
   return url.pathname === new URL(base).pathname;
@@ -87,10 +91,9 @@ export function urlField({ ghostUrls, allowLocalhost, base }: UrlRules, linkOnly
   return z.string(PATH_PROBLEM).transform((value, ctx) => {
     // A path, or a path-relative reference. A URL with a scheme, or a `//host` one, names
     // its own origin, which the manifest's would then not be, even when it's the same one
-    // today. Resolving against a placeholder shows a host in any of the parser's spellings.
-    // An empty one, or one that's only a query or fragment, would be the manifest itself.
-    const namesHost = URL.parse(value, PLACEHOLDER_BASE)?.host !== PLACEHOLDER_HOST;
-    const url = URL.canParse(value) || namesHost ? null : URL.parse(value, base);
+    // today. An empty one, or one that's only a query or fragment, would be the manifest
+    // itself.
+    const url = URL.canParse(value) || namesHost(value) ? null : URL.parse(value, base);
     if (!url || url.origin !== origin || isManifestItself(url, base)) {
       ctx.addIssue({ code: 'custom', message: PATH_PROBLEM });
       return z.NEVER;

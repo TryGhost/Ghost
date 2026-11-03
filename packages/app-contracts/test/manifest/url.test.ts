@@ -40,6 +40,17 @@ describe('paths', () => {
     for (const spelling of ['//', '\\\\', '/\\', ' //', '/\t/']) {
       expect(surfaceUrlError(`${spelling}podcast.example.com/admin`)).toBe(PATH_PROBLEM);
     }
+    // Whatever host the manifest is served from.
+    for (const host of ['manifest-a.invalid', 'manifest-b.invalid']) {
+      const manifestUrl = `https://${host}/ghost-app.json`;
+      const parsed = manifest({
+        manifest_url: manifestUrl,
+        surfaces: [{ type: 'admin_page', url: `//${host}/admin` }],
+      });
+      expect(errorsOf(parsed, { ...options, manifestUrl })).toEqual([
+        expect.objectContaining({ path: 'surfaces[0].url', message: PATH_PROBLEM }),
+      ]);
+    }
     expect(surfaceUrlError('javascript:alert(1)')).toBe(PATH_PROBLEM);
     expect(surfaceUrlError('data:text/html,<script>alert(1)</script>')).toBe(PATH_PROBLEM);
   });
