@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Banner } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useWhatsNew, useDismissWhatsNew } from '@/whats-new/hooks/use-whats-new';
 import { useChangelog } from '@/whats-new/hooks/use-changelog';
 
@@ -9,6 +10,8 @@ function WhatsNewBanner() {
   const { data: changelog } = useChangelog();
   const { mutate: dismissWhatsNew } = useDismissWhatsNew();
   const [isDismissed, setIsDismissed] = useState(false);
+  // The floating sidebar holds its banners inside the capsule, so their glow stays within it
+  const admin7Design = useFeatureFlag('admin7Design');
 
   // Don't show if dismissed or no new content
   if (isDismissed || !hasNew) {
@@ -37,7 +40,7 @@ function WhatsNewBanner() {
       className="mx-2"
       data-testid="whats-new-banner"
       role="status"
-      variant="gradient"
+      variant={admin7Design ? 'gradient-inline' : 'gradient'}
       dismissible
       onDismiss={handleDismiss}
     >
