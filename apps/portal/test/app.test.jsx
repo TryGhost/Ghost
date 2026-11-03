@@ -76,6 +76,36 @@ describe('App', function () {
     expect(ghostApi.member.customFields).toHaveBeenCalledTimes(1);
   });
 
+  // A site newer than this build can list a field of a type the build doesn't know.
+  test('leaves out, and warns about, a custom field of a type it does not know', async () => {
+    window.location = new URL('http://example.com/#/portal/account/profile');
+    const basic = FixtureSite.singleTier.basic;
+    const ghostApi = setupApi({
+      site: { ...basic, labs: { ...basic.labs, membersCustomFields: true } },
+    });
+    ghostApi.member.customFields = vi.fn(() =>
+      Promise.resolve([
+        { key: 'nickname', name: 'Nickname', type: 'short_text', access: { member: 'write' } },
+        { key: 'birthday', name: 'Birthday', type: 'date', access: { member: 'write' } },
+      ]),
+    );
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const utils = appRender(<App siteUrl="http://example.com" api={ghostApi} />);
+      const popupFrame = await utils.findByTitle(/portal-popup/i);
+      const popup = within(popupFrame.contentDocument);
+
+      expect(await popup.findByLabelText('Nickname')).toBeInTheDocument();
+      expect(popup.queryByText('Birthday')).not.toBeInTheDocument();
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('custom field'), {
+        key: 'birthday',
+        type: 'date',
+      });
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
   test('does not ask for custom fields when the site does not have them', async () => {
     const ghostApi = setupApi();
     ghostApi.member.customFields = vi.fn(() => Promise.resolve([]));
