@@ -171,21 +171,21 @@ const authenticateWithToken = async function apiKeyAuthenticateWithToken(
   // Using req.originalUrl means we get the right url even if version-rewrites have happened
   const { version, api } = legacyApiPathMatch(originalUrl);
 
-  // ensure the token was meant for this api
+  // ensure the token was meant for this api, in any case, as Express routes the path in any case
   let options;
 
   if (version) {
     // CASE: legacy versioned api request
     options = Object.assign(
       {
-        audience: new RegExp(`/?${version}/${api}/?$`),
+        audience: new RegExp(`/?${version}/${api}/?$`, 'i'),
       },
       jwtValidationOptions,
     );
   } else {
     options = Object.assign(
       {
-        audience: new RegExp(`/?${api}/?$`),
+        audience: new RegExp(`/?${api}/?$`, 'i'),
       },
       jwtValidationOptions,
     );
