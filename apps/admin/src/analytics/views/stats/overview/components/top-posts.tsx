@@ -126,7 +126,9 @@ const TopPosts: React.FC<TopPostsProps> = ({ topPostsData, isLoading }) => {
                       });
                       const opensEditor = destination.startsWith('/editor/');
                       navigate(destination, {
-                        state: opensEditor ? editorReturnState(location) : undefined,
+                        state: opensEditor
+                          ? editorReturnState(`${location.pathname}${location.search}`)
+                          : undefined,
                       });
                     }}
                   >

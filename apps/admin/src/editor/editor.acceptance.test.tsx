@@ -183,6 +183,63 @@ describe('Editor analytics breadcrumb', () => {
   });
 });
 
+/**
+ * An editor opened by an app leads back to the app, at the route it was on, in
+ * place of the list it belongs to. Admin passes the route as router state, so
+ * rendering with it is also what a reload of the editor sees.
+ */
+describe('Editor app breadcrumb', () => {
+  const appRoute = '/apps/6a1b2c3d4e5f60718293a4b5';
+
+  function fakePublished(postType: 'post' | 'page') {
+    const resource = postType === 'post' ? 'posts' : 'pages';
+    fakeEditorChrome();
+    fakeAdminEndpoint('GET', new RegExp(`^/${resource}/abc123/\\?`), {
+      [resource]: [
+        post({
+          id: 'abc123',
+          title: 'Published',
+          status: 'published',
+          lexical: buildLexicalParagraph('Published'),
+          published_at: '2026-01-01T00:00:00.000Z',
+        }),
+      ],
+    });
+  }
+
+  it.each([
+    { postType: 'post', editorReturn: appRoute },
+    { postType: 'page', editorReturn: `${appRoute}/episodes/12?tab=notes` },
+    { postType: 'post', editorReturn: `${appRoute}/#/episodes` },
+  ] as const)(
+    'leads a $postType back to the app at $editorReturn',
+    async ({ postType, editorReturn }) => {
+      fakePublished(postType);
+      await renderAdminApp(`/editor/${postType}/abc123`, { locationState: { editorReturn } });
+
+      await expect.element(editorScreen.appBackLink()).toHaveAttribute('href', `#${editorReturn}`);
+      await expect(editorScreen.backLink(postType)).toHaveCount(0);
+      // Only the analytics return hides the status line.
+      await expect.element(editorScreen.status()).toBeVisible();
+    },
+  );
+
+  it.each([
+    '/apps/installation-1',
+    '/apps/install?manifest=https%3A%2F%2Fapp.example%2Fghost-app.json',
+    `${appRoute}/../../members`,
+    `${appRoute}/..`,
+    `${appRoute}x`,
+    `//example.com${appRoute}`,
+  ])('ignores the return path %s', async (editorReturn) => {
+    fakePublished('post');
+    await renderAdminApp('/editor/post/abc123', { locationState: { editorReturn } });
+
+    await expect.element(editorScreen.backLink('post')).toHaveAttribute('href', '#/posts');
+    await expect(editorScreen.appBackLink()).toHaveCount(0);
+  });
+});
+
 describe('Editor list breadcrumb', () => {
   afterEach(clearStickyPostFilters);
 

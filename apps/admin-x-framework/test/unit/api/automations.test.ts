@@ -18,6 +18,9 @@ import {
   updateSendEmailAction,
   updateWaitAction,
   useBrowseAutomationActionLinks,
+  useAddAutomation,
+  useEditAutomation,
+  useSetAutomationStatus,
 } from '../../../src/api/automations';
 
 const baseDetail = (
@@ -26,8 +29,7 @@ const baseDetail = (
 ): AutomationDetail => ({
   id: 'a1',
   slug: 'welcome',
-  trigger_tier_scope: 'free',
-  trigger_tier_ids: null,
+  trigger_rules: [{ trigger_type: 'free_signup', scope: null, product_id: null, direction: null }],
   name: 'Welcome',
   description: 'Welcome new members.',
   status: 'active',
@@ -743,4 +745,55 @@ describe('automation run response validation', () => {
   ])('rejects $name', ({ body }) => {
     expect(AutomationRunsResponseSchema.safeParse({ meta, ...body }).success).toBe(false);
   });
+});
+
+describe('automation mutation contracts', () => {
+  it.each([
+    { method: 'POST', useMutation: useAddAutomation },
+    { method: 'PUT', useMutation: useEditAutomation },
+  ])('sends rules without legacy or server fields on $method', async ({ method, useMutation }) => {
+    const automation = baseDetail([], []);
+    // Core still returns legacy fields, which must not leak into mutations.
+    const serverAutomation = { ...automation, trigger_tier_scope: 'free', trigger_tier_ids: null };
+    await withMockFetch({ json: { automations: [automation] } }, async (mock) => {
+      const { result } = renderHookWithProviders(() => useMutation());
+      await act(async () => {
+        await result.current.mutateAsync(serverAutomation);
+      });
+      const request = mock.calls.find(
+        ([, options]: [unknown, RequestInit]) => options.method === method,
+      );
+      expect(JSON.parse(request[1].body)).toEqual({
+        automations: [
+          {
+            name: automation.name,
+            description: automation.description,
+            status: automation.status,
+            trigger_rules: automation.trigger_rules,
+            actions: [],
+            edges: [],
+          },
+        ],
+      });
+    });
+  });
+
+  it.each(['inactive', 'archived'] as const)(
+    'keeps %s status edits free of trigger and graph fields',
+    async (status) => {
+      await withMockFetch(
+        { json: { automations: [{ ...baseDetail([], []), status }] } },
+        async (mock) => {
+          const { result } = renderHookWithProviders(() => useSetAutomationStatus());
+          await act(async () => {
+            await result.current.mutateAsync({ id: 'a1', status });
+          });
+          const request = mock.calls.find(
+            ([, options]: [unknown, RequestInit]) => options.method === 'PUT',
+          );
+          expect(JSON.parse(request[1].body)).toEqual({ automations: [{ status }] });
+        },
+      );
+    },
+  );
 });

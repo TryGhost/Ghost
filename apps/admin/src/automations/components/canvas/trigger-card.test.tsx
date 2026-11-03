@@ -39,8 +39,15 @@ function Picker({ initial }: { initial: TierSelection }) {
           isError: false,
           refetch: vi.fn<TriggerData['tierQuery']['refetch']>(),
         },
-        scope: 'all_paid',
-        tierIds: [],
+        triggerType: 'paid_subscription_started',
+        rules: [
+          {
+            trigger_type: 'paid_subscription_started',
+            scope: 'any_paid_tier',
+            product_id: null,
+            direction: null,
+          },
+        ],
         savedTierIds: [],
         onUpdate: vi.fn(),
         tierSelection: { value, onChange },

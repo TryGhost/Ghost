@@ -44,6 +44,8 @@ const MEMBER_FIELDS = [
     key: 'label',
     icon: 'tag',
     type: 'set',
+    // A member can hold any number of labels, so the label filter also offers "is all of".
+    operators: ['is-any', 'is-all', 'is-not-any'],
     ui: { label: 'Label', searchable: true, className: 'w-64' },
     metadata: { activeColumn: { key: 'labels', label: 'Labels' }, columnInclude: 'labels' },
   },

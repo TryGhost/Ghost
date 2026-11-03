@@ -111,15 +111,19 @@ The header's back link returns a post to the posts list and a page to the pages
 list, with the filters and sort order the list was left with. A post opened
 from its analytics screen or from the analytics overview instead reads
 "Analytics" and returns to the screen it was opened from, path and query string
-included. Those screens pass `editorReturnState()` from `api.ts` as router
-state, and the editor accepts only a path under `/posts/analytics/` or
-`/analytics`. The return survives a reload, since it lives in the history
-entry, but a new post never gets it. While the link leads to analytics, the
-status line is hidden unless the post's newsletter failed to send or a save
-failed.
+included. A post or page an app opened reads "Back" and returns to the app, at
+the route the app was on when it asked, query and fragment included. Reopening
+the app loses anything it kept only in memory, such as an open dialog. Those
+screens, and Admin's app page, pass `editorReturnState()` from `api.ts` as
+router state; apps never set it themselves. The editor accepts only a path
+under `/posts/analytics/`, `/analytics` or an app's route,
+`/apps/<installation id>`, and none with `.` or `..` segments. The return
+survives a reload, since it lives in the history entry, but a new post never
+gets it. While the link leads to analytics, the status line is hidden unless
+the post's newsletter failed to send or a save failed.
 
 The link shows its arrow alone at every width, as a square button with no
-tooltip, and "Posts", "Pages" or "Analytics" stays its accessible name.
+tooltip, and "Posts", "Pages", "Analytics" or "Back" stays its accessible name.
 
 ## Images
 
