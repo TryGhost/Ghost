@@ -220,11 +220,12 @@ module.exports = function apiRoutes() {
   router.all(['/members/metafields', '/members/metafields/*'], mw.authAdminApi);
   router.use('/members/metafields', metafieldsRouter);
 
-  // Reading is deliberately open: Admin asks every site for its definitions to draw
-  // screens it renders either way, and a site that has none simply answers with an empty
-  // list rather than a 404.
+  // Reading is deliberately open: Admin asks every site for its definitions, and for the values
+  // members hold of a list field it filters by, to draw screens it renders either way, and a site
+  // that has none simply answers with an empty list rather than a 404.
   metafieldsRouter.get('/:namespace', http(api.membersMetafields.browse));
   metafieldsRouter.get('/:namespace/:key', http(api.membersMetafields.read));
+  metafieldsRouter.get('/:namespace/:key/values', http(api.membersMetafields.browseValues));
 
   // Changing one needs the feature to exist in this build, and a 404 says it doesn't. Who may
   // change a namespace's fields, and whether its limits let them, is the namespace's own

@@ -145,6 +145,9 @@ describe('Members list', () => {
         updated_at: null,
       },
     ]);
+    fakeAdminEndpoint('GET', '/members/metafields/custom/favourite_animals/values/', {
+      values: [],
+    });
     const membersApi = fakeMembers(({ filter }) =>
       filter ? [member({ name: 'Dog Lover' })] : [member({ name: 'Dog Lover' }), member()],
     );
@@ -173,6 +176,9 @@ describe('Members list', () => {
         updated_at: null,
       },
     ]);
+    fakeAdminEndpoint('GET', '/members/metafields/custom/favourite_animals/values/', {
+      values: [],
+    });
     const membersApi = fakeMembers(({ filter }) =>
       filter ? [member({ name: 'Unanswered' })] : [member({ name: 'Unanswered' }), member()],
     );
@@ -187,6 +193,93 @@ describe('Members list', () => {
     await expect
       .element(page.getByRole('button', { name: 'Dog', exact: true }))
       .not.toBeInTheDocument();
+    await expect(membersScreen.memberRows()).toHaveCount(1);
+  });
+
+  it("offers a list field's own options when what members hold can't be read", async () => {
+    fakeMemberCustomFields([
+      {
+        namespace: CUSTOM_NAMESPACE,
+        key: KeySchema.parse('favourite_animals'),
+        name: 'Favourite animals',
+        type: 'list',
+        settings: { options: ['Dog', 'Cat'], multiple: true },
+        status: 'active',
+        access: { member: 'none' },
+        created_at: '2026-08-05T00:00:00.000Z',
+        updated_at: null,
+      },
+    ]);
+    fakeAdminEndpoint(
+      'GET',
+      '/members/metafields/custom/favourite_animals/values/',
+      { errors: [{ message: 'Resource not found' }] },
+      { status: 404 },
+    );
+    fakeMembers([member()]);
+    await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+
+    await membersScreen.openFilterField('Favourite animals');
+
+    await expect.element(membersScreen.multiselectOption('Dog')).toBeVisible();
+    await expect.element(membersScreen.multiselectOption('Cat')).toBeVisible();
+  });
+
+  it('keeps a saved filter naming an option neither offered nor held', async () => {
+    fakeMemberCustomFields([
+      {
+        namespace: CUSTOM_NAMESPACE,
+        key: KeySchema.parse('favourite_animals'),
+        name: 'Favourite animals',
+        type: 'list',
+        settings: { options: ['Dog', 'Cat'], multiple: true },
+        status: 'active',
+        access: { member: 'none' },
+        created_at: '2026-08-05T00:00:00.000Z',
+        updated_at: null,
+      },
+    ]);
+    fakeAdminEndpoint('GET', '/members/metafields/custom/favourite_animals/values/', {
+      values: [],
+    });
+    const membersApi = fakeMembers([]);
+    const saved = "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dolphin'])";
+    await renderAdminApp(`/members?filter=${encodeURIComponent(saved)}`, {
+      labs: { membersCustomFields: true },
+    });
+
+    await membersScreen.openMultiselectValue('Dolphin');
+    await expect.element(membersScreen.multiselectOption('Dolphin')).toBeVisible();
+    await expect(membersApi).toHaveSentFilter(saved);
+  });
+
+  it('filters a list field by an option members still hold after it was removed', async () => {
+    fakeMemberCustomFields([
+      {
+        namespace: CUSTOM_NAMESPACE,
+        key: KeySchema.parse('favourite_animals'),
+        name: 'Favourite animals',
+        type: 'list',
+        settings: { options: ['Dog', 'Cat'], multiple: true },
+        status: 'active',
+        access: { member: 'none' },
+        created_at: '2026-08-05T00:00:00.000Z',
+        updated_at: null,
+      },
+    ]);
+    fakeAdminEndpoint('GET', '/members/metafields/custom/favourite_animals/values/', {
+      values: [{ value: 'Dog' }, { value: 'Dolphin' }],
+    });
+    const membersApi = fakeMembers(({ filter }) =>
+      filter ? [member({ name: 'Dolphin Fan' })] : [member({ name: 'Dolphin Fan' }), member()],
+    );
+    await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+
+    await membersScreen.addMultiselectFilter('Favourite animals', ['Dolphin']);
+
+    await expect(membersApi).toHaveSentFilter(
+      "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dolphin'])",
+    );
     await expect(membersScreen.memberRows()).toHaveCount(1);
   });
 
