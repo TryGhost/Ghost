@@ -359,4 +359,50 @@ describe('List custom fields', function () {
       assert.deepEqual(await readValues(memberId), { [field.key]: ['Cat'] });
     });
   });
+
+  // Ghost checks a list's settings every time it writes them, so settings Ghost can't read were
+  // damaged outside Ghost, or by a later release that reads settings differently. The field keeps
+  // working with a new list's default settings until the next write of its settings replaces them.
+  describe("Settings Ghost can't read", function () {
+    const NEW_LIST = { options: [], multiple: false };
+    const damage = (key: string, change: Record<string, unknown>) =>
+      models.Base.knex('members_metafields').where({ namespace: 'custom', key }).update(change);
+    const listedKeys = async () => {
+      const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
+      return body.members_metafields.map((field: { key: string }) => field.key);
+    };
+
+    it("reads the field with a new list's settings, and keeps what members hold", async function () {
+      const field = await createList(ANIMALS);
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: ['Dog', 'Cat'] });
+      await damage(field.key, { settings: 'not json' });
+
+      const { body } = await agent.get(`members/metafields/custom/${field.key}/`).expectStatus(200);
+      assert.deepEqual(body.members_metafields[0].settings, NEW_LIST);
+      assert.deepEqual(await listedKeys(), [field.key]);
+      // Both answers are kept. A list's answers come back in the order of the list's options, and
+      // a list read with its defaults has no options, so the test doesn't check the order.
+      const { [field.key]: held } = await readValues(memberId);
+      assert.deepEqual([...held].sort(), ['Cat', 'Dog']);
+    });
+
+    it('takes the settings the next edit writes', async function () {
+      const field = await createList(ANIMALS);
+      await damage(field.key, { settings: JSON.stringify({ options: 'Dog' }) });
+
+      assert.deepEqual((await editSettings(field.key, ANIMALS)).settings, ANIMALS);
+      const { body } = await agent.get(`members/metafields/custom/${field.key}/`).expectStatus(200);
+      assert.deepEqual(body.members_metafields[0].settings, ANIMALS);
+    });
+
+    it('leaves out a field of a type this release does not know, and lists the others', async function () {
+      const retired = await createList(ANIMALS);
+      const kept = await createList(ANIMALS, 'Favourite foods');
+      await damage(retired.key, { type: 'retired_type' });
+
+      assert.deepEqual(await listedKeys(), [kept.key]);
+      await agent.get(`members/metafields/custom/${retired.key}/`).expectStatus(404);
+    });
+  });
 });
