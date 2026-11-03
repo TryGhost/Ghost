@@ -194,7 +194,9 @@ export class ExplorePingService {
       return;
     }
 
-    if (isLocalhost(new URL(this.config.get('url') as string).hostname)) {
+    const url = this.config.get('url');
+    const siteUrl = typeof url === 'string' ? URL.parse(url) : null;
+    if (!siteUrl || isLocalhost(siteUrl.hostname)) {
       return;
     }
 

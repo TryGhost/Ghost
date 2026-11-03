@@ -281,6 +281,15 @@ describe('ExplorePingService', function () {
   });
 
   describe('ping', function () {
+    it('does not ping for a malformed site URL', async function () {
+      configStub.get.withArgs('url').returns('https://%');
+
+      await explorePingService.ping();
+
+      sinon.assert.notCalled(requestStub);
+      sinon.assert.notCalled(postsStub.stats.getTotalPostsPublished);
+    });
+
     it('does not ping for a localhost site URL', async function () {
       configStub.get.withArgs('url').returns('http://localhost:2368');
 
