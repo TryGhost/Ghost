@@ -124,9 +124,6 @@ describe('Member Custom Fields Members API', function () {
     await fixtureManager.init('newsletters', 'members:newsletters');
     await adminAgent.loginAsOwner();
     await membersAgent.loginAs(MEMBER_EMAIL);
-    // Defining and removing fields is behind the flag, so it is on for the whole
-    // file rather than for each test: every test both makes and unmakes one.
-    mockManager.mockLabsEnabled('membersCustomFields');
 
     const { body } = await adminAgent
       .get(`members/?filter=email:'${MEMBER_EMAIL}'`)

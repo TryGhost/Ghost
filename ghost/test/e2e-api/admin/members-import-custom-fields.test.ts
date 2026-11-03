@@ -87,7 +87,6 @@ describe('Members import — custom fields', function () {
 
   beforeEach(function () {
     mockManager.mockMail();
-    mockManager.mockLabsEnabled('membersCustomFields');
   });
 
   afterEach(async function () {

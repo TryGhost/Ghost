@@ -66,7 +66,6 @@ async function openCheckoutFields(
   const allLabs = {
     stripeCheckoutDesign: true,
     stripeCheckoutCollection: true,
-    membersCustomFields: true,
     ...labs,
   };
   const siteConfig = configResponse({ labs: allLabs });

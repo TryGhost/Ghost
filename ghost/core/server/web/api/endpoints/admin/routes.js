@@ -227,9 +227,10 @@ module.exports = function apiRoutes() {
   metafieldsRouter.get('/:namespace/:key', http(api.membersMetafields.read));
   metafieldsRouter.get('/:namespace/:key/values', http(api.membersMetafields.browseValues));
 
-  // Changing one needs the feature to exist in this build, and a 404 says it doesn't. Who may
-  // change a namespace's fields, and whether its limits let them, is the namespace's own
-  // policy, which the endpoints and the service apply.
+  // Changing one needs custom fields to be switched on, and a 404 says they aren't. They are
+  // released, so only a flag switched off from outside the site says that. Who may change a
+  // namespace's fields, and whether its limits let them, is the namespace's own policy, which
+  // the endpoints and the service apply.
   metafieldsRouter.use(labs.enabledMiddleware('membersCustomFields'));
 
   metafieldsRouter.post('/:namespace', http(api.membersMetafields.add));
