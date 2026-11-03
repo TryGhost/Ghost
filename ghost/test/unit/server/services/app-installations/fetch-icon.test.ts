@@ -109,15 +109,17 @@ describe('createIconFetcher', function () {
     });
   }
 
-  it('refuses a JPEG icon, saying it has no transparency', async function () {
-    const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xe0]);
-    const { fetchIcon } = setup({ fetched: serving(jpeg, 'image/jpeg') });
+  for (const contentType of ['image/jpeg', 'image/jpg', 'image/pjpeg']) {
+    it(`refuses a JPEG icon served as ${contentType}, saying it has no transparency`, async function () {
+      const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xe0]);
+      const { fetchIcon } = setup({ fetched: serving(jpeg, contentType) });
 
-    assertRefused(
-      await refusal(fetchIcon({ url: ICON_URL })),
-      'Expected an SVG, PNG or WebP image, since a JPEG has no transparency',
-    );
-  });
+      assertRefused(
+        await refusal(fetchIcon({ url: ICON_URL })),
+        'Expected an SVG, PNG or WebP image, since a JPEG has no transparency',
+      );
+    });
+  }
 
   describe('when the app can’t be read', function () {
     it('refuses an icon that does not load, saying only the status and logging why', async function () {

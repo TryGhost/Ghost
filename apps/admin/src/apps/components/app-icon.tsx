@@ -31,17 +31,23 @@ interface AppIconProps {
   className?: string;
 }
 
+// The formats Ghost stores icons in, whose transparency an icon is drawn from. Ghost stored
+// JPEG and GIF copies before it refused them, and an older Ghost still does; those fall back.
+const STORED_ICON_PREFIXES = ['data:image/svg+xml;', 'data:image/png;', 'data:image/webp;'];
+
 /**
  * The copy of the app's icon Ghost stored, as a data URL, so drawing it never requests
  * anything from the app. It isn't sanitized, so it's only ever drawn as an image, which
  * can't run scripts or load anything.
  *
  * Ghost doesn't check the bytes, so a copy can fail to load. Then this gives null and the
- * caller draws the default icon instead.
+ * caller draws the default icon instead, as it does for a copy in another format.
  */
 function useStoredIcon(app: AppIconSource): [string | null, () => void] {
   const [failed, setFailed] = React.useState<string | null>(null);
-  const stored = app.icon_data_url?.startsWith('data:image/') ? app.icon_data_url : null;
+  const copy = app.icon_data_url;
+  const stored =
+    copy && STORED_ICON_PREFIXES.some((prefix) => copy.startsWith(prefix)) ? copy : null;
   return [stored === failed ? null : stored, () => setFailed(stored)];
 }
 
@@ -61,11 +67,12 @@ const AppGlyph: React.FC<{ app: AppIconSource; className: string; strokeWidth?: 
   strokeWidth,
 }) => {
   const [stored, onError] = useStoredIcon(app);
-  // React 18 ids look like `:r1:`. Colons need escaping in CSS, so they're dropped from the id.
-  const maskId = `app-icon-${React.useId().replace(/:/g, '')}`;
+  const maskId = React.useId();
   if (!stored) {
     const Glyph = glyphFor(app.manifest.icon);
-    return <Glyph aria-hidden="true" className={className} strokeWidth={strokeWidth} />;
+    return (
+      <Glyph aria-hidden="true" className={cn('shrink-0', className)} strokeWidth={strokeWidth} />
+    );
   }
   return (
     <svg aria-hidden="true" className={cn('shrink-0', className)} viewBox="0 0 24 24">
