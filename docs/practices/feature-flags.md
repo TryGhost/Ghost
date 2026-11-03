@@ -140,6 +140,9 @@ preserves the docked sidebar and the separate Settings sidebar.
 The `admin7Design` milestone also gives text-entry fields 4px corners and 14px
 text. Checkboxes, radios, Filter bar items and Koenig keep their current look.
 
+The `admin7Design` milestone also gives cards 8px corners and makes large titles
+and the space above them follow the width of the page area.
+
 The `admin7CustomizeFromViewSite` experiment adds Customize to the frame's top
 bar on View site, opening the Design settings in a panel over a live, browsable
 preview of the site, with its state in the URL (`/site?customize`). It needs

@@ -328,7 +328,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({ keywords }) => {
       customButtons={buttons}
       description="Make Ghost work with apps and tools."
       headerMedia={
-        <div className="-mx-5 overflow-hidden rounded-t-xl border-b border-border-default sm:-mt-5 md:-mx-7 md:-mt-7">
+        <div className="-mx-5 overflow-hidden rounded-t-card border-b border-border-default sm:-mt-5 md:-mx-7 md:-mt-7">
           <img className="size-full" src={IntegrationsSettingsImg} />
         </div>
       }

@@ -373,13 +373,7 @@ export class GiftService {
 
     const resolvedDuration: ResolvedGiftDuration = resolveGiftDuration(input);
 
-    let tier: Tier | null;
-    try {
-      tier = await this.deps.tiersService.api.read(input.tierId);
-    } catch (err) {
-      logging.error(err);
-      tier = null;
-    }
+    const tier: Tier | null = await this.deps.tiersService.api.read(input.tierId);
 
     if (!tier) {
       throw new errors.BadRequestError({

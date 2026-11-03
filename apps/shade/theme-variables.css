@@ -137,6 +137,7 @@
   --field-chip-internal-border: var(--field-chip-surface);
   --radius-field: var(--radius-sm);
   --text-field: var(--text-control-lg);
+  --radius-card: var(--radius-lg);
   --control-pressed-shadow: lch(0 0 0 / 0.07) 0px 1px 2px 0px inset;
   --control-outline-shadow:
     lch(0 0 0 / 0.14) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
@@ -285,6 +286,7 @@
   --field-chip-internal-border: var(--border);
   --radius-field: var(--radius-control);
   --text-field: var(--text-control);
+  --radius-card: var(--radius-xl);
 }
 
 /* Dark mode. With admin7Design off, the previous dark block below wins. */

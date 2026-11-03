@@ -235,6 +235,7 @@
   --radius-control: var(--radius-md);
   --radius-control-sm: var(--radius-sm);
   --radius-field: var(--radius-control);
+  --radius-card: var(--radius-xl);
   --radius-menu: var(--radius-md);
   --radius-menu-item: var(--radius-xs);
   --radius-surface: var(--radius-lg);

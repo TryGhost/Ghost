@@ -19,7 +19,7 @@ describe('Card Components', () => {
     expect(card, 'Card should be rendered').toBeTruthy();
     expect(card.textContent, 'Card should render its content').toBe('Card Content');
     expect(card.className, 'Should have outline variant styling').toContain(
-      'rounded-xl border border-border-default',
+      'rounded-card border border-border-default',
     );
   });
 
@@ -33,7 +33,7 @@ describe('Card Components', () => {
 
     expect(card, 'Card should be rendered').toBeTruthy();
     expect(card.className, 'Should not have outline variant styling').not.toContain(
-      'rounded-xl border',
+      'rounded-card border',
     );
   });
 
