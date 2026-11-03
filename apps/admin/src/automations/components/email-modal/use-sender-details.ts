@@ -1,5 +1,5 @@
 import { getSettingValues, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
-import { resolveEmailSenderDetails } from './sender-details';
+import { resolveWelcomeEmailSenderDetails as resolveEmailSenderDetails } from '@/settings/api';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useMemo } from 'react';

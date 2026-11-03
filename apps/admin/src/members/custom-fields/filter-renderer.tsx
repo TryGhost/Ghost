@@ -62,7 +62,7 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
     : [];
   const fieldLabel = field.label ?? definition?.name ?? 'Custom field';
   const isComposite = definition
-    ? matchShape(definition.type, { scalar: () => false, record: () => true })
+    ? matchShape(definition.type, { scalar: () => false, record: () => true, set: () => false })
     : false;
 
   // The part first, then what it holds: one text, or the codes an "is any of" lists.

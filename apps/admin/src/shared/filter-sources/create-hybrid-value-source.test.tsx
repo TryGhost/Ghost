@@ -1,7 +1,7 @@
 import { type FilterOption, type ValueSourceState } from '@tryghost/shade/patterns';
 import { type RemoteProbeState } from './create-remote-value-source';
 import { createHybridValueSource } from './create-hybrid-value-source';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 
@@ -38,12 +38,15 @@ const useLocalSource = (
   };
 };
 
-const useRemoteSource = ({ enabled }: { enabled?: boolean } = {}) => {
+const remoteSourceOptions = vi.fn();
+
+const useRemoteSource = (options: { enabled?: boolean; queryOptions?: unknown } = {}) => {
+  remoteSourceOptions(options);
   return {
     id: 'remote',
     useInitialBrowse: () => probeState,
     useOptions: () => {
-      return enabled ? buildState(remoteOptions) : buildState([]);
+      return options.enabled ? buildState(remoteOptions) : buildState([]);
     },
   };
 };
@@ -210,5 +213,70 @@ describe('createHybridValueSource', () => {
     await waitFor(() => {
       expect(result.current.options).toEqual(localOptions);
     });
+  });
+
+  it('exposes what the first page said about the whole collection', () => {
+    probeState = {
+      items: undefined,
+      options: [],
+      isLoading: true,
+      pagination: undefined,
+    };
+
+    const { result, rerender } = renderHook(() => useHybridSource().probe);
+
+    expect(result.current).toEqual({ isLoading: true, total: undefined });
+
+    probeState = {
+      items: [{ id: '1' }],
+      options: remoteOptions,
+      isLoading: false,
+      pagination: {
+        total: 4000,
+        next: 2,
+      },
+    };
+
+    rerender();
+
+    expect(result.current).toEqual({ isLoading: false, total: 4000 });
+  });
+
+  it('resolves local mode when the first page answers without pagination', async () => {
+    probeState = {
+      items: [{ id: '1' }],
+      options: localOptions,
+      isLoading: false,
+      pagination: undefined,
+    };
+
+    const { result } = renderHook(() => {
+      const source = useHybridSource();
+      return { state: source.useOptions({ query: '', selectedValues: [] }), probe: source.probe };
+    });
+
+    await waitFor(() => {
+      expect(result.current.state.options).toEqual(localOptions);
+    });
+    expect(result.current.probe.total).toBe(1);
+  });
+
+  it('passes its query options to the remote source', () => {
+    probeState = {
+      items: [{ id: '1' }],
+      options: remoteOptions,
+      isLoading: false,
+      pagination: {
+        total: 250,
+        next: 2,
+      },
+    };
+    const queryOptions = { defaultErrorHandler: false };
+    remoteSourceOptions.mockClear();
+
+    renderHook(() => useHybridSource({ queryOptions }));
+
+    expect(remoteSourceOptions).toHaveBeenCalledWith({ enabled: true, queryOptions });
+    expect(remoteSourceOptions).toHaveBeenCalledWith({ enabled: false, queryOptions });
   });
 });
