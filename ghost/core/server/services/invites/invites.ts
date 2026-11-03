@@ -117,7 +117,7 @@ export class Invites {
     let emailData: InviteEmailData;
 
     return this.invitationLimiter
-      .run(invites[0].email, (transacting) => {
+      .run(invites[0], (transacting) => {
         const inviteOptions = transacting ? { ...options, transacting } : options;
         return InviteModel.findOne({ email: invites[0].email }, inviteOptions)
           .then((existingInvite) => {

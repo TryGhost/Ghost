@@ -21,32 +21,65 @@ export default class InvitationLimiter {
 
   private isLimited(): boolean {
     return (
+      this.deps.limitService.isLimited('staff') ||
       this.deps.limitService.isLimited('allStaff') ||
       this.deps.limitService.isLimited('inviteEmails')
     );
   }
 
-  async run<T>(email: string, prepare: (transaction?: Knex.Transaction) => Promise<T>): Promise<T> {
+  async run<T>(
+    invite: { email: string; role_id: string },
+    prepare: (transaction?: Knex.Transaction) => Promise<T>,
+  ): Promise<T> {
     if (!this.isLimited()) {
       return prepare();
     }
     return this.deps.transaction(async (transaction) => {
-      const counterValue = await this.getAndLockInviteEmailCounter(transaction);
       const options = { transacting: transaction };
+      const counterValue =
+        this.deps.limitService.isLimited('allStaff') ||
+        this.deps.limitService.isLimited('inviteEmails')
+          ? await this.getAndLockInviteEmailCounter(transaction)
+          : null;
+      const email = invite.email.trim();
+      const existingInvite = await transaction('invites')
+        .where({ email })
+        .forUpdate()
+        .first('role_id');
+      // Acceptance may have completed since the API's permission check.
+      const registered = await transaction('users').where({ email }).first('id');
+      if (registered) {
+        throw new errors.ValidationError({
+          message: 'User is already registered.',
+          code: 'USER_ALREADY_REGISTERED',
+        });
+      }
       if (this.deps.limitService.isLimited('inviteEmails')) {
         await this.reserveEmail(transaction, counterValue);
       }
       // Replacing a pending invitation does not occupy another seat, even after an import.
-      if (this.deps.limitService.isLimited('allStaff')) {
-        const existingInvite = await transaction('invites')
-          .where('email', email.trim())
-          .forUpdate()
-          .first('id');
-        if (!existingInvite) {
-          await this.deps.limitService.errorIfWouldGoOverLimit('allStaff', options);
-        }
+      if (this.deps.limitService.isLimited('allStaff') && !existingInvite) {
+        await this.deps.limitService.errorIfWouldGoOverLimit('allStaff', options);
+      }
+      if (this.deps.limitService.isLimited('staff')) {
+        await this.checkStaffLimit(transaction, invite.role_id, existingInvite?.role_id);
       }
       return prepare(transaction);
+    });
+  }
+
+  private async checkStaffLimit(
+    transaction: Knex.Transaction,
+    roleId: string,
+    previousRoleId?: string,
+  ): Promise<void> {
+    const contributor = await transaction('roles').where('name', 'Contributor').first('id');
+    if (roleId === contributor.id) {
+      return;
+    }
+    await this.deps.limitService.errorIfWouldGoOverLimit('staff', {
+      transacting: transaction,
+      addedCount: previousRoleId && previousRoleId !== contributor.id ? 0 : 1,
     });
   }
 
