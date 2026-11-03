@@ -2,8 +2,9 @@ import assert from 'node:assert/strict';
 import { z } from 'zod';
 import type * as Framework from '../../utils/e2e-framework';
 
-// Required rather than imported, so the test shares the module instances Ghost boots with, and
-// the mock manager's restore undoes its stubs.
+// Loaded with `require` rather than `import`, because under Vitest an `import` of a CommonJS
+// module gets a separate copy of it. With `require`, the test shares the module instances Ghost
+// boots with, so the mock manager's stubs reach Ghost and its `restore` removes them.
 const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const stripeService = require('../../../core/server/services/stripe');
@@ -37,7 +38,8 @@ describe('Checkout session outcomes', function () {
       .expectStatus(200);
   }
 
-  // A tax ID needs no custom field, so it's the collected part that takes no setting up.
+  // The tax ID is the one thing a checkout can ask the buyer for without a custom field to save
+  // the answer in, because Stripe keeps the tax ID itself, so it's the simplest part to set up.
   async function offerTaxId() {
     mockManager.mockLabsEnabled('stripeCheckoutCollection');
     mockManager.mockLabsDisabled('stripeAutomaticTax');
@@ -206,7 +208,6 @@ describe('Checkout session outcomes', function () {
     ]);
   });
 
-  // Stripe refuses some sessions without naming a parameter, so any part could be why.
   it('records every part as dropped when Stripe refused the session without naming why, and it went ahead without them', async function () {
     await setDesign();
     await offerTaxId();
