@@ -1,28 +1,22 @@
 import React from 'react';
-import { CustomFieldTypeOption } from '@/shared/member-custom-fields/custom-field-type-option';
 import {
   Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Switch,
 } from '@tryghost/shade/components';
-import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
+import {
+  type CustomFieldDraft,
+  customFieldDraftErrors,
+  draftOf,
+  isSettingsProblem,
+  newCustomField,
+  newDraft,
+} from '@/shared/member-custom-fields/custom-field-draft';
+import { CustomFieldForm } from '@/shared/member-custom-fields/custom-field-form';
+import { LucideIcon } from '@tryghost/shade/utils';
 import { SettingsModal } from '@tryghost/shade/patterns';
-import { useMemberCount } from '@tryghost/admin-x-framework/api/members';
 import {
   memberCustomFieldProblemsOf,
   memberCustomFieldUserTypes,
@@ -31,18 +25,11 @@ import {
   useEditMemberCustomField,
   userTypeForFieldType,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
-import { TypedSettingsInputSchema, refusedProperty } from '@tryghost/metafield-types';
-import { matchShape } from '@tryghost/metafield-types/structure';
 import { dequal } from 'dequal';
-import ListFieldSettings from '@/shared/member-custom-fields/list-field-settings';
 import { toast } from 'sonner';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
-
-/** Whether a problem is with the field's settings: the settings as a whole, or a part of them. */
-const isSettingsProblem = (property: string) =>
-  property === 'settings' || property.startsWith('settings.');
 
 const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => void }> = ({
   field,
@@ -53,123 +40,53 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
   const { mutateAsync: editField } = useEditMemberCustomField();
   const { mutateAsync: deleteField } = useDeleteMemberCustomField();
   const handleError = useHandleError();
-  const memberCount = useMemberCount();
   const isEdit = field !== undefined;
 
-  const { formState, updateForm, handleSave, errors, clearError, setErrors, okProps } = useForm({
-    initialState: {
-      name: field?.name || '',
-      // Form state tracks the user-type id; it maps to the API storage
-      // type on save
-      userTypeId: field ? field.type : memberCustomFieldUserTypes[0].id,
-      access: field ? field.access.member : 'none',
-      // What the type is set up with, as its settings inputs report it. A type with nothing to
-      // set up has none.
-      settings: field?.settings,
-    },
-    savingDelay: 500,
-    onValidate: (state) => {
-      // Name uniqueness is enforced by the API (unique among custom fields); a 422
-      // comes back through onSaveError and highlights the field. Here we
-      // only guard the empty case so we never POST a blank name.
-      const newErrors: Record<string, string> = {};
-      if (!state.name.trim()) {
-        newErrors.name = 'Enter a name for the field';
-      }
-      // Settings are checked with the type by the rule the server applies, in its words: all of
-      // a new field's, and an edited field's only when they change. Settings saved under an older
-      // rule are kept, and an edit that leaves them alone doesn't send them.
-      if (!field || !dequal(state.settings, field.settings)) {
-        const typed = TypedSettingsInputSchema.safeParse({
-          type: state.userTypeId,
-          settings: state.settings,
-        });
-        // Every problem, each under the path Ghost would name it by.
-        for (const issue of typed.error?.issues ?? []) {
-          newErrors[refusedProperty(issue.path)] ??= issue.message;
+  // An edit shows the field's own type, which can't change.
+  const offeredTypes = field ? [userTypeForFieldType(field.type)] : memberCustomFieldUserTypes;
+
+  const { formState, updateForm, handleSave, errors, clearError, setErrors, okProps, saveState } =
+    useForm<CustomFieldDraft>({
+      initialState: field ? draftOf(field) : newDraft(offeredTypes[0].id),
+      savingDelay: 500,
+      // Name uniqueness is enforced by the API (unique among custom fields); a 422 comes back
+      // through onSaveError and highlights the field.
+      onValidate: (state) => ({ ...customFieldDraftErrors(state, field) }),
+      onSave: async (state) => {
+        if (field) {
+          // Only the properties this form actually changed. Sending the whole field back
+          // would carry whatever the list held when it was loaded, so saving a rename
+          // would silently restore the access a colleague had changed in the meantime.
+          const name = state.name.trim();
+          // Settings are sent whole, and only when they change.
+          const { settings } = state;
+          await editField({
+            key: field.key,
+            ...(name === field.name ? {} : { name }),
+            ...(state.access === field.access.member ? {} : { access: { member: state.access } }),
+            ...(settings && !dequal(settings, field.settings) ? { settings } : {}),
+          });
+        } else {
+          await createField(newCustomField(state));
         }
-      }
-      return newErrors;
-    },
-    onSave: async (state) => {
-      if (field) {
-        // Only the properties this form actually changed. Sending the whole field back
-        // would carry whatever the list held when it was loaded, so saving a rename
-        // would silently restore the access a colleague had changed in the meantime.
-        const name = state.name.trim();
-        // Settings are sent whole, and only when they change.
-        const { settings } = state;
-        await editField({
-          key: field.key,
-          ...(name === field.name ? {} : { name }),
-          ...(state.access === field.access.member ? {} : { access: { member: state.access } }),
-          ...(settings && !dequal(settings, field.settings) ? { settings } : {}),
-        });
-      } else {
-        // No key: the backend mints it from the name.
-        await createField({
-          name: state.name.trim(),
-          type: state.userTypeId,
-          settings: state.settings,
-          access: { member: state.access },
-        });
-      }
-    },
-    onSaveError: (error) => {
-      // Ghost refusing something this form asks for shows beside the input that set it. Anything
-      // else, such as a refusal of the request itself, is reported as an error.
-      const problems = memberCustomFieldProblemsOf(error)?.filter(
-        ({ property }) => property === 'name' || isSettingsProblem(property),
-      );
-      if (problems?.length) {
-        setErrors(Object.fromEntries(problems.map(({ property, message }) => [property, message])));
-        return;
-      }
-      handleError(error);
-    },
-  });
+      },
+      onSaveError: (error) => {
+        // Ghost refusing something this form asks for shows beside the input that set it. Anything
+        // else, such as a refusal of the request itself, is reported as an error.
+        const problems = memberCustomFieldProblemsOf(error)?.filter(
+          ({ property }) => property === 'name' || isSettingsProblem(property),
+        );
+        if (problems?.length) {
+          setErrors(
+            Object.fromEntries(problems.map(({ property, message }) => [property, message])),
+          );
+          return;
+        }
+        handleError(error);
+      },
+    });
 
   const isArchived = field?.status === 'archived';
-  const selectedType = userTypeForFieldType(formState.userTypeId);
-
-  // The problems with the settings, by where they are within them, for the type's own inputs to
-  // place: '' for the settings as a whole, `options.2` for a list's third option.
-  const settingsErrors = Object.fromEntries(
-    Object.entries(errors).flatMap(([property, message]) =>
-      message && isSettingsProblem(property) ? [[property.slice('settings.'.length), message]] : [],
-    ),
-  );
-  const clearSettingsErrors = () =>
-    setErrors(
-      Object.fromEntries(
-        Object.entries(errors).filter(([property]) => !isSettingsProblem(property)),
-      ),
-    );
-
-  // The API keeps a third access level, `read`, that the switch doesn't offer. A field
-  // already set to it reads as open and is described as such; saving without touching
-  // the switch leaves it there, since the edit sends only what changed, and switching it
-  // off and on again returns it to the level it had rather than upgrading it.
-  const isOpenToMembers = formState.access !== 'none';
-  const storedOpenLevel = field && field.access.member !== 'none' ? field.access.member : 'write';
-  // Opening a field that was closed discloses whatever staff have recorded in it so far.
-  const isOpeningClosedField = isEdit && isOpenToMembers && field.access.member === 'none';
-
-  let accessDescription;
-  if (isArchived) {
-    accessDescription =
-      'Members never see an archived field. Reactivate it to choose whether they can see this one.';
-  } else if (isOpenToMembers) {
-    // The count is left out while it loads, as the newsletter modal does.
-    const members = `Your ${memberCount === undefined ? '' : formatNumber(memberCount)} member${memberCount === 1 ? '' : 's'}`;
-    accessDescription =
-      formState.access === 'read'
-        ? `${members} can see this field in their Portal account settings, but not change it.`
-        : `${members} can see and update this field in their Portal account settings.`;
-  } else {
-    accessDescription = 'Only staff can see this field and what you record in it.';
-  }
-
   // Archiving and reactivating both ask for confirmation first, because each changes what every
   // surface that collects values shows.
   const archiveButton = (existing: MemberCustomField) => (
@@ -331,85 +248,30 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
         }
       }}
     >
-      <FieldGroup className="mt-10 gap-8">
-        <Field data-invalid={Boolean(errors.name) || undefined}>
-          <FieldLabel htmlFor="custom-field-name">Name</FieldLabel>
-          <Input
-            aria-invalid={Boolean(errors.name) || undefined}
-            autoComplete="off"
-            id="custom-field-name"
-            placeholder="Enter custom field name"
-            value={formState.name}
-            autoFocus
-            onChange={(e) => updateForm((state) => ({ ...state, name: e.target.value }))}
-            onKeyDown={() => clearError('name')}
-          />
-          {errors.name && <FieldError>{errors.name}</FieldError>}
-        </Field>
-        <Field data-disabled={isEdit || undefined}>
-          <FieldLabel>Type</FieldLabel>
-          <Select
-            disabled={isEdit}
-            value={formState.userTypeId}
-            onValueChange={(value) => {
-              const chosen = memberCustomFieldUserTypes.find((userType) => userType.id === value);
-              if (chosen) {
-                // Settings belong to a type, so another type starts with none of its own.
-                clearSettingsErrors();
-                updateForm((state) => ({ ...state, userTypeId: chosen.id, settings: undefined }));
-              }
-            }}
-          >
-            <SelectTrigger aria-label="Type" data-testid="custom-field-type">
-              <SelectValue placeholder="Select type">
-                <CustomFieldTypeOption type={selectedType.id} />
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {memberCustomFieldUserTypes.map((userType) => (
-                <SelectItem key={userType.id} value={userType.id}>
-                  <CustomFieldTypeOption type={userType.id} />
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {isEdit && <FieldDescription>Type can’t be changed after creation</FieldDescription>}
-        </Field>
-        {matchShape<React.ReactNode>(formState.userTypeId, {
-          scalar: () => null,
-          record: () => null,
-          set: () => (
-            <ListFieldSettings
-              disabled={isArchived}
-              errors={settingsErrors}
-              idPrefix="custom-field"
-              saved={field?.settings}
-              onChange={(settings) => {
-                clearSettingsErrors();
-                updateForm((state) => ({ ...state, settings }));
-              }}
-            />
-          ),
-        })}
-        <Field data-disabled={isArchived || undefined} orientation="horizontal">
-          <FieldContent>
-            <FieldLabel htmlFor="custom-field-visible-to-members">Visible to members</FieldLabel>
-            <FieldDescription>
-              {accessDescription}
-              {isOpeningClosedField && <> Anything already recorded will become visible.</>}
-            </FieldDescription>
-          </FieldContent>
-          <Switch
-            checked={!isArchived && isOpenToMembers}
-            data-testid="custom-field-access"
-            disabled={isArchived}
-            id="custom-field-visible-to-members"
-            onCheckedChange={(checked) =>
-              updateForm((state) => ({ ...state, access: checked ? storedOpenLevel : 'none' }))
+      <div className="mt-10">
+        <CustomFieldForm
+          disabled={isArchived}
+          draft={formState}
+          errors={errors}
+          field={field}
+          idPrefix="custom-field"
+          saving={saveState === 'saving'}
+          types={offeredTypes}
+          withVisibility
+          onChange={updateForm}
+          onClearErrors={(which) => {
+            if (which === 'name') {
+              clearError('name');
+              return;
             }
-          />
-        </Field>
-      </FieldGroup>
+            setErrors(
+              Object.fromEntries(
+                Object.entries(errors).filter(([property]) => !isSettingsProblem(property)),
+              ),
+            );
+          }}
+        />
+      </div>
     </SettingsModal>
   );
 };
