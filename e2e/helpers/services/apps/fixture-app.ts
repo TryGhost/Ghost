@@ -25,6 +25,8 @@ export interface FixtureAppManifest {
   accent_color: string;
   icon: { name: string };
   surfaces: [{ type: 'admin_page'; url: string }];
+  /** Ghost requires it for an app on localhost, as the fixture always is. */
+  development: true;
 }
 
 /** A request the app sends Admin through the bridge, as the SDK's `ghost.fetch` would. */
@@ -174,6 +176,7 @@ export class FixtureApp extends FakeServer {
       accent_color: '#15171a',
       icon: { name: 'blocks' },
       surfaces: [{ type: 'admin_page', url: 'app.html' }],
+      development: true,
     };
   }
 
