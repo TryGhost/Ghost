@@ -149,6 +149,7 @@
   --control-readonly-surface: var(--color-gray-50);
   --control-disabled-surface: var(--color-gray-100);
   --control-border: color-mix(in oklab, var(--color-gray-200), var(--color-gray-300));
+  --radius-card: var(--radius-lg);
   --control-pressed-shadow: lch(0 0 0 / 0.07) 0px 1px 2px 0px inset;
   --control-outline-shadow:
     lch(0 0 0 / 0.14) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
@@ -295,6 +296,7 @@
     lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
     lch(0 0 0 / 0.04) 0px 1px 1px 0px, var(--control-pressed-shadow);
   --table-row-hover: var(--color-gray-50);
+  --radius-card: var(--radius-xl);
 }
 
 /* Dark mode. With admin7Design off, the previous dark block below wins. */
