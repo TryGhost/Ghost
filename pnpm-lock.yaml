@@ -1663,6 +1663,9 @@ importers:
       '@types/react':
         specifier: catalog:react17
         version: 17.0.93
+      '@types/react-dom':
+        specifier: catalog:react17
+        version: 17.0.26(@types/react@17.0.93)
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2

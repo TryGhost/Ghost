@@ -23,9 +23,9 @@ const tier = (id: string, active: boolean, type = 'paid'): Tier => ({
 });
 
 const tiers = [
-  tier('Gold', true),
   tier('Legacy', false),
   tier('Unused', false),
+  tier('Gold', true),
   tier('Free', true, 'free'),
 ];
 
@@ -86,11 +86,21 @@ describe('Paid subscription changed tier choices', () => {
     expect(options()).toEqual(['Free', 'Gold']);
   });
 
+  it('sorts active tiers before archived tiers in the From picker', () => {
+    render(<Picker initial={{ from: [], to: ['Legacy'] }} />);
+
+    open('From');
+    expect(options()).toEqual(['Any paid tier', 'Gold', 'Legacy (archived)', 'Unused (archived)']);
+    fireEvent.keyDown(screen.getByRole('combobox', { name: 'From' }), { key: 'Escape' });
+  });
+
   it('keeps an existing archived destination visible and removable', () => {
     render(<Picker initial={{ from: 'any_paid', to: ['Legacy'] }} />);
+
     expect(screen.getByRole('button', { name: 'Remove Legacy (archived)' })).toBeVisible();
+
     open('To');
-    expect(options()).toEqual(['Free', 'Gold', 'Legacy (archived)']);
+    expect(options()).toEqual(['Free', 'Legacy (archived)', 'Gold']);
     expect(screen.getByRole('option', { name: 'Legacy (archived)' })).toHaveAttribute(
       'aria-selected',
       'true',

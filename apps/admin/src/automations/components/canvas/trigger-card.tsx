@@ -173,6 +173,7 @@ const SubscriptionChangedPicker: React.FC<{ trigger: TriggerData; errorMessage?:
       name: tier.active ? tier.name : `${tier.name} (archived)`,
       active: tier.active,
     }));
+  const fromTiers = [...tiers].sort((a, b) => Number(b.active) - Number(a.active));
   const missingTierLabel = tierQuery.isLoading ? 'Loading tier...' : 'Unavailable tier';
   const fromTierIds = value.from === 'any_paid' ? [] : value.from;
   const toTierIds = value.to === 'downgraded_to_free' ? [] : value.to;
@@ -206,7 +207,7 @@ const SubscriptionChangedPicker: React.FC<{ trigger: TriggerData; errorMessage?:
           notice={notice}
           placeholder="Select tiers..."
           standalone={{ value: 'any_paid', label: 'Any paid tier' }}
-          tiers={tiers}
+          tiers={fromTiers}
           value={value.from}
           onChange={(from) => onChange(updateFromSelection(value, from))}
         />

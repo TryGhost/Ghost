@@ -267,6 +267,7 @@ export const AutomationSidebar: React.FC<{
   selectedRunId: string | null;
   onSelectRun: (id: string, memberName: string) => void;
   isRunSelectionDisabled: boolean;
+  isToggleHidden?: boolean;
 }> = ({
   automationId,
   description,
@@ -284,6 +285,7 @@ export const AutomationSidebar: React.FC<{
   selectedRunId,
   onSelectRun,
   isRunSelectionDisabled,
+  isToggleHidden = false,
 }) => {
   let activeTab: AutomationSidebarTab;
   switch (metadata) {
@@ -489,7 +491,10 @@ export const AutomationSidebar: React.FC<{
           aria-controls={panelId}
           aria-expanded={isOpen}
           aria-label={isOpen ? 'Hide automation sidebar' : 'Show automation sidebar'}
-          className="absolute top-4 left-4 z-20"
+          className={cn(
+            'absolute top-4 left-4 z-20 transition-transform duration-200 ease-in-out motion-reduce:transition-none',
+            isToggleHidden && 'translate-x-[calc(-100%-2rem)]',
+          )}
           size="icon"
           type="button"
           variant="ghost"
@@ -569,11 +574,13 @@ export const AutomationSidebar: React.FC<{
         aria-expanded={isOpen}
         aria-label={isOpen ? 'Hide automation sidebar' : 'Show automation sidebar'}
         className={cn(
-          'absolute z-40',
+          'absolute z-40 transition-transform duration-200 ease-in-out motion-reduce:transition-none',
           'enabled:aria-expanded:shadow-none enabled:aria-expanded:hover:bg-button-ghost-hover',
           chrome === 'floating'
             ? 'top-5 right-6 bg-surface-elevated enabled:aria-expanded:bg-surface-elevated'
             : 'top-3 right-4 enabled:aria-expanded:bg-transparent',
+          // Slides off its edge while the email editor clears the canvas.
+          isToggleHidden && 'translate-x-[calc(100%+2rem)]',
         )}
         size="icon"
         type="button"
