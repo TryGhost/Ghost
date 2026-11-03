@@ -34,6 +34,7 @@ describe('MW Version Rewrites', function () {
 
   function assertVersionRewrittenWithHeaders(version, path, resolve, reject) {
     mwVersionRewrites(req, res, (err) => {
+      assert.equal(req.url, path, 'url was rewritten');
       assert.deepEqual(
         req.headers,
         { 'accept-version': `${version}.0` },
