@@ -17,6 +17,20 @@ async function anAddressFieldMembersMayEdit(page: Page, fieldName: string): Prom
   await settingsPage.customFieldsSection.createField(fieldName, 'Address', true);
 }
 
+/** Defines a list field the members of this site may edit, taking several answers. */
+async function aListFieldMembersMayEdit(
+  page: Page,
+  fieldName: string,
+  options: string[],
+): Promise<void> {
+  const settingsPage = new SettingsPage(page);
+  await settingsPage.goto();
+  await settingsPage.customFieldsSection.createField(fieldName, 'List', true, {
+    options,
+    multiple: true,
+  });
+}
+
 /** Opens Portal account settings as the member, in a browser context of their own. */
 async function accountSettingsAs(
   browser: Browser,
@@ -70,6 +84,45 @@ test.describe('Portal - member custom fields', () => {
 
       await expect(profile.partInput(key, 'line1')).toHaveClass(/error/);
       await expect(profile.partInput(key, 'city')).not.toHaveClass(/error/);
+    } finally {
+      await context.close();
+    }
+  });
+
+  // Escape closes the list rather than Portal, which closes itself on an Escape nothing in it has
+  // handled, so the member picks, closes the list and saves without leaving the page.
+  test('saves the answers a member picks from a list', async ({ page, browser, baseURL }) => {
+    const fieldName = `Favourite animals ${Date.now()}`;
+    const member = await createMemberFactory(page.request).create({
+      name: 'Ada Lovelace',
+      email: `ada-list-${Date.now()}@ghost.org`,
+    });
+    await aListFieldMembersMayEdit(page, fieldName, ['Dog', 'Cat', 'Fish']);
+
+    const { context, memberPage, accountHome, profile, key } = await accountSettingsAs(
+      browser,
+      baseURL!,
+      member,
+      fieldName,
+    );
+    try {
+      await profile.listPicker(key).click();
+      await profile.listOption('Cat').click();
+      await profile.listOption('Fish').click();
+      await memberPage.keyboard.press('Escape');
+
+      await expect(profile.listOption('Dog')).toBeHidden();
+      await expect(profile.title).toBeVisible();
+      await expect(profile.listAnswer('Cat')).toBeVisible();
+      await expect(profile.listAnswer('Fish')).toBeVisible();
+      await profile.save();
+
+      await expect(accountHome.signOutButton).toBeVisible();
+      await accountHome.portalFrame.locator('[data-test-button="edit-profile"]').click();
+      await expect(profile.title).toBeVisible();
+      await expect(profile.listAnswer('Cat')).toBeVisible();
+      await expect(profile.listAnswer('Fish')).toBeVisible();
+      await expect(profile.listAnswer('Dog')).toHaveCount(0);
     } finally {
       await context.close();
     }
