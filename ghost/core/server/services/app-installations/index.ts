@@ -29,6 +29,17 @@ export type { AppInstallationPreview, AppSession } from './service';
  *   boot, so an entry that isn't an origin stops Ghost starting instead of failing every
  *   app.
  */
+/** A config entry as an error shows it, which is logged, so without a URL's credentials. */
+function shown(entry: unknown): string {
+  const url = typeof entry === 'string' ? URL.parse(entry) : null;
+  if (url && (url.username || url.password)) {
+    url.username = '';
+    url.password = '';
+    return JSON.stringify(url.href);
+  }
+  return JSON.stringify(entry);
+}
+
 const AppsConfig = z.object({
   localhostAlias: z.string().min(1).nullable().default(null),
   trustedOrigins: z
@@ -39,7 +50,7 @@ const AppsConfig = z.object({
       if (!read.success) {
         ctx.addIssue({
           code: 'custom',
-          message: `Expected a list of origins, such as https://app.example.com, not ${JSON.stringify(read.entry)}`,
+          message: `Expected a list of origins, such as https://app.example.com, not ${shown(read.entry)}`,
         });
         return z.NEVER;
       }

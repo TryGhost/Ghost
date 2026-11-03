@@ -65,9 +65,11 @@ An app describes itself to Ghost in a JSON manifest, which it serves as a
   fetches the manifest from and challenges is the one every surface runs on. A
   URL with its own scheme or host is refused, even the manifest's own. The
   author's `url` is only linked to, so it is absolute and may be anywhere.
-- `manifest_url` is the address the signed manifest is served from. A manifest
-  read from any other address is refused, so a copy can't pass as the app, and
-  the paths resolve to the same URLs wherever the bytes are served.
+- `manifest_url` is the address Ghost was asked to fetch the signed manifest
+  from. A manifest naming any other address is refused, so a copy can't pass as
+  the app, and the paths resolve to the same URLs wherever the bytes are served.
+  Ghost follows a redirect to another path on the same host, and the manifest
+  still names the address Ghost was asked for.
 - `identity_key` and `backend_key` are public Ed25519 keys as JWKs, with exactly
   `kty`, `crv` and `x`. A key that includes its private part `d` is refused, and
   so are two keys that are the same.
