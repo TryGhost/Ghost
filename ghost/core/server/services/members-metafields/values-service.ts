@@ -7,7 +7,6 @@ import {
   isRecordValue,
   matchShape,
   valueSchemaFor,
-  withTypedSettings,
   type FieldType,
   type FieldValue,
   type MetafieldChangeEventField,
@@ -27,7 +26,7 @@ import {
   DbStoredValueRow,
   DbMetafieldValue,
   FIELD_STATUS,
-  STORED_SETTINGS,
+  storedField,
   StoredFieldList,
   type MetafieldChangeEvent,
   type SingleWriteOrigin,
@@ -46,6 +45,7 @@ import {
   type FieldSource,
 } from './queries';
 import { MemberAccessSchema, canWrite, type Audience } from './access';
+import { readStoredField } from './stored-fields';
 import { storedValueAs, valueRowsToWrite, valuesFromRows } from './storage';
 
 const VALUES_TABLE = 'members_metafield_values';
@@ -114,16 +114,13 @@ function refusalError(first: Refusal, rest: Refusal[]): errors.ValidationError {
  * What a write needs of a field, decoded so its namespace and key arrive checked, and its type
  * and settings read against each other.
  */
-const WritableField = withTypedSettings(
-  {
-    id: z.string(),
-    namespace: NamespaceSchema,
-    key: KeySchema,
-    name: z.string(),
-    memberAccess: MemberAccessSchema,
-  },
-  STORED_SETTINGS,
-);
+const WritableField = storedField({
+  id: z.string(),
+  namespace: NamespaceSchema,
+  key: KeySchema,
+  name: z.string(),
+  memberAccess: MemberAccessSchema,
+});
 
 /** The column each of a writable field's values is read from, keyed so none is left out. */
 const WRITABLE_FIELD_COLUMNS = {
@@ -134,13 +131,10 @@ const WRITABLE_FIELD_COLUMNS = {
   memberAccess: 'member_access',
   type: 'type',
   settings: 'settings',
-} satisfies Record<keyof z.input<typeof WritableField>, string>;
+} satisfies Record<keyof z.input<typeof WritableField.asStored>, string>;
 
 /** A field's identity with its type and settings, for reading its values. */
-const DbTypedField = withTypedSettings(
-  { namespace: NamespaceSchema, key: KeySchema },
-  STORED_SETTINGS,
-);
+const DbTypedField = storedField({ namespace: NamespaceSchema, key: KeySchema });
 
 /** The columns of a field's identity, type and settings, keyed so none is left out. */
 const TYPED_FIELD_COLUMNS = Object.keys({
@@ -148,7 +142,7 @@ const TYPED_FIELD_COLUMNS = Object.keys({
   key: true,
   type: true,
   settings: true,
-} satisfies Record<keyof z.input<typeof DbTypedField>, true>);
+} satisfies Record<keyof z.input<typeof DbTypedField.asStored>, true>);
 
 /**
  * The columns of the joined read of values, each from the table that holds it. Keyed by the row it
@@ -163,7 +157,7 @@ const STORED_VALUE_COLUMNS = {
   value_text: VALUES_TABLE,
 } satisfies Record<keyof z.input<typeof DbStoredValueRow>, string>;
 
-type AllowedField = z.output<typeof WritableField>;
+type AllowedField = z.output<typeof WritableField.asStored>;
 
 /** An absent `value` means clear the field. */
 export interface PlannedWrite {
@@ -261,28 +255,23 @@ export class MetafieldValuesService {
 
     const allowed = new Map<string, AllowedField>();
     for (const row of rows) {
-      // Skipped rather than thrown, the way an unreadable value is: the write then reports
-      // this one field as unknown instead of failing every other value it carries.
-      const field = WritableField.safeParse(row);
-      if (!field.success) {
-        logging.warn(
-          {
-            event: { name: 'members.metafields.field_unreadable' },
-            err: field.error,
-            metafieldNamespace: row.namespace,
-            metafieldKey: row.key,
-          },
-          'Skipping an unreadable metafield',
-        );
+      // A field that can't be read even with its type's defaults is skipped rather than thrown, the
+      // way an unreadable value is: the write then reports this one field as unknown instead of
+      // failing every other value it carries.
+      const field = readStoredField(row, WritableField, {
+        reader: 'values',
+        tracking: this.tracking,
+      });
+      if (!field) {
         continue;
       }
       allowed.set(
         z.encode(IdentityTextSchema, {
-          namespace: field.data.namespace,
-          key: field.data.key,
+          namespace: field.namespace,
+          key: field.key,
           parts: [],
         }),
-        field.data,
+        field,
       );
     }
     return allowed;
@@ -302,7 +291,8 @@ export class MetafieldValuesService {
 
   /**
    * The type and settings of each active field the audience can read, keyed by identity. A field
-   * whose type or settings can't be read is left out, and its values with it.
+   * whose settings can't be read is read with its type's defaults, and one that can't be read even
+   * so is left out, and its values with it.
    */
   private async typedFields(
     executor: Knex,
@@ -313,20 +303,13 @@ export class MetafieldValuesService {
       .read.select(...TYPED_FIELD_COLUMNS);
     const typedFields = new Map<string, TypedSettings>();
     for (const row of rows) {
-      const field = DbTypedField.safeParse(row);
-      if (!field.success) {
-        logging.warn(
-          {
-            event: { name: 'members.metafields.field_unreadable' },
-            err: field.error,
-            metafieldNamespace: row.namespace,
-            metafieldKey: row.key,
-          },
-          'Skipping the values of an unreadable metafield',
-        );
-        continue;
+      const field = readStoredField(row, DbTypedField, {
+        reader: 'values',
+        tracking: this.tracking,
+      });
+      if (field) {
+        typedFields.set([field.namespace, field.key].join(SEPARATOR), field);
       }
-      typedFields.set([field.data.namespace, field.data.key].join(SEPARATOR), field.data);
     }
     return typedFields;
   }

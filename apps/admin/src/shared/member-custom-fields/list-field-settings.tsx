@@ -8,6 +8,7 @@ import {
   FieldLabel,
   Switch,
 } from '@tryghost/shade/components';
+import { SHAPE_SETTINGS } from '@tryghost/metafield-types';
 import { optionText, type SetSettings } from '@tryghost/metafield-types/structure';
 
 interface ListInputs {
@@ -45,10 +46,11 @@ const ListFieldSettings: React.FC<{
   idPrefix: string;
   onChange: (settings: SetSettings) => void;
 }> = ({ saved, errors = {}, disabled, idPrefix, onChange }) => {
+  const start = saved ?? SHAPE_SETTINGS.set.defaults;
   const [inputs, setInputs] = useState<ListInputs>({
-    options: saved?.options ?? [],
+    options: start.options,
     newOption: '',
-    multiple: saved?.multiple ?? false,
+    multiple: start.multiple,
   });
 
   const update = (changes: Partial<ListInputs>) => {

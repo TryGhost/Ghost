@@ -181,7 +181,7 @@ export function editableAnswers(settings: SetSettings, held: readonly unknown[])
  * What a field of each shape is set up with beyond its name: a set's options, and nothing for any
  * other shape.
  */
-interface SettingsOfShape {
+export interface SettingsOfShape {
   scalar: undefined;
   record: undefined;
   set: SetSettings;

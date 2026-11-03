@@ -8,7 +8,7 @@ import { resolveMaxDefinitions } from './config';
 import { customFields } from './custom-fields';
 import { createNamespaces, type Namespaces } from './namespaces';
 import { fieldSource, type FieldSource } from './queries';
-import { tracer } from '../../lib/tracing';
+import { meter, tracer } from '../../lib/tracing';
 import { metafieldsTracking } from './tracking';
 
 export type { Metafield } from './models';
@@ -90,7 +90,7 @@ export function init(): void {
   namespaces = createNamespaces([customFields({ limitService, getMaxDefinitions })]);
   fields = fieldSource(namespaces);
 
-  const tracking = metafieldsTracking(tracer);
+  const tracking = metafieldsTracking({ tracer, meter });
   definitions = new MetafieldDefinitionsService({
     knex,
     fields,
