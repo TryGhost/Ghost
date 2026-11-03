@@ -34,15 +34,16 @@ export const resetMockData = () => {
   switchMocks('on');
 };
 
-// A faked Stripe connection (see handlers.ts). Off by default: the site's real
+// A faked Stripe connection (see handlers.ts). On by default, so a preview
+// without Stripe still shows the paid triggers; switched off, the site's real
 // Stripe setting applies.
 const STRIPE_KEY = 'shaping.mock.stripe';
 
 export const readFakeStripe = (): boolean => {
   try {
-    return localStorage.getItem(STRIPE_KEY) === 'on';
+    return localStorage.getItem(STRIPE_KEY) !== 'off';
   } catch {
-    return false;
+    return true;
   }
 };
 

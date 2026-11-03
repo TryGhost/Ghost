@@ -195,11 +195,20 @@ const withFakeSettings = (body: SettingsBody): SettingsBody => {
 
 export const handlers = [
   // Performance needs Tinybird's config to show; give it one so the tab
-  // renders, with the stats themselves answered below.
+  // renders, with the stats themselves answered below. The Labs flags the
+  // prototype needs read as on, so a preview works without visiting Labs
+  // (each redeploy resets them).
   http.get(api('/config/'), async ({ request }) => {
     const response = await fetchReal(request.url, { credentials: 'include' });
-    const json = (await response.json()) as { config: Record<string, unknown> };
-    json.config.stats ??= { id: 'shaping-mock', endpoint: '' };
+    const json = (await response.json()) as { config?: Record<string, unknown> };
+    if (response.ok && json.config) {
+      json.config.stats ??= { id: 'shaping-mock', endpoint: '' };
+      json.config.labs = {
+        ...(json.config.labs as Record<string, unknown> | undefined),
+        automations: true,
+        admin7Design: true,
+      };
+    }
     return HttpResponse.json(json, { status: response.status });
   }),
 

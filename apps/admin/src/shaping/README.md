@@ -15,12 +15,14 @@ only what's listed in `handlers.ts` is faked.
 
 Faked today: the whole automations API (browse, read, add, edit, status,
 performance stats, runs, run history, email links, email preview and test
-send), plus `config.stats` so the Performance tab shows without Tinybird.
+send), plus `config.stats` so the Performance tab shows without Tinybird. The
+`automations` and `admin7Design` Labs flags always read as on, so a PR preview
+needs no Labs setup (each redeploy resets them).
 
-Site conditions, switched in the prototype menu: **Stripe connected** fakes a
-Stripe Connect connection by adding made-up keys to the settings Admin reads.
-Saves from Settings have those keys stripped, so they never reach the real
-database.
+Site conditions, switched in the prototype menu: **Stripe connected** (on by
+default) fakes a Stripe Connect connection by adding made-up keys to the
+settings Admin reads. Saves from Settings have those keys stripped, so they
+never reach the real database.
 
 The fake data lives in the browser (`localStorage`, see `db.ts`), so edits
 survive reloads. `seed.ts` builds the starting data set, using the site's real
