@@ -55,6 +55,8 @@ describe('useLimiter', () => {
     vi.restoreAllMocks();
     fetchApi.mockReset();
     fetchAutomations.mockReset();
+    vi.mocked(useBrowseUsers).mockReset();
+    vi.mocked(useBrowseInvites).mockReset();
   });
 
   it.each([0, 2])('blocks activation at the active automation cap of %s', async (max) => {
@@ -166,6 +168,48 @@ describe('useLimiter', () => {
     expect(useBrowseInvites).toHaveBeenCalledWith({ enabled: true });
     expect(useBrowseRoles).toHaveBeenCalledWith({ enabled: true });
   });
+
+  it('counts all users and pending invitations when only allStaff is requested', async () => {
+    withHostSettings({ limits: { allStaff: { max: 3 }, staff: { max: 1 } } });
+    vi.mocked(useBrowseUsers).mockReturnValue({
+      data: {
+        users: [
+          { status: 'active', roles: [{ name: 'Owner' }] },
+          { status: 'inactive', roles: [{ name: 'Contributor' }] },
+        ],
+      },
+      isLoading: false,
+    } as ReturnType<typeof useBrowseUsers>);
+    vi.mocked(useBrowseInvites).mockReturnValue({
+      data: { invites: [{ role_id: 'contributor' }] },
+      isLoading: false,
+    } as ReturnType<typeof useBrowseInvites>);
+
+    const { result } = renderHook(() => useLimiter({ limits: ['allStaff'] }));
+
+    expect(useBrowseUsers).toHaveBeenCalledWith({ enabled: true });
+    expect(useBrowseInvites).toHaveBeenCalledWith({ enabled: true });
+    expect(result.current.isLimited('staff')).toBe(false);
+    await expect(result.current.errorIfWouldGoOverLimit('allStaff')).rejects.toBeInstanceOf(
+      HostLimitError,
+    );
+  });
+
+  it.each([{ maxPeriodic: 15 }, { disabled: true }])(
+    'leaves inviteEmails checks to the server for %j',
+    async (inviteEmails) => {
+      withHostSettings({
+        subscription: SUBSCRIPTION,
+        limits: { inviteEmails, allStaff: { max: 10 } },
+      });
+      const { result } = renderHook(() => useLimiter());
+
+      expect(result.current.isLimited('allStaff')).toBe(true);
+      expect(result.current.isLimited('inviteEmails')).toBe(false);
+      await expect(result.current.errorIfWouldGoOverLimit('inviteEmails')).resolves.toBeUndefined();
+      expect(fetchApi).not.toHaveBeenCalled();
+    },
+  );
 
   it('loads only the limits a caller names and leaves the staff lists unread', () => {
     withHostSettings({

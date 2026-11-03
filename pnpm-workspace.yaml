@@ -163,7 +163,7 @@ catalog:
   eslint-plugin-react-hooks: 5.2.0
   eslint-plugin-react-refresh: 0.5.7
   eslint-plugin-storybook: 10.6.5
-  eslint-plugin-tailwindcss: 4.2.0
+  eslint-plugin-tailwindcss: 4.4.0
   express: 4.22.3
   flexsearch: 0.7.43
   fs-extra: 11.3.6
@@ -246,7 +246,7 @@ catalog:
   '@floating-ui/react-dom': 2.1.9
   shell-quote: 1.11.0
   unidecode: 1.1.0
-  mppx: 0.6.20
+  mppx: 0.17.0
   '@x402/core': 2.29.0
   '@x402/evm': 2.29.0
   '@x402/hono': 2.29.0
@@ -260,8 +260,8 @@ catalog:
   lint-staged: 17.3.0
   secretlint: 13.0.7
   '@pnpm/releasing.versioning': 1100.3.8
-  '@pnpm/workspace.workspace-manifest-reader': 1100.3.1
-  execa: 10.0.1
+  '@pnpm/workspace.workspace-manifest-reader': 1100.3.2
+  execa: 10.2.1
   remark-cli: 12.0.1
   remark-validate-links: 13.1.0
   markdownlint-cli2: 0.24.0
@@ -306,7 +306,7 @@ overrides:
   # only ever call `load`. See patchedDependencies for the matching slim import.
   'juice>cheerio': 'catalog:'
   # mppx pins ox exactly; use viem's copy so Ghost ships one ox
-  'mppx>ox': 0.14.60
+  'mppx>ox': 0.14.59
   # mg-utils depends on the npm release of kg-default-cards, so the published
   # copy was installed alongside the workspace one that ghost links — and
   # it dragged its own published kg-utils, kg-markdown-html-renderer and

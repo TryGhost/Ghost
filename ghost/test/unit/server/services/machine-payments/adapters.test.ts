@@ -680,6 +680,7 @@ describe('Unit: server/services/machine-payments/adapters', function () {
       assert.equal(fulfillment.method, 'tempo');
       assert.equal(fulfillment.reference, '0xtxhash');
       assert.ok(captured.tempoChargeConfig);
+      assert.deepEqual(captured.tempoChargeConfig.currencies, [TEMPO_USDC]);
       assert.equal(captured.tempoChargeConfig.decimals, 6);
       assert.equal(captured.chargeCalls[0].options.scope, '/paid-post.md');
       assert.ok(captured.tempoChargeConfig.store);

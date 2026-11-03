@@ -11,7 +11,6 @@ export const init = () => {
   let helpLink;
 
   if (
-    config.get('hostSettings:billing:enabled') &&
     config.get('hostSettings:billing:enabled') === true &&
     config.get('hostSettings:billing:url')
   ) {

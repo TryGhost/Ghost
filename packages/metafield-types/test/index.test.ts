@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 import {
   FIELD_STRUCTURES,
+  editableAnswers,
   MAX_LONG_TEXT_BYTES,
   isMetafieldChangeSource,
   isFieldType,
@@ -338,6 +339,21 @@ describe('metafield-types catalog', function () {
       });
       assert.equal(result.success, true);
       assert.deepEqual(result.data, { line1: '', city: '' });
+    });
+  });
+
+  describe('a list', function () {
+    it('edits only the answers its field offers, in its order', function () {
+      const settings = { options: ['Dog', 'Cat', 'Fish'], multiple: true };
+      assert.deepEqual(editableAnswers(settings, ['Fish', 'Dolphin', 'Dog']), ['Dog', 'Fish']);
+    });
+
+    it('edits no answer of a field taking one that holds several', function () {
+      const settings = { options: ['Dog', 'Cat'], multiple: false };
+      assert.deepEqual(editableAnswers(settings, ['Dog', 'Cat']), []);
+      // Still several, though only one is offered now: the one alone isn't their answer.
+      assert.deepEqual(editableAnswers(settings, ['Dog', 'Hamster']), []);
+      assert.deepEqual(editableAnswers(settings, ['Cat']), ['Cat']);
     });
   });
 
