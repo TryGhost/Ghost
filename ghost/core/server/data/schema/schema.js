@@ -2734,13 +2734,12 @@ module.exports = {
     requires_approval: { type: 'boolean', nullable: false, defaultTo: false },
     created_at: { type: 'dateTime', nullable: false },
   },
-  // Committed dispatches waiting for the relay to hand them to the jobs backend. Still in
-  // development: see ./in-development.ts.
   jobs_outbox: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     envelope: { type: 'text', maxlength: 65535, nullable: false },
     created_at: { type: 'dateTime', nullable: false },
     available_at: { type: 'dateTime', nullable: false },
-    '@@INDEXES@@': [['available_at']],
+    submitted_at: { type: 'dateTime', nullable: true },
+    '@@INDEXES@@': [['submitted_at', 'available_at']],
   },
 };
