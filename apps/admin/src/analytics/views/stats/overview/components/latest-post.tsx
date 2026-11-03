@@ -91,7 +91,9 @@ const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) =
   const shouldGoToEditor = postDestination.startsWith('/editor/');
   const openPostDestination = () =>
     navigate(postDestination, {
-      state: shouldGoToEditor ? editorReturnState(location) : undefined,
+      state: shouldGoToEditor
+        ? editorReturnState(`${location.pathname}${location.search}`)
+        : undefined,
     });
 
   return (

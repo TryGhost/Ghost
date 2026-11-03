@@ -12,8 +12,10 @@ import {
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
+  fakeEditorChrome,
   fakeFrameOrigin,
   fakeTags,
+  post,
   holdModuleLoads,
   postFrameForm,
   reloadFrame,
@@ -22,6 +24,7 @@ import {
   siteResponse,
   staffRole,
 } from '@test-utils/acceptance';
+import { editorScreen } from '@/editor/editor.screen';
 import { sidebarScreen } from '@/layout/sidebar.screen';
 import { APP_FRAME_SANDBOX, appFrameTimeouts } from './lib/frame';
 import { appsScreen } from './apps.screen';
@@ -73,6 +76,7 @@ const fakeReview = () =>
         manifest_url: MANIFEST_URL,
         manifest: manifest({ name: 'Podcasts' }),
         digest: 'digest-2',
+        trusted_origins: [],
         installation: {
           id: 'installation-1',
           status: 'suspended',
@@ -430,6 +434,7 @@ describe('Managing apps', () => {
           manifest_url: MANIFEST_URL,
           manifest: manifest(),
           digest: 'digest-2',
+          trusted_origins: [],
           installation: {
             id: 'installation-1',
             status: 'active',
@@ -463,7 +468,12 @@ describe('Managing apps', () => {
     // Uninstalled in another tab in the meantime, so the review offers a fresh install.
     fakeAdminEndpoint('POST', '/apps/installations/preview/', {
       app_installation_previews: [
-        { manifest_url: MANIFEST_URL, manifest: manifest(), digest: 'digest-2' },
+        {
+          manifest_url: MANIFEST_URL,
+          manifest: manifest(),
+          digest: 'digest-2',
+          trusted_origins: [],
+        },
       ],
     });
     const reinstalled = installation({ id: 'installation-2' });
@@ -490,6 +500,7 @@ describe('Managing apps', () => {
           manifest_url: MANIFEST_URL,
           manifest: manifest(),
           digest: 'digest-2',
+          trusted_origins: [],
           installation: {
             id: 'installation-2',
             status: 'active',
@@ -548,12 +559,17 @@ describe('Managing apps', () => {
   it('says an app is unavailable when Ghost can’t use its manifest, and opens it once it can', async () => {
     fakeInstallations([installation()]);
     const { sessionsApi } = await fakeAppPage(installation());
-    sessionsApi.set(apiError(409, 'This app is unavailable.', 'APP_UNAVAILABLE'));
+    sessionsApi.set(
+      apiError(409, 'Could not load the app’s manifest.', 'APP_MANIFEST_UNREACHABLE'),
+    );
 
     await renderAdminApp(APP_ROUTE, { labs });
 
-    await expect.element(appsScreen.unavailable()).toHaveTextContent('Podcast isn’t available');
+    await expect
+      .element(appsScreen.unavailable())
+      .toHaveTextContent('Podcast isn’t available right now');
     await expect.element(appsScreen.unavailable()).toHaveTextContent('podcast.example.com');
+    await expect.element(appsScreen.unavailable()).toHaveTextContent('APP_MANIFEST_UNREACHABLE');
     await expect.element(appsScreen.frame()).not.toBeInTheDocument();
 
     sessionsApi.set(installation());
@@ -561,6 +577,52 @@ describe('Managing apps', () => {
 
     await expect.element(appsScreen.frame()).toBeVisible();
     expect(sessionsApi.requests).toHaveLength(2);
+  });
+
+  // Uninstalling and installing it again from a link is how another developer's key gets pinned.
+  it('says Ghost couldn’t confirm it’s the app installed, sending the publisher to its developer', async () => {
+    fakeInstallations([installation()]);
+    const { sessionsApi } = await fakeAppPage(installation());
+    sessionsApi.set(
+      apiError(409, 'This app doesn’t come from the same developer.', 'APP_IDENTITY_MISMATCH'),
+    );
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect
+      .element(appsScreen.unavailable())
+      .toHaveTextContent('Ghost couldn’t confirm this is Podcast');
+    await expect.element(appsScreen.unavailable()).toHaveTextContent('Contact its developer');
+    await expect.element(appsScreen.unavailable()).toHaveTextContent('APP_IDENTITY_MISMATCH');
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+    await expect.element(page.getByRole('button', { name: 'Uninstall' })).not.toBeInTheDocument();
+
+    sessionsApi.set(installation());
+    await page.getByRole('button', { name: 'Try again' }).click();
+
+    await expect.element(appsScreen.frame()).toBeVisible();
+  });
+
+  it('marks a development build in the list and its details, as its signed manifest says', async () => {
+    const development = installation({ manifest: manifest({ development: true }) });
+    fakeInstallations([development]);
+    await fakeAppPage(development);
+
+    await renderAdminApp('/apps', { labs });
+
+    await expect.element(appsScreen.row('Podcast')).toHaveTextContent('Development');
+    await appsScreen.rowActions('Podcast').click();
+    await appsScreen.detailsMenuItem().click();
+    await expect.element(appsScreen.details()).toHaveTextContent('Development');
+  });
+
+  it('doesn’t mark an app that isn’t a development build', async () => {
+    fakeInstallations([installation()]);
+
+    await renderAdminApp('/apps', { labs });
+
+    await expect.element(appsScreen.row('Podcast')).toBeVisible();
+    await expect.element(appsScreen.row('Podcast')).not.toHaveTextContent('Development');
   });
 
   it('says an app page address that isn’t an app’s doesn’t exist, rather than offering a retry', async () => {
@@ -928,29 +990,35 @@ describe('Managing apps', () => {
     const pageId = '6500000000000000000000a3';
     const memberId = '6500000000000000000000b2';
 
-    it('opens a post in the editor', async () => {
-      // The editor owns its request graph.
-      allowUnhandledRequests();
-      await fakeAppPage(installation());
-      await renderAdminApp(APP_ROUTE, { labs });
-      await expect.element(appsScreen.frame()).toBeVisible();
+    // An ObjectId, as Ghost generates them, which is how the editor recognises an app's route.
+    for (const postType of ['post', 'page'] as const) {
+      it(`opens a ${postType} in the editor, whose back link returns to the app where it was`, async () => {
+        const id = '6a1b2c3d4e5f60718293a4b5';
+        const resource = postType === 'post' ? 'posts' : 'pages';
+        const placeId = postType === 'post' ? postId : pageId;
+        fakeEditorChrome();
+        fakeAdminEndpoint('GET', new RegExp(`^/${resource}/${placeId}/\\?`), {
+          [resource]: [post({ id: placeId })],
+        });
+        await fakeAppPage(installation({ id }));
+        await renderAdminApp(`/apps/${id}`, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
 
-      await callAppFrame(APP_ORIGIN, 'open', { post: { id: postId } });
+        // The app asks straight after moving, before Admin has necessarily caught up.
+        answer(await callAppFrame(APP_ORIGIN, 'navigate', '/episodes/12?tab=notes'));
+        await callAppFrame(
+          APP_ORIGIN,
+          'open',
+          postType === 'post' ? { post: { id: placeId } } : { page: { id: placeId } },
+        );
 
-      await expect.poll(currentRoute).toBe(`/editor/post/${postId}`);
-    });
-
-    it('opens a page in the editor', async () => {
-      // The editor owns its request graph.
-      allowUnhandledRequests();
-      await fakeAppPage(installation());
-      await renderAdminApp(APP_ROUTE, { labs });
-      await expect.element(appsScreen.frame()).toBeVisible();
-
-      await callAppFrame(APP_ORIGIN, 'open', { page: { id: pageId } });
-
-      await expect.poll(currentRoute).toBe(`/editor/page/${pageId}`);
-    });
+        await expect.poll(currentRoute).toBe(`/editor/${postType}/${placeId}`);
+        await editorScreen.appBackLink().click();
+        await expect.poll(currentRoute).toBe(`/apps/${id}/episodes/12?tab=notes`);
+        await expect.element(appsScreen.frame()).toBeVisible();
+        await expect.poll(async () => (await appState()).address).toBe('/episodes/12?tab=notes');
+      });
+    }
 
     it('opens a member', async () => {
       // The member's page owns its request graph.

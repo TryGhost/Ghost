@@ -226,7 +226,9 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
-                navigate(editorPath, { state: editorReturnState(location) });
+                navigate(editorPath, {
+                  state: editorReturnState(`${location.pathname}${location.search}`),
+                });
               }}
             >
               <LucideIcon.Pen />
