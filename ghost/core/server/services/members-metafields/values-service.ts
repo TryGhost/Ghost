@@ -5,9 +5,9 @@ import type { Knex } from 'knex';
 import { z } from 'zod';
 import {
   isRecordValue,
+  matchField,
   matchShape,
   valueSchemaFor,
-  withTypedSettings,
   type FieldType,
   type FieldValue,
   type MetafieldChangeEventField,
@@ -27,7 +27,7 @@ import {
   DbStoredValueRow,
   DbMetafieldValue,
   FIELD_STATUS,
-  STORED_SETTINGS,
+  storedField,
   StoredFieldList,
   type MetafieldChangeEvent,
   type SingleWriteOrigin,
@@ -45,10 +45,14 @@ import {
   type FieldIdentity,
   type FieldSource,
 } from './queries';
-import { MemberAccessSchema, canWrite, type Audience } from './access';
-import { storedValueAs, valueRowsToWrite, valuesFromRows } from './storage';
+import { ADMIN, MemberAccessSchema, canWrite, type Audience } from './access';
+import { readStoredField } from './stored-fields';
+import { heldOptionTexts, storedValueAs, valueRowsToWrite, valuesFromRows } from './storage';
 
 const VALUES_TABLE = 'members_metafield_values';
+
+/** One option a list field has been answered with: its path, and the text one of its rows holds. */
+const HeldOptionRow = z.object({ path: z.string(), value_text: z.string() });
 const CHANGE_EVENTS_TABLE = 'members_metafield_change_events';
 const MEMBERS_TABLE = 'members';
 
@@ -114,16 +118,13 @@ function refusalError(first: Refusal, rest: Refusal[]): errors.ValidationError {
  * What a write needs of a field, decoded so its namespace and key arrive checked, and its type
  * and settings read against each other.
  */
-const WritableField = withTypedSettings(
-  {
-    id: z.string(),
-    namespace: NamespaceSchema,
-    key: KeySchema,
-    name: z.string(),
-    memberAccess: MemberAccessSchema,
-  },
-  STORED_SETTINGS,
-);
+const WritableField = storedField({
+  id: z.string(),
+  namespace: NamespaceSchema,
+  key: KeySchema,
+  name: z.string(),
+  memberAccess: MemberAccessSchema,
+});
 
 /** The column each of a writable field's values is read from, keyed so none is left out. */
 const WRITABLE_FIELD_COLUMNS = {
@@ -134,13 +135,10 @@ const WRITABLE_FIELD_COLUMNS = {
   memberAccess: 'member_access',
   type: 'type',
   settings: 'settings',
-} satisfies Record<keyof z.input<typeof WritableField>, string>;
+} satisfies Record<keyof z.input<typeof WritableField.asStored>, string>;
 
 /** A field's identity with its type and settings, for reading its values. */
-const DbTypedField = withTypedSettings(
-  { namespace: NamespaceSchema, key: KeySchema },
-  STORED_SETTINGS,
-);
+const DbTypedField = storedField({ namespace: NamespaceSchema, key: KeySchema });
 
 /** The columns of a field's identity, type and settings, keyed so none is left out. */
 const TYPED_FIELD_COLUMNS = Object.keys({
@@ -148,7 +146,7 @@ const TYPED_FIELD_COLUMNS = Object.keys({
   key: true,
   type: true,
   settings: true,
-} satisfies Record<keyof z.input<typeof DbTypedField>, true>);
+} satisfies Record<keyof z.input<typeof DbTypedField.asStored>, true>);
 
 /**
  * The columns of the joined read of values, each from the table that holds it. Keyed by the row it
@@ -163,7 +161,7 @@ const STORED_VALUE_COLUMNS = {
   value_text: VALUES_TABLE,
 } satisfies Record<keyof z.input<typeof DbStoredValueRow>, string>;
 
-type AllowedField = z.output<typeof WritableField>;
+type AllowedField = z.output<typeof WritableField.asStored>;
 
 /** An absent `value` means clear the field. */
 export interface PlannedWrite {
@@ -261,28 +259,23 @@ export class MetafieldValuesService {
 
     const allowed = new Map<string, AllowedField>();
     for (const row of rows) {
-      // Skipped rather than thrown, the way an unreadable value is: the write then reports
-      // this one field as unknown instead of failing every other value it carries.
-      const field = WritableField.safeParse(row);
-      if (!field.success) {
-        logging.warn(
-          {
-            event: { name: 'members.metafields.field_unreadable' },
-            err: field.error,
-            metafieldNamespace: row.namespace,
-            metafieldKey: row.key,
-          },
-          'Skipping an unreadable metafield',
-        );
+      // A field that can't be read even with its type's defaults is skipped rather than thrown, the
+      // way an unreadable value is: the write then reports this one field as unknown instead of
+      // failing every other value it carries.
+      const field = readStoredField(row, WritableField, {
+        reader: 'values',
+        tracking: this.tracking,
+      });
+      if (!field) {
         continue;
       }
       allowed.set(
         z.encode(IdentityTextSchema, {
-          namespace: field.data.namespace,
-          key: field.data.key,
+          namespace: field.namespace,
+          key: field.key,
           parts: [],
         }),
-        field.data,
+        field,
       );
     }
     return allowed;
@@ -302,7 +295,8 @@ export class MetafieldValuesService {
 
   /**
    * The type and settings of each active field the audience can read, keyed by identity. A field
-   * whose type or settings can't be read is left out, and its values with it.
+   * whose settings can't be read is read with its type's defaults, and one that can't be read even
+   * so is left out, and its values with it.
    */
   private async typedFields(
     executor: Knex,
@@ -313,20 +307,13 @@ export class MetafieldValuesService {
       .read.select(...TYPED_FIELD_COLUMNS);
     const typedFields = new Map<string, TypedSettings>();
     for (const row of rows) {
-      const field = DbTypedField.safeParse(row);
-      if (!field.success) {
-        logging.warn(
-          {
-            event: { name: 'members.metafields.field_unreadable' },
-            err: field.error,
-            metafieldNamespace: row.namespace,
-            metafieldKey: row.key,
-          },
-          'Skipping the values of an unreadable metafield',
-        );
-        continue;
+      const field = readStoredField(row, DbTypedField, {
+        reader: 'values',
+        tracking: this.tracking,
+      });
+      if (field) {
+        typedFields.set([field.namespace, field.key].join(SEPARATOR), field);
       }
-      typedFields.set([field.data.namespace, field.data.key].join(SEPARATOR), field.data);
     }
     return typedFields;
   }
@@ -717,6 +704,58 @@ export class MetafieldValuesService {
 
     // Joins the caller's transaction rather than nesting a savepoint under it.
     await (executor ? apply(executor) : this.knex.transaction(apply));
+  }
+
+  /**
+   * The text of every option members hold for a list field, whether or not the field still offers
+   * it, sorted by text. The members filter offers them all, so a publisher can find who answered
+   * with an option after it was removed. A field that isn't a list is refused, and one that doesn't
+   * exist, or can't be read even with its type's defaults, is not found.
+   *
+   * Only an active field's values are read, as the filter offers only active fields. An archived
+   * field is not found, and so is every field while the host switches custom fields off, since they
+   * all read as archived then, so this read gives nothing the switched-off filter doesn't offer.
+   *
+   * Read from the table's key: each option a field has been answered with is one path, and every row
+   * under a path holds the same text, so one row is read for each.
+   */
+  async heldValues(field: FieldIdentity): Promise<string[]> {
+    const [row] = await this.fields
+      .definitions(this.knex, { audience: ADMIN, status: ACTIVE_ONLY, field })
+      .read.select(...TYPED_FIELD_COLUMNS);
+    // A field that can't be read even with its type's defaults is treated as missing, as the
+    // definitions read treats it.
+    const typed =
+      row === undefined
+        ? null
+        : readStoredField(row, DbTypedField, { reader: 'values', tracking: this.tracking });
+    if (!typed) {
+      throw new errors.NotFoundError({ message: 'Custom field not found.' });
+    }
+    const notAList = (): never => {
+      throw new errors.ValidationError({
+        message: "Only a list field's values can be read.",
+        property: 'key',
+      });
+    };
+    return matchField<TypedSettings, Promise<string[]>>(typed, {
+      scalar: notAList,
+      record: notAList,
+      set: async () => {
+        const held = this.knex(VALUES_TABLE)
+          .distinct('path')
+          .where(fieldReference(field))
+          .as('held');
+        const rows = await this.knex.from(held).select('held.path', {
+          value_text: this.knex(VALUES_TABLE)
+            .select('value_text')
+            .where(fieldReference(field))
+            .whereRaw('?? = ??', [`${VALUES_TABLE}.path`, 'held.path'])
+            .limit(1),
+        });
+        return heldOptionTexts(z.array(HeldOptionRow).parse(rows));
+      },
+    });
   }
 
   /**

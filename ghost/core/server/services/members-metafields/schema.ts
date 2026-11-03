@@ -5,7 +5,7 @@ import {
   FieldStatusSchema,
   FieldTypeSchema,
   MetafieldChangeEventFieldSchema,
-  SetSettingsShape,
+  SHAPE_SETTINGS,
   withTypedSettings,
   type FieldStatus,
   type MetafieldChangeEntry,
@@ -51,11 +51,35 @@ const NoStoredSettings = z.codec(z.null().default(null), z.undefined(), {
 export const STORED_SETTINGS = {
   scalar: NoStoredSettings,
   record: NoStoredSettings,
-  set: DbJson(SetSettingsShape, { message: 'The stored settings are not JSON.' }),
+  set: DbJson(SHAPE_SETTINGS.set.read, { message: 'The stored settings are not JSON.' }),
 };
 
+/**
+ * `STORED_SETTINGS`, except that settings which can't be read, such as settings that aren't JSON,
+ * are read as the shape's default settings. A field whose settings were damaged is then read the
+ * way a new field of its type starts, and the next write of its settings replaces them. Only for
+ * reading: a write encodes through `STORED_SETTINGS`, so it never stores defaults it wasn't given.
+ */
+const STORED_SETTINGS_OR_DEFAULTS = {
+  scalar: NoStoredSettings.catch(SHAPE_SETTINGS.scalar.defaults),
+  record: NoStoredSettings.catch(SHAPE_SETTINGS.record.defaults),
+  // A copy for each read, so a reader that changes the settings it was given can't change the
+  // defaults every other read starts from.
+  set: STORED_SETTINGS.set.catch(() => structuredClone(SHAPE_SETTINGS.set.defaults)),
+};
+
+/**
+ * A stored field with `base`'s columns, its type and its settings, read two ways: as stored, and
+ * with its shape's default settings when the stored ones can't be read. `readStoredField` decides
+ * between them.
+ */
+export const storedField = <Base extends z.ZodRawShape>(base: Base) => ({
+  asStored: withTypedSettings(base, STORED_SETTINGS),
+  withDefaults: withTypedSettings(base, STORED_SETTINGS_OR_DEFAULTS),
+});
+
 /** A definition as the table holds it, its settings read by the shape its type declares. */
-export const DbMetafield = withTypedSettings(DB_METAFIELD_COLUMNS, STORED_SETTINGS);
+export const DbMetafield = storedField(DB_METAFIELD_COLUMNS);
 
 /** A field's type and settings alone, as the table holds them. */
 export const DbTypedSettings = withTypedSettings({}, STORED_SETTINGS) satisfies z.ZodType<
@@ -67,7 +91,7 @@ export const DbTypedSettings = withTypedSettings({}, STORED_SETTINGS) satisfies 
 type MetafieldRank = { sort_order: number };
 
 // As the table holds it, so a set's `settings` are the JSON text.
-export type MetafieldRow = z.input<typeof DbMetafield> & MetafieldRank;
+export type MetafieldRow = z.input<typeof DbMetafield.asStored> & MetafieldRank;
 
 /**
  * How a value arrived, not who caused it: who edited a member's fields is already an
@@ -221,7 +245,7 @@ declare module 'knex/types/tables' {
       MetafieldRow,
       // `status` is DB-defaulted and only set via update, so it's absent here. The
       // rank is required: letting it default would land a new field at the top.
-      Omit<z.input<typeof DbMetafield>, 'updated_at' | 'status'> & MetafieldRank,
+      Omit<z.input<typeof DbMetafield.asStored>, 'updated_at' | 'status'> & MetafieldRank,
       Partial<MetafieldRow>
     >;
     members_metafield_values: Knex.CompositeTableType<

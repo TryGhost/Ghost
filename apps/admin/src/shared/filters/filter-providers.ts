@@ -151,6 +151,12 @@ export function describeField(descriptor: FieldDescriptor): FilterField {
     ui.defaultOperator = registered.defaultOperator;
   }
 
+  // A field's presence operators come from how the field is addressed, whatever its type, and take
+  // no value, so the filter is told to show no value input for them.
+  if (presenceOperators.length > 0) {
+    ui.valuelessOperators = presenceOperators;
+  }
+
   return {
     operators: chosen satisfies readonly string[],
     codec: composeCodec(addressing, semantics),

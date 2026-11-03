@@ -30,6 +30,13 @@ const manifest = {
   surfaces: [{ type: 'admin_page', url: '/admin' }],
 };
 
+/** A fake HTTP response: status 200 with `body` as the body. */
+const answering = (body: string, type = 'application/json') =>
+  Object.assign(Promise.resolve({ statusCode: 200, headers: { 'content-type': type } }), {
+    on: () => {},
+    buffer: async () => Buffer.from(body),
+  });
+
 describe('App installations composition root', function () {
   const sandbox = sinon.createSandbox();
   let previousModules: Map<string, NodeJS.Module | undefined>;
@@ -55,12 +62,7 @@ describe('App installations composition root', function () {
     sandbox.stub(db, 'knex').get(readKnex);
     // Substitute only the outbound transport; keep the real fetcher and manifest validation.
     require(requestPath);
-    request = sandbox.stub().callsFake(() =>
-      Object.assign(Promise.resolve({ statusCode: 200 }), {
-        on: () => {},
-        text: async () => JSON.stringify(manifest),
-      }),
-    );
+    request = sandbox.stub().callsFake(() => answering(JSON.stringify(manifest)));
     sandbox.replace(require.cache[requestPath]!, 'exports', request);
     root = require(rootPath).default;
   });
@@ -131,7 +133,7 @@ describe('App installations composition root', function () {
   it('wires logging through the manifest loader and fetcher', async function () {
     const failure = new Error('Transport failed');
     const warn = sandbox.stub(logging, 'warn');
-    request.returns({ on: () => {}, text: sandbox.stub().rejects(failure) });
+    request.returns({ on: () => {}, buffer: sandbox.stub().rejects(failure) });
     sandbox.stub(config, 'get').withArgs('env').returns('production');
     sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
     await root.init();
@@ -149,6 +151,26 @@ describe('App installations composition root', function () {
       `Could not load the app manifest at ${manifestUrl}`,
     );
     sinon.assert.calledWithExactly(warn.secondCall, failure);
+  });
+
+  it('wires the icon loader to keep a copy of the app’s icon as a data URL', async function () {
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1v1H0z"/></svg>';
+    request.callsFake((url: URL) =>
+      url.pathname === '/icon.svg'
+        ? answering(svg, 'image/svg+xml')
+        : answering(JSON.stringify({ ...manifest, icon: { url: '/icon.svg' } })),
+    );
+    sandbox.stub(config, 'get').withArgs('env').returns('production');
+    sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
+    await root.init();
+
+    const preview = await root.service.preview('https://podcast.example/manifest.json');
+
+    assert.equal(request.lastCall.args[0].href, 'https://podcast.example/icon.svg');
+    assert.equal(
+      preview.icon_data_url,
+      `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`,
+    );
   });
 
   it('logs action recording failures without failing the installation', async function () {

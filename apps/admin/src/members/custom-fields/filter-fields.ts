@@ -23,6 +23,7 @@ import type {
   PresenceAddressing,
   ValueSemantics,
 } from '@/shared/filters';
+import type { OperatorId } from '@/shared/filters/filter-operators';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 type ScalarFilterBase = {
@@ -129,6 +130,15 @@ export function customFieldOperators(partTypes: readonly LeafFilterType[]): read
   ];
 }
 
+// A list field is filtered the way labels are. A member can hold several of a list's options, even
+// when the field now takes only one answer, so the filter also offers "is all of".
+const LIST_OPERATORS: readonly OperatorId[] = [
+  'is-any',
+  'is-all',
+  'is-not-any',
+  ...CUSTOM_FIELD_SET_OPERATORS,
+];
+
 export const CUSTOM_FIELD_CLAUSE = METAFIELDS_FIELD_PREFIX;
 
 export type CustomFieldDefinition = Pick<MemberCustomField, 'namespace' | 'key' | 'name' | 'type'>;
@@ -158,17 +168,20 @@ export function customFieldDescriptor(definition: CustomFieldDefinition): FieldD
           defaultOperator: 'is-set',
         },
       }),
+    // A list is filtered as a whole, by the options it holds, the way labels are.
     set: () =>
       domainField({
         key: metafieldFieldId(definition),
         icon: 'text',
-        semantics: customFieldSemantics([]),
-        operators: customFieldOperators([]),
-        addressing: customFieldAddressing(definition),
+        semantics: customFieldSemantics(['set']),
+        operators: LIST_OPERATORS,
+        addressing: customFieldAddressing(definition, 'whole-field'),
         ui: {
           label: definition.name,
-          type: 'custom',
-          defaultOperator: 'is-set',
+          type: 'multiselect',
+          searchable: true,
+          className: 'w-64',
+          defaultOperator: 'is-any',
         },
       }),
   });
