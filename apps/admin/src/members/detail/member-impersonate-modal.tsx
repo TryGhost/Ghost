@@ -101,7 +101,7 @@ const MemberImpersonateModal: React.FC<MemberImpersonateModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
           <Label htmlFor="member-signin-url">Signin link</Label>
           <Input
             data-testid="member-signin-url"
