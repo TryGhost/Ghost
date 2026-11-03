@@ -73,13 +73,13 @@ describe('automations API', function () {
     });
   });
 
-  describe('trigger', function () {
+  describe('notify', function () {
     type Repository = AutomationsRepository2<TestAutomationsRepositoryConnection>;
     type FirstAction = Awaited<ReturnType<Repository['findFirstActionRevisions']>>[number];
 
     let repository: ReturnType<typeof createTestAutomationsRepository2>;
     let domainEvents: { dispatch: ReturnType<typeof vi.fn<(event: unknown) => unknown>> };
-    let trigger: Parameters<ReturnType<typeof createApi>['trigger']>[0];
+    let event: Parameters<ReturnType<typeof createApi>['notify']>[0];
     let firstActions: FirstAction[];
     let runs: Array<Pick<RunToInsert, 'id' | 'automation_id' | 'member_id'>>;
     let steps: RunStepToInsert[];
@@ -102,8 +102,8 @@ describe('automations API', function () {
       runs = [];
       steps = [];
       domainEvents = { dispatch: vi.fn<(event: unknown) => unknown>() };
-      trigger = {
-        event: 'membership_started',
+      event = {
+        eventName: 'membership_started',
         source: 'member',
         memberEmail: 'member@example.com',
         memberId: ObjectId().toHexString(),
@@ -130,17 +130,17 @@ describe('automations API', function () {
       vi.useRealTimers();
     });
 
-    it('fails if called with an unexpected `event`', async function () {
+    it('fails if called with an unexpected `eventName`', async function () {
       const withTransaction = vi.fn();
       const api = createApi({ repository: { ...repository, withTransaction } });
 
-      const events = [undefined, 'invalid', 'membership_ended', 'membership_did_start'];
+      const eventNames = [undefined, 'invalid', 'membership_ended', 'membership_did_start'];
       await Promise.all(
-        events.map(async (event) => {
+        eventNames.map(async (eventName) => {
           await expect(() =>
-            api.trigger({
-              ...trigger,
-              event: event as any,
+            api.notify({
+              ...event,
+              eventName: eventName as any,
               memberEmail: 'foo@example.com',
               memberId: 'abc',
               memberStatus: 'free',
@@ -162,10 +162,10 @@ describe('automations API', function () {
         domainEvents,
       });
 
-      await api.trigger(trigger);
-      await api.trigger({
-        ...trigger,
-        event: 'paid_subscription_changed',
+      await api.notify(event);
+      await api.notify({
+        ...event,
+        eventName: 'paid_subscription_changed',
         previousMemberStatus: 'paid',
         previousMemberTierIds: ['basic'],
       });
@@ -180,10 +180,10 @@ describe('automations API', function () {
         const withTransaction = vi.fn();
         const api = createApi({ repository: { ...repository, withTransaction } });
 
-        await api.trigger({ ...trigger, source });
-        await api.trigger({
-          ...trigger,
-          event: 'paid_subscription_changed',
+        await api.notify({ ...event, source });
+        await api.notify({
+          ...event,
+          eventName: 'paid_subscription_changed',
           source,
           previousMemberStatus: 'paid',
           previousMemberTierIds: ['basic'],
@@ -198,8 +198,8 @@ describe('automations API', function () {
       const withTransaction = vi.fn();
       const api = createApi({ repository: { ...repository, withTransaction } });
 
-      await api.trigger({ ...trigger, memberStatus: 'comped' });
-      await api.trigger({ ...trigger, memberStatus: 'paid', previousMemberStatus: 'gift' });
+      await api.notify({ ...event, memberStatus: 'comped' });
+      await api.notify({ ...event, memberStatus: 'paid', previousMemberStatus: 'gift' });
 
       expect(withTransaction).not.toHaveBeenCalled();
       expect(domainEvents.dispatch).not.toHaveBeenCalled();
@@ -210,15 +210,15 @@ describe('automations API', function () {
       const api = createApi({ repository: { ...repository, withTransaction } });
 
       const changed = {
-        ...trigger,
-        event: 'paid_subscription_changed' as const,
+        ...event,
+        eventName: 'paid_subscription_changed' as const,
         previousMemberStatus: 'paid' as const,
         previousMemberTierIds: ['basic'],
       };
-      await api.trigger({ ...changed, memberTierIds: ['basic'] });
-      await api.trigger({ ...changed, previousMemberStatus: 'free' });
-      await api.trigger({ ...changed, previousMemberStatus: 'comped' });
-      await api.trigger({ ...changed, memberStatus: 'comped' });
+      await api.notify({ ...changed, memberTierIds: ['basic'] });
+      await api.notify({ ...changed, previousMemberStatus: 'free' });
+      await api.notify({ ...changed, previousMemberStatus: 'comped' });
+      await api.notify({ ...changed, memberStatus: 'comped' });
 
       expect(withTransaction).not.toHaveBeenCalled();
       expect(domainEvents.dispatch).not.toHaveBeenCalled();
@@ -228,10 +228,10 @@ describe('automations API', function () {
       const findFirstActionRevisions = vi.fn().mockReturnValue([]);
       const api = createApi({ repository: { ...repository, findFirstActionRevisions } });
 
-      await api.trigger({ ...trigger, memberStatus: 'gift', memberTierIds: ['tier'] });
+      await api.notify({ ...event, memberStatus: 'gift', memberTierIds: ['tier'] });
 
       expect(findFirstActionRevisions).toHaveBeenCalledExactlyOnceWith(expect.anything(), {
-        event: 'membership_started',
+        eventName: 'membership_started',
         memberStatus: 'paid',
         memberTierIds: ['tier'],
       });
@@ -240,27 +240,27 @@ describe('automations API', function () {
     it('treats gift memberships like paid memberships when signing up or changing tiers', async function () {
       const findFirstActionRevisions = vi.fn(() => []);
       const api = createApi({ repository: { ...repository, findFirstActionRevisions } });
-      await api.trigger({
-        ...trigger,
-        event: 'membership_started',
+      await api.notify({
+        ...event,
+        eventName: 'membership_started',
         memberStatus: 'gift',
         previousMemberStatus: null,
       });
       expect(findFirstActionRevisions).toHaveBeenLastCalledWith(expect.anything(), {
-        event: 'membership_started',
+        eventName: 'membership_started',
         memberStatus: 'paid',
         memberTierIds: [],
       });
-      await api.trigger({
-        ...trigger,
-        event: 'paid_subscription_changed',
+      await api.notify({
+        ...event,
+        eventName: 'paid_subscription_changed',
         memberStatus: 'gift',
         previousMemberStatus: 'gift',
         previousMemberTierIds: ['basic'],
         memberTierIds: ['premium'],
       });
       expect(findFirstActionRevisions).toHaveBeenLastCalledWith(expect.anything(), {
-        event: 'paid_subscription_changed',
+        eventName: 'paid_subscription_changed',
         memberStatus: 'paid',
         previousMemberTierIds: ['basic'],
         memberTierIds: ['premium'],
@@ -285,7 +285,7 @@ describe('automations API', function () {
         domainEvents,
       });
 
-      await api.trigger(trigger);
+      await api.notify(event);
 
       expect(lockMember).toHaveBeenCalledBefore(findFirstActionRevisions);
       expect(lockMember).toHaveBeenCalledBefore(hasMemberEnteredAutomation);
@@ -299,14 +299,14 @@ describe('automations API', function () {
       firstActions = [wait, email];
       const api = createApi({ repository, domainEvents });
 
-      await api.trigger(trigger);
+      await api.notify(event);
 
       expect(runs).toEqual(
         firstActions.map((action) => ({
           id: expect.any(String),
           automation_id: action.automation_id,
-          member_id: trigger.memberId,
-          member_email: trigger.memberEmail,
+          member_id: event.memberId,
+          member_email: event.memberEmail,
           created_at: now,
           updated_at: now,
         })),
@@ -345,10 +345,10 @@ describe('automations API', function () {
           domainEvents,
         });
 
-        await api.trigger({ ...trigger, memberStatus, memberTierIds });
+        await api.notify({ ...event, memberStatus, memberTierIds });
 
         expect(findFirstActionRevisions).toHaveBeenCalledExactlyOnceWith(expect.anything(), {
-          event: 'membership_started',
+          eventName: 'membership_started',
           memberStatus,
           memberTierIds,
         });
@@ -363,12 +363,12 @@ describe('automations API', function () {
         {
           id: ObjectId().toHexString(),
           automation_id: entered.automation_id,
-          member_id: trigger.memberId,
+          member_id: event.memberId,
         },
       ];
       const api = createApi({ repository, domainEvents });
 
-      await api.trigger(trigger);
+      await api.notify(event);
 
       expect(runs).toHaveLength(2);
       expect(runs[1]?.automation_id).toBe(available.automation_id);
@@ -389,17 +389,17 @@ describe('automations API', function () {
         labs: { isSet: (flag: string) => flag === 'automations' },
       });
       const changed = {
-        ...trigger,
-        event: 'paid_subscription_changed' as const,
+        ...event,
+        eventName: 'paid_subscription_changed' as const,
         previousMemberStatus: 'paid' as const,
         previousMemberTierIds: ['basic'],
         memberTierIds: ['premium'],
         memberStatus: 'paid' as const,
       };
-      await api.trigger(changed);
-      await api.trigger(changed);
+      await api.notify(changed);
+      await api.notify(changed);
       expect(findFirstActionRevisions).toHaveBeenLastCalledWith(expect.anything(), {
-        event: changed.event,
+        eventName: changed.eventName,
         memberStatus: changed.memberStatus,
         memberTierIds: changed.memberTierIds,
         previousMemberTierIds: changed.previousMemberTierIds,
@@ -411,7 +411,7 @@ describe('automations API', function () {
     it('inserts no runs or steps when there are no matching automations', async function () {
       const api = createApi({ repository, domainEvents });
 
-      await api.trigger(trigger);
+      await api.notify(event);
 
       expect(runs).toHaveLength(0);
       expect(steps).toHaveLength(0);
@@ -422,7 +422,7 @@ describe('automations API', function () {
       firstActions = [createFirstAction()];
       const api = createApi({ repository, domainEvents, fakeWaitHoursMultiplier: 100 });
 
-      await api.trigger(trigger);
+      await api.notify(event);
 
       expect(steps).toHaveLength(1);
       expect(steps[0].ready_at).toEqual(new Date(now.getTime() + 200));
@@ -447,7 +447,7 @@ describe('automations API', function () {
         domainEvents,
       });
 
-      await expect(api.trigger(trigger)).rejects.toBe(failure);
+      await expect(api.notify(event)).rejects.toBe(failure);
 
       expect(domainEvents.dispatch).not.toHaveBeenCalled();
     });

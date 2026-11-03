@@ -513,7 +513,7 @@ function throwValidationError(message: string, property?: string): never {
 
 export const requestPoll = automationsApi2.requestPoll.bind(automationsApi2);
 
-export const trigger = automationsApi2.trigger.bind(automationsApi2);
+export const notify = automationsApi2.notify.bind(automationsApi2);
 
 export async function fetchAndLockSteps(
   ...args: Parameters<AutomationsRepository['fetchAndLockSteps']>
