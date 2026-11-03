@@ -284,15 +284,15 @@ export function MediaUploadSetting({className, imgClassName, label, hideLabel, o
                 borderStyle={borderStyle}
                 className={clsx(
                     stacked && 'h-32',
-                    !stacked && src && 'h-[5.2rem]',
-                    !stacked && type !== 'button' && !src && 'h-[5.2rem] w-[7.2rem]'
+                    !stacked && type === 'button' && src && 'h-[5.2rem]',
+                    !stacked && type !== 'button' && 'h-[5.2rem] w-[9.2rem]'
                 )}
                 desc={desc}
                 dragHandler={{isDraggedOver, setRef: placeholderRef}}
                 errors={errors}
                 filePicker={filePicker}
                 icon={icon}
-                imgClassName={imgClassName}
+                imgClassName={clsx(!stacked && type !== 'button' && 'w-full', imgClassName)}
                 isLoading={isLoading}
                 isPinturaEnabled={isPinturaEnabled}
                 mimeTypes={mimeTypes}
