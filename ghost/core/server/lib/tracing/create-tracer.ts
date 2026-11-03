@@ -3,7 +3,8 @@ import { InternalServerError } from '@tryghost/errors';
 import { z } from 'zod';
 import type { GhostLogger } from '@tryghost/logging';
 import type { GhostMetrics } from '@tryghost/metrics';
-import type { AttributeValue, Span, Tracer } from './tracer';
+import { noLabels, setLabel, type Labels } from './labels';
+import type { Span, Tracer } from './tracer';
 
 type Exit = { outcome: 'success' } | { outcome: 'failure'; err: unknown };
 
@@ -14,14 +15,10 @@ interface SpanContext {
 }
 
 /** What each span ships as, in the Elastic Common Schema fields Elastic's APM stores spans in. */
-export interface SpanDocument extends SpanContext {
+export interface SpanDocument extends SpanContext, Labels {
   '@timestamp': number;
   event: { name: string; outcome: Exit['outcome']; duration: number };
   error?: { type: string };
-  // Elastic's APM keeps numbers apart from the other attributes, so they can be summed,
-  // averaged and bucketed.
-  labels: Record<string, string | boolean | string[] | boolean[]>;
-  numeric_labels: Record<string, number | number[]>;
 }
 
 /**
@@ -30,10 +27,6 @@ export interface SpanDocument extends SpanContext {
  * `event.name`.
  */
 const METRIC = 'ghost-spans';
-
-/** A list holds one kind of value, so its first says which; an empty list is never asked. */
-const isNumeric = (value: AttributeValue): value is number | number[] =>
-  typeof value === 'number' || (Array.isArray(value) && typeof value[0] === 'number');
 
 const CodedError = z.object({ code: z.string().min(1) });
 
@@ -73,7 +66,7 @@ export function createTracer({
   function record(
     name: string,
     context: SpanContext,
-    attributes: Pick<SpanDocument, 'labels' | 'numeric_labels'>,
+    attributes: Labels,
     start: { timestamp: number; at: number },
     exit: Exit,
   ): void {
@@ -116,7 +109,7 @@ export function createTracer({
   function logException(
     name: string,
     context: SpanContext,
-    attributes: Pick<SpanDocument, 'labels' | 'numeric_labels'>,
+    attributes: Labels,
     err: unknown,
   ): void {
     // With no message of its own, Ghost's logger makes the error's message the line.
@@ -139,30 +132,10 @@ export function createTracer({
         trace: { id: randomBytes(16).toString('hex') },
         span: { id: randomBytes(8).toString('hex') },
       };
-      const attributes: Pick<SpanDocument, 'labels' | 'numeric_labels'> = {
-        labels: {},
-        numeric_labels: {},
-      };
+      const attributes = noLabels();
       const span: Span = {
         setAttribute(key, value) {
-          // Elasticsearch reads a dot in a field name as nesting, and labels can't nest. Elastic's
-          // APM replaces dots the same way.
-          const field = key.replace(/\./g, '_');
-          // A key set again can change kind, so its old value is cleared from both.
-          delete attributes.labels[field];
-          delete attributes.numeric_labels[field];
-          // Elasticsearch stores nothing for an empty list, and its kind can't be told.
-          if (Array.isArray(value) && value.length === 0) {
-            return;
-          }
-          // Copied, as OpenTelemetry copies a list, so changing it afterwards can't change what
-          // the span ships.
-          const copy = structuredClone(value);
-          if (isNumeric(copy)) {
-            attributes.numeric_labels[field] = copy;
-          } else {
-            attributes.labels[field] = copy;
-          }
+          setLabel(attributes, key, value);
         },
       };
       try {
