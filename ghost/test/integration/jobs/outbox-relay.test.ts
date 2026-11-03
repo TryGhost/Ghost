@@ -208,6 +208,22 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       assert.equal(await countRows(), 1, 'a rejected row is retained, never discarded');
     });
 
+    it('does not claim a row that was already submitted', async function () {
+      await knex(TABLE).insert({
+        id: newId(),
+        envelope: JSON.stringify(envelopeFor()),
+        created_at: new Date(),
+        available_at: new Date(),
+        submitted_at: new Date(),
+      });
+
+      const outcome = await outbox.processNext(async () => {}, {
+        retryDelayMs: TIMINGS.retryDelayMs,
+      });
+
+      assert.equal(outcome.status, 'idle');
+    });
+
     it('reports idle when no row is eligible', async function () {
       const id = newId();
       await outbox.insert({ id, envelope: envelopeFor() });

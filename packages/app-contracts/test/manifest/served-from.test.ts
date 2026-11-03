@@ -2,38 +2,21 @@ import assert from 'node:assert/strict';
 
 import { describe, it } from 'vitest';
 
-import {
-  appPageUrl,
-  isDevelopmentApp,
-  movedBetween,
-  servedFrom,
-} from '../../src/manifest/index.ts';
+import { appPageUrl, movedBetween, servedFrom } from '../../src/manifest/index.ts';
 import type { AppManifest } from '../../src/manifest/index.ts';
 
-const at = (manifestUrl: string, pageUrl: string) => ({
-  manifestUrl,
-  manifest: {
+const at = (manifestUrl: string, pageUrl: string) =>
+  ({
+    manifest_url: manifestUrl,
     surfaces: [{ type: 'admin_page', url: pageUrl }],
-  } as AppManifest,
-});
+  }) as AppManifest;
 
 describe('servedFrom', function () {
   it('names the host the app’s page loads from', function () {
-    const { manifest } = at(
-      'https://cdn.example.net/app.json',
-      'https://podcast.example.com/admin',
-    );
+    const manifest = at('https://cdn.example.net/app.json', 'https://podcast.example.com/admin');
 
     assert.equal(servedFrom(manifest), 'podcast.example.com');
-    assert.equal(isDevelopmentApp(manifest), false);
     assert.equal(appPageUrl(manifest), 'https://podcast.example.com/admin');
-  });
-
-  it('marks an app served from the developer’s machine', function () {
-    assert.equal(
-      isDevelopmentApp(at('http://localhost:5173/a.json', 'http://localhost:5173/').manifest),
-      true,
-    );
   });
 
   it('refuses a manifest without surfaces, which a valid one always has', function () {

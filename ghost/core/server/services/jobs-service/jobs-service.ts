@@ -213,7 +213,7 @@ export class JobsService {
       this.#outbox.relay.start();
     } else if (this.#logOutboxUnavailable) {
       this.#logging.warn(
-        '[Jobs] services:jobs:outbox is enabled but the outbox is unavailable here (it needs MySQL and the jobs_outbox table); using the legacy direct-dispatch path.',
+        '[Jobs] services:jobs:outbox is enabled but the outbox is unavailable here (it needs MySQL); using the legacy direct-dispatch path.',
       );
     }
   }
