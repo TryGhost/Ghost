@@ -136,8 +136,6 @@ const PAGE_HTML = `<!DOCTYPE html>
  * The page URL in the manifest is relative to the manifest, and every path ending in `.html` serves
  * the page, which shows the path it was served from. A second fixture app with the same ID is the
  * same app served from another host, as when a developer's tunnel URL changes.
- *
- * Tests that use it set the `fixtureAppEnabled` option, so Ghost can fetch its manifest.
  */
 export class FixtureApp extends FakeServer {
   manifest: FixtureAppManifest;

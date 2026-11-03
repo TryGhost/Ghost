@@ -15,7 +15,7 @@ const isHeldCall = (request: Request | URL) => {
 };
 
 test.describe('Ghost Admin - App install lifecycle', () => {
-  test.use({ fixtureAppEnabled: true, labs: { apps: true } });
+  test.use({ labs: { apps: true } });
 
   test('installs an app that opens and calls the Admin API', async ({ page, fixtureApp }) => {
     const appsPage = new AppsPage(page);

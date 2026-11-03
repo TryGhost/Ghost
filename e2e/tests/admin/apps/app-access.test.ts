@@ -4,8 +4,6 @@ import { expect, signInAsStaff, test, withIsolatedPage } from '@/helpers/playwri
 const INSTALLATIONS_API = '/ghost/api/admin/apps/installations/';
 
 test.describe('Ghost Admin - App access', () => {
-  test.use({ fixtureAppEnabled: true });
-
   test('Apps and its API are unavailable while the Labs flag is off', async ({
     page,
     fixtureApp,

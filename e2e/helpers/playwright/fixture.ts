@@ -118,9 +118,6 @@ export interface GhostInstanceFixture {
   // Forces per-test isolation because Ghost boots against a per-test fake upgrade host.
   upgradeHostEnabled?: boolean;
   upgradeHost?: FakeUpgradeHost;
-  // Lets Ghost fetch the fixture app's manifest. Unlike Stripe and the upgrade host it keeps
-  // per-file reuse, because the config it adds is the same for every test.
-  fixtureAppEnabled?: boolean;
   // An app the test can install. Its ID is unique to the test, so it never meets another test's
   // installation in a shared per-file environment.
   fixtureApp: FixtureApp;
@@ -377,7 +374,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
       mailgunServer,
       upgradeHostEnabled,
       upgradeHost,
-      fixtureAppEnabled,
     },
     use,
     testInfo: TestInfo,
@@ -411,18 +407,11 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
             adapters__upgrade__HttpUpgradeAdapter__url: `http://host.docker.internal:${upgradeHost.port}`,
           }
         : {};
-    // Ghost runs in a container, where localhost is the container itself, so it fetches the
-    // fixture app's localhost manifest from the host, as compose.dev.yaml sets up. The browser
-    // still loads the app's pages from localhost.
-    const fixtureAppConfig = fixtureAppEnabled
-      ? { apps__localhostAlias: 'host.docker.internal' }
-      : {};
     const mergedConfig = {
       ...(config || {}),
       ...stripeConfig,
       ...mailgunConfig,
       ...upgradeHostConfig,
-      ...fixtureAppConfig,
     };
     const stripe = stripeServer
       ? {
@@ -536,7 +525,6 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
   stripeEnabled: [false, { option: true }],
   mailgunEnabled: [false, { option: true }],
   upgradeHostEnabled: [false, { option: true }],
-  fixtureAppEnabled: [false, { option: true }],
 
   stripeServer: async ({ stripeEnabled }, use) => {
     if (!stripeEnabled) {
@@ -599,11 +587,7 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
     await use(service);
   },
 
-  fixtureApp: async ({ fixtureAppEnabled }, use, testInfo) => {
-    if (!fixtureAppEnabled) {
-      throw new Error('Set test.use({fixtureAppEnabled: true}) so Ghost can fetch the fixture app');
-    }
-
+  fixtureApp: async ({}, use, testInfo) => {
     // Playwright's test ID already differs for each --repeat-each run; a retry keeps it, so the
     // retry count is added for a retry that reuses the per-file environment.
     const app = new FixtureApp({ appId: `org.ghost.e2e.app-${testInfo.testId}-${testInfo.retry}` });

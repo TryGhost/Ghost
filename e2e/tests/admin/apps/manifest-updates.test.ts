@@ -14,7 +14,7 @@ async function reopenApp(page: Page, installationId: string) {
 }
 
 test.describe('Ghost Admin - App manifest updates', () => {
-  test.use({ fixtureAppEnabled: true, labs: { apps: true } });
+  test.use({ labs: { apps: true } });
 
   test('applies a silent change when the app next opens', async ({ page, fixtureApp }) => {
     const appPage = new AppPage(page);
