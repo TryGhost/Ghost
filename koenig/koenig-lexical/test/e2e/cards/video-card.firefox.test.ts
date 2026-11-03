@@ -260,27 +260,34 @@ test.describe('Video card', async () => {
     test('keeps focus in the thumbnail picker while the picked frame is saved', async function () {
         await focusEditor(page);
         await uploadVideo(page);
-        // Saving slowed down, so the picker is still open while it saves
-        await page.evaluate(() => {
+        // Saving slowed down, so the picker is still open while it saves; the page isn't reloaded between tests
+        const restoreToBlob = await page.evaluateHandle(() => {
             const toBlob = HTMLCanvasElement.prototype.toBlob;
             HTMLCanvasElement.prototype.toBlob = function (...args) {
                 setTimeout(() => toBlob.apply(this, args), 2000);
             };
+            return () => {
+                HTMLCanvasElement.prototype.toBlob = toBlob;
+            };
         });
 
-        await page.getByTestId('media-upload-placeholder').click();
-        const picker = page.getByRole('dialog', {name: 'Select thumbnail'});
-        const select = picker.getByRole('button', {name: 'Select'});
-        await expect(select).toBeEnabled();
-        await select.focus();
-        await page.keyboard.press('Enter');
+        try {
+            await page.getByTestId('media-upload-placeholder').click();
+            const picker = page.getByRole('dialog', {name: 'Select thumbnail'});
+            const select = picker.getByRole('button', {name: 'Select'});
+            await expect(select).toBeEnabled();
+            await select.focus();
+            await page.keyboard.press('Enter');
 
-        // Firefox drops focus to the page when a focused button is disabled
-        await expect(select).toHaveAttribute('aria-disabled', 'true');
-        await expect(select).toBeFocused();
+            // Disabling a focused button drops focus to the page
+            await expect(select).toHaveAttribute('aria-disabled', 'true');
+            await expect(select).toBeFocused();
 
-        await page.keyboard.press('Escape');
-        await expect(picker).toBeHidden();
+            await page.keyboard.press('Escape');
+            await expect(picker).toBeHidden();
+        } finally {
+            await restoreToBlob.evaluate(restore => restore());
+        }
     });
 
     test('can close the thumbnail picker without changing the thumbnail', async function () {

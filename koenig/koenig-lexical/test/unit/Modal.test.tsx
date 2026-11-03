@@ -51,7 +51,8 @@ describe('Modal', function () {
             expect(onPageKey).not.toHaveBeenCalled();
 
             fireEvent.keyDown(first, {key: 's', metaKey: true});
-            expect(onPageKey).toHaveBeenCalledTimes(1);
+            fireEvent.keyDown(first, {key: 'ы', code: 'KeyS', ctrlKey: true});
+            expect(onPageKey).toHaveBeenCalledTimes(2);
         } finally {
             document.removeEventListener('keydown', onPageKey);
         }

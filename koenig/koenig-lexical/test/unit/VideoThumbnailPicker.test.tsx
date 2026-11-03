@@ -66,7 +66,7 @@ describe('VideoThumbnailPicker', function () {
         expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
 
-    it('keeps focus on Select while the frame is saved', async function () {
+    it('marks Select busy, rather than disabling it, while the frame is saved', async function () {
         vi.mocked(canvasToJpeg).mockImplementationOnce(() => new Promise<Blob>(() => {}));
         renderPicker();
         loadPreview();
