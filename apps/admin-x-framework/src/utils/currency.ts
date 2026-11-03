@@ -113,7 +113,7 @@ export const currencies: CurrencyOption[] = [
   { isoCode: 'SOS', name: 'Somali shilling' },
   { isoCode: 'SRD', name: 'Surinamese dollar' },
   { isoCode: 'STD', name: 'São Tomé and Príncipe dobra' },
-  { isoCode: 'SZL', name: 'Salvadoran colón' },
+  { isoCode: 'SZL', name: 'Swazi lilangeni' },
   { isoCode: 'THB', name: 'Thai baht' },
   { isoCode: 'TJS', name: 'Tajikistani somoni' },
   { isoCode: 'TOP', name: 'Tongan paʻanga' },
