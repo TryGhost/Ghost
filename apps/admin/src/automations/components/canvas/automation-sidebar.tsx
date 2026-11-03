@@ -204,7 +204,7 @@ function getStopConditionDescription({
   triggerRules: readonly AutomationTriggerRule[];
   tiers: readonly Tier[];
 }): string {
-  // Lifecycle runs stay eligible while the member matches a destination tier.
+  // paid_subscription_changed runs stay eligible while the member matches a destination tier.
   const eligibilityRules =
     triggerRules[0]?.trigger_type === 'paid_subscription_changed'
       ? triggerRules.filter((rule) => rule.direction === 'to')

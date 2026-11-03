@@ -31,7 +31,7 @@ describe('signup trigger rules', () => {
     ).toEqual([]);
   });
 
-  it('encodes each selected paid tier without a lifecycle direction', () => {
+  it('encodes each selected paid tier without a From/To direction', () => {
     expect(
       buildTriggerRules({
         triggerType: 'paid_subscription_started',
@@ -88,7 +88,7 @@ describe('trigger tier IDs', () => {
   });
 });
 
-describe('incomplete lifecycle rules', () => {
+describe('incomplete paid_subscription_changed rules', () => {
   it('retains empty selections', () => {
     expect(
       buildTriggerRules({
@@ -118,8 +118,8 @@ describe('incomplete lifecycle rules', () => {
   });
 });
 
-describe('lifecycle rule dirty comparison', () => {
-  it('ignores ordering when lifecycle rules have no product IDs', () => {
+describe('paid_subscription_changed rule dirty comparison', () => {
+  it('ignores ordering when paid_subscription_changed rules have no product IDs', () => {
     const rules = buildTriggerRules({
       triggerType: 'paid_subscription_changed',
       selection: {

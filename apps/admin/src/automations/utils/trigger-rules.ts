@@ -53,7 +53,7 @@ export function buildTriggerRules(options: TriggerRuleOptions): AutomationTrigge
 export const getTriggerTierIds = (rules: readonly AutomationTriggerRule[]): string[] =>
   rules.flatMap((rule) => (rule.product_id ? [rule.product_id] : []));
 
-// Rule order has no meaning for trigger eligibility. Compare copies by tier and
+// Rule order has no meaning for trigger eligibility. Sort copies by tier and
 // direction so reordering selections does not mark the draft dirty or reorder its chips.
 export const comparableTriggerRules = (rules: readonly AutomationTriggerRule[]) =>
   rules
