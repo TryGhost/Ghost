@@ -183,10 +183,6 @@ describe('Every custom field type through the Admin API', function () {
     await agent.loginAsOwner();
   });
 
-  beforeEach(function () {
-    mockManager.mockLabsEnabled('membersCustomFields');
-  });
-
   afterEach(async function () {
     mockManager.restore();
     await models.Base.knex('members_metafield_values').del();

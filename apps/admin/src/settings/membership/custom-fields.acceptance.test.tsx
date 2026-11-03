@@ -12,6 +12,7 @@ import {
   settleRequests,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
+import { CUSTOM_FIELDS_FLAG } from '@/shared/member-custom-fields/availability';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 import { MAX_OPTIONS } from '@tryghost/metafield-types/structure';
@@ -38,8 +39,6 @@ const archivedField: MemberCustomField = {
   created_at: '2026-07-12T00:00:00.000Z',
   updated_at: '2026-07-13T00:00:00.000Z',
 };
-
-const flagOn = { labs: { membersCustomFields: true } };
 
 const ReorderBody = z.object({ members_metafields: z.array(z.object({ key: z.string() })) });
 
@@ -91,10 +90,12 @@ function fakeCustomFieldsWithCreate(initial: CustomField[], created: CustomField
 }
 
 describe('Custom fields', () => {
-  it('stays hidden and does not query the closed endpoint while the flag is off', async () => {
+  // Admin goes live before the servers it talks to, and a server that hasn't released custom
+  // fields reports their flag off and refuses every change to them.
+  it('stays hidden, and asks for no fields, on a server that has not released them', async () => {
     fakeSettingsScreens();
     const customFieldsApi = fakeCustomFields();
-    await renderAdminApp('/settings');
+    await renderAdminApp('/settings', { labs: { [CUSTOM_FIELDS_FLAG]: false } });
 
     await expect.element(settingsScreen.navItem('Tiers')).toBeVisible();
     await expect(settingsScreen.navItem('Custom fields')).toHaveCount(0);
@@ -110,7 +111,7 @@ describe('Custom fields', () => {
     fakeSettingsScreens();
     // As the server lists them while they're switched off.
     fakeCustomFields([{ ...companyField, status: 'archived' }]);
-    const config = configResponse({ labs: { membersCustomFields: true } });
+    const config = configResponse();
     config.config.hostSettings = {
       limits: {
         limitCustomFields: {
@@ -121,7 +122,6 @@ describe('Custom fields', () => {
       billing: { enabled: true },
     };
     await renderAdminApp('/settings', {
-      ...flagOn,
       boot: { browseConfig: { response: config } },
     });
 
@@ -143,10 +143,9 @@ describe('Custom fields', () => {
   it('says custom fields are unavailable when the host gives no words of its own', async () => {
     fakeSettingsScreens();
     fakeCustomFields([{ ...companyField, status: 'archived' }]);
-    const config = configResponse({ labs: { membersCustomFields: true } });
+    const config = configResponse();
     config.config.hostSettings = { limits: { limitCustomFields: { disabled: true } } };
     await renderAdminApp('/settings', {
-      ...flagOn,
       boot: { browseConfig: { response: config } },
     });
 
@@ -160,12 +159,11 @@ describe('Custom fields', () => {
   it('stays visible when the host sets the limit but leaves it enabled', async () => {
     fakeSettingsScreens();
     fakeCustomFields();
-    const config = configResponse({ labs: { membersCustomFields: true } });
+    const config = configResponse();
     config.config.hostSettings = {
       limits: { limitCustomFields: { disabled: false } },
     };
     await renderAdminApp('/settings', {
-      ...flagOn,
       boot: { browseConfig: { response: config } },
     });
 
@@ -175,7 +173,7 @@ describe('Custom fields', () => {
   it('lists each field with its user-facing type, opting into archived fields', async () => {
     fakeSettingsScreens();
     const customFieldsApi = fakeCustomFields();
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     // Browse hides archived by default; Settings asks for both statuses.
     await expect
@@ -201,7 +199,7 @@ describe('Custom fields', () => {
         type: 'a_type_from_the_future',
       },
     ]);
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     await expect.element(page.getByText('Something went wrong, please try again.')).toBeVisible();
     await expect(settingsScreen.customFields().getByTestId('custom-field-list-item')).toHaveCount(
@@ -217,7 +215,7 @@ describe('Custom fields', () => {
         { ...companyField, key: KeySchema.parse('job_title'), name: 'Job Title' },
       ],
     });
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     await settingsScreen.customFields().getByRole('button', { name: 'Add custom field' }).click();
     const modal = settingsScreen.customFieldModal();
@@ -239,7 +237,7 @@ describe('Custom fields', () => {
     const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
       members_metafields: [{ ...companyField, key: 'bio', name: 'Bio', type: 'long_text' }],
     });
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     await settingsScreen.customFields().getByRole('button', { name: 'Add custom field' }).click();
     const modal = settingsScreen.customFieldModal();
@@ -272,7 +270,7 @@ describe('Custom fields', () => {
       },
       { status: 422 },
     );
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     await settingsScreen.customFields().getByRole('button', { name: 'Add custom field' }).click();
     const modal = settingsScreen.customFieldModal();
@@ -292,7 +290,7 @@ describe('Custom fields', () => {
     fakeAdminEndpoint('PUT', '/members/metafields/custom/company/', {
       members_metafields: [{ ...companyField, access: { member: 'write' as const } }],
     });
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
     const modal = settingsScreen.customFieldModal();
@@ -308,7 +306,6 @@ describe('Custom fields', () => {
     fakeCustomFields();
     // The count is the sidebar's member-count probe, served by the boot table.
     await renderAdminApp('/settings', {
-      ...flagOn,
       boot: {
         browseMembersCount: {
           response: { members: [], meta: { pagination: { total: 838, limit: 1, page: 1 } } },
@@ -337,7 +334,7 @@ describe('Custom fields', () => {
       { ...companyField, access: { member: 'write' as const } },
       { ...archivedField, access: { member: 'write' as const } },
     ]);
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect.element(rows).toHaveTextContent('Visible to members');
@@ -352,7 +349,7 @@ describe('Custom fields', () => {
     const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/company/', {
       members_metafields: [companyField],
     });
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
     const modal = settingsScreen.customFieldModal();
@@ -379,7 +376,7 @@ describe('Custom fields', () => {
       await held;
       return { members_metafields: [companyField] };
     });
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
     const modal = settingsScreen.customFieldModal();
@@ -400,7 +397,7 @@ describe('Custom fields', () => {
     const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/company/', {
       members_metafields: [{ ...companyField, access: { member: 'read' as const } }],
     });
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
     const modal = settingsScreen.customFieldModal();
@@ -429,7 +426,7 @@ describe('Custom fields', () => {
         { ...companyField, name: 'Employer', access: { member: 'read' as const } },
       ],
     });
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
     const modal = settingsScreen.customFieldModal();
@@ -446,7 +443,7 @@ describe('Custom fields', () => {
   it('does not offer the access control on an archived field', async () => {
     fakeSettingsScreens();
     fakeCustomFields([archivedField]);
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     await settingsScreen.customFields().getByRole('tab', { name: 'Archived' }).click();
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
@@ -461,7 +458,7 @@ describe('Custom fields', () => {
   it('warns when reactivating a field that is open to members', async () => {
     fakeSettingsScreens();
     fakeCustomFields([{ ...archivedField, access: { member: 'write' as const } }]);
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     await settingsScreen.customFields().getByRole('tab', { name: 'Archived' }).click();
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
@@ -478,7 +475,7 @@ describe('Custom fields', () => {
     const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/company/', {
       members_metafields: [{ ...companyField, name: 'Employer' }],
     });
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
     const modal = settingsScreen.customFieldModal();
@@ -501,7 +498,7 @@ describe('Custom fields', () => {
     const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/company/', {
       members_metafields: [{ ...companyField, access: { member: 'write' as const } }],
     });
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
     const modal = settingsScreen.customFieldModal();
@@ -520,7 +517,7 @@ describe('Custom fields', () => {
     const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/company/', {
       members_metafields: [{ ...companyField, status: 'archived' }],
     });
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
     await settingsScreen.customFieldModal().getByRole('button', { name: 'Archive' }).click();
@@ -543,7 +540,7 @@ describe('Custom fields', () => {
   it('splits fields into Active and Archived tabs', async () => {
     fakeSettingsScreens();
     fakeCustomFields([companyField, archivedField]);
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     // Active tab is the default and shows only active fields.
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
@@ -563,7 +560,7 @@ describe('Custom fields', () => {
       name: `Field ${index}`,
     }));
     fakeCustomFields(manyFields);
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(5);
@@ -593,7 +590,7 @@ describe('Custom fields', () => {
       key: KeySchema.parse('newest'),
       name: 'Newest',
     });
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(5);
@@ -623,7 +620,7 @@ describe('Custom fields', () => {
       currentFields = reordered(request.body, currentFields);
       return { members_metafields: currentFields };
     });
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(3);
@@ -674,7 +671,7 @@ describe('Custom fields', () => {
       currentFields = reordered(request.body, currentFields);
       return { members_metafields: currentFields };
     });
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(2);
@@ -719,7 +716,7 @@ describe('Custom fields', () => {
       },
       { status: 422 },
     );
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(2);
@@ -744,7 +741,7 @@ describe('Custom fields', () => {
       currentFields = reordered(request.body, currentFields);
       return { members_metafields: currentFields };
     });
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(2);
@@ -772,7 +769,7 @@ describe('Custom fields', () => {
       currentFields = reordered(request.body, currentFields);
       return { members_metafields: currentFields };
     });
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     const rows = settingsScreen.customFields().getByTestId('custom-field-list-item');
     await expect(rows).toHaveCount(5);
@@ -798,7 +795,7 @@ describe('Custom fields', () => {
   it('does not offer dragging on the archived tab', async () => {
     fakeSettingsScreens();
     fakeCustomFields([companyField, archivedField]);
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     // An archived field holds its place in the order, but there is nowhere to see
     // it, so there is nothing to drag it through.
@@ -814,7 +811,7 @@ describe('Custom fields', () => {
     fakeSettingsScreens();
     const customFieldsApi = fakeCustomFields([companyField, archivedField]);
     const deleteApi = fakeAdminEndpoint('DELETE', '/members/metafields/custom/old_hobby/', {});
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     await settingsScreen.customFields().getByRole('tab', { name: 'Archived' }).click();
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
@@ -844,7 +841,7 @@ describe('Custom fields', () => {
   it('does not expose permanent deletion for an active field', async () => {
     fakeSettingsScreens();
     fakeCustomFields([companyField]);
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     // Deletion lives behind the header menu, and an active field has none —
     // the UI can't reach delete, matching the API's archived-only rule.
@@ -856,7 +853,7 @@ describe('Custom fields', () => {
   it('shows no tabs at all while no fields exist', async () => {
     fakeSettingsScreens();
     fakeCustomFields([]);
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     await expect.element(settingsScreen.customFields()).toBeVisible();
     await expect(settingsScreen.customFields().getByRole('tab')).toHaveCount(0);
@@ -868,7 +865,7 @@ describe('Custom fields', () => {
     const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/old_hobby/', {
       members_metafields: [{ ...archivedField, status: 'active' }],
     });
-    await renderAdminApp('/settings', flagOn);
+    await renderAdminApp('/settings');
 
     await settingsScreen.customFields().getByRole('tab', { name: 'Archived' }).click();
     await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
@@ -922,7 +919,7 @@ describe('Custom fields', () => {
       const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
         members_metafields: [animalsField],
       });
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       await modal.getByLabelText('Name').fill('Favourite animals');
@@ -952,7 +949,7 @@ describe('Custom fields', () => {
       const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
         members_metafields: [animalsField],
       });
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       await modal.getByLabelText('Name').fill('Favourite animals');
@@ -972,7 +969,7 @@ describe('Custom fields', () => {
       const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
         members_metafields: [animalsField],
       });
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       await modal.getByLabelText('Name').fill('Favourite animals');
@@ -1000,7 +997,7 @@ describe('Custom fields', () => {
     it('leaves text an input method is still composing in the input on Enter', async () => {
       fakeSettingsScreens();
       fakeListedFields();
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       const input = modal.getByLabelText('New option');
@@ -1033,7 +1030,7 @@ describe('Custom fields', () => {
         },
         { status: 422 },
       );
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       await modal.getByLabelText('Name').fill('Favourite animals');
@@ -1264,7 +1261,7 @@ describe('Custom fields', () => {
     it('takes a pasted list as one option per line, skipping repeats', async () => {
       fakeSettingsScreens();
       fakeListedFields();
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       const input = modal.getByLabelText('New option');
@@ -1287,7 +1284,7 @@ describe('Custom fields', () => {
       const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/favourite_animals/', {
         members_metafields: [animalsField],
       });
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
       const modal = settingsScreen.customFieldModal();
@@ -1455,7 +1452,7 @@ describe('Custom fields', () => {
       const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/favourite_animals/', {
         members_metafields: [{ ...animalsField, name: 'Pets' }],
       });
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
       const modal = settingsScreen.customFieldModal();
@@ -1704,7 +1701,7 @@ describe('Custom fields', () => {
       const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/favourite_animals/', {
         members_metafields: [{ ...oneOption, name: 'Pets' }],
       });
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
       const modal = settingsScreen.customFieldModal();
@@ -1718,7 +1715,7 @@ describe('Custom fields', () => {
     it('keeps text already typed when several lines are pasted after it', async () => {
       fakeSettingsScreens();
       fakeListedFields();
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       const input = modal.getByLabelText('New option');
@@ -1738,7 +1735,7 @@ describe('Custom fields', () => {
     it('lists an archived list’s options with nothing to change them', async () => {
       fakeSettingsScreens();
       fakeListedFields([{ ...animalsField, status: 'archived' }]);
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       await settingsScreen.customFields().getByRole('tab', { name: 'Archived' }).click();
       await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
