@@ -246,7 +246,7 @@ catalog:
   '@floating-ui/react-dom': 2.1.9
   shell-quote: 1.11.0
   unidecode: 1.1.0
-  mppx: 0.6.20
+  mppx: 0.17.0
   '@x402/core': 2.29.0
   '@x402/evm': 2.29.0
   '@x402/hono': 2.29.0
@@ -306,7 +306,7 @@ overrides:
   # only ever call `load`. See patchedDependencies for the matching slim import.
   'juice>cheerio': 'catalog:'
   # mppx pins ox exactly; use viem's copy so Ghost ships one ox
-  'mppx>ox': 0.14.60
+  'mppx>ox': 0.14.59
   # mg-utils depends on the npm release of kg-default-cards, so the published
   # copy was installed alongside the workspace one that ghost links — and
   # it dragged its own published kg-utils, kg-markdown-html-renderer and
