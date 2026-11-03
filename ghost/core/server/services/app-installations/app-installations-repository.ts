@@ -204,10 +204,15 @@ export class AppInstallationsRepository {
 
   /**
    * The backend keys replaced for an app signed with this identity key: every key named by
-   * a manifest row of any of its installations, ended ones included, other than the newest
-   * row's. Rows are only added for verified manifests, pending ones included, so a key is
+   * a manifest row of any of its installations, ended ones included, other than the current
+   * key. Rows are only added for verified manifests, pending ones included, so a key is
    * retired as soon as a verified manifest names a newer one, and uninstalling and
    * installing again doesn't bring it back.
+   *
+   * The current key is the one the newest installation's pending manifest names, or else its
+   * approved manifest's. Every added row becomes one of those straight away, so rows aren't
+   * ordered by `created_at`, which comes from each instance's clock and is only to the
+   * second. Only installations are, and those are an uninstall and an install apart.
    */
   async retiredBackendKeysOf(appId: string, identityKeyThumbprint: string): Promise<Set<string>> {
     const rows = () =>
@@ -217,13 +222,18 @@ export class AppInstallationsRepository {
           'installation.app_id': appId,
           'installation.identity_key_thumbprint': identityKeyThumbprint,
         });
-    const newest = rows()
-      .orderBy('manifest.created_at', 'desc')
-      .orderBy('manifest.id', 'desc')
+    const current = rows()
+      .whereRaw('?? = coalesce(??, ??)', [
+        'manifest.id',
+        'installation.pending_manifest_id',
+        'installation.manifest_id',
+      ])
+      .orderBy('installation.created_at', 'desc')
+      .orderBy('installation.id', 'desc')
       .limit(1)
       .select('manifest.backend_key_thumbprint');
     const retired = await rows()
-      .whereNot('manifest.backend_key_thumbprint', newest)
+      .whereNot('manifest.backend_key_thumbprint', current)
       .distinct<z.input<typeof BackendKeyRow>[]>('manifest.backend_key_thumbprint');
     return new Set(retired.map((row) => z.decode(BackendKeyRow, row).backend_key_thumbprint));
   }

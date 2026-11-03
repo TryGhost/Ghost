@@ -214,6 +214,9 @@ describe('AppInstallationsRepository retiredBackendKeysOf', function () {
       table.string('id').primary();
       table.string('app_id');
       table.string('identity_key_thumbprint');
+      table.string('manifest_id');
+      table.string('pending_manifest_id');
+      table.dateTime('created_at');
     });
     await knex.schema.createTable('app_installation_manifests', (table) => {
       table.string('id').primary();
@@ -225,13 +228,16 @@ describe('AppInstallationsRepository retiredBackendKeysOf', function () {
       table.dateTime('created_at');
     });
     // Only the columns the lookup reads, so not a row the table's type would accept.
+    // Each installed a day after the one before it.
     await knex
-      .insert([
-        { id: 'installation', app_id: manifest.id, identity_key_thumbprint: 'identity' },
-        { id: 'ended', app_id: manifest.id, identity_key_thumbprint: 'identity' },
-        { id: 'other-key', app_id: manifest.id, identity_key_thumbprint: 'other' },
-        { id: 'other-app', app_id: 'com.example.other', identity_key_thumbprint: 'identity' },
-      ])
+      .insert(
+        [
+          { id: 'ended', app_id: manifest.id, identity_key_thumbprint: 'identity' },
+          { id: 'installation', app_id: manifest.id, identity_key_thumbprint: 'identity' },
+          { id: 'other-key', app_id: manifest.id, identity_key_thumbprint: 'other' },
+          { id: 'other-app', app_id: 'com.example.other', identity_key_thumbprint: 'identity' },
+        ].map((row, day) => ({ ...row, created_at: new Date(Date.UTC(2025, 0, 1 + day)) })),
+      )
       .into('app_installations');
     minute = 0;
   });
@@ -240,26 +246,45 @@ describe('AppInstallationsRepository retiredBackendKeysOf', function () {
     await knex.destroy();
   });
 
-  /** Adds manifest rows naming these keys, each newer than every row added before it. */
-  const addRows = (installationId: string, keys: string[]) => {
+  /** A manifest row with this ID, naming this key. */
+  const manifestRow = (installationId: string, id: string, key: string, createdAt: Date) => ({
+    id,
+    installation_id: installationId,
+    manifest_url: loaded.manifestUrl,
+    manifest: loaded.serialised,
+    digest: `digest-${id}`,
+    backend_key_thumbprint: key,
+    source: 'update' as const,
+    requires_approval: false,
+    created_at: createdAt,
+  });
+
+  /** Points the installation at its approved manifest and pending one, as a write would. */
+  const point = (installationId: string, manifestId: string, pendingManifestId: string | null) =>
+    knex('app_installations')
+      .where({ id: installationId })
+      .update({ manifest_id: manifestId, pending_manifest_id: pendingManifestId });
+
+  /**
+   * Adds manifest rows naming these keys, each newer than every row added before it, and
+   * approves the last one.
+   */
+  const addRows = async (installationId: string, keys: string[]) => {
     const first = minute;
     minute += keys.length;
-    return knex('app_installation_manifests').insert(
-      keys.map((key, index) => ({
-        id: `${installationId}-${index}`,
-        installation_id: installationId,
-        manifest_url: loaded.manifestUrl,
-        manifest: loaded.serialised,
-        digest: `digest-${index}`,
-        backend_key_thumbprint: key,
-        source: index === 0 ? ('install' as const) : ('update' as const),
-        requires_approval: false,
-        created_at: new Date(Date.UTC(2026, 0, 1, 0, first + index)),
-      })),
+    const rows = keys.map((key, index) =>
+      manifestRow(
+        installationId,
+        `${installationId}-${index}`,
+        key,
+        new Date(Date.UTC(2026, 0, 1, 0, first + index)),
+      ),
     );
+    await knex('app_installation_manifests').insert(rows);
+    await point(installationId, rows[rows.length - 1].id, null);
   };
 
-  it('is every key the app’s rows name under the identity key, other than the newest row’s', async function () {
+  it('is every key the app’s rows name under the identity key, other than the current one', async function () {
     await addRows('installation', ['k1', 'k1', 'k2', 'k3']);
     await addRows('other-key', ['k4', 'k5']);
     await addRows('other-app', ['k6', 'k7']);
@@ -270,6 +295,33 @@ describe('AppInstallationsRepository retiredBackendKeysOf', function () {
       new Set(['k1', 'k2']),
     );
     assert.deepEqual(await repository.retiredBackendKeysOf(manifest.id, 'missing'), new Set());
+  });
+
+  // Two instances can add rows in the same second, and their IDs needn't sort in the order
+  // the rows were added, so the current key can't be read off the clock.
+  it('takes the current key from the installation, not from when its rows were added', async function () {
+    const second = new Date(Date.UTC(2026, 0, 1));
+    await knex('app_installation_manifests').insert([
+      manifestRow('installation', 'b-older', 'k1', second),
+      manifestRow('installation', 'a-newer', 'k2', second),
+    ]);
+    await point('installation', 'a-newer', null);
+
+    assert.deepEqual(
+      await new AppInstallationsRepository(knex).retiredBackendKeysOf(manifest.id, 'identity'),
+      new Set(['k1']),
+    );
+  });
+
+  // Otherwise whoever held the approved manifest's key could resume the app by serving it.
+  it('takes the current key from a pending manifest that is the newest row', async function () {
+    await addRows('installation', ['k1', 'k2']);
+    await point('installation', 'installation-0', 'installation-1');
+
+    assert.deepEqual(
+      await new AppInstallationsRepository(knex).retiredBackendKeysOf(manifest.id, 'identity'),
+      new Set(['k1']),
+    );
   });
 
   // Otherwise uninstalling and installing again would bring a replaced key back.

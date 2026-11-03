@@ -74,6 +74,7 @@ describe('App installations composition root', function () {
     const builder = {
       join: sandbox.stub().returnsThis(),
       where: sandbox.stub().returnsThis(),
+      whereRaw: sandbox.stub().returnsThis(),
       orderBy: sandbox.stub().returnsThis(),
       limit: sandbox.stub().returnsThis(),
       select: sandbox.stub().returnsThis(),

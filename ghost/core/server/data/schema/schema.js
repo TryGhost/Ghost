@@ -2721,8 +2721,8 @@ module.exports = {
     // services/app-installations/load-manifest.ts.
     digest: { type: 'string', maxlength: 64, nullable: false },
     // The RFC 7638 thumbprint of the manifest's backend key. For each app and identity key,
-    // every key named before the newest row's, on any installation, is retired: a manifest
-    // naming one is refused.
+    // every key named on any installation is retired, other than the one named by the newest
+    // installation's pending or else approved manifest: a manifest naming one is refused.
     backend_key_thumbprint: { type: 'string', maxlength: 64, nullable: false },
     // How the row was added: the app was installed, an Administrator approved changes, the
     // re-check applied a newer manifest or stored one for approval (`update`), or the
