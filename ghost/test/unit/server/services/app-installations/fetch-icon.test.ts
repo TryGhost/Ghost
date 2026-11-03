@@ -69,7 +69,7 @@ describe('createIconFetcher', function () {
       [
         ICON_URL,
         {
-          accept: 'image/svg+xml, image/png, image/jpeg, image/gif, image/webp',
+          headers: { accept: 'image/svg+xml, image/png, image/jpeg, image/gif, image/webp' },
           maxBytes: 16 * 1024,
         },
       ],
