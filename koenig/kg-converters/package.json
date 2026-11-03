@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/kg-converters",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "description": "Converts between serialized Mobiledoc and Lexical formats for Ghost's editor",
   "license": "MIT",
   "author": "Ghost Foundation",
