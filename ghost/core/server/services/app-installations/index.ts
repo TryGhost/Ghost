@@ -32,8 +32,15 @@ export type { AppInstallationPreview, AppSession } from './service';
  */
 /** A config entry as an error shows it, which is logged, so without a URL's credentials. */
 function shown(entry: unknown): string {
-  const url = typeof entry === 'string' ? URL.parse(entry) : null;
-  if (url && (url.username || url.password)) {
+  if (typeof entry !== 'string') {
+    return JSON.stringify(entry);
+  }
+  const url = URL.parse(entry);
+  if (!url) {
+    // One the URL parser refuses can still start with credentials, up to an `@`.
+    return JSON.stringify(entry.replace(/^([^/?#]*\/\/)?[^/?#]*@/, '$1'));
+  }
+  if (url.username || url.password) {
     url.username = '';
     url.password = '';
     return JSON.stringify(url.href);

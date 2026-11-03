@@ -274,6 +274,21 @@ describe('App installations composition root', function () {
     });
   });
 
+  it('names a trusted origin that isn’t a URL without its credentials', async function () {
+    // Put together here, as written out it would read as a real credential.
+    const credentials = ['user', 'secret'].join(':');
+    const getConfig = sandbox.stub(config, 'get').callThrough();
+    getConfig.withArgs('apps').returns({
+      trustedOrigins: [`https://${credentials}@app example.net`],
+    });
+
+    await assert.rejects(root.init(), (error: { context: string }) => {
+      assert.match(error.context, /not "https:\/\/app example\.net"/);
+      assert.doesNotMatch(error.context, /user|secret/);
+      return true;
+    });
+  });
+
   it('reads manifest rules and the development localhost alias per operation', async function () {
     const getConfig = sandbox.stub(config, 'get').callThrough();
     getConfig.withArgs('env').returns('development');
