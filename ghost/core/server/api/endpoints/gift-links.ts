@@ -1,5 +1,5 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
-import { service, type RequestContext } from '../../services/gift-links';
+import giftLinks, { type RequestContext } from '../../services/gift-links';
 
 const permissionsService = require('../../services/permissions');
 
@@ -41,7 +41,7 @@ const controller = {
       return assertCanEditAndGift(frame);
     },
     query(frame: GiftLinksFrame) {
-      return service!.getPost(frame.options.id);
+      return giftLinks.service.getPost(frame.options.id);
     },
   },
 
@@ -54,7 +54,7 @@ const controller = {
       return assertCanEditAndGift(frame);
     },
     query(frame: GiftLinksFrame) {
-      return service!.ensure(requestContextFromFrame(frame), frame.options.id);
+      return giftLinks.service.ensure(requestContextFromFrame(frame), frame.options.id);
     },
   },
 
@@ -67,7 +67,7 @@ const controller = {
       return assertCanEditAndGift(frame);
     },
     query(frame: GiftLinksFrame) {
-      return service!.create(requestContextFromFrame(frame), frame.options.id);
+      return giftLinks.service.create(requestContextFromFrame(frame), frame.options.id);
     },
   },
 
@@ -78,7 +78,7 @@ const controller = {
       return permissionsService.canThis(frame.options.context).removeAll.gift_link();
     },
     async query(frame: GiftLinksFrame) {
-      const count = await service!.removeAll(requestContextFromFrame(frame));
+      const count = await giftLinks.service.removeAll(requestContextFromFrame(frame));
       return { count };
     },
   },

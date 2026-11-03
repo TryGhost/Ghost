@@ -6,6 +6,7 @@ import {
   normalizeRecipientFilter,
 } from '@tryghost/admin-x-framework/utils/recipient-filter';
 import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
+import { useRefusedEntry } from '@/editor/refused-entry';
 import { EDITOR_REQUEST_OPTIONS } from '@/editor/request-options';
 import { useEmailSize } from '@/editor/use-email-size';
 import { useState } from 'react';
@@ -115,6 +116,8 @@ export function OptionsStep({
   onRetryLimits,
 }: OptionsStepProps) {
   const [openSection, setOpenSection] = useState<Section | null>(null);
+  // A schedule typed but refused keeps the writer here rather than reviewing the time held.
+  const refusedEntry = useRefusedEntry();
   const toggle = (section: Section) => () =>
     setOpenSection((current) => (current === section ? null : section));
 
@@ -238,6 +241,7 @@ export function OptionsStep({
           <PublishAtOptions
             state={state}
             timezone={timezone}
+            onRefusalChange={refusedEntry.report}
             onSetScheduledAt={onSetScheduledAt}
             onToggleScheduled={onToggleScheduled}
           />
@@ -250,7 +254,11 @@ export function OptionsStep({
             data-testid={publishContinue}
             disabled={!limitsChecked || !state.canPublish}
             size="lg"
-            onClick={onContinue}
+            onClick={() => {
+              if (!refusedEntry.hold()) {
+                onContinue();
+              }
+            }}
           >
             Continue, final review &rarr;
           </Button>

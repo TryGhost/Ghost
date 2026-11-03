@@ -1,7 +1,6 @@
 {
   "name": "@tryghost/app-sdk",
-  "version": "private",
-  "private": true,
+  "version": "0.1.0-alpha.0",
   "description": "The SDK apps use to talk to Ghost from inside Admin",
   "license": "MIT",
   "author": "Ghost Foundation",
@@ -50,10 +49,6 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
-  },
-  "ghostPackage": {
-    "goldenPath": "exempt",
-    "reason": "A browser SDK for third-party apps: its build bundles with Vite, writing what it uses of the contracts into build/, and ships a self-contained bundle in dist/, so its build script, files and Nx outputs differ from the golden path. Everything else follows it."
   },
   "nx": {
     "targets": {

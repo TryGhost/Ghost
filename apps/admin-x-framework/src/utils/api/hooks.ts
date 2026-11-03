@@ -226,7 +226,7 @@ interface MutationOptions<ResponseData, Payload>
   };
 }
 
-const mutate = <ResponseData, Payload>({
+const mutate = async <ResponseData, Payload>({
   fetchApi,
   path,
   payload,
@@ -239,7 +239,7 @@ const mutate = <ResponseData, Payload>({
   searchParams?: Record<string, string>;
   options: Omit<MutationOptions<ResponseData, Payload>, 'path'>;
 }) => {
-  const { defaultSearchParams, body, requestOptions, ...staticOptions } = options;
+  const { defaultSearchParams, body, requestOptions, parseResponse, ...staticOptions } = options;
   const url = apiUrl(path, searchParams || defaultSearchParams);
   const generatedBody = payload && body?.(payload);
 
@@ -250,11 +250,15 @@ const mutate = <ResponseData, Payload>({
     requestBody = JSON.stringify(generatedBody);
   }
 
-  return fetchApi<ResponseData>(url, {
+  const request = {
     body: requestBody,
     ...staticOptions,
     ...(payload === undefined ? {} : requestOptions?.(payload)),
-  });
+  };
+  if (parseResponse) {
+    return parseResponse(await fetchApi<unknown>(url, request));
+  }
+  return fetchApi<ResponseData>(url, request);
 };
 
 export const createMutation =

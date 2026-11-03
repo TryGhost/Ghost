@@ -1,9 +1,7 @@
+import errors from '@tryghost/errors';
 import { type Knex } from 'knex';
 import { z } from 'zod';
-import type {
-  AutomationsRepository2,
-  AutomationTriggerTierScope,
-} from './automations-repository-2';
+import type { AutomationsRepository2 } from './automations-repository-2';
 
 type Connection = Knex | Knex.Transaction;
 
@@ -23,16 +21,116 @@ const nextActionRevisionRowSchema = z.discriminatedUnion('type', [
   }),
 ]);
 
-const TRIGGER_TIER_SCOPE_BY_MEMBER_STATUS = {
-  free: 'free',
-  paid: 'all_paid',
-} as const satisfies Record<'free' | 'paid', AutomationTriggerTierScope>;
-
 const selectExists = async (connection: Connection, query: Knex.QueryBuilder): Promise<boolean> => {
   const row = await connection
     .select<{ exists: boolean | number | string }>(connection.raw('exists ? as `exists`', [query]))
     .first();
   return Boolean(Number(row?.exists));
+};
+
+const applyMembershipStartedFilters = (
+  query: Knex.QueryBuilder,
+  connection: Connection,
+  {
+    memberStatus,
+    memberTierIds,
+  }: Extract<
+    Parameters<AutomationsRepository2<Connection>['findFirstActionRevisions']>[1],
+    { eventName: 'membership_started' }
+  >,
+): void => {
+  query.whereExists(
+    connection('automation_trigger_rules as rule')
+      .select('rule.id')
+      .where('rule.automation_id', connection.ref('automation.id'))
+      .where((builder) => {
+        switch (memberStatus) {
+          case 'free':
+            builder.where('rule.trigger_type', 'free_signup');
+            break;
+          case 'paid':
+            builder.where('rule.trigger_type', 'paid_subscription_started').where((paid) => {
+              paid.where('rule.scope', 'any_paid_tier');
+              if (memberTierIds.length > 0) {
+                paid.orWhere((specific) =>
+                  specific
+                    .where('rule.scope', 'specific_paid_tier')
+                    .whereIn('rule.product_id', memberTierIds),
+                );
+              }
+            });
+            break;
+          default: {
+            const _exhaustive: never = memberStatus;
+            throw new errors.InternalServerError({
+              message: `Unexpected member status: ${_exhaustive}`,
+            });
+          }
+        }
+      }),
+  );
+};
+
+const applyPaidSubscriptionChangedFilters = (
+  query: Knex.QueryBuilder,
+  connection: Connection,
+  {
+    memberStatus,
+    memberTierIds,
+    previousMemberTierIds,
+  }: Extract<
+    Parameters<AutomationsRepository2<Connection>['findFirstActionRevisions']>[1],
+    { eventName: 'paid_subscription_changed' }
+  >,
+): void => {
+  const lostTierIds = previousMemberTierIds.filter((id) => !memberTierIds.includes(id));
+  if (lostTierIds.length === 0) {
+    // If no tiers were lost, no paid subscription change triggers will match.
+    query.whereRaw('FALSE');
+    return;
+  }
+
+  const gainedTierIds = memberTierIds.filter((id) => !previousMemberTierIds.includes(id));
+
+  // Is there a matching "from" rule?
+  query.whereExists(
+    connection('automation_trigger_rules as rule')
+      .select('rule.id')
+      .where('rule.automation_id', connection.ref('automation.id'))
+      .where('rule.trigger_type', 'paid_subscription_changed')
+      .where('rule.direction', 'from')
+      .where((from) => {
+        from.whereIn('rule.product_id', lostTierIds);
+        from.orWhere((anyPaid) => {
+          anyPaid
+            .where('rule.scope', 'any_paid_tier')
+            // Don't include "from" rules if they overlap with "to" rules.
+            .whereNotExists(
+              connection('automation_trigger_rules as previous_destination')
+                .select('previous_destination.id')
+                .where('previous_destination.automation_id', connection.ref('automation.id'))
+                .where('previous_destination.trigger_type', 'paid_subscription_changed')
+                .where('previous_destination.direction', 'to')
+                .whereIn('previous_destination.product_id', previousMemberTierIds),
+            );
+        });
+      }),
+  );
+
+  // Is there a matching "to" rule?
+  query.whereExists(
+    connection('automation_trigger_rules as destination')
+      .select('destination.id')
+      .where('destination.automation_id', connection.ref('automation.id'))
+      .where('destination.trigger_type', 'paid_subscription_changed')
+      .where('destination.direction', 'to')
+      .where((to) => {
+        to.whereIn('destination.product_id', gainedTierIds);
+        if (memberStatus === 'free' && memberTierIds.length === 0) {
+          to.orWhere('destination.scope', 'free');
+        }
+      }),
+  );
 };
 
 /**
@@ -47,8 +145,12 @@ export const createDatabaseAutomationsRepository2 = ({
   knex: Knex;
 }>) => {
   return {
-    async findFirstActionRevisions(connection, memberStatus, memberTierIds) {
-      const rows = await connection('automations as automation')
+    async deleteTriggerRules(connection, automationId) {
+      await connection('automation_trigger_rules').where('automation_id', automationId).delete();
+    },
+
+    async findFirstActionRevisions(connection, options) {
+      const rows: unknown[] = await connection('automations as automation')
         .select(
           'automation.id as automation_id',
           'actions.id as action_id',
@@ -58,22 +160,20 @@ export const createDatabaseAutomationsRepository2 = ({
         )
         .innerJoin('automation_actions as actions', 'actions.automation_id', 'automation.id')
         .innerJoin('automation_action_revisions as revisions', 'revisions.action_id', 'actions.id')
-        .where((builder) => {
-          builder.where(
-            'automation.trigger_tier_scope',
-            TRIGGER_TIER_SCOPE_BY_MEMBER_STATUS[memberStatus],
-          );
-          if (memberStatus === 'paid' && memberTierIds.length > 0) {
-            builder.orWhere((selected) => {
-              selected
-                .where('automation.trigger_tier_scope', 'selected_paid')
-                .whereExists(
-                  connection('automation_trigger_tiers as trigger_tier')
-                    .select('trigger_tier.automation_id')
-                    .where('trigger_tier.automation_id', connection.ref('automation.id'))
-                    .whereIn('trigger_tier.product_id', memberTierIds),
-                );
-            });
+        .modify((query) => {
+          switch (options.eventName) {
+            case 'membership_started':
+              applyMembershipStartedFilters(query, connection, options);
+              break;
+            case 'paid_subscription_changed':
+              applyPaidSubscriptionChangedFilters(query, connection, options);
+              break;
+            default: {
+              const _exhaustive: never = options;
+              throw new errors.InternalServerError({
+                message: `Unexpected automation event: ${_exhaustive}`,
+              });
+            }
           }
         })
         .where('automation.status', 'active')
@@ -139,6 +239,12 @@ export const createDatabaseAutomationsRepository2 = ({
             updated_at: run.updated_at,
           })),
         );
+      }
+    },
+
+    async insertTriggerRules(connection, toInsert) {
+      if (toInsert.length > 0) {
+        await connection('automation_trigger_rules').insert(toInsert);
       }
     },
 

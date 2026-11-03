@@ -1,9 +1,7 @@
-const { promises: fs } = require('fs');
-const path = require('path');
-
 class CommentsServiceEmailRenderer {
-  constructor({ t }) {
+  constructor({ t, readTemplate }) {
     this.t = t;
+    this.readTemplate = readTemplate;
 
     this.Handlebars = require('handlebars').create();
     this.Handlebars.registerHelper('t', function (key, options) {
@@ -22,11 +20,8 @@ class CommentsServiceEmailRenderer {
   }
 
   async renderEmailTemplate(templateName, data) {
-    const htmlTemplateSource = await fs.readFile(
-      path.join(__dirname, './email-templates/', `${templateName}.hbs`),
-      'utf8',
-    );
-    const htmlTemplate = this.Handlebars.compile(Buffer.from(htmlTemplateSource).toString());
+    const htmlTemplateSource = await this.readTemplate(templateName);
+    const htmlTemplate = this.Handlebars.compile(htmlTemplateSource);
     const { renderText } = require(`./email-templates/${templateName}.txt`);
 
     const html = htmlTemplate(data);

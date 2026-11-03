@@ -68,7 +68,7 @@ function NavApp({
         title={name}
         to={to.replace(/^\//, '')}
       >
-        <AppNavIcon {...installation.manifest} />
+        <AppNavIcon app={installation} />
         <NavMenuItem.Label className="grow">{name}</NavMenuItem.Label>
         {installation.status === 'suspended' && (
           <span

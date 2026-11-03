@@ -1,9 +1,14 @@
+import { buildTriggerRules } from './utils/trigger-rules';
 import React from 'react';
-import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
+import type {
+  AutomationDetail,
+  AutomationTriggerRule,
+} from '@tryghost/admin-x-framework/api/automations';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { Background, ReactFlow } from '@xyflow/react';
 import AutomationHeader from './components/automation-header';
 import { AutomationCanvasControls } from './components/canvas/controls';
@@ -16,12 +21,41 @@ import { ScreenEntranceContext } from '@/layout/screen-transition';
 // SHAPING PROTOTYPE ONLY — never merge (see src/shaping/README.md).
 import { useEditorChromeVariant } from '@/shaping/variants';
 
+type PickedTrigger = AutomationTriggerRule['trigger_type'];
+
+const TRIGGER_OPTIONS = [
+  [
+    'free_signup',
+    LucideIcon.UserPlus,
+    'Free member signed up',
+    'When someone signs up as a free member',
+  ],
+  [
+    'paid_subscription_started',
+    LucideIcon.CreditCard,
+    'Paid subscription started',
+    'When a new or free member starts a paid subscription',
+  ],
+] as const;
+
+// Remains behind Labs while lifecycle enrollment and execution are being completed.
+const SUBSCRIPTION_CHANGED_OPTION = [
+  'paid_subscription_changed',
+  LucideIcon.ArrowRightLeft,
+  'Paid subscription changed',
+  "When a member's paid subscription moves to another tier or ends",
+] as const;
+
 const TriggerPicker: React.FC<{
   automation: AutomationDetail;
   // `cardTop`: where the card sits, so the editor can open with the trigger in the same place.
-  onPick: (scope: 'free' | 'all_paid', cardTop: number) => void;
+  onPick: (trigger: PickedTrigger, cardTop: number) => void;
 }> = ({ automation, onPick }) => {
   const { dialogProps } = useUnsavedChangesGuard({ when: true });
+  const lifecycleTriggers = useFeatureFlag('automationsLifecycleTriggers');
+  const options = lifecycleTriggers
+    ? [...TRIGGER_OPTIONS, SUBSCRIPTION_CHANGED_OPTION]
+    : TRIGGER_OPTIONS;
   const cardRef = React.useRef<HTMLDivElement>(null);
   // SHAPING PROTOTYPE ONLY — never merge.
   const chrome = useEditorChromeVariant();
@@ -66,28 +100,13 @@ const TriggerPicker: React.FC<{
             gap="xl"
           >
             <Text weight="semibold">Select a trigger</Text>
-            {(
-              [
-                [
-                  'free',
-                  LucideIcon.UserPlus,
-                  'Free member signed up',
-                  'When someone signs up as a free member',
-                ],
-                [
-                  'all_paid',
-                  LucideIcon.CreditCard,
-                  'Paid subscription started',
-                  'When a new or free member starts a paid subscription',
-                ],
-              ] as const
-            ).map(([scope, Icon, title, description]) => (
+            {options.map(([trigger, Icon, title, description]) => (
               <Button
-                key={scope}
+                key={trigger}
                 className="-mx-2 h-auto justify-start px-2 text-left whitespace-normal"
                 shape="rounded"
                 variant="ghost"
-                onClick={() => onPick(scope, cardRef.current?.offsetTop ?? 0)}
+                onClick={() => onPick(trigger, cardRef.current?.offsetTop ?? 0)}
               >
                 <Inline gap="md">
                   <Inline className="size-9 shrink-0 rounded-md bg-muted" justify="center">
@@ -121,8 +140,12 @@ const NewAutomationLoading: React.FC = () => {
 };
 
 type NewAutomationProps = {
-  // `triggerTop`: where the picker's card was, when a trigger was picked on it.
-  children: (automation: AutomationDetail, triggerTop?: number) => React.ReactNode;
+  children: (creation: {
+    automation: AutomationDetail;
+    triggerType: PickedTrigger;
+    // Where the picker's card was when the trigger was selected.
+    triggerTop?: number;
+  }) => React.ReactNode;
 };
 
 const NewAutomationSession: React.FC<
@@ -135,6 +158,7 @@ const NewAutomationSession: React.FC<
   const [initialAutomation, setInitialAutomation] = React.useState<AutomationDetail | null>(null);
   // Where the trigger was picked, once it has been.
   const [triggerTop, setTriggerTop] = React.useState<number | null>(null);
+  const [triggerType, setTriggerType] = React.useState<PickedTrigger>('free_signup');
   if (!initialAutomation) {
     if (isStripeReady) {
       setInitialAutomation({
@@ -146,21 +170,25 @@ const NewAutomationSession: React.FC<
         updated_at: '',
         actions: [],
         edges: [],
-        trigger_tier_scope: stripeEnabled ? null : 'free',
-        trigger_tier_ids: null,
+        trigger_rules: stripeEnabled ? [] : buildTriggerRules({ triggerType: 'free_signup' }),
       });
     }
     return <NewAutomationLoading />;
   }
-  if (initialAutomation.trigger_tier_scope === null) {
+  if (stripeEnabled && triggerTop === null) {
     return (
       <TriggerPicker
         automation={initialAutomation}
-        onPick={(scope, cardTop) => {
+        onPick={(trigger, cardTop) => {
           setTriggerTop(cardTop);
+          setTriggerType(trigger);
           setInitialAutomation({
             ...initialAutomation,
-            trigger_tier_scope: scope,
+            trigger_rules: buildTriggerRules(
+              trigger === 'paid_subscription_changed'
+                ? { triggerType: trigger, selection: { from: [], to: [] } }
+                : { triggerType: trigger },
+            ),
           });
         }}
       />
@@ -170,10 +198,10 @@ const NewAutomationSession: React.FC<
   // header replacing it shouldn't play it a second time in the same visit.
   return triggerTop !== null ? (
     <ScreenEntranceContext.Provider value={false}>
-      {children(initialAutomation, triggerTop)}
+      {children({ automation: initialAutomation, triggerType, triggerTop })}
     </ScreenEntranceContext.Provider>
   ) : (
-    children(initialAutomation)
+    children({ automation: initialAutomation, triggerType })
   );
 };
 

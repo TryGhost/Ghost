@@ -1,3 +1,8 @@
+import {
+  comparableTriggerRules,
+  getTriggerTierIds,
+  subscriptionChangedSelectionFromRules,
+} from './utils/trigger-rules';
 import { HostLimitError } from '@tryghost/admin-x-framework/errors';
 import { useBrowseConfig, upgradeRoute } from '@tryghost/admin-x-framework/api/config';
 import { LimitModalContent } from '@/settings/api';
@@ -26,14 +31,16 @@ import { useAddAutomation, useEditAutomation } from '@tryghost/admin-x-framework
 import type {
   AutomationDetail,
   AutomationStatus,
+  AutomationTriggerRule,
 } from '@tryghost/admin-x-framework/api/automations';
 import { dequal } from 'dequal';
 import { isEmptyEmailLexical } from './utils';
 import { toast } from 'sonner';
-import { useNavigate, useParams } from '@tryghost/admin-x-framework';
+import { useLocation, useMatches, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { navigateTo } from '@/utils/navigation';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { AutomationEditState } from './types';
+import { hasMissingTierSelection } from './utils/tier-selection';
 import { isAutomationStatusActive } from './utils/is-automation-status-active';
 import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
 
@@ -47,16 +54,24 @@ const editableSlice = (automation: AutomationDetail) => ({
   name: automation.name,
   description: automation.description,
   status: automation.status,
-  trigger_tier_scope: automation.trigger_tier_scope,
-  trigger_tier_ids: automation.trigger_tier_ids ? [...automation.trigger_tier_ids].sort() : null,
+  trigger_rules: comparableTriggerRules(automation.trigger_rules),
   actions: automation.actions,
   edges: automation.edges,
 });
 
-const getTriggerErrors = (automation: AutomationDetail): Record<string, string> =>
-  automation.trigger_tier_scope === 'selected_paid' && !automation.trigger_tier_ids.length
+const getTriggerErrors = (
+  automation: AutomationDetail,
+  triggerType: AutomationTriggerRule['trigger_type'] | undefined,
+): Record<string, string> => {
+  if (triggerType === 'paid_subscription_changed') {
+    return hasMissingTierSelection(subscriptionChangedSelectionFromRules(automation.trigger_rules))
+      ? { [TRIGGER_CANVAS_ID]: 'Select at least one tier.' }
+      : {};
+  }
+  return !automation.trigger_rules.length
     ? { [TRIGGER_CANVAS_ID]: 'Select at least one paid tier.' }
     : {};
+};
 
 const isFailedEditState = (editState: AutomationEditState): boolean => {
   return editState.phase === 'failed';
@@ -90,6 +105,7 @@ const AutomationEditorContent: React.FC<{
   creation?: {
     initialAutomation: AutomationDetail;
     triggerTop?: number;
+    triggerType: AutomationTriggerRule['trigger_type'];
     onCreated: (id: string) => void;
   };
 }> = ({ automationId, creation }) => {
@@ -136,6 +152,10 @@ const AutomationEditorContent: React.FC<{
   const [draft, setDraft] = React.useState<AutomationDetail | undefined>(
     creation?.initialAutomation,
   );
+  // Preserve the trigger type even when every rule is removed from the draft.
+  const [triggerType, setTriggerType] = React.useState<
+    AutomationTriggerRule['trigger_type'] | undefined
+  >(creation?.triggerType);
   React.useEffect(() => {
     if (!automation) {
       return;
@@ -143,6 +163,7 @@ const AutomationEditorContent: React.FC<{
 
     setSavedAutomation((currentAutomation) => currentAutomation ?? automation);
     setDraft((currentDraft) => currentDraft ?? automation);
+    setTriggerType((currentType) => currentType ?? automation.trigger_rules[0]?.trigger_type);
   }, [automation]);
   const isEditorLoading = !draft && !isReadError;
   const isEditorError = !draft && isReadError;
@@ -169,7 +190,10 @@ const AutomationEditorContent: React.FC<{
         return oldErrors;
       }
 
-      const nextErrors = { ...getActionErrors(next), ...getTriggerErrors(next) };
+      const nextErrors = {
+        ...getActionErrors(next),
+        ...getTriggerErrors(next, triggerType),
+      };
       return Object.fromEntries(
         Object.entries(oldErrors).filter(([actionId]) => nextErrors[actionId]),
       );
@@ -188,7 +212,7 @@ const AutomationEditorContent: React.FC<{
     }
     const nextActionErrors = {
       ...(action === 'publish' ? getActionErrors(automationToValidate) : {}),
-      ...getTriggerErrors(automationToValidate),
+      ...getTriggerErrors(automationToValidate, triggerType),
     };
     if (Object.keys(nextActionErrors).length > 0 || invalidWaitIds.size > 0) {
       setActionErrors(nextActionErrors);
@@ -535,8 +559,11 @@ const AutomationEditorContent: React.FC<{
             }}
           />
         )}
-        savedTriggerTierIds={savedAutomation?.trigger_tier_ids ?? []}
+        savedTriggerTierIds={
+          savedAutomation ? getTriggerTierIds(savedAutomation.trigger_rules) : []
+        }
         selectedRunId={selectedRunId}
+        triggerType={triggerType}
         onChange={onDraftChange}
         onDiscardBlockedEmailNavigation={(closeEmailModal) => {
           onEmailDirtyChange(false);
@@ -616,31 +643,48 @@ const AutomationEditorContent: React.FC<{
 
 const AutomationEditor: React.FC = () => {
   const { id: automationId = '' } = useParams<{ id: string }>();
+  const location = useLocation();
+  // Matched params change on navigation even when their values do not; a native
+  // hash entry can reuse the location object.
+  const navigation = useMatches().at(-1)?.params;
 
   // Keep the creation session mounted when its first save replaces /new with the server ID.
   const [session, setSession] = React.useState({
     routeId: automationId,
     createdId: null as string | null,
     key: 0,
+    location,
+    navigation,
   });
-  if (automationId !== session.routeId) {
+  if (
+    automationId !== session.routeId ||
+    location !== session.location ||
+    navigation !== session.navigation
+  ) {
     const isFirstSave = session.routeId === 'new' && automationId === session.createdId;
+    // The router can render the create's URL replace and a later navigation as one,
+    // so the new-automation URL reached after the create is a new automation either way.
+    const isNewAfterCreate = automationId === 'new' && session.createdId !== null;
+    const keeps = isFirstSave || (automationId === session.routeId && !isNewAfterCreate);
     setSession({
       routeId: automationId,
-      createdId: isFirstSave ? session.createdId : null,
-      key: isFirstSave ? session.key : session.key + 1,
+      createdId: keeps ? session.createdId : null,
+      key: keeps ? session.key : session.key + 1,
+      location,
+      navigation,
     });
   }
   return (
     <ScreenEntranceProvider>
       {automationId === 'new' || automationId === session.createdId ? (
         <NewAutomation key={session.key}>
-          {(initialAutomation, triggerTop) => (
+          {({ automation: initialAutomation, triggerType, triggerTop }) => (
             <AutomationEditorContent
               automationId={null}
               creation={{
                 initialAutomation,
                 triggerTop,
+                triggerType,
                 onCreated: (createdId) => setSession((current) => ({ ...current, createdId })),
               }}
             />

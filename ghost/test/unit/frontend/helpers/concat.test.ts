@@ -8,7 +8,6 @@ import split from '../../../../core/frontend/helpers/split';
 // @ts-expect-error This module lacks type definitions.
 import url from '../../../../core/frontend/helpers/url';
 
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../utils/config-utils';
 // @ts-expect-error This module lacks type definitions.
 import { SafeString } from '../../../../core/frontend/services/handlebars';

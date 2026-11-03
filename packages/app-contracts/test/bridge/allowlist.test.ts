@@ -20,6 +20,7 @@ describe('the Admin API allowlist', () => {
       'users:read',
       'tiers:read',
       'newsletters:read',
+      'site:read',
       'slugs:read',
     ]);
     for (const scope of ADMIN_API_ALLOWLIST) {
@@ -53,6 +54,7 @@ describe('the Admin API allowlist', () => {
       ['GET', '/users/', 'GET /users'],
       ['GET', '/tiers/', 'GET /tiers'],
       ['GET', '/newsletters/', 'GET /newsletters'],
+      ['GET', '/site/', 'GET /site'],
       ['GET', '/search-index/posts/', 'GET /search-index/posts'],
       ['GET', '/search-index/pages', 'GET /search-index/pages'],
       ['GET', '/search-index/tags/', 'GET /search-index/tags'],
@@ -79,6 +81,8 @@ describe('the Admin API allowlist', () => {
       ['GET', `/tiers/${ID}/`],
       ['POST', '/tiers/'],
       ['GET', `/newsletters/${ID}/`],
+      ['PUT', '/site/'],
+      ['GET', '/site/extra/'],
       ['GET', '/search-index/users/'],
       ['GET', '/slugs/post/'],
       ['GET', '/members/'],

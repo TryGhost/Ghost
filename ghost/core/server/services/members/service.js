@@ -14,7 +14,7 @@ const config = require('../../../shared/config');
 const models = require('../../models');
 const { GhostMailer } = require('../../lib/mail');
 const jobsService = require('../jobs-service');
-const tiersService = require('../tiers');
+const tiersService = require('../tiers').default;
 const giftService = require('../gifts');
 const VerificationTrigger = require('../verification-trigger');
 const { verificationWebhookService } = require('../verification/verification-webhook-service');
@@ -63,10 +63,10 @@ const buildImporterDeps = ({ stripeAPIService }) => {
       return api.members;
     },
     getDefaultTier: () => {
-      return tiersService.api.readDefaultTier();
+      return tiersService.service.api.readDefaultTier();
     },
     getTierByName: async (name) => {
-      const tiers = await tiersService.api.browse({
+      const tiers = await tiersService.service.api.browse({
         filter: {
           name,
         },
@@ -74,7 +74,7 @@ const buildImporterDeps = ({ stripeAPIService }) => {
 
       if (tiers.data.length > 0) {
         // It is possible that there are multiple tiers with the same name so return the last one in the array -
-        // `tiersService.api.browse` returns all tiers, but without any ordering applied, so we assume that
+        // `tiersService.service.api.browse` returns all tiers, but without any ordering applied, so we assume that
         // the last one in the array is the most recently created
         return tiers.data.pop();
       }

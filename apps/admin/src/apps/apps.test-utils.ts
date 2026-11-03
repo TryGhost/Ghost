@@ -24,8 +24,22 @@ export const manifest = (overrides: Partial<AppManifest> = {}): AppManifest => (
   accent_color: '#ff5500',
   icon: { name: 'audio-lines' },
   surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/admin' }],
+  manifest_url: 'https://podcast.example.com/ghost-app.json',
+  identity_key: { kty: 'OKP', crv: 'Ed25519', x: 'xQcVt_FXHEk7Uv4dKhUL2nR5DwwsLVW4pu2il-5sX_s' },
+  backend_key: { kty: 'OKP', crv: 'Ed25519', x: 'H7aU67-okztSJD3-0znkVDiCU-izOI3I851CZX8XDyk' },
+  development: false,
   ...overrides,
 });
+
+export const ICON_URL = 'https://podcast.example.com/icon.svg';
+const ICON_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2 2h20v20H2z"></path></svg>';
+/** The copy of an app's icon that Ghost stores. */
+export const ICON_DATA_URL = `data:image/svg+xml;base64,${btoa(ICON_SVG)}`;
+
+/** The `src` of every image in `container`. */
+export const imageSources = (container: Element) =>
+  [...container.querySelectorAll('img')].map((img) => img.getAttribute('src'));
 
 export const installation = (overrides: Partial<AppInstallation> = {}): AppInstallation => ({
   id: 'installation-1',
@@ -34,6 +48,7 @@ export const installation = (overrides: Partial<AppInstallation> = {}): AppInsta
   revision: 0,
   manifest_url: MANIFEST_URL,
   manifest: manifest(),
+  icon_data_url: null,
   created_at: '2026-10-01T10:00:00.000Z',
   updated_at: '2026-10-01T10:00:00.000Z',
   ...overrides,

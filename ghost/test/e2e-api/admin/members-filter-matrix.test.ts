@@ -57,7 +57,7 @@ describe('Members filtering, every operator admin can emit', function () {
     await createMember({
       email: BOB,
       name: 'Bob Brown',
-      labels: [{ name: 'vip' }],
+      labels: [{ name: 'vip' }, { name: 'gold' }],
       newsletters: [],
     });
     await createMember({ email: CAROL, name: 'Carol Clark', newsletters: [{ id: newsletterId }] });
@@ -135,6 +135,7 @@ describe('Members filtering, every operator admin can emit', function () {
   describe('derived — a label, which is a join', function () {
     matrix([
       { what: 'label is any of', nql: 'label:[vip]', expect: [ALICE, BOB] },
+      { what: 'label is all of', nql: 'label:[vip+gold]', expect: [BOB] },
       { what: 'label is none of', nql: 'label:-[vip]', expect: [CAROL] },
     ]);
   });

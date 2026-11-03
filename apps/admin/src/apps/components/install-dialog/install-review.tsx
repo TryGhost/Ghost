@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button, DialogFooter } from '@tryghost/shade/components';
 import type { AppInstallationPreview } from '@tryghost/admin-x-framework/api/app-installations';
-import { NoticeBanner, ReviewHeader, ReviewSeparator } from './review-header';
+import { NoticeBanner, ReviewHeader, ReviewSeparator, TrustedOriginsNote } from './review-header';
 import { ACCOUNT_ACCESS_INTRO, AccessIndicator } from '@/apps/components/access-indicator';
 import { CapabilitySummary } from '@/apps/components/surface-icon';
 import { ACCOUNT_ACCESS } from '@/apps/lib/access';
@@ -28,6 +28,7 @@ export const InstallReview: React.FC<ReviewProps> = ({
       <ReviewHeader description={manifest.description} preview={preview} title={manifest.name} />
       <NoticeBanner notice={notice} />
       <CapabilitySummary manifest={manifest} />
+      <TrustedOriginsNote preview={preview} />
       <ReviewSeparator />
       <AccessIndicator intro={ACCOUNT_ACCESS_INTRO} items={ACCOUNT_ACCESS} />
       <DialogFooter>

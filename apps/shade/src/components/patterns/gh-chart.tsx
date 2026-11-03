@@ -9,6 +9,7 @@ import React from 'react';
 import { AlignedAxisTick, ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { TrendingDown, TrendingUp } from 'lucide-react';
+import { useShade } from '@/providers/shade-context';
 
 // A Ghost specific charts for analytics re-using ShadCN/UI and Recharts components
 
@@ -124,6 +125,7 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
   showHours = false,
   tooltipContent,
 }) => {
+  const { admin7Design } = useShade();
   const yRange = yAxisRange || [getYRange(data).min, getYRange(data).max];
   const chartConfig = {
     value: {
@@ -196,8 +198,9 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
         />
         <defs>
           <linearGradient id={`fillChart-${id}`} x1="0" x2="0" y1="0" y2="1">
-            <stop offset="5%" stopColor={color} stopOpacity={0.8} />
-            <stop offset="95%" stopColor={color} stopOpacity={0.1} />
+            {/* admin7Design charts are flat: an even tint under the line. */}
+            <stop offset="5%" stopColor={color} stopOpacity={admin7Design ? 0.5 : 0.8} />
+            <stop offset="95%" stopColor={color} stopOpacity={admin7Design ? 0.5 : 0.1} />
           </linearGradient>
         </defs>
         <Area

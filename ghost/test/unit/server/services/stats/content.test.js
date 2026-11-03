@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const ContentStatsService = require('../../../../../core/server/services/stats/content-stats-service');
-const tinybird = require('../../../../../core/server/services/stats/utils/tinybird');
+const logging = require('@tryghost/logging');
 
 describe('ContentStatsService', function () {
   let service;
@@ -33,14 +33,12 @@ describe('ContentStatsService', function () {
       fetch: sinon.stub(),
     };
 
-    // Stub tinybird.create to return our mock client
-    sinon.stub(tinybird, 'create').returns(mockTinybirdClient);
-
     // Create service instance with mocked dependencies
     service = new ContentStatsService({
       knex: mockKnex,
       urlService: mockUrlService,
       tinybirdClient: mockTinybirdClient,
+      logging,
     });
   });
 
@@ -186,6 +184,7 @@ describe('ContentStatsService', function () {
       const serviceNoUrl = new ContentStatsService({
         knex: mockKnex,
         urlService: null,
+        logging,
       });
 
       const result = await serviceNoUrl.getResourceTitle('/about/');
@@ -449,6 +448,7 @@ describe('ContentStatsService', function () {
       const serviceNoTinybird = new ContentStatsService({
         knex: mockKnex,
         urlService: mockUrlService,
+        logging,
       });
 
       const result = await serviceNoTinybird.getTopContent({

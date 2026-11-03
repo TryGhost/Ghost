@@ -1,5 +1,3 @@
-const logging = require('@tryghost/logging');
-
 // Pre-migration the resourceType field on this service's response was the
 // raw `data.type` column on the underlying record: 'post' / 'page' for
 // posts and pages, undefined for tags / authors (those tables have no type
@@ -23,11 +21,13 @@ class ContentStatsService {
    * @param {object} deps
    * @param {import('knex').Knex} deps.knex - Database client
    * @param {object} deps.urlService - Ghost URL service for resource lookups
+   * @param {object} deps.logging
    * @param {object} [deps.tinybirdClient] - Configured Tinybird client
    */
   constructor(deps) {
     this.knex = deps.knex;
     this.urlService = deps.urlService;
+    this.logging = deps.logging;
     this.tinybirdClient = deps.tinybirdClient;
   }
 
@@ -71,8 +71,8 @@ class ContentStatsService {
 
       return { data: enrichedData };
     } catch (error) {
-      logging.error('Error fetching top content:');
-      logging.error(error);
+      this.logging.error('Error fetching top content:');
+      this.logging.error(error);
       return { data: [] };
     }
   }
@@ -222,7 +222,7 @@ class ContentStatsService {
       }
     } catch (err) {
       if (err.code !== 'URLSERVICE_NOT_READY') {
-        logging.warn(`Error looking up resource for ${pathname}: ${err.message}`);
+        this.logging.warn(`Error looking up resource for ${pathname}: ${err.message}`);
       }
     }
 

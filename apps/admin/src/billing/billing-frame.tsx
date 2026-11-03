@@ -92,8 +92,8 @@ function BillingAppFrame({ alerts, billingUrl }: BillingFrameProps & { billingUr
   const [connection] = useState(
     () =>
       new BillingAppConnection(billingUrl, {
-        // As Ember's pro routes queue the route before its iframe exists: a
-        // child route loads without the query
+        // The route is queued before its iframe exists: a child route loads
+        // without the query
         getLocationSubRoute: () => initialBillingSubRoute(locationRef.current.pathname),
         getReportContext: () => ({
           isForceUpgrade: forceUpgradeRef.current === true,

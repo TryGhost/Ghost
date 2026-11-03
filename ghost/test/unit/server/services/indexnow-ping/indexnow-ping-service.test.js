@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const _ = require('lodash');
 const nock = require('nock');
 const testUtils = require('../../../../utils');
+const { createLoggingFake } = require('../../../../utils/logging-utils');
 const request = require('@tryghost/request');
 const {
   IndexNowPingService,
@@ -30,7 +31,7 @@ function createService() {
     urlJoin: (...args) => args.join('/'),
   };
 
-  const logging = { info: sinon.stub(), warn: sinon.stub(), error: sinon.stub() };
+  const logging = createLoggingFake();
 
   // Chainable so `events.removeListener(...).on(...)` works.
   const events = { removeListener: sinon.stub().returnsThis(), on: sinon.stub().returnsThis() };

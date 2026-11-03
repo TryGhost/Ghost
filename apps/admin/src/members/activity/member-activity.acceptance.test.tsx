@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import {
+  configResponse,
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
@@ -189,6 +190,32 @@ describe('Member activity', () => {
 
     await renderAdminApp('/members-activity?member=ada', { boot: settings });
     await expect.poll(() => excludedTypes()?.split(',').sort()).toEqual(preview);
+  });
+
+  // While the host switches custom fields off every field reads as archived, and changes to
+  // an archived field stay in a member's history like any other.
+  it('keeps showing custom field changes while the host switches custom fields off', async () => {
+    world();
+    const change = event('company-change', 'metafield_change_event');
+    change.data = {
+      ...change.data,
+      source: 'portal',
+      metafields: [{ namespace: 'custom', key: 'company', name: 'Company' }],
+    };
+    fakeAdminEndpoint('GET', EVENTS, ({ url }) => ({
+      events: new URL(url).searchParams.get('filter')?.includes('metafield_change_event')
+        ? []
+        : [change],
+    }));
+    const config = configResponse({ labs: { membersCustomFields: true } });
+    config.config.hostSettings = { limits: { limitCustomFields: { disabled: true } } };
+
+    await renderAdminApp('/members-activity', {
+      labs: { membersCustomFields: true },
+      boot: { browseConfig: { response: config } },
+    });
+
+    await expect.element(screen.text('Updated Company in Portal')).toBeVisible();
   });
 
   it('renders absent members and unknown event types without unsafe links', async () => {

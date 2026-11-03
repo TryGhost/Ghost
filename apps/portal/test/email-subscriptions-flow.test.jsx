@@ -209,6 +209,57 @@ describe('Newsletter Subscriptions', () => {
     expect(newsletter2Checkbox).not.toBeChecked();
   });
 
+  test.each([
+    ['comment-toggle', 'Comment preferences updated.', 'enable_comment_notifications'],
+    [
+      'updates-and-announcements-toggle',
+      'Email preferences updated.',
+      'enable_updates_and_announcements',
+    ],
+  ])('%s confirms only a saved change', async (toggleTestId, successMessage, field) => {
+    const member = {
+      ...FixtureMember.subbedToNewsletter,
+      enable_comment_notifications: true,
+      enable_updates_and_announcements: true,
+    };
+    const { ghostApi, manageSubscriptionsButton, popupIframeDocument } = await setup({
+      site: { ...FixtureSite.singleTier.onlyFreePlanWithoutStripe, labs: { automations: true } },
+      member,
+      newsletters: Newsletters,
+    });
+    await userEvent.click(manageSubscriptionsButton);
+    const popup = within(popupIframeDocument);
+    const toggle = popup.getByTestId(toggleTestId);
+    const input = toggle.querySelector('input');
+
+    ghostApi.member.update = vi.fn().mockRejectedValue(new Error('Network error'));
+    await userEvent.click(input);
+
+    expect(await popup.findByText('Failed to update newsletter settings')).toBeInTheDocument();
+    expect(popup.queryByText(successMessage)).not.toBeInTheDocument();
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    expect(input).toBeChecked();
+
+    let resolveUpdate;
+    ghostApi.member.update = vi.fn(
+      () =>
+        new Promise((resolve) => {
+          resolveUpdate = resolve;
+        }),
+    );
+    await userEvent.click(toggle);
+    await userEvent.click(toggle);
+
+    expect(ghostApi.member.update).toHaveBeenCalledTimes(1);
+    expect(popup.queryByText(successMessage)).not.toBeInTheDocument();
+
+    resolveUpdate({ ...member, [field]: false });
+
+    expect(await popup.findByText(successMessage)).toBeInTheDocument();
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    expect(input).not.toBeChecked();
+  });
+
   describe('from the unsubscribe link > UnsubscribePage', () => {
     test('unsubscribe via email link while not logged in', async () => {
       // Mock window.location

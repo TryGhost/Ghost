@@ -53,10 +53,10 @@ class EmailServiceWrapper {
     const i18nLib = require('@tryghost/i18n').default;
     const lexicalLib = require('../../lib/lexical');
     const urlUtils = require('../../../shared/url-utils').default;
-    const memberAttribution = require('../member-attribution');
+    const memberAttribution = require('../member-attribution').default;
     const linkReplacer = require('../../lib/link-replacer');
     const linkTracking = require('../link-tracking');
-    const audienceFeedback = require('../audience-feedback');
+    const audienceFeedback = require('../audience-feedback').default;
     const storageUtils = require('../../adapters/storage/utils');
     const emailAnalyticsJobs = require('../email-analytics/jobs');
     const { cachedImageSizeFromUrl } = require('../../lib/image');
@@ -94,8 +94,8 @@ class EmailServiceWrapper {
       linkReplacer,
       linkTracking,
       memberAttributionService: memberAttribution.service,
-      audienceFeedbackService: audienceFeedback.service,
-      outboundLinkTagger: memberAttribution.outboundLinkTagger,
+      audienceFeedbackService: audienceFeedback.service.service,
+      outboundLinkTagger: memberAttribution.service.outboundLinkTagger,
       emailAddressService: emailAddressService.service,
       labs,
       models: { Post },

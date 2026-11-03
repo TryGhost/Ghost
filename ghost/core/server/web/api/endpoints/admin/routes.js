@@ -5,7 +5,6 @@ const auth = require('../../../../auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
 const labs = require('../../../../../shared/labs');
-const limits = require('../../../../services/limits');
 
 const shared = require('../../../shared');
 
@@ -204,12 +203,12 @@ module.exports = function apiRoutes() {
   router.get('/members/stripe_connect', mw.authAdminApi, http(api.membersStripeConnect.auth));
 
   // Custom field definitions. Mounted rather than listed so every route under it is
-  // reached the same way, and so the guards are stated once each instead of on every
-  // route that needs them.
+  // reached the same way, and so the guard is stated once instead of on every route that
+  // needs it.
   //
   // Order carries the rule here, the way Express reads it: a request walks this stack
-  // from the top, so the reads below are answered before the guards are reached, and
-  // everything registered after them passes through both. A route added at the end is
+  // from the top, so the reads below are answered before the guard is reached, and
+  // everything registered after it passes through it. A route added at the end is
   // guarded by being there, which is the safer way round to forget.
   //
   // Mounted before /members/:id so the literal path is not captured as an id.
@@ -221,18 +220,17 @@ module.exports = function apiRoutes() {
   router.all(['/members/metafields', '/members/metafields/*'], mw.authAdminApi);
   router.use('/members/metafields', metafieldsRouter);
 
-  // Reading is deliberately open: Admin asks every site for its definitions to draw
-  // screens it renders either way, and a site that has none simply answers with an empty
-  // list rather than a 404.
+  // Reading is deliberately open: Admin asks every site for its definitions, and for the values
+  // members hold of a list field it filters by, to draw screens it renders either way, and a site
+  // that has none simply answers with an empty list rather than a 404.
   metafieldsRouter.get('/:namespace', http(api.membersMetafields.browse));
   metafieldsRouter.get('/:namespace/:key', http(api.membersMetafields.read));
+  metafieldsRouter.get('/:namespace/:key/values', http(api.membersMetafields.browseValues));
 
-  // Changing one needs the feature to exist in this build and the site's plan to include
-  // it. Two separate questions, asked once each: a 404 says the feature is not here, a 403
-  // says the plan does not cover it, and only the second is something a publisher can act
-  // on.
+  // Changing one needs the feature to exist in this build, and a 404 says it doesn't. Who may
+  // change a namespace's fields, and whether its limits let them, is the namespace's own
+  // policy, which the endpoints and the service apply.
   metafieldsRouter.use(labs.enabledMiddleware('membersCustomFields'));
-  metafieldsRouter.use(limits.requireFeature('limitCustomFields'));
 
   metafieldsRouter.post('/:namespace', http(api.membersMetafields.add));
   metafieldsRouter.put('/:namespace', http(api.membersMetafields.reorder));
@@ -518,7 +516,12 @@ module.exports = function apiRoutes() {
   // ## Invites
   router.get('/invites', mw.authAdminApi, http(api.invites.browse));
   router.get('/invites/:id', mw.authAdminApi, http(api.invites.read));
-  router.post('/invites', mw.authAdminApi, http(api.invites.add));
+  router.post(
+    '/invites',
+    mw.authAdminApi,
+    shared.middleware.brute.staffInviteLimiter,
+    http(api.invites.add),
+  );
   router.delete('/invites/:id', mw.authAdminApi, http(api.invites.destroy));
 
   // ## Redirects

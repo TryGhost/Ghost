@@ -2,7 +2,7 @@ name: ghost-dev
 
 services:
   mysql:
-    image: mysql:8.4.11@sha256:6ea90827b1100f8f2ae306a539f86d2c264a26ed435a2a9f75551dd5c3aeb242
+    image: mysql:8.4.11@sha256:0f51e63e537a1f176423fa03ef559aabe6fa4372a53160a44bc7e75da7d15364
     container_name: ghost-dev-mysql
     # Shared by every checkout's Ghost and DB test runs, which outgrow MySQL's default 151 connections
     command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT --log-error-verbosity=1 --max-connections=1000
@@ -34,7 +34,7 @@ services:
       start_interval: 1s
 
   redis:
-    image: redis:7.4@sha256:c6eabf748fc7a61dbb5a705c78bcf3d6377b1127a97d0ce965c11c44ba46896f
+    image: redis:7.4@sha256:b6b6e3dc0c0952737748e55d5d885272840c7e42ba41ab1d5489f693419882f5
     container_name: ghost-dev-redis
     command: ['redis-server', '--loglevel', 'warning']
     ports:
@@ -52,7 +52,7 @@ services:
       retries: 120
 
   mailpit:
-    image: axllent/mailpit@sha256:23fe39e81bde596a918000b3135c0f85dc8bb4c9ea6be274b051143f3e300387
+    image: axllent/mailpit@sha256:9b3a463be15354c0f0eba91697d80e3e0d8a5623ef0e627cacc836bc17fd5231
     container_name: ghost-dev-mailpit
     # Tags each message with the SMTP username, which `pnpm dev` sets to the checkout's name
     command: ['--quiet', '--smtp-auth-accept-any', '--smtp-auth-allow-insecure', '--tags-username']
@@ -181,7 +181,7 @@ services:
         condition: service_healthy
 
   stripe:
-    image: stripe/stripe-cli:latest@sha256:f9e60cb8bcd9457317c8ab9ee7f16703e1070a6e9e56cbde96d166389e0707a3
+    image: stripe/stripe-cli:latest@sha256:16a5c75bd681b756fdd174e54840623170f811efe9d49522d401013d97ade7bd
     container_name: ghost-dev-stripe
     entrypoint: ['/entrypoint.sh']
     profiles: ['stripe']

@@ -31,6 +31,11 @@
       "source": "./src/bridge/index.ts",
       "types": "./build/bridge/index.d.ts",
       "default": "./build/bridge/index.js"
+    },
+    "./identity": {
+      "source": "./src/identity/index.ts",
+      "types": "./build/identity/index.d.ts",
+      "default": "./build/identity/index.js"
     }
   },
   "scripts": {
@@ -43,6 +48,7 @@
     "lint": "pnpm run '/^lint:/'"
   },
   "dependencies": {
+    "jose": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

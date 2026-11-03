@@ -5,11 +5,8 @@ import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
 import type { PostResource } from '@/posts/list/post-resource';
 
 /**
- * Every string a post row renders, as pure functions.
- *
- * Ported from `apps/ember-admin/app/components/posts-list/list-item-analytics.hbs`
- * and its helpers. Kept out of the component because this is where parity
- * actually lives — the wording and the conditions behind it are far easier to
+ * Every string a post row renders, as pure functions. Kept out of the
+ * component because the wording and the conditions behind it are far easier to
  * get subtly wrong than the layout, and far harder to eyeball.
  */
 
@@ -20,7 +17,7 @@ function statusOf(post: PostListItem): PostStatus {
 }
 
 /**
- * Ember's `didEmailFail`: a *post*, live, whose email failed. The status gate
+ * A *post*, live, whose email failed. The status gate
  * matters — un-publishing a post whose newsletter failed leaves the email
  * record attached, and without it that draft would render as an error.
  */
@@ -39,7 +36,7 @@ function didEmailFail(post: PostListItem): boolean {
 }
 
 /**
- * Ember's `hasBeenEmailed`: a *post* (never a page), live, with a non-failed
+ * A *post* (never a page), live, with a non-failed
  * email. The page guard matters because a page carrying stray email data would
  * otherwise be described as sent.
  */
@@ -112,7 +109,7 @@ export function getPostMetaParts(
   ].filter((part): part is string => Boolean(part));
 }
 
-/** Ember prefixes the date's title attribute so it has context. */
+/** The date's title attribute, prefixed so it has context. */
 export function getPostDateTooltip(
   post: PostListItem,
   { timezone, now }: PostStatusDetailOptions = {},
@@ -152,7 +149,7 @@ export interface PostStatusDetailOptions {
 }
 
 /**
- * The extra text Ember reveals on hover: who a scheduled post will go to, or
+ * The extra text revealed on hover: who a scheduled post will go to, or
  * how many members already received it. `null` when there is nothing to add.
  */
 export function getPostStatusDetail(

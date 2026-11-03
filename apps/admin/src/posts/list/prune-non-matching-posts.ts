@@ -2,7 +2,7 @@ import nql from '@tryghost/nql';
 import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
 
 /**
- * Copied verbatim from Ember's `updateFilteredPosts`. Not optional: without
+ * NQL expansions for matching posts client-side. Not optional: without
  * them `tag:news` is looked up as a literal `tag` property, which a post does
  * not have, so every edited post fails to match and the entire selection
  * disappears from the list.
@@ -26,7 +26,7 @@ const EXPANSIONS = [
 
 interface PruneOptions {
   posts: PostListItem[];
-  /** Ids the bulk action actually edited — Ember's `availableModels`. */
+  /** Ids the bulk action actually edited. */
   editedIds: Set<string>;
   /** The bucket's own filter, which the edited posts must still match. */
   filter: string;
@@ -35,10 +35,8 @@ interface PruneOptions {
 /**
  * Drops the rows a bulk edit has pushed out of the given filter.
  *
- * Adapted from `updateFilteredPosts` in Ember's posts-list context menu —
- * with one deliberate difference: the caller prunes per *bucket* filter,
- * where Ember prunes every model against the list-wide filter and so leaves
- * an unpublished row sitting in the published section of the unfiltered list.
+ * The caller prunes per *bucket* filter, not the list-wide filter, so an
+ * unpublished row doesn't linger in the published section of the unfiltered list.
  */
 export function pruneNonMatchingPosts({ posts, editedIds, filter }: PruneOptions): PostListItem[] {
   const query = nql(filter, { expansions: EXPANSIONS });

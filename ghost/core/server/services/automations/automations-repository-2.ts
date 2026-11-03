@@ -1,4 +1,5 @@
-import type { Promisable } from 'type-fest';
+import type { AutomationTriggerRule } from './trigger-rules';
+import type { Promisable, ReadonlyDeep } from 'type-fest';
 import type { z } from 'zod';
 import { addAutomationDataSchema } from './automations-schemas';
 
@@ -52,11 +53,25 @@ type NextActionRevisionRow = {
  * NOTE: `AutomationsRepository2` will soon subsume `AutomationsRepository`. See NY-1704.
  */
 export type AutomationsRepository2<Connection> = {
+  /** Delete all trigger rules for an automation. */
+  deleteTriggerRules: (connection: Connection, automationId: string) => Promisable<void>;
+
   /** Find the first action revision for all automations that match these trigger criteria. */
   findFirstActionRevisions: (
     connection: Connection,
-    memberStatus: 'free' | 'paid',
-    memberTierIds: ReadonlyArray<string>,
+    options: ReadonlyDeep<
+      | {
+          eventName: 'membership_started';
+          memberStatus: 'free' | 'paid';
+          memberTierIds: string[];
+        }
+      | {
+          eventName: 'paid_subscription_changed';
+          memberStatus: 'free' | 'paid';
+          memberTierIds: string[];
+          previousMemberTierIds: string[];
+        }
+    >,
   ) => Promisable<NextActionRevisionRow[]>;
 
   /** Get the count of all automations. */
@@ -83,6 +98,12 @@ export type AutomationsRepository2<Connection> = {
 
   /** Insert automation runs. Typically coupled with the insertion of an equal number of steps. */
   insertRuns: (connection: Connection, toInsert: ReadonlyArray<RunToInsert>) => Promisable<void>;
+
+  /** Insert automation trigger rules. */
+  insertTriggerRules: (
+    connection: Connection,
+    toInsert: ReadonlyArray<AutomationTriggerRule>,
+  ) => Promisable<void>;
 
   /** Is this run's automation active? */
   isAutomationActiveForRun: (

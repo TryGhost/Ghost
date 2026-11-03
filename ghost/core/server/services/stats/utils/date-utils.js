@@ -1,4 +1,23 @@
-const moment = require('moment-timezone');
+const { getUnixTime, moment } = require('../../../../kernel/clock');
+
+/**
+ * Today's UTC calendar date
+ * @returns {string} Date in YYYY-MM-DD format
+ */
+function utcToday() {
+  return new Date(getUnixTime() * 1000).toISOString().slice(0, 10);
+}
+
+/**
+ * The start of the UTC day a number of days before today
+ * @param {number} days - Whole days to go back
+ * @returns {string} Datetime in YYYY-MM-DD HH:mm:ss format, as stored in the database
+ */
+function startOfUtcDayAgo(days) {
+  const date = new Date(getUnixTime() * 1000);
+  date.setUTCDate(date.getUTCDate() - days);
+  return `${date.toISOString().slice(0, 10)} 00:00:00`;
+}
 
 /**
  * Get processed date boundaries with timezone support
@@ -38,4 +57,6 @@ function applyDateFilter(query, dateFrom, dateTo, dateColumn) {
 module.exports = {
   getDateBoundaries,
   applyDateFilter,
+  utcToday,
+  startOfUtcDayAgo,
 };

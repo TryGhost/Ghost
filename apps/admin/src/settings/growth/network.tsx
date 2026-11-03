@@ -102,7 +102,7 @@ const Network: React.FC<{ keywords: string[] }> = ({ keywords }) => {
             </div>
           )}
         </SettingGroupContent>
-        <div className="-mx-5 -mb-5 overflow-hidden rounded-b-xl md:-mx-7 md:-mb-7">
+        <div className="-mx-5 -mb-5 overflow-hidden rounded-b-card md:-mx-7 md:-mb-7">
           <img className="dark:opacity-90" src={SettingImg} />
         </div>
       </>

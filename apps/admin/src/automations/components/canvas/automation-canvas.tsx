@@ -174,6 +174,7 @@ type BuildGraphParams = {
   connectIn: boolean;
   automation: AutomationDetail;
   savedTriggerTierIds: readonly string[];
+  triggerType: TriggerData['triggerType'];
   tierQuery: TriggerData['tierQuery'];
   onChange: (next: AutomationDetail) => void;
   nodeSizes: Record<string, { width: number; height: number }>;
@@ -195,6 +196,7 @@ const buildGraph = ({
   connectIn,
   automation,
   savedTriggerTierIds,
+  triggerType,
   tierQuery,
   onChange,
   nodeSizes,
@@ -244,8 +246,8 @@ const buildGraph = ({
       data: {
         trigger: {
           tierQuery,
-          scope: automation.trigger_tier_scope,
-          tierIds: automation.trigger_tier_ids ?? [],
+          triggerType,
+          rules: automation.trigger_rules,
           savedTierIds: savedTriggerTierIds,
           onUpdate: (trigger) => onChange({ ...automation, ...trigger }),
         },
@@ -407,6 +409,7 @@ type AutomationCanvasProps = {
   onWaitValidityChange: (stepId: string, valid: boolean) => void;
   automation?: AutomationDetail;
   savedTriggerTierIds?: readonly string[];
+  triggerType?: TriggerData['triggerType'];
   isEmailNavigationBlocked?: boolean;
   isLoading: boolean;
   isError: boolean;
@@ -435,6 +438,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   initialTriggerTop,
   actionErrors = {},
   savedTriggerTierIds = [],
+  triggerType,
   onWaitValidityChange,
   automation,
   isEmailNavigationBlocked = false,
@@ -475,23 +479,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const [newStepId, setNewStepId] = useState<string | null>(null);
   const [emailModalMode, setEmailModalMode] = useState<EmailModalMode>('edit');
   const [deleteConfirmationActionId, setDeleteConfirmationActionId] = useState<string | null>(null);
-  const triggerTierScope = automation?.trigger_tier_scope;
-  let tiersEnabled: boolean;
-  switch (triggerTierScope) {
-    case 'all_paid':
-    case 'selected_paid':
-      tiersEnabled = true;
-      break;
-    case 'free':
-    case null:
-    case undefined:
-      tiersEnabled = false;
-      break;
-    default: {
-      const _exhaustive: never = triggerTierScope;
-      throw new Error(`Unknown automation trigger scope: ${String(_exhaustive)}`);
-    }
-  }
+  const tiersEnabled =
+    triggerType === 'paid_subscription_started' || triggerType === 'paid_subscription_changed';
   const {
     data: tierData,
     isLoading: tiersLoading,
@@ -501,6 +490,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     searchParams: { filter: 'type:paid', limit: 'all' },
     defaultErrorHandler: false,
     enabled: tiersEnabled,
+    staleTime: 0,
   });
   const tierQuery = useMemo(
     () => ({ data: tierData, isLoading: tiersLoading, isError: tiersError, refetch: refetchTiers }),
@@ -747,7 +737,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   }, [connecting]);
 
   const graph = useMemo(() => {
-    if (!automation) {
+    if (!automation || !triggerType) {
       return null;
     }
     return buildGraph({
@@ -755,6 +745,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       connectIn: connecting,
       automation,
       savedTriggerTierIds,
+      triggerType,
       tierQuery,
       onChange,
       nodeSizes,
@@ -774,6 +765,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     actionErrors,
     connecting,
     savedTriggerTierIds,
+    triggerType,
     tierQuery,
     onChange,
     automation,
@@ -983,8 +975,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       selectedRunId={selectedRunId}
       selectedTab={sidebar.tab === 'unknown' ? 'settings' : sidebar.tab}
       tiers={tierData?.tiers ?? []}
-      triggerTierIds={automation.trigger_tier_ids ?? []}
-      triggerTierScope={automation.trigger_tier_scope}
+      triggerRules={automation.trigger_rules}
       onDescriptionChange={(description) => onChange({ ...automation, description })}
       onOpenChange={setAutomationSidebarOpen}
       onSelectRun={handleSelectRun}

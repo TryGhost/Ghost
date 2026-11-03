@@ -66,7 +66,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
   sidebar,
   onNameChange,
 }) => {
-  const { isAdmin7, controlShape } = useShade();
+  const { controlShape } = useShade();
   const floating = chrome === 'floating';
   // Floating over the canvas, ghost controls need a surface to read as buttons.
   const floatingSurface = floating ? 'bg-surface-elevated' : undefined;
@@ -117,7 +117,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
         <Button
           className={floatingSurface}
           disabled={!isTurnOffButtonEnabled}
-          variant={isAdmin7 ? 'ghost' : 'outline'}
+          variant="ghost"
           onClick={onTurnOff}
         >
           Turn off
@@ -131,7 +131,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
         <Button
           className={saveButtonVariant === 'outline' ? floatingSurface : undefined}
           disabled={!isSaveButtonEnabled}
-          variant={isAdmin7 && saveButtonVariant === 'outline' ? 'ghost' : saveButtonVariant}
+          variant={saveButtonVariant === 'outline' ? 'ghost' : saveButtonVariant}
           onClick={onSave}
         >
           {saveButtonChildren}
@@ -145,12 +145,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
   }
 
   const backButton = (
-    <Button
-      className={floatingSurface}
-      size={isAdmin7 ? 'icon' : undefined}
-      variant="ghost"
-      asChild
-    >
+    <Button className={floatingSurface} size="icon" variant="ghost" asChild>
       <Link aria-label="Back to automations" to="/automations">
         <LucideIcon.ArrowLeft strokeWidth={2} />
       </Link>
@@ -193,7 +188,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
                 <span
                   className={cn(
                     'flex h-(--control-height) min-w-0 items-center bg-surface-elevated',
-                    isAdmin7 ? 'px-3' : 'px-2.5',
+                    'px-3',
                     controlShape === 'pill' ? 'rounded-full' : 'rounded-control',
                   )}
                 >

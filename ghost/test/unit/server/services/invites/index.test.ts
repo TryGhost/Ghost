@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+import type { Invites } from '../../../../../core/server/services/invites/invites';
 
 const rootPath = require.resolve('../../../../../core/server/services/invites');
 const settingsCache = require('../../../../../core/shared/settings-cache');
@@ -12,18 +13,12 @@ const urlUtils = require('../../../../../core/shared/url-utils').default;
 describe('Invites service root', function () {
   const sandbox = sinon.createSandbox();
   let previousModule: NodeJS.Module | undefined;
-  let invitesService: { add(request: typeof input): Promise<typeof edited> };
+  let invitesService: Invites;
   let InviteModel: { findOne: sinon.SinonStub; add: sinon.SinonStub; edit: sinon.SinonStub };
   let api: { mail: { send: sinon.SinonStub } };
-  let input: {
-    api: typeof api;
-    InviteModel: typeof InviteModel;
-    invites: Array<{ email: string; role_id: string }>;
-    options: { context: { user: string } };
-    user: { name?: string; email?: string };
-  };
-  let created: { id: string; get(key: string): string };
-  let edited: { id: string; status: string };
+  let input: Parameters<Invites['add']>[0];
+  let created: Awaited<ReturnType<Invites['add']>>;
+  let edited: Awaited<ReturnType<Invites['add']>> & { status: string };
   let render: sinon.SinonStub;
   let getTitle: sinon.SinonStub;
   let getDomain: sinon.SinonStub;
@@ -38,7 +33,7 @@ describe('Invites service root', function () {
       email: 'recipient@example.com',
     };
     created = { id: 'invite-id', get: (key) => values[key] };
-    edited = { id: 'invite-id', status: 'sent' };
+    edited = { ...created, status: 'sent' };
     InviteModel = {
       findOne: sandbox.stub().resolves(null),
       add: sandbox.stub().resolves(created),

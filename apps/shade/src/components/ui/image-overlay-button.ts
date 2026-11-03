@@ -7,6 +7,6 @@ export const imageOverlayButtonClasses = {
 } as const;
 
 /** Keep image-overlay controls legible over the image in every button state. */
-export function imageOverlayButton(isAdmin7 = true) {
-  return cn(imageOverlayButtonClasses.base, isAdmin7 && imageOverlayButtonClasses.pressed);
+export function imageOverlayButton() {
+  return cn(imageOverlayButtonClasses.base, imageOverlayButtonClasses.pressed);
 }

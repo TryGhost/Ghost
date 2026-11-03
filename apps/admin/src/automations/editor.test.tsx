@@ -9,11 +9,12 @@ import type {
   AutomationStatus,
   EditAutomationPayload,
 } from '@tryghost/admin-x-framework/api/automations';
-import { RouterProvider, createMemoryRouter } from 'react-router';
+import { RouterProvider, createHashRouter, createMemoryRouter, useLocation } from 'react-router';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRoot } from 'react-dom/client';
 import { flushSync } from 'react-dom';
+import { deferred } from '@/utils/deferred';
 
 const { mockToastError } = vi.hoisted(() => ({
   mockToastError: vi.fn(),
@@ -182,6 +183,10 @@ const mockEditMutation = {
   isLoading: false,
   variables: undefined as { id: string; status: AutomationStatus } | undefined,
 };
+const mockAddMutation = {
+  mutate:
+    vi.fn<(payload: Omit<EditAutomationPayload, 'id'>, options: MockEditMutationOptions) => void>(),
+};
 const mockReactFlow = {
   fitView: vi.fn(),
   getViewport: vi.fn(() => ({ x: 0, y: 0, zoom: mockViewportZoom })),
@@ -205,10 +210,20 @@ vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
     useBrowseAutomationActionLinks: (...args: unknown[]) =>
       mockUseBrowseAutomationActionLinks(...args),
     useEditAutomation: () => mockEditMutation,
-    useAddAutomation: () => ({ mutate: vi.fn() }),
+    useAddAutomation: () => mockAddMutation,
     useReadAutomationPerformanceStats: () => ({ isFetching: true }),
   };
 });
+
+vi.mock('./hooks/use-visible-automations', () => ({
+  useVisibleAutomations: () => ({
+    allAutomations: [],
+    stripeEnabled: false,
+    isStripeReady: true,
+    isLoading: false,
+    isError: false,
+  }),
+}));
 
 // The virtualized run list requires browser layout; its behavior is covered by acceptance tests.
 vi.mock('./components/canvas/run-list', () => ({ RunList: () => null }));
@@ -398,8 +413,7 @@ vi.mock('@xyflow/react', async () => {
 const automationDetail: AutomationDetail = {
   id: 'automation-id-1',
   slug: 'member-welcome-email-free',
-  trigger_tier_scope: 'free',
-  trigger_tier_ids: null,
+  trigger_rules: [{ trigger_type: 'free_signup', scope: null, product_id: null, direction: null }],
   name: 'Free member welcome flow',
   description: 'Welcome new free members.',
   status: 'active',
@@ -518,6 +532,7 @@ describe('AutomationEditor', () => {
       isError: false,
     });
     mockEditMutation.mutate.mockReset();
+    mockAddMutation.mutate.mockReset();
     mockReactFlow.fitView.mockReset();
     mockReactFlow.getViewport.mockReset();
     mockReactFlow.getViewport.mockImplementation(() => ({ x: 0, y: 0, zoom: mockViewportZoom }));
@@ -534,6 +549,106 @@ describe('AutomationEditor', () => {
     mockEmailTracking.emailTrackOpens = true;
     mockEmailTracking.emailTrackClicks = true;
   });
+
+  it.each([
+    { timing: 'after', holdCreatedRoute: false },
+    { timing: 'before', holdCreatedRoute: true },
+  ])(
+    'starts a fresh creation session when a native hash return arrives $timing the saved route commits',
+    async ({ holdCreatedRoute }) => {
+      const previousHref = window.location.href;
+      const previousState: unknown = window.history.state;
+      const commit = deferred<void>();
+      const Commit = React.lazy(() => commit.promise.then(() => ({ default: () => null })));
+      let committedLocation!: ReturnType<typeof useLocation>;
+      function RouteCommit() {
+        const location = useLocation();
+        React.useLayoutEffect(() => {
+          committedLocation = location;
+        });
+        // Hold the saved route's render without delaying the URL replacement.
+        return holdCreatedRoute && location.pathname === '/automations/created' ? <Commit /> : null;
+      }
+      mockAddMutation.mutate.mockImplementation((payload, options) => {
+        options.onSuccess?.({
+          automations: [
+            {
+              ...automationDetail,
+              ...payload,
+              id: mockAddMutation.mutate.mock.calls.length === 1 ? 'created' : 'created-2',
+            },
+          ],
+        });
+      });
+      window.history.replaceState(null, '', '#/automations/new');
+      const router = createHashRouter([
+        {
+          path: '/automations/:id',
+          element: (
+            <>
+              <AutomationEditor />
+              <RouteCommit />
+            </>
+          ),
+        },
+      ]);
+      const view = render(
+        <React.Suspense fallback="Loading">
+          <RouterProvider router={router} />
+        </React.Suspense>,
+      );
+      const initialLocation = committedLocation;
+      const originalNameField = screen.getByRole('textbox', { name: 'Automation name' });
+      try {
+        fireEvent.change(originalNameField, { target: { value: 'First automation' } });
+        fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+        await waitFor(() => expect(window.location.hash).toBe('#/automations/created'));
+        if (holdCreatedRoute) {
+          expect(committedLocation).toBe(initialLocation);
+        } else {
+          await waitFor(() => expect(committedLocation.pathname).toBe('/automations/created'));
+        }
+        expect(screen.getByRole('textbox', { name: 'Automation name' })).toBe(originalNameField);
+        expect(originalNameField).toHaveValue('First automation');
+        expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
+
+        // A refresh must preserve the saved session, including while its route is held.
+        await act(async () => {
+          await router.revalidate();
+        });
+        expect(screen.getByRole('textbox', { name: 'Automation name' })).toBe(originalNameField);
+        expect(originalNameField).toHaveValue('First automation');
+
+        window.location.hash = '#/automations/new';
+        await waitFor(() =>
+          expect(screen.getByRole('textbox', { name: 'Automation name' })).toHaveValue(
+            'New Automation',
+          ),
+        );
+        expect(originalNameField.isConnected).toBe(false);
+        if (holdCreatedRoute) {
+          // Both navigations can collapse into the same useLocation object.
+          expect(committedLocation).toBe(initialLocation);
+        }
+        fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+        expect(mockAddMutation.mutate).toHaveBeenCalledTimes(2);
+        expect(mockAddMutation.mutate.mock.calls[1][0]).toMatchObject({
+          name: 'New Automation',
+          status: 'inactive',
+          actions: [],
+        });
+        expect(mockEditMutation.mutate).not.toHaveBeenCalled();
+      } finally {
+        await act(async () => {
+          commit.resolve();
+          await commit.promise;
+        });
+        view.unmount();
+        router.dispose();
+        window.history.replaceState(previousState, '', previousHref);
+      }
+    },
+  );
 
   it('renders the loading state while the automation is fetching', () => {
     mockUseReadAutomation.mockReturnValue({
@@ -1601,7 +1716,14 @@ describe('AutomationEditor', () => {
           {
             ...automationDetail,
             slug: 'member-welcome-email-paid',
-            trigger_tier_scope: 'all_paid',
+            trigger_rules: [
+              {
+                trigger_type: 'paid_subscription_started',
+                scope: 'any_paid_tier',
+                product_id: null,
+                direction: null,
+              },
+            ],
             name: 'Paid member welcome flow',
           },
         ],
@@ -1973,15 +2095,21 @@ describe('AutomationEditor', () => {
     { status: 'active', label: 'Turn off', action: 'turn off' },
   ] as const)(
     'blocks $label with no selected paid tiers even without run analytics',
-    async ({ status, label, action }) => {
+    ({ status, label, action }) => {
       mockUseReadAutomation.mockReturnValue({
         data: {
           automations: [
             {
               ...automationDetail,
               status,
-              trigger_tier_scope: 'selected_paid',
-              trigger_tier_ids: [],
+              trigger_rules: [
+                {
+                  trigger_type: 'paid_subscription_started',
+                  scope: 'specific_paid_tier',
+                  product_id: 'bronze',
+                  direction: null,
+                },
+              ],
             },
           ],
         },
@@ -1990,7 +2118,7 @@ describe('AutomationEditor', () => {
       });
 
       renderEditor();
-      await stageLocalEdit();
+      fireEvent.click(screen.getByRole('button', { name: 'Remove Unavailable tier' }));
       fireEvent.click(screen.getByRole('button', { name: label }));
 
       expect(screen.getByText(`Fix all issues to ${action} this automation.`)).toBeVisible();

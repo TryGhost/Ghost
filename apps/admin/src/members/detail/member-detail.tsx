@@ -82,7 +82,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
   const backPath = deriveMemberDetailBackPath(location.search);
   const isCreating = memberId === CREATE_ID;
 
-  // `include=tiers` mirrors the Ember route so complimentary tiers arrive with the member.
+  // `include=tiers` so complimentary tiers arrive with the member.
   const { data, isLoading, error, refetch } = useMember(memberId, {
     enabled: !!memberId && !isCreating,
     searchParams: { include: 'tiers' },
@@ -126,10 +126,9 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
   // until the answer is known, avoiding a label churn from generic
   // "subscribed to newsletter" → specific "subscribed to Weekly".
   // Newsletters are fetched on BOTH create and edit modes: on create so we
-  // can seed the draft with Ember's default subscriptions
-  // (`subscribe_on_signup:true + visibility:members`, matching
-  // `gh-member-settings-form.js:233-241`); on edit so the activity feed can
-  // decide whether to render newsletter labels.
+  // can seed the draft with the default subscriptions
+  // (`subscribe_on_signup:true + visibility:members`); on edit so the activity
+  // feed can decide whether to render newsletter labels.
   const { data: newslettersData } = useBrowseNewsletters({
     searchParams: { filter: 'status:active', limit: '50' },
   });
@@ -175,7 +174,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     );
   }, [member, isCreating]);
 
-  // Seed the create-mode draft with the Ember default newsletter set the
+  // Seed the create-mode draft with the default newsletter set the
   // first time the newsletters query resolves. Runs at most once per
   // create-screen visit (`newsletterDefaultsSeededRef` is reset when
   // create mode is re-entered) so a user who deselects a default doesn't
@@ -222,11 +221,8 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     confirmUnloadWhen: activeMutation.isPending || hasUnsavedChanges,
   });
   const emailValid = !!draft && isValidMemberEmail(draft.email, member?.email ?? undefined);
-  // `touched` is set on the email field's first blur. That keeps the New
-  // member screen from painting an "Email is required." error before the
-  // user has done anything, matching Ember's save-time-only validator
-  // (`ghost/admin/app/validators/member.js:15`). Reset below when the
-  // member id or create-mode flag changes so a fresh screen starts clean.
+  // Set on the email field's first blur so a new member screen doesn't open on
+  // "Email is required."; reset when the member id or create mode changes.
   const [emailTouched, setEmailTouched] = React.useState(false);
   React.useEffect(() => {
     setEmailTouched(false);
@@ -289,11 +285,9 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
           labels: draft.labels.length ? draft.labels : undefined,
           // Send the visibly-selected newsletter set ONLY once the
           // seeding effect has run. If the user manages to hit Save
-          // before the newsletters query resolves, we don't have
-          // a reliable "what would Ember show?" snapshot, so we omit
-          // the key entirely and let the server apply its own default
-          // (`member-repository.js:460-464`) — same effective outcome
-          // as Ember's Ember-data unpopulated hasMany. An empty
+          // before the newsletters query resolves, we omit the key
+          // entirely and let the server apply its own default
+          // (`member-repository.js:460-464`). An empty
           // seeded list (user deselected everything) is still sent
           // explicitly so the intent isn't lost to the server default.
           newsletters: newsletterDefaultsSeededRef.current
@@ -346,7 +340,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     );
   };
 
-  // Save button state (Save / Saving / Saved / Retry), mirroring the Ember task button.
+  // Save button state (Save / Saving / Saved / Retry).
   let saveLabel: React.ReactNode = 'Save';
   let saveVariant: ButtonProps['variant'] = 'default';
   let saveDisabled = true;
@@ -552,8 +546,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                   {/* Newsletters section owns its external heading + card so an empty
                                     newsletter list hides the whole thing (returns null). Renders
                                     on /members/new too so an admin can pick the initial
-                                    subscription set at creation — matches Ember's
-                                    `gh-member-settings-form.hbs:74-80`. */}
+                                    subscription set at creation. */}
                   {newslettersUiEnabled && (isCreating || member) && (
                     <MemberNewslettersField
                       disabled={activeMutation.isPending}
@@ -564,14 +557,12 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                     />
                   )}
 
-                  {/* Subscriptions: external "SUBSCRIPTIONS" label + own card. Matches
-                                    Ember's `gh-member-settings-form.hbs:82`, which always renders
-                                    the section under `{{#if paidMembersEnabled}}` — including on
-                                    the New member screen, where the empty-state card shows a
+                  {/* Subscriptions: external "SUBSCRIPTIONS" label + own card. Renders
+                                    whenever paid members are enabled — including on the New
+                                    member screen, where the empty-state card shows a
                                     "No subscriptions" indicator until the member is created. The
                                     child component early-returns when there's nothing to show
-                                    (no subs, no add-comp affordance available), matching Ember's
-                                    `{{#unless this.tiers}}` branch. */}
+                                    (no subs, no add-comp affordance available). */}
                   {paidMembersEnabled && (
                     <section
                       aria-labelledby="member-subscriptions-heading"
@@ -584,13 +575,12 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                     </section>
                   )}
 
-                  {/* Recent activity feed — Ember `activity-feed.hbs` shows the top
-                                    5 events for a saved member, and switches to a "no events yet"
-                                    empty state when `@member.isNew` (`activity-feed.hbs:2`).
-                                    We mirror the same section wrapper for both states so the
-                                    section header is consistent. `newslettersResolved` avoids a
-                                    row-label churn when the newsletters query hasn't returned
-                                    yet — irrelevant in create mode, so gate it on `!isCreating`. */}
+                  {/* Recent activity feed — the top 5 events for a saved member, or a
+                                    "no events yet" empty state on create, under the same section
+                                    wrapper so the section header is consistent.
+                                    `newslettersResolved` avoids a row-label churn when the
+                                    newsletters query hasn't returned yet — irrelevant in create
+                                    mode, so gate it on `!isCreating`. */}
                   {(isCreating || (member && newslettersResolved)) && (
                     <MemberActivityFeed
                       hasMultipleNewsletters={hasMultipleNewsletters}
@@ -648,7 +638,7 @@ const MemberDetail: React.FC = () => {
   return (
     <MemberDetailPage
       // Hidden when the site can't sign up members or has email disabled:
-      // the numbers are always zero and only add noise. Mirrors Ember.
+      // the numbers are always zero and only add noise.
       engagementEnabled={membersSignupAccess !== 'none' && newslettersEnabled === true}
       newslettersUiEnabled={newslettersEnabled === true}
       // Sites without paid memberships never see subscription UI.

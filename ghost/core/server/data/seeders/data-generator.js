@@ -107,6 +107,14 @@ class DataGenerator {
     // TODO: Remove this once we import posts_meta
     tables.unshift('posts_meta');
 
+    // Trigger rules have no importer and must be cleared before automations.
+    if (
+      tables.includes('automations') &&
+      (await transaction.schema.hasTable('automation_trigger_rules'))
+    ) {
+      tables.unshift('automation_trigger_rules');
+    }
+
     // members_current_subscription has no importer (it's a computed
     // lookup populated from a VIEW in the post-import step), so it
     // wouldn't be in `tables` from `tableList`. Without explicitly

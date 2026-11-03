@@ -29,9 +29,9 @@ interface TagDeleteModalProps {
 }
 
 /**
- * Confirms permanent tag deletion, porting Ember's `delete-tag-modal`: the
- * body names the tag, reports how many posts it will be removed from, and a
- * successful delete returns to the tags list.
+ * Confirms permanent tag deletion: the body names the tag, reports how many
+ * posts it will be removed from, and a successful delete returns to the tags
+ * list.
  */
 const TagDeleteModal: React.FC<TagDeleteModalProps> = ({
   open,

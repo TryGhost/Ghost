@@ -1,41 +1,97 @@
 import { z } from 'zod';
 import type { Knex } from 'knex';
 import {
+  FIELD_STATUS,
+  FieldStatusSchema,
   FieldTypeSchema,
   MetafieldChangeEventFieldSchema,
+  SHAPE_SETTINGS,
+  withTypedSettings,
+  type FieldStatus,
   type MetafieldChangeEntry,
   type MetafieldChangeSource,
+  type TypedSettings,
 } from '@tryghost/metafield-types';
 import { DbDate } from '../../lib/db-types/date';
 import { DbJson } from '../../lib/db-types/json';
 import { MemberAccessSchema } from './access';
 import { KeySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';
 
-// `archived` is soft: the field drops out of the values path but stays in the definition
-// list so it can be renamed, restored or deleted. Mirrors schema.js's `isIn` on the
-// column, which is static config and cannot import this.
-export const FIELD_STATUS = { active: 'active', archived: 'archived' } as const;
-export type FieldStatus = (typeof FIELD_STATUS)[keyof typeof FIELD_STATUS];
-export const FieldStatusSchema = z.enum([FIELD_STATUS.active, FIELD_STATUS.archived]);
+// schema.js lists the same statuses in its `isIn`, because static schema config can't import this.
+// Re-exported so the service reads every column's vocabulary from this module.
+export { FIELD_STATUS, FieldStatusSchema, type FieldStatus };
 
-// The single source for the read projection and the knex table type below. `type` parses
-// as the field-type enum, so the row carries the narrow type and no codec needs a cast.
-export const DbMetafield = z.object({
+// What a definition row holds beside its type and settings: with them, the single source for the
+// read projection and the knex table type below.
+export const DB_METAFIELD_COLUMNS = {
   id: z.string(),
   namespace: z.string(),
   key: z.string(),
   name: z.string(),
-  type: FieldTypeSchema,
   status: FieldStatusSchema,
   member_access: MemberAccessSchema,
   created_at: DbDate,
   updated_at: DbDate.nullable(),
+};
+
+/**
+ * A field with nothing to set up stores null as its settings, which reads back as none. Such a
+ * field has no settings to write at all, so the column's default stands in for them.
+ */
+const NoStoredSettings = z.codec(z.null().default(null), z.undefined(), {
+  decode: () => undefined,
+  encode: () => null,
 });
+
+/**
+ * Each shape's settings as the table holds them: a set's as JSON, and null for every other shape.
+ * Read for their shape alone, since the rules apply when settings are written, so a rule tightened
+ * later never hides a field set up under the old one.
+ */
+export const STORED_SETTINGS = {
+  scalar: NoStoredSettings,
+  record: NoStoredSettings,
+  set: DbJson(SHAPE_SETTINGS.set.read, { message: 'The stored settings are not JSON.' }),
+};
+
+/**
+ * `STORED_SETTINGS`, except that settings which can't be read, such as settings that aren't JSON,
+ * are read as the shape's default settings. A field whose settings were damaged is then read the
+ * way a new field of its type starts, and the next write of its settings replaces them. Only for
+ * reading: a write encodes through `STORED_SETTINGS`, so it never stores defaults it wasn't given.
+ */
+const STORED_SETTINGS_OR_DEFAULTS = {
+  scalar: NoStoredSettings.catch(SHAPE_SETTINGS.scalar.defaults),
+  record: NoStoredSettings.catch(SHAPE_SETTINGS.record.defaults),
+  // A copy for each read, so a reader that changes the settings it was given can't change the
+  // defaults every other read starts from.
+  set: STORED_SETTINGS.set.catch(() => structuredClone(SHAPE_SETTINGS.set.defaults)),
+};
+
+/**
+ * A stored field with `base`'s columns, its type and its settings, read two ways: as stored, and
+ * with its shape's default settings when the stored ones can't be read. `readStoredField` decides
+ * between them.
+ */
+export const storedField = <Base extends z.ZodRawShape>(base: Base) => ({
+  asStored: withTypedSettings(base, STORED_SETTINGS),
+  withDefaults: withTypedSettings(base, STORED_SETTINGS_OR_DEFAULTS),
+});
+
+/** A definition as the table holds it, its settings read by the shape its type declares. */
+export const DbMetafield = storedField(DB_METAFIELD_COLUMNS);
+
+/** A field's type and settings alone, as the table holds them. */
+export const DbTypedSettings = withTypedSettings({}, STORED_SETTINGS) satisfies z.ZodType<
+  TypedSettings,
+  unknown
+>;
 
 // Storage only: order is a fact about the list, so no read projection carries a rank.
 type MetafieldRank = { sort_order: number };
 
-type MetafieldRow = z.infer<typeof DbMetafield> & MetafieldRank;
+// As the table holds it, so a set's `settings` are the JSON text.
+export type MetafieldRow = z.input<typeof DbMetafield.asStored> & MetafieldRank;
 
 /**
  * How a value arrived, not who caused it: who edited a member's fields is already an
@@ -74,12 +130,9 @@ export const DbMetafieldValue = z.object({
 
 type MetafieldValueRow = z.infer<typeof DbMetafieldValue>;
 
-// The field's namespace and key travel with the row so a value assembles without a second
-// lookup.
-//
-// `type` takes no part in the assembly and is here as a gate: a value whose type has left
-// the catalog is one the definitions list no longer returns either, so failing to parse
-// is what drops it.
+// `type` drops a value whose type has left the catalog: its definition is no longer listed either,
+// and the row fails to parse. What a field's rows add up to is read once per field, with its
+// settings, from its definition rather than from each row.
 export const DbStoredValueRow = z.object({
   member_id: z.string(),
   namespace: NamespaceSchema,
@@ -135,6 +188,12 @@ export type WriteOrigin =
       source: Extract<MetafieldChangeSource, 'portal' | 'checkout'>;
     };
 
+/**
+ * Where a write of one member's values was made, by anyone but an import, which stores each
+ * row's values through a write of its own.
+ */
+export type SingleWriteOrigin = Exclude<WriteOrigin, { source: 'import' }>;
+
 /** The fields an entry names. */
 export const MetafieldChangeEventFields = z.array(MetafieldChangeEventFieldSchema);
 
@@ -186,7 +245,7 @@ declare module 'knex/types/tables' {
       MetafieldRow,
       // `status` is DB-defaulted and only set via update, so it's absent here. The
       // rank is required: letting it default would land a new field at the top.
-      Omit<z.input<typeof DbMetafield>, 'updated_at' | 'status'> & MetafieldRank,
+      Omit<z.input<typeof DbMetafield.asStored>, 'updated_at' | 'status'> & MetafieldRank,
       Partial<MetafieldRow>
     >;
     members_metafield_values: Knex.CompositeTableType<

@@ -1,10 +1,11 @@
+import { buildTriggerRuleRows } from '../../../../core/server/services/automations/trigger-rules';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 // @ts-expect-error Test utilities currently lack type definitions.
 import testUtils from '../../../utils';
-import { toDatabaseDate } from '../../../../core/server/lib/db-types/date';
+import { fromDatabaseDate, toDatabaseDate } from '../../../../core/server/lib/db-types/date';
 import { createDatabaseAutomationsRepository } from '../../../../core/server/services/automations/database-automations-repository';
 import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
 import { createAutomationsApi2 } from '../../../../core/server/services/automations/automations-api-2';
@@ -44,14 +45,17 @@ describe('database automations repository', function () {
       slug,
       name: `Test automation ${id}`,
       status: 'active',
-      trigger_tier_scope: triggerTierScope,
       created_at: now,
       updated_at: now,
     });
-    if (triggerTierIds.length > 0) {
-      await knex('automation_trigger_tiers').insert(
-        triggerTierIds.map((product_id) => ({ automation_id: id, product_id })),
-      );
+    const rules = buildTriggerRuleRows({
+      automationId: id,
+      scope: triggerTierScope,
+      tierIds: triggerTierIds,
+      createdAt: fromDatabaseDate(now),
+    });
+    if (rules.length > 0) {
+      await knex('automation_trigger_rules').insert(rules);
     }
     await knex('automation_actions').insert({
       id: actionId,
@@ -118,8 +122,9 @@ describe('database automations repository', function () {
         edges: [{ source_action_id: actions[0].id, target_action_id: actions[1].id }],
         name: `Creation test ${ObjectId().toHexString()}`,
         description: 'Test description',
-        trigger_tier_scope: 'free' as const,
-        trigger_tier_ids: null,
+        trigger_rules: [
+          { trigger_type: 'free_signup' as const, scope: null, product_id: null, direction: null },
+        ],
       };
       const automation = await repo.add(data);
 
@@ -147,16 +152,18 @@ describe('database automations repository', function () {
     });
   });
 
-  describe('trigger', function () {
+  describe('notify', function () {
     it('excludes paid members whose tier is not selected', async function () {
       const selectedAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
       const api = createApi();
       const memberId = ObjectId().toHexString();
-      await api.trigger({
-        event: 'membership_started',
+      await api.notify({
+        eventName: 'membership_started',
+        source: 'member' as const,
         memberId,
         memberEmail: await insertMember(memberId),
         memberStatus: 'paid',
+        previousMemberStatus: null,
         memberTierIds: [ObjectId().toHexString()],
       });
       const runs = await knex('automation_runs').where({
@@ -170,11 +177,13 @@ describe('database automations repository', function () {
       const selectedAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
       const api = createApi();
       const memberId = ObjectId().toHexString();
-      await api.trigger({
-        event: 'membership_started',
+      await api.notify({
+        eventName: 'membership_started',
+        source: 'member' as const,
         memberId,
         memberEmail: await insertMember(memberId),
         memberStatus: 'paid',
+        previousMemberStatus: null,
         memberTierIds: selectedTierIds,
       });
       const runs = await knex('automation_runs').where({
@@ -195,10 +204,11 @@ describe('database automations repository', function () {
         const memberLockTxn = await knex.transaction();
         await memberLockTxn('members').where('id', memberId).forUpdate().first('id');
 
-        // Wait until both triggers try to lock the member.
+        // Wait until both notifications try to lock the member.
         const bothMemberLocksRequested = Promise.withResolvers<void>();
         const timeout = setTimeout(
-          () => bothMemberLocksRequested.reject(new Error('Triggers did not reach member lock')),
+          () =>
+            bothMemberLocksRequested.reject(new Error('Notifications did not reach member lock')),
           10_000,
         );
         let memberLockCount = 0;
@@ -213,17 +223,19 @@ describe('database automations repository', function () {
         };
         knex.on('query', onKnexQuery);
 
-        // Actually do the triggers.
+        // Notify the automations system twice.
         const api = createApi();
-        const triggerOptions = {
-          event: 'membership_started' as const,
+        const event = {
+          eventName: 'membership_started' as const,
+          source: 'member' as const,
           memberId,
           memberEmail,
           memberStatus: 'free' as const,
+          previousMemberStatus: null,
           memberTierIds: [],
         };
-        const triggers = Promise.all([api.trigger(triggerOptions), api.trigger(triggerOptions)]);
-        triggers.catch(bothMemberLocksRequested.reject);
+        const notifications = Promise.all([api.notify(event), api.notify(event)]);
+        notifications.catch(bothMemberLocksRequested.reject);
 
         try {
           await bothMemberLocksRequested.promise;
@@ -231,7 +243,7 @@ describe('database automations repository', function () {
           clearTimeout(timeout);
           knex.removeListener('query', onKnexQuery);
           await memberLockTxn.rollback();
-          await triggers;
+          await notifications;
         }
       }
 
@@ -249,14 +261,14 @@ describe('database automations repository', function () {
       const memberEmails = await Promise.all(memberIds.map(insertMember));
       const api = createApi();
 
-      // Hold the referenced automation row so both triggers reach the run lookup
+      // Hold the referenced automation row so both notifications reach the run lookup
       // before either can insert its run.
       const automationLockTxn = await knex.transaction();
       await automationLockTxn('automations').where('id', automationId).forUpdate().first('id');
 
       const bothRunLookupsFinished = Promise.withResolvers<void>();
       const timeout = setTimeout(
-        () => bothRunLookupsFinished.reject(new Error('Triggers did not reach run lookup')),
+        () => bothRunLookupsFinished.reject(new Error('Notifications did not reach run lookup')),
         10_000,
       );
       let runLookupCount = 0;
@@ -271,16 +283,18 @@ describe('database automations repository', function () {
       };
       knex.on('query-response', onKnexQueryResponse);
 
-      const triggers = memberIds.map((memberId, index) =>
-        api.trigger({
-          event: 'membership_started',
+      const notifications = memberIds.map((memberId, index) =>
+        api.notify({
+          eventName: 'membership_started',
+          source: 'member' as const,
           memberId,
           memberEmail: memberEmails[index],
           memberStatus: 'free',
+          previousMemberStatus: null,
           memberTierIds: [],
         }),
       );
-      const triggerResults = Promise.allSettled(triggers);
+      const notificationResults = Promise.allSettled(notifications);
 
       try {
         await bothRunLookupsFinished.promise;
@@ -288,10 +302,10 @@ describe('database automations repository', function () {
         clearTimeout(timeout);
         knex.removeListener('query-response', onKnexQueryResponse);
         await automationLockTxn.rollback();
-        await triggerResults;
+        await notificationResults;
       }
 
-      for (const result of await triggerResults) {
+      for (const result of await notificationResults) {
         if (result.status === 'rejected') {
           throw result.reason;
         }
@@ -310,11 +324,13 @@ describe('database automations repository', function () {
       const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
       const api = createApi();
       for (const memberId of [ObjectId().toHexString(), ObjectId().toHexString()]) {
-        await api.trigger({
-          event: 'membership_started',
+        await api.notify({
+          eventName: 'membership_started',
+          source: 'member' as const,
           memberId,
           memberEmail: await insertMember(memberId),
           memberStatus: 'paid',
+          previousMemberStatus: null,
           memberTierIds: selectedTierIds,
         });
       }
@@ -330,18 +346,21 @@ describe('database automations repository', function () {
       const first = await repo.fetchAndLockSteps(1);
       assert.equal(first.steps.length, 1);
       assert.deepEqual(
-        [...first.steps[0].automation_trigger_tier_ids].sort(),
+        [...first.steps[0].automation_trigger_rules.map((rule) => rule.product_id)].sort(),
         [...selectedTierIds].sort(),
       );
 
       await repo.finishStepAndEnqueueNext(first.steps[0]);
-      await knex('automation_trigger_tiers')
-        .where({ automation_id: selectedAutomationId })
+      await knex('automation_trigger_rules')
+        .where({ automation_id: selectedAutomationId, product_id: selectedTierIds[0] })
         .delete();
       const second = await repo.fetchAndLockSteps(1);
       assert.equal(second.steps.length, 1);
       assert.notEqual(second.steps[0].id, first.steps[0].id);
-      assert.deepEqual(second.steps[0].automation_trigger_tier_ids, []);
+      assert.deepEqual(
+        second.steps[0].automation_trigger_rules.map((rule) => rule.product_id),
+        [selectedTierIds[1]],
+      );
     });
   });
 });

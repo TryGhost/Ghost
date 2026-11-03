@@ -77,7 +77,7 @@ export const ShapingMenu: React.FC<{ mocked: boolean }> = ({ mocked }) => {
   }, [open]);
 
   return (
-    <ShadeApp className="shade-admin" darkMode={dark} isAdmin7>
+    <ShadeApp className="shade-admin" darkMode={dark}>
       <div className="group/proto fixed right-0 bottom-0 z-[60] flex size-16 items-end justify-end p-4">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>

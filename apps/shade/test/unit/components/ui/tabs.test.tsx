@@ -1,6 +1,5 @@
-import assert from 'assert/strict';
 import { useState } from 'react';
-import { describe, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, screen } from '@testing-library/react';
 import {
   Tabs,
@@ -26,10 +25,10 @@ describe('Tabs Component', () => {
 
     const count = screen.getByText('12');
 
-    assert.match(count.className, /bg-secondary/);
-    assert.match(count.className, /text-xs/);
-    assert.doesNotMatch(count.className, /bg-surface-elevated/);
-    assert.doesNotMatch(count.className, /text-sm/);
+    expect(count.className).toMatch(/bg-secondary/);
+    expect(count.className).toMatch(/text-xs/);
+    expect(count.className).not.toMatch(/bg-surface-elevated/);
+    expect(count.className).not.toMatch(/text-sm/);
   });
 
   it('commits a focused field before changing tabs and changes value once', () => {
@@ -67,12 +66,10 @@ describe('Tabs Component', () => {
     fireEvent.mouseDown(secondTab);
     act(() => secondTab.focus());
 
-    assert.equal(
-      handleBlur.mock.calls.length,
+    expect(handleBlur.mock.calls.length, 'Blur handler should run before the panel unmounts').toBe(
       1,
-      'Blur handler should run before the panel unmounts',
     );
-    assert.equal(handleValueChange.mock.calls.length, 1, 'Value change handler should run once');
-    assert.equal(secondTab.getAttribute('aria-selected'), 'true');
+    expect(handleValueChange.mock.calls.length, 'Value change handler should run once').toBe(1);
+    expect(secondTab.getAttribute('aria-selected')).toBe('true');
   });
 });

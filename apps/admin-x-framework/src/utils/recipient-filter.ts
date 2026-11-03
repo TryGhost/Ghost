@@ -1,8 +1,4 @@
-// Email recipient-filter string handling, consolidated from the Ember admin's
-// four copies of the same comma-split logic: `utils/publish-options.js`,
-// `components/gh-members-recipient-select.js`,
-// `components/editor/modals/publish-flow.js` and
-// `services/members-count-cache.js`. Behavior (including quirks) is preserved.
+// Email recipient-filter string handling: plain comma splits, not NQL parses.
 
 export const FREE_SEGMENT = 'status:free';
 export const PAID_SEGMENT = 'status:-free';
@@ -54,9 +50,8 @@ export interface RecipientFilterSegments {
 
 /**
  * Splits a recipient filter into base (free/paid) and specific (label/tier)
- * segments by comma, the way `gh-members-recipient-select` does. This is a
- * plain comma split, not an NQL parse: a specific segment whose value contains
- * a comma is split apart the same way the Ember component splits it.
+ * segments by comma. This is a plain comma split, not an NQL parse: a
+ * specific segment whose value contains a comma is split apart.
  */
 export function parseRecipientFilter(filter: string | null | undefined): RecipientFilterSegments {
   const items = (filter || '').split(',');
@@ -84,13 +79,12 @@ export function parseRecipientFilter(filter: string | null | undefined): Recipie
 }
 
 /**
- * Rebuilds a recipient filter string from parsed segments, mirroring
- * `gh-members-recipient-select#updateFilter`: base segments first, then
- * specific segments, deduplicated, joined by comma. Returns `null` for an
+ * Rebuilds a recipient filter string from parsed segments: base segments
+ * first, then specific segments, deduplicated, joined by comma. Returns `null` for an
  * empty selection (the "no recipients" state).
  *
- * `paidAvailable: false` drops the paid segment, matching the component's
- * behavior when Stripe is not connected.
+ * `paidAvailable: false` drops the paid segment, for when Stripe is not
+ * connected.
  */
 export function buildRecipientFilter(
   segments: Pick<RecipientFilterSegments, 'base' | 'specific'>,
@@ -108,8 +102,7 @@ export function buildRecipientFilter(
 export type RecipientType = 'none' | 'all' | 'free' | 'paid' | 'specific';
 
 /**
- * Classifies a recipient filter the way the publish flow does
- * (`editor/modals/publish-flow.js#recipientType`).
+ * Classifies a recipient filter.
  *
  * The "all" case is a substring check, not a segment check, so any filter
  * containing both `status:free` and `status:-free` anywhere classifies as
@@ -136,10 +129,9 @@ export function getRecipientType(filter: string | null | undefined): RecipientTy
 }
 
 /**
- * Derives the filter that scopes members to a newsletter's audience
- * (`models/newsletter.js#recipientFilter`): actively subscribed to the
- * newsletter, email not disabled, and paid-only when the newsletter's
- * visibility is `paid`.
+ * Derives the filter that scopes members to a newsletter's audience: actively
+ * subscribed to the newsletter, email not disabled, and paid-only when the
+ * newsletter's visibility is `paid`.
  */
 export function getNewsletterRecipientFilter({
   slug,
@@ -158,9 +150,8 @@ export function getNewsletterRecipientFilter({
 }
 
 /**
- * Composes the full filter sent to the email service
- * (`utils/publish-options.js#fullRecipientFilter`): the newsletter's audience
- * filter, optionally AND-ed with the selected recipient filter.
+ * Composes the full filter sent to the email service: the newsletter's
+ * audience filter, optionally AND-ed with the selected recipient filter.
  */
 export function getFullRecipientFilter(
   newsletterRecipientFilter: string,

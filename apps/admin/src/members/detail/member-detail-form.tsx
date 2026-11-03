@@ -31,16 +31,16 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({
   onEmailBlur,
   onNameBlur,
 }) => {
-  // Soft limit: the note can be typed past 500 (Ember has no hard cap); the counter
-  // just turns negative and red.
+  // Soft limit: the note can be typed past 500; the counter just turns negative
+  // and red.
   const noteCharactersLeft = getNoteCharactersLeft(draft.note);
   const usedCharacters = NOTE_MAX_LENGTH - noteCharactersLeft;
   const overLimit = noteCharactersLeft < 0;
   // Traffic-light colour progression on the used-count digit as the note
-  // fills up. Ember only had two states (green/red); this extends it with
-  // a warning band as the user gets close to the limit so there's a visual
-  // heads-up before they cross it. Thresholds are lenient by design — most
-  // notes are short, and we don't want to nag on every keystroke.
+  // fills up, with a warning band between green and red as the user gets
+  // close to the limit so there's a visual heads-up before they cross it.
+  // Thresholds are lenient by design — most notes are short, and we don't want
+  // to nag on every keystroke.
   const usedColorClass = overLimit
     ? 'text-destructive'
     : usedCharacters >= NOTE_MAX_LENGTH * 0.8

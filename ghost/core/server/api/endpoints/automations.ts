@@ -1,3 +1,7 @@
+import type {
+  AddAutomationData,
+  EditAutomationData,
+} from '../../services/automations/automations-schemas';
 import type { Controller, Frame } from '@tryghost/api-framework';
 import errors from '@tryghost/errors';
 import * as automationsApi from '../../services/automations/automations-api';
@@ -7,10 +11,10 @@ import labs from '../../../shared/labs';
 const MAX_AUTOMATIONS = 50;
 
 type ReadFrame = Frame<{ data: { id: string } }>;
-type AddFrame = Frame<{ data: { automations?: unknown[] } }>;
+type AddFrame = Frame<{ data: AddAutomationData }>;
 type EditFrame = Frame<{
   options: { id: string };
-  data: { automations?: unknown[] };
+  data: EditAutomationData;
 }>;
 
 const assertCanAddAutomations = (): void => {
@@ -71,7 +75,7 @@ export const controller = {
     async query(frame: AddFrame) {
       assertCanAddAutomations();
       await assertNotAddingTooManyAutomations();
-      return await automationsApi.add(frame.data.automations?.[0]);
+      return await automationsApi.add(frame.data);
     },
   },
 
@@ -82,7 +86,7 @@ export const controller = {
     options: ['id'],
     permissions: true,
     async query(frame: EditFrame) {
-      return await automationsApi.edit(frame.options.id, frame.data?.automations?.[0]);
+      return await automationsApi.edit(frame.options.id, frame.data);
     },
   },
 

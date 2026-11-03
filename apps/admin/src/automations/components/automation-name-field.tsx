@@ -20,15 +20,15 @@ const AutomationNameField: React.FC<AutomationNameFieldProps> = ({
   onChange,
   surface = false,
 }) => {
-  const { isAdmin7, controlShape } = useShade();
+  const { controlShape } = useShade();
   // The input's 1px border sits inside its padding, so it pads 1px less than the hidden copy
   let box = { copy: 'h-8 px-2', input: 'h-8 bg-transparent px-[7px]' };
   if (surface) {
     const shape = controlShape === 'pill' ? 'rounded-full' : 'rounded-control';
-    box = isAdmin7
-      ? { copy: 'h-(--control-height) px-3', input: 'h-(--control-height) px-[11px]' }
-      : { copy: 'h-(--control-height) px-2.5', input: 'h-(--control-height) px-[9px]' };
-    box.input = cn(box.input, 'bg-surface-elevated', shape);
+    box = {
+      copy: 'h-(--control-height) px-3',
+      input: cn('h-(--control-height) bg-surface-elevated px-[11px]', shape),
+    };
   }
   const inputRef = useRef<HTMLInputElement>(null);
   // Restored on Escape, or on blur when left blank

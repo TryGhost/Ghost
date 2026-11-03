@@ -47,11 +47,8 @@ type SendOptions = {
 
 type PollOptions = {
   memberWelcomeEmailService: {
-    init: sinon.SinonStub<[], unknown>;
-    api: {
-      loadMemberWelcomeEmails: sinon.SinonStub<[], Promise<void>>;
-      send: sinon.SinonStub<[SendOptions], Promise<void>>;
-    };
+    loadMemberWelcomeEmails: sinon.SinonStub<[], Promise<void>>;
+    send: sinon.SinonStub<[SendOptions], Promise<void>>;
   };
   enqueueAnotherPollAt: sinon.SinonStub<[Readonly<Date>], unknown>;
 };
@@ -72,11 +69,8 @@ describe('welcome email automations poll', function () {
 
     options = {
       memberWelcomeEmailService: {
-        init: sinon.stub<[], unknown>(),
-        api: {
-          loadMemberWelcomeEmails: sinon.stub<[], Promise<void>>().resolves(),
-          send: sinon.stub<[SendOptions], Promise<void>>().resolves(),
-        },
+        loadMemberWelcomeEmails: sinon.stub<[], Promise<void>>().resolves(),
+        send: sinon.stub<[SendOptions], Promise<void>>().resolves(),
       },
       enqueueAnotherPollAt: sinon.stub<[Readonly<Date>], unknown>(),
     };
@@ -211,9 +205,8 @@ describe('welcome email automations poll', function () {
   it('does nothing if no runs exist in database', async function () {
     await welcomeEmailAutomationPoll(options);
 
-    sinon.assert.notCalled(options.memberWelcomeEmailService.init);
-    sinon.assert.notCalled(options.memberWelcomeEmailService.api.loadMemberWelcomeEmails);
-    sinon.assert.notCalled(options.memberWelcomeEmailService.api.send);
+    sinon.assert.notCalled(options.memberWelcomeEmailService.loadMemberWelcomeEmails);
+    sinon.assert.notCalled(options.memberWelcomeEmailService.send);
     sinon.assert.notCalled(options.enqueueAnotherPollAt);
     assert.deepEqual(await readTrackedRecipients(), []);
   });
@@ -254,9 +247,8 @@ describe('welcome email automations poll', function () {
 
     await welcomeEmailAutomationPoll(options);
 
-    sinon.assert.notCalled(options.memberWelcomeEmailService.init);
-    sinon.assert.notCalled(options.memberWelcomeEmailService.api.loadMemberWelcomeEmails);
-    sinon.assert.notCalled(options.memberWelcomeEmailService.api.send);
+    sinon.assert.notCalled(options.memberWelcomeEmailService.loadMemberWelcomeEmails);
+    sinon.assert.notCalled(options.memberWelcomeEmailService.send);
     sinon.assert.calledWith(options.enqueueAnotherPollAt, futureReadyAt);
     assert.deepEqual(await readTrackedRecipients(), []);
   });
@@ -299,11 +291,10 @@ describe('welcome email automations poll', function () {
 
     await welcomeEmailAutomationPoll(options);
 
-    sinon.assert.calledOnce(options.memberWelcomeEmailService.init);
-    sinon.assert.calledOnce(options.memberWelcomeEmailService.api.loadMemberWelcomeEmails);
+    sinon.assert.calledOnce(options.memberWelcomeEmailService.loadMemberWelcomeEmails);
 
     sinon.assert.calledWith(
-      options.memberWelcomeEmailService.api.send,
+      options.memberWelcomeEmailService.send,
       sinon.match({
         member: {
           name: 'Member One',
@@ -314,7 +305,7 @@ describe('welcome email automations poll', function () {
       }),
     );
     sinon.assert.calledWith(
-      options.memberWelcomeEmailService.api.send,
+      options.memberWelcomeEmailService.send,
       sinon.match({
         member: {
           name: 'Member Two',
@@ -365,7 +356,7 @@ describe('welcome email automations poll', function () {
       ready_at: new Date(Date.now() - 1000),
     });
     const sendError = new Error('send failed');
-    options.memberWelcomeEmailService.api.send.rejects(sendError);
+    options.memberWelcomeEmailService.send.rejects(sendError);
 
     // The rejected send hits processRun's catch block and logs an expected
     // error. Stub the logger so we can assert that path fired instead of
@@ -378,9 +369,8 @@ describe('welcome email automations poll', function () {
     const pollStart = Date.now();
     await welcomeEmailAutomationPoll(options);
 
-    sinon.assert.calledOnce(options.memberWelcomeEmailService.init);
-    sinon.assert.calledOnce(options.memberWelcomeEmailService.api.loadMemberWelcomeEmails);
-    sinon.assert.calledOnce(options.memberWelcomeEmailService.api.send);
+    sinon.assert.calledOnce(options.memberWelcomeEmailService.loadMemberWelcomeEmails);
+    sinon.assert.calledOnce(options.memberWelcomeEmailService.send);
     sinon.assert.calledOnce(errorLog);
 
     const enqueuedAt = options.enqueueAnotherPollAt.firstCall.args[0];
@@ -439,7 +429,7 @@ describe('welcome email automations poll', function () {
     const pollStart = Date.now();
     await welcomeEmailAutomationPoll(options);
 
-    sinon.assert.calledOnce(options.memberWelcomeEmailService.api.send);
+    sinon.assert.calledOnce(options.memberWelcomeEmailService.send);
     sinon.assert.calledOnce(errorLog);
     const enqueuedAt = options.enqueueAnotherPollAt.firstCall.args[0];
     const enqueuedDrift = Math.abs(enqueuedAt.getTime() - (pollStart + RETRY_DELAY_MS));
@@ -470,11 +460,11 @@ describe('welcome email automations poll', function () {
       step_attempts: 10,
     });
     const sendError = new Error('send failed');
-    options.memberWelcomeEmailService.api.send.rejects(sendError);
+    options.memberWelcomeEmailService.send.rejects(sendError);
 
     await welcomeEmailAutomationPoll(options);
 
-    sinon.assert.notCalled(options.memberWelcomeEmailService.api.send);
+    sinon.assert.notCalled(options.memberWelcomeEmailService.send);
     sinon.assert.notCalled(options.enqueueAnotherPollAt);
 
     const updatedRun = await readRun(run.id);
@@ -502,7 +492,7 @@ describe('welcome email automations poll', function () {
 
     await welcomeEmailAutomationPoll(options);
 
-    sinon.assert.notCalled(options.memberWelcomeEmailService.api.send);
+    sinon.assert.notCalled(options.memberWelcomeEmailService.send);
     sinon.assert.notCalled(options.enqueueAnotherPollAt);
     assert.deepEqual(await readTrackedRecipients(), []);
 
@@ -536,7 +526,7 @@ describe('welcome email automations poll', function () {
 
     await welcomeEmailAutomationPoll(options);
 
-    sinon.assert.notCalled(options.memberWelcomeEmailService.api.send);
+    sinon.assert.notCalled(options.memberWelcomeEmailService.send);
     sinon.assert.notCalled(options.enqueueAnotherPollAt);
     assert.equal(await readRun(run.id), undefined);
     assert.deepEqual(await readTrackedRecipients(), []);
@@ -566,7 +556,7 @@ describe('welcome email automations poll', function () {
 
     await welcomeEmailAutomationPoll(options);
 
-    sinon.assert.notCalled(options.memberWelcomeEmailService.api.send);
+    sinon.assert.notCalled(options.memberWelcomeEmailService.send);
     sinon.assert.notCalled(options.enqueueAnotherPollAt);
     assert.deepEqual(await readTrackedRecipients(), []);
 
@@ -600,7 +590,7 @@ describe('welcome email automations poll', function () {
     await welcomeEmailAutomationPoll(options);
 
     sinon.assert.calledWith(
-      options.memberWelcomeEmailService.api.send,
+      options.memberWelcomeEmailService.send,
       sinon.match({
         member: {
           name: 'Gift Member',
@@ -636,7 +626,7 @@ describe('welcome email automations poll', function () {
 
     await welcomeEmailAutomationPoll(options);
 
-    sinon.assert.notCalled(options.memberWelcomeEmailService.api.send);
+    sinon.assert.notCalled(options.memberWelcomeEmailService.send);
 
     const updatedRun = await readRun(run.id);
     assert.equal(updatedRun.exit_reason, 'email send failed');
@@ -665,7 +655,7 @@ describe('welcome email automations poll', function () {
 
     await welcomeEmailAutomationPoll(options);
 
-    sinon.assert.callCount(options.memberWelcomeEmailService.api.send, MAX_RUNS_PER_BATCH);
+    sinon.assert.callCount(options.memberWelcomeEmailService.send, MAX_RUNS_PER_BATCH);
     sinon.assert.calledOnceWithExactly(
       options.enqueueAnotherPollAt,
       sinon.match((date) => date instanceof Date && date <= new Date() && date >= beforePoll),

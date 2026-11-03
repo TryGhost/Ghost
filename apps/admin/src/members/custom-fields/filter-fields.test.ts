@@ -1,37 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { SCALAR_KIND_FILTER_TYPE, customFieldDescriptor, partFilterType } from './filter-fields';
+import { customFieldDescriptor, partFilterType } from './filter-fields';
 import { FILTER_TYPES } from '@/shared/filters';
-import { MEMBER_CUSTOM_FIELD_KINDS } from '@tryghost/admin-x-framework/api/member-custom-fields';
-import type {
-  MemberCustomFieldKind,
-  MemberCustomFieldPartType,
-} from '@tryghost/admin-x-framework/api/member-custom-fields';
-import type { FieldDescriptor, FilterTypeId } from '@/shared/filters';
+import type { FieldDescriptor } from '@/shared/filters';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
-
-type ScalarKind = Exclude<MemberCustomFieldKind, 'record'>;
-
-// Compile-time assertions: this file is type-checked by `tsc -b`, so each expected
-// error going away fails the build.
-// @ts-expect-error -- must not compile, or SCALAR_KIND_FILTER_TYPE is no longer exhaustive
-const _mappingWithAMissingKindDoesNotCompile: { [K in ScalarKind]: FilterTypeId } = {
-  text: 'text',
-  date: 'plain_date',
-};
-const _mappingWithAnUnknownKindDoesNotCompile: { [K in ScalarKind]: FilterTypeId } = {
-  ...SCALAR_KIND_FILTER_TYPE,
-  // @ts-expect-error -- must not compile, or SCALAR_KIND_FILTER_TYPE accepts undeclared kinds
-  boolean: 'scalar',
-};
-void _mappingWithAMissingKindDoesNotCompile;
-void _mappingWithAnUnknownKindDoesNotCompile;
-
-describe('SCALAR_KIND_FILTER_TYPE', () => {
-  it('maps every scalar kind the shared catalog declares', () => {
-    const scalarKinds = MEMBER_CUSTOM_FIELD_KINDS.filter((kind) => kind !== 'record');
-    expect(Object.keys(SCALAR_KIND_FILTER_TYPE).sort()).toEqual([...scalarKinds].sort());
-  });
-});
 
 describe('a composite field descriptor', () => {
   const descriptor = customFieldDescriptor({
@@ -88,15 +59,6 @@ function describeSemantics(field: FieldDescriptor) {
   }
   return field.semantics;
 }
-
-// @ts-expect-error -- must not compile, or PART_FILTER_TYPE is no longer exhaustive
-const _partMappingWithAMissingTypeDoesNotCompile: {
-  [P in MemberCustomFieldPartType]: 'text' | 'set';
-} = {
-  short_text: 'text',
-  postal_code: 'text',
-};
-void _partMappingWithAMissingTypeDoesNotCompile;
 
 describe('partFilterType', () => {
   it('types a part from a list as a set and a typed part as text', () => {

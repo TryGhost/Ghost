@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../utils/config-utils';
 
 describe('vhost utils', function () {
@@ -34,6 +33,7 @@ describe('vhost utils', function () {
     it('should have regex that excludes admin traffic on front-end', function () {
       const frontendRegex = configUtils.config.getFrontendMountPath();
 
+      assert.ok(frontendRegex instanceof RegExp);
       assert.equal(frontendRegex.test('localhost'), true);
       assert.equal(frontendRegex.test('ghost.blog'), true);
       assert.equal(frontendRegex.test('admin.ghost.blog'), false);

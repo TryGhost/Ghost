@@ -1,6 +1,5 @@
-import assert from 'assert/strict';
 import React from 'react';
-import { describe, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 import { Input } from '../../../../src/components/ui/input';
 import { render } from '../../utils/test-utils';
@@ -10,20 +9,19 @@ describe('Input Component', () => {
     render(<Input data-testid="input" placeholder="Enter text" />);
     const input = screen.getByTestId('input');
 
-    assert.ok(input, 'Input should be rendered');
-    assert.equal(input.tagName.toLowerCase(), 'input', 'Should be an input element');
-    assert.ok(
-      input.className.includes('h-(--control-height)'),
-      'Should use the shared control height',
+    expect(input, 'Input should be rendered').toBeTruthy();
+    expect(input.tagName.toLowerCase(), 'Should be an input element').toBe('input');
+    expect(input.className, 'Should use the shared control height').toContain(
+      'h-(--control-height)',
     );
-    assert.ok(!input.className.includes('h-9'), 'Should not use a fixed height');
+    expect(input.className, 'Should not use a fixed height').not.toContain('h-9');
   });
 
   it('applies custom className correctly', () => {
     render(<Input className="custom-class" data-testid="input" />);
     const input = screen.getByTestId('input');
 
-    assert.ok(input.className.includes('custom-class'), 'Should have custom class');
+    expect(input.className, 'Should have custom class').toContain('custom-class');
   });
 
   it('handles input changes', () => {
@@ -33,21 +31,19 @@ describe('Input Component', () => {
     const input = screen.getByTestId('input');
     fireEvent.change(input, { target: { value: 'test value' } });
 
-    assert.equal(handleChange.mock.calls.length, 1, 'Change handler should be called once');
+    expect(handleChange.mock.calls.length, 'Change handler should be called once').toBe(1);
   });
 
   it('renders disabled state correctly', () => {
     render(<Input data-testid="input" disabled />);
     const input = screen.getByTestId('input');
 
-    assert.ok(input.hasAttribute('disabled'), 'Input should be disabled');
-    assert.ok(
-      input.className.includes('disabled:bg-control-disabled-surface'),
-      'Should have a disabled surface',
+    expect(input.hasAttribute('disabled'), 'Input should be disabled').toBeTruthy();
+    expect(input.className, 'Should have a disabled surface').toContain(
+      'disabled:bg-control-disabled-surface',
     );
-    assert.ok(
-      input.className.includes('disabled:text-muted-foreground'),
-      'Should keep disabled values readable',
+    expect(input.className, 'Should keep disabled values readable').toContain(
+      'disabled:text-muted-foreground',
     );
   });
 
@@ -55,7 +51,7 @@ describe('Input Component', () => {
     render(<Input data-testid="input" type="password" />);
     const input = screen.getByTestId('input');
 
-    assert.equal(input.getAttribute('type'), 'password', 'Should have correct type attribute');
+    expect(input.getAttribute('type'), 'Should have correct type attribute').toBe('password');
   });
 
   it('applies focus styles when focused', () => {
@@ -64,7 +60,7 @@ describe('Input Component', () => {
 
     fireEvent.focus(input);
     // Testing focus behavior would require browser environment - we'll just check that it doesn't error
-    assert.ok(true);
+    expect(true).toBeTruthy();
   });
 
   it('forwards ref correctly', () => {
@@ -79,6 +75,6 @@ describe('Input Component', () => {
     const input = screen.getByTestId('input');
 
     // Check that the component rendered
-    assert.ok(input, 'Input should be rendered');
+    expect(input, 'Input should be rendered').toBeTruthy();
   });
 });

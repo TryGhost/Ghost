@@ -8,7 +8,8 @@ const LazyUrlService = require('../../core/server/services/url/lazy-url-service'
 const { createFindResource } = require('../../core/server/services/url/lazy-find-resource');
 const inputSerializer = require('../../core/server/api/endpoints/utils/serializers/input/posts');
 const postsMapper = require('../../core/server/api/endpoints/utils/serializers/output/mappers/posts');
-const memberAttribution = require('../../core/server/services/member-attribution');
+const memberAttribution = require('../../core/server/services/member-attribution').default;
+const commentsService = require('../../core/server/services/comments').default;
 const db = require('../../core/server/data/db');
 
 // Drives the real Content API pipeline — input serializer, model fetch, output
@@ -47,7 +48,8 @@ describe('Integration: Content API URL serialization (primary_tag permalinks)', 
   beforeAll(testUtils.setup('users:roles', 'posts'));
 
   const EMPTY_LEXICAL = testUtils.DataGenerator.markdownToLexical('url serialization fixture');
-  let hadOutboundLinkTagger;
+  let attributionStub;
+  let commentsStub;
   let publicFirst;
 
   beforeAll(async function () {
@@ -97,17 +99,18 @@ describe('Integration: Content API URL serialization (primary_tag permalinks)', 
 
     // outboundLinkTagger is only wired at boot; stub a pass-through. It
     // is a process global, so put it back afterwards.
-    hadOutboundLinkTagger = Object.hasOwn(memberAttribution, 'outboundLinkTagger');
-    if (!memberAttribution.outboundLinkTagger) {
-      memberAttribution.outboundLinkTagger = { addToHtml: async (html) => html };
-    }
+    attributionStub = sinon.stub(memberAttribution, 'service').get(() => ({
+      outboundLinkTagger: { addToHtml: async (html) => html },
+    }));
+    // The Content API mapper reads the comments setting from the Comments
+    // root, which is also only initialized at boot.
+    commentsStub = sinon.stub(commentsService, 'service').get(() => ({ api: { enabled: 'all' } }));
   });
 
   afterAll(function () {
     urlService.reset();
-    if (!hadOutboundLinkTagger) {
-      delete memberAttribution.outboundLinkTagger;
-    }
+    attributionStub.restore();
+    commentsStub.restore();
   });
   afterAll(testUtils.teardownDb);
 

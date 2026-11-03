@@ -2,8 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { readPublishCelebration } from './post-publish-celebration';
 
 /**
- * The editor→list handoff, ported from `checkPublishFlowModal` in
- * `apps/ember-admin/app/components/posts-list/list.js`.
+ * The editor→list handoff.
  */
 afterEach(() => {
   localStorage.clear();
@@ -33,10 +32,8 @@ describe('readPublishCelebration', () => {
   });
 
   /**
-   * The key is cleared as it is read, *before* anything is fetched. Ember
-   * clears it after the modal opens, so a failed request leaves the key in
-   * place and the celebration re-fires on every visit to the list until it
-   * happens to succeed.
+   * The key is cleared as it is read, *before* anything is fetched, so a
+   * failed request can't leave it in place to re-fire on every visit.
    */
   it('clears the key as it reads it', () => {
     localStorage.setItem('ghost-last-published-post', JSON.stringify({ id: 'p1', type: 'post' }));
@@ -62,8 +59,7 @@ describe('readPublishCelebration', () => {
     expect(readPublishCelebration()).toBeNull();
   });
 
-  // Published wins if both are somehow set, matching Ember's order — though
-  // it opens two modals in that case and we open one.
+  // Published wins if both are somehow set; only one modal opens.
   it('prefers the published entry when both are set', () => {
     localStorage.setItem('ghost-last-published-post', JSON.stringify({ id: 'p1', type: 'post' }));
     localStorage.setItem('ghost-last-scheduled-post', JSON.stringify({ id: 'p2', type: 'post' }));

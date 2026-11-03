@@ -1,6 +1,5 @@
 import sinon from 'sinon';
 
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../utils/config-utils';
 import { mockManager } from '../../../utils/e2e-framework';
 

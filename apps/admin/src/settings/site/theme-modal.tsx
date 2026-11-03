@@ -141,12 +141,6 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({ currentTab, setCurrentTab, 
         okVariant: 'destructive',
         onOk: async (confirmModal) => {
           setUploading(true);
-
-          // this is to avoid the themes array from returning the overwritten theme.
-          // find index of themeFileName in existingThemeNames and remove from the array
-          const index = existingThemeNames.indexOf(themeFileName);
-          themes.splice(index, 1);
-
           await handleThemeUpload({ file, onActivate: onClose });
           setUploading(false);
           setCurrentTab('installed');
@@ -400,11 +394,6 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({ source, themeRef })
             let data: ThemesInstallResponseType | undefined;
             setInstalledFromMarketplace(true);
             try {
-              if (willOverwrite) {
-                if (themes) {
-                  themes.splice(index, 1);
-                }
-              }
               data = await installTheme(themeRef);
               if (data?.themes[0]) {
                 await activateTheme(data.themes[0].name);

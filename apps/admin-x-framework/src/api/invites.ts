@@ -42,7 +42,9 @@ export const useBrowseInvites = createInfiniteQuery<InvitesResponseType & { isEn
   },
 });
 
-export const useAddInvite = createMutation<InvitesResponseType, { email: string; roleId: string }>({
+type AddInvitePayload = { email: string; roleId: string; replacingId?: string };
+
+export const useAddInvite = createMutation<InvitesResponseType, AddInvitePayload>({
   method: 'POST',
   path: () => '/invites/',
   body: ({ email, roleId }) => ({
@@ -59,7 +61,16 @@ export const useAddInvite = createMutation<InvitesResponseType, { email: string;
   updateQueries: {
     dataType,
     // Assume that all invite queries should include this new one
-    update: insertToQueryCache('invites'),
+    update: (response, current, payload) => {
+      const withoutPrevious = payload.replacingId
+        ? deleteFromQueryCache<InvitesResponseType, string>('invites')(
+            response,
+            current,
+            payload.replacingId,
+          )
+        : current;
+      return insertToQueryCache<InvitesResponseType>('invites')(response, withoutPrevious);
+    },
   },
 });
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
 import {
+  configResponse,
   fakeAdminEndpoint,
   fakeMemberCustomFields,
   fakeMembers,
@@ -12,7 +13,9 @@ import {
 import { importMembersScreen } from './import-members.screen';
 import { membersScreen } from './members.screen';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { MetafieldDefinitionSchema } from '@tryghost/metafield-types';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
+import { z } from 'zod';
 
 // The import dialog is served to everyone now, so custom fields are the only switch left, and
 // the dialog has to hold up on either side of it.
@@ -36,6 +39,9 @@ const RAGGED_CSV = 'email,name,note\nada@example.com\ngrace@example.com,Grace Ho
 // leave that request unhandled.
 const customFieldsBrowsePath = new RegExp('^/members/metafields/custom/(\\?|$)');
 
+// What the import's create form sends: a name, and the type with whatever settings it takes.
+const CreateBody = z.object({ members_metafields: z.array(z.looseObject({ name: z.string() })) });
+
 const EXPORTED_CSV = 'email,metafields.custom.nickname\nada@example.com,Countess\n';
 
 /**
@@ -51,19 +57,17 @@ function fakeCustomFieldsWorld(definedFields: MemberCustomField[] = []) {
     meta: { stats: { imported: 1, invalid: [] }, import_label: { name: 'Import', slug: 'import' } },
   });
   const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', ({ body }) => {
-    const [input] = (
-      body as { members_metafields: Array<{ name: string; type: MemberCustomField['type'] }> }
-    ).members_metafields;
-    const field: MemberCustomField = {
+    const [input] = CreateBody.parse(body).members_metafields;
+    const field = MetafieldDefinitionSchema.parse({
+      ...input,
       namespace: CUSTOM_NAMESPACE,
-      key: KeySchema.parse(input.name.trim().toLowerCase().replace(/\s+/g, '_')),
+      key: input.name.trim().toLowerCase().replace(/\s+/g, '_'),
       name: input.name.trim(),
-      type: input.type,
       status: 'active',
       access: { member: 'none' },
       created_at: '2026-08-05T00:00:00.000Z',
       updated_at: null,
-    };
+    });
     fields.push(field);
     return { members_metafields: [field] };
   });
@@ -815,6 +819,23 @@ describe('Import members custom fields', () => {
 
       // The offer to add a field was the list's only force-mounted item, so without it a
       // fruitless search would leave the list blank with nothing said.
+      await expect.element(importMembersScreen.addCustomFieldOption()).not.toBeInTheDocument();
+      await expect.element(importMembersScreen.messageText('No fields found.')).toBeVisible();
+    });
+
+    // While the host switches custom fields off every field reads as archived, so there is
+    // none to map onto, and the server would refuse a new one.
+    it('offers no way to make a field while the host switches custom fields off', async () => {
+      fakeCustomFieldsWorld();
+      const config = configResponse(FLAGS);
+      config.config.hostSettings = { limits: { limitCustomFields: { disabled: true } } };
+      await renderAdminApp('/members', { ...FLAGS, boot: { browseConfig: { response: config } } });
+      await openMappingStep();
+
+      await importToggle('nickname').click();
+      await fieldSelect('nickname').click();
+      await userEvent.fill(importMembersScreen.searchFieldsInput(), 'zzzz');
+
       await expect.element(importMembersScreen.addCustomFieldOption()).not.toBeInTheDocument();
       await expect.element(importMembersScreen.messageText('No fields found.')).toBeVisible();
     });

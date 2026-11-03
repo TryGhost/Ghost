@@ -1083,9 +1083,14 @@ module.exports = {
       // Keep in sync with FIELD_TYPE_IDS in @tryghost/metafield-types,
       // the source of truth (this static schema can't import it).
       validations: {
-        isIn: [['short_text', 'long_text', 'address']],
+        isIn: [['short_text', 'long_text', 'list', 'address']],
       },
     },
+    // What the field is set up with beyond its name, as JSON: a list field's options and
+    // whether a member picks several. Null for a type with nothing to set up. Each type's
+    // settings are checked by @tryghost/metafield-types. MEDIUMTEXT because a list's options
+    // can outgrow TEXT's 65,535 bytes.
+    settings: { type: 'text', maxlength: 16777215, fieldtype: 'medium', nullable: true },
     status: {
       type: 'string',
       maxlength: 50,
@@ -2175,16 +2180,11 @@ module.exports = {
     name: { type: 'string', maxlength: 191, nullable: false },
     description: { type: 'string', maxlength: 2000, nullable: false, defaultTo: '' },
     slug: { type: 'string', maxlength: 191, nullable: true, unique: true },
-    trigger_tier_scope: {
-      type: 'string',
-      maxlength: 50,
-      nullable: true,
-      validations: { isIn: [['free', 'all_paid', 'selected_paid']] },
-    },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
-  automation_trigger_tiers: {
+  automation_trigger_rules: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     automation_id: {
       type: 'string',
       maxlength: 24,
@@ -2192,12 +2192,35 @@ module.exports = {
       references: 'automations.id',
       cascadeDelete: true,
     },
+    trigger_type: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      validations: {
+        isIn: [['free_signup', 'paid_subscription_started', 'paid_subscription_changed']],
+      },
+    },
+    scope: {
+      type: 'string',
+      maxlength: 50,
+      nullable: true,
+      validations: { isIn: [['any_paid_tier', 'specific_paid_tier', 'free']] },
+    },
+    direction: {
+      type: 'string',
+      maxlength: 50,
+      nullable: true,
+      validations: { isIn: [['from', 'to']] },
+    },
     product_id: {
       type: 'string',
       maxlength: 24,
-      nullable: false,
+      nullable: true,
       references: 'products.id',
+      cascadeDelete: true,
     },
+    created_at: { type: 'dateTime', nullable: false },
+    // Note that this UNIQUE constraint allows duplicates if `product_id` is NULL. This is intentional.
     '@@UNIQUE_CONSTRAINTS@@': [['automation_id', 'product_id']],
   },
   automation_actions: {
@@ -2365,6 +2388,7 @@ module.exports = {
             'failed',
             'finished',
             'member changed status',
+            'member changed tier',
             'member unsubscribed',
           ],
         ],
@@ -2656,6 +2680,9 @@ module.exports = {
     // Being unique, it is what lets a site have only one installation per app however two
     // installs race, while any number of ended ones share the null.
     current_app_id: { type: 'string', maxlength: 191, nullable: true, unique: true },
+    // The RFC 7638 thumbprint of the identity key the app was installed with. It never
+    // changes: a manifest signed with any other key is a different app.
+    identity_key_thumbprint: { type: 'string', maxlength: 64, nullable: false },
     status: {
       type: 'string',
       maxlength: 50,
@@ -2687,12 +2714,20 @@ module.exports = {
     },
     // As wide as the contract's URL limit, which is what refuses a longer one.
     manifest_url: { type: 'string', maxlength: 2000, nullable: false },
-    // The validated manifest, with its URLs resolved, as JSON.
+    // The validated manifest, as JSON.
     manifest: { type: 'text', maxlength: 65535, nullable: false },
-    // SHA-256 of `manifest_url` and `manifest` together, in hex: what a publisher confirms,
+    // SHA-256 of `manifest`, which names its own URL, in hex: what a publisher confirms,
     // and what tells two versions apart without parsing them. Defined by
     // services/app-installations/load-manifest.ts.
     digest: { type: 'string', maxlength: 64, nullable: false },
+    // A copy of the app's own icon as a data URL, taken when the row was added, so staff
+    // browsers never request it from the app. Null for a named icon. Defined by
+    // services/app-installations/fetch-icon.ts.
+    icon_data_url: { type: 'text', maxlength: 65535, nullable: true },
+    // The RFC 7638 thumbprint of the manifest's backend key. For each app and identity key,
+    // every key named on any installation is retired, other than the one named by the newest
+    // installation's pending or else approved manifest: a manifest naming one is refused.
+    backend_key_thumbprint: { type: 'string', maxlength: 64, nullable: false },
     // How the row was added: the app was installed, an Administrator approved changes, the
     // re-check applied a newer manifest or stored one for approval (`update`), or the
     // re-check lifted a suspension because the app reverted the pending changes (`resume`).
@@ -2706,13 +2741,12 @@ module.exports = {
     requires_approval: { type: 'boolean', nullable: false, defaultTo: false },
     created_at: { type: 'dateTime', nullable: false },
   },
-  // Committed dispatches waiting for the relay to hand them to the jobs backend. Still in
-  // development: see ./in-development.ts.
   jobs_outbox: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     envelope: { type: 'text', maxlength: 65535, nullable: false },
     created_at: { type: 'dateTime', nullable: false },
     available_at: { type: 'dateTime', nullable: false },
-    '@@INDEXES@@': [['available_at']],
+    submitted_at: { type: 'dateTime', nullable: true },
+    '@@INDEXES@@': [['submitted_at', 'available_at']],
   },
 };

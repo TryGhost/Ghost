@@ -1,5 +1,6 @@
-import { MockedApi, initialize, waitEditorFocused } from '../utils/e2e';
+import { MOCKED_SITE_URL, MockedApi, initialize, waitEditorFocused } from '../utils/e2e';
 import { buildMember, buildReply } from '../utils/fixtures';
+import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
 
 test.describe('Actions', async () => {
@@ -587,6 +588,22 @@ test.describe('Actions', async () => {
   });
 
   test.describe('Sorting', () => {
+    async function holdSortingResponse(page: Page): Promise<() => void> {
+      let release = () => {};
+      const pending = new Promise<void>((resolve) => {
+        release = () => resolve();
+      });
+      await page.route(
+        `${MOCKED_SITE_URL}/members/api/comments/post/${mockedApi.postId}/*`,
+        async (route) => {
+          await pending;
+          await route.fallback();
+        },
+        { times: 1 },
+      );
+      return release;
+    }
+
     test('Renders Sorting Form dropdown', async ({ page }) => {
       mockedApi.addComment({
         html: '<p>This is comment 1</p>',
@@ -719,22 +736,20 @@ test.describe('Actions', async () => {
       const sortingDropdown = await frame.getByTestId('comments-sorting-form-dropdown');
 
       const optionSelect = await sortingDropdown.getByText('Newest');
-      mockedApi.setDelay(100);
-      await optionSelect.click();
-      const commentsElement = await frame.getByTestId('comment-elements');
-      const hasOpacity50 = await commentsElement.evaluate((el) =>
-        el.classList.contains('opacity-50'),
-      );
-      expect(hasOpacity50).toBe(true);
+      const releaseResponse = await holdSortingResponse(page);
+      const commentsElement = frame.getByTestId('comment-elements');
+      try {
+        await optionSelect.click();
+        await expect(commentsElement).toHaveClass(/\bopacity-50\b/);
+      } finally {
+        releaseResponse();
+      }
 
       const comments = await frame.getByTestId('comment-component');
 
       await expect(comments.nth(0)).toContainText('This is the newest comment');
 
-      const hasNoOpacity50 = await commentsElement.evaluate((el) =>
-        el.classList.contains('opacity-50'),
-      );
-      expect(hasNoOpacity50).toBe(false);
+      await expect(commentsElement).not.toHaveClass(/\bopacity-50\b/);
     });
 
     test('Sorts by oldest', async ({ page }) => {
@@ -764,22 +779,20 @@ test.describe('Actions', async () => {
       const sortingDropdown = await frame.getByTestId('comments-sorting-form-dropdown');
 
       const optionSelect = await sortingDropdown.getByText('Oldest');
-      mockedApi.setDelay(100);
-      await optionSelect.click();
-      const commentsElement = await frame.getByTestId('comment-elements');
-      const hasOpacity50 = await commentsElement.evaluate((el) =>
-        el.classList.contains('opacity-50'),
-      );
-      expect(hasOpacity50).toBe(true);
+      const releaseResponse = await holdSortingResponse(page);
+      const commentsElement = frame.getByTestId('comment-elements');
+      try {
+        await optionSelect.click();
+        await expect(commentsElement).toHaveClass(/\bopacity-50\b/);
+      } finally {
+        releaseResponse();
+      }
 
       const comments = await frame.getByTestId('comment-component');
 
       await expect(comments.nth(0)).toContainText('This is the oldest');
 
-      const hasNoOpacity50 = await commentsElement.evaluate((el) =>
-        el.classList.contains('opacity-50'),
-      );
-      expect(hasNoOpacity50).toBe(false);
+      await expect(commentsElement).not.toHaveClass(/\bopacity-50\b/);
     });
 
     test('has loading state when changing sorting', async ({ page }) => {
@@ -805,22 +818,20 @@ test.describe('Actions', async () => {
       const sortingDropdown = await frame.getByTestId('comments-sorting-form-dropdown');
 
       const optionSelect = await sortingDropdown.getByText('Newest');
-      mockedApi.setDelay(100);
-      await optionSelect.click();
-      const commentsElement = await frame.getByTestId('comment-elements');
-      const hasOpacity50 = await commentsElement.evaluate((el) =>
-        el.classList.contains('opacity-50'),
-      );
-      expect(hasOpacity50).toBe(true);
+      const releaseResponse = await holdSortingResponse(page);
+      const commentsElement = frame.getByTestId('comment-elements');
+      try {
+        await optionSelect.click();
+        await expect(commentsElement).toHaveClass(/\bopacity-50\b/);
+      } finally {
+        releaseResponse();
+      }
 
       const comments = await frame.getByTestId('comment-component');
 
       await expect(comments.nth(0)).toContainText('This is the newest comment');
 
-      const hasNoOpacity50 = await commentsElement.evaluate((el) =>
-        el.classList.contains('opacity-50'),
-      );
-      expect(hasNoOpacity50).toBe(false);
+      await expect(commentsElement).not.toHaveClass(/\bopacity-50\b/);
     });
   });
 

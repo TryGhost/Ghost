@@ -6,9 +6,8 @@ import {
   isPostViewActive,
 } from './post-sidebar-views';
 
-// Saved views are addressed by the same five params the list screen uses, and
-// Ember compares them for exact equality after dropping nulls. Getting this
-// wrong means the sidebar highlights the wrong thing, or nothing.
+// Saved views are addressed by the same five params the list screen uses,
+// compared for exact equality after dropping nulls.
 
 describe('buildPostViewUrl', () => {
   it('builds a bare route URL for an empty filter', () => {
@@ -53,7 +52,7 @@ describe('isPostViewActive', () => {
     ).toBe(false);
   });
 
-  // Ember compares the whole param set, so a view is not active merely
+  // The whole param set is compared, so a view is not active merely
   // because the URL is a superset of it.
   it('does not match when the URL carries an extra param', () => {
     expect(isPostViewActive(at('?type=draft&tag=news'), 'posts', { type: 'draft' })).toBe(false);
@@ -74,8 +73,7 @@ describe('isPostViewActive', () => {
     expect(isPostViewActive(at('?type=draft'), 'posts', {})).toBe(false);
   });
 
-  // Sort is part of a view's identity in Ember - it is one of the five
-  // params `reset-query-params` covers.
+  // Sort is part of a view's identity - it is one of the five view params.
   it('includes order in the comparison', () => {
     expect(
       isPostViewActive(at('?type=draft'), 'posts', { type: 'draft', order: 'published_at asc' }),
@@ -104,7 +102,7 @@ describe('getDefaultPostViews', () => {
     ]);
   });
 
-  it('matches the Ember filters exactly', () => {
+  it('uses the draft, scheduled and published filters', () => {
     expect(POST_DEFAULT_VIEWS.map((view) => view.filter)).toEqual([
       { type: 'draft' },
       { type: 'scheduled' },
@@ -113,7 +111,7 @@ describe('getDefaultPostViews', () => {
   });
 
   // Contributors only ever see their own drafts, so status views are
-  // meaningless to them - Ember hides them.
+  // meaningless to them.
   it('offers none to a contributor', () => {
     expect(getDefaultPostViews(true)).toEqual([]);
   });

@@ -8,7 +8,7 @@ import type {
 // Bump VERSION when the shape changes; an older copy is reseeded.
 
 const STORAGE_KEY = 'shaping.mock.db';
-const VERSION = 4;
+const VERSION = 5;
 
 export type MockRun = AutomationRun & { automation_id: string };
 

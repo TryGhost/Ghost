@@ -13,13 +13,7 @@
   "targetDefaults": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": [
-        {
-          "env": "GHOST_CDN_URL"
-        },
-        "default",
-        "^default"
-      ],
+      "inputs": ["default", "^default"],
       "outputs": [
         "{projectRoot}/build",
         "{projectRoot}/dist",

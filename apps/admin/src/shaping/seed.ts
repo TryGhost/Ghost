@@ -196,6 +196,13 @@ const buildLinks = (count: number, unclicked: number, clicked: number): MockDb['
   ];
 };
 
+const ANY_PAID_STARTED = {
+  trigger_type: 'paid_subscription_started',
+  scope: 'any_paid_tier',
+  product_id: null,
+  direction: null,
+} as const;
+
 export const seedDb = async () => {
   const now = Date.now();
   const paidTierIds = await readPaidTierIds();
@@ -222,7 +229,11 @@ export const seedDb = async () => {
     'Free member welcome',
     'Greet new free members with a short onboarding sequence.',
     'active',
-    { trigger_tier_scope: 'free', trigger_tier_ids: null },
+    {
+      trigger_rules: [
+        { trigger_type: 'free_signup', scope: null, product_id: null, direction: null },
+      ],
+    },
     [
       {
         email: {
@@ -253,7 +264,7 @@ export const seedDb = async () => {
     'Paid member welcome',
     'Welcome members who have just started paying.',
     'active',
-    { trigger_tier_scope: 'all_paid', trigger_tier_ids: null },
+    { trigger_rules: [ANY_PAID_STARTED] },
     [
       {
         email: {
@@ -277,16 +288,52 @@ export const seedDb = async () => {
     'inactive',
     paidTierIds.length > 0
       ? {
-          trigger_tier_scope: 'selected_paid',
-          trigger_tier_ids: [paidTierIds[paidTierIds.length - 1]],
+          trigger_rules: [
+            {
+              trigger_type: 'paid_subscription_started',
+              scope: 'specific_paid_tier',
+              product_id: paidTierIds[paidTierIds.length - 1],
+              direction: null,
+            },
+          ],
         }
-      : { trigger_tier_scope: 'all_paid', trigger_tier_ids: null },
+      : { trigger_rules: [ANY_PAID_STARTED] },
     [
       {
         email: { subject: 'A personal thank-you', body: ['Thank you for choosing our top tier.'] },
       },
     ],
     6,
+  );
+  const downgrade = automation(
+    'Downgrade check-in',
+    'Check in with members who move from a paid tier to free.',
+    'inactive',
+    {
+      trigger_rules: [
+        {
+          trigger_type: 'paid_subscription_changed',
+          scope: 'any_paid_tier',
+          product_id: null,
+          direction: 'from',
+        },
+        {
+          trigger_type: 'paid_subscription_changed',
+          scope: 'free',
+          product_id: null,
+          direction: 'to',
+        },
+      ],
+    },
+    [
+      {
+        email: {
+          subject: 'Sorry to see you go',
+          body: ['You’re still on our free list, so you won’t miss a post.'],
+        },
+      },
+    ],
+    2,
   );
 
   const runs = [...buildRuns(free.id, 160, 120, now), ...buildRuns(paid.id, 70, 90, now)];
@@ -333,5 +380,5 @@ export const seedDb = async () => {
     });
   }
 
-  setDb({ automations: [free, paid, tierDraft], runs, links });
+  setDb({ automations: [free, paid, tierDraft, downgrade], runs, links });
 };

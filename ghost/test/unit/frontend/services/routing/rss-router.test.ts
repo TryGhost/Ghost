@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { assertExists } from '../../../../utils/assertions';
 import sinon from 'sinon';
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../../utils/config-utils';
 // @ts-expect-error This module lacks type definitions.
 import controllers from '../../../../../core/frontend/services/routing/controllers';

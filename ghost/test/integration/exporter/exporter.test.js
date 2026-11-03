@@ -32,7 +32,7 @@ describe('Exporter', function () {
       'automation_actions',
       'automation_run_steps',
       'automation_runs',
-      'automation_trigger_tiers',
+      'automation_trigger_rules',
       'automated_email_recipients',
       'automations',
       'benefits',

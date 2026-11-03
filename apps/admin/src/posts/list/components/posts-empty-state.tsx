@@ -5,18 +5,17 @@ import { type PostResource, getPostResourceCopy } from '@/posts/list/post-resour
 interface PostsEmptyStateProps {
   resource: PostResource;
   /**
-   * Whether any filter is active. Sorting deliberately doesn't count — Ember
-   * excludes `order` from this check, so re-sorting an empty list still
-   * offers "write your first post" rather than "clear your filters".
+   * Whether any filter is active. Sorting deliberately doesn't count, so
+   * re-sorting an empty list still offers "write your first post" rather than
+   * "clear your filters".
    */
   hasFilters: boolean;
   onClearFilters: () => void;
 }
 
 /**
- * The two empty states from `apps/ember-admin/app/templates/posts.hbs`: a cold
- * start with a call to action, and a filtered-to-nothing state offering a way
- * back.
+ * The two empty states: a cold start with a call to action, and a
+ * filtered-to-nothing state offering a way back.
  */
 export function PostsEmptyState({ resource, hasFilters, onClearFilters }: PostsEmptyStateProps) {
   const copy = getPostResourceCopy(resource);

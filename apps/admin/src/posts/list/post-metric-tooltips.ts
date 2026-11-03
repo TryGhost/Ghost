@@ -2,12 +2,11 @@ import type { PostMetricKey } from '@/posts/list/post-metrics';
 import type { PostListItem } from '@/posts/list/hooks/use-posts-list';
 
 /**
- * The breakdown shown when hovering a metric column, ported from the tooltip
- * markup in `list-item-analytics.hbs`.
+ * The breakdown shown when hovering a metric column.
  *
- * The three email columns share one tooltip — Ember shows the same "Newsletter
+ * The three email columns share one tooltip — the same "Newsletter
  * performance" panel with Sent, Opens and Clicks whichever of them you hover,
- * and it lists Opens/Clicks only when those are being tracked.
+ * listing Opens/Clicks only when those are being tracked.
  *
  * The panel shows **raw counts**, not the rates the columns show: the Opens
  * column reads "78%" while the panel underneath it reads "Opens 572". Showing
@@ -77,7 +76,7 @@ export function getPostMetricTooltip(
     title: 'New members',
     rows: [
       { label: 'Free', value: inputs.freeMembers ?? 0, icon: 'free' },
-      // Ember hides the paid row entirely when paid members are off.
+      // The paid row is hidden entirely when paid members are off.
       ...(inputs.paidMembersEnabled
         ? [{ label: 'Paid', value: inputs.paidMembers ?? 0, icon: 'paid' as const }]
         : []),

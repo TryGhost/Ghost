@@ -260,8 +260,7 @@ export const handlers = [
       name: '',
       description: '',
       status: 'inactive',
-      trigger_tier_scope: null,
-      trigger_tier_ids: null,
+      trigger_rules: [],
       actions: [],
       edges: [],
       ...fields,
@@ -289,14 +288,12 @@ export const handlers = [
     if (fields.name && nameTaken(fields.name, id)) {
       return nameTakenError();
     }
-    // A cast: the trigger's scope and tier ids arrive together, but TypeScript
-    // can't see that through a partial merge.
     const updated = keepStats(existing, {
       ...existing,
       ...fields,
       id,
       updated_at: new Date().toISOString(),
-    } as AutomationDetail);
+    });
     const db = getDb();
     db.automations = db.automations.map((item) => (item.id === id ? updated : item));
     saveDb();

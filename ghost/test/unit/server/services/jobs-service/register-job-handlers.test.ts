@@ -56,7 +56,7 @@ describe('register-job-handlers', function () {
   beforeEach(function () {
     // Keep the root uninitialized to prove registration defers access until execution.
     // Restore complete cache entries so existing consumers retain their original modules.
-    originalModules = new Map(MODULE_PATHS.map((path) => [path, require.cache[path]]));
+    originalModules = new Map(Object.entries(require.cache));
     for (const path of MODULE_PATHS) {
       delete require.cache[path];
     }
@@ -95,12 +95,14 @@ describe('register-job-handlers', function () {
 
   afterEach(function () {
     sinon.restore();
-    for (const [path, original] of originalModules) {
-      if (original) {
-        require.cache[path] = original;
-      } else {
+    // Restore newly loaded dependencies too, not just the roots we reloaded.
+    for (const path of Object.keys(require.cache)) {
+      if (!originalModules.has(path)) {
         delete require.cache[path];
       }
+    }
+    for (const [path, original] of originalModules) {
+      require.cache[path] = original;
     }
   });
 
