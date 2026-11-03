@@ -1,6 +1,7 @@
+import {LOAD_TIMEOUT_MS, canvasToJpeg} from '../../src/utils/videoFrames';
 import {VideoThumbnailPicker} from '../../src/components/ui/VideoThumbnailPicker';
-import {afterEach, expect, vi} from 'vitest';
-import {fireEvent, render, screen} from '@testing-library/react';
+import {act, fireEvent, render, screen} from '@testing-library/react';
+import {afterEach, beforeEach, expect, vi} from 'vitest';
 
 // jsdom plays no video: the strip never loads, and the picked frame can't be encoded, as when a
 // frame really can't be saved
@@ -16,33 +17,43 @@ vi.mock(import('../../src/utils/videoFrames'), async (importOriginal) => {
 });
 
 /** The preview as if its video had loaded. */
-function loadPreview() {
+function loadPreview({duration = 4} = {}) {
     const preview = screen.getByTestId('thumbnail-preview');
     Object.defineProperties(preview, {
         videoWidth: {value: 1920},
         videoHeight: {value: 1080},
-        duration: {value: 4}
+        duration: {value: duration},
+        readyState: {value: 4}
     });
     fireEvent.loadedMetadata(preview);
 }
 
+function renderPicker(props = {}) {
+    return render(
+        <VideoThumbnailPicker
+            thumbnail="/content/images/2026/10/video_thumb.jpg"
+            videoSrc="/content/media/2026/10/video.mp4"
+            isOpen
+            onClose={vi.fn()}
+            onSelectFrame={vi.fn()}
+            onUploadImage={vi.fn()}
+            {...props}
+        />
+    );
+}
+
 describe('VideoThumbnailPicker', function () {
+    beforeEach(() => {
+        vi.spyOn(HTMLMediaElement.prototype, 'load').mockImplementation(() => {});
+    });
+
     afterEach(() => {
         vi.restoreAllMocks();
     });
 
     it('says when the picked frame can\'t be saved, until the writer moves on', async function () {
-        vi.spyOn(HTMLMediaElement.prototype, 'load').mockImplementation(() => {});
         const onSelectFrame = vi.fn();
-        render(
-            <VideoThumbnailPicker
-                videoSrc="/content/media/2026/10/video.mp4"
-                isOpen
-                onClose={vi.fn()}
-                onSelectFrame={onSelectFrame}
-                onUploadImage={vi.fn()}
-            />
-        );
+        renderPicker({onSelectFrame});
         loadPreview();
 
         fireEvent.click(screen.getByRole('button', {name: 'Select'}));
@@ -53,5 +64,45 @@ describe('VideoThumbnailPicker', function () {
 
         fireEvent.change(screen.getByRole('slider', {name: 'Thumbnail frame'}), {target: {value: '2'}});
         expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
+    it('keeps focus on Select while the frame is saved', async function () {
+        vi.mocked(canvasToJpeg).mockImplementationOnce(() => new Promise<Blob>(() => {}));
+        renderPicker();
+        loadPreview();
+
+        const select = screen.getByRole('button', {name: 'Select'});
+        select.focus();
+        fireEvent.click(select);
+
+        expect(select).toHaveAttribute('aria-disabled', 'true');
+        expect(select).not.toBeDisabled();
+    });
+
+    it('offers only an image for a video with no length to scrub', function () {
+        renderPicker();
+        loadPreview({duration: Infinity});
+
+        expect(screen.getByTestId('thumbnail-unreadable')).toBeInTheDocument();
+        expect(screen.getByRole('img', {name: 'Current thumbnail'})).toBeInTheDocument();
+        expect(screen.queryByRole('slider', {name: 'Thumbnail frame'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Select'})).not.toBeInTheDocument();
+        expect(screen.getByRole('status')).toHaveTextContent('This video\'s frames couldn\'t be loaded');
+    });
+
+    it('offers only an image when the video never loads', function () {
+        vi.useFakeTimers();
+        try {
+            renderPicker();
+            expect(screen.queryByTestId('thumbnail-unreadable')).not.toBeInTheDocument();
+
+            act(() => {
+                vi.advanceTimersByTime(LOAD_TIMEOUT_MS);
+            });
+
+            expect(screen.getByTestId('thumbnail-unreadable')).toBeInTheDocument();
+        } finally {
+            vi.useRealTimers();
+        }
     });
 });

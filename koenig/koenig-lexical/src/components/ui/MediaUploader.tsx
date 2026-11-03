@@ -35,7 +35,6 @@ export function MediaUploader({
     filePicker
 }) {
     const fileInputRef = useRef(null);
-    // What clicking the empty placeholder does: choosing a file, unless the caller offers more
     const pickFile = filePicker ?? (() => openFileSelection({fileInputRef}));
 
     const onFileInputRef = (element) => {

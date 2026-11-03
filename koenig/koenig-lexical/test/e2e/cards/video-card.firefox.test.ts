@@ -257,6 +257,32 @@ test.describe('Video card', async () => {
         await expect(scrubber).toHaveAttribute('aria-valuetext', /^0:0[34] of 0:04$/);
     });
 
+    test('keeps focus in the thumbnail picker while the picked frame is saved', async function () {
+        await focusEditor(page);
+        await uploadVideo(page);
+        // Saving slowed down, so the picker is still open while it saves
+        await page.evaluate(() => {
+            const toBlob = HTMLCanvasElement.prototype.toBlob;
+            HTMLCanvasElement.prototype.toBlob = function (...args) {
+                setTimeout(() => toBlob.apply(this, args), 2000);
+            };
+        });
+
+        await page.getByTestId('media-upload-placeholder').click();
+        const picker = page.getByRole('dialog', {name: 'Select thumbnail'});
+        const select = picker.getByRole('button', {name: 'Select'});
+        await expect(select).toBeEnabled();
+        await select.focus();
+        await page.keyboard.press('Enter');
+
+        // Firefox drops focus to the page when a focused button is disabled
+        await expect(select).toHaveAttribute('aria-disabled', 'true');
+        await expect(select).toBeFocused();
+
+        await page.keyboard.press('Escape');
+        await expect(picker).toBeHidden();
+    });
+
     test('can close the thumbnail picker without changing the thumbnail', async function () {
         await focusEditor(page);
         await uploadVideo(page);

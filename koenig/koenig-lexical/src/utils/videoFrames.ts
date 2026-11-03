@@ -1,16 +1,13 @@
-// Frames read from a video in the browser, as extractVideoMetadata reads a card's first one. A
-// video on another domain has to allow it (CORS): without that it still plays, but its frames
-// can't be read back from a canvas.
+// A video on another domain must allow CORS: without it the video plays, but a canvas it's drawn on can't be read
 
 // A video the browser can't decode may never report an error
-const LOAD_TIMEOUT_MS = 15000;
-// A seek over the network that never lands, once the connection drops
+export const LOAD_TIMEOUT_MS = 15000;
 const SEEK_TIMEOUT_MS = 10000;
+const FRAME_POLL_MS = 50;
 
 /** The frames can't be read here at all: the video failed to load, or its domain doesn't allow it. */
 export class FramesUnreadableError extends Error {}
 
-/** A video set up to have its frames read: muted, inline, and asking for CORS. */
 export function createFrameVideo(): HTMLVideoElement {
     const video = document.createElement('video');
     video.crossOrigin = 'anonymous';
@@ -50,12 +47,16 @@ export function loadVideo(video: HTMLVideoElement, src: string): Promise<void> {
     });
 }
 
-/** Resolves once a seek in progress lands on its frame; rejects if it errors or never does. */
-export function whenSeeked(video: HTMLVideoElement): Promise<void> {
+/**
+ * Resolves once the frame the video is on can be drawn: no seek in progress, and its data decoded.
+ * Safari can report a seek done before the data arrives, and no event marks it arriving, so this polls.
+ */
+export function whenFrameReady(video: HTMLVideoElement): Promise<void> {
     return new Promise((resolve, reject) => {
         const finish = (error?: Error) => {
             window.clearTimeout(timeout);
-            video.removeEventListener('seeked', onSeeked);
+            window.clearInterval(poll);
+            video.removeEventListener('seeked', check);
             video.removeEventListener('error', onError);
             if (error) {
                 reject(error);
@@ -63,19 +64,24 @@ export function whenSeeked(video: HTMLVideoElement): Promise<void> {
                 resolve();
             }
         };
-        const onSeeked = () => finish();
-        const onError = () => finish(new FramesUnreadableError('The video failed while seeking'));
-        const timeout = window.setTimeout(() => finish(new Error('The seek took too long')), SEEK_TIMEOUT_MS);
-        video.addEventListener('seeked', onSeeked);
+        function check() {
+            if (!video.seeking && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+                finish();
+            }
+        }
+        const onError = () => finish(new Error('The video failed while seeking'));
+        const timeout = window.setTimeout(() => finish(new Error('The frame took too long to load')), SEEK_TIMEOUT_MS);
+        const poll = window.setInterval(check, FRAME_POLL_MS);
+        video.addEventListener('seeked', check);
         video.addEventListener('error', onError);
+        check();
     });
 }
 
 /** Moves a video to `time` (seconds), resolving once that frame can be drawn. */
 export function seekVideo(video: HTMLVideoElement, time: number): Promise<void> {
-    const seeked = whenSeeked(video);
     video.currentTime = time;
-    return seeked;
+    return whenFrameReady(video);
 }
 
 /** The frame a video is on, drawn `width` pixels wide (its own size when not given). */
@@ -102,6 +108,11 @@ export function canvasToJpeg(canvas: HTMLCanvasElement, quality = 0.75): Promise
             reject(error instanceof DOMException && error.name === 'SecurityError' ? new FramesUnreadableError(error.message) : error);
         }
     });
+}
+
+/** Whether a video reports a length the picker can scrub; WebM recorded in a browser often reports Infinity. */
+export function hasUsableDuration(duration: number): boolean {
+    return Number.isFinite(duration) && duration > 0;
 }
 
 /** When `count` frames spread across a video `duration` seconds long fall, each mid-slice. */

@@ -124,24 +124,23 @@ export function VideoNodeComponent({
     const handleCustomThumbnailChange = async (files) => {
         const customThumbnailUploadResult = await customThumbnailUploader.upload(files);
         const imageUrl = customThumbnailUploadResult?.[0]?.url;
+        if (!imageUrl) {
+            return;
+        }
         const {width, height} = await getImageDimensions(imageUrl);
 
-        if (imageUrl) {
-            editor.update(() => {
-                const node = $getNodeByKey(nodeKey);
-                node.customThumbnailSrc = imageUrl;
-                node.thumbnailWidth = width;
-                node.thumbnailHeight = height;
-            });
-        }
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.customThumbnailSrc = imageUrl;
+            node.thumbnailWidth = width;
+            node.thumbnailHeight = height;
+        });
     };
 
     const onCustomThumbnailChange = async (e) => {
         await handleCustomThumbnailChange(e.target.files);
     };
 
-    // A frame picked from the video is a custom thumbnail like an uploaded one: removing it
-    // goes back to the frame grabbed on upload
     const onThumbnailFrameSelect = async (frame) => {
         setPickingThumbnail(false);
         await handleCustomThumbnailChange([new File([frame], 'video-thumbnail.jpg', {type: 'image/jpeg'})]);
