@@ -364,6 +364,32 @@ describe('Custom fields', () => {
     });
   });
 
+  it('holds the form still while an edit saves', async () => {
+    fakeSettingsScreens();
+    fakeCustomFields([{ ...companyField, access: { member: 'write' as const } }]);
+    let release = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    fakeAdminEndpoint('PUT', '/members/metafields/custom/company/', async () => {
+      await held;
+      return { members_metafields: [companyField] };
+    });
+    await renderAdminApp('/settings', flagOn);
+
+    await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+    const modal = settingsScreen.customFieldModal();
+    await userEvent.fill(modal.getByLabelText('Name'), 'Employer');
+    await modal.getByRole('button', { name: 'Save' }).click();
+
+    // A change made now would not be sent, and the modal closes once the save lands.
+    await expect.element(modal.getByLabelText('Visible to members')).toBeDisabled();
+    await expect.element(modal.getByLabelText('Name')).toBeDisabled();
+
+    release();
+    await expect(modal).toHaveCount(0);
+  });
+
   it('shows a view-only field as open, and keeps it view-only through a switch round-trip', async () => {
     fakeSettingsScreens();
     fakeCustomFields([{ ...companyField, access: { member: 'read' as const } }]);

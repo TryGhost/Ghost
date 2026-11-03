@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import {
   configResponse,
@@ -157,6 +157,29 @@ describe('Import members custom fields', () => {
     await expect.element(fieldSelect('nickname')).toHaveTextContent('Nickname');
   });
 
+  it('creates a field for a column whose header is blank, and imports the column into it', async () => {
+    const { createApi, uploadApi } = fakeCustomFieldsWorld();
+    await renderAdminApp('/members', FLAGS);
+    await openMappingStep('email,name,\nada@example.com,Ada,Countess\n');
+
+    // The column's key is empty, so its controls' names have nothing where the key would be.
+    await page.getByRole('checkbox', { name: 'Import', exact: true }).click();
+    await page.getByRole('combobox', { name: 'Field for , not chosen', exact: true }).click();
+    await importMembersScreen.addCustomFieldOption().click();
+    await userEvent.fill(createForm().getByLabelText('Name'), 'Nickname');
+    await createForm().getByRole('button', { name: 'Save' }).click();
+
+    await expect
+      .poll(() => createApi.lastRequest?.body)
+      .toEqual({
+        members_metafields: [{ name: 'Nickname', type: 'short_text', access: { member: 'none' } }],
+      });
+    await importMembersScreen.importButton(1).click();
+    await expect
+      .poll(() => uploadApi.lastRequest && sentMapping(uploadApi.lastRequest.body))
+      .toEqual({ email: 'email', name: 'name', '': 'metafields.custom.nickname' });
+  });
+
   it('marks a custom field a membership field already has the name of', async () => {
     fakeCustomFieldsWorld();
     await renderAdminApp('/members', FLAGS);
@@ -244,20 +267,19 @@ describe('Import members custom fields', () => {
     await expect.element(importMembersScreen.option('Nickname')).toBeVisible();
   });
 
-  it('puts the create form away when another picker is opened', async () => {
+  it('puts the create form away on Escape, leaving the import open', async () => {
     fakeCustomFieldsWorld();
     await renderAdminApp('/members', FLAGS);
     await openMappingStep();
 
     await openCreateForm('nickname');
-    await expect.element(createForm()).toBeVisible();
+    await expect.element(createForm().getByLabelText('Name')).toHaveFocus();
+    await userEvent.keyboard('{Escape}');
 
-    // The publisher has moved on to another decision, and a half-filled form stranded
-    // under someone else's dropdown helps nobody. `email` because a column out of the
-    // import has no control to open.
-    await fieldSelect('email').click();
-
+    // Back on the column it was opened for, which is still to answer.
     await expect.element(createForm()).not.toBeInTheDocument();
+    await expect.element(fieldSelect('nickname')).toHaveFocus();
+    await expect.element(fieldSelect('nickname')).toHaveTextContent('Select field');
   });
 
   it('keeps its field when a column is deselected', async () => {
@@ -317,6 +339,107 @@ describe('Import members custom fields', () => {
     await expect.element(fieldSelect('city')).toHaveTextContent('Shipping address (City)');
   });
 
+  it('creates a list field with the options its form is given and maps the column onto it', async () => {
+    const { createApi } = fakeCustomFieldsWorld();
+    await renderAdminApp('/members', FLAGS);
+    await openMappingStep();
+
+    await openCreateForm('city');
+    const dialog = importMembersScreen.createFieldForm();
+    await dialog.getByRole('combobox', { name: 'Type' }).click();
+    await importMembersScreen.option('List').click();
+    for (const option of ['London', 'Paris']) {
+      await userEvent.fill(dialog.getByLabelText('New option'), option);
+      await dialog.getByRole('button', { name: 'Add option' }).click();
+    }
+    await dialog.getByRole('button', { name: 'Save' }).click();
+
+    await expect
+      .poll(() => createApi.lastRequest?.body)
+      .toEqual({
+        members_metafields: [
+          {
+            name: 'City',
+            type: 'list',
+            settings: { options: ['London', 'Paris'], multiple: false },
+            access: { member: 'none' },
+          },
+        ],
+      });
+    await expect.element(fieldSelect('city')).toHaveTextContent('City');
+  });
+
+  it('says what a list field needs before sending it', async () => {
+    const { createApi } = fakeCustomFieldsWorld();
+    await renderAdminApp('/members', FLAGS);
+    await openMappingStep();
+
+    await openCreateForm('city');
+    const dialog = importMembersScreen.createFieldForm();
+    await dialog.getByRole('combobox', { name: 'Type' }).click();
+    await importMembersScreen.option('List').click();
+    await dialog.getByRole('button', { name: 'Save' }).click();
+
+    await expect.element(dialog.getByText('Give the list at least 2 options.')).toBeVisible();
+    expect(createApi.requests).toHaveLength(0);
+  });
+
+  it('keeps a changed form on a stray Escape, and Cancel puts it away', async () => {
+    fakeCustomFieldsWorld();
+    await renderAdminApp('/members', FLAGS);
+    await openMappingStep();
+
+    await openCreateForm('nickname');
+    await userEvent.fill(createForm().getByLabelText('Name'), 'Nick');
+    await userEvent.keyboard('{Escape}');
+
+    await expect.element(createForm().getByLabelText('Name')).toHaveValue('Nick');
+    await expect.element(importMembersScreen.leaveConfirmationText()).not.toBeInTheDocument();
+
+    await createForm().getByRole('button', { name: 'Cancel' }).click();
+    await expect.element(createForm()).not.toBeInTheDocument();
+    await expect.element(fieldSelect('nickname')).toHaveTextContent('Select field');
+  });
+
+  it('keeps a changed form on a stray click outside it', async () => {
+    fakeCustomFieldsWorld();
+    await renderAdminApp('/members', FLAGS);
+    await openMappingStep();
+
+    await openCreateForm('nickname');
+    await userEvent.fill(createForm().getByLabelText('Name'), 'Nick');
+    // By its text and forced: the popover is modal, so the page behind it is hidden from the
+    // accessibility tree and takes no pointer events of its own.
+    await page.getByText(/If an email address in your CSV matches/).click({ force: true });
+
+    await expect.element(createForm().getByLabelText('Name')).toHaveValue('Nick');
+  });
+
+  it('holds the form still while its create saves', async () => {
+    fakeCustomFieldsWorld();
+    let release = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    fakeAdminEndpoint('POST', '/members/metafields/custom/', async () => {
+      await held;
+      return { members_metafields: [NICKNAME_FIELD] };
+    });
+    await renderAdminApp('/members', FLAGS);
+    await openMappingStep();
+
+    await openCreateForm('nickname');
+    await createForm().getByRole('button', { name: 'Save' }).click();
+
+    // Nothing changes until the site answers, so a refusal still describes what was sent.
+    await expect.element(createForm().getByRole('button', { name: 'Saving' })).toBeDisabled();
+    await expect.element(createForm().getByLabelText('Name')).toBeDisabled();
+    await expect.element(createForm().getByLabelText('Type')).toBeDisabled();
+
+    release();
+    await expect.element(createForm()).not.toBeInTheDocument();
+  });
+
   it('pins a name the site already uses to the name input', async () => {
     fakeCustomFieldsWorld();
     fakeAdminEndpoint(
@@ -344,6 +467,7 @@ describe('Import members custom fields', () => {
     await expect
       .element(createForm().getByText('A custom field with this name already exists.'))
       .toBeVisible();
+    await createForm().getByRole('button', { name: 'Cancel' }).click();
     await expect.element(fieldSelect('nickname')).toHaveTextContent('Select field');
   });
 
@@ -375,8 +499,11 @@ describe('Import members custom fields', () => {
 
     // The server's own sentence, because it is the only thing that explains the refusal.
     await expect.element(createForm().getByText(/limited to 20 per site/)).toBeVisible();
-    // Retrying cannot succeed, so the button that invites it is disabled until they change
-    // something.
+    // Retrying cannot succeed, so the button that invites it is disabled, and stays so through
+    // an edit: nothing typed changes a ceiling.
+    await expect.element(createForm().getByRole('button', { name: 'Save' })).toBeDisabled();
+    await userEvent.fill(createForm().getByLabelText('Name'), 'Nick');
+    await expect.element(createForm().getByText(/limited to 20 per site/)).toBeVisible();
     await expect.element(createForm().getByRole('button', { name: 'Save' })).toBeDisabled();
   });
 
@@ -395,6 +522,7 @@ describe('Import members custom fields', () => {
     await expect
       .element(createForm().getByText(/was created, but this column could not be mapped/))
       .toBeVisible();
+    await createForm().getByRole('button', { name: 'Cancel' }).click();
     await expect.element(fieldSelect('nickname')).toHaveTextContent('Select field');
   });
 
