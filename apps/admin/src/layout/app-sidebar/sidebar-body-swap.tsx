@@ -2,7 +2,7 @@ import React from 'react';
 
 /*
  * The floating sidebar's body, which swaps the main navigation for the
- * Settings navigation and back. The capsule's header stays put; in the body,
+ * Settings navigation and back. In the body,
  * the outgoing rows leave together (to the left going in to Settings, to the
  * right coming back) while the incoming rows swipe in one after another from
  * the other side.

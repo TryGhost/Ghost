@@ -1,5 +1,7 @@
-## 7.2.10
+## 4.3.9
 
 ### Patch Changes
+
+- Updated dependencies
 
 - Updated dependencies

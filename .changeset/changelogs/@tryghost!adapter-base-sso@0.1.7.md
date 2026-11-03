@@ -1,5 +1,7 @@
-## 0.4.9
+## 0.1.7
 
 ### Patch Changes
+
+- Updated dependencies
 
 - Updated dependencies
