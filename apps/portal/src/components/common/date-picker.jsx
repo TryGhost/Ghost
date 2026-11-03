@@ -1,16 +1,8 @@
 import AppContext from '../../app-context';
 import CalendarIcon from '../../images/icons/calendar.svg?react';
 import { DayPicker } from 'react-day-picker';
-import { createPortal } from 'react-dom';
-import {
-  useCallback,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useContext, useMemo, useRef, useState } from 'react';
+import Popover from './popover';
 import { parseDateValue, toDateValue } from '../../utils/date-time';
 
 export const DatePickerStyles = `
@@ -82,11 +74,7 @@ export const DatePickerStyles = `
         }
     }
 
-    /* Portalled outside the animated, overflow-hidden gift reveal to avoid
-       clipping and layout shifts; placed from the field's measured rect. */
     .gh-portal-datepicker-popover {
-        position: absolute;
-        z-index: 100;
         padding: 10px;
         background: var(--white);
         border: 1px solid var(--grey90);
@@ -254,28 +242,6 @@ const classNames = {
   outside: 'gh-portal-datepicker-outside',
 };
 
-const POPOVER_GAP = 6;
-
-// Render outside the clipped gift reveal, falling back to the owning
-// document's body.
-function getPopoverHost(node) {
-  return node?.closest('.gh-portal-popup-container') || node?.ownerDocument?.body || null;
-}
-
-// The nearest scrolling ancestor is the real viewport: Portal's popup is a
-// scrolling box inside a full-height iframe.
-function getVisibleBox(node) {
-  const view = node?.ownerDocument?.defaultView;
-  for (let el = node?.parentElement; el && view; el = el.parentElement) {
-    const { overflowY } = view.getComputedStyle(el);
-    if (overflowY === 'auto' || overflowY === 'scroll') {
-      return el.getBoundingClientRect();
-    }
-  }
-  const height = view?.innerHeight || node?.ownerDocument?.documentElement?.clientHeight || 0;
-  return height ? { top: 0, bottom: height } : null;
-}
-
 // Intl reports the week start as 1–7 (Monday–Sunday); react-day-picker counts
 // 0–6 from Sunday. Older browsers expose weekInfo as a property instead of a
 // method, or not at all — fall back to Sunday.
@@ -307,11 +273,8 @@ const DatePicker = ({
 }) => {
   const { locale: siteLocale = 'en', dir = 'ltr' } = useContext(AppContext);
   const [isOpen, setIsOpen] = useState(false);
-  const [popoverStyle, setPopoverStyle] = useState(null);
-  const containerRef = useRef(null);
   const fieldRef = useRef(null);
   const toggleRef = useRef(null);
-  const popoverRef = useRef(null);
 
   const selected = parseDateValue(value);
   const minDate = parseDateValue(min);
@@ -342,79 +305,6 @@ const DatePicker = ({
 
   const weekStartsOn = useMemo(() => getWeekStart(locale), [locale]);
 
-  // Measures after render in the portal host's coordinate space.
-  const position = useCallback(() => {
-    const field = fieldRef.current;
-    const target = getPopoverHost(field);
-    const popover = popoverRef.current;
-    if (!field || !target || !popover) {
-      return;
-    }
-    const rect = field.getBoundingClientRect();
-    const host = target.getBoundingClientRect();
-    const visible = getVisibleBox(field);
-    const height = popover.offsetHeight;
-
-    const spaceBelow = visible ? visible.bottom - rect.bottom : Infinity;
-    const spaceAbove = visible ? rect.top - visible.top : 0;
-    const flip = spaceBelow < height + POPOVER_GAP && spaceAbove > spaceBelow;
-
-    // translateY rather than a measured height, so a flipped box hangs from
-    // the field's top edge and grows away from it.
-    setPopoverStyle({
-      top: flip ? rect.top - host.top - POPOVER_GAP : rect.bottom - host.top + POPOVER_GAP,
-      right: host.right - rect.right,
-      transform: flip ? 'translateY(-100%)' : undefined,
-    });
-  }, []);
-
-  // Layout effect, not a plain one: the popover is measured and placed before
-  // the browser paints, so it never shows up in the wrong spot first.
-  useLayoutEffect(() => {
-    if (isOpen) {
-      position();
-    }
-  }, [isOpen, position]);
-
-  // Portal renders inside an iframe, so the global `document` here is the
-  // parent page's — listeners have to go on the element's own document or
-  // they never fire. Scroll is captured because it's the popup
-  // wrapper that scrolls, not the document.
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-    const node = containerRef.current;
-    const doc = node?.ownerDocument;
-    if (!doc) {
-      return;
-    }
-    const onPointerDown = (event) => {
-      if (
-        !node.contains(event.target) &&
-        !event.target.closest?.('.gh-portal-datepicker-popover')
-      ) {
-        setIsOpen(false);
-      }
-    };
-    const onKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        setIsOpen(false);
-        toggleRef.current?.focus();
-      }
-    };
-    doc.addEventListener('pointerdown', onPointerDown);
-    doc.addEventListener('keydown', onKeyDown);
-    doc.addEventListener('scroll', position, true);
-    doc.defaultView?.addEventListener('resize', position);
-    return () => {
-      doc.removeEventListener('pointerdown', onPointerDown);
-      doc.removeEventListener('keydown', onKeyDown);
-      doc.removeEventListener('scroll', position, true);
-      doc.defaultView?.removeEventListener('resize', position);
-    };
-  }, [isOpen, position]);
-
   const toggle = () => setIsOpen((currentlyOpen) => !currentlyOpen);
 
   const handleSelect = (date) => {
@@ -429,7 +319,7 @@ const DatePicker = ({
   const showMinLabel = !!minLabel && !!value && value === min;
 
   return (
-    <div ref={containerRef} className="gh-portal-datepicker">
+    <div className="gh-portal-datepicker">
       <div ref={fieldRef} className="gh-portal-datepicker-field">
         {/* Keeps a native date input for locale-aware keyboard
                     editing; only the browser's calendar is replaced. */}
@@ -466,43 +356,47 @@ const DatePicker = ({
           <CalendarIcon aria-hidden="true" focusable="false" />
         </button>
       </div>
-      {isOpen &&
-        createPortal(
-          <div
-            aria-label={ariaLabel}
-            className="gh-portal-datepicker-popover"
-            data-testid="datepicker-popover"
-            role="dialog"
-            ref={popoverRef}
-            style={popoverStyle || { visibility: 'hidden' }}
-          >
-            <DayPicker
-              classNames={classNames}
-              dir={dir}
-              defaultMonth={selected || minDate}
-              disabled={[
-                ...(minDate ? [{ before: minDate }] : []),
-                ...(maxDate ? [{ after: maxDate }] : []),
-              ]}
-              endMonth={maxDate}
-              // Six rows every month, so paging can't change the height the
-              // placement above was measured from.
-              fixedWeeks
-              formatters={{
-                formatCaption: (date) => formats.monthCaption.format(date),
-                formatWeekdayName: (date) => formats.weekday.format(date),
-                formatDay: (date) => formats.day.format(date),
-              }}
-              mode="single"
-              selected={selected}
-              showOutsideDays
-              startMonth={minDate}
-              weekStartsOn={weekStartsOn}
-              onSelect={handleSelect}
-            />
-          </div>,
-          getPopoverHost(fieldRef.current),
-        )}
+      {isOpen && (
+        <Popover
+          align="end"
+          anchor={fieldRef}
+          aria-label={ariaLabel}
+          className="gh-portal-datepicker-popover"
+          data-testid="datepicker-popover"
+          role="dialog"
+          onClose={(reason) => {
+            setIsOpen(false);
+            if (reason === 'escape') {
+              toggleRef.current?.focus();
+            }
+          }}
+        >
+          <DayPicker
+            classNames={classNames}
+            dir={dir}
+            defaultMonth={selected || minDate}
+            disabled={[
+              ...(minDate ? [{ before: minDate }] : []),
+              ...(maxDate ? [{ after: maxDate }] : []),
+            ]}
+            endMonth={maxDate}
+            // Six rows every month, so paging can't change the height the
+            // popover decided which way to open from.
+            fixedWeeks
+            formatters={{
+              formatCaption: (date) => formats.monthCaption.format(date),
+              formatWeekdayName: (date) => formats.weekday.format(date),
+              formatDay: (date) => formats.day.format(date),
+            }}
+            mode="single"
+            selected={selected}
+            showOutsideDays
+            startMonth={minDate}
+            weekStartsOn={weekStartsOn}
+            onSelect={handleSelect}
+          />
+        </Popover>
+      )}
     </div>
   );
 };
