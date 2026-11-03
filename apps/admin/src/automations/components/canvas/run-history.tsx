@@ -13,6 +13,10 @@ type RunHistoryProps = {
   runId: string;
   memberName?: string;
   isAutomationSidebarOpen: boolean;
+  // The editor's floating controls sit over the top of the canvas.
+  isUnderFloatingHeader?: boolean;
+  // The current build's sidebar toggle sits over the canvas's top-left corner.
+  clearsLeftToggle?: boolean;
   onClose: () => void;
 };
 
@@ -48,6 +52,8 @@ const RunHistoryContent: React.FC<RunHistoryProps> = ({
   runId,
   memberName,
   isAutomationSidebarOpen,
+  isUnderFloatingHeader = false,
+  clearsLeftToggle = false,
   onClose,
 }) => {
   const { history, summary, isLoading, isError, notFound, retry, plan } = useAutomationRunHistory(
@@ -76,7 +82,8 @@ const RunHistoryContent: React.FC<RunHistoryProps> = ({
         <Inline
           className={cn(
             'pointer-events-none sticky top-0 z-10 shrink-0 px-6 py-4',
-            !isAutomationSidebarOpen && 'pl-16',
+            isUnderFloatingHeader && 'pt-16',
+            clearsLeftToggle && !isAutomationSidebarOpen && 'pl-16',
           )}
           gap="sm"
         >

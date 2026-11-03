@@ -27,6 +27,7 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { TotalEntries } from './total-entries';
 import { StatusCounts } from './status-counts';
+import type { EditorChrome } from '@/automations/components/types';
 import type { RunSortDirection } from '@/automations/types';
 import { RunList } from './run-list';
 import { MemberSearch } from './member-search';
@@ -61,10 +62,10 @@ const unstartedStats = (): AutomationPerformanceStats => {
   };
 };
 
-const UnsavedPerformance: React.FC = () => {
+const UnsavedPerformance: React.FC<{ className?: string }> = ({ className }) => {
   const [stats] = useState(unstartedStats);
   return (
-    <Stack className="mt-4" gap="md">
+    <Stack className={className} gap="md">
       <TotalEntries chart={mapAutomationEntryStats(stats)} isLoading={false} />
       <StatusCounts
         data={mapAutomationStatusStats(stats)}
@@ -197,6 +198,9 @@ const PerformanceContent: React.FC<{
   );
 };
 
+// Shared by the sidebar and the header controls that move with it.
+export const CHROME_EASE = 'ease-[cubic-bezier(0.22,0.61,0.36,1)]';
+
 function getStopConditionDescription({
   triggerRules,
   tiers,
@@ -257,6 +261,9 @@ export const AutomationSidebar: React.FC<{
   onTabChange: (tab: AutomationSidebarTab) => void;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  chrome: EditorChrome;
+  // Off for the first paint, so a sidebar that starts open doesn't animate in.
+  animated: boolean;
   selectedRunId: string | null;
   onSelectRun: (id: string, memberName: string) => void;
   isRunSelectionDisabled: boolean;
@@ -273,6 +280,8 @@ export const AutomationSidebar: React.FC<{
   selectedTab,
   onTabChange,
   onOpenChange,
+  chrome,
+  animated,
   selectedRunId,
   onSelectRun,
   isRunSelectionDisabled,
@@ -318,151 +327,268 @@ export const AutomationSidebar: React.FC<{
     tiers,
   });
 
+  // Main's left-hand sidebar, kept as-is to compare against.
+  const current = chrome === 'current';
+  // Space between the tab row and each tab's content; Settings already uses 24px.
+  const tabContentGap = current ? 'mt-4' : 'mt-6';
+
+  const panel = (
+    <Stack
+      // The tab row's text centres on the header buttons' line: 28px down when docked,
+      // 36px when floating (inside the card's 8px inset and border).
+      className={cn(
+        current
+          ? 'h-full w-[480px] overflow-y-auto border-r border-border-default px-6 py-4 @max-[960px]/automation:w-[100cqw]'
+          : 'h-full overflow-y-auto px-6 pb-4',
+        chrome === 'floating' && 'pt-[9px]',
+        chrome === 'docked' && 'pt-2.5',
+      )}
+      gap="none"
+      style={{ overflowAnchor: 'none' }}
+    >
+      <Text as="h2" className="sr-only" id={headingId}>
+        {activeTab === 'performance' ? 'Performance' : 'Settings'}
+      </Text>
+      <Tabs
+        className="flex min-h-0 flex-1 flex-col"
+        value={activeTab}
+        variant={current ? 'button' : 'underline'}
+        onValueChange={(value) => {
+          if (value === 'performance' || value === 'settings') {
+            onTabChange(value);
+          }
+        }}
+      >
+        <Inline
+          className={cn(
+            current
+              ? 'h-(--control-height) shrink-0 pl-10'
+              : 'h-9 shrink-0 border-b border-border-default',
+            // Room for the toggle, which sits one gap past the last button: its
+            // offset from the edge plus the gap equals the panel's padding, less
+            // the card's 1px border when floating.
+            chrome === 'docked' && 'pr-(--control-height)',
+            chrome === 'floating' && 'pr-[calc(var(--control-height)-1px)]',
+          )}
+          gap="sm"
+        >
+          <TabsList
+            aria-label="Automation sidebar"
+            className={
+              searchOpen && activeTab === 'performance'
+                ? 'sr-only'
+                : current
+                  ? 'min-w-0 flex-1'
+                  : 'w-auto min-w-0 flex-1 border-b-0'
+            }
+          >
+            {performanceEnabled && <TabsTrigger value="performance">Performance</TabsTrigger>}
+            {metadata !== 'hidden' && <TabsTrigger value="settings">Settings</TabsTrigger>}
+          </TabsList>
+          {activeTab === 'performance' && automationId && (
+            <>
+              <MemberSearch
+                open={searchOpen}
+                onInputChange={setInput}
+                onOpenChange={setSearchOpen}
+                onSearchChange={(next) => {
+                  if (next !== search) {
+                    setSearch(next);
+                    setQueryRevision((revision) => revision + 1);
+                  }
+                }}
+              />
+              {!searchActive && (
+                <PerformanceDateFilter
+                  icon={current ? LucideIcon.Funnel : LucideIcon.ListFilter}
+                  value={dateRange.value}
+                  onChange={(value) => {
+                    if (value !== dateRange.value) {
+                      setDateRange(createPerformanceDateRange(value));
+                    }
+                  }}
+                />
+              )}
+            </>
+          )}
+        </Inline>
+        <TabsContent
+          className="flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
+          hidden={activeTab !== 'performance'}
+          value="performance"
+          forceMount
+        >
+          {performanceEnabled && !automationId && <UnsavedPerformance className={tabContentGap} />}
+          {performanceEnabled && automationId && hasOpened && (
+            <Stack className={cn(tabContentGap, 'min-h-0 flex-1')} gap="none">
+              <PerformanceContent
+                automationId={automationId}
+                dateRange={dateRange}
+                direction={direction}
+                enabled={isOpen && activeTab === 'performance'}
+                isRunSelectionDisabled={isRunSelectionDisabled}
+                queryScope={panelId}
+                runQueryScope={runQueryScope}
+                search={search}
+                searchActive={searchActive}
+                selectedRunId={selectedRunId}
+                selectedStatus={status}
+                updating={updating}
+                onClearDate={() => setDateRange(createPerformanceDateRange('all'))}
+                onDirectionChange={(next) => {
+                  setDirection(next);
+                  setQueryRevision((revision) => revision + 1);
+                }}
+                onSelectRun={onSelectRun}
+                onStatusChange={(selected) => {
+                  setStatus(status === selected ? null : selected);
+                  setQueryRevision((revision) => revision + 1);
+                }}
+              />
+            </Stack>
+          )}
+        </TabsContent>
+        {metadata !== 'hidden' && (
+          <TabsContent className="mt-6" value="settings">
+            <Stack gap="xl">
+              <Field>
+                <FieldLabel htmlFor={descriptionId}>Description</FieldLabel>
+                <Textarea
+                  disabled={metadata === 'readonly'}
+                  id={descriptionId}
+                  maxLength={2000}
+                  rows={4}
+                  value={description}
+                  onChange={(event) => onDescriptionChange(event.target.value)}
+                />
+              </Field>
+              <Field>
+                <FieldLabel>Stop conditions</FieldLabel>
+                <FieldDescription>{stopConditionDescription}</FieldDescription>
+              </Field>
+            </Stack>
+          </TabsContent>
+        )}
+      </Tabs>
+    </Stack>
+  );
+
+  const asideProps = {
+    ref: (element: HTMLElement | null) => {
+      if (element) {
+        element.inert = !isOpen;
+      }
+    },
+    'aria-hidden': !isOpen,
+    'aria-labelledby': headingId,
+    id: panelId,
+  };
+
+  if (current) {
+    return (
+      <>
+        <Button
+          aria-controls={panelId}
+          aria-expanded={isOpen}
+          aria-label={isOpen ? 'Hide automation sidebar' : 'Show automation sidebar'}
+          className={cn(
+            'absolute top-4 left-4 z-20 transition-transform duration-200 ease-in-out motion-reduce:transition-none',
+            isToggleHidden && 'translate-x-[calc(-100%-2rem)]',
+          )}
+          size="icon"
+          type="button"
+          variant="ghost"
+          onClick={() => onOpenChange(!isOpen)}
+        >
+          <LucideIcon.PanelLeft strokeWidth={2} />
+        </Button>
+        <aside
+          {...asideProps}
+          className={cn(
+            'shrink-0 overflow-hidden bg-surface-elevated transition-[width] duration-150 ease-out motion-reduce:transition-none',
+            '@max-[960px]/automation:absolute @max-[960px]/automation:inset-y-0 @max-[960px]/automation:left-0 @max-[960px]/automation:z-10',
+            isOpen ? 'w-[480px] @max-[960px]/automation:w-full' : 'w-0',
+          )}
+        >
+          {panel}
+        </aside>
+      </>
+    );
+  }
+
+  // Contents fade out as the sidebar starts closing and back in once it's mostly open,
+  // so they never pass under the toggle mid-slide.
+  const contentFade = cn(
+    animated && 'transition-opacity motion-reduce:transition-none',
+    isOpen ? 'opacity-100 [transition-delay:100ms] duration-200' : 'opacity-0 duration-100',
+  );
+
   return (
     <>
+      {chrome === 'floating' ? (
+        // A card that slides in over the canvas, with the canvas showing around it.
+        <aside
+          {...asideProps}
+          className={cn(
+            'absolute inset-y-0 right-0 z-30 flex w-[min(480px,100%)] flex-col',
+            animated &&
+              `transition-transform duration-300 ${CHROME_EASE} motion-reduce:transition-none`,
+            isOpen ? 'translate-x-0' : 'pointer-events-none translate-x-full',
+          )}
+        >
+          <div className="flex min-h-0 flex-1 flex-col p-2">
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border-default bg-background shadow-sm">
+              <div className={cn('flex min-h-0 flex-1 flex-col', contentFade)}>{panel}</div>
+            </div>
+          </div>
+        </aside>
+      ) : (
+        // Narrows by width, holding its contents at full width on the right edge so they
+        // fade rather than reflow. Below 960px it covers the canvas, under the header.
+        <aside
+          {...asideProps}
+          className={cn(
+            'relative flex shrink-0 flex-col items-end overflow-hidden bg-surface-elevated',
+            animated &&
+              `transition-[width] duration-300 ${CHROME_EASE} motion-reduce:transition-none`,
+            isOpen ? 'w-[480px] border-l border-border-default' : 'w-0',
+            '@max-[960px]/automation:absolute @max-[960px]/automation:top-14 @max-[960px]/automation:right-0 @max-[960px]/automation:bottom-0 @max-[960px]/automation:z-30',
+            isOpen && '@max-[960px]/automation:w-full',
+          )}
+        >
+          <div
+            className={cn(
+              'flex min-h-0 w-[480px] flex-1 flex-col @max-[960px]/automation:w-[100cqw]',
+              contentFade,
+            )}
+          >
+            {panel}
+          </div>
+        </aside>
+      )}
+      {/* Pinned to the top-right corner: over the header's row while closed, and the
+          sidebar's top row while open. Like the post editor's settings toggle, it
+          looks the same in both states. */}
       <Button
         aria-controls={panelId}
         aria-expanded={isOpen}
         aria-label={isOpen ? 'Hide automation sidebar' : 'Show automation sidebar'}
         className={cn(
-          'absolute top-4 left-4 z-20 transition-transform duration-200 ease-in-out motion-reduce:transition-none',
-          isToggleHidden && 'translate-x-[calc(-100%-2rem)]',
+          'absolute z-40 transition-transform duration-200 ease-in-out motion-reduce:transition-none',
+          'enabled:aria-expanded:shadow-none enabled:aria-expanded:hover:bg-button-ghost-hover',
+          chrome === 'floating'
+            ? 'top-5 right-6 bg-surface-elevated enabled:aria-expanded:bg-surface-elevated'
+            : 'top-3 right-4 enabled:aria-expanded:bg-transparent',
+          // Slides off its edge while the email editor clears the canvas.
+          isToggleHidden && 'translate-x-[calc(100%+2rem)]',
         )}
         size="icon"
         type="button"
         variant="ghost"
         onClick={() => onOpenChange(!isOpen)}
       >
-        <LucideIcon.PanelLeft strokeWidth={2} />
+        <LucideIcon.PanelRight strokeWidth={2} />
       </Button>
-      <aside
-        ref={(panel) => {
-          if (panel) {
-            panel.inert = !isOpen;
-          }
-        }}
-        aria-hidden={!isOpen}
-        aria-labelledby={headingId}
-        className={cn(
-          'shrink-0 overflow-hidden bg-surface-elevated transition-[width] duration-150 ease-out motion-reduce:transition-none',
-          '@max-[960px]/automation:absolute @max-[960px]/automation:inset-y-0 @max-[960px]/automation:left-0 @max-[960px]/automation:z-10',
-          isOpen ? 'w-[480px] @max-[960px]/automation:w-full' : 'w-0',
-        )}
-        id={panelId}
-      >
-        {/* Keep content at its full width while the sidebar animates open or closed. */}
-        <Stack
-          className="h-full w-[480px] overflow-y-auto border-r border-border-default px-6 py-4 @max-[960px]/automation:w-[100cqw]"
-          gap="none"
-          style={{ overflowAnchor: 'none' }}
-        >
-          <Text as="h2" className="sr-only" id={headingId}>
-            {activeTab === 'performance' ? 'Performance' : 'Settings'}
-          </Text>
-          <Tabs
-            className="flex min-h-0 flex-1 flex-col"
-            value={activeTab}
-            variant="button"
-            onValueChange={(value) => {
-              if (value === 'performance' || value === 'settings') {
-                onTabChange(value);
-              }
-            }}
-          >
-            <Inline className="h-(--control-height) shrink-0 pl-10" gap="sm">
-              <TabsList
-                aria-label="Automation sidebar"
-                className={searchOpen && activeTab === 'performance' ? 'sr-only' : 'min-w-0 flex-1'}
-              >
-                {performanceEnabled && <TabsTrigger value="performance">Performance</TabsTrigger>}
-                {metadata !== 'hidden' && <TabsTrigger value="settings">Settings</TabsTrigger>}
-              </TabsList>
-              {activeTab === 'performance' && automationId && (
-                <>
-                  <MemberSearch
-                    open={searchOpen}
-                    onInputChange={setInput}
-                    onOpenChange={setSearchOpen}
-                    onSearchChange={(next) => {
-                      if (next !== search) {
-                        setSearch(next);
-                        setQueryRevision((revision) => revision + 1);
-                      }
-                    }}
-                  />
-                  {!searchActive && (
-                    <PerformanceDateFilter
-                      value={dateRange.value}
-                      onChange={(value) => {
-                        if (value !== dateRange.value) {
-                          setDateRange(createPerformanceDateRange(value));
-                        }
-                      }}
-                    />
-                  )}
-                </>
-              )}
-            </Inline>
-            <TabsContent
-              className="flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden"
-              hidden={activeTab !== 'performance'}
-              value="performance"
-              forceMount
-            >
-              {performanceEnabled && !automationId && <UnsavedPerformance />}
-              {performanceEnabled && automationId && hasOpened && (
-                <Stack className="mt-4 min-h-0 flex-1" gap="none">
-                  <PerformanceContent
-                    automationId={automationId}
-                    dateRange={dateRange}
-                    direction={direction}
-                    enabled={isOpen && activeTab === 'performance'}
-                    isRunSelectionDisabled={isRunSelectionDisabled}
-                    queryScope={panelId}
-                    runQueryScope={runQueryScope}
-                    search={search}
-                    searchActive={searchActive}
-                    selectedRunId={selectedRunId}
-                    selectedStatus={status}
-                    updating={updating}
-                    onClearDate={() => setDateRange(createPerformanceDateRange('all'))}
-                    onDirectionChange={(next) => {
-                      setDirection(next);
-                      setQueryRevision((revision) => revision + 1);
-                    }}
-                    onSelectRun={onSelectRun}
-                    onStatusChange={(selected) => {
-                      setStatus(status === selected ? null : selected);
-                      setQueryRevision((revision) => revision + 1);
-                    }}
-                  />
-                </Stack>
-              )}
-            </TabsContent>
-            {metadata !== 'hidden' && (
-              <TabsContent className="mt-6" value="settings">
-                <Stack gap="xl">
-                  <Field>
-                    <FieldLabel htmlFor={descriptionId}>Description</FieldLabel>
-                    <Textarea
-                      disabled={metadata === 'readonly'}
-                      id={descriptionId}
-                      maxLength={2000}
-                      rows={4}
-                      value={description}
-                      onChange={(event) => onDescriptionChange(event.target.value)}
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel>Stop conditions</FieldLabel>
-                    <FieldDescription>{stopConditionDescription}</FieldDescription>
-                  </Field>
-                </Stack>
-              </TabsContent>
-            )}
-          </Tabs>
-        </Stack>
-      </aside>
     </>
   );
 };
