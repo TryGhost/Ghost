@@ -1,12 +1,13 @@
 import * as sel from '@tryghost/test-data/selectors/apps';
 import { AdminPage } from '@/admin-pages';
 import { AppInstallDialog } from './app-install-dialog';
-import { Frame, Locator, Page } from '@playwright/test';
-import type {
-  BridgeFetchRequest,
-  BridgeFetchResult,
-  FixtureAppHooks,
+import {
+  type BridgeFetchRequest,
+  type BridgeFetchResult,
+  FIXTURE_APP_PATH_TEST_ID,
+  type FixtureAppHooks,
 } from '@/helpers/services/apps';
+import { Frame, Locator, Page } from '@playwright/test';
 
 type FixtureAppWindow = Window & { __fixtureApp: FixtureAppHooks };
 
@@ -27,7 +28,7 @@ export class AppPage extends AdminPage {
     this.needsApproval = page.getByTestId(sel.appNeedsApproval);
     this.notInstalled = page.getByTestId(sel.appNotInstalled);
     this.unavailable = page.getByTestId(sel.appUnavailable);
-    this.appPagePath = this.frame.contentFrame().getByTestId('fixture-app-path');
+    this.appPagePath = this.frame.contentFrame().getByTestId(FIXTURE_APP_PATH_TEST_ID);
     this.installDialog = new AppInstallDialog(page);
   }
 

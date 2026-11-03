@@ -1,4 +1,4 @@
-export { FIXTURE_APP_CONFIG, FixtureApp } from './fixture-app';
+export { FIXTURE_APP_PATH_TEST_ID, FixtureApp } from './fixture-app';
 export type {
   BridgeFetchRequest,
   BridgeFetchResult,

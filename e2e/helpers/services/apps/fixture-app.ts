@@ -1,12 +1,8 @@
 import { CONNECT_MESSAGE_TYPE, HELLO_MESSAGE_TYPE } from '@tryghost/app-contracts';
 import { FakeServer } from '@/helpers/services/fake-server';
 
-/**
- * Ghost config for tests that install the fixture app. Ghost runs in a container, where localhost
- * is the container, so it fetches localhost manifests from the host, as compose.dev.yaml sets up.
- * The browser still loads the app's pages from localhost.
- */
-export const FIXTURE_APP_CONFIG = { apps__localhostAlias: 'host.docker.internal' } as const;
+/** The test ID of the element where the fixture app's page shows the path it was served from. */
+export const FIXTURE_APP_PATH_TEST_ID = 'fixture-app-path';
 
 /** The manifest the fixture app serves. Its fields follow `@tryghost/app-contracts`' manifest. */
 export interface FixtureAppManifest {
@@ -50,7 +46,7 @@ export interface FixtureAppHooks {
  */
 const PAGE_SCRIPT = `
 (() => {
-  document.querySelector('[data-testid="fixture-app-path"]').textContent = location.pathname;
+  document.querySelector('[data-testid=${JSON.stringify(FIXTURE_APP_PATH_TEST_ID)}]').textContent = location.pathname;
   const documentId = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2);
   const pending = new Map();
   let port;
@@ -115,7 +111,7 @@ const PAGE_HTML = `<!DOCTYPE html>
 <head><meta charset="utf-8"><title>Fixture app</title></head>
 <body>
 <h1>Fixture app</h1>
-<p>Served from <code data-testid="fixture-app-path"></code></p>
+<p>Served from <code data-testid="${FIXTURE_APP_PATH_TEST_ID}"></code></p>
 <script>${PAGE_SCRIPT}</script>
 </body>
 </html>`;
@@ -128,7 +124,7 @@ const PAGE_HTML = `<!DOCTYPE html>
  * the page, which shows the path it was served from. A second fixture app with the same ID is the
  * same app served from another host, as when a developer's tunnel URL changes.
  *
- * Tests that install it boot Ghost with `FIXTURE_APP_CONFIG`.
+ * Tests that use it set the `fixtureAppEnabled` option, so Ghost can fetch its manifest.
  */
 export class FixtureApp extends FakeServer {
   manifest: FixtureAppManifest;

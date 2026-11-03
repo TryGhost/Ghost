@@ -1,11 +1,20 @@
-import { AppDetailsPage, AppPage, AppsPage, LoginPage, SidebarPage } from '@/admin-pages';
-import { FIXTURE_APP_CONFIG, FixtureApp } from '@/helpers/services/apps';
-import { expect, installApp, test, withIsolatedPage } from '@/helpers/playwright';
+import { AppDetailsPage, AppPage, AppsPage } from '@/admin-pages';
+import { FixtureApp } from '@/helpers/services/apps';
+import { Request } from '@playwright/test';
+import { expect, installApp, signInAsStaff, test, withIsolatedPage } from '@/helpers/playwright';
 
-const POSTS_API = '**/ghost/api/admin/posts/**';
+/** The app's call that's still running when its session ends, told apart from Admin's own requests. */
+const HELD_CALL_PATH = '/posts/?filter=slug:e2e-held-call';
+const isHeldCall = (request: Request | URL) => {
+  const url = request instanceof URL ? request : new URL(request.url());
+  return (
+    url.pathname === '/ghost/api/admin/posts/' &&
+    url.searchParams.get('filter') === 'slug:e2e-held-call'
+  );
+};
 
 test.describe('Ghost Admin - App install lifecycle', () => {
-  test.use({ config: FIXTURE_APP_CONFIG, labs: { apps: true } });
+  test.use({ fixtureAppEnabled: true, labs: { apps: true } });
 
   test('installs an app that opens and calls the Admin API', async ({ page, fixtureApp }) => {
     const appsPage = new AppsPage(page);
@@ -25,6 +34,8 @@ test.describe('Ghost Admin - App install lifecycle', () => {
   test('refuses app requests to endpoints apps can’t use', async ({ page, fixtureApp }) => {
     const appPage = new AppPage(page);
     await installApp(page, fixtureApp.manifestUrl);
+    const sent: string[] = [];
+    page.on('request', (request) => sent.push(new URL(request.url()).pathname));
 
     expect(await appPage.bridgeFetch({ path: '/db/' })).toEqual({
       error: "blocked: Apps can't use GET /db/",
@@ -32,6 +43,9 @@ test.describe('Ghost Admin - App install lifecycle', () => {
     expect(await appPage.bridgeFetch({ path: '/users/me/token/' })).toEqual({
       error: "blocked: Apps can't use GET /users/me/token/",
     });
+    // Admin refuses them before sending anything.
+    expect(sent).not.toContain('/ghost/api/admin/db/');
+    expect(sent).not.toContain('/ghost/api/admin/users/me/token/');
   });
 
   test('an uninstall from another Admin session ends the open app’s session, and reinstalling starts a new installation', async ({
@@ -47,19 +61,14 @@ test.describe('Ghost Admin - App install lifecycle', () => {
     const oldFrame = await appPage.appFrame();
 
     // The app's call is still running when the session ends: its request is held, never answered.
-    await page.route(POSTS_API, () => {});
-    const held = page.waitForRequest(POSTS_API);
-    const aborted = page.waitForEvent('requestfailed', (request) =>
-      request.url().includes('/ghost/api/admin/posts/'),
-    );
-    await appPage.startBridgeFetch({ path: '/posts/' }, oldFrame);
+    await page.route(isHeldCall, () => {});
+    const held = page.waitForRequest(isHeldCall);
+    const aborted = page.waitForEvent('requestfailed', isHeldCall);
+    await appPage.startBridgeFetch({ path: HELD_CALL_PATH }, oldFrame);
     await held;
 
     await withIsolatedPage(browser, { baseURL }, async ({ page: otherPage }) => {
-      const loginPage = new LoginPage(otherPage);
-      await loginPage.goto();
-      await loginPage.signIn(ghostAccountAdministrator.email, ghostAccountAdministrator.password);
-      await expect(new SidebarPage(otherPage).sidebar).toBeVisible();
+      await signInAsStaff(otherPage, ghostAccountAdministrator);
 
       const otherDetailsPage = new AppDetailsPage(otherPage);
       await otherDetailsPage.gotoDetails(installationId);
@@ -71,7 +80,7 @@ test.describe('Ghost Admin - App install lifecycle', () => {
     await appPage.returnToTab();
     await aborted;
     await expect(appPage.notInstalled).toBeVisible();
-    expect(oldFrame.isDetached()).toBe(true);
+    await expect.poll(() => oldFrame.isDetached()).toBe(true);
     await page.unrouteAll({ behavior: 'ignoreErrors' });
 
     const reinstalledId = await installApp(page, fixtureApp.manifestUrl);

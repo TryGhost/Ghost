@@ -2,7 +2,8 @@ import { Page } from '@playwright/test';
 
 import { EmailClient, MailPit } from '@/helpers/services/email/mail-pit';
 import { HomePage, PublicPage } from '@/public-pages';
-import { Member } from '@/data-factory';
+import { LoginPage, SidebarPage } from '@/admin-pages';
+import { Member, StaffAccount } from '@/data-factory';
 import { SignInPage } from '@/portal-pages';
 import { extractMagicLink } from '@/helpers/services/email/utils';
 
@@ -35,4 +36,18 @@ export async function signInAsMember(page: Page, member: Member): Promise<void> 
   const publicPage = new PublicPage(page);
   await publicPage.goto(magicLink);
   await homePage.waitUntilLoaded();
+}
+
+/**
+ * Signs in to Ghost Admin as a staff user and waits until Admin has loaded, so the next navigation
+ * isn't redirected back to the sign-in screen.
+ *
+ * @param page - The Playwright page, usually from `withIsolatedPage` for a second session
+ * @param account - The staff account to sign in as
+ */
+export async function signInAsStaff(page: Page, account: StaffAccount): Promise<void> {
+  const loginPage = new LoginPage(page);
+  await loginPage.goto();
+  await loginPage.signIn(account.email, account.password);
+  await new SidebarPage(page).sidebar.waitFor({ state: 'visible' });
 }

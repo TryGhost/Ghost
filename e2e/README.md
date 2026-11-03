@@ -185,7 +185,7 @@ The fixtures a test usually reaches for:
 - `ghostInstance` - the running instance: `baseUrl`, `database`, `port`, `siteUuid`, `containerId`, `instanceId`
 - `resolvedIsolation` - `'per-file' | 'per-test'` for the current test
 - `resetEnvironment()` - force an environment recycle (see the escape hatch below)
-- `fixtureApp` - a small app on a local server for the Apps tests, with a manifest the test can change and an Admin page that connects to the bridge (`helpers/services/apps`)
+- `fixtureApp` - a small app on a local server for the Apps tests, with a manifest the test can change and an Admin page that connects to the bridge (`helpers/services/apps`); needs `fixtureAppEnabled`
 
 The fixture resolves isolation mode per test file:
 
@@ -222,6 +222,7 @@ Environment identity for per-file reuse:
 - If either changes between tests in the same file, the shared per-file Ghost environment is recycled before reuse.
 - `stripeEnabled` does not participate in per-file reuse. It always forces per-test isolation because Ghost must boot against a per-test fake Stripe server.
 - `upgradeHostEnabled` forces per-test isolation for the same reason, with a per-test fake upgrade host.
+- `fixtureAppEnabled` participates in per-file reuse. The config it adds is the same for every test, and each test's app has its own ID.
 
 Fixture option behavior:
 
@@ -229,6 +230,7 @@ Fixture option behavior:
 - `labs`: use for labs flags that should get a fresh environment when they change.
 - `stripeEnabled`: use for Stripe-backed tests; this always runs each test with a fully isolated Ghost environment.
 - `upgradeHostEnabled`: use for Ghost update tests; see [Testing Ghost updates](../docs/contributing/testing-ghost-updates.md).
+- `fixtureAppEnabled`: use for Apps tests; it lets Ghost fetch the `fixtureApp` fixture's manifest, and the fixture requires it.
 
 Escape hatch:
 

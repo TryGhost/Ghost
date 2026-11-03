@@ -1,11 +1,10 @@
-import { AppsPage, LoginPage, SidebarPage } from '@/admin-pages';
-import { FIXTURE_APP_CONFIG } from '@/helpers/services/apps';
-import { expect, test, withIsolatedPage } from '@/helpers/playwright';
+import { AppsPage } from '@/admin-pages';
+import { expect, signInAsStaff, test, withIsolatedPage } from '@/helpers/playwright';
 
 const INSTALLATIONS_API = '/ghost/api/admin/apps/installations/';
 
 test.describe('Ghost Admin - App access', () => {
-  test.use({ config: FIXTURE_APP_CONFIG });
+  test.use({ fixtureAppEnabled: true });
 
   test('Apps and its API are unavailable while the Labs flag is off', async ({
     page,
@@ -35,10 +34,7 @@ test.describe('Ghost Admin - App access', () => {
       await expect(ownerAppsPage.installDialog.installButton).toBeVisible();
 
       await withIsolatedPage(browser, { baseURL }, async ({ page: editorPage }) => {
-        const loginPage = new LoginPage(editorPage);
-        await loginPage.goto();
-        await loginPage.signIn(ghostAccountEditor.email, ghostAccountEditor.password);
-        await expect(new SidebarPage(editorPage).sidebar).toBeVisible();
+        await signInAsStaff(editorPage, ghostAccountEditor);
 
         const appsPage = new AppsPage(editorPage);
         await appsPage.gotoInstallLink(fixtureApp.manifestUrl);
