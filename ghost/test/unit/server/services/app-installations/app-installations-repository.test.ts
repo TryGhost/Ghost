@@ -324,14 +324,15 @@ describe('AppInstallationsRepository retiredBackendKeysOf', function () {
     );
   });
 
-  // Otherwise uninstalling and installing again would bring a replaced key back.
+  // Otherwise uninstalling and installing again would bring a replaced key back. The ended
+  // installation still points at k2, so only the newest installation makes k3 current.
   it('counts the rows of ended installations', async function () {
     await addRows('ended', ['k1', 'k2']);
-    await addRows('installation', ['k2']);
+    await addRows('installation', ['k3']);
 
     assert.deepEqual(
       await new AppInstallationsRepository(knex).retiredBackendKeysOf(manifest.id, 'identity'),
-      new Set(['k1']),
+      new Set(['k1', 'k2']),
     );
   });
 
