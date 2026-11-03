@@ -271,6 +271,7 @@ export const SHADE_TOKEN_NAMES = [
   'radius-2xl',
   'radius-3xl',
   'radius-badge',
+  'radius-card',
   'radius-control',
   'radius-control-sm',
   'radius-full',

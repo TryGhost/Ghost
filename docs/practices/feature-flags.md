@@ -141,6 +141,9 @@ The `admin7Design` milestone also sets column headers in a small uppercase label
 style. Section headings on member details, tag details and Settings share one
 style, and member stats and list text follow the prototype.
 
+The `admin7Design` milestone also gives cards 8px corners and makes large titles
+and the space above them follow the width of the page area.
+
 The `admin7CustomizeFromViewSite` experiment adds Customize to the frame's top
 bar on View site, opening the Design settings in a panel over a live, browsable
 preview of the site, with its state in the URL (`/site?customize`). It needs

@@ -74,6 +74,7 @@ module.exports = function MembersAPI({
   giftService,
   metafieldValues,
   checkouts,
+  tracking,
 }) {
   const tokenService = new TokenService({
     signingKeys,
@@ -217,6 +218,7 @@ module.exports = function MembersAPI({
     emailAddressService,
     giftService,
     checkouts,
+    tracking,
   });
 
   const wellKnownController = new WellKnownController({
