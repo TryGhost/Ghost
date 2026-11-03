@@ -7,6 +7,7 @@ import * as spamPrevention from '../../../../../../../core/server/web/shared/mid
 type FactoryName =
   | 'upgradeBlock'
   | 'upgradeApiBlock'
+  | 'staffInviteBlock'
   | 'globalBlock'
   | 'globalReset'
   | 'userLogin'
@@ -33,6 +34,7 @@ const factories: Array<{
 }> = [
   { name: 'upgradeBlock', configKey: 'upgrade_block', attachResetToRequest: false },
   { name: 'upgradeApiBlock', configKey: 'upgrade_api_block', attachResetToRequest: false },
+  { name: 'staffInviteBlock', configKey: 'staff_invite_block', attachResetToRequest: false },
   { name: 'globalBlock', configKey: 'global_block', attachResetToRequest: false },
   { name: 'globalReset', configKey: 'global_reset', attachResetToRequest: false },
   { name: 'userLogin', configKey: 'user_login', attachResetToRequest: true },
@@ -144,18 +146,23 @@ describe('Spam Prevention', function () {
     }
   });
 
-  it('keeps upgrade budgets stable when limiter construction order changes', function () {
+  it('keeps upgrade and invite budgets stable when limiter construction order changes', function () {
     const firstRequestLimiter = spamPrevention.upgradeBlock();
     const firstApiLimiter = spamPrevention.upgradeApiBlock();
+    const firstInviteLimiter = spamPrevention.staffInviteBlock();
 
     spamPrevention.reset();
     spamPrevention.globalBlock();
+    const secondInviteLimiter = spamPrevention.staffInviteBlock();
     const secondApiLimiter = spamPrevention.upgradeApiBlock();
     const secondRequestLimiter = spamPrevention.upgradeBlock();
 
     assert.equal(firstRequestLimiter.name, secondRequestLimiter.name);
     assert.equal(firstApiLimiter.name, secondApiLimiter.name);
     assert.notEqual(secondRequestLimiter.name, secondApiLimiter.name);
+    assert.equal(firstInviteLimiter.name, secondInviteLimiter.name);
+    assert.notEqual(secondInviteLimiter.name, secondRequestLimiter.name);
+    assert.equal(secondInviteLimiter.options.refreshTimeoutOnRequest, false);
   });
 
   it('reset clears cached limiters and reloads spam configuration', function () {
