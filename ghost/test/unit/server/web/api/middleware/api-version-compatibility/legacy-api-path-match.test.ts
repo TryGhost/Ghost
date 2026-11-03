@@ -93,15 +93,17 @@ describe('Legacy Path Match', function () {
     assert.deepEqual(legacyApiPathMatch('/v4/admin?x=1'), { version: 'v4', api: 'admin' });
   });
 
-  it('matches a legacy version and api name in any case, as Express routes them', function () {
-    assert.deepEqual(legacyApiPathMatch('/ghost/api/V4/admin/posts/'), {
-      version: 'V4',
-      api: 'admin',
-    });
-    assert.deepEqual(legacyApiPathMatch('/ghost/api/v4/Admin/posts/'), {
-      version: 'v4',
-      api: 'Admin',
-    });
+  it('matches a legacy version and api name in any case, as Express routes them, and returns them in lowercase', function () {
+    const cases: [string, { version: string | null; api: string }][] = [
+      ['/ghost/api/V4/ADMIN/posts/', { version: 'v4', api: 'admin' }],
+      ['/V4/Admin/posts/', { version: 'v4', api: 'admin' }],
+      ['/ghost/api/Canary/admin/', { version: 'canary', api: 'admin' }],
+      ['/ghost/api/CONTENT/posts/', { version: null, api: 'content' }],
+    ];
+
+    for (const [url, expected] of cases) {
+      assert.deepEqual(legacyApiPathMatch(url), expected, url);
+    }
   });
 
   it('ignores the query string', function () {

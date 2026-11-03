@@ -60,6 +60,32 @@ describe('Admin API Key Auth', function () {
     return promise;
   });
 
+  it('should authenticate a v4 API key on a versioned path written in capitals', function () {
+    const { promise, resolve } = Promise.withResolvers();
+    const token = jwt.sign({}, secret, {
+      keyid: fakeApiKey.id,
+      algorithm: 'HS256',
+      expiresIn: '5m',
+      audience: '/v4/admin/',
+      issuer: fakeApiKey.id,
+    });
+
+    const req = {
+      originalUrl: '/ghost/api/V4/Admin/posts/',
+      headers: {
+        authorization: `Ghost ${token}`,
+      },
+    };
+    const res = {};
+
+    apiKeyAuth.admin.authenticate(req, res, (err) => {
+      assert.equal(err, undefined);
+      assert.equal(req.api_key, fakeApiKey);
+      resolve();
+    });
+    return promise;
+  });
+
   it('should authenticate known+valid non-versioned API key', function () {
     const { promise, resolve } = Promise.withResolvers();
     const token = jwt.sign({}, secret, {

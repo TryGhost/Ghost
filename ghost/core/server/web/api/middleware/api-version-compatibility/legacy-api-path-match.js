@@ -16,11 +16,9 @@ module.exports = (url) => {
     urlToMatch += '/';
   }
 
-  let { version, api } = pathMatch(apiRouteMatcher)(urlToMatch);
+  const { version, api } = pathMatch(apiRouteMatcher)(urlToMatch);
 
-  if (version === undefined) {
-    version = null;
-  }
-
-  return { version, api };
+  // The match ignores case, as Express routes paths in any case, but callers
+  // compare these with lowercase values such as a token's audience.
+  return { version: version?.toLowerCase() ?? null, api: api?.toLowerCase() };
 };
