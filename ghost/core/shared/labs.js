@@ -29,7 +29,12 @@ const messages = {
 // flags in this list always return `true`, allows quick global enable prior to full flag removal
 // Admin no longer reads selfServeArchives or admin7EditorImprovements; they stay
 // enabled for older Admin builds during independent deployments.
-const GA_FEATURES = ['selfServeArchives', 'admin7EditorImprovements', 'stripeCheckoutDesign'];
+const GA_FEATURES = [
+  'automationsLifecycleTriggers',
+  'selfServeArchives',
+  'admin7EditorImprovements',
+  'stripeCheckoutDesign',
+];
 
 // These features are considered publicly available and can be enabled/disabled by users
 const PUBLIC_BETA_FEATURES = [
@@ -43,7 +48,6 @@ const PUBLIC_BETA_FEATURES = [
 // Which is only visible if the developer experiments flag is enabled
 const PRIVATE_FEATURES = [
   'automations',
-  'automationsLifecycleTriggers',
   'stripeAutomaticTax',
   'importMemberTier',
   'csvContentImporter',
