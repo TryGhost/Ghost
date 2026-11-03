@@ -247,6 +247,7 @@ export const SHADE_TOKEN_NAMES = [
   'font-sans',
   'font-serif',
   'foreground',
+  'icon-stroke',
   'input',
   'input-group-radius',
   'leading-base',
