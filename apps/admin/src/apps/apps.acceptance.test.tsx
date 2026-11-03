@@ -1339,7 +1339,9 @@ describe('Managing apps', () => {
     const row = appsScreen.row('Podcast').element();
     await expect.poll(() => row.querySelector('svg.lucide-app-window')).not.toBeNull();
     expect(imageSources(row)).toEqual([]);
-    await expect.poll(() => imageSources(appsScreen.sidebarApps().element())).toEqual([]);
+    const sidebar = appsScreen.sidebarApps().element();
+    await expect.poll(() => sidebar.querySelector('svg.lucide-app-window')).not.toBeNull();
+    expect(imageSources(sidebar)).toEqual([]);
   });
 
   it('draws the default icon for a stored copy that isn’t an image data URL', async () => {

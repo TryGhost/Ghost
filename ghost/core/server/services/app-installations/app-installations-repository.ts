@@ -185,6 +185,11 @@ export class AppInstallationsRepository {
     return row ? z.decode(InstallationRow, row) : undefined;
   }
 
+  /** Whether the app has a current installation. Reads no manifest, so nothing can fail to decode. */
+  async isInstalled(appId: string): Promise<boolean> {
+    return Boolean(await this.knex(INSTALLATIONS).where('current_app_id', appId).first('id'));
+  }
+
   /**
    * Reads only the digest and icon copy, skipping the manifest: a row stored under an older
    * contract may no longer decode, but we still compare against it.

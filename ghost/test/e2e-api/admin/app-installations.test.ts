@@ -1625,6 +1625,35 @@ describe('App installations Admin API', function () {
       assert.equal((await actions()).length, 1);
     });
 
+    it('asks for a new review when the installation changes while its icon fails to load', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      const reviewed = await preview();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      nock(MANIFEST_HOST)
+        .get(ICON_PATH)
+        .reply(503, async () => {
+          await models.Base.knex('app_installations')
+            .where({ id: installed.id })
+            .increment('revision', 1);
+          return '';
+        });
+      // For the fresh preview the refusal includes.
+      serveIcon(NEW_ICON);
+
+      const { body } = await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [{ manifest_url: MANIFEST_URL, digest: reviewed.digest, revision: 0 }],
+        })
+        .expectStatus(409);
+
+      assert.equal(body.errors[0].code, 'APP_INSTALLATION_CHANGED');
+      assert.equal(body.errors[0].details.installation.revision, 1);
+      assert.equal((await manifestRows()).length, 1);
+    });
+
     it('reports an app uninstalled while its icon fails to load as uninstalled', async function () {
       const installed = await installWithIcon();
       serve(manifest({ ...servedIcon, name: 'Podcasts' }));

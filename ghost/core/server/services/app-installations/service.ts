@@ -180,7 +180,7 @@ export class AppInstallationsService {
     const loaded = await this.fetchReviewed(manifestUrl, digest);
     // Report an installed app as such before fetching its icon, which could fail instead.
     // The insert still catches a race with another install.
-    if (await this.repository.currentInstallationOf(loaded.manifest.id)) {
+    if (await this.repository.isInstalled(loaded.manifest.id)) {
       throw alreadyInstalled(loaded.manifest.id);
     }
     const installation = await this.repository.insert(
@@ -236,9 +236,16 @@ export class AppInstallationsService {
     const write = await this.withIconCopy(
       approvalWrite({ current, pending: await this.pendingManifestOf(current), loaded }),
     ).catch(async (error: unknown) => {
-      // An app uninstalled during the icon fetch has nothing left to approve, whatever
-      // went wrong with its icon.
-      throw (await this.currentInstallation(id)) ? error : uninstalled();
+      // If the installation was uninstalled or changed during the icon fetch, report that,
+      // whatever went wrong with its icon, as `store` would have.
+      const latest = await this.currentInstallation(id);
+      if (!latest) {
+        throw uninstalled();
+      }
+      if (latest.revision !== current.revision) {
+        throw await this.changedSinceReview(loaded);
+      }
+      throw error;
     });
     const stored = await this.store(current, write);
     if (stored.status === 'uninstalled') {
