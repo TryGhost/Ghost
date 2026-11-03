@@ -25,7 +25,7 @@ import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { NotFound } from '@/shared/not-found';
-import { AccessIndicator } from './components/access-indicator';
+import { AccessIndicator, OPENED_APP_ACCESS_INTRO } from './components/access-indicator';
 import { AppIcon } from './components/app-icon';
 import { AppPinButton } from './components/app-pin-button';
 import { AppsGate } from './components/apps-gate';
@@ -36,7 +36,8 @@ import { historyTitle, installedBy } from './lib/history';
 import { isInstallationNotFound } from './lib/not-found';
 import { appReviewRoute, appRoute } from './lib/routes';
 import { useInstalledApps } from './lib/use-app-pins';
-import { isDevelopmentApp } from './lib/served-from';
+import { isDevelopmentApp, servedFrom } from './lib/served-from';
+import { AppAuthor, UnverifiedDeveloperBadge } from './components/app-author';
 
 const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div className="grid grid-cols-[8rem_1fr] gap-4 py-3" data-testid="app-fact">
@@ -105,15 +106,14 @@ const Details: React.FC<{ installation: AppInstallation; timezone: string }> = (
         {status !== 'uninstalled' && <CapabilitySummary manifest={manifest} />}
 
         <div className="divide-y border-y">
+          <Fact label="Served from">
+            <span className="break-all">{servedFrom(manifest)}</span>
+          </Fact>
           <Fact label="Made by">
-            <a
-              className="hover:underline"
-              href={manifest.author.url}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              {manifest.author.name}
-            </a>
+            <Inline gap="xs" wrap>
+              <AppAuthor manifest={manifest} />
+              <UnverifiedDeveloperBadge manifest={manifest} />
+            </Inline>
           </Fact>
           <Fact label="Installed">
             {formatDisplayDate(installation.created_at, timezone)}
@@ -143,10 +143,7 @@ const Details: React.FC<{ installation: AppInstallation; timezone: string }> = (
         )}
 
         {status !== 'uninstalled' && (
-          <AccessIndicator
-            intro="Apps use the account of whoever opens them, so this app can do everything they can."
-            items={ACCOUNT_ACCESS}
-          />
+          <AccessIndicator intro={OPENED_APP_ACCESS_INTRO} items={ACCOUNT_ACCESS} />
         )}
 
         <Stack gap="sm">

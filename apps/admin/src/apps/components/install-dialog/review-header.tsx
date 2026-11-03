@@ -10,27 +10,21 @@ import {
 import { Inline, Text } from '@tryghost/shade/primitives';
 import type { AppInstallationPreview } from '@tryghost/admin-x-framework/api/app-installations';
 import { AppBanner, AppIcon } from '@/apps/components/app-icon';
+import { AppProvenance, UnverifiedDeveloperBadge } from '@/apps/components/app-author';
 import { isDevelopmentApp } from '@/apps/lib/served-from';
 
 /**
- * Who made the app: the same for installing and approving. Where it runs is listed with
- * what it can access, as a place it sends data to.
+ * Who the app is: the same for installing and approving. Where it's served from comes first,
+ * as what Ghost checked, then who made it, with a badge while Ghost hasn’t verified them.
  */
 const AppIdentity: React.FC<{ preview: AppInstallationPreview }> = ({ preview }) => {
   const { manifest } = preview;
   return (
-    <Inline gap="xs">
+    <Inline gap="xs" wrap>
       <Text as="span" size="sm" tone="secondary">
-        By{' '}
-        <a
-          className="text-foreground hover:underline"
-          href={manifest.author.url}
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          {manifest.author.name}
-        </a>
+        <AppProvenance manifest={manifest} emphasised />
       </Text>
+      <UnverifiedDeveloperBadge manifest={manifest} />
       {isDevelopmentApp(manifest) && (
         <Badge data-testid="app-development-badge" variant="secondary">
           Development

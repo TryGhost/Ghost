@@ -13,6 +13,7 @@ export const appsScreen = {
   notAllowedDialog: () => page.getByTestId(sel.appInstallNotAllowedDialog),
   developmentBadge: () =>
     page.getByTestId(sel.appInstallDialog).getByTestId(sel.appDevelopmentBadge),
+  unverifiedDeveloperBadge: () => page.getByTestId(sel.appUnverifiedDeveloperBadge),
   accessIndicator: () => page.getByTestId(sel.accessIndicator),
   accessItems: () => page.getByTestId(sel.accessItem),
   capabilities: () => page.getByTestId(sel.appCapability),

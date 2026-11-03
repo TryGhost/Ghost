@@ -72,8 +72,9 @@ export const UninstallDialog: React.FC<UninstallDialogProps> = ({
         <AlertDialogHeader>
           <AlertDialogTitle>Uninstall {shown?.manifest.name}?</AlertDialogTitle>
           <AlertDialogDescription>
-            The app stops working immediately for everyone. Reinstalling it later is like installing
-            it for the first time.
+            The app stops opening for everyone. Where it’s already open, in another tab or for
+            another staff user, it can keep running until that tab is reloaded. Reinstalling it
+            later is like installing it for the first time.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <Banner data-testid="app-uninstall-integration-key-note" size="md" variant="warning">

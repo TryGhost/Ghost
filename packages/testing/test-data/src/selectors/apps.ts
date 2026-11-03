@@ -19,6 +19,7 @@ export const appDevelopmentBadge = 'app-development-badge';
 export const accessIndicator = 'access-indicator';
 export const accessItem = 'access-item';
 export const appDetails = 'app-details';
+export const appUnverifiedDeveloperBadge = 'app-unverified-developer-badge';
 export const appPage = 'app-page';
 export const appFrame = 'app-frame';
 export const appNotResponding = 'app-not-responding';

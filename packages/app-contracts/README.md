@@ -47,7 +47,12 @@ An app describes itself to Ghost in a JSON manifest served next to the app:
 - `id` is chosen by the developer, in reverse-domain style. It is the app's
   identity: it stays the same wherever the app is served from.
 - `name`, `description` and `author` are all required. The author's `url` is only
-  ever linked to.
+  ever linked to, and nothing checks who the author is, so Admin's install review
+  and app details mark them as an unverified developer.
+- Text is one line of plain text. Characters that show nothing, as a reader sees
+  them, are taken off both ends, such as spaces, Hangul fillers and the blank
+  Braille pattern standing alone, with any marks on them. Text with nothing
+  visible left is refused.
 - `icon` is drawn on `accent_color`, a six-digit hex colour. It is either
   `{ "name": "audio-lines" }`, one of the icons Admin ships, or
   `{ "url": "/icon.svg" }`, an SVG the app serves, which Ghost shows as an image

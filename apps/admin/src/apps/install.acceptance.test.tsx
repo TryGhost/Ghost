@@ -94,14 +94,24 @@ describe('Installing an app', () => {
     const dialog = appsScreen.installDialog();
     await expect.element(dialog).toHaveTextContent('Podcast');
     await expect.element(dialog).toHaveTextContent('Publish episodes and embed players.');
-    await expect.element(dialog).toHaveTextContent('By Example Audio');
+    // Where it's served from, which Ghost checked, before who made it, which nothing checks.
+    await expect
+      .element(dialog)
+      .toHaveTextContent('Served from podcast.example.com · By Example Audio');
+    await expect
+      .element(appsScreen.unverifiedDeveloperBadge())
+      .toHaveTextContent('Unverified developer');
+    await expect
+      .element(dialog.getByRole('link', { name: 'Example Audio', exact: true }))
+      .toHaveAttribute('href', 'https://example.com/');
     await expect.element(appsScreen.developmentBadge()).not.toBeInTheDocument();
     await expect
       .element(appsScreen.accessIndicator())
-      .toHaveTextContent('This app uses your account, so it can do everything you can.');
+      .toHaveTextContent('This app uses the account of whoever opens it, yours included');
+    await expect(appsScreen.accessItems()).toHaveCount(6);
     await expect
       .element(appsScreen.accessItems().first())
-      .toHaveTextContent('View, create, edit, publish and delete all posts and pages');
+      .toHaveTextContent('View, create, edit, publish and delete posts and pages');
     // What the app does: where it appears, and where what it reads can go.
     await expect(appsScreen.capabilities()).toHaveCount(2);
     await expect

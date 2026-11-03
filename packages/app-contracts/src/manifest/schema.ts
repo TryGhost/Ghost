@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { iconField } from './icon.ts';
 import { APP_ID_MAX_LENGTH, isValidAppId } from './id.ts';
 import { surfacesField } from './surfaces.ts';
-import { plainText } from './text.ts';
+import { plainText, storedText } from './text.ts';
 import { absoluteUrl, urlField, type UrlField, type UrlRules } from './url.ts';
 
 const NAME_MAX_LENGTH = 50;
@@ -17,20 +17,21 @@ const HEX_COLOR = /^#[0-9a-f]{6}$/i;
  * claim something Ghost has not designed, and adding a field is always a deliberate change
  * here.
  *
- * Defined once, with the URL rule left open. What a valid URL is depends on whether the
- * manifest is being parsed, when where it was fetched from and where Ghost is served from
- * both matter, or read back after it was, when neither does.
+ * Defined once, with the URL and text rules left open. What a valid URL is depends on whether
+ * the manifest is being parsed, when where it was fetched from and where Ghost is served from
+ * both matter, or read back after it was, when neither does. Text is held to today's rules
+ * when parsed, and read back under the rules it was stored under.
  */
-function manifestShape(url: UrlField) {
+function manifestShape(url: UrlField, text: typeof plainText) {
   return z.strictObject({
     id: z.custom<string>(isValidAppId, {
       error: `Expected a lowercase reverse-domain ID such as com.example.app, at most ${APP_ID_MAX_LENGTH} characters`,
     }),
-    name: plainText(NAME_MAX_LENGTH),
-    description: plainText(DESCRIPTION_MAX_LENGTH),
+    name: text(NAME_MAX_LENGTH),
+    description: text(DESCRIPTION_MAX_LENGTH),
     author: z.strictObject(
       {
-        name: plainText(AUTHOR_NAME_MAX_LENGTH),
+        name: text(AUTHOR_NAME_MAX_LENGTH),
         // Only ever linked to, so it may point at the publisher's own site.
         url: url(true),
       },
@@ -47,7 +48,7 @@ function manifestShape(url: UrlField) {
 
 /** The manifest as an app serves it. Built per parse, as its URL rule depends on the parse. */
 export function manifestSchema(rules: UrlRules) {
-  return manifestShape((linkOnly) => urlField(rules, linkOnly));
+  return manifestShape((linkOnly) => urlField(rules, linkOnly), plainText);
 }
 
 /**
@@ -56,7 +57,7 @@ export function manifestSchema(rules: UrlRules) {
  * whatever the site's URL has become since, and it encodes a manifest back to the same
  * shape, so what is stored is what will be read.
  */
-export const AppManifestSchema = manifestShape(absoluteUrl);
+export const AppManifestSchema = manifestShape(absoluteUrl, storedText);
 
 /**
  * A parsed manifest. Every URL in it is absolute, and a surface's origin is the only one
