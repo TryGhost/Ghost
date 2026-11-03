@@ -158,13 +158,15 @@ export function decodeBridgeError<Code extends BridgeErrorCode>(
   return (codes as readonly string[]).includes(code) ? { code: code as Code, detail } : undefined;
 }
 
-const THEME_MODES = ['light', 'dark'] as const;
-
 /** The theme Admin is showing, so the page can match it. `mode` is resolved, never `system`. */
 export type Theme = {
-  mode: (typeof THEME_MODES)[number];
+  // Written out, rather than derived from a list, so the SDK's published types show the modes.
+  mode: 'light' | 'dark';
   accent_color: string;
 };
+
+// Every mode, once each: the record type fails to compile if it and `Theme` disagree.
+const THEME_MODES: Record<Theme['mode'], true> = { light: true, dark: true };
 
 /**
  * What Admin sends an app's page when the session starts. An older SDK ignores fields a newer
@@ -294,7 +296,9 @@ function hasStrings(value: unknown, keys: readonly string[]): value is Record<st
 
 export function isTheme(value: unknown): value is Theme {
   return (
-    hasStrings(value, ['accent_color']) && (THEME_MODES as readonly unknown[]).includes(value.mode)
+    hasStrings(value, ['accent_color']) &&
+    typeof value.mode === 'string' &&
+    Object.hasOwn(THEME_MODES, value.mode)
   );
 }
 

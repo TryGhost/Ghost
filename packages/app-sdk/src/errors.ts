@@ -1,13 +1,18 @@
-import { HOST_ERROR_CODES, decodeBridgeError, type BridgeErrorCode } from '@tryghost/app-contracts';
+import { HOST_ERROR_CODES, decodeBridgeError } from '@tryghost/app-contracts';
 
+// The bridge codes are written out, rather than taken from the contracts' `BridgeErrorCode`,
+// so the published types list every code. A test checks they match.
 /**
  * Why an SDK call failed:
  *
  * - `not_framed`: the page is not framed in Admin, so there is nothing to connect to.
  * - `not_connected`: Admin did not start the app in time.
- * - `duplicate_sdk`: another copy of the SDK in the page has already connected, or tried to.
- * - `invalid_context`: Admin started the app with a context this SDK cannot read.
- * - `session_ended`: this document has left the app session, or the session has ended.
+ * - `duplicate_sdk`: another copy of the SDK in the page has already connected, or tried to,
+ *   because the page loads the SDK more than once. Load a single copy for the whole page.
+ * - `invalid_context`: Admin started the app with a context this SDK cannot read. Updating the
+ *   SDK usually fixes it.
+ * - `session_ended`: this document has left the app session, usually because the page reloaded
+ *   or navigated away, or the session has ended. Every call fails after that.
  * - `invalid_argument`: the app passed something that cannot be sent.
  * - `invalid_path`: a path that is not an Admin API path, or not a route within the app; or
  *   one the Admin API only redirects, such as a path without its trailing `/`.
@@ -25,7 +30,13 @@ export type GhostAppErrorCode =
   | 'not_connected'
   | 'duplicate_sdk'
   | 'unsupported'
-  | BridgeErrorCode;
+  | 'session_ended'
+  | 'invalid_argument'
+  | 'invalid_path'
+  | 'blocked'
+  | 'network_error'
+  | 'rejected'
+  | 'invalid_context';
 
 /** The only error type the SDK rejects with, so an app can branch on `code`. */
 export class GhostAppError extends Error {
