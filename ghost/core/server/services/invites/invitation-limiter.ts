@@ -40,18 +40,9 @@ export default class InvitationLimiter {
       }
 
       const email = invite.email.trim();
-      const existingInvite = await transaction('invites')
-        .where({ email })
-        .forUpdate()
-        .first('role_id');
+      const existingInvite = await this.findAndLockInvite(transaction, email);
       // Acceptance may have completed since the API's permission check.
-      const registered = await transaction('users').where({ email }).first('id');
-      if (registered) {
-        throw new errors.ValidationError({
-          message: 'User is already registered.',
-          code: 'USER_ALREADY_REGISTERED',
-        });
-      }
+      await this.errorIfAlreadyRegistered(transaction, email);
       if (hasEmailLimit) {
         await this.reserveEmail(transaction, counterValue);
       }
@@ -64,6 +55,26 @@ export default class InvitationLimiter {
       }
       return prepare(transaction);
     });
+  }
+
+  private async findAndLockInvite(
+    transaction: Knex.Transaction,
+    email: string,
+  ): Promise<{ role_id: string } | undefined> {
+    return transaction('invites').where({ email }).forUpdate().first('role_id');
+  }
+
+  private async errorIfAlreadyRegistered(
+    transaction: Knex.Transaction,
+    email: string,
+  ): Promise<void> {
+    const registered = await transaction('users').where({ email }).first('id');
+    if (registered) {
+      throw new errors.ValidationError({
+        message: 'User is already registered.',
+        code: 'USER_ALREADY_REGISTERED',
+      });
+    }
   }
 
   private async checkStaffLimit(
