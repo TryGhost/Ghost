@@ -2720,6 +2720,10 @@ module.exports = {
     // and what tells two versions apart without parsing them. Defined by
     // services/app-installations/load-manifest.ts.
     digest: { type: 'string', maxlength: 64, nullable: false },
+    // A copy of the app's own icon as a data URL, taken when the row was added, so staff
+    // browsers never request it from the app. Null for a named icon. Defined by
+    // services/app-installations/fetch-icon.ts.
+    icon_data_url: { type: 'text', maxlength: 65535, nullable: true },
     // The RFC 7638 thumbprint of the manifest's backend key. For each app and identity key,
     // every key named on any installation is retired, other than the one named by the newest
     // installation's pending or else approved manifest: a manifest naming one is refused.

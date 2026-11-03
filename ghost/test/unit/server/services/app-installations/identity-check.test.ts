@@ -19,6 +19,7 @@ import {
   type TestAppKeys,
   type TestKey,
 } from '../../../../utils/app-identity';
+import { createLoggingFake } from '../../../../utils/logging-utils';
 
 const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
 const ORIGIN = 'https://podcast.example.com';
@@ -63,7 +64,8 @@ const answering =
   async (body, url) => ({
     success: true,
     url,
-    text: await answerTestChallenge(body, key, url),
+    body: Buffer.from(await answerTestChallenge(body, key, url)),
+    contentType: 'application/json',
   });
 
 const answeringWith =
@@ -78,17 +80,17 @@ function setup({
   const fetchFromApp = vi.fn<FetchFromApp>(async (url, options: AppFetchOptions) =>
     backend(options.body!, url),
   );
-  const warn = vi.fn();
+  const logging = createLoggingFake();
   const checker = createIdentityChecker({
     fetchFromApp,
-    logging: { warn },
+    logging,
     getTrustConfig: () => trust,
     getAllowLocalhost: () => trust.trustLoopback,
   });
   /** Challenges the manifest URL's origin, then checks the loaded manifest. */
   const checkIdentity = (manifest: LoadedManifest, pinned: PinnedIdentity | null) =>
     checker.check(manifest, pinned, checker.challenge(manifest.manifestUrl));
-  return { checker, checkIdentity, fetchFromApp, warn };
+  return { checker, checkIdentity, fetchFromApp, warn: logging.warn };
 }
 
 const pinned = (overrides: Partial<PinnedIdentity> = {}): PinnedIdentity => ({
@@ -176,7 +178,12 @@ describe('createIdentityChecker', function () {
 
     it('fails when the origin answers with something other than a signature', async function () {
       const { checkIdentity } = setup({
-        backend: answeringWith({ success: true, url: MANIFEST_URL, text: '<html></html>' }),
+        backend: answeringWith({
+          success: true,
+          url: MANIFEST_URL,
+          body: Buffer.from('<html></html>'),
+          contentType: 'text/html',
+        }),
       });
 
       await assert.rejects(checkIdentity(loaded(), null), {
@@ -207,7 +214,7 @@ describe('createIdentityChecker', function () {
         code: 'APP_CHALLENGE_UNREACHABLE',
         context: ORIGIN,
       });
-      assert.deepEqual(warn.mock.calls, [[`Could not challenge the app at ${ORIGIN}`], [cause]]);
+      assert.deepEqual(warn.args, [[`Could not challenge the app at ${ORIGIN}`], [cause]]);
     });
 
     it('reports an error status, or a redirect, as unreachable with the status', async function () {

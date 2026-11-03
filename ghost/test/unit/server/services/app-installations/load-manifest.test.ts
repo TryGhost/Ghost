@@ -17,6 +17,7 @@ import {
   signTestManifest,
   type TestAppKeys,
 } from '../../../../utils/app-identity';
+import { createLoggingFake } from '../../../../utils/logging-utils';
 
 const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
 
@@ -88,7 +89,7 @@ const failing =
 function setup({ app, rules = RULES }: { app?: App; rules?: ManifestRules } = {}) {
   app ??= serving(manifest());
   const fetchFromApp = vi.fn<FetchFromApp>(async (url) => app!(url));
-  const warn = vi.fn();
+  const logging = createLoggingFake();
   const loadManifest = createManifestLoader({
     fetchFromApp,
     logging,
@@ -252,7 +253,7 @@ describe('createManifestLoader', function () {
         code: 'APP_MANIFEST_UNREACHABLE',
         context,
       });
-      assert.deepEqual(warn.mock.calls, [
+      assert.deepEqual(warn.args, [
         [`Could not load the app manifest at ${MANIFEST_URL}`],
         [context],
       ]);

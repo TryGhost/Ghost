@@ -57,9 +57,12 @@ An app describes itself to Ghost in a JSON manifest, which it serves as a
   ever linked to.
 - `icon` is drawn on `accent_color`, a six-digit hex colour. It is either
   `{ "name": "audio-lines" }`, one of the icons Admin ships, or
-  `{ "url": "/icon.svg" }`, an SVG the app serves, which Ghost shows as an image
-  and never inlines. A name Admin does not know is not rejected here; Admin falls
-  back to a default icon.
+  `{ "url": "/icon.svg" }`, an image the app serves: SVG, PNG, JPEG, GIF or
+  WebP, at most 16 KB. Ghost keeps a copy of the image with each manifest
+  version it stores, and only shows that copy, as an image. An image replaced at
+  the same URL shows the next time the manifest changes, even by a field that
+  needs no approval. A name Admin does not know is not rejected here;
+  Admin falls back to a default icon.
 - An app is one origin. Everything Ghost loads from it, the surfaces and an
   icon's `url`, is a path resolved against `manifest_url`, so the origin Ghost
   fetches the manifest from and challenges is the one every surface runs on. A

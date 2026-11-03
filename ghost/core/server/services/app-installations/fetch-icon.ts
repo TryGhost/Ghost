@@ -44,6 +44,10 @@ function iconError(
         `${iconUrl} answered with HTTP ${failure.status} and a Location that is not a URL`,
       );
       return invalidIcon(`Expected an icon that loads, not HTTP ${failure.status}`);
+    // The icon is fetched following redirects on its own host, so this is only for
+    // completeness.
+    case 'redirect_refused':
+      return invalidIcon(`Expected an icon that loads, not HTTP ${failure.status}`);
     case 'redirected':
       return invalidIcon(`Expected an icon on its own host, not a redirect to ${failure.host}`);
     case 'too_large':
@@ -73,7 +77,7 @@ export function createIconFetcher({
       return null;
     }
     const fetched = await fetchFromApp(icon.url, {
-      accept: [...ICON_TYPES].join(', '),
+      headers: { accept: [...ICON_TYPES].join(', ') },
       maxBytes: ICON_MAX_BYTES,
     });
     if (!fetched.success) {

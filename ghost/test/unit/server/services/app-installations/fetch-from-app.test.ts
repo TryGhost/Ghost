@@ -421,7 +421,8 @@ describe('createAppFetcher', function () {
       assert.deepEqual(result, {
         success: true,
         url: 'https://podcast.example.com/challenge',
-        text: 'Signed',
+        body: Buffer.from('Signed'),
+        contentType: null,
       });
     });
 
@@ -449,7 +450,12 @@ describe('createAppFetcher', function () {
 
       const result = await fetcher()(APP_URL, NO_REDIRECTS);
 
-      assert.deepEqual(result, { success: true, url: APP_URL, text: 'Hello' });
+      assert.deepEqual(result, {
+        success: true,
+        url: APP_URL,
+        body: Buffer.from('Hello'),
+        contentType: null,
+      });
     });
 
     it.each([301, 302, 303, 307, 308])(

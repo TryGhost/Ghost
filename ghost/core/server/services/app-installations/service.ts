@@ -140,6 +140,7 @@ export class AppInstallationsService {
   private recordAction: RecordAppInstallationAction;
   private loadManifest: LoadManifest;
   private identity: IdentityChecker;
+  private fetchIcon: FetchIcon;
   /** Re-checks in progress, by installation ID. Sessions that start together share one. */
   private rechecking = new Map<string, Promise<void>>();
 
@@ -148,16 +149,19 @@ export class AppInstallationsService {
     recordAction,
     loadManifest,
     identity,
+    fetchIcon,
   }: {
     knex: Knex;
     recordAction: RecordAppInstallationAction;
     loadManifest: LoadManifest;
     identity: IdentityChecker;
+    fetchIcon: FetchIcon;
   }) {
     this.repository = new AppInstallationsRepository(knex);
     this.recordAction = recordAction;
     this.loadManifest = loadManifest;
     this.identity = identity;
+    this.fetchIcon = fetchIcon;
   }
 
   /** Lists installed apps, suspended ones included. Uninstalled apps aren't listed. */
@@ -198,7 +202,14 @@ export class AppInstallationsService {
     { manifestUrl, digest }: { manifestUrl: string; digest: string },
   ): Promise<Installation> {
     const { loaded } = await this.fetchReviewed(manifestUrl, digest);
-    const installation = await this.repository.insert(loaded);
+    const iconDataUrl = await this.fetchIcon(loaded.manifest.icon).catch(async (error: unknown) => {
+      // An installed app can't be installed, whatever went wrong with its icon. The insert
+      // reports the same when the app is installed after the fetch.
+      throw (await this.repository.isInstalled(loaded.manifest.id))
+        ? alreadyInstalled(loaded.manifest.id)
+        : error;
+    });
+    const installation = await this.repository.insert(loaded, iconDataUrl);
     await this.recordAction({
       context,
       event: 'installed',
@@ -249,7 +260,7 @@ export class AppInstallationsService {
         throw uninstalled();
       }
       if (latest.revision !== current.revision) {
-        throw await this.changedSinceReview(loaded);
+        throw await this.changedSinceReview(checked, id);
       }
       throw error;
     });
@@ -369,16 +380,35 @@ export class AppInstallationsService {
     return { loaded, trustedOrigins, installation: current };
   }
 
-  private previewOf({
+  /**
+   * Shows the icon approving would store. A reused row shows its stored copy without a
+   * fetch, so the review works even if the icon URL stopped loading. The digest doesn't
+   * cover the icon, so confirming fetches it again.
+   */
+  private async previewOf({
     loaded,
     trustedOrigins,
     installation: current,
-  }: CheckedManifest): AppInstallationPreview {
-    return {
+  }: CheckedManifest): Promise<AppInstallationPreview> {
+    const reviewed = {
       manifest_url: loaded.manifestUrl,
       manifest: loaded.manifest,
       digest: loaded.digest,
       trusted_origins: trustedOrigins,
+    };
+    if (!current) {
+      return {
+        ...reviewed,
+        icon_data_url: await this.fetchIcon(loaded.manifest.icon),
+        installation: null,
+      };
+    }
+
+    const pending = await this.pendingManifestOf(current);
+    const write = await this.withIconCopy(approvalWrite({ current, pending, loaded }));
+    return {
+      ...reviewed,
+      icon_data_url: iconCopyKeptBy(write, current, pending),
       // The approved manifest shown is the one the changes were computed from, so the
       // review matches the list of changes.
       installation: {
@@ -391,6 +421,23 @@ export class AppInstallationsService {
         changes: changesFrom(current, loaded),
       },
     };
+  }
+
+  /**
+   * Fetches the icon for a write that adds a row, before the transaction opens so it never
+   * waits on the app. Other writes skip the fetch, so a stored copy never changes.
+   */
+  private async withIconCopy(write: ManifestWrite): Promise<ManifestWrite<AddedRow>> {
+    switch (write.kind) {
+      case 'nothing':
+      case 'approve_existing':
+        return write;
+      case 'add_approved':
+      case 'add_pending': {
+        const iconDataUrl = await this.fetchIcon(write.row.loaded.manifest.icon);
+        return { kind: write.kind, row: { ...write.row, iconDataUrl } };
+      }
+    }
   }
 
   /**
@@ -413,7 +460,7 @@ export class AppInstallationsService {
       throw new errors.ConflictError({
         message: 'The app changed while it was being reviewed.',
         code: 'APP_MANIFEST_CHANGED',
-        errorDetails: this.previewOf(checked),
+        errorDetails: await this.previewOf(checked),
       });
     }
     return checked;
@@ -431,7 +478,7 @@ export class AppInstallationsService {
     return new errors.ConflictError({
       message: 'The installation changed while the app was being reviewed.',
       code: 'APP_INSTALLATION_CHANGED',
-      errorDetails: this.previewOf({ ...checked, installation }),
+      errorDetails: await this.previewOf({ ...checked, installation }),
     });
   }
 
@@ -449,7 +496,10 @@ export class AppInstallationsService {
    * Applies a write planned from `current`, unless the installation changed since. Returns
    * the newly approved or pending manifest's ID, or null for `nothing`.
    */
-  private store(current: Installation, write: ManifestWrite): Promise<WriteOutcome<string | null>> {
+  private store(
+    current: Installation,
+    write: ManifestWrite<AddedRow>,
+  ): Promise<WriteOutcome<string | null>> {
     return this.repository.whileUnchanged(current, async (locked) => {
       switch (write.kind) {
         case 'nothing':
@@ -495,8 +545,10 @@ export class AppInstallationsService {
    *
    * If the manifest can't be loaded, fails the identity check, or is for a different app,
    * the app is broken or its URL now serves someone else. The session then fails instead of
-   * running the approved manifest, with the failure's own code. The challenge goes out with
-   * the manifest fetch, so a session start waits for one round trip to the app, not two.
+   * running the approved manifest, with the failure's own code. So does an icon that can't
+   * be loaded when a new row needs storing, even for a silent change; a re-check that stores
+   * nothing doesn't fetch it. The challenge goes out with the manifest fetch, so a session
+   * start waits for one round trip to the app, not two.
    *
    * Everything is looked up by installation ID, never app ID, so a re-check that started
    * before an uninstall can't bring that installation back or change a newer installation
@@ -516,7 +568,7 @@ export class AppInstallationsService {
         this.load(before.manifest_url),
         this.pinnedIdentityOf(before.app_id, before.identity_key_thumbprint),
       ]);
-      ({ loaded } = fetched);
+      const { loaded } = fetched;
       if (loaded.manifest.id !== before.app_id) {
         throw new errors.ValidationError({
           message: `${before.manifest_url} now serves ${loaded.manifest.id}.`,
@@ -524,6 +576,9 @@ export class AppInstallationsService {
         });
       }
       await this.identity.check(loaded, pinned, fetched.started);
+      write = await this.withIconCopy(
+        recheckWrite({ current: before, pending: await this.pendingManifestOf(before), loaded }),
+      );
     } catch (err) {
       // A ValidationError means the app served something that can't be used. Anything else
       // is a fault in Ghost, which fails the session as it is.
@@ -533,11 +588,6 @@ export class AppInstallationsService {
       return this.unavailableUnlessChanged(before, err);
     }
 
-    const write = recheckWrite({
-      current: before,
-      pending: await this.pendingManifestOf(before),
-      loaded,
-    });
     const stored = await this.store(before, write);
     if (stored.status === 'uninstalled') {
       throw notInstalled();

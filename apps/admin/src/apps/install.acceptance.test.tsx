@@ -31,6 +31,7 @@ const preview = (overrides: Partial<AppInstallationPreview> = {}): AppInstallati
   manifest: manifest(),
   digest: 'digest-1',
   trusted_origins: [],
+  icon_data_url: null,
   installation: null,
   ...overrides,
 });
@@ -142,6 +143,20 @@ describe('Installing an app', () => {
     await expect.poll(currentRoute).toBe('/apps');
     await expect(appsScreen.rows()).toHaveCount(1);
     await expect.element(appsScreen.row('Podcast')).toHaveTextContent('Example Audio');
+  });
+
+  it('shows the app’s own icon from the copy Ghost would store, never from the app', async () => {
+    fakeInstallations();
+    fakePreview(
+      previewResponse(
+        preview({ manifest: manifest({ icon: { url: ICON_URL } }), icon_data_url: ICON_DATA_URL }),
+      ),
+    );
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+
+    await expect.element(appsScreen.installButton()).toBeVisible();
+    expect(imageSources(appsScreen.installDialog().element())).toEqual([ICON_DATA_URL]);
   });
 
   it('marks a development build, as its signed manifest says', async () => {

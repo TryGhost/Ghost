@@ -88,7 +88,8 @@ export function createManifestFetcher({
       throw manifestError(manifestUrl, fetched.failure, logging);
     }
 
-    return parseJson(fetched.text, manifestUrl);
+    // Decoded as UTF-8, which is what JSON should use, whatever charset the app names.
+    return parseJson(fetched.body.toString('utf8'), manifestUrl);
   };
 }
 

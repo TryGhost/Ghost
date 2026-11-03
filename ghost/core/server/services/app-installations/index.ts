@@ -10,6 +10,7 @@ import {
   type RecordAppInstallationAction,
 } from './actions';
 import { createAppFetcher } from './fetch-from-app';
+import { createIconFetcher } from './fetch-icon';
 import { createIdentityChecker, readTrustedOrigins } from './identity-check';
 import { createManifestLoader } from './load-manifest';
 import { AppInstallationsService } from './service';
@@ -123,6 +124,7 @@ export default defineService(
         }),
         getAllowLocalhost: isDevelopment,
       }),
+      fetchIcon: createIconFetcher({ fetchFromApp, logging }),
     });
   },
   extras,

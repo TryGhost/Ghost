@@ -149,7 +149,7 @@ export function createIdentityChecker({
       const { failure } = answered;
       return { kind: 'failed', error: () => challengeUnreachable(origin, failure, logging) };
     }
-    return { kind: 'answered', sent, text: answered.text };
+    return { kind: 'answered', sent, text: answered.body.toString('utf8') };
   }
 
   function challenge(manifestUrl: string): StartedChallenge {

@@ -95,6 +95,7 @@ describe('AppInstallationsRepository insert', function () {
       manifest: loaded.serialised,
       digest: loaded.digest,
       backend_key_thumbprint: 'backend-thumbprint',
+      icon_data_url: ICON_DATA_URL,
       source: 'install',
       requires_approval: false,
       created_at: insert.mock.calls[0][0].created_at,
@@ -224,6 +225,7 @@ describe('AppInstallationsRepository retiredBackendKeysOf', function () {
         table.string(column);
       }
       table.string('backend_key_thumbprint');
+      table.text('icon_data_url');
       table.boolean('requires_approval');
       table.dateTime('created_at');
     });
@@ -254,6 +256,7 @@ describe('AppInstallationsRepository retiredBackendKeysOf', function () {
     manifest: loaded.serialised,
     digest: `digest-${id}`,
     backend_key_thumbprint: key,
+    icon_data_url: null,
     source: 'update' as const,
     requires_approval: false,
     created_at: createdAt,

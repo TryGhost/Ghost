@@ -1820,6 +1820,377 @@ describe('App installations Admin API', function () {
     });
   });
 
+  describe('the app’s icon', function () {
+    const approve = (id: string, digest: string, revision: number) =>
+      agent
+        .put(`apps/installations/${id}/`)
+        .body({ app_installations: [{ manifest_url: MANIFEST_URL, digest, revision }] })
+        .expectStatus(200);
+    /** Installs the app with its own SVG icon. The review and the install each fetch it. */
+    const installWithIcon = async () => {
+      serveIcon(ICON, 2);
+      return install(servedIcon);
+    };
+    const iconOf = async (manifestId: string) =>
+      (await models.Base.knex('app_installation_manifests').where({ id: manifestId }).first())
+        .icon_data_url;
+
+    it('previews a copy of the icon the app serves, as a data URL', async function () {
+      serve(manifest(servedIcon));
+      serveIcon();
+
+      const result = await preview();
+
+      assert.equal(result.manifest.icon.url, `${MANIFEST_HOST}${ICON_PATH}`);
+      assert.equal(result.icon_data_url, copyOf(ICON));
+    });
+
+    it('keeps no copy of an icon Admin ships', async function () {
+      const installed = await install();
+
+      assert.equal(installed.icon_data_url, null);
+      assert.equal((await manifestRows())[0].icon_data_url, null);
+    });
+
+    it('stores the copy with the installed manifest, and shows it with the installation', async function () {
+      const installed = await installWithIcon();
+
+      assert.equal(installed.icon_data_url, copyOf(ICON));
+      const [stored] = await manifestRows();
+      assert.equal(stored.icon_data_url, copyOf(ICON));
+      const { body: list } = await agent.get('apps/installations/').expectStatus(200);
+      assert.equal(list.app_installations[0].icon_data_url, copyOf(ICON));
+      const { body: read } = await agent
+        .get(`apps/installations/${installed.id}/`)
+        .expectStatus(200);
+      assert.equal(read.app_installations[0].icon_data_url, copyOf(ICON));
+    });
+
+    it('shows the approved copy beside the reviewed one', async function () {
+      await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+
+      const result = await preview();
+
+      assert.equal(result.icon_data_url, copyOf(NEW_ICON));
+      assert.equal(result.installation.icon_data_url, copyOf(ICON));
+    });
+
+    it('refuses an app whose icon can’t be used, saying why at icon.url', async function () {
+      const cases: Array<[() => nock.Scope, string]> = [
+        [
+          () => nock(MANIFEST_HOST).get(ICON_PATH).reply(404),
+          'Expected an icon that loads, not HTTP 404',
+        ],
+        [
+          () =>
+            nock(MANIFEST_HOST)
+              .get(ICON_PATH)
+              .reply(302, '', { location: 'https://elsewhere.example.net/icon.svg' }),
+          'Expected an icon on its own host, not a redirect to elsewhere.example.net',
+        ],
+        [
+          () => serveIcon(ICON.replace('</svg>', `<desc>${'x'.repeat(16 * 1024)}</desc></svg>`)),
+          'Expected an icon of at most 16 KB',
+        ],
+        [
+          () =>
+            nock(MANIFEST_HOST)
+              .get(ICON_PATH)
+              .reply(200, '<html><body>Not found</body></html>', { 'content-type': 'text/html' }),
+          'Expected an SVG, PNG, JPEG, GIF or WebP image',
+        ],
+      ];
+      for (const [serveBadIcon, message] of cases) {
+        serve(manifest(servedIcon));
+        serveBadIcon();
+
+        const error = await preview(MANIFEST_URL, 422);
+
+        assert.equal(error.code, 'APP_MANIFEST_INVALID', message);
+        assert.ok(error.context.endsWith(`icon.url: ${message}`), error.context);
+        assert.deepEqual(error.details, [{ path: 'icon.url', message }]);
+      }
+    });
+
+    it('refuses an install whose icon stopped loading after the review, storing nothing', async function () {
+      serve(manifest(servedIcon));
+      serveIcon();
+      const { digest } = await preview();
+      serve(manifest(servedIcon));
+      nock(MANIFEST_HOST).get(ICON_PATH).reply(503);
+
+      const { body } = await agent
+        .post('apps/installations/')
+        .body({ app_installations: [{ manifest_url: MANIFEST_URL, digest }] })
+        .expectStatus(422);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_INVALID');
+      assert.deepEqual(body.errors[0].details, [
+        { path: 'icon.url', message: 'Expected an icon that loads, not HTTP 503' },
+      ]);
+      assert.equal((await manifestRows()).length, 0);
+    });
+
+    // A re-check that stores nothing never contacts the icon URL, so the icon can't change
+    // by itself.
+    it('never fetches the icon again for a re-check that stores nothing', async function () {
+      const installed = await installWithIcon();
+      serve(manifest(servedIcon));
+      const unchanged = serveIcon(NEW_ICON);
+
+      const { body } = await start(installed.id);
+
+      assert.equal(unchanged.isDone(), false);
+      assert.equal(body.app_sessions[0].installation.icon_data_url, copyOf(ICON));
+
+      // Same when the app serves the pending manifest, which already has its own copy.
+      nock.cleanAll();
+      backends.clear();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      await start(installed.id);
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      const pending = serveIcon(ICON);
+
+      await start(installed.id);
+
+      assert.equal(pending.isDone(), false);
+      const row = await installationRow(installed.id);
+      assert.equal(await iconOf(row.pending_manifest_id), copyOf(NEW_ICON));
+      assert.equal(await iconOf(row.manifest_id), copyOf(ICON));
+    });
+
+    it('fetches the icon again for a re-check that stores a new manifest', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, description: 'Episodes and players.' }));
+      serveIcon(NEW_ICON);
+
+      const { body } = await start(installed.id);
+
+      assert.equal(body.app_sessions[0].installation.revision, 1);
+      assert.equal(body.app_sessions[0].installation.icon_data_url, copyOf(NEW_ICON));
+      assert.deepEqual(
+        (await manifestRows()).map((row: { icon_data_url: string }) => row.icon_data_url).sort(),
+        [copyOf(NEW_ICON), copyOf(ICON)].sort(),
+      );
+    });
+
+    it('fails as unavailable when a re-check that stores a new manifest can’t use its icon, storing nothing', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, description: 'Episodes and players.' }));
+      nock(MANIFEST_HOST).get(ICON_PATH).reply(503);
+      const warn = sinon.stub(logging, 'warn');
+
+      const { body } = await start(installed.id, 409);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_INVALID');
+      assert.equal(body.errors[0].context, 'icon.url: Expected an icon that loads, not HTTP 503');
+      assert.equal((await manifestRows()).length, 1);
+      assert.equal((await installationRow(installed.id)).revision, 0);
+      assert.ok(warn.calledWith(`Could not load the app icon at ${MANIFEST_HOST}${ICON_PATH}`));
+
+      // Once the icon loads again, so does the app.
+      serve(manifest({ ...servedIcon, description: 'Episodes and players.' }));
+      serveIcon(NEW_ICON);
+      const { body: opened } = await start(installed.id);
+      assert.equal(opened.app_sessions[0].installation.revision, 1);
+      assert.equal(opened.app_sessions[0].installation.icon_data_url, copyOf(NEW_ICON));
+    });
+
+    // The icon is fetched between planning a write and storing it, so a revision change
+    // during the fetch must stop the write.
+    const changeDuringIconFetch = (id: string, svg: string) =>
+      nock(MANIFEST_HOST)
+        .get(ICON_PATH)
+        .reply(
+          200,
+          async () => {
+            await models.Base.knex('app_installations').where({ id }).increment('revision', 1);
+            return svg;
+          },
+          SVG,
+        );
+
+    it('stores nothing when the installation changes while a re-check fetches the icon', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, description: 'Episodes and players.' }));
+      changeDuringIconFetch(installed.id, NEW_ICON);
+
+      const { body } = await start(installed.id);
+
+      assert.equal(body.app_sessions[0].installation.revision, 1);
+      assert.equal(body.app_sessions[0].installation.icon_data_url, copyOf(ICON));
+      assert.equal((await manifestRows()).length, 1);
+    });
+
+    it('asks for a new review when the installation changes while an approval fetches the icon', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      const reviewed = await preview();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      changeDuringIconFetch(installed.id, NEW_ICON);
+      // For the fresh preview the refusal includes.
+      serveIcon(NEW_ICON);
+
+      const { body } = await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [{ manifest_url: MANIFEST_URL, digest: reviewed.digest, revision: 0 }],
+        })
+        .expectStatus(409);
+
+      assert.equal(body.errors[0].code, 'APP_INSTALLATION_CHANGED');
+      assert.equal(body.errors[0].details.installation.revision, 1);
+      assert.equal((await manifestRows()).length, 1);
+      assert.equal((await actions()).length, 1);
+    });
+
+    it('asks for a new review when the installation changes while its icon fails to load', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      const reviewed = await preview();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      nock(MANIFEST_HOST)
+        .get(ICON_PATH)
+        .reply(503, async () => {
+          await models.Base.knex('app_installations')
+            .where({ id: installed.id })
+            .increment('revision', 1);
+          return '';
+        });
+      // For the fresh preview the refusal includes.
+      serveIcon(NEW_ICON);
+
+      const { body } = await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [{ manifest_url: MANIFEST_URL, digest: reviewed.digest, revision: 0 }],
+        })
+        .expectStatus(409);
+
+      assert.equal(body.errors[0].code, 'APP_INSTALLATION_CHANGED');
+      assert.equal(body.errors[0].details.installation.revision, 1);
+      assert.equal(body.errors[0].details.manifest.name, 'Podcasts');
+      assert.equal((await manifestRows()).length, 1);
+    });
+
+    it('reports an app uninstalled while its icon fails to load as uninstalled', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      const reviewed = await preview();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      nock(MANIFEST_HOST)
+        .get(ICON_PATH)
+        .reply(503, async () => {
+          await service().uninstall(owner, installed.id);
+          return '';
+        });
+
+      const { body } = await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [{ manifest_url: MANIFEST_URL, digest: reviewed.digest, revision: 0 }],
+        })
+        .expectStatus(409);
+
+      assert.equal(body.errors[0].code, 'APP_INSTALLATION_UNINSTALLED');
+      assert.equal((await manifestRows()).length, 1);
+    });
+
+    it('refuses an approval when the app is uninstalled while it fetches the icon, storing nothing', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      const reviewed = await preview();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      nock(MANIFEST_HOST)
+        .get(ICON_PATH)
+        .reply(
+          200,
+          async () => {
+            await service().uninstall(owner, installed.id);
+            return NEW_ICON;
+          },
+          SVG,
+        );
+
+      const { body } = await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [{ manifest_url: MANIFEST_URL, digest: reviewed.digest, revision: 0 }],
+        })
+        .expectStatus(409);
+
+      assert.equal(body.errors[0].code, 'APP_INSTALLATION_UNINSTALLED');
+      assert.equal((await manifestRows()).length, 1);
+      assert.deepEqual(
+        (await actions()).map(({ event }: { event: string }) => event),
+        ['installed', 'uninstalled'],
+      );
+    });
+
+    // The digest doesn't cover the icon, so the copy is whatever the app serves on approval.
+    it('stores the icon fetched on approval for an approval that stores a new manifest', async function () {
+      const approvedIcon =
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="12" height="12"/></svg>';
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      const reviewed = await preview();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(approvedIcon);
+
+      const { body } = await approve(installed.id, reviewed.digest, reviewed.installation.revision);
+
+      assert.equal(reviewed.icon_data_url, copyOf(NEW_ICON));
+      assert.equal(body.app_installations[0].icon_data_url, copyOf(approvedIcon));
+      assert.equal(
+        await iconOf((await installationRow(installed.id)).manifest_id),
+        copyOf(approvedIcon),
+      );
+    });
+
+    // When approving reuses an existing row, nothing fetches the icon, so one that stopped
+    // loading doesn't get in the way.
+    const iconStopsLoading = () => nock(MANIFEST_HOST).get(ICON_PATH).times(2).reply(503);
+
+    it('reviews and approves the pending manifest with the copy it already has', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      await start(installed.id);
+      iconStopsLoading();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      const reviewed = await preview();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+
+      const { body } = await approve(installed.id, reviewed.digest, reviewed.installation.revision);
+
+      assert.equal(reviewed.icon_data_url, copyOf(NEW_ICON));
+      assert.equal(body.app_installations[0].status, 'active');
+      assert.equal(body.app_installations[0].icon_data_url, copyOf(NEW_ICON));
+    });
+
+    it('reviews and approves what is already approved with the installed copy', async function () {
+      const installed = await installWithIcon();
+      iconStopsLoading();
+      serve(manifest(servedIcon));
+      const reviewed = await preview();
+      serve(manifest(servedIcon));
+
+      const { body } = await approve(installed.id, reviewed.digest, reviewed.installation.revision);
+
+      assert.deepEqual(reviewed.installation.changes, []);
+      assert.equal(reviewed.icon_data_url, copyOf(ICON));
+      assert.equal(body.app_installations[0].icon_data_url, copyOf(ICON));
+    });
+  });
+
   describe('GET /apps/installations/', function () {
     it('lists the active installations', async function () {
       const ended = await install({ id: 'com.example.ended' });

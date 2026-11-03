@@ -233,11 +233,11 @@ export function createAppFetcher({
     });
 
     let response: PlainResponse;
-    let body: Buffer;
+    let received: Buffer;
     try {
       response = await pending;
       // The body just read; nothing is fetched again. got types it as a Uint8Array.
-      body = Buffer.from(await pending.buffer());
+      received = Buffer.from(await pending.buffer());
     } catch (err) {
       if (refusedRedirect) {
         return { success: false, failure: refusedRedirect };
@@ -257,6 +257,7 @@ export function createAppFetcher({
     if (refusedRedirect) {
       return { success: false, failure: refusedRedirect };
     }
+    const status = response.statusCode;
     if (redirect === 'error' && isRedirect(status)) {
       return { success: false, failure: { reason: 'redirect_refused', status } };
     }
@@ -274,7 +275,7 @@ export function createAppFetcher({
     return {
       success: true,
       url: current.href,
-      body,
+      body: received,
       contentType: response.headers['content-type'] ?? null,
     };
   };

@@ -46,11 +46,32 @@ function manifestFor(manifestUrl: string) {
 const manifest = { id: 'com.example.podcast' };
 
 /** A fake HTTP response: status 200 with `body` as the body. */
-const answering = (body: string, type = 'application/json') =>
+const answering = (body: string | Promise<string>, type = 'application/json') =>
   Object.assign(Promise.resolve({ statusCode: 200, headers: { 'content-type': type } }), {
     on: () => {},
-    buffer: async () => Buffer.from(body),
+    buffer: async () => Buffer.from(await body),
   });
+
+/**
+ * Serves the app at whatever address it's asked for: its signed manifest, with `overrides`,
+ * and answers to challenges, as its backend.
+ */
+const servingApp =
+  (overrides: Record<string, unknown> = {}) =>
+  (url: URL, options: { body?: string; headers: { host?: string } }) => {
+    // As the browser would see it, without the localhost alias.
+    const asked = new URL(url.href);
+    if (options.headers.host) {
+      asked.host = options.headers.host;
+    }
+    return answering(
+      options.body
+        ? answerTestChallenge(options.body, keys.backend, asked.href)
+        : signTestManifest({ ...manifestFor(asked.href), ...overrides }, keys.identity).then(
+            (signed) => JSON.stringify(signed),
+          ),
+    );
+  };
 
 describe('App installations composition root', function () {
   const sandbox = sinon.createSandbox();
@@ -89,24 +110,7 @@ describe('App installations composition root', function () {
     // identity check. It serves the signed manifest, and answers challenges as the app's
     // backend.
     require(requestPath);
-    request = sandbox
-      .stub()
-      .callsFake((url: URL, options: { body?: string; headers: { host?: string } }) => {
-        // As the browser would see it, without the localhost alias.
-        const asked = new URL(url.href);
-        if (options.headers.host) {
-          asked.host = options.headers.host;
-        }
-        const text = options.body
-          ? answerTestChallenge(options.body, keys.backend, asked.href)
-          : signTestManifest(manifestFor(asked.href), keys.identity).then((signed) =>
-              JSON.stringify(signed),
-            );
-        return Object.assign(Promise.resolve({ statusCode: 200 }), {
-          on: () => {},
-          text: () => text,
-        });
-      });
+    request = sandbox.stub().callsFake(servingApp());
     sandbox.replace(require.cache[requestPath]!, 'exports', request);
     root = require(rootPath).default;
   });
@@ -199,10 +203,9 @@ describe('App installations composition root', function () {
 
   it('wires the icon loader to keep a copy of the app’s icon as a data URL', async function () {
     const svg = '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1v1H0z"/></svg>';
-    request.callsFake((url: URL) =>
-      url.pathname === '/icon.svg'
-        ? answering(svg, 'image/svg+xml')
-        : answering(JSON.stringify({ ...manifest, icon: { url: '/icon.svg' } })),
+    const app = servingApp({ icon: { url: '/icon.svg' } });
+    request.callsFake((url: URL, options: { body?: string; headers: { host?: string } }) =>
+      url.pathname === '/icon.svg' ? answering(svg, 'image/svg+xml') : app(url, options),
     );
     sandbox.stub(config, 'get').withArgs('env').returns('production');
     sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
