@@ -60,19 +60,6 @@ describe('automations API', function () {
     });
   });
 
-  describe('requestPoll', function () {
-    it('dispatches a "start automations poll" event', function () {
-      const domainEvents = { dispatch: vi.fn<(event: unknown) => unknown>() };
-      const api = createApi({ domainEvents });
-
-      api.requestPoll();
-
-      expect(domainEvents.dispatch).toHaveBeenCalledExactlyOnceWith(
-        expect.any(StartAutomationsPollEvent),
-      );
-    });
-  });
-
   describe('notify', function () {
     type Repository = AutomationsRepository2<TestAutomationsRepositoryConnection>;
     type FirstAction = Awaited<ReturnType<Repository['findFirstActionRevisions']>>[number];
@@ -450,6 +437,19 @@ describe('automations API', function () {
       await expect(api.notify(event)).rejects.toBe(failure);
 
       expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('requestPoll', function () {
+    it('dispatches a "start automations poll" event', function () {
+      const domainEvents = { dispatch: vi.fn<(event: unknown) => unknown>() };
+      const api = createApi({ domainEvents });
+
+      api.requestPoll();
+
+      expect(domainEvents.dispatch).toHaveBeenCalledExactlyOnceWith(
+        expect.any(StartAutomationsPollEvent),
+      );
     });
   });
 
