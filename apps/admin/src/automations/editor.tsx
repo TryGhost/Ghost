@@ -298,7 +298,19 @@ const AutomationEditorContent: React.FC<{
         onSuccess: (response) => {
           const savedDraft = response.automations[0];
           setSavedAutomation(savedDraft);
-          setDraft(savedDraft);
+          // A save acknowledges the submitted snapshot, not edits made while it was pending.
+          // Keep those edits dirty, adopting only the server identity and status transition.
+          setDraft((current) =>
+            !current || current === draft
+              ? savedDraft
+              : {
+                  ...current,
+                  id: savedDraft.id,
+                  status: savedDraft.status,
+                  created_at: savedDraft.created_at,
+                  updated_at: savedDraft.updated_at,
+                },
+          );
           setActionErrors({});
           setEditState({ phase: 'idle' });
           if (isNew) {

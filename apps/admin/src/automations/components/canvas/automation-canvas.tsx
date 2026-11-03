@@ -474,6 +474,16 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     [tierData, tiersLoading, tiersError, refetchTiers],
   );
   const emailModalStepId = searchParams.get(EMAIL_STEP_QUERY_PARAM);
+  const getEmailCardElement = useCallback(() => {
+    if (!emailModalStepId) {
+      return null;
+    }
+    return (
+      editingCanvasRef.current
+        ?.querySelector(`.react-flow__node[data-id="${CSS.escape(emailModalStepId)}"]`)
+        ?.querySelector<HTMLElement>('[role="article"]') ?? null
+    );
+  }, [emailModalStepId]);
   const isRouterOpenedEmailModal =
     hasAutomationEmailModalState(location.state) && location.state.automationEmailModal;
 
@@ -918,11 +928,14 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       </Box>
       {emailModalAction && automation && (
         <EmailContentModal
+          key={emailModalAction.id}
           automationId={automation.id}
-          initialLexical={emailModalAction.data.email_lexical}
+          emailDraft={{
+            subject: emailModalAction.data.email_subject,
+            lexical: emailModalAction.data.email_lexical,
+          }}
+          getEmailCardElement={getEmailCardElement}
           initialMode={emailModalMode}
-          initialSubject={emailModalAction.data.email_subject}
-          originStepId={emailModalAction.id}
           onChange={({ subject, lexical }) => {
             onChange(
               updateSendEmailAction({

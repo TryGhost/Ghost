@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { fakeAdminEndpoint, renderAdminApp, settingsResponse } from '@test-utils/acceptance';
+import {
+  fakeAdminEndpoint,
+  renderAdminApp,
+  settingsResponse,
+  unsavedChangesGuarded,
+} from '@test-utils/acceptance';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
 import {
   detail,
@@ -81,19 +86,124 @@ const emailCards = () =>
     .getByRole('article', { name: /^Send email/ });
 const preview = (card: ReturnType<typeof emailCards>) =>
   card.getByRole('region', { name: 'Email message preview' });
-const serve = () => {
+const serve = ({
+  beforeSave,
+}: {
+  beforeSave?: () => void | Response | Promise<void>;
+} = {}) => {
   setup();
   fakeEmailEditorData();
   const data = workflow();
   fakeAdminEndpoint('GET', '/automations/first/', { automations: [data] });
-  return fakeAdminEndpoint('PUT', '/automations/first/', ({ body }) => ({
-    automations: [
-      { ...data, ...(body as { automations: Partial<AutomationDetail>[] }).automations[0] },
-    ],
-  }));
+  return fakeAdminEndpoint('PUT', '/automations/first/', async ({ body }) => {
+    const response = await beforeSave?.();
+    return (
+      response ?? {
+        automations: [
+          { ...data, ...(body as { automations: Partial<AutomationDetail>[] }).automations[0] },
+        ],
+      }
+    );
+  });
 };
 
 describe('Editable email cards', () => {
+  it('preserves a body edit made while saving with the email editor open', async () => {
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const save = serve({ beforeSave: () => held });
+    await renderAdminApp('/automations/first', flags);
+    await emailCards().first().getByRole('button', { name: 'Edit email content' }).click();
+    const body = emailEditorBody();
+    const saveButton = page.getByRole('button', { name: 'Save', exact: true });
+    const savedBody = (index: number) => {
+      const { automations } = save.requests[index].body as { automations: AutomationDetail[] };
+      const email = automations[0].actions[0];
+      return email.type === 'send_email' ? email.data.email_lexical : undefined;
+    };
+
+    await body.fill('First version');
+    try {
+      await saveButton.click();
+      await expect.poll(() => save.requests.length).toBe(1);
+      expect(savedBody(0)).toContain('First version');
+      await body.fill('Second version');
+    } finally {
+      release();
+    }
+
+    await expect.element(saveButton).toBeEnabled();
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    await saveButton.click();
+    await expect.poll(() => save.requests.length).toBe(2);
+    expect(savedBody(1)).toContain('Second version');
+    await expect.element(saveButton).toBeDisabled();
+  });
+
+  it('can insert a divider using the add-card button on a narrow screen', async () => {
+    serve();
+    await page.viewport(390, 844);
+    try {
+      await renderAdminApp('/automations/first', flags);
+      await emailCards().first().getByRole('button', { name: 'Edit email content' }).click();
+      await emailEditorBody().fill('');
+      await emailEditorBody().click();
+      const add = emailEditor().getByRole('button', { name: 'Add a card' });
+      await expect.element(add).toBeVisible();
+      await expect.poll(() => add.element().getBoundingClientRect().left).toBeGreaterThanOrEqual(0);
+      await add.click();
+      await page.getByRole('menuitem', { name: 'Divider', exact: true }).click();
+      await expect.element(emailEditor().getByRole('separator')).toBeVisible();
+    } finally {
+      await page.viewport(1280, 800);
+    }
+  });
+
+  it('retries a failed save without closing or losing the email draft', async () => {
+    let fail = true;
+    const save = serve({
+      beforeSave: () =>
+        fail
+          ? new Response(
+              JSON.stringify({ errors: [{ message: 'Unavailable', type: 'InternalServerError' }] }),
+              { status: 500, headers: { 'Content-Type': 'application/json' } },
+            )
+          : undefined,
+    });
+    await renderAdminApp('/automations/first', flags);
+    await emailCards().first().getByRole('button', { name: 'Edit email content' }).click();
+    await emailEditorBody().fill('Keep this draft');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect.element(page.getByRole('button', { name: 'Retry', exact: true })).toBeEnabled();
+    await expect.element(emailEditorBody()).toHaveTextContent('Keep this draft');
+    await expect.poll(unsavedChangesGuarded).toBe(true);
+    fail = false;
+    await page.getByRole('button', { name: 'Retry', exact: true }).click();
+    await expect.element(page.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
+    await expect.element(emailEditorBody()).toHaveTextContent('Keep this draft');
+    expect(save.requests).toHaveLength(2);
+    expect(save.requests[1].body).toEqual(save.requests[0].body);
+    await expect.poll(unsavedChangesGuarded).toBe(false);
+  });
+
+  it('keeps opening and undoing body edits clean', async () => {
+    serve();
+    await renderAdminApp('/automations/first', flags);
+    await emailCards().first().getByRole('button', { name: 'Edit email content' }).click();
+    await expect.element(emailEditorBody()).toHaveTextContent('Thanks for joining.');
+    await expect.element(page.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
+    await emailEditorBody().click();
+    await userEvent.keyboard('{End} extra');
+    await expect.element(emailEditorBody()).toHaveTextContent('Thanks for joining. extra');
+    await expect.element(page.getByRole('button', { name: 'Save', exact: true })).toBeEnabled();
+    await userEvent.keyboard('{ControlOrMeta>}z{/ControlOrMeta}');
+    await expect.element(emailEditorBody()).toHaveTextContent('Thanks for joining.');
+    await expect.element(page.getByRole('button', { name: 'Save', exact: true })).toBeDisabled();
+    await expect.poll(unsavedChangesGuarded).toBe(false);
+  });
+
   it('keeps email cards editable when run analytics is absent', async () => {
     serve();
     await renderAdminApp('/automations/first', { labs: { automations: true } });
@@ -161,7 +271,7 @@ describe('Editable email cards', () => {
     expect(saved.actions[2].data).toMatchObject({ email_subject: '', email_lexical: '' });
   });
 
-  it('opens the existing content editor and updates the preview after clearing the body', async () => {
+  it('contains long body text in the card preview and updates it after clearing the body', async () => {
     const save = serve();
     fakeAdminEndpoint('GET', '/automated_emails/', { automated_emails: [] });
     fakeAdminEndpoint('GET', '/newsletters/?filter=status%3Aactive&limit=1', { newsletters: [] });
@@ -175,9 +285,19 @@ describe('Editable email cards', () => {
     await emailCards().nth(0).getByRole('button', { name: 'Edit email content' }).click();
     await expect.element(emailEditor()).toBeVisible();
     await expect.element(emailEditorBody()).toHaveTextContent('Thanks for joining.');
-    await emailEditorBody().fill('Rewritten message');
+    const longWord = 'rwqaetsgrdxrweatszrdrqaewstzdrxwtaegsdxtweagdsaffdsafasdfsadfasd';
+    await emailEditorBody().fill(longWord);
     await minimizeEmailEditor();
-    await expect.element(preview(emailCards().nth(0))).toHaveTextContent('Rewritten message');
+    const card = emailCards().first();
+    const message = preview(card);
+    await expect.element(message).toHaveTextContent(longWord);
+    await expect
+      .poll(
+        () =>
+          message.element().getBoundingClientRect().right -
+          card.element().getBoundingClientRect().right,
+      )
+      .toBeLessThanOrEqual(0);
     await emailCards().nth(0).getByRole('button', { name: 'Edit email content' }).click();
     await expect.element(emailEditor()).toBeVisible();
     await emailEditorBody().fill('');
@@ -325,13 +445,19 @@ describe('Editable email cards', () => {
         name: /^(Show|Hide) automation sidebar$/,
       });
       const edit = () => emailCards().nth(0).getByRole('button', { name: 'Edit email content' });
+      const card = emailCards().first().element();
+      const canvas = page.getByRole('region', { name: 'Editing canvas' }).element();
 
       await edit().click();
       await expect.element(emailEditor()).toBeVisible();
       await expect.element(sidebarToggle).toHaveAttribute('aria-expanded', 'false');
+      expect(getComputedStyle(card).visibility).toBe('hidden');
+      expect(canvas.closest('[inert]')).not.toBeNull();
       await userEvent.keyboard('{Escape}');
       await expect(emailEditor()).toHaveCount(0);
       await expect.element(sidebarToggle).toHaveAttribute('aria-expanded', 'true');
+      expect(getComputedStyle(card).visibility).toBe('visible');
+      expect(canvas.closest('[inert]')).toBeNull();
 
       // A click on the canvas around the panel minimizes it too.
       await edit().click();
