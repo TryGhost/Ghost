@@ -88,7 +88,7 @@ const Details: React.FC<{ installation: AppInstallation; timezone: string }> = (
     <Stack className="lg:flex-row lg:items-start lg:gap-12" gap="2xl">
       <Stack className="w-full shrink-0 lg:w-80" gap="xl">
         <Stack gap="md">
-          <AppIcon manifest={manifest} size="xl" />
+          <AppIcon app={installation} size="xl" />
           <Stack gap="xs">
             <Inline gap="xs" wrap>
               <Text as="h1" size="xl" weight="semibold">

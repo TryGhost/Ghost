@@ -26,9 +26,11 @@ export type AppFetchFailure =
 export type AppFetchResult =
   | {
       success: true;
-      /** Where the text was finally read from, after any redirects on the same host. */
+      /** Where the body was finally read from, after any redirects on the same host. */
       url: string;
-      text: string;
+      body: Buffer;
+      /** The response's Content-Type, as the app sent it. */
+      contentType: string | null;
     }
   | { success: false; failure: AppFetchFailure };
 
@@ -203,14 +205,12 @@ export function createAppFetcher({
       }
     });
 
-    // got decodes the body as UTF-8 whatever charset the response names. The size limit
-    // above still applies, because it counts downloaded bytes.
-    let status: number;
-    let text: string;
+    let response: PlainResponse;
+    let body: Buffer;
     try {
-      status = (await pending).statusCode;
-      // Decodes the response just read, as fetch's text() does; nothing is fetched again.
-      text = await pending.text();
+      response = await pending;
+      // The body just read; nothing is fetched again. got types it as a Uint8Array.
+      body = Buffer.from(await pending.buffer());
     } catch (err) {
       if (refusedRedirect) {
         return { success: false, failure: refusedRedirect };
@@ -227,6 +227,7 @@ export function createAppFetcher({
     if (refusedRedirect) {
       return { success: false, failure: refusedRedirect };
     }
+    const status = response.statusCode;
     // got resolves a 304 rather than failing it, but it is no more a read than a 404.
     if (!isSuccess(status)) {
       return {
@@ -238,6 +239,11 @@ export function createAppFetcher({
         },
       };
     }
-    return { success: true, url: current.href, text };
+    return {
+      success: true,
+      url: current.href,
+      body,
+      contentType: response.headers['content-type'] ?? null,
+    };
   };
 }
