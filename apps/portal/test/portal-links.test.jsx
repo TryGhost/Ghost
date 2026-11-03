@@ -507,7 +507,7 @@ describe('Portal Data links:', () => {
       });
       expect(window.sessionStorage.getItem(GIFT_FORM_STATE_KEY)).not.toBeNull();
 
-      fireEvent.keyUp(popupDocument.body, { key: 'Escape' });
+      fireEvent.keyDown(popupDocument.body, { key: 'Escape' });
 
       await waitFor(() => expect(utils.queryByTitle(/portal-popup/i)).not.toBeInTheDocument());
       expect(window.sessionStorage.getItem(GIFT_FORM_STATE_KEY)).toBeNull();
