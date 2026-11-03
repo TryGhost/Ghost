@@ -85,6 +85,31 @@ describe('Admin API Key Auth', function () {
     }
   });
 
+  it('should authenticate a non-versioned API key on a path written in capitals, with an audience in either case', async function () {
+    for (const audience of ['/admin/', '/Admin/']) {
+      const token = jwt.sign({}, secret, {
+        keyid: fakeApiKey.id,
+        algorithm: 'HS256',
+        expiresIn: '5m',
+        audience,
+        issuer: fakeApiKey.id,
+      });
+      const req = {
+        originalUrl: '/ghost/api/Admin/session/',
+        headers: {
+          authorization: `Ghost ${token}`,
+        },
+      };
+
+      const err = await new Promise((resolve) => {
+        apiKeyAuth.admin.authenticate(req, {}, resolve);
+      });
+
+      assert.equal(err, undefined, audience);
+      assert.equal(req.api_key, fakeApiKey, audience);
+    }
+  });
+
   it('should authenticate known+valid non-versioned API key', function () {
     const { promise, resolve } = Promise.withResolvers();
     const token = jwt.sign({}, secret, {
