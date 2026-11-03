@@ -104,7 +104,7 @@ describe('Members list', () => {
     const membersApi = fakeMembers(({ filter }) =>
       filter ? [member({ name: 'Acme Member' })] : [member({ name: 'Acme Member' }), member()],
     );
-    await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+    await renderAdminApp('/members');
 
     await expect(membersScreen.memberRows()).toHaveCount(2);
 
@@ -151,7 +151,7 @@ describe('Members list', () => {
     const membersApi = fakeMembers(({ filter }) =>
       filter ? [member({ name: 'Dog Lover' })] : [member({ name: 'Dog Lover' }), member()],
     );
-    await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+    await renderAdminApp('/members');
 
     await membersScreen.addMultiselectFilter('Favourite animals', ['Dog']);
 
@@ -182,7 +182,7 @@ describe('Members list', () => {
     const membersApi = fakeMembers(({ filter }) =>
       filter ? [member({ name: 'Unanswered' })] : [member({ name: 'Unanswered' }), member()],
     );
-    await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+    await renderAdminApp('/members');
 
     await membersScreen.addMultiselectFilter('Favourite animals', ['Dog']);
     await userEvent.keyboard('{Escape}');
@@ -217,7 +217,7 @@ describe('Members list', () => {
       { status: 404 },
     );
     fakeMembers([member()]);
-    await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+    await renderAdminApp('/members');
 
     await membersScreen.openFilterField('Favourite animals');
 
@@ -244,9 +244,7 @@ describe('Members list', () => {
     });
     const membersApi = fakeMembers([]);
     const saved = "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dolphin'])";
-    await renderAdminApp(`/members?filter=${encodeURIComponent(saved)}`, {
-      labs: { membersCustomFields: true },
-    });
+    await renderAdminApp(`/members?filter=${encodeURIComponent(saved)}`);
 
     await membersScreen.openMultiselectValue('Dolphin');
     await expect.element(membersScreen.multiselectOption('Dolphin')).toBeVisible();
@@ -273,7 +271,7 @@ describe('Members list', () => {
     const membersApi = fakeMembers(({ filter }) =>
       filter ? [member({ name: 'Dolphin Fan' })] : [member({ name: 'Dolphin Fan' }), member()],
     );
-    await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+    await renderAdminApp('/members');
 
     await membersScreen.addMultiselectFilter('Favourite animals', ['Dolphin']);
 
@@ -305,7 +303,7 @@ describe('Members list', () => {
       const membersApi = fakeMembers(({ filter }) =>
         filter ? [member({ name: 'Both' })] : [member({ name: 'Both' }), member()],
       );
-      await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+      await renderAdminApp('/members');
 
       await membersScreen.addMultiselectFilter('Favourite animals', ['Dog', 'Cat']);
       await userEvent.keyboard('{Escape}');
@@ -324,7 +322,7 @@ describe('Members list', () => {
         values: [],
       });
       fakeMembers([member()]);
-      await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+      await renderAdminApp('/members');
 
       await membersScreen.addMultiselectFilter('Favourite animals', ['Dog']);
       await userEvent.keyboard('{Escape}');
@@ -341,9 +339,7 @@ describe('Members list', () => {
       const membersApi = fakeMembers([member({ name: 'Both' })]);
       const typed =
         "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dog'+'Cat'])";
-      await renderAdminApp(`/members?filter=${encodeURIComponent(typed)}`, {
-        labs: { membersCustomFields: true },
-      });
+      await renderAdminApp(`/members?filter=${encodeURIComponent(typed)}`);
 
       await expect
         .element(page.getByRole('button', { name: 'is all of', exact: true }))

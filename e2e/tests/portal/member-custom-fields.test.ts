@@ -61,8 +61,6 @@ async function accountSettingsAs(
 }
 
 test.describe('Portal - member custom fields', () => {
-  test.use({ labs: { membersCustomFields: true } });
-
   // An address is drawn as several inputs under one name. A member told only that their
   // address was refused is left checking six boxes, so the refusal has to land on the
   // box itself, the way a malformed email address does.

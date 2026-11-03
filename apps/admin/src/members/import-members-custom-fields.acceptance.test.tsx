@@ -12,15 +12,16 @@ import {
 } from '@test-utils/acceptance';
 import { importMembersScreen } from './import-members.screen';
 import { membersScreen } from './members.screen';
+import { CUSTOM_FIELDS_FLAG } from '@/shared/member-custom-fields/availability';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { MetafieldDefinitionSchema } from '@tryghost/metafield-types';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 import { z } from 'zod';
 
-// The import dialog is served to everyone now, so custom fields are the only switch left, and
-// the dialog has to hold up on either side of it.
-const FLAGS = { labs: { membersCustomFields: true } };
-const WITHOUT_CUSTOM_FIELDS = { labs: {} };
+// Admin goes live before the servers it talks to, and a server that hasn't released custom
+// fields reports their flag off and refuses new ones. The dialog still maps onto the fields
+// such a site has, but offers no way to make another.
+const WITHOUT_CUSTOM_FIELDS = { labs: { [CUSTOM_FIELDS_FLAG]: false } };
 
 // A `nickname` column no defined field matches, alongside the columns auto-detection claims.
 // `name` is present deliberately: it takes the /name/i heuristic, which would otherwise map
@@ -151,7 +152,7 @@ describe('Import members custom fields', () => {
 
     it('starts a field for a column with several answers in a cell as a list of its answers', async () => {
       const createApi = fakeSiteCreatingLists();
-      await renderAdminApp('/members', FLAGS);
+      await renderAdminApp('/members');
       await openMappingStep(TOPICS_CSV);
 
       await openCreateForm('topics');
@@ -178,7 +179,7 @@ describe('Import members custom fields', () => {
 
     it('suggests a column’s answers when its field is made a list, taking one answer when no cell holds several', async () => {
       fakeSiteCreatingLists();
-      await renderAdminApp('/members', FLAGS);
+      await renderAdminApp('/members');
       await openMappingStep(
         'email,name,topics\nada@example.com,Ada,Film\ngrace@example.com,Grace,Cooking\n',
       );
@@ -196,7 +197,7 @@ describe('Import members custom fields', () => {
 
     it('reads an answer past the export’s formula guard, as the import does', async () => {
       fakeSiteCreatingLists();
-      await renderAdminApp('/members', FLAGS);
+      await renderAdminApp('/members');
       // The export puts an apostrophe before a cell that starts the way a formula does.
       await openMappingStep(
         "email,name,topics\nada@example.com,Ada,'-Other | Film\ngrace@example.com,Grace,Cooking\n",
@@ -212,7 +213,7 @@ describe('Import members custom fields', () => {
 
     it('refuses a list for a column with more answers than a list can offer', async () => {
       const createApi = fakeSiteCreatingLists();
-      await renderAdminApp('/members', FLAGS);
+      await renderAdminApp('/members');
       const rows = Array.from({ length: 101 }, (_, n) => `m${n}@example.com,Member,Topic ${n}`);
       await openMappingStep(`email,name,topics\n${rows.join('\n')}\n`);
 
@@ -234,7 +235,7 @@ describe('Import members custom fields', () => {
 
   it('creates a custom field for an unmatched column and maps the column onto it', async () => {
     const { createApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await importToggle('nickname').click();
@@ -266,7 +267,7 @@ describe('Import members custom fields', () => {
 
   it('creates a field for a column whose header is blank, and imports the column into it', async () => {
     const { createApi, uploadApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep('email,name,\nada@example.com,Ada,Countess\n');
 
     // The column's key is empty, so its controls' names have nothing where the key would be.
@@ -289,7 +290,7 @@ describe('Import members custom fields', () => {
 
   it('marks a custom field a membership field already has the name of', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -307,7 +308,7 @@ describe('Import members custom fields', () => {
 
   it('leaves a custom field no membership field is named like unmarked', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -319,7 +320,7 @@ describe('Import members custom fields', () => {
 
   it('selects the second of two fields sharing a name from the keyboard', async () => {
     const { uploadApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -354,7 +355,7 @@ describe('Import members custom fields', () => {
 
   it('searches the names on the rows rather than the columns behind them', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -376,7 +377,7 @@ describe('Import members custom fields', () => {
 
   it('puts the create form away on Escape, leaving the import open', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -391,7 +392,7 @@ describe('Import members custom fields', () => {
 
   it('keeps its field when a column is deselected', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -411,7 +412,7 @@ describe('Import members custom fields', () => {
   // just made — the same question as any other mapping, asked where the others are.
   it('creates a composite field and asks which part the column holds', async () => {
     const { createApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('city');
@@ -448,7 +449,7 @@ describe('Import members custom fields', () => {
 
   it('creates a list field with the options its form is given and maps the column onto it', async () => {
     const { createApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('city');
@@ -482,7 +483,7 @@ describe('Import members custom fields', () => {
 
   it('says what a list field needs before sending it', async () => {
     const { createApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('city');
@@ -497,7 +498,7 @@ describe('Import members custom fields', () => {
 
   it('keeps a changed form on a stray Escape, and Cancel puts it away', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -514,7 +515,7 @@ describe('Import members custom fields', () => {
 
   it('keeps a changed form on a stray click outside it', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -538,7 +539,7 @@ describe('Import members custom fields', () => {
       await held;
       return { members_metafields: [NICKNAME_FIELD] };
     });
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -569,7 +570,7 @@ describe('Import members custom fields', () => {
       },
       { status: 422 },
     );
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -604,7 +605,7 @@ describe('Import members custom fields', () => {
       },
       { status: 403 },
     );
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -626,7 +627,7 @@ describe('Import members custom fields', () => {
     // reshapes the envelope. The field is created either way, so the form must not claim
     // otherwise and send them to create a second one.
     fakeAdminEndpoint('POST', '/members/metafields/custom/', { members_metafields: [] });
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -644,7 +645,7 @@ describe('Import members custom fields', () => {
   // switched off has to be named with an empty target, not left out.
   it('names every column it is not importing rather than omitting it', async () => {
     const { uploadApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     // `name` is auto-detected, so this deselects a column that has a field; the three
@@ -670,7 +671,7 @@ describe('Import members custom fields', () => {
   // it stays out. Collapsing the two into one in-or-out decision would resurrect it here.
   it('keeps a deselected column out when another column takes the field it held', async () => {
     const { uploadApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await importToggle('name').click();
@@ -705,7 +706,7 @@ describe('Import members custom fields', () => {
   // request, whichever sample happens to be on screen.
   it('shows every column the file has, not just the previewed row', async () => {
     const { uploadApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep(RAGGED_CSV);
 
     // Row 1 holds only an email, so reading columns off it would leave these two off the
@@ -731,12 +732,10 @@ describe('Import members custom fields', () => {
       });
   });
 
-  // The upload result and its refusals are re-implemented in this modal, so they are asserted
-  // here rather than inherited: the shipped modal's own suite covers the file the gate no
-  // longer serves when the flag is on.
+  // The upload result and its refusals are drawn by this modal, so they are asserted here.
   describe('after the upload', () => {
     async function importAll() {
-      await renderAdminApp('/members', FLAGS);
+      await renderAdminApp('/members');
       await openMappingStep();
       await importMembersScreen.importButton(1).click();
     }
@@ -825,7 +824,7 @@ describe('Import members custom fields', () => {
         import_label: { name: 'Import', slug: 'import' },
       },
     });
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     // The table is reached at all — waiting on a failed query would leave it on a spinner.
@@ -841,7 +840,7 @@ describe('Import members custom fields', () => {
 
   it('clears a refusal when the column it named is answered by creating a field', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     // Refused: in the import with nothing chosen for it.
@@ -865,7 +864,7 @@ describe('Import members custom fields', () => {
 
   it('will not import a file whose email column is deselected', async () => {
     const { uploadApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     // Mapped, but out of the import. The request would go without an email column and
@@ -879,7 +878,7 @@ describe('Import members custom fields', () => {
 
   it('marks the column it cannot import a selected row as, and lets it through once answered', async () => {
     const { uploadApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await importToggle('nickname').click();
@@ -909,7 +908,7 @@ describe('Import members custom fields', () => {
   // not by switching a kind picker to find out what is behind each setting.
   it('offers membership and custom fields in one searchable list', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep(EXPORTED_CSV);
 
     // A Ghost export re-imported where its field no longer exists: nothing matches, so it
@@ -938,7 +937,7 @@ describe('Import members custom fields', () => {
   // exist yet, so the way to make one has to survive the search that proves it.
   it('offers to add a field when the search matches none', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await importToggle('nickname').click();
@@ -957,7 +956,7 @@ describe('Import members custom fields', () => {
   // guard made impossible. The column is in the import with nothing to fill, and Import says so.
   it('refuses the import when a composite is created and no part is chosen', async () => {
     const { uploadApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('city');
@@ -988,7 +987,7 @@ describe('Import members custom fields', () => {
   // a mapping. Nothing has been changed here, so there is nothing to lose and nothing to ask.
   it('closes without asking when nothing has been changed', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
     await expect.element(fieldSelect('email')).toBeVisible();
 
@@ -1000,7 +999,7 @@ describe('Import members custom fields', () => {
 
   it('asks before discarding a mapping that has been changed', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await importToggle('nickname').click();
@@ -1021,7 +1020,7 @@ describe('Import members custom fields', () => {
   // userEvent adds task boundaries that let React settle and hide this race.
   it('asks even when the dismissal lands before React has settled', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
     await expect.element(fieldSelect('email')).toBeVisible();
 
@@ -1068,9 +1067,9 @@ describe('Import members custom fields', () => {
     // none to map onto, and the server would refuse a new one.
     it('offers no way to make a field while the host switches custom fields off', async () => {
       fakeCustomFieldsWorld();
-      const config = configResponse(FLAGS);
+      const config = configResponse();
       config.config.hostSettings = { limits: { limitCustomFields: { disabled: true } } };
-      await renderAdminApp('/members', { ...FLAGS, boot: { browseConfig: { response: config } } });
+      await renderAdminApp('/members', { boot: { browseConfig: { response: config } } });
       await openMappingStep();
 
       await importToggle('nickname').click();
