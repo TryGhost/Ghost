@@ -61,10 +61,10 @@ const unstartedStats = (): AutomationPerformanceStats => {
   };
 };
 
-const UnsavedPerformance: React.FC = () => {
+const UnsavedPerformance: React.FC<{ className?: string }> = ({ className }) => {
   const [stats] = useState(unstartedStats);
   return (
-    <Stack className="mt-4" gap="md">
+    <Stack className={className} gap="md">
       <TotalEntries chart={mapAutomationEntryStats(stats)} isLoading={false} />
       <StatusCounts
         data={mapAutomationStatusStats(stats)}
@@ -307,6 +307,8 @@ export const AutomationSidebar: React.FC<{
 
   // Main's left-hand sidebar, kept as-is to compare against.
   const current = chrome === 'current';
+  // Space between the tab row and each tab's content; Settings already uses 24px.
+  const tabContentGap = current ? 'mt-4' : 'mt-6';
 
   const panel = (
     <Stack
@@ -336,11 +338,16 @@ export const AutomationSidebar: React.FC<{
         }}
       >
         <Inline
-          className={
+          className={cn(
             current
               ? 'h-(--control-height) shrink-0 pl-10'
-              : 'h-9 shrink-0 border-b border-border-default pr-10'
-          }
+              : 'h-9 shrink-0 border-b border-border-default',
+            // Room for the toggle, which sits one gap past the last button: its
+            // offset from the edge plus the gap equals the panel's padding, less
+            // the card's 1px border when floating.
+            chrome === 'docked' && 'pr-(--control-height)',
+            chrome === 'floating' && 'pr-[calc(var(--control-height)-1px)]',
+          )}
           gap="sm"
         >
           <TabsList
@@ -389,9 +396,9 @@ export const AutomationSidebar: React.FC<{
           value="performance"
           forceMount
         >
-          {performanceEnabled && !automationId && <UnsavedPerformance />}
+          {performanceEnabled && !automationId && <UnsavedPerformance className={tabContentGap} />}
           {performanceEnabled && automationId && hasOpened && (
-            <Stack className="mt-4 min-h-0 flex-1" gap="none">
+            <Stack className={cn(tabContentGap, 'min-h-0 flex-1')} gap="none">
               <PerformanceContent
                 automationId={automationId}
                 dateRange={dateRange}
@@ -484,6 +491,13 @@ export const AutomationSidebar: React.FC<{
     );
   }
 
+  // Contents fade out as the sidebar starts closing and back in once it's mostly open,
+  // so they never pass under the toggle mid-slide.
+  const contentFade = cn(
+    animated && 'transition-opacity motion-reduce:transition-none',
+    isOpen ? 'opacity-100 [transition-delay:100ms] duration-200' : 'opacity-0 duration-100',
+  );
+
   return (
     <>
       {chrome === 'floating' ? (
@@ -499,7 +513,7 @@ export const AutomationSidebar: React.FC<{
         >
           <div className="flex min-h-0 flex-1 flex-col p-2">
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border-default bg-background shadow-sm">
-              {panel}
+              <div className={cn('flex min-h-0 flex-1 flex-col', contentFade)}>{panel}</div>
             </div>
           </div>
         </aside>
@@ -520,10 +534,7 @@ export const AutomationSidebar: React.FC<{
           <div
             className={cn(
               'flex min-h-0 w-[480px] flex-1 flex-col @max-[960px]/automation:w-[100cqw]',
-              animated && 'transition-opacity motion-reduce:transition-none',
-              isOpen
-                ? 'opacity-100 [transition-delay:100ms] duration-200'
-                : 'opacity-0 duration-100',
+              contentFade,
             )}
           >
             {panel}
