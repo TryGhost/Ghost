@@ -278,7 +278,7 @@ const APP_PATH_BASE = 'https://app.invalid';
  * app at all. Even then, the result may not be: resolving `.` and `..` can leave `//` at the
  * start, so `/.//host` becomes `//host`, which resolves to another site. Check the result with
  * `isContainedPath` before resolving it against anything. `AppPathSchema` does both and returns
- * this form. The SDK, which doesn't load zod, calls this directly.
+ * this form.
  */
 export function normaliseAppPath(path: string): string {
   const url = new URL(path, APP_PATH_BASE);

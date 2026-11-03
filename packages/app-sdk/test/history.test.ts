@@ -60,6 +60,14 @@ describe('the page’s history, once Admin owns it', () => {
     expect(moved).toHaveBeenCalledWith('/search?q=a%20b', 'push');
   });
 
+  it('stays on the reported route when the page moves to one that is not contained', () => {
+    window.history.pushState(null, '', '/a');
+    window.history.pushState(null, '', '/.//x/');
+    window.history.replaceState(null, '', '/a');
+
+    expect(moved.mock.calls).toEqual([['/a', 'push']]);
+  });
+
   it('preserves state set on the initial route before the SDK takes over history', () => {
     watch?.stop();
     const initialState = { restoreScroll: 450, draft: 'editor-7' };

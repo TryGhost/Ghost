@@ -1,4 +1,4 @@
-import type { PathMove } from '@tryghost/app-contracts';
+import { isContainedPath, type PathMove } from '@tryghost/app-contracts';
 
 /**
  * A URL's route: its path, query and fragment. The URL parser has already put them in the
@@ -66,7 +66,8 @@ export function watchHistory(
   const report = (move: PathMove) => {
     const next = currentRoute();
     states.set(next, history.state);
-    if (next !== route) {
+    // A route that isn't contained is never reported, so the page stays where Admin has it.
+    if (next !== route && isContainedPath(next)) {
       route = next;
       void moved(next, move);
     }
