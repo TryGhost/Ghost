@@ -280,6 +280,13 @@ content and third-party pages or widgets on another origin (a separate subdomain
 counts). An open redirect is a risk too: a link through it puts another site's
 page in the frame, inside Admin.
 
+Serve the app from a host of its own, too. Ghost refuses an app on the site's
+or Admin's host, whatever the port, because browsers send a host's cookies to
+every port on it, Ghost's session cookie included. On your own machine, with
+Ghost on `localhost`, serve the app from `127.0.0.1` (or the other way round):
+browsers treat the two as different hosts. Open Admin on the name Ghost is
+configured with, as Admin refuses an app on the host it's opened from too.
+
 ## Develop
 
 This is a workspace package in the Ghost monorepo. From the package directory:

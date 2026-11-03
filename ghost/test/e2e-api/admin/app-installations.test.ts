@@ -399,18 +399,27 @@ describe('App installations Admin API', function () {
       );
     });
 
-    it('refuses an app served from the site itself', async function () {
-      const siteUrl = configUtils.config.get('url');
-      serve(
-        manifest({ surfaces: [{ type: 'admin_page', url: `${siteUrl}/content/files/app.html` }] }),
-      );
+    // Every path in a manifest is on the manifest's origin, so this keeps the whole app off
+    // Ghost's host, where browsers would send it Ghost's cookies whatever the port.
+    it('refuses a manifest URL on the site’s own host, on any port, before fetching anything', async function () {
+      // The test site is on the machine itself, which only development accepts.
+      configUtils.set('env', 'development');
+      const site = new URL(configUtils.config.get('url'));
+      const otherPort = new URL(site);
+      otherPort.port = String(Number(site.port) + 1);
 
-      const error = await preview(MANIFEST_URL, 422);
-      assert.equal(error.code, 'APP_MANIFEST_INVALID');
-      assert.deepEqual(
-        error.details.map(({ path }: { path: string }) => path),
-        ['surfaces[0].url'],
-      );
+      for (const manifestUrl of [
+        new URL('/content/files/ghost-app.json', site).href,
+        new URL(MANIFEST_PATH, otherPort).href,
+      ]) {
+        // Served, so a manifest fetched from there would be accepted.
+        const scope = serve(manifest({ development: true }), manifestUrl);
+
+        const error = await preview(manifestUrl, 422);
+        assert.equal(error.code, 'APP_MANIFEST_URL_INVALID', manifestUrl);
+        assert.match(error.context, /Ghost itself is served from, on any port/);
+        assert.equal(scope.isDone(), false, manifestUrl);
+      }
     });
   });
 

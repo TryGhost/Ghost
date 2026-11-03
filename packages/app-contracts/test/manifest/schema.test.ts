@@ -187,7 +187,7 @@ describe('development on localhost', () => {
 
   it.each([
     { author: { name: 'Example Audio', url: 'http://localhost:8787/about' } },
-    { manifest_url: 'http://localhost:8787/ghost-app.json' },
+    { manifest_url: 'http://127.0.0.1:8787/ghost-app.json' },
   ])('is required when a URL is on localhost: %o', (overrides) => {
     const input = manifest(overrides);
     const parseOptions = { ...devOptions, manifestUrl: input.manifest_url };

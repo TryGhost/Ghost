@@ -84,10 +84,13 @@ export const APP_FRAME_ALLOW = [
 ].join('; ');
 
 /**
- * Whether a page is on an origin Ghost itself is served from. Ghost refuses such a URL
- * when it accepts a manifest, but the site's or Admin's URL can change afterwards, and a
- * frame on Admin's own origin would be Admin, sandbox or not. So the same rule is asked
- * again where the frame is made, against the origins Admin knows itself by.
+ * Whether a page is on a host Ghost itself is served from, on any port. Ghost refuses such
+ * a manifest when it accepts one, but the site's or Admin's URL can change afterwards, and
+ * an older Ghost refused only their exact origins. A frame on Admin's own origin would be
+ * Admin, sandbox or not, and a page on another port of its host is sent the staff user's
+ * session cookie, as cookies ignore ports. So the same rule is asked again where the frame
+ * is made, against the URLs Admin knows itself by. Admin bundles the rule, so it holds
+ * whichever Ghost it runs with.
  *
  * It covers the URL the frame is given, not where the frame goes from there: the app's
  * server can redirect, and the page can set its own location, which the sandbox allows.
@@ -99,4 +102,4 @@ export const APP_FRAME_ALLOW = [
  * is a top-level document: the allowlist's checks on what a write may contain keep script out of
  * the site instead.
  */
-export { isGhostOrigin } from '@tryghost/app-contracts';
+export { isGhostHost } from '@tryghost/app-contracts';

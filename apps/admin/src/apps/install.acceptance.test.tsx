@@ -174,20 +174,20 @@ describe('Installing an app', () => {
     fakePreview(
       previewResponse(
         preview({
-          manifest_url: 'http://localhost:5173/ghost-app.json',
+          manifest_url: 'http://127.0.0.1:5173/ghost-app.json',
           manifest: manifest({
-            manifest_url: 'http://localhost:5173/ghost-app.json',
-            surfaces: [{ type: 'admin_page', url: 'http://localhost:5173/admin' }],
+            manifest_url: 'http://127.0.0.1:5173/ghost-app.json',
+            surfaces: [{ type: 'admin_page', url: 'http://127.0.0.1:5173/admin' }],
           }),
         }),
       ),
     );
 
-    await renderAdminApp('/apps/install?manifest=http://localhost:5173/ghost-app.json', { labs });
+    await renderAdminApp('/apps/install?manifest=http://127.0.0.1:5173/ghost-app.json', { labs });
 
     await expect
       .element(appsScreen.capabilities().last())
-      .toHaveTextContent('Read and write data to localhost:5173');
+      .toHaveTextContent('Read and write data to 127.0.0.1:5173');
     await expect.element(appsScreen.developmentBadge()).not.toBeInTheDocument();
   });
 

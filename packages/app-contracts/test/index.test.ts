@@ -49,7 +49,7 @@ describe('the root entry point', () => {
       'isConnectMessage',
       'isContainedPath',
       'isFetchResponse',
-      'isGhostOrigin',
+      'isGhostHost',
       'isLocalhost',
       'isPlainText',
       'isRecord',
