@@ -320,11 +320,16 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
           event.preventDefault();
         }}
         onOpenAutoFocus={(event) => {
-          // Focus the subject, not the first header button, which would open its tooltip.
-          event.preventDefault();
           const subject = subjectRef.current;
-          subject?.focus({ preventScroll: true });
-          subject?.setSelectionRange(subject.value.length, subject.value.length);
+          if (subject) {
+            event.preventDefault();
+            subject.focus({ preventScroll: true });
+            subject.setSelectionRange(subject.value.length, subject.value.length);
+          } else if (event.currentTarget instanceof HTMLElement) {
+            // Focus the dialog in Preview without opening a header tooltip.
+            event.preventDefault();
+            event.currentTarget.focus({ preventScroll: true });
+          }
         }}
       >
         <DialogTitle className="sr-only">Edit email</DialogTitle>
