@@ -37,7 +37,7 @@ describe('Badge Component', () => {
     render(<Badge variant="warning">Warning Badge</Badge>);
     const badge = screen.getByText('Warning Badge');
 
-    expect(badge.className, 'Should have warning variant class').toContain('bg-state-warning');
+    expect(badge.className, 'Should have warning variant class').toContain('bg-badge-warning');
   });
 
   it('applies outline variant correctly', () => {

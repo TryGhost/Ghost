@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const staffService = require('../../../../../core/server/services/staff');
+const staffService = require('../../../../../core/server/services/staff').default;
 const emailAddressService = require('../../../../../core/server/services/email-address');
 const memberAttribution = require('../../../../../core/server/services/member-attribution').default;
 

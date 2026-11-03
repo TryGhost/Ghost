@@ -31,7 +31,8 @@ function stripeSettings() {
   });
 }
 
-const phoneField: MemberCustomField = {
+// A short text field, typed as one, so a copy can be given another plain type.
+const phoneField = {
   namespace: CUSTOM_NAMESPACE,
   key: KeySchema.parse('contact_phone'),
   name: 'Contact phone',
@@ -40,7 +41,7 @@ const phoneField: MemberCustomField = {
   access: { member: 'none' },
   created_at: '2026-10-19T00:00:00.000Z',
   updated_at: null,
-};
+} satisfies MemberCustomField;
 
 type HostSettings = ReturnType<typeof configResponse>['config']['hostSettings'];
 

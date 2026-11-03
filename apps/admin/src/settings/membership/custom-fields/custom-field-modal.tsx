@@ -22,19 +22,27 @@ import {
 } from '@tryghost/shade/components';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { SettingsModal } from '@tryghost/shade/patterns';
-import { ValidationError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import { useMemberCount } from '@tryghost/admin-x-framework/api/members';
 import {
+  memberCustomFieldProblemsOf,
   memberCustomFieldUserTypes,
   useCreateMemberCustomField,
   useDeleteMemberCustomField,
   useEditMemberCustomField,
   userTypeForFieldType,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { TypedSettingsInputSchema, refusedProperty } from '@tryghost/metafield-types';
+import { matchShape } from '@tryghost/metafield-types/structure';
+import { dequal } from 'dequal';
+import ListFieldSettings from '@/shared/member-custom-fields/list-field-settings';
 import { toast } from 'sonner';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+
+/** Whether a problem is with the field's settings: the settings as a whole, or a part of them. */
+const isSettingsProblem = (property: string) =>
+  property === 'settings' || property.startsWith('settings.');
 
 const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => void }> = ({
   field,
@@ -55,6 +63,9 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
       // type on save
       userTypeId: field ? field.type : memberCustomFieldUserTypes[0].id,
       access: field ? field.access.member : 'none',
+      // What the type is set up with, as its settings inputs report it. A type with nothing to
+      // set up has none.
+      settings: field?.settings,
     },
     savingDelay: 500,
     onValidate: (state) => {
@@ -65,6 +76,19 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
       if (!state.name.trim()) {
         newErrors.name = 'Enter a name for the field';
       }
+      // Settings are checked with the type by the rule the server applies, in its words: all of
+      // a new field's, and an edited field's only when they change. Settings saved under an older
+      // rule are kept, and an edit that leaves them alone doesn't send them.
+      if (!field || !dequal(state.settings, field.settings)) {
+        const typed = TypedSettingsInputSchema.safeParse({
+          type: state.userTypeId,
+          settings: state.settings,
+        });
+        // Every problem, each under the path Ghost would name it by.
+        for (const issue of typed.error?.issues ?? []) {
+          newErrors[refusedProperty(issue.path)] ??= issue.message;
+        }
+      }
       return newErrors;
     },
     onSave: async (state) => {
@@ -73,27 +97,32 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
         // would carry whatever the list held when it was loaded, so saving a rename
         // would silently restore the access a colleague had changed in the meantime.
         const name = state.name.trim();
+        // Settings are sent whole, and only when they change.
+        const { settings } = state;
         await editField({
           key: field.key,
           ...(name === field.name ? {} : { name }),
           ...(state.access === field.access.member ? {} : { access: { member: state.access } }),
+          ...(settings && !dequal(settings, field.settings) ? { settings } : {}),
         });
       } else {
         // No key: the backend mints it from the name.
         await createField({
           name: state.name.trim(),
           type: state.userTypeId,
+          settings: state.settings,
           access: { member: state.access },
         });
       }
     },
     onSaveError: (error) => {
-      // A field-level validation error from the API highlights its input;
-      // anything else falls back to a toast. The human-readable text lives
-      // in `context` (Ghost's error handler rewrites `message` to a generic
-      // "cannot save ..." summary), so read it via getErrorMessage.
-      if (error instanceof ValidationError && error.data?.errors?.[0]?.property === 'name') {
-        setErrors({ name: getErrorMessage(error, 'Invalid name') });
+      // Ghost refusing something this form asks for shows beside the input that set it. Anything
+      // else, such as a refusal of the request itself, is reported as an error.
+      const problems = memberCustomFieldProblemsOf(error)?.filter(
+        ({ property }) => property === 'name' || isSettingsProblem(property),
+      );
+      if (problems?.length) {
+        setErrors(Object.fromEntries(problems.map(({ property, message }) => [property, message])));
         return;
       }
       handleError(error);
@@ -102,6 +131,20 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
 
   const isArchived = field?.status === 'archived';
   const selectedType = userTypeForFieldType(formState.userTypeId);
+
+  // The problems with the settings, by where they are within them, for the type's own inputs to
+  // place: '' for the settings as a whole, `options.2` for a list's third option.
+  const settingsErrors = Object.fromEntries(
+    Object.entries(errors).flatMap(([property, message]) =>
+      message && isSettingsProblem(property) ? [[property.slice('settings.'.length), message]] : [],
+    ),
+  );
+  const clearSettingsErrors = () =>
+    setErrors(
+      Object.fromEntries(
+        Object.entries(errors).filter(([property]) => !isSettingsProblem(property)),
+      ),
+    );
 
   // The API keeps a third access level, `read`, that the switch doesn't offer. A field
   // already set to it reads as open and is described as such; saving without touching
@@ -311,7 +354,9 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
             onValueChange={(value) => {
               const chosen = memberCustomFieldUserTypes.find((userType) => userType.id === value);
               if (chosen) {
-                updateForm((state) => ({ ...state, userTypeId: chosen.id }));
+                // Settings belong to a type, so another type starts with none of its own.
+                clearSettingsErrors();
+                updateForm((state) => ({ ...state, userTypeId: chosen.id, settings: undefined }));
               }
             }}
           >
@@ -330,6 +375,22 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
           </Select>
           {isEdit && <FieldDescription>Type can’t be changed after creation</FieldDescription>}
         </Field>
+        {matchShape<React.ReactNode>(formState.userTypeId, {
+          scalar: () => null,
+          record: () => null,
+          set: () => (
+            <ListFieldSettings
+              disabled={isArchived}
+              errors={settingsErrors}
+              idPrefix="custom-field"
+              saved={field?.settings}
+              onChange={(settings) => {
+                clearSettingsErrors();
+                updateForm((state) => ({ ...state, settings }));
+              }}
+            />
+          ),
+        })}
         <Field data-disabled={isArchived || undefined} orientation="horizontal">
           <FieldContent>
             <FieldLabel htmlFor="custom-field-visible-to-members">Visible to members</FieldLabel>

@@ -2,15 +2,21 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 import {
   FIELD_STRUCTURES,
+  editableAnswers,
   MAX_LONG_TEXT_BYTES,
   isMetafieldChangeSource,
   isFieldType,
   isRecordValue,
+  matchField,
   matchShape,
   partsOf,
+  refusedProperty,
   valueSchemaFor,
   type Address,
+  TypedSettingsInputSchema,
   type FieldType,
+  type FieldTypeOfShape,
+  type TypedSettings,
 } from '../src/index.ts';
 
 // This asserts only the catalog's *contract* — which field types exist, and which of
@@ -52,6 +58,7 @@ describe('metafield-types catalog', function () {
       matchShape(type, {
         scalar: ({ leaf }) => `one ${leaf.leaf} value`,
         record: ({ parts }) => `parts ${Object.keys(parts).join(', ')}`,
+        set: () => 'options picked from the field',
       });
 
     assert.equal(layout('long_text'), 'one text value');
@@ -70,7 +77,7 @@ describe('metafield-types catalog', function () {
     for (const type of ['a_type_from_the_future', 'constructor']) {
       assert.throws(
         // @ts-expect-error a type this build doesn't know
-        () => matchShape(type, { scalar: () => 1, record: () => 2 }),
+        () => matchShape(type, { scalar: () => 1, record: () => 2, set: () => 3 }),
         new RegExp(`Unknown field type: ${type}`),
       );
     }
@@ -103,6 +110,21 @@ describe('metafield-types catalog', function () {
       'country',
     ]);
     assert.equal(partsOf('short_text'), null);
+  });
+
+  it('names no parts for a list, whose options are its field’s own', function () {
+    assert.equal(partsOf('list'), null);
+  });
+
+  it('refuses to answer for a field of a type it has never heard of, naming it', function () {
+    // A plain JavaScript caller can pass any string as a type.
+    const unknown = { type: 'a_type_from_the_future' };
+    const handlers = { scalar: () => 1, record: () => 2, set: () => 3 };
+    assert.throws(
+      // @ts-expect-error a type this build doesn't know
+      () => matchField(unknown, handlers),
+      /Unknown field type: a_type_from_the_future/,
+    );
   });
 
   it('reads a type it has never heard of as having no parts', function () {
@@ -227,7 +249,9 @@ describe('metafield-types catalog', function () {
 
     it('normalises the case of a country code, so one country is one value', function () {
       const countryOf = (written: string) => {
-        const parsed = valueSchemaFor({ type: 'address' }).safeParse({ country: written });
+        const parsed = valueSchemaFor({ type: 'address' }).safeParse({
+          country: written,
+        });
         if (!parsed.success || !isRecordValue(parsed.data)) {
           return undefined;
         }
@@ -281,7 +305,9 @@ describe('metafield-types catalog', function () {
 
       // A value that reaches the limit exactly still fits once its padding is gone.
       assert.equal(
-        valueSchemaFor({ type: 'address' }).safeParse({ line1: `  ${'x'.repeat(255)}  ` }).success,
+        valueSchemaFor({ type: 'address' }).safeParse({
+          line1: `  ${'x'.repeat(255)}  `,
+        }).success,
         true,
       );
     });
@@ -307,14 +333,46 @@ describe('metafield-types catalog', function () {
     it('reads a part of nothing but whitespace as empty, so it clears', function () {
       // Trimming happens per part above, so whitespace has already become the empty
       // string by the time the rule runs — and empty is an instruction, not a value.
-      const result = valueSchemaFor({ type: 'address' }).safeParse({ line1: '   ', city: '\t' });
+      const result = valueSchemaFor({ type: 'address' }).safeParse({
+        line1: '   ',
+        city: '\t',
+      });
       assert.equal(result.success, true);
       assert.deepEqual(result.data, { line1: '', city: '' });
     });
   });
 
+  describe('a list', function () {
+    it('edits only the answers its field offers, in its order', function () {
+      const settings = { options: ['Dog', 'Cat', 'Fish'], multiple: true };
+      assert.deepEqual(editableAnswers(settings, ['Fish', 'Dolphin', 'Dog']), ['Dog', 'Fish']);
+    });
+
+    it('edits no answer of a field taking one that holds several', function () {
+      const settings = { options: ['Dog', 'Cat'], multiple: false };
+      assert.deepEqual(editableAnswers(settings, ['Dog', 'Cat']), []);
+      // Still several, though only one is offered now: the one alone isn't their answer.
+      assert.deepEqual(editableAnswers(settings, ['Dog', 'Hamster']), []);
+      assert.deepEqual(editableAnswers(settings, ['Cat']), ['Cat']);
+    });
+  });
+
   describe('what a broken rule says', function () {
-    const reasonFor = (type: FieldType, value: unknown): string | null => {
+    // Ghost names a refusal's property this way, and a form files what it finds under the same
+    // key, so a problem with one option lands beside that option.
+    it('names where a refusal points, down to the option', function () {
+      const result = TypedSettingsInputSchema.safeParse({
+        type: 'list',
+        settings: { options: ['Dog', 'Cat | Mouse'], multiple: true },
+      });
+      assert.equal(result.success, false);
+      assert.equal(refusedProperty(result.error?.issues[0]?.path ?? []), 'settings.options.1');
+    });
+
+    const reasonFor = (
+      type: FieldTypeOfShape<'scalar' | 'record'>,
+      value: unknown,
+    ): string | null => {
       const result = valueSchemaFor({ type }).safeParse(value);
       return result.success ? null : (result.error.issues[0]?.message ?? null);
     };
@@ -351,28 +409,59 @@ describe('metafield-types catalog', function () {
 
     it('holds a sentence for every rule a value can break', function () {
       // Notices a rule added without wording, which falls back to zod's phrasing.
-      const brokenValues: Array<[FieldType, unknown]> = [
+      const brokenValues: Array<[FieldTypeOfShape<'scalar' | 'record'>, unknown]> = [
         ['short_text', 'x'.repeat(256)],
         ['short_text', 42],
         ['long_text', 'x'.repeat(MAX_LONG_TEXT_BYTES + 1)],
         ['address', {}],
         ['address', { city: 42 }],
-        ...Object.keys(FIELD_STRUCTURES.address.parts).map((part): [FieldType, unknown] => [
-          'address',
-          { [part]: 'x'.repeat(256) },
-        ]),
+        ...Object.keys(FIELD_STRUCTURES.address.parts).map(
+          (part): [FieldTypeOfShape<'record'>, unknown] => ['address', { [part]: 'x'.repeat(256) }],
+        ),
+      ];
+      const list: TypedSettings = {
+        type: 'list',
+        settings: { options: ['Dog', 'Cat'], multiple: false },
+      };
+      const brokenLists: unknown[] = ['Dog', [42], ['Dolphin'], ['Dog', 'Cat']];
+      const brokenSettings: Array<[FieldType, unknown]> = [
+        ['list', undefined],
+        ['list', { options: ['Dog', 'Cat'] }],
+        ['list', { options: ['Dog'], multiple: true }],
+        ['list', { options: ['Dog', 'Dog'], multiple: true }],
+        ['list', { options: ['Dog', '  '], multiple: true }],
+        ['list', { options: ['Dog', 'Cat | Mouse'], multiple: true }],
+        ['list', { options: ['Dog', 'x'.repeat(256)], multiple: true }],
+        ['list', { options: Array.from({ length: 101 }, (_, n) => `${n}`), multiple: true }],
+        ['short_text', { options: ['Dog', 'Cat'], multiple: true }],
       ];
 
-      for (const [type, value] of brokenValues) {
-        const reason = reasonFor(type, value);
-        assert.ok(reason, `${type} ${JSON.stringify(value)} should be rejected`);
-        assert.doesNotMatch(
-          reason,
-          /Too big|Too small|Invalid input|expected /,
+      const reasons: Array<[string, string | null]> = [
+        ...brokenValues.map(([type, value]): [string, string | null] => [
           `${type} ${JSON.stringify(value)}`,
-        );
+          reasonFor(type, value),
+        ]),
+        ...brokenLists.map((value): [string, string | null] => {
+          const result = valueSchemaFor(list).safeParse(value);
+          return [
+            `list ${JSON.stringify(value)}`,
+            result.success ? null : (result.error.issues[0]?.message ?? null),
+          ];
+        }),
+        ...brokenSettings.map(([type, settings]): [string, string | null] => {
+          const result = TypedSettingsInputSchema.safeParse({ type, settings });
+          return [
+            `${type} settings ${JSON.stringify(settings)}`,
+            result.success ? null : (result.error.issues[0]?.message ?? null),
+          ];
+        }),
+      ];
+
+      for (const [what, reason] of reasons) {
+        assert.ok(reason, `${what} should be rejected`);
+        assert.doesNotMatch(reason, /Too big|Too small|Invalid input|expected /, what);
         // A whole sentence: a screen shows it unedited.
-        assert.match(reason, /^[A-Z].*\.$/, `${type} ${JSON.stringify(value)}`);
+        assert.match(reason, /^[A-Z].*\.$/, what);
       }
     });
   });

@@ -78,7 +78,7 @@ describe('Incoming Recommendation Emails', function () {
       createdAt: new Date(5000),
     });
 
-    await recommendationsService.service.repository.save(recommendation);
+    await recommendationsService.service.controller.service.repository.save(recommendation);
 
     const webmention = await Mention.create({
       source: 'https://www.otherghostsite.com/.well-known/recommendations.json',

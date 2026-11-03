@@ -217,7 +217,9 @@ describe('Stats service root', function () {
     const statsCache = endpoint.subscriptions.cache;
     assert.ok(statsCache);
     for (const name of names) {
-      assert.equal(endpoint[name].cache, statsCache, `${name} uses the shared stats cache`);
+      if (name !== 'newsletterBasicStats') {
+        assert.equal(endpoint[name].cache, statsCache, `${name} uses the shared stats cache`);
+      }
     }
     await assert.rejects(endpoint.subscriptions.query(), IncorrectUsageError);
 
@@ -295,6 +297,64 @@ describe('Stats service root', function () {
     query.resolves(null);
     assert.equal(await api.subscriptions(), null);
     sinon.assert.calledOnce(query);
+  });
+
+  it('caches unpaginated newsletter stats but bypasses the cache for period pages', async function () {
+    getConfig.withArgs('hostSettings:statsCache:enabled').returns(true);
+    const root = loadRoot();
+    await root.init();
+    const endpoint = loadEndpoint().newsletterBasicStats;
+    const basicCache = endpoint.cache as {
+      get(key: string, getResponse: () => unknown): unknown;
+      set(key: string, response: object): unknown;
+    };
+    const cacheStubs = cache as { get: sinon.SinonStub; set: sinon.SinonStub };
+    const response = { stats: [] };
+    const getResponse = sandbox.stub().resolves(response);
+    cacheStubs.get.resolves(response);
+    cacheStubs.set.resolves();
+
+    const topKey = JSON.stringify({ method: 'getNewsletterBasicStats', options: { limit: 20 } });
+    assert.equal(await basicCache.get(topKey, getResponse), response);
+    await basicCache.set(topKey, response);
+    sinon.assert.calledOnceWithExactly(cacheStubs.get, topKey, getResponse);
+    sinon.assert.calledOnceWithExactly(cacheStubs.set, topKey, response);
+
+    for (const page of [1, 2]) {
+      const pageKey = JSON.stringify({
+        method: 'getNewsletterBasicStats',
+        options: { limit: 50, page },
+      });
+      assert.equal(await basicCache.get(pageKey, getResponse), undefined);
+      await basicCache.set(pageKey, response);
+    }
+    sinon.assert.calledOnce(cacheStubs.get);
+    sinon.assert.calledOnce(cacheStubs.set);
+  });
+
+  it('separates strict click requests from legacy requests in the API and cache', async function () {
+    const root = loadRoot();
+    await root.init();
+    const clicks = sandbox
+      .stub(root.service.api.posts, 'getNewsletterClickStats')
+      .resolves({ data: [] });
+    const endpoint = loadEndpoint().newsletterClickStats as EndpointMethod & {
+      options: string[];
+      generateCacheKeyData(frame: object): unknown;
+    };
+    const options = { newsletter_id: 'newsletter-1', post_ids: 'post-1' };
+    const strict = { ...options, fail_on_error: 'true' };
+    assert.ok(endpoint.options.includes('fail_on_error'));
+    assert.notDeepEqual(
+      endpoint.generateCacheKeyData({ options }),
+      endpoint.generateCacheKeyData({ options: strict }),
+    );
+    await endpoint.query({ options });
+    await endpoint.query({ options: strict });
+    await endpoint.query({ options: { ...options, fail_on_error: true } });
+    assert.deepEqual(clicks.firstCall.args, ['newsletter-1', 'post-1', false]);
+    assert.deepEqual(clicks.secondCall.args, ['newsletter-1', 'post-1', true]);
+    assert.deepEqual(clicks.thirdCall.args, ['newsletter-1', 'post-1', true]);
   });
 
   it.each([

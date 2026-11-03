@@ -3,9 +3,8 @@
 The kernel contains application-independent framework primitives. It has no
 knowledge of Ghost's features, domain models, business rules or configuration.
 
-This directory is a temporary home for `defineService` while we prove the service
-migration approach. The helper's shape and location may evolve as more services
-migrate.
+This directory is a temporary home for `defineService`. Its location may change;
+the contract below is the one migrated services rely on.
 
 Application code depends on the kernel; the kernel does not depend on application
 code. Kernel modules may use one another and general-purpose dependencies, but

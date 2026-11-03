@@ -6,6 +6,7 @@ const urlUtils = require('../../core/shared/url-utils').default;
 const { anyGhostAgent, anyContentVersion, anyContentLength, anyISODateTime, anyObjectId } =
   matchers;
 const membersEventsService = require('../../core/server/services/members-events');
+const DomainEvents = require('@tryghost/domain-events');
 
 describe('Click Tracking', function () {
   let agent;
@@ -147,6 +148,8 @@ describe('Click Tracking', function () {
     const previousClickCount = linkToClick.count.clicks;
 
     await fetchWithoutFollowingRedirect(urlOfLinkToClick.href);
+    // The redirect responds before the click is saved
+    await DomainEvents.allSettled();
 
     const {
       body: {

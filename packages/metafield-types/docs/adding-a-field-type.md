@@ -15,6 +15,9 @@ Every type is composed from a few building blocks in
 - A **scalar** type is one leaf. Short text is `text('line')`.
 - A **record** type is a set of named leaves, its parts. An address is six parts, five of
   them text and one a `country`.
+- A **set** type is some of the options its field offers, each named by its text. A list
+  is one. Its options, and whether a member picks one or several, are the field's
+  settings rather than the type's.
 
 Everything that checks, stores, exports, edits, filters or draws a value is written once
 per building block, so a type composed from blocks that already exist needs only its own
@@ -23,7 +26,8 @@ entries.
 ## A type made of existing blocks
 
 1. In [`src/structure.ts`](../src/structure.ts), add the type's id to `FIELD_TYPE_IDS`
-   and what it is composed of to `FIELD_STRUCTURES`.
+   and what it is composed of to `FIELD_STRUCTURES`. What a field of it is set up with
+   follows from its shape.
 2. In Admin's [`fieldTypePresentation`](../../../apps/admin-x-framework/src/api/member-custom-fields.ts),
    give it a name and an icon. A record also gives a label for each part and says which
    parts take a full row of the form.
@@ -55,28 +59,39 @@ Adding a block leads the compiler to everything written per block of its kind.
 - **A kind of leaf**, such as a number or a date: every `matchLeaf` call and every map
   keyed by leaf kind, which are the leaf's rule, Admin's control, one-line value, filter
   type and filter picker, and Portal's input.
-- **A shape**, such as a set of choices: `ValueOf`, for the value a type of it holds, and
-  every `matchShape` call, which are its rule, Ghost's reads and writes, CSV columns and
-  cells, Admin's control, editor, one-line value, filters and import mapping, and Portal's
-  inputs, change detection and error placement.
+- **A shape**, such as the set a list is: `ValueOf`, for the value a type of it holds,
+  `SettingsOf`, for what a field of it is set up with, its variant in `withTypedSettings`
+  and the settings each caller gives it there (as written, as read back, and as Ghost's
+  table holds them), and every `matchShape` and
+  `matchField` call, which are its rule, Ghost's row layout (how its rows are read, and
+  where a filter finds its whole value), CSV columns and cells, Admin's control, editor,
+  one-line value, filters and import mapping, and Portal's inputs, change detection and
+  error placement. A value laid out unlike a string, a record or a list of strings also
+  fails to compile where Ghost writes its rows.
 
-The compiler won't ask about storage or about Ghost's filters. Every leaf is stored as
+The compiler won't ask about how a leaf is stored or compared. Every leaf is stored as
 text in `value_text`, under the path of its part, and `ValueOf` gives every leaf a string,
 so a leaf that should hold, store or compare as a number or a date needs those changed by
-hand. Ghost's filters compare stored text, and a filter on a whole field's value compares
-the row at its root, so a shape whose value is stored as several rows needs its filters
-written by hand too.
+hand. Ghost's filters compare stored text.
 
 ## A type set up per field
 
-No type is set up per field yet. The first, a list whose options belong to the field
-rather than to its type, needs somewhere in the definition to keep them. Its value is a
-list of choices, a new shape, so the compiler leads it through everything above.
+A list's options belong to the field rather than its type, so a field carries `settings`
+beside its `type`, and the two are one value, `TypedSettings`. `SettingsOf` says what a
+field of each shape is set up with: `SetSettings` for a set, and nothing for anything else,
+so a field of another shape has no settings and a write that gives it some is refused. The
+definitions API checks them against the rules on create and edit, with
+`TypedSettingsInputSchema`, and reads them back for their shape alone, with
+`TypedSettingsSchema`. `withTypedSettings` pairs a type with its settings beside what else a
+field holds, such as a definition's name or a row's columns, so Ghost's table reads a set's
+settings as JSON from the field's `settings` column, and null as none for any other shape.
 
-What the compiler won't do is hand it the field's options. Each entry point that checks,
-shows or edits a value already takes the field: `valueSchemaFor(field)`,
-`formatMemberCustomFieldValue(field, value)`, Admin's editor and filter, and Portal's
-inputs. Below them, the leaf helpers and the maps of lists (`LIST_RULES`,
-`memberCustomFieldChoiceLists` and `LIST_OPTIONS`) see only a leaf, so the field's
-options have to be passed down from the entry point by hand. Rules are also built once per
-type in `RULES`, which a rule built from a field's options can't be.
+Everything that checks, shows or edits a value takes the whole field, so a set's handler
+in `matchField` gets its settings: `valueSchemaFor(field)` builds a set's rule from its
+options, and Admin's editor and filter offer them. A rule that depends on nothing but the type
+is built once per type; a set's is built from its field whenever it is asked for.
+
+A set keeps one row per option picked, under the SHA-256 of the option's text, so the same
+text is always the same row and a filter naming an option's text finds it by the table's
+key. An option is named by its text alone: removing one leaves members' answers as they
+are, and offering the same text again makes it that option again.

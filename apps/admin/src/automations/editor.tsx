@@ -1,3 +1,4 @@
+import { comparableTriggerRules, getTriggerTierIds } from './utils/trigger-rules';
 import { HostLimitError } from '@tryghost/admin-x-framework/errors';
 import { useBrowseConfig, upgradeRoute } from '@tryghost/admin-x-framework/api/config';
 import { LimitModalContent } from '@/settings/api';
@@ -26,6 +27,7 @@ import { useAddAutomation, useEditAutomation } from '@tryghost/admin-x-framework
 import type {
   AutomationDetail,
   AutomationStatus,
+  AutomationTriggerRule,
 } from '@tryghost/admin-x-framework/api/automations';
 import { dequal } from 'dequal';
 import { isEmptyEmailLexical } from './utils';
@@ -48,8 +50,7 @@ const editableSlice = (automation: AutomationDetail) => ({
   name: automation.name,
   description: automation.description,
   status: automation.status,
-  trigger_tier_scope: automation.trigger_tier_scope,
-  trigger_tier_ids: automation.trigger_tier_ids ? [...automation.trigger_tier_ids].sort() : null,
+  trigger_rules: comparableTriggerRules(automation.trigger_rules),
   actions: automation.actions,
   edges: automation.edges,
 });
@@ -63,7 +64,7 @@ const getTriggerErrors = (
       ? { [TRIGGER_CANVAS_ID]: 'Select at least one tier.' }
       : {};
   }
-  return automation.trigger_tier_scope === 'selected_paid' && !automation.trigger_tier_ids.length
+  return !automation.trigger_rules.length
     ? { [TRIGGER_CANVAS_ID]: 'Select at least one paid tier.' }
     : {};
 };
@@ -100,6 +101,7 @@ const AutomationEditorContent: React.FC<{
   creation?: {
     initialAutomation: AutomationDetail;
     triggerTop?: number;
+    triggerType: AutomationTriggerRule['trigger_type'];
     tierSelection?: TierSelection;
     onCreated: (id: string) => void;
   };
@@ -147,6 +149,10 @@ const AutomationEditorContent: React.FC<{
   const [draft, setDraft] = React.useState<AutomationDetail | undefined>(
     creation?.initialAutomation,
   );
+  // Preserve the trigger type when every paid tier is removed from the draft.
+  const [triggerType, setTriggerType] = React.useState<
+    AutomationTriggerRule['trigger_type'] | undefined
+  >(creation?.triggerType);
   // Kept outside the draft until the API can hold it (NY-1733).
   const [tierSelection, setTierSelection] = React.useState(creation?.tierSelection);
   React.useEffect(() => {
@@ -156,6 +162,7 @@ const AutomationEditorContent: React.FC<{
 
     setSavedAutomation((currentAutomation) => currentAutomation ?? automation);
     setDraft((currentDraft) => currentDraft ?? automation);
+    setTriggerType((currentType) => currentType ?? automation.trigger_rules[0]?.trigger_type);
   }, [automation]);
   const isEditorLoading = !draft && !isReadError;
   const isEditorError = !draft && isReadError;
@@ -573,9 +580,12 @@ const AutomationEditorContent: React.FC<{
         isEmailNavigationBlocked={isEmailNavigationBlocked}
         isError={isEditorError}
         isLoading={isEditorLoading}
-        savedTriggerTierIds={savedAutomation?.trigger_tier_ids ?? []}
+        savedTriggerTierIds={
+          savedAutomation ? getTriggerTierIds(savedAutomation.trigger_rules) : []
+        }
         selectedRunId={selectedRunId}
         tierSelection={triggerTierSelection}
+        triggerType={triggerType}
         onChange={onDraftChange}
         onDiscardBlockedEmailNavigation={(closeEmailModal) => {
           onEmailDirtyChange(false);
@@ -690,12 +700,13 @@ const AutomationEditor: React.FC = () => {
     <ScreenEntranceProvider>
       {automationId === 'new' || automationId === session.createdId ? (
         <NewAutomation key={session.key}>
-          {(initialAutomation, triggerTop, tierSelection) => (
+          {({ automation: initialAutomation, triggerTop, triggerType, tierSelection }) => (
             <AutomationEditorContent
               automationId={null}
               creation={{
                 initialAutomation,
                 triggerTop,
+                triggerType,
                 tierSelection,
                 onCreated: (createdId) => setSession((current) => ({ ...current, createdId })),
               }}

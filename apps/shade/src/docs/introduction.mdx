@@ -68,38 +68,36 @@ pages. Form selects and input groups retain standard rounded corners; their
 embedded action buttons inherit the button shape. PageHeader.SelectTrigger supplies
 the pill shape for header dropdowns. Explicit shapes remain available for a specific visual need.
 
-Admin enables the current design on every route without a Labs flag. The generic
-`isAdmin7` provider switch remains available:
+Admin 7 changes that are still rolling out sit behind Admin's `admin7Design`
+Labs flag. Admin passes the flag's value to `ShadeApp`; Shade previews and
+standalone surfaces default to `true`, so they show the Admin 7 design:
 
 ```tsx
-<ShadeApp darkMode={darkMode} isAdmin7={isAdmin7}>
+<ShadeApp admin7Design={admin7Design} darkMode={darkMode}>
     <App />
 </ShadeApp>
 ```
 
-Components can read the same value for structural or interaction differences
-required by legacy surfaces:
+Appearance differences belong in Shade's tokens, scoped by the
+`data-admin7-design` attribute that `ShadeApp` writes. Components read the same
+value only for structural or interaction differences:
 
 ```tsx
 import {useShade} from '@tryghost/shade/app';
 
-const {isAdmin7} = useShade();
+const {admin7Design} = useShade();
 ```
 
-Pure appearance differences belong in shared recipes and scoped tokens.
-`Button variant="subtle"` expresses a low-emphasis action: ghost chrome with
-`isAdmin7` enabled, outline chrome otherwise. Avoid using control shape as a
-proxy for behavior.
-
-Portals carry `data-admin7` through Shade's internal scope wrapper. Keep
+Portals carry `data-admin7-design` through Shade's internal scope wrapper. Keep
 scope attributes off `document.body`: independently mounted surfaces must not
-change one another's menus or dialogs. Shade previews and standalone ActivityPub
-default to the new appearance. Embedded ActivityPub inherits Admin's computed
-boolean from the shared application wrapper.
+change one another's menus or dialogs. Embedded ActivityPub inherits Admin's
+value from the shared application wrapper.
+
+The switch is named after the flag and is removed with it. A later milestone
+that needs a Shade switch adds its own, named after its own flag.
 
 The [feature flag guide](https://github.com/TryGhost/Ghost/blob/main/docs/practices/feature-flags.md#admin-7-milestones)
-covers naming, shared presentation, testing and removal. Retain compatibility
-branches only while a surface still needs them; ordinary component calls
-already use the intended defaults.
+covers naming, shared presentation, testing and removal. Ordinary component
+calls already use the intended defaults.
 
 </div>

@@ -2,7 +2,6 @@ import React from 'react';
 import moment from 'moment-timezone';
 import { Button, Card, CardContent, EmptyIndicator, Skeleton } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { useShade } from '@tryghost/shade/app';
 import { isSafeHref } from './is-safe-href';
 import { parseMemberEvent } from './member-event';
 import { useMemberActivityFeed } from '@tryghost/admin-x-framework/api/members';
@@ -79,26 +78,13 @@ export const EventIcon: React.FC<{ iconName: string }> = ({ iconName }) => {
 
 /** "View all member activity →" link to the member's full activity feed. */
 const ViewAllLink: React.FC<{ memberId: string }> = ({ memberId }) => {
-  const { isAdmin7 } = useShade();
-  const link = (
-    <a
-      className={isAdmin7 ? undefined : 'block pt-3 font-medium text-primary hover:underline'}
-      data-testid="member-activity-view-all"
-      href={`#/members-activity?member=${memberId}`}
-    >
-      View all member activity →
-    </a>
+  return (
+    <Button className="mt-3" variant="ghost" asChild>
+      <a data-testid="member-activity-view-all" href={`#/members-activity?member=${memberId}`}>
+        View all member activity →
+      </a>
+    </Button>
   );
-
-  if (isAdmin7) {
-    return (
-      <Button className="mt-3" variant="ghost" asChild>
-        {link}
-      </Button>
-    );
-  }
-
-  return link;
 };
 
 const NEW_MEMBER_ACTIVITY_COPY = 'All events related to this member will be shown here.';

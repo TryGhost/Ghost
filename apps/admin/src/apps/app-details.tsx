@@ -36,7 +36,6 @@ import { historyTitle, installedBy } from './lib/history';
 import { isInstallationNotFound } from './lib/not-found';
 import { appReviewRoute, appRoute } from './lib/routes';
 import { useInstalledApps } from './lib/use-app-pins';
-import { isDevelopmentApp } from './lib/served-from';
 
 const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div className="grid grid-cols-[8rem_1fr] gap-4 py-3" data-testid="app-fact">
@@ -88,13 +87,13 @@ const Details: React.FC<{ installation: AppInstallation; timezone: string }> = (
     <Stack className="lg:flex-row lg:items-start lg:gap-12" gap="2xl">
       <Stack className="w-full shrink-0 lg:w-80" gap="xl">
         <Stack gap="md">
-          <AppIcon manifest={manifest} size="xl" />
+          <AppIcon app={installation} size="xl" />
           <Stack gap="xs">
             <Inline gap="xs" wrap>
               <Text as="h1" size="xl" weight="semibold">
                 {manifest.name}
               </Text>
-              {isDevelopmentApp(manifest) && <Badge variant="secondary">Development</Badge>}
+              {manifest.development && <Badge variant="secondary">Development</Badge>}
               {status === 'suspended' && <Badge variant="warning">Needs approval</Badge>}
               {status === 'uninstalled' && <Badge variant="secondary">Uninstalled</Badge>}
             </Inline>

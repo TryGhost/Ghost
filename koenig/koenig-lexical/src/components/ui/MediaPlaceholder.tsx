@@ -90,7 +90,7 @@ export function MediaPlaceholder({
     const buttonClasses = clsx(
         'group flex cursor-pointer select-none items-center justify-center',
         type === 'button' && 'px-3 py-1',
-        type !== 'button' && (size === 'xsmall' ? 'p-4' : 'flex-col p-20')
+        type !== 'button' && (size === 'xsmall' ? 'size-full p-4' : 'flex-col p-20')
     );
 
     const errorClasses = clsx(

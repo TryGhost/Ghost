@@ -4,7 +4,6 @@ import { type VariantProps } from 'class-variance-authority';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 
 import { selectTriggerVariants } from '@/components/ui/select-variants';
-import { useShade } from '@/providers/shade-context';
 import { cn } from '@/lib/utils';
 import { ShadeScope } from '@/shade-scope';
 import { inputSurface, inputSurfaceClasses } from '@/components/ui/input-surface';
@@ -18,7 +17,7 @@ const SelectValue = SelectPrimitive.Value;
 export interface SelectTriggerProps
   extends
     React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>,
-    Omit<VariantProps<typeof selectTriggerVariants>, 'isAdmin7'> {
+    VariantProps<typeof selectTriggerVariants> {
   /** Show the dropdown chevron. Defaults to hidden for the secondary variant. */
   showChevron?: boolean;
 }
@@ -31,7 +30,6 @@ const SelectTrigger = React.forwardRef<
     { className, children, shape, variant, showChevron = variant !== 'secondary', ...props },
     ref,
   ) => {
-    const { isAdmin7 } = useShade();
     const resolvedShape = shape ?? 'rounded';
     return (
       <SelectPrimitive.Trigger
@@ -39,7 +37,7 @@ const SelectTrigger = React.forwardRef<
         className={cn(
           inputSurface('self'),
           inputSurfaceClasses.disabledFieldSelf,
-          selectTriggerVariants({ shape: resolvedShape, variant, isAdmin7 }),
+          selectTriggerVariants({ shape: resolvedShape, variant }),
           showChevron && 'pr-2',
           className,
         )}

@@ -49,6 +49,9 @@ describe('Explore ping during boot', function () {
 
     configUtils.set('sentry:disabled', true);
     configUtils.set('explore:update_url', 'https://explore.example/update');
+    // The root skips pings for local site URLs, including the test default.
+    configUtils.set('url', 'https://publication.example/');
+    configUtils.set('admin:url', configUtils.getServerUrl());
     sandbox.stub(sentry, 'captureException');
     sandbox.stub(sentry, 'captureMessage');
     notify.resetNotifications();

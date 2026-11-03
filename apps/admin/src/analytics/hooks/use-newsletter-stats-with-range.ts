@@ -6,6 +6,7 @@ import {
   useSubscriberCount,
 } from '@tryghost/admin-x-framework/api/stats';
 import { formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
+import { STATS_RANGES } from '@/shared/analytics/constants';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import { useMemo } from 'react';
 
@@ -149,13 +150,19 @@ export const useNewsletterBasicStatsWithRange = (
   const currentOrder = order ?? 'date desc'; // Default to date descending
 
   // Calculate date strings using the helper, memoize for stability
-  const { startDate, endDate } = useMemo(() => getRangeDates(currentRange), [currentRange]);
+  const { startDate, endDate, timezone } = useMemo(
+    () => getRangeDates(currentRange),
+    [currentRange],
+  );
 
   // Build search params
   const searchParams = useMemo(() => {
     const params: Record<string, string> = {
-      date_from: formatQueryDate(startDate),
+      ...(currentRange !== STATS_RANGES.allTime.value
+        ? { date_from: formatQueryDate(startDate) }
+        : {}),
       date_to: formatQueryDate(endDate),
+      timezone,
       order: currentOrder,
     };
 
@@ -164,7 +171,7 @@ export const useNewsletterBasicStatsWithRange = (
     }
 
     return params;
-  }, [startDate, endDate, currentOrder, newsletterId]);
+  }, [startDate, endDate, timezone, currentOrder, newsletterId, currentRange]);
 
   // Conditionally call the hook or return empty state
   const realResult = useNewsletterBasicStats({ searchParams, enabled: shouldFetch });

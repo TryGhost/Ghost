@@ -1,5 +1,5 @@
 import type { AutomationTriggerRule } from './trigger-rules';
-import type { Promisable } from 'type-fest';
+import type { Promisable, ReadonlyDeep } from 'type-fest';
 import type { z } from 'zod';
 import { addAutomationDataSchema } from './automations-schemas';
 
@@ -59,8 +59,19 @@ export type AutomationsRepository2<Connection> = {
   /** Find the first action revision for all automations that match these trigger criteria. */
   findFirstActionRevisions: (
     connection: Connection,
-    memberStatus: 'free' | 'paid',
-    memberTierIds: ReadonlyArray<string>,
+    options: ReadonlyDeep<
+      | {
+          eventName: 'membership_started';
+          memberStatus: 'free' | 'paid';
+          memberTierIds: string[];
+        }
+      | {
+          eventName: 'paid_subscription_changed';
+          memberStatus: 'free' | 'paid';
+          memberTierIds: string[];
+          previousMemberTierIds: string[];
+        }
+    >,
   ) => Promisable<NextActionRevisionRow[]>;
 
   /** Get the count of all automations. */

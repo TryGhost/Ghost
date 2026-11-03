@@ -70,6 +70,18 @@ const controller = {
     },
   },
 
+  // Reading the values members hold needs the permission to browse members, because the values
+  // say something about the members who hold them.
+  browseValues: {
+    headers: noCacheInvalidation,
+    options: ['namespace', 'key'],
+    validation: { options: { namespace: { required: true }, key: { required: true } } },
+    permissions: { docName: 'member', method: 'browse' },
+    query(frame: ReadFrame) {
+      return booted().values.heldValues(fieldRoute(frame.options));
+    },
+  },
+
   add: {
     statusCode: 201,
     headers: noCacheInvalidation,
@@ -138,6 +150,7 @@ const controller = {
 } satisfies Controller<{
   browse: ReadFrame;
   read: ReadFrame;
+  browseValues: ReadFrame;
   add: WriteFrame;
   reorder: WriteFrame;
   edit: WriteFrame;

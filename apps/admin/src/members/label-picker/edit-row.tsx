@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useShade } from '@tryghost/shade/app';
 import { Stack } from '@tryghost/shade/primitives';
 import { Button, Input } from '@tryghost/shade/components';
 import { type Label } from '@tryghost/admin-x-framework/api/labels';
@@ -13,8 +12,6 @@ interface EditRowProps {
 }
 
 export const EditRow: React.FC<EditRowProps> = ({ label, onSave, onCancel, onDelete }) => {
-  const { isAdmin7 } = useShade();
-  const EditInput = isAdmin7 ? Input : 'input';
   const [name, setName] = useState(label.name);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState('');
@@ -66,14 +63,10 @@ export const EditRow: React.FC<EditRowProps> = ({ label, onSave, onCancel, onDel
   };
 
   return (
-    <Stack className={isAdmin7 ? 'pt-1 pb-2' : 'py-1.5'} gap="sm" data-edit-row>
-      <EditInput
+    <Stack className="pt-1 pb-2" gap="sm" data-edit-row>
+      <Input
         ref={inputRef}
-        className={
-          isAdmin7
-            ? 'h-7 rounded-control-sm! px-2 text-sm'
-            : 'h-7 w-full rounded border border-border bg-background px-2 text-sm outline-hidden focus:ring-1 focus:ring-ring disabled:opacity-50'
-        }
+        className="h-7 rounded-control-sm! px-2 text-sm"
         disabled={isBusy}
         type="text"
         value={name}

@@ -5,12 +5,13 @@ import { hasCustomFieldsEnabled } from './helpers';
 
 /**
  * A field the publisher has opened to members, as the members API lists it: Ghost's definition
- * without what only says where and when it is stored. The key and type are plain strings, because
- * Portal also runs beside newer Ghost sites, which can send a type this build doesn't know.
+ * without what only says where and when it is stored, or its settings, which no type Portal draws
+ * takes. The key and type are plain strings, because Portal also runs beside newer Ghost sites,
+ * which can send a type this build doesn't know.
  */
 export type MemberCustomField = Omit<
   MetafieldDefinition,
-  'namespace' | 'key' | 'type' | 'status' | 'created_at' | 'updated_at'
+  'namespace' | 'key' | 'type' | 'settings' | 'status' | 'created_at' | 'updated_at'
 > & {
   key: string;
   type: string;
@@ -161,6 +162,7 @@ export function changedCustomFields(
           ? undefined
           : Object.fromEntries(changed.map((part) => [part, held?.[part] ?? '']));
       },
+      set: () => undefined,
     });
     if (change !== undefined) {
       custom[field.key] = change;
@@ -179,6 +181,7 @@ export function withChange(
   return matchShape<CustomFieldValue>(field.type, {
     scalar: () => value,
     record: () => (part === null ? held : { ...compositeValue(held), [part]: value }),
+    set: () => held,
   });
 }
 
@@ -198,5 +201,6 @@ export function refusedInput(field: MemberCustomField, part: string): string | n
     scalar: () => (part === '' ? `custom:${drawn.key}` : null),
     record: ({ parts }) =>
       part !== '' && Object.keys(parts).includes(part) ? `custom:${drawn.key}:${part}` : null,
+    set: () => null,
   });
 }
