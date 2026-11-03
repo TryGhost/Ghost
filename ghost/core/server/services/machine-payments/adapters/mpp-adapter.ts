@@ -182,7 +182,7 @@ export class MppAdapter implements PaymentAdapter {
       if (hasTempo) {
         methods.push(
           tempo.charge({
-            currency: tempoCurrency,
+            currencies: [tempoCurrency],
             recipient,
             testnet,
             decimals: TEMPO_DECIMALS,

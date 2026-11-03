@@ -1,15 +1,24 @@
 import { z } from 'zod';
 import { KeySchema, NamespaceSchema } from './identity.js';
 import {
+  FIELD_STRUCTURES,
   FIELD_TYPE_IDS,
+  MAX_OPTIONS,
+  MIN_OPTIONS,
+  OPTION_SEPARATOR,
+  optionText,
+  matchField,
   matchLeaf,
-  matchShape,
   type FieldType,
   type FieldTypeOfShape,
   type Leaf,
   type ListSource,
+  type SetSettings,
+  type FieldShape,
   type TextSize,
+  type TypedSettings,
   type ValueOf,
+  typesOfShape,
 } from './structure.js';
 
 // Re-exported so a caller that needs both halves still has one import. The split is
@@ -18,16 +27,24 @@ export {
   FIELD_STRUCTURES,
   FIELD_TYPE_IDS,
   LIST_SOURCES,
+  MAX_OPTIONS,
+  MIN_OPTIONS,
+  OPTION_SEPARATOR,
   TEXT_SIZES,
   choice,
   country,
+  editableAnswers,
+  inOptionOrder,
   isFieldType,
   isRecordValue,
+  matchField,
   matchLeaf,
   matchShape,
   partsOf,
   text,
   type ChoiceLeaf,
+  type FieldHandlers,
+  type FieldOfShape,
   type FieldShape,
   type FieldStructure,
   type FieldType,
@@ -39,11 +56,15 @@ export {
   type PartsOf,
   type RecordStructure,
   type ScalarStructure,
+  type SetSettings,
+  type SetStructure,
+  type SettingsOf,
   type ShapeHandlers,
   type ShapeOf,
   type StructureOf,
   type TextLeaf,
   type TextSize,
+  type TypedSettings,
   type ValueOf,
 } from './structure.js';
 
@@ -134,21 +155,135 @@ export const FIELD_STATUS = {
 } as const satisfies Record<FieldStatus, FieldStatus>;
 
 /**
+ * An option as a publisher writes it. Its text is all that names it, so each bound is on the text
+ * as it is matched, and the separator a CSV cell joins options with can't appear in one.
+ */
+const OptionSchema = z
+  .string({ error: 'Enter text for each option.' })
+  .transform(optionText)
+  .pipe(
+    z
+      .string()
+      .min(1, { error: 'Enter text for each option.' })
+      .max(255, { error: 'Use 255 characters or fewer for each option.' })
+      .refine((option) => !option.includes(OPTION_SEPARATOR), {
+        error: `Options can't contain ${OPTION_SEPARATOR}.`,
+      }),
+  );
+
+/**
+ * What a set field is set up with. Options are a set as well, so the same text can't be offered
+ * twice; they are listed in the order they are shown.
+ */
+export const SetSettingsSchema = z.object(
+  {
+    options: z
+      .array(OptionSchema, { error: 'Give the list its options.' })
+      .min(MIN_OPTIONS, { error: `Give the list at least ${MIN_OPTIONS} options.` })
+      .max(MAX_OPTIONS, { error: `Give the list ${MAX_OPTIONS} options or fewer.` })
+      .refine((options) => new Set(options).size === options.length, {
+        error: 'Give each option once.',
+      }),
+    multiple: z.boolean({ error: 'Say whether members can pick more than one option.' }),
+  },
+  { error: 'Give the list its options.' },
+) satisfies z.ZodType<SetSettings, unknown>;
+
+/**
+ * A field whose type has nothing to set up has no settings, so a write that gives it some is
+ * refused.
+ */
+const NO_SETTINGS = z.undefined({ error: 'Only a list field has settings.' }).optional();
+
+/**
+ * A set field's settings as stored or sent back: their shape alone. The rules above apply when
+ * settings are written, so a rule tightened later never hides a field that was set up under the
+ * old one, the way a value's rule never hides what a member already holds.
+ */
+export const SetSettingsShape = z.object({ options: z.array(z.string()), multiple: z.boolean() });
+
+const TYPE_ERROR = { error: 'Choose a type of custom field.' };
+
+/**
+ * What a field holds beside its type, `base`, with its type and the settings that type's shape
+ * takes, held as `settings` says for each shape: a set's options, and nothing for any other shape.
+ * One variant per shape, so a field's settings are always read against its type. Writes give the
+ * rules, reads the shape alone, and Ghost's table its column.
+ */
+export const withTypedSettings = <
+  Base extends z.ZodRawShape,
+  ForScalar extends z.ZodType,
+  ForRecord extends z.ZodType,
+  ForSet extends z.ZodType,
+>(
+  base: Base,
+  settings: { scalar: ForScalar; record: ForRecord; set: ForSet } & {
+    [S in FieldShape]: z.ZodType;
+  },
+) => {
+  // Keyed by shape, so a shape added to the catalog fails to compile here until it has a variant.
+  const variants = {
+    scalar: z.object({ ...base, type: z.enum(typesOfShape('scalar')), settings: settings.scalar }),
+    record: z.object({ ...base, type: z.enum(typesOfShape('record')), settings: settings.record }),
+    set: z.object({ ...base, type: z.enum(typesOfShape('set')), settings: settings.set }),
+  } satisfies { [S in FieldShape]: z.ZodType };
+  return z.discriminatedUnion('type', [variants.scalar, variants.record, variants.set], TYPE_ERROR);
+};
+
+/** Each shape's settings as a write states them, checked against the rules. */
+export const WRITTEN_SETTINGS = {
+  scalar: NO_SETTINGS,
+  record: NO_SETTINGS,
+  set: SetSettingsSchema,
+};
+
+/** Each shape's settings as they are read back, checked for their shape alone. */
+export const READ_SETTINGS = { scalar: NO_SETTINGS, record: NO_SETTINGS, set: SetSettingsShape };
+
+/**
+ * Where a refusal points within what was sent: the path to the refused value, with its parts and
+ * positions joined by dots, such as `settings.options.2` for a field's third option. Ghost names
+ * a refusal's `property` this way, and a form files the problems it finds under the same keys, so
+ * each lands beside the input that set the value.
+ */
+export function refusedProperty(path: readonly PropertyKey[]): string {
+  return path.map(String).join('.');
+}
+
+/**
+ * A field's type and settings as a write states them, checked together and against the rules:
+ * the settings must be what that type is set up with, so a list carries its options and
+ * nothing else carries any.
+ */
+export const TypedSettingsInputSchema = withTypedSettings({}, WRITTEN_SETTINGS) satisfies z.ZodType<
+  TypedSettings,
+  unknown
+>;
+
+/** A field's type and settings as they are read back: paired, but checked for their shape alone. */
+export const TypedSettingsSchema = withTypedSettings({}, READ_SETTINGS) satisfies z.ZodType<
+  TypedSettings,
+  unknown
+>;
+
+/**
  * A field definition as the Admin and Members APIs return it. Ghost writes every definition through
  * this and Admin reads every one through it, so both ends are checked against one shape. Portal
  * uses the type without the check, because zod would add to every page view on every site. Dates
  * are ISO strings, as JSON carries them.
  */
-export const MetafieldDefinitionSchema = z.object({
-  namespace: NamespaceSchema,
-  key: KeySchema,
-  name: z.string(),
-  type: FieldTypeSchema,
-  status: FieldStatusSchema,
-  access: z.object({ member: MemberAccessSchema }),
-  created_at: z.iso.datetime(),
-  updated_at: z.iso.datetime().nullable(),
-});
+export const MetafieldDefinitionSchema = withTypedSettings(
+  {
+    namespace: NamespaceSchema,
+    key: KeySchema,
+    name: z.string(),
+    status: FieldStatusSchema,
+    access: z.object({ member: MemberAccessSchema }),
+    created_at: z.iso.datetime(),
+    updated_at: z.iso.datetime().nullable(),
+  },
+  READ_SETTINGS,
+);
 export type MetafieldDefinition = z.output<typeof MetafieldDefinitionSchema>;
 
 /**
@@ -274,8 +409,7 @@ export type FieldValue = ValueOf<FieldType>;
 export type Address = ValueOf<'address'>;
 
 /**
- * A type's rule, derived from its composition. Throws for a type this build doesn't know, as
- * `matchShape` does.
+ * A record type's rule, derived from its parts.
  *
  * A record's parts are all optional, because none of an address's exists everywhere: there is no
  * postal code in Ireland or Hong Kong, and no city in an Irish townland address. What holds instead
@@ -286,25 +420,72 @@ export type Address = ValueOf<'address'>;
  * A record is strict, so a part nobody declared is refused rather than dropped, in zod's wording,
  * which names the offending key.
  */
-function ruleOf(type: FieldType): z.ZodType<FieldValue> {
-  return matchShape<z.ZodType<FieldValue>>(type, {
-    scalar: ({ leaf }) => leafRule(leaf),
-    record: ({ parts }, recordType) =>
-      z
-        .strictObject(
-          Object.fromEntries(
-            Object.entries(parts).map(([part, leaf]) => [part, clearable(leafRule(leaf))]),
-          ),
-        )
-        .refine((value) => Object.values(value).some((entry) => typeof entry === 'string'), {
-          error: RECORD_EMPTY[recordType],
-        }),
+function recordRule(type: FieldTypeOfShape<'record'>): z.ZodType<FieldValue> {
+  return z
+    .strictObject(
+      Object.fromEntries(
+        Object.entries(FIELD_STRUCTURES[type].parts).map(([part, leaf]) => [
+          part,
+          clearable(leafRule(leaf)),
+        ]),
+      ),
+    )
+    .refine((value) => Object.values(value).some((entry) => typeof entry === 'string'), {
+      error: RECORD_EMPTY[type],
+    });
+}
+
+/**
+ * A set field's rule, from its own options: the text of each option picked, picking any option
+ * once however often it is named, and only one of them when the field takes one. A failure is
+ * reported against the whole field rather than at a position in the list, which a client would
+ * read as an option named by a number.
+ *
+ * Checked when an answer is given and never again: a publisher can change the options later, and
+ * an answer keeps what was picked.
+ */
+function setRule({ options, multiple }: SetSettings): z.ZodType<FieldValue> {
+  const offered = new Set(options);
+  return z
+    .array(z.unknown(), { error: 'Choose from the options this field offers.' })
+    .transform((picked, ctx) => {
+      const texts = picked.filter((option) => typeof option === 'string');
+      if (texts.length < picked.length) {
+        ctx.issues.push({
+          code: 'custom',
+          message: 'Choose from the options this field offers.',
+          input: picked,
+        });
+        return z.NEVER;
+      }
+      return [...new Set(texts.map(optionText))];
+    })
+    .check((ctx) => {
+      if (ctx.value.some((option) => !offered.has(option))) {
+        ctx.issues.push({
+          code: 'custom',
+          message: 'Choose from the options this field offers.',
+          input: ctx.value,
+        });
+      } else if (!multiple && ctx.value.length > 1) {
+        ctx.issues.push({ code: 'custom', message: 'Choose one option.', input: ctx.value });
+      }
+    });
+}
+
+/** A field's rule, from what its type is composed of and, for a set, the options the field offers. */
+function ruleOf(field: TypedSettings): z.ZodType<FieldValue> {
+  return matchField(field, {
+    scalar: ({ type }) => leafRule(FIELD_STRUCTURES[type].leaf),
+    record: ({ type }) => recordRule(type),
+    set: ({ settings }) => setRule(settings),
   });
 }
 
-// Built once per type: Ghost checks every value an import writes, and Admin every keystroke.
+// Built once per type whose rule comes from the type alone: Ghost checks every value an import
+// writes, and Admin every keystroke.
 const RULES = new Map<FieldType, z.ZodType<FieldValue>>(
-  FIELD_TYPE_IDS.map((type) => [type, ruleOf(type)]),
+  [...typesOfShape('scalar'), ...typesOfShape('record')].map((type) => [type, ruleOf({ type })]),
 );
 
 /**
@@ -313,6 +494,6 @@ const RULES = new Map<FieldType, z.ZodType<FieldValue>>(
  * and nowhere else; such a rule is built from the field rather than kept per type. Throws for a
  * type this build doesn't know.
  */
-export function valueSchemaFor(field: { type: FieldType }): z.ZodType<FieldValue> {
-  return RULES.get(field.type) ?? ruleOf(field.type);
+export function valueSchemaFor(field: TypedSettings): z.ZodType<FieldValue> {
+  return RULES.get(field.type) ?? ruleOf(field);
 }

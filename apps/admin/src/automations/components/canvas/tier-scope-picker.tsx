@@ -62,6 +62,7 @@ export function TierScopePicker<TStandalone extends string>({
   const standaloneChosen = value === standalone.value;
   const chosenIds: readonly string[] = typeof value === 'string' ? [] : value;
   const chosenTiers = tiers.filter((tier) => chosenIds.includes(tier.id));
+  const hasSelection = standaloneChosen || chosenTiers.length > 0;
 
   const term = search.trim().toLowerCase();
   const updateSearch = useCallback(
@@ -235,7 +236,6 @@ export function TierScopePicker<TStandalone extends string>({
 
   const optionId = (index: number) => `${listId}-option-${index}`;
   const headingId = `${listId}-tiers`;
-  const nothingChosen = !standaloneChosen && chosenTiers.length === 0;
 
   const renderRow = (row: Row, index: number) => {
     const isHighlighted = index === highlightedIndex;
@@ -322,11 +322,12 @@ export function TierScopePicker<TStandalone extends string>({
           aria-label={inputId ? undefined : inputLabel}
           className={cn(
             tokenFieldClasses.input,
+            hasSelection && search === '' && 'min-w-0 not-focus:px-0',
             // No caret beside the standalone value until something is typed.
             standaloneChosen && search === '' && 'caret-transparent',
           )}
           id={inputId}
-          placeholder={nothingChosen ? placeholder : ''}
+          placeholder={hasSelection ? '' : placeholder}
           role="combobox"
           value={search}
           onChange={(event) => {

@@ -601,5 +601,153 @@ describe('automations', function () {
       await deliver('customer.subscription.updated');
       assert.equal((await getRuns(automation.id)).length, 1);
     });
+
+    it.each([
+      { from: 'any', to: ['Silver', 'Gold'], before: 'Bronze', after: 'Silver', enrolls: true },
+      { from: 'any', to: ['Silver', 'Gold'], before: 'Silver', after: 'Gold', enrolls: false },
+      { from: 'Bronze', to: ['Silver', 'Gold'], before: 'Bronze', after: 'Silver', enrolls: true },
+      { from: 'Bronze', to: ['Silver', 'Gold'], before: 'Silver', after: 'Gold', enrolls: false },
+      { from: 'Bronze', to: ['Silver', 'Gold'], before: 'Platinum', after: 'Gold', enrolls: false },
+      { from: 'Bronze', to: ['Silver', 'Gold'], before: 'Gold', after: 'Platinum', enrolls: false },
+      { from: 'Silver', to: ['Gold'], before: 'Silver', after: 'Gold', enrolls: true },
+    ])(
+      'starts paid_subscription_changed automation: $enrolls when member changes from $before to $after (From: $from)',
+      async function ({ from, to, before, after, enrolls }) {
+        const tiers = new Map<
+          string,
+          { id: string; price: (typeof subscription.items.data)[number]['price'] }
+        >();
+        for (const name of ['Bronze', 'Silver', 'Gold', 'Platinum']) {
+          const id = ObjectId().toHexString();
+          const product = `prod_${id}`;
+          const price = { ...subscription.items.data[0].price, id: `price_${id}`, product };
+          await db
+            .knex('products')
+            .insert({ id, name, slug: id, type: 'paid', active: true, created_at: new Date() });
+          await db.knex('stripe_products').insert({
+            id: ObjectId().toHexString(),
+            product_id: id,
+            stripe_product_id: product,
+            created_at: new Date(),
+          });
+          await db.knex('stripe_prices').insert({
+            id: ObjectId().toHexString(),
+            stripe_price_id: price.id,
+            stripe_product_id: product,
+            active: true,
+            currency: 'usd',
+            amount: price.unit_amount,
+            type: 'recurring',
+            interval: 'month',
+            created_at: new Date(),
+          });
+          nock('https://api.stripe.com').post(`/v1/prices/${price.id}`).reply(200, price).persist();
+          nock('https://api.stripe.com')
+            .post(`/v1/products/${product}`)
+            .reply(200, { id: product, active: true })
+            .persist();
+          tiers.set(name, { id, price });
+        }
+        const tier = (name: string) => {
+          const result = tiers.get(name);
+          assert(result);
+          return result;
+        };
+        const response = await agent
+          .post('/automations/')
+          .body({
+            automations: [
+              {
+                name: `Tier transition ${from} ${before} ${after}`,
+                description: '',
+                status: 'active',
+                trigger_rules: [
+                  {
+                    trigger_type: 'paid_subscription_changed',
+                    direction: 'from',
+                    scope: from === 'any' ? 'any_paid_tier' : 'specific_paid_tier',
+                    product_id: from === 'any' ? null : tier(from).id,
+                  },
+                  ...to.map((name) => ({
+                    trigger_type: 'paid_subscription_changed',
+                    direction: 'to',
+                    scope: 'specific_paid_tier',
+                    product_id: tier(name).id,
+                  })),
+                ],
+                actions: [{ id: ObjectId().toHexString(), type: 'wait', data: { wait_hours: 48 } }],
+                edges: [],
+              },
+            ],
+          })
+          .expectStatus(201);
+        const automationId = response.body.automations[0].id;
+        const assertTier = async (name: string) => {
+          const member = await models.Member.findOne(
+            { id: memberId },
+            { withRelated: ['products'] },
+          );
+          assert.equal(member.get('status'), 'paid');
+          assert.deepEqual(
+            member.related('products').models.map((product: { id: string }) => product.id),
+            [tier(name).id],
+          );
+        };
+        subscription.items.data[0].price = tier(before).price;
+        await deliver('customer.subscription.created');
+        await assertTier(before);
+        assert.equal((await getRuns(automationId)).length, 0);
+        subscription.items.data[0].price = tier(after).price;
+        await deliver('customer.subscription.updated');
+        await assertTier(after);
+        if (enrolls) {
+          await assertEnrollment(automationId);
+        } else {
+          assert.equal((await getRuns(automationId)).length, 0);
+        }
+        await deliver('customer.subscription.updated');
+        assert.equal((await getRuns(automationId)).length, enrolls ? 1 : 0);
+      },
+    );
+
+    it('starts automation once when paid access ends, not when auto-renew is disabled', async function () {
+      const automation = await getPaidAutomation();
+      await db.knex('automation_trigger_rules').where('automation_id', automation.id).delete();
+      await db.knex('automation_trigger_rules').insert([
+        {
+          id: ObjectId().toHexString(),
+          automation_id: automation.id,
+          created_at: new Date(),
+          trigger_type: 'paid_subscription_changed',
+          direction: 'from',
+          scope: 'any_paid_tier',
+          product_id: null,
+        },
+        {
+          id: ObjectId().toHexString(),
+          automation_id: automation.id,
+          created_at: new Date(),
+          trigger_type: 'paid_subscription_changed',
+          direction: 'to',
+          scope: 'free',
+          product_id: null,
+        },
+      ]);
+      const runs = () =>
+        db.knex('automation_runs').where({ automation_id: automation.id, member_id: memberId });
+      await deliver('customer.subscription.created');
+      assert.equal((await models.Member.findOne({ id: memberId })).get('status'), 'paid');
+      assert.equal((await runs()).length, 0);
+      subscription.cancel_at_period_end = true;
+      await deliver('customer.subscription.updated');
+      assert.equal((await runs()).length, 0);
+      subscription.status = 'canceled';
+      subscription.canceled_at = Math.floor(Date.now() / 1000);
+      await deliver('customer.subscription.deleted');
+      assert.equal((await models.Member.findOne({ id: memberId })).get('status'), 'free');
+      await assertEnrollment(automation.id);
+      await deliver('customer.subscription.deleted');
+      assert.equal((await runs()).length, 1);
+    });
   });
 });

@@ -91,7 +91,8 @@ function toggled(set: ReadonlySet<string>, key: string, present: boolean): Reado
  * The CSV column a row should map onto, resolved from the field the server actually created
  * rather than from the type that was asked for.
  *
- * Null for a composite, which spans several columns and so has no single answer. Which of them
+ * Null for a composite, which spans several columns and so has no single answer. A list's
+ * options share one column. Which of them
  * this column holds is asked in the field picker afterwards, not here: it is the same question
  * as any other mapping, and the picker already knows how to ask it.
  */
@@ -99,6 +100,7 @@ function columnFor(field: MemberCustomField): string | null {
   return matchShape(field.type, {
     scalar: () => memberCustomFieldCsvColumns([field])[0]?.value ?? null,
     record: () => null,
+    set: () => memberCustomFieldCsvColumns([field])[0]?.value ?? null,
   });
 }
 

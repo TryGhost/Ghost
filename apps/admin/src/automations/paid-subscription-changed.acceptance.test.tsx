@@ -67,7 +67,7 @@ describe('Paid subscription changed trigger', () => {
     await expect.element(from()).toHaveAttribute('placeholder', 'Select tiers...');
     await expect.element(to()).toHaveAttribute('placeholder', 'Select tiers...');
 
-    // Active paid tiers only, under the standalone option.
+    // Every paid tier can be a source, including archived tiers.
     await from().click();
     await expect
       .poll(() =>
@@ -76,7 +76,7 @@ describe('Paid subscription changed trigger', () => {
           .elements()
           .map((row) => row.textContent),
       )
-      .toEqual(['Any paid tier', 'Bronze', 'Gold']);
+      .toEqual(['Any paid tier', 'Bronze', 'Gold', 'Legacy (archived)']);
     await option('Bronze').click();
     await userEvent.keyboard('{Escape}');
 
@@ -108,6 +108,21 @@ describe('Paid subscription changed trigger', () => {
 
     await expect.element(triggerCard().getByRole('button', { name: 'Remove Gold' })).toBeVisible();
     await expect.element(to()).toHaveAttribute('placeholder', 'Select tiers...');
+  });
+
+  it('focuses each field from its label without opening its list', async () => {
+    await start({ automations: true, automationsLifecycleTriggers: true });
+    await pickTrigger();
+    await from().click();
+    await expect.element(page.getByRole('listbox')).toBeVisible();
+
+    await page.getByText('From', { exact: true }).click();
+    await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+    await expect.element(from()).toHaveFocus();
+
+    await page.getByText('To', { exact: true }).click();
+    await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+    await expect.element(to()).toHaveFocus();
   });
 
   it('asks for both fields before saving', async () => {

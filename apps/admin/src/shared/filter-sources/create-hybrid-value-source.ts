@@ -2,6 +2,7 @@ import {
   type RemoteProbeState,
   type RemoteValueSourceHook,
   type ValueSourceHookOptions,
+  type ValueSourceQueryOptions,
 } from './create-remote-value-source';
 import {
   type ValueSource,
@@ -9,6 +10,21 @@ import {
   type ValueSourceState,
 } from '@tryghost/shade/patterns';
 import { useEffect, useState } from 'react';
+
+export type HybridValueSourceOptions = {
+  queryOptions?: ValueSourceQueryOptions;
+};
+
+/** What the first page reported about the whole collection, before any search is typed. */
+export type HybridProbeState = {
+  isLoading: boolean;
+  /** Undefined until the first page arrives. */
+  total: number | undefined;
+};
+
+export type HybridValueSource<T = string> = ValueSource<T> & {
+  probe: HybridProbeState;
+};
 
 interface HybridValueSourceConfig<Item, T = string> {
   id: string;
@@ -24,14 +40,23 @@ const NOOP = () => {};
 
 export function createHybridValueSource<Item, T = string>(
   config: HybridValueSourceConfig<Item, T>,
-): () => ValueSource<T> {
-  return function useHybridValueSource(): ValueSource<T> {
-    const probeSource = config.useRemoteSource({ enabled: true });
+): (options?: HybridValueSourceOptions) => HybridValueSource<T> {
+  return function useHybridValueSource(options = {}): HybridValueSource<T> {
+    const { queryOptions } = options;
+    const probeSource = config.useRemoteSource({ enabled: true, queryOptions });
     const probe = probeSource.useInitialBrowse();
     const [mode, setMode] = useState<'local' | 'remote' | null>(null);
 
     useEffect(() => {
-      if (mode !== null || !probe.pagination) {
+      if (mode !== null) {
+        return;
+      }
+
+      // A browse that answered without pagination has nothing more to page.
+      if (!probe.pagination) {
+        if (!probe.isLoading && probe.items !== undefined) {
+          setMode('local');
+        }
         return;
       }
 
@@ -40,10 +65,10 @@ export function createHybridValueSource<Item, T = string>(
           ? 'local'
           : 'remote',
       );
-    }, [mode, probe.pagination]);
+    }, [mode, probe.isLoading, probe.items, probe.pagination]);
 
-    const localSource = config.useLocalSource(probe, { enabled: mode === 'local' });
-    const remoteSource = config.useRemoteSource({ enabled: mode === 'remote' });
+    const localSource = config.useLocalSource(probe, { enabled: mode === 'local', queryOptions });
+    const remoteSource = config.useRemoteSource({ enabled: mode === 'remote', queryOptions });
 
     const useOptions = (params: ValueSourceParams<T>): ValueSourceState<T> => {
       const localState = localSource.useOptions(params);
@@ -66,6 +91,10 @@ export function createHybridValueSource<Item, T = string>(
     return {
       id: config.id,
       useOptions,
+      probe: {
+        isLoading: probe.isLoading,
+        total: probe.pagination?.total ?? probe.items?.length,
+      },
     };
   };
 }

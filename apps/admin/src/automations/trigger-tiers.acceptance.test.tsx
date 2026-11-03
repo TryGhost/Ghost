@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
+import { fakeAdminEndpoint, fakeAutomations, renderAdminApp } from '@test-utils/acceptance';
 import type {
   AutomationDetail,
   AutomationTrigger,
@@ -119,6 +119,17 @@ describe('Automation trigger tiers', () => {
     await expect.element(options).not.toBeInTheDocument();
     await expect.element(picker()).toHaveFocus();
     expect(save.requests).toHaveLength(0);
+  });
+
+  it('focuses the scope from its label without opening a list', async () => {
+    serve({ trigger_tier_scope: 'selected_paid', trigger_tier_ids: ['bronze'] });
+    await renderAdminApp('/automations/first', flags);
+    await picker().click();
+    await expect.element(page.getByRole('listbox', { name: 'Tiers', exact: true })).toBeVisible();
+
+    await page.getByText('Triggered when a new or free member starts:', { exact: true }).click();
+    await expect.element(page.getByRole('listbox')).not.toBeInTheDocument();
+    await expect.element(scope()).toHaveFocus();
   });
 
   it.each(['Save', 'Publish', 'Publish changes', 'Turn off'])(
@@ -289,6 +300,23 @@ describe('Automation trigger tiers', () => {
       trigger_tier_scope: 'selected_paid',
       trigger_tier_ids: ['gold'],
     });
+  });
+
+  it('refreshes tiers when returning to the editor', async () => {
+    serve({ trigger_tier_scope: 'selected_paid', trigger_tier_ids: ['bronze'] });
+    fakeAutomations([]);
+    const tiers = [{ id: 'bronze', name: 'Bronze', type: 'paid', active: true }];
+    fakeAdminEndpoint('GET', /\/tiers\/\?/, () => ({ tiers }));
+
+    await renderAdminApp('/automations/first', flags);
+    await expect.element(chips()).toHaveTextContent('Bronze');
+    await page.getByRole('link', { name: 'Back to automations' }).click();
+    await expect.element(page.getByRole('heading', { name: 'No automations yet' })).toBeVisible();
+    tiers.push({ id: 'silver', name: 'Silver', type: 'paid', active: true });
+    window.history.back();
+    await expect.element(chips()).toHaveTextContent('Bronze');
+    await picker().click();
+    await expect.element(page.getByRole('option', { name: 'Silver', exact: true })).toBeVisible();
   });
 
   it('guards navigation with unsaved tier changes', async () => {
