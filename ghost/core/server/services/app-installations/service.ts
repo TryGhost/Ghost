@@ -178,15 +178,14 @@ export class AppInstallationsService {
     { manifestUrl, digest }: { manifestUrl: string; digest: string },
   ): Promise<Installation> {
     const loaded = await this.fetchReviewed(manifestUrl, digest);
-    // Report an installed app as such before fetching its icon, which could fail instead.
-    // The insert still catches a race with another install.
-    if (await this.repository.isInstalled(loaded.manifest.id)) {
-      throw alreadyInstalled(loaded.manifest.id);
-    }
-    const installation = await this.repository.insert(
-      loaded,
-      await this.fetchIcon(loaded.manifest.icon),
-    );
+    const iconDataUrl = await this.fetchIcon(loaded.manifest.icon).catch(async (error: unknown) => {
+      // An installed app can't be installed, whatever went wrong with its icon. The insert
+      // reports the same when the app is installed after the fetch.
+      throw (await this.repository.isInstalled(loaded.manifest.id))
+        ? alreadyInstalled(loaded.manifest.id)
+        : error;
+    });
+    const installation = await this.repository.insert(loaded, iconDataUrl);
     await this.recordAction({
       context,
       event: 'installed',

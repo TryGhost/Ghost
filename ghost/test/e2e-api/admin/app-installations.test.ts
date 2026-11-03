@@ -438,18 +438,17 @@ describe('App installations Admin API', function () {
       assert.equal(body.errors[0].code, 'APP_ALREADY_INSTALLED');
     });
 
-    it('refuses to install an installed app before fetching its icon', async function () {
+    it('refuses to install an installed app whose icon fails to load as already installed', async function () {
       await install();
       serve(manifest(servedIcon));
       serveIcon();
       const { digest } = await preview();
       serve(manifest(servedIcon));
-      const unfetched = nock(MANIFEST_HOST).get(ICON_PATH).reply(503);
+      nock(MANIFEST_HOST).get(ICON_PATH).reply(503);
 
       const { body } = await confirm(digest, 409);
 
       assert.equal(body.errors[0].code, 'APP_ALREADY_INSTALLED');
-      assert.equal(unfetched.isDone(), false);
     });
 
     it('keeps the manifest URL as it was checked, not as it was confirmed', async function () {
@@ -1651,6 +1650,7 @@ describe('App installations Admin API', function () {
 
       assert.equal(body.errors[0].code, 'APP_INSTALLATION_CHANGED');
       assert.equal(body.errors[0].details.installation.revision, 1);
+      assert.equal(body.errors[0].details.manifest.name, 'Podcasts');
       assert.equal((await manifestRows()).length, 1);
     });
 
