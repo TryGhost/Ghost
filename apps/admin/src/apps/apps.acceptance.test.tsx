@@ -1442,26 +1442,6 @@ describe('Managing apps', () => {
     expect(imageSources(sidebar)).toEqual([]);
   });
 
-  // Ghost stored JPEG and GIF copies before it refused them, and an older Ghost still does.
-  for (const type of ['image/jpeg', 'image/gif']) {
-    it(`draws the default icon for a stored ${type} copy, a format Ghost no longer stores`, async () => {
-      fakeInstallations([
-        installation({
-          manifest: manifest({ icon: { url: ICON_URL } }),
-          icon_data_url: `data:${type};base64,AAAA`,
-        }),
-      ]);
-
-      await renderAdminApp('/apps', { labs });
-
-      await expect.element(appsScreen.row('Podcast')).toBeVisible();
-      const row = appsScreen.row('Podcast').element();
-      expect(imageSources(row)).toEqual([]);
-      expect(row.querySelector('svg.lucide-app-window')).not.toBeNull();
-      expect(imageSources(appsScreen.sidebarApps().element())).toEqual([]);
-    });
-  }
-
   it('draws the default icon for a stored copy that isn’t an image data URL', async () => {
     fakeInstallations([
       installation({ manifest: manifest({ icon: { url: ICON_URL } }), icon_data_url: ICON_URL }),

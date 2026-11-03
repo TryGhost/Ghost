@@ -31,22 +31,17 @@ interface AppIconProps {
   className?: string;
 }
 
-// The formats Ghost stores icons in. An older Ghost also stored JPEG and GIF copies, which
-// can't be drawn from their transparency, so those fall back too.
-const STORED_ICON = /^data:image\/(svg\+xml|png|webp);/;
-
 /**
  * The copy of the app's icon Ghost stored, as a data URL, so drawing it never requests
  * anything from the app. It isn't sanitized, so it's only ever drawn as an image, which
  * can't run scripts or load anything.
  *
  * Ghost doesn't check the bytes, so a copy can fail to load. Then this gives null and the
- * caller draws the default icon instead, as it does for a copy in another format.
+ * caller draws the default icon instead.
  */
 function useStoredIcon(app: AppIconSource): [string | null, () => void] {
   const [failed, setFailed] = React.useState<string | null>(null);
-  const stored =
-    app.icon_data_url && STORED_ICON.test(app.icon_data_url) ? app.icon_data_url : null;
+  const stored = app.icon_data_url?.startsWith('data:image/') ? app.icon_data_url : null;
   return [stored === failed ? null : stored, () => setFailed(stored)];
 }
 
