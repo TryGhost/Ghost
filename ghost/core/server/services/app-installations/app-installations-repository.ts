@@ -23,7 +23,6 @@ const MANIFESTS = 'app_installation_manifests';
 
 const HistoryManifestRow = DbAppInstallationManifest.pick({
   id: true,
-  manifest_url: true,
   source: true,
   requires_approval: true,
   created_at: true,
@@ -32,6 +31,8 @@ const HistoryManifestRow = DbAppInstallationManifest.pick({
 const ManifestContentRow = DbAppInstallationManifest.pick({ id: true, manifest: true });
 
 const DigestAndIconRow = DbAppInstallationManifest.pick({ digest: true, icon_data_url: true });
+
+const BackendKeyRow = DbAppInstallationManifest.pick({ backend_key_thumbprint: true });
 
 const HistoryActionRow = z
   .object({
@@ -106,6 +107,7 @@ class LockedInstallation {
       manifest_url: loaded.manifestUrl,
       manifest: loaded.serialised,
       digest: loaded.digest,
+      backend_key_thumbprint: loaded.backendKeyThumbprint,
       icon_data_url: iconDataUrl,
       source,
       requires_approval: requiresApproval,
@@ -201,6 +203,42 @@ export class AppInstallationsRepository {
     return row ? z.decode(DigestAndIconRow, row) : undefined;
   }
 
+  /**
+   * The backend keys replaced for an app signed with this identity key: every key named by
+   * a manifest row of any of its installations, ended ones included, other than the current
+   * key. Rows are only added for verified manifests, pending ones included, so a key is
+   * retired as soon as a verified manifest names a newer one, and uninstalling and
+   * installing again doesn't bring it back.
+   *
+   * The current key is the one the newest installation's pending manifest names, or else its
+   * approved manifest's. Every added row becomes one of those straight away, so rows aren't
+   * ordered by `created_at`, which comes from each instance's clock and is only to the
+   * second. Only installations are, and those are an uninstall and an install apart.
+   */
+  async retiredBackendKeysOf(appId: string, identityKeyThumbprint: string): Promise<Set<string>> {
+    const rows = () =>
+      this.knex(`${MANIFESTS} as manifest`)
+        .join(`${INSTALLATIONS} as installation`, 'installation.id', 'manifest.installation_id')
+        .where({
+          'installation.app_id': appId,
+          'installation.identity_key_thumbprint': identityKeyThumbprint,
+        });
+    const current = rows()
+      .whereRaw('?? = coalesce(??, ??)', [
+        'manifest.id',
+        'installation.pending_manifest_id',
+        'installation.manifest_id',
+      ])
+      .orderBy('installation.created_at', 'desc')
+      .orderBy('installation.id', 'desc')
+      .limit(1)
+      .select('manifest.backend_key_thumbprint');
+    const retired = await rows()
+      .whereNot('manifest.backend_key_thumbprint', current)
+      .distinct<z.input<typeof BackendKeyRow>[]>('manifest.backend_key_thumbprint');
+    return new Set(retired.map((row) => z.decode(BackendKeyRow, row).backend_key_thumbprint));
+  }
+
   /** An installation's manifest rows and staff actions, oldest first. */
   async historyRows(
     id: string,
@@ -211,7 +249,6 @@ export class AppInstallationsRepository {
       .orderBy('id', 'asc')
       .select<z.input<typeof HistoryManifestRow>[]>(
         'id',
-        'manifest_url',
         'source',
         'requires_approval',
         'created_at',
@@ -274,6 +311,7 @@ export class AppInstallationsRepository {
     const written: z.input<typeof InstallationRow> = {
       id,
       app_id: manifest.id,
+      identity_key_thumbprint: loaded.identityKeyThumbprint,
       status: 'active',
       manifest_id: manifestId,
       pending_manifest_id: null,
@@ -291,6 +329,7 @@ export class AppInstallationsRepository {
             id,
             app_id: written.app_id,
             current_app_id: written.app_id,
+            identity_key_thumbprint: written.identity_key_thumbprint,
             status: written.status,
             manifest_id: written.manifest_id,
             created_at: now,
@@ -302,6 +341,7 @@ export class AppInstallationsRepository {
             manifest_url: written.manifest_url,
             manifest: loaded.serialised,
             digest: loaded.digest,
+            backend_key_thumbprint: loaded.backendKeyThumbprint,
             icon_data_url: iconDataUrl,
             source: 'install',
             requires_approval: false,
