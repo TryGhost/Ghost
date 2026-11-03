@@ -1,7 +1,7 @@
 import { cva } from 'class-variance-authority';
 
 const settingGroupVariants = cva(
-  'group/setting-group relative flex flex-col gap-6 rounded-xl text-card-foreground transition-all',
+  'group/setting-group relative flex flex-col gap-6 rounded-card text-card-foreground transition-all',
   {
     variants: {
       variant: {
