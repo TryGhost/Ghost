@@ -473,7 +473,7 @@ describe('automations API', function () {
 
     const trackClick = () =>
       repository.withConnection((connection) =>
-        createApi({ repository }).trackEmailClicked(click, { transacting: connection }),
+        createApi({ repository }).trackEmailClicked(click, { connection }),
       );
 
     it('records when a member first clicks an email and increases its click count', async function () {

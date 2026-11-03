@@ -192,7 +192,7 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
         memberId,
         clickedAt,
       }: TrackEmailClickedOptions,
-      { transacting: connection }: { transacting: RepositoryTransaction },
+      { connection }: { connection: RepositoryTransaction },
     ): Promise<void> => {
       await repository.lockActionRevisions(connection, [automationActionRevisionId]);
 

@@ -3075,7 +3075,7 @@ describe('automations repository', function () {
       clickedAt?: Date;
       automationRunStepId?: string;
     } = {}): Promise<void> => {
-      await knex.transaction(async (transacting) => {
+      await knex.transaction(async (transaction) => {
         await createClickApi().trackEmailClicked(
           {
             automationActionRevisionId: firstRevisionId,
@@ -3083,7 +3083,7 @@ describe('automations repository', function () {
             memberId,
             clickedAt,
           },
-          { transacting },
+          { connection: transaction },
         );
       });
     };

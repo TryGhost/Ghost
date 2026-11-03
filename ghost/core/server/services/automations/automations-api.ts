@@ -1,5 +1,6 @@
 // @ts-expect-error This module lacks type definitions.
 import domainEvents from '@tryghost/domain-events';
+import type { Knex } from 'knex';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
@@ -33,6 +34,7 @@ import {
   fetchAutomationRuns,
   fetchAutomationStats,
 } from './tinybird-automation-stats';
+import type { TrackEmailClickedOptions } from './automations-repository-2';
 import { createDatabaseAutomationsRepository2 } from './database-automations-repository-2';
 import { createAutomationsApi2 } from './automations-api-2';
 
@@ -555,4 +557,7 @@ export async function trackEmailDeliveredAndOpened(
   return await repository.trackEmailDeliveredAndOpened(...args);
 }
 
-export const trackEmailClicked = automationsApi2.trackEmailClicked.bind(automationsApi2);
+export const trackEmailClicked = async (
+  options: TrackEmailClickedOptions,
+  connectionOptions: { transacting: Knex.Transaction },
+) => automationsApi2.trackEmailClicked(options, { connection: connectionOptions.transacting });
