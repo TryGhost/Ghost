@@ -772,8 +772,32 @@ describe('RecommendationService', function () {
 
   describe('trackClicked', function () {
     it('adds click event', async function () {
+      const recommendation = Recommendation.create({
+        id: '1',
+        url: 'http://localhost/1',
+        title: 'Test',
+        description: null,
+        excerpt: null,
+        featuredImage: null,
+        favicon: null,
+        oneClickSubscribe: false,
+      });
+      await service.repository.save(recommendation);
+
       await service.trackClicked({ id: '1' });
       assert.equal(await clickEventRepository.getCount({}), 1);
+    });
+
+    it('throws NotFoundError for an unknown recommendation id (no raw DB error leaks)', async function () {
+      const save = sinon.spy(clickEventRepository, 'save');
+      await assert.rejects(() => service.trackClicked({ id: 'does-not-exist' }), {
+        name: 'NotFoundError',
+      });
+      assert.equal(
+        save.called,
+        false,
+        'should not attempt to save a click for a missing recommendation',
+      );
     });
   });
 
