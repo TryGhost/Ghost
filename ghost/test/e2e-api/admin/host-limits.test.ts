@@ -584,6 +584,29 @@ describe('Host limits', function () {
       assert.equal(unchanged.get('role_id'), contributor);
     });
 
+    it('resends a counted invitation above capacity without adding a seat', async function () {
+      await hostLimits.setHostLimits({ staff: { max: 100 } });
+      const author = await roleId('Author');
+      const email = 'above-capacity-author@example.com';
+      await agent
+        .post('invites/')
+        .body({ invites: [{ email, role_id: author }] })
+        .expectStatus(201);
+      const count = Number(await (limits.limits.staff as MaxLimit).currentCountQuery());
+      await hostLimits.setHostLimits({ staff: { max: count - 1 } });
+
+      await agent
+        .post('invites/')
+        .body({ invites: [{ email, role_id: author }] })
+        .expectStatus(201);
+
+      assert.equal(
+        Number(await (limits.limits.staff as MaxLimit).currentCountQuery()),
+        count,
+        'resending above capacity keeps the existing seat count',
+      );
+    });
+
     it('rejects a resend if acceptance consumes its reserved seat after permission checking', async function () {
       await hostLimits.setHostLimits({ staff: { max: 100 } });
       const email = 'accepted-during-resend@example.com';

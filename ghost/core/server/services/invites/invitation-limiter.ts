@@ -77,9 +77,11 @@ export default class InvitationLimiter {
     if (roleId === contributor.id) {
       return;
     }
+    if (previousRoleId && previousRoleId !== contributor.id) {
+      return;
+    }
     await this.deps.limitService.errorIfWouldGoOverLimit('staff', {
       transacting: transaction,
-      addedCount: previousRoleId && previousRoleId !== contributor.id ? 0 : 1,
     });
   }
 
