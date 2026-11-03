@@ -14,6 +14,11 @@ function namedIcon(name: string): LucideIcon.LucideIcon | undefined {
   return Object.hasOwn(LucideIcon.icons, key) ? LucideIcon.icons[key] : undefined;
 }
 
+/** The icon Admin draws when the app has no stored copy: its named icon or a default. */
+function glyphFor(icon: AppInstallation['manifest']['icon']): LucideIcon.LucideIcon {
+  return ('name' in icon ? namedIcon(icon.name) : undefined) ?? LucideIcon.AppWindow;
+}
+
 const TILE_SIZES = { md: 'size-10', lg: 'size-12', xl: 'size-16 rounded-xl' };
 const GLYPH_SIZES = { md: 'size-[18px]', lg: 'size-6', xl: 'size-7' };
 
@@ -48,7 +53,7 @@ export const AppIcon: React.FC<AppIconProps> = ({ app, size = 'md', className })
   if (stored) {
     content = <img alt="" className={glyph} src={stored} />;
   } else {
-    const Glyph = ('name' in icon ? namedIcon(icon.name) : undefined) ?? LucideIcon.AppWindow;
+    const Glyph = glyphFor(icon);
     content = <Glyph className={glyph} strokeWidth={1.5} />;
   }
 
@@ -84,8 +89,7 @@ export const AppNavIcon: React.FC<{ app: AppIconSource }> = ({ app }) => {
       </span>
     );
   }
-  const { icon } = app.manifest;
-  const Glyph = ('name' in icon ? namedIcon(icon.name) : undefined) ?? LucideIcon.AppWindow;
+  const Glyph = glyphFor(app.manifest.icon);
   return <Glyph aria-hidden="true" />;
 };
 
