@@ -181,16 +181,15 @@ Admin never imports it.
 
 An app serves its manifest as flattened JWS JSON, signed with its identity key,
 which the developer keeps offline. The protected header is exactly
-`{"alg":"Ed25519","typ":"ghost-app-manifest","iat":<seconds>}`, and the payload
-is the manifest's exact bytes.
+`{"alg":"Ed25519","typ":"ghost-app-manifest"}`, and the payload is the
+manifest's exact bytes.
 
-`iat` is when it was signed. Ghost keeps the newest it has seen for each
-installation and refuses an older one, so a copy of an earlier manifest, with a
-backend key since replaced, can't be served again. It is in the header so that
-signing the same manifest again keeps its digest. To roll back, sign the older
-manifest again: a platform's rollback that serves the old signed file is
-refused. Serve the signed manifest with `Cache-Control: no-cache`, so a stale
-copy in a cache isn't refused as outdated.
+When a manifest names a new backend key, Ghost retires the one it replaced for
+that app and identity key, and refuses any manifest that names it again, even
+after the app is uninstalled and installed again. So replacing a leaked backend
+key revokes it on every site that sees the new manifest. A platform's rollback
+to an earlier deployment keeps working, unless it goes back past a new backend
+key.
 
 ```ts
 import {
@@ -199,7 +198,7 @@ import {
   verifySignedManifest,
 } from '@tryghost/app-contracts/identity';
 
-const signed = await signManifest(manifest, identityPrivateKey); // iat: now
+const signed = await signManifest(manifest, identityPrivateKey);
 
 const read = readSignedManifest(body);
 // Parse read.payload with parseManifest, then:
@@ -207,7 +206,7 @@ await verifySignedManifest(read.signed, parsed.manifest.identity_key); // { succ
 ```
 
 The key to verify with is named inside the manifest, so `readSignedManifest`
-hands back the payload and `issuedAt` unverified. Nothing in either may be used until
+hands back the payload unverified. Nothing in it may be used until
 `verifySignedManifest` has passed with the manifest's own `identity_key`.
 
 `thumbprintOf(key)` is a key's RFC 7638 thumbprint, the same however its JWK is

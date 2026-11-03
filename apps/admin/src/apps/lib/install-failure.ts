@@ -68,11 +68,6 @@ export function installFailureOf(error: unknown): InstallFailure {
         kind: 'problems',
         problems: [{ title: 'The app’s details are for another install link', detail }],
       };
-    case 'APP_MANIFEST_SIGNED_IN_FUTURE':
-      return {
-        kind: 'problems',
-        problems: [{ title: 'The app’s details say they were signed in the future', detail }],
-      };
     case 'APP_MANIFEST_URL_INVALID':
       return { kind: 'problems', problems: [{ title: 'The install link isn’t valid', detail }] };
     case 'APP_MANIFEST_REDIRECTED':

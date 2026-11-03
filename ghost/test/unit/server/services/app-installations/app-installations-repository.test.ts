@@ -27,15 +27,13 @@ const loaded: LoadedManifest = {
   serialised: JSON.stringify(manifest, null, 2),
   digest: 'reviewed-digest',
   identityKeyThumbprint: 'identity-thumbprint',
-  issuedAt: 1_800_000_000,
+  backendKeyThumbprint: 'backend-thumbprint',
 };
 const ICON_DATA_URL = 'data:image/svg+xml;base64,PHN2Zy8+';
 const installation: Installation = {
   id: 'installation',
   app_id: manifest.id,
   identity_key_thumbprint: 'identity-thumbprint',
-  manifest_signed_at: 1_800_000_000,
-  manifest_signed_digest: 'reviewed-digest',
   status: 'active',
   manifest_id: 'approved',
   pending_manifest_id: null,
@@ -90,14 +88,13 @@ describe('AppInstallationsRepository insert', function () {
       trx.mock.calls.map(([table]) => table),
       ['app_installations', 'app_installation_manifests'],
     );
-    assert.equal(insert.mock.calls[0][0].manifest_signed_at, loaded.issuedAt);
-    assert.equal(insert.mock.calls[0][0].manifest_signed_digest, loaded.digest);
     assert.deepEqual(insert.mock.calls[1][0], {
       id: insert.mock.calls[0][0].manifest_id,
       installation_id: installed.id,
       manifest_url: loaded.manifestUrl,
       manifest: loaded.serialised,
       digest: loaded.digest,
+      backend_key_thumbprint: 'backend-thumbprint',
       source: 'install',
       requires_approval: false,
       created_at: insert.mock.calls[0][0].created_at,
@@ -207,8 +204,9 @@ describe('AppInstallationsRepository whileUnchanged', function () {
   });
 });
 
-describe('AppInstallationsRepository signed times', function () {
+describe('AppInstallationsRepository retiredBackendKeysOf', function () {
   let knex: Knex;
+  let minute: number;
 
   beforeEach(async function () {
     knex = createKnex({ client: 'better-sqlite3', connection: ':memory:', useNullAsDefault: true });
@@ -216,81 +214,83 @@ describe('AppInstallationsRepository signed times', function () {
       table.string('id').primary();
       table.string('app_id');
       table.string('identity_key_thumbprint');
-      table.string('status');
-      table.bigInteger('manifest_signed_at');
-      table.string('manifest_signed_digest');
-      table.integer('revision');
     });
-    // Only the columns these read and write, so not a row the table's type would accept.
+    await knex.schema.createTable('app_installation_manifests', (table) => {
+      table.string('id').primary();
+      for (const column of ['installation_id', 'manifest_url', 'manifest', 'digest', 'source']) {
+        table.string(column);
+      }
+      table.string('backend_key_thumbprint');
+      table.boolean('requires_approval');
+      table.dateTime('created_at');
+    });
+    // Only the columns the lookup reads, so not a row the table's type would accept.
     await knex
       .insert([
-        row('installation', 'active', 100, 'first'),
-        row('ended', 'uninstalled', 300, 'third'),
-        row('older', 'uninstalled', 200, 'second'),
-        { ...row('another-key', 'uninstalled', 400, 'fourth'), identity_key_thumbprint: 'other' },
+        { id: 'installation', app_id: manifest.id, identity_key_thumbprint: 'identity' },
+        { id: 'ended', app_id: manifest.id, identity_key_thumbprint: 'identity' },
+        { id: 'other-key', app_id: manifest.id, identity_key_thumbprint: 'other' },
+        { id: 'other-app', app_id: 'com.example.other', identity_key_thumbprint: 'identity' },
       ])
       .into('app_installations');
+    minute = 0;
   });
 
   afterEach(async function () {
     await knex.destroy();
   });
 
-  function row(id: string, status: string, signedAt: number, digest: string) {
-    return {
-      id,
-      app_id: manifest.id,
-      identity_key_thumbprint: 'identity-thumbprint',
-      status,
-      manifest_signed_at: signedAt,
-      manifest_signed_digest: digest,
-      revision: 3,
-    };
-  }
-
-  const read = (id: string) =>
-    knex('app_installations')
-      .where({ id })
-      .first('manifest_signed_at', 'manifest_signed_digest', 'revision');
-
-  const raise = (issuedAt: number, digest: string) =>
-    new AppInstallationsRepository(knex).whileUnchanged(installation, (locked) =>
-      locked.raiseSignedAt({ ...loaded, issuedAt, digest }),
+  /** Adds manifest rows naming these keys, each newer than every row added before it. */
+  const addRows = (installationId: string, keys: string[]) => {
+    const first = minute;
+    minute += keys.length;
+    return knex('app_installation_manifests').insert(
+      keys.map((key, index) => ({
+        id: `${installationId}-${index}`,
+        installation_id: installationId,
+        manifest_url: loaded.manifestUrl,
+        manifest: loaded.serialised,
+        digest: `digest-${index}`,
+        backend_key_thumbprint: key,
+        source: index === 0 ? ('install' as const) : ('update' as const),
+        requires_approval: false,
+        created_at: new Date(Date.UTC(2026, 0, 1, 0, first + index)),
+      })),
     );
+  };
 
-  it('records a later signing under the lock, without moving the revision on', async function () {
-    assert.equal((await raise(200, 'second')).status, 'written');
-
-    assert.deepEqual(await read('installation'), {
-      manifest_signed_at: 200,
-      manifest_signed_digest: 'second',
-      revision: 3,
-    });
-  });
-
-  // Two re-checks may race; the later signing wins whichever writes last.
-  it('never lowers it, nor changes the digest at the same time', async function () {
-    await raise(50, 'older');
-    await raise(100, 'other');
-
-    assert.deepEqual(await read('installation'), {
-      manifest_signed_at: 100,
-      manifest_signed_digest: 'first',
-      revision: 3,
-    });
-  });
-
-  it('reads the newest signing among the app’s installations with the same key', async function () {
+  it('is every key the app’s rows name under the identity key, other than the newest row’s', async function () {
+    await addRows('installation', ['k1', 'k1', 'k2', 'k3']);
+    await addRows('other-key', ['k4', 'k5']);
+    await addRows('other-app', ['k6', 'k7']);
     const repository = new AppInstallationsRepository(knex);
 
-    assert.deepEqual(await repository.lastSignedAtOf(manifest.id, 'identity-thumbprint'), {
-      signedAt: 300,
-      signedDigest: 'third',
-    });
-    assert.equal(await repository.lastSignedAtOf(manifest.id, 'unknown'), undefined);
-    assert.equal(
-      await repository.lastSignedAtOf('com.example.other', 'identity-thumbprint'),
-      undefined,
+    assert.deepEqual(
+      await repository.retiredBackendKeysOf(manifest.id, 'identity'),
+      new Set(['k1', 'k2']),
     );
+    assert.deepEqual(await repository.retiredBackendKeysOf(manifest.id, 'missing'), new Set());
+  });
+
+  // Otherwise uninstalling and installing again would bring a replaced key back.
+  it('counts the rows of ended installations', async function () {
+    await addRows('ended', ['k1', 'k2']);
+    await addRows('installation', ['k2']);
+
+    assert.deepEqual(
+      await new AppInstallationsRepository(knex).retiredBackendKeysOf(manifest.id, 'identity'),
+      new Set(['k1']),
+    );
+  });
+
+  // A re-check that changes nothing adds no row, but every update and approval does.
+  it('reads each retired key once, however long the history', async function () {
+    await addRows('installation', ['k1', 'k1', 'k1', 'k2', 'k2', 'k3', 'k3']);
+    const returned: number[] = [];
+    knex.on('query-response', (rows: unknown[]) => returned.push(rows.length));
+
+    await new AppInstallationsRepository(knex).retiredBackendKeysOf(manifest.id, 'identity');
+
+    assert.deepEqual(returned, [2]);
   });
 });

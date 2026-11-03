@@ -28,16 +28,9 @@ export async function generateTestAppKeys(): Promise<TestAppKeys> {
   return { identity: await generateTestKey(), backend: await generateTestKey() };
 }
 
-/**
- * Signs a manifest with an identity key, as an app's tooling would, as of `issuedAt` or
- * now.
- */
-export function signTestManifest(
-  manifest: unknown,
-  identity: TestKey,
-  options: { issuedAt?: Date } = {},
-): Promise<SignedManifest> {
-  return signManifest(manifest, identity.privateKey, options);
+/** Signs a manifest with an identity key, as an app's tooling would. */
+export function signTestManifest(manifest: unknown, identity: TestKey): Promise<SignedManifest> {
+  return signManifest(manifest, identity.privateKey);
 }
 
 /**

@@ -62,14 +62,13 @@ for the app signed with any other key is refused, so changing keys means
 uninstalling the app and installing it again.
 _Avoid_: trusted key, saved key
 
-**Signed at**:
-When the newest manifest an installation has verified was signed, from its
-signed manifest's `iat`, kept with that manifest's digest. A manifest signed
-earlier is outdated and refused, and so is a different one signed at the same
-second, so a backend key the app has replaced can't come back with an older
-manifest. Rolling back means signing the older manifest again. Recording a newer
-one doesn't change the revision.
-_Avoid_: version, retired key
+**Retired backend key**:
+A backend key that a verified manifest for the app, signed with the same
+identity key, has replaced with a newer one, on any installation of the app,
+uninstalled ones included. A manifest naming a retired key is refused, so the
+app can never go back to it, even by being uninstalled and installed again. A
+rollback that keeps the backend key isn't affected.
+_Avoid_: revoked key, old key
 
 **Revision**:
 The installation's change counter. Every change to the installation increments

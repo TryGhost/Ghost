@@ -32,10 +32,7 @@ const ManifestContentRow = DbAppInstallationManifest.pick({ id: true, manifest: 
 
 const DigestAndIconRow = DbAppInstallationManifest.pick({ digest: true, icon_data_url: true });
 
-const SignedAtRow = DbAppInstallation.pick({
-  manifest_signed_at: true,
-  manifest_signed_digest: true,
-});
+const BackendKeyRow = DbAppInstallationManifest.pick({ backend_key_thumbprint: true });
 
 const HistoryActionRow = z
   .object({
@@ -110,23 +107,12 @@ class LockedInstallation {
       manifest_url: loaded.manifestUrl,
       manifest: loaded.serialised,
       digest: loaded.digest,
+      backend_key_thumbprint: loaded.backendKeyThumbprint,
       source,
       requires_approval: requiresApproval,
       created_at: toDatabaseDate(new Date()),
     });
     return id;
-  }
-
-  /**
-   * Records that the installation has seen a verified manifest signed at `loaded.issuedAt`,
-   * unless it has seen a later one. It doesn't move the revision on: nothing a session runs
-   * changes, so open sessions carry on.
-   */
-  async raiseSignedAt(loaded: LoadedManifest): Promise<void> {
-    await this.trx(INSTALLATIONS)
-      .where({ id: this.id })
-      .where('manifest_signed_at', '<', loaded.issuedAt)
-      .update({ manifest_signed_at: loaded.issuedAt, manifest_signed_digest: loaded.digest });
   }
 
   /**
@@ -217,26 +203,29 @@ export class AppInstallationsRepository {
   }
 
   /**
-   * When the newest manifest any ended installation of the app was signed, among those
-   * signed with this identity key, and that manifest's digest. Installing the app again
-   * starts from there, so uninstalling doesn't let an older manifest back in.
+   * The backend keys replaced for an app signed with this identity key: every key named by
+   * a manifest row of any of its installations, ended ones included, other than the newest
+   * row's. Rows are only added for verified manifests, pending ones included, so a key is
+   * retired as soon as a verified manifest names a newer one, and uninstalling and
+   * installing again doesn't bring it back.
    */
-  async lastSignedAtOf(
-    appId: string,
-    identityKeyThumbprint: string,
-  ): Promise<{ signedAt: number; signedDigest: string } | undefined> {
-    const row = await this.knex(INSTALLATIONS)
-      .where({ app_id: appId, identity_key_thumbprint: identityKeyThumbprint })
-      .orderBy('manifest_signed_at', 'desc')
-      .first<z.input<typeof SignedAtRow> | undefined>(
-        'manifest_signed_at',
-        'manifest_signed_digest',
-      );
-    if (!row) {
-      return undefined;
-    }
-    const decoded = z.decode(SignedAtRow, row);
-    return { signedAt: decoded.manifest_signed_at, signedDigest: decoded.manifest_signed_digest };
+  async retiredBackendKeysOf(appId: string, identityKeyThumbprint: string): Promise<Set<string>> {
+    const rows = () =>
+      this.knex(`${MANIFESTS} as manifest`)
+        .join(`${INSTALLATIONS} as installation`, 'installation.id', 'manifest.installation_id')
+        .where({
+          'installation.app_id': appId,
+          'installation.identity_key_thumbprint': identityKeyThumbprint,
+        });
+    const newest = rows()
+      .orderBy('manifest.created_at', 'desc')
+      .orderBy('manifest.id', 'desc')
+      .limit(1)
+      .select('manifest.backend_key_thumbprint');
+    const retired = await rows()
+      .whereNot('manifest.backend_key_thumbprint', newest)
+      .distinct<z.input<typeof BackendKeyRow>[]>('manifest.backend_key_thumbprint');
+    return new Set(retired.map((row) => z.decode(BackendKeyRow, row).backend_key_thumbprint));
   }
 
   /** An installation's manifest rows and staff actions, oldest first. */
@@ -312,8 +301,6 @@ export class AppInstallationsRepository {
       id,
       app_id: manifest.id,
       identity_key_thumbprint: loaded.identityKeyThumbprint,
-      manifest_signed_at: loaded.issuedAt,
-      manifest_signed_digest: loaded.digest,
       status: 'active',
       manifest_id: manifestId,
       pending_manifest_id: null,
@@ -332,8 +319,6 @@ export class AppInstallationsRepository {
             app_id: written.app_id,
             current_app_id: written.app_id,
             identity_key_thumbprint: written.identity_key_thumbprint,
-            manifest_signed_at: written.manifest_signed_at,
-            manifest_signed_digest: written.manifest_signed_digest,
             status: written.status,
             manifest_id: written.manifest_id,
             created_at: now,
@@ -345,6 +330,7 @@ export class AppInstallationsRepository {
             manifest_url: written.manifest_url,
             manifest: loaded.serialised,
             digest: loaded.digest,
+            backend_key_thumbprint: loaded.backendKeyThumbprint,
             source: 'install',
             requires_approval: false,
             created_at: now,

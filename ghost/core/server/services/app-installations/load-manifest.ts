@@ -42,11 +42,8 @@ export interface LoadedManifest {
   digest: string;
   /** The RFC 7638 thumbprint of the identity key the manifest is signed with. */
   identityKeyThumbprint: string;
-  /**
-   * When the manifest was signed, in seconds since the epoch, as its verified protected
-   * header says. The identity check holds it to the newest the installation has seen.
-   */
-  issuedAt: number;
+  /** The RFC 7638 thumbprint of the backend key the manifest names. */
+  backendKeyThumbprint: string;
 }
 
 export type LoadManifest = (manifestUrl: string) => Promise<LoadedManifest>;
@@ -145,7 +142,7 @@ export function createManifestLoader({
       serialised,
       digest: digestOf(serialised),
       identityKeyThumbprint: await thumbprintOf(manifest.identity_key),
-      issuedAt: signed.issuedAt,
+      backendKeyThumbprint: await thumbprintOf(manifest.backend_key),
     };
   };
 }

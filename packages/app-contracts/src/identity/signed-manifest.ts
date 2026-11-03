@@ -21,18 +21,12 @@ const SignedManifestShape = z.strictObject({
   signature: z.string(),
 });
 
-/**
- * `iat` is when the manifest was signed, in seconds since the epoch (a JWT NumericDate). It
- * sits in the header rather than the manifest, so signing the same manifest again keeps its
- * digest, and Ghost refuses one signed before the newest it has seen.
- */
 const ProtectedHeader = z.strictObject({
   alg: z.literal(ALGORITHM),
   typ: z.literal(SIGNED_MANIFEST_TYPE),
-  iat: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
 });
 
-const EXPECTED_HEADER = `{"alg":"${ALGORITHM}","typ":"${SIGNED_MANIFEST_TYPE}","iat":<seconds since the epoch>}`;
+const EXPECTED_HEADER = JSON.stringify({ alg: ALGORITHM, typ: SIGNED_MANIFEST_TYPE });
 
 export type ReadSignedManifestResult =
   | {
@@ -40,8 +34,6 @@ export type ReadSignedManifestResult =
       signed: SignedManifest;
       /** The manifest's exact text, as signed. Nothing in it is verified yet. */
       payload: string;
-      /** When the manifest says it was signed, in seconds since the epoch. Not verified yet. */
-      issuedAt: number;
     }
   | { success: false; error: string };
 
@@ -49,21 +41,15 @@ export type VerifyResult = { success: true } | { success: false; error: string }
 
 /**
  * Signs a manifest with an app's identity key. A string is signed as the exact text it is;
- * anything else is signed as its JSON. `issuedAt` defaults to now; signing an older
- * manifest again with a fresh one is how an app rolls back.
+ * anything else is signed as its JSON.
  */
 export async function signManifest(
   manifest: unknown,
   identityKey: PrivateKey,
-  { issuedAt = new Date() }: { issuedAt?: Date } = {},
 ): Promise<SignedManifest> {
   const text = typeof manifest === 'string' ? manifest : JSON.stringify(manifest);
   const signed = await new FlattenedSign(new TextEncoder().encode(text))
-    .setProtectedHeader({
-      alg: ALGORITHM,
-      typ: SIGNED_MANIFEST_TYPE,
-      iat: Math.floor(issuedAt.getTime() / 1000),
-    })
+    .setProtectedHeader({ alg: ALGORITHM, typ: SIGNED_MANIFEST_TYPE })
     .sign(identityKey);
   return { protected: signed.protected!, payload: signed.payload, signature: signed.signature };
 }
@@ -83,15 +69,14 @@ export function readSignedManifest(body: unknown): ReadSignedManifestResult {
   }
   const signed = shape.data;
 
-  const header = readExactHeader(signed.protected, ProtectedHeader);
-  if (!header) {
+  if (!readExactHeader(signed.protected, ProtectedHeader)) {
     return { success: false, error: `Expected a protected header of ${EXPECTED_HEADER}` };
   }
   const payload = decodeText(signed.payload);
   if (payload === undefined) {
     return { success: false, error: 'Expected a payload of UTF-8 text in base64url' };
   }
-  return { success: true, signed, payload, issuedAt: header.iat };
+  return { success: true, signed, payload };
 }
 
 /**

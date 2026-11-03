@@ -19,7 +19,6 @@ import {
 } from '../../../../utils/app-identity';
 
 const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
-const SIGNED_AT = new Date('2026-10-29T12:00:00Z');
 
 const RULES: ManifestRules = {
   ghostUrls: ['https://site.example.com', 'https://site.example.com/ghost/'],
@@ -80,10 +79,7 @@ const serving =
     { finalUrl, identity }: { finalUrl?: string; identity?: TestAppKeys['identity'] } = {},
   ): App =>
   async (url) =>
-    servingText(
-      await signTestManifest(body, identity ?? keys.identity, { issuedAt: SIGNED_AT }),
-      finalUrl,
-    )(url);
+    servingText(await signTestManifest(body, identity ?? keys.identity), finalUrl)(url);
 
 const failing =
   (failure: AppFetchFailure): App =>
@@ -149,7 +145,7 @@ describe('createManifestLoader', function () {
       ]);
     });
 
-    it('loads a signed manifest, with its identity key’s thumbprint and when it was signed', async function () {
+    it('loads a signed manifest, with the thumbprints of its keys', async function () {
       const { loadManifest } = setup();
 
       const loaded = await loadManifest(MANIFEST_URL);
@@ -160,7 +156,7 @@ describe('createManifestLoader', function () {
       ]);
       assert.deepEqual(JSON.parse(loaded.serialised), loaded.manifest);
       assert.equal(loaded.identityKeyThumbprint, await thumbprintOf(keys.identity.publicJwk));
-      assert.equal(loaded.issuedAt, SIGNED_AT.getTime() / 1000);
+      assert.equal(loaded.backendKeyThumbprint, await thumbprintOf(keys.backend.publicJwk));
     });
 
     // Ghost compares the address it was asked for, which is the one it stores and fetches

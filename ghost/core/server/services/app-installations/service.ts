@@ -253,7 +253,7 @@ export class AppInstallationsService {
       }
       throw error;
     });
-    const stored = await this.store(current, write, loaded);
+    const stored = await this.store(current, write);
     if (stored.status === 'uninstalled') {
       throw uninstalled();
     }
@@ -323,12 +323,17 @@ export class AppInstallationsService {
     );
   }
 
-  /** What the site holds an installation's manifests to: its key, and the newest signing. */
-  private pinnedIdentityOf(installation: Installation): PinnedIdentity {
+  /**
+   * What the site holds manifests signed with an identity key to: that key, and the backend
+   * keys replaced on any installation of the app signed with it.
+   */
+  private async pinnedIdentityOf(
+    appId: string,
+    identityKeyThumbprint: string,
+  ): Promise<PinnedIdentity> {
     return {
-      identityKeyThumbprint: installation.identity_key_thumbprint,
-      signedAt: installation.manifest_signed_at,
-      signedDigest: installation.manifest_signed_digest,
+      identityKeyThumbprint,
+      retiredBackendKeys: await this.repository.retiredBackendKeysOf(appId, identityKeyThumbprint),
     };
   }
 
@@ -346,8 +351,8 @@ export class AppInstallationsService {
   /**
    * Runs the identity check on a manifest a publisher is to review, against `installation`,
    * or else the site's installation of that app, if it has one. Without one, a manifest
-   * signed with the same key as an ended installation is still held to its newest signing,
-   * so uninstalling and installing again can't bring back an older manifest.
+   * signed with the same key as an ended installation still can't name a backend key it
+   * replaced, so uninstalling and installing again can't bring a retired key back.
    */
   private async review(
     loaded: LoadedManifest,
@@ -356,14 +361,10 @@ export class AppInstallationsService {
   ): Promise<CheckedManifest> {
     const current =
       installation ?? (await this.repository.currentInstallationOf(loaded.manifest.id)) ?? null;
-    let pinned: PinnedIdentity | null = current ? this.pinnedIdentityOf(current) : null;
-    if (!current) {
-      const ended = await this.repository.lastSignedAtOf(
-        loaded.manifest.id,
-        loaded.identityKeyThumbprint,
-      );
-      pinned = ended ? { identityKeyThumbprint: loaded.identityKeyThumbprint, ...ended } : null;
-    }
+    const pinned = await this.pinnedIdentityOf(
+      loaded.manifest.id,
+      current?.identity_key_thumbprint ?? loaded.identityKeyThumbprint,
+    );
     const { trustedOrigins } = await this.identity.check(loaded, pinned, started);
     return { loaded, trustedOrigins, installation: current };
   }
@@ -445,17 +446,11 @@ export class AppInstallationsService {
   }
 
   /**
-   * Applies a write planned from `current`, unless the installation changed since, and
-   * records when `loaded`, which passed the identity check, was signed. Returns the newly
-   * approved or pending manifest's ID, or null for `nothing`.
+   * Applies a write planned from `current`, unless the installation changed since. Returns
+   * the newly approved or pending manifest's ID, or null for `nothing`.
    */
-  private store(
-    current: Installation,
-    write: ManifestWrite,
-    loaded: LoadedManifest,
-  ): Promise<WriteOutcome<string | null>> {
+  private store(current: Installation, write: ManifestWrite): Promise<WriteOutcome<string | null>> {
     return this.repository.whileUnchanged(current, async (locked) => {
-      await locked.raiseSignedAt(loaded);
       switch (write.kind) {
         case 'nothing':
           return null;
@@ -516,15 +511,19 @@ export class AppInstallationsService {
 
     let write: ManifestWrite<AddedRow>;
     try {
-      let started: StartedChallenge;
-      ({ loaded, started } = await this.load(before.manifest_url));
+      // The retired keys are read while the manifest loads.
+      const [fetched, pinned] = await Promise.all([
+        this.load(before.manifest_url),
+        this.pinnedIdentityOf(before.app_id, before.identity_key_thumbprint),
+      ]);
+      ({ loaded } = fetched);
       if (loaded.manifest.id !== before.app_id) {
         throw new errors.ValidationError({
           message: `${before.manifest_url} now serves ${loaded.manifest.id}.`,
           code: 'APP_MANIFEST_OTHER_APP',
         });
       }
-      await this.identity.check(loaded, this.pinnedIdentityOf(before), started);
+      await this.identity.check(loaded, pinned, fetched.started);
     } catch (err) {
       // A ValidationError means the app served something that can't be used. Anything else
       // is a fault in Ghost, which fails the session as it is.
@@ -539,7 +538,7 @@ export class AppInstallationsService {
       pending: await this.pendingManifestOf(before),
       loaded,
     });
-    const stored = await this.store(before, write, loaded);
+    const stored = await this.store(before, write);
     if (stored.status === 'uninstalled') {
       throw notInstalled();
     }

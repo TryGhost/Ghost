@@ -22,7 +22,6 @@ import {
 
 const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
 const ORIGIN = 'https://podcast.example.com';
-const NOW = 1_800_000_000;
 
 let keys: TestAppKeys;
 let other: TestKey;
@@ -32,11 +31,7 @@ beforeAll(async function () {
   other = await generateTestKey();
 });
 
-function loaded({
-  manifestUrl = MANIFEST_URL,
-  issuedAt = NOW,
-  digest = 'digest',
-}: { manifestUrl?: string; issuedAt?: number; digest?: string } = {}): LoadedManifest {
+function loaded({ manifestUrl = MANIFEST_URL }: { manifestUrl?: string } = {}): LoadedManifest {
   const manifest = {
     id: 'com.example.podcast',
     name: 'Podcast',
@@ -54,9 +49,9 @@ function loaded({
     manifestUrl,
     manifest,
     serialised: JSON.stringify(manifest),
-    digest,
+    digest: 'digest',
     identityKeyThumbprint: 'identity',
-    issuedAt,
+    backendKeyThumbprint: 'backend',
   };
 }
 
@@ -89,7 +84,6 @@ function setup({
     logging: { warn },
     getTrustConfig: () => trust,
     getAllowLocalhost: () => trust.trustLoopback,
-    now: () => NOW,
   });
   /** Challenges the manifest URL's origin, then checks the loaded manifest. */
   const checkIdentity = (manifest: LoadedManifest, pinned: PinnedIdentity | null) =>
@@ -99,8 +93,7 @@ function setup({
 
 const pinned = (overrides: Partial<PinnedIdentity> = {}): PinnedIdentity => ({
   identityKeyThumbprint: 'identity',
-  signedAt: NOW - 60,
-  signedDigest: 'older',
+  retiredBackendKeys: new Set(),
   ...overrides,
 });
 
@@ -282,7 +275,7 @@ describe('createIdentityChecker', function () {
       assert.equal(trusting.fetchFromApp.mock.calls.length, 0);
     });
 
-    it('skips only the challenge: the pinned key and signing time still apply', async function () {
+    it('skips only the challenge: the pinned key and retired keys still apply', async function () {
       const { checkIdentity } = setup({
         trust: { trustedOrigins: new Set([ORIGIN]), trustLoopback: false },
       });
@@ -290,60 +283,20 @@ describe('createIdentityChecker', function () {
       await assert.rejects(checkIdentity(loaded(), pinned({ identityKeyThumbprint: 'another' })), {
         code: 'APP_IDENTITY_MISMATCH',
       });
-      await assert.rejects(checkIdentity(loaded(), pinned({ signedAt: NOW + 1 })), {
-        code: 'APP_MANIFEST_OUTDATED',
-      });
-    });
-  });
-
-  describe('when the manifest was signed', function () {
-    it('accepts a manifest signed a few minutes ahead of Ghost’s clock', async function () {
-      const { checkIdentity } = setup();
-
-      await checkIdentity(loaded({ issuedAt: NOW + 5 * 60 }), null);
-    });
-
-    // Otherwise one manifest would hold every site to its time.
-    it('refuses one signed further ahead, for an app the site has or not', async function () {
-      const { checkIdentity } = setup();
-
-      for (const pin of [null, pinned()]) {
-        await assert.rejects(checkIdentity(loaded({ issuedAt: NOW + 5 * 60 + 1 }), pin), {
-          errorType: 'ValidationError',
-          code: 'APP_MANIFEST_SIGNED_IN_FUTURE',
-        });
-      }
-    });
-
-    it('accepts a manifest signed after the newest the site has seen, or that same one again', async function () {
-      const { checkIdentity } = setup();
-
-      await checkIdentity(loaded(), pinned());
-      await checkIdentity(loaded({ digest: 'older', issuedAt: NOW - 60 }), pinned());
-    });
-
-    // A replaced backend key would come back with it.
-    it('refuses a manifest signed before the newest the site has seen', async function () {
-      const { checkIdentity, fetchFromApp } = setup();
-
-      await assert.rejects(checkIdentity(loaded({ issuedAt: NOW - 61 }), pinned()), {
-        errorType: 'ValidationError',
-        code: 'APP_MANIFEST_OUTDATED',
-      });
-      // Refused before the answer is read; the challenge went out with the fetch.
-      assert.equal(fetchFromApp.mock.calls.length, 1);
-    });
-
-    it('refuses another manifest signed at the same second as the newest', async function () {
-      const { checkIdentity } = setup();
-
-      await assert.rejects(checkIdentity(loaded({ issuedAt: NOW - 60 }), pinned()), {
-        code: 'APP_MANIFEST_CONFLICT',
-      });
+      await assert.rejects(
+        checkIdentity(loaded(), pinned({ retiredBackendKeys: new Set(['backend']) })),
+        { code: 'APP_BACKEND_KEY_RETIRED' },
+      );
     });
   });
 
   describe('for an app the site has', function () {
+    it('passes a manifest signed with the pinned key, naming a current backend key', async function () {
+      const { checkIdentity } = setup();
+
+      await checkIdentity(loaded(), pinned({ retiredBackendKeys: new Set(['older']) }));
+    });
+
     it('refuses a manifest signed with another identity key, saying nothing more', async function () {
       const { checkIdentity } = setup();
 
@@ -356,6 +309,21 @@ describe('createIdentityChecker', function () {
           return true;
         },
       );
+    });
+
+    // Refused before the answer is read; the challenge went out with the fetch.
+    it('refuses a manifest that names a retired backend key, without reading the answer', async function () {
+      const { checkIdentity, fetchFromApp } = setup();
+
+      await assert.rejects(
+        checkIdentity(loaded(), pinned({ retiredBackendKeys: new Set(['backend']) })),
+        {
+          errorType: 'ValidationError',
+          code: 'APP_BACKEND_KEY_RETIRED',
+          context: 'backend_key has been replaced, and can’t be used again',
+        },
+      );
+      assert.equal(fetchFromApp.mock.calls.length, 1);
     });
   });
 });

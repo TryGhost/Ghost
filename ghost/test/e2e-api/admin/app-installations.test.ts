@@ -24,15 +24,6 @@ const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
 let keys: TestAppKeys;
 
 /**
- * When the app last signed a manifest, in seconds. Each signing is a second later than the
- * one before, as a site refuses one signed earlier than the newest it has seen and two
- * different manifests signed in the same second. Starts in the past so none is in the
- * future.
- */
-let clock = Math.floor(Date.now() / 1000) - 24 * 60 * 60;
-const nextSigning = () => new Date((clock += 1) * 1000);
-
-/**
  * The manifest the app signs. `serve` fills in `manifest_url` with the address it serves it
  * from, unless a test names another.
  */
@@ -94,11 +85,10 @@ describe('App installations Admin API', function () {
   };
   /** The manifest as the app serves it from `url`, signed with its identity key. */
   const signed = (body: Record<string, unknown>, url = MANIFEST_URL) =>
-    signTestManifest({ manifest_url: url, ...body }, keys.identity, { issuedAt: nextSigning() });
+    signTestManifest({ manifest_url: url, ...body }, keys.identity);
   /**
-   * Serves the manifest from `url`, signed with the app's identity key or `identity` as of
-   * the next second or `issuedAt`, and answers challenges on its origin. The manifest names
-   * `url` unless it says otherwise.
+   * Serves the manifest from `url`, signed with the app's identity key or `identity`, and
+   * answers challenges on its origin. The manifest names `url` unless it says otherwise.
    */
   const serve = (
     body: Record<string, unknown>,
@@ -106,18 +96,12 @@ describe('App installations Admin API', function () {
     {
       identity = keys.identity,
       backend = keys.backend,
-      issuedAt,
-    }: {
-      identity?: TestAppKeys['identity'];
-      backend?: TestAppKeys['backend'];
-      issuedAt?: Date;
-    } = {},
+    }: { identity?: TestAppKeys['identity']; backend?: TestAppKeys['backend'] } = {},
   ) => {
     const served: Record<string, unknown> = { manifest_url: url, ...body };
     const { origin, pathname } = new URL(url);
     answerChallenges(origin, backend);
-    // Signed once, when served, so a manifest served again for each request keeps its time.
-    const signing = signTestManifest(served, identity, { issuedAt: issuedAt ?? nextSigning() });
+    const signing = signTestManifest(served, identity);
     return nock(origin)
       .get(pathname)
       .reply(async () => [200, await signing]);
@@ -1492,13 +1476,13 @@ describe('App installations Admin API', function () {
         .body({ app_installations: [{ manifest_url: MANIFEST_URL, digest }] })
         .expectStatus(status);
 
-    it('pins the identity key at install, and records when its manifest was signed', async function () {
+    it('pins the identity key at install, and records each manifest’s backend key', async function () {
       const installation = await install();
 
       const row = await installationRow(installation.id);
       assert.equal(row.identity_key_thumbprint, await thumbprintOf(keys.identity.publicJwk));
-      assert.equal(Number(row.manifest_signed_at), clock);
-      assert.equal(row.manifest_signed_digest, installation.digest);
+      const [stored] = await manifestRows();
+      assert.equal(stored.backend_key_thumbprint, await thumbprintOf(keys.backend.publicJwk));
     });
 
     it('refuses a manifest that is not signed, saying what was expected', async function () {
@@ -1736,9 +1720,8 @@ describe('App installations Admin API', function () {
       });
 
       // Otherwise whoever held the replaced key could serve the old manifest again.
-      it('refuses the manifest from before the rotation, leaving the installation as it was', async function () {
+      it('refuses the replaced key from then on, leaving the installation as it was', async function () {
         const installed = await install();
-        const installedAt = new Date(clock * 1000);
         const replacement = await generateTestAppKeys();
         serve(manifest({ backend_key: replacement.backend.publicJwk }), MANIFEST_URL, {
           backend: replacement.backend,
@@ -1746,37 +1729,19 @@ describe('App installations Admin API', function () {
         await start(installed.id);
         const before = await installationRow(installed.id);
 
-        serve(manifest(), MANIFEST_URL, { issuedAt: installedAt });
+        serve(manifest());
         const { body } = await start(installed.id, 409);
 
-        assert.equal(body.errors[0].code, 'APP_MANIFEST_OUTDATED');
+        assert.equal(body.errors[0].code, 'APP_BACKEND_KEY_RETIRED');
         assert.deepEqual(await installationRow(installed.id), before);
-        serve(manifest(), MANIFEST_URL, { issuedAt: installedAt });
-        assert.equal((await preview(MANIFEST_URL, 422)).code, 'APP_MANIFEST_OUTDATED');
-      });
-
-      it('rolls back to the older manifest once it is signed again', async function () {
-        const installed = await install();
-        const replacement = await generateTestAppKeys();
-        serve(manifest({ backend_key: replacement.backend.publicJwk }), MANIFEST_URL, {
-          backend: replacement.backend,
-        });
-        await start(installed.id);
-
         serve(manifest());
-        const { body } = await start(installed.id);
-
-        assert.deepEqual(
-          body.app_sessions[0].installation.manifest.backend_key,
-          keys.backend.publicJwk,
-        );
+        assert.equal((await preview(MANIFEST_URL, 422)).code, 'APP_BACKEND_KEY_RETIRED');
       });
 
       // Otherwise whoever held the replaced key could resume a suspended app by serving
       // the approved manifest again.
-      it('refuses the approved manifest’s old signing once a pending one is newer', async function () {
+      it('retires a key as soon as a pending manifest names a newer one', async function () {
         const installed = await install();
-        const installedAt = new Date(clock * 1000);
         const replacement = await generateTestAppKeys();
         serve(
           manifest({ name: 'Podcasts', backend_key: replacement.backend.publicJwk }),
@@ -1786,38 +1751,40 @@ describe('App installations Admin API', function () {
         await start(installed.id);
         assert.equal((await installationRow(installed.id)).status, 'suspended');
 
-        serve(manifest(), MANIFEST_URL, { issuedAt: installedAt });
+        serve(manifest());
         const { body } = await start(installed.id, 409);
 
-        assert.equal(body.errors[0].code, 'APP_MANIFEST_OUTDATED');
+        assert.equal(body.errors[0].code, 'APP_BACKEND_KEY_RETIRED');
         assert.equal((await installationRow(installed.id)).status, 'suspended');
       });
 
-      it('still refuses the manifest from before the rotation once the app is installed again', async function () {
+      it('still refuses the replaced key once the app is installed again', async function () {
         const installed = await install();
-        const installedAt = new Date(clock * 1000);
         const replacement = await generateTestAppKeys();
-        serve(manifest({ backend_key: replacement.backend.publicJwk }), MANIFEST_URL, {
-          backend: replacement.backend,
-        });
+        const rotated = manifest({ backend_key: replacement.backend.publicJwk });
+        serve(rotated, MANIFEST_URL, { backend: replacement.backend });
         await start(installed.id);
         await service().uninstall(owner, installed.id);
 
-        serve(manifest(), MANIFEST_URL, { issuedAt: installedAt });
-        assert.equal((await preview(MANIFEST_URL, 422)).code, 'APP_MANIFEST_OUTDATED');
         serve(manifest());
+        assert.equal((await preview(MANIFEST_URL, 422)).code, 'APP_BACKEND_KEY_RETIRED');
+        serve(rotated, MANIFEST_URL, { backend: replacement.backend });
         await preview();
       });
 
-      it('records a manifest signed again without moving the revision on', async function () {
+      // A platform's rollback serves the earlier deployment's signed manifest as it was.
+      it('lets the app roll back to an earlier manifest with the same backend key', async function () {
         const installed = await install();
-
-        serve(manifest());
+        serve(manifest({ description: 'A newer description.' }));
         await start(installed.id);
 
-        const row = await installationRow(installed.id);
-        assert.equal(row.revision, 0);
-        assert.equal(Number(row.manifest_signed_at), clock);
+        serve(manifest());
+        const { body } = await start(installed.id);
+
+        assert.equal(
+          body.app_sessions[0].installation.manifest.description,
+          manifest().description,
+        );
       });
     });
 

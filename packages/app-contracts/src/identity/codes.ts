@@ -12,12 +12,10 @@ export const UNCONFIRMED_APP_CODES = [
   'APP_MANIFEST_URL_MISMATCH',
   /** The signature wasn't made with the identity key the manifest names. */
   'APP_MANIFEST_SIGNATURE_INVALID',
-  /** The manifest was signed before the newest one the site has seen for the app. */
-  'APP_MANIFEST_OUTDATED',
-  /** Another manifest was signed at the same moment as the newest one the site has seen. */
-  'APP_MANIFEST_CONFLICT',
   /** The manifest is signed with another key than the one the app was installed with. */
   'APP_IDENTITY_MISMATCH',
+  /** The manifest names a backend key a newer manifest from the same developer replaced. */
+  'APP_BACKEND_KEY_RETIRED',
   /** The app's origin didn't answer the challenge with the manifest's backend key. */
   'APP_CHALLENGE_FAILED',
 ] as const;

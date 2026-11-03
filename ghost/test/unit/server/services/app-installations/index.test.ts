@@ -75,7 +75,11 @@ describe('App installations composition root', function () {
       join: sandbox.stub().returnsThis(),
       where: sandbox.stub().returnsThis(),
       orderBy: sandbox.stub().returnsThis(),
+      limit: sandbox.stub().returnsThis(),
+      select: sandbox.stub().returnsThis(),
+      whereNot: sandbox.stub().returnsThis(),
       first: sandbox.stub().resolves(undefined),
+      distinct: sandbox.stub().resolves([]),
     };
     query = sandbox.stub().returns(builder);
     readKnex = sandbox.stub().returns(query as unknown as Knex);

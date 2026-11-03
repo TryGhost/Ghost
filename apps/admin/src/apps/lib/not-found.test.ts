@@ -33,7 +33,7 @@ describe('sessionFailureOf', () => {
     expect(isInstallationNotFound(apiError(409, 'APP_MANIFEST_UNREACHABLE'))).toBe(false);
   });
 
-  it.each(['APP_IDENTITY_MISMATCH', 'APP_CHALLENGE_FAILED', 'APP_MANIFEST_OUTDATED'])(
+  it.each(['APP_IDENTITY_MISMATCH', 'APP_CHALLENGE_FAILED', 'APP_BACKEND_KEY_RETIRED'])(
     'says Ghost couldn’t confirm the app for %s',
     (code) => {
       expect(sessionFailureOf(apiError(409, code))).toEqual({ code, unconfirmed: true });

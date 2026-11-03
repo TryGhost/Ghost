@@ -11,20 +11,15 @@ import type { LoadedManifest } from './load-manifest';
 
 const ANSWER_MAX_BYTES = 4 * 1024;
 
-/**
- * How far ahead of Ghost's clock a manifest may say it was signed, for clocks that
- * disagree a little. Any further, and one manifest would hold every site to its time.
- */
-const CLOCK_SKEW_SECONDS = 5 * 60;
-
 /** What the site has to say about an app it already has. */
 export interface PinnedIdentity {
   /** The thumbprint of the identity key the app was installed with. */
   identityKeyThumbprint: string;
-  /** When the newest manifest the installation has seen was signed, in seconds. */
-  signedAt: number;
-  /** That manifest's digest. */
-  signedDigest: string;
+  /**
+   * Thumbprints of the backend keys a newer manifest signed with that identity key replaced,
+   * on any installation of the app.
+   */
+  retiredBackendKeys: ReadonlySet<string>;
 }
 
 export interface IdentityCheckResult {
@@ -71,16 +66,14 @@ export interface IdentityChecker {
   /**
    * Finishes the check once the manifest has loaded and its signature is verified:
    *
-   * 1. It's signed no more than a few minutes ahead of Ghost's clock.
-   * 2. For an app the site has, it's signed with the pinned identity key, no earlier than
-   *    the newest manifest the installation has seen, and not at the same moment as a
-   *    different one.
-   * 3. The app's origin answered the challenge with the manifest's backend key, unless the
+   * 1. For an app the site has, it's signed with the pinned identity key, and doesn't name
+   *    a retired backend key.
+   * 2. The app's origin answered the challenge with the manifest's backend key, unless the
    *    site trusts that origin. A rotated backend key works at once, as the manifest that
    *    names it is the one the answer is checked against.
    *
-   * Every failure is thrown as a ValidationError, those from steps 2 and 3 with one of
-   * `UNCONFIRMED_APP_CODES` unless the origin couldn't be reached.
+   * Every failure is thrown as a ValidationError with one of `UNCONFIRMED_APP_CODES`, unless
+   * the origin couldn't be reached.
    */
   check(
     loaded: LoadedManifest,
@@ -115,53 +108,17 @@ function challengeFailed(origin: string, why: string) {
   });
 }
 
-/** Refuses a manifest whose signing time can't follow what the site has seen. */
-function checkSignedAt(
-  loaded: LoadedManifest,
-  pinned: PinnedIdentity | null,
-  now: number,
-): Error | null {
-  if (loaded.issuedAt > now + CLOCK_SKEW_SECONDS) {
-    return new errors.ValidationError({
-      message: 'The app’s manifest says it was signed in the future.',
-      code: 'APP_MANIFEST_SIGNED_IN_FUTURE',
-      context: `iat is ${new Date(loaded.issuedAt * 1000).toISOString()}; check the clock of whatever signed it`,
-    });
-  }
-  if (!pinned) {
-    return null;
-  }
-  if (loaded.issuedAt < pinned.signedAt) {
-    return new errors.ValidationError({
-      message: 'Ghost couldn’t confirm this is the app’s current version.',
-      code: 'APP_MANIFEST_OUTDATED',
-      context: `It was signed at ${new Date(loaded.issuedAt * 1000).toISOString()}, before the newest one seen, at ${new Date(pinned.signedAt * 1000).toISOString()}. To roll back, sign the older manifest again.`,
-    });
-  }
-  if (loaded.issuedAt === pinned.signedAt && loaded.digest !== pinned.signedDigest) {
-    return new errors.ValidationError({
-      message: 'Ghost couldn’t confirm this is the app’s current version.',
-      code: 'APP_MANIFEST_CONFLICT',
-      context: 'Another manifest was signed at the same second. Sign this one again.',
-    });
-  }
-  return null;
-}
-
 export function createIdentityChecker({
   fetchFromApp,
   logging,
   getTrustConfig,
   getAllowLocalhost,
-  now = () => Math.floor(Date.now() / 1000),
 }: {
   fetchFromApp: FetchFromApp;
   logging: Pick<GhostLogger, 'warn'>;
   getTrustConfig: () => TrustConfig;
   /** Whether a manifest URL on localhost is one Ghost fetches, as the manifest rules say. */
   getAllowLocalhost: () => boolean;
-  /** Ghost's clock, in seconds since the epoch. */
-  now?: () => number;
 }): IdentityChecker {
   function isTrusted(origin: string) {
     const { trustedOrigins, trustLoopback } = getTrustConfig();
@@ -223,9 +180,12 @@ export function createIdentityChecker({
         code: 'APP_IDENTITY_MISMATCH',
       });
     }
-    const signedAt = checkSignedAt(loaded, pinned, now());
-    if (signedAt) {
-      throw signedAt;
+    if (pinned?.retiredBackendKeys.has(loaded.backendKeyThumbprint)) {
+      throw new errors.ValidationError({
+        message: 'Ghost couldn’t confirm the app comes from its developer.',
+        code: 'APP_BACKEND_KEY_RETIRED',
+        context: 'backend_key has been replaced, and can’t be used again',
+      });
     }
 
     const origin = new URL(loaded.manifestUrl).origin;
