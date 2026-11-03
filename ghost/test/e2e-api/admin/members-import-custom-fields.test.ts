@@ -19,15 +19,17 @@ describe('Members import — custom fields', function () {
   let request: { post: (_url: string) => any; get: (_url: string) => any };
 
   // The key is minted server-side from the name, so callers read it off the result.
-  async function createField(name: string, type: string): Promise<string> {
+  async function createField(name: string, type: string, settings?: unknown): Promise<string> {
     const res = await (
       request.post(localUtils.API.getApiQuery('members/metafields/custom/')) as any
     )
       .set('Origin', config.get('url'))
-      .send({ members_metafields: [{ name, type }] })
+      .send({ members_metafields: [{ name, type, settings }] })
       .expect(201);
     return res.body.members_metafields[0].key;
   }
+
+  const TOPICS = { options: ['Film, TV', 'Cooking', 'Travel'], multiple: true };
 
   // Upload a CSV built inline. `mapping` is the header -> target map the mapping step
   // sends; omitted, the importer reads each column under its own name (which is how an
@@ -394,6 +396,65 @@ describe('Members import — custom fields', function () {
     );
 
     assert.equal(await findMember(email), undefined);
+  });
+
+  describe('list fields', function () {
+    it("reads a list's options from one cell, split where the export separates them", async function () {
+      const key = await createField('Topics', 'list', TOPICS);
+
+      const res = await importCSV(
+        [
+          `email,metafields.custom.${key}`,
+          'cf-list-spaced@example.com,"Film, TV | Travel"',
+          'cf-list-typed@example.com,Cooking|Travel',
+        ].join('\n'),
+      );
+      assert.equal(res.body.meta.stats.imported, 2);
+
+      assert.deepEqual((await findMember('cf-list-spaced@example.com')).metafields.custom[key], [
+        'Film, TV',
+        'Travel',
+      ]);
+      assert.deepEqual((await findMember('cf-list-typed@example.com')).metafields.custom[key], [
+        'Cooking',
+        'Travel',
+      ]);
+    });
+
+    it('replaces the options a member held with the ones the file names', async function () {
+      const key = await createField('Topics', 'list', TOPICS);
+      const email = 'cf-list-replaced@example.com';
+      await importCSV(`email,metafields.custom.${key}\n${email},Cooking | Travel\n`);
+
+      const res = await importCSV(`email,metafields.custom.${key}\n${email},Travel\n`);
+      assert.equal(res.body.meta.stats.invalid.length, 0);
+
+      assert.deepEqual((await findMember(email)).metafields.custom[key], ['Travel']);
+    });
+
+    it('fails a row naming an option the field does not offer', async function () {
+      const key = await createField('Topics', 'list', TOPICS);
+      const email = 'cf-list-unknown@example.com';
+
+      const res = await importCSV(`email,metafields.custom.${key}\n${email},Cooking | Gardening\n`);
+      assert.equal(res.body.meta.stats.imported, 0);
+      assert.equal(
+        res.body.meta.stats.invalid[0].error,
+        `metafields.custom.${key}: Choose from the options this field offers.`,
+      );
+      assert.equal(await findMember(email), undefined);
+    });
+
+    it('fails a row naming several options for a field that takes one', async function () {
+      const key = await createField('Topics', 'list', { ...TOPICS, multiple: false });
+      const email = 'cf-list-several@example.com';
+
+      const res = await importCSV(`email,metafields.custom.${key}\n${email},Cooking | Travel\n`);
+      assert.equal(
+        res.body.meta.stats.invalid[0].error,
+        `metafields.custom.${key}: Choose one option.`,
+      );
+    });
   });
 
   // An unrecognised column is dropped, not an error, so the member still imports.

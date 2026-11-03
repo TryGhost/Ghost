@@ -97,26 +97,46 @@ describe('List custom fields', function () {
       assert.deepEqual(field.settings.options, ['Film & TV', 'cooking']);
     });
 
-    for (const [settings, message] of [
-      [undefined, 'Give the list its options.'],
-      [{ options: ['Dog'], multiple: true }, 'Give the list at least 2 options.'],
-      [{ options: ['Dog', 'Dog '], multiple: true }, 'Give each option once.'],
-      [{ options: ['Dog', ''], multiple: true }, 'Enter text for each option.'],
-      [{ options: ['Dog', 'Cat | Mouse'], multiple: true }, "Options can't contain |."],
+    // Each refusal names the setting it is about by its path, down to the option, so a form can
+    // show it beside the input that set it.
+    for (const [settings, message, property] of [
+      [undefined, 'Give the list its options.', 'settings'],
+      [
+        { options: ['Dog'], multiple: true },
+        'Give the list at least 2 options.',
+        'settings.options',
+      ],
+      [{ options: ['Dog', 'Dog '], multiple: true }, 'Give each option once.', 'settings.options'],
+      [
+        { options: ['Dog', ''], multiple: true },
+        'Enter text for each option.',
+        'settings.options.1',
+      ],
+      [
+        { options: ['Dog', 'Cat | Mouse'], multiple: true },
+        "Options can't contain |.",
+        'settings.options.1',
+      ],
       [
         { options: ['Dog', 'x'.repeat(256)], multiple: true },
         'Use 255 characters or fewer for each option.',
+        'settings.options.1',
       ],
       [
         { options: Array.from({ length: 101 }, (_, n) => `Option ${n}`), multiple: true },
         'Give the list 100 options or fewer.',
+        'settings.options',
       ],
-      [{ options: ['Dog', 'Cat'] }, 'Say whether members can pick more than one option.'],
+      [
+        { options: ['Dog', 'Cat'] },
+        'Say whether members can pick more than one option.',
+        'settings.multiple',
+      ],
     ] as const) {
       it(`refuses a list set up with ${JSON.stringify(settings)?.slice(0, 60)}`, async function () {
         const error = await createList(settings, 'Favourite animals', 422);
         assert.equal(error.context, message);
-        assert.match(error.property, /^settings/);
+        assert.equal(error.property, property);
       });
     }
 
@@ -150,6 +170,7 @@ describe('List custom fields', function () {
         .expectStatus(422);
 
       assert.equal(refused.errors[0].context, 'Give the list at least 2 options.');
+      assert.equal(refused.errors[0].property, 'settings.options');
       const { body } = await agent.get(`members/metafields/custom/${field.key}/`).expectStatus(200);
       assert.equal(body.members_metafields[0].name, 'Favourite animals');
       assert.deepEqual(body.members_metafields[0].settings, ANIMALS);

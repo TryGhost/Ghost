@@ -162,6 +162,21 @@ export function optionText(option: string): string {
   return option.trim().normalize('NFC');
 }
 
+/** The answers among `held` that a set field offers, in the order it offers them. */
+export function inOptionOrder(settings: SetSettings, held: readonly unknown[]): string[] {
+  return settings.options.filter((option) => held.includes(option));
+}
+
+/**
+ * What a form editing a set field's answers starts from: only the options the field offers now,
+ * since one it no longer offers can't be picked again. A field that has gone from several answers
+ * to one starts unanswered while the member holds several, even if only one of them is still
+ * offered, so the next answer replaces them rather than one being shown as their only answer.
+ */
+export function editableAnswers(settings: SetSettings, held: readonly unknown[]): string[] {
+  return !settings.multiple && held.length > 1 ? [] : inOptionOrder(settings, held);
+}
+
 /**
  * What a field of each shape is set up with beyond its name: a set's options, and nothing for any
  * other shape.

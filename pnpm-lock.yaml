@@ -249,8 +249,8 @@ catalogs:
       specifier: 1100.3.8
       version: 1100.3.8
     '@pnpm/workspace.workspace-manifest-reader':
-      specifier: 1100.3.1
-      version: 1100.3.1
+      specifier: 1100.3.2
+      version: 1100.3.2
     '@quilted/threads':
       specifier: 4.1.0
       version: 4.1.0
@@ -570,11 +570,11 @@ catalogs:
       specifier: 10.6.5
       version: 10.6.5
     eslint-plugin-tailwindcss:
-      specifier: 4.2.0
-      version: 4.2.0
+      specifier: 4.4.0
+      version: 4.4.0
     execa:
-      specifier: 10.0.1
-      version: 10.0.1
+      specifier: 10.2.1
+      version: 10.2.1
     fastq:
       specifier: ^1.20.1
       version: 1.20.3
@@ -4455,7 +4455,7 @@ importers:
         version: 10.6.5(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
-        version: 4.2.0(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(tailwindcss@4.3.3)
+        version: 4.4.0(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(tailwindcss@4.3.3)
       globals:
         specifier: 'catalog:'
         version: 17.7.0
@@ -4599,7 +4599,7 @@ importers:
         version: 1100.3.8(@pnpm/logger@1100.0.0)
       '@pnpm/workspace.workspace-manifest-reader':
         specifier: 'catalog:'
-        version: 1100.3.1
+        version: 1100.3.2
       '@sentry/bundler-plugin-core':
         specifier: 'catalog:'
         version: 5.3.0(supports-color@10.2.2)
@@ -4608,7 +4608,7 @@ importers:
         version: 10.0.3
       execa:
         specifier: 'catalog:'
-        version: 10.0.1
+        version: 10.2.1
       semver:
         specifier: 'catalog:'
         version: 7.8.5
@@ -7227,8 +7227,8 @@ packages:
     resolution: {integrity: sha512-lEvwougkILMozWY/7wN1/uyxrOZJfOHSzmeaFBKa69EhzjoqM0Qn9bE+PrFiMr5xUEc1sln3en6bNh4kQJdfSw==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/workspace.workspace-manifest-reader@1100.3.1':
-    resolution: {integrity: sha512-FggIroCEbuVuJUdjb4gJspTYF/19sHrEB6dBTa2PHl3ajVWfwTK69R1zmA3OOZ/hVuQ0TvPvCFfqOuN06cM6YA==}
+  '@pnpm/workspace.workspace-manifest-reader@1100.3.2':
+    resolution: {integrity: sha512-wy2R4Ow7Gs9SVYMDpPXDNH1N4T523zR9yKVyWjRPrIPQnTvjqJ/VL6jrpTe3mG9wgdKCtOOjTdPvir4frs+FOg==}
     engines: {node: '>=22.13'}
 
   '@pnpm/yaml.document-sync@1100.0.2':
@@ -11571,8 +11571,8 @@ packages:
     peerDependencies:
       tailwindcss: ^3.4.0 || ^4.0.0
 
-  eslint-plugin-tailwindcss@4.2.0:
-    resolution: {integrity: sha512-TSygSjEL54Iks7K29FjvM9Lp03cpsYtbh3LJHnj/84FxCOYfLFuvQ+GioHOxgq19WGN5NbHPuvFDz/igIOEtbg==}
+  eslint-plugin-tailwindcss@4.4.0:
+    resolution: {integrity: sha512-cPyEIeBTVbPU30oQTm7pOqOYurb5vtGaGhRCajYsSUwpUS9fvswB13dOLDUjGJJ+Rt8ylXf4L0hrhLA7Hf7WTQ==}
     engines: {node: '>=20.19.0'}
     peerDependencies:
       eslint: ^9.0.0 || ^10.0.0
@@ -11697,8 +11697,8 @@ packages:
     resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
     engines: {node: '>=0.8.x'}
 
-  execa@10.0.1:
-    resolution: {integrity: sha512-ge98qjkRK4IB7tL7Ju/6qmm5LHoH1eEMt5FNZrz3f4UIYhF28lggX20z3FaX1sgc67msLEn0N0BscOs29iuwyw==}
+  execa@10.2.1:
+    resolution: {integrity: sha512-/Bofl3ZBh2Q4/PG0W63qFzP5vDAypi8Zc90UWTBzaDNIYiX7apPOd0N6L8hG8CojUdq4V51adu8BObP+iVsSTw==}
     engines: {node: '>=22'}
 
   expand-template@2.0.3:
@@ -14874,8 +14874,8 @@ packages:
     resolution: {integrity: sha512-66hKPCr+72mlfiSjlEB1+45IjXSqvVAIy6mocupoww4tBFE9R9IhwwUGoI4G++Tc9Aq+2rxOt0RFU6gPcrte0A==}
     engines: {node: '>= 0.8'}
 
-  pretty-ms@9.3.0:
-    resolution: {integrity: sha512-gjVS5hOP+M3wMm5nmNOucbIrqudzs9v/57bWRHQWLYklXqoXKrVfYW2W9+glfGsqtPgpiz5WwyEEB+ksXIx3gQ==}
+  pretty-ms@9.3.1:
+    resolution: {integrity: sha512-HzMy3Geq23nVALD/M2LliU+F+M+gVNsvkQWWqeBZ8HDiCgzo6YPJ/Omrmtq24EFrIsk0a3EkQGEd7bDOo+IhGA==}
     engines: {node: '>=18'}
 
   prettyjson@1.2.5:
@@ -19483,7 +19483,7 @@ snapshots:
 
   '@pnpm/workspace.spec-parser@1100.0.1': {}
 
-  '@pnpm/workspace.workspace-manifest-reader@1100.3.1':
+  '@pnpm/workspace.workspace-manifest-reader@1100.3.2':
     dependencies:
       '@pnpm/constants': 1102.0.1
       '@pnpm/error': 1100.2.2
@@ -24232,7 +24232,7 @@ snapshots:
       tailwind-api-utils: 1.0.3(tailwindcss@3.4.19(tsx@4.23.15)(yaml@2.9.0))
       tailwindcss: 3.4.19(tsx@4.23.15)(yaml@2.9.0)
 
-  eslint-plugin-tailwindcss@4.2.0(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(tailwindcss@4.3.3):
+  eslint-plugin-tailwindcss@4.4.0(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(tailwindcss@4.3.3):
     dependencies:
       '@typescript-eslint/utils': 8.71.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
       eslint: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
@@ -24381,7 +24381,7 @@ snapshots:
 
   events@3.3.0: {}
 
-  execa@10.0.1:
+  execa@10.2.1:
     dependencies:
       '@sindresorhus/merge-streams': 4.0.0
       figures: 6.1.0
@@ -24390,7 +24390,7 @@ snapshots:
       is-plain-obj: 4.1.0
       is-stream: 4.0.1
       npm-run-path: 6.0.0
-      pretty-ms: 9.3.0
+      pretty-ms: 9.3.1
       signal-exit: 4.1.0
       strip-final-newline: 4.0.0
       which-command: 0.1.0
@@ -28111,7 +28111,7 @@ snapshots:
 
   pretty-hrtime@1.0.3: {}
 
-  pretty-ms@9.3.0:
+  pretty-ms@9.3.1:
     dependencies:
       parse-ms: 4.0.0
 

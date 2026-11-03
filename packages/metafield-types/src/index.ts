@@ -33,6 +33,8 @@ export {
   TEXT_SIZES,
   choice,
   country,
+  editableAnswers,
+  inOptionOrder,
   isFieldType,
   isRecordValue,
   matchField,
@@ -237,6 +239,16 @@ export const WRITTEN_SETTINGS = {
 
 /** Each shape's settings as they are read back, checked for their shape alone. */
 export const READ_SETTINGS = { scalar: NO_SETTINGS, record: NO_SETTINGS, set: SetSettingsShape };
+
+/**
+ * Where a refusal points within what was sent: the path to the refused value, with its parts and
+ * positions joined by dots, such as `settings.options.2` for a field's third option. Ghost names
+ * a refusal's `property` this way, and a form files the problems it finds under the same keys, so
+ * each lands beside the input that set the value.
+ */
+export function refusedProperty(path: readonly PropertyKey[]): string {
+  return path.map(String).join('.');
+}
 
 /**
  * A field's type and settings as a write states them, checked together and against the rules:
