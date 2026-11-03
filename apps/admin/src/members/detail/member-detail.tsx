@@ -568,7 +568,10 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                       aria-labelledby="member-subscriptions-heading"
                       className="flex flex-col gap-3"
                     >
-                      <h3 className="text-base font-semibold" id="member-subscriptions-heading">
+                      <h3
+                        className="section-heading text-base font-semibold"
+                        id="member-subscriptions-heading"
+                      >
                         Subscriptions
                       </h3>
                       <MemberSubscriptionsSection canAddComp={canAddComp} member={member} />

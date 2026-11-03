@@ -128,7 +128,7 @@ const ActivityRow: React.FC<{ event: ParsedMemberEvent }> = ({ event }) => {
         <EventIcon iconName={event.icon} />
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <div className="text-sm leading-snug">
+        <div className="text-sm leading-snug in-data-[admin7-design=true]:text-md">
           <span data-testid="member-activity-action">{capitalize(event.action)}</span>
           {event.info && <span className="ml-1 text-muted-foreground">({event.info})</span>}
           {hasObjectLink && (
@@ -163,9 +163,13 @@ const ActivityRow: React.FC<{ event: ParsedMemberEvent }> = ({ event }) => {
           )}
         </div>
         {event.description && (
-          <div className="truncate text-xs text-muted-foreground">{event.description}</div>
+          <div className="truncate text-xs text-muted-foreground in-data-[admin7-design=true]:text-base">
+            {event.description}
+          </div>
         )}
-        <div className="text-xs text-muted-foreground">{relativeTime}</div>
+        <div className="text-xs text-muted-foreground in-data-[admin7-design=true]:text-base">
+          {relativeTime}
+        </div>
       </div>
     </div>
   );
@@ -217,7 +221,7 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
   if (!memberId) {
     return (
       <section aria-labelledby="member-activity-heading" className="flex flex-col gap-3">
-        <h3 className="text-base font-semibold" id="member-activity-heading">
+        <h3 className="section-heading text-base font-semibold" id="member-activity-heading">
           Activity
         </h3>
         <Card>
@@ -238,7 +242,7 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
 
   return (
     <section aria-labelledby="member-activity-heading" className="flex flex-col gap-3">
-      <h3 className="text-base font-semibold" id="member-activity-heading">
+      <h3 className="section-heading text-base font-semibold" id="member-activity-heading">
         Activity
       </h3>
       <Card>

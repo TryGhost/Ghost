@@ -104,7 +104,9 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
           </div>
 
           <div className="mt-4 flex flex-col gap-3 text-sm">
-            <h3 className="border-b border-border pb-2 text-base font-semibold">Signup info</h3>
+            <h3 className="section-heading border-b border-border pb-2 text-base font-semibold">
+              Signup info
+            </h3>
             <MetaRow icon={<LucideIcon.UserPlus size={16} />}>
               Created — <span className="text-foreground">{formatDate(member.created_at)}</span>
             </MetaRow>
@@ -152,39 +154,41 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
               className="mt-4 flex flex-col gap-3 text-sm"
               data-testid="member-detail-engagement"
             >
-              <h4 className="border-b border-border pb-2 text-base font-semibold">Engagement</h4>
+              <h4 className="section-heading border-b border-border pb-2 text-base font-semibold">
+                Engagement
+              </h4>
               {/* A missing `email_count` counts as no newsletters received. */}
               {(member.email_count ?? 0) === 0 ? (
                 // Falls back to a generic "this member" when no name is known.
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground in-data-[admin7-design=true]:text-base in-data-[admin7-design=true]:italic">
                   {name
                     ? `We’ll show ${getFirstName(name)}’s email stats here once they receive their first newsletter.`
                     : 'We’ll show this member’s email stats here once they receive their first newsletter.'}
                 </p>
               ) : (
                 <div className="flex flex-col gap-4">
-                  <div className="flex flex-col gap-0.5">
-                    <p className="text-muted-foreground">Emails received</p>
-                    <p className="text-2xl font-semibold">
+                  <div className="flex flex-col gap-0.5 in-data-[admin7-design=true]:gap-2">
+                    <p className="stat-label text-muted-foreground">Emails received</p>
+                    <p className="stat-value text-2xl font-semibold">
                       {formatNumber(member.email_count ?? 0)}
                     </p>
                   </div>
-                  <div className="flex flex-col gap-0.5">
-                    <p className="text-muted-foreground">Emails opened</p>
-                    <p className="text-2xl font-semibold">
+                  <div className="flex flex-col gap-0.5 in-data-[admin7-design=true]:gap-2">
+                    <p className="stat-label text-muted-foreground">Emails opened</p>
+                    <p className="stat-value text-2xl font-semibold">
                       {formatNumber(member.email_opened_count ?? 0)}
                     </p>
                   </div>
-                  <div className="flex flex-col gap-0.5">
-                    <p className="text-muted-foreground">Average open rate</p>
+                  <div className="flex flex-col gap-0.5 in-data-[admin7-design=true]:gap-2">
+                    <p className="stat-label text-muted-foreground">Average open rate</p>
                     {member.email_open_rate === null || member.email_open_rate === undefined ? (
                       // Server sends `null` until the member has
                       // been sent 5 newsletters.
-                      <p className="text-muted-foreground">
+                      <p className="text-muted-foreground in-data-[admin7-design=true]:text-base in-data-[admin7-design=true]:italic">
                         This metric is calculated once a member has received 5 newsletters.
                       </p>
                     ) : (
-                      <p className="text-2xl font-semibold">
+                      <p className="stat-value text-2xl font-semibold">
                         {formatNumber(member.email_open_rate)}
                         <span className="text-base font-normal text-muted-foreground">%</span>
                       </p>

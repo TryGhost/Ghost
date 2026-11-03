@@ -81,7 +81,7 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
       className="flex flex-col gap-3"
       data-testid="member-newsletters-field"
     >
-      <h3 className="text-base font-semibold" id="member-newsletters-heading">
+      <h3 className="section-heading text-base font-semibold" id="member-newsletters-heading">
         Newsletters
       </h3>
       <Card>
@@ -130,9 +130,11 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
                       className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
                     >
                       <div className="min-w-0">
-                        <div className="font-medium">{newsletter.name}</div>
+                        <div className="font-medium in-data-[admin7-design=true]:text-md">
+                          {newsletter.name}
+                        </div>
                         {newsletter.description && (
-                          <p className="truncate text-sm text-muted-foreground">
+                          <p className="truncate text-sm text-muted-foreground in-data-[admin7-design=true]:text-base">
                             {newsletter.description}
                           </p>
                         )}
@@ -150,7 +152,7 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
                   );
                 })}
               </ul>
-              <p className="mt-4 text-sm text-muted-foreground">
+              <p className="mt-4 text-sm text-muted-foreground in-data-[admin7-design=true]:text-base in-data-[admin7-design=true]:italic">
                 If disabled, member will <em>not</em> receive newsletter emails
               </p>
             </>

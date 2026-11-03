@@ -120,7 +120,10 @@ const SubscriptionRow: React.FC<{
         <PriceBlock kind={kind} sub={sub} />
         <div className="min-w-0 flex-1 pt-2">
           <div className="flex items-center gap-2">
-            <span className="min-w-0 truncate font-semibold" data-testid="member-subscription-tier">
+            <span
+              className="min-w-0 truncate font-semibold in-data-[admin7-design=true]:text-md"
+              data-testid="member-subscription-tier"
+            >
               {sub.tier?.name ?? 'Subscription'}
             </span>
             <Badge

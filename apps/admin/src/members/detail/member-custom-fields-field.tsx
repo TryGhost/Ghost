@@ -404,7 +404,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
       className="flex flex-col gap-3"
       data-testid="member-custom-fields-field"
     >
-      <h3 className="text-base font-semibold" id="member-custom-fields-heading">
+      <h3 className="section-heading text-base font-semibold" id="member-custom-fields-heading">
         Custom fields
       </h3>
       <Card>
@@ -451,13 +451,19 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
                     }}
                   >
                     <span className="min-w-0">
-                      <span className="block text-sm text-muted-foreground">{field.name}</span>
+                      <span className="block text-sm text-muted-foreground in-data-[admin7-design=true]:text-base">
+                        {field.name}
+                      </span>
                       {/* select-text: button text is unselectable by default,
                                                 and values (addresses especially) get copied. */}
                       {display ? (
-                        <span className="block break-words select-text">{display}</span>
+                        <span className="block break-words select-text in-data-[admin7-design=true]:text-md">
+                          {display}
+                        </span>
                       ) : (
-                        <span className="block text-muted-foreground">–</span>
+                        <span className="block text-muted-foreground in-data-[admin7-design=true]:text-md">
+                          –
+                        </span>
                       )}
                     </span>
                     <LucideIcon.Pen
