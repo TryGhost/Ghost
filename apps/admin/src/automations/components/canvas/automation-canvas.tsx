@@ -171,7 +171,6 @@ type BuildGraphParams = {
   connectIn: boolean;
   automation: AutomationDetail;
   savedTriggerTierIds: readonly string[];
-  tierSelection?: TriggerData['tierSelection'];
   triggerType: TriggerData['triggerType'];
   tierQuery: TriggerData['tierQuery'];
   onChange: (next: AutomationDetail) => void;
@@ -194,7 +193,6 @@ const buildGraph = ({
   connectIn,
   automation,
   savedTriggerTierIds,
-  tierSelection,
   triggerType,
   tierQuery,
   onChange,
@@ -249,7 +247,6 @@ const buildGraph = ({
           rules: automation.trigger_rules,
           savedTierIds: savedTriggerTierIds,
           onUpdate: (trigger) => onChange({ ...automation, ...trigger }),
-          tierSelection,
         },
         errorMessage: actionErrors[TRIGGER_CANVAS_ID],
         onInteract: () => onInteract(TRIGGER_CANVAS_ID),
@@ -401,7 +398,6 @@ type AutomationCanvasProps = {
   onWaitValidityChange: (stepId: string, valid: boolean) => void;
   automation?: AutomationDetail;
   savedTriggerTierIds?: readonly string[];
-  tierSelection?: TriggerData['tierSelection'];
   triggerType?: TriggerData['triggerType'];
   isEmailNavigationBlocked?: boolean;
   isLoading: boolean;
@@ -430,7 +426,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   initialTriggerTop,
   actionErrors = {},
   savedTriggerTierIds = [],
-  tierSelection,
   triggerType,
   onWaitValidityChange,
   automation,
@@ -472,7 +467,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const [newStepId, setNewStepId] = useState<string | null>(null);
   const [emailModalMode, setEmailModalMode] = useState<EmailModalMode>('edit');
   const [deleteConfirmationActionId, setDeleteConfirmationActionId] = useState<string | null>(null);
-  const tiersEnabled = triggerType === 'paid_subscription_started';
+  const tiersEnabled =
+    triggerType === 'paid_subscription_started' || triggerType === 'paid_subscription_changed';
   const {
     data: tierData,
     isLoading: tiersLoading,
@@ -714,7 +710,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       connectIn: connecting,
       automation,
       savedTriggerTierIds,
-      tierSelection,
       triggerType,
       tierQuery,
       onChange,
@@ -735,7 +730,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     actionErrors,
     connecting,
     savedTriggerTierIds,
-    tierSelection,
     triggerType,
     tierQuery,
     onChange,

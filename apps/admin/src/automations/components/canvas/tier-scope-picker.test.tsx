@@ -115,6 +115,20 @@ describe('TierScopePicker', () => {
     expect(value()).toEqual(['gold']);
   });
 
+  it('retains missing selections when adding a tier without offering them as options', () => {
+    render(<Picker initial={['missing']} />);
+    expect(screen.getByRole('button', { name: 'Remove Unavailable tier' })).toBeVisible();
+    open();
+    expect(screen.queryByRole('option', { name: 'Unavailable tier' })).not.toBeInTheDocument();
+
+    fireEvent.click(option('Gold'));
+    expect(value()).toEqual(['gold', 'missing']);
+    expect(screen.getByRole('button', { name: 'Remove Unavailable tier' })).toBeVisible();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Unavailable tier' }));
+    expect(value()).toEqual(['gold']);
+  });
+
   it('clears the last choice on Backspace with nothing typed', () => {
     render(<Picker initial={['bronze', 'gold']} />);
     fireEvent.keyDown(field(), { key: 'Backspace' });
