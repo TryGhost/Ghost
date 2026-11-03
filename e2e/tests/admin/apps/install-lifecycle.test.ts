@@ -4,12 +4,13 @@ import { Request } from '@playwright/test';
 import { expect, installApp, signInAsStaff, test, withIsolatedPage } from '@/helpers/playwright';
 
 /** The app's call that's still running when its session ends, told apart from Admin's own requests. */
-const HELD_CALL_PATH = '/posts/?filter=slug:e2e-held-call';
+const HELD_CALL_FILTER = 'slug:e2e-held-call';
+const HELD_CALL_PATH = `/posts/?filter=${HELD_CALL_FILTER}`;
 const isHeldCall = (request: Request | URL) => {
   const url = request instanceof URL ? request : new URL(request.url());
   return (
     url.pathname === '/ghost/api/admin/posts/' &&
-    url.searchParams.get('filter') === 'slug:e2e-held-call'
+    url.searchParams.get('filter') === HELD_CALL_FILTER
   );
 };
 

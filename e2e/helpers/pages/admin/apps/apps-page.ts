@@ -18,7 +18,7 @@ export class AppsPage extends AdminPage {
     this.rows = page.getByTestId(sel.appsListRow);
     this.installDialog = new AppInstallDialog(page);
     this.notAllowedDialog = page.getByTestId(sel.appInstallNotAllowedDialog);
-    this.notFound = page.getByRole('heading', { name: 'Page not found' });
+    this.notFound = page.getByRole('heading', { name: sel.notFoundHeading });
   }
 
   async gotoInstallLink(manifestUrl: string): Promise<void> {

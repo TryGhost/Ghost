@@ -24,6 +24,11 @@ export class AppDetailsPage extends AdminPage {
     await this.goto(`/ghost/#/apps/details/${installationId}`);
   }
 
+  /** A history entry's title, with who made the change if anyone did, but not its date. */
+  historyTitle(index: number): Locator {
+    return this.historyEntries.nth(index).locator(':scope > span').first();
+  }
+
   /** The text shown under the app's name. */
   description(text: string): Locator {
     return this.details.getByText(text, { exact: true });

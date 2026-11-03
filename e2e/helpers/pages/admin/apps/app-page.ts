@@ -64,8 +64,8 @@ export class AppPage extends AdminPage {
   }
 
   /** Has the app's page call the Admin API through the bridge. */
-  async bridgeFetch(request: BridgeFetchRequest): Promise<BridgeFetchResult> {
-    const frame = await this.appFrame();
+  async bridgeFetch(request: BridgeFetchRequest, frame?: Frame): Promise<BridgeFetchResult> {
+    frame ??= await this.appFrame();
     return frame.evaluate(
       (sent) => (window as unknown as FixtureAppWindow).__fixtureApp.fetch(sent),
       request,
@@ -76,7 +76,8 @@ export class AppPage extends AdminPage {
    * Has the app's page start a bridge call without waiting for it, for a call that's still running
    * when its session ends.
    */
-  async startBridgeFetch(request: BridgeFetchRequest, frame: Frame): Promise<void> {
+  async startBridgeFetch(request: BridgeFetchRequest, frame?: Frame): Promise<void> {
+    frame ??= await this.appFrame();
     await frame.evaluate((sent) => {
       void (window as unknown as FixtureAppWindow).__fixtureApp.fetch(sent);
     }, request);

@@ -45,6 +45,8 @@ export const uninstallButton = 'Uninstall';
 export const reviewChangesLink = 'Review changes';
 export const openLink = 'Open';
 export const detailsMenuItem = 'Details';
+// Admin's shared not-found page, which Apps routes show while the Labs flag is off.
+export const notFoundHeading = 'Page not found';
 
 // text fragments
 export const emptyStateText = 'No apps yet';

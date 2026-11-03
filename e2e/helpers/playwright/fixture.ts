@@ -604,6 +604,8 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
       throw new Error('Set test.use({fixtureAppEnabled: true}) so Ghost can fetch the fixture app');
     }
 
+    // Playwright's test ID already differs for each --repeat-each run; a retry keeps it, so the
+    // retry count is added for a retry that reuses the per-file environment.
     const app = new FixtureApp({ appId: `org.ghost.e2e.app-${testInfo.testId}-${testInfo.retry}` });
     await app.start();
     debug('Fixture app started on port', app.port);

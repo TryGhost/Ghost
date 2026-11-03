@@ -27,7 +27,7 @@ test.describe('Ghost Admin - App manifest updates', () => {
     await expect(appPage.frame).toBeVisible();
     await detailsPage.gotoDetails(installationId);
     await expect(detailsPage.description('A newer description.')).toBeVisible();
-    await expect(detailsPage.historyEntries.first()).toHaveText(/^Updated(?!,)/);
+    await expect(detailsPage.historyTitle(0)).toHaveText('Updated');
   });
 
   test('suspends the app for a change that needs approval, and approving resumes it on the new manifest', async ({
@@ -70,7 +70,7 @@ test.describe('Ghost Admin - App manifest updates', () => {
     await expect(appPage.frame).toBeVisible();
     await expect(appPage.appPagePath).toHaveText('/app.html');
     await detailsPage.gotoDetails(installationId);
-    await expect(detailsPage.historyEntries.first()).toHaveText(/^Resumed, changes withdrawn/);
+    await expect(detailsPage.historyTitle(0)).toHaveText('Resumed, changes withdrawn');
   });
 
   test('refuses an update that changes the app’s ID and keeps the last valid manifest', async ({

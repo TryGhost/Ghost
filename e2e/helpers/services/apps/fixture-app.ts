@@ -4,6 +4,12 @@ import { FakeServer } from '@/helpers/services/fake-server';
 /** The test ID of the element where the fixture app's page shows the path it was served from. */
 export const FIXTURE_APP_PATH_TEST_ID = 'fixture-app-path';
 
+/**
+ * How long the page waits for Admin to start it and answer a bridge call before it gives up, so a
+ * call Admin drops fails with a clear error well before the test times out.
+ */
+const BRIDGE_TIMEOUT_MS = 10_000;
+
 /** The manifest the fixture app serves. Its fields follow `@tryghost/app-contracts`' manifest. */
 export interface FixtureAppManifest {
   id: string;
@@ -60,16 +66,23 @@ const PAGE_SCRIPT = `
     port.postMessage([1, id, name, args]);
   });
 
+  const timedOut = () => new Promise((resolve) => window.setTimeout(
+    () => resolve({ error: 'fixture: Admin did not answer the call within ${BRIDGE_TIMEOUT_MS}ms' }),
+    ${BRIDGE_TIMEOUT_MS},
+  ));
+
+  const fetchThroughBridge = async (request) => {
+    await started;
+    const [value, error] = await call('fetch', [request]);
+    if (error != null) {
+      return { error: typeof error.message === 'string' ? error.message : String(error) };
+    }
+    return { status: value.status, body: value.body };
+  };
+
   window.__fixtureApp = {
     started,
-    async fetch(request) {
-      await started;
-      const [value, error] = await call('fetch', [request]);
-      if (error != null) {
-        return { error: typeof error.message === 'string' ? error.message : String(error) };
-      }
-      return { status: value.status, body: value.body };
-    },
+    fetch: (request) => Promise.race([fetchThroughBridge(request), timedOut()]),
   };
 
   const hello = () => window.parent.postMessage(
