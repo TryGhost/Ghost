@@ -61,8 +61,8 @@ An app describes itself to Ghost in a JSON manifest, which it serves as a
   at most 16 KB. Ghost keeps a copy of the image with each manifest
   version it stores, and only shows that copy, as an image. Admin draws it in a
   single colour, like the icons it ships, keeping only the shape of its opaque
-  pixels: draw a glyph on a transparent background. An image with no
-  transparent pixels shows as a plain square. JPEG and GIF are refused. An image replaced at
+  pixels, so draw a glyph on a transparent background. JPEG and GIF are
+  refused. An image replaced at
   the same URL shows the next time the manifest changes, even by a field that
   needs no approval. A name Admin does not know is not rejected here;
   Admin falls back to a default icon.

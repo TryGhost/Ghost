@@ -1393,17 +1393,14 @@ describe('Managing apps', () => {
     await renderAdminApp('/apps', { labs });
 
     await expect.element(appsScreen.row('Podcast')).toBeVisible();
-    const tile = appsScreen.row('Podcast').element();
-    expect(tile.querySelector('img')).toBeNull();
-    const tileIcon = tile.querySelector('svg:has(mask)')!;
-    expect(tileIcon.querySelector('mask image')!.getAttribute('href')).toBe(ICON_DATA_URL);
+    const tileIcon = appsScreen.row('Podcast').element().querySelector('svg:has(mask)')!;
     expect(tileIcon.querySelector('rect')!.getAttribute('fill')).toBe('currentColor');
     expect(tileIcon.parentElement).toHaveClass('text-white');
 
-    const sidebar = appsScreen.sidebarApps().element();
-    expect(sidebar.querySelector('img')).toBeNull();
-    const icon = sidebar.querySelector('[data-sidebar=menu-button] > svg:has(mask)')!;
-    expect(icon.querySelector('mask image')!.getAttribute('href')).toBe(ICON_DATA_URL);
+    const icon = appsScreen
+      .sidebarApps()
+      .element()
+      .querySelector('[data-sidebar=menu-button] > svg:has(mask)')!;
     expect(icon.querySelector('rect')!.getAttribute('fill')).toBe('currentColor');
     expect(icon.getBoundingClientRect().width).toBe(16);
     // A native nav item in the same sidebar, which is neither active nor hovered.

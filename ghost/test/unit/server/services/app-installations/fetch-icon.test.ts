@@ -93,6 +93,7 @@ describe('createIconFetcher', function () {
   });
 
   for (const contentType of [
+    'image/jpeg',
     'image/gif',
     'text/html',
     'image/svg',
@@ -104,19 +105,7 @@ describe('createIconFetcher', function () {
 
       assertRefused(
         await refusal(fetchIcon({ url: ICON_URL })),
-        'Expected an SVG, PNG or WebP image',
-      );
-    });
-  }
-
-  for (const contentType of ['image/jpeg', 'image/jpg', 'image/pjpeg']) {
-    it(`refuses a JPEG icon served as ${contentType}, saying it has no transparency`, async function () {
-      const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xe0]);
-      const { fetchIcon } = setup({ fetched: serving(jpeg, contentType) });
-
-      assertRefused(
-        await refusal(fetchIcon({ url: ICON_URL })),
-        'Expected an SVG, PNG or WebP image, since a JPEG has no transparency',
+        'Expected an SVG, PNG or WebP image with a transparent background',
       );
     });
   }

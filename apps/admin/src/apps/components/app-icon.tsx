@@ -31,9 +31,9 @@ interface AppIconProps {
   className?: string;
 }
 
-// The formats Ghost stores icons in, whose transparency an icon is drawn from. Ghost stored
-// JPEG and GIF copies before it refused them, and an older Ghost still does; those fall back.
-const STORED_ICON_PREFIXES = ['data:image/svg+xml;', 'data:image/png;', 'data:image/webp;'];
+// The formats Ghost stores icons in. An older Ghost also stored JPEG and GIF copies, which
+// can't be drawn from their transparency, so those fall back too.
+const STORED_ICON = /^data:image\/(svg\+xml|png|webp);/;
 
 /**
  * The copy of the app's icon Ghost stored, as a data URL, so drawing it never requests
@@ -45,21 +45,15 @@ const STORED_ICON_PREFIXES = ['data:image/svg+xml;', 'data:image/png;', 'data:im
  */
 function useStoredIcon(app: AppIconSource): [string | null, () => void] {
   const [failed, setFailed] = React.useState<string | null>(null);
-  const copy = app.icon_data_url;
   const stored =
-    copy && STORED_ICON_PREFIXES.some((prefix) => copy.startsWith(prefix)) ? copy : null;
+    app.icon_data_url && STORED_ICON.test(app.icon_data_url) ? app.icon_data_url : null;
   return [stored === failed ? null : stored, () => setFailed(stored)];
 }
 
 /**
  * An app's icon in `currentColor`, like the icons Admin ships: its named icon, or the copy
- * of its own icon that Ghost stored, or a default icon.
- *
- * A stored icon is used as a mask over `currentColor`, which keeps only the shape of its
- * opaque pixels, so it matches the named icons whatever colours the app drew it in. An
- * icon with no transparent pixels flattens to a plain square. An `<image>` is still drawn
- * as an image, so it can't run scripts or load anything, and it's fitted inside the square
- * rather than cropped.
+ * of its own icon Ghost stored, or a default icon. A stored copy masks `currentColor` with
+ * its opaque pixels; inside the mask it's still an image, which can't run scripts.
  */
 const AppGlyph: React.FC<{ app: AppIconSource; className: string; strokeWidth?: number }> = ({
   app,
