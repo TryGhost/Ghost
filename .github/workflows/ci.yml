@@ -1781,7 +1781,9 @@ jobs:
 
       # Synchronise with job_build_admin only now, after core is built: the full
       # image is core + admin. No `needs` edge, so the two jobs run concurrently
-      # and core builds during the wait.
+      # and core builds during the wait. The wait lasts as long as Build Admin is
+      # queued or running, so a busy runner pool delays the full image rather than
+      # failing it.
       - name: Wait for admin build
         uses: ./.github/actions/wait-for-artifact
         with:

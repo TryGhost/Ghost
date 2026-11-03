@@ -4,19 +4,31 @@ description: >-
   if the job that produces it has already concluded unsuccessfully. Used to let a
   job depend on another job's artifact without a `needs` edge (so the two jobs can
   run concurrently and only synchronise at the point the artifact is consumed).
+  The wait follows the producing job: it lasts as long as that job is queued or
+  running, and times out only if its artifact is missing once it has succeeded.
 inputs:
   artifact-name:
     description: 'Name of the artifact to wait for'
     required: true
   job-name:
     description: >-
-      Display name of the job that produces the artifact. Used to fail fast if
-      that job concludes without success (the artifact will never appear).
+      Display name of the job that produces the artifact. Its state decides how
+      long to wait: fail fast if it concludes without success (the artifact will
+      never appear), keep waiting while it is queued or running.
     required: true
   timeout-seconds:
-    description: 'Give up after this many seconds'
+    description: >-
+      Give up this many seconds after the producing job has succeeded, if its
+      artifact is still not listed.
     required: false
-    default: '600'
+    default: '120'
+  max-wait-seconds:
+    description: >-
+      Give up after this many seconds in all, however far the producing job has
+      got. A backstop for a job that stays queued, so the wait cannot hold its
+      runner for the rest of the job's timeout.
+    required: false
+    default: '3600'
   interval-seconds:
     description: 'Seconds between polls'
     required: false
@@ -37,41 +49,60 @@ runs:
         ARTIFACT_NAME: ${{ inputs.artifact-name }}
         JOB_NAME: ${{ inputs.job-name }}
         TIMEOUT: ${{ inputs.timeout-seconds }}
+        MAX_WAIT: ${{ inputs.max-wait-seconds }}
         INTERVAL: ${{ inputs.interval-seconds }}
       run: |
         START=$(date +%s)
+        # When the producing job was first seen to have succeeded. TIMEOUT counts
+        # from here: until the producer has finished, a missing artifact is expected.
+        SUCCEEDED_AT=""
 
         while true; do
           # --paginate: a run can upload more than 100 artifacts (e2e shards,
           # package matrices), so the target may be beyond the first page. Emit one
           # line per matching unexpired artifact and count them; env.ARTIFACT_NAME
           # is read via jq's env object rather than interpolated into the filter.
-          # On API failure the pipe yields no lines → COUNT=0 → keep waiting.
-          COUNT=$(gh api --paginate "repos/${REPO}/actions/runs/${RUN_ID}/artifacts?per_page=100" \
-            --jq '.artifacts[] | select(.name == env.ARTIFACT_NAME and .expired == false) | .id' 2>/dev/null | wc -l | tr -d '[:space:]')
+          # On API failure the pipe yields no lines → COUNT=0 → keep waiting. The
+          # `|| true` keeps that failure from ending the step: Actions runs bash with
+          # -e and pipefail.
+          COUNT=$( (gh api --paginate "repos/${REPO}/actions/runs/${RUN_ID}/artifacts?per_page=100" \
+            --jq '.artifacts[] | select(.name == env.ARTIFACT_NAME and .expired == false) | .id' 2>/dev/null || true) | wc -l | tr -d '[:space:]')
 
           if [ "$COUNT" -gt 0 ]; then
             echo "${ARTIFACT_NAME} artifact is ready"
             break
           fi
 
-          # The artifact is never coming if the producing job already finished
-          # without success — fail now instead of waiting out the timeout.
-          # --paginate: the run can exceed 100 jobs (shards + package matrices).
-          # A queued/in-progress job has a null conclusion → empty → keep waiting.
-          CONCLUSION=$(gh api --paginate "repos/${REPO}/actions/runs/${RUN_ID}/jobs?per_page=100" \
-            --jq '.jobs[] | select(.name == env.JOB_NAME) | .conclusion // ""' 2>/dev/null | tail -n1 || echo "")
-          if [ -n "$CONCLUSION" ] && [ "$CONCLUSION" != "success" ]; then
-            echo "::error::${JOB_NAME} concluded '${CONCLUSION}' — the ${ARTIFACT_NAME} artifact will not be produced"
+          # The producing job's status (queued, in_progress, completed, ...) and
+          # conclusion, for the run's latest attempt. --paginate: the run can exceed
+          # 100 jobs (shards + package matrices). A job not created yet, or an API
+          # failure, reads as "unknown" → keep waiting, within MAX_WAIT.
+          JOB_STATE=$(gh api --paginate "repos/${REPO}/actions/runs/${RUN_ID}/jobs?per_page=100" \
+            --jq '.jobs[] | select(.name == env.JOB_NAME) | "\(.status) \(.conclusion // "")"' 2>/dev/null | tail -n1 || true)
+          read -r STATUS CONCLUSION <<< "${JOB_STATE:-unknown}"
+
+          NOW=$(date +%s)
+          ELAPSED=$(( NOW - START ))
+
+          if [ "$STATUS" = "completed" ]; then
+            # The artifact is never coming if the producing job finished without
+            # success — fail now instead of waiting out a timeout.
+            if [ "$CONCLUSION" != "success" ]; then
+              echo "::error::${JOB_NAME} concluded '${CONCLUSION}' — the ${ARTIFACT_NAME} artifact will not be produced"
+              exit 1
+            fi
+            SUCCEEDED_AT=${SUCCEEDED_AT:-$NOW}
+            if [ $(( NOW - SUCCEEDED_AT )) -ge "$TIMEOUT" ]; then
+              echo "::error::${JOB_NAME} succeeded but the ${ARTIFACT_NAME} artifact was still not listed ${TIMEOUT}s later"
+              exit 1
+            fi
+          elif [ "$ELAPSED" -ge "$MAX_WAIT" ]; then
+            # Only a producer that never finishes gets here: a runner queue that
+            # long means the run is stuck, not that the artifact is late.
+            echo "::error::Gave up waiting for the ${ARTIFACT_NAME} artifact after ${MAX_WAIT}s: ${JOB_NAME} is still ${STATUS}"
             exit 1
           fi
 
-          ELAPSED=$(( $(date +%s) - START ))
-          if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
-            echo "::error::Timed out waiting for ${ARTIFACT_NAME} artifact (${TIMEOUT}s)"
-            exit 1
-          fi
-
-          echo "Waiting for ${ARTIFACT_NAME} artifact... (${ELAPSED}s elapsed)"
+          echo "Waiting for ${ARTIFACT_NAME} artifact... (${ELAPSED}s elapsed, ${JOB_NAME} ${STATUS}${CONCLUSION:+ $CONCLUSION})"
           sleep "$INTERVAL"
         done
