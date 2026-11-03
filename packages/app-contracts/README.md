@@ -59,7 +59,10 @@ An app describes itself to Ghost in a JSON manifest, which it serves as a
   `{ "name": "audio-lines" }`, one of the icons Admin ships, or
   `{ "url": "/icon.svg" }`, an image the app serves: SVG, PNG, JPEG, GIF or
   WebP, at most 16 KB. Ghost keeps a copy of the image with each manifest
-  version it stores, and only shows that copy, as an image. An image replaced at
+  version it stores, and only shows that copy, as an image. Admin draws it in a
+  single colour, like the icons it ships, keeping only the shape of its opaque
+  pixels: a glyph on a transparent background works, and an image without
+  transparency, such as a JPEG, shows as a plain square. An image replaced at
   the same URL shows the next time the manifest changes, even by a field that
   needs no approval. A name Admin does not know is not rejected here;
   Admin falls back to a default icon.

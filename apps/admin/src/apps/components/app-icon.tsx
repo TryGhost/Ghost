@@ -61,7 +61,7 @@ const AppGlyph: React.FC<{ app: AppIconSource; className: string; strokeWidth?: 
   strokeWidth,
 }) => {
   const [stored, onError] = useStoredIcon(app);
-  // React 18 ids look like `:r1:`; the colons would end the `url(#…)` reference early.
+  // React 18 ids look like `:r1:`. Colons need escaping in CSS, so they're dropped from the id.
   const maskId = `app-icon-${React.useId().replace(/:/g, '')}`;
   if (!stored) {
     const Glyph = glyphFor(app.manifest.icon);

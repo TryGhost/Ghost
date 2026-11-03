@@ -1406,10 +1406,12 @@ describe('Managing apps', () => {
     expect(icon.querySelector('mask image')!.getAttribute('href')).toBe(ICON_DATA_URL);
     expect(icon.querySelector('rect')!.getAttribute('fill')).toBe('currentColor');
     expect(icon.getBoundingClientRect().width).toBe(16);
-    const nativeIcon = document.querySelector(
-      '[data-sidebar=menu-button][data-active=false] > svg.lucide',
-    )!;
-    expect(getComputedStyle(icon).color).toBe(getComputedStyle(nativeIcon).color);
+    // A native nav item in the same sidebar, which is neither active nor hovered.
+    const nativeIcon = icon
+      .closest('[data-sidebar=sidebar]')!
+      .querySelector('[data-sidebar=menu-button][data-active=false]:not(:hover) > svg.lucide');
+    expect(nativeIcon).not.toBeNull();
+    expect(getComputedStyle(icon).color).toBe(getComputedStyle(nativeIcon!).color);
   });
 
   it('draws the default icon for an app’s own icon without a stored copy', async () => {
