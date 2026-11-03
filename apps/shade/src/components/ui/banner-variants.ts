@@ -14,7 +14,7 @@ const bannerVariants = cva('relative block rounded-lg transition-all duration-30
       ],
       // Sits among other content, so its glow fades out within a card's padding
       'gradient-inline': [
-        'cursor-pointer bg-surface-elevated',
+        'bg-surface-elevated',
         'shadow-[-5px_-4px_28px_3px_color-mix(in_oklab,var(--banner-glow-start)_28%,transparent),5px_4px_28px_3px_color-mix(in_oklab,var(--banner-glow-end)_32%,transparent)]',
         'dark:shadow-[-5px_-4px_28px_3px_color-mix(in_oklab,var(--banner-glow-start)_36%,transparent),5px_4px_28px_3px_color-mix(in_oklab,var(--banner-glow-end)_38%,transparent)]',
         'hover:shadow-[-5px_-3px_28px_4px_color-mix(in_oklab,var(--banner-glow-start)_38%,transparent),5px_5px_28px_4px_color-mix(in_oklab,var(--banner-glow-end)_42%,transparent)]',

@@ -295,7 +295,7 @@ export const AllVariants: Story = {
           <span className="text-yellow">
             <Sparkles className="size-4" />
           </span>
-          <strong>Gradient</strong> - Cyan/purple gradient shadow with hover animation
+          <strong>Gradient</strong> - Two-colour gradient shadow with hover animation
         </div>
       </Banner>
       <Banner variant="gradient-inline">

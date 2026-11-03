@@ -53,6 +53,7 @@ function Example({
         headerHidden={headerHidden}
         icon={<span className="block bg-foreground" />}
         label="My site"
+        pinLocked={headerHidden}
         pinned={pinned}
         onPinnedChange={setPinned}
       >

@@ -194,9 +194,9 @@ interface FloatingSidebarProps extends Omit<React.ComponentProps<'div'>, 'childr
   /** Beside the icon in the open and pinned panel's header row (e.g. the site title); hidden while closed. */
   header: React.ReactNode;
   /**
-   * Collapses the header row, icon included, while open or pinned, giving its
-   * room to the body (e.g. a screen whose navigation has its own top row). The
-   * closed circle keeps its icon.
+   * Collapses the header row, icon included, giving its room to the body (e.g.
+   * a screen whose navigation has its own top row). It applies while pinned
+   * with `pinLocked`, as otherwise the pin button needs the row.
    */
   headerHidden?: boolean;
   /** Unfurls beneath the header when open or pinned. */
@@ -448,7 +448,7 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
 
     // Pinned, the panel is always open; `open` alone shows the pin button.
     const expanded = open || pinned;
-    const headerCollapsed = headerHidden && expanded;
+    const headerCollapsed = headerHidden && pinLocked && pinned;
 
     // The header, pin button and body are clipped away while closed, so they
     // must not be reachable; the circle itself takes focus. A locked pin
