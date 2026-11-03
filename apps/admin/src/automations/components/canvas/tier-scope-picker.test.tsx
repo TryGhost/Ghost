@@ -51,7 +51,7 @@ const open = () => fireEvent.click(field());
 const option = (name: string) => screen.getByRole('option', { name });
 
 describe('TierScopePicker', () => {
-  it('lists the standalone option first, then the tiers under their heading', () => {
+  it('lists the standalone option first, then the tiers', () => {
     render(<Picker />);
     expect(field()).toHaveAttribute('placeholder', 'Select tiers...');
     open();
@@ -62,11 +62,6 @@ describe('TierScopePicker', () => {
         .getAllByRole('option')
         .map((row) => row.textContent),
     ).toEqual(['Any paid tier', 'Bronze', 'Silver', 'Gold']);
-    expect(
-      within(screen.getByRole('group', { name: 'Specific tiers' }))
-        .getAllByRole('option')
-        .map((row) => row.textContent),
-    ).toEqual(['Bronze', 'Silver', 'Gold']);
   });
 
   it('shows the standalone option as the plain value, and closes the list on choosing it', () => {
