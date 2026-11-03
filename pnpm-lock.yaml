@@ -249,8 +249,8 @@ catalogs:
       specifier: 1100.3.8
       version: 1100.3.8
     '@pnpm/workspace.workspace-manifest-reader':
-      specifier: 1100.3.1
-      version: 1100.3.1
+      specifier: 1100.3.2
+      version: 1100.3.2
     '@quilted/threads':
       specifier: 4.1.0
       version: 4.1.0
@@ -4599,7 +4599,7 @@ importers:
         version: 1100.3.8(@pnpm/logger@1100.0.0)
       '@pnpm/workspace.workspace-manifest-reader':
         specifier: 'catalog:'
-        version: 1100.3.1
+        version: 1100.3.2
       '@sentry/bundler-plugin-core':
         specifier: 'catalog:'
         version: 5.3.0(supports-color@10.2.2)
@@ -7227,8 +7227,8 @@ packages:
     resolution: {integrity: sha512-lEvwougkILMozWY/7wN1/uyxrOZJfOHSzmeaFBKa69EhzjoqM0Qn9bE+PrFiMr5xUEc1sln3en6bNh4kQJdfSw==}
     engines: {node: '>=22.13'}
 
-  '@pnpm/workspace.workspace-manifest-reader@1100.3.1':
-    resolution: {integrity: sha512-FggIroCEbuVuJUdjb4gJspTYF/19sHrEB6dBTa2PHl3ajVWfwTK69R1zmA3OOZ/hVuQ0TvPvCFfqOuN06cM6YA==}
+  '@pnpm/workspace.workspace-manifest-reader@1100.3.2':
+    resolution: {integrity: sha512-wy2R4Ow7Gs9SVYMDpPXDNH1N4T523zR9yKVyWjRPrIPQnTvjqJ/VL6jrpTe3mG9wgdKCtOOjTdPvir4frs+FOg==}
     engines: {node: '>=22.13'}
 
   '@pnpm/yaml.document-sync@1100.0.2':
@@ -19483,7 +19483,7 @@ snapshots:
 
   '@pnpm/workspace.spec-parser@1100.0.1': {}
 
-  '@pnpm/workspace.workspace-manifest-reader@1100.3.1':
+  '@pnpm/workspace.workspace-manifest-reader@1100.3.2':
     dependencies:
       '@pnpm/constants': 1102.0.1
       '@pnpm/error': 1100.2.2
