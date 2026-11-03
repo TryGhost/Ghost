@@ -26,6 +26,7 @@ export type TierScopePickerProps<TStandalone extends string> = {
   // Missing saved tiers stay removable without becoming dropdown options.
   missingTierLabel?: string;
   onChange: (next: TStandalone | string[]) => void;
+  tiersHeading?: string;
   emptyMessage: string;
   placeholder: string;
   inputLabel: string;
@@ -44,6 +45,7 @@ export function TierScopePicker<TStandalone extends string>({
   tiers,
   missingTierLabel = 'Unavailable tier',
   onChange,
+  tiersHeading = 'Specific tiers',
   emptyMessage,
   placeholder,
   inputLabel,
@@ -359,10 +361,16 @@ export function TierScopePicker<TStandalone extends string>({
               <div className="px-2 py-1.5 text-sm text-muted-foreground">{emptyMessage}</div>
             )}
             {standaloneRows}
-            {standaloneRows.length > 0 && tierRows.length > 0 && (
-              <div className="-mx-1 my-1 h-px bg-border" role="separator" />
+            {tierRows.length > 0 && (
+              <>
+                {standaloneRows.length > 0 && (
+                  <div className="-mx-1 my-1 h-px bg-border" role="separator" />
+                )}
+                <div aria-label={tiersHeading} role="group">
+                  {tierRows}
+                </div>
+              </>
             )}
-            {tierRows}
           </div>
         </div>
       )}
