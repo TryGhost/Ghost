@@ -96,8 +96,17 @@ export function csvColumnsForField(field: CsvField): CsvFieldColumn[] {
 const joinOptions = (options: readonly unknown[]): string =>
   options.map(toCell).join(` ${OPTION_SEPARATOR} `);
 
-const splitOptions = (cell: string): string[] =>
-  cell
+// A spreadsheet runs a cell starting with one of these as a formula, so an export puts an
+// apostrophe before such a cell, as the members export does.
+const FORMULA_TRIGGERS = ['=', '+', '-', '@', '\t', '\r'];
+
+/**
+ * The options a list's cell names, the way an import reads it: past the apostrophe an export puts
+ * before a cell that starts the way a formula does, then split on the separator. Read here rather
+ * than left to the caller's decoding, since Admin reads list cells too, to suggest a list's options.
+ */
+export const splitOptions = (cell: string): string[] =>
+  (cell.charAt(0) === "'" && FORMULA_TRIGGERS.includes(cell.charAt(1)) ? cell.slice(1) : cell)
     .split(OPTION_SEPARATOR)
     .map((option) => option.trim())
     .filter((option) => option !== '');
@@ -171,8 +180,8 @@ export function hasFieldColumns(
  *
  * `decodeCell` turns a raw cell into its value; it defaults to identity. The caller owns
  * any de-serialization the specific file needs — the members importer passes one that
- * strips the export's formula guard — so this stays pure vocabulary and holds no knowledge
- * of how any particular CSV escapes its cells.
+ * strips the export's formula guard. A list's cell is read past that guard by
+ * `splitOptions` as well, which Admin shares to suggest a list's options.
  *
  * A field is written only from a non-blank cell; a blank or absent cell leaves the
  * existing value untouched, not cleared — matching how the importer keeps a blank name or

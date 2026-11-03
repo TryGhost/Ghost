@@ -180,7 +180,10 @@ export function CustomFieldForm({
         />
         {errors.name && <FieldError>{errors.name}</FieldError>}
       </Field>
-      <Field data-disabled={typeFixed || undefined}>
+      <Field
+        data-disabled={typeFixed || undefined}
+        data-invalid={Boolean(errors.type) || undefined}
+      >
         <FieldLabel>Type</FieldLabel>
         <Select
           disabled={typeFixed || saving}
@@ -198,7 +201,11 @@ export function CustomFieldForm({
             }
           }}
         >
-          <SelectTrigger aria-label="Type" data-testid="custom-field-type">
+          <SelectTrigger
+            aria-invalid={Boolean(errors.type) || undefined}
+            aria-label="Type"
+            data-testid="custom-field-type"
+          >
             <SelectValue placeholder="Select type">
               <CustomFieldTypeOption type={draft.type} />
             </SelectValue>
@@ -212,23 +219,25 @@ export function CustomFieldForm({
           </SelectContent>
         </Select>
         {isEdit && <FieldDescription>Type can’t be changed after creation</FieldDescription>}
+        {errors.type && <FieldError>{errors.type}</FieldError>}
       </Field>
       {/* What the type is set up with, drawn by its shape, so a shape that takes settings can't
           be added without a way to set them. */}
       {matchField<CustomFieldDraft, ReactNode>(draft, {
         scalar: () => null,
         record: () => null,
-        set: ({ type }) => (
+        set: (list) => (
           <ListFieldSettings
             // A new set of inputs for each type, since each starts from its own settings.
-            key={type}
+            key={list.type}
             disabled={disabled || saving}
             errors={settingsErrors}
             idPrefix={idPrefix}
+            initial={list.settings}
             saved={field ? savedListSettings(field) : undefined}
             onChange={(settings) => {
               onClearErrors('settings');
-              onChange((current) => ({ ...current, type, settings }));
+              onChange((current) => ({ ...current, type: list.type, settings }));
             }}
           />
         ),
