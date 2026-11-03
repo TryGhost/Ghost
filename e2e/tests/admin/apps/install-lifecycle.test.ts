@@ -132,12 +132,17 @@ test.describe('Ghost Admin - App install lifecycle', () => {
     const detailsPage = new AppDetailsPage(page);
     const installationId = await installApp(page, fixtureApp.manifestUrl);
     // The same app, now served from another host.
-    const movedApp = new FixtureApp({ appId: fixtureApp.manifest.id });
+    const movedApp = new FixtureApp({
+      appId: fixtureApp.manifest.id,
+      identityKey: fixtureApp.identityKey,
+    });
     await movedApp.start();
 
     try {
       await appsPage.gotoInstallLink(movedApp.manifestUrl);
-      await expect(appsPage.installDialog.moveWarning).toBeVisible();
+      await expect(
+        appsPage.installDialog.changes.filter({ hasText: 'Install link' }),
+      ).toContainText(movedApp.manifestUrl);
       await appsPage.installDialog.approveChanges();
 
       await appPage.gotoApp(installationId);

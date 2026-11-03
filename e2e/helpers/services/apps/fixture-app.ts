@@ -1,5 +1,8 @@
+import express from 'express';
+import { CHALLENGE_PATH, answerChallenge, signManifest } from '@tryghost/app-contracts/identity';
 import { CONNECT_MESSAGE_TYPE, HELLO_MESSAGE_TYPE } from '@tryghost/app-contracts';
 import { FakeServer } from '@/helpers/services/fake-server';
+import { type KeyObject, generateKeyPairSync } from 'node:crypto';
 
 /** The test ID of the element where the fixture app's page shows the path it was served from. */
 export const FIXTURE_APP_PATH_TEST_ID = 'fixture-app-path';
@@ -10,7 +13,10 @@ export const FIXTURE_APP_PATH_TEST_ID = 'fixture-app-path';
  */
 const BRIDGE_TIMEOUT_MS = 10_000;
 
-/** The manifest the fixture app serves. Its fields follow `@tryghost/app-contracts`' manifest. */
+/**
+ * The manifest the fixture app serves, before it adds its manifest URL and keys and signs it.
+ * Its fields follow `@tryghost/app-contracts`' manifest.
+ */
 export interface FixtureAppManifest {
   id: string;
   name: string;
@@ -135,13 +141,31 @@ const PAGE_HTML = `<!DOCTYPE html>
  *
  * The page URL in the manifest is relative to the manifest, and every path ending in `.html` serves
  * the page, which shows the path it was served from. A second fixture app with the same ID is the
- * same app served from another host, as when a developer's tunnel URL changes.
+ * same app served from another host, as when a developer's tunnel URL changes, as long as it's
+ * given the first one's identity key.
+ *
+ * It signs its manifest with its identity key and answers Ghost's challenge with its backend key,
+ * as an app's tooling and backend would. Ghost in development trusts localhost without the
+ * challenge, so only the signature is checked today.
  */
 export class FixtureApp extends FakeServer {
   manifest: FixtureAppManifest;
+  /** The private key the app signs its manifest with, which Ghost pins at install. */
+  readonly identityKey: KeyObject;
+  private readonly backendKey: KeyObject;
 
-  constructor({ appId, name = 'Fixture App' }: { appId: string; name?: string }) {
+  constructor({
+    appId,
+    name = 'Fixture App',
+    identityKey = generateKeyPairSync('ed25519').privateKey,
+  }: {
+    appId: string;
+    name?: string;
+    identityKey?: KeyObject;
+  }) {
     super({ debugNamespace: 'e2e:fixture-app' });
+    this.identityKey = identityKey;
+    this.backendKey = generateKeyPairSync('ed25519').privateKey;
     this.manifest = {
       id: appId,
       name,
@@ -172,12 +196,38 @@ export class FixtureApp extends FakeServer {
   }
 
   protected setupRoutes(): void {
-    this.app.get('/manifest.json', (_req, res) => {
-      res.json(this.manifest);
+    this.app.get('/manifest.json', (_req, res, next) => {
+      const served = {
+        ...this.manifest,
+        manifest_url: this.manifestUrl,
+        identity_key: publicJwk(this.identityKey),
+        backend_key: publicJwk(this.backendKey),
+      };
+      signManifest(served, this.identityKey).then((signed) => res.json(signed), next);
+    });
+
+    this.app.post(CHALLENGE_PATH, express.text({ type: '*/*' }), (req, res, next) => {
+      const requestUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+      answerChallenge(String(req.body), { backendKey: this.backendKey, requestUrl }).then(
+        (result) => {
+          if (result.success) {
+            res.json(result.answer);
+          } else {
+            res.status(400).json({ error: result.error });
+          }
+        },
+        next,
+      );
     });
 
     this.app.get(/\.html$/, (_req, res) => {
       res.type('html').send(PAGE_HTML);
     });
   }
+}
+
+/** A private key's public half, as the manifest names it. */
+function publicJwk(privateKey: KeyObject) {
+  const { kty, crv, x } = privateKey.export({ format: 'jwk' });
+  return { kty, crv, x };
 }

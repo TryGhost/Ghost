@@ -6,8 +6,8 @@ export class AppInstallDialog {
   public readonly modal: Locator;
   /** Says the app changed while it was being reviewed. */
   public readonly notice: Locator;
-  /** Says the app is moving to a new manifest URL. */
-  public readonly moveWarning: Locator;
+  /** What changed, for an app the site already has, one row per field. */
+  public readonly changes: Locator;
   public readonly installButton: Locator;
   public readonly approveChangesButton: Locator;
   public readonly cancelButton: Locator;
@@ -15,7 +15,7 @@ export class AppInstallDialog {
   constructor(page: Page) {
     this.modal = page.getByTestId(sel.appInstallDialog);
     this.notice = this.modal.getByTestId(sel.appInstallNotice);
-    this.moveWarning = this.modal.getByTestId(sel.appInstallMoveWarning);
+    this.changes = this.modal.getByTestId(sel.appManifestChange);
     this.installButton = this.modal.getByRole('button', { name: sel.installButton, exact: true });
     this.approveChangesButton = this.modal.getByRole('button', {
       name: sel.approveChangesButton,
