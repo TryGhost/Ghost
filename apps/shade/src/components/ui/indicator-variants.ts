@@ -11,7 +11,7 @@ const indicatorVariants = cva('rounded-full', {
       info: 'bg-state-info',
       success: 'bg-state-success',
       error: 'bg-state-danger',
-      warning: 'bg-state-warning',
+      warning: 'bg-state-warning-fill',
     },
     state: {
       idle: '',
@@ -49,7 +49,7 @@ const indicatorVariants = cva('rounded-full', {
     {
       variant: 'warning',
       state: 'inactive',
-      className: 'border-state-warning',
+      className: 'border-state-warning-fill',
     },
   ],
   defaultVariants: {
