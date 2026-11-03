@@ -1,13 +1,6 @@
-import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import {
-  InputGroup,
-  Button,
-  InputGroupAddon,
-  InputGroupInput,
-  InputGroupText,
-  inputSurface,
-} from '@tryghost/shade/components';
-import { Inline, Stack } from '@tryghost/shade/primitives';
+import React, { useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Button, buttonVariants, inputSurface } from '@tryghost/shade/components';
+import { Inline } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { isEmptyEmailLexical } from '@/automations/utils';
 import { AutomationCardWarning } from './automation-card-warning';
@@ -30,7 +23,6 @@ export type EditableEmailData = {
   lexical: string;
   suppressWarning: boolean;
   onInteract: () => void;
-  onUpdateSubject: (subject: string) => void;
   onEditContent: () => void;
 };
 
@@ -120,6 +112,7 @@ export const EditableEmailCard: React.FC<
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const showAnalytics = analyticsOpen && Boolean(analytics);
   const emailView = useEmailViewHeight(showAnalytics);
+  const previewTextId = useId();
   return (
     <AutomationCard
       aria-label={email.subject ? `Send email: ${email.subject}` : 'Send email'}
@@ -162,37 +155,41 @@ export const EditableEmailCard: React.FC<
       <div className="mt-3" style={{ minHeight: emailView.height }}>
         <div ref={emailView.ref}>
           <EmailCardCollapse open={!showAnalytics}>
-            <Stack gap="md">
-              <InputGroup>
-                <InputGroupAddon>
-                  <InputGroupText>Subject</InputGroupText>
-                </InputGroupAddon>
-                <InputGroupInput
-                  aria-label="Subject line"
-                  value={email.subject}
-                  onChange={(event) => email.onUpdateSubject(event.target.value)}
-                />
-              </InputGroup>
-              <EmailCardMessage aria-label="Email message preview" className="border-0 p-0">
-                <button
-                  aria-label="Edit email content"
-                  className={cn(
-                    inputSurface('self'),
-                    'group/field flex w-full items-start justify-between gap-2 px-3 py-2.5 text-left hover:bg-muted',
-                  )}
-                  type="button"
-                  onClick={email.onEditContent}
-                >
-                  <EmailCardExcerpt className="line-clamp-5 min-h-[5lh] text-[length:var(--text-control)] text-muted-foreground">
+            <EmailCardMessage aria-label="Email message preview" className="border-0 p-0">
+              <button
+                aria-describedby={previewTextId}
+                aria-label="Edit email content"
+                className={cn(
+                  inputSurface('self'),
+                  'group/field flex w-full items-start justify-between gap-2 p-5 text-left',
+                )}
+                type="button"
+                onClick={email.onEditContent}
+              >
+                <span className="block min-w-0 flex-1" id={previewTextId}>
+                  <span
+                    className={cn(
+                      'mb-2 block truncate text-md font-medium',
+                      email.subject.trim() ? 'text-foreground' : 'text-muted-foreground',
+                    )}
+                  >
+                    {email.subject.trim() || 'Subject'}
+                  </span>
+                  <EmailCardExcerpt className="line-clamp-4 min-h-[4lh] text-[length:var(--text-control)] text-muted-foreground">
                     {text || 'Message'}
                   </EmailCardExcerpt>
-                  <LucideIcon.Pen
-                    className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/field:opacity-100 group-focus-visible/field:opacity-100 motion-reduce:transition-none"
-                    strokeWidth={2}
-                  />
-                </button>
-              </EmailCardMessage>
-            </Stack>
+                </span>
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
+                    '-my-0.5 shrink-0 translate-x-1 -translate-y-1 opacity-0 transition-opacity group-hover/field:opacity-100 group-focus-visible/field:opacity-100 motion-reduce:transition-none',
+                  )}
+                >
+                  <LucideIcon.Maximize2 strokeWidth={2} />
+                </span>
+              </button>
+            </EmailCardMessage>
           </EmailCardCollapse>
           {analytics && <EmailCardAnalytics analytics={analytics} open={showAnalytics} />}
         </div>

@@ -13,6 +13,7 @@ import {
   open,
   close,
 } from './run-history.test-utils';
+import { editEmailSubject, fakeEmailEditorData } from './email-editor.test-utils';
 
 describe('Run history preserves editor drafts', () => {
   it('makes metadata readonly during history and restores the unsaved draft after closing', async () => {
@@ -152,8 +153,9 @@ describe('Run history preserves editor drafts', () => {
     fakeAdminEndpoint('GET', '/automations/first/', { automations: [emailDetail] });
     const save = fakeAdminEndpoint('PUT', '/automations/first/', { automations: [emailDetail] });
     respond(history('a'));
+    fakeEmailEditorData();
     await renderAdminApp('/automations/first', flags);
-    await page.getByRole('textbox', { name: 'Subject line' }).fill('Unsaved subject');
+    await editEmailSubject(page.getByRole('article', { name: /^Send email/ }), 'Unsaved subject');
     await open();
     await select();
     await expect.element(canvas()).toHaveTextContent('Alex');
@@ -161,9 +163,6 @@ describe('Run history preserves editor drafts', () => {
       .element(page.getByRole('complementary', { name: 'Step details' }))
       .not.toBeInTheDocument();
     await close();
-    await expect
-      .element(page.getByRole('textbox', { name: 'Subject line' }))
-      .toHaveValue('Unsaved subject');
     await expect
       .element(page.getByRole('article', { name: 'Send email: Unsaved subject' }))
       .toBeVisible();

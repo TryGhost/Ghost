@@ -68,7 +68,7 @@ const HEADER_UNDERLAP_Y = 56;
 const NODE_ENTER_ANIMATION_DURATION = 250;
 const DISABLED_REASON = 'Maximum steps added';
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
-export const EMAIL_STEP_QUERY_PARAM = 'emailStep';
+const EMAIL_STEP_QUERY_PARAM = 'emailStep';
 
 const edgeTypes = {
   'add-step-edge': AddStepEdge,
@@ -178,7 +178,6 @@ type BuildGraphParams = {
   newEmailWithoutWarningsId: string | null;
   onInteract: (stepId: string) => void;
   onWaitValidityChange: (stepId: string, valid: boolean) => void;
-  onUpdateSubject: (stepId: string, subject: string) => void;
   onUpdateWait: (stepId: string, hours: number) => void;
   disabled: boolean;
   onDelete: (stepId: string) => void;
@@ -200,7 +199,6 @@ const buildGraph = ({
   newEmailWithoutWarningsId,
   onInteract,
   onWaitValidityChange,
-  onUpdateSubject,
   onUpdateWait,
   disabled,
   onDelete,
@@ -278,7 +276,6 @@ const buildGraph = ({
                 lexical: action.data.email_lexical,
                 suppressWarning: newEmailWithoutWarningsId === action.id,
                 onInteract: () => onInteract(action.id),
-                onUpdateSubject: (subject: string) => onUpdateSubject(action.id, subject),
                 onEditContent: () => onEditEmailBody(action.id),
               },
             }
@@ -399,15 +396,11 @@ type AutomationCanvasProps = {
   automation?: AutomationDetail;
   savedTriggerTierIds?: readonly string[];
   triggerType?: TriggerData['triggerType'];
-  isEmailNavigationBlocked?: boolean;
   isLoading: boolean;
   isError: boolean;
   onChange: (next: AutomationDetail) => void;
   selectedRunId: string | null;
   onSelectRun: (id: string | null) => void;
-  onDiscardBlockedEmailNavigation?: (closeEmailModal: () => void) => void;
-  onEmailDirtyChange?: (isDirty: boolean) => void;
-  onKeepEditingAfterBlockedEmailNavigation?: () => void;
 };
 
 const insertActionByType = {
@@ -429,15 +422,11 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   triggerType,
   onWaitValidityChange,
   automation,
-  isEmailNavigationBlocked = false,
   isLoading,
   isError,
   onChange,
   selectedRunId,
   onSelectRun,
-  onDiscardBlockedEmailNavigation,
-  onEmailDirtyChange,
-  onKeepEditingAfterBlockedEmailNavigation,
 }) => {
   const layoutRef = useRef<HTMLElement>(null);
   const [nodeSizes, setNodeSizes] = useState<Record<string, { width: number; height: number }>>({});
@@ -485,6 +474,16 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     [tierData, tiersLoading, tiersError, refetchTiers],
   );
   const emailModalStepId = searchParams.get(EMAIL_STEP_QUERY_PARAM);
+  const getEmailCardElement = useCallback(() => {
+    if (!emailModalStepId) {
+      return null;
+    }
+    return (
+      editingCanvasRef.current
+        ?.querySelector(`.react-flow__node[data-id="${CSS.escape(emailModalStepId)}"]`)
+        ?.querySelector<HTMLElement>('[role="article"]') ?? null
+    );
+  }, [emailModalStepId]);
   const isRouterOpenedEmailModal =
     hasAutomationEmailModalState(location.state) && location.state.automationEmailModal;
 
@@ -569,30 +568,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         return;
       }
       onChange(updateWaitAction({ detail: automation, actionId, waitHours }));
-    },
-    [automation, onChange],
-  );
-
-  const handleUpdateSubject = useCallback(
-    (actionId: string, subject: string) => {
-      if (!automation) {
-        return;
-      }
-      const action = automation.actions.find(
-        (item): item is AutomationSendEmailAction =>
-          item.id === actionId && item.type === 'send_email',
-      );
-      if (!action) {
-        return;
-      }
-      onChange(
-        updateSendEmailAction({
-          detail: automation,
-          actionId,
-          emailSubject: subject,
-          emailLexical: action.data.email_lexical,
-        }),
-      );
     },
     [automation, onChange],
   );
@@ -717,7 +692,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       newEmailWithoutWarningsId,
       onInteract: showWarningsForOtherSteps,
       onWaitValidityChange,
-      onUpdateSubject: handleUpdateSubject,
       onUpdateWait: handleUpdateWait,
       disabled: automation.actions.length >= MAX_AUTOMATION_ACTIONS,
       onDelete: handleRequestDelete,
@@ -738,7 +712,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     newEmailWithoutWarningsId,
     showWarningsForOtherSteps,
     onWaitValidityChange,
-    handleUpdateSubject,
     handleUpdateWait,
     handleEditEmail,
     handlePreviewEmail,
@@ -766,6 +739,34 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [deleteConfirmationAction, emailModalAction, sidebar.open, setAutomationSidebarOpen]);
 
+  // While the email editor is open, hide the flow and controls and close the sidebar,
+  // restoring it as the editor starts to close.
+  const isEmailModalOpen = Boolean(emailModalAction);
+  const [isEmailModalClosing, setIsEmailModalClosing] = useState(false);
+  const isCanvasCleared = isEmailModalOpen && !isEmailModalClosing;
+  const sidebarOpenBeforeEmailRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    if (isEmailModalOpen && sidebarOpenBeforeEmailRef.current === null) {
+      sidebarOpenBeforeEmailRef.current = sidebar.open;
+      if (sidebar.open) {
+        setAutomationSidebarOpen(false);
+      }
+    } else if (!isEmailModalOpen) {
+      if (sidebarOpenBeforeEmailRef.current) {
+        setAutomationSidebarOpen(true);
+      }
+      sidebarOpenBeforeEmailRef.current = null;
+      setIsEmailModalClosing(false);
+    }
+  }, [isEmailModalOpen, sidebar.open, setAutomationSidebarOpen]);
+  const handleEmailModalCloseStart = useCallback(() => {
+    setIsEmailModalClosing(true);
+    if (sidebarOpenBeforeEmailRef.current) {
+      setAutomationSidebarOpen(true);
+      sidebarOpenBeforeEmailRef.current = false;
+    }
+  }, [setAutomationSidebarOpen]);
+
   const closeEmailModal = () => {
     setEmailModalMode('edit');
     if (isRouterOpenedEmailModal) {
@@ -775,11 +776,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
 
     removeEmailStepParam();
   };
-
-  const closeEmailModalWithoutHistoryNavigation = useCallback(() => {
-    setEmailModalMode('edit');
-    removeEmailStepParam();
-  }, [removeEmailStepParam]);
 
   useEffect(() => {
     if (!automation || !emailModalStepId) {
@@ -853,6 +849,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
         description={automation.description}
         isOpen={sidebar.open}
         isRunSelectionDisabled={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)}
+        isToggleHidden={isCanvasCleared}
         metadata={isHistoryOpen ? 'readonly' : 'editable'}
         performanceEnabled={isPerformanceEnabled}
         selectedRunId={selectedRunId}
@@ -885,7 +882,10 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
           tabIndex={-1}
         >
           {/* Only the pane reaches up behind the header; the region keeps the visible bounds */}
-          <Box className="absolute inset-x-0 -top-14 bottom-0">
+          <Box
+            className="absolute inset-x-0 -top-14 bottom-0 [&_.react-flow\_\_viewport]:transition-opacity [&_.react-flow\_\_viewport]:duration-200 [&_.react-flow\_\_viewport]:ease-in-out data-cleared:[&_.react-flow\_\_viewport]:opacity-0 motion-reduce:[&_.react-flow\_\_viewport]:transition-none"
+            data-cleared={isCanvasCleared || undefined}
+          >
             <ReactFlow
               className="[--xy-background-color:var(--preview-canvas)] [--xy-edge-stroke:var(--border-default)]"
               defaultViewport={initialViewport}
@@ -910,7 +910,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
               onNodesChange={handleNodesChange}
             >
               <Background {...canvasBackground} variant={BackgroundVariant.Dots} />
-              <AutomationCanvasControls />
+              <AutomationCanvasControls isHidden={isCanvasCleared} />
             </ReactFlow>
           </Box>
         </Box>
@@ -928,18 +928,15 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       </Box>
       {emailModalAction && automation && (
         <EmailContentModal
+          key={emailModalAction.id}
           automationId={automation.id}
-          initialLexical={emailModalAction.data.email_lexical}
+          emailDraft={{
+            subject: emailModalAction.data.email_subject,
+            lexical: emailModalAction.data.email_lexical,
+          }}
+          getEmailCardElement={getEmailCardElement}
           initialMode={emailModalMode}
-          initialSubject={emailModalAction.data.email_subject}
-          isDiscardNavigationBlocked={isEmailNavigationBlocked}
-          onClose={closeEmailModal}
-          onDirtyChange={onEmailDirtyChange}
-          onDiscardBlockedNavigation={() =>
-            onDiscardBlockedEmailNavigation?.(closeEmailModalWithoutHistoryNavigation)
-          }
-          onKeepEditingAfterBlockedNavigation={onKeepEditingAfterBlockedEmailNavigation}
-          onSave={({ subject, lexical }) => {
+          onChange={({ subject, lexical }) => {
             onChange(
               updateSendEmailAction({
                 detail: automation,
@@ -949,6 +946,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
               }),
             );
           }}
+          onClose={closeEmailModal}
+          onCloseStart={handleEmailModalCloseStart}
         />
       )}
       <AlertDialog
