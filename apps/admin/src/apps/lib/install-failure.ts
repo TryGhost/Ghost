@@ -100,7 +100,7 @@ export function installFailureOf(error: unknown): InstallFailure {
       };
     }
     default:
-      // A bad signature, a failed challenge, or a manifest older than one the site has seen.
+      // A bad signature, a failed challenge, or a backend key a newer manifest replaced.
       if (isUnconfirmedAppCode(apiError?.code)) {
         return { kind: 'unconfirmed', detail };
       }

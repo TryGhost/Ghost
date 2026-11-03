@@ -37,6 +37,9 @@ describe('paths', () => {
     expect(surfaceUrlError('https://podcast.example.com/admin')).toBe(PATH_PROBLEM);
     expect(surfaceUrlError('https://audio.example.org/admin')).toBe(PATH_PROBLEM);
     expect(surfaceUrlError('//audio.example.org/admin')).toBe(PATH_PROBLEM);
+    for (const spelling of ['//', '\\\\', '/\\', ' //', '/\t/']) {
+      expect(surfaceUrlError(`${spelling}podcast.example.com/admin`)).toBe(PATH_PROBLEM);
+    }
     expect(surfaceUrlError('javascript:alert(1)')).toBe(PATH_PROBLEM);
     expect(surfaceUrlError('data:text/html,<script>alert(1)</script>')).toBe(PATH_PROBLEM);
   });

@@ -39,7 +39,7 @@ function titleOf(failure: InstallFailure, attempted: Attempted): string {
 function describe(failure: InstallFailure): string {
   switch (failure.kind) {
     case 'unreachable':
-      return 'The app didn’t respond. It might be down or having a temporary problem.';
+      return 'The app didn’t answer as expected. It might be down or having a temporary problem.';
     case 'another-developer':
       return 'This link is for an app that’s already installed, but it doesn’t come from the same developer. If you weren’t expecting it, you can ignore it.';
     case 'unconfirmed':

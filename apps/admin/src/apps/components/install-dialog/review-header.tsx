@@ -72,7 +72,7 @@ export const ReviewSeparator: React.FC = () => <Separator className="-mx-6 w-aut
  * they hold the app's key, so the review doesn't claim more than Ghost checked.
  */
 export const TrustedOriginsNote: React.FC<{ preview: AppInstallationPreview }> = ({ preview }) => {
-  const hosts = preview.trusted_origins.map((origin) => new URL(origin).host);
+  const hosts = (preview.trusted_origins ?? []).map((origin) => new URL(origin).host);
   if (hosts.length === 0) {
     return null;
   }

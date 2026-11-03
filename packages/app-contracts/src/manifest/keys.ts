@@ -7,9 +7,6 @@ const ED25519_X = /^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$/;
 
 const EXPECTED = 'Expected a public Ed25519 key as a JWK with kty, crv and x';
 
-/** A public Ed25519 key as a JWK (RFC 8037), with nothing but the members it needs. */
-export type PublicKeyJwk = { kty: 'OKP'; crv: 'Ed25519'; x: string };
-
 const PRIVATE = 'Expected a public key, but this includes its private part (d)';
 
 /**
@@ -34,3 +31,6 @@ export const publicKeyField = z.strictObject(
     },
   },
 );
+
+/** A public Ed25519 key as a JWK (RFC 8037), with nothing but the members it needs. */
+export type PublicKeyJwk = z.infer<typeof publicKeyField>;

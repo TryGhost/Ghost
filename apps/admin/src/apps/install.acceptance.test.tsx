@@ -200,6 +200,18 @@ describe('Installing an app', () => {
     await expect.element(appsScreen.trustedOrigins()).not.toBeInTheDocument();
   });
 
+  it('says nothing about trust when Ghost doesn’t report which hosts it trusts', async () => {
+    fakeInstallations();
+    const older = preview();
+    delete older.trusted_origins;
+    fakePreview(previewResponse(older));
+
+    await renderAdminApp(INSTALL_ROUTE, { labs });
+
+    await expect.element(appsScreen.installButton()).toBeVisible();
+    await expect.element(appsScreen.trustedOrigins()).not.toBeInTheDocument();
+  });
+
   it('asks for a fresh review when the app changed while it was being reviewed', async () => {
     fakeInstallations();
     const changed = preview({ manifest: manifest({ name: 'Podcasts' }), digest: 'digest-2' });
@@ -306,6 +318,9 @@ describe('Installing an app', () => {
     await appsScreen.approveChangesButton().click();
 
     await expect.poll(() => approveApi.requests.length).toBe(1);
+    expect(approveApi.requests[0].body).toEqual({
+      app_installations: [{ manifest_url: elsewhere, digest: 'digest-2', revision: 0 }],
+    });
     await expect.element(page.getByText('Changes to Podcast approved')).toBeVisible();
   });
 
@@ -377,7 +392,7 @@ describe('Installing an app', () => {
 
     await renderAdminApp(INSTALL_ROUTE, { labs });
 
-    await expect.element(appsScreen.installDialog()).toHaveTextContent('didn’t respond');
+    await expect.element(appsScreen.installDialog()).toHaveTextContent('didn’t answer as expected');
     await appsScreen.tryAgainButton().click();
 
     await expect.element(appsScreen.installButton()).toBeVisible();
@@ -695,7 +710,7 @@ describe('Installing an app', () => {
     await renderAdminApp(INSTALL_ROUTE, { labs });
 
     await expect.element(appsScreen.installDialog()).toHaveTextContent('Couldn’t load app details');
-    await expect.element(appsScreen.installDialog()).toHaveTextContent('didn’t respond');
+    await expect.element(appsScreen.installDialog()).toHaveTextContent('didn’t answer as expected');
     await expect.element(appsScreen.unreachable()).toHaveTextContent('answered with HTTP 503');
     await appsScreen.tryAgainButton().click();
 

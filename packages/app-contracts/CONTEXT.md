@@ -26,8 +26,9 @@ _Avoid_: user, owner, admin
 
 **Development app**:
 An app whose signed manifest says it is in development, as every app on the
-developer's machine must. It changes how Ghost labels the app, never what Ghost
-checks.
+developer's machine must: Ghost refuses a manifest on localhost that doesn't.
+Ghost labels the app as one, and a change to the flag needs the publisher's
+approval.
 _Avoid_: local app, test app
 
 ### Identity
@@ -50,8 +51,9 @@ _Avoid_: handshake, ping
 
 **Identity check**:
 What a manifest must pass before Ghost uses it: it is signed with the identity
-key it names, no earlier than the newest one the site has seen for the app, and
-the app's origin answers the challenge, unless the site trusts that origin.
+key it names, which for an app the site has is the one it was installed with; it
+names no backend key a newer manifest from that developer replaced; and the
+app's origin answers the challenge, unless the site trusts that origin.
 _Avoid_: verification, validation
 
 ### Manifests
@@ -62,9 +64,8 @@ manifest.
 _Avoid_: config, app.json, descriptor
 
 **Signed manifest**:
-A manifest's exact bytes, signed with the app's identity key with the time it
-was signed: what an app serves. Ghost only reads a manifest out of a signed
-manifest it has verified.
+A manifest's exact bytes, signed with the app's identity key: what an app
+serves. Ghost only reads a manifest out of a signed manifest it has verified.
 _Avoid_: JWS, envelope, signed config
 
 **Manifest URL**:
