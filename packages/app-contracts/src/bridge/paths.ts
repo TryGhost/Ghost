@@ -13,17 +13,22 @@ export const APP_PATH_MAX_LENGTH = 2048;
  * under `/apps/:installationId`, so it must not be able to point outside that.
  *
  * Parsing accepts only a path, not a URL or `//host`, and returns it normalised by
- * `normaliseAppPath`, with `..` resolved within the app, so it is ready to use. The length is
- * checked before normalising, so a long input isn't normalised at all, and again after, as
- * percent-encoding can make a path up to three times longer.
+ * `normaliseAppPath`, with `..` resolved within the app, so it is ready to use. Containment is
+ * checked again on the normalised path, which is the one Admin resolves against the app's page:
+ * normalising can turn a contained path into `//host`, as `/.//host` or `/a/..//host` do, and
+ * that would load another site in the app's frame. The length is checked before normalising, so
+ * a long input isn't normalised at all, and again after, as percent-encoding can make a path up
+ * to three times longer.
  */
 const tooLong = `Expected a path of at most ${APP_PATH_MAX_LENGTH} characters`;
+const escapesOnceResolved =
+  'Expected a path that still starts with a single / once . and .. are resolved';
 export const AppPathSchema = z
   .string('Expected a path')
   .max(APP_PATH_MAX_LENGTH, tooLong)
   .refine(isContainedPath, ARGUMENT_MESSAGES.appPath)
   .transform(normaliseAppPath)
-  .pipe(z.string().max(APP_PATH_MAX_LENGTH, tooLong));
+  .pipe(z.string().max(APP_PATH_MAX_LENGTH, tooLong).refine(isContainedPath, escapesOnceResolved));
 
 export type AppPath = z.output<typeof AppPathSchema>;
 

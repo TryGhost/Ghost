@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { isContainedPath } from '../bridge/rules.ts';
 import { isGhostOrigin } from './ghost-origin.ts';
 import { URL_MAX_LENGTH } from './limits.ts';
 import { isLocalhost } from './localhost.ts';
@@ -41,10 +42,20 @@ export interface UrlRules {
  */
 export type UrlField = (linkOnly?: boolean) => z.ZodType<string, string>;
 
+const ROUTE_PROBLEM =
+  'Expected a URL that resolves to a path starting with a single /, with no \\ in its query or fragment';
+
 /**
  * A URL Ghost will load: resolved against the manifest's own URL, and never on an origin
  * Ghost is served from. `linkOnly` lifts that last rule for a URL that is only ever
  * linked to, which a publisher's own app may well point at their own site.
+ *
+ * A loaded URL's path, query and fragment must also make a path `isContainedPath` accepts.
+ * Admin opens the app there, as its entry route, and the SDK refuses a route that isn't one.
+ * Resolving can still give one that isn't: `/.//admin` resolves to the path `//admin`, which
+ * names a host, as `admin` does against a manifest at `//ghost-app.json`, and a `\` in the
+ * query or fragment is left as it is. Only the page is opened as a route, but every URL Ghost
+ * loads is held to the one rule.
  */
 export function urlField({ base, ghostUrls, allowLocalhost }: UrlRules, linkOnly = false) {
   return z
@@ -71,6 +82,10 @@ export function urlField({ base, ghostUrls, allowLocalhost }: UrlRules, linkOnly
           code: 'custom',
           message: 'Expected an address other than the one Ghost itself is served from',
         });
+        return z.NEVER;
+      }
+      if (!linkOnly && !isContainedPath(`${url.pathname}${url.search}${url.hash}`)) {
+        ctx.addIssue({ code: 'custom', message: ROUTE_PROBLEM });
         return z.NEVER;
       }
       return url.href;

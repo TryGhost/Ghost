@@ -164,9 +164,10 @@ export class Channel {
     // new frame at its own path, so the two differ only when the page's server redirected it or
     // a form or link loaded another page in place, and then Admin follows the page.
     this.#history = watchHistory((route, move) => this.#moved(route, move));
-    this.#path = currentRoute();
-    if (this.#path !== context.path) {
-      void this.#moved(this.#path, 'replace');
+    const route = currentRoute();
+    this.#path = context.path;
+    if (route !== context.path) {
+      void this.#moved(route, 'replace');
     }
     // Report the title before `start` returns, so Admin has it by the time it shows the page.
     // An older Admin without `titleChanged` keeps its own title.
@@ -204,6 +205,11 @@ export class Channel {
    * for the app, or has refused; a refused move leaves the page where it is.
    */
   async #moved(route: string, move: PathMove): Promise<void> {
+    // A route that leaves the app once normalised, such as `/.//host/`, is one Admin refuses
+    // and the SDK never hands out, so the app's path stays where it was.
+    if (!isContainedPath(route)) {
+      return;
+    }
     this.#path = route;
     this.#moves += 1;
     const thisMove = this.#moves;

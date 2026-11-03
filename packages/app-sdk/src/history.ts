@@ -1,12 +1,18 @@
-import { normaliseAppPath, type PathMove } from '@tryghost/app-contracts';
+import type { PathMove } from '@tryghost/app-contracts';
 
 /**
- * The page's route: the path, query and fragment of its URL, in the normalised form Admin
- * stores app paths in.
+ * A URL's route: its path, query and fragment. The URL parser has already put them in the
+ * normalised form Admin stores app paths in. Resolving them again would read a path that starts
+ * with `//` as a host, so a page at `//evil.example/x` would report `/x`; kept as it is, that
+ * route fails `isContainedPath` and is never reported.
  */
+function routeOf({ pathname, search, hash }: { pathname: string; search: string; hash: string }) {
+  return `${pathname}${search}${hash}`;
+}
+
+/** The page's route. */
 export function currentRoute(): string {
-  const { pathname, search, hash } = window.location;
-  return normaliseAppPath(`${pathname}${search}${hash}`);
+  return routeOf(window.location);
 }
 
 /** Whether a node is an HTML or SVG link, which the browser follows when it's clicked. */
@@ -101,7 +107,7 @@ export function watchHistory(
     }
     event.preventDefault();
     const go = () => load(url.href);
-    const next = normaliseAppPath(`${url.pathname}${url.search}${url.hash}`);
+    const next = routeOf(url);
     if (next === route) {
       go();
       return;
