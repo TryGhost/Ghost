@@ -16,12 +16,10 @@ const DOT_SEGMENT = /\/\.\.?(?:\/|$)/;
 
 /**
  * Router state for opening the editor from an analytics screen or an app, so its header leads back
- * there. An app's route is passed whole, as Admin routes it.
+ * to the Admin route `to`. The caller decides which parts of its location the route keeps.
  */
-export function editorReturnState(from: string | { pathname: string; search: string }) {
-  return {
-    editorReturn: typeof from === 'string' ? from : `${from.pathname}${from.search}`,
-  } satisfies EditorReturnLocationState;
+export function editorReturnState(to: string) {
+  return { editorReturn: to } satisfies EditorReturnLocationState;
 }
 
 /** The analytics screen or app the editor was opened from, if the location state carries one. */
