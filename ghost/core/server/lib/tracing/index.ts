@@ -1,5 +1,6 @@
 import logging from '@tryghost/logging';
 import ghostMetrics from '@tryghost/metrics';
+import { createMeter } from './create-meter';
 import { createTracer } from './create-tracer';
 
 /**
@@ -8,3 +9,6 @@ import { createTracer } from './create-tracer';
  * sites leave unconfigured, so nothing leaves them.
  */
 export const tracer = createTracer({ transport: ghostMetrics, logging });
+
+/** The meter Ghost's services count with, shipped the same way as the tracer's spans. */
+export const meter = createMeter({ transport: ghostMetrics, logging });
