@@ -33,7 +33,20 @@ const FIELDS: Field[] = [
   { field: 'accent_color', label: 'Accent color', value: (m) => m.accent_color },
   // A publisher reads the icon as one thing, named or served by the app.
   { field: 'icon', label: 'Icon', value: (m) => ('url' in m.icon ? m.icon.url : m.icon.name) },
+  // Where every later version of the app's details comes from, so a move is a change like any other.
+  { field: 'manifest_url', label: 'Install link', value: (m) => m.manifest_url },
+  {
+    field: 'development',
+    label: 'Development build',
+    value: (m) => (m.development ? 'Yes' : 'No'),
+  },
 ];
+
+/**
+ * Keys say nothing a publisher can judge. A new identity key never reaches a review, and a new
+ * backend key applies without one.
+ */
+const UNLISTED = ['identity_key', 'backend_key'];
 
 const SURFACE_LABELS: Record<string, string> = {
   admin_page: 'Page in Admin',
@@ -62,8 +75,7 @@ const within = (change: AppManifestChange, field: string) =>
 /**
  * What changed between the approved manifest and the one being reviewed, one row per field
  * as the publisher reads it, with the changes that need approval first. Ghost says which
- * fields changed; the values come from the two manifests. A move is not a row: where the
- * app runs is listed as a surface, and the review warns about the move on its own.
+ * fields changed; the values come from the two manifests.
  */
 export function describeChanges(
   approved: ManifestVersion,
@@ -86,7 +98,7 @@ export function describeChanges(
   }
 
   // A field added to the manifest after this was written: shown by its name, as JSON.
-  const known = new Set([...fields.map(({ field }) => topOf(field)), 'manifest_url']);
+  const known = new Set([...fields.map(({ field }) => topOf(field)), ...UNLISTED]);
   for (const change of changes) {
     const top = topOf(change.path);
     if (known.has(top)) {
