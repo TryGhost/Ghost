@@ -164,7 +164,7 @@ describe('database automations repository', function () {
     const findFirstActionRevisions = (memberStatus: 'free' | 'paid', memberTierIds: string[]) =>
       repository.withConnection((connection) =>
         repository.findFirstActionRevisions(connection, {
-          event: 'membership_started',
+          eventName: 'membership_started',
           memberStatus,
           memberTierIds,
         }),
@@ -190,7 +190,7 @@ describe('database automations repository', function () {
       const find = (status: 'free' | 'paid', before: string[], after: string[]) =>
         repository.withConnection((connection) =>
           repository.findFirstActionRevisions(connection, {
-            event: 'paid_subscription_changed',
+            eventName: 'paid_subscription_changed',
             memberStatus: status,
             memberTierIds: after,
             previousMemberTierIds: before,
@@ -229,7 +229,7 @@ describe('database automations repository', function () {
       const find = (before: string[], after: string[]) =>
         repository.withConnection((connection) =>
           repository.findFirstActionRevisions(connection, {
-            event: 'paid_subscription_changed',
+            eventName: 'paid_subscription_changed',
             memberStatus: 'paid',
             memberTierIds: after,
             previousMemberTierIds: before,

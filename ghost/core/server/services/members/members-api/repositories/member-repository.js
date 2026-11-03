@@ -156,7 +156,7 @@ module.exports = class MemberRepository {
    * @param {import('../../../members-metafields/values-service').MetafieldValuesService} deps.metafieldValues
    * @param {ITokenService} deps.tokenService
    * @param {any} deps.newslettersService
-   * @param {Pick<automationsApi, 'trigger'>} deps.automationsApi
+   * @param {Pick<automationsApi, 'notify'>} deps.automationsApi
    * @param {any} deps.Automation
    * @param {any} deps.WelcomeEmailAutomationRun
    */
@@ -265,22 +265,22 @@ module.exports = class MemberRepository {
   }
 
   /**
-   * @param {Parameters<typeof automationsApi.trigger>[0]} payload
+   * @param {Parameters<typeof automationsApi.notify>[0]} payload
    * @param {object} options
    * @param {Knex.Transaction} [options.transacting]
    * @returns {Promise<void>}
    */
-  async #triggerAutomation(payload, options) {
-    const trigger = () => this._automationsApi.trigger(payload);
+  async #notifyAutomations(payload, options) {
+    const notify = () => this._automationsApi.notify(payload);
     if (options.transacting) {
-      options.transacting.executionPromise.then(trigger).catch((err) => {
+      options.transacting.executionPromise.then(notify).catch((err) => {
         logging.error({
           err,
-          message: `Error triggering automation for member ${payload.memberId}`,
+          message: `Error notifying automations for member ${payload.memberId}`,
         });
       });
     } else {
-      await trigger();
+      await notify();
     }
   }
 
@@ -295,7 +295,7 @@ module.exports = class MemberRepository {
    * @param {Knex.Transaction} [options.options.transacting]
    * @returns {Promise<void>}
    */
-  async triggerPaidSubscriptionChangedAutomation({
+  async notifyPaidSubscriptionChangedAutomation({
     member,
     previousStatus,
     previousTierIds,
@@ -303,7 +303,7 @@ module.exports = class MemberRepository {
     options,
   }) {
     const payload = {
-      event: /** @type {const} */ ('paid_subscription_changed'),
+      eventName: /** @type {const} */ ('paid_subscription_changed'),
       source: this._resolveContextSource(options.context || {}),
       memberId: member.id,
       memberEmail: member.get('email'),
@@ -312,7 +312,7 @@ module.exports = class MemberRepository {
       memberTierIds: tierIds,
       previousMemberTierIds: previousTierIds,
     };
-    await this.#triggerAutomation(payload, options);
+    await this.#notifyAutomations(payload, options);
   }
 
   isActiveSubscriptionStatus(status) {
@@ -336,7 +336,7 @@ module.exports = class MemberRepository {
    * @param {Knex.Transaction} [options.bookshelfOptions.transacting]
    * @returns {Promise<void>}
    */
-  async #triggerMembershipStartedAutomation({
+  async #notifyMembershipStartedAutomation({
     member,
     memberStatus,
     previousMemberStatus,
@@ -346,9 +346,9 @@ module.exports = class MemberRepository {
     const memberEmail = member.get('email');
     const memberTierIds = await getMemberTierIds(member, memberStatus, bookshelfOptions);
 
-    await this.#triggerAutomation(
+    await this.#notifyAutomations(
       {
-        event: 'membership_started',
+        eventName: 'membership_started',
         source: this._resolveContextSource(bookshelfOptions.context || {}),
         memberId,
         memberEmail,
@@ -409,7 +409,7 @@ module.exports = class MemberRepository {
   }
 
   /**
-   * Trigger an automation for member signup.
+   * Notify the automations system about member signup.
    *
    * @param {object} options
    * @param {MemberModel} options.member
@@ -418,14 +418,14 @@ module.exports = class MemberRepository {
    * @param {object} options.bookshelfOptions
    * @returns {Promise<void>}
    */
-  async triggerMembershipStartedAutomation({
+  async notifyMembershipStartedAutomation({
     member,
     memberStatus,
     previousMemberStatus = null,
     bookshelfOptions,
   }) {
     const promises = [
-      this.#triggerMembershipStartedAutomation({
+      this.#notifyMembershipStartedAutomation({
         member,
         memberStatus,
         previousMemberStatus,
@@ -692,7 +692,7 @@ module.exports = class MemberRepository {
           { ...memberAddOptions, transacting },
         );
 
-        await this.triggerMembershipStartedAutomation({
+        await this.notifyMembershipStartedAutomation({
           member: newMember,
           memberStatus: 'free',
           bookshelfOptions: { context, transacting },
@@ -715,7 +715,7 @@ module.exports = class MemberRepository {
         memberAddOptions,
       );
       if (isFreeSignup) {
-        await this.#triggerMembershipStartedAutomation({
+        await this.#notifyMembershipStartedAutomation({
           member,
           memberStatus: 'free',
           previousMemberStatus: null,
@@ -1169,7 +1169,7 @@ module.exports = class MemberRepository {
     }
 
     if (shouldUpdateProducts) {
-      await this.triggerPaidSubscriptionChangedAutomation({
+      await this.notifyPaidSubscriptionChangedAutomation({
         member,
         previousStatus: previousMemberStatus,
         previousTierIds: previousMemberTierIds,
@@ -2206,7 +2206,7 @@ module.exports = class MemberRepository {
       );
 
       if (updatedMember.get('status') === 'paid') {
-        await this.triggerMembershipStartedAutomation({
+        await this.notifyMembershipStartedAutomation({
           member: memberModel,
           memberStatus: 'paid',
           previousMemberStatus: updatedMember._previousAttributes.status,
@@ -2215,7 +2215,7 @@ module.exports = class MemberRepository {
       }
     }
 
-    await this.triggerPaidSubscriptionChangedAutomation({
+    await this.notifyPaidSubscriptionChangedAutomation({
       member: updatedMember,
       previousStatus: updatedMember._previousAttributes.status,
       previousTierIds: oldMemberProductIds,
