@@ -56,6 +56,18 @@ describe('createAppFetcher', function () {
       });
     });
 
+    it('reads a binary body byte for byte', async function () {
+      const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0xff, 0x00]);
+      nock('https://podcast.example.com')
+        .get('/ghost-app.json')
+        .reply(200, png, { 'content-type': 'image/png' });
+
+      const result = await fetcher()(APP_URL, OPTIONS);
+
+      assert.ok(result.success);
+      assert.deepEqual(result.body, png);
+    });
+
     it('reports a URL it can’t read as unreachable, without a request', async function () {
       const request = vi.fn();
       const fetchFromApp = createAppFetcher({

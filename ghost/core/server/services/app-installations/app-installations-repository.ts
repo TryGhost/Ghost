@@ -144,6 +144,14 @@ class LockedInstallation {
  * The installations and their manifest rows. Manifest rows are only ever added, never
  * changed, and every write to an installation moves its revision on.
  */
+/** The app has a current installation, so it can't be installed again. */
+export function alreadyInstalled(appId: string) {
+  return new errors.ConflictError({
+    message: `The app ${appId} is already installed.`,
+    code: 'APP_ALREADY_INSTALLED',
+  });
+}
+
 export class AppInstallationsRepository {
   private knex: Knex;
 
@@ -304,10 +312,7 @@ export class AppInstallationsRepository {
           continue;
         }
         if (isUniqueViolation(err)) {
-          throw new errors.ConflictError({
-            message: `The app ${manifest.id} is already installed.`,
-            code: 'APP_ALREADY_INSTALLED',
-          });
+          throw alreadyInstalled(manifest.id);
         }
         throw err;
       }

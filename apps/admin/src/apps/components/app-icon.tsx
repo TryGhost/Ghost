@@ -35,9 +35,14 @@ interface AppIconProps {
  * The copy of the app's icon Ghost stored, as a data URL, so drawing it never requests
  * anything from the app. It isn't sanitized, so it's only ever drawn as an image, which
  * can't run scripts or load anything.
+ *
+ * Ghost doesn't check the bytes, so a copy can fail to load. Then this gives null and the
+ * caller draws the default icon instead.
  */
-function storedIcon(app: AppIconSource): string | null {
-  return app.icon_data_url?.startsWith('data:image/') ? app.icon_data_url : null;
+function useStoredIcon(app: AppIconSource): [string | null, () => void] {
+  const [failed, setFailed] = React.useState<string | null>(null);
+  const stored = app.icon_data_url?.startsWith('data:image/') ? app.icon_data_url : null;
+  return [stored === failed ? null : stored, () => setFailed(stored)];
 }
 
 /**
@@ -48,10 +53,10 @@ export const AppIcon: React.FC<AppIconProps> = ({ app, size = 'md', className })
   const { icon, accent_color: color } = app.manifest;
   const glyph = GLYPH_SIZES[size];
 
-  const stored = storedIcon(app);
+  const [stored, onError] = useStoredIcon(app);
   let content: React.ReactNode;
   if (stored) {
-    content = <img alt="" className={glyph} src={stored} />;
+    content = <img alt="" className={glyph} src={stored} onError={onError} />;
   } else {
     const Glyph = glyphFor(icon);
     content = <Glyph className={glyph} strokeWidth={1.5} />;
@@ -77,7 +82,7 @@ export const AppIcon: React.FC<AppIconProps> = ({ app, size = 'md', className })
  * app's own icon is made for its accent colour, so it keeps a small tile of it.
  */
 export const AppNavIcon: React.FC<{ app: AppIconSource }> = ({ app }) => {
-  const stored = storedIcon(app);
+  const [stored, onError] = useStoredIcon(app);
   if (stored) {
     return (
       <span
@@ -85,7 +90,7 @@ export const AppNavIcon: React.FC<{ app: AppIconSource }> = ({ app }) => {
         className="flex size-4 shrink-0 items-center justify-center rounded-[4px]"
         style={{ backgroundColor: app.manifest.accent_color }}
       >
-        <img alt="" className="size-3" src={stored} />
+        <img alt="" className="size-3" src={stored} onError={onError} />
       </span>
     );
   }

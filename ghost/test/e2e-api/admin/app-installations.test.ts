@@ -438,6 +438,20 @@ describe('App installations Admin API', function () {
       assert.equal(body.errors[0].code, 'APP_ALREADY_INSTALLED');
     });
 
+    it('refuses to install an installed app before fetching its icon', async function () {
+      await install();
+      serve(manifest(servedIcon));
+      serveIcon();
+      const { digest } = await preview();
+      serve(manifest(servedIcon));
+      const unfetched = nock(MANIFEST_HOST).get(ICON_PATH).reply(503);
+
+      const { body } = await confirm(digest, 409);
+
+      assert.equal(body.errors[0].code, 'APP_ALREADY_INSTALLED');
+      assert.equal(unfetched.isDone(), false);
+    });
+
     it('keeps the manifest URL as it was checked, not as it was confirmed', async function () {
       const spelled = 'https://Podcast.Example.com/ghost-app.json#install';
       serve(manifest());
@@ -1611,6 +1625,30 @@ describe('App installations Admin API', function () {
       assert.equal((await actions()).length, 1);
     });
 
+    it('reports an app uninstalled while its icon fails to load as uninstalled', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      const reviewed = await preview();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      nock(MANIFEST_HOST)
+        .get(ICON_PATH)
+        .reply(503, async () => {
+          await service().uninstall(owner, installed.id);
+          return '';
+        });
+
+      const { body } = await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [{ manifest_url: MANIFEST_URL, digest: reviewed.digest, revision: 0 }],
+        })
+        .expectStatus(409);
+
+      assert.equal(body.errors[0].code, 'APP_INSTALLATION_UNINSTALLED');
+      assert.equal((await manifestRows()).length, 1);
+    });
+
     it('refuses an approval when the app is uninstalled while it fetches the icon, storing nothing', async function () {
       const installed = await installWithIcon();
       serve(manifest({ ...servedIcon, name: 'Podcasts' }));
@@ -1643,20 +1681,24 @@ describe('App installations Admin API', function () {
       );
     });
 
-    it('fetches the icon for an approval that stores a new manifest', async function () {
+    // The digest doesn't cover the icon, so the copy is whatever the app serves on approval.
+    it('stores the icon fetched on approval for an approval that stores a new manifest', async function () {
+      const approvedIcon =
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><rect width="12" height="12"/></svg>';
       const installed = await installWithIcon();
       serve(manifest({ ...servedIcon, name: 'Podcasts' }));
       serveIcon(NEW_ICON);
       const reviewed = await preview();
       serve(manifest({ ...servedIcon, name: 'Podcasts' }));
-      serveIcon(NEW_ICON);
+      serveIcon(approvedIcon);
 
       const { body } = await approve(installed.id, reviewed.digest, reviewed.installation.revision);
 
-      assert.equal(body.app_installations[0].icon_data_url, copyOf(NEW_ICON));
+      assert.equal(reviewed.icon_data_url, copyOf(NEW_ICON));
+      assert.equal(body.app_installations[0].icon_data_url, copyOf(approvedIcon));
       assert.equal(
         await iconOf((await installationRow(installed.id)).manifest_id),
-        copyOf(NEW_ICON),
+        copyOf(approvedIcon),
       );
     });
 

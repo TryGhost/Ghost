@@ -3,6 +3,7 @@ import type { Knex } from 'knex';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
 import type { RecordAppInstallationAction, RequestContext } from './actions';
 import {
+  alreadyInstalled,
   AppInstallationsRepository,
   type AddedRow,
   type WriteOutcome,
@@ -177,6 +178,11 @@ export class AppInstallationsService {
     { manifestUrl, digest }: { manifestUrl: string; digest: string },
   ): Promise<Installation> {
     const loaded = await this.fetchReviewed(manifestUrl, digest);
+    // Report an installed app as such before fetching its icon, which could fail instead.
+    // The insert still catches a race with another install.
+    if (await this.repository.currentInstallationOf(loaded.manifest.id)) {
+      throw alreadyInstalled(loaded.manifest.id);
+    }
     const installation = await this.repository.insert(
       loaded,
       await this.fetchIcon(loaded.manifest.icon),
@@ -229,7 +235,11 @@ export class AppInstallationsService {
 
     const write = await this.withIconCopy(
       approvalWrite({ current, pending: await this.pendingManifestOf(current), loaded }),
-    );
+    ).catch(async (error: unknown) => {
+      // An app uninstalled during the icon fetch has nothing left to approve, whatever
+      // went wrong with its icon.
+      throw (await this.currentInstallation(id)) ? error : uninstalled();
+    });
     const stored = await this.store(current, write);
     if (stored.status === 'uninstalled') {
       throw uninstalled();

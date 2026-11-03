@@ -1325,6 +1325,23 @@ describe('Managing apps', () => {
     expect(imageSources(appsScreen.sidebarApps().element())).toEqual([]);
   });
 
+  it('draws the default icon for a stored copy that doesn’t load', async () => {
+    fakeInstallations([
+      installation({
+        manifest: manifest({ icon: { url: ICON_URL } }),
+        icon_data_url: 'data:image/png;base64,bm90IGEgcG5n',
+      }),
+    ]);
+
+    await renderAdminApp('/apps', { labs });
+
+    await expect.element(appsScreen.row('Podcast')).toBeVisible();
+    const row = appsScreen.row('Podcast').element();
+    await expect.poll(() => row.querySelector('svg.lucide-app-window')).not.toBeNull();
+    expect(imageSources(row)).toEqual([]);
+    await expect.poll(() => imageSources(appsScreen.sidebarApps().element())).toEqual([]);
+  });
+
   it('draws the default icon for a stored copy that isn’t an image data URL', async () => {
     fakeInstallations([
       installation({ manifest: manifest({ icon: { url: ICON_URL } }), icon_data_url: ICON_URL }),
