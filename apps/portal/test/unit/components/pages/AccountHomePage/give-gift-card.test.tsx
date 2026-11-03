@@ -98,6 +98,10 @@ describe('GiveGiftCard', () => {
       label: 'there is no giftable offering',
       site: paidSite({ portal_plans: ['free'] }),
     },
+    {
+      label: 'the site is invite-only',
+      site: paidSite({ members_signup_access: 'invite' }),
+    },
   ])('does not render when $label', ({ site }) => {
     const { queryByText } = setup({ site });
 

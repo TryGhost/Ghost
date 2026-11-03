@@ -5,6 +5,7 @@ import {
   type SettingValue,
   getSettingValue,
 } from '@tryghost/admin-x-framework/api/settings';
+import { signupAccessAllowsGifts } from '@/settings/utils/gift-subscriptions';
 
 type GiftPromotionSettingKey = 'portal_signup_gift_promotion' | 'portal_account_gift_promotion';
 
@@ -14,6 +15,11 @@ const GiftPromotionField: React.FC<{
   updateSetting: (key: string, setting: SettingValue) => void;
 }> = ({ localSettings, settingKey, updateSetting }) => {
   const id = settingKey.replaceAll('_', '-');
+
+  // Portal hides gift promotions where gifts are off, e.g. invite-only sites
+  if (!signupAccessAllowsGifts(localSettings)) {
+    return null;
+  }
 
   return (
     <Field orientation="horizontal">

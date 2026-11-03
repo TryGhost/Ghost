@@ -4,6 +4,7 @@ import { hasMode } from '../utils/check-mode';
 import AppContext from '../app-context';
 import { getFrameStyles } from './frame.styles';
 import { getActivePage, getPages } from '../pages';
+import { signupAccessAllowsGifts } from '../utils/gift-subscriptions';
 import PopupNotification from './common/popup-notification';
 import PoweredBy from './common/powered-by';
 import {
@@ -197,7 +198,9 @@ export class PopupContent extends React.Component {
       }
     }
 
-    if (page === 'gift' || page === 'giftSuccess' || page === 'giftRedemption') {
+    // sites without gifts get the small invite-only popup instead of the gift checkout
+    const isGiftCheckout = page === 'gift' && signupAccessAllowsGifts({ site });
+    if (isGiftCheckout || page === 'giftSuccess' || page === 'giftRedemption') {
       pageClass += ' full-size';
       popupSize = 'full';
     }
@@ -239,7 +242,7 @@ export class PopupContent extends React.Component {
 
     const containerClassName = `${className} ${popupWidthStyle} ${pageClass}`;
     const isGiftLayout =
-      page === 'gift' ||
+      isGiftCheckout ||
       page === 'giftSuccess' ||
       page === 'giftRedemption' ||
       (page === 'magiclink' && lastPage === 'gift');
