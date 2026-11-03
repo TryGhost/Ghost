@@ -30,7 +30,8 @@
   /* admin7Design: every 16px icon takes --icon-stroke, whichever way it was
      sized. CSS can't read a rendered size, so this lists those ways. A parent's
      size beats an icon's own size class unless that class is forced. Important, in
-     this layer, so it also beats strokes forced with an unlayered `!` utility. */
+     this layer, so it also beats strokes forced with an unlayered `!` utility. Icons
+     drawn on a 16-unit grid are left out, since the token is in a 24-unit grid. */
   [data-admin7-design='true']
     :is(
       svg.size-4,
@@ -39,7 +40,7 @@
       svg[width='16'],
       [class*='[&_svg]:size-4'] svg:not([class*='size-'][class*='!']),
       [class*='[&>svg]:size-4'] > svg:not([class*='size-'][class*='!'])
-    ) {
+    ):not([viewBox='0 0 16 16']) {
     &,
     & * {
       stroke-width: var(--icon-stroke) !important;
