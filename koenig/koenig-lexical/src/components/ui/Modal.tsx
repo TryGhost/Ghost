@@ -10,7 +10,7 @@ function shortcutKey(event) {
         return null;
     }
     const key = typeof event.key === 'string' ? event.key.toLowerCase() : '';
-    // A layout that types a non-Latin letter is read by its physical key, as Admin's shortcuts are
+    // A layout that types a non-Latin letter is read by its physical key, as Admin's global shortcuts are
     if (/^[ -~]$/.test(key)) {
         return key;
     }
