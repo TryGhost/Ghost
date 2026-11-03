@@ -34,17 +34,13 @@ export const manifest = (overrides: Partial<AppManifest> = {}): AppManifest => (
 export const ICON_URL = 'https://podcast.example.com/icon.svg';
 const ICON_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M2 2h20v20H2z"></path></svg>';
-/** The copy of an app's icon that Ghost stores. Its transparent margin keeps it flattened. */
+/** The copy of an app's icon that Ghost stores. */
 export const ICON_DATA_URL = `data:image/svg+xml;base64,${btoa(ICON_SVG)}`;
-const SOLID_ICON_SVG =
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#7c3aed" d="M0 0h24v24H0z"></path></svg>';
-/** A stored icon with no transparent pixels, such as a favicon, drawn in full colour. */
-export const SOLID_ICON_DATA_URL = `data:image/svg+xml;base64,${btoa(SOLID_ICON_SVG)}`;
 
 /** The source of every image in `container`, whether an `<img>` or an SVG `<image>`. */
 export const imageSources = (container: Element) =>
   [...container.querySelectorAll('img, image')].map(
-    (img) => img.getAttribute('src') ?? img.getAttribute('href'),
+    (image) => image.getAttribute('src') ?? image.getAttribute('href'),
   );
 
 export const installation = (overrides: Partial<AppInstallation> = {}): AppInstallation => ({

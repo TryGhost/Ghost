@@ -1,7 +1,6 @@
 import React from 'react';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-installations';
-import { useSolidIcon } from './use-solid-icon';
 
 /**
  * An icon Admin ships, by its Lucide name such as `audio-lines`. Admin already includes
@@ -22,9 +21,6 @@ function glyphFor(icon: AppInstallation['manifest']['icon']): LucideIcon.LucideI
 
 const TILE_SIZES = { md: 'size-10', lg: 'size-12', xl: 'size-16 rounded-xl' };
 const GLYPH_SIZES = { md: 'size-[18px]', lg: 'size-6', xl: 'size-7' };
-// An app's own icon is flattened to a white silhouette of its opaque pixels, so it
-// matches the named icons whatever colours the app drew it in.
-const MONOCHROME = 'brightness-0 invert';
 
 /** An installation or a preview. */
 type AppIconSource = Pick<AppInstallation, 'manifest' | 'icon_data_url'>;
@@ -50,90 +46,58 @@ function useStoredIcon(app: AppIconSource): [string | null, () => void] {
 }
 
 /**
- * An app's icon on its accent colour: a named icon, or the copy of its own icon that Ghost
- * stored, flattened to white, or in full colour filling the tile when it's solid. Falls back
- * to a default icon.
+ * An app's icon in `currentColor`, like the icons Admin ships: its named icon, or the copy
+ * of its own icon that Ghost stored, or a default icon.
+ *
+ * A stored icon is used as a mask over `currentColor`, which keeps only the shape of its
+ * opaque pixels, so it matches the named icons whatever colours the app drew it in. An
+ * icon with no transparent pixels flattens to a plain square. An `<image>` is still drawn
+ * as an image, so it can't run scripts or load anything, and it's fitted inside the square
+ * rather than cropped.
  */
-export const AppIcon: React.FC<AppIconProps> = ({ app, size = 'md', className }) => {
-  const { icon, accent_color: color } = app.manifest;
-  const glyph = GLYPH_SIZES[size];
-
+const AppGlyph: React.FC<{ app: AppIconSource; className: string; strokeWidth?: number }> = ({
+  app,
+  className,
+  strokeWidth,
+}) => {
   const [stored, onError] = useStoredIcon(app);
-  const solid = useSolidIcon(stored);
-  let content: React.ReactNode;
-  if (stored) {
-    content = (
-      <img
-        alt=""
-        className={cn(
-          solid ? 'size-full object-cover' : [glyph, MONOCHROME],
-          solid === undefined && 'invisible',
-        )}
-        src={stored}
-        onError={onError}
-      />
-    );
-  } else {
-    const Glyph = glyphFor(icon);
-    content = <Glyph className={glyph} strokeWidth={1.5} />;
+  // React 18 ids look like `:r1:`; the colons would end the `url(#…)` reference early.
+  const maskId = `app-icon-${React.useId().replace(/:/g, '')}`;
+  if (!stored) {
+    const Glyph = glyphFor(app.manifest.icon);
+    return <Glyph aria-hidden="true" className={className} strokeWidth={strokeWidth} />;
   }
-
   return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        'flex shrink-0 items-center justify-center overflow-hidden rounded-md text-white',
-        TILE_SIZES[size],
-        className,
-      )}
-      style={{ backgroundColor: color }}
-    >
-      {content}
-    </span>
+    <svg aria-hidden="true" className={cn('shrink-0', className)} viewBox="0 0 24 24">
+      <mask id={maskId} style={{ maskType: 'alpha' }}>
+        {/* React listens for `error` on an SVG `<image>` as it does on an `<img>`. */}
+        {/* eslint-disable-next-line react/no-unknown-property */}
+        <image height="24" href={stored} width="24" onError={onError} />
+      </mask>
+      <rect fill="currentColor" height="24" mask={`url(#${maskId})`} width="24" />
+    </svg>
   );
 };
 
-/**
- * An app's icon at sidebar size, drawn bare as an `svg` so the sidebar sizes and colours it
- * like its own icons. An app's own icon is used as a mask over `currentColor`, which keeps
- * only the shape of its opaque pixels. An `<image>` is still drawn as an image, so it can't
- * run scripts or load anything. A solid icon is drawn as it is, in full colour.
- */
-export const AppNavIcon: React.FC<{ app: AppIconSource }> = ({ app }) => {
-  const [stored, onError] = useStoredIcon(app);
-  const solid = useSolidIcon(stored);
-  // React 18 ids look like `:r1:`; the colons would end the `url(#…)` reference early.
-  const maskId = `app-nav-icon-${React.useId().replace(/:/g, '')}`;
-  if (stored && solid) {
-    return (
-      <img
-        alt=""
-        aria-hidden="true"
-        className="size-4 shrink-0 rounded-[4px] object-cover"
-        src={stored}
-        onError={onError}
-      />
-    );
-  }
-  if (stored) {
-    return (
-      <svg
-        aria-hidden="true"
-        className={cn(solid === undefined && 'invisible')}
-        viewBox="0 0 24 24"
-      >
-        <mask id={maskId} style={{ maskType: 'alpha' }}>
-          {/* React listens for `error` on an SVG `<image>` as it does on an `<img>`. */}
-          {/* eslint-disable-next-line react/no-unknown-property */}
-          <image height="24" href={stored} width="24" onError={onError} />
-        </mask>
-        <rect fill="currentColor" height="24" mask={`url(#${maskId})`} width="24" />
-      </svg>
-    );
-  }
-  const Glyph = glyphFor(app.manifest.icon);
-  return <Glyph aria-hidden="true" />;
-};
+/** An app's icon in white on a tile of its accent colour. */
+export const AppIcon: React.FC<AppIconProps> = ({ app, size = 'md', className }) => (
+  <span
+    aria-hidden="true"
+    className={cn(
+      'flex shrink-0 items-center justify-center rounded-md text-white',
+      TILE_SIZES[size],
+      className,
+    )}
+    style={{ backgroundColor: app.manifest.accent_color }}
+  >
+    <AppGlyph app={app} className={GLYPH_SIZES[size]} strokeWidth={1.5} />
+  </span>
+);
+
+/** An app's icon at sidebar size, drawn bare so the sidebar colours it like its own icons. */
+export const AppNavIcon: React.FC<{ app: AppIconSource }> = ({ app }) => (
+  <AppGlyph app={app} className="size-4" />
+);
 
 /** The band an app's icon sits into at the top of the install screen, in its accent color. */
 export const AppBanner: React.FC<{ className?: string; color: string }> = ({

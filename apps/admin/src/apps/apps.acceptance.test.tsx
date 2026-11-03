@@ -32,7 +32,6 @@ import {
   APP_ORIGIN,
   APP_PAGE_URL,
   ICON_DATA_URL,
-  SOLID_ICON_DATA_URL,
   ICON_URL,
   MANIFEST_URL,
   failAppFrame,
@@ -1372,7 +1371,8 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.row('Podcast')).toBeVisible();
     const row = appsScreen.row('Podcast').element();
     expect(imageSources(row)).toEqual([ICON_DATA_URL]);
-    await expect.poll(() => row.querySelector('img')!.naturalWidth).toBeGreaterThan(0);
+    // An SVG `<image>` has no naturalWidth, but decode() settles once it has loaded.
+    await (row.querySelector('image') as SVGImageElement & { decode(): Promise<void> }).decode();
     expect(imageSources(appsScreen.sidebarApps().element())).toEqual([ICON_DATA_URL]);
 
     await appsScreen.rowActions('Podcast').click();
@@ -1393,42 +1393,23 @@ describe('Managing apps', () => {
     await renderAdminApp('/apps', { labs });
 
     await expect.element(appsScreen.row('Podcast')).toBeVisible();
-    const tileImage = appsScreen.row('Podcast').element().querySelector('img')!;
-    await expect.poll(() => tileImage.classList.contains('invisible')).toBe(false);
-    expect(tileImage).toHaveClass('brightness-0', 'invert');
+    const tile = appsScreen.row('Podcast').element();
+    expect(tile.querySelector('img')).toBeNull();
+    const tileIcon = tile.querySelector('svg:has(mask)')!;
+    expect(tileIcon.querySelector('mask image')!.getAttribute('href')).toBe(ICON_DATA_URL);
+    expect(tileIcon.querySelector('rect')!.getAttribute('fill')).toBe('currentColor');
+    expect(tileIcon.parentElement).toHaveClass('text-white');
 
     const sidebar = appsScreen.sidebarApps().element();
-    const icon = sidebar.querySelector('[data-sidebar=menu-button] > svg')!;
-    await expect.poll(() => icon.classList.contains('invisible')).toBe(false);
     expect(sidebar.querySelector('img')).toBeNull();
+    const icon = sidebar.querySelector('[data-sidebar=menu-button] > svg:has(mask)')!;
     expect(icon.querySelector('mask image')!.getAttribute('href')).toBe(ICON_DATA_URL);
     expect(icon.querySelector('rect')!.getAttribute('fill')).toBe('currentColor');
+    expect(icon.getBoundingClientRect().width).toBe(16);
     const nativeIcon = document.querySelector(
       '[data-sidebar=menu-button][data-active=false] > svg.lucide',
     )!;
     expect(getComputedStyle(icon).color).toBe(getComputedStyle(nativeIcon).color);
-  });
-
-  it('draws a solid app icon in full colour, filling its tile', async () => {
-    fakeInstallations([
-      installation({
-        manifest: manifest({ icon: { url: ICON_URL } }),
-        icon_data_url: SOLID_ICON_DATA_URL,
-      }),
-    ]);
-
-    await renderAdminApp('/apps', { labs });
-
-    await expect.element(appsScreen.row('Podcast')).toBeVisible();
-    const tileImage = appsScreen.row('Podcast').element().querySelector('img')!;
-    await expect.poll(() => tileImage.classList.contains('object-cover')).toBe(true);
-    expect(tileImage).not.toHaveClass('brightness-0');
-
-    const sidebar = appsScreen.sidebarApps().element();
-    await expect
-      .poll(() => sidebar.querySelector('img')?.getAttribute('src'))
-      .toBe(SOLID_ICON_DATA_URL);
-    expect(sidebar.querySelector('image')).toBeNull();
   });
 
   it('draws the default icon for an app’s own icon without a stored copy', async () => {
