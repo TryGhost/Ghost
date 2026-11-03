@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { z } from 'zod';
 
-const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
+const {
+  agentProvider,
+  fixtureManager,
+  mockManager,
+  hostLimits,
+} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 
 // A list field offers options its publisher chose and takes one or several of them. Its options and
@@ -12,6 +17,7 @@ describe('List custom fields', function () {
     put: (_url: string) => any;
     post: (_url: string) => any;
     loginAsOwner: () => Promise<void>;
+    loginAsEditor: () => Promise<void>;
   };
 
   const ANIMALS = { options: ['Dog', 'Cat'], multiple: true };
@@ -403,6 +409,90 @@ describe('List custom fields', function () {
 
       assert.deepEqual(await listedKeys(), [kept.key]);
       await agent.get(`members/metafields/custom/${retired.key}/`).expectStatus(404);
+    });
+  });
+
+  describe('Values members hold', function () {
+    const heldValues = async (key: string) => {
+      const { body } = await agent
+        .get(`members/metafields/custom/${key}/values/`)
+        .expectStatus(200);
+      return body.values.map(({ value }: { value: string }) => value);
+    };
+
+    it('names each option members hold once, sorted by text, including ones the field no longer offers', async function () {
+      const field = await createList({ options: ['Dolphin', 'Dog', 'Cat'], multiple: true });
+      await setValues(await createMember(), { [field.key]: ['Dolphin', 'Dog'] });
+      await setValues(await createMember(), { [field.key]: ['Dog'] });
+      await setValues(await createMember(), { [field.key]: ['Cat'] });
+      await editSettings(field.key, ANIMALS);
+
+      assert.deepEqual(await heldValues(field.key), ['Cat', 'Dog', 'Dolphin']);
+    });
+
+    it('names none for a list nobody has answered', async function () {
+      const field = await createList(ANIMALS);
+      assert.deepEqual(await heldValues(field.key), []);
+    });
+
+    it('refuses a field that is not a list, and one that does not exist', async function () {
+      const { body } = await agent
+        .post('members/metafields/custom/')
+        .body({ members_metafields: [{ name: 'Company', type: 'short_text' }] })
+        .expectStatus(201);
+
+      await agent
+        .get(`members/metafields/custom/${body.members_metafields[0].key}/values/`)
+        .expectStatus(422);
+      await agent.get('members/metafields/custom/nothing_here/values/').expectStatus(404);
+    });
+
+    it('is not shown to a role that cannot browse members', async function () {
+      const field = await createList(ANIMALS);
+      await agent.loginAsEditor();
+      try {
+        await agent.get(`members/metafields/custom/${field.key}/values/`).expectStatus(403);
+      } finally {
+        await agent.loginAsOwner();
+      }
+    });
+
+    // A site that defined fields with the flag on can still filter by them with it off.
+    it('is read while the flag is off', async function () {
+      const field = await createList(ANIMALS);
+      await setValues(await createMember(), { [field.key]: ['Cat'] });
+      mockManager.mockLabsDisabled('membersCustomFields');
+
+      assert.deepEqual(await heldValues(field.key), ['Cat']);
+    });
+
+    it('is not found for an archived field, or for any field while the host switches custom fields off', async function () {
+      const archived = await createList(ANIMALS);
+      await setValues(await createMember(), { [archived.key]: ['Cat'] });
+      await agent
+        .put(`members/metafields/custom/${archived.key}/`)
+        .body({ members_metafields: [{ status: 'archived' }] })
+        .expectStatus(200);
+      await agent.get(`members/metafields/custom/${archived.key}/values/`).expectStatus(404);
+
+      const active = await createList(ANIMALS, 'Favourite foods');
+      await setValues(await createMember(), { [active.key]: ['Dog'] });
+      await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+      try {
+        await agent.get(`members/metafields/custom/${active.key}/values/`).expectStatus(404);
+      } finally {
+        await hostLimits.restoreHostLimits();
+      }
+    });
+
+    it("reads what members hold of a list whose settings Ghost can't read", async function () {
+      const field = await createList(ANIMALS);
+      await setValues(await createMember(), { [field.key]: ['Cat'] });
+      await models.Base.knex('members_metafields')
+        .where({ namespace: 'custom', key: field.key })
+        .update({ settings: 'not json' });
+
+      assert.deepEqual(await heldValues(field.key), ['Cat']);
     });
   });
 });

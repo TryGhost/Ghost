@@ -5,6 +5,7 @@ import type { Knex } from 'knex';
 import { z } from 'zod';
 import {
   isRecordValue,
+  matchField,
   matchShape,
   valueSchemaFor,
   type FieldType,
@@ -44,11 +45,14 @@ import {
   type FieldIdentity,
   type FieldSource,
 } from './queries';
-import { MemberAccessSchema, canWrite, type Audience } from './access';
+import { ADMIN, MemberAccessSchema, canWrite, type Audience } from './access';
 import { readStoredField } from './stored-fields';
-import { storedValueAs, valueRowsToWrite, valuesFromRows } from './storage';
+import { heldOptionTexts, storedValueAs, valueRowsToWrite, valuesFromRows } from './storage';
 
 const VALUES_TABLE = 'members_metafield_values';
+
+/** One option a list field has been answered with: its path, and the text one of its rows holds. */
+const HeldOptionRow = z.object({ path: z.string(), value_text: z.string() });
 const CHANGE_EVENTS_TABLE = 'members_metafield_change_events';
 const MEMBERS_TABLE = 'members';
 
@@ -700,6 +704,58 @@ export class MetafieldValuesService {
 
     // Joins the caller's transaction rather than nesting a savepoint under it.
     await (executor ? apply(executor) : this.knex.transaction(apply));
+  }
+
+  /**
+   * The text of every option members hold for a list field, whether or not the field still offers
+   * it, sorted by text. The members filter offers them all, so a publisher can find who answered
+   * with an option after it was removed. A field that isn't a list is refused, and one that doesn't
+   * exist, or can't be read even with its type's defaults, is not found.
+   *
+   * Only an active field's values are read, as the filter offers only active fields. An archived
+   * field is not found, and so is every field while the host switches custom fields off, since they
+   * all read as archived then, so this read gives nothing the switched-off filter doesn't offer.
+   *
+   * Read from the table's key: each option a field has been answered with is one path, and every row
+   * under a path holds the same text, so one row is read for each.
+   */
+  async heldValues(field: FieldIdentity): Promise<string[]> {
+    const [row] = await this.fields
+      .definitions(this.knex, { audience: ADMIN, status: ACTIVE_ONLY, field })
+      .read.select(...TYPED_FIELD_COLUMNS);
+    // A field that can't be read even with its type's defaults is treated as missing, as the
+    // definitions read treats it.
+    const typed =
+      row === undefined
+        ? null
+        : readStoredField(row, DbTypedField, { reader: 'values', tracking: this.tracking });
+    if (!typed) {
+      throw new errors.NotFoundError({ message: 'Custom field not found.' });
+    }
+    const notAList = (): never => {
+      throw new errors.ValidationError({
+        message: "Only a list field's values can be read.",
+        property: 'key',
+      });
+    };
+    return matchField<TypedSettings, Promise<string[]>>(typed, {
+      scalar: notAList,
+      record: notAList,
+      set: async () => {
+        const held = this.knex(VALUES_TABLE)
+          .distinct('path')
+          .where(fieldReference(field))
+          .as('held');
+        const rows = await this.knex.from(held).select('held.path', {
+          value_text: this.knex(VALUES_TABLE)
+            .select('value_text')
+            .where(fieldReference(field))
+            .whereRaw('?? = ??', [`${VALUES_TABLE}.path`, 'held.path'])
+            .limit(1),
+        });
+        return heldOptionTexts(z.array(HeldOptionRow).parse(rows));
+      },
+    });
   }
 
   /**
