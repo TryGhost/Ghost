@@ -832,7 +832,7 @@ overrides:
   '@tryghost/nql-lang': 0.7.0
   jackspeak: 4.2.3
   moment: 2.31.0
-  moment-timezone: 0.6.5
+  moment-timezone: 0.6.6
   '@types/bookshelf>knex': 2.4.2
   juice>cheerio: 1.2.0
   mppx>ox: 0.14.59
@@ -1178,8 +1178,8 @@ importers:
         specifier: 2.31.0
         version: 2.31.0
       moment-timezone:
-        specifier: 0.6.5
-        version: 0.6.5
+        specifier: 0.6.6
+        version: 0.6.6
       papaparse:
         specifier: 5.5.4
         version: 5.5.4
@@ -2513,8 +2513,8 @@ importers:
         specifier: 2.31.0
         version: 2.31.0
       moment-timezone:
-        specifier: 0.6.5
-        version: 0.6.5
+        specifier: 0.6.6
+        version: 0.6.6
       mppx:
         specifier: 'catalog:'
         version: 0.17.0(@x402/core@2.29.0)(@x402/hono@2.29.0(hono@4.13.14))(express@4.22.3(supports-color@10.2.2))(hono@4.13.14)(viem@2.57.13)
@@ -13794,8 +13794,8 @@ packages:
   mlly@1.8.2:
     resolution: {integrity: sha512-d+ObxMQFmbt10sretNDytwt85VrbkhhUA/JBGm1MPaWJ65Cl4wOgLaB1NYvJSZ0Ef03MMEU/0xpPMXUIQ29UfA==}
 
-  moment-timezone@0.6.5:
-    resolution: {integrity: sha512-KKzZAxGv2Qx4cnk6eSlvf4C+DLFW52vmMY5MN7UARY7GONbozkutylQG3DrrtmLCTXdQ5XZrqao9cI16bLFzXA==}
+  moment-timezone@0.6.6:
+    resolution: {integrity: sha512-LF5AAYsMduXFW2ungr/D9JqNq9ykZyhWgYG6wFtdGZW5ZlBDTBgTUFqW8EC7Fa+Dvs3IMZxlWkSR09sW2D/+0w==}
 
   moment@2.31.0:
     resolution: {integrity: sha512-0acOTfMiWOheYS4eoWb80yYMb/JLvVv9SHbs2PehaDzfUG0Bw855SKyk0IKTnPGa5+U2bmi3W68l1+sGLX/pvw==}
@@ -21090,7 +21090,7 @@ snapshots:
     dependencies:
       '@tryghost/errors': 3.4.5
       lodash: 4.18.1
-      moment-timezone: 0.6.5
+      moment-timezone: 0.6.6
 
   '@tryghost/bookshelf-custom-query@2.3.19': {}
 
@@ -21395,7 +21395,7 @@ snapshots:
       lodash: 4.18.1
       lru-cache: 11.5.3
       moment: 2.31.0
-      moment-timezone: 0.6.5
+      moment-timezone: 0.6.6
       remark: 11.0.2
       remark-footnotes: 1.0.0
       unist-util-visit: 2.0.3
@@ -21405,7 +21405,7 @@ snapshots:
       '@tryghost/errors': 3.4.5
       '@tryghost/tpl': 2.3.19
       lodash: 4.18.1
-      moment-timezone: 0.6.5
+      moment-timezone: 0.6.6
       validator: 13.15.35
 
   '@tryghost/version@2.3.19':
@@ -26950,7 +26950,7 @@ snapshots:
       pkg-types: 1.3.1
       ufo: 1.6.4
 
-  moment-timezone@0.6.5:
+  moment-timezone@0.6.6:
     dependencies:
       moment: 2.31.0
 

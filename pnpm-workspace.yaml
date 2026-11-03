@@ -190,7 +190,7 @@ catalog:
   lucide-react: 1.23.0
   mingo: 2.5.3
   moment: 2.31.0
-  moment-timezone: 0.6.5
+  moment-timezone: 0.6.6
   msw: 2.14.6
   nock: 14.0.17
   node-html-markdown: 2.0.0
