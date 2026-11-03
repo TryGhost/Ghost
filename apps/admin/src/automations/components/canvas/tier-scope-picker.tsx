@@ -242,7 +242,6 @@ export function TierScopePicker<TStandalone extends string>({
   };
 
   const optionId = (index: number) => `${listId}-option-${index}`;
-  const headingId = `${listId}-tiers`;
 
   const renderRow = (row: Row, index: number) => {
     const isHighlighted = index === highlightedIndex;
@@ -367,13 +366,7 @@ export function TierScopePicker<TStandalone extends string>({
                 {standaloneRows.length > 0 && (
                   <div className="-mx-1 my-1 h-px bg-border" role="separator" />
                 )}
-                <div aria-labelledby={headingId} role="group">
-                  <div
-                    className="px-2 py-1.5 text-xs font-medium text-muted-foreground"
-                    id={headingId}
-                  >
-                    {tiersHeading}
-                  </div>
+                <div aria-label={tiersHeading} role="group">
                   {tierRows}
                 </div>
               </>
