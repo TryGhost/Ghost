@@ -69,7 +69,7 @@ describe('createIconFetcher', function () {
       [
         ICON_URL,
         {
-          headers: { accept: 'image/svg+xml, image/png, image/jpeg, image/gif, image/webp' },
+          headers: { accept: 'image/svg+xml, image/png, image/webp' },
           maxBytes: 16 * 1024,
         },
       ],
@@ -92,16 +92,32 @@ describe('createIconFetcher', function () {
     );
   });
 
-  for (const contentType of ['text/html', 'image/svg', 'application/octet-stream', null]) {
+  for (const contentType of [
+    'image/gif',
+    'text/html',
+    'image/svg',
+    'application/octet-stream',
+    null,
+  ]) {
     it(`refuses an icon served as ${contentType ?? 'no type'}`, async function () {
       const { fetchIcon } = setup({ fetched: serving(ICON, contentType) });
 
       assertRefused(
         await refusal(fetchIcon({ url: ICON_URL })),
-        'Expected an SVG, PNG, JPEG, GIF or WebP image',
+        'Expected an SVG, PNG or WebP image',
       );
     });
   }
+
+  it('refuses a JPEG icon, saying it has no transparency', async function () {
+    const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xe0]);
+    const { fetchIcon } = setup({ fetched: serving(jpeg, 'image/jpeg') });
+
+    assertRefused(
+      await refusal(fetchIcon({ url: ICON_URL })),
+      'Expected an SVG, PNG or WebP image, since a JPEG has no transparency',
+    );
+  });
 
   describe('when the app can’t be read', function () {
     it('refuses an icon that does not load, saying only the status and logging why', async function () {
