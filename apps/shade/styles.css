@@ -47,18 +47,6 @@
   }
 }
 
-/* admin7Design: a filled field reads as a dark well on a tinted panel, so fields
-   inside one go back to the control surface and a thin border, with lighter chips. */
-[data-admin7-design='true'] .fields-on-tint {
-  --field-surface: var(--control-surface);
-  --field-readonly-surface: var(--control-readonly-surface);
-  --field-disabled-surface: var(--control-disabled-surface);
-  --field-border: var(--control-border);
-  --field-chip-surface: var(--secondary);
-  --field-chip-internal-border: var(--field-chip-surface);
-  --dropzone-surface: transparent;
-}
-
 /* admin7Design: banners are a flat color with darker shades of it for text and no
    outline. Text inside takes those shades, whichever tone it asks for. */
 [data-admin7-design='true']

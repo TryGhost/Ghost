@@ -153,7 +153,7 @@ const Sidebar = React.forwardRef<
         <div
           ref={ref}
           className={cn(
-            'fields-on-tint flex h-full w-(--sidebar-width) flex-col bg-sidebar text-sidebar-foreground',
+            'flex h-full w-(--sidebar-width) flex-col bg-sidebar text-sidebar-foreground',
             className,
           )}
           id={sidebarId}
@@ -169,7 +169,7 @@ const Sidebar = React.forwardRef<
       return (
         <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
           <SheetContent
-            className="fields-on-tint w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+            className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
             data-mobile="true"
             data-sidebar="sidebar"
             id={sidebarId}
@@ -224,7 +224,7 @@ const Sidebar = React.forwardRef<
           {...props}
         >
           <div
-            className="fields-on-tint flex size-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
+            className="flex size-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
             data-sidebar="sidebar"
           >
             {children}

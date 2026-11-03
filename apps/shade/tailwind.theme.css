@@ -383,7 +383,6 @@
   --color-field-chip-surface: var(--field-chip-surface);
   --color-field-chip-internal-surface: var(--field-chip-internal-surface);
   --color-field-chip-internal-border: var(--field-chip-internal-border);
-  --color-dropzone-surface: var(--dropzone-surface);
 }
 
 @keyframes toasterIn {

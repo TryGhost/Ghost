@@ -11,7 +11,6 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, React.ComponentProps<'tex
         className={cn(
           inputSurface('self'),
           inputSurfaceClasses.disabledFieldSelf,
-          inputSurfaceClasses.typingSelf,
           'flex min-h-[80px] w-full max-w-none px-3 py-2 text-(length:--text-field) placeholder:text-muted-foreground',
           className,
         )}

@@ -45,9 +45,6 @@ export const inputSurfaceClasses = {
   disabledSelf: 'disabled:cursor-not-allowed disabled:opacity-50',
   disabledFieldSelf:
     'disabled:bg-field-disabled-surface disabled:text-muted-foreground disabled:opacity-100 disabled:hover:bg-field-disabled-surface',
-  // admin7Design: a field you type in drops its fill while focused, for contrast.
-  typingSelf: 'in-data-[admin7-design=true]:focus-visible:bg-control-surface',
-  typingWithin: 'in-data-[admin7-design=true]:has-[:focus-visible]:bg-control-surface',
 } as const;
 
 export function inputSurface(mode: 'self' | 'within' = 'self') {

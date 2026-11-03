@@ -137,10 +137,9 @@ Settings, the editor, the automation editor, mobile and pages without a
 navigation inside the same sidebar, pinned without changing the stored mode. Mobile keeps the sidebar sheet, and the flag-off path
 preserves the docked sidebar and the separate Settings sidebar.
 
-The `admin7Design` milestone also fills text-entry fields with no border and 4px
-corners, gives 16px icons a shared stroke and sets column headers in a small
-uppercase label style. Fields inside a tinted panel with the `fields-on-tint`
-class are white with a thin border instead. Colored banners are a flat color with
+The `admin7Design` milestone also gives text-entry fields 4px corners and 14px
+text, gives 16px icons a shared stroke and sets column headers in a small
+uppercase label style. Colored banners are a flat color with
 darker shades of it for text and no outline. On member detail, sections sit under
 larger headings, with stats and list text following the prototype. Checkboxes, radios, Filter bar items
 and Koenig keep their current look, and other icon sizes keep their own stroke.

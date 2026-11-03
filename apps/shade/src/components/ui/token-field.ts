@@ -1,11 +1,10 @@
-import { inputSurface, inputSurfaceClasses } from '@/components/ui/input-surface';
+import { inputSurface } from '@/components/ui/input-surface';
 import { cn } from '@/lib/utils';
 
 /** Shared chip density for token inputs such as labels, tags and authors. */
 export const tokenFieldClasses = {
   field: cn(
     inputSurface('within'),
-    inputSurfaceClasses.typingWithin,
     'relative flex min-h-(--control-height) w-full cursor-text flex-wrap items-center gap-1 p-0.75 text-(length:--text-field)',
   ),
   input:

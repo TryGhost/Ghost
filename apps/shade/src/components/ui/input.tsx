@@ -11,7 +11,6 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(
         className={cn(
           inputSurface('self'),
           inputSurfaceClasses.disabledFieldSelf,
-          inputSurfaceClasses.typingSelf,
           'flex h-(--control-height) w-full px-3 py-1 text-(length:--text-field) file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground',
           className,
         )}

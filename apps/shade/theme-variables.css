@@ -149,17 +149,14 @@
   --control-readonly-surface: var(--color-gray-50);
   --control-disabled-surface: var(--color-gray-100);
   --control-border: color-mix(in oklab, var(--color-gray-200), var(--color-gray-300));
-  /* Text-entry fields are filled and borderless. Buttons, checkboxes and radios
-     keep the --control-* tokens above. The fill sits between gray-100 and gray-200,
-     tuned by eye from the Admin7Vision prototype's lightness (96.39%). */
-  --field-surface: oklch(96.9% 0.0007 255);
-  --field-readonly-surface: var(--field-surface);
-  --field-disabled-surface: var(--field-surface);
-  --field-border: transparent;
-  --field-chip-surface: var(--color-gray-300);
+  /* Text-entry fields are white with a light outline. */
+  --field-surface: var(--control-surface);
+  --field-readonly-surface: var(--control-readonly-surface);
+  --field-disabled-surface: var(--control-disabled-surface);
+  --field-border: var(--control-border);
+  --field-chip-surface: var(--secondary);
   --field-chip-internal-surface: transparent;
   --field-chip-internal-border: var(--field-chip-surface);
-  --dropzone-surface: var(--field-surface);
   --radius-field: var(--radius-sm);
   --text-field: var(--text-control-lg);
   /* Stroke of 16px icons, in the icon's 24-unit grid: about 1.17px on screen. */
@@ -317,7 +314,6 @@
   --field-chip-surface: var(--secondary);
   --field-chip-internal-surface: color-mix(in oklab, var(--secondary) 30%, transparent);
   --field-chip-internal-border: var(--border);
-  --dropzone-surface: transparent;
   --radius-field: var(--radius-control);
   --text-field: var(--text-control);
 }
@@ -348,10 +344,6 @@
   --banner-destructive-surface: var(--color-red-900);
   --banner-destructive-foreground: var(--color-red-300);
   --banner-destructive-secondary: var(--color-red-300);
-
-  /* Fields are filled in dark mode too. */
-  --field-surface: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
-  --field-chip-surface: color-mix(in oklab, var(--color-gray-800) 40%, var(--color-gray-900));
 
   --tab-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
   --tab-active: color-mix(in oklab, oklch(36.77% 0.0022 255) 60%, transparent);
@@ -459,8 +451,6 @@
 .dark [data-admin7-design='false'] {
   --state-warning-surface: color-mix(in oklab, var(--state-warning) 10%, transparent);
   --state-warning-border: color-mix(in oklab, var(--state-warning) 40%, transparent);
-  --field-surface: var(--control-surface);
-  --field-chip-surface: var(--secondary);
   --color-black: oklch(20.38% 0.0067 258.4);
   /* Less-saturated gray scale for dark mode (lightness + hue preserved, chroma halved again) */
   --color-gray-50: oklch(98.54% 0.0003 286.4);
