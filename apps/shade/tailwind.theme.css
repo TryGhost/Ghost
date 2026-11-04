@@ -373,6 +373,7 @@
   --color-table-row-hover: var(--table-row-hover);
   --color-map-surface: var(--map-surface);
   --color-publish-accent: var(--publish-accent);
+  --color-character-count: var(--character-count);
   --color-table-row-selected: var(--table-row-selected);
   --color-control-surface: var(--control-surface);
   --color-control-readonly-surface: var(--control-readonly-surface);

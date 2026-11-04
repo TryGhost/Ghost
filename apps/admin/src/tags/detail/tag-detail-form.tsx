@@ -62,7 +62,7 @@ const UsedCharacters: React.FC<{
     <p className="text-sm text-muted-foreground">
       {prefix}: {formatNumber(limit)} characters. You’ve used{' '}
       <span
-        className={cn('font-semibold', used > limit ? 'text-destructive' : 'text-state-success')}
+        className={cn('font-semibold', used > limit ? 'text-destructive' : 'text-character-count')}
       >
         {formatNumber(used)}
       </span>

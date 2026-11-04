@@ -408,6 +408,7 @@ export const State: Story = {
       swatches={[
         { name: 'info', cssVar: '--state-info' },
         { name: 'success', cssVar: '--state-success' },
+        { name: 'character count', cssVar: '--character-count' },
         { name: 'warning', cssVar: '--state-warning' },
         { name: 'warning surface', cssVar: '--state-warning-surface' },
         { name: 'warning border', cssVar: '--state-warning-border' },

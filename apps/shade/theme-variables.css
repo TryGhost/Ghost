@@ -73,6 +73,7 @@
   /* Publishing is a celebration: brighter than --state-success, which has to pass
      AA as small text. */
   --publish-accent: var(--color-green-600);
+  --character-count: var(--color-green-600);
   --state-success-foreground: var(--color-black);
   --state-warning: var(--color-yellow-700);
   /* --state-warning is dark enough for text, so a tint or a solid mark made from it
@@ -155,7 +156,7 @@
   --field-surface: var(--control-surface);
   --field-readonly-surface: var(--control-readonly-surface);
   --field-disabled-surface: var(--control-disabled-surface);
-  --field-border: var(--control-border);
+  --field-border: var(--color-gray-300);
   --field-chip-surface: var(--secondary);
   --field-chip-internal-surface: transparent;
   --field-chip-internal-border: var(--field-chip-surface);
@@ -274,6 +275,7 @@
   --state-info: var(--color-blue-500);
   --state-success: var(--color-green-500);
   --publish-accent: var(--state-success);
+  --character-count: var(--state-success);
   --state-warning: var(--color-yellow-500);
   --state-warning-surface: color-mix(in oklab, var(--state-warning) 10%, transparent);
   --state-warning-border: color-mix(in oklab, var(--state-warning) 40%, transparent);
@@ -331,6 +333,7 @@
   --color-sidebar-bg: oklch(0.204 0.002 255);
 
   --publish-accent: var(--state-success);
+  --character-count: var(--state-success);
   --state-warning-surface: var(--color-yellow-900);
   --state-warning-border: transparent;
   --state-warning-fill: var(--state-warning);
@@ -358,6 +361,7 @@
   --control-readonly-surface: var(--color-gray-950);
   --control-disabled-surface: var(--color-gray-950);
   --control-border: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
+  --field-border: var(--control-border);
   --control-pressed-shadow: lch(0 0 0 / 0.07) 0px 1px 2px 0px inset;
   --control-outline-shadow:
     lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
