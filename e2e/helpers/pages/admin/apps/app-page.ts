@@ -1,15 +1,8 @@
 import * as sel from '@tryghost/test-data/selectors/apps';
 import { AdminPage } from '@/admin-pages';
 import { AppInstallDialog } from './app-install-dialog';
-import {
-  type BridgeFetchRequest,
-  type BridgeFetchResult,
-  FIXTURE_APP_PATH_TEST_ID,
-  type FixtureAppHooks,
-} from '@/helpers/services/apps';
-import { Frame, Locator, Page } from '@playwright/test';
-
-type FixtureAppWindow = Window & { __fixtureApp: FixtureAppHooks };
+import { FixtureAppView } from './fixture-app-view';
+import { Locator, Page } from '@playwright/test';
 
 /** An installed app's page in Admin, which frames the app's own page. */
 export class AppPage extends AdminPage {
@@ -18,8 +11,8 @@ export class AppPage extends AdminPage {
   readonly needsApproval: Locator;
   readonly notInstalled: Locator;
   readonly unavailable: Locator;
-  /** The path the app's page was served from, which the fixture app shows. */
-  readonly appPagePath: Locator;
+  /** The fixture app's page in the frame. */
+  readonly app: FixtureAppView;
   readonly installDialog: AppInstallDialog;
 
   constructor(page: Page) {
@@ -28,7 +21,7 @@ export class AppPage extends AdminPage {
     this.needsApproval = page.getByTestId(sel.appNeedsApproval);
     this.notInstalled = page.getByTestId(sel.appNotInstalled);
     this.unavailable = page.getByTestId(sel.appUnavailable);
-    this.appPagePath = this.frame.contentFrame().getByTestId(FIXTURE_APP_PATH_TEST_ID);
+    this.app = new FixtureAppView(this.frame.contentFrame());
     this.installDialog = new AppInstallDialog(page);
   }
 
@@ -43,44 +36,6 @@ export class AppPage extends AdminPage {
       throw new Error(`Not on an app's page: ${this.page.url()}`);
     }
     return match[1];
-  }
-
-  /** The document in the app's frame, to call into it or to check it's gone once its session ends. */
-  async appFrame(): Promise<Frame> {
-    const frame = await (await this.frame.elementHandle())?.contentFrame();
-    if (!frame) {
-      throw new Error('The app’s frame has no document');
-    }
-    return frame;
-  }
-
-  /** The revision of the installation the app's session started on. */
-  async sessionRevision(): Promise<number> {
-    const frame = await this.appFrame();
-    return frame.evaluate(async () => {
-      const context = await (window as unknown as FixtureAppWindow).__fixtureApp.started;
-      return context.session.revision;
-    });
-  }
-
-  /** Has the app's page call the Admin API through the bridge. */
-  async bridgeFetch(request: BridgeFetchRequest, frame?: Frame): Promise<BridgeFetchResult> {
-    frame ??= await this.appFrame();
-    return frame.evaluate(
-      (sent) => (window as unknown as FixtureAppWindow).__fixtureApp.fetch(sent),
-      request,
-    );
-  }
-
-  /**
-   * Has the app's page start a bridge call without waiting for it, for a call that's still running
-   * when its session ends.
-   */
-  async startBridgeFetch(request: BridgeFetchRequest, frame?: Frame): Promise<void> {
-    frame ??= await this.appFrame();
-    await frame.evaluate((sent) => {
-      void (window as unknown as FixtureAppWindow).__fixtureApp.fetch(sent);
-    }, request);
   }
 
   /**

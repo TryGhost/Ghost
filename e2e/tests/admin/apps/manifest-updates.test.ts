@@ -48,7 +48,7 @@ test.describe('Ghost Admin - App manifest updates', () => {
     await appPage.installDialog.approveChanges();
 
     await expect(appPage.frame).toBeVisible();
-    await expect(appPage.appPagePath).toHaveText('/app-v2.html');
+    await expect(appPage.app.servedFrom).toHaveText('/app-v2.html');
   });
 
   test('reverting a change before it is approved ends the suspension', async ({
@@ -68,7 +68,7 @@ test.describe('Ghost Admin - App manifest updates', () => {
     await reopenApp(page, installationId);
 
     await expect(appPage.frame).toBeVisible();
-    await expect(appPage.appPagePath).toHaveText('/app.html');
+    await expect(appPage.app.servedFrom).toHaveText('/app.html');
     await detailsPage.gotoDetails(installationId);
     await expect(detailsPage.historyTitle(0)).toHaveText('Resumed, changes withdrawn');
   });
@@ -100,7 +100,6 @@ test.describe('Ghost Admin - App manifest updates', () => {
   }) => {
     const appPage = new AppPage(page);
     const installationId = await installApp(page, fixtureApp.manifestUrl);
-    const oldFrame = await appPage.appFrame();
 
     // Opening the app in another tab re-checks it, which suspends it for the new page URL.
     fixtureApp.setPageUrl('app-v2.html');
@@ -114,6 +113,6 @@ test.describe('Ghost Admin - App manifest updates', () => {
 
     await expect(appPage.needsApproval).toBeVisible();
     await expect(appPage.installDialog.approveChangesButton).toBeVisible();
-    await expect.poll(() => oldFrame.isDetached()).toBe(true);
+    await expect(appPage.frame).toHaveCount(0);
   });
 });

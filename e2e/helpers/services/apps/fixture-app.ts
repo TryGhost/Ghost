@@ -28,32 +28,10 @@ export interface FixtureAppManifest {
   development: true;
 }
 
-/** A request the app sends Admin with the SDK's `ghost.fetch`. */
-export interface BridgeFetchRequest {
-  path: string;
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  headers?: Record<string, string>;
-  body?: string;
-}
-
 /**
- * How Admin answered the app's `ghost.fetch`: the response, or the SDK's error as its code and
- * message, as in `blocked: …`.
- */
-export type BridgeFetchResult =
-  | { status: number; body: string; error?: undefined }
-  | { error: string; status?: undefined; body?: undefined };
-
-/** What the fixture app's page exposes to the test as `window.__fixtureApp`. */
-export interface FixtureAppHooks {
-  /** Resolves with the start context once Admin has started the page. */
-  started: Promise<{ session: { revision: number } }>;
-  fetch(request: BridgeFetchRequest): Promise<BridgeFetchResult>;
-}
-
-/**
- * The fixture app's page script. It imports the app SDK as an app would and sets its hooks before
- * Admin can start it, so they're there by the time Admin shows the frame.
+ * The fixture app's page script. It connects with the app SDK as an app would. Its button calls
+ * the Admin API with `ghost.fetch` and shows the response's status and body, or the SDK's error as
+ * its code and message, as in `blocked: …`.
  */
 const PAGE_SCRIPT = `
 import { connect } from '@tryghost/app-sdk';
@@ -61,18 +39,18 @@ import { connect } from '@tryghost/app-sdk';
 document.querySelector('[data-testid=${JSON.stringify(FIXTURE_APP_PATH_TEST_ID)}]').textContent = location.pathname;
 
 const connecting = connect();
+const path = document.querySelector('input');
+const result = document.querySelector('output');
 
-window.__fixtureApp = {
-  started: connecting.then((ghost) => ({ session: ghost.session })),
-  async fetch({ path, ...init }) {
-    try {
-      const response = await (await connecting).fetch(path, init);
-      return { status: response.status, body: await response.text() };
-    } catch (error) {
-      return { error: error.code + ': ' + error.message };
-    }
-  },
-};
+document.querySelector('button').addEventListener('click', async () => {
+  result.textContent = 'Calling ' + path.value;
+  try {
+    const response = await (await connecting).fetch(path.value);
+    result.textContent = response.status + ' ' + (await response.text());
+  } catch (error) {
+    result.textContent = error.code + ': ' + error.message;
+  }
+});
 `;
 
 /**
@@ -98,6 +76,9 @@ function pageHtml(appSdkBundle: string): string {
 <body>
 <h1>Fixture app</h1>
 <p>Served from <code data-testid="${FIXTURE_APP_PATH_TEST_ID}"></code></p>
+<label>Admin API path <input value="/posts/"></label>
+<button type="button">Call the Admin API</button>
+<output></output>
 <script type="module">${PAGE_SCRIPT}</script>
 </body>
 </html>`;
@@ -117,7 +98,8 @@ function readAppSdkBundle(): string {
 
 /**
  * A small app for the apps E2E tests. It serves its manifest, which a test can change between
- * steps the way a developer would redeploy, and an Admin page that connects to Admin's bridge.
+ * steps the way a developer would redeploy, and an Admin page that connects to Admin and has a
+ * button that calls the Admin API.
  *
  * The page URL in the manifest is relative to the manifest, and every path ending in `.html` serves
  * the page, which shows the path it was served from. A second fixture app with the same ID is the

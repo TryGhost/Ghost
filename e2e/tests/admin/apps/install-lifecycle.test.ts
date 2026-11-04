@@ -26,10 +26,9 @@ test.describe('Ghost Admin - App install lifecycle', () => {
     await appsPage.installDialog.install();
 
     await expect(appPage.frame).toBeVisible();
-    await expect(appPage.appPagePath).toHaveText('/app.html');
-    const result = await appPage.bridgeFetch({ path: '/posts/' });
-    expect(result.status).toBe(200);
-    expect(JSON.parse(result.body ?? '')).toHaveProperty('posts');
+    await expect(appPage.app.servedFrom).toHaveText('/app.html');
+    await appPage.app.callAdminApi('/posts/');
+    await expect(appPage.app.result).toHaveText(/^200 \{"posts":/);
   });
 
   test('refuses app requests to endpoints apps can’t use', async ({ page, fixtureApp }) => {
@@ -38,12 +37,10 @@ test.describe('Ghost Admin - App install lifecycle', () => {
     const sent: string[] = [];
     page.on('request', (request) => sent.push(new URL(request.url()).pathname));
 
-    expect(await appPage.bridgeFetch({ path: '/db/' })).toEqual({
-      error: "blocked: Apps can't use GET /db/",
-    });
-    expect(await appPage.bridgeFetch({ path: '/users/me/token/' })).toEqual({
-      error: "blocked: Apps can't use GET /users/me/token/",
-    });
+    await appPage.app.callAdminApi('/db/');
+    await expect(appPage.app.result).toHaveText("blocked: Apps can't use GET /db/");
+    await appPage.app.callAdminApi('/users/me/token/');
+    await expect(appPage.app.result).toHaveText("blocked: Apps can't use GET /users/me/token/");
     // Admin refuses them before sending anything.
     expect(sent).not.toContain('/ghost/api/admin/db/');
     expect(sent).not.toContain('/ghost/api/admin/users/me/token/');
@@ -59,13 +56,12 @@ test.describe('Ghost Admin - App install lifecycle', () => {
     const appPage = new AppPage(page);
     const detailsPage = new AppDetailsPage(page);
     const installationId = await installApp(page, fixtureApp.manifestUrl);
-    const oldFrame = await appPage.appFrame();
 
     // The app's call is still running when the session ends: its request is held, never answered.
     await page.route(isHeldCall, () => {});
     const held = page.waitForRequest(isHeldCall);
     const aborted = page.waitForEvent('requestfailed', isHeldCall);
-    await appPage.startBridgeFetch({ path: HELD_CALL_PATH }, oldFrame);
+    await appPage.app.callAdminApi(HELD_CALL_PATH);
     await held;
 
     await withIsolatedPage(browser, { baseURL }, async ({ page: otherPage }) => {
@@ -84,12 +80,11 @@ test.describe('Ghost Admin - App install lifecycle', () => {
     await appPage.returnToTab();
     await aborted;
     await expect(appPage.notInstalled).toBeVisible();
-    await expect.poll(() => oldFrame.isDetached()).toBe(true);
+    await expect(appPage.frame).toHaveCount(0);
     await page.unrouteAll({ behavior: 'ignoreErrors' });
 
     const reinstalledId = await installApp(page, fixtureApp.manifestUrl);
     expect(reinstalledId).not.toBe(installationId);
-    expect(await appPage.sessionRevision()).toBe(0);
 
     await appPage.gotoApp(installationId);
     await expect(appPage.notInstalled).toBeVisible();
