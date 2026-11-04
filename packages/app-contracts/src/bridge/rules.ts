@@ -160,7 +160,10 @@ export function decodeBridgeError<Code extends BridgeErrorCode>(
 
 const THEME_MODES = ['light', 'dark'] as const;
 
-/** The theme Admin is showing, so the page can match it. `mode` is resolved, never `system`. */
+/**
+ * The theme Admin is showing, so the page can match it. `mode` is `light` or `dark`, never
+ * `system`.
+ */
 export type Theme = {
   mode: (typeof THEME_MODES)[number];
   accent_color: string;
