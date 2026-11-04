@@ -23,8 +23,7 @@ type FactoryName =
   | 'privateBlog'
   | 'contentApiKey'
   | 'webmentionsBlock'
-  | 'emailPreviewBlock'
-  | 'supportRequestBlock';
+  | 'emailPreviewBlock';
 
 const factories: Array<{
   name: FactoryName;
@@ -64,7 +63,6 @@ const factories: Array<{
   },
   { name: 'webmentionsBlock', attachResetToRequest: false },
   { name: 'emailPreviewBlock', attachResetToRequest: false },
-  { name: 'supportRequestBlock', configKey: 'support_request_block', attachResetToRequest: false },
 ];
 
 const fakeSpamConfig = (seed: number) => ({

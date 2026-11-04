@@ -32,7 +32,6 @@ const messages = {
   emailPreviewBlock: 'Only 10 test emails can be sent per hour',
   upgradeBlock: 'Too many update requests. Try again in a minute.',
   staffInviteBlock: 'Too many invitation requests. Try again in a minute.',
-  supportRequestBlock: 'Too many support requests. Please try again later.',
 };
 let spamPrivateBlock = spam.private_block || {};
 let spamGlobalBlock = spam.global_block || {};
@@ -50,7 +49,6 @@ const spamEmailPreviewBlock = spam.email_preview_block || {};
 let spamUpgradeBlock = spam.upgrade_block || {};
 let spamUpgradeApiBlock = spam.upgrade_api_block || {};
 let spamStaffInviteBlock = spam.staff_invite_block || {};
-let spamSupportRequestBlock = spam.support_request_block || {};
 let spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
 let spamOtcVerification = spam.otc_verification || {};
 
@@ -73,7 +71,6 @@ let emailPreviewBlockInstance;
 let upgradeBlockInstance;
 let upgradeApiBlockInstance;
 let staffInviteBlockInstance;
-let supportRequestBlockInstance;
 let otcVerificationEnumerationInstance;
 let otcVerificationInstance;
 
@@ -338,42 +335,6 @@ const staffInviteBlock = () => {
     );
 
   return staffInviteBlockInstance;
-};
-
-const supportRequestBlock = () => {
-  const ExpressBrute = require('express-brute');
-  const BruteKnex = require('@tryghost/brute-knex');
-  const db = require('../../../../data/db');
-
-  store =
-    store ||
-    new BruteKnex({
-      tablename: 'brute',
-      createTable: false,
-      knex: db.knex,
-    });
-
-  supportRequestBlockInstance =
-    supportRequestBlockInstance ||
-    new ExpressBrute(
-      store,
-      extend(
-        {
-          attachResetToRequest: false,
-          failCallback(req, res, next) {
-            return next(
-              new errors.TooManyRequestsError({
-                message: messages.supportRequestBlock,
-              }),
-            );
-          },
-          handleStoreError: handleStoreError,
-        },
-        pick(spamSupportRequestBlock, spamConfigKeys),
-      ),
-    );
-
-  return supportRequestBlockInstance;
 };
 
 const membersAuth = () => {
@@ -864,7 +825,6 @@ module.exports = {
   contentApiKey: contentApiKey,
   webmentionsBlock: webmentionsBlock,
   emailPreviewBlock: emailPreviewBlock,
-  supportRequestBlock: supportRequestBlock,
   reset: () => {
     upgradeBlockInstance = undefined;
     upgradeApiBlockInstance = undefined;
@@ -885,7 +845,6 @@ module.exports = {
     contentApiKeyInstance = undefined;
     otcVerificationEnumerationInstance = undefined;
     otcVerificationInstance = undefined;
-    supportRequestBlockInstance = undefined;
 
     spam = config.get('spam') || {};
     spamUpgradeBlock = spam.upgrade_block || {};
@@ -904,6 +863,5 @@ module.exports = {
     spamContentApiKey = spam.content_api_key || {};
     spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
     spamOtcVerification = spam.otc_verification || {};
-    spamSupportRequestBlock = spam.support_request_block || {};
   },
 };

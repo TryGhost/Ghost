@@ -223,17 +223,4 @@ module.exports = {
       },
     })(req, res, next);
   },
-
-  /**
-   * Blocks support request spam
-   */
-
-  supportRequestLimiter(req, res, next) {
-    return spamPrevention.supportRequestBlock().getMiddleware({
-      ignoreIP: true,
-      key(_req, _res, _next) {
-        return _next('support_request_blocked');
-      },
-    })(req, res, next);
-  },
 };
