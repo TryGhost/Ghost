@@ -4050,6 +4050,12 @@ importers:
       '@quilted/threads':
         specifier: 'catalog:'
         version: 4.1.0(@preact/signals-core@1.14.4)
+      jose:
+        specifier: 'catalog:'
+        version: 6.2.13
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
@@ -4063,6 +4069,9 @@ importers:
       '@tryghost/app-contracts':
         specifier: workspace:*
         version: link:../app-contracts
+      '@types/jsonwebtoken':
+        specifier: 'catalog:'
+        version: 9.0.10
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.5
@@ -4078,6 +4087,9 @@ importers:
       jsdom:
         specifier: 'catalog:'
         version: 30.0.1(@noble/hashes@1.8.0)
+      jsonwebtoken:
+        specifier: 'catalog:'
+        version: 8.5.1
       rolldown-plugin-dts:
         specifier: 'catalog:'
         version: 0.27.11(@typescript/typescript6@6.0.2)(@volar/typescript@2.4.28(@typescript/typescript6@6.0.2))(oxc-resolver@11.24.2)(rolldown@1.1.5)

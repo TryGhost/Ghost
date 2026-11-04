@@ -65,6 +65,17 @@ const entryPoints = Object.entries(manifest.exports as Record<string, unknown>)
 // loaded. Type-checked, never run.
 const USAGE = `
 import { connect, GhostAppError, type Ghost, type GhostAppErrorCode } from '@tryghost/app-sdk';
+import { CHALLENGE_PATH, createAdminApiClient, handleChallenge } from '@tryghost/app-sdk/backend';
+
+export const worker = {
+  async fetch(request: Request, env: { GHOST_APP_BACKEND_KEY: string; GHOST_ADMIN_API_KEY: string }) {
+    if (new URL(request.url).pathname === CHALLENGE_PATH) {
+      return handleChallenge(request, { backendKey: env.GHOST_APP_BACKEND_KEY });
+    }
+    const api = createAdminApiClient({ url: 'https://site.example', key: env.GHOST_ADMIN_API_KEY });
+    return api.fetch('/posts/?limit=5');
+  },
+};
 
 try {
   const ghost: Ghost = await connect({ timeout: 5000 });

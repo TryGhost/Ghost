@@ -27,9 +27,9 @@ const tidyRegionComments: Plugin = {
 
 // Vite replaces a Node builtin, such as `node:crypto`, with an empty stub for the browser and
 // only logs a warning. A bundle that needs one would build, import nothing, and break the page
-// that called it. Everything the SDK or the contracts' root entry point imports must run in a
-// page, so a builtin fails the build instead. That covers a builtin imported as `node:…`, and
-// one Vite stubbed, which is how a builtin imported without the prefix shows up. How Vite
+// that called it. Everything the SDK imports must run in a page, or in a backend on any
+// platform, so a builtin fails the build instead. That covers a builtin imported as `node:…`,
+// and one Vite stubbed, which is how a builtin imported without the prefix shows up. How Vite
 // names its stub is an internal detail, so the prefix is checked first.
 const refuseNodeBuiltins: Plugin = {
   name: 'refuse-node-builtins',
@@ -46,10 +46,11 @@ const refuseNodeBuiltins: Plugin = {
   },
 };
 
-// Writes the package's type declarations to one file next to its code, with the contract types
-// the SDK uses inlined, so an app needs nothing from @tryghost/app-contracts. Only the types the
-// entry point exports are exported. TypeScript 7 emits the declarations. The plugin looks for it
-// as `typescript`, which is the TypeScript 6 shim here, so it is pointed at `@typescript/native`.
+// Writes the package's type declarations next to its code, a file for each entry point, with the
+// contract types the SDK uses inlined, so an app needs nothing from @tryghost/app-contracts. Only
+// the types each entry point exports are exported. TypeScript 7 emits the declarations. The
+// plugin looks for it as `typescript`, which is the TypeScript 6 shim here, so it is pointed at
+// `@typescript/native`.
 async function bundleDeclarations(): Promise<Plugin[]> {
   const typescript = createRequire(import.meta.url).resolve('@typescript/native/package.json');
   const { default: getExePath } = (await import(
@@ -102,9 +103,10 @@ const shared = {
   emptyOutDir: true,
 } as const;
 
-// The build a bundler imports, in `build/`, built with `--mode package`: one ES module with
-// the parts of @tryghost/app-contracts the SDK uses inlined, so the package depends only on
-// @quilted/threads. A function, so only this build sets up the declaration plugin.
+// The build a bundler or Node imports, in `build/`, built with `--mode package`: an ES module
+// for each entry point, sharing chunks, with the parts of @tryghost/app-contracts the SDK uses
+// inlined, so the package depends only on what it lists in `dependencies`. A function, so only
+// this build sets up the declaration plugin.
 const packageBuild = (): UserConfig => ({
   define: sdkVersion,
   plugins: [refuseNodeBuiltins, tidyRegionComments, bundleDeclarations()],
@@ -116,10 +118,27 @@ const packageBuild = (): UserConfig => ({
     outDir: 'build',
     // Named after the entry, as the declarations are the same entry named `index.d`, and the
     // declaration plugin turns `index.d.js` into `index.d.ts`.
-    lib: { entry: 'src/index.ts', formats: ['es'], fileName: (_format, name) => `${name}.js` },
+    lib: {
+      entry: {
+        // The page's SDK.
+        index: 'src/index.ts',
+        // An app's backend, on any platform.
+        backend: 'src/backend/index.ts',
+      },
+      formats: ['es'],
+      fileName: (_format, name) => `${name}.js`,
+    },
     rolldownOptions: {
-      external: [/^@quilted\/threads(?:\/|$)/],
-      output: { sourcemapPathTransform: fromNodeModules },
+      external: [/^(?:@quilted\/threads|jose|zod)(?:\/|$)/],
+      output: {
+        sourcemapPathTransform: fromNodeModules,
+        chunkFileNames: 'chunks/[name]-[hash].js',
+      },
+      // Declarations and the contracts have no side effects, so an entry point never imports a
+      // chunk, or a package, only because another entry point uses it.
+      treeshake: {
+        moduleSideEffects: (id) => !/\.d\.[cm]?ts$/.test(id) && !/\/app-contracts\//.test(id),
+      },
       // Generating the declarations runs TypeScript, which is expected to be slow.
       checks: { pluginTimings: false },
     },
