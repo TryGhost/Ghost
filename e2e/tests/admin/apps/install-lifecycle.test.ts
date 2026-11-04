@@ -1,7 +1,7 @@
-import { AppDetailsPage, AppPage, AppsPage } from '@/admin-pages';
+import { AppDetailsPage, AppPage, AppsPage, LoginPage, SidebarPage } from '@/admin-pages';
 import { FixtureApp } from '@/helpers/services/apps';
 import { Request } from '@playwright/test';
-import { expect, installApp, signInAsStaff, test, withIsolatedPage } from '@/helpers/playwright';
+import { expect, installApp, test, withIsolatedPage } from '@/helpers/playwright';
 
 /** The app's call that's still running when its session ends, told apart from Admin's own requests. */
 const HELD_CALL_FILTER = 'slug:e2e-held-call';
@@ -69,7 +69,10 @@ test.describe('Ghost Admin - App install lifecycle', () => {
     await held;
 
     await withIsolatedPage(browser, { baseURL }, async ({ page: otherPage }) => {
-      await signInAsStaff(otherPage, ghostAccountAdministrator);
+      const loginPage = new LoginPage(otherPage);
+      await loginPage.goto();
+      await loginPage.signIn(ghostAccountAdministrator.email, ghostAccountAdministrator.password);
+      await expect(new SidebarPage(otherPage).sidebar).toBeVisible();
 
       const otherDetailsPage = new AppDetailsPage(otherPage);
       await otherDetailsPage.gotoDetails(installationId);
