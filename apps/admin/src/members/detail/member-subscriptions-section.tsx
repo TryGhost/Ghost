@@ -225,7 +225,11 @@ const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
   //   - As a footer under existing subs when the member has active paid subs but
   //     no comp tier yet — that's the "cancel Stripe and comp on top" flow.
   const addCompButton = isAddCompAllowed ? (
-    <Button data-testid="add-complimentary" variant="outline" onClick={() => setShowAddComp(true)}>
+    <Button
+      data-testid="add-complimentary"
+      variant={admin7Design ? 'secondary' : 'outline'}
+      onClick={() => setShowAddComp(true)}
+    >
       <LucideIcon.Plus className="mr-1" size={16} />
       Add complimentary subscription
     </Button>
