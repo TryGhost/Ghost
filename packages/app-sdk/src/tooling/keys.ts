@@ -100,8 +100,12 @@ function readAnyKey(text: string, source: string): PrivateKeyJwk | PublicKeyJwk 
     throw new Error(`${source} isn't an Ed25519 key as a JWK, with kty "OKP", crv "Ed25519" and x`);
   }
   const { d } = value as { d?: unknown };
-  if (typeof d !== 'string') {
+  if (d === undefined) {
     return publicKeyOf(value);
+  }
+  // A key that has a private part, but not one that reads, isn't a public key.
+  if (typeof d !== 'string') {
+    throw new Error(`${source} isn't a usable Ed25519 key: its d isn't a string`);
   }
   let x: string | undefined;
   try {

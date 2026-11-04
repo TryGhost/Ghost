@@ -257,6 +257,23 @@ describe('readSigningKeys', () => {
     await expect(reading).rejects.not.toThrow(text);
   });
 
+  it.each([5, null, { value: 'x' }])(
+    'refuses a backend key whose d is %j, rather than reading it as a public key',
+    async (d) => {
+      const reading = readSigningKeys({
+        root,
+        mode: 'production',
+        env: {
+          GHOST_APP_IDENTITY_KEY: JSON.stringify(generateKey()),
+          GHOST_APP_BACKEND_KEY: JSON.stringify({ ...publicKeyOf(generateKey()), d }),
+        },
+      });
+      await expect(reading).rejects.toThrow(
+        "GHOST_APP_BACKEND_KEY isn't a usable Ed25519 key: its d isn't a string",
+      );
+    },
+  );
+
   it('refuses the same key as both', async () => {
     const key = JSON.stringify(generateKey());
     await expect(
