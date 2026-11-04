@@ -179,8 +179,12 @@ server with `pnpm dev`.
 Ghost Core's database-backed suites boot a Ghost per worker, and the Admin
 acceptance and browser E2E suites drive a browser per worker. Each sizes its
 workers as if it had the machine to itself, so tests running in several
-worktrees at once can exhaust memory. Set `TEST_WORKERS_COUNT` to cap the
-workers of all three suites.
+worktrees at once can exhaust memory.
+
+Set `TEST_MACHINE_SHARE` to the share of the machine one test run may use, such
+as `0.5` when two worktrees run tests at once. Each suite scales its workers to
+that share by what its workers cost, so the suites split the machine instead of
+each taking all of it. `TEST_WORKERS_COUNT` sets an exact worker count instead.
 
 ## Run Browser E2E Tests
 
