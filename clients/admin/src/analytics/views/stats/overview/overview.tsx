@@ -25,6 +25,7 @@ import { useAnalytics } from '@/analytics/providers/analytics-context';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
 import { useGrowthStats } from '@/analytics/hooks/use-growth-stats';
 import { useLatestPostStats } from '@/analytics/hooks/use-latest-post-stats';
+import { useSoleNewsletterSubscribers } from '@/analytics/hooks/use-sole-newsletter-subscribers';
 import { useTinybirdQuery } from '@tryghost/admin-x-framework';
 import { useTopPostsViews } from '@tryghost/admin-x-framework/api/stats';
 
@@ -223,6 +224,18 @@ const Overview: React.FC = () => {
     return processedData;
   }, [growthChartData, range, currencySymbol, paidMembersEnabled]);
 
+  /* Get newsletter subscribers
+    /* ---------------------------------------------------------------------- */
+  // A site that earns nothing gets more from its subscriber count than from a
+  // flat $0 MRR line, so only look for subscribers once there's no revenue.
+  const hasRevenue =
+    paidMembersEnabled === true &&
+    (growthTotals.mrr > 0 || mrrChartData.some((item) => item.value > 0));
+  const { subscribers, isLoading: isSubscribersLoading } = useSoleNewsletterSubscribers(
+    range,
+    !isGrowthStatsLoading && !hasRevenue,
+  );
+
   /* Calculate KPI values
     /* ---------------------------------------------------------------------- */
   const kpiValues = useMemo(() => {
@@ -255,10 +268,11 @@ const Overview: React.FC = () => {
           currencySymbol={currencySymbol}
           growthChartRange={growthChartRange}
           growthTotals={growthTotals}
-          isLoading={isVisitorsLoading || isGrowthStatsLoading}
+          isLoading={isVisitorsLoading || isGrowthStatsLoading || isSubscribersLoading}
           kpiValues={kpiValues}
           membersChartData={membersChartData}
           mrrChartData={mrrChartData}
+          subscribers={subscribers}
           visitorsChartData={visitorsChartData}
           visitorsChartRange={visitorsChartRange}
           visitorsYRange={visitorsYRange}

@@ -12,6 +12,12 @@ export const analyticsScreen = {
   membersViewMoreButton: () =>
     page.getByTestId(sel.members).getByRole('button', { name: 'View more' }),
   mrrValue: () => page.getByTestId(sel.mrr).getByTestId(sel.kpiCardHeaderValue),
+  mrrCard: () => page.getByTestId(sel.mrr),
+  newsletterSubscribersCard: () => page.getByTestId(sel.newsletterSubscribers),
+  newsletterSubscribersValue: () =>
+    page.getByTestId(sel.newsletterSubscribers).getByTestId(sel.kpiCardHeaderValue),
+  newsletterSubscribersViewMoreButton: () =>
+    page.getByTestId(sel.newsletterSubscribers).getByRole('button', { name: 'View more' }),
   uniqueVisitorsViewMoreButton: () =>
     page.getByTestId(sel.uniqueVisitors).getByRole('button', { name: 'View more' }),
   latestPost: () => page.getByTestId(sel.latestPost),
