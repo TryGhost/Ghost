@@ -7,22 +7,28 @@ export interface AllowFramingOptions {
   adminOrigins: readonly string[];
 }
 
-/** Reads an origin, refusing anything more, so nothing else can be written into the policy. */
+// Characters that end a source in a policy, a directive or a whole policy, and the wildcard.
+const UNSAFE_IN_POLICY = /[\s;,'"*]/;
+
+/**
+ * Reads an origin, refusing anything more, so nothing else can be written into the policy. The
+ * URL parser lets `;` and `,` into a host, so the origin must also read back as itself.
+ */
 function readOrigin(entry: string): string {
   const url = URL.parse(entry);
+  const origin = url?.origin;
   if (
     !url ||
+    !origin ||
     (url.protocol !== 'https:' && url.protocol !== 'http:') ||
-    url.username ||
-    url.password ||
-    url.pathname !== '/' ||
-    url.search ||
-    url.hash ||
-    entry.includes('*')
+    url.href !== `${origin}/` ||
+    URL.parse(origin)?.origin !== origin ||
+    UNSAFE_IN_POLICY.test(entry) ||
+    UNSAFE_IN_POLICY.test(origin)
   ) {
     throw new TypeError(`Expected an origin such as https://site.example, not ${entry}`);
   }
-  return url.origin;
+  return origin;
 }
 
 /**
@@ -37,11 +43,24 @@ export function allowFraming(response: Response, { adminOrigins }: AllowFramingO
   const origins = adminOrigins.map(readOrigin);
   const directive = `frame-ancestors ${origins.length > 0 ? origins.join(' ') : "'none'"}`;
   const framed = new Response(response.body, response);
-  const policy = (framed.headers.get('content-security-policy') ?? '')
-    .split(';')
-    .map((part) => part.trim())
-    .filter((part) => part && !/^frame-ancestors(?:\s|$)/i.test(part));
-  framed.headers.set('content-security-policy', [...policy, directive].join('; '));
+  // Several Content-Security-Policy headers read as one, joined by commas, and each is a policy
+  // of its own: every one of them applies. So each loses its own `frame-ancestors`, which would
+  // still refuse Admin, and keeps everything else.
+  const policies = (framed.headers.get('content-security-policy') ?? '')
+    .split(',')
+    .map((policy) =>
+      policy
+        .split(';')
+        .map((part) => part.trim())
+        .filter((part) => part && !/^frame-ancestors(?:\s|$)/i.test(part))
+        .join('; '),
+    )
+    .filter(Boolean);
+  const [first, ...rest] = policies;
+  framed.headers.set(
+    'content-security-policy',
+    [first ? `${first}; ${directive}` : directive, ...rest].join(', '),
+  );
   framed.headers.delete('x-frame-options');
   return framed;
 }

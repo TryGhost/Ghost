@@ -194,6 +194,28 @@ describe('allowFraming', () => {
     ).toBe("default-src 'self'; img-src *; frame-ancestors https://site.example");
   });
 
+  it('accepts an origin in any case the URL parser reads as one', () => {
+    const framed = allowFraming(new Response(), { adminOrigins: ['HTTPS://Site.Example:443'] });
+    expect(framed.headers.get('content-security-policy')).toBe(
+      'frame-ancestors https://site.example',
+    );
+  });
+
+  it("drops each of several policies' frame-ancestors, and keeps everything else", () => {
+    const page = new Response(null, {
+      headers: [
+        ['content-security-policy', "script-src 'none'; frame-ancestors 'none'"],
+        ['content-security-policy', "default-src 'self'"],
+        ['content-security-policy', "frame-ancestors 'self'"],
+      ],
+    });
+    expect(
+      allowFraming(page, { adminOrigins: ['https://site.example'] }).headers.get(
+        'content-security-policy',
+      ),
+    ).toBe("script-src 'none'; frame-ancestors https://site.example, default-src 'self'");
+  });
+
   it('works on a response whose headers are immutable, as fetch returns them', () => {
     const fetched = Response.redirect('https://app.example/', 302);
     expect(() => fetched.headers.set('x', 'y')).toThrow();
@@ -208,6 +230,11 @@ describe('allowFraming', () => {
     "https://site.example; script-src 'unsafe-inline'",
     'https://*.example',
     'ftp://site.example',
+    // The URL parser takes these into the host, where they would end a source or a policy.
+    'https://a.example;sandbox',
+    'https://a.example,b.example',
+    'https://a.example%3Bsandbox',
+    'https://a.example\tb.example',
   ])('refuses %s, which is not an origin', (origin) => {
     expect(() => allowFraming(new Response(), { adminOrigins: [origin] })).toThrow(TypeError);
   });
