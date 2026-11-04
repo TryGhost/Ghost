@@ -388,6 +388,33 @@ describe('checkApp', () => {
     expect(challenge).not.toBe(first);
   });
 
+  it.each([
+    [
+      'breaks',
+      () =>
+        new ReadableStream<Uint8Array>({
+          start(controller) {
+            controller.error(new Error('connection reset'));
+          },
+        }),
+    ],
+    // Never ends: reading it would wait out the deadline.
+    ['stalls', () => new ReadableStream<Uint8Array>({ pull: () => new Promise(() => {}) })],
+  ])('follows a redirect whose body %s without reading it, as Ghost does', async (_name, body) => {
+    const result = await checkApp(MANIFEST_URL, {
+      fetch: fakeApp({
+        [MANIFEST_URL]: () =>
+          new Response(body(), {
+            status: 301,
+            headers: { location: 'https://localhost/ghost-app.json' },
+          }),
+        'https://localhost/ghost-app.json': async () => Response.json(await signed()),
+        ...challengeRoute,
+      }),
+    });
+    expect(result.success).toBe(true);
+  });
+
   it.each([300, 304, 305])(
     'treats HTTP %i as an answer, not a redirect, as Ghost does',
     async (status) => {

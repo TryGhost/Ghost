@@ -88,7 +88,7 @@ class Failure extends Error {
 interface Answer {
   status: number;
   location: string | null;
-  /** Up to the limit; `undefined` past it. */
+  /** Up to the limit; `undefined` past it, or when it wasn't wanted. */
   body: Uint8Array | undefined;
 }
 
@@ -106,23 +106,28 @@ const describe = (error: unknown) => {
 
 /**
  * Requests a URL as Ghost does, following no redirect, and reads the answer's body up to
- * `maxBytes`, until `signal` gives up. A request that fails, before or while its body arrives,
- * fails with `code`.
+ * `maxBytes`, until `signal` gives up, if `wantsBody` says so from its status. Any other body is
+ * dropped unread, as Ghost drops a redirect's, so one that stalls or breaks doesn't matter. A
+ * request that fails, before or while a body it wants arrives, fails with `code`.
  */
 async function send(
   request: typeof fetch,
   url: URL | string,
   init: RequestInit & { signal: AbortSignal },
-  maxBytes: number,
-  code: CheckCode,
+  {
+    maxBytes,
+    code,
+    wantsBody,
+  }: { maxBytes: number; code: CheckCode; wantsBody: (status: number) => boolean },
 ): Promise<Answer> {
   try {
     const response = await request(url, { ...init, redirect: 'manual' });
-    return {
-      status: response.status,
-      location: response.headers.get('location'),
-      body: await readBytes(response, maxBytes),
-    };
+    const answer = { status: response.status, location: response.headers.get('location') };
+    if (!wantsBody(response.status)) {
+      response.body?.cancel().catch(() => undefined);
+      return { ...answer, body: undefined };
+    }
+    return { ...answer, body: await readBytes(response, maxBytes) };
   } catch (error) {
     throw new Failure(code, `${String(url)}: ${describe(error)}`);
   }
@@ -156,8 +161,11 @@ async function fetchManifest(manifestUrl: string, request: typeof fetch): Promis
       request,
       current,
       { headers: { accept: 'application/json' }, signal },
-      SIGNED_MANIFEST_MAX_BYTES,
-      'APP_MANIFEST_UNREACHABLE',
+      {
+        maxBytes: SIGNED_MANIFEST_MAX_BYTES,
+        code: 'APP_MANIFEST_UNREACHABLE',
+        wantsBody: isSuccess,
+      },
     );
     if (REDIRECT_STATUSES.has(answer.status) && answer.location !== null) {
       const target = URL.parse(answer.location, current);
@@ -211,8 +219,8 @@ async function challenge(origin: string, backendKey: PublicKeyJwk, request: type
       headers: { accept: 'application/json', 'content-type': 'application/json' },
       signal: AbortSignal.timeout(TIMEOUT_MS),
     },
-    ANSWER_MAX_BYTES,
-    'APP_CHALLENGE_UNREACHABLE',
+    // The answer, or the backend's explanation of a refusal.
+    { maxBytes: ANSWER_MAX_BYTES, code: 'APP_CHALLENGE_UNREACHABLE', wantsBody: () => true },
   );
   const text = answer.body && decode(answer.body);
   if (!isSuccess(answer.status)) {
