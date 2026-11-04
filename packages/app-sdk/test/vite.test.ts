@@ -746,8 +746,17 @@ describe('vite build', () => {
 
   it('fails for a GHOST_APP_URL that is not one, or a manifest that cannot be signed', async () => {
     await createKeys({ root, mode: 'production' });
-    vi.stubEnv('GHOST_APP_URL', 'hello');
-    await expect(buildApp()).rejects.toThrow("GHOST_APP_URL must be the app's public address");
+    for (const appUrl of [
+      'hello',
+      'https://hello.example.com?v=1',
+      'https://hello.example.com/#x',
+      'https://hello.example.com?',
+    ]) {
+      vi.stubEnv('GHOST_APP_URL', appUrl);
+      await expect(buildApp(), appUrl).rejects.toThrow(
+        "GHOST_APP_URL must be the app's public address",
+      );
+    }
 
     vi.stubEnv('GHOST_APP_URL', 'http://hello.example.com');
     await expect(buildApp()).rejects.toThrow(

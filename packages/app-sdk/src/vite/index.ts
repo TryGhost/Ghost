@@ -297,7 +297,9 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
         return;
       }
       const base = URL.parse(appUrl.endsWith('/') ? appUrl : `${appUrl}/`);
-      if (!base) {
+      // A query or fragment would land in the middle of the manifest's address, or swallow it,
+      // so it's refused, written out or empty.
+      if (!base || /[?#]/.test(appUrl)) {
         this.error(
           `ghost-app: GHOST_APP_URL must be the app's public address, such as https://app.example.com, not ${appUrl}`,
         );
