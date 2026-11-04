@@ -6,10 +6,21 @@ import * as SheetPrimitive from '@radix-ui/react-dialog';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { X } from 'lucide-react';
 
+import { useHostedModal, useModalOpen } from '@/lib/app-overlay';
 import { cn } from '@/lib/utils';
 import { ShadeScope } from '@/shade-scope';
 
-const Sheet = SheetPrimitive.Root;
+// Radix keeps whether a sheet is modal to itself, and only a modal one covers Admin.
+const SheetModalContext = React.createContext(true);
+
+const Sheet = ({ modal = true, ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) => {
+  const [rootProps, provideOpen] = useModalOpen(props);
+  return (
+    <SheetModalContext.Provider value={modal}>
+      {provideOpen(<SheetPrimitive.Root modal={modal} {...rootProps} />)}
+    </SheetModalContext.Provider>
+  );
+};
 
 const SheetTrigger = SheetPrimitive.Trigger;
 
@@ -59,24 +70,34 @@ interface SheetContentProps
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
->(({ side = 'right', className, children, ...props }, ref) => (
-  <SheetPortal>
-    <ShadeScope>
-      <SheetOverlay />
-      <SheetPrimitive.Content
-        ref={ref}
-        className={cn(sheetVariants({ side }), className)}
-        {...props}
-      >
-        <SheetPrimitive.Close className="fixed top-4 right-4 z-50 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 disabled:pointer-events-none data-[state=open]:bg-secondary">
-          <X className="size-4" />
-          <span className="sr-only">Close</span>
-        </SheetPrimitive.Close>
-        {children}
-      </SheetPrimitive.Content>
-    </ShadeScope>
-  </SheetPortal>
-));
+>(({ side = 'right', className, children, ...props }, ref) => {
+  // In an app inside Ghost Admin, the sheet renders in the app's overlay, over all of Admin,
+  // and Admin draws the backdrop, which shows through the sheet's own.
+  const {
+    container,
+    overlayStyle,
+    ref: contentRef,
+    wrap,
+  } = useHostedModal('sheet', ref, React.useContext(SheetModalContext));
+  return (
+    <SheetPortal container={container}>
+      <ShadeScope>
+        <SheetOverlay style={overlayStyle} />
+        <SheetPrimitive.Content
+          ref={contentRef}
+          className={cn(sheetVariants({ side }), className)}
+          {...props}
+        >
+          <SheetPrimitive.Close className="fixed top-4 right-4 z-50 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 disabled:pointer-events-none data-[state=open]:bg-secondary">
+            <X className="size-4" />
+            <span className="sr-only">Close</span>
+          </SheetPrimitive.Close>
+          {wrap(children)}
+        </SheetPrimitive.Content>
+      </ShadeScope>
+    </SheetPortal>
+  );
+});
 SheetContent.displayName = SheetPrimitive.Content.displayName;
 
 const SheetHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
