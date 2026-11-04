@@ -132,6 +132,17 @@ describe('the package', () => {
     expect(loaded).not.toMatch(/jose|zod|node:/);
   });
 
+  it.each(['tooling', 'bin'])('%s.js loads only Node builtins, jose and zod', (entry) => {
+    const loaded = [...reachableImports(code(entry))].filter(
+      (specifier) => !specifier.startsWith('node:'),
+    );
+    expect(new Set(loaded)).toEqual(new Set(['jose', 'zod']));
+  });
+
+  it('runs the CLI with Node', () => {
+    expect(readFileSync(code('bin'), 'utf8').split('\n')[0]).toBe('#!/usr/bin/env node');
+  });
+
   it.each([
     ['index', ['GhostAppError', 'connect']],
     [
@@ -153,6 +164,7 @@ describe('the package', () => {
   it.each([
     ['index', []],
     ['backend', []],
+    ['tooling', []],
   ])(
     '%s.d.ts declares its types without importing or referring to any other package but %j',
     (entry, expected) => {
@@ -220,6 +232,7 @@ describe('the package', () => {
         'serveManifest',
       ],
     ],
+    ['tooling', undefined],
   ])(
     'declares every type %s exports, with nothing missing',
     { timeout: 60_000 },

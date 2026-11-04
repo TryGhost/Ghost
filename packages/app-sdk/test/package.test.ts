@@ -66,6 +66,7 @@ const entryPoints = Object.entries(manifest.exports as Record<string, unknown>)
 const USAGE = `
 import { connect, GhostAppError, type Ghost, type GhostAppErrorCode } from '@tryghost/app-sdk';
 import { CHALLENGE_PATH, createAdminApiClient, handleChallenge } from '@tryghost/app-sdk/backend';
+import { checkApp, signProject } from '@tryghost/app-sdk/tooling';
 
 export const worker = {
   async fetch(request: Request, env: { GHOST_APP_BACKEND_KEY: string; GHOST_ADMIN_API_KEY: string }) {
@@ -76,6 +77,12 @@ export const worker = {
     return api.fetch('/posts/?limit=5');
   },
 };
+
+export async function tooling() {
+  const signed = await signProject({ root: '.', mode: 'production', manifestUrl: 'https://app.example/ghost-app.json' });
+  const checked = await checkApp('https://app.example/ghost-app.json');
+  return signed.success && checked.success ? checked.manifest.id : undefined;
+}
 
 try {
   const ghost: Ghost = await connect({ timeout: 5000 });
@@ -168,6 +175,12 @@ describe('the packed package', () => {
       Object.fromEntries(
         Object.entries(dependencies).map(([name, { version }]) => [name, version]),
       ),
+    );
+  });
+
+  it('runs the ghost-app CLI from its bin', { timeout: 60_000 }, async () => {
+    expect(await run(join(app, 'node_modules/.bin/ghost-app'), ['--help'], app)).toContain(
+      'Usage: ghost-app',
     );
   });
 

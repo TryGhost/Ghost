@@ -27,10 +27,10 @@ const tidyRegionComments: Plugin = {
 
 // Vite replaces a Node builtin, such as `node:crypto`, with an empty stub for the browser and
 // only logs a warning. A bundle that needs one would build, import nothing, and break the page
-// that called it. Everything the SDK imports must run in a page, or in a backend on any
-// platform, so a builtin fails the build instead. That covers a builtin imported as `node:…`,
-// and one Vite stubbed, which is how a builtin imported without the prefix shows up. How Vite
-// names its stub is an internal detail, so the prefix is checked first.
+// that called it. Everything the browser bundle imports must run in a page, so a builtin fails
+// the build instead. That covers a builtin imported as `node:…`, and one Vite stubbed, which is
+// how a builtin imported without the prefix shows up. How Vite names its stub is an internal
+// detail, so the prefix is checked first.
 const refuseNodeBuiltins: Plugin = {
   name: 'refuse-node-builtins',
   enforce: 'pre',
@@ -43,6 +43,57 @@ const refuseNodeBuiltins: Plugin = {
       this.error(`${importer} imports ${source}, a Node builtin no page can load`);
     }
     return resolved;
+  },
+};
+
+// The entry points that run in Node, and only those, may import Node builtins.
+const NODE_ENTRIES: ReadonlySet<string> = new Set(['tooling', 'bin']);
+
+// The package build has entry points for Node too, so a builtin imported as `node:…` stays an
+// import, and the build fails if any module the other entry points reach imports one: they run
+// in a page, or in a backend on any platform. One imported without the prefix is refused
+// wherever it is, as Vite stubs it.
+const keepNodeBuiltinsToNode: Plugin = {
+  name: 'keep-node-builtins-to-node',
+  enforce: 'pre',
+  async resolveId(source, importer, options) {
+    if (source.startsWith('node:')) {
+      return { id: source, external: true };
+    }
+    const resolved = await this.resolve(source, importer, { ...options, skipSelf: true });
+    if (resolved?.id.startsWith('__vite-browser-external')) {
+      this.error(`${importer} imports ${source}: import Node builtins as node:${source}`);
+    }
+    return resolved;
+  },
+  generateBundle(_options, bundle) {
+    const seen = new Set<string>();
+    const visit = (id: string) => {
+      if (seen.has(id)) {
+        return;
+      }
+      seen.add(id);
+      const info = this.getModuleInfo(id);
+      for (const imported of [
+        ...(info?.importedIds ?? []),
+        ...(info?.dynamicallyImportedIds ?? []),
+      ]) {
+        if (imported.startsWith('node:')) {
+          this.error(`${id} imports ${imported}, a Node builtin no page can load`);
+        }
+        visit(imported);
+      }
+    };
+    for (const chunk of Object.values(bundle)) {
+      if (
+        chunk.type === 'chunk' &&
+        chunk.isEntry &&
+        chunk.facadeModuleId &&
+        !NODE_ENTRIES.has(chunk.name)
+      ) {
+        visit(chunk.facadeModuleId);
+      }
+    }
   },
 };
 
@@ -109,7 +160,7 @@ const shared = {
 // this build sets up the declaration plugin.
 const packageBuild = (): UserConfig => ({
   define: sdkVersion,
-  plugins: [refuseNodeBuiltins, tidyRegionComments, bundleDeclarations()],
+  plugins: [keepNodeBuiltinsToNode, tidyRegionComments, bundleDeclarations()],
   // Vite would compile the generated declarations to JavaScript, which drops every type. This
   // replaces Vite's own exclusions, so JavaScript stays excluded too.
   oxc: { exclude: [/\.js$/, /\.d\.[cm]?ts$/] },
@@ -124,6 +175,9 @@ const packageBuild = (): UserConfig => ({
         index: 'src/index.ts',
         // An app's backend, on any platform.
         backend: 'src/backend/index.ts',
+        // An app's tooling, in Node.
+        tooling: 'src/tooling/index.ts',
+        bin: 'src/bin.ts',
       },
       formats: ['es'],
       fileName: (_format, name) => `${name}.js`,
