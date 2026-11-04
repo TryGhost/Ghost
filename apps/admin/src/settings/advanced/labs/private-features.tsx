@@ -102,6 +102,12 @@ const features: Feature[] = [
       'Install and manage third-party apps that run on their own servers. Early and incomplete.',
     flag: 'apps',
   },
+  {
+    title: 'In-app support',
+    description:
+      'Open Help in a sidebar inside Admin instead of a new tab. Needs a host script that provides the support app.',
+    flag: 'inAppSupport',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {
