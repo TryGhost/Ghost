@@ -212,6 +212,13 @@ describe('vite dev', () => {
     await readAsGhost(JSON.parse(response.body), 'https://committed.example/ghost-app.json');
   });
 
+  it.each(['https://tunnel.example/path', 'https://tunnel.example;x', 'tunnel.example'])(
+    'refuses %s, which is not a tunnel address',
+    (tunnelUrl) => {
+      expect(() => ghostApp({ tunnelUrl })).toThrow("expected a tunnel's address");
+    },
+  );
+
   it('refuses a tunnel that is not an address', () => {
     expect(() => ghostApp({ tunnelUrl: 'https://tunnel.example/path' })).toThrow(
       "expected a tunnel's address such as https://example.trycloudflare.com",

@@ -377,6 +377,17 @@ describe('signing', () => {
     expect(!result.success && result.errors[0]?.message).toContain('as Ghost fetches it');
   });
 
+  it('reads a ghost-app.json that starts with a byte order mark, as Ghost reads JSON', async () => {
+    await createKeys({ root, mode: 'development' });
+    await writeFile(join(root, 'ghost-app.json'), `\uFEFF${JSON.stringify(SOURCE)}`);
+    const result = await signProject({
+      root,
+      mode: 'development',
+      manifestUrl: 'http://localhost:5173/ghost-app.json',
+    });
+    expect(result.success).toBe(true);
+  });
+
   it('reads a manifest from an absolute path, as it is', async () => {
     await createKeys({ root, mode: 'development' });
     const elsewhere = await makeProject();

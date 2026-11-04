@@ -9,6 +9,7 @@ import { parseManifest, parseManifestUrl } from '@tryghost/app-contracts/manifes
 
 import { readBytes } from '../shared/body.ts';
 import { UNKNOWN_GHOST_URL, formatErrors } from '../shared/manifest.ts';
+import { parseJsonText } from '../shared/parse.ts';
 import type { PublicKeyJwk } from './keys.ts';
 import {
   ANSWER_MAX_BYTES,
@@ -202,7 +203,7 @@ async function fetchManifest(manifestUrl: string, request: typeof fetch): Promis
 
 function parseJson(text: string, what: string): unknown {
   try {
-    return JSON.parse(text.charCodeAt(0) === 0xfeff ? text.slice(1) : text);
+    return parseJsonText(text);
   } catch {
     throw new Failure('APP_MANIFEST_NOT_JSON', what);
   }

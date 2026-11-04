@@ -1,3 +1,5 @@
+import { parseOrigin } from '../shared/parse.ts';
+
 export interface AllowFramingOptions {
   /**
    * The Ghost Admin origins that may frame the page, such as `https://site.example`. Admin is
@@ -7,25 +9,10 @@ export interface AllowFramingOptions {
   adminOrigins: readonly string[];
 }
 
-// Characters that end a source in a policy, a directive or a whole policy, and the wildcard.
-const UNSAFE_IN_POLICY = /[\s;,'"*]/;
-
-/**
- * Reads an origin, refusing anything more, so nothing else can be written into the policy. The
- * URL parser lets `;` and `,` into a host, so the origin must also read back as itself.
- */
+/** Reads an origin, refusing anything more, so nothing else can be written into the policy. */
 function readOrigin(entry: string): string {
-  const url = URL.parse(entry);
-  const origin = url?.origin;
-  if (
-    !url ||
-    !origin ||
-    (url.protocol !== 'https:' && url.protocol !== 'http:') ||
-    url.href !== `${origin}/` ||
-    URL.parse(origin)?.origin !== origin ||
-    UNSAFE_IN_POLICY.test(entry) ||
-    UNSAFE_IN_POLICY.test(origin)
-  ) {
+  const origin = parseOrigin(entry);
+  if (!origin) {
     throw new TypeError(`Expected an origin such as https://site.example, not ${entry}`);
   }
   return origin;

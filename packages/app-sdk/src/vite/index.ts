@@ -17,6 +17,7 @@ import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite';
 
 import { createKeys, signingKeySource } from '../tooling/keys.ts';
 import { MANIFEST_PATH, formatErrors } from '../shared/manifest.ts';
+import { parseOrigin } from '../shared/parse.ts';
 import { MANIFEST_FILE, serialiseSigned, signProject } from '../tooling/sign.ts';
 import { DENY, VITE_DEFAULT_DENY } from './deny.ts';
 import { provideDevBackendKey } from './dev-vars.ts';
@@ -42,21 +43,13 @@ function readTunnels(input: string | readonly string[] | undefined): string[] {
     .map((entry) => entry.trim())
     .filter(Boolean)
     .map((entry) => {
-      const url = URL.parse(entry);
-      if (
-        !url ||
-        (url.protocol !== 'https:' && url.protocol !== 'http:') ||
-        url.pathname !== '/' ||
-        url.search ||
-        url.hash ||
-        url.username ||
-        url.password
-      ) {
+      const origin = parseOrigin(entry);
+      if (!origin) {
         throw new Error(
           `ghost-app: expected a tunnel's address such as https://example.trycloudflare.com, not ${entry}`,
         );
       }
-      return url.origin;
+      return origin;
     });
 }
 

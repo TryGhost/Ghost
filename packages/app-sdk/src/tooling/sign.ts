@@ -13,6 +13,7 @@ import {
   type ReadKeysOptions,
 } from './keys.ts';
 import { UNKNOWN_GHOST_URL } from '../shared/manifest.ts';
+import { parseJsonText } from '../shared/parse.ts';
 import {
   MANIFEST_MAX_BYTES,
   SIGNED_MANIFEST_MAX_BYTES,
@@ -136,7 +137,7 @@ export function serialiseSigned(signed: SignedManifest): string {
 export async function readManifestSource(file: string): Promise<unknown> {
   const text = await readFile(file, 'utf8');
   try {
-    return JSON.parse(text.charCodeAt(0) === 0xfeff ? text.slice(1) : text);
+    return parseJsonText(text);
   } catch (error) {
     throw new Error(`${file} isn't JSON: ${(error as Error).message}`, { cause: error });
   }
