@@ -80,8 +80,8 @@ describe('Automation run history from the execution', function () {
         sendAutomationEmail: sinon.stub().resolves({ id: '<history@example.com>' }),
       },
     };
-    await automationsApi2.trigger({
-      event: 'membership_started',
+    await automationsApi2.notify({
+      eventName: 'membership_started',
       source: 'member' as const,
       memberId: member.id,
       memberEmail: member.email,

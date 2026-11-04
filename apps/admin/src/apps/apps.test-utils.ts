@@ -37,9 +37,11 @@ const ICON_SVG =
 /** The copy of an app's icon that Ghost stores. */
 export const ICON_DATA_URL = `data:image/svg+xml;base64,${btoa(ICON_SVG)}`;
 
-/** The `src` of every image in `container`. */
+/** The source of every image in `container`, whether an `<img>` or an SVG `<image>`. */
 export const imageSources = (container: Element) =>
-  [...container.querySelectorAll('img')].map((img) => img.getAttribute('src'));
+  [...container.querySelectorAll('img, image')].map(
+    (image) => image.getAttribute('src') ?? image.getAttribute('href'),
+  );
 
 export const installation = (overrides: Partial<AppInstallation> = {}): AppInstallation => ({
   id: 'installation-1',

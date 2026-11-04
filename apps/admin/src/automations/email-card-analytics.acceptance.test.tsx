@@ -12,6 +12,13 @@ import type {
   AutomationSendEmailAction,
 } from '@tryghost/admin-x-framework/api/automations';
 import { detail, setup, editingCanvas } from './run-history.test-utils';
+import {
+  editEmailSubject,
+  emailEditor,
+  emailEditorBody,
+  fakeEmailEditorData,
+  minimizeEmailEditor,
+} from './email-editor.test-utils';
 
 const stats: AutomationEmailStats = {
   email_sent_count: 100,
@@ -95,7 +102,7 @@ describe('Email card analytics', () => {
     prepare();
     fakeAdminEndpoint('GET', linksPath(), { automation_action_links: links(2) });
     await boot();
-    const subject = card().getByRole('textbox', { name: 'Subject line' });
+    const subject = card().getByRole('button', { name: 'Edit email content' });
     await expect.element(subject).toBeVisible();
     await expect.element(toggle()).toHaveAttribute('aria-pressed', 'false');
 
@@ -215,8 +222,9 @@ describe('Email card analytics', () => {
       { errors: [{ message: 'Unavailable', type: 'InternalServerError' }] },
       { status: 500 },
     );
+    fakeEmailEditorData();
     await boot();
-    await card().getByRole('textbox', { name: 'Subject line' }).fill('Draft subject');
+    await editEmailSubject(card(), 'Draft subject');
     await show('Draft subject');
     await expect
       .element(card('Draft subject').getByRole('alert'))
@@ -232,8 +240,8 @@ describe('Email card analytics', () => {
     await expect.element(link).toBeVisible();
     await toggle('Draft subject').click();
     await expect
-      .element(card('Draft subject').getByRole('textbox', { name: 'Subject line' }))
-      .toHaveValue('Draft subject');
+      .element(card('Draft subject').getByRole('button', { name: 'Edit email content' }))
+      .toHaveTextContent('Draft subject');
   });
 
   it('stays open beside the automation sidebar', async () => {
@@ -270,8 +278,12 @@ describe('Email card analytics', () => {
         },
       ],
     }));
+    fakeEmailEditorData();
     await boot();
-    await editingCanvas().getByRole('textbox', { name: 'Subject line' }).fill('Updated subject');
+    await editEmailSubject(
+      editingCanvas().getByRole('article', { name: /^Send email/ }),
+      'Updated subject',
+    );
     await show('Updated subject');
     let workflowDisappeared = false;
     const canvas = editingCanvas().element();
@@ -311,14 +323,7 @@ describe('Email card analytics', () => {
     async (field) => {
       prepare();
       fakeAdminEndpoint('GET', linksPath(), { automation_action_links: [] });
-      fakeAdminEndpoint('GET', '/automated_emails/', { automated_emails: [] });
-      fakeAdminEndpoint('GET', '/newsletters/?filter=status%3Aactive&limit=1', { newsletters: [] });
-      fakeAdminEndpoint('GET', '/offers/', { offers: [] });
-      fakeAdminEndpoint(
-        'GET',
-        '/posts/?filter=status%3Apublished&fields=id%2Curl%2Ctitle%2Cvisibility%2Cpublished_at&order=published_at+desc&limit=5',
-        { posts: [] },
-      );
+      fakeEmailEditorData();
       const save = fakeAdminEndpoint('PUT', '/automations/first/', ({ body }) => ({
         automations: [
           {
@@ -330,13 +335,12 @@ describe('Email card analytics', () => {
       await boot();
       const emailCard = editingCanvas().getByRole('article', { name: /^Send email/ });
       if (field === 'subject') {
-        await emailCard.getByRole('textbox', { name: 'Subject line' }).fill('Updated subject');
+        await editEmailSubject(emailCard, 'Updated subject');
       } else {
         await emailCard.getByRole('button', { name: 'Edit email content', exact: true }).click();
-        const dialog = page.getByRole('dialog', { name: 'Edit email', exact: true });
-        await dialog.getByRole('textbox').fill('Updated message');
-        await dialog.getByRole('button', { name: 'Save', exact: true }).click();
-        await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+        await expect.element(emailEditor()).toBeVisible();
+        await emailEditorBody().fill('Updated message');
+        await minimizeEmailEditor();
       }
       let workflowDisappeared = false;
       const canvas = editingCanvas().element();

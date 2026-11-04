@@ -605,13 +605,14 @@ describe('automations', function () {
     it.each([
       { from: 'any', to: ['Silver', 'Gold'], before: 'Bronze', after: 'Silver', enrolls: true },
       { from: 'any', to: ['Silver', 'Gold'], before: 'Silver', after: 'Gold', enrolls: false },
+      { from: 'any', to: 'all' as const, before: 'Silver', after: 'Gold', enrolls: false },
       { from: 'Bronze', to: ['Silver', 'Gold'], before: 'Bronze', after: 'Silver', enrolls: true },
       { from: 'Bronze', to: ['Silver', 'Gold'], before: 'Silver', after: 'Gold', enrolls: false },
       { from: 'Bronze', to: ['Silver', 'Gold'], before: 'Platinum', after: 'Gold', enrolls: false },
       { from: 'Bronze', to: ['Silver', 'Gold'], before: 'Gold', after: 'Platinum', enrolls: false },
       { from: 'Silver', to: ['Gold'], before: 'Silver', after: 'Gold', enrolls: true },
     ])(
-      'starts paid_subscription_changed automation: $enrolls when member changes from $before to $after (From: $from)',
+      'starts paid_subscription_changed automation: $enrolls when member changes from $before to $after (From: $from, To: $to)',
       async function ({ from, to, before, after, enrolls }) {
         const tiers = new Map<
           string,
@@ -653,6 +654,10 @@ describe('automations', function () {
           assert(result);
           return result;
         };
+        const toTierIds =
+          to === 'all'
+            ? await db.knex('products').where({ type: 'paid', active: true }).pluck('id')
+            : to.map((name) => tier(name).id);
         const response = await agent
           .post('/automations/')
           .body({
@@ -668,11 +673,11 @@ describe('automations', function () {
                     scope: from === 'any' ? 'any_paid_tier' : 'specific_paid_tier',
                     product_id: from === 'any' ? null : tier(from).id,
                   },
-                  ...to.map((name) => ({
+                  ...toTierIds.map((id: string) => ({
                     trigger_type: 'paid_subscription_changed',
                     direction: 'to',
                     scope: 'specific_paid_tier',
-                    product_id: tier(name).id,
+                    product_id: id,
                   })),
                 ],
                 actions: [{ id: ObjectId().toHexString(), type: 'wait', data: { wait_hours: 48 } }],

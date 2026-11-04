@@ -73,6 +73,53 @@ describe('paths', () => {
     expect(surfaceUrlError(`${path}a`)).toContain('at most 2000');
   });
 
+  it('rejects a URL Ghost loads that does not give Admin a route to open the app at', () => {
+    // Admin opens the app at the page's path, query and fragment. `//admin` would name a host,
+    // and the SDK refuses a route with a `\`, which the URL parser leaves in a query or fragment.
+    const message =
+      'Expected a URL that resolves to a path starting with a single /, with no \\ in its query or fragment';
+    for (const url of [
+      '/.//admin',
+      '/a/..//admin',
+      './/admin',
+      '/.\\/admin',
+      '/admin?next=\\episodes',
+      '/admin#\\episodes',
+    ]) {
+      expect(surfaceUrlError(url), url).toBe(message);
+    }
+    expect(errorsOf(manifest({ icon: { url: '/.//icon.svg' } }))).toEqual([
+      { path: 'icon.url', message },
+    ]);
+  });
+
+  it('rejects a relative URL that resolves to a path starting with //', () => {
+    const errors = errorsOf(manifest({ surfaces: [{ type: 'admin_page', url: 'admin' }] }), {
+      ...options,
+      manifestUrl: 'https://podcast.example.com//ghost-app.json',
+    });
+    expect(errors).toEqual([
+      { path: 'surfaces[0].url', message: expect.stringContaining('resolves to a path') },
+    ]);
+  });
+
+  it('accepts the routes Admin can open, and anything in a URL only linked to', () => {
+    // A `\` in the path is read as `/`, so it never reaches the route.
+    for (const [url, resolved] of [
+      ['/admin//episodes', 'https://podcast.example.com/admin//episodes'],
+      ['/%2F%2Fadmin', 'https://podcast.example.com/%2F%2Fadmin'],
+      ['/admin?next=//other.example', 'https://podcast.example.com/admin?next=//other.example'],
+      ['/admin\\episodes', 'https://podcast.example.com/admin/episodes'],
+    ]) {
+      const parsed = manifestOf(manifest({ surfaces: [{ type: 'admin_page', url }] }));
+      expect(parsed.surfaces[0]?.url, url).toBe(resolved);
+    }
+    for (const url of ['https://example.com//about', 'https://example.com/about?a=\\b']) {
+      const author = { name: 'Example Audio', url };
+      expect(manifestOf(manifest({ author })).author.url, url).toBe(url);
+    }
+  });
+
   it('applies the same rules to the icon', () => {
     expect(manifestOf(manifest({ icon: { url: '/icon.svg' } })).icon).toEqual({
       url: 'https://podcast.example.com/icon.svg',

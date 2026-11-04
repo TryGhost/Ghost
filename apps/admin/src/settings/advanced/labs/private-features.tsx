@@ -20,9 +20,9 @@ const features: Feature[] = [
     flag: 'automations',
   },
   {
-    title: 'Automations lifecycle triggers',
-    description: 'Triggers for upgrades and downgrades.',
-    flag: 'automationsLifecycleTriggers',
+    title: 'Automations lead magnets',
+    description: '"Label added" automation trigger.',
+    flag: 'automationsLeadMagnets',
   },
   {
     title: 'Stripe Automatic Tax (private beta)',

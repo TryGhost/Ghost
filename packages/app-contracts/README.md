@@ -57,9 +57,12 @@ An app describes itself to Ghost in a JSON manifest, which it serves as a
   ever linked to.
 - `icon` is drawn on `accent_color`, a six-digit hex colour. It is either
   `{ "name": "audio-lines" }`, one of the icons Admin ships, or
-  `{ "url": "/icon.svg" }`, an image the app serves: SVG, PNG, JPEG, GIF or
-  WebP, at most 16 KB. Ghost keeps a copy of the image with each manifest
-  version it stores, and only shows that copy, as an image. An image replaced at
+  `{ "url": "/icon.svg" }`, an image the app serves: SVG, PNG or WebP,
+  at most 16 KB. Ghost keeps a copy of the image with each manifest
+  version it stores, and only shows that copy, as an image. Admin draws it in a
+  single colour, like the icons it ships, keeping only the shape of its opaque
+  pixels, so draw a glyph on a transparent background. JPEG and GIF are
+  refused. An image replaced at
   the same URL shows the next time the manifest changes, even by a field that
   needs no approval. A name Admin does not know is not rejected here;
   Admin falls back to a default icon.
@@ -127,7 +130,10 @@ const manifest = AppManifestSchema.parse(JSON.parse(stored));
 `ghostUrls` is required and cannot be empty. Nothing Ghost loads from a manifest
 may point at the site's own origin or Admin's: a surface there would not be
 contained by its sandbox, and an icon there would let the app make Ghost request
-any of the site's own URLs. The author's link is exempt, since Ghost never loads it.
+any of the site's own URLs. Its path, query and fragment must also be a path
+`isContainedPath` accepts, as Admin opens the app there: not one starting with
+`//`, as `/.//admin` resolves to, nor one with a `\` in the query or fragment.
+The author's link is exempt from both, since Ghost never loads it.
 
 There is no list of allowed origins in the manifest. The only origin that may
 talk to Ghost from a surface is the origin of that surface's resolved `url`;
@@ -268,8 +274,10 @@ the root entry point exports them as well:
 - the message types, `START_TIMEOUT_MS`, `TITLE_MAX_LENGTH`, `FETCH_METHODS` and
   the statuses a fetch response may have;
 - `isContainedPath`, and `normaliseAppPath`, which returns the one normalised
-  form both sides store an app path in, with `..` resolved within the app
-  (`AppPathSchema` already returns it, so Admin doesn't need to call it);
+  form both sides store an app path in, with `..` resolved within the app.
+  Resolving `.` and `..` can leave a contained path starting with `//`, such as
+  `/.//host`, so check the result with `isContainedPath` before resolving it
+  against anything (`AppPathSchema` does both);
 - `isReservedRequestHeader` for the headers only Admin sets,
   `isJsonContentType` for the one content type a body may have,
   `methodAllowsBody`, and the messages both sides refuse an argument with

@@ -31,9 +31,15 @@ export class CustomFieldsSection extends BasePage {
 
   /**
    * Creates a field of the named type, closed to members unless `visibleToMembers` is
-   * set. The modal closes itself on success.
+   * set. A List takes `list`: the options it offers, in that order, and whether it takes several
+   * answers rather than one. The modal closes itself on success.
    */
-  async createField(name: string, type?: string, visibleToMembers = false): Promise<void> {
+  async createField(
+    name: string,
+    type?: string,
+    visibleToMembers = false,
+    list?: { options: string[]; multiple?: boolean },
+  ): Promise<void> {
     await this.addButton.waitFor();
     await this.addButton.click();
     await this.modal.getByLabel('Name').fill(name);
@@ -41,6 +47,16 @@ export class CustomFieldsSection extends BasePage {
     if (type) {
       await this.modal.getByTestId('custom-field-type').click();
       await this.page.getByRole('option', { name: type, exact: true }).click();
+    }
+
+    if (list) {
+      for (const option of list.options) {
+        await this.modal.getByLabel('New option').fill(option);
+        await this.modal.getByRole('button', { name: 'Add option' }).click();
+      }
+      if (list.multiple) {
+        await this.modal.getByLabel('Allow multiple answers').click();
+      }
     }
 
     if (visibleToMembers) {
