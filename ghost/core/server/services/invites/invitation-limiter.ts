@@ -19,12 +19,15 @@ export default class InvitationLimiter {
     this.deps = deps;
   }
 
-  async run<T>(email: string, prepare: (transaction?: Knex.Transaction) => Promise<T>): Promise<T> {
-    const hasAllStaffLimit = this.deps.limitService.isLimited('allStaff');
-    const hasEmailLimit = this.deps.limitService.isLimited('inviteEmails');
-    const isLimited = hasAllStaffLimit || hasEmailLimit;
+  private isLimited(): boolean {
+    return (
+      this.deps.limitService.isLimited('allStaff') ||
+      this.deps.limitService.isLimited('inviteEmails')
+    );
+  }
 
-    if (!isLimited) {
+  async run<T>(email: string, prepare: (transaction?: Knex.Transaction) => Promise<T>): Promise<T> {
+    if (!this.isLimited()) {
       return prepare();
     }
     return this.deps.transaction(async (transaction) => {
@@ -36,11 +39,11 @@ export default class InvitationLimiter {
       const existingInvite = await this.findAndLockInvite(transaction, email);
       // Acceptance may have completed since the API's permission check.
       await this.errorIfAlreadyRegistered(transaction, email);
-      if (hasEmailLimit) {
+      if (this.deps.limitService.isLimited('inviteEmails')) {
         await this.reserveEmail(transaction, counterValue);
       }
       // Replacing a pending invitation does not occupy another seat, even after an import.
-      if (hasAllStaffLimit && !existingInvite) {
+      if (this.deps.limitService.isLimited('allStaff') && !existingInvite) {
         await this.deps.limitService.errorIfWouldGoOverLimit('allStaff', options);
       }
       return prepare(transaction);
