@@ -34,6 +34,7 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@faker-js/faker": "catalog:",
+    "@internal/cfg-test-workers": "workspace:*",
     "@playwright/test": "catalog:",
     "@tryghost/adapter-base-upgrade": "workspace:*",
     "@tryghost/app-contracts": "workspace:*",

@@ -240,6 +240,7 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-test-workers": "workspace:*",
     "@tryghost/email-mock-receiver": "2.3.19",
     "@tryghost/express-test": "2.3.20",
     "@tryghost/webhook-mock-receiver": "2.3.19",
