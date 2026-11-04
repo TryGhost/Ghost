@@ -2,6 +2,8 @@ import { execFile } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 
+import { ignoreError } from '../shared/ignore.ts';
+
 export type IgnoredResult = { ignored: true } | { ignored: false; reason: string };
 
 function git(args: string[], cwd: string, input?: string) {
@@ -10,7 +12,7 @@ function git(args: string[], cwd: string, input?: string) {
       done({ code: error ? ((error as { code?: number | string }).code ?? 1) : 0, stdout, stderr });
     });
     // A git that couldn't start has no stdin to write to; its error arrives above.
-    child.stdin?.on('error', () => undefined);
+    child.stdin?.on('error', ignoreError);
     child.stdin?.end(input);
   });
 }

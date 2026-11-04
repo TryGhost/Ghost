@@ -8,6 +8,7 @@ import {
 import { parseManifest, parseManifestUrl } from '@tryghost/app-contracts/manifest';
 
 import { readBytes } from '../shared/body.ts';
+import { ignoreError } from '../shared/ignore.ts';
 import { UNKNOWN_GHOST_URL, formatErrors } from '../shared/manifest.ts';
 import { parseJsonText } from '../shared/parse.ts';
 import type { PublicKeyJwk } from './keys.ts';
@@ -125,7 +126,7 @@ async function send(
     const response = await request(url, { ...init, redirect: 'manual' });
     const answer = { status: response.status, location: response.headers.get('location') };
     if (!wantsBody(response.status)) {
-      response.body?.cancel().catch(() => undefined);
+      response.body?.cancel().catch(ignoreError);
       return { ...answer, body: undefined };
     }
     return { ...answer, body: await readBytes(response, maxBytes) };

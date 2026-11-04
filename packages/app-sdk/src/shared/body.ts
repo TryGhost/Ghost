@@ -1,3 +1,5 @@
+import { ignoreError } from './ignore.ts';
+
 /**
  * Reads a request's or a response's body, or `undefined` if it is longer than `maxBytes`. It
  * stops reading as soon as the body passes the limit, so a large body is never held whole.
@@ -8,7 +10,7 @@ export async function readBytes(
 ): Promise<Uint8Array | undefined> {
   if (Number(message.headers.get('content-length')) > maxBytes) {
     // Too large either way, so a body that refuses to be cancelled changes nothing.
-    await message.body?.cancel().catch(() => undefined);
+    await message.body?.cancel().catch(ignoreError);
     return undefined;
   }
   if (!message.body) {
@@ -24,7 +26,7 @@ export async function readBytes(
     }
     length += value.byteLength;
     if (length > maxBytes) {
-      await reader.cancel().catch(() => undefined);
+      await reader.cancel().catch(ignoreError);
       return undefined;
     }
     chunks.push(value);
