@@ -99,7 +99,10 @@ const anotherKey = (file: string): Message => ({
  * the same code as in production. It adds the variable when it's missing and git ignores the
  * file, and never changes a value that's there. Returns what to tell the developer, if anything.
  */
-export async function provideDevBackendKey(root: string): Promise<Message | undefined> {
+export async function provideDevBackendKey(
+  root: string,
+  { retried = false }: { retried?: boolean } = {},
+): Promise<Message | undefined> {
   if (!WRANGLER_CONFIGS.some((file) => existsSync(join(root, file)))) {
     return undefined;
   }
@@ -142,7 +145,15 @@ export async function provideDevBackendKey(root: string): Promise<Message | unde
   // Single quotes keep the JSON as it is.
   const line = `${BACKEND_KEY_VARIABLE}='${JSON.stringify(key)}'\n`;
   if (!existing) {
-    await writeFile(file, line, { flag: 'wx', mode: 0o600 });
+    try {
+      await writeFile(file, line, { flag: 'wx', mode: 0o600 });
+    } catch (error) {
+      // Another dev server created it first: what it holds now decides, once.
+      if ((error as NodeJS.ErrnoException).code === 'EEXIST' && !retried) {
+        return provideDevBackendKey(root, { retried: true });
+      }
+      throw error;
+    }
   } else {
     // Opened without following a link, in case one replaced the file since it was checked, and
     // made private before the key goes in, as an existing file is often readable by anyone.
