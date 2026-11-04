@@ -4,7 +4,6 @@ import path from 'node:path';
 
 import FormData from 'form-data';
 import sinon from 'sinon';
-import { MaxLimit } from '@tryghost/limit-service';
 
 import type { HostLimitConfig, HostSettings } from '../../utils/host-limits-utils';
 
@@ -23,6 +22,7 @@ const mailService = require('../../../core/server/lib/mail') as {
 const membersService = require('../../../core/server/services/members') as {
   stripeConnect: StripeConnect;
 };
+const { MaxLimit }: typeof import('@tryghost/limit-service') = require('@tryghost/limit-service');
 const {
   limitService: limits,
 }: typeof import('../../../core/server/services/limits') = require('../../../core/server/services/limits');
