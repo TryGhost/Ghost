@@ -339,4 +339,23 @@ describe('createAdminApiClient', () => {
       TypeError,
     );
   });
+
+  // The key goes with every request, so plain HTTP is only for a Ghost on the same machine.
+  it.each(['http://site.example', 'ftp://site.example', 'http://10.0.0.5:2368'])(
+    'refuses %s, which would send the key in the clear or not at all',
+    (url) => {
+      expect(() => createAdminApiClient({ url, key: ADMIN_API_KEY })).toThrow(TypeError);
+    },
+  );
+
+  it.each([
+    'http://localhost:2368',
+    'http://127.0.0.1:2368',
+    'http://127.1.2.3',
+    'http://[::1]:2368',
+  ])('accepts %s, on this machine', (url) => {
+    expect(createAdminApiClient({ url, key: ADMIN_API_KEY }).root).toBe(
+      new URL('/ghost/api/admin/', url).href,
+    );
+  });
 });

@@ -1,4 +1,4 @@
-import { isContainedPath } from '@tryghost/app-contracts';
+import { isContainedPath, isLocalhost } from '@tryghost/app-contracts';
 import { SignJWT } from 'jose';
 
 // An Admin API key as Ghost shows it for a custom integration: the key's ID, then its secret
@@ -81,8 +81,15 @@ export function createAdminApiClient({
 }: AdminApiClientOptions): AdminApiClient {
   readKey(key);
   const site = URL.parse(url);
-  if (!site || (site.protocol !== 'https:' && site.protocol !== 'http:')) {
-    throw new TypeError(`Expected the site's URL, such as https://site.example, not ${url}`);
+  // The key goes with every request, so it never crosses the network in the clear: plain HTTP
+  // only reaches a Ghost on the same machine.
+  if (
+    !site ||
+    !(site.protocol === 'https:' || (site.protocol === 'http:' && isLocalhost(site.hostname)))
+  ) {
+    throw new TypeError(
+      `Expected the site's URL over https, such as https://site.example, or http on localhost, not ${url}`,
+    );
   }
   site.search = '';
   site.hash = '';
