@@ -507,7 +507,8 @@ per entry point, which share chunks:
   builtin;
 - `backend.js` loads only `jose` and `zod`, and no Node builtin;
 - `tooling.js`, `vite.js` and `bin.js` load Node builtins, `jose` and `zod`;
-  `vite.js` imports only Vite's types, as Vite is an optional peer dependency;
+  `vite.js` imports Vite only when Vite runs the plugin, not when it loads, as
+  Vite is an optional peer dependency;
 - each entry point's declarations, emitted by TypeScript 7 and bundled by
   `rolldown-plugin-dts`, import nothing, but Vite's types for `vite.d.ts`;
 - `dist/` imports nothing at all.
