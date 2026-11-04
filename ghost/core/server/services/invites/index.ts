@@ -20,7 +20,6 @@ export default defineService('Invites', () => {
     urlUtils,
     models,
     logging,
-    limitService,
     invitationLimiter: new InvitationLimiter({
       transaction: (callback) => models.Base.transaction(callback),
       limitService,
