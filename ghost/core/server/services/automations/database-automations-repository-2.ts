@@ -5,6 +5,11 @@ import type { AutomationsRepository2 } from './automations-repository-2';
 
 type Connection = Knex | Knex.Transaction;
 
+const emailRecipientClickRowSchema = z.object({
+  id: z.string(),
+  clicked_at: z.coerce.date().nullable(),
+});
+
 const nextActionRevisionRowBaseSchema = z.object({
   automation_id: z.string(),
   action_id: z.string(),
@@ -149,6 +154,23 @@ export const createDatabaseAutomationsRepository2 = ({
       await connection('automation_trigger_rules').where('automation_id', automationId).delete();
     },
 
+    async findEmailRecipientForClick(
+      connection,
+      { automationActionRevisionId, automationRunStepId, memberId },
+    ) {
+      const row = await connection('automated_email_recipients')
+        .select('id', 'clicked_at')
+        .where({
+          automation_action_revision_id: automationActionRevisionId,
+          automation_run_step_id: automationRunStepId,
+          member_id: memberId,
+          track_clicks: true,
+        })
+        .forUpdate()
+        .first();
+      return row === undefined ? undefined : emailRecipientClickRowSchema.parse(row);
+    },
+
     async findFirstActionRevisions(connection, options) {
       const rows: unknown[] = await connection('automations as automation')
         .select(
@@ -209,6 +231,12 @@ export const createDatabaseAutomationsRepository2 = ({
         .select(connection.raw('1'))
         .where({ automation_id: automationId, member_id: memberId });
       return await selectExists(connection, query);
+    },
+
+    async incrementEmailClickedCount(connection, revisionId) {
+      await connection('automation_action_revisions')
+        .where({ id: revisionId })
+        .update({ email_clicked_count: connection.raw('COALESCE(email_clicked_count, 0) + 1') });
     },
 
     async insertActions(connection, toInsert) {
@@ -283,8 +311,28 @@ export const createDatabaseAutomationsRepository2 = ({
         .orderBy(['e.source_action_id', 'e.target_action_id']);
     },
 
+    async lockActionRevisions(connection, revisionIds) {
+      const ids = [...new Set(revisionIds)];
+      if (ids.length === 0) {
+        return;
+      }
+      await connection('automation_action_revisions')
+        .select('id')
+        .whereIn('id', ids)
+        .orderBy('id')
+        .forUpdate();
+    },
+
     async lockMember(connection, memberId) {
       await connection('members').where('id', memberId).forUpdate().first('id');
+    },
+
+    async setEmailRecipientClickedAt(connection, recipientId, clickedAt) {
+      const updated = await connection('automated_email_recipients')
+        .where({ id: recipientId })
+        .whereNull('clicked_at')
+        .update({ clicked_at: clickedAt });
+      return updated > 0;
     },
 
     withConnection: (fn) => fn(knex),

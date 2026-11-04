@@ -6,6 +6,7 @@ import type {
   AutomationsRepository2,
   RunStepToInsert,
   RunToInsert,
+  TrackEmailClickedOptions,
 } from './automations-repository-2';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 import { getReadyAtForAction } from './util/get-ready-at-for-action';
@@ -183,5 +184,37 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
     },
 
     requestPoll,
+
+    trackEmailClicked: async (
+      {
+        automationActionRevisionId,
+        automationRunStepId,
+        memberId,
+        clickedAt,
+      }: TrackEmailClickedOptions,
+      { connection }: { connection: RepositoryTransaction },
+    ): Promise<void> => {
+      await repository.lockActionRevisions(connection, [automationActionRevisionId]);
+
+      const recipient = await repository.findEmailRecipientForClick(connection, {
+        automationActionRevisionId,
+        automationRunStepId,
+        memberId,
+      });
+      if (!recipient || recipient.clicked_at !== null) {
+        return;
+      }
+
+      const updated = await repository.setEmailRecipientClickedAt(
+        connection,
+        recipient.id,
+        clickedAt,
+      );
+      if (!updated) {
+        return;
+      }
+
+      await repository.incrementEmailClickedCount(connection, automationActionRevisionId);
+    },
   };
 };
