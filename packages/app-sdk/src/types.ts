@@ -71,7 +71,8 @@ export interface OverlayHold {
  * page: a second document on the app's origin that Admin shows above its own chrome, over a
  * tint. It covers the whole window, so a dialog lays out as Admin's own do, and Admin shows only
  * the app's safe area of it: in the overlay, `--ghost-safe-area-inset-*` are measured from the
- * window's edges.
+ * window's edges. Shade's dialogs, sheets and alert dialogs use it when the app passes it to
+ * `ShadeApp` as `overlay`.
  *
  * That document is the app's page, loaded a second time. It never connects, but code that runs
  * before `connect()` resolves runs there too, so start fetches, analytics and the like once
@@ -137,6 +138,6 @@ export interface Ghost {
   fetch(path: string, init?: GhostFetchInit): Promise<Response>;
   /** Sends the person using the app to a place in Admin, such as `{ post: { id } }`. */
   open(place: Place): Promise<void>;
-  /** Where dialogs and sheets render to cover all of Admin. */
+  /** Where dialogs and sheets render to cover all of Admin. Pass it to `ShadeApp`. */
   readonly overlay: GhostOverlay;
 }

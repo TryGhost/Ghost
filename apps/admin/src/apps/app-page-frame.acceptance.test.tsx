@@ -320,7 +320,7 @@ describe('An app’s page beneath Admin’s chrome', () => {
     });
   });
 
-  describe('opening a menu or a select', () => {
+  describe('opening a menu, a select or a dialog', () => {
     for (const tall of [true, false]) {
       it(`leaves a page that ${tall ? 'scrolls' : 'doesn’t scroll'} where it is, scrollbar and all`, async () => {
         await openShadeApp({ tall });
@@ -358,6 +358,11 @@ describe('An app’s page beneath Admin’s chrome', () => {
           await userEvent.keyboard('{Escape}');
           await expect.poll(() => inApp('rect', popup), { message: trigger }).toBeNull();
         }
+
+        // In the overlay, over all of Admin, the page beneath its tint holds still too.
+        await clickInApp('#open-dialog');
+        await expect.element(appsScreen.overlayTint()).toBeVisible();
+        await opens('#open-dialog');
       });
     }
   });

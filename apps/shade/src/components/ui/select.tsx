@@ -4,6 +4,7 @@ import { type VariantProps } from 'class-variance-authority';
 import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 
 import { selectTriggerVariants } from '@/components/ui/select-variants';
+import { usePortalContainer } from '@/lib/app-overlay';
 import { cn } from '@/lib/utils';
 import { ShadeScope } from '@/shade-scope';
 import { inputSurface, inputSurfaceClasses } from '@/components/ui/input-surface';
@@ -101,11 +102,12 @@ const SelectContent = React.forwardRef<
     },
     ref,
   ) => {
+    const container = usePortalContainer();
     // Radix fits an item-aligned select to the window, so in a Ghost app it would run under
     // Admin's chrome. A popper one keeps inside the safe area.
-    const position = hasSafeArea() ? 'popper' : requested;
+    const position = hasSafeArea(container) ? 'popper' : requested;
     return (
-      <SelectPrimitive.Portal>
+      <SelectPrimitive.Portal container={container}>
         <ShadeScope>
           <SelectPrimitive.Content
             ref={ref}
@@ -115,7 +117,7 @@ const SelectContent = React.forwardRef<
                 'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
               className,
             )}
-            {...safeAreaCollision(collisionBoundary)}
+            {...safeAreaCollision(collisionBoundary, container)}
             position={position}
             onEscapeKeyDown={(event) => consumeOverlayEscape(event, onEscapeKeyDown)}
             {...props}

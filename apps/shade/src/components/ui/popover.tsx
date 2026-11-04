@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { ShadeScope } from '@/shade-scope';
 
+import { usePortalContainer } from '@/lib/app-overlay';
 import { cn } from '@/lib/utils';
 import { consumeOverlayEscape } from '@/lib/overlay-escape';
 import { safeAreaCollision } from '@/lib/safe-area';
@@ -21,7 +22,7 @@ const PopoverContent = React.forwardRef<
     { className, align = 'center', onEscapeKeyDown, sideOffset = 4, collisionBoundary, ...props },
     ref,
   ) => (
-    <PopoverPrimitive.Portal>
+    <PopoverPrimitive.Portal container={usePortalContainer()}>
       <ShadeScope>
         <PopoverPrimitive.Content
           ref={ref}
@@ -32,7 +33,7 @@ const PopoverContent = React.forwardRef<
             'z-50 origin-(--radix-popover-content-transform-origin) rounded-menu border border-border/60 bg-surface-elevated-2 p-5 text-popover-foreground shadow-md outline-hidden data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 dark:border-border/30',
             className,
           )}
-          {...safeAreaCollision(collisionBoundary)}
+          {...safeAreaCollision(collisionBoundary, usePortalContainer())}
           sideOffset={sideOffset}
           onEscapeKeyDown={(event) => consumeOverlayEscape(event, onEscapeKeyDown)}
           {...props}
