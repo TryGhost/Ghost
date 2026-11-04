@@ -10,13 +10,15 @@ import {
   AlertDialogTitle,
   Button,
   Field,
+  FieldContent,
+  FieldDescription,
   FieldError,
   FieldLabel,
   LoadingIndicator,
   RadioGroup,
   RadioGroupItem,
 } from '@tryghost/shade/components';
-import { formatNumber } from '@tryghost/shade/utils';
+import { formatNumber, LucideIcon } from '@tryghost/shade/utils';
 
 // The "Label added to a member" trigger's label, for the publish confirmation (NY-1750).
 // `memberCount` is null while it loads or when it can't be read.
@@ -25,17 +27,32 @@ export type PublishLabelTrigger = {
   memberCount: number | null;
 };
 
-// Not saved yet: the API can't enroll members who already have the label (NY-1750).
+// Not saved yet: the API can't start members who already have the label (NY-1750).
 type Enrollment = 'new' | 'new_and_existing';
 
-// Finishes "from now on, plus …"; a count that can't be read still asks.
-const existingMembers = (count: number | null): string => {
-  if (count === null) {
-    return 'those who already have it';
+// The label as the trigger card shows it: its tag icon says "label" for names that read like plain
+// words ("Free trial"). The icon stays on the name's first word, so a line never ends on it alone.
+const LabelName = ({ name }: { name: string }) => {
+  const [firstWord, ...rest] = name.split(' ');
+  return (
+    <span className="font-medium text-foreground">
+      <span className="whitespace-nowrap">
+        <LucideIcon.Tag className="mr-1 inline size-3.5 align-[-2px]" />
+        {firstWord}
+      </span>
+      {rest.length > 0 && ` ${rest.join(' ')}`}
+    </span>
+  );
+};
+
+// Who the second choice adds; a count that can't be read still offers it.
+const existingMembersHint = (memberCount: number | null): string => {
+  if (memberCount === null) {
+    return 'Members who already have it will be added right away';
   }
-  return count === 1
-    ? 'the 1 who already has it'
-    : `the ${formatNumber(count)} who already have it`;
+  return memberCount === 1
+    ? '1 member will be added right away'
+    : `${formatNumber(memberCount)} members will be added right away`;
 };
 
 interface AutomationStatusDialogProps {
@@ -88,13 +105,14 @@ const AutomationStatusDialogBody = ({
   const id = useId();
   const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
   const [showEnrollmentError, setShowEnrollmentError] = useState(false);
-  // Only asked when members already have the label; with none, there is nothing to choose.
+  // Asked only when members already have the label. No default: the publisher must say whether
+  // those members start too (NY-1750).
   const asksEnrollment = labelTrigger !== undefined && labelTrigger.memberCount !== 0;
   const { title, description, buttonLabel, pendingLabel } = (() => {
     switch (status) {
       case 'active':
         return {
-          title: 'Start your automation?',
+          title: labelTrigger ? 'Publish automation?' : 'Start your automation?',
           description:
             'Once published, your automation goes live. Any member who meets the trigger will be enrolled automatically.',
           buttonLabel: 'Publish',
@@ -130,8 +148,8 @@ const AutomationStatusDialogBody = ({
         <AlertDialogDescription>
           {labelTrigger ? (
             <>
-              Once published, this automation will enroll any member who gets a {labelTrigger.name}{' '}
-              label{asksEnrollment ? ':' : '.'}
+              Start this automation for members who get <LabelName name={labelTrigger.name} />
+              {asksEnrollment ? ':' : '.'}
             </>
           ) : (
             description
@@ -143,7 +161,9 @@ const AutomationStatusDialogBody = ({
           <RadioGroup
             aria-describedby={showEnrollmentError ? `${id}-error` : undefined}
             aria-invalid={showEnrollmentError || undefined}
-            aria-label="Who to enroll"
+            aria-label="Who to start this automation for"
+            // Shade's 12px suits one-line radios; these carry a hint, so each needs a clearer break.
+            className="gap-5"
             value={enrollment ?? ''}
             onValueChange={(value) => {
               setEnrollment(value as Enrollment);
@@ -152,18 +172,26 @@ const AutomationStatusDialogBody = ({
           >
             <Field orientation="horizontal">
               <RadioGroupItem id={`${id}-new`} value="new" />
-              <FieldLabel className="font-normal" htmlFor={`${id}-new`}>
-                from now on
-              </FieldLabel>
+              <FieldContent>
+                <FieldLabel className="font-normal" htmlFor={`${id}-new`}>
+                  From now on
+                </FieldLabel>
+                <FieldDescription>Only enroll members who get it after publishing</FieldDescription>
+              </FieldContent>
             </Field>
             <Field orientation="horizontal">
               <RadioGroupItem id={`${id}-existing`} value="new_and_existing" />
-              <FieldLabel className="font-normal" htmlFor={`${id}-existing`}>
-                from now on, plus {existingMembers(labelTrigger?.memberCount ?? null)}
-              </FieldLabel>
+              <FieldContent>
+                <FieldLabel className="font-normal" htmlFor={`${id}-existing`}>
+                  From now on and who already have it
+                </FieldLabel>
+                <FieldDescription>{existingMembersHint(labelTrigger.memberCount)}</FieldDescription>
+              </FieldContent>
             </Field>
           </RadioGroup>
-          {showEnrollmentError && <FieldError id={`${id}-error`}>Choose who to enroll.</FieldError>}
+          {showEnrollmentError && (
+            <FieldError id={`${id}-error`}>Choose who to start this automation for.</FieldError>
+          )}
         </Field>
       )}
       <AlertDialogFooter>

@@ -3,7 +3,7 @@ import {
   getTriggerTierIds,
   subscriptionChangedSelectionFromRules,
 } from '@/automations/utils/trigger-rules';
-import React, { useId, useState } from 'react';
+import React, { useId } from 'react';
 import type {
   AutomationTrigger,
   AutomationTriggerRule,
@@ -11,15 +11,7 @@ import type {
 import type { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import {
   Button,
-  Combobox,
-  ComboboxContent,
-  ComboboxTrigger,
-  ComboboxValue,
-  CommandItem,
-  type FooterRenderProps,
   Label,
-  MultiSelectCombobox,
-  type RenderItemProps,
   Select,
   SelectContent,
   SelectItem,
@@ -31,7 +23,7 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { AutomationCard, AutomationCardHeader } from './automation-card';
 import { TierScopePicker } from './tier-scope-picker';
 import { ChipPicker } from '@/shared/pickers/chip-picker';
-import { canCreateLabel, EditRow, useLabelPicker } from '@/members/api';
+import { canCreateLabel, useLabelPicker } from '@/members/api';
 import type { LabelSelection, TierSelection } from '@/automations/types';
 import { isTierSelectionEmpty, updateFromSelection } from '@/automations/utils/tier-selection';
 
@@ -200,7 +192,8 @@ const SubscriptionChangedPicker: React.FC<{ trigger: TriggerData; errorMessage?:
 
   return (
     <Stack aria-labelledby={`${id}-label`} className="nowheel" gap="lg" role="group">
-      <Text as="p" id={`${id}-label`} size="sm">
+      {/* Not a Label, as it names both fields; sized like the other triggers' field labels. */}
+      <Text as="p" className="text-[length:var(--text-control)] leading-normal" id={`${id}-label`}>
         Triggered when a member&apos;s subscription changes:
       </Text>
       <Stack gap="sm">
@@ -219,9 +212,9 @@ const SubscriptionChangedPicker: React.FC<{ trigger: TriggerData; errorMessage?:
           invalid={Boolean(errorMessage) && isTierSelectionEmpty(value.from)}
           missingTierLabel={missingTierLabel}
           notice={notice}
+          options={fromTiers}
           placeholder="Select tiers..."
           standalone={{ value: 'any_paid', label: 'Any paid tier' }}
-          tiers={fromTiers}
           value={value.from}
           onChange={(from) => onChange(updateFromSelection(value, from))}
         />
@@ -242,9 +235,9 @@ const SubscriptionChangedPicker: React.FC<{ trigger: TriggerData; errorMessage?:
           invalid={Boolean(errorMessage) && isTierSelectionEmpty(value.to)}
           missingTierLabel={missingTierLabel}
           notice={notice}
+          options={toTiers}
           placeholder="Select tiers..."
           standalone={{ value: 'downgraded_to_free', label: 'Free' }}
-          tiers={toTiers}
           value={value.to}
           onChange={(to) => onChange({ ...value, to })}
         />
@@ -265,161 +258,71 @@ const SubscriptionChangedPicker: React.FC<{ trigger: TriggerData; errorMessage?:
   );
 };
 
-// One label, picked like a single-choice setting (Settings' time zone) with the members label
-// filter's inline create, rename and delete. Picking or creating a label replaces the current one.
+// One label, on the "Paid subscription changed" field in its one-choice mode, with a row to create
+// the typed label. Picking or creating a label replaces the current one.
 const LabelAddedPicker: React.FC<{
   labelSelection: NonNullable<TriggerData['labelSelection']>;
   errorMessage?: string;
 }> = ({ labelSelection, errorMessage }) => {
   const id = useId();
-  const [open, setOpen] = useState(false);
-  const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
   const { value, onChange } = labelSelection;
   const selectedSlugs = React.useMemo(() => (value === null ? [] : [value]), [value]);
   const picker = useLabelPicker({
     selectedSlugs,
     onSelectionChange: (slugs) => onChange(slugs.at(-1) ?? null),
   });
-  const selectedName = picker.resolvedSelectedLabels[0]?.name ?? value;
-
-  const onOpenChange = (nextOpen: boolean) => {
-    setOpen(nextOpen);
-    if (!nextOpen) {
-      // The list remounts with an empty search, so clear the picker's query to match.
-      picker.optionSource.onSearchChange?.('');
-      setSearch('');
-      setEditingLabelId(null);
-    }
-  };
-  // When a search matches nothing, the Create row is the answer: drop the empty list and its
-  // "No labels found" message, and the Create row's divider that would sit under the search box.
-  const hidesEmptyList = editingLabelId === null && canCreateLabel(picker.labels, search);
-
-  const renderItem = ({ option, isSelected, onSelect }: RenderItemProps<string>) => {
-    const metadataId = option.metadata?.id;
-    const labelId =
-      typeof metadataId === 'string' || typeof metadataId === 'number' ? String(metadataId) : '';
-
-    if (editingLabelId === labelId && !isSelected) {
-      return (
-        <EditRow
-          key={labelId}
-          label={{ id: labelId, name: option.label }}
-          onCancel={() => setEditingLabelId(null)}
-          onDelete={async (deletedId) => {
-            await picker.deleteLabel(deletedId);
-            setEditingLabelId(null);
-          }}
-          onSave={async (editedId, name) => {
-            await picker.editLabel(editedId, name);
-            setEditingLabelId(null);
-          }}
-        />
-      );
-    }
-
-    return (
-      <CommandItem
-        key={String(option.value)}
-        className="group"
-        value={option.label}
-        onSelect={onSelect}
-      >
-        <span className="flex-1 truncate">{option.label}</span>
-        {isSelected ? (
-          <LucideIcon.Check className="size-4 shrink-0 text-primary" />
-        ) : (
-          <button
-            aria-label={`Edit label ${option.label}`}
-            className="relative ml-1 flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:text-foreground"
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              event.preventDefault();
-              setEditingLabelId(labelId);
-            }}
-          >
-            <LucideIcon.Pencil className="absolute size-3 translate-x-2 opacity-0 transition-all duration-150 ease-out group-hover:translate-x-0 group-hover:opacity-100" />
-          </button>
-        )}
-      </CommandItem>
-    );
-  };
-
-  const renderFooter = ({ searchInput, clearSearch }: FooterRenderProps) => {
-    if (!canCreateLabel(picker.labels, searchInput)) {
-      return null;
-    }
-    return (
-      <div className="border-t border-border-default p-1">
-        <Button
-          className="h-8 w-full justify-start gap-2 px-2 text-sm font-normal"
-          disabled={picker.isCreating}
-          variant="ghost"
-          onClick={() =>
-            void (async () => {
-              try {
-                if (await picker.createLabel(searchInput.trim())) {
-                  clearSearch();
-                  onOpenChange(false);
-                }
-              } catch {
-                // Already reported via toast; keep the typed name for a retry.
-              }
-            })()
-          }
-        >
-          <LucideIcon.Plus className="size-4" />
-          {picker.isCreating ? 'Creating...' : `Create "${searchInput.trim()}"`}
-        </Button>
-      </div>
-    );
-  };
+  const { isInitialLoad, hasMore, isLoadingMore, loadMore, onSearchChange } = picker.optionSource;
+  // In name order: the label source lists the chosen label first, which would move it on each pick.
+  const options = React.useMemo(
+    () =>
+      picker.labels
+        .map((label) => ({ id: label.slug, name: label.name }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    [picker.labels],
+  );
 
   return (
     <Stack className="nowheel" gap="sm">
       <Label className="leading-normal font-normal" htmlFor={`${id}-label`}>
         Triggered when this label is added to a member:
       </Label>
-      <Combobox open={open} onOpenChange={onOpenChange}>
-        <ComboboxTrigger
-          aria-describedby={errorMessage ? `${id}-error` : undefined}
-          aria-invalid={Boolean(errorMessage) || undefined}
-          id={`${id}-label`}
-        >
-          <ComboboxValue placeholder={!selectedName}>
-            {selectedName ?? 'Select a label'}
-          </ComboboxValue>
-        </ComboboxTrigger>
-        <ComboboxContent className="nodrag nopan nowheel">
-          <MultiSelectCombobox
-            className={
-              hidesEmptyList
-                ? '[&_[data-slot=command-list]:has([data-slot=command-empty])]:hidden [&_[data-slot=command-list]:has([data-slot=command-empty])+*]:border-t-0'
-                : undefined
-            }
-            footer={renderFooter}
-            i18n={{
-              searchPlaceholder: 'Search or create a label',
-              noResultsFound: 'No labels found',
-            }}
-            isMultiSelect={false}
-            optionSource={picker.optionSource}
-            renderItem={renderItem}
-            values={selectedSlugs}
-            autoCloseOnSelect
-            // Picking the current label again keeps it: the trigger always needs one.
-            onChange={(slugs) => {
-              if (slugs[0]) {
-                onChange(slugs[0]);
-              }
-            }}
-            onClose={() => onOpenChange(false)}
-            onSearchChange={setSearch}
-          />
-        </ComboboxContent>
-      </Combobox>
+      <TierScopePicker<never>
+        createRow={{
+          offer: (term) => !picker.isCreating && canCreateLabel(picker.labels, term),
+          label: (term) => `Create "${term}"`,
+          onCreate: (term) => {
+            picker
+              .createLabel(term)
+              .then((label) => {
+                if (label) {
+                  onChange(label.slug);
+                }
+              })
+              .catch(() => {
+                // Already reported via toast.
+              });
+          },
+        }}
+        describedBy={errorMessage ? `${id}-error` : undefined}
+        emptyMessage="No labels found"
+        inputId={`${id}-label`}
+        inputLabel="Label"
+        invalid={Boolean(errorMessage)}
+        missingTierLabel="Unavailable label"
+        notice={isInitialLoad ? <Text size="md">Loading labels...</Text> : undefined}
+        options={options}
+        optionsHeading="Labels"
+        placeholder="Search or create a label..."
+        value={selectedSlugs}
+        single
+        onChange={(next) => onChange(typeof next === 'string' ? null : (next[0] ?? null))}
+        onEndReached={() => {
+          if (hasMore && !isLoadingMore) {
+            loadMore();
+          }
+        }}
+        onSearchChange={onSearchChange}
+      />
       {errorMessage && (
         <Text as="p" className="text-destructive" id={`${id}-error`} role="alert" size="sm">
           {errorMessage}
