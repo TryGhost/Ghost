@@ -11,7 +11,6 @@ import {
   settleRequests,
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
-import { CUSTOM_FIELDS_FLAG } from '@/shared/member-custom-fields/availability';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 import { z } from 'zod';
@@ -88,23 +87,10 @@ function fakeCustomFieldsWithCreate(initial: CustomField[], created: CustomField
 }
 
 describe('Custom fields', () => {
-  // Admin goes live before the servers it talks to, and a server that hasn't released custom
-  // fields reports their flag off and refuses every change to them.
-  it('stays hidden, and asks for no fields, on a server that has not released them', async () => {
-    fakeSettingsScreens();
-    const customFieldsApi = fakeCustomFields();
-    await renderAdminApp('/settings', { labs: { [CUSTOM_FIELDS_FLAG]: false } });
-
-    await expect.element(settingsScreen.navItem('Tiers')).toBeVisible();
-    await expect(settingsScreen.navItem('Custom fields')).toHaveCount(0);
-    await expect(settingsScreen.customFields()).toHaveCount(0);
-    expect(customFieldsApi.requests).toHaveLength(0);
-  });
-
-  // A host can switch custom fields off for a site separately from the flag, so the
-  // feature can be sold. A site without them is still told they exist: Settings keeps the
-  // entry, in the sidebar and in search, and the section offers the upgrade in the host's
-  // words rather than a list whose every change would be refused.
+  // A host can switch custom fields off for a site, so the feature can be sold. A site
+  // without them is still told they exist: Settings keeps the entry, in the sidebar and in
+  // search, and the section offers the upgrade in the host's words rather than a list whose
+  // every change would be refused.
   it('offers the upgrade when the host switches custom fields off', async () => {
     fakeSettingsScreens();
     // As the server lists them while they're switched off.

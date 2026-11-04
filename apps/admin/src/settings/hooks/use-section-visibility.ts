@@ -8,7 +8,6 @@ import {
   usePaidMembersEnabled,
 } from '@tryghost/admin-x-framework/api/settings';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
-import { CUSTOM_FIELDS_FLAG } from '@/shared/member-custom-fields/availability';
 import { searchKeywords as emailSearchKeywords } from '@/settings/email/search-keywords';
 import { searchKeywords as emailsSearchKeywords } from '@/settings/email/emails-search-keywords';
 
@@ -18,7 +17,6 @@ export interface SettingsSectionVisibility {
   giftSubscriptions: boolean;
   welcomeEmails: boolean;
   tipsAndDonations: boolean;
-  customFields: boolean;
   offers: boolean;
   /** Keywords of the email sections this site shows. */
   emailKeywords: string[];
@@ -34,7 +32,6 @@ export function useSettingsSectionVisibility(): SettingsSectionVisibility {
   const paidMembersEnabled = usePaidMembersEnabled();
   const hasNewslettersEnabled = useNewslettersEnabled() === true;
   const hasAutomations = useFeatureFlag('automations');
-  const customFields = useFeatureFlag(CUSTOM_FIELDS_FLAG);
 
   const settings = settingsData?.settings;
   const config = configData?.config;
@@ -67,7 +64,6 @@ export function useSettingsSectionVisibility(): SettingsSectionVisibility {
       giftSubscriptions,
       welcomeEmails: !hasAutomations,
       tipsAndDonations,
-      customFields,
       offers: hasStripeEnabled,
       emailKeywords,
     }),
@@ -76,7 +72,6 @@ export function useSettingsSectionVisibility(): SettingsSectionVisibility {
       hasAutomations,
       giftSubscriptions,
       tipsAndDonations,
-      customFields,
       hasStripeEnabled,
       emailKeywords,
     ],

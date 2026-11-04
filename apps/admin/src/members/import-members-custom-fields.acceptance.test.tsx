@@ -12,16 +12,10 @@ import {
 } from '@test-utils/acceptance';
 import { importMembersScreen } from './import-members.screen';
 import { membersScreen } from './members.screen';
-import { CUSTOM_FIELDS_FLAG } from '@/shared/member-custom-fields/availability';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { MetafieldDefinitionSchema } from '@tryghost/metafield-types';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 import { z } from 'zod';
-
-// Admin goes live before the servers it talks to, and a server that hasn't released custom
-// fields reports their flag off and refuses new ones. The dialog still maps onto the fields
-// such a site has, but offers no way to make another.
-const WITHOUT_CUSTOM_FIELDS = { labs: { [CUSTOM_FIELDS_FLAG]: false } };
 
 // A `nickname` column no defined field matches, alongside the columns auto-detection claims.
 // `name` is present deliberately: it takes the /name/i heuristic, which would otherwise map
@@ -1026,39 +1020,10 @@ describe('Import members custom fields', () => {
   });
 
   describe('without field management', () => {
-    it('offers the defined fields, but no way to make another', async () => {
-      const { browseApi } = fakeCustomFieldsWorld([NICKNAME_FIELD]);
-      await renderAdminApp('/members', WITHOUT_CUSTOM_FIELDS);
-      await openMappingStep();
-
-      await importToggle('nickname').click();
-      await fieldSelect('nickname').click();
-
-      // Exact, or "Email" also matches "Subscribed to emails".
-      await expect.element(importMembersScreen.option('Email', { exact: true })).toBeVisible();
-      await expect.element(importMembersScreen.option('Nickname')).toBeVisible();
-      await expect.element(importMembersScreen.addCustomFieldOption()).not.toBeInTheDocument();
-
-      expect(browseApi.requests.length).toBeGreaterThan(0);
-    });
-
-    it('says no field matches a search rather than offering to make one', async () => {
-      fakeCustomFieldsWorld();
-      await renderAdminApp('/members', WITHOUT_CUSTOM_FIELDS);
-      await openMappingStep();
-
-      await importToggle('nickname').click();
-      await fieldSelect('nickname').click();
-      await userEvent.fill(importMembersScreen.searchFieldsInput(), 'zzzz');
-
-      // The offer to add a field was the list's only force-mounted item, so without it a
-      // fruitless search would leave the list blank with nothing said.
-      await expect.element(importMembersScreen.addCustomFieldOption()).not.toBeInTheDocument();
-      await expect.element(importMembersScreen.messageText('No fields found.')).toBeVisible();
-    });
-
     // While the host switches custom fields off every field reads as archived, so there is
-    // none to map onto, and the server would refuse a new one.
+    // none to map onto, and the server would refuse a new one. The offer to add a field was the
+    // list's only force-mounted item, so without it a fruitless search would leave the list
+    // blank with nothing said.
     it('offers no way to make a field while the host switches custom fields off', async () => {
       fakeCustomFieldsWorld();
       const config = configResponse();
