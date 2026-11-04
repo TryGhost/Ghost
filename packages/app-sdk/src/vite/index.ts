@@ -53,6 +53,25 @@ function readTunnels(input: string | readonly string[] | undefined): string[] {
     });
 }
 
+/**
+ * A variable from the environment or, as Vite reads them, the mode's `.env` files in `envDir`,
+ * so a project can keep its address in `.env.production`. The environment wins. Vite is only
+ * imported here, when it runs the plugin, as it's an optional peer dependency.
+ */
+async function readEnv(
+  mode: string,
+  envDir: string | false,
+  name: string,
+): Promise<string | undefined> {
+  const fromProcess = process.env[name]?.trim();
+  if (fromProcess || envDir === false) {
+    return fromProcess || undefined;
+  }
+  const { loadEnv } = await import('vite');
+  // Exactly this name, though Vite reads every variable that starts with it.
+  return loadEnv(mode, envDir, name)[name]?.trim() || undefined;
+}
+
 const installLink = (manifestUrl: string, ghostUrl: string | undefined) => {
   const ghost = (ghostUrl || 'http://localhost:2368').replace(/\/+$/, '');
   return `${ghost}/ghost/#/apps/install?manifest=${encodeURIComponent(manifestUrl)}`;
@@ -156,22 +175,13 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
     enforce: 'pre',
 
     async config(userConfig, { command, isPreview, mode }) {
-      // Read as Vite reads the mode's `.env` files, so a project can keep its address in
-      // `.env.production`. The environment wins. Vite is only imported here, when it runs the
-      // plugin, as it's an optional peer dependency.
       const root = resolve(userConfig.root ?? '');
-      // As Vite resolves it: against the project's root.
-      const envDir = userConfig.envDir === false ? false : resolve(root, userConfig.envDir ?? '');
-      const { loadEnv } = await import('vite');
-      const files =
-        envDir === false
-          ? {}
-          : loadEnv(mode, envDir, ['GHOST_APP_URL', 'GHOST_APP_TUNNEL_URL', 'GHOST_URL']);
-      const read = (name: string) => process.env[name]?.trim() || files[name]?.trim() || undefined;
-      appUrl = read('GHOST_APP_URL');
-      ghostUrl = read('GHOST_URL');
+      // The tunnels are read here, as the hosts Vite allows are set here. Everything else is read
+      // once the config is resolved, so a later plugin's `envDir` counts.
       if (options.tunnelUrl === undefined) {
-        tunnels = readTunnels(read('GHOST_APP_TUNNEL_URL'));
+        // As Vite resolves it: against the project's root.
+        const envDir = userConfig.envDir === false ? false : resolve(root, userConfig.envDir ?? '');
+        tunnels = readTunnels(await readEnv(mode, envDir, 'GHOST_APP_TUNNEL_URL'));
       }
 
       if (command !== 'serve' || isPreview) {
@@ -197,8 +207,10 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
       };
     },
 
-    configResolved(resolved) {
+    async configResolved(resolved) {
       config = resolved;
+      appUrl = await readEnv(resolved.mode, resolved.envDir, 'GHOST_APP_URL');
+      ghostUrl = await readEnv(resolved.mode, resolved.envDir, 'GHOST_URL');
       if (pending) {
         config.logger[pending.level](`ghost-app: ${pending.message}`);
         pending = undefined;

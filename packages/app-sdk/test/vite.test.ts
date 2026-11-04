@@ -683,6 +683,25 @@ describe('vite build', () => {
     await readAsGhost(signed, 'https://config.example.com/ghost-app.json');
   });
 
+  it('reads GHOST_APP_URL from the envDir a later plugin names', async () => {
+    await createKeys({ root, mode: 'production' });
+    await mkdir(join(root, 'config'));
+    await writeFile(
+      join(root, 'config/.env.production'),
+      'GHOST_APP_URL=https://later.example.com\n',
+    );
+    const later: Plugin = { name: 'later', config: () => ({ envDir: 'config' }) };
+    await build({
+      root,
+      configFile: false,
+      customLogger: recordingLogger(),
+      plugins: [ghostApp(), later],
+      build: { outDir: outDir() },
+    });
+    const signed = JSON.parse(await readFile(join(outDir(), 'ghost-app.json'), 'utf8'));
+    await readAsGhost(signed, 'https://later.example.com/ghost-app.json');
+  });
+
   it('reads GHOST_APP_URL from .env.production, which the environment overrides', async () => {
     await createKeys({ root, mode: 'production' });
     await writeFile(join(root, '.env.production'), 'GHOST_APP_URL=https://committed.example.com\n');
