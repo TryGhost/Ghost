@@ -30,11 +30,13 @@ export function pathOf(parts: readonly Part[]): string {
 }
 
 /**
- * The columns a row keeps its value in: one column per kind of value, so the database compares each
- * kind as itself.
+ * The columns a row can keep its value in: one column per kind of value, so the database compares
+ * each kind as itself. A row holds its value in exactly one of them, which the database holds, and
+ * the others are empty, so a write names only its own and leaves the rest to their default.
  */
 export interface ValueColumns {
-  value_text: string;
+  value_text?: string | null;
+  value_number?: number | null;
 }
 export type ValueColumn = keyof ValueColumns;
 
@@ -47,7 +49,7 @@ interface StoredKind<K extends ValueKind> {
   readonly column: ValueColumn;
   /** Whether a value, or a filter's operand, is of this kind. */
   is(value: unknown): value is ValueOfKind<K>;
-  /** The columns a value of this kind is written as. */
+  /** The column a value of this kind is written as, with its value: its own, and no other. */
   columns(value: ValueOfKind<K>): ValueColumns;
 }
 
@@ -61,6 +63,11 @@ const VALUE_KINDS: { readonly [K in ValueKind]: StoredKind<K> } = {
     column: 'value_text',
     is: (value): value is string => typeof value === 'string',
     columns: (value) => ({ value_text: value }),
+  },
+  number: {
+    column: 'value_number',
+    is: (value): value is number => typeof value === 'number',
+    columns: (value) => ({ value_number: value }),
   },
 };
 
@@ -88,12 +95,18 @@ function valueColumns(value: AnyLeafValue): ValueColumns {
 }
 
 /** A row's value, read from the column its leaf's kind of value is kept in. */
-const leafFrom = (leaf: Leaf, row: ValueRow): AnyLeafValue =>
-  row[VALUE_KINDS[LEAVES[leaf.leaf].kind].column];
+const leafFrom = (leaf: Leaf, row: ValueRow): AnyLeafValue | undefined =>
+  row[VALUE_KINDS[LEAVES[leaf.leaf].kind].column] ?? undefined;
 
 /** The text a set keeps an option under, from a row that holds one at the option's path. */
 const optionTextOf = (row: Pick<ValueRow, 'path' | 'value_text'>): string | undefined =>
-  row.path === optionPath(row.value_text) ? row.value_text : undefined;
+  typeof row.value_text === 'string' && row.path === optionPath(row.value_text)
+    ? row.value_text
+    : undefined;
+
+/** Whether a row holds its value in exactly one column, as the database holds every row does. */
+export const holdsOneValue = (row: ValueColumns): boolean =>
+  VALUE_COLUMNS.filter((column) => row[column] !== null && row[column] !== undefined).length === 1;
 
 /**
  * The column a filter's comparison is made in: that of the kind every value it compares with is
@@ -203,7 +216,8 @@ const STORED: { readonly [S in FieldShape]: StoredShape<S> } = {
         const leaf = Object.prototype.hasOwnProperty.call(parts, row.path)
           ? parts[row.path]
           : undefined;
-        return leaf === undefined ? [] : [[row.path, leafFrom(leaf, row)]];
+        const held = leaf && leafFrom(leaf, row);
+        return held === undefined ? [] : [[row.path, held]];
       });
       if (declared.length < rows.length) {
         leftOut();

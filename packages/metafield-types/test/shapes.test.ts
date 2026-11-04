@@ -12,6 +12,7 @@ import {
   matchShape,
   type Leaf,
   type LeafKind,
+  type LeafValues,
   shapedType,
   textOfValue,
   valueFromText,
@@ -112,6 +113,41 @@ describe('a record', function () {
           }
         }
       }
+    }
+  });
+});
+
+// Each kind of leaf says how two of its values order, or that no filter compares them by more or
+// less. Keyed by kind, so a kind added to the catalog has to say here which it is, with a lesser
+// and a greater value for an ordered kind.
+describe('each kind of leaf', function () {
+  const ORDERED: { readonly [K in LeafKind]: readonly [LeafValues[K], LeafValues[K]] | null } = {
+    text: null,
+    choice: null,
+    number: [-7, 0.1],
+  };
+
+  function ordersAsSaid<K extends LeafKind>(
+    kind: K,
+    pair: readonly [LeafValues[K], LeafValues[K]] | null,
+  ) {
+    const { order } = LEAVES[kind];
+    if (pair === null) {
+      expect(order, kind).toBeNull();
+      return;
+    }
+    if (order === null) {
+      assert.fail(`${kind} values order, but the kind says no filter compares them`);
+    }
+    const [lesser, greater] = pair;
+    expect(order(lesser, greater), kind).toBeLessThan(0);
+    expect(order(greater, lesser), kind).toBeGreaterThan(0);
+    expect(order(lesser, lesser), kind).toBe(0);
+  }
+
+  it('orders two of its values as a filter comparing by more or less must, or not at all', function () {
+    for (const kind of keysOf(ORDERED)) {
+      ordersAsSaid(kind, ORDERED[kind]);
     }
   });
 });

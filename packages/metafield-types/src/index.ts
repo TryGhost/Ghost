@@ -483,6 +483,8 @@ const LIST_RULES: { [F in ListSource]: () => LeafRule<'choice'> } = {
 const LEAF_RULES: { [K in LeafKind]: (leaf: Extract<Leaf, { leaf: K }>) => LeafRule<K> } = {
   text: ({ size }) => TEXT_RULES[size](),
   choice: ({ from }) => LIST_RULES[from](),
+  // Finite only: zod refuses Infinity and NaN, which JSON can't carry anyway.
+  number: () => z.number({ error: 'Enter a number.' }),
 };
 
 /** A leaf's rule, whichever kind of leaf it is. */

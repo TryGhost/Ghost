@@ -77,6 +77,11 @@ interface LeafKindRules<K extends LeafKind> {
    * value as text is `String` for every kind.
    */
   fromText(text: string): LeafValues[K] | string;
+  /**
+   * How two of its values order, as a filter comparing by more or less must, or null for a kind
+   * no filter compares that way.
+   */
+  readonly order: ((a: LeafValues[K], b: LeafValues[K]) => number) | null;
 }
 
 /**
@@ -117,16 +122,27 @@ export interface ShapeRules<S extends FieldShape> {
 const filled = <V extends AnyLeafValue>(raw: V | undefined): V | undefined =>
   typeof raw === 'string' && raw.trim() === '' ? undefined : raw;
 
-/** A value JSON carries as a string, without its padding, which every such leaf's rule trims too. */
+/**
+ * A value JSON carries as a string, without its padding, which every such leaf's rule trims too.
+ * Unordered: no filter compares text by more or less.
+ */
 const stringRules = {
   kind: 'string',
   read: (raw: unknown) => (typeof raw === 'string' ? filled(raw.trim()) : undefined),
   fromText: (text: string) => text.trim(),
+  order: null,
 } as const;
 
 export const LEAVES: { readonly [K in LeafKind]: LeafKindRules<K> } = {
   text: stringRules,
   choice: stringRules,
+  number: {
+    kind: 'number',
+    read: (raw) => (typeof raw === 'number' && Number.isFinite(raw) ? raw : undefined),
+    // Plain decimal notation only, so `0x10` or `1e3` are refused rather than read as other numbers.
+    fromText: (text) => (/^-?\d+(\.\d+)?$/.test(text.trim()) ? Number(text.trim()) : text),
+    order: (a, b) => a - b,
+  },
 };
 
 /** A raw value read as its leaf's kind of value, typed by the leaf. */

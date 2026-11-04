@@ -30,20 +30,28 @@ export interface ChoiceLeaf {
   readonly from: ListSource;
 }
 
+/** A number, which may have a fractional part. */
+export interface NumberLeaf {
+  readonly leaf: 'number';
+}
+
 /** One value. */
-export type Leaf = TextLeaf | ChoiceLeaf;
+export type Leaf = TextLeaf | ChoiceLeaf | NumberLeaf;
 export type LeafKind = Leaf['leaf'];
 
 /** What a value of each kind of leaf is, as JSON carries it. */
 export interface LeafValues {
   text: string;
   choice: string;
+  number: number;
 }
 
 export type LeafValue<L extends Leaf> = LeafValues[L['leaf']];
 
 export const text = <const S extends TextSize>(size: S) => ({ leaf: 'text', size }) as const;
 export const choice = <const F extends ListSource>(from: F) => ({ leaf: 'choice', from }) as const;
+
+export const decimal = (): NumberLeaf => ({ leaf: 'number' });
 
 /** A country, as the two-letter code a list of countries offers. */
 export const country = choice('countries');
@@ -76,7 +84,7 @@ export type FieldStructure = ScalarStructure | RecordStructure | SetStructure;
 export type FieldShape = FieldStructure['shape'];
 
 /** The source for the union type, the zod enum and the `FIELD_STRUCTURES` keys alike. */
-export const FIELD_TYPE_IDS = ['short_text', 'long_text', 'list', 'address'] as const;
+export const FIELD_TYPE_IDS = ['short_text', 'long_text', 'number', 'list', 'address'] as const;
 export type FieldType = (typeof FIELD_TYPE_IDS)[number];
 
 /**
@@ -91,6 +99,7 @@ export type FieldType = (typeof FIELD_TYPE_IDS)[number];
 export const FIELD_STRUCTURES = {
   short_text: { shape: 'scalar', leaf: text('line') },
   long_text: { shape: 'scalar', leaf: text('long') },
+  number: { shape: 'scalar', leaf: decimal() },
   list: { shape: 'set' },
   address: {
     shape: 'record',
@@ -349,6 +358,8 @@ export function matchLeaf<R>(leaf: Leaf, handlers: LeafHandlers<R>): R {
       return handlers.text(leaf);
     case 'choice':
       return handlers.choice(leaf);
+    case 'number':
+      return handlers.number(leaf);
   }
 }
 

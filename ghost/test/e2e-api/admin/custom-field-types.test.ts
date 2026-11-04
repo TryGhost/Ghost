@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
 import {
+  LEAVES,
   SHAPES,
   keysOf,
+  matchShape,
   shaped,
   type AnyLeafValue,
   type FieldShape,
+  type LeafKind,
   type ShapeValue,
   type ShapeWrite,
   type ShapedField,
@@ -28,6 +31,11 @@ const NQL_LITERALS: {
     is: (value): value is string => typeof value === 'string',
     literal: (value) => `'${value.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`,
   },
+  // Unquoted, which NQL reads as a number.
+  number: {
+    is: (value): value is number => typeof value === 'number',
+    literal: (value) => String(value),
+  },
 };
 
 function literalAs<K extends ValueKind>(kind: K, value: AnyLeafValue): string | undefined {
@@ -39,6 +47,31 @@ const literal = (value: AnyLeafValue): string =>
   keysOf(NQL_LITERALS)
     .map((kind) => literalAs(kind, value))
     .find((written) => written !== undefined) ?? assert.fail(`no literal for ${value}`);
+
+/** A scalar fixture's values, sorted as its leaf orders them, or null for a kind no filter orders. */
+function inOrder({ field, values }: AnyFieldFixture): AnyLeafValue[] | null {
+  return matchShape<AnyLeafValue[] | null>(field.type, {
+    scalar: ({ leaf }) => sortedAs(leaf, values),
+    record: () => null,
+    set: () => null,
+  });
+}
+
+function sortedAs<K extends LeafKind>(leaf: { readonly leaf: K }, values: readonly unknown[]) {
+  const { order, read } = LEAVES[leaf.leaf];
+  const held = values.flatMap((value) => {
+    const leafValue = read(value);
+    return leafValue === undefined ? [] : [leafValue];
+  });
+  return order ? [...held].sort(order) : null;
+}
+
+/**
+ * Whether NQL can write a value. It can't write a negative number: `-` is its negation, so
+ * `value:-7` reads as something else. Left out of the filters below and pinned on its own, so the
+ * gap stays in view.
+ */
+const nqlCanWrite = (value: unknown) => !(typeof value === 'number' && value < 0);
 
 const matching = (identity: string, value: string) =>
   `(metafields.identity:'${identity}'+metafields.value:${value})`;
@@ -168,7 +201,7 @@ describe('Every custom field type through the Admin API', function () {
     for (const value of values) {
       holders.push({ email: (await createMember({ [key]: value })).email, value });
     }
-    for (const { value } of holders) {
+    for (const { value } of holders.filter((holder) => nqlCanWrite(holder.value))) {
       for (const { filter, finds } of FILTERS[of.shape](key, value)) {
         const expected = holders.filter((holder) => finds(holder.value)).map((h) => h.email);
         assert.deepEqual((await browse(filter)).sort(), expected.sort(), filter);
@@ -238,5 +271,41 @@ describe('Every custom field type through the Admin API', function () {
       assert.equal(holding.length, holders);
       assert.ok(!holding.includes(without.email));
     });
+
+    // A kind of leaf whose values order, as the domain says, is compared by more or less in
+    // that order.
+    it('compares by more or less as its leaf orders its values', async function () {
+      const sorted = inOrder(fixture);
+      if (!sorted) {
+        return;
+      }
+      const key = await createField(fixture);
+      const holders = new Map<AnyLeafValue, string>();
+      for (const value of sorted) {
+        holders.set(value, (await createMember({ [key]: value })).email);
+      }
+      const emails = (values: AnyLeafValue[]) => values.map((value) => holders.get(value)).sort();
+      for (const [index, value] of sorted.entries()) {
+        if (!nqlCanWrite(value)) {
+          continue;
+        }
+        const above = await browse(matching(`custom.${key}`, `>${literal(value)}`));
+        assert.deepEqual(above.sort(), emails(sorted.slice(index + 1)), `>${value}`);
+        const below = await browse(matching(`custom.${key}`, `<${literal(value)}`));
+        assert.deepEqual(below.sort(), emails(sorted.slice(0, index)), `<${value}`);
+      }
+    });
+  });
+
+  it.fails('finds a member by a negative number they hold, once NQL can write one', async function () {
+    const { body } = await agent
+      .post('members/metafields/custom/')
+      .body({ members_metafields: [{ name: 'Balance', type: 'number' }] })
+      .expectStatus(201);
+    const key = body.members_metafields[0].key;
+    const member = await createMember({ [key]: -7 });
+    // Someone holding another number, whom "not 7", which is what `-7` reads as, would also find.
+    await createMember({ [key]: 3 });
+    assert.deepEqual(await browse(matching(`custom.${key}`, '-7')), [member.email]);
   });
 });

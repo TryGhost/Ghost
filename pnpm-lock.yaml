@@ -869,6 +869,7 @@ pnpmfileChecksum: sha256-qev/zWGQadDoB7sHatQQkkjF+hSnLGwfErh/U1ptQjA=
 
 patchedDependencies:
   '@elastic/elasticsearch@8.19.2': 725142a9606e50dff3ed4c17fb9256d5457c7c75ce262898b87ef0ffff14dcc2
+  '@tryghost/nql-lang@0.7.0': 0064321543524cfafb69016cf534c4d75c8163af461a6e8847b9e21d7f2a49ec
   aria-hidden@1.2.6: 8a2e148001c763e9eb7fd3ad21da0f290fd50e099f6a3d6abe6c2ec9a14b3bb8
   juice@11.1.1: 9b56fcd925d7de8dd73a700a918dcb387ef39410581a11d9ac683b3eed9790d0
 
@@ -1128,7 +1129,7 @@ importers:
         version: 0.13.4(supports-color@10.2.2)
       '@tryghost/nql-lang':
         specifier: 0.7.0
-        version: 0.7.0
+        version: 0.7.0(patch_hash=0064321543524cfafb69016cf534c4d75c8163af461a6e8847b9e21d7f2a49ec)
       '@tryghost/nql-string':
         specifier: workspace:*
         version: link:../../packages/nql-string
@@ -2280,7 +2281,7 @@ importers:
         version: 0.13.4(supports-color@10.2.2)
       '@tryghost/nql-lang':
         specifier: 0.7.0
-        version: 0.7.0
+        version: 0.7.0(patch_hash=0064321543524cfafb69016cf534c4d75c8163af461a6e8847b9e21d7f2a49ec)
       '@tryghost/nql-string':
         specifier: workspace:*
         version: link:../packages/nql-string
@@ -21336,7 +21337,7 @@ snapshots:
       - debug
       - supports-color
 
-  '@tryghost/nql-lang@0.7.0':
+  '@tryghost/nql-lang@0.7.0(patch_hash=0064321543524cfafb69016cf534c4d75c8163af461a6e8847b9e21d7f2a49ec)':
     dependencies:
       luxon: 3.7.2
 
@@ -21344,7 +21345,7 @@ snapshots:
     dependencies:
       '@tryghost/mongo-knex': 0.11.2(supports-color@10.2.2)
       '@tryghost/mongo-utils': 0.6.6
-      '@tryghost/nql-lang': 0.7.0
+      '@tryghost/nql-lang': 0.7.0(patch_hash=0064321543524cfafb69016cf534c4d75c8163af461a6e8847b9e21d7f2a49ec)
       lodash: 4.18.1
       mingo: 2.5.3
     transitivePeerDependencies:

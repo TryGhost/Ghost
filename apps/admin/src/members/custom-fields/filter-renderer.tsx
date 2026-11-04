@@ -12,10 +12,16 @@ import {
   memberCustomFieldParts,
   type MemberCustomFieldChoiceList,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
-import { filterLeaf, partFilterType } from './filter-fields';
+import { LEAF_FILTER, filterLeaf, partFilterType } from './filter-fields';
 import { useCustomFieldDefinitionsIncludingArchived } from '@/shared/member-custom-fields/use-definitions';
 import type { CustomRendererProps, FilterFieldConfig } from '@tryghost/shade/patterns';
 import type { LeafFilterType } from './filter-fields';
+import type { FilterControl } from '@/shared/filters/filter-types';
+
+/** The value input each control a filter type declares is typed into, where it isn't text. */
+const SEGMENT_INPUTS: Partial<Record<FilterControl, 'number'>> = {
+  number: 'number',
+};
 
 // "Is set" and "is not set" apply to a field of any value type.
 const PRESENCE_ONLY_OPTIONS = createOperatorOptions(CUSTOM_FIELD_SET_OPERATORS);
@@ -74,8 +80,11 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
     ? matchLeaf<MemberCustomFieldChoiceList | null>(leaf, {
         text: () => null,
         choice: ({ from }) => memberCustomFieldChoiceLists[from],
+        number: () => null,
       })
     : null;
+  // Typed into the input its filter type declares, as the same type's filter on any other field is.
+  const inputType = leaf ? SEGMENT_INPUTS[FILTER_TYPES[LEAF_FILTER[leaf.leaf]].control] : undefined;
 
   const {
     options: operatorOptions,
@@ -143,6 +152,7 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
           placeholder="Enter value..."
           readOnly={readOnly}
           testId="custom-field-filter-value"
+          type={inputType ?? 'text'}
           value={rest[0] ?? ''}
           onChange={(nextValue) => onChange([part, nextValue])}
         />

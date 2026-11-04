@@ -15,7 +15,7 @@ import {
 import { DbDate } from '../../lib/db-types/date';
 import { DbJson } from '../../lib/db-types/json';
 import { MemberAccessSchema } from './access';
-import type { ValueColumn, ValueColumns } from './storage';
+import { holdsOneValue, type ValueColumn, type ValueColumns } from './storage';
 import { KeySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';
 
 // schema.js lists the same statuses in its `isIn`, because static schema config can't import this.
@@ -113,11 +113,13 @@ export const WrittenBy = z.discriminatedUnion('type', [
 export type WrittenBy = z.infer<typeof WrittenBy>;
 
 /**
- * Each column a value is kept in, as the database holds it. Keyed by storage's columns, so a kind of
- * value storage adds fails to compile here until its column is read.
+ * Each column a value can be kept in, as the database holds it: empty but for the one a row's kind
+ * of value is kept in. Keyed by storage's columns, so a kind of value storage adds fails to compile
+ * here until its column is read.
  */
 const VALUE_COLUMN_SCHEMAS = {
-  value_text: z.string(),
+  value_text: z.string().nullish(),
+  value_number: z.number().nullish(),
 } satisfies { readonly [C in ValueColumn]: z.ZodType<ValueColumns[C]> };
 
 // One part of a member's value. What a `path` means is storage.ts's business, so the row
@@ -127,6 +129,7 @@ export const DbMetafieldValue = z.object({
   metafield_key: z.string(),
   member_id: z.string(),
   path: z.string(),
+  // The value, in the column its kind is kept in.
   ...VALUE_COLUMN_SCHEMAS,
   // Plain columns rather than the `WrittenBy` union: the rule holds at the write
   // boundary, so one malformed row cannot throw away a member's whole profile on read.
@@ -142,14 +145,17 @@ type MetafieldValueRow = z.infer<typeof DbMetafieldValue>;
 // `type` drops a value whose type has left the catalog: its definition is no longer listed either,
 // and the row fails to parse. What a field's rows add up to is read once per field, with its
 // settings, from its definition rather than from each row.
-export const DbStoredValueRow = z.object({
-  member_id: z.string(),
-  namespace: NamespaceSchema,
-  key: KeySchema,
-  type: FieldTypeSchema,
-  path: z.string(),
-  ...VALUE_COLUMN_SCHEMAS,
-});
+export const DbStoredValueRow = z
+  .object({
+    member_id: z.string(),
+    namespace: NamespaceSchema,
+    key: KeySchema,
+    type: FieldTypeSchema,
+    path: z.string(),
+    ...VALUE_COLUMN_SCHEMAS,
+  })
+  // In exactly one column, or the row is unreadable rather than read as whichever held something.
+  .refine(holdsOneValue, { error: 'A value row holds its value in exactly one column.' });
 
 export const DbMetafieldBinding = z.object({
   id: z.string(),

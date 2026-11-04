@@ -17,8 +17,10 @@ import {
   TypedSettingsInputSchema,
   type FieldType,
   type FieldTypeOfShape,
+  type Leaf,
   type TypedSettings,
 } from '../src/index.ts';
+import { ALL_FIELD_FIXTURES, type AnyFieldFixture } from './fixtures/fields.ts';
 
 // This asserts only the catalog's *contract* — which field types exist, and which of
 // them have parts. The behavioural outcomes (per-type value validation, the composite
@@ -67,14 +69,28 @@ describe('metafield-types catalog', function () {
   });
 
   it('answers for each leaf by the kind it declares', function () {
-    const holds = (part: 'line1' | 'country') =>
-      matchLeaf(FIELD_STRUCTURES.address.parts[part], {
+    const holds = (leaf: Leaf) =>
+      matchLeaf(leaf, {
         text: ({ size }) => `${size} text`,
         choice: ({ from }) => `a choice from ${from}`,
+        number: () => 'a number',
       });
 
-    assert.equal(holds('line1'), 'line text');
-    assert.equal(holds('country'), 'a choice from countries');
+    assert.equal(holds(FIELD_STRUCTURES.address.parts.line1), 'line text');
+    assert.equal(holds(FIELD_STRUCTURES.address.parts.country), 'a choice from countries');
+    assert.equal(holds(FIELD_STRUCTURES.number.leaf), 'a number');
+  });
+
+  // Every field type, over the fixtures it declares: the fixtures promise values the field's rule
+  // accepts as they are, which every law run over them relies on.
+  describe.each(
+    ALL_FIELD_FIXTURES.map((fixture): [string, AnyFieldFixture] => [fixture.field.type, fixture]),
+  )('the rule of a %s field', (_type, { field, values }) => {
+    it('accepts each fixture value as it is', function () {
+      for (const value of values) {
+        assert.deepEqual(valueSchemaFor(field).parse(value), value);
+      }
+    });
   });
 
   it('knows its own types, and nothing else as one', function () {
@@ -416,6 +432,8 @@ describe('metafield-types catalog', function () {
       assert.equal(reasonFor('address', {}), 'Enter at least one part of the address.');
       assert.equal(reasonFor('short_text', 42), 'Enter text.');
       assert.equal(reasonFor('address', { city: 42 }), 'Enter text.');
+      assert.equal(reasonFor('number', '7'), 'Enter a number.');
+      assert.equal(reasonFor('number', Number.NaN), 'Enter a number.');
     });
 
     it('says the same thing however one rule was broken', function () {

@@ -468,6 +468,9 @@ patchedDependencies:
   # helpers Ghost never calls; the patch defers that require, as 9.x does. The
   # dependency is dropped in .pnpmfile.mjs - patches apply after resolution.
   '@elastic/elasticsearch@8.19.2': patches/@elastic__elasticsearch@8.19.2.patch
+  # NQL lexes a decimal such as 9.5 as one number but parsed it with parseInt, so a
+  # filter for less than 9.5 arrived as less than 9. Belongs upstream in TryGhost/NQL.
+  '@tryghost/nql-lang@0.7.0': patches/@tryghost__nql-lang@0.7.0.patch
   # Radix modals call hideOthers from an effect; StrictMode's dev replay sets,
   # removes and re-sets aria-hidden on the whole page in one task, which stalls
   # Safari for ~2s per open. The patch defers an undo that runs in the same task

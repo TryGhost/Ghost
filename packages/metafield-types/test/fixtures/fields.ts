@@ -29,6 +29,8 @@ export const FIELD_FIXTURES: {
 } = {
   short_text: [{ field: { type: 'short_text' }, values: ['Bex', 'Rebecca'] }],
   long_text: [{ field: { type: 'long_text' }, values: ['A first note', 'A second, longer note'] }],
+  // 0.1 and 9.95 aren't exact in binary, and 0 is a value rather than nothing.
+  number: [{ field: { type: 'number' }, values: [3, 42.5, -7, 0, 0.1, 9.95] }],
   list: [
     {
       field: { type: 'list', settings: { options: ['Film', 'Travel', 'Cooking'], multiple: true } },

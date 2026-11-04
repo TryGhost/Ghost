@@ -11,6 +11,7 @@ const VALID_KEYS = {
   binary: ['maxlength', 'nullable', 'index'],
   boolean: ['nullable', 'defaultTo'],
   dateTime: ['nullable', 'index'],
+  double: ['nullable'],
   integer: ['nullable', 'unsigned', 'defaultTo', 'index'],
   string: [
     'maxlength',

@@ -130,7 +130,11 @@ describe('waiting protects precision, not the clauses', () => {
 });
 
 /** The operator a filter is written with to find a member holding a value, per filter type. */
-const NAMING: { readonly [T in LeafFilterType]: string } = { text: 'is', set: 'is-any' };
+const NAMING: { readonly [T in LeafFilterType]: string } = {
+  text: 'is',
+  set: 'is-any',
+  number: 'is',
+};
 
 /**
  * One held leaf value as a filter names it: which filter type its leaf uses, the values the filter
@@ -172,6 +176,37 @@ function heldLeaves({ field }: AnyFieldFixture, value: unknown): HeldLeaf[] {
   });
 }
 
+/**
+ * Whether NQL can write a held value. It can't write a negative number: `-` is its negation, so
+ * `value:-7` reads as something else. Left out here and pinned below, so the gap stays in view.
+ */
+const nqlCanWrite = ({ read }: HeldLeaf) =>
+  !read.some((held) => typeof held === 'number' && held < 0);
+
+describe('a negative number', () => {
+  const fields = buildMemberFields({
+    customFields: [
+      {
+        namespace: CUSTOM_NAMESPACE,
+        key: KeySchema.parse('sampled'),
+        name: 'Sample',
+        type: 'number',
+      },
+    ],
+  });
+
+  it.fails('reads back as itself from the NQL Admin writes for it, once NQL can write one', () => {
+    const nql = serializeMemberFilters(
+      [{ id: 'x', field: 'metafields.custom.sampled', operator: 'is', values: ['', '-7'] }],
+      'UTC',
+      fields,
+    );
+    expect(parseMemberFilter(nql, 'UTC', fields).map((predicate) => predicate.values)).toEqual([
+      ['', -7],
+    ]);
+  });
+});
+
 // Every field type, over the fixtures it declares: each value a member can hold is one Admin's
 // filters can name, writing it from the text its input holds and reading it back as that value.
 describe.each(
@@ -194,7 +229,7 @@ describe.each(
       const leaves = heldLeaves(fixture, value);
       // A value the parser rejects would otherwise pass with nothing asserted.
       expect(leaves.length, JSON.stringify(value)).toBeGreaterThan(0);
-      for (const leaf of leaves) {
+      for (const leaf of leaves.filter(nqlCanWrite)) {
         const operator = NAMING[leaf.filter];
         const nql = serializeMemberFilters(
           [{ id: 'x', field, operator, values: leaf.written }],

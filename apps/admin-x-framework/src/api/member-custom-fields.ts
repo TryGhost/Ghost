@@ -107,6 +107,7 @@ export type FieldTypePresentation<T extends FieldType> = {
 const fieldTypePresentation: { [T in FieldType]: FieldTypePresentation<T> } = {
   short_text: { label: 'Short text', icon: LucideIcon.Type },
   long_text: { label: 'Long text', icon: LucideIcon.AlignLeft },
+  number: { label: 'Number', icon: LucideIcon.Hash },
   list: { label: 'List', icon: LucideIcon.List },
   address: {
     label: 'Address',
@@ -211,6 +212,7 @@ export const memberCustomFieldLeafText = (leaf: Leaf, value: AnyLeafValue): stri
   matchLeaf(leaf, {
     text: () => String(value),
     choice: ({ from }) => memberCustomFieldChoiceLists[from].label(String(value)),
+    number: () => String(value),
   });
 
 export type MemberCustomFieldPart = {

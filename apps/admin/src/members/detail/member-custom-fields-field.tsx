@@ -234,6 +234,17 @@ const LeafInput: React.FC<{
         onChange={onChange}
       />
     ),
+    number: () => (
+      <Input
+        aria-invalid={invalid || undefined}
+        disabled={disabled}
+        id={id}
+        inputMode="decimal"
+        type="number"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    ),
   });
 
 // One control per part in a two-column sub-grid, in the order the type declares its parts. The parts

@@ -1033,6 +1033,70 @@ export const ComposedSegments: Story = {
   },
 };
 
+// A customRenderer whose value is compared by size, so its segment is a number input.
+const NumberSegmentRenderer = ({
+  values,
+  onChange,
+  operator,
+  onOperatorChange,
+  readOnly,
+}: CustomRendererProps) => (
+  <>
+    {onOperatorChange && (
+      <FilterSegmentSelect
+        ariaLabel="Operator"
+        options={[
+          { value: 'is', label: 'is' },
+          { value: 'is-greater', label: 'is greater than' },
+          { value: 'is-less', label: 'is less than' },
+        ]}
+        readOnly={readOnly}
+        value={operator}
+        onChange={onOperatorChange}
+      />
+    )}
+    <FilterSegmentInput
+      ariaLabel="Value"
+      placeholder="Enter a number..."
+      readOnly={readOnly}
+      type="number"
+      value={typeof values[0] === 'string' ? values[0] : ''}
+      onChange={(next) => onChange([next])}
+    />
+  </>
+);
+
+export const NumberSegment: Story = {
+  render: () => (
+    <FilterDemo
+      fields={[
+        {
+          key: 'shoe_size',
+          label: 'Shoe size',
+          type: 'custom',
+          icon: <SlidersHorizontal className="size-4" />,
+          renderOperatorInValue: true,
+          operators: [
+            { value: 'is', label: 'is' },
+            { value: 'is-greater', label: 'is greater than' },
+            { value: 'is-less', label: 'is less than' },
+          ],
+          customRenderer: (props) => <NumberSegmentRenderer {...props} />,
+        },
+      ]}
+      initialFilters={[createFilter('shoe_size', 'is-greater', ['9.5'])]}
+    />
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'FilterSegmentInput with `type="number"` for a value compared by size: a number input that takes any decimal.',
+      },
+    },
+  },
+};
+
 const readOnlyFields: FilterFieldConfig[] = [
   {
     key: 'archived_field',

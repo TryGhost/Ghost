@@ -1,0 +1,26 @@
+diff --git a/dist/parser.js b/dist/parser.js
+index c20cabc7a03492abf88376bb6fcdafa44d252cc7..fea466c860c7426ce4665a00c0a73512f201165a 100644
+--- a/dist/parser.js
++++ b/dist/parser.js
+@@ -163,7 +163,7 @@ case 22:
+  this.$ = false 
+ break;
+ case 23:
+- this.$ = parseInt(yytext); 
++ this.$ = Number(yytext); 
+ break;
+ case 24:
+  this.$ = yy.relDateToAbsolute($$[$0-2], $$[$0-1], $$[$0]) 
+diff --git a/src/nql.y b/src/nql.y
+index c8bbe6440ca99a4a160aefb5e1101514a129b57f..eea778fcfd5f053fd8aef36311ade625abadbcc8 100644
+--- a/src/nql.y
++++ b/src/nql.y
+@@ -80,7 +80,7 @@ VALUE
+     : NULL { $$ = null }
+     | TRUE { $$ = true }
+     | FALSE { $$ = false }
+-    | NUMBER { $$ = parseInt(yytext); }
++    | NUMBER { $$ = Number(yytext); }
+     | NOW DATEOP AMOUNT INTERVAL { $$ = yy.relDateToAbsolute($2, $3, $4) }
+     | LITERAL { $$ = yy.unescape($1); }
+     | STRING  { $1 = $1.replace(/^'|'$/g, ''); $$ = yy.unescape($1); }

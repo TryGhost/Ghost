@@ -8,6 +8,7 @@ import {
   FILTER_TYPES,
   domainField,
   listsOperator,
+  numberSemantics,
   setSemantics,
   textSemantics,
 } from '@/shared/filters';
@@ -42,6 +43,7 @@ type ScalarFilterBase = {
 export const LEAF_FILTER = {
   text: 'text',
   choice: 'set',
+  number: 'number',
 } as const satisfies { readonly [K in LeafKind]: FilterTypeId };
 
 export type LeafFilterType = (typeof LEAF_FILTER)[LeafKind];
@@ -51,6 +53,7 @@ export type LeafFilterType = (typeof LEAF_FILTER)[LeafKind];
 const SCALAR_FILTER: { [F in LeafFilterType]: (base: ScalarFilterBase) => FieldDescriptor } = {
   text: (base) => ({ ...base, type: 'text' }),
   set: (base) => ({ ...base, type: 'set' }),
+  number: (base) => ({ ...base, type: 'number' }),
 };
 
 // How each filter type reads a filter's value back, and when it is asked to, lowest first: a plain
@@ -63,6 +66,8 @@ const LEAF_SEMANTICS: {
   text: { order: 0, semantics: () => textSemantics() },
   // Quoted, as the text a sibling part holds is, so a code reads the same either way.
   set: { order: 1, semantics: () => setSemantics({ quoteStrings: true }) },
+  // Compared by size, the way emails sent are.
+  number: { order: 2, semantics: () => numberSemantics() },
 };
 
 const LEAF_FILTER_TYPES: readonly LeafFilterType[] = keysOf(LEAF_SEMANTICS).sort(

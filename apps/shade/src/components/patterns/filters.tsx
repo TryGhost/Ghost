@@ -1387,10 +1387,12 @@ export interface FilterSegmentInputProps {
   // Render the value as static text (no input) — for an applied filter that should
   // stay legible but not editable.
   readOnly?: boolean;
+  // A number input, for a value compared by size, taking any decimal; text otherwise.
+  type?: 'text' | 'number';
 }
 
-// A text-input segment styled like the built-in value input, for the value part
-// of a custom renderer composed from segments.
+// A text- or number-input segment styled like the built-in value input, for the value
+// part of a custom renderer composed from segments.
 export function FilterSegmentInput({
   value,
   onChange,
@@ -1399,6 +1401,7 @@ export function FilterSegmentInput({
   className,
   testId,
   readOnly,
+  type = 'text',
 }: FilterSegmentInputProps) {
   const context = useFilterContext();
 
@@ -1427,7 +1430,10 @@ export function FilterSegmentInput({
           className="w-full bg-transparent outline-hidden"
           data-slot="filters-input"
           data-testid={testId}
+          inputMode={type === 'number' ? 'decimal' : undefined}
           placeholder={placeholder}
+          step={type === 'number' ? 'any' : undefined}
+          type={type}
           value={value}
           onChange={(event) => onChange(event.target.value)}
         />

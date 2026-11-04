@@ -57,7 +57,7 @@ const TEXT_INPUT: { [S in TextSize]: 'text' | 'textarea' } = {
 };
 
 interface LeafInput {
-  type: 'text' | 'textarea' | 'select';
+  type: 'text' | 'textarea' | 'select' | 'number';
   options?: { value: string; label: string }[];
 }
 
@@ -65,6 +65,7 @@ const leafInput = (leaf: Leaf, held: string | undefined): LeafInput =>
   matchLeaf<LeafInput>(leaf, {
     text: ({ size }) => ({ type: TEXT_INPUT[size] }),
     choice: ({ from }) => ({ type: 'select', options: LIST_OPTIONS[from](held) }),
+    number: () => ({ type: 'number' }),
   });
 
 /**

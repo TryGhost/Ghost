@@ -99,11 +99,15 @@ describe('custom field value storage', function () {
   });
 
   // schema.js is JavaScript the compiler can't see into, so the values table is checked against
-  // the columns storage writes: one per kind of value.
-  it('has the values table keep a column for each kind of value', function () {
+  // the columns storage writes: one per kind of value, and a row holding its value in exactly one.
+  it('has the values table keep a column for each kind of value, holding exactly one per row', function () {
     const table = require('../../../../../core/server/data/schema/schema').members_metafield_values;
     const declared = Object.keys(table).filter((column) => column.startsWith('value_'));
     assert.deepEqual([...declared].sort(), [...VALUE_COLUMNS].sort());
+    for (const column of VALUE_COLUMNS) {
+      assert.equal(table[column].nullable, true, column);
+    }
+    assert.deepEqual(table['@@CHECKS@@'], [{ exactlyOneOf: [...VALUE_COLUMNS] }]);
   });
 
   // Checked by `test:types` only: each line fails it once the compiler allows what it describes.

@@ -17,6 +17,13 @@ vi.mock('@/shared/member-custom-fields/use-definitions', () => ({
         status: 'active',
       },
       { namespace: 'custom', key: 'shipping', name: 'Shipping', type: 'address', status: 'active' },
+      {
+        namespace: 'custom',
+        key: 'shoe_size',
+        name: 'Shoe size',
+        type: 'number',
+        status: 'active',
+      },
     ],
   }),
 }));
@@ -300,5 +307,27 @@ describe('CustomFieldFilterRenderer operators', () => {
     await screen.findByRole('menu');
     fireEvent.click(screen.getByRole('menuitem', { name: 'Address line 1' }));
     expect(onChange).toHaveBeenCalledWith(['line1', 'Berlin']);
+  });
+});
+
+describe('CustomFieldFilterRenderer value', () => {
+  // A number is compared by size, so its value is typed into a number input, which takes decimals.
+  it("types a number field's value into a number input, and a text field's into a text one", () => {
+    renderPill({
+      operators: [{ value: 'is-greater', label: 'is greater than' }],
+      operator: 'is-greater',
+      fieldKey: 'metafields.custom.shoe_size',
+      label: 'Shoe size',
+      values: ['', '9.5'],
+    });
+    const number = screen.getByLabelText('Shoe size value');
+    expect(number).toHaveAttribute('type', 'number');
+    expect(number).toHaveAttribute('step', 'any');
+    expect(number).toHaveValue(9.5);
+  });
+
+  it("types a text field's value into a text input", () => {
+    renderPill({ operators: TEXT_OPERATORS, operator: 'is', values: ['', 'May'] });
+    expect(screen.getByLabelText('Birthday value')).toHaveAttribute('type', 'text');
   });
 });
