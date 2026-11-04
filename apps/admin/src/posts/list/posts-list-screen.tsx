@@ -332,12 +332,7 @@ export function PostsListScreen({ resource }: { resource: PostResource }) {
                     />
                   )}
                   <PageHeader.ActionGroup.Primary>
-                    <PageHeader.Action
-                      fallbackVariant="default"
-                      label={copy.newLabel}
-                      asChild
-                      primary
-                    >
+                    <PageHeader.Action label={copy.newLabel} asChild primary>
                       <a aria-label={copy.newLabel} className="font-bold" href={copy.newHref}>
                         <LucideIcon.Plus className="size-4" />
                         <span className="hidden sm:inline">{copy.newLabel}</span>

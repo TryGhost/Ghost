@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/koenig-lexical",
-  "version": "1.13.1",
+  "version": "2.0.0",
   "description": "Ghost's Lexical-based rich text post editor",
   "repository": {
     "type": "git",
@@ -77,7 +77,7 @@
     "@prettier/sync": "0.6.1",
     "@storybook/addon-docs": "catalog:",
     "@storybook/addon-links": "catalog:",
-    "@storybook/react": "10.4.6",
+    "@storybook/react": "catalog:",
     "@storybook/react-vite": "catalog:",
     "@testing-library/dom": "catalog:",
     "@testing-library/jest-dom": "catalog:",
@@ -107,7 +107,7 @@
     "eslint-plugin-ghost": "catalog:",
     "eslint-plugin-react": "catalog:",
     "eslint-plugin-react-hooks": "catalog:",
-    "eslint-plugin-storybook": "10.4.6",
+    "eslint-plugin-storybook": "catalog:",
     "eslint-plugin-tailwindcss": "catalog:tailwind3",
     "eventemitter3": "5.0.4",
     "fast-average-color": "9.5.2",

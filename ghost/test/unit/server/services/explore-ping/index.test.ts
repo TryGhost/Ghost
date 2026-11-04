@@ -120,6 +120,18 @@ describe('explore-ping root', function () {
     });
   }
 
+  for (const url of ['http://localhost:2368/', 'http://127.0.0.1:2368/']) {
+    it(`constructs but does not ping for the local site URL ${url}`, async function () {
+      getConfig.withArgs('url').returns(url);
+
+      assert.equal(await root.init(), undefined);
+
+      sinon.assert.calledOnce(createPosts);
+      sinon.assert.notCalled(ping);
+      sinon.assert.notCalled(info);
+    });
+  }
+
   it('retains one instance and pings once across repeated init', async function () {
     assert.equal(await root.init(), undefined);
     assert.equal(await root.init(), undefined);

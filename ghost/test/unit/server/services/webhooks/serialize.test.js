@@ -281,4 +281,83 @@ describe('WebhookService - Serialize', function () {
     assert.equal(result.member.current.subscriptions[0].cancel_at_period_end, true);
     assert.equal(result.member.previous.subscriptions[0].cancel_at_period_end, false);
   });
+
+  it('keeps only the changed keys the serialized post still shows in previous', async function () {
+    const post = fixtureManager.get('posts', 1);
+    const postModel = new Post(post);
+    sinon.stub(postModel, 'load').resolves(postModel);
+
+    // lexical is changed on the model but the webhook formats leave it out of the output.
+    postModel._previousAttributes.title = post.title;
+    postModel._previousAttributes.lexical = '{"root":{}}';
+    postModel._changed = { title: post.title, lexical: '{"root":{}}' };
+    postModel.attributes.title = 'A brand new title';
+
+    const result = await serialize('post.edited', postModel);
+
+    assert.equal(Object.hasOwn(result.post.current, 'lexical'), false);
+    assert.deepEqual(result.post.previous, { title: 'Ghostly Kitchen Sink' });
+  });
+
+  describe('member metafields', function () {
+    function memberModel() {
+      const model = new Member({
+        id: 'member-id',
+        uuid: 'member-uuid',
+        email: 'member@example.com',
+        status: 'free',
+        created_at: new Date('2026-01-01T00:00:00.000Z'),
+        updated_at: new Date('2026-01-01T00:00:00.000Z'),
+      });
+      sinon.stub(model, 'load').resolves(model);
+      return model;
+    }
+
+    it('adds the metafields read for the member to current', async function () {
+      const readMemberMetafields = sinon.stub().resolves({ custom: { favourite_colour: 'teal' } });
+      const serializeMember = createSerialize({
+        urlService: noRelationsUrlService,
+        readMemberMetafields,
+      });
+
+      const result = await serializeMember('member.added', memberModel());
+
+      sinon.assert.calledOnceWithExactly(readMemberMetafields, 'member-id');
+      assert.deepEqual(result.member.current.metafields, { custom: { favourite_colour: 'teal' } });
+      assert.deepEqual(result.member.previous, {});
+    });
+
+    it('leaves metafields off current when none are read', async function () {
+      const result = await serialize('member.added', memberModel());
+
+      assert.equal(result.member.current.email, 'member@example.com');
+      assert.equal(Object.hasOwn(result.member.current, 'metafields'), false);
+    });
+
+    it('adds the metafields the model carried before the change to previous', async function () {
+      const model = memberModel();
+      model._previousMetafields = { custom: { favourite_colour: 'red' } };
+
+      const result = await serialize('member.edited', model);
+
+      assert.deepEqual(result.member.previous, {
+        metafields: { custom: { favourite_colour: 'red' } },
+      });
+    });
+
+    it('reads no metafields for other resources', async function () {
+      const readMemberMetafields = sinon.stub().resolves({ custom: { favourite_colour: 'teal' } });
+      const serializePost = createSerialize({
+        urlService: noRelationsUrlService,
+        readMemberMetafields,
+      });
+      const postModel = new Post(fixtureManager.get('posts', 1));
+      sinon.stub(postModel, 'load').resolves(postModel);
+
+      const result = await serializePost('post.added', postModel);
+
+      sinon.assert.notCalled(readMemberMetafields);
+      assert.equal(Object.hasOwn(result.post.current, 'metafields'), false);
+    });
+  });
 });

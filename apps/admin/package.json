@@ -56,7 +56,7 @@
     "@tryghost/string": "catalog:",
     "@tryghost/timezone-data": "catalog:",
     "@uiw/react-codemirror": "catalog:",
-    "@xyflow/react": "12.11.2",
+    "@xyflow/react": "12.12.0",
     "clsx": "catalog:",
     "dequal": "catalog:",
     "dompurify": "catalog:",

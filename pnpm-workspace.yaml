@@ -45,6 +45,8 @@ allowBuilds:
   ssh2: false
   cpu-features: false
   protobufjs: false
+  # optional native accelerator for msgpackr (via bullmq); the pure-JS path is used
+  msgpackr-extract: false
 
 catalog:
   '@codemirror/autocomplete': 6.20.4
@@ -63,7 +65,7 @@ catalog:
   '@eslint/compat': 2.1.1
   '@eslint/js': 9.39.5
   '@extractus/oembed-extractor': 6.0.0
-  '@faker-js/faker': 10.5.0
+  '@faker-js/faker': 10.6.0
   '@playwright/test': 1.64.1
   '@radix-ui/react-avatar': 1.2.1
   '@radix-ui/react-checkbox': 1.3.6
@@ -80,10 +82,11 @@ catalog:
   '@sentry/bundler-plugin-core': 5.3.0
   '@sentry/react': 7.120.4
   '@sentry/vite-plugin': 5.4.1
-  '@storybook/addon-docs': 10.4.6
-  '@storybook/addon-links': 10.4.6
-  '@storybook/preact-vite': 10.4.6
-  '@storybook/react-vite': 10.4.6
+  '@storybook/addon-docs': 10.6.5
+  '@storybook/addon-links': 10.6.5
+  '@storybook/preact-vite': 10.6.5
+  '@storybook/react': 10.6.5
+  '@storybook/react-vite': 10.6.5
   '@tailwindcss/postcss': 4.3.3
   '@tailwindcss/vite': 4.3.3
   '@tanstack/react-query': 5.105.0
@@ -95,23 +98,23 @@ catalog:
   '@tryghost/brute-knex': 3.2.2
   '@tryghost/color-utils': 0.2.23
   '@tryghost/custom-fonts': 1.0.14
-  '@tryghost/debug': 2.3.18
-  '@tryghost/domain-events': 3.3.20
-  '@tryghost/errors': 3.4.4
+  '@tryghost/debug': 2.3.19
+  '@tryghost/domain-events': 3.3.21
+  '@tryghost/errors': 3.4.5
   '@tryghost/helpers': 1.1.109
-  '@tryghost/logging': 6.0.1
+  '@tryghost/logging': 6.0.2
   '@tryghost/mg-clean-html': 0.12.6
-  '@tryghost/metrics': 3.7.1
+  '@tryghost/metrics': 3.7.2
   '@tryghost/mongo-knex': 0.11.2
   '@tryghost/nql': 0.13.4
   '@tryghost/nql-lang': 0.7.0
-  '@tryghost/pretty-cli': 3.4.0
-  '@tryghost/promise': 2.3.18
-  '@tryghost/request': 4.0.12
-  '@tryghost/security': 4.0.0
+  '@tryghost/pretty-cli': 3.4.1
+  '@tryghost/promise': 2.3.19
+  '@tryghost/request': 4.0.13
+  '@tryghost/security': 4.0.1
   '@tryghost/string': 0.3.8
   '@tryghost/timezone-data': 1.0.3
-  '@tryghost/tpl': 2.3.18
+  '@tryghost/tpl': 2.3.19
   '@tryghost/url-utils': 5.4.1
   '@types/csso': 5.0.5
   '@types/express': 4.17.25
@@ -159,7 +162,8 @@ catalog:
   eslint-plugin-react: 7.37.5
   eslint-plugin-react-hooks: 5.2.0
   eslint-plugin-react-refresh: 0.5.7
-  eslint-plugin-tailwindcss: 4.2.0
+  eslint-plugin-storybook: 10.6.5
+  eslint-plugin-tailwindcss: 4.4.0
   express: 4.22.3
   flexsearch: 0.7.43
   fs-extra: 11.3.6
@@ -186,7 +190,7 @@ catalog:
   lucide-react: 1.23.0
   mingo: 2.5.3
   moment: 2.31.0
-  moment-timezone: 0.6.5
+  moment-timezone: 0.6.6
   msw: 2.14.6
   nock: 14.0.17
   node-html-markdown: 2.0.0
@@ -208,7 +212,7 @@ catalog:
   sirv: 3.0.2
   snakecase-keys: 9.0.2
   sonner: 2.0.8
-  storybook: 10.4.6
+  storybook: 10.6.5
   stylelint: 17.14.1
   supertest: 7.3.1
   tailwindcss: 4.3.3
@@ -229,7 +233,7 @@ catalog:
   typescript-eslint: 8.71.1
   undici: 8.12.3
   validator: 13.15.35
-  vite: 8.1.3
+  vite: 8.1.6
   vite-plugin-svgr: 5.2.0
   vitest: 4.1.12
   vitest-browser-react: 2.2.0
@@ -242,10 +246,10 @@ catalog:
   '@floating-ui/react-dom': 2.1.9
   shell-quote: 1.11.0
   unidecode: 1.1.0
-  mppx: 0.6.20
-  '@x402/core': 2.28.0
-  '@x402/evm': 2.28.0
-  '@x402/hono': 2.28.0
+  mppx: 0.17.0
+  '@x402/core': 2.29.0
+  '@x402/evm': 2.29.0
+  '@x402/hono': 2.29.0
   hono: 4.13.14
   '@octokit/core': 7.0.8
   '@octokit/plugin-retry': 8.1.1
@@ -256,13 +260,13 @@ catalog:
   lint-staged: 17.3.0
   secretlint: 13.0.7
   '@pnpm/releasing.versioning': 1100.3.8
-  '@pnpm/workspace.workspace-manifest-reader': 1100.3.1
-  execa: 10.0.1
+  '@pnpm/workspace.workspace-manifest-reader': 1100.3.2
+  execa: 10.2.1
   remark-cli: 12.0.1
   remark-validate-links: 13.1.0
-  markdownlint-cli2: 0.23.3
+  markdownlint-cli2: 0.24.0
   parse-email-address: 0.0.5
-  nodemailer: 10.0.16
+  nodemailer: 10.1.7
   '@types/nodemailer': 8.0.2
   '@breejs/later': 4.2.0
   fastq: ^1.20.1
@@ -270,9 +274,10 @@ catalog:
   '@types/stoppable': 1.1.3
   '@types/supertest': 7.2.1
   '@types/express-brute': 1.0.6
-  '@tryghost/validator': 3.2.19
+  '@tryghost/validator': 3.2.20
   '@types/probability-distributions': 0.1.3
   d3-geo: 3.1.1
+  bullmq: 5.81.5
 
 catalogs:
   react17:
@@ -301,7 +306,7 @@ overrides:
   # only ever call `load`. See patchedDependencies for the matching slim import.
   'juice>cheerio': 'catalog:'
   # mppx pins ox exactly; use viem's copy so Ghost ships one ox
-  'mppx>ox': 0.14.60
+  'mppx>ox': 0.14.59
   # mg-utils depends on the npm release of kg-default-cards, so the published
   # copy was installed alongside the workspace one that ghost links — and
   # it dragged its own published kg-utils, kg-markdown-html-renderer and
@@ -332,11 +337,12 @@ overrides:
   'markdown-it@>=14.0.0 <14.3.1': ^14.3.1
   'postcss-selector-parser@>=7.0.0 <7.1.6': ^7.1.6
   'proxy-addr@<2.0.8': ^2.0.8
+  're2js@>=2.2.0 <2.8.7': ^2.8.7
   'shell-quote@>=1.8.4 <1.11.0': ^1.11.0
   'source-map-js@<1.2.2': ^1.2.2
   'tinypool@<2.1.2': ^2.1.2
-  # nx 23.3.0 pins undici before the 7.29.1 security fixes
-  'nx>undici': 7.29.1
+  # nx 23.3.1 pins undici before the 7.30.1 security fixes
+  'nx>undici': 7.30.1
   # routing-related dependencies
   body-parser: 'catalog:'
   express: 'catalog:'

@@ -1,4 +1,4 @@
-const memberWelcomeEmailService = require('../../services/member-welcome-emails/service');
+const memberWelcomeEmails = require('../../services/member-welcome-emails').default;
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -22,8 +22,7 @@ const controller = {
       method: 'edit',
     },
     async query(frame) {
-      memberWelcomeEmailService.init();
-      return await memberWelcomeEmailService.api.previewAutomationEmail({
+      return await memberWelcomeEmails.service.previewAutomationEmail({
         automationId: frame.options.id,
         subject: frame.data.subject,
         lexical: frame.data.lexical,
@@ -50,8 +49,7 @@ const controller = {
       method: 'edit',
     },
     async query(frame) {
-      memberWelcomeEmailService.init();
-      await memberWelcomeEmailService.api.sendTestAutomationEmail({
+      await memberWelcomeEmails.service.sendTestAutomationEmail({
         automationId: frame.options.id,
         email: frame.data.email,
         subject: frame.data.subject,

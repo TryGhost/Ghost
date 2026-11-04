@@ -16,7 +16,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 - [**Radius**](?path=/docs/tokens-radius--docs) — numeric and semantic radii (`radius-control`, `radius-menu`, `radius-menu-item`, `radius-surface`, `radius-pill`).
 - [**Shadows**](?path=/docs/tokens-shadows--docs) — elevation tokens for cards, popovers, and modals.
 - [**Motion**](?path=/docs/tokens-motion--docs) — durations, easings, and named animations.
-- [**Breakpoints**](?path=/docs/tokens-breakpoints--docs) — responsive cut-offs backing Tailwind's `md:` / `lg:` variants.
+- [**Breakpoints**](?path=/docs/tokens-breakpoints--docs) — responsive cut-offs backing Tailwind's `md:` / `lg:` variants. They're px, not rem: `sm` 480px, `md` 640px, `sidebar` 800px, `tablet` 860px, `lg` 1024px, `sidebarlg` 1240px, `xl` 1320px, `xxl` 1440px, `xxxl` 1600px.
 
 Toggle light/dark from the Storybook toolbar to see semantic tokens flip.
 
@@ -48,7 +48,9 @@ Inside Shade, change a token's value in `theme-variables.css` and wire a new uti
 | Secondary, muted text                                                                                           | `text-muted-foreground`, or `Text tone="secondary"` | `--muted-foreground`, `--text-secondary` |
 | Default border: cards, banners, dividers (opaque)                                                               | `border-border-default`                             | `--border-default`                       |
 | Border of a floating surface: popover, dropdown, select (translucent in dark mode, usually with `/60` or `/30`) | `border-border`                                     | `--border`                               |
-| Form-control border: inputs, selects, outline buttons                                                           | `border-control-border`                             | `--control-border`                       |
+| Form-control border: outline buttons, checkboxes, radios                                                        | `border-control-border`                             | `--control-border`                       |
+| Text-entry field border: inputs, selects                                                                        | `border-field-border`                               | `--field-border`                         |
+| Text-entry field background: inputs, selects                                                                    | `bg-field-surface`                                  | `--field-surface`                        |
 | Generic hover                                                                                                   | `bg-interactive-hover`                              | `--interactive-hover`                    |
 | Outline button hover                                                                                            | `bg-button-hover`                                   | `--button-hover`                         |
 | Tab and page menu hover, active                                                                                 | `bg-tab-hover`, `bg-tab-active`                     | `--tab-hover`, `--tab-active`            |
@@ -127,9 +129,31 @@ Hover, active, and selected states are their own tokens — don't reach for raw 
 
 In dark mode `--interactive-hover`, `--button-hover`, and `--tab-hover` are translucent (`gray-900/30`) so they composite over whatever surface sits behind them. `--table-row-hover` is opaque (it matches `--surface-elevated`) — use it where you need an opaque fill, like sticky table cells where content scrolls underneath.
 
+## Card corners
+
+`Card` and `SettingGroup` round their corners with `--radius-card`. Anything clipped to those corners, like a section footer, should use `rounded-t-card` or `rounded-b-card` so it follows the same value. With `admin7Design` on, it's 8px.
+
 ## Form control borders
 
-Inputs, textareas, outline `Button`s, dropdown triggers, and the `inputSurface` recipe use `--control-border`, not `--border-default`. In dark mode it lifts a step above the page border so form controls keep enough contrast against the page surface. Borders inside cards or popovers can keep using `--border-default`.
+Outline `Button`s use `--control-border`, not `--border-default`. In dark mode it lifts a step above the page border so form controls keep enough contrast against the page surface. Borders inside cards or popovers can keep using `--border-default`.
+
+Text-entry fields, including inputs, textareas and select triggers, take their chrome from the `inputSurface` recipe: `--field-surface`, `--field-border` and `--radius-field`. Their colors follow `--control-surface` and `--control-border`. With `admin7Design` on, they have 4px corners and 14px text (`--text-field`). With it off, they use `--radius-control`. Checkboxes and radios use the recipe but keep a visible edge with `--control-surface` and `--border-strong`.
+
+## Section headings and stats
+
+With `admin7Design` on, the `section-heading` class sets a heading for a section inside a page or card, one step below the page title, at `--text-section-heading`. `stat-label` sets the small label above a stat or a value, and `stat-value` sets a stat's large, light number.
+
+## Title weight
+
+With `admin7Design` on, large titles, section headings, modal titles and tier names share one weight, `--font-weight-title`. Use the `font-title` class for it, so they can be tuned together.
+
+## Column headers
+
+Give any element that labels a column the `column-label` class. `TableHead`, `TableHeadButton` and `DataListHeader` already have it. With `admin7Design` on, it sets the label to uppercase, 10px, medium weight, 0.04em spacing in `--text-secondary`.
+
+## Warning colors
+
+With `admin7Design` on, `--state-warning` is dark enough for text and icons on white, but don't tint it or use it as a fill, because it goes brown. With the flag off it's a lighter yellow that's too faint for text on white. Warning `Banner`s already handle this: with `admin7Design` on, all colored banners are a flat color with darker shades of it for text and no outline. Use `--state-warning-surface` for other warning boxes, and `--state-warning-fill` for dots, stars, solid labels and card borders.
 
 ## Dropdown surface contract
 

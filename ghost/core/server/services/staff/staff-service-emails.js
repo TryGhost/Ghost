@@ -1,7 +1,4 @@
-const { promises: fs, readFileSync } = require('fs');
-const path = require('path');
-const moment = require('moment');
-const { globSync } = require('glob');
+const { moment } = require('../../../kernel/clock');
 const { formatAddressForDelivery } = require('../../lib/mail/format-address-for-delivery');
 
 class StaffServiceEmails {
@@ -14,6 +11,7 @@ class StaffServiceEmails {
     blogIcon,
     urlUtils,
     labs,
+    templateFiles,
   }) {
     this.logging = logging;
     this.models = models;
@@ -23,6 +21,8 @@ class StaffServiceEmails {
     this.blogIcon = blogIcon;
     this.urlUtils = urlUtils;
     this.labs = labs;
+    /** @private */
+    this.templateFiles = templateFiles;
 
     this.Handlebars = require('handlebars').create();
     this.registerPartials();
@@ -619,14 +619,9 @@ class StaffServiceEmails {
   }
 
   registerPartials() {
-    const rootDirname = './email-templates/partials/';
-    const files = globSync('*.hbs', { cwd: path.join(__dirname, rootDirname) });
-    files.forEach((fileName) => {
-      const name = fileName.replace(/.hbs$/, '');
-      const filePath = path.join(__dirname, rootDirname, `${name}.hbs`);
-      const content = readFileSync(filePath, 'utf8');
-      this.Handlebars.registerPartial(name, content);
-    });
+    for (const { name, source } of this.templateFiles.readPartials()) {
+      this.Handlebars.registerPartial(name, source);
+    }
   }
 
   registerHelpers() {
@@ -651,11 +646,8 @@ class StaffServiceEmails {
   }
 
   async renderHTML(templateName, data) {
-    const htmlTemplateSource = await fs.readFile(
-      path.join(__dirname, './email-templates/', `${templateName}.hbs`),
-      'utf8',
-    );
-    const htmlTemplate = this.Handlebars.compile(Buffer.from(htmlTemplateSource).toString());
+    const htmlTemplateSource = await this.templateFiles.readTemplate(templateName);
+    const htmlTemplate = this.Handlebars.compile(htmlTemplateSource);
 
     let sharedData = {};
     if (data.recipient) {

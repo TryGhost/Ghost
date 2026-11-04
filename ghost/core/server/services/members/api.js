@@ -27,6 +27,8 @@ const metafieldsService = require('../members-metafields');
 const signingKeys = require('../signing-keys').default;
 const { t } = require('../../../shared/i18n');
 const sentry = require('../../../shared/sentry');
+const { tracer } = require('../../lib/tracing');
+const { stripeTracking } = require('../stripe/tracking');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
@@ -288,6 +290,7 @@ function createApiInstance(config) {
     // Read here for the same reason: the Stripe Checkout config is also initialised in
     // initCore, so its guarded service is ready when the members API is built.
     checkouts: stripeCheckoutConfig.service.checkouts,
+    tracking: stripeTracking(tracer),
   });
 
   return membersApiInstance;

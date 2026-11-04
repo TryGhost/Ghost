@@ -99,6 +99,13 @@ describe('a normalised app path', () => {
     expect(normaliseAppPath('/./a/.')).toBe('/a/');
   });
 
+  it('can return a path that is no longer contained, which callers must check', () => {
+    for (const path of ['/.//evil.example/', '/a/..//evil.example/', '/%2e//evil.example/']) {
+      expect(isContainedPath(path), path).toBe(true);
+      expect(isContainedPath(normaliseAppPath(path)), path).toBe(false);
+    }
+  });
+
   it('is unchanged when normalised again', () => {
     for (const path of ['/episodes/a b', '/../x', '/search?q=ü#é', '/a:b', '/?', '/#']) {
       const once = normaliseAppPath(path);

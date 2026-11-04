@@ -72,7 +72,9 @@ describe('New automation', () => {
       automations: [
         {
           name: 'New Automation (2)',
-          trigger_tier_scope: 'free',
+          trigger_rules: [
+            { trigger_type: 'free_signup', scope: null, product_id: null, direction: null },
+          ],
           status: 'inactive',
           actions: [{ type: 'wait' }],
         },
@@ -214,7 +216,19 @@ describe('New automation', () => {
     await button('Save').click();
     await expect.poll(() => create.requests.length).toBe(1);
     expect(create.requests[0].body).toMatchObject({
-      automations: [{ trigger_tier_scope: 'all_paid', actions: [{ data: { wait_hours: 72 } }] }],
+      automations: [
+        {
+          trigger_rules: [
+            {
+              trigger_type: 'paid_subscription_started',
+              scope: 'any_paid_tier',
+              product_id: null,
+              direction: null,
+            },
+          ],
+          actions: [{ data: { wait_hours: 72 } }],
+        },
+      ],
     });
   });
 
@@ -285,16 +299,13 @@ describe('New automation', () => {
       .click();
     await button('Edit email content').click();
     const dialog = page.getByRole('dialog', { name: 'Edit email', exact: true });
-    await expect.element(dialog.getByRole('tab', { name: 'Preview' })).toBeDisabled();
-    await expect
-      .element(dialog.getByRole('tab', { name: 'Preview' }))
-      .toHaveAttribute('title', 'Save automation to preview or send a test');
-    await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+    await expect.element(dialog.getByRole('radio', { name: 'Preview' })).toBeDisabled();
+    await dialog.getByRole('button', { name: 'Minimize editor' }).click();
     await expect.element(dialog).not.toBeInTheDocument();
     await button('Save').click();
     await expect.poll(currentRoute).toBe('/automations/created');
     await button('Edit email content').click();
-    await expect.element(dialog.getByRole('tab', { name: 'Preview' })).toBeEnabled();
+    await expect.element(dialog.getByRole('radio', { name: 'Preview' })).toBeEnabled();
   });
 
   it('plays the header entrance once, not again after a trigger is picked', async () => {
@@ -404,11 +415,22 @@ describe('New automation', () => {
     expect(runs.requests).toHaveLength(0);
   });
 
-  for (const [title, scope] of [
-    ['Free member signed up', 'free'],
-    ['Paid subscription started', 'all_paid'],
+  for (const { title, rule } of [
+    {
+      title: 'Free member signed up',
+      rule: { trigger_type: 'free_signup', scope: null, product_id: null, direction: null },
+    },
+    {
+      title: 'Paid subscription started',
+      rule: {
+        trigger_type: 'paid_subscription_started',
+        scope: 'any_paid_tier',
+        product_id: null,
+        direction: null,
+      },
+    },
   ] as const) {
-    it(`selects ${scope} with Stripe connected`, async () => {
+    it(`selects ${title} with Stripe connected`, async () => {
       fakeAutomations([]);
       fakeAdminEndpoint('GET', /\/tiers\/\?/, { tiers: [] });
       const create = serveCreation();
@@ -425,7 +447,7 @@ describe('New automation', () => {
       await expect.element(page.getByText('Select a trigger', { exact: true })).toBeVisible();
       await expect.element(button('Hide automation sidebar')).not.toBeInTheDocument();
       await page.getByRole('button', { name: new RegExp(`^${title}`) }).click();
-      if (scope === 'all_paid') {
+      if (rule.trigger_type === 'paid_subscription_started') {
         await expect
           .element(page.getByText('Triggered when a new or free member starts:', { exact: true }))
           .toBeVisible();
@@ -446,7 +468,11 @@ describe('New automation', () => {
       await expect.poll(() => create.requests.length).toBe(1);
       await expect.element(button('Show automation sidebar')).toBeVisible();
       expect(create.requests[0].body).toMatchObject({
-        automations: [{ trigger_tier_scope: scope, trigger_tier_ids: null }],
+        automations: [
+          {
+            trigger_rules: [rule],
+          },
+        ],
       });
     });
   }

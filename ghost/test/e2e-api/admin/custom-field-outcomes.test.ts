@@ -210,6 +210,52 @@ describe('Custom field outcomes', function () {
     });
   });
 
+  describe("Reading a field Ghost can't read", function () {
+    const counted = () => metrics.tracked('members.metafields.unreadable_fields');
+
+    async function damagedList(change: Record<string, unknown>): Promise<void> {
+      const { body } = await adminAgent
+        .post('members/metafields/custom/')
+        .body({
+          members_metafields: [
+            {
+              name: 'Animals',
+              type: 'list',
+              settings: { options: ['Dog', 'Cat'], multiple: false },
+            },
+          ],
+        })
+        .expectStatus(201);
+      await models.Base.knex('members_metafields')
+        .where({ key: body.members_metafields[0].key })
+        .update(change);
+    }
+
+    it("counts a field read with its type's default settings", async function () {
+      await damagedList({ settings: 'not json' });
+      await adminAgent.get('members/metafields/custom/').expectStatus(200);
+
+      expect(counted()).toMatchObject([
+        {
+          value: 1,
+          labels: { reader: 'definitions', outcome: 'defaulted_settings', field_type: 'list' },
+        },
+      ]);
+    });
+
+    it('counts a field left out because even that could not be read', async function () {
+      await damagedList({ type: 'retired_type' });
+      await adminAgent.get('members/metafields/custom/').expectStatus(200);
+
+      expect(counted()).toMatchObject([
+        {
+          value: 1,
+          labels: { reader: 'definitions', outcome: 'left_out', field_type: 'retired_type' },
+        },
+      ]);
+    });
+  });
+
   describe('Writing values', function () {
     const writes = () => metrics.tracked('members.metafields.values');
 

@@ -1,9 +1,12 @@
+import nock from 'nock';
+import stripe from 'stripe';
+import ObjectId from 'bson-objectid';
+import { vi } from 'vitest';
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import { mockSystemTime } from '../../utils/clock-utils';
 // @ts-expect-error This module lacks type definitions.
 import DomainEvents from '@tryghost/domain-events';
-import { agentProvider, fixtureManager, mockManager } from '../../utils/e2e-framework';
 import * as db from '../../../core/server/data/db';
 // @ts-expect-error This module lacks type definitions.
 import models from '../../../core/server/models';
@@ -23,13 +26,19 @@ import {
   setupAutomationsFixture,
 } from '../../utils/automations-fixtures';
 
-// Keep the same CommonJS instance Ghost uses so the send stub intercepts delivery.
+// Share the same CommonJS instances Ghost uses.
+const {
+  agentProvider,
+  fixtureManager,
+  mockManager,
+}: typeof import('../../utils/e2e-framework') = require('../../utils/e2e-framework');
 const MailgunClient = require('../../../core/server/lib/mailgun/mailgun-client');
 
 const HOUR_MS = 60 * 60 * 1000;
 const AUTOMATION_EMAIL_REPLY_TO = 'support@example.com';
 
 let agent: Awaited<ReturnType<typeof agentProvider.getAdminAPIAgent>>;
+let membersAgent: Awaited<ReturnType<typeof agentProvider.getAgentsForMembers>>['membersAgent'];
 let schedulerKey: Parameters<typeof getSignedAdminToken>[0]['key'];
 let mailgunSend: sinon.SinonStub;
 
@@ -220,8 +229,8 @@ async function runAutomationForFreeMember(automation: Automation, email: string)
 
 describe('automations', function () {
   beforeAll(async function () {
-    agent = await agentProvider.getAdminAPIAgent();
-    await fixtureManager.init('users', 'integrations', 'api_keys');
+    ({ adminAgent: agent, membersAgent } = await agentProvider.getAgentsForMembers());
+    await fixtureManager.init('users', 'integrations', 'api_keys', 'members');
     await agent.loginAsOwner();
 
     schedulerKey = await models.Integration.getApiKeyBySlug('ghost-scheduler', 'admin');
@@ -418,5 +427,332 @@ describe('automations', function () {
     }
 
     assert.equal(getAutomationEmailSends().length, 0);
+  });
+
+  describe('paid subscription triggers', function () {
+    let memberId: string;
+    let customer: {
+      id: string;
+      email: string;
+      invoice_settings: object;
+      subscriptions: { data: unknown[] };
+    };
+    let subscription: {
+      id: string;
+      customer: string;
+      status: string;
+      cancel_at_period_end: boolean;
+      start_date: number;
+      current_period_end: number;
+      canceled_at?: number;
+      items: {
+        data: {
+          price: {
+            id: string;
+            product: string;
+            active: boolean;
+            nickname: string;
+            currency: string;
+            recurring: { interval: string };
+            unit_amount: number;
+            type: string;
+          };
+        }[];
+      };
+      metadata: Record<string, string>;
+    };
+
+    beforeEach(async function () {
+      const customerId = `cus_${ObjectId().toHexString()}`;
+      const response = await agent
+        .post('/members/')
+        .body({ members: [{ email: `${customerId}@example.com`, subscribed: false }] })
+        .expectStatus(201);
+      memberId = response.body.members[0].id;
+      await models.MemberStripeCustomer.add({ member_id: memberId, customer_id: customerId });
+      customer = {
+        id: customerId,
+        email: response.body.members[0].email,
+        invoice_settings: {},
+        subscriptions: { data: [] },
+      };
+      const now = Math.floor(Date.now() / 1000);
+      subscription = {
+        id: `sub_${ObjectId().toHexString()}`,
+        customer: customerId,
+        status: 'active',
+        cancel_at_period_end: false,
+        start_date: now,
+        current_period_end: now + 86400 * 31,
+        items: {
+          data: [
+            {
+              price: {
+                id: 'price_123',
+                product: 'product_123',
+                active: true,
+                nickname: 'month',
+                currency: 'usd',
+                recurring: { interval: 'month' },
+                unit_amount: 150,
+                type: 'recurring',
+              },
+            },
+          ],
+        },
+        metadata: {},
+      };
+      nock('https://api.stripe.com')
+        .post('/v1/prices/price_123')
+        .reply(200, subscription.items.data[0].price)
+        .persist();
+      nock('https://api.stripe.com')
+        .post('/v1/products/product_123')
+        .reply(200, { id: 'product_123', active: true })
+        .persist();
+      nock('https://api.stripe.com')
+        .post('/v1/products')
+        .reply(200, { id: 'product_123', active: true })
+        .persist();
+      nock('https://api.stripe.com')
+        .post('/v1/prices')
+        .reply(200, subscription.items.data[0].price)
+        .persist();
+      nock('https://api.stripe.com')
+        .get(`/v1/subscriptions/${subscription.id}`)
+        .query(true)
+        .reply(() => [200, subscription])
+        .persist();
+      nock('https://api.stripe.com')
+        .get(`/v1/customers/${customerId}`)
+        .query(true)
+        .reply(() => [200, customer])
+        .persist();
+    });
+
+    afterEach(function () {
+      nock.cleanAll();
+    });
+
+    async function deliver(type: string) {
+      const payload = JSON.stringify({
+        type,
+        api_version: '2020-08-27',
+        data: { object: subscription },
+      });
+      const secret = process.env.WEBHOOK_SECRET;
+      assert(secret, 'Expected webhook signing secret');
+      const signature = new stripe('sk_test_automations', {
+        apiVersion: '2020-08-27',
+      }).webhooks.generateTestHeaderString({
+        payload,
+        secret,
+      });
+      await membersAgent
+        .post('/webhooks/stripe/')
+        .body(payload)
+        .header('content-type', 'application/json')
+        .header('stripe-signature', signature)
+        .expectStatus(200);
+      await DomainEvents.allSettled();
+    }
+
+    async function getPaidAutomation() {
+      return await db.knex('automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).first();
+    }
+
+    function getRuns(automationId: string) {
+      return db.knex('automation_runs').where({ automation_id: automationId, member_id: memberId });
+    }
+
+    async function assertEnrollment(automationId: string) {
+      const automation = { id: automationId };
+      const runs = () =>
+        db.knex('automation_runs').where({ automation_id: automationId, member_id: memberId });
+      await vi.waitFor(async () => assert.equal((await runs()).length, 1));
+      const [run] = await runs();
+      assert.equal(run.member_email, customer.email);
+      const steps = await db.knex('automation_run_steps').where('automation_run_id', run.id);
+      assert.equal(steps.length, 1);
+      const revision = await db
+        .knex('automation_action_revisions')
+        .where('id', steps[0].automation_action_revision_id)
+        .first();
+      assert.equal(
+        revision.action_id,
+        (
+          await db
+            .knex('automation_actions')
+            .where('automation_id', automation.id)
+            .orderBy('created_at')
+            .first()
+        ).id,
+      );
+    }
+
+    it('enrolls once when a paid subscription starts', async function () {
+      const automation = await getPaidAutomation();
+      assert.equal((await getRuns(automation.id)).length, 0);
+      await deliver('customer.subscription.created');
+      assert.equal((await models.Member.findOne({ id: memberId })).get('status'), 'paid');
+      await assertEnrollment(automation.id);
+      await deliver('customer.subscription.created');
+      assert.equal((await getRuns(automation.id)).length, 1);
+      await deliver('customer.subscription.updated');
+      assert.equal((await getRuns(automation.id)).length, 1);
+    });
+
+    it.each([
+      { from: 'any', to: ['Silver', 'Gold'], before: 'Bronze', after: 'Silver', enrolls: true },
+      { from: 'any', to: ['Silver', 'Gold'], before: 'Silver', after: 'Gold', enrolls: false },
+      { from: 'any', to: 'all' as const, before: 'Silver', after: 'Gold', enrolls: false },
+      { from: 'Bronze', to: ['Silver', 'Gold'], before: 'Bronze', after: 'Silver', enrolls: true },
+      { from: 'Bronze', to: ['Silver', 'Gold'], before: 'Silver', after: 'Gold', enrolls: false },
+      { from: 'Bronze', to: ['Silver', 'Gold'], before: 'Platinum', after: 'Gold', enrolls: false },
+      { from: 'Bronze', to: ['Silver', 'Gold'], before: 'Gold', after: 'Platinum', enrolls: false },
+      { from: 'Silver', to: ['Gold'], before: 'Silver', after: 'Gold', enrolls: true },
+    ])(
+      'starts paid_subscription_changed automation: $enrolls when member changes from $before to $after (From: $from, To: $to)',
+      async function ({ from, to, before, after, enrolls }) {
+        const tiers = new Map<
+          string,
+          { id: string; price: (typeof subscription.items.data)[number]['price'] }
+        >();
+        for (const name of ['Bronze', 'Silver', 'Gold', 'Platinum']) {
+          const id = ObjectId().toHexString();
+          const product = `prod_${id}`;
+          const price = { ...subscription.items.data[0].price, id: `price_${id}`, product };
+          await db
+            .knex('products')
+            .insert({ id, name, slug: id, type: 'paid', active: true, created_at: new Date() });
+          await db.knex('stripe_products').insert({
+            id: ObjectId().toHexString(),
+            product_id: id,
+            stripe_product_id: product,
+            created_at: new Date(),
+          });
+          await db.knex('stripe_prices').insert({
+            id: ObjectId().toHexString(),
+            stripe_price_id: price.id,
+            stripe_product_id: product,
+            active: true,
+            currency: 'usd',
+            amount: price.unit_amount,
+            type: 'recurring',
+            interval: 'month',
+            created_at: new Date(),
+          });
+          nock('https://api.stripe.com').post(`/v1/prices/${price.id}`).reply(200, price).persist();
+          nock('https://api.stripe.com')
+            .post(`/v1/products/${product}`)
+            .reply(200, { id: product, active: true })
+            .persist();
+          tiers.set(name, { id, price });
+        }
+        const tier = (name: string) => {
+          const result = tiers.get(name);
+          assert(result);
+          return result;
+        };
+        const toTierIds =
+          to === 'all'
+            ? await db.knex('products').where({ type: 'paid', active: true }).pluck('id')
+            : to.map((name) => tier(name).id);
+        const response = await agent
+          .post('/automations/')
+          .body({
+            automations: [
+              {
+                name: `Tier transition ${from} ${before} ${after}`,
+                description: '',
+                status: 'active',
+                trigger_rules: [
+                  {
+                    trigger_type: 'paid_subscription_changed',
+                    direction: 'from',
+                    scope: from === 'any' ? 'any_paid_tier' : 'specific_paid_tier',
+                    product_id: from === 'any' ? null : tier(from).id,
+                  },
+                  ...toTierIds.map((id: string) => ({
+                    trigger_type: 'paid_subscription_changed',
+                    direction: 'to',
+                    scope: 'specific_paid_tier',
+                    product_id: id,
+                  })),
+                ],
+                actions: [{ id: ObjectId().toHexString(), type: 'wait', data: { wait_hours: 48 } }],
+                edges: [],
+              },
+            ],
+          })
+          .expectStatus(201);
+        const automationId = response.body.automations[0].id;
+        const assertTier = async (name: string) => {
+          const member = await models.Member.findOne(
+            { id: memberId },
+            { withRelated: ['products'] },
+          );
+          assert.equal(member.get('status'), 'paid');
+          assert.deepEqual(
+            member.related('products').models.map((product: { id: string }) => product.id),
+            [tier(name).id],
+          );
+        };
+        subscription.items.data[0].price = tier(before).price;
+        await deliver('customer.subscription.created');
+        await assertTier(before);
+        assert.equal((await getRuns(automationId)).length, 0);
+        subscription.items.data[0].price = tier(after).price;
+        await deliver('customer.subscription.updated');
+        await assertTier(after);
+        if (enrolls) {
+          await assertEnrollment(automationId);
+        } else {
+          assert.equal((await getRuns(automationId)).length, 0);
+        }
+        await deliver('customer.subscription.updated');
+        assert.equal((await getRuns(automationId)).length, enrolls ? 1 : 0);
+      },
+    );
+
+    it('starts automation once when paid access ends, not when auto-renew is disabled', async function () {
+      const automation = await getPaidAutomation();
+      await db.knex('automation_trigger_rules').where('automation_id', automation.id).delete();
+      await db.knex('automation_trigger_rules').insert([
+        {
+          id: ObjectId().toHexString(),
+          automation_id: automation.id,
+          created_at: new Date(),
+          trigger_type: 'paid_subscription_changed',
+          direction: 'from',
+          scope: 'any_paid_tier',
+          product_id: null,
+        },
+        {
+          id: ObjectId().toHexString(),
+          automation_id: automation.id,
+          created_at: new Date(),
+          trigger_type: 'paid_subscription_changed',
+          direction: 'to',
+          scope: 'free',
+          product_id: null,
+        },
+      ]);
+      const runs = () =>
+        db.knex('automation_runs').where({ automation_id: automation.id, member_id: memberId });
+      await deliver('customer.subscription.created');
+      assert.equal((await models.Member.findOne({ id: memberId })).get('status'), 'paid');
+      assert.equal((await runs()).length, 0);
+      subscription.cancel_at_period_end = true;
+      await deliver('customer.subscription.updated');
+      assert.equal((await runs()).length, 0);
+      subscription.status = 'canceled';
+      subscription.canceled_at = Math.floor(Date.now() / 1000);
+      await deliver('customer.subscription.deleted');
+      assert.equal((await models.Member.findOne({ id: memberId })).get('status'), 'free');
+      await assertEnrollment(automation.id);
+      await deliver('customer.subscription.deleted');
+      assert.equal((await runs()).length, 1);
+    });
   });
 });

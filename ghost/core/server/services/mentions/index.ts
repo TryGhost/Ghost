@@ -1,6 +1,6 @@
 import { defineService } from '../../../kernel/define-service';
 
-export default defineService('Mentions', async () => {
+export default defineService('Mentions', () => {
   const MentionController = require('./mention-controller');
   const WebmentionMetadata = require('./webmention-metadata');
   const MentionsAPI = require('./mentions-api');
@@ -44,8 +44,8 @@ export default defineService('Mentions', async () => {
     logging,
   });
 
-  const controller = new MentionController({ logging });
-  await controller.init({
+  const controller = new MentionController({
+    logging,
     api,
     jobsService,
     mentionResourceService: {

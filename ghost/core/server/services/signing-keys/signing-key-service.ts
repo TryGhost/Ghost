@@ -10,6 +10,7 @@ import {
   type PublicKeyInfo,
 } from '../../lib/public-jwk';
 import { DbDate } from '../../lib/db-types/date';
+import type { Settings as SettingsModel } from '../../models/settings';
 
 export type SigningKeyPurpose = 'members' | 'staff';
 
@@ -38,17 +39,6 @@ interface Keypair {
 
 interface SettingsCache {
   get(key: string, options: { resolve: false }): unknown;
-}
-
-interface SettingsModel {
-  findOne(
-    data: { key: string },
-    options: { transacting: Knex.Transaction; forUpdate: true },
-  ): Promise<{ toJSON(): unknown } | null>;
-  edit(
-    data: { key: string; value: string | null }[],
-    options: { transacting: Knex.Transaction; context: { internal: true } },
-  ): Promise<unknown>;
 }
 
 type Transaction = <T>(fn: (transacting: Knex.Transaction) => Promise<T>) => Promise<T>;
@@ -141,7 +131,7 @@ function modulusLength(privateKey: string): number {
  */
 export class SigningKeyService {
   private settingsCache: SettingsCache;
-  private Settings: SettingsModel;
+  private Settings: Pick<typeof SettingsModel, 'findOne' | 'edit'>;
   private transaction: Transaction;
   private logging: Pick<GhostLogger, 'info' | 'warn'>;
   private generateKeypair: () => Promise<Keypair>;
@@ -156,7 +146,7 @@ export class SigningKeyService {
     onRotationStarted,
   }: {
     settingsCache: SettingsCache;
-    Settings: SettingsModel;
+    Settings: Pick<typeof SettingsModel, 'findOne' | 'edit'>;
     transaction: Transaction;
     logging: Pick<GhostLogger, 'info' | 'warn'>;
     generateKeypair?: () => Promise<Keypair>;

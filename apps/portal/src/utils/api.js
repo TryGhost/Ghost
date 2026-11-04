@@ -1,7 +1,6 @@
 import { HumanReadableError } from './errors';
 import { fetchWithEdgeChallenge } from './edge-challenge';
 import { transformApiSiteData, transformApiTiersData, getUrlHistory } from './helpers';
-import { readMemberCustomFields } from './custom-fields';
 
 function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
   const apiPath = 'members/api';
@@ -278,10 +277,8 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
     },
 
     /**
-     * The custom fields the publisher has opened to members, in the publisher's order.
-     *
-     * Portal reaches older Ghost sites indefinitely, so a site without the endpoint — or
-     * a field that does not say what the member may do with it — reads as no fields.
+     * The custom fields the publisher has opened to members, in the publisher's order. A site
+     * without the endpoint reads as no fields.
      */
     customFields() {
       const url = endpointFor({ type: 'members', resource: 'member/metafields/custom' });
@@ -292,19 +289,9 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         if (!res.ok) {
           return [];
         }
-        // Read defensively: Portal and the site it talks to are deployed apart, so this
-        // endpoint may be missing, or answered by a version that shapes it differently.
-        // Anything unrecognisable reads as no fields, which is what a site with none
-        // gives, rather than breaking the page these are drawn on.
         return res
           .json()
-          .then((data) => {
-            const fields = data?.members_metafields;
-            if (!Array.isArray(fields)) {
-              return [];
-            }
-            return readMemberCustomFields(fields);
-          })
+          .then((data) => data.members_metafields)
           .catch(() => []);
       });
     },

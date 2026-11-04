@@ -2,8 +2,8 @@ import React from 'react';
 import moment from 'moment-timezone';
 import { Button, Card, CardContent, EmptyIndicator, Skeleton } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { useShade } from '@tryghost/shade/app';
 import { isSafeHref } from './is-safe-href';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { parseMemberEvent } from './member-event';
 import { useMemberActivityFeed } from '@tryghost/admin-x-framework/api/members';
 import { activityQueryOptions } from '@/members/activity/activity-filters';
@@ -79,26 +79,13 @@ export const EventIcon: React.FC<{ iconName: string }> = ({ iconName }) => {
 
 /** "View all member activity →" link to the member's full activity feed. */
 const ViewAllLink: React.FC<{ memberId: string }> = ({ memberId }) => {
-  const { isAdmin7 } = useShade();
-  const link = (
-    <a
-      className={isAdmin7 ? undefined : 'block pt-3 font-medium text-primary hover:underline'}
-      data-testid="member-activity-view-all"
-      href={`#/members-activity?member=${memberId}`}
-    >
-      View all member activity →
-    </a>
+  return (
+    <Button className="mt-3" variant="ghost" asChild>
+      <a data-testid="member-activity-view-all" href={`#/members-activity?member=${memberId}`}>
+        View all member activity →
+      </a>
+    </Button>
   );
-
-  if (isAdmin7) {
-    return (
-      <Button className="mt-3" variant="ghost" asChild>
-        {link}
-      </Button>
-    );
-  }
-
-  return link;
 };
 
 const NEW_MEMBER_ACTIVITY_COPY = 'All events related to this member will be shown here.';
@@ -142,7 +129,7 @@ const ActivityRow: React.FC<{ event: ParsedMemberEvent }> = ({ event }) => {
         <EventIcon iconName={event.icon} />
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <div className="text-sm leading-snug">
+        <div className="text-sm leading-snug in-data-[admin7-design=true]:text-md">
           <span data-testid="member-activity-action">{capitalize(event.action)}</span>
           {event.info && <span className="ml-1 text-muted-foreground">({event.info})</span>}
           {hasObjectLink && (
@@ -177,9 +164,13 @@ const ActivityRow: React.FC<{ event: ParsedMemberEvent }> = ({ event }) => {
           )}
         </div>
         {event.description && (
-          <div className="truncate text-xs text-muted-foreground">{event.description}</div>
+          <div className="truncate text-xs text-muted-foreground in-data-[admin7-design=true]:text-base">
+            {event.description}
+          </div>
         )}
-        <div className="text-xs text-muted-foreground">{relativeTime}</div>
+        <div className="text-xs text-muted-foreground in-data-[admin7-design=true]:text-base">
+          {relativeTime}
+        </div>
       </div>
     </div>
   );
@@ -191,6 +182,15 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
   hasMultipleTiers,
   paidMembersEnabled,
 }) => {
+  const admin7Design = useFeatureFlag('admin7Design');
+  const heading = (
+    <h3
+      className="section-heading text-base font-semibold in-data-[admin7-design=true]:mb-4"
+      id="member-activity-heading"
+    >
+      Activity
+    </h3>
+  );
   // Cap the inline feed to 5 events. Anything beyond that lives
   // behind the "View all" link. On the create screen there's no memberId
   // to query against, so disable the fetch entirely — an unsaved member has
@@ -231,14 +231,13 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
   if (!memberId) {
     return (
       <section aria-labelledby="member-activity-heading" className="flex flex-col gap-3">
-        <h3 className="text-base font-semibold" id="member-activity-heading">
-          Activity
-        </h3>
+        {!admin7Design && heading}
         <Card>
           {/* Same wrapper padding as the Subscriptions empty state
                         (`member-subscriptions-section.tsx`) so both cards line
                         up visually when they render side-by-side. */}
           <CardContent className="pt-6">
+            {admin7Design && heading}
             <div className="flex flex-col items-center gap-3 py-4">
               <EmptyIndicator description={NEW_MEMBER_ACTIVITY_COPY} title="Activity">
                 <LucideIcon.Activity />
@@ -252,11 +251,10 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
 
   return (
     <section aria-labelledby="member-activity-heading" className="flex flex-col gap-3">
-      <h3 className="text-base font-semibold" id="member-activity-heading">
-        Activity
-      </h3>
+      {!admin7Design && heading}
       <Card>
-        <CardContent className="pt-3">
+        <CardContent className="pt-3 in-data-[admin7-design=true]:pt-6">
+          {admin7Design && heading}
           {isLoading ? (
             // Held back like the loading spinners, so a quick feed never flashes skeletons
             <div className="delayed-fade-in flex flex-col gap-3">

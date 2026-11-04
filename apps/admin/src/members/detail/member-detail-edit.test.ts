@@ -20,7 +20,7 @@ import { describe, expect, it } from 'vitest';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 
-const customField = (key: string, type: MemberCustomField['type']): MemberCustomField => ({
+const customField = (key: string, type: 'short_text' | 'address'): MemberCustomField => ({
   namespace: CUSTOM_NAMESPACE,
   key: KeySchema.parse(key),
   name: key,

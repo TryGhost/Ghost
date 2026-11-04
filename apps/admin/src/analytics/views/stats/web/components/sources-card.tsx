@@ -189,10 +189,10 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
       </div>
       <CardContent className="overflow-hidden">
         <div className="mb-2 flex h-6 items-center justify-between">
-          <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+          <div className="column-label text-xs font-medium tracking-wide text-muted-foreground uppercase">
             Source
           </div>
-          <div className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+          <div className="column-label text-xs font-medium tracking-wide text-muted-foreground uppercase">
             Visitors
           </div>
         </div>

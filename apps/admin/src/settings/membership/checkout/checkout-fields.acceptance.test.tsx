@@ -31,7 +31,8 @@ function stripeSettings() {
   });
 }
 
-const phoneField: MemberCustomField = {
+// A short text field, typed as one, so a copy can be given another plain type.
+const phoneField = {
   namespace: CUSTOM_NAMESPACE,
   key: KeySchema.parse('contact_phone'),
   name: 'Contact phone',
@@ -40,7 +41,7 @@ const phoneField: MemberCustomField = {
   access: { member: 'none' },
   created_at: '2026-10-19T00:00:00.000Z',
   updated_at: null,
-};
+} satisfies MemberCustomField;
 
 type HostSettings = ReturnType<typeof configResponse>['config']['hostSettings'];
 
@@ -219,11 +220,8 @@ describe('Checkout settings', () => {
     await modal.getByRole('switch', { name: 'Phone' }).click();
     await modal.getByRole('combobox', { name: 'Save phone as' }).click();
     await page.getByRole('option', { name: 'Add custom field' }).click();
-    await userEvent.fill(
-      page.getByRole('textbox', { name: 'New custom field for Save phone as' }),
-      'Phone',
-    );
-    const form = page.getByRole('dialog').filter({ hasText: 'New custom field' });
+    const form = page.getByRole('dialog', { name: 'New custom field' });
+    await userEvent.fill(form.getByLabelText('Name'), 'Phone');
     await form.getByRole('button', { name: 'Save' }).click();
 
     await expect
@@ -250,11 +248,8 @@ describe('Checkout settings', () => {
     await modal.getByRole('switch', { name: 'Phone' }).click();
     await modal.getByRole('combobox', { name: 'Save phone as' }).click();
     await page.getByRole('option', { name: 'Add custom field' }).click();
-    await userEvent.fill(
-      page.getByRole('textbox', { name: 'New custom field for Save phone as' }),
-      'Contact phone',
-    );
-    const form = page.getByRole('dialog').filter({ hasText: 'New custom field' });
+    const form = page.getByRole('dialog', { name: 'New custom field' });
+    await userEvent.fill(form.getByLabelText('Name'), 'Contact phone');
     await form.getByRole('button', { name: 'Save' }).click();
     // Any refusal will do, so the test doesn't depend on the server's wording.
     await expect.element(form.getByRole('alert')).toBeVisible();
@@ -321,11 +316,11 @@ describe('Checkout settings', () => {
 
     await picker.click();
     await page.getByRole('option', { name: 'Add custom field' }).click();
-    const name = page.getByRole('textbox', { name: 'New custom field for Save phone as' });
+    const form = page.getByRole('dialog', { name: 'New custom field' });
+    const name = form.getByLabelText('Name');
     await userEvent.fill(name, 'Work phone');
     // Escape straight after Enter as well as later, as the form can be left the moment it saves.
     await userEvent.keyboard('{Enter}{Escape}');
-    const form = page.getByRole('dialog').filter({ hasText: 'New custom field' });
     await expect.element(form.getByRole('button', { name: 'Saving' })).toBeDisabled();
     await userEvent.keyboard('{Escape}');
     await page.elementLocator(elsewhere).click({ force: true });

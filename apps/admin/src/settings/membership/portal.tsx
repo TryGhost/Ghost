@@ -88,7 +88,7 @@ const Portal: React.FC<{ keywords: string[] }> = ({ keywords }) => {
           Change to &lsquo;Invite-only&rsquo; or another option to customize Portal.
         </Banner>
       )}
-      <div className="relative isolate -mx-5 -mb-5 hidden flex-col items-center justify-end overflow-hidden rounded-b-xl bg-gray-50 px-5 pt-6 text-black sm:visible! sm:flex! md:-mx-7 md:-mb-7">
+      <div className="relative isolate -mx-5 -mb-5 hidden flex-col items-center justify-end overflow-hidden rounded-b-card bg-gray-50 px-5 pt-6 text-black sm:visible! sm:flex! md:-mx-7 md:-mb-7">
         <div
           className="absolute right-6 bottom-6 flex size-12 items-center justify-center rounded-full text-white shadow-lg"
           style={{

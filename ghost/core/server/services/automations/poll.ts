@@ -11,26 +11,23 @@ import { Member } from '../../models';
 const settingsCache = require('../../../shared/settings-cache');
 
 type MemberWelcomeEmailService = {
-  init: () => unknown;
-  api: {
-    sendAutomationEmail: (options: {
-      email: {
-        designSettingId: string | null;
-        lexical: string;
-        subject: string;
-      };
-      member: {
-        email: string;
-        name: string | null;
-        uuid: string;
-      };
-      memberStatus: 'free' | 'paid';
-      trackOpens: boolean;
-      trackClicks: boolean;
-      automationActionRevisionId: string;
-      automationRunStepId: string;
-    }) => Promise<unknown>;
-  };
+  sendAutomationEmail: (options: {
+    email: {
+      designSettingId: string | null;
+      lexical: string;
+      subject: string;
+    };
+    member: {
+      email: string;
+      name: string | null;
+      uuid: string;
+    };
+    memberStatus: 'free' | 'paid';
+    trackOpens: boolean;
+    trackClicks: boolean;
+    automationActionRevisionId: string;
+    automationRunStepId: string;
+  }) => Promise<unknown>;
 };
 
 type MemberModel = {
@@ -276,10 +273,9 @@ const processStep = async ({
           await automationsApi.markStepTerminal(step, 'member unsubscribed');
           return null;
         }
-        memberWelcomeEmailService.init();
         const trackClicks = Boolean(settingsCache.get('email_track_clicks'));
         const trackOpens = Boolean(settingsCache.get('email_track_opens'));
-        const sendResult = await memberWelcomeEmailService.api.sendAutomationEmail({
+        const sendResult = await memberWelcomeEmailService.sendAutomationEmail({
           email: {
             designSettingId: step.email_design_setting_id,
             lexical: step.email_lexical,

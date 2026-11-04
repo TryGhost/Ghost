@@ -3,6 +3,7 @@ import { Button, Card, CardContent, LoadingIndicator, Switch } from '@tryghost/s
 import { LucideIcon } from '@tryghost/shade/utils';
 import { getMemberSuppressionInfo, toggleMemberNewsletter } from './member-detail-edit';
 import { toast } from 'sonner';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletters';
 import {
   useRemoveMemberEmailSuppression,
@@ -31,6 +32,7 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
   // A new member can't be suppressed yet — skip the suppression branch
   // entirely by treating a missing memberId as "not suppressed".
   const suppression = memberId ? getMemberSuppressionInfo(emailSuppression) : null;
+  const admin7Design = useFeatureFlag('admin7Design');
   const removeSuppression = useRemoveMemberEmailSuppression();
 
   // Only active newsletters are shown; archived ones are managed elsewhere and
@@ -73,6 +75,15 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
     );
   };
 
+  const heading = (
+    <h3
+      className="section-heading text-base font-semibold in-data-[admin7-design=true]:mb-4"
+      id="member-newsletters-heading"
+    >
+      Newsletters
+    </h3>
+  );
+
   // The whole section — external heading + card — is owned by this component
   // so an empty-newsletters state can hide it cleanly (returning null above).
   return (
@@ -81,11 +92,10 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
       className="flex flex-col gap-3"
       data-testid="member-newsletters-field"
     >
-      <h3 className="text-base font-semibold" id="member-newsletters-heading">
-        Newsletters
-      </h3>
+      {!admin7Design && heading}
       <Card>
         <CardContent className="p-6">
+          {admin7Design && heading}
           {suppression ? (
             <div
               className="flex items-center justify-between gap-4"
@@ -130,9 +140,11 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
                       className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
                     >
                       <div className="min-w-0">
-                        <div className="font-medium">{newsletter.name}</div>
+                        <div className="font-medium in-data-[admin7-design=true]:text-md">
+                          {newsletter.name}
+                        </div>
                         {newsletter.description && (
-                          <p className="truncate text-sm text-muted-foreground">
+                          <p className="truncate text-sm text-muted-foreground in-data-[admin7-design=true]:text-base">
                             {newsletter.description}
                           </p>
                         )}
@@ -150,7 +162,7 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
                   );
                 })}
               </ul>
-              <p className="mt-4 text-sm text-muted-foreground">
+              <p className="mt-4 text-sm text-muted-foreground in-data-[admin7-design=true]:text-base in-data-[admin7-design=true]:italic">
                 If disabled, member will <em>not</em> receive newsletter emails
               </p>
             </>

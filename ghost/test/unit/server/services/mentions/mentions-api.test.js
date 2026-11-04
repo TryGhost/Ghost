@@ -51,6 +51,12 @@ describe('MentionsAPI', function () {
     logging = createLoggingFake();
   });
 
+  // Several tests install fake timers. Restore them here too, so the last test
+  // to run cannot leave a clock installed for the next file in this worker.
+  afterEach(function () {
+    sinon.restore();
+  });
+
   it('Can generate a mentions report', async function () {
     // this.retries(1);
     const repository = new InMemoryMentionRepository();
