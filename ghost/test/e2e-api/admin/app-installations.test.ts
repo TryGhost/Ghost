@@ -285,13 +285,14 @@ describe('App installations Admin API', function () {
 
       const installed = await assertActionLogged(agent, {
         resourceType: 'app_installation',
-        event: 'installed',
+        event: 'added',
         resourceId: installation.id,
         actor: owner.actor,
       });
       assert.deepEqual(installed.details, {
         primary_name: 'Podcast',
         app_id: 'com.example.podcast',
+        action_name: 'installed',
       });
     });
   });
@@ -430,7 +431,7 @@ describe('App installations Admin API', function () {
       assert.equal(body.app_installations[0].status, 'active');
       const [stored] = await manifestRows();
       assert.equal(stored.digest, digest);
-      assert.equal((await loggedActions())[0].event, 'installed');
+      assert.equal((await loggedActions())[0].details?.action_name, 'installed');
     });
 
     // The manifest names its own address, and its paths resolve against it, so the digest
@@ -576,13 +577,14 @@ describe('App installations Admin API', function () {
       assert.equal(Boolean(second.requires_approval), true);
 
       const [, action] = await loggedActions();
-      assert.equal(action.event, 'changes_approved');
+      assert.equal(action.event, 'edited');
       assert.equal(action.actor_id, owner.actor.id);
       assert.deepEqual(action.details, {
         primary_name: 'Podcast',
         app_id: 'com.example.podcast',
         from_manifest_id: first.id,
         to_manifest_id: second.id,
+        action_name: 'changes_approved',
       });
       assert.equal(first.source, 'install');
       assert.equal(second.source, 'approval');
@@ -789,6 +791,7 @@ describe('App installations Admin API', function () {
         app_id: 'com.example.podcast',
         from_manifest_id: first.id,
         to_manifest_id: approved.id,
+        action_name: 'changes_approved',
       });
 
       const { body: details } = await agent
@@ -872,7 +875,7 @@ describe('App installations Admin API', function () {
       // The approved one and the pending one: approving added nothing.
       assert.equal((await manifestRows()).length, 2);
       const [, action] = await loggedActions();
-      assert.equal(action.event, 'changes_approved');
+      assert.equal(action.details?.action_name, 'changes_approved');
       assert.equal(action.details?.from_manifest_id, row.manifest_id);
       assert.equal(action.details?.to_manifest_id, row.manifest_id);
     });
@@ -965,7 +968,7 @@ describe('App installations Admin API', function () {
       assert.equal(row.revision, 1);
       assert.equal((await manifestRows()).length, 1);
       assert.deepEqual(
-        (await loggedActions()).map((action) => action.event),
+        (await loggedActions()).map((action) => action.details?.action_name),
         ['installed', 'uninstalled'],
       );
     });
@@ -2127,7 +2130,7 @@ describe('App installations Admin API', function () {
       assert.equal(body.errors[0].code, 'APP_INSTALLATION_UNINSTALLED');
       assert.equal((await manifestRows()).length, 1);
       assert.deepEqual(
-        (await loggedActions()).map(({ event }) => event),
+        (await loggedActions()).map(({ details }) => details?.action_name),
         ['installed', 'uninstalled'],
       );
     });
@@ -2331,10 +2334,14 @@ describe('App installations Admin API', function () {
 
       await assertActionLogged(agent, {
         resourceType: 'app_installation',
-        event: 'uninstalled',
+        event: 'deleted',
         resourceId: installation.id,
         actor: owner.actor,
-        details: { primary_name: 'Podcast', app_id: 'com.example.podcast' },
+        details: {
+          primary_name: 'Podcast',
+          app_id: 'com.example.podcast',
+          action_name: 'uninstalled',
+        },
       });
     });
 
@@ -2360,10 +2367,10 @@ describe('App installations Admin API', function () {
       const logged = await loggedActions();
 
       assert.deepEqual(
-        logged.map((action) => [action.event, action.resource?.id]),
+        logged.map((action) => [action.event, action.details?.action_name, action.resource?.id]),
         [
-          ['installed', installation.id],
-          ['uninstalled', installation.id],
+          ['added', 'installed', installation.id],
+          ['deleted', 'uninstalled', installation.id],
         ],
       );
     });
@@ -2450,7 +2457,7 @@ describe('App installations Admin API', function () {
       await agent.delete(`apps/installations/${installationId}/`).expectStatus(204);
 
       const [, action] = await loggedActions();
-      assert.equal(action.event, 'uninstalled');
+      assert.equal(action.details?.action_name, 'uninstalled');
       assert.equal(action.actor_type, 'user');
     });
   });

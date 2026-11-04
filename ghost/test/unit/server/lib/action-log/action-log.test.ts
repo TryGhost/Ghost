@@ -186,7 +186,8 @@ describe('Unit: lib/action-log/action-log', function () {
     it('logs the failure and still resolves', async function () {
       await actionLog.record(USER, {
         resourceType: 'app_installation',
-        event: 'installed',
+        event: 'added',
+        actionName: 'installed',
         resourceId: POST_ID,
         primaryName: 'Podcast',
       });
@@ -201,7 +202,7 @@ describe('Unit: lib/action-log/action-log', function () {
           err: undefined,
           action: {
             resource_type: 'app_installation',
-            event: 'installed',
+            event: 'added',
             resource_id: POST_ID,
             actor_type: 'user',
             actor_id: USER.id,

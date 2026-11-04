@@ -35,16 +35,18 @@ const servedFrom = (host: string) =>
     surfaces: [{ type: 'admin_page', url: `https://${host}/admin` }],
   }) as AppManifest;
 
+const EVENTS = { installed: 'added', changes_approved: 'edited', uninstalled: 'deleted' };
+
 const action = (
   id: string,
-  event: string,
+  actionName: keyof typeof EVENTS,
   createdAt: string,
   context: Record<string, string> = {},
 ): HistoryAction => ({
   id,
-  event,
+  event: EVENTS[actionName],
   actor: jamie,
-  context: JSON.stringify(context),
+  context: JSON.stringify({ ...context, action_name: actionName }),
   created_at: new Date(createdAt),
 });
 

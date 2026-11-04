@@ -1,6 +1,5 @@
 import { movedBetween, type AppManifest } from '@tryghost/app-contracts/manifest';
 import { z } from 'zod';
-import type { ActionVerb } from '../../lib/action-log/kinds';
 import type { AppInstallationHistoryEntry, HistoryActor } from './codec';
 import type { AppInstallationManifestSource } from './schema';
 
@@ -19,6 +18,11 @@ export interface HistoryAction {
   context: string | null;
   created_at: Date;
 }
+
+/** What happened to an installation, as its action names it. */
+export type AppInstallationActionName = 'installed' | 'uninstalled' | 'changes_approved';
+
+const NamedContext = z.object({ action_name: z.string() });
 
 const ApprovalContext = z.object({
   from_manifest_id: z.string(),
@@ -137,5 +141,5 @@ function newestFirst(entries: Entry[]): Entry[] {
   );
 }
 
-const withEvent = (event: ActionVerb<'app_installation'>) => (action: HistoryAction) =>
-  action.event === event;
+const withEvent = (name: AppInstallationActionName) => (action: HistoryAction) =>
+  NamedContext.safeParse(JSON.parse(action.context ?? 'null')).data?.action_name === name;

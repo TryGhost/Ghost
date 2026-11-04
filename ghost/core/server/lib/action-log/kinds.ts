@@ -13,7 +13,7 @@
 export const ACTION_KINDS = {
   app_installation: {
     table: 'app_installations',
-    verbs: ['installed', 'uninstalled', 'changes_approved'],
+    verbs: ['added', 'edited', 'deleted'],
   },
   gift_link: {
     table: 'posts',
