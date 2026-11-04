@@ -21,12 +21,6 @@ describe('@tryghost/app-sdk', () => {
     expectTypeOf<sdk.Ghost['theme']>().toEqualTypeOf<Readonly<contracts.Theme>>();
   });
 
-  it('has a code for each of its own failures and every bridge code', () => {
-    expectTypeOf<sdk.GhostAppErrorCode>().toEqualTypeOf<
-      'not_framed' | 'not_connected' | 'duplicate_sdk' | 'unsupported' | contracts.BridgeErrorCode
-    >();
-  });
-
   it('gives errors a name and a code', () => {
     const cause = new Error('underneath');
     const error = new sdk.GhostAppError('blocked', 'No', { cause });

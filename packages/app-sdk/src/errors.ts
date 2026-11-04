@@ -1,7 +1,5 @@
-import { HOST_ERROR_CODES, decodeBridgeError } from '@tryghost/app-contracts';
+import { HOST_ERROR_CODES, decodeBridgeError, type BridgeErrorCode } from '@tryghost/app-contracts';
 
-// The bridge codes are written out, rather than taken from the contracts' `BridgeErrorCode`,
-// so the published types list every code. A test checks they match.
 /**
  * Why an SDK call failed:
  *
@@ -30,13 +28,7 @@ export type GhostAppErrorCode =
   | 'not_connected'
   | 'duplicate_sdk'
   | 'unsupported'
-  | 'session_ended'
-  | 'invalid_argument'
-  | 'invalid_path'
-  | 'blocked'
-  | 'network_error'
-  | 'rejected'
-  | 'invalid_context';
+  | BridgeErrorCode;
 
 /** The only error type the SDK rejects with, so an app can branch on `code`. */
 export class GhostAppError extends Error {
