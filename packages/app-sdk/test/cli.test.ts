@@ -270,6 +270,45 @@ describe('ghost-app keys, sign and backend-key', () => {
     expect(existsSync(join(root, 'public/ghost-app.json'))).toBe(true);
   });
 
+  it("prints only the backend key's public half with --public", async () => {
+    await cli('keys', '--production', '--dir', root);
+    const backend = JSON.parse(
+      await readFile(join(root, '.ghost-app/production/backend.json'), 'utf8'),
+    );
+    const result = await cli('backend-key', '--production', '--public', '--dir', root);
+    expect(result).toMatchObject({ code: 0, err: '' });
+    expect(JSON.parse(result.out)).toEqual({ kty: 'OKP', crv: 'Ed25519', x: backend.x });
+    expect(result.out).not.toContain(backend.d);
+  });
+
+  describe('backend-key --check', () => {
+    it('prints nothing, and exits with 0, for a key that is there and usable', async () => {
+      await cli('keys', '--production', '--dir', root);
+      expect(await cli('backend-key', '--production', '--check', '--dir', root)).toEqual({
+        code: 0,
+        out: '',
+        err: '',
+      });
+    });
+
+    it('says why on stderr, and prints nothing else, for a key that is missing', async () => {
+      const result = await cli('backend-key', '--production', '--check', '--dir', root);
+      expect(result).toMatchObject({ code: 1, out: '' });
+      expect(result.err).toContain("There's no production backend key");
+    });
+
+    it("says why, without the key, for one that isn't usable", async () => {
+      await cli('keys', '--production', '--dir', root);
+      const file = join(root, '.ghost-app/production/backend.json');
+      const backend = JSON.parse(await readFile(file, 'utf8'));
+      await writeFile(file, JSON.stringify({ ...backend, x: generateKey().x }));
+      const result = await cli('backend-key', '--production', '--check', '--dir', root);
+      expect(result).toMatchObject({ code: 1, out: '' });
+      expect(result.err).toContain("isn't a usable Ed25519 key");
+      expect(result.err).not.toContain(backend.d);
+    });
+  });
+
   it('reports a manifest that cannot be signed with its problems', async () => {
     await cli('keys', '--dir', root);
     await writeFile(

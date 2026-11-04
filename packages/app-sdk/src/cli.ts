@@ -3,7 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 
 import { checkApp } from './tooling/check.ts';
-import { createKeys, keyFile, readBackendKey, type Mode } from './tooling/keys.ts';
+import { createKeys, keyFile, publicKeyOf, readBackendKey, type Mode } from './tooling/keys.ts';
 import { formatErrors } from './shared/manifest.ts';
 import { MANIFEST_FILE, serialiseSigned, signProject } from './tooling/sign.ts';
 
@@ -21,6 +21,8 @@ Commands:
   backend-key [--production]   Print the mode's private backend key, to pipe into a secret
                                store: ghost-app backend-key --production |
                                wrangler secret put GHOST_APP_BACKEND_KEY
+       [--public]              print only its public half, which is all CI needs to sign
+       [--check]               print nothing, and exit 0 only if the key is there and usable
 
 Options:
   --dir <directory>            The project's directory (the current one by default)
@@ -111,8 +113,17 @@ async function check(url: string | undefined, io: Io) {
   return 0;
 }
 
-async function backendKey(root: string, mode: Mode, io: Io) {
-  io.out(JSON.stringify(await readBackendKey({ root, mode })));
+async function backendKey(
+  root: string,
+  mode: Mode,
+  { public: publicHalf, check: checkOnly }: { public?: boolean; check?: boolean },
+  io: Io,
+) {
+  // Reading the key checks it, and fails with what's wrong, never with the key.
+  const key = await readBackendKey({ root, mode });
+  if (!checkOnly) {
+    io.out(JSON.stringify(publicHalf ? publicKeyOf(key) : key));
+  }
 }
 
 /** Runs the CLI with its arguments (without `node` and the script), returning the exit code. */
@@ -128,6 +139,8 @@ export async function run(args: string[], io: Io): Promise<number> {
         out: { type: 'string' },
         manifest: { type: 'string' },
         dir: { type: 'string' },
+        public: { type: 'boolean' },
+        check: { type: 'boolean' },
         help: { type: 'boolean', short: 'h' },
       },
     });
@@ -155,7 +168,7 @@ export async function run(args: string[], io: Io): Promise<number> {
       case 'check':
         return await check(rest[0], io);
       case 'backend-key':
-        await backendKey(root, modeOf(values.production), io);
+        await backendKey(root, modeOf(values.production), values, io);
         return 0;
       default:
         throw new UsageError(`Unknown command ${command}`);

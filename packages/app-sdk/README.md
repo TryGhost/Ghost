@@ -316,8 +316,9 @@ development identity key must share its backend key too: a new backend key
 retires the old one on every site that reads the new manifest.
 
 In CI, set `GHOST_APP_IDENTITY_KEY` to the production identity key and
-`GHOST_APP_BACKEND_KEY` to the backend key (its public half is enough), in place
-of the files.
+`GHOST_APP_BACKEND_KEY` to the backend key's public half, which
+`ghost-app backend-key --production --public` prints, in place of the files. CI
+only signs, so it never needs the backend's private key.
 
 ### The Vite plugin
 
@@ -370,7 +371,7 @@ than `ghost-app.json`.
 ghost-app keys [--production]
 ghost-app sign --url <manifest URL> [--production] [--out <file>]
 ghost-app check <manifest URL>
-ghost-app backend-key [--production] | wrangler secret put GHOST_APP_BACKEND_KEY
+ghost-app backend-key [--production] [--public | --check]
 ```
 
 - `keys` creates the mode's keys, keeping any that exist.
@@ -383,7 +384,14 @@ ghost-app backend-key [--production] | wrangler secret put GHOST_APP_BACKEND_KEY
   was wrong. It can't check what only a site knows: the key it installed the app
   with, and backend keys a newer manifest replaced.
 - `backend-key` prints the mode's private backend key, for a host's secret
-  store. It's the only command that prints a private key.
+  store. It's the only command that prints a private key. `--public` prints
+  only its public half, for CI. `--check` prints nothing, and exits with 0
+  only if the key is there and usable, with the reason on stderr otherwise,
+  so a script can stop before piping nothing into a secret store, in any shell:
+
+  ```sh
+  ghost-app backend-key --production --check && ghost-app backend-key --production | wrangler secret put GHOST_APP_BACKEND_KEY
+  ```
 
 `--dir` points any of them at another project directory.
 
