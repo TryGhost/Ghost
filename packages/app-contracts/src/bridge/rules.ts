@@ -23,6 +23,23 @@ export const CONNECT_MESSAGE_TYPE = 'ghost-app:connect';
  */
 export const START_TIMEOUT_MS = 10_000;
 
+/**
+ * The name Admin gives the overlay frame: the second frame of an app's page, on the app's own
+ * origin, that Admin places above its chrome and its tint so the app's dialogs and sheets can
+ * cover all of Admin. The page frame finds it by this name among its siblings, and the SDK in a
+ * document loaded under it knows it's the overlay rather than the app's page. A frame's name is
+ * set by Admin, which is what makes it a marker the app's URL can't fake.
+ */
+export const OVERLAY_FRAME_NAME = 'ghost-app-overlay';
+
+/**
+ * How dark Admin's tint is while the overlay shows: a dialog's, or a sheet's, which is lighter,
+ * the same as Shade's own overlays for each.
+ */
+export const OVERLAY_TINTS = ['dialog', 'sheet'] as const;
+
+export type OverlayTint = (typeof OVERLAY_TINTS)[number];
+
 /** Long enough for any real page title, short enough that Admin's own name still shows. */
 export const TITLE_MAX_LENGTH = 200;
 
@@ -79,6 +96,7 @@ export const ARGUMENT_MESSAGES = {
   pathMove: 'Expected a move of push or replace',
   place:
     'Expected a place such as { post: { id } }, { page: { id } }, { member: { id } } or { apps: true }',
+  overlayOptions: `Expected overlay options such as { tint: 'dialog' }, with a tint of: ${OVERLAY_TINTS.join(', ')}`,
 } as const;
 
 /**
