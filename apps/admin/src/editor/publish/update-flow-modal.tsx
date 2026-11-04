@@ -182,7 +182,7 @@ function KeyedUpdateFlowModal({
           <Text
             aria-hidden="true"
             as="h2"
-            className="text-lg tracking-tight in-data-[admin7-design=true]:font-medium"
+            className="text-lg tracking-tight in-data-[admin7-design=true]:font-[540]"
             weight="semibold"
           >
             {heading}
