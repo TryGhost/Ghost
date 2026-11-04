@@ -109,9 +109,6 @@ export class EmailAnalyticsService {
   #fetchLatestOpenedData: FetchData;
   #fetchScheduledData: FetchDataScheduled;
 
-  /** IDs awaiting aggregation, retried on this job's next run. Lost on restart. */
-  #unaggregated = new WeakMap<FetchData, EventProcessingResult>();
-
   constructor({
     queries,
     fetchEvents,
@@ -491,11 +488,6 @@ export class EmailAnalyticsService {
 
     // We keep the processing result here, so we also have a result in case of failures
     const processingResult = new EventProcessingResult();
-    const unaggregated = this.#unaggregated.get(fetchData);
-    this.#unaggregated.delete(fetchData);
-    if (unaggregated) {
-      processingResult.merge(unaggregated);
-    }
     // Track cumulative event counts separately since processingResult gets reset during intermediate aggregations
     const cumulativeResult = new EventProcessingResult();
     let error: unknown = null;
@@ -507,9 +499,8 @@ export class EmailAnalyticsService {
       const start = Date.now();
       const timings = await eventProcessor.aggregate({
         includeOpenedEvents,
-        // A failed batch may have stored events before returning its counts, and
-        // retried ids must be aggregated even though their events are already stored
-        skipUnchanged: skipUnchanged && !error && !unaggregated,
+        // A failed batch may have stored events before returning its counts
+        skipUnchanged: skipUnchanged && !error,
         processingResult,
         isFinal,
       });
@@ -617,16 +608,6 @@ export class EmailAnalyticsService {
     } catch (err) {
       logging.error('[EmailAnalytics] Error while aggregating stats');
       logging.error(err);
-
-      // Keep these IDs for the next run. The missing-events sweep may skip
-      // their replayed events because the recipient timestamps are already stored.
-      this.#unaggregated.set(
-        fetchData,
-        new EventProcessingResult({
-          emailIds: processingResult.emailIds,
-          memberIds: processingResult.memberIds,
-        }),
-      );
 
       if (!error) {
         error = err;

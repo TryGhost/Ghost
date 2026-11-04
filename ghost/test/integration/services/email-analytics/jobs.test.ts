@@ -21,7 +21,6 @@ const EmailAnalyticsAutomationFetchLatestJob =
 const EmailAnalyticsGiftFetchLatestJob =
   require('../../../../core/server/services/email-analytics/jobs/email-analytics-gift-fetch-latest-job').default;
 const models = require('../../../../core/server/models');
-const { Queries } = require('../../../../core/server/services/email-analytics/lib/queries');
 const NewsletterEmailEventStorage = require('../../../../core/server/services/email-service/newsletter-email-event-storage');
 
 type MailgunEvent = {
@@ -320,45 +319,6 @@ describe('email analytics JobsService delivery', function () {
         'user-variables': { 'email-id': emailId },
       }));
     }
-
-    async function assertMemberOpenCountsAggregated() {
-      for (const recipient of recipients) {
-        const [{ count }] = await knex('email_recipients')
-          .count('id as count')
-          .where('member_id', recipient.member_id)
-          .whereNotNull('opened_at');
-        const member = await knex('members').where('id', recipient.member_id).first();
-        assert.equal(member.email_opened_count, Number(count));
-      }
-    }
-
-    function failFirstMemberAggregation() {
-      const aggregateMemberStats = sinon.stub(Queries.prototype, 'aggregateMemberStats');
-      aggregateMemberStats.callThrough();
-      aggregateMemberStats.onFirstCall().rejects(new Error('aggregation failed'));
-    }
-
-    it('aggregates opens whose fetchLatest aggregation failed', async function () {
-      await prepareOpenedRecipients();
-      const newsletters = emailAnalytics.getNewsletters();
-      failFirstMemberAggregation();
-
-      await assert.rejects(newsletters.fetchLatestOpenedEvents(), /aggregation failed/);
-      await newsletters.fetchLatestOpenedEvents();
-
-      await assertMemberOpenCountsAggregated();
-    });
-
-    it('aggregates opens whose missing-sweep aggregation failed', async function () {
-      await prepareOpenedRecipients();
-      const newsletters = emailAnalytics.getNewsletters();
-      failFirstMemberAggregation();
-
-      await assert.rejects(newsletters.fetchMissing(), /aggregation failed/);
-      await newsletters.fetchMissing();
-
-      await assertMemberOpenCountsAggregated();
-    });
 
     it('aggregates a permanent failure whose record failed to save in the missing sweep', async function () {
       const batch = fixtureManager.get('email_batches', 0);
