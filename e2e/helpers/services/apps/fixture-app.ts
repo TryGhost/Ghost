@@ -52,16 +52,11 @@ export interface FixtureAppHooks {
 }
 
 /**
- * The fixture app's page. Its script loads the app SDK's bundle and connects, and sets its hooks
- * before Admin can start it, so they're there by the time Admin shows the frame.
- *
- * The bundle is imported from a data URL rather than served: the tests' browser context sends an
- * `Origin` header with every request, which Chromium refuses for a module script it fetches.
+ * The fixture app's page script. It imports the app SDK as an app would and sets its hooks before
+ * Admin can start it, so they're there by the time Admin shows the frame.
  */
-function pageHtml(appSdkBundle: string): string {
-  const appSdkUrl = `data:text/javascript;base64,${Buffer.from(appSdkBundle).toString('base64')}`;
-  const script = `
-const { connect } = await import(${JSON.stringify(appSdkUrl)});
+const PAGE_SCRIPT = `
+import { connect } from '@tryghost/app-sdk';
 
 document.querySelector('[data-testid=${JSON.stringify(FIXTURE_APP_PATH_TEST_ID)}]').textContent = location.pathname;
 
@@ -79,13 +74,31 @@ window.__fixtureApp = {
   },
 };
 `;
+
+/**
+ * The fixture app's page, with an import map that resolves `@tryghost/app-sdk` to the SDK's bundle.
+ *
+ * The bundle is inlined as a data URL because the frame can't fetch it from the fixture's server:
+ * the tests' browser context sends Admin's `Origin` with every request, and Chromium refuses any
+ * request from the frame, a script or an image, whose `Origin` isn't the frame's own.
+ */
+function pageHtml(appSdkBundle: string): string {
+  const importMap = {
+    imports: {
+      '@tryghost/app-sdk': `data:text/javascript;base64,${Buffer.from(appSdkBundle).toString('base64')}`,
+    },
+  };
   return `<!DOCTYPE html>
 <html lang="en">
-<head><meta charset="utf-8"><title>Fixture app</title></head>
+<head>
+<meta charset="utf-8">
+<title>Fixture app</title>
+<script type="importmap">${JSON.stringify(importMap)}</script>
+</head>
 <body>
 <h1>Fixture app</h1>
 <p>Served from <code data-testid="${FIXTURE_APP_PATH_TEST_ID}"></code></p>
-<script type="module">${script}</script>
+<script type="module">${PAGE_SCRIPT}</script>
 </body>
 </html>`;
 }
