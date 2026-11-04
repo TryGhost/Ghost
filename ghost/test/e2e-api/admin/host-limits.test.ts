@@ -554,32 +554,34 @@ describe('Host limits', function () {
       assert.equal(body.errors?.[0].type, 'HostLimitError');
     });
 
-    it('resends a counted invitation at capacity without using another seat', async function () {
-      const role = await roleId('Author');
-      const email = 'resend-at-capacity@example.com';
-      const { body: original } = await agent
-        .post('invites/')
-        .body({ invites: [{ email, role_id: role }] })
-        .expectStatus(201);
-      await hostLimits.setHostLimits({ staff: { max: 100 } });
-      const staff = limits.limits.staff;
-      assert.ok(staff instanceof MaxLimit);
-      const count = Number(await staff.currentCountQuery());
-      await hostLimits.setHostLimits({ staff: { max: count } });
+    for (const aboveCapacity of [false, true]) {
+      it(`resends a counted invitation ${aboveCapacity ? 'above' : 'at'} capacity without using another seat`, async function () {
+        const role = await roleId('Author');
+        const email = `resend-${aboveCapacity ? 'above' : 'at'}-capacity@example.com`;
+        const { body: original } = await agent
+          .post('invites/')
+          .body({ invites: [{ email, role_id: role }] })
+          .expectStatus(201);
+        await hostLimits.setHostLimits({ staff: { max: 100 } });
+        const staff = limits.limits.staff;
+        assert.ok(staff instanceof MaxLimit);
+        const count = Number(await staff.currentCountQuery());
+        await hostLimits.setHostLimits({ staff: { max: count - (aboveCapacity ? 1 : 0) } });
 
-      const { body: resent } = await agent
-        .post('invites/')
-        .body({ invites: [{ email, role_id: role }] })
-        .expectStatus(201);
+        const { body: resent } = await agent
+          .post('invites/')
+          .body({ invites: [{ email, role_id: role }] })
+          .expectStatus(201);
 
-      assert.notEqual(resent.invites![0].id, original.invites![0].id);
-      assert.equal(Number(await staff.currentCountQuery()), count);
-      const { body } = await agent
-        .post('invites/')
-        .body({ invites: [{ email: 'new-at-capacity@example.com', role_id: role }] })
-        .expectStatus(403);
-      assert.equal(body.errors?.[0].type, 'HostLimitError');
-    });
+        assert.notEqual(resent.invites![0].id, original.invites![0].id);
+        assert.equal(Number(await staff.currentCountQuery()), count);
+        const { body } = await agent
+          .post('invites/')
+          .body({ invites: [{ email: 'new-at-capacity@example.com', role_id: role }] })
+          .expectStatus(403);
+        assert.equal(body.errors?.[0].type, 'HostLimitError');
+      });
+    }
 
     it('keeps a Contributor invitation when changing it to Author would exceed capacity', async function () {
       const email = 'contributor-at-capacity@example.com';

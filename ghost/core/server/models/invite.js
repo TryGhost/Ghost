@@ -109,9 +109,11 @@ const Invite = ghostBookshelf.Model.extend(
             const existingRole = existingInvite
               ? await ghostBookshelf.model('Role').findOne({ id: existingInvite.get('role_id') })
               : null;
-            await limitService.errorIfWouldGoOverLimit('staff', {
-              addedCount: existingRole && existingRole.get('name') !== 'Contributor' ? 0 : 1,
-            });
+            const existingInviteUsesStaffSeat =
+              existingRole && existingRole.get('name') !== 'Contributor';
+            if (!existingInviteUsesStaffSeat) {
+              await limitService.errorIfWouldGoOverLimit('staff');
+            }
           }
 
           let allowed = [];
