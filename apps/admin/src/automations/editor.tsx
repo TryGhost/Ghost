@@ -173,30 +173,40 @@ const AutomationEditorContent: React.FC<{
     invalidWaitIds.size > 0 ||
     (!!draft && !!savedAutomation && !dequal(editableSlice(draft), editableSlice(savedAutomation)));
 
-  const onDraftChange = (next: AutomationDetail) => {
-    setValidationFeedback(null);
-    setDraft(next);
-    setInvalidWaitIds((current) => {
-      const remaining = new Set(
-        [...current].filter((id) => next.actions.some((action) => action.id === id)),
-      );
-      return remaining.size === current.size ? current : remaining;
-    });
-    setActionErrors((oldErrors) => {
-      if (Object.keys(oldErrors).length === 0) {
-        return oldErrors;
-      }
+  // The canvas rebuilds every card whenever this or `savedTriggerTierIds` changes, so both stay
+  // stable across renders. A rebuild that lands just after React Flow first measures a card makes
+  // it lose that card's handles, and with them the edge into it and its Add step control.
+  const onDraftChange = React.useCallback(
+    (next: AutomationDetail) => {
+      setValidationFeedback(null);
+      setDraft(next);
+      setInvalidWaitIds((current) => {
+        const remaining = new Set(
+          [...current].filter((id) => next.actions.some((action) => action.id === id)),
+        );
+        return remaining.size === current.size ? current : remaining;
+      });
+      setActionErrors((oldErrors) => {
+        if (Object.keys(oldErrors).length === 0) {
+          return oldErrors;
+        }
 
-      const nextErrors = {
-        ...getActionErrors(next),
-        ...getTriggerErrors(next, triggerType),
-      };
-      return Object.fromEntries(
-        Object.entries(oldErrors).filter(([actionId]) => nextErrors[actionId]),
-      );
-    });
-    setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
-  };
+        const nextErrors = {
+          ...getActionErrors(next),
+          ...getTriggerErrors(next, triggerType),
+        };
+        return Object.fromEntries(
+          Object.entries(oldErrors).filter(([actionId]) => nextErrors[actionId]),
+        );
+      });
+      setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
+    },
+    [triggerType],
+  );
+  const savedTriggerTierIds = React.useMemo(
+    () => (savedAutomation ? getTriggerTierIds(savedAutomation.trigger_rules) : []),
+    [savedAutomation],
+  );
 
   const validateForAction = (
     automationToValidate: AutomationDetail,
@@ -537,9 +547,7 @@ const AutomationEditorContent: React.FC<{
         initialTriggerTop={creation?.triggerTop}
         isError={isEditorError}
         isLoading={isEditorLoading}
-        savedTriggerTierIds={
-          savedAutomation ? getTriggerTierIds(savedAutomation.trigger_rules) : []
-        }
+        savedTriggerTierIds={savedTriggerTierIds}
         selectedRunId={selectedRunId}
         triggerType={triggerType}
         onChange={onDraftChange}
