@@ -502,6 +502,10 @@
     - selection-word-count-plugin
     - strong-snakes-lie
     - weak-spiders-complain
+"@tryghost/koenig-lexical@2.1.0":
+  dir: koenig/koenig-lexical
+  intents:
+    - video-thumbnail-frame-picker
 "@tryghost/metafield-types@0.1.1":
   dir: packages/metafield-types
   intents:
