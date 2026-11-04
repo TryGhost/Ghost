@@ -218,6 +218,44 @@ describe('App installations composition root', function () {
     );
   });
 
+  // MySQL rolls back the whole install when its action insert deadlocks, so the install
+  // has to run again, action and all.
+  it('reruns the whole install when its action insert deadlocks', async function () {
+    const error = sandbox.stub(logging, 'error');
+    const insert = sandbox.stub().resolves();
+    const insertAction = sandbox
+      .stub()
+      .onFirstCall()
+      .rejects(Object.assign(new Error('Deadlock found'), { code: 'ER_LOCK_DEADLOCK' }))
+      .resolves();
+    const trx = sandbox
+      .stub()
+      .callsFake((table: string) => ({ insert: table === 'actions' ? insertAction : insert }));
+    const transaction = sandbox
+      .stub()
+      .callsFake(async (write: (connection: Knex.Transaction) => Promise<unknown>) =>
+        write(trx as unknown as Knex.Transaction),
+      );
+    Object.assign(query, { transaction });
+    sandbox.stub(config, 'get').withArgs('env').returns('production');
+    sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
+    await root.init();
+    const manifestUrl = 'https://podcast.example/manifest.json';
+    const preview = await root.service.preview(manifestUrl);
+
+    const installed = await root.service.create(
+      { actor: { id: 'staff-id', type: 'user' } },
+      { manifestUrl, digest: preview.digest },
+    );
+
+    assert.equal(installed.app_id, manifest.id);
+    sinon.assert.calledTwice(transaction);
+    assert.equal(insert.callCount, 4, 'both attempts insert the installation and its manifest');
+    sinon.assert.calledTwice(insertAction);
+    assert.equal(insertAction.secondCall.args[0].resource_id, installed.id);
+    sinon.assert.notCalled(error);
+  });
+
   it('logs action recording failures without failing the installation', async function () {
     const failure = new Error('History write failed');
     const error = sandbox.stub(logging, 'error');
