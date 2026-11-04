@@ -3169,6 +3169,26 @@ describe('automations repository', function () {
       assert.equal(await getClickedCount(firstRevisionId), null);
     });
 
+    it('leaves the click unrecorded when its count cannot be saved', async function () {
+      // Fail the second write after the click timestamp has been saved.
+      await knex.raw(`
+        CREATE TRIGGER fail_email_clicked_count
+        BEFORE UPDATE OF email_clicked_count ON automation_action_revisions
+        BEGIN
+          SELECT RAISE(FAIL, 'click count update failed');
+        END
+      `);
+
+      try {
+        await assert.rejects(trackClick(), /click count update failed/);
+      } finally {
+        await knex.raw('DROP TRIGGER fail_email_clicked_count');
+      }
+
+      assert.equal(await getClickedAt('tracked-recipient'), null);
+      assert.equal(await getClickedCount(firstRevisionId), null);
+    });
+
     it('increments an existing click count', async function () {
       await knex('automation_action_revisions')
         .where({ id: firstRevisionId })
