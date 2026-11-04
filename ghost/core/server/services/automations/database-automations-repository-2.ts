@@ -36,7 +36,7 @@ const applyMembershipStartedFilters = (
     memberTierIds,
   }: Extract<
     Parameters<AutomationsRepository2<Connection>['findFirstActionRevisions']>[1],
-    { event: 'membership_started' }
+    { eventName: 'membership_started' }
   >,
 ): void => {
   query.whereExists(
@@ -80,7 +80,7 @@ const applyPaidSubscriptionChangedFilters = (
     previousMemberTierIds,
   }: Extract<
     Parameters<AutomationsRepository2<Connection>['findFirstActionRevisions']>[1],
-    { event: 'paid_subscription_changed' }
+    { eventName: 'paid_subscription_changed' }
   >,
 ): void => {
   const lostTierIds = previousMemberTierIds.filter((id) => !memberTierIds.includes(id));
@@ -161,7 +161,7 @@ export const createDatabaseAutomationsRepository2 = ({
         .innerJoin('automation_actions as actions', 'actions.automation_id', 'automation.id')
         .innerJoin('automation_action_revisions as revisions', 'revisions.action_id', 'actions.id')
         .modify((query) => {
-          switch (options.event) {
+          switch (options.eventName) {
             case 'membership_started':
               applyMembershipStartedFilters(query, connection, options);
               break;

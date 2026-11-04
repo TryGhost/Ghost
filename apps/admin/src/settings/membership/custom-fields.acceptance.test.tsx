@@ -364,6 +364,32 @@ describe('Custom fields', () => {
     });
   });
 
+  it('holds the form still while an edit saves', async () => {
+    fakeSettingsScreens();
+    fakeCustomFields([{ ...companyField, access: { member: 'write' as const } }]);
+    let release = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    fakeAdminEndpoint('PUT', '/members/metafields/custom/company/', async () => {
+      await held;
+      return { members_metafields: [companyField] };
+    });
+    await renderAdminApp('/settings', flagOn);
+
+    await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+    const modal = settingsScreen.customFieldModal();
+    await userEvent.fill(modal.getByLabelText('Name'), 'Employer');
+    await modal.getByRole('button', { name: 'Save' }).click();
+
+    // A change made now would not be sent, and the modal closes once the save lands.
+    await expect.element(modal.getByLabelText('Visible to members')).toBeDisabled();
+    await expect.element(modal.getByLabelText('Name')).toBeDisabled();
+
+    release();
+    await expect(modal).toHaveCount(0);
+  });
+
   it('shows a view-only field as open, and keeps it view-only through a switch round-trip', async () => {
     fakeSettingsScreens();
     fakeCustomFields([{ ...companyField, access: { member: 'read' as const } }]);
@@ -871,10 +897,15 @@ describe('Custom fields', () => {
         members_metafields: fields,
       });
 
-    const openNewField = async () => {
+    // After you pick an option, Radix moves focus back to the select a frame later. If the
+    // test has already started typing in the next field, focus jumps away mid-test and Enter
+    // reopens the select. So wait for the select to get focus back before moving on.
+    const openNewListField = async () => {
       await settingsScreen.customFields().getByRole('button', { name: 'Add custom field' }).click();
       const modal = settingsScreen.customFieldModal();
       await modal.getByLabelText('Type').click();
+      await page.getByRole('option', { name: /List/ }).click();
+      await expect.element(modal.getByLabelText('Type')).toHaveFocus();
       return modal;
     };
 
@@ -886,8 +917,7 @@ describe('Custom fields', () => {
       });
       await renderAdminApp('/settings', flagOn);
 
-      const modal = await openNewField();
-      await page.getByRole('option', { name: /List/ }).click();
+      const modal = await openNewListField();
       await modal.getByLabelText('Name').fill('Favourite animals');
       await modal.getByLabelText('New option').fill('Dog');
       await userEvent.keyboard('{Enter}');
@@ -917,8 +947,7 @@ describe('Custom fields', () => {
       });
       await renderAdminApp('/settings', flagOn);
 
-      const modal = await openNewField();
-      await page.getByRole('option', { name: /List/ }).click();
+      const modal = await openNewListField();
       await modal.getByLabelText('Name').fill('Favourite animals');
       await modal.getByLabelText('New option').fill('Dog');
       await modal.getByRole('button', { name: 'Save' }).click();
@@ -938,8 +967,7 @@ describe('Custom fields', () => {
       });
       await renderAdminApp('/settings', flagOn);
 
-      const modal = await openNewField();
-      await page.getByRole('option', { name: /List/ }).click();
+      const modal = await openNewListField();
       await modal.getByLabelText('Name').fill('Favourite animals');
       await modal.getByLabelText('New option').fill('Dog');
       await userEvent.keyboard('{Enter}');
@@ -965,8 +993,7 @@ describe('Custom fields', () => {
       fakeListedFields();
       await renderAdminApp('/settings', flagOn);
 
-      const modal = await openNewField();
-      await page.getByRole('option', { name: /List/ }).click();
+      const modal = await openNewListField();
       const input = modal.getByLabelText('New option');
       await input.fill('ねこ');
       input
@@ -999,8 +1026,7 @@ describe('Custom fields', () => {
       );
       await renderAdminApp('/settings', flagOn);
 
-      const modal = await openNewField();
-      await page.getByRole('option', { name: /List/ }).click();
+      const modal = await openNewListField();
       await modal.getByLabelText('Name').fill('Favourite animals');
       await modal.getByLabelText('New option').fill('Dog');
       await userEvent.keyboard('{Enter}');
@@ -1019,8 +1045,7 @@ describe('Custom fields', () => {
       fakeListedFields();
       await renderAdminApp('/settings', flagOn);
 
-      const modal = await openNewField();
-      await page.getByRole('option', { name: /List/ }).click();
+      const modal = await openNewListField();
       const input = modal.getByLabelText('New option');
       await input.click();
       const pasted = new DataTransfer();
@@ -1101,8 +1126,7 @@ describe('Custom fields', () => {
       fakeListedFields();
       await renderAdminApp('/settings', flagOn);
 
-      const modal = await openNewField();
-      await page.getByRole('option', { name: /List/ }).click();
+      const modal = await openNewListField();
       const input = modal.getByLabelText('New option');
       await input.fill('Do');
       const pasted = new DataTransfer();

@@ -323,6 +323,9 @@
   --color-state-success: var(--state-success);
   --color-state-success-foreground: var(--state-success-foreground);
   --color-state-warning: var(--state-warning);
+  --color-state-warning-surface: var(--state-warning-surface);
+  --color-state-warning-border: var(--state-warning-border);
+  --color-state-warning-fill: var(--state-warning-fill);
   --color-state-warning-foreground: var(--state-warning-foreground);
   --color-state-danger: var(--state-danger);
   --color-state-danger-foreground: var(--state-danger-foreground);
@@ -366,6 +369,8 @@
   --color-filter-bar-background: var(--filter-bar-background);
   --color-filter-bar-item-hover: var(--filter-bar-item-hover);
   --color-table-row-hover: var(--table-row-hover);
+  --color-map-surface: var(--map-surface);
+  --color-publish-accent: var(--publish-accent);
   --color-table-row-selected: var(--table-row-selected);
   --color-control-surface: var(--control-surface);
   --color-control-readonly-surface: var(--control-readonly-surface);

@@ -25,7 +25,7 @@ import { ValidationError } from '../utils/errors';
 
 // Re-exported so the import mapping can recognize a custom_fields.* column (same reason
 // as the re-exports below).
-export { isMetafieldColumn } from '@tryghost/metafield-csv';
+export { isMetafieldColumn, splitOptions as splitListCell } from '@tryghost/metafield-csv';
 
 export type { Address as MemberCustomFieldAddress } from '@tryghost/metafield-types';
 export { valueSchemaFor as memberCustomFieldValueSchema } from '@tryghost/metafield-types';

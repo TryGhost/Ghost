@@ -52,6 +52,11 @@
   },
   "nx": {
     "targets": {
+      "test": {
+        "dependsOn": [
+          "build"
+        ]
+      },
       "build": {
         "outputs": [
           "{projectRoot}/build",

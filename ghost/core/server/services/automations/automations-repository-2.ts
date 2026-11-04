@@ -61,12 +61,12 @@ export type AutomationsRepository2<Connection> = {
     connection: Connection,
     options: ReadonlyDeep<
       | {
-          event: 'membership_started';
+          eventName: 'membership_started';
           memberStatus: 'free' | 'paid';
           memberTierIds: string[];
         }
       | {
-          event: 'paid_subscription_changed';
+          eventName: 'paid_subscription_changed';
           memberStatus: 'free' | 'paid';
           memberTierIds: string[];
           previousMemberTierIds: string[];

@@ -204,13 +204,20 @@ function getStopConditionDescription({
   triggerRules: readonly AutomationTriggerRule[];
   tiers: readonly Tier[];
 }): string {
-  if (triggerRules.length === 0) {
-    // A paid signup draft can have no selected tiers yet.
+  // paid_subscription_changed runs stay eligible while the member matches a destination tier.
+  const eligibilityRules =
+    triggerRules[0]?.trigger_type === 'paid_subscription_changed'
+      ? triggerRules.filter((rule) => rule.direction === 'to')
+      : triggerRules;
+  if (eligibilityRules.length === 0) {
+    // No destination has been selected yet (or a signup's tier selection was cleared).
     return 'Members stop early if they unsubscribe or leave the selected tiers.';
   }
-  const eligibilityScope = triggerRules[0].scope;
-  const eligibleTierIds = getTriggerTierIds(triggerRules);
+  const eligibilityScope = eligibilityRules[0].scope;
+  const eligibleTierIds = getTriggerTierIds(eligibilityRules);
   switch (eligibilityScope) {
+    case 'free':
+      return 'Members stop early if they unsubscribe or start a paid subscription.';
     case null:
       return 'Members stop early if they unsubscribe.';
     case 'any_paid_tier':
@@ -253,6 +260,7 @@ export const AutomationSidebar: React.FC<{
   selectedRunId: string | null;
   onSelectRun: (id: string, memberName: string) => void;
   isRunSelectionDisabled: boolean;
+  isToggleHidden?: boolean;
 }> = ({
   automationId,
   description,
@@ -268,6 +276,7 @@ export const AutomationSidebar: React.FC<{
   selectedRunId,
   onSelectRun,
   isRunSelectionDisabled,
+  isToggleHidden = false,
 }) => {
   let activeTab: AutomationSidebarTab;
   switch (metadata) {
@@ -304,7 +313,10 @@ export const AutomationSidebar: React.FC<{
     setHasOpened(true);
   }
 
-  const stopConditionDescription = getStopConditionDescription({ triggerRules, tiers });
+  const stopConditionDescription = getStopConditionDescription({
+    triggerRules,
+    tiers,
+  });
 
   return (
     <>
@@ -312,7 +324,10 @@ export const AutomationSidebar: React.FC<{
         aria-controls={panelId}
         aria-expanded={isOpen}
         aria-label={isOpen ? 'Hide automation sidebar' : 'Show automation sidebar'}
-        className="absolute top-4 left-4 z-20"
+        className={cn(
+          'absolute top-4 left-4 z-20 transition-transform duration-200 ease-in-out motion-reduce:transition-none',
+          isToggleHidden && 'translate-x-[calc(-100%-2rem)]',
+        )}
         size="icon"
         type="button"
         variant="ghost"

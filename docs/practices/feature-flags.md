@@ -141,6 +141,9 @@ The `admin7Design` milestone also sets column headers in a small uppercase label
 style. Section headings on member details, tag details and Settings share one
 style, and member stats and list text follow the prototype.
 
+The `admin7Design` milestone also makes colored banners a flat color with darker
+shades of it for text and no outline.
+
 The `admin7Design` milestone also gives cards 8px corners and makes large titles
 and the space above them follow the width of the page area.
 

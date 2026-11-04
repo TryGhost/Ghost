@@ -28,6 +28,21 @@ export class PortalAccountProfilePage extends PortalPage {
     return this.portalFrame.locator(`[name="custom:${key}:${part}"]`);
   }
 
+  /** A list field's picker: the button that opens its options, named for the field it holds. */
+  listPicker(key: string): Locator {
+    return this.portalFrame.locator(`[data-test-input="input-custom:${key}"]`);
+  }
+
+  /** An option of the list whose picker is open. */
+  listOption(option: string): Locator {
+    return this.portalFrame.getByRole('option', { name: option, exact: true });
+  }
+
+  /** The chip of an answer held by a list field that takes several, found by its remove button. */
+  listAnswer(answer: string): Locator {
+    return this.portalFrame.getByRole('button', { name: `Remove ${answer}`, exact: true });
+  }
+
   async save(): Promise<void> {
     await this.saveButton.click();
   }

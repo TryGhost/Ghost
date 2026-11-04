@@ -1899,7 +1899,7 @@ describe('App installations Admin API', function () {
             nock(MANIFEST_HOST)
               .get(ICON_PATH)
               .reply(200, '<html><body>Not found</body></html>', { 'content-type': 'text/html' }),
-          'Expected an SVG, PNG, JPEG, GIF or WebP image',
+          'Expected an SVG, PNG or WebP image with a transparent background',
         ],
       ];
       for (const [serveBadIcon, message] of cases) {

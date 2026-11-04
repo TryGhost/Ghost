@@ -18,9 +18,8 @@ import { useVisibleAutomations } from './hooks/use-visible-automations';
 import { getNewAutomationName } from './utils/get-new-automation-name';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import { ScreenEntranceContext } from '@/layout/screen-transition';
-import type { TierSelection } from './types';
 
-type PickedTrigger = AutomationTriggerRule['trigger_type'] | 'paid_subscription_changed';
+type PickedTrigger = AutomationTriggerRule['trigger_type'];
 
 const TRIGGER_OPTIONS = [
   [
@@ -37,7 +36,7 @@ const TRIGGER_OPTIONS = [
   ],
 ] as const;
 
-// Behind the lifecycle triggers Labs flag until the API can save it (NY-1733).
+// Remains behind Labs while lifecycle enrollment and execution are being completed.
 const SUBSCRIPTION_CHANGED_OPTION = [
   'paid_subscription_changed',
   LucideIcon.ArrowRightLeft,
@@ -137,11 +136,9 @@ const NewAutomationLoading: React.FC = () => {
 type NewAutomationProps = {
   children: (creation: {
     automation: AutomationDetail;
-    triggerType: AutomationTriggerRule['trigger_type'];
+    triggerType: PickedTrigger;
     // Where the picker's card was when the trigger was selected.
     triggerTop?: number;
-    // Local-only state for the lifecycle trigger until its persistence is enabled.
-    tierSelection?: TierSelection;
   }) => React.ReactNode;
 };
 
@@ -155,9 +152,7 @@ const NewAutomationSession: React.FC<
   const [initialAutomation, setInitialAutomation] = React.useState<AutomationDetail | null>(null);
   // Where the trigger was picked, once it has been.
   const [triggerTop, setTriggerTop] = React.useState<number | null>(null);
-  const [triggerType, setTriggerType] =
-    React.useState<AutomationTriggerRule['trigger_type']>('free_signup');
-  const [tierSelection, setTierSelection] = React.useState<TierSelection>();
+  const [triggerType, setTriggerType] = React.useState<PickedTrigger>('free_signup');
   if (!initialAutomation) {
     if (isStripeReady) {
       setInitialAutomation({
@@ -180,22 +175,15 @@ const NewAutomationSession: React.FC<
         automation={initialAutomation}
         onPick={(trigger, cardTop) => {
           setTriggerTop(cardTop);
-          setTriggerType(
-            trigger === 'paid_subscription_changed' ? 'paid_subscription_started' : trigger,
-          );
-          if (trigger === 'paid_subscription_changed') {
-            // A stand-in signup trigger loads paid tiers; lifecycle saving remains blocked.
-            setTierSelection({ from: [], to: [] });
-            setInitialAutomation({
-              ...initialAutomation,
-              trigger_rules: buildTriggerRules({ triggerType: 'paid_subscription_started' }),
-            });
-          } else {
-            setInitialAutomation({
-              ...initialAutomation,
-              trigger_rules: buildTriggerRules({ triggerType: trigger }),
-            });
-          }
+          setTriggerType(trigger);
+          setInitialAutomation({
+            ...initialAutomation,
+            trigger_rules: buildTriggerRules(
+              trigger === 'paid_subscription_changed'
+                ? { triggerType: trigger, selection: { from: [], to: [] } }
+                : { triggerType: trigger },
+            ),
+          });
         }}
       />
     );
@@ -204,7 +192,7 @@ const NewAutomationSession: React.FC<
   // header replacing it shouldn't play it a second time in the same visit.
   return triggerTop !== null ? (
     <ScreenEntranceContext.Provider value={false}>
-      {children({ automation: initialAutomation, triggerType, triggerTop, tierSelection })}
+      {children({ automation: initialAutomation, triggerType, triggerTop })}
     </ScreenEntranceContext.Provider>
   ) : (
     children({ automation: initialAutomation, triggerType })

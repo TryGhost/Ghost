@@ -44,6 +44,10 @@ describe('{{concat}} helper', function () {
     };
   });
 
+  afterAll(async function () {
+    await configUtils.restore();
+  });
+
   it('can correctly concat nothing', function () {
     const templateString = '{{concat}}';
     const expected = '';

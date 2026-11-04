@@ -77,6 +77,49 @@
   text-transform: uppercase;
 }
 
+/* admin7Design: banners are a flat color with darker shades of it for text and no
+   outline. Text inside takes those shades, whichever tone it asks for. */
+[data-admin7-design='true']
+  [data-slot='banner']:is(
+    [data-variant='info'],
+    [data-variant='success'],
+    [data-variant='warning'],
+    [data-variant='destructive']
+  ) {
+  --foreground: var(--banner-foreground);
+  --text-primary: var(--banner-foreground);
+  --text-secondary: var(--banner-secondary);
+  --muted-foreground: var(--banner-secondary);
+  --state-warning: var(--banner-secondary);
+  border-color: transparent;
+  background-color: var(--banner-surface);
+  color: var(--banner-foreground);
+}
+
+[data-admin7-design='true'] [data-slot='banner'][data-variant='info'] {
+  --banner-surface: var(--banner-info-surface);
+  --banner-foreground: var(--banner-info-foreground);
+  --banner-secondary: var(--banner-info-secondary);
+}
+
+[data-admin7-design='true'] [data-slot='banner'][data-variant='success'] {
+  --banner-surface: var(--banner-success-surface);
+  --banner-foreground: var(--banner-success-foreground);
+  --banner-secondary: var(--banner-success-secondary);
+}
+
+[data-admin7-design='true'] [data-slot='banner'][data-variant='warning'] {
+  --banner-surface: var(--banner-warning-surface);
+  --banner-foreground: var(--banner-warning-foreground);
+  --banner-secondary: var(--banner-warning-secondary);
+}
+
+[data-admin7-design='true'] [data-slot='banner'][data-variant='destructive'] {
+  --banner-surface: var(--banner-destructive-surface);
+  --banner-foreground: var(--banner-destructive-foreground);
+  --banner-secondary: var(--banner-destructive-secondary);
+}
+
 .shade {
   line-height: 1.5;
   -ms-text-size-adjust: 100%;
@@ -281,7 +324,7 @@ html.theme-switching *::after {
 
 [data-large-title-header] [data-page-header='page-header'] {
   padding-bottom: 32px;
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border);
 }
 
 [data-large-title-header] [data-page-header='page-header']:has(~ [data-slot='filter-bar']) {
@@ -324,7 +367,7 @@ html.theme-switching *::after {
   z-index: 20;
   height: 44px;
   background-color: var(--background);
-  box-shadow: inset 0 -1px 0 var(--border-default);
+  box-shadow: inset 0 -1px 0 var(--border);
 }
 
 [data-large-title-host]
