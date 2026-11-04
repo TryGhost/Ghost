@@ -31,9 +31,8 @@ export default class InvitationLimiter {
       return prepare();
     }
     return this.deps.transaction(async (transaction) => {
-      const options = { transacting: transaction };
-      // Serialize allStaff and email allowance checks before reading invitations or counts.
       const counterValue = await this.getAndLockInviteEmailCounter(transaction);
+      const options = { transacting: transaction };
 
       email = email.trim();
       const existingInvite = await this.findAndLockInvite(transaction, email);
