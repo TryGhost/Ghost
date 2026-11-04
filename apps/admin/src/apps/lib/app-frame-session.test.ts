@@ -24,7 +24,10 @@ const context = (overrides: Partial<StartContext> = {}): StartContext => ({
   theme: { mode: 'light', accent_color: '#ff5500' },
   session: { revision: 0 },
   path: '/',
-  layout: { safeArea: { top: 0, right: 0, bottom: 57, left: 0 } },
+  layout: {
+    safeArea: { top: 0, right: 0, bottom: 57, left: 0 },
+    overlaySafeArea: { top: 44, right: 8, bottom: 65, left: 8 },
+  },
   ...overrides,
 });
 
@@ -47,6 +50,7 @@ function fakeDocument() {
     themeChanged: vi.fn<AppExports['themeChanged']>(async () => {}),
     pathChanged: vi.fn<AppExports['pathChanged']>(async () => {}),
     layoutChanged: vi.fn<AppExports['layoutChanged']>(async () => {}),
+    overlayDismissed: vi.fn<AppExports['overlayDismissed']>(async () => {}),
   };
   let thread: ThreadMessagePort<HostExports, AppExports> | undefined;
   return {
@@ -758,11 +762,17 @@ describe('createAppFrameSession', () => {
 
   it('sends the app a layout it doesn’t have yet, once', async () => {
     const frame = await started();
-    const pinned = { safeArea: { top: 0, right: 0, bottom: 57, left: 285 } };
+    const pinned = {
+      safeArea: { top: 0, right: 0, bottom: 57, left: 285 },
+      overlaySafeArea: { top: 44, right: 8, bottom: 65, left: 293 },
+    };
 
     session.layoutChanged(admin.context.layout);
     session.layoutChanged(pinned);
-    session.layoutChanged({ safeArea: { ...pinned.safeArea } });
+    session.layoutChanged({
+      safeArea: { ...pinned.safeArea },
+      overlaySafeArea: { ...pinned.overlaySafeArea },
+    });
 
     await vi.waitFor(() => expect(frame.app.layoutChanged).toHaveBeenCalledExactlyOnceWith(pinned));
   });
@@ -773,7 +783,10 @@ describe('createAppFrameSession', () => {
 
     session.pathChanged('/episodes');
     session.themeChanged({ mode: 'dark', accent_color: '#000000' });
-    session.layoutChanged({ safeArea: { top: 0, right: 0, bottom: 57, left: 285 } });
+    session.layoutChanged({
+      safeArea: { top: 0, right: 0, bottom: 57, left: 285 },
+      overlaySafeArea: { top: 44, right: 8, bottom: 65, left: 293 },
+    });
     admin.context = context({ path: '/episodes' });
     frame.hello();
     await vi.waitFor(() => expect(session.getState().status).toBe('ready'));
@@ -810,6 +823,73 @@ describe('createAppFrameSession', () => {
     await expect(frame.host.open({ apps: true })).rejects.toThrow(
       'rejected: The publisher is on their way elsewhere in Admin',
     );
+  });
+
+  describe('the overlay', () => {
+    it('shows with the tint the page asks for, and hides when the page asks', async () => {
+      const frame = await started();
+
+      await frame.host.overlayShown({ tint: 'sheet' });
+      expect(session.getState().overlay).toBe('sheet');
+
+      await frame.host.overlayShown({ tint: 'dialog' });
+      expect(session.getState().overlay).toBe('dialog');
+
+      await frame.host.overlayHidden();
+      expect(session.getState().overlay).toBeUndefined();
+    });
+
+    it('keeps the same state when the page repeats what it asked for', async () => {
+      const frame = await started();
+      await frame.host.overlayShown({ tint: 'dialog' });
+      const shown = session.getState();
+
+      await frame.host.overlayShown({ tint: 'dialog' });
+
+      expect(session.getState()).toBe(shown);
+    });
+
+    it('refuses a tint Admin doesn’t know, or anything besides a tint', async () => {
+      const frame = await started();
+
+      for (const options of [{ tint: 'none' }, { tint: 'dialog', rect: { x: 0 } }, 'dialog']) {
+        await expect(
+          frame.host.overlayShown(options as unknown as { tint: 'dialog' }),
+        ).rejects.toThrow('invalid_argument');
+      }
+      expect(session.getState().overlay).toBeUndefined();
+    });
+
+    it('hides when the page loads again', async () => {
+      const frame = await started();
+      await frame.host.overlayShown({ tint: 'dialog' });
+
+      session.restart();
+
+      expect(session.getState().overlay).toBeUndefined();
+    });
+
+    it('tells the page when the publisher presses the tint', async () => {
+      const frame = await started();
+      await frame.host.overlayShown({ tint: 'dialog' });
+
+      session.overlayDismissed();
+
+      await vi.waitFor(() => expect(frame.app.overlayDismissed).toHaveBeenCalledOnce());
+    });
+
+    it('loads the page again when the overlay frame holds a document on Admin’s origin', async () => {
+      const frame = await started();
+      await frame.host.overlayShown({ tint: 'dialog' });
+
+      session.overlayLeft();
+
+      expect(session.getState()).toMatchObject({
+        status: 'loading',
+        attempt: 1,
+        overlay: undefined,
+      });
+    });
   });
 
   it('sends the app’s validated request with a signal that aborts when the frame unmounts', async () => {

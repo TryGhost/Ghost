@@ -1,5 +1,6 @@
 import {
   type Layout,
+  type OverlayTint,
   type Place,
   type StartContext,
   type Theme,
@@ -20,6 +21,8 @@ export interface AppFrameState {
   attempt: number;
   /** When this load started. Used to show how long the app has gone without responding. */
   startedAt: Date;
+  /** The overlay's tint while the page has a dialog or sheet open, else undefined. */
+  overlay?: OverlayTint;
 }
 
 /**
@@ -86,6 +89,10 @@ export interface AppFrameSession {
   themeChanged: (theme: Theme) => void;
   /** Called when Admin lays out the app's frame differently. The session sends the new layout. */
   layoutChanged: (layout: Layout) => void;
+  /** Called when the publisher presses Admin's tint. The session tells the page. */
+  overlayDismissed: () => void;
+  /** Called when the overlay frame holds a document on Admin's own origin. The page loads again. */
+  overlayLeft: () => void;
 }
 
 /**
@@ -178,6 +185,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
       title: undefined,
       attempt: state.attempt + 1,
       startedAt: new Date(),
+      overlay: undefined,
     });
   };
 
@@ -203,7 +211,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
     }
     if (shortLived > MAX_SHORT_LIVED) {
       detach();
-      update({ status: 'failed', title: undefined });
+      update({ status: 'failed', title: undefined, overlay: undefined });
       return false;
     }
     return true;
@@ -255,10 +263,29 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
         },
         // The app reports each move before it asks to open a place, so its route is current.
         open: (place) => options.open(place, appPath ?? options.context().path),
+        overlayShown: ({ tint }) => {
+          if (host !== bound || state.status !== 'ready') {
+            return false;
+          }
+          if (state.overlay !== tint) {
+            update({ overlay: tint });
+          }
+          return true;
+        },
+        overlayHidden: () => {
+          if (host === bound && state.overlay !== undefined) {
+            update({ overlay: undefined });
+          }
+        },
         documentChanged: () => {
           if (host === bound && documentEnded(false)) {
             window.clearTimeout(timer);
-            update({ status: 'loading', title: undefined, startedAt: new Date() });
+            update({
+              status: 'loading',
+              title: undefined,
+              startedAt: new Date(),
+              overlay: undefined,
+            });
             timer = window.setTimeout(restartOnItsOwn, appFrameTimeouts.ready);
           }
         },
@@ -277,7 +304,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
     const fail = () => {
       if (host === bound) {
         bound.dispose();
-        update({ status: 'failed', title: undefined });
+        update({ status: 'failed', title: undefined, overlay: undefined });
       }
     };
     // Cleared as soon as the app starts, so a started app is never marked unresponsive.
@@ -344,6 +371,14 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
       if (host?.connected && !sameLayout(appLayout, layout)) {
         appLayout = layout;
         host.layoutChanged(layout);
+      }
+    },
+    overlayDismissed: () => {
+      host?.overlayDismissed();
+    },
+    overlayLeft: () => {
+      if (host) {
+        restartOnItsOwn();
       }
     },
   };

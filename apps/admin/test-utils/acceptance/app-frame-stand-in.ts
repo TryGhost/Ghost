@@ -61,6 +61,8 @@ export interface AppFrameState {
   /** The current theme, `Ghost.theme`. */
   theme: Theme | undefined;
   received: AppFrameReceived[];
+  /** The dialog `openDialogLater` opened: whether there was activation, and what took focus. */
+  laterDialog?: { activation: boolean; focused?: string };
 }
 
 export interface AppFrameHooks {
@@ -78,6 +80,12 @@ export interface AppFrameHooks {
   /** Clicks a link to `href`, which the SDK turns into a move before the page loads it. */
   followLink(href: string): Promise<AppFrameResult<void>>;
   open(place: Place): Promise<AppFrameResult<void>>;
+  /** Opens nested dialogs in the app's overlay, refused until the overlay has loaded. */
+  openDialogs(dialogs: string[][]): Promise<AppFrameResult<void>>;
+  /** Opens a dialog from a timer rather than a press, as after a slow fetch. */
+  openDialogLater(labels: string[], delayMs: number): Promise<AppFrameResult<void>>;
+  /** The text of what has focus in the app's overlay. */
+  overlayFocus(): string | undefined;
 }
 
 declare global {
@@ -104,6 +112,8 @@ const safeArea = (): AppFrameSafeArea => {
   return { top: inset('top'), right: inset('right'), bottom: inset('bottom'), left: inset('left') };
 };
 let ghost: Ghost | undefined;
+let overlayRoot: HTMLElement | undefined;
+let laterDialog: AppFrameState['laterDialog'];
 let markConnected: (connecting: Promise<Ghost>) => void = () => {};
 const connected = new Promise<Ghost>((resolve) => {
   markConnected = resolve;
@@ -116,6 +126,35 @@ const describeError = async (error: unknown) => {
   }
   return error instanceof Error ? error.message : String(error);
 };
+
+function openDialog(app: Ghost, labels: string[]): HTMLElement | undefined {
+  const root = app.overlay.container();
+  if (!root) {
+    return undefined;
+  }
+  overlayRoot = root;
+  const dialog = root.ownerDocument.createElement('div');
+  dialog.setAttribute('role', 'dialog');
+  for (const label of labels) {
+    const button = root.ownerDocument.createElement('button');
+    button.textContent = label;
+    dialog.append(button);
+  }
+  root.append(dialog);
+  const hold = app.overlay.hold('dialog', dialog);
+  hold.setOpen(true);
+  // On the document, where a real dialog's Escape handling listens.
+  const closeOnEscape = (event: KeyboardEvent) => {
+    if (event.key === 'Escape' && root.lastElementChild === dialog) {
+      root.ownerDocument.removeEventListener('keydown', closeOnEscape);
+      hold.setOpen(false);
+      dialog.remove();
+      hold.release();
+    }
+  };
+  root.ownerDocument.addEventListener('keydown', closeOnEscape);
+  return dialog;
+}
 
 async function settle<Value>(call: (app: Ghost) => Promise<Value>): Promise<AppFrameResult<Value>> {
   try {
@@ -133,6 +172,7 @@ window.__app = {
     theme: ghost?.theme,
     safeArea: safeArea(),
     received,
+    laterDialog,
   }),
   canShare: () => navigator.canShare({ url: location.href }),
   fetch: ({ path, method, headers, body }) =>
@@ -169,6 +209,33 @@ window.__app = {
       return Promise.resolve();
     }),
   open: (place) => settle((app) => app.open(place)),
+  openDialogs: (dialogs) =>
+    settle((app) => {
+      for (const labels of dialogs) {
+        if (!openDialog(app, labels)) {
+          return Promise.reject(new Error('No overlay to open dialogs in yet'));
+        }
+      }
+      return Promise.resolve();
+    }),
+  openDialogLater: (labels, delayMs) =>
+    settle((app) => {
+      window.setTimeout(() => {
+        const overlay = app.overlay.container()?.ownerDocument.defaultView;
+        const state: NonNullable<AppFrameState['laterDialog']> = {
+          activation:
+            navigator.userActivation?.isActive === true ||
+            overlay?.navigator.userActivation?.isActive === true,
+        };
+        const dialog = openDialog(app, labels);
+        dialog?.addEventListener('focusin', (event) => {
+          state.focused ??= (event.target as Element).textContent ?? undefined;
+        });
+        laterDialog = state;
+      }, delayMs);
+      return Promise.resolve();
+    }),
+  overlayFocus: () => overlayRoot?.ownerDocument.activeElement?.textContent ?? undefined,
 };
 
 async function start() {

@@ -9,6 +9,8 @@ import type { PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import tailwindcss from '@tailwindcss/vite';
+// From source: the package isn't built yet when this config loads.
+import { OVERLAY_FRAME_NAME } from '../../contracts/app-contracts/src/bridge/rules';
 
 import { sharedDefine, sharedResolve } from './vite.shared';
 
@@ -167,7 +169,10 @@ async function newestFrameOn(page: BrowserPage, origin: string, purpose: string)
     page
       .frames()
       .filter(
-        (candidate) => URL.canParse(candidate.url()) && new URL(candidate.url()).origin === origin,
+        (candidate) =>
+          candidate.name() !== OVERLAY_FRAME_NAME &&
+          URL.canParse(candidate.url()) &&
+          new URL(candidate.url()).origin === origin,
       )
       .at(-1);
   const deadline = Date.now() + FRAME_ATTACH_TIMEOUT_MS;
