@@ -1,4 +1,5 @@
 import { describe, expect, it, onTestFinished } from 'vitest';
+import { page } from 'vitest/browser';
 
 import {
   TINYBIRD_SITE_UUID,
@@ -315,10 +316,34 @@ describe('Analytics overview', () => {
       newsletterId,
     );
 
+    // 150 → 158 over the range
+    await expect.element(analyticsScreen.newsletterSubscribersDiff()).toHaveTextContent('5%');
+    await analyticsScreen.newsletterSubscribersDiff().hover();
+    await expect.element(page.getByRole('tooltip')).toHaveTextContent(/up 5% from 150/);
+
     fakeAdminStats.newsletterBasic();
     fakeAdminEndpoint('GET', /^\/stats\/newsletter-click-stats\//, { stats: [], meta: {} });
     await analyticsScreen.newsletterSubscribersViewMoreButton().click();
-    await expect.poll(currentRoute).toMatch(/^\/analytics\/newsletters\//);
+    await expect.poll(currentRoute).toBe('/analytics/newsletters/?tab=total-subscribers');
+  });
+
+  it('shows the subscriber count without a trend when the subscriber history fails to load', async () => {
+    seedFreeSingleNewsletterWorld();
+    fakeAdminEndpoint('GET', /^\/stats\/subscriber-count\//, { errors: [] }, { status: 500 });
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+    await expect.element(analyticsScreen.newsletterSubscribersValue()).toHaveTextContent('158');
+    await expect.element(analyticsScreen.newsletterSubscribersDiff()).toBeEmptyDOMElement();
+    await expect.element(analyticsScreen.mrrCard()).not.toBeInTheDocument();
+  });
+
+  it('keeps MRR when the MRR history fails to load', async () => {
+    seedFreeSingleNewsletterWorld();
+    fakeAdminEndpoint('GET', /^\/stats\/mrr\//, { errors: [] }, { status: 500 });
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+    await expect.element(analyticsScreen.mrrCard()).toBeVisible();
+    await expect.element(analyticsScreen.newsletterSubscribersCard()).not.toBeInTheDocument();
   });
 
   it('shows newsletter subscribers next to members when Stripe isn’t connected', async () => {

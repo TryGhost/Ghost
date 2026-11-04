@@ -16,6 +16,8 @@ export const analyticsScreen = {
   newsletterSubscribersCard: () => page.getByTestId(sel.newsletterSubscribers),
   newsletterSubscribersValue: () =>
     page.getByTestId(sel.newsletterSubscribers).getByTestId(sel.kpiCardHeaderValue),
+  newsletterSubscribersDiff: () =>
+    page.getByTestId(sel.newsletterSubscribers).getByTestId(sel.kpiCardHeaderDiff),
   newsletterSubscribersViewMoreButton: () =>
     page.getByTestId(sel.newsletterSubscribers).getByRole('button', { name: 'View more' }),
   uniqueVisitorsViewMoreButton: () =>

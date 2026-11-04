@@ -236,7 +236,11 @@ export const useGrowthStats = (range: number) => {
     },
   });
 
-  const { data: mrrHistoryResponse, isLoading: isMrrLoading } = useMrrHistory({
+  const {
+    data: mrrHistoryResponse,
+    isLoading: isMrrLoading,
+    isError: isMrrError,
+  } = useMrrHistory({
     searchParams: {
       date_from: memberDataStartDate,
     },
@@ -433,6 +437,7 @@ export const useGrowthStats = (range: number) => {
 
   return {
     isLoading,
+    isMrrError,
     memberData,
     mrrData,
     dateFrom,
