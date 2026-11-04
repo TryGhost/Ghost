@@ -11,9 +11,10 @@ import {
   type Leaf,
   type ListSource,
   type PartsOf,
+  type ShapeOf,
   type TextSize,
-  type ValueOf,
 } from '@tryghost/metafield-types/structure';
+import type { ShapeText } from '@tryghost/metafield-types/shapes';
 
 import InputForm from './input-form';
 import ListPicker from './list-picker';
@@ -96,8 +97,8 @@ interface FieldProps<S extends FieldShape> {
   value: CustomFieldValue;
   /** What the site refused, keyed by the name of the input that holds it. */
   errors: Record<string, string | undefined>;
-  /** The field's whole value once a member changes it, in the shape its type keeps. */
-  onChange: (value: ValueOf<FieldTypeOfShape<S>>) => void;
+  /** What the field's inputs hold once a member changes one, each leaf as its text. */
+  onChange: (text: ShapeText[S]) => void;
   onKeyDown: (event: React.KeyboardEvent) => void;
 }
 
@@ -278,8 +279,11 @@ function ListField({ field, value, errors, onChange }: FieldProps<'set'>) {
   );
 }
 
-/** Reports a field's whole value once a member changes it, in the shape the field's type keeps. */
-type CustomFieldChange = <F extends MemberCustomField>(field: F, value: ValueOf<F['type']>) => void;
+/** Reports what a field's inputs hold once a member changes one, each leaf as its text. */
+type CustomFieldChange = <F extends MemberCustomField>(
+  field: F,
+  text: ShapeText[ShapeOf<F['type']>],
+) => void;
 
 interface DrawnFieldProps {
   field: MemberCustomField;

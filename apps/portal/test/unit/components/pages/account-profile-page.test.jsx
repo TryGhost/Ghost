@@ -264,7 +264,9 @@ describe('Account Profile Page', () => {
 
       expect(mockDoActionFn).toHaveBeenCalledWith(
         'updateProfile',
-        expect.objectContaining({ metafields: { custom: { shipping_address: { country: '' } } } }),
+        expect.objectContaining({
+          metafields: { custom: { shipping_address: { country: null } } },
+        }),
       );
     });
 
@@ -304,7 +306,7 @@ describe('Account Profile Page', () => {
 
       expect(mockDoActionFn).toHaveBeenCalledWith(
         'updateProfile',
-        expect.objectContaining({ metafields: { custom: { shipping_address: { city: '' } } } }),
+        expect.objectContaining({ metafields: { custom: { shipping_address: { city: null } } } }),
       );
     });
 
@@ -381,7 +383,7 @@ describe('Account Profile Page', () => {
 
         expect(utils.mockDoActionFn).toHaveBeenCalledWith(
           'updateProfile',
-          expect.objectContaining({ metafields: { custom: { favourite_animals: [] } } }),
+          expect.objectContaining({ metafields: { custom: { favourite_animals: null } } }),
         );
       });
 
@@ -428,7 +430,7 @@ describe('Account Profile Page', () => {
 
         expect(utils.mockDoActionFn).toHaveBeenCalledWith(
           'updateProfile',
-          expect.objectContaining({ metafields: { custom: { favourite_animal: [] } } }),
+          expect.objectContaining({ metafields: { custom: { favourite_animal: null } } }),
         );
       });
 
@@ -461,7 +463,7 @@ describe('Account Profile Page', () => {
 
         expect(utils.mockDoActionFn).toHaveBeenCalledWith(
           'updateProfile',
-          expect.objectContaining({ metafields: { custom: { favourite_animals: [] } } }),
+          expect.objectContaining({ metafields: { custom: { favourite_animals: null } } }),
         );
       });
 
@@ -565,7 +567,7 @@ describe('Account Profile Page', () => {
 
         expect(utils.mockDoActionFn).toHaveBeenCalledWith(
           'updateProfile',
-          expect.objectContaining({ metafields: { custom: { favourite_animal: [] } } }),
+          expect.objectContaining({ metafields: { custom: { favourite_animal: null } } }),
         );
       });
 

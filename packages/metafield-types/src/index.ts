@@ -7,8 +7,6 @@ import {
   MIN_OPTIONS,
   OPTION_SEPARATOR,
   optionText,
-  matchField,
-  matchLeaf,
   type FieldType,
   type FieldTypeOfShape,
   type Leaf,
@@ -16,11 +14,43 @@ import {
   type SetSettings,
   type SettingsOfShape,
   type FieldShape,
+  type FieldOfShape,
+  type LeafKind,
+  type LeafValues,
   type TextSize,
   type TypedSettings,
   type ValueOf,
   typesOfShape,
+  type WriteOf,
 } from './structure.js';
+import { shaped, type ShapeWrite, type ShapedField } from './shapes.js';
+
+export {
+  FIELD_READING,
+  LEAVES,
+  SHAPES,
+  editableValue,
+  formShows,
+  formTextOf,
+  heldTextOf,
+  formWrite,
+  heldValue,
+  leafFromText,
+  shaped,
+  shapedType,
+  textOfValue,
+  valueFromText,
+  type AnyLeafValue,
+  type FieldReading,
+  type ShapeRules,
+  type ShapeText,
+  type ShapeValue,
+  type ShapeWrite,
+  type ShapedField,
+  type ShapedType,
+  type ValueKind,
+  type ValueOfKind,
+} from './shapes.js';
 
 // Re-exported so a caller that needs both halves still has one import. The split is
 // about what a bundle pays for, not about where the catalog lives.
@@ -53,6 +83,8 @@ export {
   type Leaf,
   type LeafHandlers,
   type LeafKind,
+  type LeafValue,
+  type LeafValues,
   type ListSource,
   type PartsOf,
   type RecordStructure,
@@ -67,6 +99,8 @@ export {
   type TextSize,
   type TypedSettings,
   type ValueOf,
+  type WriteOf,
+  keysOf,
 } from './structure.js';
 
 /**
@@ -84,10 +118,12 @@ export {
  *
  * ## What a write may say
  *
- * A value is text, and so is every part of one. A write names what it means to change: a
- * name it does not mention is left as it was, and a name given an empty string is being
- * cleared. That is why every part accepts empty regardless of its own rule — emptying is
- * a statement about the write, not about the part.
+ * A value is a leaf's value, and so is every part of one. A write names what it means to
+ * change: a name it does not mention is left as it was, and a name given `null` is being
+ * cleared, whatever kind of leaf it holds. That is why every part accepts `null` regardless of
+ * its own rule: clearing is a statement about the write, not about the part. A value is never
+ * empty, so text of nothing but spaces, or a list picking nothing, is refused rather than being
+ * a second way of holding nothing.
  *
  * A name nobody recognizes is an error rather than a silent drop, at both depths. A
  * misspelled field key is refused by the values service, which alone knows which fields a
@@ -397,35 +433,38 @@ export const MAX_LONG_TEXT_BYTES = 65535;
 const byteLength = (value: string): number => new TextEncoder().encode(value).length;
 
 /**
- * Every leaf's rule is built from this, so no two leaves can disagree about whitespace: a value
- * of nothing but spaces is nothing, whichever field it was typed into. Trimming first also makes
- * each bound measure the value rather than its padding.
+ * Every text leaf's rule is built from this, so no two leaves can disagree about whitespace.
+ * Trimming first also makes each bound measure the value rather than its padding.
  */
 const trimmed = () => z.string({ error: 'Enter text.' }).trim();
 
+/** Text that holds something: text of nothing but spaces is refused, since a write clears with `null`. */
+const filled = () => trimmed().min(1, { error: 'Enter a value, or send null to clear it.' });
+
 /**
- * Pinned to a string at both ends because storage keeps one string per leaf: a rule parsing to
- * anything else could be written and never read back.
+ * A leaf's rule, parsing to the value its kind of leaf holds (`LeafValues`). Storage keeps each
+ * kind of value in a column of its own, so a rule parsing to anything else could be written and
+ * never read back.
  */
-type LeafRule = z.ZodType<string, string>;
+type LeafRule<K extends LeafKind = LeafKind> = z.ZodType<LeafValues[K], LeafValues[K]>;
 
 /** Each text size's bound. Each message is a literal, so it can be a translation key. */
-const TEXT_RULES: { [S in TextSize]: () => LeafRule } = {
-  line: () => trimmed().max(255, { error: 'Use 255 characters or fewer.' }),
+const TEXT_RULES: { [S in TextSize]: () => LeafRule<'text'> } = {
+  line: () => filled().max(255, { error: 'Use 255 characters or fewer.' }),
 
   // A sanity limit rather than a format, used for postal codes: they vary too much between
   // countries to check the shape of one without knowing the country, and the country is a
   // sibling part rather than something this can see.
-  code: () => trimmed().max(32, { error: 'Use 32 characters or fewer.' }),
+  code: () => filled().max(32, { error: 'Use 32 characters or fewer.' }),
 
   long: () =>
-    trimmed().refine((value) => byteLength(value) <= MAX_LONG_TEXT_BYTES, {
+    filled().refine((value) => byteLength(value) <= MAX_LONG_TEXT_BYTES, {
       error: 'This text is too long to save. Shorten it a little.',
     }),
 };
 
 /** Which keys each list accepts. */
-const LIST_RULES: { [F in ListSource]: () => LeafRule } = {
+const LIST_RULES: { [F in ListSource]: () => LeafRule<'choice'> } = {
   // The shape of an ISO 3166-1 alpha-2 code, deliberately not checked against the list of them.
   // Membership of that list is contested, and a closed list here would make Ghost the arbiter of
   // it for every member of every site. Clients offer countries to pick from without this deciding
@@ -435,26 +474,27 @@ const LIST_RULES: { [F in ListSource]: () => LeafRule } = {
   // either would silently half-miss. Checked as two ASCII letters on the way in rather than by
   // length on the way out, because uppercasing does not preserve length: `ß` becomes `SS`.
   countries: () =>
-    trimmed()
+    filled()
       .regex(/^[A-Za-z]{2}$/, { error: 'Enter a 2-letter country code, like US.' })
       .toUpperCase(),
 };
 
-const leafRule = (leaf: Leaf): LeafRule =>
-  matchLeaf(leaf, {
-    text: ({ size }) => TEXT_RULES[size](),
-    choice: ({ from }) => LIST_RULES[from](),
-  });
+/** Each kind of leaf's rule. Keyed by kind, so a kind added to the catalog fails to compile here. */
+const LEAF_RULES: { [K in LeafKind]: (leaf: Extract<Leaf, { leaf: K }>) => LeafRule<K> } = {
+  text: ({ size }) => TEXT_RULES[size](),
+  choice: ({ from }) => LIST_RULES[from](),
+};
+
+/** A leaf's rule, whichever kind of leaf it is. */
+const leafRule = <K extends LeafKind>(leaf: Extract<Leaf, { leaf: K }>): LeafRule<K> =>
+  LEAF_RULES[leaf.leaf](leaf);
 
 /**
- * A part as a write may name it: absent, empty, or a value of its own leaf. A rule that is a bound
- * would admit empty on its own; one that is a format would not, and would leave its part the only
- * one that could be set but never removed.
+ * A part as a write may name it: absent to leave it alone, `null` to clear it, or a value of its
+ * own leaf. Every part clears the same way, whatever its leaf's rule, so none can be set but never
+ * removed.
  */
-const clearable = (rule: LeafRule) =>
-  trimmed()
-    .pipe(z.union([z.literal(''), rule]))
-    .optional();
+const part = (leaf: Leaf) => leafRule(leaf).nullable().optional();
 
 /** What each record type says when a write names none of its parts. */
 const RECORD_EMPTY: { [T in FieldTypeOfShape<'record'>]: string } = {
@@ -465,6 +505,9 @@ const RECORD_EMPTY: { [T in FieldTypeOfShape<'record'>]: string } = {
  * A value of any field type, as a caller holding a field of unknown type must accept it.
  */
 export type FieldValue = ValueOf<FieldType>;
+
+/** A write to a field of any type, as a caller holding a field of unknown type must give it. */
+export type FieldWrite = WriteOf<FieldType>;
 
 export type Address = ValueOf<'address'>;
 
@@ -480,17 +523,14 @@ export type Address = ValueOf<'address'>;
  * A record is strict, so a part nobody declared is refused rather than dropped, in zod's wording,
  * which names the offending key.
  */
-function recordRule(type: FieldTypeOfShape<'record'>): z.ZodType<FieldValue> {
+function recordRule(type: FieldTypeOfShape<'record'>): z.ZodType<ShapeWrite['record']> {
   return z
     .strictObject(
       Object.fromEntries(
-        Object.entries(FIELD_STRUCTURES[type].parts).map(([part, leaf]) => [
-          part,
-          clearable(leafRule(leaf)),
-        ]),
+        Object.entries(FIELD_STRUCTURES[type].parts).map(([name, leaf]) => [name, part(leaf)]),
       ),
     )
-    .refine((value) => Object.values(value).some((entry) => typeof entry === 'string'), {
+    .refine((value) => Object.values(value).some((entry) => entry !== undefined), {
       error: RECORD_EMPTY[type],
     });
 }
@@ -504,7 +544,7 @@ function recordRule(type: FieldTypeOfShape<'record'>): z.ZodType<FieldValue> {
  * Checked when an answer is given and never again: a publisher can change the options later, and
  * an answer keeps what was picked.
  */
-function setRule({ options, multiple }: SetSettings): z.ZodType<FieldValue> {
+function setRule({ options, multiple }: SetSettings): z.ZodType<ShapeWrite['set']> {
   const offered = new Set(options);
   return z
     .array(z.unknown(), { error: 'Choose from the options this field offers.' })
@@ -521,7 +561,14 @@ function setRule({ options, multiple }: SetSettings): z.ZodType<FieldValue> {
       return [...new Set(texts.map(optionText))];
     })
     .check((ctx) => {
-      if (ctx.value.some((option) => !offered.has(option))) {
+      if (ctx.value.length === 0) {
+        // A list holding nothing is no answer, which a write gives as `null`.
+        ctx.issues.push({
+          code: 'custom',
+          message: 'Choose at least one option, or send null to clear it.',
+          input: ctx.value,
+        });
+      } else if (ctx.value.some((option) => !offered.has(option))) {
         ctx.issues.push({
           code: 'custom',
           message: 'Choose from the options this field offers.',
@@ -533,27 +580,90 @@ function setRule({ options, multiple }: SetSettings): z.ZodType<FieldValue> {
     });
 }
 
-/** A field's rule, from what its type is composed of and, for a set, the options the field offers. */
-function ruleOf(field: TypedSettings): z.ZodType<FieldValue> {
-  return matchField(field, {
-    scalar: ({ type }) => leafRule(FIELD_STRUCTURES[type].leaf),
-    record: ({ type }) => recordRule(type),
-    set: ({ settings }) => setRule(settings),
-  });
+/**
+ * `build` run once per type, for a rule that comes from the type alone: Ghost checks every value an
+ * import writes through these rules, and Admin every keystroke.
+ */
+function oncePerType<T extends FieldType, R>(build: (type: T) => R): (type: T) => R {
+  const built = new Map<T, R>();
+  return (type) => {
+    const rule = built.get(type) ?? build(type);
+    built.set(type, rule);
+    return rule;
+  };
 }
 
-// Built once per type whose rule comes from the type alone: Ghost checks every value an import
-// writes, and Admin every keystroke.
-const RULES = new Map<FieldType, z.ZodType<FieldValue>>(
-  [...typesOfShape('scalar'), ...typesOfShape('record')].map((type) => [type, ruleOf({ type })]),
+const scalarRule = oncePerType((type: FieldTypeOfShape<'scalar'>) =>
+  leafRule(FIELD_STRUCTURES[type].leaf),
 );
+const recordRuleOf = oncePerType(recordRule);
 
 /**
- * The rule a value of one field must satisfy. It takes the field rather than its type so that a
+ * Each shape's strict rule for a write, from what a field's type is composed of and, for a set,
+ * the options the field offers. Keyed by shape, so a shape added to the catalog fails to compile
+ * here until it has a rule.
+ */
+const WRITE_RULES: {
+  readonly [S in FieldShape]: (field: FieldOfShape<S>) => z.ZodType<ShapeWrite[S]>;
+} = {
+  scalar: ({ type }) => scalarRule(type),
+  record: ({ type }) => recordRuleOf(type),
+  set: ({ settings }) => setRule(settings),
+};
+
+function writeRuleOf<S extends FieldShape>({
+  shape,
+  field,
+}: ShapedField<TypedSettings, S>): z.ZodType<ShapeWrite[S]> {
+  return WRITE_RULES[shape](field);
+}
+
+/** A field's rule, from what its type is composed of and, for a set, the options the field offers. */
+function ruleOf(field: TypedSettings): z.ZodType<FieldWrite> {
+  return writeRuleOf(shaped(field));
+}
+
+/**
+ * A value a field's rule accepted for writing, tidied as the rule tidies it. Only `accept` makes
+ * one, so a value that skipped the rule can't be handed to code that stores it.
+ */
+export type Accepted<S extends FieldShape> = ShapeWrite[S] & z.core.$brand<'accepted'>;
+
+/** An accepted value with its shape, so a table keyed by shape can be indexed with it. */
+export type AcceptedValue<S extends FieldShape = FieldShape> = {
+  [K in S]: { readonly shape: K; readonly value: Accepted<K> };
+}[S];
+
+export type Acceptance<S extends FieldShape = FieldShape> =
+  | { readonly success: true; readonly accepted: AcceptedValue<S> }
+  | { readonly success: false; readonly issues: readonly z.core.$ZodIssue[] };
+
+/**
+ * Strict, for a write, under the field's rule today: only options the field offers now, one answer
+ * when it takes one, and each part valid under its leaf's rule. What a held value reads as is
+ * lenient instead, and is `FIELD_READING`'s to say.
+ */
+export function accept<S extends FieldShape>(
+  of: ShapedField<TypedSettings, S>,
+  raw: unknown,
+): Acceptance<S> {
+  const result = writeRuleOf(of).brand<'accepted'>().safeParse(raw);
+  return result.success
+    ? { success: true, accepted: acceptedAs(of.shape, result.data) }
+    : { success: false, issues: result.error.issues };
+}
+
+function acceptedAs<S extends FieldShape>(shape: S, value: Accepted<S>): AcceptedValue<S> {
+  return { shape, value };
+}
+
+/**
+ * The rule a write to one field must satisfy, which parses to the write it accepts: a record's
+ * part named as `null` clears it. It takes the field rather than its type so that a
  * rule depending on the field's own setup, such as the options a list field offers, changes here
  * and nowhere else; such a rule is built from the field rather than kept per type. Throws for a
  * type this build doesn't know.
  */
-export function valueSchemaFor(field: TypedSettings): z.ZodType<FieldValue> {
-  return RULES.get(field.type) ?? ruleOf(field);
+export function valueSchemaFor(field: TypedSettings): z.ZodType<FieldWrite> {
+  return ruleOf(field);
 }

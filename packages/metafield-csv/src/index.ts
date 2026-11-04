@@ -1,10 +1,20 @@
 import * as z from 'zod/mini';
 import {
+  FIELD_STRUCTURES,
+  keysOf,
   OPTION_SEPARATOR,
-  isRecordValue,
-  matchShape,
+  type FieldShape,
   type FieldType,
+  type FieldTypeOfShape,
 } from '@tryghost/metafield-types/structure';
+import {
+  SHAPES,
+  shapedType,
+  valueFromText,
+  type ShapeText,
+  type ShapeValue,
+  type ShapedType,
+} from '@tryghost/metafield-types/shapes';
 import {
   IdentityTextSchema,
   type Key,
@@ -65,14 +75,6 @@ function toCell(value: unknown): string {
   return value === undefined || value === null ? '' : String(value);
 }
 
-// A cell holding nothing but whitespace carries no more data than an empty one, so both
-// read as blank. Without this a stray space is a value: it would be stored as one on a
-// scalar, and on a composite it would make an otherwise untouched address fail its "at
-// least one part filled in" rule and take the whole member row down with it.
-function isBlank(cell: string): boolean {
-  return cell.trim() === '';
-}
-
 /** A column a field occupies, and which part of the field's value it holds. */
 export interface CsvFieldColumn {
   column: string;
@@ -83,12 +85,14 @@ export interface CsvFieldColumn {
 // Shares csvCellsForFields' column derivation, so a field is written, read, and offered
 // as a mapping target under one set of column names.
 export function csvColumnsForField(field: CsvField): CsvFieldColumn[] {
-  return matchShape<CsvFieldColumn[]>(field.type, {
-    scalar: () => [{ column: columnOf(field), part: null }],
-    record: ({ parts }) =>
-      Object.keys(parts).map((part) => ({ column: columnOf(field, part), part })),
-    set: () => [{ column: columnOf(field), part: null }],
-  });
+  return columnsOf(shapedType(field.type), field);
+}
+
+function columnsOf<S extends FieldShape>(
+  { shape, type }: ShapedType<S>,
+  field: CsvField,
+): CsvFieldColumn[] {
+  return CSV_SHAPES[shape].columns(field, type);
 }
 
 // Spaced on both sides so a cell reads as a list, and split on the separator alone, so a cell
@@ -136,26 +140,28 @@ export function csvCellsForFields(
   values: Record<string, Record<string, unknown> | undefined>,
 ): Record<string, string> {
   const cells: Record<string, string> = {};
-
   for (const field of fields) {
-    const value = values[field.namespace]?.[field.key];
-    matchShape(field.type, {
-      scalar: () => {
-        cells[columnOf(field)] = toCell(value);
-      },
-      record: ({ parts }) => {
-        const composite = isRecordValue(value) ? value : {};
-        for (const part of Object.keys(parts)) {
-          cells[columnOf(field, part)] = toCell(composite[part]);
-        }
-      },
-      set: () => {
-        cells[columnOf(field)] = Array.isArray(value) ? joinOptions(value) : '';
-      },
-    });
+    Object.assign(
+      cells,
+      cellsOf(shapedType(field.type), field, values[field.namespace]?.[field.key]),
+    );
   }
-
   return cells;
+}
+
+/**
+ * A held value's cells, by column. No value, or one that isn't its field's structure, exports as
+ * a blank cell in every column the field occupies.
+ */
+function cellsOf<S extends FieldShape>(
+  { shape, type }: ShapedType<S>,
+  field: CsvField,
+  raw: unknown,
+): Record<string, string> {
+  const value = SHAPES[shape].parse(type, raw);
+  return value === undefined
+    ? Object.fromEntries(CSV_SHAPES[shape].columns(field, type).map(({ column }) => [column, '']))
+    : CSV_SHAPES[shape].toCells(field, type, value);
 }
 
 /**
@@ -202,30 +208,11 @@ export function fieldValuesFromCsvRow(
   const values: Record<string, unknown> = {};
 
   for (const field of fields) {
-    const value = matchShape<unknown>(field.type, {
-      scalar: () => {
-        const cell = cellFor(row, field, null);
-        const decoded = cell === undefined ? '' : decodeCell(cell);
-        return isBlank(decoded) ? undefined : decoded;
-      },
-      record: ({ parts }) => {
-        const composite: Record<string, string> = {};
-        for (const part of Object.keys(parts)) {
-          const cell = cellFor(row, field, part);
-          const decoded = cell === undefined ? '' : decodeCell(cell);
-          if (!isBlank(decoded)) {
-            composite[part] = decoded;
-          }
-        }
-        return Object.keys(composite).length > 0 ? composite : undefined;
-      },
-      set: () => {
-        const cell = cellFor(row, field, null);
-        const options = cell === undefined ? [] : splitOptions(decodeCell(cell));
-        return options.length > 0 ? options : undefined;
-      },
-    });
-
+    const cell = (part: string | null) => {
+      const raw = cellFor(row, field, part);
+      return raw === undefined ? '' : decodeCell(raw);
+    };
+    const value = valueOf(shapedType(field.type), field, cell);
     if (value !== undefined) {
       values[identityOf(field)] = value;
     }
@@ -233,3 +220,59 @@ export function fieldValuesFromCsvRow(
 
   return values;
 }
+
+/**
+ * A row's value for a field, with each leaf read from its cell's text, or undefined when its cells
+ * are blank, which the domain reads as holding nothing.
+ */
+function valueOf<S extends FieldShape>(
+  of: ShapedType<S>,
+  field: CsvField,
+  cell: (part: string | null) => string,
+): ShapeValue[S] | undefined {
+  return valueFromText(of, CSV_SHAPES[of.shape].fromCells(field, of.type, cell));
+}
+
+/** How a field of each shape is laid out in CSV cells. The CSV package's knowledge alone. */
+interface CsvShape<S extends FieldShape> {
+  /** The columns a field of this shape occupies: one, or one per part. */
+  columns(field: CsvField, type: FieldTypeOfShape<S>): CsvFieldColumn[];
+  /** A held value's cells, by column. */
+  toCells(field: CsvField, type: FieldTypeOfShape<S>, value: ShapeValue[S]): Record<string, string>;
+  /**
+   * The text a row's cells give, in the shape's structure, blank cells and all. `cell` reads the
+   * cell for a part, or for the whole value, decoded and `''` when absent. The domain then reads it
+   * as text, and the import passes it through the field's rule.
+   */
+  fromCells(
+    field: CsvField,
+    type: FieldTypeOfShape<S>,
+    cell: (part: string | null) => string,
+  ): ShapeText[S];
+}
+
+const CSV_SHAPES: { readonly [S in FieldShape]: CsvShape<S> } = {
+  scalar: {
+    columns: (field) => [{ column: columnOf(field), part: null }],
+    toCells: (field, _type, value) => ({ [columnOf(field)]: toCell(value) }),
+    fromCells: (_field, _type, cell) => cell(null),
+  },
+  record: {
+    columns: (field, type) =>
+      keysOf(FIELD_STRUCTURES[type].parts).map((part) => ({ column: columnOf(field, part), part })),
+    toCells: (field, type, value) =>
+      Object.fromEntries(
+        keysOf(FIELD_STRUCTURES[type].parts).map((part) => [
+          columnOf(field, part),
+          toCell(value[part]),
+        ]),
+      ),
+    fromCells: (_field, type, cell) =>
+      Object.fromEntries(keysOf(FIELD_STRUCTURES[type].parts).map((part) => [part, cell(part)])),
+  },
+  set: {
+    columns: (field) => [{ column: columnOf(field), part: null }],
+    toCells: (field, _type, value) => ({ [columnOf(field)]: joinOptions(value) }),
+    fromCells: (_field, _type, cell) => splitOptions(cell(null)),
+  },
+};
