@@ -39,6 +39,7 @@ beforeEach(async () => {
   }));
   vi.stubEnv('GHOST_APP_URL', undefined);
   vi.stubEnv('GHOST_APP_TUNNEL_URL', undefined);
+  vi.stubEnv('GHOST_URL', undefined);
   vi.stubEnv('GHOST_APP_IDENTITY_KEY', undefined);
   vi.stubEnv('GHOST_APP_BACKEND_KEY', undefined);
   // These tests run the plugin as `vite dev` would, not as Vitest loads a project's config.
@@ -198,6 +199,32 @@ describe('vite dev', () => {
     );
     expect((await get(open.port, 'env.example')).body).toContain(
       `only for localhost:${open.port}, tunnel.example, not env.example`,
+    );
+  });
+
+  it('prints the install link for GHOST_URL from the .env files, which the environment overrides', async () => {
+    await writeFile(join(root, '.env.development'), 'GHOST_URL=http://from-file.localhost:2368/\n');
+    const link = (port: number) =>
+      `/ghost/#/apps/install?manifest=${encodeURIComponent(`http://localhost:${port}/ghost-app.json`)}`;
+    const printed = async () => {
+      const started = await startDevServer();
+      server!.printUrls();
+      await server!.close();
+      return {
+        port: started.port,
+        text: started.logger.messages.map(({ text }) => text).join('\n'),
+      };
+    };
+
+    const fromFile = await printed();
+    expect(fromFile.text).toContain(
+      `Install:   http://from-file.localhost:2368${link(fromFile.port)}`,
+    );
+
+    vi.stubEnv('GHOST_URL', 'http://from-env.localhost:2368');
+    const fromEnv = await printed();
+    expect(fromEnv.text).toContain(
+      `Install:   http://from-env.localhost:2368${link(fromEnv.port)}`,
     );
   });
 

@@ -53,8 +53,8 @@ function readTunnels(input: string | readonly string[] | undefined): string[] {
     });
 }
 
-const installLink = (manifestUrl: string) => {
-  const ghost = (process.env.GHOST_URL?.trim() || 'http://localhost:2368').replace(/\/+$/, '');
+const installLink = (manifestUrl: string, ghostUrl: string | undefined) => {
+  const ghost = (ghostUrl || 'http://localhost:2368').replace(/\/+$/, '');
   return `${ghost}/ghost/#/apps/install?manifest=${encodeURIComponent(manifestUrl)}`;
 };
 
@@ -81,6 +81,8 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
   // An option is checked at once; the environment's once the config hook has read it.
   let tunnels = options.tunnelUrl === undefined ? [] : readTunnels(options.tunnelUrl);
   let appUrl: string | undefined;
+  // The Ghost the printed install link opens, which `.env.development` can name too.
+  let ghostUrl: string | undefined;
   let config: ResolvedConfig;
   let pending: { level: 'info' | 'warn'; message: string } | undefined;
   let warnedUnsigned = false;
@@ -162,9 +164,12 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
       const envDir = userConfig.envDir === false ? false : resolve(root, userConfig.envDir ?? '');
       const { loadEnv } = await import('vite');
       const files =
-        envDir === false ? {} : loadEnv(mode, envDir, ['GHOST_APP_URL', 'GHOST_APP_TUNNEL_URL']);
+        envDir === false
+          ? {}
+          : loadEnv(mode, envDir, ['GHOST_APP_URL', 'GHOST_APP_TUNNEL_URL', 'GHOST_URL']);
       const read = (name: string) => process.env[name]?.trim() || files[name]?.trim() || undefined;
       appUrl = read('GHOST_APP_URL');
+      ghostUrl = read('GHOST_URL');
       if (options.tunnelUrl === undefined) {
         tunnels = readTunnels(read('GHOST_APP_TUNNEL_URL'));
       }
@@ -233,7 +238,7 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
         ];
         const lines = urls.flatMap((url) => [
           `  Ghost app: ${url}`,
-          `  Install:   ${installLink(url)}`,
+          `  Install:   ${installLink(url, ghostUrl)}`,
         ]);
         config.logger.info(`\n${lines.join('\n')}\n`);
       };
