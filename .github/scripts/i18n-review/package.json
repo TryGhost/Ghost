@@ -11,7 +11,7 @@
     "test": "node --test"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "0.110.0",
+    "@anthropic-ai/sdk": "0.137.0",
     "@octokit/rest": "21.1.1"
   },
   "devDependencies": {

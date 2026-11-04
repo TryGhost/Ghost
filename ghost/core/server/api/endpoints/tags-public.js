@@ -2,7 +2,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const pick = require('lodash/pick');
 const models = require('../../models');
-const tagsPublicService = require('../../services/tags-public');
+const tagsPublicService = require('../../services/tags-public').default;
 const { rejectTagsContentApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
 
 const ALLOWED_INCLUDES = ['count.posts'];
@@ -21,7 +21,7 @@ const controller = {
     headers: {
       cacheInvalidate: false,
     },
-    cache: tagsPublicService.api?.cache,
+    cache: tagsPublicService.service.cache,
     options: ['include', 'filter', 'fields', 'limit', 'order', 'page', 'debug'],
     validation: {
       options: {

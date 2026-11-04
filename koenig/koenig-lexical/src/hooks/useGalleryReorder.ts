@@ -83,6 +83,12 @@ export default function useGalleryReorder({images, updateImages, isSelected = fa
             return;
         }
 
+        // every container is notified when a drag ends, so ignore drags that
+        // started elsewhere - another gallery may hold an image with the same src
+        if (!containerRef.contains(draggableInfo.element)) {
+            return;
+        }
+
         const image = images.find(i => i.src === draggableInfo.dataset.src);
         if (image) {
             const updatedImages = images.filter(i => i !== image);

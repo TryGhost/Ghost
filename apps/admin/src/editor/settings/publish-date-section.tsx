@@ -8,6 +8,7 @@ import {
   settingsPublishTime,
 } from '@tryghost/test-data/selectors/editor';
 import { DateTimePicker } from '@/editor/date-time-picker';
+import { useRefusedEntryReport } from '@/editor/refused-entry';
 import { useSiteTimezone } from '@/editor/use-editor-settings';
 import { PUBLISHED_AT_MUST_BE_PAST, publishedAtInFuture } from '@/editor/session/settings-fields';
 import type { EditorSettingsPort } from './editor-settings-port';
@@ -28,6 +29,7 @@ export function PublishDateSection({ session }: PublishDateSectionProps) {
   const errorId = useId();
   const labelId = useId();
   const timezone = useSiteTimezone();
+  const reportRefusedEntry = useRefusedEntryReport();
 
   const { status, publishedAt } = session.publishTime;
   // Read per render: a value fixed at mount goes stale, and the calendar's cap
@@ -51,13 +53,14 @@ export function PublishDateSection({ session }: PublishDateSectionProps) {
         disabled={isScheduled}
         invalid={invalid}
         labelledBy={labelId}
-        // Ember caps the calendar at today; a past publish time is the rule.
+        // The calendar is capped at today; a past publish time is the rule.
         maxDate={now}
         timeLabel="Publish time"
         timeTestId={settingsPublishTime}
         timezone={timezone}
         value={value}
         onChange={(date) => session.editPublishedAt(date.toISOString())}
+        onRefusalChange={reportRefusedEntry}
       />
       {invalid ? (
         <FieldError data-testid={settingsPublishDateError} id={errorId}>

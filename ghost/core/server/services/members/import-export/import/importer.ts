@@ -2,10 +2,12 @@ import moment from 'moment-timezone';
 import buildImportEmail, { type EmailLinks } from './completion-email';
 import { stripFormulaGuard } from '../csv';
 import { fieldValuesFromCsvRow, type CsvField } from '@tryghost/metafield-csv';
+import { z } from 'zod';
 import type { Knex } from 'knex';
 import type { MemberImportRow, ImportErrorRow, ImportLabel, Label } from './row';
 import type { RowSpool } from './spool';
 import MembersImportJob from '../../jobs/members-import-job';
+import type { ImportAttempt, ImportExportTracking } from '../tracking';
 
 const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
@@ -105,21 +107,20 @@ export interface EmailNotifications {
 // escaping.
 export type FailureReporter = (error: unknown) => void;
 
-// Opaque to the import: planWrite produces it, applyWrite consumes it.
-type MetafieldPlan = unknown;
-
 // The metafields collaborator as the import needs it. activeFields is the field set a
 // metafields.* column is read against, empty when the feature is off; planWrite
 // validates a row's values (throwing so the row fails whole) and applyWrite persists
-// them, touching only the parts the row named, both on the row's transaction.
-export interface MetafieldsImport {
+// them, touching only the parts the row named, both on the row's transaction. A plan is
+// opaque to the import, which only hands what planWrite made to applyWrite, so its type is
+// whatever the collaborator's is.
+export interface MetafieldsImport<Plan> {
   activeFields(): Promise<CsvField[]>;
-  planWrite(values: Record<string, unknown>): Promise<MetafieldPlan[]>;
-  applyWrite(memberId: string, plan: MetafieldPlan[], executor: Knex): Promise<void>;
+  planWrite(values: Record<string, unknown>): Promise<Plan[]>;
+  applyWrite(memberId: string, plan: Plan[], executor: Knex.Transaction): Promise<void>;
 }
 
 // The collaborators the import depends on, one per concern.
-interface ImporterDeps {
+interface ImporterDeps<Plan> {
   knex: Knex;
   readRows: ReadRows;
   spool: RowSpool;
@@ -127,12 +128,13 @@ interface ImporterDeps {
   tiers: TiersRepository;
   stripe: StripeSubscriptions;
   gifts: GiftService;
-  metafields: MetafieldsImport;
+  metafields: MetafieldsImport<Plan>;
   email: EmailNotifications;
   report: FailureReporter;
   dispatchJob: (job: MembersImportJob) => Promise<void>;
   getTimezone: () => string;
   getInlineThreshold: () => number;
+  tracking: ImportExportTracking;
 }
 
 // The values built for one row and handed to the members repository. Indexed off
@@ -214,7 +216,7 @@ function canImportInline(rowCount: number, expensive: boolean, inlineThreshold: 
   return rowCount <= inlineThreshold && !expensive;
 }
 
-class MembersCSVImporter {
+class MembersCSVImporter<Plan> {
   private _knex: Knex;
   private _readRows: ReadRows;
   private _spool: RowSpool;
@@ -222,12 +224,13 @@ class MembersCSVImporter {
   private _tiers: TiersRepository;
   private _stripe: StripeSubscriptions;
   private _gifts: GiftService;
-  private _metafields: MetafieldsImport;
+  private _metafields: MetafieldsImport<Plan>;
   private _email: EmailNotifications;
   private _report: FailureReporter;
   private _dispatchJob: (job: MembersImportJob) => Promise<void>;
   private _getTimezone: () => string;
   private _getInlineThreshold: () => number;
+  private _tracking: ImportExportTracking;
 
   constructor({
     knex,
@@ -243,7 +246,8 @@ class MembersCSVImporter {
     dispatchJob,
     getTimezone,
     getInlineThreshold,
-  }: ImporterDeps) {
+    tracking,
+  }: ImporterDeps<Plan>) {
     this._knex = knex;
     this._readRows = readRows;
     this._spool = spool;
@@ -257,6 +261,7 @@ class MembersCSVImporter {
     this._dispatchJob = dispatchJob;
     this._getTimezone = getTimezone;
     this._getInlineThreshold = getInlineThreshold;
+    this._tracking = tracking;
   }
 
   async importCSV(
@@ -268,7 +273,9 @@ class MembersCSVImporter {
     const extraLabels = request.extraLabels ?? [];
 
     if (canImportInline(rows.length, hasExpensiveColumns(rows), this._getInlineThreshold())) {
-      const result = await this.importRows(rows, labelName, extraLabels, verificationTrigger);
+      const result = await this._tracking.import('inline', (attempt) =>
+        this.importRows(attempt, rows, labelName, extraLabels, verificationTrigger),
+      );
       return { deferred: false, originalImportSize: rows.length, result };
     }
 
@@ -285,11 +292,9 @@ class MembersCSVImporter {
     verificationTrigger: VerificationTrigger,
   ): Promise<ImportResult> {
     const rows = await this._readRows(request.filePath, request.mapping);
-    return this.importRows(
-      rows,
-      buildImportLabelName(this._getTimezone()),
-      request.extraLabels ?? [],
-      verificationTrigger,
+    const labelName = buildImportLabelName(this._getTimezone());
+    return this._tracking.import('inline', (attempt) =>
+      this.importRows(attempt, rows, labelName, request.extraLabels ?? [], verificationTrigger),
     );
   }
 
@@ -334,10 +339,18 @@ class MembersCSVImporter {
     // the request, so anything failing from here is ours rather than the file's.
     let result: ImportResult | null = null;
     try {
-      const spooledRows = await this._spool.read(spoolKey);
-      result = await this.importRows(spooledRows, labelName, extraLabels, verificationTrigger);
+      // The rows are read back as part of the run, so a run that can't read them has failed.
+      result = await this._tracking.import('background', async (attempt) =>
+        this.importRows(
+          attempt,
+          await this._spool.read(spoolKey),
+          labelName,
+          extraLabels,
+          verificationTrigger,
+        ),
+      );
     } catch (error) {
-      // importRows only throws before its write loop, so nothing was written.
+      // A run only throws before its write loop, so nothing was written.
       this._report(error);
     } finally {
       await this.settle(() => this._spool.remove(spoolKey));
@@ -377,14 +390,18 @@ class MembersCSVImporter {
   // Only the write itself may throw. Callers rely on that to tell an import that never
   // ran from one that ran and then failed to tidy up after itself.
   private async importRows(
+    attempt: ImportAttempt,
     rows: MemberImportRow[],
     labelName: string,
     extraLabels: Label[],
     verificationTrigger: VerificationTrigger,
   ): Promise<ImportResult> {
     const startedAt = Date.now();
+    attempt.read(rows.length);
     const prepared = await this.prepareRun(labelName, extraLabels);
+    attempt.readsFields(prepared.activeMetafields, rows);
     const written = await this.writeRows(rows, prepared);
+    attempt.wrote({ imported: written.imported, rejected: written.errors.length });
     const result: ImportResult = { imported: written.imported, errors: written.errors };
 
     // Bookkeeping, and the publisher's result is already in hand. Nothing below is
@@ -653,6 +670,8 @@ class MembersCSVImporter {
   }
 }
 
+const ValueRefusal = z.object({ property: z.string(), message: z.string() });
+
 // A row error is read next to a spreadsheet, and a value rejection states only what the
 // value should be — the same sentence Admin shows under a single input, where the field is
 // already on screen. `property` is the dotted path a default export writes as its column
@@ -664,11 +683,11 @@ async function namingTheColumn<T>(plan: () => Promise<T>): Promise<T> {
   try {
     return await plan();
   } catch (error) {
-    const { property, message } = (error ?? {}) as { property?: unknown; message?: unknown };
-    const namesAField = typeof property === 'string' && property.includes('.');
-    if (!namesAField || typeof message !== 'string') {
+    const refusal = ValueRefusal.safeParse(error);
+    if (!refusal.success || !refusal.data.property.includes('.')) {
       throw error;
     }
+    const { property, message } = refusal.data;
     throw new errors.DataImportError({ message: `${property}: ${message}` });
   }
 }

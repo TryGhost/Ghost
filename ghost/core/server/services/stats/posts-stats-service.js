@@ -1,6 +1,5 @@
-const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const urlUtils = require('../../../shared/url-utils').default;
+const { moment } = require('../../../kernel/clock');
 
 // Import source normalization from ReferrersStatsService
 const { normalizeSource } = require('./referrers-stats-service');
@@ -83,11 +82,15 @@ class PostsStatsService {
    * @param {import('knex').Knex} deps.knex - Database client
    * @param {object} [deps.tinybirdClient] - Tinybird client for analytics
    * @param {object} [deps.urlService] - URL service for checking URL existence
+   * @param {object} deps.urlUtils - URL helpers for absolute image URLs
+   * @param {object} deps.logging
    */
   constructor(deps) {
     this.knex = deps.knex;
     this.tinybirdClient = deps.tinybirdClient;
     this.urlService = deps.urlService;
+    this.urlUtils = deps.urlUtils;
+    this.logging = deps.logging;
   }
 
   /**
@@ -211,7 +214,7 @@ class PostsStatsService {
 
       return { data: transformedResults.slice(0, limit) };
     } catch (error) {
-      logging.error('Error fetching top posts by attribution:', error);
+      this.logging.error('Error fetching top posts by attribution:', error);
       return { data: [] };
     }
   }
@@ -407,7 +410,7 @@ class PostsStatsService {
 
       return { data: finalResults.slice(0, limit) };
     } catch (error) {
-      logging.error(`Error fetching referrers for post ${postId}:`, error);
+      this.logging.error(`Error fetching referrers for post ${postId}:`, error);
       return { data: [] };
     }
   }
@@ -456,7 +459,7 @@ class PostsStatsService {
         ],
       };
     } catch (error) {
-      logging.error(`Error fetching growth stats for post ${postId}:`, error);
+      this.logging.error(`Error fetching growth stats for post ${postId}:`, error);
       return { data: [] };
     }
   }
@@ -809,7 +812,7 @@ class PostsStatsService {
 
       return { data: results };
     } catch (error) {
-      logging.error(`Error fetching newsletter stats for newsletter ${newsletterId}:`, error);
+      this.logging.error(`Error fetching newsletter stats for newsletter ${newsletterId}:`, error);
       return { data: [] };
     }
   }
@@ -821,6 +824,9 @@ class PostsStatsService {
    * @param {Object} options - Query options
    * @param {string} [options.order] - Sort order (e.g., 'date desc', 'open_rate desc', 'click_rate desc')
    * @param {number} [options.limit] - Number of results to return (default: 20)
+   * @param {number} [options.page] - Optional page number for period-wide statistics
+   * @param {string} [options.after_id] - Last post ID from the preceding page
+   * @param {string} [options.after_date] - UTC send date observed for that post
    * @param {string} [options.date_from] - Optional start date filter (YYYY-MM-DD)
    * @param {string} [options.date_to] - Optional end date filter (YYYY-MM-DD)
    * @param {string} [options.timezone] - Timezone to use for date interpretation
@@ -831,7 +837,13 @@ class PostsStatsService {
       const order = options.order || 'date desc';
       const limitRaw = Number.parseInt(String(options.limit ?? 20), 10);
       const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? limitRaw : 20;
+      const paginated = options.page !== undefined;
+      const pageRaw = Number(options.page);
+      const page = Number.isSafeInteger(pageRaw) && pageRaw > 0 ? pageRaw : 1;
       const { dateFrom, dateTo } = getDateBoundaries(options);
+      // Posts use database datetime strings rather than ISO strings in SQLite.
+      const databaseDateFrom = dateFrom?.replace('T', ' ').replace('.000Z', '') ?? null;
+      const databaseDateTo = dateTo?.replace('T', ' ').replace('Z', '') ?? null;
 
       // Parse order field and direction
       const [orderField, orderDirection = 'desc'] = order.split(' ');
@@ -858,6 +870,22 @@ class PostsStatsService {
         });
       }
 
+      if (paginated && orderField !== 'date') {
+        throw new errors.BadRequestError({ message: 'Date-ordered pagination is required' });
+      }
+      let cursorDate;
+      if (paginated && page > 1) {
+        if (
+          typeof options.after_id !== 'string' ||
+          !options.after_id ||
+          typeof options.after_date !== 'string' ||
+          !/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d{1,6})?$/.test(options.after_date)
+        ) {
+          throw new errors.BadRequestError({ message: 'A date-ordered cursor is required' });
+        }
+        cursorDate = options.after_date;
+      }
+
       let query;
 
       // If ordering by click_rate, we need to include click data
@@ -881,11 +909,11 @@ class PostsStatsService {
             this.knex.raw('COALESCE(e.email_count, 0) as sent_to'),
             this.knex.raw('COALESCE(e.opened_count, 0) as total_opens'),
             this.knex.raw(
-              'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate',
+              'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN 1.0 * COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate',
             ),
             this.knex.raw('COALESCE(clicks.click_count, 0) as total_clicks'),
             this.knex.raw(
-              'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(clicks.click_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as click_rate',
+              'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN 1.0 * COALESCE(clicks.click_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as click_rate',
             ),
           )
           .from('posts as p')
@@ -894,10 +922,10 @@ class PostsStatsService {
           .where('p.newsletter_id', newsletterId)
           .whereIn('p.status', ['sent', 'published'])
           .orderBy(orderFieldMap[orderField], orderDirection)
-          .limit(limit);
+          .limit(paginated ? limit + 1 : limit);
 
         // Apply centralized date filtering
-        applyDateFilter(query, dateFrom, dateTo, 'p.published_at');
+        applyDateFilter(query, databaseDateFrom, databaseDateTo, 'p.published_at');
       } else {
         // Build the query without click data for better performance
         query = this.knex
@@ -908,7 +936,7 @@ class PostsStatsService {
             this.knex.raw('COALESCE(e.email_count, 0) as sent_to'),
             this.knex.raw('COALESCE(e.opened_count, 0) as total_opens'),
             this.knex.raw(
-              'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate',
+              'CASE WHEN COALESCE(e.email_count, 0) > 0 THEN 1.0 * COALESCE(e.opened_count, 0) / COALESCE(e.email_count, 0) ELSE 0 END as open_rate',
             ),
           )
           .from('posts as p')
@@ -916,17 +944,49 @@ class PostsStatsService {
           .where('p.newsletter_id', newsletterId)
           .whereIn('p.status', ['sent', 'published'])
           .orderBy(orderFieldMap[orderField], orderDirection)
-          .limit(limit);
+          .limit(paginated ? limit + 1 : limit);
 
         // Apply centralized date filtering
-        applyDateFilter(query, dateFrom, dateTo, 'p.published_at');
+        applyDateFilter(query, databaseDateFrom, databaseDateTo, 'p.published_at');
+      }
+
+      if (paginated) {
+        query.orderBy('p.id', orderDirection);
+      }
+
+      if (cursorDate) {
+        const comparison = orderDirection.toLowerCase() === 'desc' ? '<' : '>';
+        query.where((builder) => {
+          builder.where('p.published_at', comparison, cursorDate).orWhere((tied) => {
+            tied.where('p.published_at', cursorDate).andWhere('p.id', comparison, options.after_id);
+          });
+        });
       }
 
       const results = await query;
 
-      return { data: results };
+      if (!paginated) {
+        return { data: results };
+      }
+
+      return {
+        data: results.slice(0, limit),
+        meta: {
+          pagination: {
+            page,
+            limit,
+            next: results.length > limit ? page + 1 : null,
+          },
+        },
+      };
     } catch (error) {
-      logging.error(`Error fetching newsletter basic stats for newsletter ${newsletterId}:`, error);
+      this.logging.error(
+        `Error fetching newsletter basic stats for newsletter ${newsletterId}:`,
+        error,
+      );
+      if (options.page !== undefined) {
+        throw error;
+      }
       return { data: [] };
     }
   }
@@ -936,9 +996,10 @@ class PostsStatsService {
    *
    * @param {string} newsletterId - ID of the newsletter to get click stats for
    * @param {Array<string>|string} postIds - Array of post IDs or comma-separated string of post IDs to get click data for
+   * @param {boolean} [failOnError] - Propagate database failures when true
    * @returns {Promise<{data: Array}>} The newsletter click stats
    */
-  async getNewsletterClickStats(newsletterId, postIds = []) {
+  async getNewsletterClickStats(newsletterId, postIds = [], failOnError = false) {
     try {
       // Handle postIds as either array or comma-separated string
       let postIdsArray = [];
@@ -972,7 +1033,7 @@ class PostsStatsService {
         .groupBy('r.post_id')
         .select(
           this.knex.raw(
-            'CASE WHEN MAX(COALESCE(e.email_count, 0)) > 0 THEN COALESCE(COUNT(DISTINCT mce.member_id), 0) / MAX(COALESCE(e.email_count, 0)) ELSE 0 END as click_rate',
+            'CASE WHEN MAX(COALESCE(e.email_count, 0)) > 0 THEN 1.0 * COALESCE(COUNT(DISTINCT mce.member_id), 0) / MAX(COALESCE(e.email_count, 0)) ELSE 0 END as click_rate',
           ),
         );
 
@@ -980,7 +1041,13 @@ class PostsStatsService {
 
       return { data: results };
     } catch (error) {
-      logging.error(`Error fetching newsletter click stats for newsletter ${newsletterId}:`, error);
+      this.logging.error(
+        `Error fetching newsletter click stats for newsletter ${newsletterId}:`,
+        error,
+      );
+      if (failOnError) {
+        throw error;
+      }
       return { data: [] };
     }
   }
@@ -1070,7 +1137,7 @@ class PostsStatsService {
         ],
       };
     } catch (error) {
-      logging.error(`Error fetching subscriber stats for newsletter ${newsletterId}:`, error);
+      this.logging.error(`Error fetching subscriber stats for newsletter ${newsletterId}:`, error);
       return {
         data: [
           {
@@ -1127,8 +1194,6 @@ class PostsStatsService {
    * @returns {Array<{date: string, value: number}>} Dense array with all dates filled
    */
   _fillMissingDates(values, startDate, endDate, timezone = 'UTC', startingValue = 0) {
-    const moment = require('moment-timezone');
-
     // If no date range provided, return as-is
     if (!startDate || !endDate) {
       return values || [];
@@ -1220,7 +1285,7 @@ class PostsStatsService {
 
           visitors = visitorData?.[0]?.visits || 0;
         } catch (error) {
-          logging.error('Error fetching visitor data from Tinybird:', error);
+          this.logging.error('Error fetching visitor data from Tinybird:', error);
         }
       }
 
@@ -1239,7 +1304,7 @@ class PostsStatsService {
         ],
       };
     } catch (error) {
-      logging.error(`Error fetching post stats for post ${postId}:`, error);
+      this.logging.error(`Error fetching post stats for post ${postId}:`, error);
       return { data: [] };
     }
   }
@@ -1359,7 +1424,7 @@ class PostsStatsService {
               title: post.title,
               published_at: post.published_at,
               feature_image: post.feature_image
-                ? urlUtils.transformReadyToAbsolute(post.feature_image)
+                ? this.urlUtils.transformReadyToAbsolute(post.feature_image)
                 : post.feature_image,
               status: post.status,
               authors: post.authors,
@@ -1462,7 +1527,7 @@ class PostsStatsService {
           title: post.title,
           published_at: post.published_at,
           feature_image: post.feature_image
-            ? urlUtils.transformReadyToAbsolute(post.feature_image)
+            ? this.urlUtils.transformReadyToAbsolute(post.feature_image)
             : post.feature_image,
           status: post.status,
           authors: post.authors,
@@ -1481,7 +1546,7 @@ class PostsStatsService {
       // Combine both sets of posts
       return { data: [...postsWithViews, ...additionalPostsWithZeroViews] };
     } catch (error) {
-      logging.error('Error fetching top posts views:', error);
+      this.logging.error('Error fetching top posts views:', error);
       return { data: [] };
     }
   }
@@ -1552,7 +1617,7 @@ class PostsStatsService {
 
       return combinedResults;
     } catch (error) {
-      logging.error('Error fetching member attribution counts:', error);
+      this.logging.error('Error fetching member attribution counts:', error);
       return postIds.map((postId) => ({
         post_id: postId,
         free_members: 0,
@@ -1582,7 +1647,7 @@ class PostsStatsService {
 
       return memberCounts;
     } catch (error) {
-      logging.error('Error fetching member counts:', error);
+      this.logging.error('Error fetching member counts:', error);
       return {};
     }
   }
@@ -1620,7 +1685,7 @@ class PostsStatsService {
 
       return visitorCounts;
     } catch (error) {
-      logging.error('Error fetching visitor counts from Tinybird:', error);
+      this.logging.error('Error fetching visitor counts from Tinybird:', error);
       return {};
     }
   }
@@ -1658,7 +1723,7 @@ class PostsStatsService {
 
       return clickCounts;
     } catch (error) {
-      logging.error('Error fetching click counts:', error);
+      this.logging.error('Error fetching click counts:', error);
       return {};
     }
   }

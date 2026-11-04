@@ -296,7 +296,13 @@ const SettingsModal = forwardRef<HTMLElement, SettingsModalProps>(
     }
 
     const titleContent = title && (
-      <Text as="h3" className="md:text-2xl" leading="heading" size="xl" weight="bold">
+      <Text
+        as="h3"
+        className="in-data-[admin7-design=true]:font-title md:text-2xl"
+        leading="heading"
+        size="xl"
+        weight="bold"
+      >
         {title}
       </Text>
     );

@@ -1,4 +1,8 @@
 module.exports = {
+  get automations() {
+    return require('./automations');
+  },
+
   get db() {
     return require('./db');
   },

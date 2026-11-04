@@ -1,5 +1,4 @@
 import type React from 'react';
-import assert from 'assert/strict';
 import { ListPage } from '@/components/page-templates/list-page';
 import { PageChromeProvider } from '@/components/page-templates/large-page-title';
 import { PageHeader } from '@/components/patterns/page-header';
@@ -38,16 +37,15 @@ describe('ListPage large titles', () => {
     render(wrap(<MembersPage />));
 
     const headings = screen.getAllByRole('heading', { level: 1 });
-    assert.equal(headings.length, 1);
-    assert.equal(headings[0].getAttribute('data-page-header'), 'title');
-    assert.equal(headings[0].hasAttribute('aria-hidden'), false);
+    expect(headings.length).toBe(1);
+    expect(headings[0].getAttribute('data-page-header')).toBe('title');
+    expect(headings[0].hasAttribute('aria-hidden')).toBe(false);
 
     const listPage = screen.getByTestId('list-page');
-    assert.equal(listPage.hasAttribute('data-large-title-host'), false);
-    assert.equal(listPage.querySelector('[data-list-page=large-title]'), null);
-    assert.equal(listPage.style.getPropertyValue('--list-page-header-height'), '');
-    assert.equal(
-      screen.getByTestId('list-page-header').hasAttribute('data-large-title-header'),
+    expect(listPage.hasAttribute('data-large-title-host')).toBe(false);
+    expect(listPage.querySelector('[data-list-page=large-title]')).toBeNull();
+    expect(listPage.style.getPropertyValue('--list-page-header-height')).toBe('');
+    expect(screen.getByTestId('list-page-header').hasAttribute('data-large-title-header')).toBe(
       false,
     );
   });
@@ -61,16 +59,15 @@ describe('ListPage large titles', () => {
 
     // The one heading assistive technology gets is the large title, count included
     const heading = screen.getByRole('heading', { level: 1 });
-    assert.equal(heading.getAttribute('data-large-title'), '');
-    assert.match(heading.textContent ?? '', /Members\s*12/);
+    expect(heading.getAttribute('data-large-title')).toBe('');
+    expect(heading.textContent ?? '').toMatch(/Members\s*12/);
 
     const standIn = screen
       .getByTestId('list-page-header')
       .querySelector('[data-page-header=title]');
-    assert.equal(standIn?.getAttribute('aria-hidden'), 'true');
-    assert.equal(screen.getByTestId('list-page').hasAttribute('data-large-title-host'), true);
-    assert.equal(
-      screen.getByTestId('list-page-header').hasAttribute('data-large-title-header'),
+    expect(standIn?.getAttribute('aria-hidden')).toBe('true');
+    expect(screen.getByTestId('list-page').hasAttribute('data-large-title-host')).toBe(true);
+    expect(screen.getByTestId('list-page-header').hasAttribute('data-large-title-header')).toBe(
       true,
     );
   });
@@ -82,11 +79,10 @@ describe('ListPage large titles', () => {
       </PageChromeProvider>,
     );
 
-    assert.equal(screen.queryByRole('heading', { level: 1 }), null);
+    expect(screen.queryByRole('heading', { level: 1 })).toBeNull();
     // Its table labels still stick beneath the header
-    assert.equal(screen.getByTestId('list-page').hasAttribute('data-large-title-host'), true);
-    assert.equal(
-      screen.getByTestId('list-page-header').hasAttribute('data-large-title-header'),
+    expect(screen.getByTestId('list-page').hasAttribute('data-large-title-host')).toBe(true);
+    expect(screen.getByTestId('list-page-header').hasAttribute('data-large-title-header')).toBe(
       false,
     );
   });

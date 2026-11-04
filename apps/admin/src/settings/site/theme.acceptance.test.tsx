@@ -175,6 +175,25 @@ describe('Theme settings', () => {
     await expect.poll(() => installApi.lastRequest?.url).toContain('ref=TryGhost%2FEdition');
   });
 
+  it('lists a theme once after updating it', async () => {
+    const installed = fakeThemeWorld();
+    const edition = installed.find((item) => item.name === 'edition')!;
+    fakeAdminEndpoint('POST', /^\/themes\/install\/\?/, { themes: [edition] });
+    await renderAdminApp('/settings/design/change-theme');
+
+    const modal = settingsScreen.themeModal();
+    await modal.getByRole('button', { name: /Edition/ }).click();
+    await modal.getByRole('button', { name: 'Update Edition' }).click();
+    await settingsScreen.confirmationModal().getByRole('button', { name: 'Overwrite' }).click();
+    await settingsScreen.confirmationModal().getByRole('button', { name: 'Close' }).click();
+    await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+
+    await modal.getByRole('button', { name: 'Change theme' }).click();
+    await modal.getByRole('tab', { name: 'Installed' }).click();
+    await expect(settingsScreen.themeListItems()).toHaveCount(2);
+    await expect(installedTheme('edition')).toHaveCount(1);
+  });
+
   it('manages installed themes', async () => {
     const installed = fakeThemeWorld();
     const casper = installed.find((item) => item.name === 'casper')!;
@@ -515,6 +534,34 @@ describe('Theme settings', () => {
       .element(page.getByText('Click to select or drag & drop zip file', { exact: true }))
       .toBeVisible();
     await expect(page.getByText('Theme not uploaded')).toHaveCount(0);
+  });
+
+  it('keeps the existing theme listed when an overwriting upload fails', async () => {
+    fakeThemeWorld();
+    fakeAdminEndpoint(
+      'POST',
+      '/themes/upload/',
+      {
+        errors: [
+          { message: 'Theme is not compatible or contains errors.', details: 'Missing index.hbs' },
+        ],
+      },
+      { status: 422 },
+    );
+    const buffer = await archiveBuffer();
+    await renderAdminApp('/settings/design/change-theme');
+
+    await settingsScreen.themeModal().getByRole('button', { name: 'Upload theme' }).click();
+    await uploadThemeFile(new File([buffer], 'edition.zip', { type: 'application/zip' }));
+    await settingsScreen.confirmationModal().getByRole('button', { name: 'Overwrite' }).click();
+
+    const errorModal = settingsScreen.confirmationModal();
+    await expect.element(errorModal).toHaveTextContent('Theme not uploaded');
+    await errorModal.getByRole('button', { name: 'Cancel' }).click();
+    await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+
+    await expect(settingsScreen.themeListItems()).toHaveCount(2);
+    await expect.element(installedTheme('edition')).toBeVisible();
   });
 
   it('tells a blocking problem apart from the errors reported alongside it', async () => {
@@ -969,6 +1016,36 @@ describe('Theme settings', () => {
       replaceState.mock.calls.some(([, , url]) => String(url).endsWith('#/settings/theme')),
     ).toBe(true);
     replaceState.mockRestore();
+  });
+
+  it('keeps a built-in theme activatable after its marketplace installation fails', async () => {
+    fakeThemeWorld();
+    const installApi = fakeAdminEndpoint(
+      'POST',
+      /^\/themes\/install\/\?/,
+      {
+        errors: [
+          { message: "Please rename your zip, it's not allowed to override the default theme." },
+        ],
+      },
+      { status: 422 },
+    );
+    await renderAdminApp('/settings/theme/install?source=github&ref=TryGhost/Casper');
+
+    const confirmModal = settingsScreen.confirmationModal();
+    await expect.element(confirmModal).toHaveTextContent(/overwrite your existing version/i);
+    await confirmModal.getByRole('button', { name: 'Install' }).click();
+    await expect.element(settingsScreen.errorToast()).toHaveTextContent(/override the default/i);
+    expect(installApi.requests).toHaveLength(1);
+    await confirmModal.getByRole('button', { name: 'Cancel' }).click();
+    await expect(settingsScreen.confirmationModal()).toHaveCount(0);
+
+    const modal = settingsScreen.themeModal();
+    await modal.getByRole('button', { name: /Casper/ }).click();
+    await modal.getByRole('button', { name: 'Activate Casper' }).click();
+    await expect
+      .element(settingsScreen.confirmationModal())
+      .toHaveTextContent(/Do you want to activate Casper/);
   });
 
   it('confirms before discarding editor changes', async () => {

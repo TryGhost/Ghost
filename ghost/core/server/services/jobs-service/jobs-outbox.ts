@@ -4,8 +4,8 @@ import type { DispatchEnvelope } from '@tryghost/adapter-base-jobs';
 import { DbJson } from '../../lib/db-types/json';
 
 const TABLE = 'jobs_outbox';
-// knex's generated name for the schema's ['available_at'] index on this table.
-const AVAILABLE_AT_INDEX = 'jobs_outbox_available_at_index';
+// knex's generated name for the schema's ['submitted_at', 'available_at'] index on this table.
+const CLAIM_INDEX = 'jobs_outbox_submitted_at_available_at_index';
 
 export const OutboxEnvelope = DbJson(
   z.object({
@@ -72,10 +72,12 @@ export class JobsOutbox {
       // after a truncate) gets a table scan plus filesort, which reads and
       // locks every eligible row before the LIMIT applies, so one relay
       // holding a row starves the others and blocks inserts. Forcing the
-      // available_at index makes the scan stop at the first unlocked row.
+      // claim index makes the scan stop at the first unlocked row, and
+      // start past the rows already handed over.
       const raw = await trx
         .select('id', 'envelope')
-        .from(trx.raw('?? force index (??)', [TABLE, AVAILABLE_AT_INDEX]))
+        .from(trx.raw('?? force index (??)', [TABLE, CLAIM_INDEX]))
+        .whereNull('submitted_at')
         .where('available_at', '<=', new Date())
         .orderBy([{ column: 'available_at' }, { column: 'id' }])
         .forUpdate()

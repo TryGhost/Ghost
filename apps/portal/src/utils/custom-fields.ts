@@ -1,17 +1,42 @@
-import { FIELD_TYPE_IDS, partsOf, type FieldType } from '@tryghost/metafield-types/structure';
+import type { MetafieldDefinition, TypedSettings } from '@tryghost/metafield-types';
+import {
+  FIELD_STRUCTURES,
+  editableAnswers,
+  isFieldType,
+  isRecordValue,
+  matchField,
+  matchShape,
+  type FieldType,
+  type FieldTypeOfShape,
+  type ValueOf,
+} from '@tryghost/metafield-types/structure';
 import { isPreviewMode } from './check-mode';
 import { hasCustomFieldsEnabled } from './helpers';
 
-/** A field the publisher has opened to members, as the members API describes it. */
-export interface MemberCustomField {
+/**
+ * A field the publisher has opened to members, as the members API lists it: Ghost's definition
+ * without what only says where and when it is stored. The type is a plain string, because a site
+ * newer than this build can list a field of a type this build doesn't know.
+ */
+export type ListedCustomField = Pick<MetafieldDefinition, 'name' | 'access'> & {
   key: string;
-  name: string;
   type: string;
-  access: { member: string };
+  settings?: unknown;
+};
+
+/** A listed field of a type this build knows, with the settings that type takes. */
+export type MemberCustomField = Omit<ListedCustomField, 'type' | 'settings'> & TypedSettings;
+
+/**
+ * Whether a listed field is of a type this build knows. Only the type is checked: the rest is read
+ * as the site's own Ghost sends it, which lists a field with the settings its type takes.
+ */
+function isMemberCustomField(field: ListedCustomField): field is MemberCustomField {
+  return isFieldType(field.type);
 }
 
 interface AskFor {
-  api: { member: { customFields: () => Promise<MemberCustomField[]> } };
+  api: { member: { customFields: () => Promise<ListedCustomField[]> } };
   site: { labs?: { membersCustomFields?: boolean } } | null;
   member: unknown;
 }
@@ -23,6 +48,9 @@ interface AskFor {
  * Always a list. Nothing to ask for — the feature off, nobody signed in, a preview — and
  * a site that cannot answer come to the same thing here: no fields to draw. Every way in
  * is a page load, so there is no later moment at which the answer would differ.
+ *
+ * A field of a type this build doesn't know is left out, with a warning in the console, since
+ * there is nothing sensible to draw for it.
  */
 export async function fetchMemberCustomFields({
   api,
@@ -34,60 +62,61 @@ export async function fetchMemberCustomFields({
   }
 
   try {
-    return await api.member.customFields();
+    const listed = await api.member.customFields();
+    return listed.flatMap((field) => {
+      if (isMemberCustomField(field)) {
+        return [field];
+      }
+      // eslint-disable-next-line no-console
+      console.warn('[Portal] Left out a custom field of a type this build does not know:', {
+        key: field.key,
+        type: field.type,
+      });
+      return [];
+    });
   } catch (err) {
     return [];
   }
 }
 
-/**
- * A field this build can draw. The site may offer a type added after this bundle
- * shipped, and there is nothing sensible to render for one, so it is left out rather
- * than guessed at.
- */
-const DRAWABLE_TYPES = new Set<string>(FIELD_TYPE_IDS);
+/** A value as the member holds it, laid out as its field's type keeps one, or undefined if none. */
+export type CustomFieldValue = ValueOf<FieldType> | undefined;
 
-export type DrawableCustomField = Omit<MemberCustomField, 'type'> & { type: FieldType };
+/** What a composite holds: a string for any of its parts, and not every part need be filled in. */
+export type CompositeValue = ValueOf<FieldTypeOfShape<'record'>>;
 
-export function drawableCustomFields(
-  fields: MemberCustomField[] | null | undefined,
-): DrawableCustomField[] {
-  if (!Array.isArray(fields)) {
-    return [];
-  }
-  return fields.filter((field): field is DrawableCustomField => DRAWABLE_TYPES.has(field.type));
-}
-
-/** What a composite holds: one string per part, and not every part need be filled in. */
-export type CompositeValue = Record<string, string | undefined>;
-
-/** A value as the member holds it: one string, or one per part of a composite. */
-export type CustomFieldValue = string | CompositeValue | undefined;
+/** A composite's parts read by name, whichever parts its type declares. */
+export type PartsByName = Readonly<Record<string, string | undefined>>;
 
 /**
  * Narrowed rather than asserted. Which shape a value has follows from its field's type,
  * which the compiler cannot see, so the value itself is asked instead.
  */
 export const compositeValue = (value: CustomFieldValue): CompositeValue | undefined =>
-  typeof value === 'object' && value !== null ? value : undefined;
+  isRecordValue(value) ? value : undefined;
 
 export const scalarValue = (value: CustomFieldValue): string =>
   typeof value === 'string' ? value : '';
 
+export const listValue = (value: CustomFieldValue): string[] => (Array.isArray(value) ? value : []);
+
 /** A part is changed when what the member has differs from what the site holds. */
 const changedParts = (
   parts: readonly string[],
-  current: CompositeValue | undefined,
-  original: CompositeValue | undefined,
-): string[] => parts.filter((part) => (current?.[part] ?? '') !== (original?.[part] ?? ''));
+  current: PartsByName,
+  original: PartsByName,
+): string[] => parts.filter((part) => (current[part] ?? '') !== (original[part] ?? ''));
 
 /**
  * What the member changed, in the shape the members API takes: only fields they may
  * write, since naming one they may only read refuses the whole save, and only the parts
- * of a composite they touched, since each part records who last wrote it.
+ * of a composite they touched, since each part records who last wrote it. A list is sent as its
+ * picker shows it, the answers `editableAnswers` gives, whenever those differ from what the site
+ * holds. Saving therefore clears an answer the picker can't show, such as one to an option the
+ * field no longer offers, though the member never touched the list.
  */
 export function changedCustomFields(
-  fields: DrawableCustomField[],
+  fields: MemberCustomField[],
   values: Record<string, CustomFieldValue>,
   original: Record<string, CustomFieldValue>,
 ): { custom: Record<string, unknown> } | undefined {
@@ -95,26 +124,47 @@ export function changedCustomFields(
 
   for (const field of fields.filter((f) => f.access.member === 'write')) {
     const value = values[field.key];
-    const parts = partsOf(field.type);
-
-    if (!parts) {
-      if (scalarValue(value) !== scalarValue(original[field.key])) {
-        custom[field.key] = value;
-      }
-      continue;
+    const was = original[field.key];
+    const change = matchField<MemberCustomField, unknown>(field, {
+      scalar: () => (scalarValue(value) !== scalarValue(was) ? value : undefined),
+      // Only the parts that changed, emptied ones included. Naming the whole field would clear it,
+      // and this build only knows the parts it draws.
+      record: ({ type }) => {
+        const held: PartsByName = compositeValue(value) ?? {};
+        const { parts } = FIELD_STRUCTURES[type];
+        const changed = changedParts(Object.keys(parts), held, compositeValue(was) ?? {});
+        return changed.length === 0
+          ? undefined
+          : Object.fromEntries(changed.map((part) => [part, held[part] ?? '']));
+      },
+      // A list is written whole, so a change sends every answer the picker shows.
+      set: ({ settings }) => {
+        const shown = editableAnswers(settings, listValue(value));
+        const held = listValue(was);
+        const same = shown.length === held.length && shown.every((option) => held.includes(option));
+        return same ? undefined : shown;
+      },
+    });
+    if (change !== undefined) {
+      custom[field.key] = change;
     }
-
-    const held = compositeValue(value);
-    const was = compositeValue(original[field.key]);
-    const changed = changedParts(parts, held, was);
-    if (changed.length === 0) {
-      continue;
-    }
-
-    // The parts that changed, emptied ones included, and never the field itself: naming
-    // the field clears it whole, and a build only knows the parts it draws.
-    custom[field.key] = Object.fromEntries(changed.map((part) => [part, held?.[part] ?? '']));
   }
 
   return Object.keys(custom).length > 0 ? { custom } : undefined;
+}
+
+/**
+ * The name of the input a refusal belongs on, or null when no single input holds what was refused.
+ * That covers a refusal of a whole record (the field was archived or closed to members while the
+ * page was open) and of a part the field doesn't declare.
+ * Marking an input that isn't on the page would hide the refusal, so the caller shows these in the
+ * notification instead.
+ */
+export function refusedInput(field: MemberCustomField, part: string): string | null {
+  return matchShape<string | null>(field.type, {
+    scalar: () => (part === '' ? `custom:${field.key}` : null),
+    record: ({ parts }) =>
+      part !== '' && Object.keys(parts).includes(part) ? `custom:${field.key}:${part}` : null,
+    set: () => (part === '' ? `custom:${field.key}` : null),
+  });
 }

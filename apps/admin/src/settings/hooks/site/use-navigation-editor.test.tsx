@@ -1,4 +1,3 @@
-import * as assert from 'node:assert/strict';
 import useNavigationEditor, {
   type NavigationItem,
 } from '@/settings/hooks/site/use-navigation-editor';
@@ -13,8 +12,8 @@ describe('useNavigationEditor', function () {
       }),
     );
 
-    assert.equal(result.current.items[0].icon, '');
-    assert.equal(result.current.items[0].visibility, 'public');
+    expect(result.current.items[0].icon).toBe('');
+    expect(result.current.items[0].visibility).toBe('public');
   });
 
   it('serializes icon and non-public visibility when an item changes', async function () {
@@ -34,7 +33,7 @@ describe('useNavigationEditor', function () {
     });
 
     await waitFor(() => {
-      assert.deepEqual(setItems.mock.calls.at(-1)?.[0], [
+      expect(setItems.mock.calls.at(-1)?.[0]).toStrictEqual([
         {
           url: '/',
           label: 'Home',
@@ -61,7 +60,7 @@ describe('useNavigationEditor', function () {
     });
 
     await waitFor(() => {
-      assert.deepEqual(setItems.mock.calls.at(-1)?.[0], [
+      expect(setItems.mock.calls.at(-1)?.[0]).toStrictEqual([
         {
           url: '/',
           label: 'Home',
@@ -87,7 +86,7 @@ describe('useNavigationEditor', function () {
     });
 
     await waitFor(() => {
-      assert.deepEqual(setItems.mock.calls.at(-1)?.[0], [
+      expect(setItems.mock.calls.at(-1)?.[0]).toStrictEqual([
         {
           url: '/',
           label: 'Home',
@@ -120,7 +119,7 @@ describe('useNavigationEditor', function () {
     });
 
     await waitFor(() => {
-      assert.deepEqual(setItems.mock.calls.at(-1)?.[0], [
+      expect(setItems.mock.calls.at(-1)?.[0]).toStrictEqual([
         {
           url: '/blog/',
           label: 'Blog',
@@ -151,7 +150,7 @@ describe('useNavigationEditor', function () {
     });
 
     await waitFor(() => {
-      assert.deepEqual(setItems.mock.calls.at(-1)?.[0], [
+      expect(setItems.mock.calls.at(-1)?.[0]).toStrictEqual([
         {
           url: '/icon-only/',
           label: '',
@@ -175,11 +174,11 @@ describe('useNavigationEditor', function () {
     );
 
     act(() => {
-      assert.equal(result.current.validate(), false);
+      expect(result.current.validate()).toBe(false);
     });
 
     await waitFor(() => {
-      assert.equal(result.current.items[0].errors.label, 'You must specify a label or icon');
+      expect(result.current.items[0].errors.label).toBe('You must specify a label or icon');
     });
   });
 
@@ -199,14 +198,11 @@ describe('useNavigationEditor', function () {
     );
 
     act(() => {
-      assert.equal(result.current.validate(), false);
+      expect(result.current.validate()).toBe(false);
     });
 
     await waitFor(() => {
-      assert.equal(
-        result.current.items[0].errors.visibility,
-        'You must specify a valid visibility',
-      );
+      expect(result.current.items[0].errors.visibility).toBe('You must specify a valid visibility');
     });
   });
 
@@ -225,7 +221,7 @@ describe('useNavigationEditor', function () {
     );
 
     act(() => {
-      assert.equal(result.current.validate(), true);
+      expect(result.current.validate()).toBe(true);
     });
   });
 });

@@ -130,6 +130,70 @@ describe('Stripe Checkout Preview Admin API', function () {
     });
   });
 
+  // A preview has to show what it was asked to, so it never opens without part of it.
+  describe('when Stripe refuses part of it', function () {
+    beforeEach(function () {
+      mockManager.mockLabsEnabled('stripeCheckoutCollection');
+      mockManager.mockLabsDisabled('stripeAutomaticTax');
+    });
+
+    function previewTaxId() {
+      return preview(
+        { tier_id: paidTierId, design: { customize: false }, tax_number: { collect: true } },
+        422,
+      );
+    }
+
+    it('says which part Stripe refused, with Stripe’s reason', async function () {
+      stripeMocker.checkoutParamRefusal = {
+        param: 'tax_id_collection',
+        error: {
+          type: 'invalid_request_error',
+          param: 'tax_id_collection[enabled]',
+          message: 'Tax ID collection is not available.',
+        },
+      };
+
+      const { body } = await previewTaxId();
+      assert.equal(
+        body.errors[0].context,
+        'Stripe refused to ask for a tax ID. Tax ID collection is not available.',
+      );
+      assert.equal(body.errors[0].property, 'tax_number');
+      assert.equal(stripeMocker.checkoutSessions.length, 0);
+    });
+
+    // Stripe also refuses sessions for reasons of the account's own, so without a named part the
+    // preview can't say the settings are why.
+    it('says Stripe refused the checkout when it names nothing, with Stripe’s reason', async function () {
+      stripeMocker.checkoutParamRefusal = {
+        param: 'tax_id_collection',
+        error: { type: 'invalid_request_error', message: 'Tax ID collection needs more.' },
+      };
+
+      const { body } = await previewTaxId();
+      assert.equal(
+        body.errors[0].context,
+        'Stripe refused to open this checkout. Tax ID collection needs more.',
+      );
+      assert.equal(body.errors[0].property, null);
+      assert.equal(stripeMocker.checkoutSessions.length, 0);
+    });
+  });
+
+  it('says Stripe refused it, with Stripe’s reason, when it has none of the settings', async function () {
+    stripeMocker.checkoutSessionError = {
+      type: 'invalid_request_error',
+      message: 'Your account cannot currently make live charges.',
+    };
+
+    const { body } = await preview({ tier_id: paidTierId, design: { customize: false } }, 422);
+    assert.equal(
+      body.errors[0].context,
+      'Stripe refused to open this checkout. Your account cannot currently make live charges.',
+    );
+  });
+
   it('refuses a free tier, an unknown tier and a malformed tier id', async function () {
     for (const tierId of [freeTierId, '0123456789abcdef01234567', 'not-a-tier']) {
       const { body } = await preview({ tier_id: tierId, design: { customize: false } }, 422);

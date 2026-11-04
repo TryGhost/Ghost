@@ -667,3 +667,95 @@ test('handles TypeScript require imports and literal dynamic imports', () => {
   assert.equal(result.diagnostics.length, 3);
   assert.ok(result.diagnostics.every((d) => d.code === injectionCode));
 });
+
+const canonicalCode = 'ghost(prefer-canonical-types)';
+const canonicalFile = 'ghost/core/server/services/alpha/alpha-service';
+
+test('flags hand-written logger shapes whatever they are called', () => {
+  const source = [
+    'type Logging = {',
+    '  info(...args: unknown[]): void;',
+    '  error(...args: unknown[]): void;',
+    '};',
+    'interface Logger {',
+    '  warn(message: string): void;',
+    '}',
+    'type Reporter = { debug: (message: string) => void; fatal: Function };',
+    'type Deps = { logging: { trace(message: string): void } };',
+  ].join('\n');
+  const result = lint(source, `${canonicalFile}.ts`);
+  assert.equal(result.status, 1);
+  assert.ok(result.diagnostics.every((d) => d.code === canonicalCode && d.severity === 'error'));
+  assert.deepEqual(
+    result.diagnostics.map((d) => d.labels[0]?.span.line).sort((a, b) => a! - b!),
+    [1, 5, 8, 9],
+  );
+  assert.ok(
+    result.diagnostics.every((d) =>
+      d.message.includes("import type { GhostLogger } from '@tryghost/logging'"),
+    ),
+  );
+});
+
+test('allows the library logger type and shapes that are not loggers', () => {
+  const source = [
+    "import type { GhostLogger } from '@tryghost/logging';",
+    "type Deps = { logging: Pick<GhostLogger, 'info' | 'error'>; other: GhostLogger };",
+    'type Failure = { error: string; info: { code: number } };',
+    'type Store = { info(): void; get(key: string): unknown };',
+    'interface Extended extends Deps { warn(message: string): void }',
+    'type Empty = {};',
+  ].join('\n');
+  assert.deepEqual(lint(source, `${canonicalFile}.ts`).diagnostics, []);
+});
+
+test('flags JSDoc logger shapes in JavaScript but not library or data types', () => {
+  const source = [
+    '/**',
+    ' * @param {{info: (message: string) => unknown, warn: Function}} logging',
+    " * @param {Pick<import('@tryghost/logging').GhostLogger, 'info'>} other",
+    ' * @param {{id: string, error: {code: number; message: string} | null}} event',
+    ' * @param {{logging: {error(err: unknown): void}, name: string}} deps',
+    ' * @param {{',
+    ' *   info: Function,',
+    ' *   warn(message: string): void',
+    ' * }} multiline',
+    ' * @param {{',
+    ' *   warn(message: string):',
+    " *     import('./result').Result",
+    ' *   error: (message: string)',
+    ' *     => void',
+    ' * }} newlines',
+    ' * @param {{',
+    ' *   info(): void',
+    ' *   get(): string',
+    ' * }} mixed',
+    ' * @param {{',
+    ' *   warn(): void',
+    ' *   import(file: string): void',
+    ' * }} importer',
+    ' */',
+    'function example(logging, other, event, deps, multiline, newlines, mixed, importer) {}',
+  ].join('\n');
+  const result = lint(source, `${canonicalFile}.js`);
+  assert.equal(result.status, 1);
+  assert.deepEqual(
+    result.diagnostics.map((d) => [d.code, d.labels[0]?.span.line]),
+    [
+      [canonicalCode, 2],
+      [canonicalCode, 5],
+      [canonicalCode, 6],
+      [canonicalCode, 10],
+    ],
+  );
+  assert.ok(
+    result.diagnostics.every((d) => d.message.includes("import('@tryghost/logging').GhostLogger")),
+  );
+});
+
+test('limits canonical type checks to Ghost Core', () => {
+  const source = 'type Logging = { info(message: string): void };';
+  assert.equal(lint(source, `${canonicalFile}.ts`).status, 1);
+  assert.equal(lint(source, 'ghost/test/utils/example.ts').status, 0);
+  assert.equal(lint(source, 'apps/admin/src/example.ts').status, 0);
+});

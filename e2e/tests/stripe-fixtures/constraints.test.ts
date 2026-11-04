@@ -68,6 +68,17 @@ test.describe('Fake Stripe - rejects what Stripe rejects', () => {
     expect(body.error.message).toContain('exceeded maximum 3 allowed elements');
   });
 
+  // Ghost leaves out only the part whose parameter Stripe names, so the name matters as much as
+  // the refusal.
+  test('a country Stripe does not ship to is refused, naming its place in the list', async () => {
+    const { status, body } = await createSession({
+      shipping_address_collection: { allowed_countries: ['GB', 'UK'] },
+    });
+
+    expect(status).toBe(400);
+    expect(body.error.param).toBe('shipping_address_collection[allowed_countries][1]');
+  });
+
   test('customer_update without a customer is refused - ONC-35', async () => {
     const { status, body } = await createSession({ customer_update: { address: 'auto' } });
 
@@ -112,11 +123,75 @@ test.describe('Fake Stripe - rejects what Stripe rejects', () => {
     expect(body.error.message).toContain('please set `customer_update[name]`');
   });
 
-  test('tax_id_collection for an existing customer is accepted with it', async () => {
-    const { status } = await createSession({
+  // Ghost makes a buyer's customer with an email and a name, so it holds no address for Stripe
+  // to check a tax ID against.
+  test('tax_id_collection for an existing customer without an address needs customer_update[address]', async () => {
+    const { status, body } = await createSession({
       customer: 'cus_probe',
       tax_id_collection: { enabled: true },
       customer_update: { name: 'auto' },
+    });
+
+    expect(status).toBe(400);
+    expect(body.error.message).toContain('please set `customer_update[address]`');
+  });
+
+  test('tax_id_collection for an existing customer is accepted with both', async () => {
+    const { status } = await createSession({
+      customer: 'cus_probe',
+      tax_id_collection: { enabled: true },
+      customer_update: { name: 'auto', address: 'auto' },
+    });
+
+    expect(status).toBe(200);
+  });
+
+  test('tax_id_collection with a shipping address for an existing customer needs customer_update[shipping]', async () => {
+    const shipping = { shipping_address_collection: { allowed_countries: ['GB'] } };
+    const refused = await createSession({
+      customer: 'cus_probe',
+      tax_id_collection: { enabled: true },
+      ...shipping,
+      customer_update: { name: 'auto', address: 'auto' },
+    });
+    const accepted = await createSession({
+      customer: 'cus_probe',
+      tax_id_collection: { enabled: true },
+      ...shipping,
+      customer_update: { name: 'auto', address: 'auto', shipping: 'auto' },
+    });
+
+    expect(refused.status).toBe(400);
+    expect(refused.body.error.message).toContain('please set `customer_update[shipping]`');
+    expect(accepted.status).toBe(200);
+  });
+
+  test('automatic_tax for an existing customer without an address needs customer_update[address]', async () => {
+    const { status, body } = await createSession({
+      customer: 'cus_probe',
+      automatic_tax: { enabled: true },
+    });
+
+    expect(status).toBe(400);
+    expect(body.error.message).toContain("set `customer_update[address]` to 'auto'");
+  });
+
+  test('automatic_tax with a shipping address for an existing customer needs customer_update[shipping]', async () => {
+    const { status, body } = await createSession({
+      customer: 'cus_probe',
+      automatic_tax: { enabled: true },
+      shipping_address_collection: { allowed_countries: ['GB'] },
+      customer_update: { address: 'auto' },
+    });
+
+    expect(status).toBe(400);
+    expect(body.error.message).toContain("set `customer_update[shipping]` to 'auto'");
+  });
+
+  test('a shipping address for an existing customer needs nothing saved', async () => {
+    const { status } = await createSession({
+      customer: 'cus_probe',
+      shipping_address_collection: { allowed_countries: ['GB'] },
     });
 
     expect(status).toBe(200);

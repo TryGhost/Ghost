@@ -22,7 +22,7 @@ import {
   baseClasses,
   baseClassPackages,
 } from '../core/server/services/adapter-manager/base-classes';
-import { loadAdapterClass } from '../core/server/services/adapter-manager/utils';
+import { loadAdapterClass } from '../core/kernel/adapter-manager';
 
 type AdapterType = keyof typeof baseClasses;
 

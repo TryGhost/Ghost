@@ -1,4 +1,5 @@
 import type { Knex } from 'knex';
+import type { GhostLogger } from '@tryghost/logging';
 
 const ObjectId = require('bson-objectid').default;
 const { chunk: chunkArray } = require('lodash');
@@ -32,11 +33,7 @@ interface CleanExpiredCompedDeps {
     };
   };
   events: { emit(name: string, model: MemberModel, options: Record<string, unknown>): void };
-  logging: {
-    info(...args: unknown[]): void;
-    warn(...args: unknown[]): void;
-    error(...args: unknown[]): void;
-  };
+  logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
   sentry: { captureException(err: unknown): void };
 }
 

@@ -1,50 +1,38 @@
 import assert from 'node:assert/strict';
 import knex from 'knex';
-import sinon from 'sinon';
-const TinybirdServiceWrapper = require('../../../../../core/server/services/tinybird');
 // @ts-expect-error This module lacks type definitions.
 import StatsService from '../../../../../core/server/services/stats/stats-service';
+const logging = require('@tryghost/logging');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 
 describe('StatsService', function () {
-  afterEach(() => sinon.restore());
-
-  it.each([
-    { webAnalytics: false, configured: true, initialized: true },
-    { webAnalytics: false, configured: false, initialized: false },
-    { webAnalytics: true, configured: false, initialized: true },
-    { webAnalytics: true, configured: true, initialized: true },
-  ])(
-    'initializes Tinybird for the enabled analytics source: %j',
-    function ({ webAnalytics, configured, initialized }) {
-      const init = sinon.stub(TinybirdServiceWrapper, 'init');
-      const getSetting = sinon.stub();
-      getSetting.withArgs('web_analytics_enabled').returns(webAnalytics);
-      const getConfig = sinon.stub();
-      getConfig
-        .withArgs('tinybird:stats')
-        .returns(configured ? { endpoint: 'https://api.tinybird.co' } : null);
-      const service = StatsService.create({
-        knex: knex({
-          client: 'better-sqlite3',
-          useNullAsDefault: true,
-          connection: { filename: ':memory:' },
-        }),
-        settingsCache: { get: getSetting },
-        config: { get: getConfig },
-      });
-      sinon.assert.callCount(init, initialized ? 1 : 0);
-      assert.equal(Boolean(service.posts.tinybirdClient), webAnalytics);
-      assert.equal(Boolean(service.content.tinybirdClient), webAnalytics);
-    },
-  );
-  it('Exposes a create factory', function () {
-    const service = StatsService.create({
-      knex: knex({
-        client: 'better-sqlite3',
-        useNullAsDefault: true,
-        connection: { filename: ':memory:' },
-      }),
+  it('Exposes a create factory that shares one dependency set across the query services', function () {
+    const db = knex({
+      client: 'better-sqlite3',
+      useNullAsDefault: true,
+      connection: { filename: ':memory:' },
     });
+    const urlService = {};
+    const tinybirdClient = { fetch: async () => [] };
+
+    const service = StatsService.create({
+      knex: db,
+      urlService,
+      urlUtils,
+      logging,
+      tinybirdClient,
+    });
+
     assert(service instanceof StatsService);
+    for (const name of ['mrr', 'members', 'subscriptions', 'referrers', 'posts', 'content']) {
+      assert.equal(service[name].knex, db, name);
+    }
+    assert.equal(service.posts.tinybirdClient, tinybirdClient);
+    assert.equal(service.content.tinybirdClient, tinybirdClient);
+    assert.equal(service.posts.urlService, urlService);
+    assert.equal(service.content.urlService, urlService);
+    assert.equal(service.posts.urlUtils, urlUtils);
+    assert.equal(service.posts.logging, logging);
+    assert.equal(service.content.logging, logging);
   });
 });

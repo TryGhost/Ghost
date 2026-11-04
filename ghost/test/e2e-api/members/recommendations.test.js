@@ -7,19 +7,22 @@ const {
   configUtils,
 } = require('../../utils/e2e-framework');
 const { anyEtag } = matchers;
-const recommendationsService = require('../../../core/server/services/recommendations');
+const recommendationsService = require('../../../core/server/services/recommendations').default;
 const { Recommendation } = require('../../../core/server/services/recommendations/service');
 
 async function testClicked({ recommendationId, memberId }, test) {
-  const before = await recommendationsService.clickEventRepository.getAll({
-    filter: `recommendationId:'${recommendationId}'`,
-  });
+  const before =
+    await recommendationsService.service.controller.service.clickEventRepository.getAll({
+      filter: `recommendationId:'${recommendationId}'`,
+    });
 
   await test();
 
-  const after = await recommendationsService.clickEventRepository.getAll({
-    filter: `recommendationId:'${recommendationId}'`,
-  });
+  const after = await recommendationsService.service.controller.service.clickEventRepository.getAll(
+    {
+      filter: `recommendationId:'${recommendationId}'`,
+    },
+  );
 
   assert.equal(after.length, before.length + 1);
 
@@ -29,29 +32,35 @@ async function testClicked({ recommendationId, memberId }, test) {
 }
 
 async function testNotClicked(test) {
-  const before = await recommendationsService.clickEventRepository.getCount();
+  const before =
+    await recommendationsService.service.controller.service.clickEventRepository.getCount();
   await test();
-  const after = await recommendationsService.clickEventRepository.getCount();
+  const after =
+    await recommendationsService.service.controller.service.clickEventRepository.getCount();
 
   assert.equal(after, before);
 }
 
 async function testNotSubscribed(test) {
-  const before = await recommendationsService.subscribeEventRepository.getCount();
+  const before =
+    await recommendationsService.service.controller.service.subscribeEventRepository.getCount();
   await test();
-  const after = await recommendationsService.subscribeEventRepository.getCount();
+  const after =
+    await recommendationsService.service.controller.service.subscribeEventRepository.getCount();
 
   assert.equal(after, before);
 }
 
 async function testSubscribed({ recommendationId, memberId }, test) {
-  const before = await recommendationsService.subscribeEventRepository.getAll({
-    filter: `recommendationId:'${recommendationId}'`,
-  });
+  const before =
+    await recommendationsService.service.controller.service.subscribeEventRepository.getAll({
+      filter: `recommendationId:'${recommendationId}'`,
+    });
   await test();
-  const after = await recommendationsService.subscribeEventRepository.getAll({
-    filter: `recommendationId:'${recommendationId}'`,
-  });
+  const after =
+    await recommendationsService.service.controller.service.subscribeEventRepository.getAll({
+      filter: `recommendationId:'${recommendationId}'`,
+    });
 
   assert.equal(after.length, before.length + 1);
 
@@ -88,7 +97,7 @@ describe('Recommendation Event Tracking', function () {
       oneClickSubscribe: false,
     });
 
-    await recommendationsService.repository.save(recommendation);
+    await recommendationsService.service.controller.service.repository.save(recommendation);
     recommendationId = recommendation.id;
   });
 

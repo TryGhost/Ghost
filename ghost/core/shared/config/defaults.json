@@ -194,6 +194,12 @@
       "maxWait": 60000,
       "lifetime": 60
     },
+    "staff_invite_block": {
+      "freeRetries": 2,
+      "minWait": 60000,
+      "maxWait": 60000,
+      "lifetime": 60
+    },
     "email_preview_block": {
       "minWait": 360000,
       "maxWait": 360000,

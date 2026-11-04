@@ -12,6 +12,14 @@ import {
 import { memberDetailScreen } from './member-detail.screen';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
+import { z } from 'zod';
+
+const SaveBody = z.object({ members: z.tuple([z.record(z.string(), z.unknown())]) });
+const savedMember = (body: unknown) => SaveBody.parse(body).members[0];
+
+const MetafieldsPatch = z
+  .object({ custom: z.record(z.string(), z.unknown()).optional() })
+  .optional();
 
 const FIELDS: MemberCustomField[] = [
   {
@@ -54,22 +62,25 @@ const ADDRESS = { line1: '1 Main St', city: 'Berlin', postal_code: '10115', coun
  * sent as null, so the refetch a save triggers must return the merged result, not the
  * original.
  */
-function fakeMemberDetailWorld(m: Member, initialValues: Record<string, unknown>) {
+function fakeMemberDetailWorld(
+  m: Member,
+  initialValues: Record<string, unknown>,
+  fields: MemberCustomField[] = FIELDS,
+) {
   let current: Record<string, unknown> = { ...m };
   const values: Record<string, unknown> = { ...initialValues };
   fakeMembers([m]);
   fakeAdminEndpoint('GET', new RegExp(`^/members/${m.id}/`), () => ({
     members: [{ ...current, metafields: { custom: { ...values } } }],
   }));
-  fakeMemberCustomFields(FIELDS);
+  fakeMemberCustomFields(fields);
   fakeAdminEndpoint('GET', new RegExp('^/members/events/'), {
     events: [],
     meta: { pagination: { page: 1, limit: 5, pages: 1, total: 0, next: null, prev: null } },
   });
   return fakeAdminEndpoint('PUT', new RegExp(`^/members/${m.id}/`), ({ body }) => {
-    const { metafields, ...edited } = (body as { members: Array<Record<string, unknown>> })
-      .members[0];
-    const patch = (metafields as { custom?: Record<string, unknown> } | undefined)?.custom ?? {};
+    const { metafields, ...edited } = savedMember(body);
+    const patch = MetafieldsPatch.parse(metafields)?.custom ?? {};
     current = { ...current, ...edited };
     for (const [key, value] of Object.entries(patch)) {
       if (value === null) {
@@ -114,9 +125,9 @@ describe('Member detail custom fields', () => {
     await expect.element(modal()).not.toBeInTheDocument();
     await expect.element(memberDetailScreen.saveButton()).toBeDisabled();
     // The payload was a single-field merge patch: only this key, nothing else.
-    const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
-    expect(saved.members[0].metafields).toEqual({ custom: { job_title: 'Publisher' } });
-    expect(saved.members[0].name).toBeUndefined();
+    const saved = savedMember(editApi.lastRequest?.body);
+    expect(saved.metafields).toEqual({ custom: { job_title: 'Publisher' } });
+    expect(saved.name).toBeUndefined();
   });
 
   it('leaves an unsaved page edit intact when a custom field is saved', async () => {
@@ -157,8 +168,8 @@ describe('Member detail custom fields', () => {
     // here, since other empty rows already show the dash.
     await expect.element(modal()).not.toBeInTheDocument();
     await expect.element(memberDetailScreen.emptyValueDash()).toBeVisible();
-    const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
-    expect(saved.members[0].metafields).toEqual({ custom: { job_title: null } });
+    const saved = savedMember(editApi.lastRequest?.body);
+    expect(saved.metafields).toEqual({ custom: { job_title: null } });
   });
 
   it('a dirty editor refuses casual dismissal; a pristine one closes freely', async () => {
@@ -215,8 +226,8 @@ describe('Member detail custom fields', () => {
     await expect
       .element(page.getByText(/^Flat 3, 8 Wan Chai Road, Hong Kong, Hong Kong/))
       .toBeVisible();
-    const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
-    expect(saved.members[0].metafields).toEqual({
+    const saved = savedMember(editApi.lastRequest?.body);
+    expect(saved.metafields).toEqual({
       custom: {
         home_address: { line1: 'Flat 3, 8 Wan Chai Road', city: 'Hong Kong', country: 'HK' },
       },
@@ -243,8 +254,8 @@ describe('Member detail custom fields', () => {
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
     await expect.element(memberDetailScreen.fieldValue('1 Main St, Germany')).toBeVisible();
-    const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
-    expect(saved.members[0].metafields).toEqual({
+    const saved = savedMember(editApi.lastRequest?.body);
+    expect(saved.metafields).toEqual({
       custom: { home_address: { line1: '1 Main St', country: 'DE' } },
     });
   });
@@ -269,8 +280,8 @@ describe('Member detail custom fields', () => {
     await expect
       .element(memberDetailScreen.fieldValue('1 Main St, Berlin, 10115, Germany'))
       .toBeVisible();
-    const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
-    expect(saved.members[0].metafields).toEqual({ custom: { home_address: ADDRESS } });
+    const saved = savedMember(editApi.lastRequest?.body);
+    expect(saved.metafields).toEqual({ custom: { home_address: ADDRESS } });
   });
 
   it('clears a country by picking the chosen one again', async () => {
@@ -291,8 +302,8 @@ describe('Member detail custom fields', () => {
     // The emptied part is named in the write, since leaving it out would read as
     // "no change"; the rest of the address stays.
     await expect.element(memberDetailScreen.fieldValue('1 Main St, Berlin')).toBeVisible();
-    const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
-    expect(saved.members[0].metafields).toEqual({
+    const saved = savedMember(editApi.lastRequest?.body);
+    expect(saved.metafields).toEqual({
       custom: { home_address: { line1: '1 Main St', city: 'Berlin', country: '' } },
     });
   });
@@ -328,8 +339,8 @@ describe('Member detail custom fields', () => {
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
     await expect.element(memberDetailScreen.fieldValue('1 Main St, Berlin, Germany')).toBeVisible();
-    const saved = editApi.lastRequest?.body as { members: Array<Record<string, unknown>> };
-    expect(saved.members[0].metafields).toEqual({
+    const saved = savedMember(editApi.lastRequest?.body);
+    expect(saved.metafields).toEqual({
       custom: { home_address: { line1: '1 Main St', city: 'Berlin', country: 'DE' } },
     });
   });
@@ -362,6 +373,100 @@ describe('Member detail custom fields', () => {
     await expect
       .element(modal().getByText('Rejected by the server for reasons the client could not know.'))
       .toBeVisible();
+  });
+
+  describe('a list', () => {
+    const animals: MemberCustomField = {
+      ...FIELDS[0],
+      key: KeySchema.parse('favourite_animals'),
+      name: 'Favourite animals',
+      type: 'list',
+      settings: { options: ['Dog', 'Cat', 'Fish'], multiple: true },
+    };
+
+    it('shows every option a member holds, including one the field no longer offers', async () => {
+      const m = member({ name: 'Ada Lovelace' });
+      fakeMemberDetailWorld(m, { favourite_animals: ['Cat', 'Dolphin'] }, [animals]);
+      await renderAdminApp(`/members/${m.id}`);
+
+      // One chip per answer, since an option's text can hold a comma.
+      const row = memberDetailScreen.editFieldButton('Favourite animals');
+      await expect.element(row.getByText('Cat', { exact: true })).toBeVisible();
+      await expect.element(row.getByText('Dolphin', { exact: true })).toBeVisible();
+      await expect.element(row).toHaveAccessibleName('Edit Favourite animals: Cat, Dolphin');
+    });
+
+    it('closes the open list on Escape and keeps the editor', async () => {
+      const m = member({ name: 'Ada Lovelace' });
+      fakeMemberDetailWorld(m, { favourite_animals: ['Fish'] }, [animals]);
+      await renderAdminApp(`/members/${m.id}`);
+
+      await memberDetailScreen.editFieldButton('Favourite animals').click();
+      await modal().getByLabelText('Favourite animals').click();
+      await expect.element(page.getByRole('option', { name: 'Dog' })).toBeVisible();
+      await userEvent.keyboard('{Escape}');
+
+      await expect.element(page.getByRole('option', { name: 'Dog' })).not.toBeInTheDocument();
+      await expect.element(modal()).toBeVisible();
+    });
+
+    it('opens a list’s editor on its picker, not on an answer’s remove button', async () => {
+      const m = member({ name: 'Ada Lovelace' });
+      fakeMemberDetailWorld(m, { favourite_animals: ['Fish'] }, [animals]);
+      await renderAdminApp(`/members/${m.id}`);
+
+      await memberDetailScreen.editFieldButton('Favourite animals').click();
+
+      await expect.element(modal().getByLabelText('Favourite animals')).toHaveFocus();
+    });
+
+    // The editor offers only what the field offers now, so it can open empty for a member who
+    // holds answers. Saving it empty clears them.
+    it('clears answers the editor can’t show when it is saved empty', async () => {
+      const m = member({ name: 'Ada Lovelace' });
+      const editApi = fakeMemberDetailWorld(m, { favourite_animals: ['Dolphin'] }, [animals]);
+      await renderAdminApp(`/members/${m.id}`);
+
+      await memberDetailScreen.editFieldButton('Favourite animals').click();
+      await modal().getByRole('button', { name: 'Save', exact: true }).click();
+
+      await expect
+        .poll(() => editApi.lastRequest && savedMember(editApi.lastRequest.body).metafields)
+        .toEqual({ custom: { favourite_animals: null } });
+    });
+
+    it('keeps answers the editor can’t show when its other answers are saved unchanged', async () => {
+      const m = member({ name: 'Ada Lovelace' });
+      const editApi = fakeMemberDetailWorld(m, { favourite_animals: ['Fish', 'Dolphin'] }, [
+        animals,
+      ]);
+      await renderAdminApp(`/members/${m.id}`);
+
+      await memberDetailScreen.editFieldButton('Favourite animals').click();
+      await modal().getByRole('button', { name: 'Save', exact: true }).click();
+
+      await expect.element(modal()).not.toBeInTheDocument();
+      expect(editApi.lastRequest).toBeUndefined();
+    });
+
+    it('saves the options picked, in the order the field offers them', async () => {
+      const m = member({ name: 'Ada Lovelace' });
+      const editApi = fakeMemberDetailWorld(m, { favourite_animals: ['Fish'] }, [animals]);
+      await renderAdminApp(`/members/${m.id}`);
+
+      await memberDetailScreen.editFieldButton('Favourite animals').click();
+      await modal().getByLabelText('Favourite animals').click();
+      await page.getByRole('option', { name: 'Dog' }).click();
+      await userEvent.keyboard('{Escape}');
+      await modal().getByRole('button', { name: 'Save', exact: true }).click();
+
+      await expect
+        .element(memberDetailScreen.editFieldButton('Favourite animals'))
+        .toHaveAccessibleName('Edit Favourite animals: Dog, Fish');
+      await expect
+        .poll(() => editApi.lastRequest && savedMember(editApi.lastRequest.body).metafields)
+        .toEqual({ custom: { favourite_animals: ['Dog', 'Fish'] } });
+    });
   });
 
   it('hides the section when the site has no custom fields defined', async () => {

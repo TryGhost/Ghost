@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 import { useEffect, useRef, useState } from 'react';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
-import { useShade } from '@tryghost/shade/app';
 
 const BAD_PASSWORDS = [
   '1234567890',
@@ -52,7 +51,6 @@ const validateCharacterOccurrance = (stringToTest: string) => {
 
 const ChangePasswordForm: React.FC<{ user: User }> = ({ user }) => {
   const { currentUser, config, siteData } = useGlobalData();
-  const { isAdmin7 } = useShade();
   const [editPassword, setEditPassword] = useState(false);
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -276,11 +274,7 @@ const ChangePasswordForm: React.FC<{ user: User }> = ({ user }) => {
         <Input id="current-password" type="password" value="••••••••••••" disabled />
       </Field>
       <Button
-        className={
-          isAdmin7
-            ? 'absolute -top-1 right-0'
-            : 'absolute top-0 right-0 h-auto p-0 hover:bg-transparent'
-        }
+        className="absolute -top-1 right-0"
         data-testid="change-password-button"
         size="sm"
         type="button"

@@ -89,18 +89,6 @@ keeps snapshot restores fast (`GHOST_E2E_MYSQL_TMPFS_SIZE=4g` adjusts the size).
 Don't set it locally while any checkout uses that MySQL: it recreates the
 container without their databases.
 
-Set `GHOST_E2E_TINYBIRD_SLIM=true` to swap the Tinybird service for the distilled
-slim image (`ghcr.io/tryghost/tinybird-local-slim`): ~0.7GB pulled and ~2.4GB on
-disk, against ~2.1GB and ~6.9GB for upstream. CI enables it so the analytics jobs
-fit inside the runner disk budget. Override the image/tag with
-`GHOST_E2E_TINYBIRD_SLIM_IMAGE`. Local dev (`compose.dev.analytics.yaml`) always
-uses the upstream image.
-
-The slim image's GHCR package is internal, so a pull can legitimately fail — most
-often on a PR from a public fork, whose token cannot read it. `infra-up.sh` warns
-and falls back to the upstream image rather than failing the run. CI leaves the
-flag off for cross-repo PRs so those runs skip the doomed pull entirely.
-
 For a CI-like local preflight (pulls Playwright + gateway images and starts infra), run:
 
 ```bash
@@ -159,7 +147,6 @@ e2e/
 │   ├── services/               # Test doubles (fake Stripe, Mailgun, upgrade host, etc.)
 │   └── utils/                  # Shared utilities
 ├── data-factory/               # Test data factories (see its own README)
-├── visual-regression/          # Screenshot baseline suite (separate config)
 ├── scripts/                    # Infra and runner shell scripts
 ├── playwright.config.mjs       # Playwright configuration
 ├── eslint.config.js            # Lint config for the workspace
@@ -186,6 +173,7 @@ The fixtures a test usually reaches for:
 - `ghostInstance` - the running instance: `baseUrl`, `database`, `port`, `siteUuid`, `containerId`, `instanceId`
 - `resolvedIsolation` - `'per-file' | 'per-test'` for the current test
 - `resetEnvironment()` - force an environment recycle (see the escape hatch below)
+- `fixtureApp` - a small app on a local server for the Apps tests, with a manifest the test can change and an Admin page that connects with the app SDK as built from the checkout, which `pnpm test` builds (`helpers/services/apps`)
 
 The fixture resolves isolation mode per test file:
 

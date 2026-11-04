@@ -4,11 +4,8 @@ import type { PostResource } from '@/posts/list/post-resource';
 /**
  * Which items the right-click menu shows for the current selection.
  *
- * Ported from `context-menu.hbs` and the predicates at the bottom of
- * `apps/ember-admin/app/components/posts-list/context-menu.js`.
- *
  * The rule worth holding on to: **the menu describes the whole selection**, not
- * the row that was right-clicked. Ember's status predicates are all "any"
+ * the row that was right-clicked. The status predicates are all "any"
  * rather than "every", so one published post among five drafts is enough to
  * offer Unpublish — the action then applies to whichever of the selection it
  * can apply to. Getting this backwards would quietly hide actions from mixed
@@ -38,7 +35,7 @@ export interface PostContextMenuItem {
 
 export interface PostContextMenuInputs {
   /**
-   * The selected posts that are actually loaded — Ember's `availableModels`.
+   * The selected posts that are actually loaded.
    * An inverted selection can cover rows that were never fetched, so the menu
    * necessarily reasons about the ones in memory.
    */
@@ -98,7 +95,7 @@ export function getPostContextMenuItems(inputs: PostContextMenuInputs): PostCont
       add('gift-link', 'Share as a gift');
     }
 
-    // Ember separates Unpublish from the gift link above it, and only
+    // Unpublish is separated from the gift link above it, and only
     // then — but whether the gift link renders is decided per row, after
     // this list is built, so the menu draws that rule from adjacency.
     add('unpublish', 'Unpublish');

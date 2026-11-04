@@ -61,9 +61,10 @@ COPY --exclude=ghost/core/built . .
 # prebuild-install fetches its prebuilt binary (permitted by allowBuilds in
 # pnpm-workspace.yaml). No build-essential/python3 is installed, so a node-gyp
 # source-compile fallback fails loudly instead of silently pulling a toolchain into
-# a discarded layer.
+# a discarded layer. --no-runtime skips downloading the devEngines.runtime Node
+# from nodejs.org: the base image already runs NODE_VERSION.
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
-    pnpm install --filter "ghost..." --frozen-lockfile --prefer-offline
+    pnpm install --filter "ghost..." --frozen-lockfile --prefer-offline --no-runtime
 
 # Build ghost's production workspace dependency closure (kg-*/adapters; @tryghost/i18n
 # has no build script and is skipped) plus ghost's own server output. Driven with

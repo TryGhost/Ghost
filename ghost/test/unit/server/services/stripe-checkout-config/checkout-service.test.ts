@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import logging from '@tryghost/logging';
+import { createLoggingFake } from '../../../../utils/logging-utils';
 import { CheckoutService } from '../../../../../core/server/services/stripe-checkout-config/checkout-service';
 
 describe('CheckoutService', function () {
@@ -9,7 +9,7 @@ describe('CheckoutService', function () {
   });
 
   it('gives no checkout settings when the config cannot be read, so the checkout still takes payment', async function () {
-    const logged = sinon.stub(logging, 'error');
+    const logging = createLoggingFake();
     const checkouts = new CheckoutService({
       config: {
         readForCheckout: async () => {
@@ -21,6 +21,6 @@ describe('CheckoutService', function () {
     });
 
     assert.equal(await checkouts.readForTier('tier_1'), null);
-    sinon.assert.calledOnce(logged);
+    sinon.assert.calledOnce(logging.error);
   });
 });

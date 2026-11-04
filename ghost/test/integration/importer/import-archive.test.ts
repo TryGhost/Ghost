@@ -187,8 +187,8 @@ describe('ImportArchive', function () {
   });
 
   for (const message of [
-    'end of central directory record signature not found',
-    'invalid comment length',
+    'End of central directory record signature not found',
+    'Invalid comment length',
   ]) {
     it(`reports a malformed ZIP for ${message}`, async function () {
       const subject = new ImportArchive(

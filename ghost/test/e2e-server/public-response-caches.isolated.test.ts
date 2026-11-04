@@ -9,6 +9,7 @@ const models = require('../../core/server/models');
 
 describe('Configured public response caches over HTTP', function () {
   let agent: Awaited<ReturnType<typeof agentProvider.getContentAPIAgent>>;
+  let adminAgent: Awaited<ReturnType<typeof agentProvider.getAdminAPIAgent>>;
   let ghostServer: { stop(): Promise<void> } | undefined;
   let postId: string;
   let pageId: string;
@@ -23,9 +24,14 @@ describe('Configured public response caches over HTTP', function () {
     configUtils.set('adapters:cache:tagsPublic', { active: 'MemoryCache' });
     configUtils.set('adapters:cache:postsPublic', { active: 'MemoryCache' });
     configUtils.set('sentry:disabled', true);
-    ({ contentAPIAgent: agent, ghostServer } = await agentProvider.getAgentsWithFrontend());
+    ({
+      contentAPIAgent: agent,
+      adminAgent,
+      ghostServer,
+    } = await agentProvider.getAgentsWithFrontend());
     await fixtureManager.init('users', 'posts', 'tags:extra', 'api_keys');
     await agent.authenticate();
+    await adminAgent.loginAsOwner();
 
     ({ id: postId } = await db.knex('posts').where({ type: 'post', status: 'published' }).first());
     ({ id: pageId } = await db.knex('posts').where({ type: 'page', status: 'published' }).first());
@@ -47,6 +53,30 @@ describe('Configured public response caches over HTTP', function () {
     } finally {
       await configUtils.restore();
     }
+  });
+
+  it('tags browse refreshes after an Admin tag edit and caches the refreshed response', async function () {
+    const query = sandbox.spy(models.TagPublic, 'findPage');
+    const path = 'tags/?limit=all&fields=id,name&order=id%20asc';
+    const { body: first } = await agent.get(path).expectStatus(200);
+    const original = first.tags.find((tag: { id: string }) => tag.id === tagId);
+    assert.ok(original);
+    await agent.get(path).expectStatus(200);
+    sinon.assert.calledOnce(query);
+
+    const editedName = `${original.name} edited via Admin`;
+    await adminAgent
+      .put(`tags/${tagId}/`)
+      .body({ tags: [{ name: editedName }] })
+      .expectStatus(200);
+
+    const { body: refreshed } = await agent.get(path).expectStatus(200);
+    assert.equal(refreshed.tags.find((tag: { id: string }) => tag.id === tagId).name, editedName);
+    sinon.assert.calledTwice(query);
+
+    const { body: cached } = await agent.get(path).expectStatus(200);
+    assert.deepEqual(cached, refreshed);
+    sinon.assert.calledTwice(query);
   });
 
   const endpoints = [

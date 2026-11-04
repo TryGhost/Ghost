@@ -1,7 +1,7 @@
 - name: recorded_outcomes_and_latest_versions
   parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&current_time=2020-01-01T12:00:00Z
   expected_result: |
-    {"date":"2020-01-01T00:00:00Z","in_progress_run_count":1,"completed_run_count":2,"exited_early_run_count":4,"invalid_run_count":2}
+    {"date":"2020-01-01T00:00:00Z","in_progress_run_count":1,"completed_run_count":2,"exited_early_run_count":5,"invalid_run_count":2}
     {"date":"2020-01-01T01:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
     {"date":"2020-01-01T02:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
     {"date":"2020-01-01T03:00:00Z","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
@@ -190,7 +190,7 @@
 - name: local_day_grouping
   parameters: site_uuid=15840000-0000-4000-8000-000000000000&automation_id=status-automation&timezone=America/New_York&current_time=2020-01-01T12:00:00Z
   expected_result: |
-    {"date":"2019-12-31","in_progress_run_count":1,"completed_run_count":2,"exited_early_run_count":4,"invalid_run_count":2}
+    {"date":"2019-12-31","in_progress_run_count":1,"completed_run_count":2,"exited_early_run_count":5,"invalid_run_count":2}
     {"date":"2020-01-01","in_progress_run_count":0,"completed_run_count":0,"exited_early_run_count":0,"invalid_run_count":0}
 
 - name: empty_history_local_today

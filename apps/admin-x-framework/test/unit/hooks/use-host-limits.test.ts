@@ -43,4 +43,15 @@ describe('useHostLimits', () => {
 
     expect(result.current).toBeUndefined();
   });
+
+  it('reads config on the session-expiry policy the caller asked for', () => {
+    withConfig({ hostSettings: {} });
+
+    renderHook(() => useHostLimits({ requestOptions: { sessionExpiryRedirect: false } }));
+
+    expect(mockUseBrowseConfig).toHaveBeenCalledWith({
+      refetchOnMount: false,
+      requestOptions: { sessionExpiryRedirect: false },
+    });
+  });
 });

@@ -95,7 +95,7 @@ describe('GiftService', function () {
   let memberRepository: {
     get: sinon.SinonStub;
     update: sinon.SinonStub;
-    triggerMemberSignupAutomation: sinon.SinonStub;
+    notifyMembershipStartedAutomation: sinon.SinonStub;
   };
   let staffServiceEmails: {
     notifyGiftPurchased: sinon.SinonStub;
@@ -190,7 +190,7 @@ describe('GiftService', function () {
         return Promise.resolve({ id: 'member_1', get: memberGet });
       }),
       update: sinon.stub().resolves(undefined),
-      triggerMemberSignupAutomation: sinon.stub().resolves(undefined),
+      notifyMembershipStartedAutomation: sinon.stub().resolves(undefined),
     };
     staffServiceEmails = {
       notifyGiftPurchased: sinon.stub(),
@@ -2023,7 +2023,7 @@ describe('GiftService', function () {
       sinon.assert.notCalled(staffServiceEmails.notifyGiftSubscriptionStarted);
     });
 
-    it('triggers the paid member signup automation for a new gift signup', async function () {
+    it('notifies the automations system about a new gift signup', async function () {
       const gift = buildGift();
       const memberGet = sinon.stub();
       memberGet.withArgs('status').returns('gift');
@@ -2036,15 +2036,14 @@ describe('GiftService', function () {
       const service = createService();
       await service.redeem({ token: 'gift-token', memberId: 'member_1', newMember: true });
 
-      sinon.assert.calledOnceWithExactly(
-        memberRepository.triggerMemberSignupAutomation,
-        await memberRepository.get.firstCall.returnValue,
-        'paid',
-        { transacting },
-      );
+      sinon.assert.calledOnceWithExactly(memberRepository.notifyMembershipStartedAutomation, {
+        member: await memberRepository.get.firstCall.returnValue,
+        memberStatus: 'paid',
+        bookshelfOptions: { transacting },
+      });
     });
 
-    it('triggers the paid member signup automation when an existing free member redeems a gift', async function () {
+    it('notifies the automations system when an existing free member redeems a gift', async function () {
       const gift = buildGift();
       const memberGet = sinon.stub();
       memberGet.withArgs('status').returns('free');
@@ -2057,15 +2056,14 @@ describe('GiftService', function () {
       const service = createService();
       await service.redeem({ token: 'gift-token', memberId: 'member_1' });
 
-      sinon.assert.calledOnceWithExactly(
-        memberRepository.triggerMemberSignupAutomation,
-        await memberRepository.get.firstCall.returnValue,
-        'paid',
-        { transacting },
-      );
+      sinon.assert.calledOnceWithExactly(memberRepository.notifyMembershipStartedAutomation, {
+        member: await memberRepository.get.firstCall.returnValue,
+        memberStatus: 'paid',
+        bookshelfOptions: { transacting },
+      });
     });
 
-    it('passes the external transaction through to the member signup automation trigger', async function () {
+    it('passes the external transaction through to the member signup automation notification', async function () {
       const gift = buildGift();
       const memberGet = sinon.stub();
       memberGet.withArgs('status').returns('free');
@@ -2079,12 +2077,11 @@ describe('GiftService', function () {
       const externalTrx = transactionWithExecutionPromise(Promise.resolve());
       await service.redeem({ token: 'gift-token', memberId: 'member_1', transacting: externalTrx });
 
-      sinon.assert.calledOnceWithExactly(
-        memberRepository.triggerMemberSignupAutomation,
-        await memberRepository.get.firstCall.returnValue,
-        'paid',
-        { transacting: externalTrx },
-      );
+      sinon.assert.calledOnceWithExactly(memberRepository.notifyMembershipStartedAutomation, {
+        member: await memberRepository.get.firstCall.returnValue,
+        memberStatus: 'paid',
+        bookshelfOptions: { transacting: externalTrx },
+      });
     });
   });
 

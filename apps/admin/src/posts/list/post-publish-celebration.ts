@@ -24,10 +24,8 @@ export interface PublishCelebration {
  * Reads the handoff and **clears both keys as it does so**, before anything is
  * fetched.
  *
- * Ember clears after opening the modal, which means a failed request leaves the
- * key in place and the celebration re-fires on every visit to the list until it
- * happens to succeed. Clearing first costs at most one missed celebration and
- * cannot loop.
+ * Clearing first costs at most one missed celebration; clearing after the
+ * modal opens would let a failed request re-fire it on every visit.
  */
 export function readPublishCelebration(): PublishCelebration | null {
   const published = localStorage.getItem(KEYS.published);
@@ -36,7 +34,7 @@ export function readPublishCelebration(): PublishCelebration | null {
   localStorage.removeItem(KEYS.published);
   localStorage.removeItem(KEYS.scheduled);
 
-  // Published first, matching the order Ember checks them in.
+  // Published first.
   const raw = published ?? scheduled;
 
   if (!raw) {

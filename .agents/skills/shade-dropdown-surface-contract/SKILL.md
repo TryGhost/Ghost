@@ -29,11 +29,11 @@ In light mode the three surface tokens (`background` / `surface-elevated` / `sur
 | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Background | `bg-surface-elevated-2`                                                                                                                                                      |
 | Border     | `border border-border/60 dark:border-border/30`                                                                                                                              |
-| Shadow     | `shadow-md` baseline. **`DropdownMenuContent` is the exception — it uses `shadow-lg`.** `DropdownMenuSubContent`, `SelectContent`, and `PopoverContent` all use `shadow-md`. |
+| Shadow     | `shadow-md` baseline. **`DropdownMenuSubContent` is the exception — it uses `shadow-lg`.** `DropdownMenuContent`, `SelectContent`, and `PopoverContent` all use `shadow-md`. |
 | Radius     | `rounded-md` (component default)                                                                                                                                             |
 | Animation  | Standard Radix `data-[state=open]:` enter/exit set                                                                                                                           |
 
-The shadow split is intentional: the top-level `DropdownMenuContent` opens straight out of an unelevated trigger (a button on the page canvas) and needs the stronger drop. `DropdownMenuSubContent` already pops from inside a floating menu, so it uses the lighter `shadow-md` to avoid double-stacking elevation. `Select` and `Popover` also open from low-elevation triggers but their content sits closer to the trigger surface, so `shadow-md` is enough.
+The shadow split is intentional: `DropdownMenuSubContent` opens on top of the menu it belongs to and overlaps it, so it uses the stronger `shadow-lg` to stand apart from that menu. `DropdownMenuContent`, `Select` and `Popover` open from triggers on the page and sit on the canvas, so `shadow-md` is enough.
 
 The `dark:border-border/30` is a legitimate exception to the no-`dark:`-for-colour rule — it's an opacity modifier on an existing semantic token. See `shade-no-dark-variants`.
 

@@ -9,13 +9,21 @@ import {
   DropdownMenuTrigger,
 } from './dropdown-menu';
 
-const PageMenuContext = React.createContext<{ defaultValue?: string } | null>(null);
+interface PageMenuContextValue {
+  value?: string;
+  onSelect: (value: string) => void;
+}
+
+const PageMenuContext = React.createContext<PageMenuContextValue | null>(null);
 
 export interface PageMenuProps {
   children: React.ReactNode;
   responsive?: boolean;
+  /** The active item's value. Pass with `onValueChange` to control the menu, e.g. from the current route. */
   value?: string;
+  /** The item active on first render when the menu manages its own selection. */
   defaultValue?: string;
+  /** Called with the item's value when the user picks a different item. */
   onValueChange?: (value: string) => void;
   className?: string;
 }
@@ -34,6 +42,30 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
     const [resizeKey, setResizeKey] = React.useState(0);
     const containerRef = React.useRef<HTMLDivElement>(null);
     const measureRef = React.useRef<HTMLDivElement>(null);
+
+    // Controlled when `value` is passed, otherwise tracks its own selection
+    // starting from `defaultValue` (same contract as Radix Tabs).
+    const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue);
+    const isControlled = value !== undefined;
+    const activeValue = isControlled ? value : uncontrolledValue;
+
+    const handleSelect = React.useCallback(
+      (nextValue: string) => {
+        if (nextValue === activeValue) {
+          return;
+        }
+        if (!isControlled) {
+          setUncontrolledValue(nextValue);
+        }
+        onValueChange?.(nextValue);
+      },
+      [activeValue, isControlled, onValueChange],
+    );
+
+    const contextValue = React.useMemo(
+      () => ({ value: activeValue, onSelect: handleSelect }),
+      [activeValue, handleSelect],
+    );
 
     React.useLayoutEffect(() => {
       if (!responsive || !containerRef.current || !measureRef.current) {
@@ -118,12 +150,12 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
 
     // Find selected hidden item
     const selectedHiddenItem = hiddenItems.find(
-      (child) => React.isValidElement(child) && child.props?.value === value,
+      (child) => React.isValidElement(child) && child.props?.value === activeValue,
     ) as React.ReactElement | undefined;
 
     if (!responsive) {
       return (
-        <PageMenuContext.Provider value={{ defaultValue }}>
+        <PageMenuContext.Provider value={contextValue}>
           <div ref={ref} className={cn('flex items-center gap-2', className)} {...props}>
             {children}
           </div>
@@ -132,7 +164,7 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
     }
 
     return (
-      <PageMenuContext.Provider value={{ defaultValue }}>
+      <PageMenuContext.Provider value={contextValue}>
         {/* Hidden container to measure all items */}
         <div
           ref={measureRef}
@@ -178,11 +210,18 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
                     <DropdownMenuItem
                       key={item.props.value || index}
                       className={cn(
-                        item.props.value === value && 'bg-accent text-accent-foreground',
+                        item.props.value === activeValue && 'bg-accent text-accent-foreground',
                       )}
-                      onClick={() => {
-                        onValueChange?.(item.props.value);
-                        item.props.onClick?.();
+                      disabled={item.props.disabled}
+                      onClick={(event) => {
+                        // Radix still fires onClick on disabled items and relies on CSS to block pointer clicks
+                        if (item.props.disabled) {
+                          return;
+                        }
+                        item.props.onClick?.(event);
+                        if (!event.defaultPrevented) {
+                          handleSelect(item.props.value);
+                        }
                       }}
                     >
                       {item.props.children}
@@ -201,13 +240,14 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
 PageMenu.displayName = 'PageMenu';
 
 const PageMenuItem = React.forwardRef<HTMLButtonElement, PageMenuItemProps>(
-  ({ children, value, className, ...props }, ref) => {
-    const pageMenuProps = React.useContext(PageMenuContext);
-    const isActive = pageMenuProps?.defaultValue === value;
+  ({ children, value, className, onClick, ...props }, ref) => {
+    const pageMenu = React.useContext(PageMenuContext);
+    const isActive = pageMenu?.value === value;
 
     return (
       <Button
         ref={ref}
+        aria-current={isActive ? 'page' : undefined}
         className={cn(
           'relative gap-1.5 px-3 text-control font-medium text-text-secondary hover:text-foreground focus-visible:ring-0',
           'data-[state=active]:bg-muted-foreground/10 data-[state=active]:text-foreground',
@@ -216,6 +256,12 @@ const PageMenuItem = React.forwardRef<HTMLButtonElement, PageMenuItemProps>(
         )}
         data-state={isActive ? 'active' : undefined}
         variant="ghost"
+        onClick={(event) => {
+          onClick?.(event);
+          if (!event.defaultPrevented) {
+            pageMenu?.onSelect(value);
+          }
+        }}
         {...props}
       >
         {children}

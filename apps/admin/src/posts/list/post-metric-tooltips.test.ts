@@ -27,7 +27,7 @@ describe('getPostMetricTooltip', () => {
     });
   });
 
-  // All three email columns share one panel in Ember.
+  // All three email columns share one panel.
   //
   // The values are the raw counts, not the rates the columns show. The
   // fixture is chosen so the two are distinguishable: the Opens column reads
@@ -66,7 +66,7 @@ describe('getPostMetricTooltip', () => {
     });
   });
 
-  // Ember drops the row entirely rather than showing a zero.
+  // The row is dropped entirely rather than showing a zero.
   it('omits paid when paid members are off', () => {
     expect(
       getPostMetricTooltip('members', post(), {

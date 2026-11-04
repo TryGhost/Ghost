@@ -1,4 +1,3 @@
-import * as assert from 'assert/strict';
 import JSZip from 'jszip';
 import {
   THEME_EDITOR_ARCHIVE_LIMITS,
@@ -26,22 +25,22 @@ const uint8ArrayToArray = (value: Uint8Array | null) => Array.from(value ?? []);
 describe('theme-editor-utils', function () {
   describe('parseEditingThemeRoute', function () {
     it('decodes valid theme names and ignores unrelated routes', function () {
-      assert.deepEqual(parseEditingThemeRoute('theme/edit/my%20theme?from=theme'), {
+      expect(parseEditingThemeRoute('theme/edit/my%20theme?from=theme')).toStrictEqual({
         themeName: 'my theme',
         isInvalid: false,
       });
-      assert.deepEqual(parseEditingThemeRoute('design/change-theme'), {
+      expect(parseEditingThemeRoute('design/change-theme')).toStrictEqual({
         themeName: null,
         isInvalid: false,
       });
     });
 
     it('rejects malformed and encoded-slash theme names', function () {
-      assert.deepEqual(parseEditingThemeRoute('theme/edit/%E0%A4%A'), {
+      expect(parseEditingThemeRoute('theme/edit/%E0%A4%A')).toStrictEqual({
         themeName: null,
         isInvalid: true,
       });
-      assert.deepEqual(parseEditingThemeRoute('theme/edit/%2Fedition'), {
+      expect(parseEditingThemeRoute('theme/edit/%2Fedition')).toStrictEqual({
         themeName: null,
         isInvalid: true,
       });
@@ -50,19 +49,19 @@ describe('theme-editor-utils', function () {
 
   describe('isEditablePath', function () {
     it('treats extension-based theme source files as editable', function () {
-      assert.equal(isEditablePath('partials/post-card.hbs'), true);
-      assert.equal(isEditablePath('assets/app.css'), true);
+      expect(isEditablePath('partials/post-card.hbs')).toBe(true);
+      expect(isEditablePath('assets/app.css')).toBe(true);
     });
 
     it('treats common extensionless text files as editable', function () {
-      assert.equal(isEditablePath('.gitignore'), true);
-      assert.equal(isEditablePath('LICENSE'), true);
-      assert.equal(isEditablePath('subdir/.editorconfig'), true);
+      expect(isEditablePath('.gitignore')).toBe(true);
+      expect(isEditablePath('LICENSE')).toBe(true);
+      expect(isEditablePath('subdir/.editorconfig')).toBe(true);
     });
 
     it('keeps binary assets non-editable', function () {
-      assert.equal(isEditablePath('assets/logo.png'), false);
-      assert.equal(isEditablePath('assets/font.woff2'), false);
+      expect(isEditablePath('assets/logo.png')).toBe(false);
+      expect(isEditablePath('assets/font.woff2')).toBe(false);
     });
   });
 
@@ -85,13 +84,12 @@ describe('theme-editor-utils', function () {
 
       const snapshot = await extractThemeArchive(archive);
 
-      assert.equal(snapshot.rootPrefix, 'source-edited/');
-      assert.deepEqual(Object.keys(snapshot.files).sort(), ['assets/logo.png', 'package.json']);
-      assert.equal(snapshot.files['package.json'].editable, true);
-      assert.equal(snapshot.files['package.json'].content, packageJson);
-      assert.equal(snapshot.files['assets/logo.png'].editable, false);
-      assert.deepEqual(
-        uint8ArrayToArray(snapshot.files['assets/logo.png'].binary),
+      expect(snapshot.rootPrefix).toBe('source-edited/');
+      expect(Object.keys(snapshot.files).sort()).toStrictEqual(['assets/logo.png', 'package.json']);
+      expect(snapshot.files['package.json'].editable).toBe(true);
+      expect(snapshot.files['package.json'].content).toBe(packageJson);
+      expect(snapshot.files['assets/logo.png'].editable).toBe(false);
+      expect(uint8ArrayToArray(snapshot.files['assets/logo.png'].binary)).toStrictEqual(
         Array.from(binaryLogo),
       );
     });
@@ -104,8 +102,8 @@ describe('theme-editor-utils', function () {
 
       const snapshot = await extractThemeArchive(archive);
 
-      assert.equal(snapshot.rootPrefix, '');
-      assert.deepEqual(Object.keys(snapshot.files).sort(), ['assets/app.css', 'index.hbs']);
+      expect(snapshot.rootPrefix).toBe('');
+      expect(Object.keys(snapshot.files).sort()).toStrictEqual(['assets/app.css', 'index.hbs']);
     });
 
     it('rejects archives with too many files before extracting them', async function () {
@@ -115,13 +113,11 @@ describe('theme-editor-utils', function () {
         }
       });
 
-      await assert.rejects(extractThemeArchive(archive), (error: unknown) => {
-        assert.ok(error instanceof ThemeArchiveExtractionError);
-        assert.equal(error.reason, 'too_many_files');
-        assert.match(error.message, /too many files/i);
+      const extraction = extractThemeArchive(archive);
 
-        return true;
-      });
+      await expect(extraction).rejects.toBeInstanceOf(ThemeArchiveExtractionError);
+      await expect(extraction).rejects.toHaveProperty('reason', 'too_many_files');
+      await expect(extraction).rejects.toThrow(/too many files/i);
     });
 
     it('rejects archives whose extracted contents exceed the browser limit', async function () {
@@ -136,13 +132,11 @@ describe('theme-editor-utils', function () {
         );
       });
 
-      await assert.rejects(extractThemeArchive(archive), (error: unknown) => {
-        assert.ok(error instanceof ThemeArchiveExtractionError);
-        assert.equal(error.reason, 'too_large');
-        assert.match(error.message, /too large/i);
+      const extraction = extractThemeArchive(archive);
 
-        return true;
-      });
+      await expect(extraction).rejects.toBeInstanceOf(ThemeArchiveExtractionError);
+      await expect(extraction).rejects.toHaveProperty('reason', 'too_large');
+      await expect(extraction).rejects.toThrow(/too large/i);
     });
 
     it('rejects archives with non-normalized entry paths', async function () {
@@ -150,13 +144,11 @@ describe('theme-editor-utils', function () {
         zip.file('/post-card.hbs', '{{title}}');
       });
 
-      await assert.rejects(extractThemeArchive(archive), (error: unknown) => {
-        assert.ok(error instanceof ThemeArchiveExtractionError);
-        assert.equal(error.reason, 'invalid_archive');
-        assert.match(error.message, /failed to open the theme archive/i);
+      const extraction = extractThemeArchive(archive);
 
-        return true;
-      });
+      await expect(extraction).rejects.toBeInstanceOf(ThemeArchiveExtractionError);
+      await expect(extraction).rejects.toHaveProperty('reason', 'invalid_archive');
+      await expect(extraction).rejects.toThrow(/failed to open the theme archive/i);
     });
   });
 
@@ -178,16 +170,14 @@ describe('theme-editor-utils', function () {
       const rawZip = await JSZip.loadAsync(repackedBuffer);
       const roundTrippedSnapshot = await extractThemeArchive(repackedBuffer);
 
-      assert.deepEqual(
+      expect(
         Object.keys(rawZip.files)
           .filter((path) => !rawZip.files[path].dir)
           .sort(),
-        ['source-edited/assets/logo.png', 'source-edited/index.hbs'],
-      );
-      assert.equal(roundTrippedSnapshot.rootPrefix, 'source-edited/');
-      assert.equal(roundTrippedSnapshot.files['index.hbs'].content, '<main>{{title}}</main>');
-      assert.deepEqual(
-        uint8ArrayToArray(roundTrippedSnapshot.files['assets/logo.png'].binary),
+      ).toStrictEqual(['source-edited/assets/logo.png', 'source-edited/index.hbs']);
+      expect(roundTrippedSnapshot.rootPrefix).toBe('source-edited/');
+      expect(roundTrippedSnapshot.files['index.hbs'].content).toBe('<main>{{title}}</main>');
+      expect(uint8ArrayToArray(roundTrippedSnapshot.files['assets/logo.png'].binary)).toStrictEqual(
         [0, 1, 2, 200, 255],
       );
     });
@@ -211,8 +201,7 @@ describe('theme-editor-utils', function () {
       const packedArchive = await packThemeArchive(snapshot);
       const zip = await JSZip.loadAsync(await packedArchive.arrayBuffer());
 
-      assert.equal(
-        await zip.file('source-edited/index.hbs')?.async('string'),
+      expect(await zip.file('source-edited/index.hbs')?.async('string')).toBe(
         '<main>updated</main>',
       );
     });
@@ -262,7 +251,7 @@ describe('theme-editor-utils', function () {
         },
       };
 
-      assert.deepEqual(getThemeChanges({ baseFiles, currentFiles }), [
+      expect(getThemeChanges({ baseFiles, currentFiles })).toStrictEqual([
         { path: 'assets/app.css', editable: true, status: 'added' },
         { path: 'assets/logo.png', editable: false, status: 'deleted' },
         { path: 'index.hbs', editable: true, status: 'modified' },
@@ -290,8 +279,8 @@ describe('theme-editor-utils', function () {
       clonedFiles['assets/logo.png'].binary![0] = 99;
       clonedFiles['assets/logo.png'].date.setUTCFullYear(2030);
 
-      assert.deepEqual(uint8ArrayToArray(originalFiles['assets/logo.png'].binary), [4, 5, 6]);
-      assert.equal(originalFiles['assets/logo.png'].date.getUTCFullYear(), 2026);
+      expect(uint8ArrayToArray(originalFiles['assets/logo.png'].binary)).toStrictEqual([4, 5, 6]);
+      expect(originalFiles['assets/logo.png'].date.getUTCFullYear()).toBe(2026);
     });
   });
 
@@ -323,12 +312,12 @@ describe('theme-editor-utils', function () {
         newPrefix: 'static/',
       });
 
-      assert.deepEqual(Object.keys(renamedFiles).sort(), [
+      expect(Object.keys(renamedFiles).sort()).toStrictEqual([
         'partials/post-card.hbs',
         'static/app.css',
       ]);
-      assert.equal(renamedFiles['static/app.css'].path, 'static/app.css');
-      assert.equal(renamedFiles['partials/post-card.hbs'].path, 'partials/post-card.hbs');
+      expect(renamedFiles['static/app.css'].path).toBe('static/app.css');
+      expect(renamedFiles['partials/post-card.hbs'].path).toBe('partials/post-card.hbs');
     });
   });
 });

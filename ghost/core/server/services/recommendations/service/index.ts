@@ -1,7 +1,6 @@
 export * from './recommendation-controller';
 export * from './recommendation-service';
 export * from './recommendation-repository';
-export * from './in-memory-recommendation-repository';
 export * from './recommendation';
 export * from './well-known-service';
 export * from './well-known-controller';

@@ -89,8 +89,12 @@ runs:
       env:
         INSTALL_ARGS: ${{ inputs.install-args }}
         TRUST_LOCKFILE: ${{ inputs.trust-lockfile }}
+      # --no-runtime: setup-node above already put Node on PATH, so pnpm skips
+      # the devEngines.runtime Node (node@runtime:<version> in the lockfile).
+      # Otherwise every install downloads it again from nodejs.org, uncached,
+      # and a stalled download can hang a job for hours.
       run: |
-        args=(--frozen-lockfile)
+        args=(--frozen-lockfile --no-runtime)
         if [ "$TRUST_LOCKFILE" = "true" ]; then
           args+=(--trust-lockfile)
         fi

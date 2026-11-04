@@ -1,3 +1,4 @@
+import type { GhostLogger } from '@tryghost/logging';
 import {
   buildSignedWebhookRequest,
   describeWebhookError,
@@ -27,10 +28,7 @@ interface SupportRequestsServiceDependencies {
   config: {
     get: (key: string) => unknown;
   };
-  logging: {
-    info: (message: string) => void;
-    error: (message: string) => void;
-  };
+  logging: Pick<GhostLogger, 'info' | 'error'>;
   request: (url: string, options: ReturnType<typeof buildSignedWebhookRequest>) => Promise<unknown>;
 }
 

@@ -47,6 +47,74 @@ describe('an app path', () => {
     }
   });
 
+  it('refuses a path that only names a place outside the app once normalised', () => {
+    for (const path of [
+      '/.//evil.example/p/x/',
+      '/..//evil.example/',
+      '/a/..//evil.example/',
+      '/a/../..//evil.example/',
+      '/%2e//evil.example/',
+      '/%2E%2E//evil.example/',
+      '/.%2e//evil.example/',
+      '/.//evil.example?q=1#x',
+    ]) {
+      expect(pathError(path), path).toBe(
+        'Expected a path that still starts with a single / once . and .. are resolved',
+      );
+    }
+  });
+
+  it('keeps ordinary routes, including ones that only look like another place', () => {
+    for (const [path, normalised] of [
+      ['/episodes/12/notes/', '/episodes/12/notes/'],
+      ['/search?q=a&page=2', '/search?q=a&page=2'],
+      ['/search?next=//evil.example/', '/search?next=//evil.example/'],
+      ['/tab#//evil.example', '/tab#//evil.example'],
+      ['/a%2F%2Fevil.example', '/a%2F%2Fevil.example'],
+      ['/%2F%2Fevil.example', '/%2F%2Fevil.example'],
+      ['/%5Cevil.example', '/%5Cevil.example'],
+      ['/caf%C3%A9', '/caf%C3%A9'],
+      ['/café', '/caf%C3%A9'],
+      ['/a//b', '/a//b'],
+      ['/a/.//b', '/a//b'],
+    ]) {
+      expect(AppPathSchema.parse(path), path).toBe(normalised);
+    }
+  });
+
+  it('never returns a path that resolves off the origin of the page it is resolved against', () => {
+    // Every sequence of up to four of these pieces, so the property holds for combinations no
+    // list of known attacks names: the URL parser treats `\` as `/`, strips tab and newline, and
+    // collapses `.` and `..` in both spellings.
+    const pieces = [
+      '/',
+      '//',
+      '\\',
+      '.',
+      '..',
+      '%2e',
+      '%2E',
+      '%2F',
+      '%5C',
+      '\t',
+      '\n',
+      'evil.example',
+      '?',
+      '#',
+    ];
+    let sequences = [''];
+    for (let length = 1; length <= 4; length++) {
+      sequences = sequences.flatMap((start) => pieces.map((piece) => `${start}${piece}`));
+      for (const path of sequences) {
+        const parsed = AppPathSchema.safeParse(path);
+        if (parsed.success) {
+          const url = URL.parse(parsed.data, 'https://app.example/admin/');
+          expect(url?.origin, JSON.stringify(path)).toBe('https://app.example');
+        }
+      }
+    }
+  });
+
   it('refuses a path that is not text', () => {
     expect(pathError(42)).toBe('Expected a path');
   });

@@ -1,13 +1,28 @@
 import React from 'react';
-import type { Address } from '@tryghost/metafield-types';
-import { FIELD_PARTS } from '@tryghost/metafield-types/structure';
-import type { FieldType } from '@tryghost/metafield-types/structure';
+import {
+  FIELD_STRUCTURES,
+  editableAnswers,
+  inOptionOrder,
+  matchField,
+  matchLeaf,
+  type FieldOfShape,
+  type FieldShape,
+  type FieldTypeOfShape,
+  type Leaf,
+  type ListSource,
+  type PartsOf,
+  type TextSize,
+  type ValueOf,
+} from '@tryghost/metafield-types/structure';
 
 import InputForm from './input-form';
+import ListPicker from './list-picker';
 import { countryOptions } from '../../utils/countries';
+import { hasMode } from '../../utils/check-mode';
+import { isCookiesDisabled } from '../../utils/helpers';
 import { t } from '../../utils/i18n';
-import { compositeValue, scalarValue } from '../../utils/custom-fields';
-import type { CustomFieldValue, DrawableCustomField } from '../../utils/custom-fields';
+import { compositeValue, listValue, scalarValue } from '../../utils/custom-fields';
+import type { CustomFieldValue, MemberCustomField, PartsByName } from '../../utils/custom-fields';
 
 export const MemberCustomFieldsStyles = `
     .gh-portal-custom-field-errors {
@@ -25,59 +40,102 @@ export const MemberCustomFieldsStyles = `
     }
 `;
 
-/** Every part is named, and the compiler says so: a part added to the type wants one. */
-const addressLabels = (): Record<keyof Address, string> => ({
-  line1: t('Address line 1'),
-  line2: t('Address line 2'),
-  city: t('City'),
-  state: t('State'),
-  postal_code: t('Postal code'),
-  country: t('Country'),
-});
+type RecordFieldType = FieldTypeOfShape<'record'>;
 
-interface FieldProps {
-  field: DrawableCustomField;
+/** How each list a choice picks from is offered to a member, given the key they hold. */
+const LIST_OPTIONS: {
+  [F in ListSource]: (held?: string) => { value: string; label: string }[];
+} = {
+  countries: (held) => countryOptions(held),
+};
+
+const TEXT_INPUT: { [S in TextSize]: 'text' | 'textarea' } = {
+  line: 'text',
+  code: 'text',
+  long: 'textarea',
+};
+
+interface LeafInput {
+  type: 'text' | 'textarea' | 'select';
+  options?: { value: string; label: string }[];
+}
+
+const leafInput = (leaf: Leaf, held: string | undefined): LeafInput =>
+  matchLeaf<LeafInput>(leaf, {
+    text: ({ size }) => ({ type: TEXT_INPUT[size] }),
+    choice: ({ from }) => ({ type: 'select', options: LIST_OPTIONS[from](held) }),
+  });
+
+/**
+ * How each record type is laid out for a member: a label for every part, and the rows the parts
+ * are drawn in. Labels are typed against the parts the catalog declares, so a part added there
+ * fails to compile here until it has one.
+ */
+const RECORD_FORMS: {
+  [T in RecordFieldType]: {
+    labels: () => Record<PartsOf<T>, string>;
+    rows: readonly (readonly PartsOf<T>[])[];
+  };
+} = {
+  address: {
+    labels: () => ({
+      line1: t('Address line 1'),
+      line2: t('Address line 2'),
+      city: t('City'),
+      state: t('State'),
+      postal_code: t('Postal code'),
+      country: t('Country'),
+    }),
+    rows: [['line1'], ['line2'], ['city', 'state'], ['postal_code', 'country']],
+  },
+};
+
+/** What a field of shape `S` is drawn from. */
+interface FieldProps<S extends FieldShape> {
+  field: FieldOfShape<S, MemberCustomField>;
   value: CustomFieldValue;
   /** What the site refused, keyed by the name of the input that holds it. */
   errors: Record<string, string | undefined>;
-  onChange: (field: DrawableCustomField, part: string | null, value: string) => void;
+  /** The field's whole value once a member changes it, in the shape its type keeps. */
+  onChange: (value: ValueOf<FieldTypeOfShape<S>>) => void;
   onKeyDown: (event: React.KeyboardEvent) => void;
 }
 
-/** A field that holds a single thing: one input, carrying its own reason. */
-function ScalarField({ field, value, errors, onChange, onKeyDown }: FieldProps) {
+/** A field that holds one value: one input, carrying its own reason. */
+function ScalarField({ field, value, errors, onChange, onKeyDown }: FieldProps<'scalar'>) {
   const name = `custom:${field.key}`;
+  const held = scalarValue(value);
   return (
     <InputForm
       fields={[
         {
-          type: field.type === 'long_text' ? 'textarea' : 'text',
-          value: scalarValue(value),
+          ...leafInput(FIELD_STRUCTURES[field.type].leaf, held || undefined),
+          value: held,
           label: field.name,
           name,
           errorMessage: errors[name] ?? '',
           readOnly: field.access.member !== 'write',
         },
       ]}
-      onChange={(event: { target: { value: string } }) => onChange(field, null, event.target.value)}
+      onChange={(event: { target: { value: string } }) => onChange(event.target.value)}
       onKeyDown={onKeyDown}
     />
   );
 }
 
-interface AddressRowProps {
-  parts: (keyof Address)[];
-  input: (part: keyof Address) => Record<string, unknown>;
+interface RecordRowProps {
+  parts: readonly string[];
+  input: (part: string) => Record<string, unknown>;
   onChange: (part: string | null, value: string) => void;
   onKeyDown: (event: React.KeyboardEvent) => void;
 }
 
 /**
- * One row of an address. Declared here rather than inside the field: a component made
- * afresh on every render is a new type each time, so React would replace the row's
- * inputs on every keystroke and take the member's focus with them.
+ * One row of a record. Declared here rather than inside the field: a component made afresh on
+ * every render is a new type each time, so React would replace the row's inputs on every
+ * keystroke and take the member's focus with them.
  */
-function AddressRow({ parts, input, onChange, onKeyDown }: AddressRowProps) {
+function RecordRow({ parts, input, onChange, onKeyDown }: RecordRowProps) {
   return (
     <div className="gh-portal-input-group-row">
       <InputForm
@@ -92,27 +150,37 @@ function AddressRow({ parts, input, onChange, onKeyDown }: AddressRowProps) {
 }
 
 /**
- * An address: several inputs drawn as one field, their borders merged so the group reads
- * as a single thing.
+ * A record: several inputs drawn as one field, their borders merged so the group reads as a single
+ * thing. A part its rows leave out is drawn on a row of its own at the end, so no part a member can
+ * hold is left without an input.
  *
- * A refused part is marked but says nothing beside itself. The reasons are listed under
- * the whole field, in the order the parts are shown, each naming the part it belongs to,
- * so the group keeps its shape however many parts are wrong.
+ * A refused part is marked but says nothing beside itself. The reasons are listed under the whole
+ * field, in the order the parts are shown, each naming the part it belongs to, so the group keeps
+ * its shape however many parts are wrong.
  */
-function AddressField({ field, value, errors, onChange, onKeyDown }: FieldProps) {
-  const held = compositeValue(value);
-  const labels = addressLabels();
+function RecordField({ field, value, errors, onChange, onKeyDown }: FieldProps<'record'>) {
+  const { type } = field;
+  const held: PartsByName = compositeValue(value) ?? {};
+  const labels: Record<string, string> = RECORD_FORMS[type].labels();
+  const leaves: Record<string, Leaf | undefined> = FIELD_STRUCTURES[type].parts;
+  const laidOut: readonly (readonly string[])[] = RECORD_FORMS[type].rows;
+  const placed = laidOut.flat();
+  const rowsOfParts = [
+    ...laidOut,
+    ...Object.keys(leaves)
+      .filter((part) => !placed.includes(part))
+      .map((part) => [part]),
+  ];
   const readOnly = field.access.member !== 'write';
   const labelId = `custom-${field.key}-label`;
   const errorsId = `custom-${field.key}-errors`;
-  const nameOf = (part: keyof Address) => `custom:${field.key}:${part}`;
+  const nameOf = (part: string) => `custom:${field.key}:${part}`;
 
-  const input = (part: keyof Address) => {
-    const isCountry = FIELD_PARTS.address[part] === 'country_code';
+  const input = (part: string) => {
+    const leaf = leaves[part];
     return {
-      type: isCountry ? 'select' : 'text',
-      options: isCountry ? countryOptions(held?.[part]) : undefined,
-      value: held?.[part] ?? '',
+      ...(leaf ? leafInput(leaf, held[part]) : { type: 'text' }),
+      value: held[part] ?? '',
       // The part's label is read by assistive tech and shown as the placeholder; the
       // field's own name labels the group.
       label: labels[part],
@@ -128,35 +196,29 @@ function AddressField({ field, value, errors, onChange, onKeyDown }: FieldProps)
     };
   };
 
-  const rowProps = {
-    input,
-    onChange: (part: string | null, changed: string) => onChange(field, part, changed),
-    onKeyDown,
-  };
-
-  // The form, written out. Nothing else states how an address is laid out, and the
-  // reasons below read their order from these same rows, so the order a member sees and
-  // the order they are listed in cannot come apart.
-  const rows: React.ReactElement<AddressRowProps>[] = [
-    <AddressRow {...rowProps} key="line1" parts={['line1']} />,
-    <AddressRow {...rowProps} key="line2" parts={['line2']} />,
-    <AddressRow {...rowProps} key="city" parts={['city', 'state']} />,
-    <AddressRow {...rowProps} key="postal_code" parts={['postal_code', 'country']} />,
-  ];
-
-  const refused = rows
-    .flatMap((row) => row.props.parts)
-    .flatMap((part) => {
-      const message = errors[nameOf(part)];
-      return message ? [{ part, message }] : [];
-    });
+  const refused = rowsOfParts.flat().flatMap((part) => {
+    const message = errors[nameOf(part)];
+    return message ? [{ part, message }] : [];
+  });
 
   return (
     <section aria-labelledby={labelId} role="group">
       <div className="gh-portal-input-label" id={labelId}>
         {field.name}
       </div>
-      <div className="gh-portal-input-group">{rows}</div>
+      <div className="gh-portal-input-group">
+        {rowsOfParts.map((parts) => (
+          <RecordRow
+            key={parts.join(':')}
+            input={input}
+            parts={parts}
+            onChange={(part, changed) =>
+              part !== null && onChange({ ...compositeValue(value), [part]: changed })
+            }
+            onKeyDown={onKeyDown}
+          />
+        ))}
+      </div>
       {refused.length > 0 && (
         <ul className="gh-portal-custom-field-errors" id={errorsId}>
           {refused.map(({ part, message }) => (
@@ -168,24 +230,87 @@ function AddressField({ field, value, errors, onChange, onKeyDown }: FieldProps)
   );
 }
 
-interface MemberCustomFieldsProps {
-  fields: DrawableCustomField[];
-  values: Record<string, CustomFieldValue>;
+/**
+ * A list, drawn with ListPicker. A member who may change the field edits the answers
+ * `editableAnswers` gives, which saving sends, so an answer the picker leaves out is cleared when
+ * the member saves. One who may only read the field sees the answers `inOptionOrder` gives, as
+ * chips.
+ */
+function ListField({ field, value, errors, onChange }: FieldProps<'set'>) {
+  const { settings } = field;
+  const name = `custom:${field.key}`;
+  const held = listValue(value);
+  const readOnly = field.access.member !== 'write';
+  const picked = readOnly ? inOptionOrder(settings, held) : editableAnswers(settings, held);
+  const error = errors[name];
+  const id = `input-${name}`;
+  const labelId = `${id}-label`;
+  const errorId = `${id}-error`;
+  return (
+    <section className="gh-portal-input-section">
+      <div className="gh-portal-input-labelcontainer">
+        {readOnly ? (
+          <div className="gh-portal-input-label" id={labelId}>
+            {field.name}
+          </div>
+        ) : (
+          <label className="gh-portal-input-label" htmlFor={id} id={labelId}>
+            {field.name}
+          </label>
+        )}
+        {error && <p id={errorId}>{error}</p>}
+      </div>
+      <ListPicker
+        describedBy={error ? errorId : undefined}
+        disabled={hasMode(['preview']) || isCookiesDisabled()}
+        id={id}
+        invalid={Boolean(error)}
+        label={field.name}
+        labelId={labelId}
+        multiple={settings.multiple}
+        options={settings.options}
+        placeholder={t('Choose an option')}
+        readOnly={readOnly}
+        value={picked}
+        onChange={onChange}
+      />
+    </section>
+  );
+}
+
+/** Reports a field's whole value once a member changes it, in the shape the field's type keeps. */
+type CustomFieldChange = <F extends MemberCustomField>(field: F, value: ValueOf<F['type']>) => void;
+
+interface DrawnFieldProps {
+  field: MemberCustomField;
+  value: CustomFieldValue;
   errors: Record<string, string | undefined>;
-  onChange: (field: DrawableCustomField, part: string | null, value: string) => void;
+  onChange: CustomFieldChange;
   onKeyDown: (event: React.KeyboardEvent) => void;
 }
 
-/**
- * Which component draws which type. Stated as a whole rather than as a fallback, so a
- * type added to the catalog stops this compiling until something here knows how to draw
- * it, instead of being rendered as whatever the last branch happened to be.
- */
-const DRAWN_BY = {
-  address: AddressField,
-  short_text: ScalarField,
-  long_text: ScalarField,
-} satisfies Record<FieldType, React.ComponentType<FieldProps>>;
+/** A field drawn from the blocks its type is composed of. */
+function DrawnField({ field, onChange, ...drawn }: DrawnFieldProps) {
+  return matchField<MemberCustomField, React.ReactElement>(field, {
+    scalar: (scalar) => (
+      <ScalarField {...drawn} field={scalar} onChange={(value) => onChange(scalar, value)} />
+    ),
+    record: (record) => (
+      <RecordField {...drawn} field={record} onChange={(value) => onChange(record, value)} />
+    ),
+    set: (list) => (
+      <ListField {...drawn} field={list} onChange={(value) => onChange(list, value)} />
+    ),
+  });
+}
+
+interface MemberCustomFieldsProps {
+  fields: MemberCustomField[];
+  values: Record<string, CustomFieldValue>;
+  errors: Record<string, string | undefined>;
+  onChange: CustomFieldChange;
+  onKeyDown: (event: React.KeyboardEvent) => void;
+}
 
 /** The fields a publisher has opened to members, as the member fills them in. */
 export default function MemberCustomFields({
@@ -197,19 +322,16 @@ export default function MemberCustomFields({
 }: MemberCustomFieldsProps) {
   return (
     <>
-      {fields.map((field) => {
-        const Field = DRAWN_BY[field.type];
-        return (
-          <Field
-            key={field.key}
-            errors={errors}
-            field={field}
-            value={values[field.key]}
-            onChange={onChange}
-            onKeyDown={onKeyDown}
-          />
-        );
-      })}
+      {fields.map((field) => (
+        <DrawnField
+          key={field.key}
+          errors={errors}
+          field={field}
+          value={values[field.key]}
+          onChange={onChange}
+          onKeyDown={onKeyDown}
+        />
+      ))}
     </>
   );
 }

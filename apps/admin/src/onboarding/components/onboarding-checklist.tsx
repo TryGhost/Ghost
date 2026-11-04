@@ -29,7 +29,6 @@ export function OnboardingChecklist({
     <main className="relative flex min-h-screen flex-col items-center justify-center px-6 py-8">
       <section
         className="mt-[-48px] flex w-full flex-col items-center"
-        data-test-dashboard="onboarding-checklist"
         data-testid="onboarding-checklist"
       >
         <div className="mb-8 flex flex-col items-center text-center">

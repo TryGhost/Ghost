@@ -3,7 +3,6 @@ import { createRequire } from 'node:module';
 import * as Sentry from '@sentry/node';
 import * as errors from '@tryghost/errors';
 import sinon from 'sinon';
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../utils/config-utils';
 
 const localRequire = createRequire(__filename);

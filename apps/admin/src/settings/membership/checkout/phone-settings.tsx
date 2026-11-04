@@ -34,7 +34,6 @@ const PhoneSettings: React.FC<{
         chosen={chosenFields}
         error={errors.phoneField}
         fields={fields}
-        id="checkout-phone-field"
         label="Save phone as"
         type={PORT_FIELD[STRIPE_PORT.phone].type}
         value={state.fieldKey}

@@ -82,8 +82,8 @@ export class EmailAddressService {
     return transformed.from.address;
   }
 
-  getAddressFromString(from: string, replyTo?: string): EmailAddresses {
-    const parsedFrom = parseMailbox(from);
+  getAddressFromString(from?: string, replyTo?: string): EmailAddresses {
+    const parsedFrom = from ? parseMailbox(from) : null;
     const parsedReplyTo = replyTo ? parseMailbox(replyTo) : undefined;
 
     return this.getAddress({

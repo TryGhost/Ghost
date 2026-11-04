@@ -10,7 +10,7 @@ import {
 } from './post-selection-state';
 
 /**
- * Selection semantics, ported from `posts-list/selection-list.js`.
+ * Selection semantics.
  *
  * The load-bearing idea: after Select All the selection is *inverted*, and
  * `selectedIds` flips meaning from "the chosen rows" to "the rows taken out".
@@ -61,7 +61,7 @@ describe('postSelectionReducer', () => {
       ).toBeNull();
     });
 
-    // Ember only clears the anchor when the row being deselected *is* the
+    // The anchor clears only when the row being deselected *is* the
     // anchor; deselecting any other row leaves it where it was. Moving the
     // anchor onto a just-deselected row would make the next shift-click
     // range from somewhere the user did not choose.
@@ -108,8 +108,8 @@ describe('postSelectionReducer', () => {
       expect(selected(state)).toEqual(['b', 'c', 'd']);
     });
 
-    // The anchor does not move — Ember's `shiftItem` never reassigns it —
-    // so a second shift-click re-ranges from the original click.
+    // The anchor does not move, so a second shift-click re-ranges from the
+    // original click.
     it('re-ranges from the same anchor and undoes the previous range', () => {
       const state = run([
         { type: 'toggle', id: 'b' },
@@ -137,14 +137,8 @@ describe('postSelectionReducer', () => {
     /**
      * Inverted shift puts the range *back into* the selection rather than
      * taking it out — the opposite of what toggle does in the same mode.
-     *
-     * That reads like a bug, and Ember's own source says so: `toggleItem`
-     * carries a `// Shift behaviour in inverted mode needs a review`
-     * comment, and no Ember test covers it. It is ported as-is anyway.
-     * "This looks wrong to me" is not the same as "this diverges from the
-     * thing we are porting". Changing it is its own issue.
      */
-    it('re-selects the range when inverted, as Ember does', () => {
+    it('re-selects the range when inverted', () => {
       const state = run([
         { type: 'selectAll' },
         { type: 'toggle', id: 'c' },
@@ -173,7 +167,7 @@ describe('postSelectionReducer', () => {
       expect(run([{ type: 'selectAll' }, { type: 'selectAll' }]).inverted).toBe(false);
     });
 
-    // Ember discards the ids on select-all, so a row deselected before it
+    // Select-all discards the ids, so a row deselected before it
     // doesn't come back as a row deselected after it.
     it('discards the previous selection', () => {
       const state = run([{ type: 'toggle', id: 'b' }, { type: 'selectAll' }]);
@@ -218,7 +212,7 @@ describe('getPostSelectionCount', () => {
     expect(getPostSelectionCount(state, 2000)).toBe(1998);
   });
 
-  // Ember floors this at 1. The total lags behind while pages load, so the
+  // Floored at 1. The total lags behind while pages load, so the
   // subtraction can otherwise go negative and read "-3 posts selected".
   it('never reads below one while inverted', () => {
     const state = run([
@@ -258,9 +252,8 @@ describe('isSinglePostSelected', () => {
 
 /**
  * Right-clicking a row that isn't selected selects just that row — but only for
- * as long as the menu is open. Ember does this with a freeze/unfreeze pair on
- * the selection list plus a `clearOnNextUnfreeze` flag; Radix owns the menu's
- * open state for us, so it collapses to one boolean on the selection itself.
+ * as long as the menu is open. Radix owns the menu's open state, so this is one
+ * boolean on the selection itself.
  *
  * Right-clicking a row that *is* already selected leaves the selection alone —
  * that is how you act on many rows at once.

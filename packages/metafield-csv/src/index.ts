@@ -1,5 +1,10 @@
 import * as z from 'zod/mini';
-import { partsOf, type FieldType } from '@tryghost/metafield-types/structure';
+import {
+  OPTION_SEPARATOR,
+  isRecordValue,
+  matchShape,
+  type FieldType,
+} from '@tryghost/metafield-types/structure';
 import {
   IdentityTextSchema,
   type Key,
@@ -16,7 +21,8 @@ import {
  * part. That shape is derived from the type's own value schema rather than
  * declared alongside it: the two cannot drift, and it stays correct as parts
  * are added, removed, or made optional — an optional part is still a column,
- * it just holds an empty cell more often.
+ * it just holds an empty cell more often. A set occupies one column, its options
+ * joined by a separator no option can contain, never a column per option.
  *
  * The same column names are the vocabulary the importer maps onto, so an exported
  * file re-imports without the publisher remapping anything by hand.
@@ -77,11 +83,33 @@ export interface CsvFieldColumn {
 // Shares csvCellsForFields' column derivation, so a field is written, read, and offered
 // as a mapping target under one set of column names.
 export function csvColumnsForField(field: CsvField): CsvFieldColumn[] {
-  const parts = partsOf(field.type);
-  return parts
-    ? parts.map((part) => ({ column: columnOf(field, part), part }))
-    : [{ column: columnOf(field), part: null }];
+  return matchShape<CsvFieldColumn[]>(field.type, {
+    scalar: () => [{ column: columnOf(field), part: null }],
+    record: ({ parts }) =>
+      Object.keys(parts).map((part) => ({ column: columnOf(field, part), part })),
+    set: () => [{ column: columnOf(field), part: null }],
+  });
 }
+
+// Spaced on both sides so a cell reads as a list, and split on the separator alone, so a cell
+// typed by hand needn't space it.
+const joinOptions = (options: readonly unknown[]): string =>
+  options.map(toCell).join(` ${OPTION_SEPARATOR} `);
+
+// A spreadsheet runs a cell starting with one of these as a formula, so an export puts an
+// apostrophe before such a cell, as the members export does.
+const FORMULA_TRIGGERS = ['=', '+', '-', '@', '\t', '\r'];
+
+/**
+ * The options a list's cell names, the way an import reads it: past the apostrophe an export puts
+ * before a cell that starts the way a formula does, then split on the separator. Read here rather
+ * than left to the caller's decoding, since Admin reads list cells too, to suggest a list's options.
+ */
+export const splitOptions = (cell: string): string[] =>
+  (cell.charAt(0) === "'" && FORMULA_TRIGGERS.includes(cell.charAt(1)) ? cell.slice(1) : cell)
+    .split(OPTION_SEPARATOR)
+    .map((option) => option.trim())
+    .filter((option) => option !== '');
 
 export function isMetafieldColumn(column: string): boolean {
   return column === QUALIFIER || column.startsWith(PREFIX);
@@ -95,7 +123,11 @@ function cellFor(
   field: CsvField,
   part: string | null,
 ): string | undefined {
-  const cell = row[columnOf(field, part)];
+  return cellAt(row, columnOf(field, part));
+}
+
+function cellAt(row: Record<string, unknown>, column: string): string | undefined {
+  const cell = row[column];
   return typeof cell === 'string' ? cell : undefined;
 }
 
@@ -107,20 +139,38 @@ export function csvCellsForFields(
 
   for (const field of fields) {
     const value = values[field.namespace]?.[field.key];
-    const parts = partsOf(field.type);
-
-    if (!parts) {
-      cells[columnOf(field)] = toCell(value);
-      continue;
-    }
-
-    const composite = (value ?? {}) as Record<string, unknown>;
-    for (const part of parts) {
-      cells[columnOf(field, part)] = toCell(composite[part]);
-    }
+    matchShape(field.type, {
+      scalar: () => {
+        cells[columnOf(field)] = toCell(value);
+      },
+      record: ({ parts }) => {
+        const composite = isRecordValue(value) ? value : {};
+        for (const part of Object.keys(parts)) {
+          cells[columnOf(field, part)] = toCell(composite[part]);
+        }
+      },
+      set: () => {
+        cells[columnOf(field)] = Array.isArray(value) ? joinOptions(value) : '';
+      },
+    });
   }
 
   return cells;
+}
+
+/**
+ * Whether any of `rows` has a column for one of `fields`, filled in or not. A row read from a
+ * CSV can leave out the columns it is too short to reach, so rows are asked until one has.
+ */
+export function hasFieldColumns(
+  fields: readonly CsvField[],
+  rows: readonly Record<string, unknown>[],
+): boolean {
+  const columns = fields.flatMap((field) => csvColumnsForField(field).map(({ column }) => column));
+  if (columns.length === 0) {
+    return false;
+  }
+  return rows.some((row) => columns.some((column) => cellAt(row, column) !== undefined));
 }
 
 /**
@@ -130,15 +180,16 @@ export function csvCellsForFields(
  *
  * `decodeCell` turns a raw cell into its value; it defaults to identity. The caller owns
  * any de-serialization the specific file needs — the members importer passes one that
- * strips the export's formula guard — so this stays pure vocabulary and holds no knowledge
- * of how any particular CSV escapes its cells.
+ * strips the export's formula guard. A list's cell is read past that guard by
+ * `splitOptions` as well, which Admin shares to suggest a list's options.
  *
  * A field is written only from a non-blank cell; a blank or absent cell leaves the
  * existing value untouched, not cleared — matching how the importer keeps a blank name or
  * note, so re-importing a partly-filled export can't wipe values a publisher didn't
  * touch. A composite whose every cell is blank is omitted too, because the export writes
  * "no address" and an all-blank address identically; one with any filled cell is read
- * from its non-blank cells and validated whole (a malformed part fails the row).
+ * from its non-blank cells and validated whole (a malformed part fails the row). A set's
+ * cell is split into its options, so a cell naming none of them is blank too.
  * No part is required, so a row carrying only some of an address reads as only
  * those parts. A blank part's cell reads as no data for that part, the
  * same way a blank cell reads as no data for a whole field.
@@ -151,35 +202,32 @@ export function fieldValuesFromCsvRow(
   const values: Record<string, unknown> = {};
 
   for (const field of fields) {
-    const parts = partsOf(field.type);
-
-    if (!parts) {
-      const cell = cellFor(row, field, null);
-      if (cell !== undefined) {
-        const decoded = decodeCell(cell);
-        if (!isBlank(decoded)) {
-          values[identityOf(field)] = decoded;
+    const value = matchShape<unknown>(field.type, {
+      scalar: () => {
+        const cell = cellFor(row, field, null);
+        const decoded = cell === undefined ? '' : decodeCell(cell);
+        return isBlank(decoded) ? undefined : decoded;
+      },
+      record: ({ parts }) => {
+        const composite: Record<string, string> = {};
+        for (const part of Object.keys(parts)) {
+          const cell = cellFor(row, field, part);
+          const decoded = cell === undefined ? '' : decodeCell(cell);
+          if (!isBlank(decoded)) {
+            composite[part] = decoded;
+          }
         }
-      }
-      continue;
-    }
+        return Object.keys(composite).length > 0 ? composite : undefined;
+      },
+      set: () => {
+        const cell = cellFor(row, field, null);
+        const options = cell === undefined ? [] : splitOptions(decodeCell(cell));
+        return options.length > 0 ? options : undefined;
+      },
+    });
 
-    let anyColumnPresent = false;
-    const composite: Record<string, string> = {};
-    for (const part of parts) {
-      const cell = cellFor(row, field, part);
-      if (cell === undefined) {
-        continue;
-      }
-      anyColumnPresent = true;
-      const decoded = decodeCell(cell);
-      if (!isBlank(decoded)) {
-        composite[part] = decoded;
-      }
-    }
-
-    if (anyColumnPresent && Object.keys(composite).length > 0) {
-      values[identityOf(field)] = composite;
+    if (value !== undefined) {
+      values[identityOf(field)] = value;
     }
   }
 

@@ -1,7 +1,7 @@
-import { availableParallelism } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 import { build, type Rolldown } from 'vite';
+import { testWorkerCount } from '@internal/cfg-test-workers';
 import { defineConfig } from 'vitest/config';
 import type { BrowserCommand, BrowserCommandContext } from 'vitest/node';
 import { playwright } from '@vitest/browser-playwright';
@@ -25,7 +25,7 @@ import { sharedDefine, sharedResolve } from './vite.shared';
  * box, and worse wall-clock than 8). Leave a core for the Vite server and cap
  * the top end; the floor keeps 2-core runners on their current two workers.
  */
-const getWorkerCount = () => Math.min(8, Math.max(2, availableParallelism() - 1));
+const getWorkerCount = () => testWorkerCount({ memoryPerWorkerGB: 0.5, min: 2, max: 8 });
 
 // MSW cannot see iframe navigations; these route them per page (test-utils/acceptance/frames.ts).
 type BrowserPage = BrowserCommandContext['page'];
@@ -339,7 +339,9 @@ export default defineConfig({
     browser: {
       enabled: true,
       headless: true,
-      provider: playwright(),
+      // Web Share is off in Playwright's Chromium, so without it `navigator.canShare` doesn't exist
+      // to report whether an app's frame may share.
+      provider: playwright({ launchOptions: { args: ['--enable-blink-features=WebShare'] } }),
       commands: {
         bundleAppSdk,
         bundleFrameScript,

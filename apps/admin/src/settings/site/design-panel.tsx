@@ -122,7 +122,7 @@ function DesignPanelContent({
         className="settings-app pointer-events-auto absolute inset-y-3 right-3 z-10 flex w-[400px] flex-col overflow-hidden rounded-xl border border-border-default bg-surface-elevated-2 shadow-lg motion-safe:animate-[view-site-panel-in_320ms_cubic-bezier(0.16,1,0.3,1)]"
       >
         <div className="flex shrink-0 items-center justify-between gap-3 px-7 py-6">
-          <h2 className="text-xl font-bold">Design</h2>
+          <h2 className="text-xl font-bold in-data-[admin7-design=true]:font-title">Design</h2>
           <div className="flex items-center gap-2">
             <PageHeader.Action label="Close" type="button" onClick={close}>
               Close

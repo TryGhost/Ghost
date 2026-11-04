@@ -35,16 +35,28 @@ import type { User } from '@tryghost/admin-x-framework/api/users';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
 import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
+import { editorReturnState } from '@/editor/api';
 import { usePageTitle } from '@/hooks/use-document-title';
 import { useThemeContext } from '@/providers/theme-context';
 import { AppsGate } from './components/apps-gate';
 import { InstallDialog, type InstallDone } from './components/install-dialog/install-dialog';
 import { createAppFrameSession } from './lib/app-frame-session';
-import { appEntryPath, appPathFromLocation, appPathRoute, isAppLocation } from './lib/app-path';
+import {
+  appEntryPath,
+  appFrameUrl,
+  appPathFromLocation,
+  appPathRoute,
+  isAppLocation,
+} from './lib/app-path';
 import { createAdminApiFetch } from './lib/bridge-fetch';
 import { placeRoute } from './lib/bridge-places';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostOrigin } from './lib/frame';
-import { isAppUnavailable, isInstallationNotFound, isSessionsRouteMissing } from './lib/not-found';
+import {
+  isInstallationNotFound,
+  isSessionsRouteMissing,
+  sessionFailureOf,
+  type SessionFailure,
+} from './lib/not-found';
 import { reportAppsError } from './lib/report-error';
 import { appRoute } from './lib/routes';
 import { appPageUrl, servedFrom } from './lib/served-from';
@@ -89,13 +101,23 @@ const NotResponding: React.FC<{
 /**
  * Shown when Ghost couldn't use the app's manifest as the session started. The session's response
  * has no installation, so the app's name comes from the list the sidebar reads.
+ *
+ * There's no Uninstall here. When Ghost couldn't confirm the app, uninstalling it and installing
+ * it again from a link is the one way another developer's key gets pinned, so the screen sends the
+ * publisher to the developer instead. Uninstall stays on the app's details page.
  */
-const Unavailable: React.FC<{ installationId: string; onRetry: () => void }> = ({
-  installationId,
-  onRetry,
-}) => {
+const Unavailable: React.FC<{
+  installationId: string;
+  failure: SessionFailure;
+  onRetry: () => void;
+}> = ({ installationId, failure, onRetry }) => {
   const { data } = useBrowseAppInstallations({ defaultErrorHandler: false });
   const installation = data?.app_installations.find(({ id }) => id === installationId);
+  const name = installation?.manifest.name ?? 'This app';
+  const at = installation ? ` at ${servedFrom(installation.manifest)}` : '';
+  const explanation = failure.unconfirmed
+    ? `Ghost couldn’t confirm the app${at} is the one you installed. Contact its developer, and don’t install it again from a link until they’ve fixed it. Your site isn’t affected.`
+    : `Ghost couldn’t load the app${at}. It might be down or misconfigured. Your site isn’t affected.`;
   return (
     <Centered testId="app-unavailable">
       <EmptyIndicator
@@ -107,8 +129,19 @@ const Unavailable: React.FC<{ installationId: string; onRetry: () => void }> = (
             <Button onClick={onRetry}>Try again</Button>
           </>
         }
-        description={`Ghost couldn’t confirm the app’s details${installation ? ` at ${servedFrom(installation.manifest)}` : ''}. It might be down, or no longer serve the app you installed. Your site isn’t affected.`}
-        title={`${installation?.manifest.name ?? 'This app'} isn’t available`}
+        description={
+          <>
+            {explanation}
+            <span className="mt-2 block font-mono text-xs" data-testid="app-failure-code">
+              {failure.code}
+            </span>
+          </>
+        }
+        title={
+          failure.unconfirmed
+            ? `Ghost couldn’t confirm this is ${installation?.manifest.name ?? 'the app you installed'}`
+            : `${name} isn’t available right now`
+        }
       >
         <LucideIcon.TriangleAlert />
       </EmptyIndicator>
@@ -248,7 +281,11 @@ const AppFrame: React.FC<{
       fetchAdminApi: createAdminApiFetch({ apiRoot: new URL(apiUrl('/')), ghostVersion }),
       navigate: (next, { replace, move: appMove }) =>
         navigateForApp(appPathRoute(id, next, entryPath), { replace, state: { appMove } }),
-      open: (place) => navigateForApp(placeRoute(place)),
+      // Wherever the app opens, Admin records the way back to it. The app can't set this.
+      open: (place, appPath) =>
+        navigateForApp(placeRoute(place), {
+          state: editorReturnState(appPathRoute(id, appPath, entryPath)),
+        }),
     }),
   );
   const { status, title, attempt, startedAt } = useSyncExternalStore(
@@ -258,9 +295,9 @@ const AppFrame: React.FC<{
   // Each load of the frame opens the app's page at the app's current route, so a reload of Admin,
   // or coming back to the app, shows the page the publisher was on, also in a multi-page app. The
   // address is fixed for the life of the frame: changing it would reload the page.
-  const [frameSource, setFrameSource] = useState(() => ({ attempt, src: new URL(path, url).href }));
+  const [frameSource, setFrameSource] = useState(() => ({ attempt, src: appFrameUrl(url, path) }));
   if (frameSource.attempt !== attempt) {
-    setFrameSource({ attempt, src: new URL(path, url).href });
+    setFrameSource({ attempt, src: appFrameUrl(url, path) });
   }
 
   useAppTitle(manifest.name, title);
@@ -528,12 +565,13 @@ export const AppPage: React.FC = () => {
   const { settled, session, error, restart } = useAppSession(installationId);
   const installation = session?.installation;
   const notFound = isInstallationNotFound(error);
-  const unavailable = isAppUnavailable(error);
+  const failure = sessionFailureOf(error);
+  const appFailed = failure !== undefined;
   useEffect(() => {
-    if (error && !notFound && !unavailable) {
+    if (error && !notFound && !appFailed) {
       reportAppsError(error);
     }
-  }, [error, notFound, unavailable]);
+  }, [error, notFound, appFailed]);
 
   let body: React.ReactNode;
   if (!settled) {
@@ -546,8 +584,8 @@ export const AppPage: React.FC = () => {
     body = <ActiveApp session={session} onEnded={restart} />;
   } else if (installation?.status === 'suspended') {
     body = <NeedsApproval installation={installation} onApproved={restart} />;
-  } else if (unavailable) {
-    body = <Unavailable installationId={installationId} onRetry={restart} />;
+  } else if (failure) {
+    body = <Unavailable failure={failure} installationId={installationId} onRetry={restart} />;
   } else if (error && !notFound) {
     body = (
       <Centered>
@@ -564,9 +602,11 @@ export const AppPage: React.FC = () => {
     body = <NotInstalled />;
   }
 
-  // Ghost keeps only the nav and the page margin; the rest is the app's.
+  // Ghost keeps only the nav; the rest is the app's, edge to edge. Like Admin's own screens,
+  // the app brings its page gutter (Shade's page templates do), so it can bleed a sticky
+  // header or a scrolling row to the edge.
   return (
-    <div className="size-full p-4 lg:p-6" data-testid="app-page">
+    <div className="size-full" data-testid="app-page">
       {body}
     </div>
   );

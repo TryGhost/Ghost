@@ -66,11 +66,11 @@ interface MemberRepository {
     options?: Record<string, unknown>,
   ): Promise<MemberModel | null>;
   update(data: Record<string, unknown>, options?: Record<string, unknown>): Promise<unknown>;
-  triggerMemberSignupAutomation(
-    member: MemberModel,
-    memberStatus: 'free' | 'paid',
-    options?: Record<string, unknown>,
-  ): Promise<unknown>;
+  notifyMembershipStartedAutomation(options: {
+    member: MemberModel;
+    memberStatus: 'free' | 'paid';
+    bookshelfOptions: Record<string, unknown>;
+  }): Promise<unknown>;
 }
 
 type Tier = Omit<GiftCheckoutTier, 'currency'> & {
@@ -373,13 +373,7 @@ export class GiftService {
 
     const resolvedDuration: ResolvedGiftDuration = resolveGiftDuration(input);
 
-    let tier: Tier | null;
-    try {
-      tier = await this.deps.tiersService.api.read(input.tierId);
-    } catch (err) {
-      logging.error(err);
-      tier = null;
-    }
+    const tier: Tier | null = await this.deps.tiersService.api.read(input.tierId);
 
     if (!tier) {
       throw new errors.BadRequestError({
@@ -945,7 +939,11 @@ export class GiftService {
     await this.deps.giftDeliveryService.cancelPendingForGift(redeemed.token, { transacting });
 
     // Gift members receive the paid welcome email, as they receive access to paid content
-    await this.deps.memberRepository.triggerMemberSignupAutomation(member, 'paid', { transacting });
+    await this.deps.memberRepository.notifyMembershipStartedAutomation({
+      member,
+      memberStatus: 'paid',
+      bookshelfOptions: { transacting },
+    });
 
     return { redeemed, member };
   }

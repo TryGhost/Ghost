@@ -10,6 +10,7 @@ const {
   mockManager,
   fixtureManager,
   matchers,
+  hostLimits,
 } = require('../../utils/e2e-framework');
 const moment = require('moment');
 const models = require('../../../core/server/models');
@@ -4614,6 +4615,21 @@ describe('Members API', function () {
       });
     });
 
+    it('records what it saved as written in Stripe Checkout', async function () {
+      const metrics = mockManager.mockMetrics();
+      await completeCheckout('shipping-metric@example.com');
+
+      const writes = metrics.tracked('members.metafields.values');
+      assert.deepEqual(
+        new Set(writes.map(({ event, labels }) => `${event.outcome} ${labels.source}`)),
+        new Set(['success checkout']),
+      );
+      assert.deepEqual(
+        new Set(writes.flatMap(({ labels }) => labels.field_types)),
+        new Set(['address', 'short_text']),
+      );
+    });
+
     it('keeps the address but not the name while the name field is archived', async function () {
       await adminAgent
         .put('/members/metafields/custom/recipient_name/')
@@ -4624,6 +4640,28 @@ describe('Members API', function () {
 
       assert.equal(saved.delivery_address.line1, '1 High Street');
       assert.equal(saved.recipient_name, undefined);
+    });
+
+    // A checkout that asked before the host switched custom fields off. Every field then
+    // reads as archived, so what it collected lands in none of them.
+    describe('while the host switches custom fields off', function () {
+      afterEach(async function () {
+        await hostLimits.restoreHostLimits();
+      });
+
+      it('saves nothing into any field', async function () {
+        await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+        await completeCheckout('shipping-switched-off@example.com', {
+          asked: { shipping: true, phone: true },
+        });
+
+        await hostLimits.restoreHostLimits();
+        const {
+          body: { members },
+        } = await adminAgent.get('/members/?search=shipping-switched-off%40example.com');
+        const { body } = await adminAgent.get(`/members/${members[0].id}/`);
+        assert.equal(body.members[0].metafields, undefined);
+      });
     });
 
     it('saves nothing from a checkout that did not ask for it', async function () {
