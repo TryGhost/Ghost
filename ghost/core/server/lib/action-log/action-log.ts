@@ -105,7 +105,9 @@ export class ActionLog {
 }
 
 function isDeadlock(err: unknown): boolean {
-  return (err as { code?: unknown } | null)?.code === 'ER_LOCK_DEADLOCK';
+  return (
+    typeof err === 'object' && err !== null && 'code' in err && err.code === 'ER_LOCK_DEADLOCK'
+  );
 }
 
 // Only the fields that carry meaning are stored, as Bookshelf's action log does.
