@@ -94,10 +94,14 @@ Load Shade's stylesheet once, through the app stylesheet above, and render one `
 ```tsx
 import {ShadeApp} from '@tryghost/shade/app';
 
-<ShadeApp darkMode={mode === 'dark'}>
+<ShadeApp darkMode={mode === 'dark'} overlay={ghost.overlay}>
   <App />
 </ShadeApp>
 ```
+
+Pass the app SDK's `ghost.overlay` as `overlay`. Shade's dialogs, alert dialogs and sheets then render over Admin's tint, which covers all of Admin, rather than only over the app's page, and the menus, popovers, selects and tooltips inside them follow. They lay out against the whole window, as Admin's own do, but Admin shows only the app's safe area of it, the part its page has to itself, as described under Page frame and margins below. So a dialog sits centred on the window, moving only as far as it must to stay in the safe area, a sheet docks at the safe area's edge, and a dialog that scrolls as a page does scrolls inside the safe area. Anything without `overlay` renders in the page.
+
+A dialog that opens before the overlay has loaded, which it starts to once the app has started, renders in the page instead, and so does one that isn't modal.
 
 `ShadeApp` also renders the toaster. Show toasts with `toast` from `@tryghost/shade/components`, such as `toast.success('Saved')`. Don't add `sonner` as a dependency: a second copy of it shows nothing.
 
@@ -160,7 +164,7 @@ import {Container} from '@tryghost/shade/primitives';
 
 The flex column lets `ListPage` grow to fill the safe area, so an empty state in `ListPage.Body` can centre itself. The minimum height stands in for Admin's `h-full`, because nothing above the container in the frame has a height.
 
-Add no outer padding or margin of your own, on `body`, `ShadeApp` or the container. The page's margins then stay right if Admin changes how much space it leaves around the page. Something fixed to the page's edges, such as a toolbar along the bottom, keeps inside the safe area with the variables, such as `bottom-[var(--ghost-safe-area-inset-bottom,0px)]`. A backdrop that should show beneath the chrome can fill the whole frame.
+Add no outer padding or margin of your own, on `body`, `ShadeApp` or the container. The page's margins then stay right if Admin changes how much space it leaves around the page. Something fixed to the page's edges, such as a toolbar along the bottom, keeps inside the safe area with the variables, such as `bottom-[var(--ghost-safe-area-inset-bottom,0px)]`. A backdrop that should show beneath the chrome can fill the whole frame. A side sheet's own `max-w-*` only narrows it, but its own `w-*` replaces the cap that keeps it inside the safe area, so include it: `w-[min(420px,calc(100vw-var(--ghost-safe-area-inset-left,0px)-var(--ghost-safe-area-inset-right,0px)))]`.
 
 ## Start from a page template
 

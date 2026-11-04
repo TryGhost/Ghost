@@ -2,14 +2,19 @@ import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 
+import { usePortalContainer } from '@/lib/app-overlay';
 import { cn } from '@/lib/utils';
 import { ShadeScope } from '@/shade-scope';
 import { safeAreaCollision } from '@/lib/safe-area';
 
-const TooltipInputContext = React.createContext<React.RefObject<{
-  suppressFocus: boolean;
-  windowBlurred: boolean;
-}> | null>(null);
+interface TooltipInput {
+  state: React.RefObject<{ suppressFocus: boolean; windowBlurred: boolean }>;
+  watch: (target: Document) => void;
+}
+
+const TooltipInputContext = React.createContext<TooltipInput | null>(null);
+
+const TooltipCloseContext = React.createContext<(() => void) | undefined>(undefined);
 
 /**
  * Shared hover timing: `delayDuration` (ms) waits before the first tooltip;
@@ -21,14 +26,14 @@ function TooltipProvider({
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
   const inputState = React.useRef({ suppressFocus: false, windowBlurred: false });
+  const watching = React.useRef(new Map<Document, () => void>());
 
-  React.useEffect(() => {
+  const watch = React.useCallback((target: Document) => {
+    if (watching.current.has(target)) {
+      return;
+    }
     const suppressFocus = () => {
       inputState.current.suppressFocus = true;
-    };
-    const onWindowBlur = () => {
-      suppressFocus();
-      inputState.current.windowBlurred = true;
     };
     const onKeyDown = () => {
       inputState.current.suppressFocus = false;
@@ -37,20 +42,37 @@ function TooltipProvider({
     const onPointerMove = () => {
       inputState.current.windowBlurred = false;
     };
-    document.addEventListener('pointerdown', suppressFocus, true);
-    document.addEventListener('pointermove', onPointerMove, true);
-    window.addEventListener('blur', onWindowBlur);
-    document.addEventListener('keydown', onKeyDown, true);
-    return () => {
-      document.removeEventListener('pointerdown', suppressFocus, true);
-      document.removeEventListener('pointermove', onPointerMove, true);
-      window.removeEventListener('blur', onWindowBlur);
-      document.removeEventListener('keydown', onKeyDown, true);
-    };
+    target.addEventListener('pointerdown', suppressFocus, true);
+    target.addEventListener('pointermove', onPointerMove, true);
+    target.addEventListener('keydown', onKeyDown, true);
+    watching.current.set(target, () => {
+      target.removeEventListener('pointerdown', suppressFocus, true);
+      target.removeEventListener('pointermove', onPointerMove, true);
+      target.removeEventListener('keydown', onKeyDown, true);
+    });
   }, []);
 
+  React.useEffect(() => {
+    const documents = watching.current;
+    watch(document);
+    const onWindowBlur = () => {
+      inputState.current.suppressFocus = true;
+      inputState.current.windowBlurred = true;
+    };
+    window.addEventListener('blur', onWindowBlur);
+    return () => {
+      window.removeEventListener('blur', onWindowBlur);
+      for (const stop of documents.values()) {
+        stop();
+      }
+      documents.clear();
+    };
+  }, [watch]);
+
+  const input = React.useMemo(() => ({ state: inputState, watch }), [watch]);
+
   return (
-    <TooltipInputContext.Provider value={inputState}>
+    <TooltipInputContext.Provider value={input}>
       <TooltipPrimitive.Provider delayDuration={1000} {...props}>
         {children}
       </TooltipPrimitive.Provider>
@@ -64,7 +86,7 @@ function Tooltip({
   onOpenChange,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Root>) {
-  const inputState = React.useContext(TooltipInputContext);
+  const inputState = React.useContext(TooltipInputContext)?.state;
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen);
   const open = controlledOpen ?? uncontrolledOpen;
   const handleOpenChange = React.useCallback(
@@ -79,22 +101,25 @@ function Tooltip({
     [inputState, onOpenChange],
   );
 
+  const close = React.useCallback(() => handleOpenChange(false), [handleOpenChange]);
+  const view = usePortalContainer()?.ownerDocument.defaultView ?? window;
   React.useEffect(() => {
     if (!open) {
       return;
     }
-    const close = () => handleOpenChange(false);
-    window.addEventListener('blur', close);
-    return () => window.removeEventListener('blur', close);
-  }, [open, handleOpenChange]);
+    view.addEventListener('blur', close);
+    return () => view.removeEventListener('blur', close);
+  }, [open, close, view]);
 
   return (
-    <TooltipPrimitive.Root
-      {...props}
-      defaultOpen={defaultOpen}
-      open={open}
-      onOpenChange={handleOpenChange}
-    />
+    <TooltipCloseContext.Provider value={open ? close : undefined}>
+      <TooltipPrimitive.Root
+        {...props}
+        defaultOpen={defaultOpen}
+        open={open}
+        onOpenChange={handleOpenChange}
+      />
+    </TooltipCloseContext.Provider>
   );
 }
 
@@ -102,11 +127,47 @@ const TooltipTrigger = React.forwardRef<
   React.ElementRef<typeof TooltipPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Trigger>
 >(({ onFocus, ...props }, ref) => {
-  const inputState = React.useContext(TooltipInputContext);
+  const input = React.useContext(TooltipInputContext);
+  const inputState = input?.state;
+  // In the overlay, input arrives in the overlay's document, and the page's window has lost focus.
+  const container = usePortalContainer();
+  React.useEffect(() => {
+    if (container && container.ownerDocument !== document) {
+      input?.watch(container.ownerDocument);
+    }
+  }, [container, input]);
+
+  // Radix closes the tooltip as what its trigger is in scrolls, but only in the page's window.
+  const close = React.useContext(TooltipCloseContext);
+  const trigger = React.useRef<HTMLButtonElement | null>(null);
+  React.useEffect(() => {
+    const view = container?.ownerDocument.defaultView;
+    if (!close || !view || view === window) {
+      return;
+    }
+    const onScroll = (event: Event) => {
+      if (event.target instanceof view.Node && event.target.contains(trigger.current)) {
+        close();
+      }
+    };
+    view.addEventListener('scroll', onScroll, true);
+    return () => view.removeEventListener('scroll', onScroll, true);
+  }, [close, container]);
+  const triggerRef = React.useCallback(
+    (element: HTMLButtonElement | null) => {
+      trigger.current = element;
+      if (typeof ref === 'function') {
+        ref(element);
+      } else if (ref) {
+        ref.current = element;
+      }
+    },
+    [ref],
+  );
 
   return (
     <TooltipPrimitive.Trigger
-      ref={ref}
+      ref={triggerRef}
       {...props}
       onFocus={(event) => {
         onFocus?.(event);
@@ -144,7 +205,7 @@ const TooltipContent = React.forwardRef<
   TooltipContentProps
 >(({ className, sideOffset = 4, variant, collisionBoundary, ...props }, ref) => {
   return (
-    <TooltipPrimitive.Portal>
+    <TooltipPrimitive.Portal container={usePortalContainer()}>
       <ShadeScope>
         <TooltipPrimitive.Content
           ref={ref}
@@ -153,7 +214,7 @@ const TooltipContent = React.forwardRef<
             'data-[safe-area]:max-w-(--radix-tooltip-content-available-width)',
             className,
           )}
-          {...safeAreaCollision(collisionBoundary)}
+          {...safeAreaCollision(collisionBoundary, usePortalContainer())}
           sideOffset={sideOffset}
           {...props}
         />

@@ -128,6 +128,6 @@ export interface Ghost {
   fetch(path: string, init?: GhostFetchInit): Promise<Response>;
   /** Sends the person using the app to a place in Admin, such as `{ post: { id } }`. */
   open(place: Place): Promise<void>;
-  /** Where dialogs and sheets render to cover all of Admin. */
+  /** Where dialogs and sheets render to cover all of Admin. Pass it to `ShadeApp`. */
   readonly overlay: GhostOverlay;
 }
