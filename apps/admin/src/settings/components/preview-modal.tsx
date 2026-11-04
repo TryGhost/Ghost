@@ -285,7 +285,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                   as={`h${titleHeadingLevel}` as TextElement}
                   className={cn(
                     headingClasses[titleHeadingLevel],
-                    'in-data-[admin7-design=true]:font-[540]',
+                    'in-data-[admin7-design=true]:font-title',
                   )}
                   leading={headingLeading[titleHeadingLevel]}
                   size={headingSizes[titleHeadingLevel]}

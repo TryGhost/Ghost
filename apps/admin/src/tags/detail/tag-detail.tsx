@@ -479,7 +479,7 @@ const TagDetail: React.FC = () => {
                   <Skeleton className="h-(--large-title-size) w-64" />
                 ) : (
                   <H1
-                    className="min-w-0 text-[length:var(--large-title-size)]! leading-[1.15]! [font-weight:var(--large-title-weight)]! tracking-[-0.03em]! break-words"
+                    className="min-w-0 text-[length:var(--large-title-size)]! leading-[1.15]! font-title! tracking-[-0.03em]! break-words"
                     data-testid="tag-detail-title"
                   >
                     {isCreating ? draft?.name || 'New tag' : title}

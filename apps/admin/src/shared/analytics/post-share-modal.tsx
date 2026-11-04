@@ -82,7 +82,7 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
           <ShareModal.CloseButton className="absolute -top-5 -right-5" onClick={onClose} />
         </div>
         <ShareModal.Header className="relative -mt-5">
-          <ShareModal.Title className="text-3xl leading-[1.15em] font-bold in-data-[admin7-design=true]:font-[540]">
+          <ShareModal.Title className="text-3xl leading-[1.15em] font-bold in-data-[admin7-design=true]:font-title">
             {primaryTitle && <span className="text-state-success">{primaryTitle}</span>}
             {primaryTitle && secondaryTitle && <br />}
             {secondaryTitle && <span>{secondaryTitle}</span>}

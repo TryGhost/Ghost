@@ -258,6 +258,7 @@ export const SHADE_TOKEN_NAMES = [
   'font-mono',
   'font-sans',
   'font-serif',
+  'font-weight-title',
   'foreground',
   'input',
   'input-group-radius',

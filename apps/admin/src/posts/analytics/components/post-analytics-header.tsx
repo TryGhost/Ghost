@@ -333,7 +333,7 @@ const PostAnalyticsHeader: React.FC<PostAnalyticsHeaderProps> = ({ currentTab, c
                       className={cn(
                         '-ml-px max-w-[920px] indent-0',
                         largeTitles
-                          ? 'text-[length:var(--large-title-size-sm)]! leading-[1.15]! [font-weight:var(--large-title-weight)]! tracking-[-0.025em]!'
+                          ? 'text-[length:var(--large-title-size-sm)]! leading-[1.15]! font-title! tracking-[-0.025em]!'
                           : '!text-xl md:leading-[1.2em]',
                       )}
                       data-header="header-title"

@@ -451,7 +451,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                           'min-w-0',
                           // The size and type of the list pages' large titles, where they show them
                           largeTitles
-                            ? 'text-[length:var(--large-title-size)]! leading-[1.15]! [font-weight:var(--large-title-weight)]! tracking-[-0.03em] break-words'
+                            ? 'text-[length:var(--large-title-size)]! leading-[1.15]! font-title! tracking-[-0.03em] break-words'
                             : 'truncate text-2xl tracking-tight sm:text-3xl',
                         )}
                       >

@@ -32,12 +32,12 @@
    title. Comes after the utilities at their specificity, so it beats text classes. */
 .section-heading:where([data-admin7-design='true'] *) {
   font-size: var(--text-section-heading);
-  font-weight: 540;
+  font-weight: var(--font-weight-title);
   letter-spacing: 0;
   line-height: 1.35;
   font-variation-settings:
     'opsz' 22,
-    'wght' 540;
+    'wght' var(--font-weight-title);
   font-feature-settings: 'dlig', 'zero', 'ss01', 'ss02', 'cv10', 'cv06';
 }
 
@@ -187,13 +187,11 @@ html.theme-switching *::after {
    - size: 28px at 800px wide, 44px from 1380px. Admin follows the page area's
      width instead (admin-layout.tsx).
    - size, a step down: 8/11 of it (32px at most, not under 20px), for titles
-     that can run long, like a post's
-   - weight, for the titles of detail screens, post analytics and Settings */
+     that can run long, like a post's */
 :root {
   --large-title-space: clamp(28px, calc(24vh - 116px), 100px);
   --large-title-size: clamp(28px, calc(2.76vw + 6px), 44px);
   --large-title-size-sm: max(20px, calc(var(--large-title-size) * 8 / 11));
-  --large-title-weight: 540;
 }
 
 /* A list page's large title handing over to its sticky header as the page

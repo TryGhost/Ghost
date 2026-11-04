@@ -49,7 +49,7 @@ const EmailPreviewModalContent = React.forwardRef<HTMLDivElement, EmailPreviewMo
       )}
     >
       <div className="sticky top-0 grid shrink-0 grid-cols-[1fr_auto] items-center rounded-t-xl bg-surface-elevated p-8">
-        <h3 className="min-w-0 pr-4 text-md font-medium in-data-[admin7-design=true]:font-[540]">
+        <h3 className="min-w-0 pr-4 text-md font-medium in-data-[admin7-design=true]:font-title">
           {title}
         </h3>
         <Inline gap="sm">{headerActions}</Inline>

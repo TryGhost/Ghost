@@ -219,7 +219,7 @@ function ActivityPage() {
                   src={member.avatar_image}
                 />
                 <Stack className="min-w-0" gap="none">
-                  <H1 className="text-[length:var(--large-title-size)]! leading-[1.15]! [font-weight:var(--large-title-weight)]! tracking-[-0.03em]! break-words">
+                  <H1 className="text-[length:var(--large-title-size)]! leading-[1.15]! font-title! tracking-[-0.03em]! break-words">
                     {formatMemberName(member)}
                   </H1>
                   <Inline className="min-w-0 text-muted-foreground" gap="sm">
