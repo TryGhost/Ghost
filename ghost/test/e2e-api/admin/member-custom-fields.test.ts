@@ -14,7 +14,6 @@ const DatabaseInfo = require('@tryghost/database-info');
 const { knex } = require('../../../core/server/data/db');
 const models = require('../../../core/server/models');
 const events = require('../../../core/server/lib/common/events');
-const settingsService = require('../../../core/server/services/settings/settings-service');
 
 describe('Member Custom Fields Admin API', function () {
   let agent: {
@@ -2873,9 +2872,9 @@ describe('Member Custom Fields Admin API', function () {
   });
 
   // Every definition route, and the member routes that carry values, as each kind of
-  // credential the Admin API accepts. Definitions are served by a mounted router, and
-  // mounting changes what the integration-key check sees of the path, so a route that
-  // works from a session can still refuse a key.
+  // credential the Admin API accepts. Integrations such as Zapier reach these routes with a
+  // key, and each route is authenticated on its own, so one left without it would refuse
+  // them while still working from a session.
   describe('Credentials', function () {
     const credentials: Record<string, () => Promise<void>> = {
       'a staff session': () => agent.loginAsOwner(),
@@ -2903,6 +2902,12 @@ describe('Member Custom Fields Admin API', function () {
           .put('members/metafields/custom/')
           .body({ members_metafields: [{ key: shirtSize.key }, { key: company.key }] })
           .expectStatus(200);
+        const animals = await createField({
+          name: 'Favourite animals',
+          type: 'list',
+          settings: { options: ['Dog', 'Cat'], multiple: true },
+        });
+        await agent.get(`members/metafields/custom/${animals.key}/values/`).expectStatus(200);
 
         const memberId = await createMember();
         await setValues(memberId, { [company.key]: 'Ghost' });
@@ -2957,91 +2962,11 @@ describe('Member Custom Fields Admin API', function () {
     });
   });
 
-  // Custom fields are released, so a site has them whatever its own Labs setting says. That
-  // includes a site that turned them off in Labs while they were private. Ghost no longer
-  // saves a released flag into the setting, so the row is written as that site left it.
-  describe('Released', function () {
-    let storedLabs: string;
-
-    async function storeLabs(value: string) {
-      await models.Base.knex('settings').where({ key: 'labs' }).update({ value });
-      await settingsService.init();
-    }
-
-    beforeEach(async function () {
-      storedLabs = (await models.Settings.findOne({ key: 'labs' })).get('value');
-      await storeLabs(JSON.stringify({ ...JSON.parse(storedLabs), membersCustomFields: false }));
-    });
-
-    afterEach(async function () {
-      await storeLabs(storedLabs);
-    });
-
-    it('lets a site that turned custom fields off in Labs before release define one', async function () {
-      const created = await createField({ name: 'Company' });
-      assert.equal(created.key, 'company');
-    });
-  });
-
-  // A released flag can still be switched off, from config or remote flags, and the site
-  // then behaves as it did before release. The flag governs whether a publisher can set
-  // custom fields up, not whether the rest of Ghost may ask what they are: Admin reads this
-  // list to draw screens it renders either way. Every route that changes something stays
-  // behind the flag.
-  describe('Flag switched off', function () {
-    beforeEach(async function () {
-      await createField({ name: 'Company' });
-      configUtils.set('labs', { membersCustomFields: false });
-    });
-
-    afterEach(async function () {
-      await configUtils.restore();
-    });
-
-    it('still lists and reads the fields the site has', async function () {
-      const { body: list } = await agent.get('members/metafields/custom/').expectStatus(200);
-      assert.deepEqual(
-        list.members_metafields.map((field: { key: string }) => field.key),
-        ['company'],
-      );
-      const { body: read } = await agent
-        .get('members/metafields/custom/company/')
-        .expectStatus(200);
-      assert.equal(read.members_metafields[0].key, 'company');
-    });
-
-    it('404s the create endpoint', async function () {
-      await agent
-        .post('members/metafields/custom/')
-        .body({ members_metafields: [{ name: 'Company', type: 'short_text' }] })
-        .expectStatus(404);
-    });
-
-    it('404s the reorder endpoint', async function () {
-      await agent
-        .put('members/metafields/custom/')
-        .body({ members_metafields: [{ key: 'company' }] })
-        .expectStatus(404);
-    });
-
-    it('404s the edit endpoint', async function () {
-      await agent
-        .put('members/metafields/custom/company/')
-        .body({ members_metafields: [{ name: 'Employer' }] })
-        .expectStatus(404);
-    });
-
-    it('404s the delete endpoint', async function () {
-      await agent.delete('members/metafields/custom/company/').expectStatus(404);
-    });
-  });
-  // Custom fields can be switched off for a site by its host, separately from the flag,
-  // so the feature can be sold with a plan. The limit is unset everywhere today, which is
-  // what the first test pins: nothing changes for a site nobody has limited. When it is
-  // set, changing definitions answers 403 with the host's copy, distinct from the 404 the
-  // flag gives, because "your plan does not include this" is a different thing to tell a
-  // caller than "this does not exist here". Every field the site has reads as archived
-  // meanwhile, without being stored as archived, so it all comes back as it was.
+  // Custom fields can be switched off for a site by its host, so the feature can be sold
+  // with a plan. The limit is unset everywhere today, which is what the first test pins:
+  // nothing changes for a site nobody has limited. When it is set, changing definitions
+  // answers 403 with the host's copy. Every field the site has reads as archived meanwhile,
+  // without being stored as archived, so it all comes back as it was.
   describe('Host limit', function () {
     afterEach(async function () {
       await hostLimits.restoreHostLimits();

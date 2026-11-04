@@ -2,7 +2,6 @@ export interface ActivitySettings {
   editorDefaultEmailRecipients?: string;
   commentsEnabled?: string;
   emailTrackClicks?: boolean;
-  customFieldsShown?: boolean;
 }
 
 const EMAIL_EVENTS = [
@@ -87,9 +86,6 @@ function hiddenActivityEvents(settings: ActivitySettings, memberId?: string): st
   }
   if (settings.editorDefaultEmailRecipients === 'disabled') {
     hidden.push('newsletter_event');
-  }
-  if (!settings.customFieldsShown) {
-    hidden.push('metafield_change_event');
   }
   return hidden;
 }

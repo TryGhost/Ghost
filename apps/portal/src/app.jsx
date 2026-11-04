@@ -383,7 +383,7 @@ export default class App extends React.Component {
     // could have been made while the page was still loading.
     const [linkData, customFields] = await Promise.all([
       this.fetchLinkData(apiSiteData, member),
-      fetchMemberCustomFields({ api: this.GhostApi, site: apiSiteData, member }),
+      fetchMemberCustomFields({ api: this.GhostApi, member }),
     ]);
     const { site: linkSiteData, ...restLinkData } = linkData?.staleGiftRedemptionRequest
       ? {}

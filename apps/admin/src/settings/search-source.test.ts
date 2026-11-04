@@ -9,7 +9,6 @@ const visibility = (overrides: Partial<SettingsSectionVisibility> = {}) => ({
   giftSubscriptions: false,
   welcomeEmails: true,
   tipsAndDonations: false,
-  customFields: false,
   offers: false,
   emailKeywords: ['emails'],
   ...overrides,
@@ -18,7 +17,6 @@ const visibility = (overrides: Partial<SettingsSectionVisibility> = {}) => ({
 const allVisible = visibility({
   giftSubscriptions: true,
   tipsAndDonations: true,
-  customFields: true,
   offers: true,
 });
 
@@ -38,7 +36,6 @@ describe('getSettingsSections', () => {
     ['gift-subscriptions', 'giftSubscriptions'],
     ['memberemails', 'welcomeEmails'],
     ['tips-and-donations', 'tipsAndDonations'],
-    ['custom-fields', 'customFields'],
     ['offers', 'offers'],
   ] as const)('only lists %s while %s', (navid, flag) => {
     expect(navids(getSettingsSections(visibility({ [flag]: true })))).toContain(navid);
