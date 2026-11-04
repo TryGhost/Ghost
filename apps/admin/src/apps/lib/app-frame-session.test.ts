@@ -45,6 +45,7 @@ function fakeDocument() {
     start: vi.fn<AppExports['start']>(async () => {}),
     themeChanged: vi.fn<AppExports['themeChanged']>(async () => {}),
     pathChanged: vi.fn<AppExports['pathChanged']>(async () => {}),
+    overlayDismissed: vi.fn<AppExports['overlayDismissed']>(async () => {}),
   };
   let thread: ThreadMessagePort<HostExports, AppExports> | undefined;
   return {
@@ -122,15 +123,19 @@ describe('createAppFrameSession', () => {
   const open = vi.fn<AppFrameSessionOptions['open']>(() => true);
   const fetchAdminApi = vi.fn<AdminApiFetch>();
   const previousTimeout = appFrameTimeouts.ready;
+  // Whether the publisher has just clicked or typed.
+  let userActive = true;
 
   beforeEach(() => {
     admin = { context: context() };
+    userActive = true;
     session = createAppFrameSession({
       surfaceOrigin: ORIGIN,
       context: () => admin.context,
       fetchAdminApi,
       navigate,
       open,
+      userActive: () => userActive,
     });
   });
 
@@ -795,6 +800,83 @@ describe('createAppFrameSession', () => {
     await expect(frame.host.open({ apps: true })).rejects.toThrow(
       'rejected: The publisher is on their way elsewhere in Admin',
     );
+  });
+
+  describe('the overlay', () => {
+    it('shows with the tint the page asks for, and hides when the page asks', async () => {
+      const frame = await started();
+
+      await frame.host.overlayShown({ tint: 'sheet' });
+      expect(session.getState().overlay).toBe('sheet');
+
+      await frame.host.overlayShown({ tint: 'dialog' });
+      expect(session.getState().overlay).toBe('dialog');
+
+      await frame.host.overlayHidden();
+      expect(session.getState().overlay).toBeUndefined();
+    });
+
+    it('refuses to show unless the publisher has just clicked or typed', async () => {
+      const frame = await started();
+      userActive = false;
+
+      await expect(frame.host.overlayShown({ tint: 'dialog' })).rejects.toThrow(
+        'rejected: Admin shows the overlay only while the app is started, right after the publisher clicks or types in it',
+      );
+      expect(session.getState().overlay).toBeUndefined();
+    });
+
+    it('changes the tint of an overlay already shown without a new click', async () => {
+      const frame = await started();
+      await frame.host.overlayShown({ tint: 'sheet' });
+      userActive = false;
+
+      await frame.host.overlayShown({ tint: 'dialog' });
+
+      expect(session.getState().overlay).toBe('dialog');
+    });
+
+    it('refuses a tint Admin doesn’t know, or anything besides a tint', async () => {
+      const frame = await started();
+
+      for (const options of [{ tint: 'none' }, { tint: 'dialog', rect: { x: 0 } }, 'dialog']) {
+        await expect(
+          frame.host.overlayShown(options as unknown as { tint: 'dialog' }),
+        ).rejects.toThrow('invalid_argument');
+      }
+      expect(session.getState().overlay).toBeUndefined();
+    });
+
+    it('hides when the page loads again', async () => {
+      const frame = await started();
+      await frame.host.overlayShown({ tint: 'dialog' });
+
+      session.restart();
+
+      expect(session.getState().overlay).toBeUndefined();
+    });
+
+    it('tells the page when the publisher presses the tint', async () => {
+      const frame = await started();
+      await frame.host.overlayShown({ tint: 'dialog' });
+
+      session.overlayDismissed();
+
+      await vi.waitFor(() => expect(frame.app.overlayDismissed).toHaveBeenCalledOnce());
+    });
+
+    it('loads the page again when the overlay frame holds a document on Admin’s origin', async () => {
+      const frame = await started();
+      await frame.host.overlayShown({ tint: 'dialog' });
+
+      session.overlayLeft();
+
+      expect(session.getState()).toMatchObject({
+        status: 'loading',
+        attempt: 1,
+        overlay: undefined,
+      });
+    });
   });
 
   it('sends the app’s validated request with a signal that aborts when the frame unmounts', async () => {

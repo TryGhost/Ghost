@@ -1,4 +1,9 @@
-import { type Place, type StartContext, type Theme } from '@tryghost/app-contracts/bridge';
+import {
+  type OverlayTint,
+  type Place,
+  type StartContext,
+  type Theme,
+} from '@tryghost/app-contracts/bridge';
 import type { AdminApiFetch } from './bridge-fetch';
 import { type AppFrameHost, bindAppFrame } from './bridge-host';
 import { appFrameTimeouts } from './frame';
@@ -14,6 +19,11 @@ export interface AppFrameState {
   attempt: number;
   /** When this load started. Used to show how long the app has gone without responding. */
   startedAt: Date;
+  /**
+   * The tint Admin shows while the page has a dialog or sheet open in its overlay frame, or
+   * undefined while the overlay frame is hidden.
+   */
+  overlay?: OverlayTint;
 }
 
 /**
@@ -54,6 +64,13 @@ export interface AppFrameSessionOptions {
    * the app.
    */
   open: (place: Place, appPath: string) => boolean;
+  /**
+   * Whether the publisher has just clicked or typed, in Admin or in the app's frame. The page
+   * may show its overlay over all of Admin only then, so an app can't cover Admin unprompted.
+   * Defaults to the browser's transient user activation, which a press in the app's frame gives
+   * Admin's window too.
+   */
+  userActive?: () => boolean;
 }
 
 export interface AppFrameSession {
@@ -78,6 +95,16 @@ export interface AppFrameSession {
   pathChanged: (path: string, move?: number) => void;
   /** Called when Admin's theme changes. The session sends the new theme to the app. */
   themeChanged: (theme: Theme) => void;
+  /**
+   * Called when the publisher presses Admin's tint. The session tells the page, which closes its
+   * topmost dialog or sheet, or keeps it open.
+   */
+  overlayDismissed: () => void;
+  /**
+   * Called when the overlay frame holds a document on Admin's own origin, which Admin can read.
+   * The page loads again, as when its own frame does that.
+   */
+  overlayLeft: () => void;
 }
 
 /**
@@ -95,6 +122,8 @@ export const MAX_SHORT_LIVED = 5;
 // Numbers the navigations Admin makes to follow apps. Numbering starts at the time Admin loaded, so
 // a history entry from before this load keeps its old number and never matches a newer navigation.
 let lastMove = Date.now();
+
+const browserUserActive = () => navigator.userActivation?.isActive ?? true;
 
 const sameTheme = (a: Theme | undefined, b: Theme) =>
   a?.mode === b.mode && a.accent_color === b.accent_color;
@@ -125,6 +154,7 @@ const sameTheme = (a: Theme | undefined, b: Theme) =>
  * even while Admin is still catching up with routes the app has since left.
  */
 export function createAppFrameSession(options: AppFrameSessionOptions): AppFrameSession {
+  const userActive = options.userActive ?? browserUserActive;
   let state: AppFrameState = { status: 'loading', attempt: 0, startedAt: new Date() };
   const listeners = new Set<() => void>();
 
@@ -169,6 +199,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
       title: undefined,
       attempt: state.attempt + 1,
       startedAt: new Date(),
+      overlay: undefined,
     });
   };
 
@@ -194,7 +225,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
     }
     if (shortLived > MAX_SHORT_LIVED) {
       detach();
-      update({ status: 'failed', title: undefined });
+      update({ status: 'failed', title: undefined, overlay: undefined });
       return false;
     }
     return true;
@@ -245,10 +276,35 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
         },
         // The app reports each move before it asks to open a place, so its route is current.
         open: (place) => options.open(place, appPath ?? options.context().path),
+        overlayShown: ({ tint }) => {
+          // Only showing it needs the publisher's click: a dialog that opens over one already
+          // shown only changes the tint.
+          if (
+            host !== bound ||
+            state.status !== 'ready' ||
+            (state.overlay === undefined && !userActive())
+          ) {
+            return false;
+          }
+          if (state.overlay !== tint) {
+            update({ overlay: tint });
+          }
+          return true;
+        },
+        overlayHidden: () => {
+          if (host === bound && state.overlay !== undefined) {
+            update({ overlay: undefined });
+          }
+        },
         documentChanged: () => {
           if (host === bound && documentEnded(false)) {
             window.clearTimeout(timer);
-            update({ status: 'loading', title: undefined, startedAt: new Date() });
+            update({
+              status: 'loading',
+              title: undefined,
+              startedAt: new Date(),
+              overlay: undefined,
+            });
             timer = window.setTimeout(restartOnItsOwn, appFrameTimeouts.ready);
           }
         },
@@ -267,7 +323,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
     const fail = () => {
       if (host === bound) {
         bound.dispose();
-        update({ status: 'failed', title: undefined });
+        update({ status: 'failed', title: undefined, overlay: undefined });
       }
     };
     // Cleared as soon as the app starts, so a started app is never marked unresponsive.
@@ -328,6 +384,14 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
       if (host?.connected && !sameTheme(appTheme, theme)) {
         appTheme = theme;
         host.themeChanged(theme);
+      }
+    },
+    overlayDismissed: () => {
+      host?.overlayDismissed();
+    },
+    overlayLeft: () => {
+      if (host) {
+        restartOnItsOwn();
       }
     },
   };
