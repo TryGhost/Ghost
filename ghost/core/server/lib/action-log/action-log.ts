@@ -3,13 +3,13 @@ import type { Knex } from 'knex';
 import type { GhostLogger } from '@tryghost/logging';
 import type { Actor } from '../actor';
 import { toDatabaseDate } from '../db-types/date';
-import type { ActionKind, ActionVerb } from './kinds';
+import type { ActionEvent, ActionKind, ActionName } from './kinds';
 
 interface ActionOf<K extends ActionKind> {
   resourceType: K;
-  event: ActionVerb<K>;
+  event: ActionEvent;
   /** What happened, in words, when the event alone doesn't say it, such as "reset". */
-  actionName?: string;
+  actionName?: ActionName<K>;
   /** Anything else stored with the action, such as a field's key. */
   context?: Record<string, unknown>;
 }
@@ -28,12 +28,13 @@ interface SingleChange {
 interface BulkChange {
   resourceId: null;
   primaryName?: never;
-  count?: number;
+  /** How many resources changed, which Admin shows for more than one. */
+  count: number;
 }
 
 /**
- * An action to log. Only the kinds in `ACTION_KINDS` can be logged, and only with the verbs
- * each declares.
+ * An action to log. Only the kinds in `ACTION_KINDS` can be logged, as added, edited or
+ * deleted, and only with the action names each declares.
  */
 export type ActionRow = {
   [K in ActionKind]: ActionOf<K> & (SingleChange | BulkChange);
@@ -98,12 +99,11 @@ export class ActionLog {
 }
 
 // Only the fields that carry meaning are stored, as Bookshelf's action log does.
-function contextOf(row: ActionRow): string | null {
-  const context = {
+function contextOf(row: ActionRow): string {
+  return JSON.stringify({
     ...(row.primaryName === undefined ? {} : { primary_name: row.primaryName }),
     ...row.context,
     ...(row.actionName === undefined ? {} : { action_name: row.actionName }),
     ...(row.count === undefined ? {} : { count: row.count }),
-  };
-  return Object.keys(context).length ? JSON.stringify(context) : null;
+  });
 }

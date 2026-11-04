@@ -1,5 +1,6 @@
 import { movedBetween, type AppManifest } from '@tryghost/app-contracts/manifest';
 import { z } from 'zod';
+import type { ActionName } from '../../lib/action-log/kinds';
 import type { AppInstallationHistoryEntry, HistoryActor } from './codec';
 import type { AppInstallationManifestSource } from './schema';
 
@@ -20,7 +21,7 @@ export interface HistoryAction {
 }
 
 /** What happened to an installation, as its action names it. */
-export type AppInstallationActionName = 'installed' | 'uninstalled' | 'changes_approved';
+export type AppInstallationActionName = ActionName<'app_installation'>;
 
 const NamedContext = z.object({ action_name: z.string() });
 

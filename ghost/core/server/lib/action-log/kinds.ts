@@ -6,29 +6,33 @@
  *   correspond one to one (a gift link's entry points at its post), so it can't be derived
  *   from the schema. The `Action` model builds a read model per kind from it, so
  *   `include=resource` loads every kind that can be logged.
- * - `verbs` are the `event` values the kind may store.
+ * - `actionNames` are the names the kind may give an action, such as "reset", for a change
+ *   that reads as more than its event.
  *
  * Bookshelf models log their own actions and aren't listed here.
  */
 export const ACTION_KINDS = {
   app_installation: {
     table: 'app_installations',
-    verbs: ['added', 'edited', 'deleted'],
+    actionNames: ['installed', 'uninstalled', 'changes_approved'],
   },
   gift_link: {
     table: 'posts',
-    verbs: ['added', 'edited', 'deleted'],
+    actionNames: ['reset'],
   },
   member_custom_field: {
     table: 'members_metafields',
-    verbs: ['added', 'edited', 'deleted'],
+    actionNames: ['archived', 'restored', 'reordered'],
   },
   stripe_checkout_config: {
     table: 'stripe_checkout_config',
-    verbs: ['edited'],
+    actionNames: [],
   },
-} as const satisfies Record<string, { table: string; verbs: readonly string[] }>;
+} as const satisfies Record<string, { table: string; actionNames: readonly string[] }>;
 
 export type ActionKind = keyof typeof ACTION_KINDS;
 
-export type ActionVerb<K extends ActionKind> = (typeof ACTION_KINDS)[K]['verbs'][number];
+/** Every action is a resource being added, edited or deleted; its name says how. */
+export type ActionEvent = 'added' | 'edited' | 'deleted';
+
+export type ActionName<K extends ActionKind> = (typeof ACTION_KINDS)[K]['actionNames'][number];

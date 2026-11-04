@@ -104,17 +104,6 @@ describe('Unit: lib/action-log/action-log', function () {
     assert.equal(row.context, JSON.stringify({ action_name: 'reordered', count: 3 }));
   });
 
-  it('stores no context when there is nothing to say', async function () {
-    await actionLog.record(USER, {
-      resourceType: 'gift_link',
-      event: 'deleted',
-      resourceId: null,
-    });
-
-    const [row] = await knex('actions').select();
-    assert.equal(row.context, null);
-  });
-
   it('gives later actions higher ids', async function () {
     for (let i = 0; i < 3; i++) {
       await actionLog.record(USER, {
@@ -238,12 +227,21 @@ export function rejectedAtCompileTime(actionLog: ActionLog) {
     primaryName: 'A post',
   });
 
-  // @ts-expect-error A verb the kind doesn't declare.
   void actionLog.record(USER, {
-    resourceType: 'stripe_checkout_config',
-    event: 'deleted',
+    resourceType: 'member_custom_field',
+    // @ts-expect-error An event other than added, edited or deleted.
+    event: 'archived',
     resourceId: POST_ID,
-    primaryName: 'Stripe Checkout',
+    primaryName: 'Company',
+  });
+
+  // @ts-expect-error An action name the kind doesn't declare.
+  void actionLog.record(USER, {
+    resourceType: 'gift_link',
+    event: 'edited',
+    actionName: 'archived',
+    resourceId: POST_ID,
+    primaryName: 'A post',
   });
 
   // @ts-expect-error A change to one resource needs its name.
@@ -258,6 +256,14 @@ export function rejectedAtCompileTime(actionLog: ActionLog) {
     resourceType: 'gift_link',
     event: 'deleted',
     resourceId: null,
+    count: 2,
     primaryName: 'A post',
+  });
+
+  // @ts-expect-error A bulk change says how many resources it changed.
+  void actionLog.record(USER, {
+    resourceType: 'gift_link',
+    event: 'deleted',
+    resourceId: null,
   });
 }
