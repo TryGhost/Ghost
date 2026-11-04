@@ -54,7 +54,12 @@ An app describes itself to Ghost in a JSON manifest, which it serves as a
   site has at most one current installation per ID. It proves nothing about who
   made the app; `identity_key` does.
 - `name`, `description` and `author` are all required. The author's `url` is only
-  ever linked to.
+  ever linked to, and nothing checks who the author is, so Admin's install review
+  and app details mark them as an unverified developer.
+- Text is one line of plain text. Characters that show nothing, as a reader sees
+  them, are taken off both ends, such as spaces, Hangul fillers and the blank
+  Braille pattern standing alone, with any marks on them. Text with nothing
+  visible left is refused.
 - `icon` is drawn on `accent_color`, a six-digit hex colour. It is either
   `{ "name": "audio-lines" }`, one of the icons Admin ships, or
   `{ "url": "/icon.svg" }`, an image the app serves: SVG, PNG or WebP,

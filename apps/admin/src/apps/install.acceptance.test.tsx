@@ -108,14 +108,22 @@ describe('Installing an app', () => {
     const dialog = appsScreen.installDialog();
     await expect.element(dialog).toHaveTextContent('Podcast');
     await expect.element(dialog).toHaveTextContent('Publish episodes and embed players.');
+    // Who made it, which nothing checks, so it's marked as unverified.
     await expect.element(dialog).toHaveTextContent('By Example Audio');
+    await expect
+      .element(appsScreen.unverifiedDeveloperBadge())
+      .toHaveTextContent('Unverified developer');
+    await expect
+      .element(dialog.getByRole('link', { name: 'Example Audio', exact: true }))
+      .toHaveAttribute('href', 'https://example.com/');
     await expect.element(appsScreen.developmentBadge()).not.toBeInTheDocument();
     await expect
       .element(appsScreen.accessIndicator())
-      .toHaveTextContent('This app uses your account, so it can do everything you can.');
+      .toHaveTextContent('The app acts as whoever opens it, within their role.');
+    await expect(appsScreen.accessItems()).toHaveCount(6);
     await expect
       .element(appsScreen.accessItems().first())
-      .toHaveTextContent('View, create, edit, publish and delete all posts and pages');
+      .toHaveTextContent('View, create, edit, publish and delete posts and pages');
     // What the app does: where it appears, and where what it reads can go.
     await expect(appsScreen.capabilities()).toHaveCount(2);
     await expect
@@ -189,42 +197,6 @@ describe('Installing an app', () => {
       .element(appsScreen.capabilities().last())
       .toHaveTextContent('Read and write data to localhost:5173');
     await expect.element(appsScreen.developmentBadge()).not.toBeInTheDocument();
-  });
-
-  it('says which of the app’s hosts the site trusts rather than verified', async () => {
-    fakeInstallations();
-    fakePreview(previewResponse(preview({ trusted_origins: ['https://podcast.example.com'] })));
-
-    await renderAdminApp(INSTALL_ROUTE, { labs });
-
-    await expect
-      .element(appsScreen.trustedOrigins())
-      .toHaveTextContent(
-        'podcast.example.com is trusted by this site’s configuration rather than verified.',
-      );
-    await expect.element(appsScreen.installButton()).toBeVisible();
-  });
-
-  it('says nothing about trust when every host was verified', async () => {
-    fakeInstallations();
-    fakePreview(previewResponse(preview()));
-
-    await renderAdminApp(INSTALL_ROUTE, { labs });
-
-    await expect.element(appsScreen.installButton()).toBeVisible();
-    await expect.element(appsScreen.trustedOrigins()).not.toBeInTheDocument();
-  });
-
-  it('says nothing about trust when Ghost doesn’t report which hosts it trusts', async () => {
-    fakeInstallations();
-    const older = preview();
-    delete older.trusted_origins;
-    fakePreview(previewResponse(older));
-
-    await renderAdminApp(INSTALL_ROUTE, { labs });
-
-    await expect.element(appsScreen.installButton()).toBeVisible();
-    await expect.element(appsScreen.trustedOrigins()).not.toBeInTheDocument();
   });
 
   it('asks for a fresh review when the app changed while it was being reviewed', async () => {
@@ -328,7 +300,6 @@ describe('Installing an app', () => {
     await expect
       .element(appsScreen.changes().last())
       .toHaveTextContent('https://podcast.example.com/adminhttps://audio.example.org/admin');
-    await expect.element(appsScreen.trustedOrigins()).toHaveTextContent('audio.example.org');
 
     await appsScreen.approveChangesButton().click();
 
