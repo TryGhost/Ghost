@@ -29,31 +29,25 @@ These can vary across pageviews within a session:
 
 ### How Filtering Works
 
-All endpoint filtering is handled through the `filtered_sessions.pipe`, which uses a two-stage approach:
+All endpoint filtering is handled through `filtered_sessions.pipe`, which uses a two-stage approach:
 
-**Stage 1: Query Filters (Hit-Level)**
+**Stage 1: Hit-Level Filters (`hit_filtered_sessions.pipe`)**
 
-```sql
-NODE query_filters
-```
+Finds sessions where **at least one hit** matches the hit-level filter criteria (pathname, post_uuid, member_status, location, gift_link). A session qualifies if ANY of its pageviews match the specified criteria.
 
-Finds sessions where **at least one hit** matches the hit-level filter criteria (pathname, post_uuid, member_status). A session qualifies if ANY of its pageviews match the specified criteria.
-
-**Stage 2: Session Attributes (Session-Level)**
+**Stage 2: Session-Level Filters (`filtered_sessions.pipe`)**
 
 ```sql
 NODE sessions_filtered_by_session_attributes
 ```
 
-Further filters by session-level attributes (source, utm_*) by reading from `_mv_session_data` using `-Merge` combinators (e.g., `argMinMerge(source)`). These filters check attributes from the **first hit only**.
+Further filters the stage 1 sessions by session-level attributes (source, device, utm_*) from `mv_session_data`. These filters check attributes from the **first hit only**. The result is the set of session IDs that match **all** filter criteria.
 
-**Stage 3: Final Output**
+### Building Sessions Only for Matching Sessions
 
-```sql
-NODE filtered_sessions
-```
+`mv_session_data.pipe` builds sessions from raw hits on every request. When a hit-level filter is set, it only builds the sessions returned by `hit_filtered_sessions`. Every endpoint inner joins `mv_session_data` with `filtered_sessions`, whose sessions are a subset of those, so the output is unchanged. This avoids building every session in the date range just to report on the few that touched one post or page.
 
-Returns session IDs that match **all** filter criteria (both hit-level and session-level).
+`mv_session_data` can't reference `filtered_sessions` directly, because `filtered_sessions` reads from `mv_session_data` when a session-level filter is set.
 
 ### Important Behavior: All Hits from Matching Sessions
 
