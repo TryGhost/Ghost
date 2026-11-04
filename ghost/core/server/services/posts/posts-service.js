@@ -488,10 +488,9 @@ class PostsService {
       delete data.tiers;
     }
 
-    // Before the update, which locks the posts in chunks of request order
-    if (tiers) {
-      await this.models.Post.lockForUpdate(editIds, { transacting: options.transacting });
-    }
+    // Before the update, which locks the posts in chunks of request order, so
+    // overlapping bulk updates can't lock them in different orders
+    await this.models.Post.lockForUpdate(editIds, { transacting: options.transacting });
 
     const result = await this.models.Post.bulkEdit(editIds, 'posts', {
       ...options,

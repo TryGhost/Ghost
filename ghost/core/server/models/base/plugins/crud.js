@@ -278,7 +278,12 @@ module.exports = function (Bookshelf) {
 
         // Lock only this row. Bookshelf's `lock` option would also lock every
         // eager-loaded relation, e.g. tags shared with other posts, and
-        // concurrent edits of different records would deadlock on them
+        // concurrent edits of different records would deadlock on them.
+        //
+        // The relations are then plain reads, which come from the transaction's
+        // snapshot. A caller passing its own transaction must lock this row
+        // before any plain read in it, or the edit can diff its relations
+        // against rows another edit has since changed
         if (options.transacting) {
           model.query((qb) => qb.forUpdate());
         }
