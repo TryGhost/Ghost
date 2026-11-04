@@ -10,14 +10,19 @@ import { parseManifest, parseManifestUrl } from '@tryghost/app-contracts/manifes
 import { readBytes } from '../shared/body.ts';
 import { UNKNOWN_GHOST_URL, formatErrors } from '../shared/manifest.ts';
 import type { PublicKeyJwk } from './keys.ts';
+import {
+  ANSWER_MAX_BYTES,
+  MANIFEST_MAX_BYTES,
+  MAX_REDIRECTS,
+  SIGNED_MANIFEST_MAX_BYTES,
+  TIMEOUT_MS,
+  storedSize,
+  tooLargeMessage,
+} from './limits.ts';
 import type { AppManifest, ManifestError } from './types.ts';
 
-// The limits Ghost reads an app with.
-const TIMEOUT_MS = 5000;
-const MAX_REDIRECTS = 3;
-const MANIFEST_MAX_BYTES = 64 * 1024;
-const SIGNED_MANIFEST_MAX_BYTES = Math.ceil((MANIFEST_MAX_BYTES * 4) / 3) + 1024;
-const ANSWER_MAX_BYTES = 4 * 1024;
+// Ghost's Got client follows these, and treats any other status as an answer.
+const REDIRECT_STATUSES: ReadonlySet<number> = new Set([301, 302, 303, 307, 308]);
 
 /** The codes Ghost refuses an app with, which `checkApp` reports the same problems with. */
 export type CheckCode =
@@ -101,21 +106,18 @@ const describe = (error: unknown) => {
 
 /**
  * Requests a URL as Ghost does, following no redirect, and reads the answer's body up to
- * `maxBytes`. A request that fails, before or while its body arrives, fails with `code`.
+ * `maxBytes`, until `signal` gives up. A request that fails, before or while its body arrives,
+ * fails with `code`.
  */
 async function send(
   request: typeof fetch,
   url: URL | string,
-  init: RequestInit,
+  init: RequestInit & { signal: AbortSignal },
   maxBytes: number,
   code: CheckCode,
 ): Promise<Answer> {
   try {
-    const response = await request(url, {
-      ...init,
-      redirect: 'manual',
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    });
+    const response = await request(url, { ...init, redirect: 'manual' });
     return {
       status: response.status,
       location: response.headers.get('location'),
@@ -146,15 +148,18 @@ function staysOnHost(from: URL, to: URL): boolean {
 /** The signed manifest's bytes, following redirects on the same host, as Ghost does. */
 async function fetchManifest(manifestUrl: string, request: typeof fetch): Promise<Uint8Array> {
   let current = new URL(manifestUrl);
+  // One deadline for the whole read, redirects included, as in Ghost, so a slow app can't stall
+  // it several times over.
+  const signal = AbortSignal.timeout(TIMEOUT_MS);
   for (let hops = 0; ; hops++) {
     const answer = await send(
       request,
       current,
-      { headers: { accept: 'application/json' } },
+      { headers: { accept: 'application/json' }, signal },
       SIGNED_MANIFEST_MAX_BYTES,
       'APP_MANIFEST_UNREACHABLE',
     );
-    if (isRedirect(answer.status) && answer.location !== null) {
+    if (REDIRECT_STATUSES.has(answer.status) && answer.location !== null) {
       const target = URL.parse(answer.location, current);
       if (!target) {
         throw new Failure(
@@ -204,6 +209,7 @@ async function challenge(origin: string, backendKey: PublicKeyJwk, request: type
       method: 'POST',
       body: sent,
       headers: { accept: 'application/json', 'content-type': 'application/json' },
+      signal: AbortSignal.timeout(TIMEOUT_MS),
     },
     ANSWER_MAX_BYTES,
     'APP_CHALLENGE_UNREACHABLE',
@@ -260,6 +266,10 @@ async function check(input: string, request: typeof fetch): Promise<CheckResult>
   const verified = await verifySignedManifest(signed.signed, manifest.identity_key);
   if (!verified.success) {
     throw new Failure('APP_MANIFEST_SIGNATURE_INVALID', verified.error);
+  }
+  // Ghost measures what it stores, with the paths resolved, after verifying the signature.
+  if (storedSize(manifest) > MANIFEST_MAX_BYTES) {
+    throw new Failure('APP_MANIFEST_TOO_LARGE', `${manifestUrl}: ${tooLargeMessage()}`);
   }
   await challenge(new URL(manifestUrl).origin, manifest.backend_key, request);
   return { success: true, manifestUrl, manifest };

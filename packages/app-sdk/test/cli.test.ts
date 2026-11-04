@@ -342,6 +342,54 @@ describe('checkApp', () => {
     expect(result).toMatchObject({ success: true, manifestUrl: MANIFEST_URL });
   });
 
+  it('gives the whole read of the manifest one deadline, redirects included, as Ghost does', async () => {
+    const signals: AbortSignal[] = [];
+    const recording =
+      (inner: typeof fetch): typeof fetch =>
+      (input, init) => {
+        signals.push(init!.signal!);
+        return inner(input, init);
+      };
+    const result = await checkApp(MANIFEST_URL, {
+      fetch: recording(
+        fakeApp({
+          [MANIFEST_URL]: () => Response.redirect('http://localhost/moved.json', 302),
+          'http://localhost/moved.json': () =>
+            Response.redirect('https://localhost/ghost-app.json', 307),
+          'https://localhost/ghost-app.json': async () => Response.json(await signed()),
+          ...challengeRoute,
+        }),
+      ),
+    });
+    expect(result.success).toBe(true);
+    const [first, second, third, challenge] = signals;
+    expect(second).toBe(first);
+    expect(third).toBe(first);
+    // The challenge is a read of its own.
+    expect(challenge).not.toBe(first);
+  });
+
+  it.each([300, 304, 305])(
+    'treats HTTP %i as an answer, not a redirect, as Ghost does',
+    async (status) => {
+      const result = await checkApp(MANIFEST_URL, {
+        fetch: fakeApp({
+          [MANIFEST_URL]: () =>
+            new Response(null, {
+              status,
+              headers: { location: 'https://localhost/ghost-app.json' },
+            }),
+          'https://localhost/ghost-app.json': async () => Response.json(await signed()),
+        }),
+      });
+      expect(result).toMatchObject({
+        success: false,
+        code: 'APP_MANIFEST_UNREACHABLE',
+        detail: `${MANIFEST_URL} answered with HTTP ${status}`,
+      });
+    },
+  );
+
   it.each([
     [
       'a Location that is not a URL',

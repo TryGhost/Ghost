@@ -13,6 +13,7 @@ import {
   type ReadKeysOptions,
 } from './keys.ts';
 import { UNKNOWN_GHOST_URL } from '../shared/manifest.ts';
+import { MANIFEST_MAX_BYTES, storedSize, tooLargeMessage } from './limits.ts';
 import type { ManifestError, SignedManifest } from './types.ts';
 
 /** The readable manifest a project keeps, which the tooling signs. */
@@ -40,8 +41,11 @@ export type SignResult =
     }
   | {
       success: false;
-      /** As Ghost would refuse it: `APP_MANIFEST_INVALID`, or `APP_MANIFEST_URL_INVALID`. */
-      code: 'APP_MANIFEST_INVALID' | 'APP_MANIFEST_URL_INVALID';
+      /**
+       * As Ghost would refuse it: `APP_MANIFEST_INVALID`, `APP_MANIFEST_URL_INVALID`, or
+       * `APP_MANIFEST_TOO_LARGE` for one larger than Ghost stores.
+       */
+      code: 'APP_MANIFEST_INVALID' | 'APP_MANIFEST_URL_INVALID' | 'APP_MANIFEST_TOO_LARGE';
       errors: ManifestError[];
     };
 
@@ -96,6 +100,13 @@ export async function signAppManifest(source: unknown, options: SignOptions): Pr
   if (!parsed.success) {
     // A mismatch can't happen, as the manifest URL was just set; any failure is invalid.
     return { success: false, code: 'APP_MANIFEST_INVALID', errors: parsed.errors };
+  }
+  if (storedSize(parsed.manifest) > MANIFEST_MAX_BYTES) {
+    return {
+      success: false,
+      code: 'APP_MANIFEST_TOO_LARGE',
+      errors: [{ path: '', message: tooLargeMessage() }],
+    };
   }
   const signed = await signManifest(`${JSON.stringify(manifest, null, 2)}\n`, options.identityKey);
   return { success: true, signed, manifest };
