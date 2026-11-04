@@ -14,3 +14,8 @@ export type TierSelection = {
   from: 'any_paid' | string[];
   to: string[] | 'downgraded_to_free';
 };
+
+// The slug of the one label that starts a "Label added to a member" automation, as the members
+// label picker keys it; null until one is picked. Local until the API can hold it, like
+// `TierSelection` (NY-1750).
+export type LabelSelection = string | null;

@@ -14,9 +14,9 @@ import { useVisibleAutomations } from './hooks/use-visible-automations';
 import { getNewAutomationName } from './utils/get-new-automation-name';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import { ScreenEntranceContext } from '@/layout/screen-transition';
-import type { TierSelection } from './types';
+import type { LabelSelection, TierSelection } from './types';
 
-type PickedTrigger = 'free' | 'all_paid' | 'paid_subscription_changed';
+type PickedTrigger = 'free' | 'all_paid' | 'paid_subscription_changed' | 'member_label_added';
 
 const TRIGGER_OPTIONS = [
   ['free', LucideIcon.UserPlus, 'Free member signed up', 'When someone signs up as a free member'],
@@ -36,6 +36,14 @@ const SUBSCRIPTION_CHANGED_OPTION = [
   "When a member's paid subscription moves to another tier or ends",
 ] as const;
 
+// Behind the same flag until the API can save it (NY-1750).
+const LABEL_ADDED_OPTION = [
+  'member_label_added',
+  LucideIcon.Tag,
+  'Label added to a member',
+  'When a label is added to a member',
+] as const;
+
 const TriggerPicker: React.FC<{
   automation: AutomationDetail;
   // `cardTop`: where the card sits, so the editor can open with the trigger in the same place.
@@ -44,7 +52,7 @@ const TriggerPicker: React.FC<{
   const { dialogProps } = useUnsavedChangesGuard({ when: true });
   const lifecycleTriggers = useFeatureFlag('automationsLifecycleTriggers');
   const options = lifecycleTriggers
-    ? [...TRIGGER_OPTIONS, SUBSCRIPTION_CHANGED_OPTION]
+    ? [...TRIGGER_OPTIONS, SUBSCRIPTION_CHANGED_OPTION, LABEL_ADDED_OPTION]
     : TRIGGER_OPTIONS;
   const cardRef = React.useRef<HTMLDivElement>(null);
   return (
@@ -128,10 +136,12 @@ const NewAutomationLoading: React.FC = () => {
 type NewAutomationProps = {
   // `triggerTop`: where the picker's card was, when a trigger was picked on it.
   // `tierSelection`: set when the picked trigger was "Paid subscription changed".
+  // `labelSelection`: set when the picked trigger was "Label added to a member".
   children: (
     automation: AutomationDetail,
     triggerTop?: number,
     tierSelection?: TierSelection,
+    labelSelection?: LabelSelection,
   ) => React.ReactNode;
 };
 
@@ -146,6 +156,7 @@ const NewAutomationSession: React.FC<
   // Where the trigger was picked, once it has been.
   const [triggerTop, setTriggerTop] = React.useState<number | null>(null);
   const [tierSelection, setTierSelection] = React.useState<TierSelection>();
+  const [labelSelection, setLabelSelection] = React.useState<LabelSelection>();
   if (!initialAutomation) {
     if (isStripeReady) {
       setInitialAutomation({
@@ -173,6 +184,10 @@ const NewAutomationSession: React.FC<
             // A stand-in paid scope loads the paid tiers; the editor never saves it (NY-1733).
             setTierSelection({ from: [], to: [] });
             setInitialAutomation({ ...initialAutomation, trigger_tier_scope: 'all_paid' });
+          } else if (trigger === 'member_label_added') {
+            // A stand-in free scope closes the picker; the editor never saves it (NY-1750).
+            setLabelSelection(null);
+            setInitialAutomation({ ...initialAutomation, trigger_tier_scope: 'free' });
           } else {
             setInitialAutomation({
               ...initialAutomation,
@@ -187,7 +202,7 @@ const NewAutomationSession: React.FC<
   // header replacing it shouldn't play it a second time in the same visit.
   return triggerTop !== null ? (
     <ScreenEntranceContext.Provider value={false}>
-      {children(initialAutomation, triggerTop, tierSelection)}
+      {children(initialAutomation, triggerTop, tierSelection, labelSelection)}
     </ScreenEntranceContext.Provider>
   ) : (
     children(initialAutomation)

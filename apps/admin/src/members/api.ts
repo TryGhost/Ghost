@@ -14,4 +14,6 @@ export {
   normalizeSharedViewName,
   parseAllSharedViewsJSON,
 } from './shared-views';
-export { LabelPicker } from './label-picker';
+export { EditRow, LabelPicker } from './label-picker';
+export { canCreateLabel } from './label-picker/can-create-label';
+export { useLabelPicker } from './hooks/use-label-picker';

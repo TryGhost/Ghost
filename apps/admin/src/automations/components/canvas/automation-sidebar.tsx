@@ -1,5 +1,6 @@
 import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
 import { useAutomationPerformanceStats } from '@/automations/hooks/use-automation-performance-stats';
+import type { Label } from '@tryghost/admin-x-framework/api/labels';
 import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
 import React, { useId, useState } from 'react';
 import type {
@@ -202,6 +203,9 @@ export const AutomationSidebar: React.FC<{
   triggerTierScope: AutomationTrigger['trigger_tier_scope'];
   triggerTierIds: readonly string[];
   tiers: readonly Tier[];
+  // Set for a "Label added to a member" trigger, whose labels replace the tier scope (NY-1750).
+  triggerLabelSlug?: string | null;
+  labels: readonly Label[];
   performanceEnabled: boolean;
   metadata: AutomationMetadata;
   onDescriptionChange: (description: string) => void;
@@ -218,6 +222,8 @@ export const AutomationSidebar: React.FC<{
   triggerTierScope,
   triggerTierIds,
   tiers,
+  triggerLabelSlug,
+  labels,
   performanceEnabled,
   metadata,
   onDescriptionChange,
@@ -265,34 +271,40 @@ export const AutomationSidebar: React.FC<{
   }
 
   let stopConditionDescription: string;
-  switch (triggerTierScope) {
-    case 'free':
-    case null:
-      stopConditionDescription = 'Members stop early if they unsubscribe.';
-      break;
-    case 'all_paid':
-      stopConditionDescription = 'Members stop early if they unsubscribe or leave any paid tier.';
-      break;
-    case 'selected_paid': {
-      const triggerNamesById = new Map(tiers.map((tier) => [tier.id, tier.name]));
-      const tierNames = triggerTierIds
-        .map((id) => triggerNamesById.get(id))
-        .filter((tierName): tierName is string => tierName !== undefined);
-      let tierDescription = 'selected tiers';
-      if (tierNames.length === 1 && tierNames.length === triggerTierIds.length) {
-        tierDescription = `${tierNames[0]} tier`;
-      } else if (tierNames.length > 1 && tierNames.length === triggerTierIds.length) {
-        const tierList = new Intl.ListFormat('en', { style: 'long', type: 'disjunction' }).format(
-          tierNames,
-        );
-        tierDescription = `${tierList} tiers`;
+  if (triggerLabelSlug !== undefined) {
+    const labelDescription =
+      labels.find((label) => label.slug === triggerLabelSlug)?.name ?? 'selected label';
+    stopConditionDescription = `Members stop early if they unsubscribe or the ${labelDescription} is removed.`;
+  } else {
+    switch (triggerTierScope) {
+      case 'free':
+      case null:
+        stopConditionDescription = 'Members stop early if they unsubscribe.';
+        break;
+      case 'all_paid':
+        stopConditionDescription = 'Members stop early if they unsubscribe or leave any paid tier.';
+        break;
+      case 'selected_paid': {
+        const triggerNamesById = new Map(tiers.map((tier) => [tier.id, tier.name]));
+        const tierNames = triggerTierIds
+          .map((id) => triggerNamesById.get(id))
+          .filter((tierName): tierName is string => tierName !== undefined);
+        let tierDescription = 'selected tiers';
+        if (tierNames.length === 1 && tierNames.length === triggerTierIds.length) {
+          tierDescription = `${tierNames[0]} tier`;
+        } else if (tierNames.length > 1 && tierNames.length === triggerTierIds.length) {
+          const tierList = new Intl.ListFormat('en', { style: 'long', type: 'disjunction' }).format(
+            tierNames,
+          );
+          tierDescription = `${tierList} tiers`;
+        }
+        stopConditionDescription = `Members stop early if they unsubscribe or leave the ${tierDescription}.`;
+        break;
       }
-      stopConditionDescription = `Members stop early if they unsubscribe or leave the ${tierDescription}.`;
-      break;
-    }
-    default: {
-      const _exhaustive: never = triggerTierScope;
-      throw new Error(`Unknown automation trigger scope: ${String(_exhaustive)}`);
+      default: {
+        const _exhaustive: never = triggerTierScope;
+        throw new Error(`Unknown automation trigger scope: ${String(_exhaustive)}`);
+      }
     }
   }
 

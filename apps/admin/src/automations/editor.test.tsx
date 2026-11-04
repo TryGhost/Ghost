@@ -236,6 +236,21 @@ vi.mock('@tryghost/admin-x-framework/api/tiers', () => ({
   useBrowseTiers: () => ({ data: { tiers: [] }, isLoading: false }),
 }));
 
+// For the "Label added to a member" trigger, which these tests don't pick.
+vi.mock('@tryghost/admin-x-framework/api/labels', () => ({
+  useBrowseLabelsInfinite: () => ({ data: { labels: [] }, isLoading: false }),
+}));
+
+vi.mock('@tryghost/admin-x-framework/api/members', async () => {
+  const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/members')>(
+    '@tryghost/admin-x-framework/api/members',
+  );
+  return {
+    ...actual,
+    useMembersCount: () => ({ count: null, isLoading: false }),
+  };
+});
+
 // xyflow's ReactFlow needs a sized container; stub it out for unit tests.
 type StubNode = { id: string; data?: Record<string, unknown>; type?: string };
 type StubEdge = {
