@@ -1,6 +1,6 @@
-import { createPrivateKey, createPublicKey, generateKeyPairSync } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { createPrivateKey, createPublicKey, generateKeyPairSync, randomUUID } from 'node:crypto';
+import { link, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { basename, dirname, join } from 'node:path';
 
 import { isGitIgnored } from './git.ts';
 
@@ -174,25 +174,34 @@ export async function createKeys({ root, mode }: KeyOptions): Promise<CreateKeys
   await mkdir(join(root, KEYS_DIRECTORY, mode), { recursive: true, mode: 0o700 });
   const result: CreateKeysResult = { created: [], kept: [] };
   for (const name of KEY_NAMES) {
-    try {
-      // `wx` fails if the file exists, so a key is never replaced, even by a concurrent run.
-      await writeFile(
-        join(root, keyFile(mode, name)),
-        `${JSON.stringify(generateKey(), null, 2)}\n`,
-        {
-          flag: 'wx',
-          mode: 0o600,
-        },
-      );
-      result.created.push(name);
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
-        throw error;
-      }
-      result.kept.push(name);
-    }
+    result[(await publishKey(join(root, keyFile(mode, name)))) ? 'created' : 'kept'].push(name);
   }
   return result;
+}
+
+/**
+ * Writes a new key to `file` unless one is there, and says whether it did. The key is written
+ * whole to a file of its own beside it first, then linked to its name, which fails if a key is
+ * there, so a key is never replaced, even by a concurrent run, and an interrupted write never
+ * leaves part of a key where a key belongs.
+ */
+async function publishKey(file: string): Promise<boolean> {
+  const pending = join(dirname(file), `.${basename(file)}.${randomUUID()}.tmp`);
+  try {
+    await writeFile(pending, `${JSON.stringify(generateKey(), null, 2)}\n`, {
+      flag: 'wx',
+      mode: 0o600,
+    });
+    await link(pending, file);
+    return true;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
+      throw error;
+    }
+    return false;
+  } finally {
+    await rm(pending, { force: true });
+  }
 }
 
 export interface SigningKeys {

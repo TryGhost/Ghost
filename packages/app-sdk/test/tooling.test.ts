@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { existsSync } from 'node:fs';
-import { chmod, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -73,6 +73,25 @@ describe('createKeys', () => {
       created: [],
       kept: ['identity', 'backend'],
     });
+  });
+
+  it('publishes each key whole, leaving nothing else behind, even when runs race', async () => {
+    const runs = await Promise.all(
+      Array.from({ length: 5 }, () => createKeys({ root, mode: 'development' })),
+    );
+    // Each key is created by exactly one run, and kept by the rest.
+    for (const name of ['identity', 'backend'] as const) {
+      expect(runs.filter(({ created }) => created.includes(name))).toHaveLength(1);
+    }
+    expect((await readdir(join(root, '.ghost-app/development'))).sort()).toEqual([
+      'backend.json',
+      'identity.json',
+    ]);
+    for (const name of ['identity', 'backend']) {
+      expect(JSON.parse(await read(`.ghost-app/development/${name}.json`))).toMatchObject({
+        kty: 'OKP',
+      });
+    }
   });
 
   describe('in a git repository', () => {
