@@ -8443,7 +8443,7 @@ services:
         sources:
           - core/server/services/members-metafields/index.ts
           - core/server/services/members-metafields/access.ts
-          - core/server/services/members-metafields/actions.ts
+          - core/server/services/members-metafields/write-origin.ts
           - core/server/services/members-metafields/namespaces.ts
           - core/server/services/members-metafields/definitions-service.ts
           - core/server/services/members-metafields/values-service.ts
@@ -8453,11 +8453,11 @@ services:
           - test/e2e-api/members/custom-fields.test.ts
       construction:
         summary: >-
-          Init obtains the shared Knex getter, models and config, then publishes namespaces,
+          Init obtains the shared Knex getter and config, then publishes namespaces,
           fields, definitions, values and bindings sequentially; bindings retains that values instance.
           Namespaces is built from custom fields' policy, which holds the host limit service and a
           ceiling callback, both asked on each use.
-          Definitions receives an action-recording closure over models.Action and the namespaces;
+          Definitions receives the shared ActionLog, built from Knex and logging, and the namespaces;
           values receives the ceiling callback; all three receive the field source. Constructors
           store dependencies without querying or starting work.
           The shared DB getter can create the module-cached Knex client if not already loaded.
@@ -8572,15 +8572,17 @@ services:
           shared Knex. Definition add/reorder use transactions; addOne and value applyWrite join
           a supplied transaction or open one, while bind/remove use the supplied executor.
           Value changes and their history rows share a transaction; the members service
-          composes larger writes around it, and CSV import uses per-row transactions. Definition actions
-          are separate post-write work. Real HTTP proves batch rollback on a later name conflict,
+          composes larger writes around it, and CSV import uses per-row transactions. Definition add and
+          reorder log their actions inside their transactions; other definition changes log
+          right after their write. Real HTTP proves batch rollback on a later name conflict,
           successful value/history writes and cascades; validation refusals do not prove rollback
           after a value/history write fails. Import failure units use fake commit/rollback.
         sources:
           - core/server/services/members-metafields/definitions-service.ts
           - core/server/services/members-metafields/values-service.ts
           - core/server/services/members-metafields/bindings-service.ts
-          - core/server/services/members-metafields/actions.ts
+          - core/server/services/members-metafields/field-actions.ts
+          - core/server/lib/action-log/action-log.ts
           - core/server/services/members/members-api/services/member-bread-service.js
           - core/server/services/members/import-export/import/importer.ts
           - core/server/data/db/connection.ts
@@ -8595,7 +8597,7 @@ services:
           Invalid plans reject before writes; malformed value leaves are logged/omitted and
           malformed history field lists become empty, while invalid definition decoding rejects
           the read. Bindings skip unresolved/invalid rows and return ordered good plans plus the
-          first failure. Definition action failures are logged after data writes. Multi-property definition edits are not atomic; limit
+          first failure. The shared action log logs and swallows failed action writes. Multi-property definition edits are not atomic; limit
           counting deliberately permits concurrent overshoot, and applying a plan does not
           revalidate its captured definition. HTTP asserts selected refusals/corrupt reads and
           successful actions; fake binding/import tests assert continuation/reporting.
@@ -8604,7 +8606,8 @@ services:
           - core/server/services/members-metafields/definitions-service.ts
           - core/server/services/members-metafields/values-service.ts
           - core/server/services/members-metafields/bindings-service.ts
-          - core/server/services/members-metafields/actions.ts
+          - core/server/services/members-metafields/field-actions.ts
+          - core/server/lib/action-log/action-log.ts
           - core/server/services/members/import-export/import/importer.ts
         tests:
           - test/e2e-api/admin/member-custom-fields.test.ts
@@ -8620,7 +8623,7 @@ services:
         constructor units and successful HTTP boot do not establish those lifecycle contracts.
       - >-
         Add real database failure assertions for member/value/history writes after
-        work has begun, and for post-write action-log failure. Preserve the narrower existing
+        work has begun, and for action-log failure. Preserve the narrower existing
         definition-batch rollback evidence; prevalidation refusals and fake transaction tests
         do not establish these outcomes or event delivery relative to commit/rollback.
       - >-
