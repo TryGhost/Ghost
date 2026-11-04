@@ -11,6 +11,7 @@ import {
   createLogger,
   createServer,
   type Logger,
+  resolveConfig,
   type Plugin,
   type ServerOptions,
   type ViteDevServer,
@@ -23,6 +24,7 @@ import {
   readBackendKey,
   readSigningKeys,
 } from '../src/tooling/index.ts';
+import { VITE_DEFAULT_DENY } from '../src/vite/deny.ts';
 import { ghostApp, type GhostAppOptions } from '../src/vite/index.ts';
 import { git, makeProject, readAsGhost } from './helpers.ts';
 
@@ -254,6 +256,14 @@ describe('vite dev', () => {
           expect(response.body).not.toContain('SECRET');
         }
       }
+    });
+
+    it('copies the defaults the installed Vite resolves, so none is dropped', async () => {
+      const resolved = await resolveConfig(
+        { root, configFile: false, logLevel: 'silent' },
+        'serve',
+      );
+      expect(resolved.server.fs.deny).toEqual(VITE_DEFAULT_DENY);
     });
 
     it("keeps Vite's own refusals, and the project's", async () => {

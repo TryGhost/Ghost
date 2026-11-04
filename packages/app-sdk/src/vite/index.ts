@@ -18,23 +18,8 @@ import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite';
 import { createKeys, keyFile } from '../tooling/keys.ts';
 import { MANIFEST_PATH, formatErrors } from '../shared/manifest.ts';
 import { MANIFEST_FILE, serialiseSigned, signProject } from '../tooling/sign.ts';
+import { DENY, VITE_DEFAULT_DENY } from './deny.ts';
 import { provideDevBackendKey } from './dev-vars.ts';
-
-// What Vite denies when a project names nothing to deny, as of Vite 8. A project's own list
-// replaces these rather than adding to them, so they're added again here alongside the keys.
-const VITE_DEFAULT_DENY = [
-  '.env',
-  '.env.*',
-  '*.{crt,pem,key,p12,pfx,cer,der}',
-  '.npmrc',
-  '.yarnrc.yml',
-  '**/.git/**',
-];
-
-// The private keys, and `.dev.vars`, which holds the development backend key. Vite serves the
-// project's root, so without these anyone who can reach the dev server, through a tunnel too,
-// could read them as files, through `/@fs/` or as imports.
-const DENY = ['**/.ghost-app/**', '.dev.vars*'];
 
 /** A URL's port, or the scheme's default when the URL leaves it out. */
 const effectivePort = (url: URL) => url.port || (url.protocol === 'https:' ? '443' : '80');
