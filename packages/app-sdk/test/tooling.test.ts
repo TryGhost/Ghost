@@ -93,6 +93,38 @@ describe('createKeys', () => {
       ]);
     });
 
+    it("asks git about a project directory that doesn't exist yet", async () => {
+      const project = join(root, 'apps/new');
+      await expect(createKeys({ root: project, mode: 'development' })).rejects.toThrow(
+        "git doesn't ignore .ghost-app/development/identity.json",
+      );
+      await writeFile(join(root, '.gitignore'), '.ghost-app/\n');
+      expect((await createKeys({ root: project, mode: 'development' })).created).toHaveLength(2);
+    });
+
+    it('asks git once for both keys', async () => {
+      const bin = join(root, 'bin');
+      await mkdir(bin);
+      const { stdout } = await git(root, '--exec-path');
+      const real = join(stdout.trim(), 'git');
+      await writeFile(
+        join(bin, 'git'),
+        `#!/bin/sh\necho "$1" >> "${join(root, 'calls')}"\nexec "${real}" "$@"\n`,
+        { mode: 0o755 },
+      );
+      await writeFile(join(root, '.gitignore'), '.ghost-app/\nbin/\ncalls\n');
+      vi.stubEnv('PATH', `${bin}:${process.env.PATH}`);
+      try {
+        await createKeys({ root, mode: 'development' });
+      } finally {
+        vi.unstubAllEnvs();
+      }
+      expect((await readFile(join(root, 'calls'), 'utf8')).trim().split('\n')).toEqual([
+        'rev-parse',
+        'check-ignore',
+      ]);
+    });
+
     it("refuses when git can't read the repository", async () => {
       await rm(join(root, '.git'), { recursive: true });
       await writeFile(join(root, '.git'), 'nonsense');
@@ -105,7 +137,7 @@ describe('createKeys', () => {
       vi.stubEnv('PATH', root);
       try {
         await expect(createKeys({ root, mode: 'development' })).rejects.toThrow(
-          "git isn't installed, so it can't check .ghost-app/development/identity.json is ignored",
+          "git isn't installed, so it can't check .ghost-app/development/identity.json and .ghost-app/development/backend.json are ignored",
         );
       } finally {
         vi.unstubAllEnvs();
@@ -151,7 +183,7 @@ describe('whatever language git speaks', () => {
       'if [ "$1" = rev-parse ]; then echo true; exit 0; fi; echo "fatal: Fehler" >&2; exit 128',
     );
     await expect(createKeys({ root, mode: 'development' })).rejects.toThrow(
-      "git couldn't check .ghost-app/development/identity.json is ignored: fatal: Fehler",
+      "git couldn't check .ghost-app/development/identity.json and .ghost-app/development/backend.json are ignored: fatal: Fehler",
     );
   });
 });

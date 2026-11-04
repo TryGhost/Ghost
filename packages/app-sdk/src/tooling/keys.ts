@@ -158,13 +158,14 @@ export interface CreateKeysResult {
  * private key can't be committed by accident.
  */
 export async function createKeys({ root, mode }: KeyOptions): Promise<CreateKeysResult> {
-  for (const name of KEY_NAMES) {
-    const ignored = await isGitIgnored(root, keyFile(mode, name));
-    if (!ignored.ignored) {
-      throw new Error(
-        `Refusing to write private keys where git could commit them: ${ignored.reason}. Add ${KEYS_DIRECTORY}/ to .gitignore.`,
-      );
-    }
+  const ignored = await isGitIgnored(
+    root,
+    KEY_NAMES.map((name) => keyFile(mode, name)),
+  );
+  if (!ignored.ignored) {
+    throw new Error(
+      `Refusing to write private keys where git could commit them: ${ignored.reason}. Add ${KEYS_DIRECTORY}/ to .gitignore.`,
+    );
   }
   await mkdir(join(root, KEYS_DIRECTORY, mode), { recursive: true, mode: 0o700 });
   const result: CreateKeysResult = { created: [], kept: [] };
