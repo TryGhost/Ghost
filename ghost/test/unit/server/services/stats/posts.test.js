@@ -2583,17 +2583,161 @@ describe('PostsStatsService', function () {
 
       const stats = result.data[0];
       assert.equal(stats.values.length, 3, 'Should backfill all dates in range');
-      // Starting point: total (3) - changes in range (1 on Jan 5) = 2
+      // Starting point: total (3) - changes in range (1 on Jan 5) - changes after range (1 on Jan 10) = 1
       assert.equal(stats.values[0].date, '2024-01-04');
       assert.equal(
         stats.values[0].value,
-        2,
-        'Day 1 (Jan 4): Should show 2 (starting value before Jan 5 event)',
+        1,
+        'Day 1 (Jan 4): Should show 1 (only member1 subscribed so far)',
       );
       assert.equal(stats.values[1].date, '2024-01-05');
-      assert.equal(stats.values[1].value, 3, 'Day 2 (Jan 5): Should show 3 (2 + 1 new subscriber)');
+      assert.equal(stats.values[1].value, 2, 'Day 2 (Jan 5): Should show 2 (1 + 1 new subscriber)');
       assert.equal(stats.values[2].date, '2024-01-06');
-      assert.equal(stats.values[2].value, 3, 'Day 3 (Jan 6): Should carry forward 3 (no events)');
+      assert.equal(
+        stats.values[2].value,
+        2,
+        'Day 3 (Jan 6): Should carry forward 2 (Jan 10 event is after the range)',
+      );
+    });
+
+    it('should exclude subscriptions after date_to from historical values', async function () {
+      const newsletterId = 'newsletter1';
+      await _createNewsletter(newsletterId, 'Test Newsletter');
+
+      for (const memberId of ['member1', 'member2', 'member3']) {
+        await _createMember(memberId);
+        await _createMemberNewsletterSubscription(memberId, newsletterId);
+      }
+
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member1',
+        true,
+        new Date('2024-01-01T12:00:00Z'),
+      );
+      // Both after the requested range
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member2',
+        true,
+        new Date('2024-01-08T12:00:00Z'),
+      );
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member3',
+        true,
+        new Date('2024-01-09T12:00:00Z'),
+      );
+
+      const result = await service.getNewsletterSubscriberStats(newsletterId, {
+        date_from: '2024-01-02',
+        date_to: '2024-01-04',
+        timezone: 'UTC',
+      });
+
+      const stats = result.data[0];
+      assert.equal(stats.total, 3, 'Total should be the current count');
+      assert.deepEqual(
+        stats.values.map((v) => v.value),
+        [1, 1, 1],
+        'Only member1 was subscribed during Jan 2-4',
+      );
+    });
+
+    it('should exclude unsubscribes after date_to from historical values', async function () {
+      const newsletterId = 'newsletter1';
+      await _createNewsletter(newsletterId, 'Test Newsletter');
+
+      for (const memberId of ['member1', 'member2', 'member3']) {
+        await _createMember(memberId);
+      }
+      // member3 unsubscribed after the range, so only member1 and member2 are current
+      await _createMemberNewsletterSubscription('member1', newsletterId);
+      await _createMemberNewsletterSubscription('member2', newsletterId);
+
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member1',
+        true,
+        new Date('2024-01-01T12:00:00Z'),
+      );
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member2',
+        true,
+        new Date('2024-01-05T12:00:00Z'),
+      );
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member3',
+        true,
+        new Date('2024-01-06T12:00:00Z'),
+      );
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member3',
+        false,
+        new Date('2024-01-10T12:00:00Z'),
+      );
+
+      const result = await service.getNewsletterSubscriberStats(newsletterId, {
+        date_from: '2024-01-04',
+        date_to: '2024-01-06',
+        timezone: 'UTC',
+      });
+
+      const stats = result.data[0];
+      assert.equal(stats.total, 2, 'Total should be the current count');
+      assert.deepEqual(
+        stats.values.map((v) => v.value),
+        [1, 2, 3],
+        'member3 was still subscribed on Jan 6',
+      );
+    });
+
+    it('should count events at the end of date_to inside the range', async function () {
+      const newsletterId = 'newsletter1';
+      await _createNewsletter(newsletterId, 'Test Newsletter');
+
+      for (const memberId of ['member1', 'member2', 'member3']) {
+        await _createMember(memberId);
+        await _createMemberNewsletterSubscription(memberId, newsletterId);
+      }
+
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member1',
+        true,
+        new Date('2024-01-01T12:00:00Z'),
+      );
+      // Last second of date_to: inside the range
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member2',
+        true,
+        new Date('2024-01-06T23:59:59Z'),
+      );
+      // First second after date_to: outside the range
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member3',
+        true,
+        new Date('2024-01-07T00:00:00Z'),
+      );
+
+      const result = await service.getNewsletterSubscriberStats(newsletterId, {
+        date_from: '2024-01-04',
+        date_to: '2024-01-06',
+        timezone: 'UTC',
+      });
+
+      const stats = result.data[0];
+      assert.equal(stats.total, 3);
+      assert.deepEqual(
+        stats.values.map((v) => v.value),
+        [1, 1, 2],
+        'member2 counts on Jan 6, member3 does not',
+      );
     });
   });
 

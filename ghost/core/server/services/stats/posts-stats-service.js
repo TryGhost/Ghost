@@ -1068,7 +1068,7 @@ class PostsStatsService {
       const { dateFrom, dateTo } = getDateBoundaries(options);
 
       // Run both queries in parallel for better performance
-      const [totalResult, rawDeltas] = await Promise.all([
+      const [totalResult, rawDeltas, changeAfterRange] = await Promise.all([
         // Get total subscriber count (optimized query - avoid JOIN)
         this.knex('members_newsletters as mn')
           .countDistinct('mn.member_id as total')
@@ -1082,6 +1082,8 @@ class PostsStatsService {
 
         // Get daily deltas (optimized query)
         this._getNewsletterSubscriberDeltas(newsletterId, options),
+        // Net change after the range, which the current total already includes
+        this._getNewsletterSubscriberChangeAfter(newsletterId, options),
       ]);
 
       const totalValue = totalResult[0] ? totalResult[0].total : 0;
@@ -1106,7 +1108,7 @@ class PostsStatsService {
 
       // Calculate the starting point by working backwards from the current total
       const totalChange = dailyChanges.reduce((sum, item) => sum + item.change, 0);
-      cumulativeTotal = total - totalChange;
+      cumulativeTotal = total - totalChange - changeAfterRange;
       const startingTotal = cumulativeTotal;
 
       // Second pass: build cumulative values from daily changes
@@ -1181,6 +1183,35 @@ class PostsStatsService {
     applyDateFilter(deltasQuery, dateFrom, dateTo, 'mse.created_at');
 
     return await deltasQuery;
+  }
+
+  /**
+   * Net subscriber change after the requested range, so historical values
+   * can be derived from the current total
+   * @private
+   * @param {string} newsletterId - ID of the newsletter
+   * @param {Object} options - Same options as getNewsletterSubscriberStats
+   * @returns {Promise<number>}
+   */
+  async _getNewsletterSubscriberChangeAfter(newsletterId, options = {}) {
+    const { dateTo } = getDateBoundaries(options);
+    if (!dateTo) {
+      return 0;
+    }
+
+    const [result] = await this.knex('members_subscribe_events as mse')
+      .select(this.knex.raw('SUM(CASE WHEN mse.subscribed = 1 THEN 1 ELSE -1 END) as value'))
+      .where('mse.newsletter_id', newsletterId)
+      .whereNotExists(function () {
+        this.select('*')
+          .from('members as m')
+          .whereRaw('m.id = mse.member_id')
+          .where('m.email_disabled', 1);
+      })
+      // Strictly after: applyDateFilter already includes dateTo in the range
+      .where('mse.created_at', '>', dateTo);
+
+    return parseInt(String(result?.value ?? 0), 10) || 0;
   }
 
   /**
