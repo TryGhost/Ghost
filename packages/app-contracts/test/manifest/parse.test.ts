@@ -176,6 +176,17 @@ describe('parseManifestUrl', () => {
     expect(errorOf('http://localhost:8787/app.json')).toContain('development');
   });
 
+  it('refuses localhost outside development, whatever trailing dots it’s written with', () => {
+    for (const input of [
+      'https://localhost.:8787/app.json',
+      'https://localhost..:8787/app.json',
+      'https://my-app.localhost../app.json',
+      'https://127.0.0.1../app.json',
+    ]) {
+      expect(errorOf(input)).toContain('development');
+    }
+  });
+
   it('accepts localhost, over HTTP too, when Ghost runs in development', () => {
     for (const input of [
       'http://my-app.localhost:8787/app.json',

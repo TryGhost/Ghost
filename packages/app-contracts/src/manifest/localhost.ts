@@ -12,9 +12,11 @@ const LOOPBACK_HOSTS = [
 
 /**
  * Whether a host is the machine itself: `localhost`, or a loopback or unspecified address.
- * Pass `URL.hostname`, so the host is already normalised.
+ * Pass `URL.hostname`, so the host is already normalised. Trailing dots are dropped, as
+ * `isGhostHost` drops them, since the URL parser keeps every one: `localhost..` is localhost
+ * too.
  */
 export function isLocalhost(hostname: string): boolean {
-  const host = hostname.replace(/\.$/, '');
+  const host = hostname.replace(/\.+$/, '');
   return LOOPBACK_HOSTS.some((pattern) => pattern.test(host));
 }
