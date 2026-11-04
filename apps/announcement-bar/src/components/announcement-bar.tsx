@@ -62,24 +62,42 @@ function shouldShowBar(content: string | undefined) {
   return !!isBarVisible;
 }
 
+// Storage can throw when the visitor's browser blocks site data, so treat it as empty
+// rather than letting it stop the bar from rendering; dismissals then last until reload
+function readStorage(key: string) {
+  try {
+    return sessionStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeStorage(key: string, value: string | null) {
+  try {
+    if (value === null) {
+      sessionStorage.removeItem(key);
+    } else {
+      sessionStorage.setItem(key, value);
+    }
+  } catch {
+    // Nothing to persist to
+  }
+}
+
 function setContent(content: string) {
-  sessionStorage.setItem(BAR_CONTENT_STORAGE_KEY, content);
+  writeStorage(BAR_CONTENT_STORAGE_KEY, content);
 }
 
 function isContentChanged(content: string) {
-  const prevContent = sessionStorage.getItem(BAR_CONTENT_STORAGE_KEY);
+  const prevContent = readStorage(BAR_CONTENT_STORAGE_KEY);
 
   return content !== prevContent;
 }
 
 function setBarVisibility(state: boolean) {
-  if (state) {
-    sessionStorage.setItem(BAR_VISIBILITY_STORAGE_KEY, String(state));
-  } else {
-    sessionStorage.removeItem(BAR_VISIBILITY_STORAGE_KEY);
-  }
+  writeStorage(BAR_VISIBILITY_STORAGE_KEY, state ? String(state) : null);
 }
 
 function getBarVisibility() {
-  return sessionStorage.getItem(BAR_VISIBILITY_STORAGE_KEY);
+  return readStorage(BAR_VISIBILITY_STORAGE_KEY);
 }
