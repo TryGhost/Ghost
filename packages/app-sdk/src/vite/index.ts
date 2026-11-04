@@ -164,12 +164,12 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
       // Read as Vite reads the mode's `.env` files, so a project can keep its address in
       // `.env.production`. The environment wins. Vite is only imported here, when it runs the
       // plugin, as it's an optional peer dependency.
-      const envDir = userConfig.envDir ?? userConfig.root ?? '';
+      const root = resolve(userConfig.root ?? '');
+      // As Vite resolves it: against the project's root.
+      const envDir = userConfig.envDir === false ? false : resolve(root, userConfig.envDir ?? '');
       const { loadEnv } = await import('vite');
       const files =
-        envDir === false
-          ? {}
-          : loadEnv(mode, resolve(envDir), ['GHOST_APP_URL', 'GHOST_APP_TUNNEL_URL']);
+        envDir === false ? {} : loadEnv(mode, envDir, ['GHOST_APP_URL', 'GHOST_APP_TUNNEL_URL']);
       const read = (name: string) => process.env[name]?.trim() || files[name]?.trim() || undefined;
       appUrl = read('GHOST_APP_URL');
       if (options.tunnelUrl === undefined) {
@@ -184,7 +184,6 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
       // Vitest loads the project's Vite config as a dev server, which shouldn't create keys or
       // write `.dev.vars` on every test run.
       if (!process.env.VITEST && mode !== 'test') {
-        const root = resolve(userConfig.root ?? '');
         await createKeys({ root, mode: 'development' });
         pending = await provideDevBackendKey(root);
       }

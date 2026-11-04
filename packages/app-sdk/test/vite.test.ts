@@ -557,6 +557,27 @@ describe('vite build', () => {
     );
   });
 
+  it('reads .env files from the envDir the project names, against its root as Vite does', async () => {
+    await createKeys({ root, mode: 'production' });
+    await mkdir(join(root, 'config'));
+    await writeFile(
+      join(root, 'config/.env.production'),
+      'GHOST_APP_URL=https://config.example.com\n',
+    );
+    // The tests run from the package, not the project, so a path against the cwd misses.
+    expect(process.cwd()).not.toBe(root);
+    await build({
+      root,
+      configFile: false,
+      envDir: 'config',
+      customLogger: recordingLogger(),
+      plugins: [ghostApp()],
+      build: { outDir: outDir() },
+    });
+    const signed = JSON.parse(await readFile(join(outDir(), 'ghost-app.json'), 'utf8'));
+    await readAsGhost(signed, 'https://config.example.com/ghost-app.json');
+  });
+
   it('reads GHOST_APP_URL from .env.production, which the environment overrides', async () => {
     await createKeys({ root, mode: 'production' });
     await writeFile(join(root, '.env.production'), 'GHOST_APP_URL=https://committed.example.com\n');
