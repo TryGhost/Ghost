@@ -283,8 +283,9 @@ is the surface's, and answers with a `ghost-app:connect` carrying the port and
 the names of the calls it exports. The ID lets Admin tell whether a hello comes
 from a document it already connected or from a new document. Over the port,
 each side exposes named calls: `HostExports` are what an app may call on Admin
-(`fetch`, `titleChanged`, `pathChanged`, `open`), and `AppExports` what Admin
-calls on the app (`start`, `themeChanged`, `pathChanged`, `layoutChanged`).
+(`fetch`, `titleChanged`, `pathChanged`, `open`, `overlayShown`,
+`overlayHidden`), and `AppExports` what Admin calls on the app (`start`,
+`themeChanged`, `pathChanged`, `layoutChanged`, `overlayDismissed`).
 
 The frame is untrusted, so Admin parses every argument with the schemas here
 (`FetchRequestSchema`, `AppPathSchema`, `TitleSchema`, `PlaceSchema`, …) before
