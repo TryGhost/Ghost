@@ -12,6 +12,15 @@ import {
 import { memberDetailScreen } from './member-detail.screen';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
+import {
+  SHAPES,
+  accept,
+  heldValue,
+  shaped,
+  type FieldShape,
+  type ShapedField,
+  type TypedSettings,
+} from '@tryghost/metafield-types';
 import { z } from 'zod';
 
 const SaveBody = z.object({ members: z.tuple([z.record(z.string(), z.unknown())]) });
@@ -56,11 +65,24 @@ const FIELDS: MemberCustomField[] = [
 
 const ADDRESS = { line1: '1 Main St', city: 'Berlin', postal_code: '10115', country: 'DE' };
 
+/** What a write the members API accepts does to what the member holds, as the domain says. */
+function applied<S extends FieldShape>(
+  of: ShapedField<TypedSettings, S>,
+  held: unknown,
+  write: unknown,
+): unknown {
+  const acceptance = accept(of, write);
+  if (!acceptance.success) {
+    throw new Error(`the members API would refuse ${JSON.stringify(write)}`);
+  }
+  return SHAPES[of.shape].apply(heldValue(of, held), acceptance.accepted.value);
+}
+
 /**
  * The world the member detail screen reads at mount. Stateful on purpose: the real
  * endpoint treats a PUT as a merge patch, writing only the keys present and deleting a key
- * sent as null, so the refetch a save triggers must return the merged result, not the
- * original.
+ * sent as null, and applies each field's write as the domain says, so the refetch a save
+ * triggers must return the merged result, not the original.
  */
 function fakeMemberDetailWorld(
   m: Member,
@@ -83,10 +105,15 @@ function fakeMemberDetailWorld(
     const patch = MetafieldsPatch.parse(metafields)?.custom ?? {};
     current = { ...current, ...edited };
     for (const [key, value] of Object.entries(patch)) {
-      if (value === null) {
+      const field = fields.find((candidate) => candidate.key === key);
+      if (!field) {
+        throw new Error(`the members API would refuse the unknown field ${key}`);
+      }
+      const after = value === null ? undefined : applied(shaped(field), values[key], value);
+      if (after === undefined) {
         delete values[key];
       } else {
-        values[key] = value;
+        values[key] = after;
       }
     }
     return { members: [{ ...current, metafields: { custom: { ...values } } }] };
@@ -255,9 +282,7 @@ describe('Member detail custom fields', () => {
 
     await expect.element(memberDetailScreen.fieldValue('1 Main St, Germany')).toBeVisible();
     const saved = savedMember(editApi.lastRequest?.body);
-    expect(saved.metafields).toEqual({
-      custom: { home_address: { line1: '1 Main St', country: 'DE' } },
-    });
+    expect(saved.metafields).toEqual({ custom: { home_address: { country: 'DE' } } });
   });
 
   it('saves the country picked from the list as its code', async () => {
@@ -299,18 +324,17 @@ describe('Member detail custom fields', () => {
       .toHaveTextContent('Select...');
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
-    // The emptied part is named in the write, since leaving it out would read as
-    // "no change"; the rest of the address stays.
+    // The emptied part is named in the write as null, since leaving it out would read as
+    // "no change"; the parts that didn't change aren't named, and stay.
     await expect.element(memberDetailScreen.fieldValue('1 Main St, Berlin')).toBeVisible();
     const saved = savedMember(editApi.lastRequest?.body);
-    expect(saved.metafields).toEqual({
-      custom: { home_address: { line1: '1 Main St', city: 'Berlin', country: '' } },
-    });
+    expect(saved.metafields).toEqual({ custom: { home_address: { country: null } } });
   });
 
-  it('blocks saving a stored malformed country code with an inline error, then saves once fixed', async () => {
-    // Staff cannot type a code any more, but an import can store one the picker would
-    // never offer. It loads as it is, so it can be seen, and is refused until replaced.
+  it('shows a stored malformed country code as it is, and leaves it alone until replaced', async () => {
+    // Staff pick a country from a list, but an import can store a code the list doesn't offer.
+    // The code loads as it is, so it can be seen, and a save that changes other parts leaves it
+    // alone: the save names only the parts that changed.
     const m = member({ name: 'Ada Lovelace' });
     const editApi = fakeMemberDetailWorld(m, {
       home_address: { line1: '1 Main St', country: 'DEU' },
@@ -324,24 +348,20 @@ describe('Member detail custom fields', () => {
     await modal().getByLabelText('City').fill('Berlin');
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
-    // No request went out; the error says what to do, in plain words.
-    await expect
-      .element(modal().getByText('Enter a 2-letter country code, like US.'))
-      .toBeVisible();
-    await expect
-      .element(modal().getByRole('combobox', { name: 'Country' }))
-      .toHaveAttribute('aria-invalid', 'true');
-    expect(editApi.requests).toHaveLength(0);
+    await expect.element(memberDetailScreen.fieldValue('1 Main St, Berlin, DEU')).toBeVisible();
+    expect(savedMember(editApi.lastRequest?.body).metafields).toEqual({
+      custom: { home_address: { city: 'Berlin' } },
+    });
 
+    await memberDetailScreen.editFieldButton('Home address').click();
     await modal().getByRole('combobox', { name: 'Country' }).click();
     await page.getByPlaceholder('Search countries...').fill('Germ');
     await page.getByRole('option', { name: 'Germany' }).click();
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
     await expect.element(memberDetailScreen.fieldValue('1 Main St, Berlin, Germany')).toBeVisible();
-    const saved = savedMember(editApi.lastRequest?.body);
-    expect(saved.metafields).toEqual({
-      custom: { home_address: { line1: '1 Main St', city: 'Berlin', country: 'DE' } },
+    expect(savedMember(editApi.lastRequest?.body).metafields).toEqual({
+      custom: { home_address: { country: 'DE' } },
     });
   });
 
@@ -430,6 +450,7 @@ describe('Member detail custom fields', () => {
       await memberDetailScreen.editFieldButton('Favourite animals').click();
       await modal().getByRole('button', { name: 'Save', exact: true }).click();
 
+      await expect.element(modal()).not.toBeInTheDocument();
       await expect
         .poll(() => editApi.lastRequest && savedMember(editApi.lastRequest.body).metafields)
         .toEqual({ custom: { favourite_animals: null } });

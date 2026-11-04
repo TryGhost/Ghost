@@ -21,14 +21,15 @@ import {
   tokenFieldClasses,
 } from '@tryghost/shade/components';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
-import { dequal } from 'dequal';
 import {
   buildCustomFieldSavePayload,
-  editableValueOf,
-  emptyEditableValue,
+  customFieldSave,
+  editorFor,
   getCustomFieldValidationErrors,
-  getEditableCustomFieldValues,
+  isEdited,
   parseCustomFieldServerErrors,
+  type CustomFieldEditor,
+  type OpenedEditor,
 } from './member-detail-edit';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -36,8 +37,6 @@ import { IdentityTextSchema } from '@tryghost/metafield-types/identity';
 import {
   FIELD_STRUCTURES,
   inOptionOrder,
-  isRecordValue,
-  matchField,
   matchLeaf,
   matchShape,
   type Leaf,
@@ -48,7 +47,6 @@ import { partOf } from '@/members/custom-fields/addressing';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import {
   formatMemberCustomFieldValue,
-  memberCustomFieldIdentity,
   memberCustomFieldChoiceLists,
   memberCustomFieldParts,
   type MemberCustomFieldChoiceList,
@@ -57,7 +55,7 @@ import {
 import { ChipPicker } from '@/shared/pickers/chip-picker';
 import { useCustomFieldDefinitions } from '@/shared/member-custom-fields/use-definitions';
 import { useEditMember } from '@tryghost/admin-x-framework/api/members';
-import type { EditableCustomFieldValue, EditableRecordValue } from './member-detail-edit';
+import type { ShapeText } from '@tryghost/metafield-types/shapes';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 interface MemberCustomFieldsFieldProps {
@@ -244,11 +242,11 @@ const LeafInput: React.FC<{
 const RecordInput: React.FC<{
   parts: MemberCustomFieldPart[];
   inputId: string;
-  value: EditableRecordValue;
+  value: ShapeText['record'];
   // Messages keyed by part (`line1`, `postal_code`, …).
   errors?: Record<string, string>;
   disabled?: boolean;
-  onChange: (value: EditableRecordValue) => void;
+  onChange: (value: ShapeText['record']) => void;
 }> = ({ parts, inputId, value, errors, disabled, onChange }) => (
   <div className="grid gap-x-4 gap-y-3 md:grid-cols-2">
     {parts.map(({ key: part, label, leaf, fullRow }) => {
@@ -280,52 +278,57 @@ const RecordInput: React.FC<{
 );
 
 // The control for one field, from the blocks its type is composed of, so every type made of the same
-// blocks is edited alike.
+// blocks is edited alike. The editor carries its field's shape with its inputs' text, so each control
+// is handed text of its own shape.
 const CustomFieldInput: React.FC<{
-  field: MemberCustomField;
+  editor: CustomFieldEditor;
   inputId: string;
-  value: EditableCustomFieldValue;
   // Messages for this field: '' = the field itself, 'part' = a part of a composite.
   errors?: Record<string, string>;
   disabled?: boolean;
-  onChange: (value: EditableCustomFieldValue) => void;
+  onChange: (editor: CustomFieldEditor) => void;
   onOpenChange: (open: boolean) => void;
-}> = ({ field, inputId, value, errors, disabled, onChange, onOpenChange }) =>
-  matchField<MemberCustomField, React.ReactElement>(field, {
-    scalar: ({ type }) => (
-      <LeafInput
-        disabled={disabled}
-        id={inputId}
-        invalid={Boolean(errors?.[''])}
-        label={field.name}
-        leaf={FIELD_STRUCTURES[type].leaf}
-        value={typeof value === 'string' ? value : ''}
-        onChange={onChange}
-      />
-    ),
-    record: ({ type }) => (
-      <RecordInput
-        disabled={disabled}
-        errors={errors}
-        inputId={inputId}
-        parts={memberCustomFieldParts(type) ?? []}
-        value={isRecordValue(value) ? value : {}}
-        onChange={onChange}
-      />
-    ),
-    set: ({ settings }) => (
-      <ListInput
-        disabled={disabled}
-        id={inputId}
-        invalid={Boolean(errors?.[''])}
-        label={field.name}
-        settings={settings}
-        value={Array.isArray(value) ? value : []}
-        onChange={onChange}
-        onOpenChange={onOpenChange}
-      />
-    ),
-  });
+  // The return type is stated so that a shape without a case here fails to compile.
+}> = ({ editor, inputId, errors, disabled, onChange, onOpenChange }): React.ReactElement => {
+  switch (editor.shape) {
+    case 'scalar':
+      return (
+        <LeafInput
+          disabled={disabled}
+          id={inputId}
+          invalid={Boolean(errors?.[''])}
+          label={editor.field.name}
+          leaf={FIELD_STRUCTURES[editor.field.type].leaf}
+          value={editor.text}
+          onChange={(text) => onChange({ ...editor, text })}
+        />
+      );
+    case 'record':
+      return (
+        <RecordInput
+          disabled={disabled}
+          errors={errors}
+          inputId={inputId}
+          parts={memberCustomFieldParts(editor.field.type) ?? []}
+          value={editor.text}
+          onChange={(text) => onChange({ ...editor, text })}
+        />
+      );
+    case 'set':
+      return (
+        <ListInput
+          disabled={disabled}
+          id={inputId}
+          invalid={Boolean(errors?.[''])}
+          label={editor.field.name}
+          settings={editor.field.settings}
+          value={editor.text}
+          onChange={(text) => onChange({ ...editor, text })}
+          onOpenChange={onOpenChange}
+        />
+      );
+  }
+};
 
 /**
  * The editor for ONE field's value, with its own Save: one field, one save,
@@ -337,14 +340,15 @@ const CustomFieldInput: React.FC<{
 const MemberCustomFieldEditModal: React.FC<{
   memberId: string;
   field: MemberCustomField;
-  initialValue: EditableCustomFieldValue | undefined;
-  /** Whether the member holds a value, including one the editor can't show. */
-  holdsValue: boolean;
+  /** What the member holds for the field, as the members API gives it, including what the editor can't show. */
+  held: unknown;
   onClose: () => void;
-}> = ({ memberId, field, initialValue, holdsValue, onClose }) => {
-  const [value, setValue] = React.useState<EditableCustomFieldValue>(
-    initialValue ?? emptyEditableValue(field),
-  );
+}> = ({ memberId, field, held, onClose }) => {
+  // What the member held when the editor opened, and the editor as it opened on it. A save is
+  // worked out against that, not against a value refetched since, so the save names only the
+  // parts the person changed and never reverts another writer's.
+  const [opened] = React.useState<OpenedEditor>(() => ({ held, editor: editorFor(field, held) }));
+  const [editor, setEditor] = React.useState<CustomFieldEditor>(opened.editor);
   const [saveAttempted, setSaveAttempted] = React.useState(false);
   // Whether a picker inside is open. Its Escape closes the picker, and the dialog hears the key
   // first, so it lets the key go while the picker is open.
@@ -352,7 +356,8 @@ const MemberCustomFieldEditModal: React.FC<{
   const [serverErrors, setServerErrors] = React.useState<Record<string, string> | undefined>();
   const editMutation = useEditMember();
 
-  const validationErrors = getCustomFieldValidationErrors({ [field.key]: value }, [field]);
+  const save = customFieldSave(editor, opened);
+  const validationErrors = getCustomFieldValidationErrors(save);
   const errors = { ...(saveAttempted ? validationErrors : {}), ...serverErrors };
   // Keyed by the part each names, which is how the input places them. The dialog saves this one
   // field, so an error naming anything but one of its parts is about the field itself.
@@ -366,23 +371,19 @@ const MemberCustomFieldEditModal: React.FC<{
 
   const inputId = `member-custom-field-${field.key}`;
 
-  // Pristine editors dismiss freely (outside click, Escape); a dirty one
-  // refuses casual dismissal — Cancel is the one explicit way to discard,
-  // so typed values can never be lost by a stray click.
-  const isDirty = !dequal(editableValueOf(field, value), editableValueOf(field, initialValue));
-  // An empty editor clears what the member holds, even when it opened empty because none of their
-  // answers can be picked any more, such as an option the field no longer offers.
-  const clears = holdsValue && editableValueOf(field, value) === undefined;
+  // Pristine editors dismiss freely (outside click, Escape); one holding an unsaved edit refuses
+  // casual dismissal, and Cancel is the one explicit way to discard, so what was typed or picked
+  // can't be lost to a stray key or click.
+  const isDirty = isEdited(editor, opened.editor);
 
   const onSave = () => {
     if (editMutation.isPending) {
       return;
     }
-    // An unchanged value has nothing to write; skip the PUT entirely. The
-    // merge is keyed on the field, so a no-op save would still declare a
-    // member change and fire member.edited (webhooks, audit) for a value
+    // Nothing to save means no PUT at all. The merge is keyed on the field, so a no-op save
+    // would still declare a member change and fire member.edited (webhooks, audit) for a value
     // that didn't move. Mirrors the page-level save's dirty gate.
-    if (!isDirty && !clears) {
+    if (save === undefined) {
       onClose();
       return;
     }
@@ -390,7 +391,7 @@ const MemberCustomFieldEditModal: React.FC<{
       setSaveAttempted(true);
       return;
     }
-    editMutation.mutate(buildCustomFieldSavePayload(memberId, field, value), {
+    editMutation.mutate(buildCustomFieldSavePayload(memberId, save), {
       onSuccess: () => {
         toast.success(`${field.name} saved`);
         onClose();
@@ -454,13 +455,12 @@ const MemberCustomFieldEditModal: React.FC<{
           )}
           <CustomFieldInput
             disabled={editMutation.isPending}
+            editor={editor}
             errors={inputErrors}
-            field={field}
             inputId={inputId}
-            value={value}
             onChange={(next) => {
               setServerErrors(undefined);
-              setValue(next);
+              setEditor(next);
             }}
             onOpenChange={setPickerOpen}
           />
@@ -556,7 +556,6 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
   const admin7Design = useFeatureFlag('admin7Design');
   const { data, isLoading } = useCustomFieldDefinitions();
   const fields = data ?? [];
-  const values = getEditableCustomFieldValues(metafields, fields);
   const [editingField, setEditingField] = React.useState<MemberCustomField | null>(null);
 
   if (isLoading || fields.length === 0) {
@@ -636,8 +635,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
         <MemberCustomFieldEditModal
           key={editingField.key}
           field={editingField}
-          holdsValue={metafields?.[editingField.namespace]?.[editingField.key] !== undefined}
-          initialValue={values[memberCustomFieldIdentity(editingField)]}
+          held={metafields?.[editingField.namespace]?.[editingField.key]}
           memberId={memberId}
           onClose={() => setEditingField(null)}
         />
