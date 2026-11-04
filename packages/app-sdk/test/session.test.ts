@@ -525,6 +525,7 @@ describe('the Ghost object an app gets', () => {
       'onSessionEnd',
       'onThemeChange',
       'open',
+      'overlay',
       'path',
       'session',
       'site',
