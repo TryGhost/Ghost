@@ -252,6 +252,30 @@ describe('ghost-app keys, sign and backend-key', () => {
     );
   });
 
+  it.each([
+    ['ghost-app.json', [], 'over ghost-app.json'],
+    ['./readable.json', ['--manifest', 'readable.json'], 'over readable.json'],
+    ['.ghost-app/development/signed.json', [], 'into .ghost-app/'],
+    ['.ghost-app', [], 'into .ghost-app/'],
+  ])('refuses --out %s, %j', async (out, extra, refusal) => {
+    await cli('keys', '--dir', root);
+    await writeFile(join(root, 'readable.json'), JSON.stringify(SOURCE));
+    const before = await readFile(join(root, 'ghost-app.json'), 'utf8');
+    const result = await cli(
+      'sign',
+      '--url',
+      'http://localhost:5173/ghost-app.json',
+      ...extra,
+      '--out',
+      out,
+      '--dir',
+      root,
+    );
+    expect(result.code).toBe(1);
+    expect(result.err).toContain(`Refusing to write the signed manifest ${refusal}`);
+    expect(await readFile(join(root, 'ghost-app.json'), 'utf8')).toBe(before);
+  });
+
   it("writes --out in the project's directory, like --manifest, and says where", async () => {
     await cli('keys', '--dir', root);
     await writeFile(join(root, 'readable.json'), JSON.stringify(SOURCE));

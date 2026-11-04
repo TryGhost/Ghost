@@ -10,12 +10,13 @@
  * ```
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { isAbsolute, join, relative, resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 
 import { isLocalhost } from '@tryghost/app-contracts';
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite';
 
 import { KEYS_DIRECTORY, createKeys, signingKeySource } from '../tooling/keys.ts';
+import { isWithin } from '../tooling/paths.ts';
 import { MANIFEST_PATH, formatErrors } from '../shared/manifest.ts';
 import { parseOrigin } from '../shared/parse.ts';
 import { MANIFEST_FILE, serialiseSigned, signProject } from '../tooling/sign.ts';
@@ -52,11 +53,6 @@ function readTunnels(input: string | readonly string[] | undefined): string[] {
       return origin;
     });
 }
-
-const isWithin = (parent: string, child: string) => {
-  const path = relative(parent, child);
-  return path === '' || (!path.startsWith('..') && !isAbsolute(path));
-};
 
 /**
  * Refuses a public directory that holds the private keys or `.dev.vars`, or sits among the

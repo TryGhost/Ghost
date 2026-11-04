@@ -1,9 +1,17 @@
 import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 
 import { checkApp } from './tooling/check.ts';
-import { createKeys, keyFile, publicKeyOf, readBackendKey, type Mode } from './tooling/keys.ts';
+import {
+  KEYS_DIRECTORY,
+  createKeys,
+  keyFile,
+  publicKeyOf,
+  readBackendKey,
+  type Mode,
+} from './tooling/keys.ts';
+import { isWithin } from './tooling/paths.ts';
 import { formatErrors } from './shared/manifest.ts';
 import { MANIFEST_FILE, serialiseSigned, signProject } from './tooling/sign.ts';
 
@@ -68,22 +76,31 @@ async function sign(
   if (!url) {
     throw new UsageError('sign needs --url, the address the signed manifest will be served from');
   }
+  const manifestFile = manifest ?? MANIFEST_FILE;
+  // Against the project's directory, like --manifest and the keys.
+  const written = out === undefined ? undefined : resolve(root, out);
+  if (written === resolve(root, manifestFile)) {
+    throw new Error(
+      `Refusing to write the signed manifest over ${manifestFile}, which it's signed from`,
+    );
+  }
+  if (written && isWithin(join(root, KEYS_DIRECTORY), written)) {
+    throw new Error(
+      `Refusing to write the signed manifest into ${KEYS_DIRECTORY}/, which holds the keys`,
+    );
+  }
   const result = await signProject({
     root,
     mode: modeOf(production),
     manifestUrl: url,
-    manifestFile: manifest ?? MANIFEST_FILE,
+    manifestFile,
   });
   if (!result.success) {
-    io.err(
-      `${result.code}: ${manifest ?? MANIFEST_FILE} can't be signed:\n${formatErrors(result.errors)}`,
-    );
+    io.err(`${result.code}: ${manifestFile} can't be signed:\n${formatErrors(result.errors)}`);
     return 1;
   }
   const text = serialiseSigned(result.signed);
-  if (out) {
-    // Against the project's directory, like --manifest and the keys.
-    const written = resolve(root, out);
+  if (written) {
     await mkdir(dirname(written), { recursive: true });
     await writeFile(written, text);
     io.err(`Wrote ${written}, signed for ${String(result.manifest.manifest_url)}`);
