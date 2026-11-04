@@ -49,7 +49,8 @@ export interface RecordOptions {
  * Logs staff actions to the `actions` table, which Admin's History page reads.
  *
  * Call it from the command that makes the change, inside its transaction where it has one.
- * Logging is best-effort: a failed write is logged and never fails the command.
+ * Logging is best-effort: a failed write is logged and doesn't fail the command, unless it
+ * deadlocks inside the command's transaction.
  */
 export class ActionLog {
   private knex: Knex;
@@ -79,6 +80,12 @@ export class ActionLog {
         created_at: toDatabaseDate(new Date()),
       });
     } catch (err) {
+      // A deadlock rolls back the whole transaction, not just this insert, so the command's
+      // own writes are gone too. Failing lets the command retry or report it, rather than
+      // carry on as if its change was kept.
+      if (options.transacting && isDeadlock(err)) {
+        throw err;
+      }
       this.logging.error(
         {
           event: { name: 'action_log.write_failed' },
@@ -96,6 +103,10 @@ export class ActionLog {
       );
     }
   }
+}
+
+function isDeadlock(err: unknown): boolean {
+  return (err as { code?: unknown } | null)?.code === 'ER_LOCK_DEADLOCK';
 }
 
 // Only the fields that carry meaning are stored, as Bookshelf's action log does.
