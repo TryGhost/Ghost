@@ -1387,8 +1387,9 @@ export interface FilterSegmentInputProps {
   // Render the value as static text (no input) — for an applied filter that should
   // stay legible but not editable.
   readOnly?: boolean;
-  // A number input, for a value compared by size, taking any decimal; text otherwise.
-  type?: 'text' | 'number';
+  // A number input, for a value compared by size, taking any decimal; a date input, for a calendar
+  // date, whose value is `YYYY-MM-DD` whatever it shows; text otherwise.
+  type?: 'text' | 'number' | 'date';
 }
 
 // A text- or number-input segment styled like the built-in value input, for the value

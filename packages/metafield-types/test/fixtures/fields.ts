@@ -31,6 +31,8 @@ export const FIELD_FIXTURES: {
   long_text: [{ field: { type: 'long_text' }, values: ['A first note', 'A second, longer note'] }],
   // 0.1 and 9.95 aren't exact in binary, and 0 is a value rather than nothing.
   number: [{ field: { type: 'number' }, values: [3, 42.5, -7, 0, 0.1, 9.95] }],
+  // A leap day, and a day before 1970, which a timestamp would hold as negative.
+  date: [{ field: { type: 'date' }, values: ['2026-11-04', '2000-02-29', '1969-12-31'] }],
   list: [
     {
       field: { type: 'list', settings: { options: ['Film', 'Travel', 'Cooking'], multiple: true } },

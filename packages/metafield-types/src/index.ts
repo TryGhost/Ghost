@@ -479,12 +479,25 @@ const LIST_RULES: { [F in ListSource]: () => LeafRule<'choice'> } = {
       .toUpperCase(),
 };
 
+/** Whether `YYYY-MM-DD` names a day that exists, which February 30th doesn't. */
+function isCalendarDate(text: string): boolean {
+  const [year = NaN, month = NaN, day = NaN] = text.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return (
+    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+  );
+}
+
 /** Each kind of leaf's rule. Keyed by kind, so a kind added to the catalog fails to compile here. */
 const LEAF_RULES: { [K in LeafKind]: (leaf: Extract<Leaf, { leaf: K }>) => LeafRule<K> } = {
   text: ({ size }) => TEXT_RULES[size](),
   choice: ({ from }) => LIST_RULES[from](),
   // Finite only: zod refuses Infinity and NaN, which JSON can't carry anyway.
   number: () => z.number({ error: 'Enter a number.' }),
+  date: () =>
+    filled()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, { error: 'Enter a date as YYYY-MM-DD, like 2026-11-04.' })
+      .refine(isCalendarDate, { error: 'Enter a date that exists.' }),
 };
 
 /** A leaf's rule, whichever kind of leaf it is. */

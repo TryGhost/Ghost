@@ -220,6 +220,18 @@ describe('member custom fields api helpers', () => {
   });
 
   describe('formatMemberCustomFieldValue', () => {
+    // A calendar date has no zone, so it reads as its own day even where midnight UTC is still the
+    // evening before.
+    it('reads a date as the day it names, wherever it is read', () => {
+      const zone = process.env.TZ;
+      process.env.TZ = 'America/Los_Angeles';
+      try {
+        expect(formatMemberCustomFieldValue({ type: 'date' }, '2026-11-04')).toBe('4 Nov 2026');
+      } finally {
+        process.env.TZ = zone;
+      }
+    });
+
     // A value a member holds, of any type, reads as a line and never as nothing.
     it.each(
       ALL_FIELD_FIXTURES.map((fixture): [string, AnyFieldFixture] => [fixture.field.type, fixture]),

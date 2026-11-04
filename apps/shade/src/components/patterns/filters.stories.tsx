@@ -1097,6 +1097,44 @@ export const NumberSegment: Story = {
   },
 };
 
+export const DateSegment: Story = {
+  render: () => (
+    <FilterDemo
+      fields={[
+        {
+          key: 'birthday',
+          label: 'Birthday',
+          type: 'custom',
+          icon: <SlidersHorizontal className="size-4" />,
+          renderOperatorInValue: true,
+          operators: [
+            { value: 'is-less', label: 'is before' },
+            { value: 'is-greater', label: 'is after' },
+          ],
+          customRenderer: ({ values, onChange, readOnly }) => (
+            <FilterSegmentInput
+              ariaLabel="Value"
+              readOnly={readOnly}
+              type="date"
+              value={typeof values[0] === 'string' ? values[0] : ''}
+              onChange={(next) => onChange([next])}
+            />
+          ),
+        },
+      ]}
+      initialFilters={[createFilter('birthday', 'is-greater', ['2026-11-04'])]}
+    />
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'FilterSegmentInput with `type="date"` for a calendar date: a date input whose value is `YYYY-MM-DD` whatever it shows.',
+      },
+    },
+  },
+};
+
 const readOnlyFields: FilterFieldConfig[] = [
   {
     key: 'archived_field',

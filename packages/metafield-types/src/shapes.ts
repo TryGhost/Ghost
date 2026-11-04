@@ -136,6 +136,9 @@ const stringRules = {
 export const LEAVES: { readonly [K in LeafKind]: LeafKindRules<K> } = {
   text: stringRules,
   choice: stringRules,
+  // ISO 8601 writes a calendar date as a string, so a date reads as text does, its rule checks it,
+  // and it orders as its text does.
+  date: { ...stringRules, order: (a, b) => (a < b ? -1 : a > b ? 1 : 0) },
   number: {
     kind: 'number',
     read: (raw) => (typeof raw === 'number' && Number.isFinite(raw) ? raw : undefined),

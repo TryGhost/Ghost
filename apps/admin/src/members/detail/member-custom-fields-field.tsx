@@ -245,6 +245,17 @@ const LeafInput: React.FC<{
         onChange={(e) => onChange(e.target.value)}
       />
     ),
+    // A date input's value is `YYYY-MM-DD` whatever it shows, so a date is never shifted by a zone.
+    date: () => (
+      <Input
+        aria-invalid={invalid || undefined}
+        disabled={disabled}
+        id={id}
+        type="date"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    ),
   });
 
 // One control per part in a two-column sub-grid, in the order the type declares its parts. The parts

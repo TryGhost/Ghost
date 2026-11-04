@@ -125,6 +125,8 @@ describe('each kind of leaf', function () {
     text: null,
     choice: null,
     number: [-7, 0.1],
+    // Before 1970 and after, which order as the text does.
+    date: ['1969-12-31', '2026-11-04'],
   };
 
   function ordersAsSaid<K extends LeafKind>(

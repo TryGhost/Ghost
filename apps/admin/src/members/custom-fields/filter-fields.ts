@@ -9,6 +9,7 @@ import {
   domainField,
   listsOperator,
   numberSemantics,
+  plainDateSemantics,
   setSemantics,
   textSemantics,
 } from '@/shared/filters';
@@ -44,6 +45,8 @@ export const LEAF_FILTER = {
   text: 'text',
   choice: 'set',
   number: 'number',
+  // A calendar date, compared as the day it names, with no zone: before, on or after.
+  date: 'plain_date',
 } as const satisfies { readonly [K in LeafKind]: FilterTypeId };
 
 export type LeafFilterType = (typeof LEAF_FILTER)[LeafKind];
@@ -54,6 +57,7 @@ const SCALAR_FILTER: { [F in LeafFilterType]: (base: ScalarFilterBase) => FieldD
   text: (base) => ({ ...base, type: 'text' }),
   set: (base) => ({ ...base, type: 'set' }),
   number: (base) => ({ ...base, type: 'number' }),
+  plain_date: (base) => ({ ...base, type: 'plain_date' }),
 };
 
 // How each filter type reads a filter's value back, and when it is asked to, lowest first: a plain
@@ -68,6 +72,8 @@ const LEAF_SEMANTICS: {
   set: { order: 1, semantics: () => setSemantics({ quoteStrings: true }) },
   // Compared by size, the way emails sent are.
   number: { order: 2, semantics: () => numberSemantics() },
+  // A day as `YYYY-MM-DD`, compared before or after; it never claims a bare value text would.
+  plain_date: { order: 3, semantics: () => plainDateSemantics() },
 };
 
 const LEAF_FILTER_TYPES: readonly LeafFilterType[] = keysOf(LEAF_SEMANTICS).sort(

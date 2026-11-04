@@ -1083,7 +1083,7 @@ module.exports = {
       // Keep in sync with FIELD_TYPE_IDS in @tryghost/metafield-types,
       // the source of truth (this static schema can't import it).
       validations: {
-        isIn: [['short_text', 'long_text', 'number', 'list', 'address']],
+        isIn: [['short_text', 'long_text', 'number', 'date', 'list', 'address']],
       },
     },
     // What the field is set up with beyond its name, as JSON: a list field's options and

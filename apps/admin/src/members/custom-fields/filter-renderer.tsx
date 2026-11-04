@@ -19,8 +19,9 @@ import type { LeafFilterType } from './filter-fields';
 import type { FilterControl } from '@/shared/filters/filter-types';
 
 /** The value input each control a filter type declares is typed into, where it isn't text. */
-const SEGMENT_INPUTS: Partial<Record<FilterControl, 'number'>> = {
+const SEGMENT_INPUTS: Partial<Record<FilterControl, 'number' | 'date'>> = {
   number: 'number',
+  date: 'date',
 };
 
 // "Is set" and "is not set" apply to a field of any value type.
@@ -81,6 +82,7 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
         text: () => null,
         choice: ({ from }) => memberCustomFieldChoiceLists[from],
         number: () => null,
+        date: () => null,
       })
     : null;
   // Typed into the input its filter type declares, as the same type's filter on any other field is.

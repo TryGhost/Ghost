@@ -74,11 +74,13 @@ describe('metafield-types catalog', function () {
         text: ({ size }) => `${size} text`,
         choice: ({ from }) => `a choice from ${from}`,
         number: () => 'a number',
+        date: () => 'a calendar date',
       });
 
     assert.equal(holds(FIELD_STRUCTURES.address.parts.line1), 'line text');
     assert.equal(holds(FIELD_STRUCTURES.address.parts.country), 'a choice from countries');
     assert.equal(holds(FIELD_STRUCTURES.number.leaf), 'a number');
+    assert.equal(holds(FIELD_STRUCTURES.date.leaf), 'a calendar date');
   });
 
   // Every field type, over the fixtures it declares: the fixtures promise values the field's rule
@@ -434,6 +436,8 @@ describe('metafield-types catalog', function () {
       assert.equal(reasonFor('address', { city: 42 }), 'Enter text.');
       assert.equal(reasonFor('number', '7'), 'Enter a number.');
       assert.equal(reasonFor('number', Number.NaN), 'Enter a number.');
+      assert.equal(reasonFor('date', '4 Nov 2026'), 'Enter a date as YYYY-MM-DD, like 2026-11-04.');
+      assert.equal(reasonFor('date', '2026-02-30'), 'Enter a date that exists.');
     });
 
     it('says the same thing however one rule was broken', function () {

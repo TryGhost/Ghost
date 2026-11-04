@@ -108,6 +108,7 @@ const fieldTypePresentation: { [T in FieldType]: FieldTypePresentation<T> } = {
   short_text: { label: 'Short text', icon: LucideIcon.Type },
   long_text: { label: 'Long text', icon: LucideIcon.AlignLeft },
   number: { label: 'Number', icon: LucideIcon.Hash },
+  date: { label: 'Date', icon: LucideIcon.Calendar },
   list: { label: 'List', icon: LucideIcon.List },
   address: {
     label: 'Address',
@@ -208,11 +209,24 @@ export const memberCustomFieldChoiceLists: { [F in ListSource]: MemberCustomFiel
 };
 
 /** A leaf's value as a publisher reads it: text as written, and a choice by its name. */
+/**
+ * A calendar date as a person reads it, such as "4 Nov 2026". Formatted as the UTC day it names,
+ * since a date has no zone: read in the viewer's zone, a day at midnight UTC is the day before
+ * anywhere west of Greenwich. Text that names no date is shown as it is.
+ */
+function calendarDateText(value: string): string {
+  const day = new Date(`${value}T00:00:00Z`);
+  return Number.isNaN(day.getTime())
+    ? value
+    : new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeZone: 'UTC' }).format(day);
+}
+
 export const memberCustomFieldLeafText = (leaf: Leaf, value: AnyLeafValue): string =>
   matchLeaf(leaf, {
     text: () => String(value),
     choice: ({ from }) => memberCustomFieldChoiceLists[from].label(String(value)),
     number: () => String(value),
+    date: () => calendarDateText(String(value)),
   });
 
 export type MemberCustomFieldPart = {

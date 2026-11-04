@@ -57,7 +57,7 @@ const TEXT_INPUT: { [S in TextSize]: 'text' | 'textarea' } = {
 };
 
 interface LeafInput {
-  type: 'text' | 'textarea' | 'select' | 'number';
+  type: 'text' | 'textarea' | 'select' | 'number' | 'date';
   options?: { value: string; label: string }[];
 }
 
@@ -66,6 +66,8 @@ const leafInput = (leaf: Leaf, held: string | undefined): LeafInput =>
     text: ({ size }) => ({ type: TEXT_INPUT[size] }),
     choice: ({ from }) => ({ type: 'select', options: LIST_OPTIONS[from](held) }),
     number: () => ({ type: 'number' }),
+    // A date input's value is `YYYY-MM-DD` whatever it shows, so a date is never shifted by a zone.
+    date: () => ({ type: 'date' }),
   });
 
 /**

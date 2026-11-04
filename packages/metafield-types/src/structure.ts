@@ -35,8 +35,16 @@ export interface NumberLeaf {
   readonly leaf: 'number';
 }
 
+/**
+ * A calendar date: a day, with no time and no timezone, so it is the same day wherever it is read,
+ * as a birthday is.
+ */
+export interface DateLeaf {
+  readonly leaf: 'date';
+}
+
 /** One value. */
-export type Leaf = TextLeaf | ChoiceLeaf | NumberLeaf;
+export type Leaf = TextLeaf | ChoiceLeaf | NumberLeaf | DateLeaf;
 export type LeafKind = Leaf['leaf'];
 
 /** What a value of each kind of leaf is, as JSON carries it. */
@@ -44,6 +52,8 @@ export interface LeafValues {
   text: string;
   choice: string;
   number: number;
+  /** As ISO 8601 writes a calendar date, `YYYY-MM-DD`, which orders as it reads. */
+  date: string;
 }
 
 export type LeafValue<L extends Leaf> = LeafValues[L['leaf']];
@@ -52,6 +62,8 @@ export const text = <const S extends TextSize>(size: S) => ({ leaf: 'text', size
 export const choice = <const F extends ListSource>(from: F) => ({ leaf: 'choice', from }) as const;
 
 export const decimal = (): NumberLeaf => ({ leaf: 'number' });
+
+export const day = (): DateLeaf => ({ leaf: 'date' });
 
 /** A country, as the two-letter code a list of countries offers. */
 export const country = choice('countries');
@@ -84,7 +96,14 @@ export type FieldStructure = ScalarStructure | RecordStructure | SetStructure;
 export type FieldShape = FieldStructure['shape'];
 
 /** The source for the union type, the zod enum and the `FIELD_STRUCTURES` keys alike. */
-export const FIELD_TYPE_IDS = ['short_text', 'long_text', 'number', 'list', 'address'] as const;
+export const FIELD_TYPE_IDS = [
+  'short_text',
+  'long_text',
+  'number',
+  'date',
+  'list',
+  'address',
+] as const;
 export type FieldType = (typeof FIELD_TYPE_IDS)[number];
 
 /**
@@ -100,6 +119,7 @@ export const FIELD_STRUCTURES = {
   short_text: { shape: 'scalar', leaf: text('line') },
   long_text: { shape: 'scalar', leaf: text('long') },
   number: { shape: 'scalar', leaf: decimal() },
+  date: { shape: 'scalar', leaf: day() },
   list: { shape: 'set' },
   address: {
     shape: 'record',
@@ -360,6 +380,8 @@ export function matchLeaf<R>(leaf: Leaf, handlers: LeafHandlers<R>): R {
       return handlers.choice(leaf);
     case 'number':
       return handlers.number(leaf);
+    case 'date':
+      return handlers.date(leaf);
   }
 }
 
