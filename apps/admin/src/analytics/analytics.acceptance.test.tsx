@@ -115,6 +115,31 @@ function seedEmptyAnalyticsWorld() {
   fakeNewsletters([]);
 }
 
+/**
+ * A site with no MRR that sends one free newsletter: 158 subscribers, up
+ * from 150 over the range.
+ */
+function seedFreeSingleNewsletterWorld() {
+  seedEmptyAnalyticsWorld();
+  const newsletterId = '64d623b64676110001e897d2';
+  fakeNewsletters([
+    newsletter({
+      id: newsletterId,
+      name: 'Weekly Digest',
+      status: 'active',
+      count: { posts: 3, active_members: 158 },
+    }),
+  ]);
+  const subscriberRequests = fakeAdminStats.newsletterSubscribers({
+    total: 158,
+    values: [
+      { date: daysAgo(2), value: 150 },
+      { date: daysAgo(1), value: 158 },
+    ],
+  });
+  return { newsletterId, subscriberRequests };
+}
+
 /** The web traffic view's own cards, all empty. */
 function seedEmptyWebTraffic() {
   fakeAdminStats.topContent([]);
@@ -277,24 +302,10 @@ describe('Analytics overview', () => {
     await expect.element(analyticsScreen.totalMembersCard()).toBeVisible();
   });
 
-  it('shows newsletter subscribers instead of MRR on a site without revenue and one newsletter', async () => {
-    seedEmptyAnalyticsWorld();
-    const newsletterId = '64d623b64676110001e897d2';
-    fakeNewsletters([
-      newsletter({
-        id: newsletterId,
-        name: 'Weekly Digest',
-        status: 'active',
-        count: { posts: 3, active_members: 158 },
-      }),
-    ]);
-    const subscriberRequests = fakeAdminStats.newsletterSubscribers({
-      total: 158,
-      values: [
-        { date: daysAgo(2), value: 150 },
-        { date: daysAgo(1), value: 158 },
-      ],
-    });
+  // Stripe connected only to take donations: paid members are enabled, but
+  // there's no MRR to show.
+  it('shows newsletter subscribers in place of MRR when Stripe is connected only for donations', async () => {
+    const { newsletterId, subscriberRequests } = seedFreeSingleNewsletterWorld();
     await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
 
     await expect.element(analyticsScreen.newsletterSubscribersValue()).toHaveTextContent('158');
@@ -308,6 +319,25 @@ describe('Analytics overview', () => {
     fakeAdminEndpoint('GET', /^\/stats\/newsletter-click-stats\//, { stats: [], meta: {} });
     await analyticsScreen.newsletterSubscribersViewMoreButton().click();
     await expect.poll(currentRoute).toMatch(/^\/analytics\/newsletters\//);
+  });
+
+  it('shows newsletter subscribers next to members when Stripe isn’t connected', async () => {
+    seedFreeSingleNewsletterWorld();
+    await renderAdminApp('/analytics', {
+      boot: {
+        ...webAnalyticsBootOverrides(),
+        browseSettings: {
+          response: settingsResponse({
+            settings: { web_analytics_enabled: true, paid_members_enabled: false },
+          }),
+        },
+      },
+    });
+
+    await expect.element(analyticsScreen.uniqueVisitorsValue()).toBeVisible();
+    await expect.element(analyticsScreen.newsletterSubscribersValue()).toHaveTextContent('158');
+    await expect.element(analyticsScreen.membersValue()).toBeVisible();
+    await expect.element(analyticsScreen.mrrCard()).not.toBeInTheDocument();
   });
 
   it('keeps MRR when the site sends more than one newsletter', async () => {
