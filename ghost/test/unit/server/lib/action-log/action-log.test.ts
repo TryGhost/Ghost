@@ -227,6 +227,45 @@ describe('Unit: lib/action-log/action-log', function () {
   });
 });
 
+describe('Unit: lib/action-log/action-log deadlocks', function () {
+  const deadlock = () => Object.assign(new Error('Deadlock found'), { code: 'ER_LOCK_DEADLOCK' });
+  const deadlocking = () =>
+    (() => ({
+      insert: async () => {
+        throw deadlock();
+      },
+    })) as unknown as Knex;
+  const row = {
+    resourceType: 'gift_link',
+    event: 'added',
+    resourceId: POST_ID,
+    primaryName: 'A post',
+  } as const;
+
+  // MySQL has already rolled the whole transaction back, so the command's writes are gone.
+  it("fails the command when it deadlocks in the command's transaction", async function () {
+    const logging = createLoggingFake();
+    const actionLog = new ActionLog({ knex: deadlocking(), logging });
+
+    await assert.rejects(
+      actionLog.record(USER, row, {
+        transacting: deadlocking() as unknown as Knex.Transaction,
+      }),
+      { code: 'ER_LOCK_DEADLOCK' },
+    );
+    assert.equal(logging.error.callCount, 0);
+  });
+
+  it('logs a deadlock outside a transaction like any other failure', async function () {
+    const logging = createLoggingFake();
+    const actionLog = new ActionLog({ knex: deadlocking(), logging });
+
+    await actionLog.record(USER, row);
+
+    assert.equal(logging.error.callCount, 1);
+  });
+});
+
 // Checked by the compiler rather than run: a mistake in an action fails to compile.
 export function rejectedAtCompileTime(actionLog: ActionLog) {
   void actionLog.record(USER, {

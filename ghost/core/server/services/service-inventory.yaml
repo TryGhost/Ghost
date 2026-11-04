@@ -4164,9 +4164,10 @@ services:
           random generation and transaction errors propagate, without retries. Factory rejection
           leaves service unavailable and boot fails; the shared initializer permits an explicit
           retry, without service-specific failure/retry coverage. The shared action log logs and
-          swallows failed writes, which on MySQL leave the mint's transaction usable, and skips
-          writes when no actor is present. Action-log units and a real-DB deep-service test with a
-          failing action insert enforce that boundary. Gift access refuses missing key-resolution setup and rejects
+          swallows failed writes and skips writes when no actor is present. A real-DB deep-service
+          test fails the action insert with a SIGNAL error and asserts the mint still commits. A
+          deadlock rolls back the whole InnoDB transaction, so the action log rethrows it and the
+          mint fails; only action-log units cover that. Gift access refuses missing key-resolution setup and rejects
           mismatched tokens; frontend strips invalid gifts with a 301 while other failures reach
           normal error handling. Product lookup failure logs and grants a paid shim with no tiers.
           Units pin those helpers and root query-error propagation. Real DB tests pin mint rollback
@@ -8597,7 +8598,8 @@ services:
           Invalid plans reject before writes; malformed value leaves are logged/omitted and
           malformed history field lists become empty, while invalid definition decoding rejects
           the read. Bindings skip unresolved/invalid rows and return ordered good plans plus the
-          first failure. The shared action log logs and swallows failed action writes. Multi-property definition edits are not atomic; limit
+          first failure. The shared action log logs and swallows failed action writes, except a deadlock inside
+          add or reorder, which it rethrows as the transaction is already rolled back. Multi-property definition edits are not atomic; limit
           counting deliberately permits concurrent overshoot, and applying a plan does not
           revalidate its captured definition. HTTP asserts selected refusals/corrupt reads and
           successful actions; fake binding/import tests assert continuation/reporting.
