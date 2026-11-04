@@ -165,7 +165,7 @@ given, so such an address reads as a change of manifest URL.
 import { parseManifestUrl } from '@tryghost/app-contracts/manifest';
 
 const result = parseManifestUrl(' https://Podcast.Example.com/ghost-app.json ', {
-  ghostUrls: ['https://site.example.com'],
+  ghostUrls: ['https://site.example.com', 'https://admin.example.com'],
 });
 
 if (result.success) {
