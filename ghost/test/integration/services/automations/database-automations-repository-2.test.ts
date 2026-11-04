@@ -120,7 +120,9 @@ describe('database automations repository', function () {
     });
 
     afterEach(async function () {
-      await knex('automated_email_recipients').where('id', recipientId).delete();
+      await knex('automated_email_recipients')
+        .whereIn('automation_action_revision_id', revisionIds)
+        .delete();
       await knex('automation_run_steps').where('id', stepId).delete();
       await knex('automation_runs').where('id', runId).delete();
       await knex('automation_action_revisions').whereIn('id', revisionIds).delete();
@@ -152,6 +154,40 @@ describe('database automations repository', function () {
         return recipientId;
       },
     };
+  };
+
+  const useEmailTrackingFixture = () => {
+    const fixture = useEmailClickFixture();
+    const ids: Record<string, string> = {};
+    const earlier = new Date('2026-01-01T00:00:00Z');
+    const laterEvent = new Date('2026-02-01T00:00:00Z');
+
+    const getRecipient = async (id: string) => {
+      const row = await knex('automated_email_recipients').where({ id }).first();
+      return {
+        deliveredAt: row.delivered_at === null ? null : fromDatabaseDate(row.delivered_at),
+        openedAt: row.opened_at === null ? null : fromDatabaseDate(row.opened_at),
+      };
+    };
+
+    beforeEach(async function () {
+      ids.unopened = fixture.recipientId;
+      ids.opened = ObjectId().toHexString();
+      ids.other = ObjectId().toHexString();
+      ids.missing = ObjectId().toHexString();
+      const recipient = await knex('automated_email_recipients')
+        .where('id', fixture.recipientId)
+        .first();
+      await knex('automated_email_recipients').insert([
+        { ...recipient, id: ids.opened, delivered_at: earlier, opened_at: earlier },
+        { ...recipient, id: ids.other },
+      ]);
+      await knex('automation_action_revisions')
+        .where('id', fixture.revisionIds[1])
+        .update({ email_opened_count: 5 });
+    });
+
+    return { repository: fixture.repository, fixture, ids, earlier, laterEvent, getRecipient };
   };
 
   beforeAll(async function () {
@@ -655,6 +691,31 @@ describe('database automations repository', function () {
     );
   });
 
+  alphabeticalDescribe('incrementEmailOpenedCount', function () {
+    const { fixture, repository } = useEmailTrackingFixture();
+
+    it('increments unset and existing counts without touching other revisions', async function () {
+      await repository.incrementEmailOpenedCount(knex, fixture.revisionIds[0], 2);
+      expect(
+        await knex('automation_action_revisions')
+          .select('id', 'email_opened_count')
+          .whereIn('id', fixture.revisionIds)
+          .orderBy('id'),
+      ).toEqual(
+        [
+          { id: fixture.revisionIds[0], email_opened_count: 2 },
+          { id: fixture.revisionIds[1], email_opened_count: 5 },
+        ].sort((a, b) => a.id.localeCompare(b.id)),
+      );
+
+      await repository.incrementEmailOpenedCount(knex, fixture.revisionIds[1], 3);
+      expect(
+        (await knex('automation_action_revisions').where({ id: fixture.revisionIds[1] }).first())
+          .email_opened_count,
+      ).toBe(8);
+    });
+  });
+
   alphabeticalDescribe('insertActions', function () {
     let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
     let automationId: string;
@@ -1037,6 +1098,64 @@ describe('database automations repository', function () {
     });
   });
 
+  alphabeticalDescribe('lockNotYetOpenedEmailRecipients', function () {
+    const { repository, ids } = useEmailTrackingFixture();
+
+    it('returns an empty set without querying for an empty list', async function () {
+      const query = vi.fn();
+      knex.on('query', query);
+      onTestFinished(() => {
+        knex.off('query', query);
+      });
+
+      expect(await repository.lockNotYetOpenedEmailRecipients(knex, [])).toEqual(new Set());
+
+      expect(query).not.toHaveBeenCalled();
+    });
+
+    it('returns only requested, existing recipients without an open timestamp', async function () {
+      await repository.withTransaction(async (connection) => {
+        expect(
+          await repository.lockNotYetOpenedEmailRecipients(connection, [
+            ids.unopened,
+            ids.opened,
+            ids.missing,
+          ]),
+        ).toEqual(new Set([ids.unopened]));
+      });
+    });
+
+    it('locks unopened recipients until the transaction ends', async function () {
+      const trx = await knex.transaction();
+      onTestFinished(async () => {
+        await trx.rollback();
+      });
+      const recipientIds = [ids.unopened, ids.other];
+
+      expect(await repository.lockNotYetOpenedEmailRecipients(trx, recipientIds)).toEqual(
+        new Set(recipientIds),
+      );
+
+      for (const id of recipientIds) {
+        await repository.withTransaction(async (otherTrx) => {
+          await expect(
+            otherTrx('automated_email_recipients').where({ id }).forUpdate().noWait().first(),
+          ).rejects.toMatchObject({ code: 'ER_LOCK_NOWAIT' });
+        });
+      }
+
+      await trx.commit();
+
+      for (const id of recipientIds) {
+        await repository.withTransaction(async (otherTrx) => {
+          await expect(
+            otherTrx('automated_email_recipients').where({ id }).forUpdate().noWait().first(),
+          ).resolves.toMatchObject({ id });
+        });
+      }
+    });
+  });
+
   alphabeticalDescribe('setEmailRecipientClickedAt', function () {
     const fixture = useEmailClickFixture();
     const { repository, findEmailRecipientForClick } = fixture;
@@ -1060,6 +1179,86 @@ describe('database automations repository', function () {
       expect(await repository.setEmailRecipientClickedAt(knex, ObjectId().toHexString(), now)).toBe(
         false,
       );
+    });
+  });
+
+  alphabeticalDescribe('setEmailRecipientDeliveredAndOpenedAt', function () {
+    const { repository, ids, earlier, laterEvent, getRecipient } = useEmailTrackingFixture();
+
+    it('does not query when neither timestamp is supplied', async function () {
+      const query = vi.fn();
+      knex.on('query', query);
+      onTestFinished(() => {
+        knex.off('query', query);
+      });
+
+      await repository.setEmailRecipientDeliveredAndOpenedAt(knex, ids.unopened, {});
+
+      expect(query).not.toHaveBeenCalled();
+    });
+
+    it('sets both timestamps', async function () {
+      await repository.setEmailRecipientDeliveredAndOpenedAt(knex, ids.unopened, {
+        deliveredAt: earlier,
+        openedAt: laterEvent,
+      });
+
+      expect(await getRecipient(ids.unopened)).toEqual({
+        deliveredAt: earlier,
+        openedAt: laterEvent,
+      });
+    });
+
+    it('updates delivery and open timestamps independently', async function () {
+      await repository.setEmailRecipientDeliveredAndOpenedAt(knex, ids.unopened, {
+        deliveredAt: earlier,
+      });
+      expect(await getRecipient(ids.unopened)).toEqual({ deliveredAt: earlier, openedAt: null });
+
+      await repository.setEmailRecipientDeliveredAndOpenedAt(knex, ids.unopened, {
+        openedAt: laterEvent,
+      });
+      expect(await getRecipient(ids.unopened)).toEqual({
+        deliveredAt: earlier,
+        openedAt: laterEvent,
+      });
+    });
+
+    it('preserves earliest timestamps for later and repeated events', async function () {
+      for (const timestamp of [laterEvent, earlier]) {
+        await repository.setEmailRecipientDeliveredAndOpenedAt(knex, ids.opened, {
+          deliveredAt: timestamp,
+          openedAt: timestamp,
+        });
+        expect(await getRecipient(ids.opened)).toEqual({ deliveredAt: earlier, openedAt: earlier });
+      }
+    });
+
+    it('replaces timestamps with earlier events', async function () {
+      await knex('automated_email_recipients')
+        .where({ id: ids.opened })
+        .update({ delivered_at: laterEvent, opened_at: laterEvent });
+      await repository.setEmailRecipientDeliveredAndOpenedAt(knex, ids.opened, {
+        deliveredAt: earlier,
+        openedAt: earlier,
+      });
+      expect(await getRecipient(ids.opened)).toEqual({ deliveredAt: earlier, openedAt: earlier });
+    });
+
+    it('ignores unknown recipients', async function () {
+      await repository.setEmailRecipientDeliveredAndOpenedAt(knex, ids.missing, {
+        deliveredAt: earlier,
+        openedAt: earlier,
+      });
+
+      expect(
+        await knex('automated_email_recipients')
+          .whereIn('id', [ids.unopened, ids.opened, ids.other])
+          .count('* as count')
+          .first(),
+      ).toEqual({
+        count: 3,
+      });
     });
   });
 

@@ -26,6 +26,7 @@ export const createTestAutomationsRepository2 = (
       'getNumberOfAutomations',
       'hasMemberEnteredAutomation',
       'incrementEmailClickedCount',
+      'incrementEmailOpenedCount',
       'insertActions',
       'insertRunSteps',
       'insertRuns',
@@ -35,7 +36,9 @@ export const createTestAutomationsRepository2 = (
       'loadEdgeRows',
       'lockActionRevisions',
       'lockMember',
+      'lockNotYetOpenedEmailRecipients',
       'setEmailRecipientClickedAt',
+      'setEmailRecipientDeliveredAndOpenedAt',
     ]),
     ...overrides,
   } satisfies AutomationsRepository2<TestAutomationsRepositoryConnection>;
