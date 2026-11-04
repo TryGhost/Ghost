@@ -5,4 +5,6 @@ export const sameSafeArea = (a: SafeArea, b: SafeArea) =>
 
 /** Whether two layouts are the same, so a layout the app already has isn't sent again. */
 export const sameLayout = (a: Layout | undefined, b: Layout) =>
-  a !== undefined && sameSafeArea(a.safeArea, b.safeArea);
+  a !== undefined &&
+  sameSafeArea(a.safeArea, b.safeArea) &&
+  sameSafeArea(a.overlaySafeArea, b.overlaySafeArea);

@@ -337,7 +337,15 @@ export function SidePanel({ visible, framed, docked, locked, onReturnFocusLost }
               shown
                 ? cn(
                     'transition-[width]',
-                    state.size === 'full' && FULL_WIDTH,
+                    state.size === 'full' &&
+                      cn(
+                        FULL_WIDTH,
+                        // At its default width while an app's overlay shows, which would show
+                        // none of the app's page beside it (see apps/components/app-overlay.tsx)
+                        framed
+                          ? '[html[data-app-overlay]_&]:w-[calc(var(--side-panel-width)_+_var(--admin-frame-side))]'
+                          : '[html[data-app-overlay]_&]:w-(--side-panel-width)',
+                      ),
                     state.size === 'default' && (framed ? FRAMED_DEFAULT_WIDTH : DEFAULT_WIDTH),
                     !framed && 'border-l border-border',
                   )
@@ -345,6 +353,8 @@ export function SidePanel({ visible, framed, docked, locked, onReturnFocusLost }
             )
           : cn(
               'fixed z-30 origin-bottom-right bg-background shadow-xl ring-1 ring-border',
+              // Out of the way of an app's dialog over the page (see apps/components/app-overlay.tsx)
+              '[html[data-app-overlay]_&]:invisible',
               WINDOW_RADIUS_CLASS,
               // It grows from its corner as it opens, and goes at once as it closes,
               // as the bar does: shrinking into the corner would read as minimizing

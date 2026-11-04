@@ -45,6 +45,8 @@ export const appsScreen = {
   content: () => page.getByTestId(sel.appContent),
   footerDevelopmentBadge: () =>
     page.getByTestId(sel.appFooter).getByTestId(sel.appDevelopmentBadge),
+  overlayFrame: () => page.getByTestId(sel.appOverlayFrame),
+  overlayTint: () => page.getByTestId(sel.appOverlayTint),
   notResponding: () => page.getByTestId(sel.appNotResponding),
   unavailable: () => page.getByTestId(sel.appUnavailable),
   notInstalled: () => page.getByTestId(sel.appNotInstalled),
