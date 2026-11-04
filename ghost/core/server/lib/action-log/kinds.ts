@@ -21,7 +21,7 @@ export const ACTION_KINDS = {
   },
   member_custom_field: {
     table: 'members_metafields',
-    verbs: ['added', 'edited', 'archived', 'restored', 'deleted'],
+    verbs: ['added', 'edited', 'deleted'],
   },
   stripe_checkout_config: {
     table: 'stripe_checkout_config',

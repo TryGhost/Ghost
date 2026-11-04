@@ -5,16 +5,17 @@ type FieldAction = Extract<ActionRow, { resourceType: 'member_custom_field' }>;
 
 // Field-definition changes map to activity-feed events. A field's timeline reads
 // added -> edited -> archived -> restored, and a permanent delete (only from the
-// archived state) ends it with deleted.
+// archived state) ends it with deleted. Archiving and restoring are edits named for
+// what they did.
 const COMMANDS = {
-  create: 'added',
-  rename: 'edited',
-  changeAccess: 'edited',
-  changeSettings: 'edited',
-  archive: 'archived',
-  restore: 'restored',
-  delete: 'deleted',
-} as const satisfies Record<string, FieldAction['event']>;
+  create: { event: 'added' },
+  rename: { event: 'edited' },
+  changeAccess: { event: 'edited' },
+  changeSettings: { event: 'edited' },
+  archive: { event: 'edited', actionName: 'archived' },
+  restore: { event: 'edited', actionName: 'restored' },
+  delete: { event: 'deleted' },
+} as const satisfies Record<string, Pick<FieldAction, 'event' | 'actionName'>>;
 
 export type MetafieldVerb = keyof typeof COMMANDS;
 
@@ -38,7 +39,7 @@ export function fieldAction(
 ): FieldAction {
   return {
     resourceType: 'member_custom_field',
-    event: COMMANDS[verb],
+    ...COMMANDS[verb],
     resourceId: field.id,
     primaryName: field.name,
     context: { key: field.key, ...change },

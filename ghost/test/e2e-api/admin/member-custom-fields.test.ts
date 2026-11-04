@@ -2511,28 +2511,28 @@ describe('Member Custom Fields Admin API', function () {
       );
     });
 
-    it('records an "archived" action when a field is archived', async function () {
+    it('records an edit named "archived" when a field is archived', async function () {
       const field = await createField({ name: 'Favourite topic' });
       await setStatus(field.key, 'archived');
 
       await assertActionLogged(agent, {
         ...customFields,
-        event: 'archived',
+        event: 'edited',
         actor: staff,
-        details: { key: field.key },
+        details: { key: field.key, action_name: 'archived' },
       });
     });
 
-    it('records a "restored" action when an archived field is restored', async function () {
+    it('records an edit named "restored" when an archived field is restored', async function () {
       const field = await createField({ name: 'Favourite topic' });
       await setStatus(field.key, 'archived');
       await setStatus(field.key, 'active');
 
       await assertActionLogged(agent, {
         ...customFields,
-        event: 'restored',
+        event: 'edited',
         actor: staff,
-        details: { key: field.key },
+        details: { key: field.key, action_name: 'restored' },
       });
     });
 
@@ -2582,8 +2582,15 @@ describe('Member Custom Fields Admin API', function () {
 
       // The full ordered story, including the repeated archive.
       assert.deepEqual(
-        timeline.map((entry) => entry.event),
-        ['added', 'edited', 'archived', 'restored', 'archived', 'deleted'],
+        timeline.map((entry) => [entry.event, entry.details?.action_name]),
+        [
+          ['added', undefined],
+          ['edited', undefined],
+          ['edited', 'archived'],
+          ['edited', 'restored'],
+          ['edited', 'archived'],
+          ['deleted', undefined],
+        ],
       );
 
       // Every entry is attributed and carries the field's name — no anonymous
