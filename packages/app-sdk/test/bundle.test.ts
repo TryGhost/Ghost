@@ -132,12 +132,24 @@ describe('the package', () => {
     expect(loaded).not.toMatch(/jose|zod|node:/);
   });
 
-  // Vite is an optional peer dependency, so the plugin only imports its types.
-  it.each(['tooling', 'vite', 'bin'])('%s.js loads only Node builtins, jose and zod', (entry) => {
+  it.each([
+    ['tooling', ['jose', 'zod']],
+    ['bin', ['jose', 'zod']],
+    ['vite', ['jose', 'zod', 'vite']],
+  ])('%s.js loads only Node builtins and %j', (entry, packages) => {
     const loaded = [...reachableImports(code(entry))].filter(
       (specifier) => !specifier.startsWith('node:'),
     );
-    expect(new Set(loaded)).toEqual(new Set(['jose', 'zod']));
+    expect(new Set(loaded)).toEqual(new Set(packages));
+  });
+
+  // Vite is an optional peer dependency, so the plugin imports it only when Vite runs it, and
+  // the entry point loads without it.
+  it('imports Vite from the plugin only when Vite runs it', () => {
+    const imports = [...nodes(parseAst(readFileSync(code('vite'), 'utf8')))]
+      .filter((node) => node.type === 'ImportDeclaration')
+      .map((node) => String((node as { source?: { value?: unknown } }).source?.value));
+    expect(imports).not.toContain('vite');
   });
 
   it('runs the CLI with Node', () => {

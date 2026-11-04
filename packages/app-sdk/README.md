@@ -349,7 +349,17 @@ In `vite build`, it signs `ghost-app.json` for `GHOST_APP_URL`, the app's public
 address (the manifest is at `<GHOST_APP_URL>/ghost-app.json`), with the
 production keys, and emits it with the client build. A missing key fails the
 build with how to create one; the plugin never creates a production key.
-Without `GHOST_APP_URL`, the build emits no manifest and warns.
+Without `GHOST_APP_URL`, the build emits no manifest and warns, and deploying
+it takes the app down wherever it's installed.
+
+The plugin reads `GHOST_APP_URL` and `GHOST_APP_TUNNEL_URL` from the
+environment, or from the mode's `.env` files as Vite reads them; the
+environment wins. Commit the app's address in `.env.production` once it has
+one, so no deploy can forget it:
+
+```sh
+GHOST_APP_URL=https://hello.example.com
+```
 
 List the plugin before `cloudflare()`. `options.manifest` names another file
 than `ghost-app.json`.

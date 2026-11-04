@@ -45,7 +45,8 @@ export interface GhostAppOptions {
   /**
    * The public addresses of tunnels to the dev server, such as
    * `https://example.trycloudflare.com`, which `vite dev` also signs the manifest for. Read from
-   * `GHOST_APP_TUNNEL_URL` (comma-separated) by default.
+   * `GHOST_APP_TUNNEL_URL` (comma-separated) by default, in the environment or the mode's `.env`
+   * files.
    */
   tunnelUrl?: string | readonly string[];
 }
@@ -89,7 +90,8 @@ const installLink = (manifestUrl: string) => {
  *   signing for whatever a request names would let anyone pass for the app. In a Cloudflare
  *   Workers project, it adds the development backend key to `.dev.vars`, so the Worker answers
  *   Ghost's challenge in development as it does in production.
- * - `vite build` signs it for `GHOST_APP_URL` with the production keys, from `.ghost-app/` or
+ * - `vite build` signs it for `GHOST_APP_URL`, from the environment or the mode's `.env` files
+ *   such as `.env.production`, with the production keys, from `.ghost-app/` or
  *   `GHOST_APP_IDENTITY_KEY` and `GHOST_APP_BACKEND_KEY`, and emits it with the client build.
  *   Without `GHOST_APP_URL` it emits none, and says so. It never creates a production key.
  *
@@ -98,7 +100,9 @@ const installLink = (manifestUrl: string) => {
  */
 export function ghostApp(options: GhostAppOptions = {}): Plugin {
   const manifestFile = options.manifest ?? MANIFEST_FILE;
-  const tunnels = readTunnels(options.tunnelUrl ?? process.env.GHOST_APP_TUNNEL_URL);
+  // An option is checked at once; the environment's once the config hook has read it.
+  let tunnels = options.tunnelUrl === undefined ? [] : readTunnels(options.tunnelUrl);
+  let appUrl: string | undefined;
   let config: ResolvedConfig;
   let pending: { level: 'info' | 'warn'; message: string } | undefined;
   let warnedUnsigned = false;
@@ -172,6 +176,21 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
     enforce: 'pre',
 
     async config(userConfig, { command, isPreview, mode }) {
+      // Read as Vite reads the mode's `.env` files, so a project can keep its address in
+      // `.env.production`. The environment wins. Vite is only imported here, when it runs the
+      // plugin, as it's an optional peer dependency.
+      const envDir = userConfig.envDir ?? userConfig.root ?? '';
+      const { loadEnv } = await import('vite');
+      const files =
+        envDir === false
+          ? {}
+          : loadEnv(mode, resolve(envDir), ['GHOST_APP_URL', 'GHOST_APP_TUNNEL_URL']);
+      const read = (name: string) => process.env[name]?.trim() || files[name]?.trim() || undefined;
+      appUrl = read('GHOST_APP_URL');
+      if (options.tunnelUrl === undefined) {
+        tunnels = readTunnels(read('GHOST_APP_TUNNEL_URL'));
+      }
+
       if (command !== 'serve' || isPreview) {
         return undefined;
       }
@@ -247,12 +266,11 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
       if (config.command !== 'build' || this.environment.config.consumer !== 'client') {
         return;
       }
-      const appUrl = process.env.GHOST_APP_URL?.trim();
       if (!appUrl) {
         if (!warnedUnsigned) {
           warnedUnsigned = true;
           config.logger.warn(
-            `ghost-app: GHOST_APP_URL isn't set, so this build has no signed ghost-app.json and can't be installed. Set it to the app's public address, such as https://app.example.com, to sign the manifest for <GHOST_APP_URL>/ghost-app.json.`,
+            `ghost-app: GHOST_APP_URL isn't set, so this build has no signed ghost-app.json: it can't be installed, and deploying it takes the app down wherever it's installed. Set GHOST_APP_URL to the app's public address, such as https://app.example.com, in .env.production or the environment, to sign the manifest for <GHOST_APP_URL>/ghost-app.json.`,
           );
         }
         return;

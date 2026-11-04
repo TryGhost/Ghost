@@ -199,6 +199,17 @@ describe('vite dev', () => {
     );
   });
 
+  it("reads GHOST_APP_TUNNEL_URL from the mode's .env files", async () => {
+    await writeFile(
+      join(root, '.env.development'),
+      'GHOST_APP_TUNNEL_URL=https://committed.example\n',
+    );
+    const { port } = await startDevServer();
+    const response = await get(port, 'committed.example');
+    expect(response.status).toBe(200);
+    await readAsGhost(JSON.parse(response.body), 'https://committed.example/ghost-app.json');
+  });
+
   it('refuses a tunnel that is not an address', () => {
     expect(() => ghostApp({ tunnelUrl: 'https://tunnel.example/path' })).toThrow(
       "expected a tunnel's address such as https://example.trycloudflare.com",
@@ -531,6 +542,23 @@ describe('vite build', () => {
         text: expect.stringContaining("GHOST_APP_URL isn't set"),
       }),
     );
+    expect(logger.messages.find(({ level }) => level === 'warn')?.text).toContain(
+      'in .env.production or the environment',
+    );
+  });
+
+  it('reads GHOST_APP_URL from .env.production, which the environment overrides', async () => {
+    await createKeys({ root, mode: 'production' });
+    await writeFile(join(root, '.env.production'), 'GHOST_APP_URL=https://committed.example.com\n');
+    // Another mode's file doesn't count.
+    await writeFile(join(root, '.env.development'), 'GHOST_APP_URL=https://dev.example.com\n');
+    await buildApp();
+    const read = async () => JSON.parse(await readFile(join(outDir(), 'ghost-app.json'), 'utf8'));
+    await readAsGhost(await read(), 'https://committed.example.com/ghost-app.json');
+
+    vi.stubEnv('GHOST_APP_URL', 'https://env.example.com');
+    await buildApp();
+    await readAsGhost(await read(), 'https://env.example.com/ghost-app.json');
   });
 
   it('fails for a GHOST_APP_URL that is not one, or a manifest that cannot be signed', async () => {
