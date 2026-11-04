@@ -25,6 +25,9 @@ fi
 
 if [[ "${CI:-}" != "true" ]]; then
   node "$REPO_ROOT/e2e/scripts/sync-tinybird-state.mjs"
+  # The Apps tests' fixture app loads the app SDK as built from the checkout. CI builds it in
+  # prepare-ci-e2e-job.sh.
+  pnpm nx run @tryghost/app-sdk:build
 fi
 
 cd "$REPO_ROOT/e2e"

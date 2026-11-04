@@ -37,6 +37,7 @@
     "@playwright/test": "catalog:",
     "@tryghost/adapter-base-upgrade": "workspace:*",
     "@tryghost/app-contracts": "workspace:*",
+    "@tryghost/app-sdk": "workspace:*",
     "@tryghost/checkout": "workspace:*",
     "@tryghost/debug": "catalog:",
     "@tryghost/logging": "catalog:",
