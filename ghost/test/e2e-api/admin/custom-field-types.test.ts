@@ -36,6 +36,11 @@ const NQL_LITERALS: {
     is: (value): value is number => typeof value === 'number',
     literal: (value) => String(value),
   },
+  // Unquoted, which NQL reads as a boolean.
+  boolean: {
+    is: (value): value is boolean => typeof value === 'boolean',
+    literal: (value) => String(value),
+  },
 };
 
 function literalAs<K extends ValueKind>(kind: K, value: AnyLeafValue): string | undefined {

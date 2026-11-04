@@ -109,6 +109,7 @@ const fieldTypePresentation: { [T in FieldType]: FieldTypePresentation<T> } = {
   long_text: { label: 'Long text', icon: LucideIcon.AlignLeft },
   number: { label: 'Number', icon: LucideIcon.Hash },
   date: { label: 'Date', icon: LucideIcon.Calendar },
+  boolean: { label: 'Yes or no', icon: LucideIcon.ToggleRight },
   list: { label: 'List', icon: LucideIcon.List },
   address: {
     label: 'Address',
@@ -199,6 +200,17 @@ export interface MemberCustomFieldChoiceList {
   searchPlaceholder: string;
 }
 
+/** A yes or no, as a list to pick one from, each held as the text `true` or `false`. */
+export const memberCustomFieldYesNo: MemberCustomFieldChoiceList = {
+  options: () => [
+    { value: 'true', label: 'Yes' },
+    { value: 'false', label: 'No' },
+  ],
+  label: (key) => (key === 'true' ? 'Yes' : 'No'),
+  placeholder: 'Select...',
+  searchPlaceholder: 'Search...',
+};
+
 export const memberCustomFieldChoiceLists: { [F in ListSource]: MemberCustomFieldChoiceList } = {
   countries: {
     options: (held) => countryOptions(held),
@@ -227,6 +239,7 @@ export const memberCustomFieldLeafText = (leaf: Leaf, value: AnyLeafValue): stri
     choice: ({ from }) => memberCustomFieldChoiceLists[from].label(String(value)),
     number: () => String(value),
     date: () => calendarDateText(String(value)),
+    boolean: () => (value === true ? 'Yes' : 'No'),
   });
 
 export type MemberCustomFieldPart = {

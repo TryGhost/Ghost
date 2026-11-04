@@ -8,6 +8,7 @@ import {
   FILTER_TYPES,
   domainField,
   listsOperator,
+  booleanSemantics,
   numberSemantics,
   plainDateSemantics,
   setSemantics,
@@ -47,6 +48,8 @@ export const LEAF_FILTER = {
   number: 'number',
   // A calendar date, compared as the day it names, with no zone: before, on or after.
   date: 'plain_date',
+  // Yes or no, as a filter for whether it was answered "yes" or "no".
+  boolean: 'boolean',
 } as const satisfies { readonly [K in LeafKind]: FilterTypeId };
 
 export type LeafFilterType = (typeof LEAF_FILTER)[LeafKind];
@@ -58,6 +61,7 @@ const SCALAR_FILTER: { [F in LeafFilterType]: (base: ScalarFilterBase) => FieldD
   set: (base) => ({ ...base, type: 'set' }),
   number: (base) => ({ ...base, type: 'number' }),
   plain_date: (base) => ({ ...base, type: 'plain_date' }),
+  boolean: (base) => ({ ...base, type: 'boolean' }),
 };
 
 // How each filter type reads a filter's value back, and when it is asked to, lowest first: a plain
@@ -74,6 +78,8 @@ const LEAF_SEMANTICS: {
   number: { order: 2, semantics: () => numberSemantics() },
   // A day as `YYYY-MM-DD`, compared before or after; it never claims a bare value text would.
   plain_date: { order: 3, semantics: () => plainDateSemantics() },
+  // Only `true` or `false` unquoted, which nothing above claims.
+  boolean: { order: 4, semantics: () => booleanSemantics() },
 };
 
 const LEAF_FILTER_TYPES: readonly LeafFilterType[] = keysOf(LEAF_SEMANTICS).sort(

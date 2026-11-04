@@ -165,6 +165,7 @@ const STORED_VALUE_COLUMNS = {
   path: VALUES_TABLE,
   value_text: VALUES_TABLE,
   value_number: VALUES_TABLE,
+  value_boolean: VALUES_TABLE,
 } satisfies Record<keyof z.input<typeof DbStoredValueRow>, string>;
 
 type AllowedField = z.output<typeof WritableField.asStored>;

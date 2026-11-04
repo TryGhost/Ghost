@@ -135,6 +135,7 @@ const NAMING: { readonly [T in LeafFilterType]: string } = {
   set: 'is-any',
   number: 'is',
   plain_date: 'is-or-greater',
+  boolean: 'is',
 };
 
 /**

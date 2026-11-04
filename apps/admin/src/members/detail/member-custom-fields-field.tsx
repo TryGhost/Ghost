@@ -48,6 +48,7 @@ import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import {
   formatMemberCustomFieldValue,
   memberCustomFieldChoiceLists,
+  memberCustomFieldYesNo,
   memberCustomFieldParts,
   type MemberCustomFieldChoiceList,
   type MemberCustomFieldPart,
@@ -254,6 +255,18 @@ const LeafInput: React.FC<{
         type="date"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+      />
+    ),
+    // Picked as yes or no, or left unpicked, which a checkbox couldn't say.
+    boolean: () => (
+      <ChoiceInput
+        disabled={disabled}
+        id={id}
+        invalid={invalid}
+        label={label}
+        list={memberCustomFieldYesNo}
+        value={value || undefined}
+        onChange={onChange}
       />
     ),
   });

@@ -68,6 +68,15 @@ const leafInput = (leaf: Leaf, held: string | undefined): LeafInput =>
     number: () => ({ type: 'number' }),
     // A date input's value is `YYYY-MM-DD` whatever it shows, so a date is never shifted by a zone.
     date: () => ({ type: 'date' }),
+    // Asked as a choice rather than a checkbox: a checkbox can't say "not answered", so saving one
+    // left alone would answer "no".
+    boolean: () => ({
+      type: 'select',
+      options: [
+        { value: 'true', label: t('Yes') },
+        { value: 'false', label: t('No') },
+      ],
+    }),
   });
 
 /**

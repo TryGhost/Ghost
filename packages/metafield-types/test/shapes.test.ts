@@ -127,6 +127,8 @@ describe('each kind of leaf', function () {
     number: [-7, 0.1],
     // Before 1970 and after, which order as the text does.
     date: ['1969-12-31', '2026-11-04'],
+    // "Is not yes" would also find members who never answered, so a filter asks only "is".
+    boolean: null,
   };
 
   function ordersAsSaid<K extends LeafKind>(

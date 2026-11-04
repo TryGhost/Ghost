@@ -37,6 +37,7 @@ export function pathOf(parts: readonly Part[]): string {
 export interface ValueColumns {
   value_text?: string | null;
   value_number?: number | null;
+  value_boolean?: boolean | null;
 }
 export type ValueColumn = keyof ValueColumns;
 
@@ -68,6 +69,11 @@ const VALUE_KINDS: { readonly [K in ValueKind]: StoredKind<K> } = {
     column: 'value_number',
     is: (value): value is number => typeof value === 'number',
     columns: (value) => ({ value_number: value }),
+  },
+  boolean: {
+    column: 'value_boolean',
+    is: (value): value is boolean => typeof value === 'boolean',
+    columns: (value) => ({ value_boolean: value }),
   },
 };
 

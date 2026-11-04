@@ -12,6 +12,7 @@ import {
   type MetafieldChangeSource,
   type TypedSettings,
 } from '@tryghost/metafield-types';
+import { DbBoolean } from '../../lib/db-types/boolean';
 import { DbDate } from '../../lib/db-types/date';
 import { DbJson } from '../../lib/db-types/json';
 import { MemberAccessSchema } from './access';
@@ -120,6 +121,7 @@ export type WrittenBy = z.infer<typeof WrittenBy>;
 const VALUE_COLUMN_SCHEMAS = {
   value_text: z.string().nullish(),
   value_number: z.number().nullish(),
+  value_boolean: DbBoolean.nullish(),
 } satisfies { readonly [C in ValueColumn]: z.ZodType<ValueColumns[C]> };
 
 // One part of a member's value. What a `path` means is storage.ts's business, so the row

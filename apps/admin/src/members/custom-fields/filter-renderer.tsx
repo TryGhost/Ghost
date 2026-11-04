@@ -9,6 +9,7 @@ import {
 } from '@tryghost/shade/patterns';
 import {
   memberCustomFieldChoiceLists,
+  memberCustomFieldYesNo,
   memberCustomFieldParts,
   type MemberCustomFieldChoiceList,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -83,10 +84,13 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
         choice: ({ from }) => memberCustomFieldChoiceLists[from],
         number: () => null,
         date: () => null,
+        boolean: () => null,
       })
     : null;
-  // Typed into the input its filter type declares, as the same type's filter on any other field is.
-  const inputType = leaf ? SEGMENT_INPUTS[FILTER_TYPES[LEAF_FILTER[leaf.leaf]].control] : undefined;
+  // Entered with the control its filter type declares, as the same type's filter on any other field
+  // is: a yes or no is picked, and a number or a date typed into its own input.
+  const control = leaf ? FILTER_TYPES[LEAF_FILTER[leaf.leaf]].control : undefined;
+  const inputType = control ? SEGMENT_INPUTS[control] : undefined;
 
   const {
     options: operatorOptions,
@@ -148,7 +152,18 @@ const CustomFieldFilterRenderer: React.FC<CustomRendererProps<string>> = ({
         />
       )}
 
-      {needsValue && !list && (
+      {needsValue && !list && control === 'boolean' && (
+        <FilterSegmentSelect
+          ariaLabel={`${fieldLabel} value`}
+          options={memberCustomFieldYesNo.options()}
+          readOnly={readOnly}
+          testId="custom-field-filter-value"
+          value={rest[0] === undefined ? '' : String(rest[0])}
+          onChange={(nextValue) => onChange([part, nextValue])}
+        />
+      )}
+
+      {needsValue && !list && control !== 'boolean' && (
         <FilterSegmentInput
           ariaLabel={`${fieldLabel} value`}
           placeholder="Enter value..."

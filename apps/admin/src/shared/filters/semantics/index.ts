@@ -6,3 +6,4 @@ export * from './set';
 export * from './number';
 export * from './date';
 export * from './count';
+export * from './boolean';

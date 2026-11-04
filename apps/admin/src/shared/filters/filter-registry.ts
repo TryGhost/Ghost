@@ -4,6 +4,8 @@ import {
   TIMESTAMP_OPERATORS,
   SCALAR_VALUE_OPERATORS,
   SET_VALUE_OPERATORS,
+  BOOLEAN_OPERATORS,
+  booleanSemantics,
   countSemantics,
   dateSemantics,
   numberSemantics,
@@ -71,6 +73,11 @@ export const FILTER_TYPES = {
     control: 'date',
     labels: DATE_OPERATOR_LABELS,
     defaultOperator: DEFAULT_DATE_OPERATOR,
+  }),
+  boolean: defineFilterType({
+    semantics: booleanSemantics,
+    operators: BOOLEAN_OPERATORS,
+    control: 'boolean',
   }),
   count: defineFilterType({
     semantics: countSemantics,

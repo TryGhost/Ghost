@@ -498,6 +498,7 @@ const LEAF_RULES: { [K in LeafKind]: (leaf: Extract<Leaf, { leaf: K }>) => LeafR
     filled()
       .regex(/^\d{4}-\d{2}-\d{2}$/, { error: 'Enter a date as YYYY-MM-DD, like 2026-11-04.' })
       .refine(isCalendarDate, { error: 'Enter a date that exists.' }),
+  boolean: () => z.boolean({ error: 'Choose yes or no.' }),
 };
 
 /** A leaf's rule, whichever kind of leaf it is. */

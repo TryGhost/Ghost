@@ -33,6 +33,8 @@ export const FIELD_FIXTURES: {
   number: [{ field: { type: 'number' }, values: [3, 42.5, -7, 0, 0.1, 9.95] }],
   // A leap day, and a day before 1970, which a timestamp would hold as negative.
   date: [{ field: { type: 'date' }, values: ['2026-11-04', '2000-02-29', '1969-12-31'] }],
+  // `false` is an answer, not the absence of one.
+  boolean: [{ field: { type: 'boolean' }, values: [true, false] }],
   list: [
     {
       field: { type: 'list', settings: { options: ['Film', 'Travel', 'Cooking'], multiple: true } },

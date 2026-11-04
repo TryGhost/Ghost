@@ -43,8 +43,13 @@ export interface DateLeaf {
   readonly leaf: 'date';
 }
 
+/** Yes or no. `false` is an answer, as `0` is; not having answered is holding no value. */
+export interface BooleanLeaf {
+  readonly leaf: 'boolean';
+}
+
 /** One value. */
-export type Leaf = TextLeaf | ChoiceLeaf | NumberLeaf | DateLeaf;
+export type Leaf = TextLeaf | ChoiceLeaf | NumberLeaf | DateLeaf | BooleanLeaf;
 export type LeafKind = Leaf['leaf'];
 
 /** What a value of each kind of leaf is, as JSON carries it. */
@@ -54,6 +59,7 @@ export interface LeafValues {
   number: number;
   /** As ISO 8601 writes a calendar date, `YYYY-MM-DD`, which orders as it reads. */
   date: string;
+  boolean: boolean;
 }
 
 export type LeafValue<L extends Leaf> = LeafValues[L['leaf']];
@@ -64,6 +70,8 @@ export const choice = <const F extends ListSource>(from: F) => ({ leaf: 'choice'
 export const decimal = (): NumberLeaf => ({ leaf: 'number' });
 
 export const day = (): DateLeaf => ({ leaf: 'date' });
+
+export const yesNo = (): BooleanLeaf => ({ leaf: 'boolean' });
 
 /** A country, as the two-letter code a list of countries offers. */
 export const country = choice('countries');
@@ -101,6 +109,7 @@ export const FIELD_TYPE_IDS = [
   'long_text',
   'number',
   'date',
+  'boolean',
   'list',
   'address',
 ] as const;
@@ -120,6 +129,7 @@ export const FIELD_STRUCTURES = {
   long_text: { shape: 'scalar', leaf: text('long') },
   number: { shape: 'scalar', leaf: decimal() },
   date: { shape: 'scalar', leaf: day() },
+  boolean: { shape: 'scalar', leaf: yesNo() },
   list: { shape: 'set' },
   address: {
     shape: 'record',
@@ -382,6 +392,8 @@ export function matchLeaf<R>(leaf: Leaf, handlers: LeafHandlers<R>): R {
       return handlers.number(leaf);
     case 'date':
       return handlers.date(leaf);
+    case 'boolean':
+      return handlers.boolean(leaf);
   }
 }
 

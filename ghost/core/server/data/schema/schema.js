@@ -1083,7 +1083,7 @@ module.exports = {
       // Keep in sync with FIELD_TYPE_IDS in @tryghost/metafield-types,
       // the source of truth (this static schema can't import it).
       validations: {
-        isIn: [['short_text', 'long_text', 'number', 'date', 'list', 'address']],
+        isIn: [['short_text', 'long_text', 'number', 'date', 'boolean', 'list', 'address']],
       },
     },
     // What the field is set up with beyond its name, as JSON: a list field's options and
@@ -1181,6 +1181,7 @@ module.exports = {
     // One row, one value: a part a member has not filled in has no row at all.
     value_text: { type: 'text', maxlength: 65535, nullable: true },
     value_number: { type: 'double', nullable: true },
+    value_boolean: { type: 'boolean', nullable: true },
     // Who wrote the value that is here now.
     //
     // Shaped like `actions`: a type and an id, no foreign key. A type because not every
@@ -1209,7 +1210,7 @@ module.exports = {
     '@@PRIMARY_KEY@@': ['metafield_namespace', 'metafield_key', 'path', 'member_id'],
     '@@INDEXES@@': [['member_id']],
     // A row keeps its value in exactly one of the value columns, the one its kind is kept in.
-    '@@CHECKS@@': [{ exactlyOneOf: ['value_text', 'value_number'] }],
+    '@@CHECKS@@': [{ exactlyOneOf: ['value_text', 'value_number', 'value_boolean'] }],
     '@@FOREIGN_KEYS@@': [
       {
         columns: ['metafield_namespace', 'metafield_key'],

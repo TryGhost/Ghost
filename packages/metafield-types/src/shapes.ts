@@ -139,6 +139,16 @@ export const LEAVES: { readonly [K in LeafKind]: LeafKindRules<K> } = {
   // ISO 8601 writes a calendar date as a string, so a date reads as text does, its rule checks it,
   // and it orders as its text does.
   date: { ...stringRules, order: (a, b) => (a < b ? -1 : a > b ? 1 : 0) },
+  // Read from text as JSON writes it, in any case, which is how a CSV cell or a select holds it.
+  boolean: {
+    kind: 'boolean',
+    read: (raw) => (typeof raw === 'boolean' ? raw : undefined),
+    fromText: (text) => {
+      const answer = text.trim().toLowerCase();
+      return answer === 'true' ? true : answer === 'false' ? false : text;
+    },
+    order: null,
+  },
   number: {
     kind: 'number',
     read: (raw) => (typeof raw === 'number' && Number.isFinite(raw) ? raw : undefined),
