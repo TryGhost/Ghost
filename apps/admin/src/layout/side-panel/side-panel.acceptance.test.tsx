@@ -61,6 +61,11 @@ async function renderWithNavigation({ admin7Design = false } = {}) {
   }
   await renderAdminApp('/tags', { labs: { admin7Design } });
   await expect.element(sidebarScreen.navLink('Tags')).toBeVisible();
+  if (admin7Design) {
+    // The navigation shows before the Labs config brings the frame, which
+    // moves the panel and drops content opened before it
+    await expect.poll(sidebarScreen.floatingState).toBe('pinned');
+  }
 }
 
 function asContributor(): RenderAdminAppOptions {
@@ -178,6 +183,21 @@ describe('Side panel', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
     await expect.poll(() => panel().element().contains(second.element)).toBe(true);
     expect(first.element.isConnected).toBe(false);
+  });
+
+  it('keeps the content against the right edge while it collapses', async () => {
+    await renderWithNavigation();
+    const frame = hostFrame();
+    const handle = sidePanel().open(frame.element, { size: 'full' });
+    await expect.poll(panelWidth).toBeGreaterThan(800);
+
+    handle?.setSize('default');
+    await expect.poll(panelState).toBe('default');
+
+    // Mid-collapse, the panel is still wider than the content it's shrinking to
+    expect(panelWidth()).toBeGreaterThan(380);
+    const contentRight = frame.element.getBoundingClientRect().right;
+    expect(contentRight).toBeCloseTo(panelElement().getBoundingClientRect().right, 0);
   });
 
   it('resizes without reloading, and ignores a stale handle', async () => {
