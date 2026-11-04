@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import { ShadeScope } from '@/shade-scope';
 
+import { usePortalContainer } from '@/lib/app-overlay';
 import { cn } from '@/lib/utils';
 import { consumeOverlayEscape } from '@/lib/overlay-escape';
 const Popover = PopoverPrimitive.Root;
@@ -16,7 +17,7 @@ const PopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
 >(({ className, align = 'center', onEscapeKeyDown, sideOffset = 4, ...props }, ref) => (
-  <PopoverPrimitive.Portal>
+  <PopoverPrimitive.Portal container={usePortalContainer()}>
     <ShadeScope>
       <PopoverPrimitive.Content
         ref={ref}

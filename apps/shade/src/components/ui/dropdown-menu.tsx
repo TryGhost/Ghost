@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import { Check, ChevronRight, Circle } from 'lucide-react';
 
+import { usePortalContainer } from '@/lib/app-overlay';
 import { cn } from '@/lib/utils';
 import { consumeOverlayEscape } from '@/lib/overlay-escape';
 import { ShadeScope } from '@/shade-scope';
@@ -11,7 +12,10 @@ const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
 
 const DropdownMenuGroup = DropdownMenuPrimitive.Group;
 
-const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
+// In the overlay, like the menu's own content, when it's in a dialog there.
+const DropdownMenuPortal = (props: React.ComponentProps<typeof DropdownMenuPrimitive.Portal>) => (
+  <DropdownMenuPrimitive.Portal container={usePortalContainer()} {...props} />
+);
 
 const DropdownMenuSub = DropdownMenuPrimitive.Sub;
 
@@ -60,7 +64,7 @@ const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
 >(({ className, onEscapeKeyDown, sideOffset = 4, ...props }, ref) => (
-  <DropdownMenuPrimitive.Portal>
+  <DropdownMenuPrimitive.Portal container={usePortalContainer()}>
     <ShadeScope>
       <DropdownMenuPrimitive.Content
         ref={ref}

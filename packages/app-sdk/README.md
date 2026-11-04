@@ -73,7 +73,7 @@ can be retried.
 | `onPathChange(callback)`  | Called when Admin moves the app: back or forward in Admin, or one of Admin's links. The page's URL is already there and `popstate` has fired; a multi-page app loads it (see below). |
 | `fetch(path, init?)`      | Calls the Admin API as the staff user. `path` is relative to the API root (`/posts/?limit=5`), never a URL. Resolves with a real `Response`.                                         |
 | `open(place)`             | Sends the publisher to `{ post: { id } }`, `{ page: { id } }`, `{ member: { id } }` or `{ apps: true }`. Rejects with `rejected` if they're already leaving the app.                 |
-| `overlay`                 | Where dialogs and sheets render to cover all of Admin (see below).                                                                                                                   |
+| `overlay`                 | Where Shade's dialogs and sheets render to cover all of Admin. Pass it to `ShadeApp` as `overlay` (see below).                                                                       |
 | `connected`               | `false` once the session has ended.                                                                                                                                                  |
 | `onSessionEnd(callback)`  | Called once, with the `session_ended` error, when this document leaves the app session (a reload, form post or link) or the session ends.                                            |
 
@@ -181,12 +181,12 @@ and the Navigation API. Route with the History API rather than the hash.
 
 ### Dialogs over Admin
 
-A dialog, alert dialog or modal sheet that renders into
-`ghost.overlay.container()` and calls `ghost.overlay.hold()` covers all of
-Admin, as Admin's own do, rather than only the app's page. Admin loads the
-app's page a second time, hidden, in a frame above its own chrome, and the page
-renders those dialogs into it from its own React tree. That copy never connects, so it shows nothing of its own.
-Code that runs before `connect()` resolves runs in it too, so start fetches,
+Pass `ghost.overlay` to Shade's `ShadeApp` as `overlay`, and its dialogs, alert
+dialogs and modal sheets cover all of Admin, as Admin's own do, rather than
+only the app's page. Admin loads the app's page a second time, hidden, in a
+frame above its own chrome, and the page renders those dialogs into it from its
+own React tree. That copy never connects, so it shows nothing of its own. Code
+that runs before `connect()` resolves runs in it too, so start fetches,
 analytics and the like once `connect()` has resolved.
 
 - Admin shows the overlay only right after the publisher clicks or types in the
