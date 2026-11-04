@@ -2050,6 +2050,12 @@ importers:
       '@tryghost/adapter-base-upgrade':
         specifier: workspace:*
         version: link:../packages/adapters/upgrade-base
+      '@tryghost/app-contracts':
+        specifier: workspace:*
+        version: link:../packages/app-contracts
+      '@tryghost/app-sdk':
+        specifier: workspace:*
+        version: link:../packages/app-sdk
       '@tryghost/checkout':
         specifier: workspace:*
         version: link:../packages/checkout
