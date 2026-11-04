@@ -9,8 +9,9 @@
  *
  * Hosts are compared as the URL parser reads them, so case and IDN spellings agree, and
  * without a trailing dot. A sibling host, such as another subdomain of the site's, is not
- * Ghost's: the cookies Ghost sets are host-only. Nor is another name for the same machine,
- * such as `127.0.0.1` next to `localhost`, which browsers treat as another host too.
+ * Ghost's: the cookies Ghost sets are host-only. Nor is a name under Ghost's, such as
+ * `my-app.localhost` next to `localhost`, or another name for the same machine, such as
+ * `127.0.0.1`, which browsers treat as other hosts too.
  *
  * Any doubt counts as Ghost's: a URL that isn't http or https, a Ghost URL like that, or no
  * Ghost URLs at all. Either way the URL is refused.

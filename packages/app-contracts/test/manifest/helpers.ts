@@ -7,10 +7,10 @@ export const options: ParseManifestOptions = {
   ghostUrls: ['https://site.example.com', 'https://admin.example.com/ghost/'],
 };
 
-// Ghost on localhost, and the app on another name for the machine, as Ghost refuses its own
-// host on any port.
+// Ghost on localhost, and the app on a name of its own under it, as Ghost refuses its own host
+// on any port.
 export const devOptions: ParseManifestOptions = {
-  manifestUrl: 'http://127.0.0.1:8787/ghost-app.json',
+  manifestUrl: 'http://my-app.localhost:8787/ghost-app.json',
   ghostUrls: ['http://localhost:2368'],
   allowLocalhost: true,
 };
@@ -46,7 +46,7 @@ export function manifest(overrides: Record<string, unknown> = {}) {
 
 export function devManifest(overrides: Record<string, unknown> = {}) {
   return manifest({
-    manifest_url: 'http://127.0.0.1:8787/ghost-app.json',
+    manifest_url: 'http://my-app.localhost:8787/ghost-app.json',
     development: true,
     ...overrides,
   });

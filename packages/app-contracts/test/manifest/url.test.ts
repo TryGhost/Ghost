@@ -166,8 +166,8 @@ describe('paths', () => {
 describe('localhost', () => {
   it('resolves paths against a manifest on localhost in development', () => {
     const parsed = manifestOf(devManifest(), devOptions);
-    expect(parsed.surfaces[0]?.url).toBe('http://127.0.0.1:8787/admin');
-    expect(parsed.icon).toEqual({ url: 'http://127.0.0.1:8787/icon.svg' });
+    expect(parsed.surfaces[0]?.url).toBe('http://my-app.localhost:8787/admin');
+    expect(parsed.icon).toEqual({ url: 'http://my-app.localhost:8787/icon.svg' });
   });
 
   it('still rejects a manifest on Ghost’s host, on any port', () => {

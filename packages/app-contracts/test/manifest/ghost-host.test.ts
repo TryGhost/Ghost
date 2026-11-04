@@ -44,6 +44,18 @@ describe('isGhostHost', function () {
     assert.equal(isGhostHost('http://[::1]:5173/', ['http://localhost:2368/']), false);
   });
 
+  it('is false for a name under Ghost’s, as a .localhost name for an app is', function () {
+    assert.equal(isGhostHost('http://my-app.localhost:5173/', ['http://localhost:2368/']), false);
+    assert.equal(
+      isGhostHost('http://my-app.localhost:5173/', ['http://wt.ghost.localhost:2400/']),
+      false,
+    );
+    assert.equal(
+      isGhostHost('http://wt.ghost.localhost:5173/', ['http://wt.ghost.localhost:2400/']),
+      true,
+    );
+  });
+
   it('counts a URL that isn’t http or https as Ghost’s', function () {
     assert.equal(isGhostHost('not a url', ghostUrls), true);
     assert.equal(isGhostHost('about:blank', ghostUrls), true);

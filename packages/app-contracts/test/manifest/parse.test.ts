@@ -177,9 +177,12 @@ describe('parseManifestUrl', () => {
   });
 
   it('accepts localhost, over HTTP too, when Ghost runs in development', () => {
-    expect(manifestUrlOf('http://127.0.0.1:8787/app.json', devOptions)).toBe(
+    for (const input of [
+      'http://my-app.localhost:8787/app.json',
       'http://127.0.0.1:8787/app.json',
-    );
+    ]) {
+      expect(manifestUrlOf(input, devOptions)).toBe(input);
+    }
   });
 
   it('refuses an address on the site’s or Admin’s host, on any port or scheme', () => {
@@ -196,19 +199,19 @@ describe('parseManifestUrl', () => {
   });
 
   it('refuses Ghost’s own name for the machine in development, and says what to use instead', () => {
-    expect(errorOf('http://localhost:8787/app.json', devOptions)).toMatch(
-      /on any port, .*\. To run the app on this machine too, serve it from 127\.0\.0\.1$/,
-    );
+    const suggestion =
+      /on any port, .*\. To run the app on this machine too, serve it from a name of its own under \.localhost, such as my-app\.localhost$/;
+    expect(errorOf('http://localhost:8787/app.json', devOptions)).toMatch(suggestion);
     expect(
       errorOf('http://127.0.0.1:8787/app.json', { ...devOptions, ghostUrls: ['http://127.0.0.1'] }),
-    ).toMatch(/serve it from localhost$/);
-    // With Ghost on both names, there is no other to suggest.
+    ).toMatch(suggestion);
+    // A worktree's Ghost is on a name under .localhost itself.
     expect(
-      errorOf('http://localhost:8787/app.json', {
+      errorOf('http://wt.ghost.localhost:8787/app.json', {
         ...devOptions,
-        ghostUrls: ['http://localhost:2368', 'http://127.0.0.1:2368/ghost/'],
+        ghostUrls: ['http://wt.ghost.localhost:2400'],
       }),
-    ).toMatch(/to every port on its host$/);
+    ).toMatch(suggestion);
   });
 
   it('refuses every address when it is not told where Ghost is served from', () => {

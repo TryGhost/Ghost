@@ -61,18 +61,16 @@ const GHOST_URLS_PROBLEM = 'Expected the URLs Ghost itself is served from';
 const ON_GHOST_HOST =
   'Expected the manifest on a host other than the one Ghost itself is served from, on any port, as browsers send Ghost’s cookies to every port on its host';
 
+const ON_GHOST_HOST_LOCALLY = `${ON_GHOST_HOST}. To run the app on this machine too, serve it from a name of its own under .localhost, such as my-app.localhost`;
+
 /**
  * Why a manifest on one of Ghost's hosts is refused, with a hint for when that's most
- * likely: an app run next to Ghost on the developer's machine, which can be served from
- * another name for it.
+ * likely: an app run next to Ghost on the developer's machine. A name under `.localhost`
+ * is a host of its own, which browsers send to the machine itself, and so does Ghost in
+ * development, whatever the system's resolver knows.
  */
-function onGhostHost(url: URL, ghostUrls: string[]): string {
-  const host = hostOf(url) ?? '';
-  const otherName = host.startsWith('127.') ? 'localhost' : '127.0.0.1';
-  if (!isLocalhost(host) || isGhostHost(`http://${otherName}/`, ghostUrls)) {
-    return ON_GHOST_HOST;
-  }
-  return `${ON_GHOST_HOST}. To run the app on this machine too, serve it from ${otherName}`;
+function onGhostHost(url: URL): string {
+  return isLocalhost(url.hostname) ? ON_GHOST_HOST_LOCALLY : ON_GHOST_HOST;
 }
 
 /**
@@ -103,7 +101,7 @@ export function parseManifestUrl(
     return { success: false, error: `${problem} for the manifest itself` };
   }
   if (isGhostHost(url, ghostUrls)) {
-    return { success: false, error: onGhostHost(url, ghostUrls) };
+    return { success: false, error: onGhostHost(url) };
   }
   return { success: true, manifestUrl: url.href };
 }

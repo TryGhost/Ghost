@@ -282,10 +282,12 @@ page in the frame, inside Admin.
 
 Serve the app from a host of its own, too. Ghost refuses an app on the site's
 or Admin's host, whatever the port, because browsers send a host's cookies to
-every port on it, Ghost's session cookie included. On your own machine, with
-Ghost on `localhost`, serve the app from `127.0.0.1` (or the other way round):
-browsers treat the two as different hosts. Open Admin on the name Ghost is
-configured with, as Admin refuses an app on the host it's opened from too.
+every port on it, Ghost's session cookie included. On your own machine, serve
+the app from a name of its own under `.localhost`, such as `my-app.localhost`.
+Browsers treat it as another host and send it to the machine itself, Vite
+accepts it with no setup, and Ghost in development reaches it even where the
+system's resolver doesn't know it. Open Admin on the name Ghost is configured
+with, as Admin refuses an app on the host it's opened from too.
 
 ## Develop
 

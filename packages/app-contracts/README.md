@@ -86,8 +86,10 @@ An app describes itself to Ghost in a JSON manifest, which it serves as a
   most once.
 - URLs must be `https`. `localhost` and other addresses of the machine itself are
   accepted, over `http` too, only when Ghost runs in development. The manifest
-  still can't be on Ghost's own host, on any port: serve the app from whichever
-  of `localhost` and `127.0.0.1` neither the site nor Admin uses.
+  still can't be on Ghost's own host, on any port: serve the app from a name of
+  its own under `.localhost`, such as `my-app.localhost`. Browsers send such
+  names to the machine itself, and so does Ghost in development, even where the
+  system's resolver doesn't know them.
 
 The format is unversioned while only Ghost builds apps. Unknown fields are
 rejected, so adding one is always a deliberate change to `src/manifest/`.
@@ -136,8 +138,9 @@ origin would not be contained by its sandbox, and on another port it would be
 sent the staff user's session cookie, as cookies ignore ports. An icon there
 would let the app make Ghost request any of the site's own URLs. Hosts are
 compared as the URL parser reads them, without a trailing dot. A sibling host,
-such as another subdomain, is not Ghost's, nor is another name for the same
-machine: `127.0.0.1` next to Ghost on `localhost` is fine. Anything Ghost loads
+such as another subdomain, is not Ghost's, nor is a name under Ghost's or
+another name for the same machine: `my-app.localhost` or `127.0.0.1` next to
+Ghost on `localhost` is fine. Anything Ghost loads
 must also have a path, query and fragment `isContainedPath` accepts, as Admin
 opens the app there: not one starting with `//`, as `/.//admin` resolves to, nor
 one with a `\` in the query or fragment. The author's link is exempt from both,
