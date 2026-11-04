@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, onTestFinished } from 'vitest';
 import { type Locator, page, userEvent } from 'vitest/browser';
 
 import {
@@ -371,6 +371,8 @@ describe('Custom fields', () => {
     const held = new Promise<void>((resolve) => {
       release = resolve;
     });
+    // Released however the test ends, as a save left in flight would fail the tests after it.
+    onTestFinished(() => release());
     fakeAdminEndpoint('PUT', '/members/metafields/custom/company/', async () => {
       await held;
       return { members_metafields: [companyField] };
@@ -662,6 +664,8 @@ describe('Custom fields', () => {
     const putHeld = new Promise<void>((resolve) => {
       releasePut = resolve;
     });
+    // Released however the test ends, as a reorder left in flight would fail the tests after it.
+    onTestFinished(() => releasePut());
     fakeAdminEndpoint('PUT', '/members/metafields/custom/', async (request) => {
       await putHeld;
       currentFields = reordered(request.body, currentFields);

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, onTestFinished } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
@@ -532,6 +532,8 @@ describe('Import members custom fields', () => {
     const held = new Promise<void>((resolve) => {
       release = resolve;
     });
+    // Released however the test ends, as a save left in flight would fail the tests after it.
+    onTestFinished(() => release());
     fakeAdminEndpoint('POST', '/members/metafields/custom/', async () => {
       await held;
       return { members_metafields: [NICKNAME_FIELD] };
