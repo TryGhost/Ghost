@@ -301,12 +301,7 @@ export function TierScopePicker<TStandalone extends string>({
         {/* px-2 matches the input, so the value sits where a Select's does. */}
         {standaloneChosen && <span className="px-2 text-foreground">{standalone.label}</span>}
         {chosenTiers.map((tier) => (
-          <Badge
-            key={tier.id}
-            className={cn(tokenFieldClasses.chip, 'bg-secondary')}
-            variant="outline"
-            asChild
-          >
+          <Badge key={tier.id} className={tokenFieldClasses.chip} variant="outline" asChild>
             <button
               aria-label={`Remove ${tier.name}`}
               type="button"

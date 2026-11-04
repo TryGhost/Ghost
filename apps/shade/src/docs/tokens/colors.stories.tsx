@@ -313,6 +313,7 @@ export const Surface: Story = {
         { name: 'glass', cssVar: '--surface-glass' },
         { name: 'filter-bar', cssVar: '--filter-bar-background' },
         { name: 'control-readonly', cssVar: '--control-readonly-surface' },
+        { name: 'field', cssVar: '--field-surface' },
       ]}
       title="Surface"
     />
@@ -382,6 +383,7 @@ export const Border: Story = {
       swatches={[
         { name: 'default', cssVar: '--border-default' },
         { name: 'control-border', cssVar: '--control-border' },
+        { name: 'field-border', cssVar: '--field-border' },
         { name: 'strong', cssVar: '--border-strong' },
         { name: 'glass', cssVar: '--border-glass' },
         { name: 'focus-ring', cssVar: '--focus-ring' },

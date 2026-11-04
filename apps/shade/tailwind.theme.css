@@ -234,6 +234,7 @@
   --radius-full: 9999px;
   --radius-control: var(--radius-md);
   --radius-control-sm: var(--radius-sm);
+  --radius-field: var(--radius-control);
   --radius-card: var(--radius-xl);
   --radius-menu: var(--radius-md);
   --radius-menu-item: var(--radius-xs);
@@ -376,6 +377,13 @@
   --color-control-readonly-surface: var(--control-readonly-surface);
   --color-control-disabled-surface: var(--control-disabled-surface);
   --color-control-border: var(--control-border);
+  --color-field-surface: var(--field-surface);
+  --color-field-readonly-surface: var(--field-readonly-surface);
+  --color-field-disabled-surface: var(--field-disabled-surface);
+  --color-field-border: var(--field-border);
+  --color-field-chip-surface: var(--field-chip-surface);
+  --color-field-chip-internal-surface: var(--field-chip-internal-surface);
+  --color-field-chip-internal-border: var(--field-chip-internal-border);
 }
 
 @keyframes toasterIn {

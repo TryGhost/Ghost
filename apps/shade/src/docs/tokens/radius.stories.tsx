@@ -44,6 +44,7 @@ export const Semantic: Story = {
       radii={[
         { name: 'control', cssVar: '--radius-control' },
         { name: 'control sm', cssVar: '--radius-control-sm' },
+        { name: 'field', cssVar: '--radius-field' },
         { name: 'card', cssVar: '--radius-card' },
         { name: 'menu', cssVar: '--radius-menu' },
         { name: 'menu item', cssVar: '--radius-menu-item' },

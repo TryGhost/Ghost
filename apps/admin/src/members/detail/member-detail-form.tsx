@@ -55,7 +55,7 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({
     // bottom border in the left column.
     <div className="grid items-stretch gap-6 md:grid-cols-2" data-testid="member-detail-form">
       <div className="flex flex-col gap-5">
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
           <Label htmlFor="member-name">Name</Label>
           <Input
             disabled={disabled}
@@ -66,7 +66,7 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({
           />
         </div>
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
           <Label htmlFor="member-email">Email</Label>
           <Input
             aria-invalid={!!emailError}
@@ -80,7 +80,7 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({
           {emailError && <p className="text-sm text-destructive">{emailError}</p>}
         </div>
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
           <Label>Labels</Label>
           <MemberLabelsField
             disabled={disabled}
@@ -90,7 +90,7 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-col gap-1.5">
+      <div className="flex min-h-0 flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
         <Label htmlFor="member-note">
           Note <span className="font-normal text-muted-foreground">(not visible to member)</span>
         </Label>

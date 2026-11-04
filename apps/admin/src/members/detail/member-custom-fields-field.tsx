@@ -255,7 +255,13 @@ const RecordInput: React.FC<{
       const partId = `${inputId}-${part}`;
       const error = errors?.[part];
       return (
-        <div key={part} className={cn('flex flex-col gap-1.5', fullRow && 'md:col-span-2')}>
+        <div
+          key={part}
+          className={cn(
+            'flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2',
+            fullRow && 'md:col-span-2',
+          )}
+        >
           <Label htmlFor={partId}>{label}</Label>
           <LeafInput
             disabled={disabled}

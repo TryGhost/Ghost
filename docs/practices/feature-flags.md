@@ -141,6 +141,9 @@ The `admin7Design` milestone also sets column headers in a small uppercase label
 style. Section headings on member details, tag details and Settings share one
 style, and member stats and list text follow the prototype.
 
+The `admin7Design` milestone also gives text-entry fields 4px corners and 14px
+text. Checkboxes, radios, Filter bar items and Koenig keep their current look.
+
 The `admin7Design` milestone also makes colored banners a flat color with darker
 shades of it for text and no outline.
 

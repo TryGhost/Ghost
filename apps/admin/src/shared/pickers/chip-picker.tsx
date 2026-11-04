@@ -621,11 +621,7 @@ function Chip({
   title,
 }: ChipProps) {
   return (
-    <Badge
-      className={cn(tokenFieldClasses.chip, 'bg-secondary', className)}
-      variant={variant}
-      asChild
-    >
+    <Badge className={cn(tokenFieldClasses.chip, className)} variant={variant} asChild>
       <button
         ref={setRef}
         aria-label={`Remove ${label}`}
