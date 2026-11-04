@@ -6,6 +6,7 @@ import type { RecordAppInstallationAction } from './actions';
 import {
   alreadyInstalled,
   AppInstallationsRepository,
+  retryOnDeadlock,
   type AddedRow,
   type WriteOutcome,
 } from './app-installations-repository';
@@ -137,6 +138,7 @@ function iconCopyKeptBy(
 }
 
 export class AppInstallationsService {
+  private knex: Knex;
   private repository: AppInstallationsRepository;
   private recordAction: RecordAppInstallationAction;
   private loadManifest: LoadManifest;
@@ -158,6 +160,7 @@ export class AppInstallationsService {
     identity: IdentityChecker;
     fetchIcon: FetchIcon;
   }) {
+    this.knex = knex;
     this.repository = new AppInstallationsRepository(knex);
     this.recordAction = recordAction;
     this.loadManifest = loadManifest;
@@ -210,7 +213,11 @@ export class AppInstallationsService {
         ? alreadyInstalled(loaded.manifest.id)
         : error;
     });
-    const installation = await this.repository.insert(loaded, iconDataUrl);
+    const installation = await retryOnDeadlock(() =>
+      this.knex.transaction((transacting) =>
+        this.repository.insert(loaded, iconDataUrl, { transacting }),
+      ),
+    );
     await this.recordAction({
       context,
       event: 'installed',
@@ -265,7 +272,9 @@ export class AppInstallationsService {
       }
       throw error;
     });
-    const stored = await this.store(current, write);
+    const stored = await this.knex.transaction((transacting) =>
+      this.store(current, write, { transacting }),
+    );
     if (stored.status === 'uninstalled') {
       throw uninstalled();
     }
@@ -500,32 +509,37 @@ export class AppInstallationsService {
   private store(
     current: Installation,
     write: ManifestWrite<AddedRow>,
+    { transacting }: { transacting: Knex.Transaction },
   ): Promise<WriteOutcome<string | null>> {
-    return this.repository.whileUnchanged(current, async (locked) => {
-      switch (write.kind) {
-        case 'nothing':
-          return null;
-        case 'approve_existing':
-          await locked.activate(write.manifestId);
-          return write.manifestId;
-        case 'add_approved': {
-          const added = await locked.addManifest(write.row);
-          await locked.activate(added);
-          return added;
+    return this.repository.whileUnchanged(
+      current,
+      async (locked) => {
+        switch (write.kind) {
+          case 'nothing':
+            return null;
+          case 'approve_existing':
+            await locked.activate(write.manifestId);
+            return write.manifestId;
+          case 'add_approved': {
+            const added = await locked.addManifest(write.row);
+            await locked.activate(added);
+            return added;
+          }
+          case 'add_pending': {
+            const added = await locked.addManifest(write.row);
+            await locked.suspend(added);
+            return added;
+          }
+          default: {
+            const _exhaustive: never = write;
+            throw new errors.InternalServerError({
+              message: `Unhandled manifest write: ${JSON.stringify(_exhaustive)}`,
+            });
+          }
         }
-        case 'add_pending': {
-          const added = await locked.addManifest(write.row);
-          await locked.suspend(added);
-          return added;
-        }
-        default: {
-          const _exhaustive: never = write;
-          throw new errors.InternalServerError({
-            message: `Unhandled manifest write: ${JSON.stringify(_exhaustive)}`,
-          });
-        }
-      }
-    });
+      },
+      { transacting },
+    );
   }
 
   private recheck(id: string): Promise<void> {
@@ -589,7 +603,9 @@ export class AppInstallationsService {
       return this.unavailableUnlessChanged(before, err);
     }
 
-    const stored = await this.store(before, write);
+    const stored = await this.knex.transaction((transacting) =>
+      this.store(before, write, { transacting }),
+    );
     if (stored.status === 'uninstalled') {
       throw notInstalled();
     }
