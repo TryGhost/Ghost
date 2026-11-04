@@ -1,4 +1,3 @@
-import { useShade } from '@tryghost/shade/app';
 import PostShareModal from '@/shared/analytics/post-share-modal';
 import React, { useEffect, useState } from 'react';
 import {
@@ -53,7 +52,6 @@ const getPostStatusText = (latestPostStats: LatestPostWithStats) => {
 const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAdmin7 } = useShade();
   const [isShareOpen, setIsShareOpen] = useState(false);
   const { site, settings } = useAnalyticsData();
   const emailTrackClicksEnabled = useEmailTrackClicks();
@@ -93,7 +91,9 @@ const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) =
   const shouldGoToEditor = postDestination.startsWith('/editor/');
   const openPostDestination = () =>
     navigate(postDestination, {
-      state: shouldGoToEditor ? editorReturnState(location) : undefined,
+      state: shouldGoToEditor
+        ? editorReturnState(`${location.pathname}${location.search}`)
+        : undefined,
     });
 
   return (
@@ -193,7 +193,7 @@ const LatestPost: React.FC<LatestPostProps> = ({ latestPostStats, isLoading }) =
                   )}
                   <Button
                     className={latestPostStats.email_only ? 'w-full' : ''}
-                    variant={isAdmin7 || shouldGoToEditor ? 'outline' : 'subtle'}
+                    variant="outline"
                     onClick={() => {
                       openPostDestination();
                     }}

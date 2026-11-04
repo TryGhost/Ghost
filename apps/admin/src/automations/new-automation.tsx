@@ -1,5 +1,9 @@
+import { buildTriggerRules } from './utils/trigger-rules';
 import React from 'react';
-import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
+import type {
+  AutomationDetail,
+  AutomationTriggerRule,
+} from '@tryghost/admin-x-framework/api/automations';
 import { Button, LoadingIndicator } from '@tryghost/shade/components';
 import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
 import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
@@ -14,21 +18,26 @@ import { useVisibleAutomations } from './hooks/use-visible-automations';
 import { getNewAutomationName } from './utils/get-new-automation-name';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import { ScreenEntranceContext } from '@/layout/screen-transition';
-import type { LabelSelection, TierSelection } from './types';
+import type { LabelSelection } from './types';
 
-type PickedTrigger = 'free' | 'all_paid' | 'paid_subscription_changed' | 'member_label_added';
+type PickedTrigger = AutomationTriggerRule['trigger_type'] | 'member_label_added';
 
 const TRIGGER_OPTIONS = [
-  ['free', LucideIcon.UserPlus, 'Free member signed up', 'When someone signs up as a free member'],
   [
-    'all_paid',
+    'free_signup',
+    LucideIcon.UserPlus,
+    'Free member signed up',
+    'When someone signs up as a free member',
+  ],
+  [
+    'paid_subscription_started',
     LucideIcon.CreditCard,
     'Paid subscription started',
     'When a new or free member starts a paid subscription',
   ],
 ] as const;
 
-// Behind the lifecycle triggers Labs flag until the API can save it (NY-1733).
+// Remains behind Labs while lifecycle enrollment and execution are being completed.
 const SUBSCRIPTION_CHANGED_OPTION = [
   'paid_subscription_changed',
   LucideIcon.ArrowRightLeft,
@@ -134,15 +143,14 @@ const NewAutomationLoading: React.FC = () => {
 };
 
 type NewAutomationProps = {
-  // `triggerTop`: where the picker's card was, when a trigger was picked on it.
-  // `tierSelection`: set when the picked trigger was "Paid subscription changed".
-  // `labelSelection`: set when the picked trigger was "Label added to a member".
-  children: (
-    automation: AutomationDetail,
-    triggerTop?: number,
-    tierSelection?: TierSelection,
-    labelSelection?: LabelSelection,
-  ) => React.ReactNode;
+  children: (creation: {
+    automation: AutomationDetail;
+    triggerType: AutomationTriggerRule['trigger_type'];
+    // Where the picker's card was when the trigger was selected.
+    triggerTop?: number;
+    // Set when the picked trigger was "Label added to a member".
+    labelSelection?: LabelSelection;
+  }) => React.ReactNode;
 };
 
 const NewAutomationSession: React.FC<
@@ -155,7 +163,8 @@ const NewAutomationSession: React.FC<
   const [initialAutomation, setInitialAutomation] = React.useState<AutomationDetail | null>(null);
   // Where the trigger was picked, once it has been.
   const [triggerTop, setTriggerTop] = React.useState<number | null>(null);
-  const [tierSelection, setTierSelection] = React.useState<TierSelection>();
+  const [triggerType, setTriggerType] =
+    React.useState<AutomationTriggerRule['trigger_type']>('free_signup');
   const [labelSelection, setLabelSelection] = React.useState<LabelSelection>();
   if (!initialAutomation) {
     if (isStripeReady) {
@@ -168,32 +177,35 @@ const NewAutomationSession: React.FC<
         updated_at: '',
         actions: [],
         edges: [],
-        trigger_tier_scope: stripeEnabled ? null : 'free',
-        trigger_tier_ids: null,
+        trigger_rules: stripeEnabled ? [] : buildTriggerRules({ triggerType: 'free_signup' }),
       });
     }
     return <NewAutomationLoading />;
   }
-  if (initialAutomation.trigger_tier_scope === null) {
+  if (stripeEnabled && triggerTop === null) {
     return (
       <TriggerPicker
         automation={initialAutomation}
         onPick={(trigger, cardTop) => {
           setTriggerTop(cardTop);
-          if (trigger === 'paid_subscription_changed') {
-            // A stand-in paid scope loads the paid tiers; the editor never saves it (NY-1733).
-            setTierSelection({ from: [], to: [] });
-            setInitialAutomation({ ...initialAutomation, trigger_tier_scope: 'all_paid' });
-          } else if (trigger === 'member_label_added') {
-            // A stand-in free scope closes the picker; the editor never saves it (NY-1750).
+          if (trigger === 'member_label_added') {
+            // A stand-in free signup rule closes the picker; the editor never saves it (NY-1750).
             setLabelSelection(null);
-            setInitialAutomation({ ...initialAutomation, trigger_tier_scope: 'free' });
-          } else {
             setInitialAutomation({
               ...initialAutomation,
-              trigger_tier_scope: trigger,
+              trigger_rules: buildTriggerRules({ triggerType: 'free_signup' }),
             });
+            return;
           }
+          setTriggerType(trigger);
+          setInitialAutomation({
+            ...initialAutomation,
+            trigger_rules: buildTriggerRules(
+              trigger === 'paid_subscription_changed'
+                ? { triggerType: trigger, selection: { from: [], to: [] } }
+                : { triggerType: trigger },
+            ),
+          });
         }}
       />
     );
@@ -202,10 +214,10 @@ const NewAutomationSession: React.FC<
   // header replacing it shouldn't play it a second time in the same visit.
   return triggerTop !== null ? (
     <ScreenEntranceContext.Provider value={false}>
-      {children(initialAutomation, triggerTop, tierSelection, labelSelection)}
+      {children({ automation: initialAutomation, triggerType, triggerTop, labelSelection })}
     </ScreenEntranceContext.Provider>
   ) : (
-    children(initialAutomation)
+    children({ automation: initialAutomation, triggerType })
   );
 };
 

@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 
 import { RadioGroup, RadioGroupItem } from '../../../../src/components/ui/radio-group';
@@ -15,11 +14,11 @@ describe('RadioGroup Components', () => {
 
     const radio = screen.getByRole('radio', { name: 'Public' });
 
-    assert.match(radio.className, /border-border-strong/);
-    assert.doesNotMatch(radio.className, /border-control-border/);
-    assert.match(radio.className, /data-\[state=checked\]:border-primary/);
-    assert.match(radio.className, /focus-visible:border-focus-ring/);
-    assert.match(radio.className, /aria-\[invalid=true\]:border-destructive/);
-    assert.match(radio.className, /disabled:opacity-50/);
+    expect(radio.className).toMatch(/border-border-strong/);
+    expect(radio.className).not.toMatch(/border-control-border/);
+    expect(radio.className).toMatch(/data-\[state=checked\]:border-primary/);
+    expect(radio.className).toMatch(/focus-visible:border-focus-ring/);
+    expect(radio.className).toMatch(/aria-\[invalid=true\]:border-destructive/);
+    expect(radio.className).toMatch(/disabled:opacity-50/);
   });
 });

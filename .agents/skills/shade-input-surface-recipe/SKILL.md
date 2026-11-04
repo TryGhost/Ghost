@@ -81,9 +81,9 @@ Available atoms:
 
 | Recipe owns                                              | You add                                |
 | -------------------------------------------------------- | -------------------------------------- |
-| Border (`border-control-border`)                         | Height, padding                        |
-| Background (`bg-control-surface`)                        | Typography (`text-control`, `text-sm`) |
-| Radius (`rounded-md`)                                    | Layout (`flex`, `items-center`)        |
+| Border (`border-field-border`)                           | Height, padding                        |
+| Background (`bg-field-surface`)                          | Typography (`text-control`, `text-sm`) |
+| Radius (`rounded-field`)                                 | Layout (`flex`, `items-center`)        |
 | Transition (`transition-colors`)                         | Placeholder styling                    |
 | Focus ring (`focus-visible:ring-focus-ring/25`)          | Component-specific tweaks              |
 | Invalid state (`aria-[invalid=true]:border-destructive`) | Icons / slot positioning               |

@@ -9,7 +9,7 @@ const KEYS = {
 
 export interface PublishCelebrationHandoff {
   postId: string;
-  /** 'post' or 'page' — Ember's `displayName`. */
+  /** 'post' or 'page'. */
   displayName: string;
   isScheduled: boolean;
 }

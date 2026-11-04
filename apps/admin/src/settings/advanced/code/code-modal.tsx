@@ -69,7 +69,13 @@ const CodeModal: React.FC<CodeModalProps> = ({ onClose }) => {
     >
       <div className="flex h-full flex-col">
         <div className="mb-4 flex items-center justify-between">
-          <Text as="h2" className="md:text-3xl" leading="heading" size="2xl" weight="bold">
+          <Text
+            as="h2"
+            className="in-data-[admin7-design=true]:font-title md:text-3xl"
+            leading="heading"
+            size="2xl"
+            weight="bold"
+          >
             Code injection
           </Text>
           <Inline gap="md">

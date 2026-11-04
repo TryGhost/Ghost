@@ -37,14 +37,13 @@ export const IMPLEMENTED_POST_ACTIONS: ReadonlySet<PostContextMenuKey> = new Set
 
 interface UsePostActionsOptions {
   resource: PostResource;
-  /** The selected posts that are loaded — Ember's `availableModels`. */
+  /** The selected posts that are loaded. */
   posts: PostListItem[];
   /** The screen owns the modal; the hook just says which post to open it for. */
   onShareAsGift?: (postId: string) => void;
   /**
    * How many posts the action applies to — the *selection* count, which after
-   * Cmd+A is the server total rather than the rows in memory. Ember
-   * interpolates the same number into its toasts.
+   * Cmd+A is the server total rather than the rows in memory.
    */
   count: number;
   /** Bulk keys are handed upward with the selection captured at this moment. */
@@ -53,7 +52,7 @@ interface UsePostActionsOptions {
   selectionFilter: string;
   /** The bucket filters currently on screen — see `BulkActionSnapshot`. */
   bucketFilters: string[];
-  /** Ember's `isSingle`, captured with the rest of the selection. */
+  /** One id selected and not inverted, captured with the rest of the selection. */
   isSingle: boolean;
   /** Whether the selection is inverted (Cmd+A) — see `BulkActionSnapshot`. */
   inverted: boolean;
@@ -91,10 +90,10 @@ export function usePostActions({
         toast.success(getPostActionMessage(message, { count, resource, isSingle }));
       };
 
-      // Ember wraps every one of these in a try/catch and surfaces the error;
-      // without it a failed copy or a clipboard the browser refuses to write
-      // to (it rejects when the document isn't focused) is completely silent
-      // — no toast, no change, nothing to retry.
+      // Every action surfaces its error: without it a failed copy or a
+      // clipboard the browser refuses to write to (it rejects when the
+      // document isn't focused) is completely silent — no toast, no change,
+      // nothing to retry.
       try {
         switch (key) {
           case 'copy-link':
@@ -102,10 +101,9 @@ export function usePostActions({
             notify('copiedPostUrl');
             break;
           case 'copy-preview':
-            // The preview URL, not `first.url`. Ember copies the latter here,
-            // which for a draft is a permalink to a page that does not exist
-            // yet — and is the identical string its "Copy link to post" action
-            // produces, making the two menu items indistinguishable.
+            // The preview URL, not `first.url`: for a draft that is a permalink
+            // to a page that does not exist yet, and the same string "Copy link
+            // to post" produces.
             await navigator.clipboard.writeText(getPostPreviewUrl(first, siteUrl));
             notify('copiedPreviewUrl');
             break;
@@ -116,12 +114,9 @@ export function usePostActions({
               await copyPost.mutateAsync(first.id);
             }
 
-            // Ember unshifts the copy straight into its draft bucket. We
-            // refetch instead: a duplicate is always a draft whatever the
-            // source was, so it belongs in a different bucket from the row it
-            // came from, and the buckets are separate queries here. One list
-            // refetch is cheap, and unlike the bulk actions in Phase 8 there is
-            // no long selection whose scroll position needs preserving.
+            // Refetched rather than inserted: a duplicate is always a draft
+            // whatever the source was, so it belongs in a different bucket
+            // from the row it came from, and the buckets are separate queries.
             const dataType = resource === 'pages' ? 'PagesResponseType' : 'PostsResponseType';
 
             // Not awaited: `invalidateQueries` settles only once every active

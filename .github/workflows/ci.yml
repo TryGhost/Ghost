@@ -260,9 +260,6 @@ jobs:
             # it — the break lands on main and surfaces in someone else's PR.
             tb-cli:
               - 'docker/tb-cli/**'
-            tinybird-slim:
-              - 'docker/tinybird-local-slim/**'
-              - 'compose.dev.analytics.yaml'
 
       - name: Define Node test matrix
         # Node lines the unit / legacy / acceptance suites must keep passing on.
@@ -387,7 +384,6 @@ jobs:
       changed_service_inventory: ${{ steps.changed.outputs.service-inventory }}
       changed_package_standards: ${{ steps.changed.outputs.package-standards }}
       changed_tb_cli: ${{ steps.changed.outputs.tb-cli }}
-      changed_tinybird_slim: ${{ steps.changed.outputs.tinybird-slim }}
       # Single gate for the build + browser-E2E lane. True for tags, or when a
       # changed file could affect a running Ghost instance (see the `e2e` path
       # filter above). A test-only / docs-only change keeps this false.
@@ -918,7 +914,7 @@ jobs:
           --health-timeout=5s
           --health-retries=60
       redis:
-        image: redis:7.4@sha256:bd28fff4b665fdf1b73e8b5b73ec05d2f858f4fa3c8ea0d7c9bc09f7f6bf7039
+        image: redis:7.4@sha256:b6b6e3dc0c0952737748e55d5d885272840c7e42ba41ab1d5489f693419882f5
         ports:
           - 6379:6379
         options: >-
@@ -968,6 +964,12 @@ jobs:
           else
             pnpm nx run ghost:test:e2e
           fi
+
+      - name: Newsletter tests (BullMQ jobs backend)
+        run: pnpm nx run ghost:test:bullmq
+
+      - name: Newsletter failure scenarios (BullMQ jobs backend)
+        run: pnpm nx run ghost:test:bullmq:scenarios
 
       - name: Start VersityGW for integration tests
         run: |
@@ -1177,18 +1179,20 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         # The runner image already has Firefox's other libraries; `playwright install-deps`
         # also pulls ~20MB of fonts the video-card tests don't use.
+        # The package name tracks the image's FFmpeg (libavcodec60 on 24.04, libavcodec62 on 26.04).
         # Worst case 3 × (65 + 125 + 5) = 585s stays inside timeout-minutes.
         run: |
           for i in 1 2 3; do
             if sudo timeout -k 5 60 apt-get update -yq \
                  -o Acquire::Retries=3 -o Acquire::http::Timeout=30 &&
+               codec=$(apt-cache pkgnames libavcodec | grep -m1 -xE 'libavcodec[0-9]+') &&
                sudo timeout -k 5 120 apt-get install -yq --no-install-recommends \
-                 -o Acquire::Retries=3 -o Acquire::http::Timeout=30 libavcodec60; then
+                 -o Acquire::Retries=3 -o Acquire::http::Timeout=30 "$codec"; then
               exit 0
             fi
-            echo "libavcodec60 attempt $i failed/stuck, retrying..."; sleep 5
+            echo "libavcodec attempt $i failed/stuck, retrying..."; sleep 5
           done
-          echo "libavcodec60 failed after 3 attempts"; exit 1
+          echo "libavcodec failed after 3 attempts"; exit 1
 
       - name: Run Playwright tests
         run: pnpm nx run ${{ matrix.app }}:test:acceptance --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
@@ -1589,11 +1593,11 @@ jobs:
 
   job_docker:
     name: Build Docker Images
-    # NOT gated on job_build_admin or job_build_e2e_public_apps: the core image
-    # needs neither. It builds concurrently and only synchronises on the admin
-    # artifact (via wait-for-artifact) just before the full image, and on the
-    # e2e-public-apps artifact just before the E2E image.
-    needs: [job_setup]
+    # Starts after job_build_admin, because the full image includes its build.
+    # Not gated on job_build_e2e_public_apps: that artifact is only needed for the
+    # E2E image, and on tag runs a failure there must not block the release, so
+    # the job waits for it (via wait-for-artifact) just before the E2E image.
+    needs: [job_setup, job_build_admin]
     # Root of the build + browser-E2E lane (see run_e2e in job_setup).
     if: needs.job_setup.outputs.run_e2e == 'true'
     runs-on: ubuntu-latest
@@ -1729,8 +1733,7 @@ jobs:
           BUILDKIT_PROGRESS: plain
         with:
           # Context is the repo root: the Dockerfile deploy stage runs `pnpm deploy`
-          # against the workspace. core needs no admin, so it builds now while
-          # job_build_admin runs concurrently.
+          # against the workspace.
           context: .
           file: Dockerfile.production
           target: core
@@ -1770,16 +1773,6 @@ jobs:
           path: ${{ runner.temp }}/docker-image-core.tar.gz
           retention-days: 1
           if-no-files-found: error
-
-      # Synchronise with job_build_admin only now, after core is built: the full
-      # image is core + admin. No `needs` edge, so the two jobs run concurrently
-      # and core builds during the wait.
-      - name: Wait for admin build
-        uses: ./.github/actions/wait-for-artifact
-        with:
-          artifact-name: admin-build
-          job-name: Build Admin
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download admin build
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
@@ -2223,20 +2216,7 @@ jobs:
     if: needs.job_docker.result == 'success'
     permissions:
       contents: read
-      packages: read # read the internal tinybird-local-slim package
     env:
-      # Use the distilled Tinybird image instead of upstream: it needs several GB
-      # less runner disk, which is what keeps the analytics shards inside the disk
-      # budget. See docker/tinybird-local-slim/README.md.
-      #
-      # Its GHCR package is internal (the upstream licence only permits
-      # distribution within our own organization), so it is unreadable from a
-      # cross-repo PR's scoped token — those runs stay on the upstream image
-      # unless they change the slim image and build it locally below.
-      # infra-up.sh falls back on a failed pull regardless, so an unexpected
-      # permission gap degrades rather than breaks.
-      GHOST_E2E_TINYBIRD_SLIM: ${{ needs.job_setup.outputs.changed_tinybird_slim == 'true' || (github.repository_owner == 'TryGhost' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)) }}
-      GHOST_E2E_TINYBIRD_SLIM_IMAGE: ${{ needs.job_setup.outputs.changed_tinybird_slim == 'true' && 'tinybird-local-slim:e2e' || 'ghcr.io/tryghost/tinybird-local-slim:latest' }}
       # The runner's MySQL exists only for E2E, so it can live on tmpfs
       GHOST_E2E_MYSQL_TMPFS: 'true'
     strategy:
@@ -2310,16 +2290,6 @@ jobs:
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
 
-      - name: Log in to GitHub Container Registry
-        # Needed to read the internal tinybird-local-slim package.
-        if: matrix.analytics == 'true' && env.GHOST_E2E_TINYBIRD_SLIM == 'true' && needs.job_setup.outputs.changed_tinybird_slim != 'true'
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
-        continue-on-error: true
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Pull Tinybird CLI image
         id: pull_tb_cli
         if: matrix.analytics == 'true' && needs.job_setup.outputs.changed_tb_cli != 'true'
@@ -2346,20 +2316,6 @@ jobs:
             echo "GHCR image not available, building from source"
           fi
           docker build --tag "$COMPOSE_IMAGE" --file docker/tb-cli/Dockerfile .
-          docker builder prune --all --force
-
-      - name: Build changed Tinybird slim image
-        if: matrix.analytics == 'true' && needs.job_setup.outputs.changed_tinybird_slim == 'true'
-        # Build before loading the Ghost image or installing dependencies: the
-        # upstream layers need several GB that can be reclaimed after flattening.
-        # This image stays on the runner; only the main publish workflow pushes it.
-        run: |
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup
-          upstream_ref=$(grep -oE 'tinybirdco/tinybird-local:[^ ]+' compose.dev.analytics.yaml)
-          docker build --platform linux/amd64 \
-            --build-arg "TINYBIRD_LOCAL_REF=$upstream_ref" \
-            --file docker/tinybird-local-slim/Dockerfile \
-            --tag "$GHOST_E2E_TINYBIRD_SLIM_IMAGE" .
           docker builder prune --all --force
 
       - name: Load Image
@@ -2772,8 +2728,8 @@ jobs:
 
       # --provenance is explicit rather than relying on pnpm's auto-detection,
       # which degrades to a warning if it can't confirm visibility. --tag is
-      # always passed: a prerelease must never land on `latest`, and OIDC
-      # trusted publishing can't retag afterwards.
+      # always passed: a prerelease lands on `latest` only when its manifest
+      # entry names it, and OIDC trusted publishing can't retag afterwards.
       - name: Publish to npm
         if: steps.compare.outputs.changed == 'true'
         working-directory: ${{ matrix.package_path }}

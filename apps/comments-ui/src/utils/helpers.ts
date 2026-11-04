@@ -10,6 +10,15 @@ export function buildCommentPermalink(commentId: string): string {
   return `#${COMMENT_HASH_PREFIX}${commentId}`;
 }
 
+// Absolute link for sharing outside the page. Drops the query string so
+// member-specific params (e.g. from newsletter links) aren't passed along.
+export function buildCommentShareUrl(commentId: string, pageUrl: string): string {
+  const url = new URL(pageUrl);
+  url.search = '';
+  url.hash = buildCommentPermalink(commentId);
+  return url.toString();
+}
+
 export function buildCommentsRootPermalink(): string {
   return '#ghost-comments';
 }

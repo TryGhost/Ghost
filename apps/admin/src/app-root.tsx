@@ -4,6 +4,7 @@ import {
   RouterProvider,
   type TopLevelFrameworkProps,
 } from '@tryghost/admin-x-framework';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { ShadeApp } from '@tryghost/shade/app';
 
 import App from './app.tsx';
@@ -12,11 +13,14 @@ import { installHistoryPopGate } from './hooks/use-history-pop-navigation-guard'
 import { ScreenTransitionProvider } from './layout/screen-transition-provider';
 import { RouteError } from './route-error';
 import { routes } from './routes.tsx';
+import { installSidePanelApi } from './layout/side-panel/side-panel-api';
+import { SiteTimezoneSync } from './shared/analytics/site-timezone-sync';
 import { useThemeContext } from './providers/theme-context';
 import { ThemeProvider } from './providers/theme-provider';
 
 // At module scope, so it is in place before `AdminAppRoot` creates the router.
 installHistoryPopGate();
+installSidePanelApi();
 
 // Lets body-level CSS (index.css) react to the mounted app. A class keeps
 // that cheap: `body:has(#root ...)` makes Chromium restyle the whole document
@@ -34,14 +38,15 @@ const routeErrorElement = <RouteError />;
 
 function ThemedAdminApp() {
   const { resolvedTheme } = useThemeContext();
+  const admin7Design = useFeatureFlag('admin7Design');
   useMountedBodyClass();
 
   return (
     <ShadeApp
+      admin7Design={admin7Design}
       className="shade-admin"
       darkMode={resolvedTheme === 'dark'}
       data-react-admin-mounted
-      isAdmin7
     >
       <ScreenTransitionProvider>
         <App />
@@ -61,6 +66,7 @@ export function AdminAppRoot({ framework }: { framework: TopLevelFrameworkProps 
   return (
     <StrictMode>
       <FrameworkProvider {...framework}>
+        <SiteTimezoneSync />
         <RouterProvider
           errorElement={routeErrorElement}
           prefix={'/'}

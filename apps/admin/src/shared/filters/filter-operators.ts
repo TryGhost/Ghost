@@ -8,6 +8,7 @@ export const VALUE_OPERATORS = [
   'ends-with',
   'does-not-end-with',
   'is-any',
+  'is-all',
   'is-not-any',
   'is-greater',
   'is-or-greater',

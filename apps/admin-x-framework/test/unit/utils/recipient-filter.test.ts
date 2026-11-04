@@ -95,9 +95,8 @@ describe('recipient-filter', () => {
       });
     });
 
-    it('classifies padded base segments as base without checking the checkbox, like Ember', () => {
-      // gh-members-recipient-select trims for base classification but tests
-      // checkbox state against the raw segment.
+    it('classifies padded base segments as base without checking the checkbox', () => {
+      // Base classification trims the segment; checkbox state uses the raw one.
       expect(parseRecipientFilter(' status:free,label:vip')).toEqual({
         free: false,
         paid: false,
@@ -125,7 +124,7 @@ describe('recipient-filter', () => {
       }
     });
 
-    it('rebuilds with base segments first, like the Ember select', () => {
+    it('rebuilds with base segments first', () => {
       expect(buildRecipientFilter(parseRecipientFilter('label:vip,status:free'))).toBe(
         'status:free,label:vip',
       );
@@ -164,7 +163,7 @@ describe('recipient-filter', () => {
     });
 
     it('classifies both base segments as all even alongside specific segments', () => {
-      // Substring semantics from the Ember publish flow.
+      // Matches by substring, not by segment.
       expect(getRecipientType('status:free,status:-free,label:vip')).toBe('all');
       expect(getRecipientType('label:vip,status:free,status:-free')).toBe('all');
     });

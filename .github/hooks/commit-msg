@@ -1,2 +1,6 @@
 #!/usr/bin/env sh
-exec bash "$(dirname "$0")/commit-msg.bash" "$@"
+# Run the committing checkout's script. A worktree's core.hooksPath can point
+# into another checkout, whose scripts may be from a different branch.
+script="$(git rev-parse --show-toplevel)/.github/hooks/commit-msg.bash"
+[ -f "$script" ] || script="$(dirname "$0")/commit-msg.bash"
+exec bash "$script" "$@"

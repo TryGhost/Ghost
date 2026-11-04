@@ -105,21 +105,18 @@ describe('jobs-service wrapper', function () {
     jobsService.init(initArgs).handle(RebootJob, async () => {});
   });
 
-  it('with the flag on, stays on the direct path when the jobs_outbox table is not available', async function () {
+  it('with the flag on, stays on the direct path on a database without SKIP LOCKED', async function () {
     stubAdapters();
     const logging = require('@tryghost/logging');
     const warn = sinon.stub(logging, 'warn');
-    // jobs_outbox is in development, so it only exists where in-development
-    // tables are created. Enabling the flag elsewhere must not break dispatch.
-    configUtils.set('createInDevelopmentTables', false);
 
     const service = jobsService.init({
-      knex: { client: { config: { client: 'mysql2' } } },
+      knex: { client: { config: { client: 'better-sqlite3' } } },
       config: { get: (key) => (key === 'services:jobs:outbox' ? { enabled: true } : undefined) },
     });
     await service.start();
 
-    sinon.assert.calledWithMatch(warn, /jobs_outbox table/);
+    sinon.assert.calledWithMatch(warn, /needs MySQL/);
     await service.shutdown({ timeoutMs: 10 });
   });
 

@@ -11,6 +11,7 @@ import { type GhAreaChartDataItem } from '@tryghost/shade/patterns';
 import { H3 } from '@tryghost/shade/primitives';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
 import { NavbarActions } from '@tryghost/shade/components';
+import { useShade } from '@tryghost/shade/app';
 import {
   centsToDollars,
   formatQueryDate,
@@ -81,6 +82,7 @@ type GrowthChartDataItem = {
 };
 
 const Overview: React.FC = () => {
+  const { admin7Design } = useShade();
   const paidMembersEnabled = usePaidMembersEnabled();
   const { range } = useAnalytics();
   const { statsConfig, isLoading: isConfigLoading } = useAnalyticsData();
@@ -270,9 +272,16 @@ const Overview: React.FC = () => {
             title="Understanding analytics in Ghost"
             url="https://ghost.org/help/native-analytics"
           >
-            <div className="flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-tr from-[#14B8FF]/20 to-[#00BBA7]/20 p-4 opacity-80 transition-all group-hover/card:opacity-100">
+            <div
+              className={cn(
+                'flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md p-4 opacity-80 transition-all group-hover/card:opacity-100',
+                admin7Design
+                  ? 'bg-blue-500/20'
+                  : 'bg-gradient-to-tr from-[#14B8FF]/20 to-[#00BBA7]/20',
+              )}
+            >
               <LucideIcon.ChartColumnIncreasing
-                className="text-[#00BBA7]"
+                className={admin7Design ? 'text-blue-600' : 'text-[#00BBA7]'}
                 size={20}
                 strokeWidth={1.5}
               />
@@ -283,8 +292,19 @@ const Overview: React.FC = () => {
             title="How to get your content seen online"
             url="https://ghost.org/resources/content-distribution/"
           >
-            <div className="flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-tl from-[#FDC700]/20 to-[#FF2056]/20 p-4 opacity-80 transition-all group-hover/card:opacity-100">
-              <LucideIcon.Globe className="text-[#FE9A00]" size={20} strokeWidth={1.5} />
+            <div
+              className={cn(
+                'flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md p-4 opacity-80 transition-all group-hover/card:opacity-100',
+                admin7Design
+                  ? 'bg-yellow-500/20'
+                  : 'bg-gradient-to-tl from-[#FDC700]/20 to-[#FF2056]/20',
+              )}
+            >
+              <LucideIcon.Globe
+                className={admin7Design ? 'text-yellow-600' : 'text-[#FE9A00]'}
+                size={20}
+                strokeWidth={1.5}
+              />
             </div>
           </HelpCard>
         </div>

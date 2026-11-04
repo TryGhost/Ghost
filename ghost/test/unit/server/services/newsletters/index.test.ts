@@ -6,7 +6,6 @@ const models = require('../../../../../core/server/models');
 const mail = require('../../../../../core/server/lib/mail');
 const sentry = require('../../../../../core/shared/sentry');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
-const emailAddress = require('../../../../../core/server/services/email-address');
 const newsletters = require('../../../../../core/server/services/newsletters').default;
 
 describe('Newsletters Service', function () {
@@ -41,9 +40,6 @@ describe('Newsletters Service', function () {
       sandbox.useFakeTimers({ now, toFake: ['Date'] });
       sandbox.stub(sentry, 'captureMessage');
       sandbox.stub(logging, 'warn');
-      // The service reads defaultFromAddress, which the real policy does not define, so the
-      // sender is undefined. This only needs the policy object to exist.
-      sandbox.stub(emailAddress, 'service').value({});
       sandbox
         .stub(urlUtils, 'urlFor')
         .withArgs('admin', true)

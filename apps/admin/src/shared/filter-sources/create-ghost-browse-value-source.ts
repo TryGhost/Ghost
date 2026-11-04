@@ -2,6 +2,7 @@ import { type FilterOption } from '@tryghost/shade/patterns';
 import {
   type PaginationState,
   type ValueSourceHookOptions,
+  type ValueSourceQueryOptions,
   createRemoteValueSource,
 } from './create-remote-value-source';
 import { buildQuotedListFilter } from './utils';
@@ -33,6 +34,7 @@ interface CreateGhostBrowseValueSourceConfig<Item, Data> {
   useQuery: (options: {
     enabled: boolean;
     searchParams: Record<string, string>;
+    queryOptions?: ValueSourceQueryOptions;
   }) => InfiniteBrowseResult<Data>;
 }
 
@@ -68,6 +70,7 @@ export function createGhostBrowseValueSource<Item, Data extends GhostBrowseRespo
       const result = useQuery({
         enabled: options.enabled ?? true,
         searchParams: withDefaultBrowseLimit(buildBrowseSearchParams(query)),
+        queryOptions: options.queryOptions,
       });
 
       return {
@@ -95,6 +98,7 @@ export function createGhostBrowseValueSource<Item, Data extends GhostBrowseRespo
       const result = useQuery({
         enabled: (options.enabled ?? true) && selectedValues.length > 0,
         searchParams,
+        queryOptions: options.queryOptions,
       });
 
       return {

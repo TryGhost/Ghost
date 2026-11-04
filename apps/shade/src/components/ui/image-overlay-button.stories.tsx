@@ -4,11 +4,9 @@ import { Ellipsis } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { imageOverlayButton } from '@/components/ui/image-overlay-button';
 import { Inline } from '@/components/primitives';
-import { useShade } from '@/providers/shade-context';
 
 function ImageOverlayButtons() {
-  const { isAdmin7 } = useShade();
-  const className = imageOverlayButton(isAdmin7);
+  const className = imageOverlayButton();
 
   return (
     <Inline gap="sm">

@@ -14,7 +14,7 @@ const { BookshelfPostsRepository } =
   require('../../../../../core/server/services/content-import/import/post-repository') as typeof import('../../../../../core/server/services/content-import/import/post-repository');
 const jobsPath = require.resolve('../../../../../core/server/services/jobs-service');
 require(jobsPath);
-const media = require('../../../../../core/server/services/media-inliner');
+const media = require('../../../../../core/server/services/media-inliner').default;
 const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
 const mail = require('../../../../../core/server/lib/mail');
 const sentry = require('../../../../../core/shared/sentry');
@@ -123,7 +123,8 @@ describe('Content import composition root', function () {
   it('looks up jobs, storage and media when work runs, keeping one run alive across repeated init', async function () {
     const getJobs = sandbox.stub().throws(new Error('Jobs not ready'));
     sandbox.replace(require.cache[jobsPath]!, 'exports', { getInstance: getJobs });
-    const getMedia = sandbox.stub(media, 'getInstance').throws(new Error('Media not ready'));
+    const getMedia = sandbox.stub().throws(new Error('Media not ready'));
+    sandbox.stub(media, 'service').get(getMedia);
     const getAdapter = sandbox
       .stub(adapterManager, 'getAdapter')
       .throws(new Error('Storage not ready'));

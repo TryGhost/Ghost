@@ -1,4 +1,4 @@
-const mentions = require('../../services/mentions');
+const mentions = require('../../services/mentions').default;
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -10,7 +10,7 @@ const controller = {
     options: ['filter', 'fields', 'limit', 'order', 'page', 'debug', 'unique'],
     permissions: true,
     query(frame) {
-      return mentions.controller.browse(frame);
+      return mentions.service.controller.browse(frame);
     },
   },
 
@@ -25,7 +25,7 @@ const controller = {
       format: 'plain',
     },
     async query(frame) {
-      await mentions.controller.receive(frame);
+      await mentions.service.controller.receive(frame);
       return null;
     },
   },

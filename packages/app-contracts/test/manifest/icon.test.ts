@@ -10,7 +10,7 @@ describe('icon', () => {
   });
 
   it('or an SVG the app serves', () => {
-    expect(manifestOf(manifest({ icon: { url: 'icons/app.svg' } })).icon).toEqual({
+    expect(manifestOf(manifest({ icon: { url: '/icons/app.svg' } })).icon).toEqual({
       url: 'https://podcast.example.com/icons/app.svg',
     });
   });

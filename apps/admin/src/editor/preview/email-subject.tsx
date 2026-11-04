@@ -10,7 +10,7 @@ import {
   overLength,
 } from '@/editor/session/settings-fields';
 
-// Ember's placeholder is the title truncated to 40 characters, ellipsis included.
+// The placeholder is the title truncated to 40 characters, ellipsis included.
 const PLACEHOLDER_MAX = 40;
 const ELLIPSIS = '...';
 

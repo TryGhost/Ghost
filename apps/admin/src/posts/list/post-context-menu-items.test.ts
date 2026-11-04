@@ -3,12 +3,11 @@ import { getPostContextMenuItems, type PostContextMenuInputs } from './post-cont
 import type { PostListItem } from './hooks/use-posts-list';
 
 /**
- * Which items the right-click menu shows, ported from the template and the five
- * predicates in `apps/ember-admin/app/components/posts-list/context-menu.js`.
+ * Which items the right-click menu shows.
  *
  * The rule that makes this worth its own module: the menu describes the **whole
- * selection**, not the row that was right-clicked. Ember's predicates all loop
- * over every selected model, and most of them are "any" rather than "every" —
+ * selection**, not the row that was right-clicked. The predicates check every
+ * selected post, and most of them are "any" rather than "every" —
  * so one published post among five drafts is enough to offer Unpublish.
  */
 
@@ -190,7 +189,7 @@ describe('getPostContextMenuItems', () => {
     expect(keys(inputs([]))).toEqual([]);
   });
 
-  it('orders the items as the Ember template does', () => {
+  it('lists the items in a fixed order', () => {
     const items = keys(
       inputs([post({ status: 'published', featured: false })], { canCopyGiftLink: true }),
     );
@@ -207,7 +206,7 @@ describe('getPostContextMenuItems', () => {
     ]);
   });
 
-  // Ember puts a separator above Unpublish only when the gift link is
+  // A separator goes above Unpublish only when the gift link is
   // there — and whether it renders is decided per row, after this list is
   // built. The menu draws that rule from adjacency, so Unpublish must not
   // carry a flag that survives the gift link being filtered out.

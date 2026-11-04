@@ -669,7 +669,7 @@ async function clearPopupNotification() {
 }
 
 async function showPopupNotification({ data, state }) {
-  let { action, message = '' } = data;
+  let { action, message = '', status = 'success' } = data;
   action = action || 'showPopupNotification:success';
   return {
     popupNotification: createPopupNotification({
@@ -677,7 +677,7 @@ async function showPopupNotification({ data, state }) {
       autoHide: true,
       closeable: true,
       state,
-      status: 'success',
+      status,
       message,
     }),
   };
@@ -685,7 +685,12 @@ async function showPopupNotification({ data, state }) {
 
 async function updateNewsletterPreference({ data, state, api }) {
   try {
-    const { newsletters, enableCommentNotifications, enableUpdatesAndAnnouncements } = data;
+    const {
+      newsletters,
+      enableCommentNotifications,
+      enableUpdatesAndAnnouncements,
+      successMessage,
+    } = data;
     if (
       !newsletters &&
       enableCommentNotifications === undefined &&
@@ -708,6 +713,16 @@ async function updateNewsletterPreference({ data, state, api }) {
     return {
       action,
       member,
+      ...(successMessage && {
+        popupNotification: createPopupNotification({
+          type: action,
+          autoHide: true,
+          closeable: true,
+          state,
+          status: 'success',
+          message: successMessage,
+        }),
+      }),
     };
   } catch (e) {
     return {

@@ -72,6 +72,7 @@ const COMMANDS = {
   rename: 'edited',
   reorder: 'edited',
   changeAccess: 'edited',
+  changeSettings: 'edited',
   archive: 'archived',
   restore: 'restored',
   delete: 'deleted',

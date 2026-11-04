@@ -1,4 +1,4 @@
-const commentsService = require('../../services/comments');
+const commentsService = require('../../services/comments').default;
 const ALLOWED_INCLUDES = [
   'member',
   'replies',
@@ -31,7 +31,7 @@ const controller = {
     },
     permissions: false,
     query(frame) {
-      return commentsService.controller.browse(frame);
+      return commentsService.service.controller.browse(frame);
     },
   },
 
@@ -47,7 +47,7 @@ const controller = {
     },
     permissions: false,
     query(frame) {
-      return commentsService.controller.replies(frame);
+      return commentsService.service.controller.replies(frame);
     },
   },
 
@@ -64,7 +64,7 @@ const controller = {
     },
     permissions: false,
     query(frame) {
-      return commentsService.controller.read(frame);
+      return commentsService.service.controller.read(frame);
     },
   },
 
@@ -85,7 +85,7 @@ const controller = {
     },
     permissions: false,
     query(frame) {
-      return commentsService.controller.edit(frame);
+      return commentsService.service.controller.edit(frame);
     },
   },
 
@@ -107,7 +107,7 @@ const controller = {
     },
     permissions: false,
     query(frame) {
-      return commentsService.controller.add(frame);
+      return commentsService.service.controller.add(frame);
     },
   },
 
@@ -124,7 +124,7 @@ const controller = {
     },
     permissions: false,
     query() {
-      return commentsService.controller.destroy();
+      return commentsService.service.controller.destroy();
     },
   },
 
@@ -135,7 +135,7 @@ const controller = {
     permissions: false,
     options: ['ids'],
     async query(frame) {
-      return commentsService.controller.count(frame);
+      return commentsService.service.controller.count(frame);
     },
   },
 
@@ -148,7 +148,7 @@ const controller = {
     validation: {},
     permissions: false,
     async query(frame) {
-      return await commentsService.controller.like(frame);
+      return await commentsService.service.controller.like(frame);
     },
   },
 
@@ -161,7 +161,7 @@ const controller = {
     validation: {},
     permissions: false,
     async query(frame) {
-      return await commentsService.controller.unlike(frame);
+      return await commentsService.service.controller.unlike(frame);
     },
   },
 
@@ -174,7 +174,7 @@ const controller = {
     validation: {},
     permissions: false,
     async query(frame) {
-      return await commentsService.controller.dislike(frame);
+      return await commentsService.service.controller.dislike(frame);
     },
   },
 
@@ -187,7 +187,7 @@ const controller = {
     validation: {},
     permissions: false,
     async query(frame) {
-      return await commentsService.controller.undislike(frame);
+      return await commentsService.service.controller.undislike(frame);
     },
   },
 
@@ -200,7 +200,7 @@ const controller = {
     validation: {},
     permissions: false,
     async query(frame) {
-      await commentsService.controller.report(frame);
+      await commentsService.service.controller.report(frame);
     },
   },
 };

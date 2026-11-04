@@ -79,8 +79,11 @@ async function probe(name: string, params: Record<string, unknown>): Promise<voi
     log(`  ACCEPTED  ${name}`);
     log(`            collects ${collects(session)}`);
   } catch (error) {
+    // Whether Stripe names the parameter decides which part of a checkout Ghost leaves out.
+    const param = error instanceof Error && 'param' in error ? error.param : undefined;
     log(`  REJECTED  ${name}`);
-    log(`            ${(error as Error).message}`);
+    log(`            ${error instanceof Error ? error.message : String(error)}`);
+    log(`            param: ${param === undefined ? 'none' : String(param)}`);
   }
 }
 
@@ -189,13 +192,11 @@ async function main(): Promise<void> {
   });
 
   // Collecting for a member who already has a Stripe customer, which is every signed-in
-  // checkout: a free member upgrading, or anyone buying a second time. Ghost sends the
-  // collection parameters and no `customer_update`, because it reads what was collected
-  // off the completed session rather than off the customer. Stripe may still require the
-  // pair — it does for automatic tax, which is why `taxSessionParams` sets
-  // `customer_update` only when there is a customer. If it does here too, then turning
-  // shipping on breaks checkout for exactly the members most likely to buy, and every test
-  // we have would miss it: they all check out anonymously.
+  // checkout: a free member upgrading, or anyone buying a second time. Ghost reads what was
+  // collected off the completed session rather than off the customer, so it lets Stripe save
+  // onto the customer only what Stripe requires, which it works out from everything the
+  // session asks for. These probes are how those requirements were measured, and they matter
+  // because a checkout Stripe refuses here fails for exactly the members most likely to buy.
   const customer = await stripe.customers.create({ email: `probe-${Date.now()}@example.com` });
   const withCustomer = { ...base, customer: customer.id };
   const shipping = { allowed_countries: ['GB'] };
@@ -221,6 +222,74 @@ async function main(): Promise<void> {
   await probe('custom_fields with customer, no customer_update', {
     ...withCustomer,
     custom_fields: [field()],
+  });
+
+  // Ghost makes a buyer's customer with an email and a name, never an address, so what Stripe
+  // needs saved for a tax ID depends on what the customer already holds and on what else the
+  // session collects. Each probe lets Stripe save one more thing, to show the next it asks for.
+  const addressed = await stripe.customers.create({
+    email: `probe-addressed-${Date.now()}@example.com`,
+    address: { country: 'GB', postal_code: 'SW1A 1AA', line1: '1 Probe St', city: 'London' },
+  });
+  const taxId = { tax_id_collection: { enabled: true } };
+  await probe('tax_id_collection with customer, customer_update[name]', {
+    ...withCustomer,
+    ...taxId,
+    customer_update: { name: 'auto' },
+  });
+  await probe('tax_id_collection with addressed customer, customer_update[name]', {
+    ...base,
+    customer: addressed.id,
+    ...taxId,
+    customer_update: { name: 'auto' },
+  });
+  await probe('tax_id_collection with customer, customer_update[name, address]', {
+    ...withCustomer,
+    ...taxId,
+    customer_update: { name: 'auto', address: 'auto' },
+  });
+  await probe('tax_id_collection and shipping with customer, customer_update[name, address]', {
+    ...withCustomer,
+    ...taxId,
+    shipping_address_collection: shipping,
+    customer_update: { name: 'auto', address: 'auto' },
+  });
+  await probe(
+    'tax_id_collection and shipping with customer, customer_update[name, address, shipping]',
+    {
+      ...withCustomer,
+      ...taxId,
+      shipping_address_collection: shipping,
+      customer_update: { name: 'auto', address: 'auto', shipping: 'auto' },
+    },
+  );
+  await probe('customer_update[shipping] with customer, no shipping_address_collection', {
+    ...withCustomer,
+    customer_update: { shipping: 'auto' },
+  });
+
+  // Automatic tax works out tax from the customer's saved address.
+  const automaticTax = { automatic_tax: { enabled: true } };
+  await probe('automatic_tax with customer, no customer_update', {
+    ...withCustomer,
+    ...automaticTax,
+  });
+  await probe('automatic_tax with addressed customer, no customer_update', {
+    ...base,
+    customer: addressed.id,
+    ...automaticTax,
+  });
+  await probe('automatic_tax and shipping with customer, customer_update[address]', {
+    ...withCustomer,
+    ...automaticTax,
+    shipping_address_collection: shipping,
+    customer_update: { address: 'auto' },
+  });
+  await probe('automatic_tax and shipping with customer, customer_update[address, shipping]', {
+    ...withCustomer,
+    ...automaticTax,
+    shipping_address_collection: shipping,
+    customer_update: { address: 'auto', shipping: 'auto' },
   });
 
   log('\nEach REJECTED message is the string the fake server should return.');

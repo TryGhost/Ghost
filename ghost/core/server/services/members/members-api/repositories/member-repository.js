@@ -156,7 +156,7 @@ module.exports = class MemberRepository {
    * @param {import('../../../members-metafields/values-service').MetafieldValuesService} deps.metafieldValues
    * @param {ITokenService} deps.tokenService
    * @param {any} deps.newslettersService
-   * @param {Pick<automationsApi, 'trigger'>} deps.automationsApi
+   * @param {Pick<automationsApi, 'notify'>} deps.automationsApi
    * @param {any} deps.Automation
    * @param {any} deps.WelcomeEmailAutomationRun
    */
@@ -264,6 +264,57 @@ module.exports = class MemberRepository {
     );
   }
 
+  /**
+   * @param {Parameters<typeof automationsApi.notify>[0]} payload
+   * @param {object} options
+   * @param {Knex.Transaction} [options.transacting]
+   * @returns {Promise<void>}
+   */
+  async #notifyAutomations(payload, options) {
+    const notify = () => this._automationsApi.notify(payload);
+    if (options.transacting) {
+      options.transacting.executionPromise.then(notify).catch((err) => {
+        logging.error({
+          err,
+          message: `Error notifying automations for member ${payload.memberId}`,
+        });
+      });
+    } else {
+      await notify();
+    }
+  }
+
+  /**
+   * @param {object} options
+   * @param {MemberModel} options.member
+   * @param {'free' | 'paid' | 'comped' | 'gift'} options.previousStatus
+   * @param {ReadonlyArray<string>} options.previousTierIds
+   * @param {ReadonlyArray<string>} options.tierIds
+   * @param {object} options.options
+   * @param {object} [options.options.context]
+   * @param {Knex.Transaction} [options.options.transacting]
+   * @returns {Promise<void>}
+   */
+  async notifyPaidSubscriptionChangedAutomation({
+    member,
+    previousStatus,
+    previousTierIds,
+    tierIds,
+    options,
+  }) {
+    const payload = {
+      eventName: /** @type {const} */ ('paid_subscription_changed'),
+      source: this._resolveContextSource(options.context || {}),
+      memberId: member.id,
+      memberEmail: member.get('email'),
+      memberStatus: member.get('status'),
+      previousMemberStatus: previousStatus,
+      memberTierIds: tierIds,
+      previousMemberTierIds: previousTierIds,
+    };
+    await this.#notifyAutomations(payload, options);
+  }
+
   isActiveSubscriptionStatus(status) {
     return ['active', 'trialing', 'unpaid', 'past_due'].includes(status);
   }
@@ -277,37 +328,36 @@ module.exports = class MemberRepository {
   }
 
   /**
-   * @param {MemberModel} member
-   * @param {'free' | 'paid'} memberStatus
-   * @param {object} bookshelfOptions
-   * @param {Knex.Transaction} [bookshelfOptions.transacting]
+   * @param {object} options
+   * @param {MemberModel} options.member
+   * @param {'free' | 'paid'} options.memberStatus
+   * @param {'free' | 'paid' | 'comped' | 'gift' | null} options.previousMemberStatus
+   * @param {object} options.bookshelfOptions
+   * @param {Knex.Transaction} [options.bookshelfOptions.transacting]
    * @returns {Promise<void>}
    */
-  async #triggerMemberSignupAutomation(member, memberStatus, bookshelfOptions) {
+  async #notifyMembershipStartedAutomation({
+    member,
+    memberStatus,
+    previousMemberStatus,
+    bookshelfOptions,
+  }) {
     const memberId = member.id;
     const memberEmail = member.get('email');
     const memberTierIds = await getMemberTierIds(member, memberStatus, bookshelfOptions);
 
-    const trigger = async () => {
-      await this._automationsApi.trigger({
-        event: 'membership_started',
+    await this.#notifyAutomations(
+      {
+        eventName: 'membership_started',
+        source: this._resolveContextSource(bookshelfOptions.context || {}),
         memberId,
         memberEmail,
         memberStatus,
+        previousMemberStatus,
         memberTierIds,
-      });
-    };
-
-    if (bookshelfOptions?.transacting) {
-      bookshelfOptions.transacting.executionPromise.then(trigger).catch((err) => {
-        logging.error({
-          err,
-          message: `Error triggering automation for member ${memberId}`,
-        });
-      });
-    } else {
-      await trigger();
-    }
+      },
+      bookshelfOptions,
+    );
   }
 
   /**
@@ -320,7 +370,7 @@ module.exports = class MemberRepository {
    * @param {object} options
    * @returns {Promise<void>}
    */
-  async #triggerMemberSignupLegacyAutomation(memberId, memberStatus, options) {
+  async #triggerMembershipStartedLegacyAutomation(memberId, memberStatus, options) {
     if (!this._Automation || !this._WelcomeEmailAutomationRun) {
       return;
     }
@@ -359,21 +409,41 @@ module.exports = class MemberRepository {
   }
 
   /**
-   * Trigger an automation for member signup.
+   * Notify the automations system about member signup.
    *
-   * Callers are responsible for any eligibility gating (member status, source, etc.)
-   * before calling this.
-   *
-   * @param {MemberModel} member
-   * @param {'free' | 'paid'} memberStatus
-   * @param {object} bookshelfOptions
+   * @param {object} options
+   * @param {MemberModel} options.member
+   * @param {'free' | 'paid'} options.memberStatus
+   * @param {'free' | 'paid' | 'comped' | 'gift' | null} [options.previousMemberStatus]
+   * @param {object} options.bookshelfOptions
    * @returns {Promise<void>}
    */
-  async triggerMemberSignupAutomation(member, memberStatus, bookshelfOptions) {
-    await Promise.all([
-      this.#triggerMemberSignupAutomation(member, memberStatus, bookshelfOptions),
-      this.#triggerMemberSignupLegacyAutomation(member.id, memberStatus, bookshelfOptions),
-    ]);
+  async notifyMembershipStartedAutomation({
+    member,
+    memberStatus,
+    previousMemberStatus = null,
+    bookshelfOptions,
+  }) {
+    const promises = [
+      this.#notifyMembershipStartedAutomation({
+        member,
+        memberStatus,
+        previousMemberStatus,
+        bookshelfOptions,
+      }),
+    ];
+
+    const source = this._resolveContextSource(bookshelfOptions.context || {});
+    const shouldTriggerLegacyAutomation =
+      WELCOME_EMAIL_SOURCES.includes(source) &&
+      !(memberStatus === 'paid' && previousMemberStatus === 'gift');
+    if (shouldTriggerLegacyAutomation) {
+      promises.push(
+        this.#triggerMembershipStartedLegacyAutomation(member.id, memberStatus, bookshelfOptions),
+      );
+    }
+
+    await Promise.all(promises);
   }
 
   /**
@@ -622,8 +692,10 @@ module.exports = class MemberRepository {
           { ...memberAddOptions, transacting },
         );
 
-        await this.triggerMemberSignupAutomation(newMember, 'free', {
-          transacting,
+        await this.notifyMembershipStartedAutomation({
+          member: newMember,
+          memberStatus: 'free',
+          bookshelfOptions: { context, transacting },
         });
 
         return newMember;
@@ -642,6 +714,14 @@ module.exports = class MemberRepository {
         },
         memberAddOptions,
       );
+      if (isFreeSignup) {
+        await this.#notifyMembershipStartedAutomation({
+          member,
+          memberStatus: 'free',
+          previousMemberStatus: null,
+          bookshelfOptions: memberAddOptions,
+        });
+      }
     }
 
     if (!eventData.created_at) {
@@ -806,7 +886,7 @@ module.exports = class MemberRepository {
     }
 
     // Determine if we need to fetch the initial member with relations
-    const needsProducts = this._stripeAPIService.configured && data.products;
+    const shouldUpdateProducts = this._stripeAPIService.configured && data.products;
 
     // only update newsletters if we are receiving newsletter data
     const needsNewsletters = memberData.newsletters || typeof memberData.subscribed === 'boolean';
@@ -816,7 +896,7 @@ module.exports = class MemberRepository {
     if (needsNewsletters) {
       requiredRelations.push('newsletters');
     }
-    if (needsProducts) {
+    if (shouldUpdateProducts) {
       requiredRelations.push('products');
     }
 
@@ -857,7 +937,7 @@ module.exports = class MemberRepository {
 
     let productsToAdd = [];
     let productsToRemove = [];
-    if (needsProducts) {
+    if (shouldUpdateProducts) {
       const existingProducts = initialMember.related('products').models;
       const existingProductIds = existingProducts.map((product) => product.id);
       const incomingProductIds = data.products.map((product) => product.id);
@@ -990,6 +1070,10 @@ module.exports = class MemberRepository {
       }
     }
 
+    const previousMemberStatus = initialMember.get('status');
+    const previousMemberTierIds = shouldUpdateProducts
+      ? initialMember.related('products').models.map((product) => product.id)
+      : [];
     const member = await this._Member.edit(
       {
         ...memberData,
@@ -1082,6 +1166,16 @@ module.exports = class MemberRepository {
         },
         sharedOptions,
       );
+    }
+
+    if (shouldUpdateProducts) {
+      await this.notifyPaidSubscriptionChangedAutomation({
+        member,
+        previousStatus: previousMemberStatus,
+        previousTierIds: previousMemberTierIds,
+        tierIds: data.products.map((product) => product.id),
+        options,
+      });
     }
 
     if (this._stripeAPIService.configured && member._changed.email) {
@@ -2021,6 +2115,8 @@ module.exports = class MemberRepository {
       logging.error(`Failed to update member - ${data.id} - with related products`);
       logging.error(e);
       updatedMember = await this._Member.edit({ status: status }, { ...options, id: data.id });
+      // The relation edit may have failed partially; report saved access, not the proposed tiers.
+      memberProducts = (await updatedMember.related('products').fetch(options)).toJSON();
     }
 
     // Cancelling (or reactivating) touches no `members` column, so mark the
@@ -2109,21 +2205,23 @@ module.exports = class MemberRepository {
         options,
       );
 
-      const context = options?.context || {};
-      const source = this._resolveContextSource(context);
-
-      // Enqueue automation if:
-      // 1. The source is allowed to trigger automations
-      // 2. The member status changed to 'paid'
-      // 3. The previous status wasn't 'gift', as gift members already received the paid welcome email on redemption
-      if (
-        WELCOME_EMAIL_SOURCES.includes(source) &&
-        updatedMember.get('status') === 'paid' &&
-        updatedMember._previousAttributes.status !== 'gift'
-      ) {
-        await this.triggerMemberSignupAutomation(memberModel, 'paid', options);
+      if (updatedMember.get('status') === 'paid') {
+        await this.notifyMembershipStartedAutomation({
+          member: memberModel,
+          memberStatus: 'paid',
+          previousMemberStatus: updatedMember._previousAttributes.status,
+          bookshelfOptions: options,
+        });
       }
     }
+
+    await this.notifyPaidSubscriptionChangedAutomation({
+      member: updatedMember,
+      previousStatus: updatedMember._previousAttributes.status,
+      previousTierIds: oldMemberProductIds,
+      tierIds: newMemberProductIds,
+      options,
+    });
 
     // Update the members_current_subscription lookup table
     await this._updateCurrentSubscription(data.id, options);

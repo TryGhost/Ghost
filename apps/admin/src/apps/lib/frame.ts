@@ -96,7 +96,8 @@ export const APP_FRAME_ALLOW = [
  * bypassing the allowlist. The handshake only withholds the bridge from it, and Admin reloads the
  * app once it notices, after that script has already run. The fix belongs in Core, which can
  * sandbox what it serves into another origin's frame (BER-3992). That doesn't cover a popup, which
- * is a top-level document: the allowlist's checks on what a write may contain keep script out of
- * the site instead.
+ * is a top-level document. Nothing keeps script out of the site either: the allowlist lets an app
+ * write HTML and script into a post or page, which runs for whoever opens it, a popup included, on
+ * the site's origin, and on Admin's where the two share one.
  */
 export { isGhostOrigin } from '@tryghost/app-contracts';

@@ -1,3 +1,8 @@
+import {
+  comparableTriggerRules,
+  getTriggerTierIds,
+  subscriptionChangedSelectionFromRules,
+} from './utils/trigger-rules';
 import { HostLimitError } from '@tryghost/admin-x-framework/errors';
 import { useBrowseConfig, upgradeRoute } from '@tryghost/admin-x-framework/api/config';
 import { LimitModalContent } from '@/settings/api';
@@ -6,7 +11,7 @@ import AutomationStatusDialog, {
   type PublishLabelTrigger,
 } from './components/automation-status-dialog';
 import { TRIGGER_CANVAS_ID } from './components/canvas/nodes';
-import AutomationCanvas, { EMAIL_STEP_QUERY_PARAM } from './components/canvas/automation-canvas';
+import AutomationCanvas from './components/canvas/automation-canvas';
 import AutomationHeader, { type AutomationValidationAction } from './components/automation-header';
 import { useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useAutomationForEditing } from './hooks/use-automation-for-editing';
@@ -30,14 +35,15 @@ import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import type {
   AutomationDetail,
   AutomationStatus,
+  AutomationTriggerRule,
 } from '@tryghost/admin-x-framework/api/automations';
 import { dequal } from 'dequal';
 import { isEmptyEmailLexical } from './utils';
 import { toast } from 'sonner';
-import { useNavigate, useParams } from '@tryghost/admin-x-framework';
+import { useLocation, useMatches, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { navigateTo } from '@/utils/navigation';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
-import type { AutomationEditState, LabelSelection, TierSelection } from './types';
+import type { AutomationEditState, LabelSelection } from './types';
 import { hasMissingTierSelection } from './utils/tier-selection';
 import { isAutomationStatusActive } from './utils/is-automation-status-active';
 import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
@@ -52,26 +58,25 @@ const editableSlice = (automation: AutomationDetail) => ({
   name: automation.name,
   description: automation.description,
   status: automation.status,
-  trigger_tier_scope: automation.trigger_tier_scope,
-  trigger_tier_ids: automation.trigger_tier_ids ? [...automation.trigger_tier_ids].sort() : null,
+  trigger_rules: comparableTriggerRules(automation.trigger_rules),
   actions: automation.actions,
   edges: automation.edges,
 });
 
 const getTriggerErrors = (
   automation: AutomationDetail,
-  tierSelection: TierSelection | undefined,
+  triggerType: AutomationTriggerRule['trigger_type'] | undefined,
   labelSelection: LabelSelection | undefined,
 ): Record<string, string> => {
   if (labelSelection !== undefined) {
     return labelSelection === null ? { [TRIGGER_CANVAS_ID]: 'Select a label.' } : {};
   }
-  if (tierSelection) {
-    return hasMissingTierSelection(tierSelection)
+  if (triggerType === 'paid_subscription_changed') {
+    return hasMissingTierSelection(subscriptionChangedSelectionFromRules(automation.trigger_rules))
       ? { [TRIGGER_CANVAS_ID]: 'Select at least one tier.' }
       : {};
   }
-  return automation.trigger_tier_scope === 'selected_paid' && !automation.trigger_tier_ids.length
+  return !automation.trigger_rules.length
     ? { [TRIGGER_CANVAS_ID]: 'Select at least one paid tier.' }
     : {};
 };
@@ -108,7 +113,7 @@ const AutomationEditorContent: React.FC<{
   creation?: {
     initialAutomation: AutomationDetail;
     triggerTop?: number;
-    tierSelection?: TierSelection;
+    triggerType: AutomationTriggerRule['trigger_type'];
     labelSelection?: LabelSelection;
     onCreated: (id: string) => void;
   };
@@ -144,9 +149,6 @@ const AutomationEditorContent: React.FC<{
     });
   }, []);
   const [actionErrors, setActionErrors] = React.useState<Record<string, string>>({});
-  const [isEmailModalDirty, setIsEmailModalDirty] = React.useState(false);
-  const isEmailModalDirtyRef = React.useRef(false);
-  const isBlockedEmailNavigationLeavingEditorRef = React.useRef(false);
 
   // Keep the saved snapshot separate from the live query result. Later query updates or errors
   // must not redefine the dirty state or overwrite edits made during this editing session.
@@ -156,8 +158,10 @@ const AutomationEditorContent: React.FC<{
   const [draft, setDraft] = React.useState<AutomationDetail | undefined>(
     creation?.initialAutomation,
   );
-  // Kept outside the draft until the API can hold it (NY-1733).
-  const [tierSelection, setTierSelection] = React.useState(creation?.tierSelection);
+  // Preserve the trigger type even when every rule is removed from the draft.
+  const [triggerType, setTriggerType] = React.useState<
+    AutomationTriggerRule['trigger_type'] | undefined
+  >(creation?.triggerType);
   // Kept outside the draft until the API can hold it (NY-1750).
   const [labelSelection, setLabelSelection] = React.useState(creation?.labelSelection);
   React.useEffect(() => {
@@ -167,6 +171,7 @@ const AutomationEditorContent: React.FC<{
 
     setSavedAutomation((currentAutomation) => currentAutomation ?? automation);
     setDraft((currentDraft) => currentDraft ?? automation);
+    setTriggerType((currentType) => currentType ?? automation.trigger_rules[0]?.trigger_type);
   }, [automation]);
   const isEditorLoading = !draft && !isReadError;
   const isEditorError = !draft && isReadError;
@@ -179,46 +184,39 @@ const AutomationEditorContent: React.FC<{
     invalidWaitIds.size > 0 ||
     (!!draft && !!savedAutomation && !dequal(editableSlice(draft), editableSlice(savedAutomation)));
 
-  const onDraftChange = (next: AutomationDetail) => {
-    setValidationFeedback(null);
-    setDraft(next);
-    setInvalidWaitIds((current) => {
-      const remaining = new Set(
-        [...current].filter((id) => next.actions.some((action) => action.id === id)),
-      );
-      return remaining.size === current.size ? current : remaining;
-    });
-    setActionErrors((oldErrors) => {
-      if (Object.keys(oldErrors).length === 0) {
-        return oldErrors;
-      }
+  // The canvas rebuilds every card whenever this or `savedTriggerTierIds` changes, so both stay
+  // stable across renders. A rebuild that lands just after React Flow first measures a card makes
+  // it lose that card's handles, and with them the edge into it and its Add step control.
+  const onDraftChange = React.useCallback(
+    (next: AutomationDetail) => {
+      setValidationFeedback(null);
+      setDraft(next);
+      setInvalidWaitIds((current) => {
+        const remaining = new Set(
+          [...current].filter((id) => next.actions.some((action) => action.id === id)),
+        );
+        return remaining.size === current.size ? current : remaining;
+      });
+      setActionErrors((oldErrors) => {
+        if (Object.keys(oldErrors).length === 0) {
+          return oldErrors;
+        }
 
-      const nextErrors = {
-        ...getActionErrors(next),
-        ...getTriggerErrors(next, tierSelection, labelSelection),
-      };
-      return Object.fromEntries(
-        Object.entries(oldErrors).filter(([actionId]) => nextErrors[actionId]),
-      );
-    });
-    setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
-  };
-
-  const onTierSelectionChange = React.useCallback((next: TierSelection) => {
-    setValidationFeedback(null);
-    setTierSelection(next);
-    setActionErrors((oldErrors) =>
-      oldErrors[TRIGGER_CANVAS_ID] && !hasMissingTierSelection(next)
-        ? Object.fromEntries(
-            Object.entries(oldErrors).filter(([stepId]) => stepId !== TRIGGER_CANVAS_ID),
-          )
-        : oldErrors,
-    );
-    setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
-  }, []);
-  const triggerTierSelection = React.useMemo(
-    () => (tierSelection ? { value: tierSelection, onChange: onTierSelectionChange } : undefined),
-    [tierSelection, onTierSelectionChange],
+        const nextErrors = {
+          ...getActionErrors(next),
+          ...getTriggerErrors(next, triggerType, labelSelection),
+        };
+        return Object.fromEntries(
+          Object.entries(oldErrors).filter(([actionId]) => nextErrors[actionId]),
+        );
+      });
+      setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
+    },
+    [triggerType, labelSelection],
+  );
+  const savedTriggerTierIds = React.useMemo(
+    () => (savedAutomation ? getTriggerTierIds(savedAutomation.trigger_rules) : []),
+    [savedAutomation],
   );
 
   const onLabelSelectionChange = React.useCallback((next: LabelSelection) => {
@@ -267,7 +265,7 @@ const AutomationEditorContent: React.FC<{
     }
     const nextActionErrors = {
       ...(action === 'publish' ? getActionErrors(automationToValidate) : {}),
-      ...getTriggerErrors(automationToValidate, tierSelection, labelSelection),
+      ...getTriggerErrors(automationToValidate, triggerType, labelSelection),
     };
     if (Object.keys(nextActionErrors).length > 0 || invalidWaitIds.size > 0) {
       setActionErrors(nextActionErrors);
@@ -332,13 +330,7 @@ const AutomationEditorContent: React.FC<{
       toast.error('Automation couldn’t be saved');
     };
 
-    // The API would save the draft's stand-in scope instead, until NY-1733.
-    if (tierSelection) {
-      handleSaveError(
-        new Error('Saving a paid subscription changed trigger is not supported yet.'),
-      );
-      return;
-    }
+    // The API would save the draft's stand-in free signup rule instead, until NY-1750.
     if (labelSelection !== undefined) {
       handleSaveError(new Error('Saving a label added trigger is not supported yet.'));
       return;
@@ -368,7 +360,19 @@ const AutomationEditorContent: React.FC<{
         onSuccess: (response) => {
           const savedDraft = response.automations[0];
           setSavedAutomation(savedDraft);
-          setDraft(savedDraft);
+          // A save acknowledges the submitted snapshot, not edits made while it was pending.
+          // Keep those edits dirty, adopting only the server identity and status transition.
+          setDraft((current) =>
+            !current || current === draft
+              ? savedDraft
+              : {
+                  ...current,
+                  id: savedDraft.id,
+                  status: savedDraft.status,
+                  created_at: savedDraft.created_at,
+                  updated_at: savedDraft.updated_at,
+                },
+          );
           setActionErrors({});
           setEditState({ phase: 'idle' });
           if (isNew) {
@@ -543,37 +547,10 @@ const AutomationEditorContent: React.FC<{
     }
   };
 
-  // The dirty email modal claims navigations that change its `emailStep`
-  // query param (closing the modal, back button, leaving the editor) so the
-  // canvas can run its own discard flow instead of the page-level dialog.
-  const {
-    dialogProps: discardDialogProps,
-    interceptedNavigation,
-    bypassNextNavigation,
-  } = useUnsavedChangesGuard({
-    when: hasUnsavedChanges || isEmailModalDirty,
-    confirmUnloadWhen: isEditRequestActive || hasUnsavedChanges || isEmailModalDirty,
-    interceptNavigation: ({ currentLocation, nextLocation }) => {
-      const currentEmailStep = new URLSearchParams(currentLocation.search).get(
-        EMAIL_STEP_QUERY_PARAM,
-      );
-      const nextEmailStep = new URLSearchParams(nextLocation.search).get(EMAIL_STEP_QUERY_PARAM);
-      if (isEmailModalDirtyRef.current && currentEmailStep && currentEmailStep !== nextEmailStep) {
-        isBlockedEmailNavigationLeavingEditorRef.current =
-          currentLocation.pathname !== nextLocation.pathname;
-        return true;
-      }
-
-      isBlockedEmailNavigationLeavingEditorRef.current = false;
-      return false;
-    },
+  const { dialogProps: discardDialogProps, bypassNextNavigation } = useUnsavedChangesGuard({
+    when: hasUnsavedChanges,
+    confirmUnloadWhen: isEditRequestActive || hasUnsavedChanges,
   });
-  const isEmailNavigationBlocked = interceptedNavigation.isBlocked;
-
-  const onEmailDirtyChange = React.useCallback((dirty: boolean) => {
-    isEmailModalDirtyRef.current = dirty;
-    setIsEmailModalDirty(dirty);
-  }, []);
 
   return (
     <div
@@ -620,31 +597,13 @@ const AutomationEditorContent: React.FC<{
                 : 'closed'
         }
         initialTriggerTop={creation?.triggerTop}
-        isEmailNavigationBlocked={isEmailNavigationBlocked}
         isError={isEditorError}
         isLoading={isEditorLoading}
         labelSelection={triggerLabelSelection}
-        savedTriggerTierIds={savedAutomation?.trigger_tier_ids ?? []}
+        savedTriggerTierIds={savedTriggerTierIds}
         selectedRunId={selectedRunId}
-        tierSelection={triggerTierSelection}
+        triggerType={triggerType}
         onChange={onDraftChange}
-        onDiscardBlockedEmailNavigation={(closeEmailModal) => {
-          onEmailDirtyChange(false);
-          if (isBlockedEmailNavigationLeavingEditorRef.current) {
-            isBlockedEmailNavigationLeavingEditorRef.current = false;
-            interceptedNavigation.reset();
-            closeEmailModal();
-            return;
-          }
-
-          isBlockedEmailNavigationLeavingEditorRef.current = false;
-          interceptedNavigation.proceed();
-        }}
-        onEmailDirtyChange={onEmailDirtyChange}
-        onKeepEditingAfterBlockedEmailNavigation={() => {
-          isBlockedEmailNavigationLeavingEditorRef.current = false;
-          interceptedNavigation.reset();
-        }}
         onSelectRun={setSelectedRunId}
         onWaitValidityChange={onWaitValidityChange}
       />
@@ -661,7 +620,7 @@ const AutomationEditorContent: React.FC<{
           }
           onOk={() => {
             setLimitError(null);
-            confirmUpgrade(hasUnsavedChanges || isEmailModalDirty, () => {
+            confirmUpgrade(hasUnsavedChanges, () => {
               navigateTo(upgradeRoute(configData?.config));
             });
           }}
@@ -707,32 +666,48 @@ const AutomationEditorContent: React.FC<{
 
 const AutomationEditor: React.FC = () => {
   const { id: automationId = '' } = useParams<{ id: string }>();
+  const location = useLocation();
+  // Matched params change on navigation even when their values do not; a native
+  // hash entry can reuse the location object.
+  const navigation = useMatches().at(-1)?.params;
 
   // Keep the creation session mounted when its first save replaces /new with the server ID.
   const [session, setSession] = React.useState({
     routeId: automationId,
     createdId: null as string | null,
     key: 0,
+    location,
+    navigation,
   });
-  if (automationId !== session.routeId) {
+  if (
+    automationId !== session.routeId ||
+    location !== session.location ||
+    navigation !== session.navigation
+  ) {
     const isFirstSave = session.routeId === 'new' && automationId === session.createdId;
+    // The router can render the create's URL replace and a later navigation as one,
+    // so the new-automation URL reached after the create is a new automation either way.
+    const isNewAfterCreate = automationId === 'new' && session.createdId !== null;
+    const keeps = isFirstSave || (automationId === session.routeId && !isNewAfterCreate);
     setSession({
       routeId: automationId,
-      createdId: isFirstSave ? session.createdId : null,
-      key: isFirstSave ? session.key : session.key + 1,
+      createdId: keeps ? session.createdId : null,
+      key: keeps ? session.key : session.key + 1,
+      location,
+      navigation,
     });
   }
   return (
     <ScreenEntranceProvider>
       {automationId === 'new' || automationId === session.createdId ? (
         <NewAutomation key={session.key}>
-          {(initialAutomation, triggerTop, tierSelection, labelSelection) => (
+          {({ automation: initialAutomation, triggerType, triggerTop, labelSelection }) => (
             <AutomationEditorContent
               automationId={null}
               creation={{
                 initialAutomation,
                 triggerTop,
-                tierSelection,
+                triggerType,
                 labelSelection,
                 onCreated: (createdId) => setSession((current) => ({ ...current, createdId })),
               }}

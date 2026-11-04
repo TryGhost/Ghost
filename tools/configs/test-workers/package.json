@@ -1,0 +1,18 @@
+{
+  "name": "@internal/cfg-test-workers",
+  "version": "private",
+  "private": true,
+  "description": "Shared worker count for Ghost's expensive test suites",
+  "license": "MIT",
+  "files": [
+    "index.mjs",
+    "index.d.mts"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.mts",
+      "default": "./index.mjs"
+    }
+  }
+}

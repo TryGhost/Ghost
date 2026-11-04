@@ -185,7 +185,6 @@ describe('email analytics JobsService delivery', function () {
       name: 'Analytics job',
       slug: `analytics-${automationId}`,
       status: 'inactive',
-      trigger_type: 'membership_started',
       created_at: now,
       updated_at: now,
     });

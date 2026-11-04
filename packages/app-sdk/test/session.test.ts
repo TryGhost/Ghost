@@ -439,6 +439,25 @@ describe('path', () => {
     expect(ghost.path.current).toBe('/episodes/12/saved');
   });
 
+  it('keeps its path for a route that leaves the app once normalised, without asking Admin', async () => {
+    const { ghost, host } = await started();
+
+    window.history.pushState(null, '', '/.//evil.example/');
+    await settle();
+
+    expect(host.pathChanged).not.toHaveBeenCalled();
+    expect(ghost.path.current).toBe('/');
+  });
+
+  it('starts on Admin’s path when the page is at a route that leaves the app', async () => {
+    window.history.replaceState(null, '', '/.//evil.example/');
+    const { ghost, host } = await started(hostExports(), startContext({ path: '/episodes/12' }));
+    await settle();
+
+    expect(host.pathChanged).not.toHaveBeenCalled();
+    expect(ghost.path.current).toBe('/episodes/12');
+  });
+
   it('reports nothing when it starts on Admin’s path', async () => {
     window.history.replaceState(null, '', '/episodes/12');
     const { host } = await started(hostExports(), startContext({ path: '/episodes/12' }));

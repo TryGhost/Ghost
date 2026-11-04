@@ -18,6 +18,7 @@ export interface AppInstallation {
   revision?: number;
   manifest_url: string;
   manifest: AppManifest;
+  icon_data_url: string | null;
   created_at: string;
   updated_at: string | null;
   /** Newest first. Only included when read with `include=history`. */
@@ -53,6 +54,13 @@ export interface AppInstallationPreview {
   manifest: AppManifest;
   /** Sent back when confirming, so only the manifest that was reviewed gets installed. */
   digest: string;
+  icon_data_url: string | null;
+  /**
+   * The app's origin, if the site's configuration trusts it, so Ghost didn't ask it to prove it
+   * holds the app's key. Empty when it proved it. An app is one origin, so there's at most one.
+   */
+  /** Missing from a Ghost from before the identity check, which trusted no origin. */
+  trusted_origins?: string[];
   /**
    * The site's installation of the same app, if it has one: the manifest it was approved
    * with and where that was read from, and what would change.
@@ -64,6 +72,7 @@ export interface AppInstallationPreview {
     revision: number;
     manifest_url: string;
     manifest: AppManifest;
+    icon_data_url: string | null;
     changes: AppManifestChange[];
   } | null;
 }

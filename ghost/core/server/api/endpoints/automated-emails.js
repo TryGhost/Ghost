@@ -1,9 +1,10 @@
+const ObjectId = require('bson-objectid');
 const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const { lockAutomationLimit } = require('../../services/automations/automation-limit');
-const memberWelcomeEmailService = require('../../services/member-welcome-emails/service');
+const memberWelcomeEmails = require('../../services/member-welcome-emails').default;
 const emailAddressService = require('../../services/email-address');
 const {
   DEFAULT_EMAIL_DESIGN_SETTING_SLUG,
@@ -23,9 +24,13 @@ const messages = {
 // acts as a facade that joins/splits data between those two models while preserving the original
 // `automated_emails` API shape externally.
 const AUTOMATION_FIELDS = ['status', 'name', 'slug'];
-const TRIGGER_TIER_SCOPE_BY_SLUG = {
-  [MEMBER_WELCOME_EMAIL_SLUGS.free]: 'free',
-  [MEMBER_WELCOME_EMAIL_SLUGS.paid]: 'all_paid',
+const TRIGGER_RULE_BY_SLUG = {
+  [MEMBER_WELCOME_EMAIL_SLUGS.free]: { trigger_type: 'free_signup', scope: null, product_id: null },
+  [MEMBER_WELCOME_EMAIL_SLUGS.paid]: {
+    trigger_type: 'paid_subscription_started',
+    scope: 'any_paid_tier',
+    product_id: null,
+  },
 };
 const DEFAULT_DESCRIPTION_BY_SLUG = {
   [MEMBER_WELCOME_EMAIL_SLUGS.free]: 'Welcome new free members after they sign up.',
@@ -170,7 +175,6 @@ const controller = {
       const senderData = _.pick(data, SENDER_FIELDS);
       const automationData = _.pick(data, AUTOMATION_FIELDS);
       automationData.description = DEFAULT_DESCRIPTION_BY_SLUG[data.slug];
-      automationData.trigger_tier_scope = TRIGGER_TIER_SCOPE_BY_SLUG[data.slug];
       emailAddressService.init();
       validateEmailSenderFields(emailAddressService.service, senderData);
 
@@ -178,6 +182,12 @@ const controller = {
         const automation = await models.Automation.add(automationData, {
           ...frame.options,
           transacting,
+        });
+        await transacting('automation_trigger_rules').insert({
+          ...TRIGGER_RULE_BY_SLUG[data.slug],
+          id: ObjectId().toHexString(),
+          automation_id: automation.id,
+          created_at: new Date(),
         });
         const email = await models.WelcomeEmailAutomatedEmail.add(
           {
@@ -315,9 +325,8 @@ const controller = {
       method: 'edit',
     },
     async query(frame) {
-      memberWelcomeEmailService.init();
       const data = frame.data;
-      const result = await memberWelcomeEmailService.api.editSharedSenderOptions({
+      const result = await memberWelcomeEmails.service.editSharedSenderOptions({
         sender_name: data.sender_name,
         sender_email: data.sender_email,
         sender_reply_to: data.sender_reply_to,
@@ -341,10 +350,7 @@ const controller = {
     },
     data: ['token'],
     async query(frame) {
-      memberWelcomeEmailService.init();
-      const result = await memberWelcomeEmailService.api.verifySenderPropertyUpdate(
-        frame.data.token,
-      );
+      const result = await memberWelcomeEmails.service.verifySenderPropertyUpdate(frame.data.token);
       const defaultDesignSettings = await getDefaultEmailDesignSettings();
       return {
         ...result,
@@ -371,8 +377,7 @@ const controller = {
       method: 'edit',
     },
     async query(frame) {
-      memberWelcomeEmailService.init();
-      return await memberWelcomeEmailService.api.previewEmail({
+      return await memberWelcomeEmails.service.previewEmail({
         subject: frame.data.subject,
         lexical: frame.data.lexical,
         automatedEmailId: frame.options.id,
@@ -397,8 +402,7 @@ const controller = {
       method: 'edit',
     },
     async query(frame) {
-      memberWelcomeEmailService.init();
-      await memberWelcomeEmailService.api.sendTestEmail({
+      await memberWelcomeEmails.service.sendTestEmail({
         email: frame.data.email,
         subject: frame.data.subject,
         lexical: frame.data.lexical,

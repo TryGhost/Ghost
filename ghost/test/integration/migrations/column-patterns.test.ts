@@ -51,6 +51,13 @@ describe('A column pattern on MySQL', function () {
     await refused({ slug: 'first_' });
   });
 
+  it('holds an escaped question mark as a literal one', async function () {
+    await commands.createTable(TABLE, knex, { slug: { ...slug, pattern: '^why\\?$' } });
+
+    await knex(TABLE).insert({ slug: 'why?' });
+    await refused({ slug: 'wh' });
+  });
+
   it('refuses a line break after any end of the value, not only the last', async function () {
     await commands.createTable(TABLE, knex, { slug: { ...slug, pattern: '^company$|^team$' } });
 

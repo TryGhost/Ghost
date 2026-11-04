@@ -1,5 +1,4 @@
 import { type Filter, FilterBar, Filters } from '@tryghost/shade/patterns';
-import { useShade } from '@tryghost/shade/app';
 import { Inline } from '@tryghost/shade/primitives';
 import type { ReactNode } from 'react';
 import { cn } from '@tryghost/shade/utils';
@@ -44,7 +43,6 @@ export function PostsFilters({
   viewActions,
   onFiltersChange,
 }: PostsFiltersProps) {
-  const { isAdmin7 } = useShade();
   const fields = usePostFilterFields(resource, currentUser, params);
   const hasFilters = filters.length > 0;
 
@@ -53,12 +51,9 @@ export function PostsFilters({
   const trailingActions = hasFilters ? (
     <FilterBar.Actions>
       <FilterBar.Action
-        className={cn(
-          'hidden items-center lg:inline-flex',
-          !isAdmin7 && 'text-muted-foreground hover:text-foreground',
-        )}
+        className="hidden items-center lg:inline-flex"
         type="button"
-        variant={isAdmin7 ? 'ghost' : 'outline'}
+        variant="ghost"
         onClick={() => onFiltersChange([])}
       >
         Clear
@@ -76,7 +71,7 @@ export function PostsFilters({
       gap="sm"
     >
       <Filters
-        addButton={<Filters.Trigger collapseLabel={iconOnly} />}
+        addButton={<Filters.Trigger />}
         // Each field maps to one URL param; a second chip per field
         // would sit there without being in the URL.
         allowMultiple={false}

@@ -5,9 +5,12 @@ import { HOST_ERROR_CODES, decodeBridgeError, type BridgeErrorCode } from '@tryg
  *
  * - `not_framed`: the page is not framed in Admin, so there is nothing to connect to.
  * - `not_connected`: Admin did not start the app in time.
- * - `duplicate_sdk`: another copy of the SDK in the page has already connected, or tried to.
- * - `invalid_context`: Admin started the app with a context this SDK cannot read.
- * - `session_ended`: this document has left the app session, or the session has ended.
+ * - `duplicate_sdk`: another copy of the SDK in the page has already connected, or tried to,
+ *   because the page loads the SDK more than once. Load a single copy for the whole page.
+ * - `invalid_context`: Admin started the app with a context this SDK cannot read. Updating the
+ *   SDK usually fixes it.
+ * - `session_ended`: this document has left the app session, usually because the page reloaded
+ *   or navigated away, or the session has ended. Every call fails after that.
  * - `invalid_argument`: the app passed something that cannot be sent.
  * - `invalid_path`: a path that is not an Admin API path, or not a route within the app; or
  *   one the Admin API only redirects, such as a path without its trailing `/`.

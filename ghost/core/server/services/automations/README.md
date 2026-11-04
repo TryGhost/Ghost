@@ -4,7 +4,7 @@ Automations run a series of actions for a member after signup. Each automation i
 
 ## How a run moves forward
 
-The member repository calls `trigger()` after signup.
+The member repository calls `notify(event)` after signup or a paid subscription change. Matching events start automation runs.
 
 The database repository creates run(s) and queues their first step(s). Ghost's boot process starts the service, which checks for ready steps. It checks again when a new run starts or a later step becomes ready. An in-memory timer handles checks while Ghost is running; the scheduler can wake Ghost after a restart.
 
@@ -12,7 +12,7 @@ Each check locks ready steps, then runs up to 100 at once. A `wait` action advan
 
 ## Where to look
 
-- [`automations-api.ts`](automations-api.ts) handles reads, edits, validation, and signup triggers. Edits require one path with no branches or loops.
+- [`automations-api.ts`](automations-api.ts) handles reads, edits, validation, and event notifications. Edits require one path with no branches or loops.
 - [`database-automations-repository.ts`](database-automations-repository.ts) stores automations, runs, and steps.
 - [`service.ts`](service.ts) starts checks and schedules future ones.
 - [`poll.ts`](poll.ts) runs ready steps.
@@ -50,7 +50,7 @@ from those same rows. The cards sum to the total entries count.
 - **In progress:** any pending step, provided every step has a known status.
 - **Completed:** all recorded steps finished.
 - **Exited early:** no pending steps, and at least one failed, automation-disabled,
-  member-status-changed, or member-unsubscribed step.
+  member-status-changed, member-tier-changed, or member-unsubscribed step.
 
 Runs with no recorded steps are excluded from both chart and cards. An unexpected
 step status fails the request, including when another step is pending. There is no

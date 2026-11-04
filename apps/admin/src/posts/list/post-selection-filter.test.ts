@@ -2,12 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { getPostSelectionFilter, type PostSelection } from './post-selection-filter';
 
 /**
- * The highest-stakes string in the port: this is what gets appended to
+ * The highest-stakes string here: this is what gets appended to
  * `DELETE /posts/?filter=` and `PUT /posts/bulk?filter=`. A wrong branch here
  * doesn't misrender something — it edits or deletes the wrong posts.
- *
- * Ported branch-for-branch from the `filter` getter in
- * `apps/ember-admin/app/components/posts-list/selection-list.js`.
  */
 
 const selection = (overrides: Partial<PostSelection> = {}): PostSelection => ({
@@ -72,7 +69,7 @@ describe('getPostSelectionFilter', () => {
     });
   });
 
-  // Insertion order, as Ember's Set does — so the string is stable across
+  // Insertion order, so the string is stable across
   // renders and a request can be compared against an expectation.
   it('emits ids in the order they were selected', () => {
     const ids = new Set<string>();

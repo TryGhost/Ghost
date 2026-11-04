@@ -34,7 +34,7 @@ const TierCard: React.FC<TierCardProps> = ({ tier }) => {
           updateRoute({ route: `tiers/${tier.id}` });
         }}
       >
-        <div className="text-[1.65rem] leading-tight font-bold tracking-tight text-black dark:text-white">
+        <div className="text-[1.65rem] leading-tight font-bold tracking-tight text-black in-data-[admin7-design=true]:font-title dark:text-white">
           {tier.name}
         </div>
         <div className="mt-2 flex items-baseline">
