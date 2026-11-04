@@ -22,7 +22,7 @@ const mailService = require('../../../core/server/lib/mail') as {
 const membersService = require('../../../core/server/services/members') as {
   stripeConnect: StripeConnect;
 };
-const { MaxLimit }: typeof import('@tryghost/limit-service') = require('@tryghost/limit-service');
+const db: typeof import('../../../core/server/data/db') = require('../../../core/server/data/db');
 const {
   limitService: limits,
 }: typeof import('../../../core/server/services/limits') = require('../../../core/server/services/limits');
@@ -543,6 +543,23 @@ describe('Host limits', function () {
       return role.id;
     };
 
+    async function countStaffSeats(): Promise<number> {
+      const [users] = await db
+        .knex('users')
+        .join('roles_users', 'users.id', 'roles_users.user_id')
+        .join('roles', 'roles_users.role_id', 'roles.id')
+        .whereNot('roles.name', 'Contributor')
+        .whereNot('users.status', 'inactive')
+        .countDistinct('users.id', { as: 'count' });
+      const [invites] = await db
+        .knex('invites')
+        .join('roles', 'invites.role_id', 'roles.id')
+        .whereNot('roles.name', 'Contributor')
+        .count('invites.id', { as: 'count' });
+
+      return Number(users.count) + Number(invites.count);
+    }
+
     it('refuses an invitation that would take the site past its staff allowance', async function () {
       await hostLimits.setHostLimits({ staff: { max: 1 } });
 
@@ -562,10 +579,7 @@ describe('Host limits', function () {
           .post('invites/')
           .body({ invites: [{ email, role_id: role }] })
           .expectStatus(201);
-        await hostLimits.setHostLimits({ staff: { max: 100 } });
-        const staff = limits.limits.staff;
-        assert.ok(staff instanceof MaxLimit);
-        const count = Number(await staff.currentCountQuery());
+        const count = await countStaffSeats();
         await hostLimits.setHostLimits({ staff: { max: count - (aboveCapacity ? 1 : 0) } });
 
         const { body: resent } = await agent
@@ -574,10 +588,17 @@ describe('Host limits', function () {
           .expectStatus(201);
 
         assert.notEqual(resent.invites![0].id, original.invites![0].id);
-        assert.equal(Number(await staff.currentCountQuery()), count);
+        assert.equal(await countStaffSeats(), count);
         const { body } = await agent
           .post('invites/')
-          .body({ invites: [{ email: 'new-at-capacity@example.com', role_id: role }] })
+          .body({
+            invites: [
+              {
+                email: `new-${aboveCapacity ? 'above' : 'at'}-capacity@example.com`,
+                role_id: role,
+              },
+            ],
+          })
           .expectStatus(403);
         assert.equal(body.errors?.[0].type, 'HostLimitError');
       });
@@ -589,10 +610,7 @@ describe('Host limits', function () {
         .post('invites/')
         .body({ invites: [{ email, role_id: await roleId('Contributor') }] })
         .expectStatus(201);
-      await hostLimits.setHostLimits({ staff: { max: 100 } });
-      const staff = limits.limits.staff;
-      assert.ok(staff instanceof MaxLimit);
-      const count = Number(await staff.currentCountQuery());
+      const count = await countStaffSeats();
       await hostLimits.setHostLimits({ staff: { max: count } });
 
       const { body } = await agent
