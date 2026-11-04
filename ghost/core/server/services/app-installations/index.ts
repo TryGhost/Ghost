@@ -4,7 +4,7 @@ import logging from '@tryghost/logging';
 import { defineService } from '../../../kernel/define-service';
 import config from '../../../shared/config';
 import urlUtils from '../../../shared/url-utils';
-import { recordAppInstallationAction, type RecordAppInstallationAction } from './actions';
+import { ActionLog } from '../../lib/action-log/action-log';
 import { createAppFetcher } from './fetch-from-app';
 import { createIconFetcher } from './fetch-icon';
 import { createIdentityChecker, readTrustedOrigins } from './identity-check';
@@ -89,11 +89,7 @@ export default defineService('App Installations', () => {
   // change config.
   appsConfig();
   const { knex } = require('../../data/db');
-  const models = require('../../models');
   const externalRequest = require('../../lib/request-external');
-
-  const recordAction: RecordAppInstallationAction = (input) =>
-    recordAppInstallationAction({ Action: models.Action, logging, ...input });
 
   const fetchFromApp = createAppFetcher({
     request: externalRequest,
@@ -102,7 +98,7 @@ export default defineService('App Installations', () => {
 
   return new AppInstallationsService({
     knex,
-    recordAction,
+    actionLog: new ActionLog({ knex, logging }),
     loadManifest: createManifestLoader({
       fetchFromApp,
       logging,

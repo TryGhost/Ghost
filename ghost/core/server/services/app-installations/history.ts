@@ -1,6 +1,6 @@
 import { movedBetween, type AppManifest } from '@tryghost/app-contracts/manifest';
 import { z } from 'zod';
-import type { AppInstallationEvent } from './actions';
+import type { ActionVerb } from '../../lib/action-log/kinds';
 import type { AppInstallationHistoryEntry, HistoryActor } from './codec';
 import type { AppInstallationManifestSource } from './schema';
 
@@ -137,5 +137,5 @@ function newestFirst(entries: Entry[]): Entry[] {
   );
 }
 
-const withEvent = (event: AppInstallationEvent) => (action: HistoryAction) =>
+const withEvent = (event: ActionVerb<'app_installation'>) => (action: HistoryAction) =>
   action.event === event;

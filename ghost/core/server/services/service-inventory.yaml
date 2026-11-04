@@ -514,9 +514,9 @@ services:
       construction:
         summary: >-
           Boot awaits initialization after database setup. The factory returns one
-          AppInstallationsService from knex, the Action model and a manifest loader built
+          AppInstallationsService from knex, the shared action log and a manifest loader built
           from the outbound request guard, a manifest-rules getter and the localhost alias.
-          The root supplies logging to manifest loading and action recording. Successful
+          The root supplies logging to manifest loading and the action log. Successful
           initialization retains that ready instance. Root units prove no connection access
           on import, one retained instance without queries/delivery, and no publication after
           a failed connection acquisition followed by a successful retry. They also verify

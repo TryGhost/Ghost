@@ -9,8 +9,6 @@ const endpointPaths = [
   require.resolve('../../../../../core/server/api/endpoints/app-sessions'),
 ];
 const requestPath = require.resolve('../../../../../core/server/lib/request-external');
-// Load the real model registry before substituting the root's database connection.
-const models = require('../../../../../core/server/models');
 const db = require('../../../../../core/server/data/db');
 const { IncorrectUsageError } = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
@@ -223,9 +221,11 @@ describe('App installations composition root', function () {
   it('logs action recording failures without failing the installation', async function () {
     const failure = new Error('History write failed');
     const error = sandbox.stub(logging, 'error');
-    const add = sandbox.stub(models.Action, 'add').rejects(failure);
     const insert = sandbox.stub().resolves();
-    const trx = sandbox.stub().returns({ insert });
+    const insertAction = sandbox.stub().rejects(failure);
+    const trx = sandbox
+      .stub()
+      .callsFake((table: string) => ({ insert: table === 'actions' ? insertAction : insert }));
     Object.assign(query, {
       transaction: async (write: (connection: Knex.Transaction) => Promise<void>) =>
         write(trx as unknown as Knex.Transaction),
@@ -243,9 +243,11 @@ describe('App installations composition root', function () {
 
     assert.equal(installed.app_id, manifest.id);
     sinon.assert.calledTwice(insert);
-    sinon.assert.calledOnce(add);
-    assert.equal(add.firstCall.args[0].resource_id, installed.id);
-    sinon.assert.calledOnceWithExactly(error, failure);
+    sinon.assert.calledOnce(insertAction);
+    assert.equal(insertAction.firstCall.args[0].resource_id, installed.id);
+    sinon.assert.calledOnce(error);
+    assert.deepEqual(error.firstCall.args[0].event, { name: 'action_log.write_failed' });
+    assert.equal(error.firstCall.args[0].err, failure);
   });
 
   // Found at boot, rather than failing every app.
