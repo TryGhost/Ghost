@@ -174,6 +174,14 @@ those adapters.
 If E2E tests fail with `ECONNREFUSED 127.0.0.1:3306`, start the development
 server with `pnpm dev`.
 
+## Limit Parallel Workers
+
+Ghost Core's database-backed suites boot a Ghost per worker, and the Admin
+acceptance and browser E2E suites drive a browser per worker. Each sizes its
+workers as if it had the machine to itself, so tests running in several
+worktrees at once can exhaust memory. Set `TEST_WORKERS_COUNT` to cap the
+workers of all three suites.
+
 ## Run Browser E2E Tests
 
 The browser suite needs its test infrastructure running. For the normal

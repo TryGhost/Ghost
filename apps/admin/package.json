@@ -83,6 +83,7 @@
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-eslint-react": "workspace:*",
+    "@internal/cfg-test-workers": "workspace:*",
     "@sentry/vite-plugin": "catalog:",
     "@tailwindcss/vite": "catalog:",
     "@testing-library/dom": "catalog:",

@@ -1220,6 +1220,9 @@ importers:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
         version: link:../../tools/configs/eslint-react
+      '@internal/cfg-test-workers':
+        specifier: workspace:*
+        version: link:../../tools/configs/test-workers
       '@sentry/vite-plugin':
         specifier: 'catalog:'
         version: 5.4.1(rollup@4.62.2)(supports-color@10.2.2)
@@ -2044,6 +2047,9 @@ importers:
       '@faker-js/faker':
         specifier: 'catalog:'
         version: 10.6.0
+      '@internal/cfg-test-workers':
+        specifier: workspace:*
+        version: link:../tools/configs/test-workers
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.64.1
@@ -2609,6 +2615,9 @@ importers:
       '@internal/cfg-eslint':
         specifier: workspace:*
         version: link:../tools/configs/eslint
+      '@internal/cfg-test-workers':
+        specifier: workspace:*
+        version: link:../tools/configs/test-workers
       '@tryghost/email-mock-receiver':
         specifier: 2.3.19
         version: 2.3.19
@@ -4489,6 +4498,8 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
+
+  tools/configs/test-workers: {}
 
   tools/configs/typescript: {}
 
