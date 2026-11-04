@@ -19,13 +19,13 @@ import { z } from 'zod';
 import { IdentityTextSchema, type Part } from '@tryghost/metafield-types/identity';
 import { csvColumnsForField } from '@tryghost/metafield-csv';
 import { LucideIcon } from '@tryghost/shade/utils';
-import { createMutation, createQuery } from '../utils/api/hooks';
+import { createMutation, createQuery, createQueryWithId } from '../utils/api/hooks';
 import { countryName, countryOptions } from '../utils/countries';
 import { ValidationError } from '../utils/errors';
 
 // Re-exported so the import mapping can recognize a custom_fields.* column (same reason
 // as the re-exports below).
-export { isMetafieldColumn } from '@tryghost/metafield-csv';
+export { isMetafieldColumn, splitOptions as splitListCell } from '@tryghost/metafield-csv';
 
 export type { Address as MemberCustomFieldAddress } from '@tryghost/metafield-types';
 export { valueSchemaFor as memberCustomFieldValueSchema } from '@tryghost/metafield-types';
@@ -362,6 +362,35 @@ export const useBrowseMemberCustomFields = createQuery<MemberCustomField[]>({
   parseResponse: (raw) => readMemberCustomFieldsResponse(raw).members_metafields,
 });
 
+/** The Admin API's answer to a read of the values members hold for a field. */
+export interface MemberCustomFieldHeldValuesResponseType {
+  values: { value: string }[];
+}
+
+const heldValuesDataType = 'MemberCustomFieldHeldValuesResponseType';
+
+const useHeldValuesAt = createQueryWithId<MemberCustomFieldHeldValuesResponseType>({
+  dataType: heldValuesDataType,
+  path: (field) => `/members/metafields/${field}/values/`,
+});
+
+/**
+ * The text of every option members hold for a list field, including options the field no longer
+ * offers, so the filter can offer them all. Call it only for a list field. A failed read degrades
+ * quietly, as the field definitions read does in Admin's use-definitions: the filter still offers
+ * the field's own options. A failed read isn't asked again each time a filter opens, so an Admin
+ * running against a Core without this read doesn't keep asking.
+ */
+export const useMemberCustomFieldHeldValues = (
+  field: Pick<MemberCustomField, 'namespace' | 'key'> | undefined,
+  { enabled = true }: { enabled?: boolean } = {},
+) =>
+  useHeldValuesAt(field ? `${field.namespace}/${field.key}` : '', {
+    enabled: enabled && field !== undefined,
+    defaultErrorHandler: false,
+    retryOnMount: false,
+  });
+
 // Browse hides archived fields by default. Settings is the one surface that
 // manages both, so it opts into every status through this variant rather than
 // hand-writing the filter grammar in the view.
@@ -459,7 +488,12 @@ export const useEditMemberCustomField = createMutation<
   path: (field) => `/members/metafields/custom/${field.key}/`,
   parseResponse: readMemberCustomFieldsResponse,
   body: ({ key: _key, ...patch }) => ({ members_metafields: [patch] }),
-  invalidateQueries: { dataType },
+  // Editing a field can stop it offering an option members hold. The filter then offers that
+  // option only because the values read returns it, so an edit refreshes that read. A member's
+  // write doesn't: it can only add an option the field offers, which the filter already offers, or
+  // remove the last answer naming a removed option, which leaves the filter offering an option that
+  // finds nobody until the values read is next made.
+  invalidateQueries: { dataType: [dataType, heldValuesDataType] },
 });
 
 /**

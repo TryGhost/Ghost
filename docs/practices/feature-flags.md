@@ -137,13 +137,22 @@ Settings, the editor, the automation editor, mobile and pages without a
 navigation inside the same sidebar, pinned without changing the stored mode. Mobile keeps the sidebar sheet, and the flag-off path
 preserves the docked sidebar and the separate Settings sidebar.
 
+The `admin7Design` milestone also sets column headers in a small uppercase label
+style. Section headings on member details, tag details and Settings share one
+style, and member stats and list text follow the prototype.
+
 The `admin7Design` milestone also gives text-entry fields 4px corners and 14px
-text, gives 16px icons a shared stroke and sets column headers in a small
-uppercase label style. Colored banners are a flat color with
-darker shades of it for text and no outline. On member detail, the sidebar moves to
-the right with Engagement first, and sections sit under larger headings with a
-line across the top instead of a card. Checkboxes, radios, Filter bar items
-and Koenig keep their current look, and other icon sizes keep their own stroke.
+text. Checkboxes, radios, Filter bar items and Koenig keep their current look.
+
+The `admin7Design` milestone also makes colored banners a flat color with darker
+shades of it for text and no outline.
+
+The `admin7Design` milestone also gives cards 8px corners and makes large titles
+and the space above them follow the width of the page area.
+
+The `admin7Design` milestone also moves the member detail sidebar to the right with
+Engagement first, and sections sit under larger headings with a line across the
+top instead of a card.
 
 The `admin7CustomizeFromViewSite` experiment adds Customize to the frame's top
 bar on View site, opening the Design settings in a panel over a live, browsable

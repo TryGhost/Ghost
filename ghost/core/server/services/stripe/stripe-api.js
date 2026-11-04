@@ -77,10 +77,12 @@ const MANAGED_PAYMENTS_DISABLED = { enabled: false };
  */
 
 /**
- * A preview must show what it was asked to, so Stripe refusing it is reported, over a part of the
- * settings or not.
+ * Fails a preview of checkout settings that Stripe refused, with a ValidationError the Admin
+ * shows, whether or not the refusal was about a part of the settings. A buyer's checkout goes
+ * ahead without what Stripe refuses, but a preview must show exactly the settings it was asked
+ * to show, so it never goes ahead without them.
  *
- * @param {Refusal | null} refusal Null when Stripe refused something other than a part.
+ * @param {Refusal | null} refusal Null when Stripe's refusal wasn't about a part of the checkout.
  * @param {unknown} err
  */
 const reportRefusal = (refusal, err) => {
@@ -91,9 +93,11 @@ const reportRefusal = (refusal, err) => {
 };
 
 /**
- * A buyer's checkout goes ahead without what Stripe refuses, so each refusal is logged with
- * Stripe's reason, beside the outcome metric that counts it. Every event names the parts left out
- * as the Admin API names them, so one query finds them all.
+ * Logs Stripe refusing part of a buyer's checkout, with Stripe's reason. The buyer's checkout goes
+ * ahead without the refused parts and the buyer sees no error, so this line, beside the
+ * `stripe_checkout.session` span that counts the refusal, is the record of why. Each of the three
+ * events lists the parts left out under `parts`, by their Admin API names, so one query on
+ * `parts` finds every refusal of a given part.
  *
  * @param {Refusal} refusal
  * @param {unknown} err
@@ -132,9 +136,12 @@ const logRefusal = (refusal, err) => {
 };
 
 /**
- * The options a session is created again with. A retry gets its own idempotency key, made from
- * the original, so Stripe never answers it with a refusal it stored for the request before, and
- * the same refusal retried again lands on the same key.
+ * The request options for sending a session's request again after a refusal. Stripe ties an
+ * idempotency key to the parameters of the first request sent with it, and answers a later
+ * request with the same key with the stored response, or with an error when the parameters
+ * differ. A retry leaves parts out, so its parameters differ and it needs a key of its own. The
+ * retry's key is the original key plus the parts left out, so when the whole request is sent
+ * again with the original key, its retries reuse their keys too.
  *
  * @param {{idempotencyKey?: string} | undefined} requestOptions
  * @param {Refusal} refusal
@@ -166,19 +173,22 @@ module.exports = class StripeAPI {
   }
 
   /**
-   * Creates a Checkout session in a checkout's design, asking the buyer for what it asks for.
-   * Every session Ghost creates for a buyer goes through here, and no other session does, as
-   * each one is recorded as a buyer's checkout.
+   * Creates a Checkout session for a buyer, in the checkout's design and asking the buyer for
+   * what the checkout asks for. Every session Ghost creates for a buyer must go through here, and
+   * no other session may, because each call records a `stripe_checkout.session` span, and those
+   * spans must count buyers' sessions and nothing else. Previews and the branding read create
+   * their sessions elsewhere.
    *
-   * If Stripe refuses the design or something the checkout asks the buyer for, the session is
-   * created again without it, and without all of them when Stripe refuses without naming what,
-   * as a checkout that looks plainer or asks for less still takes payment.
+   * If Stripe refuses the design or something the checkout asks for, Ghost creates the session
+   * again without that part, or without every part when Stripe doesn't name what it refused. A
+   * checkout that looks plainer or asks for less still takes the buyer's payment.
    *
    * @private
    * @param {object} params
    * @param {object} [requestOptions]
    * @param {CheckoutDefinition | null} checkout How the checkout looks and what it asks the
-   *   buyer for. Null sends nothing from Ghost's settings, so Stripe uses the merchant's own.
+   *   buyer for. Null adds nothing from Ghost's checkout settings, so Stripe uses the branding set
+   *   in the publisher's Stripe dashboard.
    */
   async _createCheckoutSession(params, requestOptions, checkout) {
     const parts = checkoutSessionParts(checkout, params);
@@ -191,19 +201,19 @@ module.exports = class StripeAPI {
   }
 
   /**
-   * Creates the session, and again without the parts of Ghost's settings Stripe refuses it over:
-   * the part whose parameter Stripe names, or every part when it names no parameter, as any of
-   * them could be why. Stripe naming a parameter of the session's own fails it, and so does a
-   * refusal that persists once no parts are left, as the settings weren't why.
+   * Asks Stripe to create the session. When Stripe refuses the request because of parts of the
+   * checkout (see `refusalOf`), sends the request again without those parts, until Stripe accepts
+   * it. The session fails instead when Stripe refuses a parameter Ghost sets itself, or keeps
+   * refusing once no parts are left, because then the checkout settings weren't the reason.
    *
    * @private
    * @param {object} params
    * @param {object} [requestOptions]
-   * @param {CheckoutSessionParts} parts The parameters from Ghost's settings, by the part of the
-   *   checkout that adds them. The session can go without any of them.
-   * @param {(refusal: Refusal, err: unknown) => void} onRefused Called when Stripe refuses parts
-   *   of the settings, before the session is created again without them. Throwing stops the
-   *   session being created.
+   * @param {CheckoutSessionParts} parts The parameters each part of the checkout adds, keyed by
+   *   part. The session works without any of them.
+   * @param {(refusal: Refusal, err: unknown) => void} onRefused Called with each refusal of parts,
+   *   before the request is sent again without them. Throwing from it stops the retries and fails
+   *   the session with what was thrown.
    */
   async _createWithFallback(params, requestOptions, parts, onRefused) {
     try {
@@ -711,10 +721,10 @@ module.exports = class StripeAPI {
   }
 
   /**
-   * Create a Stripe Checkout Session that previews checkout settings not saved yet: the same
-   * checkout a signup by someone who isn't a member yet gets, marked as a preview. Stripe
-   * refusing any of the settings is reported rather than hidden, as the preview must show what
-   * it was asked to.
+   * Creates a Checkout session that previews checkout settings the publisher hasn't saved yet.
+   * The session is the one a new member signing up would get, marked as a preview in its
+   * metadata. If Stripe refuses any of the settings, the preview fails with a ValidationError
+   * saying so (see `reportRefusal`).
    *
    * @param {string} priceId
    * @param {object} options
@@ -1059,7 +1069,8 @@ module.exports = class StripeAPI {
       await this._rateLimitBucket.throttle();
       await this._stripe.checkout.sessions.expire(session.id);
     } catch (err) {
-      // Not worth failing the read for: nobody has the session's page, and it lapses in a day.
+      // Not worth failing the branding read for: no buyer has the session's link, so nobody can
+      // open it, and Stripe expires it after a day anyway.
       logging.warn(
         { event: { name: 'stripe_checkout.branding.expire_failed' }, err, session_id: session.id },
         'Failed to expire the session used to read the Stripe Checkout branding',

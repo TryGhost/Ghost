@@ -87,6 +87,22 @@ const compactPageChromeClassName = [
  * FloatingSidebarContentSync).
  */
 const pinnedPageChromeClassName = '[--page-bleed-start:var(--floating-sidebar-gap)]';
+
+/*
+ * Large titles follow the width of the page area, so they settle together as
+ * the window narrows. It's worked out from the viewport because making the page
+ * a size container would trap its fixed descendants.
+ * - space above: the space beside the page's content, up to 100px, matching the
+ *   gutter once the column can't reach its full width
+ * - size: 44px from a 1400px page area, already smaller by the time the space
+ *   has settled, and 28px from 1000px
+ */
+const largeTitleClassName = [
+  '[--page-area-width:calc(100vw_-_2_*_var(--admin-frame-side)_-_var(--floating-sidebar-gap))]',
+  '[--large-title-space:clamp(var(--page-gutter),calc((var(--page-area-width)_-_var(--content-width))_/_2_+_var(--page-gutter)),100px)]',
+  '[--large-title-size:clamp(28px,calc(0.04_*_var(--page-area-width)_-_12px),44px)]',
+  '[--large-title-size-sm:max(20px,calc(var(--large-title-size)_*_8_/_11))]',
+].join(' ');
 // The inset is the scrollport: its padding box is what clips. It stays put
 // while the page inside it slides, so a backdrop never shows an edge.
 const backdropInsetClassName = [
@@ -359,6 +375,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           className={cn(
             'flex-1 focus:outline-hidden',
             sidebarVisible ? pageChromeClassName : 'min-h-0',
+            floatingSidebar && largeTitleClassName,
             floatingSidebar &&
               (sidebarPinned ? pinnedPageChromeClassName : compactPageChromeClassName),
             isSettingsRoute && 'min-h-0',

@@ -86,9 +86,10 @@ function targetOf(raw: unknown): Target {
 
 const Texts = z.array(z.string());
 
-// The texts a list names, as NQL compiles it: any of them (`value:['a','b']`) for `$in`, or none
-// of them (`value:-['a','b']`) for `$nin`. Null for anything else.
-function listed(value: unknown, operator: '$in' | '$nin'): string[] | null {
+// The texts a list names, as NQL compiles it: any of them (`value:['a','b']`) for `$in`, every one
+// of them (`value:['a'+'b']`) for `$all`, or none of them (`value:-['a','b']`) for `$nin`. Null
+// for anything else.
+function listed(value: unknown, operator: '$in' | '$all' | '$nin'): string[] | null {
   if (!isPlainObject(value)) {
     return null;
   }
@@ -132,6 +133,12 @@ export function createMetafieldsFilterTransformer() {
     const anyOf = listed(value, '$in');
     if (anyOf) {
       return some(rowsHolding(target, anyOf));
+    }
+
+    // "All of" asks for a row holding each text in turn, since each row holds a single option.
+    const allOf = listed(value, '$all');
+    if (allOf) {
+      return { $and: allOf.map((text) => some(rowsHolding(target, [text]))) };
     }
 
     // "None of" is asked of a value that is there: the target holds something, and none of what

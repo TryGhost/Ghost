@@ -12,7 +12,8 @@ import {
   withTypedSettings,
   type TypedSettings,
 } from '@tryghost/metafield-types';
-import { metafieldCodec } from './codec';
+import { metafieldCodec, metafieldCodecWithDefaults } from './codec';
+import { readStoredField } from './stored-fields';
 import { type Key, KeySchema, type Namespace } from '@tryghost/metafield-types/identity';
 import type { Namespaces } from './namespaces';
 import { DbTypedSettings, FIELD_STATUS, FieldStatusSchema } from './schema';
@@ -175,7 +176,16 @@ export class MetafieldDefinitionsService {
 
   private async list(query: DefinitionQuery): Promise<Metafield[]> {
     const rows = await inFieldOrder(query.read).select('*');
-    return rows.map((row) => z.decode(metafieldCodec, row));
+    return rows.flatMap((row) => this.readField(row) ?? []);
+  }
+
+  /** A stored definition, or null for one that can't be read even with its type's defaults. */
+  private readField(row: Readonly<Record<string, unknown>>): Metafield | null {
+    return readStoredField(
+      row,
+      { asStored: metafieldCodec, withDefaults: metafieldCodecWithDefaults },
+      { reader: 'definitions', tracking: this.tracking },
+    );
   }
 
   async read(namespace: Namespace, key: Key, audience: Audience): Promise<Metafield> {
@@ -374,7 +384,7 @@ export class MetafieldDefinitionsService {
     const row = await executor(FIELDS_TABLE)
       .where({ namespace: field.namespace, key: field.key })
       .first();
-    return row ? z.decode(metafieldCodec, row) : null;
+    return row ? this.readField(row) : null;
   }
 
   /** The same entry `add` writes. Only the caller knows its transaction committed. */
@@ -501,12 +511,13 @@ export class MetafieldDefinitionsService {
     const byKey = new Map(rows.map((row) => [row.key, row]));
     return keys.map((key) => {
       const row = byKey.get(key);
-      if (!row) {
+      const field = row ? this.readField(row) : null;
+      if (!field) {
         throw new errors.InternalServerError({
           message: 'A custom field could not be read back after it was written.',
         });
       }
-      return z.decode(metafieldCodec, row);
+      return field;
     });
   }
 

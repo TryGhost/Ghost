@@ -742,19 +742,19 @@ describe('oembed-service', function () {
         });
       });
 
-      it('leaves embeds without a thumbnail unchanged', async function () {
+      it('leaves embeds without a thumbnail or a YouTube video ID unchanged', async function () {
         const processImageFromUrlStub = sinon.stub(oembedService, 'processImageFromUrl');
 
         nock('https://www.youtube.com').get('/oembed').query(true).reply(200, {
           type: 'video',
           version: '1.0',
-          html: '<iframe src="https://www.youtube.com/embed/1234"></iframe>',
+          html: '<iframe src="https://www.youtube.com/embed/videoseries?list=PL1234"></iframe>',
           width: 200,
           height: 113,
         });
 
         const response = await oembedService.fetchOembedDataFromUrl(
-          'https://www.youtube.com/watch?v=1234',
+          'https://www.youtube.com/playlist?list=PL1234',
         );
 
         assert.equal('thumbnail_url' in response, false);

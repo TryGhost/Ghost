@@ -1028,6 +1028,10 @@ export interface FilterFieldConfig<T = unknown> {
   valueSource?: ValueSource<string>;
   // Default operator to use when creating a filter for this field
   defaultOperator?: string;
+  // Operators that take no value, such as one asking whether a field is set at all. While one is
+  // chosen the value input is hidden and the filter's values are cleared, as for `empty` and
+  // `not_empty`. A field that renders its operator inside its value decides that for itself.
+  valuelessOperators?: readonly string[];
   // Default value to use when creating a filter for this field
   defaultValue?: T;
   // Hide the operator dropdown and only show the operator as text
@@ -1071,6 +1075,21 @@ const flattenFields = <T = unknown,>(fields: FilterFieldsConfig<T>): FilterField
     return [...acc, item];
   }, []);
 };
+
+/**
+ * Whether a field's operator takes no value: `empty` and `not_empty` never do, nor do the
+ * operators a field lists as valueless, unless the field renders its operator inside its value.
+ */
+function takesNoValue<T>(field: FilterFieldConfig<T> | undefined, operator: string): boolean {
+  if (operator === 'empty' || operator === 'not_empty') {
+    return true;
+  }
+  return (
+    field !== undefined &&
+    !field.renderOperatorInValue &&
+    (field.valuelessOperators?.includes(operator) ?? false)
+  );
+}
 
 const getFieldsMap = <T = unknown,>(
   fields: FilterFieldsConfig<T>,
@@ -2037,8 +2056,7 @@ function FilterValueSelector<T = unknown>({
     }
   }, [autoFocus]);
 
-  // Hide value input for empty/not empty operators
-  if (operator === 'empty' || operator === 'not_empty') {
+  if (takesNoValue(field, operator)) {
     return null;
   }
 
@@ -2551,8 +2569,10 @@ export const FiltersContent = <T = unknown,>({
         filters.map((filter) => {
           if (filter.id === filterId) {
             const updatedFilter = { ...filter, ...updates };
-            // Clear values for empty/not empty operators
-            if (updates.operator === 'empty' || updates.operator === 'not_empty') {
+            if (
+              updates.operator !== undefined &&
+              takesNoValue(fieldsMap[filter.field], updates.operator)
+            ) {
               updatedFilter.values = [] as T[];
             }
             return updatedFilter;
@@ -2561,7 +2581,7 @@ export const FiltersContent = <T = unknown,>({
         }),
       );
     },
-    [filters, onChange],
+    [filters, onChange, fieldsMap],
   );
 
   const removeFilter = useCallback(
@@ -2875,8 +2895,10 @@ export function Filters<T = unknown>({
         filters.map((filter) => {
           if (filter.id === filterId) {
             const updatedFilter = { ...filter, ...updates };
-            // Clear values for empty/not empty operators
-            if (updates.operator === 'empty' || updates.operator === 'not_empty') {
+            if (
+              updates.operator !== undefined &&
+              takesNoValue(fieldsMap[filter.field], updates.operator)
+            ) {
               updatedFilter.values = [] as T[];
             }
             return updatedFilter;
@@ -2885,7 +2907,7 @@ export function Filters<T = unknown>({
         }),
       );
     },
-    [filters, onChange],
+    [filters, onChange, fieldsMap],
   );
 
   const removeFilter = useCallback(

@@ -241,7 +241,12 @@ function PublishFlowDialog({
     >
       <Box className="relative min-h-full">
         <Inline className="absolute inset-x-0 top-0 p-4" justify="between">
-          <Text aria-hidden="true" as="h2" className="text-lg tracking-tight" weight="semibold">
+          <Text
+            aria-hidden="true"
+            as="h2"
+            className="text-lg tracking-tight in-data-[admin7-design=true]:font-title"
+            weight="semibold"
+          >
             Publish
           </Text>
           <PageHeader.ActionGroup>

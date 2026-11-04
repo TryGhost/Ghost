@@ -12,7 +12,7 @@ import {
   SECTION_NAMES,
 } from '../stripe-checkout-config/models';
 
-/** The Checkout session parameters a part of Ghost's checkout settings adds. */
+/** The Stripe Checkout session parameters that one part of a checkout can add to a session. */
 export interface CheckoutSessionParams {
   branding_settings?: SnakeKeys<StripeCheckoutDesign>;
   shipping_address_collection?: { allowed_countries: string[] };
@@ -20,57 +20,73 @@ export interface CheckoutSessionParams {
   tax_id_collection?: { enabled: true };
 }
 
-/** The parameters of the session a checkout's own are added to that decide how they ask. */
+/**
+ * The session's own parameters, set by Ghost rather than by the publisher's checkout settings,
+ * that change which parameters a checkout's parts add. With `automatic_tax` enabled, for example,
+ * the session already lets a business buyer give a tax ID, so the tax ID part adds nothing.
+ */
 export interface SessionParams {
   automatic_tax?: { enabled: boolean };
 }
 
 /**
- * The Checkout session parameters each part of a checkout adds: its design, and each part it
- * asks the buyer for. A part Stripe refuses is left out whole, so a parameter that only works
- * beside another never goes without it.
+ * The Checkout session parameters each part of a checkout adds, keyed by the part, so that a part
+ * Stripe refuses can be left out of the next request whole.
  */
 export type CheckoutSessionParts = {
   [Part in CheckoutPart]?: CheckoutSessionParams;
 };
 
-/** A part of a checkout: its design, or something it asks the buyer for. */
+/**
+ * A part of a checkout: its design, or one thing the publisher has the checkout ask the buyer for,
+ * such as a phone number.
+ */
 export type CheckoutPart = 'design' | keyof CheckoutAsks;
 
-/** Every part a checkout can have. */
 export const CHECKOUT_PARTS: readonly CheckoutPart[] = ['design', ...COLLECTED_SECTIONS];
 
-/** A part's name in the Admin API, which metrics and logs use too. */
+/**
+ * The name the Admin API uses for a part, such as `tax_number`. Span attributes and log lines use
+ * the same name, so one name finds a part everywhere.
+ */
 export const partName = (part: CheckoutPart) =>
   part === 'design' ? 'design' : SECTION_NAMES[part];
 
 /**
- * The parts of a checkout Stripe refused a session over: the one whose parameter it named, or
- * every part when it named no parameter, as any of them could be why. Stripe names none when it
- * refuses what a checkout may save onto an existing customer, which Ghost works out from all of
- * the parts together.
+ * Which parts of a checkout a Stripe refusal was about. When Stripe names the parameter it
+ * refused, the refusal is about the one part that added that parameter. When Stripe names no
+ * parameter, any of the parts could be the reason, so the refusal is about all of them. Stripe
+ * names no parameter, for example, when it refuses what the session may save onto an existing
+ * customer (`customer_update`), which Ghost works out from all of the parts together.
  */
 export type Refusal =
   | { named: true; part: CheckoutPart; param: string }
-  // Never empty, so every retry leaves out at least one part and the retries come to an end.
+  // Never empty, so that each retry leaves out at least one more part, and the retries always end.
   | { named: false; parts: [CheckoutPart, ...CheckoutPart[]] };
 
-/** The error Stripe throws for a session it refuses as invalid, naming the parameter if it can. */
+/**
+ * The error stripe-node throws when Stripe rejects a request as invalid. `param` is the parameter
+ * Stripe objected to, when Stripe names one.
+ */
 const StripeRefusal = z.object({
   type: z.literal('StripeInvalidRequestError'),
   param: z.string().nullish(),
 });
 
-/** Whether Stripe refused a session as invalid, for any reason. */
+/** Whether Stripe rejected a request as invalid, whatever the reason. */
 export const isStripeRefusal = (err: unknown): boolean => StripeRefusal.safeParse(err).success;
 
-/** Whether Stripe's refusal names this parameter, or a field inside it. */
+/**
+ * Whether the parameter Stripe named is `key` or a field inside it. Stripe names a field inside a
+ * parameter with brackets, such as `branding_settings[font_family]`.
+ */
 const names = (param: string, key: string) => param === key || param.startsWith(`${key}[`);
 
 /**
- * The parts of a checkout Stripe refused a session over, or null when the refusal isn't the
- * checkout's: Stripe named a parameter of the session's own, refused it for another reason, or
- * the session had no parts left.
+ * Works out which parts of a checkout a Stripe error was about. Returns null when the error isn't
+ * about the checkout's parts: when the error isn't Stripe rejecting the request as invalid, when
+ * Stripe named a parameter Ghost sets itself rather than one a part adds, or when the request
+ * had no parts left to leave out.
  */
 export function refusalOf(err: unknown, parts: CheckoutSessionParts): Refusal | null {
   const refusal = StripeRefusal.safeParse(err);
@@ -92,14 +108,16 @@ export function refusalOf(err: unknown, parts: CheckoutSessionParts): Refusal | 
   return part ? { named: true, part, param } : null;
 }
 
-/** The parts a refusal leaves a session without. */
+/** The parts to leave out of the next request after a refusal. */
 export const refusedParts = (refusal: Refusal): CheckoutPart[] =>
   refusal.named ? [refusal.part] : refusal.parts;
 
 /**
- * What a preview says when Stripe refuses it, and the request property naming the part it
- * refused. Without a named part, or with no refusal of a part at all, it can't say the settings
- * are why, as Stripe also refuses sessions for reasons of the session's or account's own.
+ * The error an Admin preview of checkout settings shows when Stripe refuses the preview's session,
+ * and the property of the preview request the error points at. Only a refusal that names a part
+ * can blame the publisher's settings. Otherwise the message stays general, because Stripe also
+ * refuses sessions for reasons unrelated to the settings, such as the state of the publisher's
+ * Stripe account.
  */
 export function previewRefusal(refusal: Refusal | null): { message: string; property?: string } {
   if (!refusal?.named) {
@@ -115,7 +133,6 @@ export function previewRefusal(refusal: Refusal | null): { message: string; prop
   };
 }
 
-/** The parts of a checkout without those a refusal leaves out. */
 export function withoutParts(parts: CheckoutSessionParts, refusal: Refusal): CheckoutSessionParts {
   const kept = { ...parts };
   for (const part of refusedParts(refusal)) {
@@ -124,7 +141,10 @@ export function withoutParts(parts: CheckoutSessionParts, refusal: Refusal): Che
   return kept;
 }
 
-/** The Checkout session parameters that ask for each collected part a checkout asks for. */
+/**
+ * For each thing a checkout can ask the buyer for, the Checkout session parameters that make
+ * Stripe ask for it.
+ */
 const STRIPE_PARAMS: {
   [Section in keyof CheckoutAsks]: (
     asking: NonNullable<CheckoutAsks[Section]>,
@@ -133,22 +153,22 @@ const STRIPE_PARAMS: {
 } = {
   shipping: ({ allowedCountries }) => ({
     shipping_address_collection: {
-      // Stripe has no way to say everywhere, and a checkout without countries collects no
-      // address, so everywhere is every country Stripe accepts.
+      // Stripe has no value meaning every country, and an empty list collects no address at all,
+      // so a checkout that ships everywhere (null) sends every country Stripe accepts.
       allowed_countries: allowedCountries ?? [...STRIPE_ALLOWED_COUNTRIES],
     },
   }),
   phone: () => ({ phone_number_collection: { enabled: true } }),
-  // Automatic tax already lets a business buyer give a tax ID, in the tax parameters every
-  // session that takes payment sends.
+  // With automatic tax, every session that takes payment already sends `tax_id_collection` in
+  // its tax parameters (see `taxSessionParams`), so the tax ID part adds nothing.
   taxNumber: (_asking, session) =>
     session.automatic_tax?.enabled ? {} : { tax_id_collection: { enabled: true } },
 };
 
 /**
- * The Checkout session parameters a checkout adds to a session, by the part that adds them: its
- * design as `branding_settings`, and what it asks the buyer for. Without a checkout there are
- * none, so Stripe uses the merchant's own settings.
+ * The Checkout session parameters a checkout adds, keyed by the part that adds each. With no
+ * checkout, nothing is added, and Stripe uses the branding set in the publisher's Stripe
+ * dashboard.
  */
 export function checkoutSessionParts(
   checkout: CheckoutDefinition | null,
@@ -163,8 +183,9 @@ export function checkoutSessionParts(
   const ask = <Section extends keyof CheckoutAsks>(section: Section) => {
     const asking = checkout.asks[section];
     const params = asking && STRIPE_PARAMS[section](asking, session);
-    // A part that adds nothing, such as a tax ID automatic tax already asks for, isn't one the
-    // session can go without.
+    // A part that adds no parameters, such as a tax ID that automatic tax already asks for, isn't
+    // kept as a part, so the session's span doesn't record it as applied and a refusal can't be
+    // blamed on it.
     if (params && Object.keys(params).length) {
       parts[section] = params;
     }
@@ -185,8 +206,9 @@ export interface TaxSessionParams {
 }
 
 /**
- * The tax parameters of a Checkout session that takes payment. With automatic tax, Stripe
- * works out the tax from the buyer's address and lets a business buyer give a tax ID.
+ * The tax parameters of a Checkout session that takes payment. With automatic tax on, Stripe
+ * works out the tax from the buyer's address, and the session also lets a business buyer give a
+ * tax ID.
  */
 export function taxSessionParams({ automaticTax }: SessionTax): TaxSessionParams {
   if (!automaticTax) {
@@ -211,8 +233,9 @@ export interface CustomerUpdate {
 }
 
 /**
- * The Checkout session to create: the session's own parameters with those each part of its
- * checkout adds, and what Stripe has to be allowed to save onto an existing customer for them.
+ * The parameters of the Checkout session to create: the session's own parameters, the parameters
+ * each remaining part of the checkout adds, and the `customer_update` those parameters need when
+ * the session is for an existing Stripe customer.
  */
 export function sessionCreateParams<Params extends CustomerSessionParams>(
   params: Params,
@@ -228,11 +251,15 @@ export function sessionCreateParams<Params extends CustomerSessionParams>(
 }
 
 /**
- * What Stripe has to be allowed to save onto an existing customer before it creates a session
- * that works out tax or takes a tax ID. Stripe checks both against the customer's address, which
- * no customer Ghost makes holds, and against the shipping address once the session collects one,
- * and takes a tax ID only once it may save the business name. Stripe refuses an update on a
- * session without a customer.
+ * What Stripe must be allowed to save onto an existing Stripe customer before Stripe will create
+ * a session that works out tax or takes a tax ID. Stripe checks both against the customer's
+ * address, and no customer Ghost creates has one, so Stripe must be allowed to save the address
+ * the buyer enters, and also the shipping address when the session collects one. Stripe only
+ * takes a tax ID when it may also save the business name the buyer gives with it.
+ *
+ * Returns null when the session needs no update: when it neither works out tax nor takes a tax
+ * ID, or when it has no customer, because Stripe refuses `customer_update` on a session without
+ * one.
  */
 function customerUpdateOf(session: CustomerSessionParams): CustomerUpdate | null {
   const takesTaxId = Boolean(session.tax_id_collection?.enabled);

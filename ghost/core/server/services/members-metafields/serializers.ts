@@ -32,3 +32,11 @@ export const toMetafieldsResponse = z
     })),
   }))
   .pipe(MetafieldsResponse);
+
+const HeldValuesResponse = z.object({ values: z.array(z.object({ value: z.string() })) });
+
+/** The values members hold for a field, as the Admin API answers a read of them. */
+export const toHeldValuesResponse = z
+  .array(z.string())
+  .transform((values) => ({ values: values.map((value) => ({ value })) }))
+  .pipe(HeldValuesResponse);

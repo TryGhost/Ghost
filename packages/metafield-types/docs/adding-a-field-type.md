@@ -88,8 +88,8 @@ settings as JSON from the field's `settings` column, and null as none for any ot
 
 Everything that checks, shows or edits a value takes the whole field, so a set's handler
 in `matchField` gets its settings: `valueSchemaFor(field)` builds a set's rule from its
-options, and Admin's editor offers them. A rule that depends on nothing but the type is built
-once per type; a set's is built from its field whenever it is asked for.
+options, and Admin's editor and filter offer them. A rule that depends on nothing but the type
+is built once per type; a set's is built from its field whenever it is asked for.
 
 A set keeps one row per option picked, under the SHA-256 of the option's text, so the same
 text is always the same row and a filter naming an option's text finds it by the table's

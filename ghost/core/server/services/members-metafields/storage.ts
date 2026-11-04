@@ -171,6 +171,18 @@ export function storedValueAs(
 }
 
 /**
+ * The text of each option in `rows`, given one row per option. A row counts only when its path is
+ * the path a set keeps that option at. The texts are sorted, so the filter offers them in the same
+ * order every time.
+ */
+export function heldOptionTexts(rows: readonly ValueRow[]): string[] {
+  return rows
+    .filter((row) => row.path === optionPath(row.value_text))
+    .map((row) => row.value_text)
+    .sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+}
+
+/**
  * Where each shape keeps a row whose text is its field's whole value, given that text, or null for
  * a shape whose whole value is never the text of one row.
  */

@@ -224,8 +224,8 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({
       <Card className="overflow-hidden" data-testid="tag-metadata-card">
         <CardContent className="p-6">
           <Stack gap="lg">
-            <Stack gap="none">
-              <span className="text-[14px] font-semibold">Meta data</span>
+            <Stack className="in-data-[admin7-design=true]:gap-1" gap="none">
+              <h3 className="section-heading text-[14px] font-semibold">Meta data</h3>
               <span className="text-[13px] leading-[16px] font-normal tracking-normal text-muted-foreground">
                 Extra content for search engines and social accounts.
               </span>

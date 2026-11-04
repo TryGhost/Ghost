@@ -129,27 +129,31 @@ Hover, active, and selected states are their own tokens — don't reach for raw 
 
 In dark mode `--interactive-hover`, `--button-hover`, and `--tab-hover` are translucent (`gray-900/30`) so they composite over whatever surface sits behind them. `--table-row-hover` is opaque (it matches `--surface-elevated`) — use it where you need an opaque fill, like sticky table cells where content scrolls underneath.
 
+## Card corners
+
+`Card` and `SettingGroup` round their corners with `--radius-card`. Anything clipped to those corners, like a section footer, should use `rounded-t-card` or `rounded-b-card` so it follows the same value. With `admin7Design` on, it's 8px.
+
 ## Form control borders
 
 Outline `Button`s use `--control-border`, not `--border-default`. In dark mode it lifts a step above the page border so form controls keep enough contrast against the page surface. Borders inside cards or popovers can keep using `--border-default`.
 
 Text-entry fields, including inputs, textareas and select triggers, take their chrome from the `inputSurface` recipe: `--field-surface`, `--field-border` and `--radius-field`. Their colors follow `--control-surface` and `--control-border`. With `admin7Design` on, they have 4px corners and 14px text (`--text-field`). With it off, they use `--radius-control`. Checkboxes and radios use the recipe but keep a visible edge with `--control-surface` and `--border-strong`.
 
-## Warning colors
-
-`--state-warning` is dark enough for text and icons on white. Don't tint it or use it as a fill, because it goes brown. Warning `Banner`s already handle this: with `admin7Design` on, all colored banners are a flat color with darker shades of it for text and no outline. Use `--state-warning-surface` for other warning boxes, and `--state-warning-fill` for dots, stars, solid labels and card borders.
-
-## Icon stroke
-
-With `admin7Design` on, every 16px icon takes `--icon-stroke`, which overrides any stroke set on the icon. The value is in the icon's 24-unit grid rather than screen pixels, so 1.75 is about 1.17px at 16px. Other icon sizes keep their own stroke.
-
 ## Section headings and stats
 
-With `admin7Design` on, the `section-heading` class sets a heading for a section inside a page, one step below the page title. `stat-label` sets the small label above a stat or a value, and `stat-value` sets a stat's large, light number. Under a heading, Card's `ruled` variant gives a section a line across the top with no outline or side padding.
+With `admin7Design` on, the `section-heading` class sets a heading for a section inside a page or card, one step below the page title, at `--text-section-heading`. A page whose headings sit outside cards, like member details, sets it to `--text-section-heading-lg`. `stat-label` sets the small label above a stat or a value, and `stat-value` sets a stat's large, light number.
+
+## Title weight
+
+With `admin7Design` on, large titles, section headings, modal titles and tier names share one weight, `--font-weight-title`. Use the `font-title` class for it, so they can be tuned together.
 
 ## Column headers
 
 Give any element that labels a column the `column-label` class. `TableHead`, `TableHeadButton` and `DataListHeader` already have it. With `admin7Design` on, it sets the label to uppercase, 10px, medium weight, 0.04em spacing in `--text-secondary`.
+
+## Warning colors
+
+With `admin7Design` on, `--state-warning` is dark enough for text and icons on white, but don't tint it or use it as a fill, because it goes brown. With the flag off it's a lighter yellow that's too faint for text on white. Warning `Banner`s already handle this: with `admin7Design` on, all colored banners are a flat color with darker shades of it for text and no outline. Use `--state-warning-surface` for other warning boxes, and `--state-warning-fill` for dots, stars, solid labels and card borders.
 
 ## Dropdown surface contract
 

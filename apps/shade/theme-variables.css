@@ -139,9 +139,9 @@
   --button-ghost-hover: color-mix(in oklab, var(--color-gray-700) 10%, transparent);
   /* An open or pressed outline Button or ghost Select reads like a selected tab */
   --button-pressed: var(--tab-active);
-  /* The gradient Banner's glow: Shapeshifter sky and indigo */
+  /* The gradient Banner's glow: Shapeshifter sky and pink */
   --banner-glow-start: var(--color-blue-400);
-  --banner-glow-end: var(--color-purple-500);
+  --banner-glow-end: var(--color-pink-500);
   --interactive-hover: var(--button-hover);
   --filter-bar-background: var(--color-gray-100);
   --filter-bar-item-hover: var(--color-gray-50);
@@ -149,6 +149,8 @@
   --control-readonly-surface: var(--color-gray-50);
   --control-disabled-surface: var(--color-gray-100);
   --control-border: color-mix(in oklab, var(--color-gray-200), var(--color-gray-300));
+  --text-section-heading: 1.6rem;
+  --text-section-heading-lg: 1.9rem;
   /* Text-entry fields are white with a light outline. */
   --field-surface: var(--control-surface);
   --field-readonly-surface: var(--control-readonly-surface);
@@ -159,8 +161,7 @@
   --field-chip-internal-border: var(--field-chip-surface);
   --radius-field: var(--radius-sm);
   --text-field: var(--text-control-lg);
-  /* Stroke of 16px icons, in the icon's 24-unit grid: about 1.17px on screen. */
-  --icon-stroke: 1.75;
+  --radius-card: var(--radius-lg);
   --control-pressed-shadow: lch(0 0 0 / 0.07) 0px 1px 2px 0px inset;
   --control-outline-shadow:
     lch(0 0 0 / 0.14) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
@@ -170,7 +171,7 @@
     lch(0 0 0 / 0.04) 0px 1px 1px 0px, var(--control-pressed-shadow);
   /* Between gray-50 and gray-100, and tuned by eye. */
   --table-row-hover: oklch(98.3% 0.0005 255);
-  /* The sea on member maps: between gray-200 and the field fill, tuned by eye. */
+  /* The sea on member maps: between gray-100 and gray-200, tuned by eye. */
   --map-surface: oklch(95.5% 0.0008 255);
   /* Selected rows read as picked-out rather than merely hovered, so this is a
      hue change and not another step on the gray ramp - a darker gray would
@@ -316,6 +317,7 @@
   --field-chip-internal-border: var(--border);
   --radius-field: var(--radius-control);
   --text-field: var(--text-control);
+  --radius-card: var(--radius-xl);
 }
 
 /* Dark mode. With admin7Design off, the previous dark block below wins. */

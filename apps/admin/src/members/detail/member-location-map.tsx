@@ -182,7 +182,7 @@ export default function MemberLocationMap({
       className={cn(
         'relative isolate',
         // The full-bleed map clips itself: it holds still as the page slides, out of this box
-        !(fullBleed && showsMap) && 'overflow-hidden rounded-xl',
+        !(fullBleed && showsMap) && 'overflow-hidden rounded-card',
         showsMap
           ? '[&_[data-page-header=main]]:items-end'
           : '[&_[data-page-header=main]]:items-start',

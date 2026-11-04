@@ -8,6 +8,7 @@ import {
   FieldLabel,
   Switch,
 } from '@tryghost/shade/components';
+import { SHAPE_SETTINGS } from '@tryghost/metafield-types';
 import { optionText, type SetSettings } from '@tryghost/metafield-types/structure';
 
 interface ListInputs {
@@ -35,6 +36,11 @@ const ListFieldSettings: React.FC<{
   /** The field's settings as saved, for a list being edited. */
   saved?: SetSettings;
   /**
+   * What the inputs start from, when it isn't what is saved: a new list's defaults, or settings
+   * suggested for it, such as the options an import column holds.
+   */
+  initial?: SetSettings;
+  /**
    * Problems with the settings, by where they are within them: '' for the settings as a whole,
    * `options` for the options as a whole, `options.2` for the third option, and `multiple` for
    * the switch.
@@ -44,11 +50,12 @@ const ListFieldSettings: React.FC<{
   // Prefixes the inputs' ids, as the form's other inputs are.
   idPrefix: string;
   onChange: (settings: SetSettings) => void;
-}> = ({ saved, errors = {}, disabled, idPrefix, onChange }) => {
+}> = ({ saved, initial, errors = {}, disabled, idPrefix, onChange }) => {
+  const start = initial ?? saved ?? SHAPE_SETTINGS.set.defaults;
   const [inputs, setInputs] = useState<ListInputs>({
-    options: saved?.options ?? [],
+    options: start.options,
     newOption: '',
-    multiple: saved?.multiple ?? false,
+    multiple: start.multiple,
   });
 
   const update = (changes: Partial<ListInputs>) => {

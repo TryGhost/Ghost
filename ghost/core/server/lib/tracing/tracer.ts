@@ -1,13 +1,13 @@
 /**
- * What an attribute can hold: the values OpenTelemetry's attributes take, except that a list
- * can't hold `null` or `undefined`, which OpenTelemetry allows so a list can keep the place of a
- * missing value and no span here needs.
+ * The values a span attribute can hold. These are the values OpenTelemetry's attributes take,
+ * minus one: OpenTelemetry also lets a list hold `null` or `undefined`, to keep the place of a
+ * missing value, and no span in Ghost needs that.
  */
 export type AttributeValue = string | number | boolean | string[] | number[] | boolean[];
 
 /**
- * Must stay a subset of OpenTelemetry's `Span`, so that an OpenTelemetry span can be passed in
- * its place.
+ * This interface must stay a subset of OpenTelemetry's `Span`, so that an OpenTelemetry span can
+ * be passed wherever this one is expected.
  */
 export interface Span {
   /** Setting a key that is already set replaces its value. */
@@ -15,35 +15,40 @@ export interface Span {
 }
 
 /**
- * Follows OpenTelemetry's tracing API, so that OpenTelemetry can replace it without changing the
- * operations it traces. It differs only where that makes tracing simpler or safer:
+ * Ghost's tracer follows OpenTelemetry's tracing API, so that OpenTelemetry can replace it
+ * without changing the code that is traced. It differs from OpenTelemetry's API only where that
+ * makes tracing simpler or safer:
  *
- * - `track` ends the span and sets its status itself: success when the operation returns, and
- *   failure when it throws. OpenTelemetry leaves both to the operation, so each operation would
- *   repeat the same `try`, `catch` and `finally`.
- * - For the same reason, `track` records a failure's exception itself, which OpenTelemetry also
- *   leaves to the operation.
- * - The exception is in Ghost's `err` field, not OpenTelemetry's `exception.*` attributes, as
- *   that is where Ghost's logs keep errors.
+ * - `track` ends the span and sets the span's status itself: success when the traced operation
+ *   returns, and failure when the operation throws. OpenTelemetry leaves both to the operation,
+ *   so every traced operation would repeat the same `try`, `catch` and `finally`.
+ * - For the same reason, `track` records the exception of a failed operation itself, which
+ *   OpenTelemetry also leaves to the operation.
+ * - The exception goes in the log line's `err` field, where Ghost's logs keep errors, rather
+ *   than in OpenTelemetry's `exception.*` attributes.
  *
- * As OpenTelemetry's conventions for exceptions in logs describe, the exception is a log line of
- * its own, named `<name>.exception`, with the span's trace and span ids and its attributes. The
- * span keeps only the error's type, because error messages can hold personal data such as a
- * buyer's email address, and spans are kept as metrics, far longer than logs.
+ * Following OpenTelemetry's conventions for exceptions in logs, the exception is logged as a line
+ * of its own, named `<span name>.exception`, carrying the span's trace id, span id and
+ * attributes. The span itself keeps only the error's type, never its message, because error
+ * messages can hold personal data such as a buyer's email address, and spans are kept as
+ * metrics, far longer than logs.
  *
- * It also lacks two things OpenTelemetry has. An error the operation expects, such as a buyer
- * mistyping their email address, can't be marked as anything but a failure, so its exception is
- * logged as an error, like any other exception that leaves its span. And a span started
- * inside another isn't linked to it as its child, so each span is a trace of its own.
+ * Ghost's tracer also lacks two things OpenTelemetry has:
+ *
+ * - An operation can't mark an error as expected, such as a buyer mistyping their email address.
+ *   Every error that leaves a span fails the span, and the error is logged as an exception.
+ * - A span started while another span is running isn't linked to the running span as its child,
+ *   so each span is a trace of its own.
  */
 export interface Tracer {
   /**
-   * Runs `fn` and returns its result or rethrows its error unchanged, whether or not recording
-   * its span succeeds.
+   * Runs `fn` inside a new span, and returns what `fn` returns or rethrows what `fn` throws,
+   * unchanged. A failure to record the span never changes what `track` returns or throws.
    *
-   * Dashboards and alerts find spans by `name`, so it names the operation in the domain's terms,
-   * the way Ghost names log events, such as `stripe_checkout.session`. A name taken from the
-   * code that runs the operation would change whenever that code is refactored.
+   * Dashboards and alerts find spans by `name`, so `name` should describe the operation in the
+   * domain's terms, the way Ghost names log events, such as `stripe_checkout.session`. A name
+   * taken from the code that runs the operation, such as a function's name, would change whenever
+   * that code is refactored, and the dashboards and alerts would stop finding the span.
    */
   track<Result>(name: string, fn: (span: Span) => Promise<Result>): Promise<Result>;
 }

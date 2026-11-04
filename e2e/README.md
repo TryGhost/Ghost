@@ -185,6 +185,7 @@ The fixtures a test usually reaches for:
 - `ghostInstance` - the running instance: `baseUrl`, `database`, `port`, `siteUuid`, `containerId`, `instanceId`
 - `resolvedIsolation` - `'per-file' | 'per-test'` for the current test
 - `resetEnvironment()` - force an environment recycle (see the escape hatch below)
+- `fixtureApp` - a small app on a local server for the Apps tests, with a manifest the test can change and an Admin page that connects with the app SDK as built from the checkout, which `pnpm test` builds (`helpers/services/apps`)
 
 The fixture resolves isolation mode per test file:
 

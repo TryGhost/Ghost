@@ -1112,4 +1112,58 @@ describe('Create Stripe Checkout Session', function () {
       assert.ok(session.shipping_address_collection);
     });
   });
+
+  describe('A checkout that can’t start', function () {
+    let paidTierId;
+
+    beforeAll(async function () {
+      const {
+        body: { tiers },
+      } = await adminAgent.get('/tiers/');
+      paidTierId = tiers.find((tier) => tier.type === 'paid').id;
+    });
+
+    beforeEach(function () {
+      mockManager.mockStripe();
+    });
+
+    async function failedCheckout(body = {}) {
+      const { body: response } = await membersAgent
+        .post('/api/create-stripe-checkout-session/')
+        .body({ tierId: paidTierId, cadence: 'month', ...body })
+        .expectStatus(400);
+      return response.errors[0];
+    }
+
+    it('answers that an unknown tier doesn’t exist', async function () {
+      const error = await failedCheckout({ tierId: '0123456789abcdef01234567' });
+      assert.equal(error.message, 'This tier does not exist.');
+    });
+
+    it('answers a malformed tier id with a server error, as the tiers read throws on one', async function () {
+      await membersAgent
+        .post('/api/create-stripe-checkout-session/')
+        .body({ tierId: 'not-an-id', cadence: 'month' })
+        .expectStatus(500);
+    });
+
+    it('answers that it couldn’t start a checkout Stripe failed', async function () {
+      stripeMocker.checkoutSessionError = { type: 'api_error', message: 'Stripe is down' };
+
+      assert.equal((await failedCheckout()).message, 'Unable to initiate checkout session');
+    });
+
+    it('answers a buyer’s email Stripe refused with Stripe’s code', async function () {
+      stripeMocker.checkoutSessionError = {
+        type: 'invalid_request_error',
+        code: 'email_invalid',
+        param: 'customer_email',
+        message: 'Invalid email address: buyer@example',
+      };
+
+      const error = await failedCheckout();
+      assert.equal(error.message, 'Unable to initiate checkout session');
+      assert.equal(error.code, 'email_invalid');
+    });
+  });
 });

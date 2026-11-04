@@ -67,6 +67,8 @@ const SIZES = {
 // Around the header row's icon, and the body's side padding, so the search
 // field and nav rows line up with the icon.
 const PADDING = 20;
+// With the body's own top padding, matches the side padding above a collapsed header.
+const COLLAPSED_HEADER_HEIGHT = 12;
 const PIN_BUTTON_SIZE = 32;
 // Puts the pin glyph PADDING from the panel's right edge.
 const PIN_BUTTON_RIGHT = 12;
@@ -191,6 +193,12 @@ interface FloatingSidebarProps extends Omit<React.ComponentProps<'div'>, 'childr
   label: string;
   /** Beside the icon in the open and pinned panel's header row (e.g. the site title); hidden while closed. */
   header: React.ReactNode;
+  /**
+   * Collapses the header row, icon included, giving its room to the body (e.g.
+   * a screen whose navigation has its own top row). It applies while pinned
+   * with `pinLocked`, as otherwise the pin button needs the row.
+   */
+  headerHidden?: boolean;
   /** Unfurls beneath the header when open or pinned. */
   children: React.ReactNode;
   bodyClassName?: string;
@@ -238,6 +246,7 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
       icon,
       label,
       header,
+      headerHidden = false,
       children,
       bodyClassName,
       openWidth = FLOATING_SIDEBAR_OPEN_WIDTH,
@@ -439,20 +448,22 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
 
     // Pinned, the panel is always open; `open` alone shows the pin button.
     const expanded = open || pinned;
+    const headerCollapsed = headerHidden && pinLocked && pinned;
 
     // The header, pin button and body are clipped away while closed, so they
     // must not be reachable; the circle itself takes focus. A locked pin
-    // button is hidden in every state.
+    // button is hidden in every state, as is a collapsed header.
     React.useLayoutEffect(() => {
-      for (const element of [headerRef.current, bodyRef.current]) {
-        if (element) {
-          element.inert = !expanded;
-        }
+      if (headerRef.current) {
+        headerRef.current.inert = !expanded || headerCollapsed;
+      }
+      if (bodyRef.current) {
+        bodyRef.current.inert = !expanded;
       }
       if (pinButtonRef.current) {
         pinButtonRef.current.inert = !expanded || pinLocked;
       }
-    }, [expanded, pinLocked]);
+    }, [expanded, headerCollapsed, pinLocked]);
 
     // The gap changes width at once, never through a transition: that would
     // lay the content out again on every frame. Content that should glide to
@@ -666,12 +677,17 @@ const FloatingSidebar = React.forwardRef<HTMLDivElement, FloatingSidebarProps>(
               data-slot="floating-sidebar-header"
               style={{
                 width: openWidth - 2,
-                height: headerHeight,
+                height: headerCollapsed ? COLLAPSED_HEADER_HEIGHT : headerHeight,
+                opacity: headerCollapsed ? 0 : 1,
+                pointerEvents: headerCollapsed ? 'none' : undefined,
                 gap: sizes.gap,
                 paddingLeft: PADDING,
                 paddingRight: onPinnedChange
                   ? PIN_BUTTON_RIGHT + PIN_BUTTON_SIZE + sizes.gap
                   : PADDING,
+                transitionProperty: morph ? 'height, opacity' : 'none',
+                transitionDuration: `${morphDuration}ms`,
+                transitionTimingFunction: glideEasing,
               }}
             >
               {/* The circle's focus target: focusing or clicking it opens the

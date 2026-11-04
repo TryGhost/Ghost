@@ -26,25 +26,55 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+}
 
-  /* admin7Design: every 16px icon takes --icon-stroke, whichever way it was
-     sized. CSS can't read a rendered size, so this lists those ways. A parent's
-     size beats an icon's own size class unless that class is forced. Important, in
-     this layer, so it also beats strokes forced with an unlayered `!` utility. */
-  [data-admin7-design='true']
-    :is(
-      svg.size-4,
-      svg[class~='size-4!'],
-      svg.h-4.w-4,
-      svg[width='16'],
-      [class*='[&_svg]:size-4'] svg:not([class*='size-'][class*='!']),
-      [class*='[&>svg]:size-4'] > svg:not([class*='size-'][class*='!'])
-    ) {
-    &,
-    & * {
-      stroke-width: var(--icon-stroke) !important;
-    }
+/* admin7Design: a heading for a section inside a page, one step below the page's
+   title. Comes after the utilities at their specificity, so it beats text classes. */
+.section-heading:where([data-admin7-design='true'] *) {
+  font-size: var(--text-section-heading);
+  font-weight: var(--font-weight-title);
+  letter-spacing: 0;
+  line-height: 1.35;
+  font-variation-settings:
+    'opsz' 22,
+    'wght' var(--font-weight-title);
+  font-feature-settings: 'dlig', 'zero', 'ss01', 'ss02', 'cv10', 'cv06';
+}
+
+/* admin7Design: a small label above a stat or a value, and a large, light number
+   for stats. Any unit inside the number is the number's size too. */
+.stat-label:where([data-admin7-design='true'] *) {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.stat-value:where([data-admin7-design='true'] *) {
+  font-size: 32px;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  font-variation-settings:
+    'opsz' 36,
+    'wght' 400;
+
+  & > span {
+    color: inherit;
+    font-size: inherit;
   }
+}
+
+/* admin7Design: the label style of column headers, whichever element holds
+   them. Comes after the utilities at their specificity, so it beats their text
+   classes but not a parent's, like the Members list's hidden sizing header. A
+   TableHead used as a row title is not a column header. */
+.column-label:where([data-admin7-design='true'] :not([scope='row'])) {
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 /* admin7Design: banners are a flat color with darker shades of it for text and no
@@ -88,55 +118,6 @@
   --banner-surface: var(--banner-destructive-surface);
   --banner-foreground: var(--banner-destructive-foreground);
   --banner-secondary: var(--banner-destructive-secondary);
-}
-
-/* admin7Design: a heading for a section inside a page, one step below the page's
-   title. Comes after the utilities at their specificity, so it beats text classes. */
-.section-heading:where([data-admin7-design='true'] *) {
-  font-size: 21px;
-  font-weight: 500;
-  letter-spacing: -0.015em;
-  line-height: 1.35;
-  font-variation-settings:
-    'opsz' 28,
-    'wght' 500;
-  font-feature-settings: 'dlig', 'zero', 'ss01', 'ss02', 'cv10', 'cv06';
-}
-
-/* admin7Design: a small label above a stat or a value, and a large, light number
-   for stats. Any unit inside the number is the number's size too. */
-.stat-label:where([data-admin7-design='true'] *) {
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 1;
-}
-
-.stat-value:where([data-admin7-design='true'] *) {
-  font-size: 32px;
-  font-weight: 400;
-  letter-spacing: -0.025em;
-  line-height: 1;
-  font-variation-settings:
-    'opsz' 36,
-    'wght' 400;
-
-  & > span {
-    color: inherit;
-    font-size: inherit;
-  }
-}
-
-/* admin7Design: the label style of column headers, whichever element holds
-   them. Comes after the utilities at their specificity, so it beats their text
-   classes but not a parent's, like the Members list's hidden sizing header. A
-   TableHead used as a row title is not a column header. */
-.column-label:where([data-admin7-design='true'] :not([scope='row'])) {
-  color: var(--text-secondary);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 .shade {
@@ -200,20 +181,16 @@ html.theme-switching *::after {
 }
 
 /* A page's large title (e.g. a list page's, ListPage with large titles on):
-   the space above it and its size grow with the window, its height as much as
-   its width, so a tall screen gets the generous version and a short one stays
-   close to the compact header it replaces.
-   - space: 28px at 600px tall, 100px from 900px
-   - size: 24px at 600px tall, 44px from 900px; and 28px at 800px wide, 44px
-     from 1380px, whichever is smaller
+   the space above it and its size grow with the window.
+   - space: 28px at 600px tall, 100px from 900px. Admin follows the space beside
+     the page's content instead (admin-layout.tsx).
+   - size: 28px at 800px wide, 44px from 1380px. Admin follows the page area's
+     width instead (admin-layout.tsx).
    - size, a step down: 8/11 of it (32px at most, not under 20px), for titles
      that can run long, like a post's */
 :root {
   --large-title-space: clamp(28px, calc(24vh - 116px), 100px);
-  --large-title-size: min(
-    clamp(24px, calc(6.667vh - 16px), 44px),
-    clamp(28px, calc(2.76vw + 6px), 44px)
-  );
+  --large-title-size: clamp(28px, calc(2.76vw + 6px), 44px);
   --large-title-size-sm: max(20px, calc(var(--large-title-size) * 8 / 11));
 }
 

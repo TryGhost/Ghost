@@ -3,6 +3,7 @@ const crypto = require('node:crypto');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const sanitizeHtml = require('sanitize-html');
+const { errors: stripeErrors } = require('stripe');
 const {
   BadRequestError,
   NoPermissionError,
@@ -156,6 +157,7 @@ module.exports = class RouterController {
    * @param {any} deps.urlUtils
    * @param {any} deps.emailAddressService
    * @param {Pick<CheckoutService, 'read'>} deps.checkouts Decides the checkout a card update opens.
+   * @param {import('../../../stripe/tracking').StripeTracking} deps.tracking
    */
   constructor({
     offersAPI,
@@ -177,6 +179,7 @@ module.exports = class RouterController {
     emailAddressService,
     giftService,
     checkouts,
+    tracking,
   }) {
     this._offersAPI = offersAPI;
     this._paymentsService = paymentsService;
@@ -197,6 +200,7 @@ module.exports = class RouterController {
     this._emailAddressService = emailAddressService;
     this._giftService = giftService;
     this._checkouts = checkouts;
+    this._tracking = tracking;
   }
 
   async ensureStripe(_req, res, next) {
@@ -543,19 +547,13 @@ module.exports = class RouterController {
     } else if (tierId) {
       offer = null;
 
-      try {
-        // If the tierId is not a valid ID, the following line will throw
-        tier = await this._tiersService.api.read(tierId);
+      tier = await this._tiersService.api.read(tierId);
 
-        if (!tier) {
-          throw undefined;
-        }
-      } catch (err) {
+      if (!tier) {
         logging.error(
-          { event: { name: 'stripe_checkout.session.tier_not_found' }, err, tier_id: tierId },
+          { event: { name: 'stripe_checkout.session.tier_not_found' }, tier_id: tierId },
           'Tier not found for a checkout',
         );
-        this._sentry?.captureException?.(err);
         throw new BadRequestError({
           message: tpl(messages.tierNotFound),
           context: 'Tier with id "' + tierId + '" not found',
@@ -672,17 +670,9 @@ module.exports = class RouterController {
     // Set by server to distinguish between checkout flows in Stripe webhooks.
     options.metadata.ghostSignupContext = ghostSignupContext;
 
-    try {
-      const paymentLink = await this._paymentsService.getPaymentLink(options);
+    const paymentLink = await this._paymentsService.getPaymentLink(options);
 
-      return { url: paymentLink };
-    } catch (err) {
-      this._sentry?.captureException?.(err);
-      throw new BadRequestError({
-        err,
-        message: tpl(messages.unableToCheckout),
-      });
-    }
+    return { url: paymentLink };
   }
 
   // Helper method to generate success URL with tier welcome page if available
@@ -735,17 +725,9 @@ module.exports = class RouterController {
       });
     }
 
-    try {
-      const paymentLink = await this._paymentsService.getDonationPaymentLink(options);
+    const paymentLink = await this._paymentsService.getDonationPaymentLink(options);
 
-      return { url: paymentLink };
-    } catch (err) {
-      this._sentry?.captureException?.(err);
-      throw new BadRequestError({
-        err,
-        message: tpl(messages.unableToCheckout),
-      });
-    }
+    return { url: paymentLink };
   }
 
   /**
@@ -774,193 +756,197 @@ module.exports = class RouterController {
       });
     }
 
-    try {
-      return await this._giftService.service.startCheckout({
-        tierId: options.tierId,
-        offerId: options.offerId,
-        cadence: options.cadence,
-        duration: options.duration,
-        deliveryMethod: options.deliveryMethod,
-        recipientEmail: options.recipientEmail,
-        recipientName: options.recipientName,
-        buyerName: options.buyerName,
-        personalMessage: options.personalMessage,
-        deliveryDate: options.deliveryDate,
-        successUrl: options.successUrl,
-        cancelUrl: options.cancelUrl,
-        buyer: {
-          memberId: options.member?.id ?? null,
-          email: options.member?.get('email') ?? options.email ?? null,
-          name: options.member?.get('name') ?? null,
-          isAuthenticated: options.isAuthenticated,
-        },
-      });
-    } catch (err) {
-      if (err instanceof BadRequestError || err instanceof NoPermissionError) {
-        throw err;
-      }
-
-      this._sentry?.captureException?.(err);
-      throw new BadRequestError({
-        err,
-        message: tpl(messages.unableToCheckout),
-      });
-    }
+    return await this._giftService.service.startCheckout({
+      tierId: options.tierId,
+      offerId: options.offerId,
+      cadence: options.cadence,
+      duration: options.duration,
+      deliveryMethod: options.deliveryMethod,
+      recipientEmail: options.recipientEmail,
+      recipientName: options.recipientName,
+      buyerName: options.buyerName,
+      personalMessage: options.personalMessage,
+      deliveryDate: options.deliveryDate,
+      successUrl: options.successUrl,
+      cancelUrl: options.cancelUrl,
+      buyer: {
+        memberId: options.member?.id ?? null,
+        email: options.member?.get('email') ?? options.email ?? null,
+        name: options.member?.get('name') ?? null,
+        isAuthenticated: options.isAuthenticated,
+      },
+    });
   }
 
   async createCheckoutSession(req, res) {
-    const type = req.body.type ?? 'subscription';
-    const metadata = req.body.metadata ?? {};
-    const identity = req.body.identity;
-    const membersEnabled = true;
+    try {
+      return await this._tracking.checkout(async (attempt) => {
+        const type = req.body.type ?? 'subscription';
+        const metadata = req.body.metadata ?? {};
+        const identity = req.body.identity;
+        const membersEnabled = true;
 
-    // Check this checkout type is supported
-    if (typeof type !== 'string' || !['subscription', 'donation', 'gift'].includes(type)) {
-      throw new BadRequestError({
-        message: tpl(messages.invalidType),
-      });
-    }
+        if (typeof type !== 'string' || !['subscription', 'donation', 'gift'].includes(type)) {
+          throw new BadRequestError({
+            message: tpl(messages.invalidType),
+          });
+        }
+        attempt.starting(type);
 
-    // Optional authentication
-    let member;
-    let isAuthenticated = false;
-    if (membersEnabled) {
-      if (identity) {
-        try {
-          const claims = await this._tokenService.decodeToken(identity);
-          const email = claims && claims.sub;
-          if (email) {
+        let member;
+        let isAuthenticated = false;
+        if (membersEnabled) {
+          if (identity) {
+            let claims;
+            try {
+              claims = await this._tokenService.decodeToken(identity);
+            } catch (err) {
+              logging.error({ event: { name: 'stripe_checkout.session.identity_invalid' }, err });
+              throw new UnauthorizedError({ err });
+            }
+            const email = claims && claims.sub;
+            if (email) {
+              member = await this._memberRepository.get(
+                {
+                  email,
+                },
+                {
+                  withRelated: ['stripeCustomers', 'products'],
+                },
+              );
+              isAuthenticated = true;
+            }
+          } else if (req.body.customerEmail) {
             member = await this._memberRepository.get(
               {
-                email,
+                email: req.body.customerEmail,
               },
               {
                 withRelated: ['stripeCustomers', 'products'],
               },
             );
-            isAuthenticated = true;
           }
-        } catch (err) {
-          logging.error({ event: { name: 'stripe_checkout.session.identity_invalid' }, err });
-          this._sentry?.captureException?.(err);
-          throw new UnauthorizedError({ err });
         }
-      } else if (req.body.customerEmail) {
-        member = await this._memberRepository.get(
-          {
-            email: req.body.customerEmail,
-          },
-          {
-            withRelated: ['stripeCustomers', 'products'],
-          },
-        );
-      }
-    }
 
-    // Store attribution data in the metadata
-    await this._setAttributionMetadata(metadata);
+        await this._setAttributionMetadata(metadata);
 
-    if (metadata.newsletters) {
-      metadata.newsletters = JSON.stringify(
-        await this._validateNewsletters(JSON.parse(metadata.newsletters)),
-      );
-    }
+        if (metadata.newsletters) {
+          metadata.newsletters = JSON.stringify(
+            await this._validateNewsletters(JSON.parse(metadata.newsletters)),
+          );
+        }
 
-    removeReservedCheckoutMetadata(metadata);
+        removeReservedCheckoutMetadata(metadata);
 
-    const siteUrl = this._urlUtils.getSiteUrl();
-    const successUrl = sanitizeReturnUrl(req.body.successUrl, siteUrl);
-    const cancelUrl = sanitizeReturnUrl(req.body.cancelUrl, siteUrl);
+        const siteUrl = this._urlUtils.getSiteUrl();
+        const successUrl = sanitizeReturnUrl(req.body.successUrl, siteUrl);
+        const cancelUrl = sanitizeReturnUrl(req.body.cancelUrl, siteUrl);
 
-    // Build options
-    const options = {
-      successUrl,
-      cancelUrl,
-      email: req.body.customerEmail,
-      member,
-      metadata,
-      isAuthenticated,
-    };
+        const options = {
+          successUrl,
+          cancelUrl,
+          email: req.body.customerEmail,
+          member,
+          metadata,
+          isAuthenticated,
+        };
 
-    let response;
-    if (type === 'subscription') {
-      if (!membersEnabled) {
-        throw new BadRequestError({
-          message: tpl(messages.badRequest),
-        });
-      }
+        let response;
+        if (type === 'subscription') {
+          if (!membersEnabled) {
+            throw new BadRequestError({
+              message: tpl(messages.badRequest),
+            });
+          }
 
-      let tier;
-      let cadence;
-      let offer;
-      let giftTrialDays;
+          let tier;
+          let cadence;
+          let offer;
+          let giftTrialDays;
 
-      if (req.body.continueFromGift) {
-        if (!isAuthenticated || !member) {
-          throw new UnauthorizedError({
-            message: tpl(messages.signInRequired),
+          if (req.body.continueFromGift) {
+            if (!isAuthenticated || !member) {
+              throw new UnauthorizedError({
+                message: tpl(messages.signInRequired),
+              });
+            }
+            const continuation = await this._giftService.service.preparePaidContinuation({
+              memberId: member.id,
+              memberStatus: member.get('status'),
+            });
+
+            ({ tier, cadence } = await this._getSubscriptionCheckoutData({
+              tierId: continuation.tierId,
+              cadence: continuation.cadence,
+            }));
+            giftTrialDays = continuation.trialDays;
+          } else {
+            ({ tier, cadence, offer } = await this._getSubscriptionCheckoutData(req.body));
+          }
+
+          response = await this._createSubscriptionCheckoutSession({
+            ...options,
+            tier,
+            cadence,
+            offer,
+            giftTrialDays,
+            referrer: req.get('referer'),
+          });
+
+          if (isAuthenticated && tier && tier.welcomePageURL) {
+            response.welcomePageUrl = tier.welcomePageURL;
+          }
+        } else if (type === 'donation') {
+          options.personalNote = parsePersonalNote(req.body.personalNote);
+          response = await this._createDonationCheckoutSession(options);
+        } else if (type === 'gift') {
+          if (!membersEnabled) {
+            throw new BadRequestError({
+              message: tpl(messages.badRequest),
+            });
+          }
+
+          response = await this._createGiftCheckoutSession({
+            ...options,
+            tierId: req.body.tierId,
+            offerId: req.body.offerId,
+            cadence: req.body.cadence,
+            duration: req.body.duration,
+            deliveryMethod: req.body.deliveryMethod,
+            recipientEmail: req.body.recipientEmail,
+            recipientName: req.body.recipientName,
+            buyerName: req.body.buyerName,
+            personalMessage: req.body.personalMessage,
+            deliveryDate: req.body.deliveryDate,
+            successUrl: siteUrl,
+            cancelUrl: options.cancelUrl || siteUrl,
           });
         }
-        const continuation = await this._giftService.service.preparePaidContinuation({
-          memberId: member.id,
-          memberStatus: member.get('status'),
+
+        res.writeHead(200, {
+          'Content-Type': 'application/json',
         });
 
-        ({ tier, cadence } = await this._getSubscriptionCheckoutData({
-          tierId: continuation.tierId,
-          cadence: continuation.cadence,
-        }));
-        giftTrialDays = continuation.trialDays;
-      } else {
-        ({ tier, cadence, offer } = await this._getSubscriptionCheckoutData(req.body));
-      }
-
-      // Check the checkout session
-      response = await this._createSubscriptionCheckoutSession({
-        ...options,
-        tier,
-        cadence,
-        offer,
-        giftTrialDays,
-        referrer: req.get('referer'),
+        return res.end(JSON.stringify(response));
       });
-
-      // Add welcome_page_url to the response if available and member is authenticated
-      if (isAuthenticated && tier && tier.welcomePageURL) {
-        response.welcomePageUrl = tier.welcomePageURL;
+    } catch (err) {
+      // A Stripe error is answered with a 400 and the message "Unable to initiate checkout
+      // session", which is the answer clients already handle: Portal recognises that message and
+      // shows it to the buyer in their language. The answer keeps the Stripe error's code, such as
+      // `email_invalid`, because BadRequestError copies the code of the error it wraps. The Stripe
+      // error is reported to Sentry here because Ghost's Sentry setup drops every Ghost error whose
+      // status isn't 500, so the BadRequestError would never reach Sentry.
+      //
+      // Any other error is rethrown unchanged. Ghost's own errors, such as the BadRequestError for
+      // a tier that doesn't exist, already carry the status and message to answer with. Anything
+      // else is a bug or an outage, which the members API's error handler answers with a 500 and
+      // reports to Sentry.
+      if (err instanceof stripeErrors.StripeError) {
+        this._sentry?.captureException?.(err);
+        throw new BadRequestError({ err, message: tpl(messages.unableToCheckout) });
       }
-    } else if (type === 'donation') {
-      options.personalNote = parsePersonalNote(req.body.personalNote);
-      response = await this._createDonationCheckoutSession(options);
-    } else if (type === 'gift') {
-      if (!membersEnabled) {
-        throw new BadRequestError({
-          message: tpl(messages.badRequest),
-        });
-      }
-
-      response = await this._createGiftCheckoutSession({
-        ...options,
-        tierId: req.body.tierId,
-        offerId: req.body.offerId,
-        cadence: req.body.cadence,
-        duration: req.body.duration,
-        deliveryMethod: req.body.deliveryMethod,
-        recipientEmail: req.body.recipientEmail,
-        recipientName: req.body.recipientName,
-        buyerName: req.body.buyerName,
-        personalMessage: req.body.personalMessage,
-        deliveryDate: req.body.deliveryDate,
-        successUrl: siteUrl,
-        cancelUrl: options.cancelUrl || siteUrl,
-      });
+      throw err;
     }
-
-    res.writeHead(200, {
-      'Content-Type': 'application/json',
-    });
-
-    return res.end(JSON.stringify(response));
   }
 
   async sendMagicLink(req, res) {

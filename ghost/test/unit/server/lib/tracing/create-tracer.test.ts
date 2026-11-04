@@ -5,7 +5,7 @@ import { createTracer } from '../../../../../core/server/lib/tracing/create-trac
 
 const LogFields = z.object({ event: z.object({ name: z.string() }) });
 
-/** Waits for the spans `track` ships after returning. */
+/** Waits until `track` has shipped its spans, which it does on a later tick, after returning. */
 const shipping = () =>
   new Promise((resolve) => {
     setImmediate(resolve);

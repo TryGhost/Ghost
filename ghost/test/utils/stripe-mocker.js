@@ -113,8 +113,9 @@ class StripeMocker {
   /** Makes Stripe refuse checkout sessions sent with a design. */
   refuseCheckoutDesign = false;
   /**
-   * Makes Stripe refuse checkout sessions sent with this parameter, with this error in Stripe's
-   * API shape, and take them once it's left out. The error names the parameter only if given one.
+   * Makes Stripe refuse any checkout session sent with `param`, answering with `error` in Stripe's
+   * API shape, and accept the session once `param` is left out. Stripe's answer names a parameter
+   * only if `error` includes one, so a test can make Stripe refuse without naming the parameter.
    * @type {{param: string, error: object} | null}
    */
   checkoutParamRefusal = null;

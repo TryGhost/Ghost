@@ -118,6 +118,10 @@ export const BASE_GHOST_ENV = [
 
   // Disable browser-side Sentry reporting during tests
   'client_sentry__disabled=true',
+
+  // Ghost runs in a container, where localhost is the container itself, so it fetches localhost
+  // app manifests (the fixture app's) from the host, as compose.dev.yaml sets up.
+  'apps__localhostAlias=host.docker.internal',
 ] as const;
 
 /**

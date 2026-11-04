@@ -14,6 +14,7 @@ import {
   type Leaf,
   type ListSource,
   type SetSettings,
+  type SettingsOfShape,
   type FieldShape,
   type TextSize,
   type TypedSettings,
@@ -155,52 +156,77 @@ export const FIELD_STATUS = {
 } as const satisfies Record<FieldStatus, FieldStatus>;
 
 /**
- * An option as a publisher writes it. Its text is all that names it, so each bound is on the text
- * as it is matched, and the separator a CSV cell joins options with can't appear in one.
+ * A set field's settings as stored or sent back: their shape alone, which every read checks. A
+ * write checks the rules `SetSettingsSchema` layers on top, so a rule tightened later never hides
+ * a field set up under the old one, the way a value's rule never hides what a member already holds.
  */
-const OptionSchema = z
-  .string({ error: 'Enter text for each option.' })
-  .transform(optionText)
-  .pipe(
-    z
-      .string()
-      .min(1, { error: 'Enter text for each option.' })
-      .max(255, { error: 'Use 255 characters or fewer for each option.' })
-      .refine((option) => !option.includes(OPTION_SEPARATOR), {
-        error: `Options can't contain ${OPTION_SEPARATOR}.`,
-      }),
-  );
-
-/**
- * What a set field is set up with. Options are a set as well, so the same text can't be offered
- * twice; they are listed in the order they are shown.
- */
-export const SetSettingsSchema = z.object(
+export const SetSettingsShape = z.object(
   {
-    options: z
-      .array(OptionSchema, { error: 'Give the list its options.' })
-      .min(MIN_OPTIONS, { error: `Give the list at least ${MIN_OPTIONS} options.` })
-      .max(MAX_OPTIONS, { error: `Give the list ${MAX_OPTIONS} options or fewer.` })
-      .refine((options) => new Set(options).size === options.length, {
-        error: 'Give each option once.',
-      }),
+    options: z.array(z.string({ error: 'Enter text for each option.' }), {
+      error: 'Give the list its options.',
+    }),
     multiple: z.boolean({ error: 'Say whether members can pick more than one option.' }),
   },
   { error: 'Give the list its options.' },
 ) satisfies z.ZodType<SetSettings, unknown>;
 
 /**
+ * Why an option's text, once tidied, can't be written, or null when it can. Its text is all that
+ * names it, so each bound is on the text as it is matched, and the separator a CSV cell joins
+ * options with can't appear in one.
+ */
+function optionProblem(option: string): string | null {
+  if (option.length === 0) {
+    return 'Enter text for each option.';
+  }
+  if (option.length > 255) {
+    return 'Use 255 characters or fewer for each option.';
+  }
+  if (option.includes(OPTION_SEPARATOR)) {
+    return `Options can't contain ${OPTION_SEPARATOR}.`;
+  }
+  return null;
+}
+
+/**
+ * What a set field is set up with: its shape, with each option's text tidied and the rules a write
+ * must meet on top. Options are a set as well, so the same text can't be offered twice; they are
+ * listed in the order they are shown.
+ */
+export const SetSettingsSchema = SetSettingsShape.transform(({ options, multiple }) => ({
+  options: options.map(optionText),
+  multiple,
+})).check((ctx) => {
+  const { options } = ctx.value;
+  options.forEach((option, index) => {
+    const problem = optionProblem(option);
+    if (problem) {
+      ctx.issues.push({
+        code: 'custom',
+        message: problem,
+        input: option,
+        path: ['options', index],
+      });
+    }
+  });
+  const listProblem =
+    options.length < MIN_OPTIONS
+      ? `Give the list at least ${MIN_OPTIONS} options.`
+      : options.length > MAX_OPTIONS
+        ? `Give the list ${MAX_OPTIONS} options or fewer.`
+        : new Set(options).size !== options.length
+          ? 'Give each option once.'
+          : null;
+  if (listProblem) {
+    ctx.issues.push({ code: 'custom', message: listProblem, input: options, path: ['options'] });
+  }
+}) satisfies z.ZodType<SetSettings, unknown>;
+
+/**
  * A field whose type has nothing to set up has no settings, so a write that gives it some is
  * refused.
  */
 const NO_SETTINGS = z.undefined({ error: 'Only a list field has settings.' }).optional();
-
-/**
- * A set field's settings as stored or sent back: their shape alone. The rules above apply when
- * settings are written, so a rule tightened later never hides a field that was set up under the
- * old one, the way a value's rule never hides what a member already holds.
- */
-export const SetSettingsShape = z.object({ options: z.array(z.string()), multiple: z.boolean() });
 
 const TYPE_ERROR = { error: 'Choose a type of custom field.' };
 
@@ -230,15 +256,49 @@ export const withTypedSettings = <
   return z.discriminatedUnion('type', [variants.scalar, variants.record, variants.set], TYPE_ERROR);
 };
 
+/** Everything about the settings of a field of one shape. */
+interface ShapeSettings<Settings> {
+  /** The rules settings are checked against whenever they are written. */
+  readonly written: z.ZodType<Settings, unknown>;
+  /** The shape settings are checked for whenever they are read back. */
+  readonly read: z.ZodType<Settings, unknown>;
+  /**
+   * What a field of the shape is set up with before anyone sets it up. A new field's form starts
+   * from these, and Ghost reads a field with them when its stored settings can't be read, so the
+   * field keeps working and the next write of its settings replaces them.
+   */
+  readonly defaults: Settings;
+}
+
+/**
+ * Each shape's settings in one place: a set's options and whether a member picks several, and
+ * nothing for any other shape. A list's defaults have no options, which a list's write rules
+ * refuse, so an edit of a list read with its defaults always writes the settings it is given.
+ * Keyed by shape, so a shape added to the catalog fails to compile until it has an entry.
+ */
+export const SHAPE_SETTINGS = {
+  scalar: { written: NO_SETTINGS, read: NO_SETTINGS, defaults: undefined },
+  record: { written: NO_SETTINGS, read: NO_SETTINGS, defaults: undefined },
+  set: {
+    written: SetSettingsSchema,
+    read: SetSettingsShape,
+    defaults: { options: [], multiple: false },
+  },
+} satisfies { readonly [S in FieldShape]: ShapeSettings<SettingsOfShape[S]> };
+
 /** Each shape's settings as a write states them, checked against the rules. */
 export const WRITTEN_SETTINGS = {
-  scalar: NO_SETTINGS,
-  record: NO_SETTINGS,
-  set: SetSettingsSchema,
+  scalar: SHAPE_SETTINGS.scalar.written,
+  record: SHAPE_SETTINGS.record.written,
+  set: SHAPE_SETTINGS.set.written,
 };
 
 /** Each shape's settings as they are read back, checked for their shape alone. */
-export const READ_SETTINGS = { scalar: NO_SETTINGS, record: NO_SETTINGS, set: SetSettingsShape };
+export const READ_SETTINGS = {
+  scalar: SHAPE_SETTINGS.scalar.read,
+  record: SHAPE_SETTINGS.record.read,
+  set: SHAPE_SETTINGS.set.read,
+};
 
 /**
  * Where a refusal points within what was sent: the path to the refused value, with its parts and

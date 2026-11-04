@@ -443,7 +443,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                           'min-w-0',
                           // The size and type of the list pages' large titles, where they show them
                           largeTitles
-                            ? 'text-[length:var(--large-title-size)]! leading-[1.15]! font-medium tracking-[-0.03em] break-words'
+                            ? 'text-[length:var(--large-title-size)]! leading-[1.15]! font-title! tracking-[-0.03em] break-words'
                             : 'truncate text-2xl tracking-tight sm:text-3xl',
                         )}
                       >
@@ -514,7 +514,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                   member={member}
                   showIdentity={!mapEnabled}
                 />
-                <div className="flex min-w-0 flex-1 flex-col gap-8 in-data-[admin7-design=true]:gap-18">
+                <div className="flex min-w-0 flex-1 flex-col gap-8 in-data-[admin7-design=true]:gap-18 in-data-[admin7-design=true]:[--text-section-heading:var(--text-section-heading-lg)]">
                   {/* First card: name, email, labels, note. Admin 7 gives it a heading
                                     like the sections below it. */}
                   <section

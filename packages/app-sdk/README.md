@@ -7,7 +7,7 @@ gives it the site, the user and the theme, and lets it call the Admin API, keep
 its route in sync with Admin's URL, and send the publisher elsewhere in Admin.
 
 > **Alpha.** CI publishes each change to npm as the next `0.1.0-alpha.N` under
-> the `alpha` tag. Alphas make no compatibility promise.
+> the `latest` tag. Alphas make no compatibility promise.
 
 ## Quick start
 
@@ -32,7 +32,7 @@ With a bundler, install the package. It includes the types and code it uses
 from Ghost's contracts, so its only dependency is `@quilted/threads`:
 
 ```sh
-pnpm add @tryghost/app-sdk@alpha
+pnpm add @tryghost/app-sdk
 ```
 
 ```ts

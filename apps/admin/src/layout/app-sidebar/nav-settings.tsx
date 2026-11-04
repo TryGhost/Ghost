@@ -4,6 +4,7 @@ import { SidebarGroup, SidebarGroupContent, SidebarMenu } from '@tryghost/shade/
 import { LucideIcon } from '@tryghost/shade/utils';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { canAccessSettings } from '@tryghost/admin-x-framework/api/users';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { NavMenuItem } from './nav-menu-item';
 import { NavGhostProItem } from './nav-ghost-pro';
 import { useSettingsReturnToState } from '@/layout/settings-navigation';
@@ -17,6 +18,7 @@ function NavSettings({ admin7Design = false, ...props }: NavSettingsProps) {
   const { data: currentUser } = useCurrentUser();
   const showSettings = currentUser && canAccessSettings(currentUser);
   const settingsReturnToState = useSettingsReturnToState();
+  const inAppSupport = useFeatureFlag('inAppSupport');
 
   return (
     <SidebarGroup {...props}>
@@ -35,6 +37,7 @@ function NavSettings({ admin7Design = false, ...props }: NavSettingsProps) {
           {!admin7Design && (
             <NavMenuItem>
               <NavMenuItem.Link
+                data-ghost-help={inAppSupport ? '' : undefined}
                 rel="noopener noreferrer"
                 target="_blank"
                 to="https://ghost.org/help?utm_source=admin&utm_campaign=help"

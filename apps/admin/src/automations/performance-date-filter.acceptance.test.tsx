@@ -65,8 +65,9 @@ const render = async (withRuns = false) => {
         id: 'dates',
         name: 'Welcome',
         slug: 'member-welcome-email-free',
-        trigger_tier_scope: 'free',
-        trigger_tier_ids: null,
+        trigger_rules: [
+          { trigger_type: 'free_signup', scope: null, product_id: null, direction: null },
+        ],
         status: 'active',
         actions: [{ id: 'wait', type: 'wait', data: { wait_hours: 24 } }],
         edges: [],

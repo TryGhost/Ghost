@@ -145,7 +145,13 @@ const YamlFileEditorModal: React.FC<YamlFileEditorModalProps> = ({
     >
       <div className="flex h-full min-h-0 flex-col">
         <div className="mb-4 flex items-center justify-between">
-          <Text as="h2" className="md:text-3xl" leading="heading" size="2xl" weight="bold">
+          <Text
+            as="h2"
+            className="in-data-[admin7-design=true]:font-title md:text-3xl"
+            leading="heading"
+            size="2xl"
+            weight="bold"
+          >
             {title}
           </Text>
           <Inline gap="md">
