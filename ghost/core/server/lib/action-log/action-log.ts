@@ -1,0 +1,109 @@
+import ObjectID from 'bson-objectid';
+import type { Knex } from 'knex';
+import type { GhostLogger } from '@tryghost/logging';
+import type { Actor } from '../actor';
+import { toDatabaseDate } from '../db-types/date';
+import type { ActionKind, ActionVerb } from './kinds';
+
+interface ActionOf<K extends ActionKind> {
+  resourceType: K;
+  event: ActionVerb<K>;
+  /** What happened, in words, when the event alone doesn't say it, such as "reset". */
+  actionName?: string;
+  /** Anything else stored with the action, such as a field's key. */
+  context?: Record<string, unknown>;
+}
+
+/**
+ * A change to one resource. The name is stored with the action, so the history still reads
+ * after the resource is deleted.
+ */
+interface SingleChange {
+  resourceId: string;
+  primaryName: string;
+  count?: never;
+}
+
+/** A change to several resources at once, which belongs to none of them. */
+interface BulkChange {
+  resourceId: null;
+  primaryName?: never;
+  count?: number;
+}
+
+/**
+ * An action to log. Only the kinds in `ACTION_KINDS` can be logged, and only with the verbs
+ * each declares.
+ */
+export type ActionRow = {
+  [K in ActionKind]: ActionOf<K> & (SingleChange | BulkChange);
+}[ActionKind];
+
+export interface RecordOptions {
+  /** The command's transaction, so the action is only kept if the change is. */
+  transacting?: Knex.Transaction;
+}
+
+/**
+ * Logs staff actions to the `actions` table, which Admin's History page reads.
+ *
+ * Call it from the command that makes the change, inside its transaction where it has one.
+ * Logging is best-effort: a failed write is logged and never fails the command.
+ */
+export class ActionLog {
+  private knex: Knex;
+  private logging: Pick<GhostLogger, 'error'>;
+
+  constructor({ knex, logging }: { knex: Knex; logging: Pick<GhostLogger, 'error'> }) {
+    this.knex = knex;
+    this.logging = logging;
+  }
+
+  /** Logs an action by `actor`. Nothing is logged when nobody is acting. */
+  async record(actor: Actor | null, row: ActionRow, options: RecordOptions = {}): Promise<void> {
+    if (!actor) {
+      return;
+    }
+    const db = options.transacting ?? this.knex;
+    try {
+      await db('actions').insert({
+        // ObjectIds increase over time, which readers rely on to order actions within a second.
+        id: new ObjectID().toHexString(),
+        resource_id: row.resourceId,
+        resource_type: row.resourceType,
+        actor_id: actor.id,
+        actor_type: actor.type,
+        event: row.event,
+        context: contextOf(row),
+        created_at: toDatabaseDate(new Date()),
+      });
+    } catch (err) {
+      this.logging.error(
+        {
+          event: { name: 'action_log.write_failed' },
+          err,
+          // Nested, as `event` is the log entry's own name.
+          action: {
+            resource_type: row.resourceType,
+            event: row.event,
+            resource_id: row.resourceId,
+            actor_type: actor.type,
+            actor_id: actor.id,
+          },
+        },
+        'Failed to log an action',
+      );
+    }
+  }
+}
+
+// Only the fields that carry meaning are stored, as Bookshelf's action log does.
+function contextOf(row: ActionRow): string | null {
+  const context = {
+    ...(row.primaryName === undefined ? {} : { primary_name: row.primaryName }),
+    ...row.context,
+    ...(row.actionName === undefined ? {} : { action_name: row.actionName }),
+    ...(row.count === undefined ? {} : { count: row.count }),
+  };
+  return Object.keys(context).length ? JSON.stringify(context) : null;
+}
