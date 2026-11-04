@@ -64,7 +64,7 @@ describe('Account Profile Page', () => {
   });
 
   describe('Custom fields', () => {
-    const site = getSiteData({ labs: { membersCustomFields: true } });
+    const site = getSiteData();
     const nickname = {
       key: 'nickname',
       name: 'Nickname',

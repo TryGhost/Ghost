@@ -34,7 +34,6 @@ const GA_FEATURES = [
   'selfServeArchives',
   'admin7EditorImprovements',
   'stripeCheckoutDesign',
-  'membersCustomFields',
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users

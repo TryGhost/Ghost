@@ -64,10 +64,7 @@ describe('App', function () {
   // every visit to it. Asked for here instead, beside the member, they cost the account
   // page no wait of its own and are asked for once.
   test('asks for the custom fields open to members while the rest of the app loads', async () => {
-    const basic = FixtureSite.singleTier.basic;
-    const ghostApi = setupApi({
-      site: { ...basic, labs: { ...basic.labs, membersCustomFields: true } },
-    });
+    const ghostApi = setupApi({ site: FixtureSite.singleTier.basic });
     ghostApi.member.customFields = vi.fn(() => Promise.resolve([]));
 
     const utils = appRender(<App siteUrl="http://example.com" api={ghostApi} />);
@@ -79,10 +76,7 @@ describe('App', function () {
   // A site newer than this build can list a field of a type the build doesn't know.
   test('leaves out, and warns about, a custom field of a type it does not know', async () => {
     window.location = new URL('http://example.com/#/portal/account/profile');
-    const basic = FixtureSite.singleTier.basic;
-    const ghostApi = setupApi({
-      site: { ...basic, labs: { ...basic.labs, membersCustomFields: true } },
-    });
+    const ghostApi = setupApi({ site: FixtureSite.singleTier.basic });
     ghostApi.member.customFields = vi.fn(() =>
       Promise.resolve([
         { key: 'nickname', name: 'Nickname', type: 'short_text', access: { member: 'write' } },
@@ -104,16 +98,6 @@ describe('App', function () {
     } finally {
       warn.mockRestore();
     }
-  });
-
-  test('does not ask for custom fields when the site does not have them', async () => {
-    const ghostApi = setupApi();
-    ghostApi.member.customFields = vi.fn(() => Promise.resolve([]));
-
-    const utils = appRender(<App siteUrl="http://example.com" api={ghostApi} />);
-    await utils.findByTitle(/portal-popup/i);
-
-    expect(ghostApi.member.customFields).not.toHaveBeenCalled();
   });
 
   test('transforms portal links on render', async () => {
