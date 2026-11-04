@@ -149,6 +149,16 @@
   --control-readonly-surface: var(--color-gray-50);
   --control-disabled-surface: var(--color-gray-100);
   --control-border: color-mix(in oklab, var(--color-gray-200), var(--color-gray-300));
+  /* Text-entry fields are white with a light outline. */
+  --field-surface: var(--control-surface);
+  --field-readonly-surface: var(--control-readonly-surface);
+  --field-disabled-surface: var(--control-disabled-surface);
+  --field-border: var(--control-border);
+  --field-chip-surface: var(--secondary);
+  --field-chip-internal-surface: transparent;
+  --field-chip-internal-border: var(--field-chip-surface);
+  --radius-field: var(--radius-sm);
+  --text-field: var(--text-control-lg);
   --radius-card: var(--radius-lg);
   --control-pressed-shadow: lch(0 0 0 / 0.07) 0px 1px 2px 0px inset;
   --control-outline-shadow:
@@ -296,6 +306,15 @@
     lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
     lch(0 0 0 / 0.04) 0px 1px 1px 0px, var(--control-pressed-shadow);
   --table-row-hover: var(--color-gray-50);
+  --field-surface: var(--control-surface);
+  --field-readonly-surface: var(--control-readonly-surface);
+  --field-disabled-surface: var(--control-disabled-surface);
+  --field-border: var(--control-border);
+  --field-chip-surface: var(--secondary);
+  --field-chip-internal-surface: color-mix(in oklab, var(--secondary) 30%, transparent);
+  --field-chip-internal-border: var(--border);
+  --radius-field: var(--radius-control);
+  --text-field: var(--text-control);
   --radius-card: var(--radius-xl);
 }
 

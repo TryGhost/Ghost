@@ -137,6 +137,9 @@ Settings, the editor, the automation editor, mobile and pages without a
 navigation inside the same sidebar, pinned without changing the stored mode. Mobile keeps the sidebar sheet, and the flag-off path
 preserves the docked sidebar and the separate Settings sidebar.
 
+The `admin7Design` milestone also gives text-entry fields 4px corners and 14px
+text. Checkboxes, radios, Filter bar items and Koenig keep their current look.
+
 The `admin7Design` milestone also makes colored banners a flat color with darker
 shades of it for text and no outline.
 

@@ -128,7 +128,7 @@ const InputGroupInput = React.forwardRef<HTMLInputElement, React.ComponentProps<
     <input
       ref={ref}
       className={cn(
-        'flex h-(--control-height) w-full flex-1 border-0 bg-transparent px-3 py-1 text-control outline-hidden file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:text-muted-foreground',
+        'flex h-(--control-height) w-full flex-1 border-0 bg-transparent px-3 py-1 text-(length:--text-field) outline-hidden file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:text-muted-foreground',
         className,
       )}
       data-slot="input-group-control"
@@ -143,7 +143,7 @@ const InputGroupTextarea = React.forwardRef<HTMLTextAreaElement, React.Component
     <textarea
       ref={ref}
       className={cn(
-        'min-h-[80px] w-full flex-1 resize-none border-0 bg-transparent p-3 text-base outline-hidden placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:text-muted-foreground',
+        'min-h-[80px] w-full flex-1 resize-none border-0 bg-transparent p-3 text-(length:--text-field) outline-hidden placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:text-muted-foreground',
         className,
       )}
       data-slot="input-group-control"

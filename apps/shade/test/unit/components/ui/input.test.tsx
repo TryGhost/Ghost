@@ -40,7 +40,7 @@ describe('Input Component', () => {
 
     expect(input.hasAttribute('disabled'), 'Input should be disabled').toBeTruthy();
     expect(input.className, 'Should have a disabled surface').toContain(
-      'disabled:bg-control-disabled-surface',
+      'disabled:bg-field-disabled-surface',
     );
     expect(input.className, 'Should keep disabled values readable').toContain(
       'disabled:text-muted-foreground',

@@ -309,7 +309,7 @@ const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => {
       {labels.map((label) => (
         <Badge
           key={label.id}
-          className={cn('cursor-pointer gap-1 pr-1', cn(tokenFieldClasses.chip, 'bg-secondary'))}
+          className={cn('cursor-pointer gap-1 pr-1', tokenFieldClasses.chip)}
           variant="outline"
           asChild
         >
