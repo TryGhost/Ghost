@@ -3,6 +3,7 @@ import {
     assertHTML,
     assertRootChildren,
     createSnippet,
+    ctrlOrCmd,
     focusEditor,
     html,
     initialize,
@@ -214,6 +215,51 @@ test.describe('Markdown card', async () => {
 
         await page.click('button[aria-label="Close dialog"]');
         await expect(await page.getByTestId('markdown-help-dialog')).not.toBeVisible();
+    });
+
+    test('goes back to writing in the markdown editor once the help guide closes', async function () {
+        await focusEditor(page);
+        await page.keyboard.type('/');
+        await page.click('[data-kg-card-menu-item="Markdown"]');
+        await focusMarkdownEditor(page);
+        const line = page.locator('[data-kg-card="markdown"] .CodeMirror-line');
+
+        // Closed with its button
+        await page.click('a[title="Markdown Guide"]');
+        await expect(page.getByTestId('markdown-help-dialog')).toBeVisible();
+        await page.click('button[aria-label="Close dialog"]');
+        await expect(page.getByTestId('markdown-help-dialog')).not.toBeVisible();
+        await page.keyboard.type('abc');
+        await expect(line).toContainText('abc');
+
+        // Closed with Escape
+        await page.click('a[title="Markdown Guide"]');
+        await expect(page.getByTestId('markdown-help-dialog')).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(page.getByTestId('markdown-help-dialog')).not.toBeVisible();
+        await page.keyboard.type('xyz');
+        await expect(line).toContainText('abcxyz');
+    });
+
+    test('can copy from the markdown help guide', async function () {
+        await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+        await focusEditor(page);
+        await page.keyboard.type('/');
+        await page.click('[data-kg-card-menu-item="Markdown"]');
+        await focusMarkdownEditor(page);
+
+        // A word from the guide, copied by keyboard
+        await page.click('a[title="Markdown Guide"]');
+        const dialog = page.getByTestId('markdown-help-dialog');
+        await expect(dialog).toBeVisible();
+        await dialog.getByText('Emphasize', {exact: true}).dblclick();
+        await page.keyboard.press(`${ctrlOrCmd(page)}+KeyC`);
+        await page.keyboard.press('Escape');
+        await expect(dialog).not.toBeVisible();
+
+        // Pasted where the writer went back to
+        await page.keyboard.press(`${ctrlOrCmd(page)}+KeyV`);
+        await expect(page.locator('[data-kg-card="markdown"] .CodeMirror-line')).toContainText('Emphasize');
     });
 
     test('adds extra paragraph when markdown is inserted at end of document', async function () {

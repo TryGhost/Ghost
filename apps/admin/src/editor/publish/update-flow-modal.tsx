@@ -197,7 +197,7 @@ function KeyedUpdateFlowModal({
             weight="bold"
           >
             This {post.displayName} {isSent ? 'was' : 'has been'}{' '}
-            <span className="text-state-success">
+            <span className="text-publish-accent">
               {post.status}
               {isSent ? ' by email' : ''}
             </span>

@@ -140,6 +140,9 @@ preserves the docked sidebar and the separate Settings sidebar.
 The `admin7Design` milestone also gives text-entry fields 4px corners and 14px
 text. Checkboxes, radios, Filter bar items and Koenig keep their current look.
 
+The `admin7Design` milestone also makes colored banners a flat color with darker
+shades of it for text and no outline.
+
 The `admin7Design` milestone also gives cards 8px corners and makes large titles
 and the space above them follow the width of the page area.
 

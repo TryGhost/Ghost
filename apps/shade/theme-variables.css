@@ -70,8 +70,30 @@
   --search-result-description: #4d5156;
   --state-info-foreground: var(--color-black);
   --state-success: var(--color-green-700);
+  /* Publishing is a celebration: brighter than --state-success, which has to pass
+     AA as small text. */
+  --publish-accent: var(--color-green-600);
   --state-success-foreground: var(--color-black);
   --state-warning: var(--color-yellow-700);
+  /* --state-warning is dark enough for text, so a tint or a solid mark made from it
+     goes brown. Boxes and marks use these yellows instead. */
+  --state-warning-surface: var(--color-yellow-200);
+  --state-warning-border: transparent;
+  --state-warning-fill: var(--color-yellow-400);
+  /* Banners are a flat color with darker shades of it for text, as in Shapeshifter's
+     page headers: step 200 behind steps 800 and 700. */
+  --banner-info-surface: var(--color-blue-200);
+  --banner-info-foreground: var(--color-blue-800);
+  --banner-info-secondary: var(--color-blue-700);
+  --banner-success-surface: var(--color-green-200);
+  --banner-success-foreground: var(--color-green-800);
+  --banner-success-secondary: var(--color-green-700);
+  --banner-warning-surface: var(--state-warning-surface);
+  --banner-warning-foreground: var(--color-yellow-800);
+  --banner-warning-secondary: var(--color-yellow-700);
+  --banner-destructive-surface: var(--color-red-200);
+  --banner-destructive-foreground: var(--color-red-800);
+  --banner-destructive-secondary: var(--color-red-700);
   --state-warning-foreground: var(--color-black);
   /* A 20% tint of the dark yellow-700 reads beige, so the warning Badge gets
      its own clean pale yellow */
@@ -145,7 +167,10 @@
   --control-outline-pressed-shadow:
     lch(0 0 0 / 0.14) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
     lch(0 0 0 / 0.04) 0px 1px 1px 0px, var(--control-pressed-shadow);
-  --table-row-hover: var(--color-gray-100);
+  /* Between gray-50 and gray-100, and tuned by eye. */
+  --table-row-hover: oklch(98.3% 0.0005 255);
+  /* The sea on member maps: between gray-100 and gray-200, tuned by eye. */
+  --map-surface: oklch(95.5% 0.0008 255);
   /* Selected rows read as picked-out rather than merely hovered, so this is a
      hue change and not another step on the gray ramp - a darker gray would
      compete with --table-row-hover instead of contrasting with it. */
@@ -246,7 +271,11 @@
   --surface-glass: rgb(248 248 248 / 0.5);
   --state-info: var(--color-blue-500);
   --state-success: var(--color-green-500);
+  --publish-accent: var(--state-success);
   --state-warning: var(--color-yellow-500);
+  --state-warning-surface: color-mix(in oklab, var(--state-warning) 10%, transparent);
+  --state-warning-border: color-mix(in oklab, var(--state-warning) 40%, transparent);
+  --state-warning-fill: var(--state-warning);
   --badge-warning: color-mix(in oklab, var(--state-warning) 20%, transparent);
   --badge-warning-hover: color-mix(in oklab, var(--state-warning) 30%, transparent);
   --badge-warning-foreground: var(--color-yellow-600);
@@ -298,6 +327,23 @@
 
   /* One-off colors (not in the standard color scale) */
   --color-sidebar-bg: oklch(0.204 0.002 255);
+
+  --publish-accent: var(--state-success);
+  --state-warning-surface: var(--color-yellow-900);
+  --state-warning-border: transparent;
+  --state-warning-fill: var(--state-warning);
+  --banner-info-surface: var(--color-blue-900);
+  --banner-info-foreground: var(--color-blue-300);
+  --banner-info-secondary: var(--color-blue-300);
+  --banner-success-surface: var(--color-green-900);
+  --banner-success-foreground: var(--color-green-300);
+  --banner-success-secondary: var(--color-green-300);
+  --banner-warning-surface: var(--state-warning-surface);
+  --banner-warning-foreground: var(--color-yellow-300);
+  --banner-warning-secondary: var(--color-yellow-300);
+  --banner-destructive-surface: var(--color-red-900);
+  --banner-destructive-foreground: var(--color-red-300);
+  --banner-destructive-secondary: var(--color-red-300);
 
   --tab-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
   --tab-active: color-mix(in oklab, oklch(36.77% 0.0022 255) 60%, transparent);
@@ -403,6 +449,8 @@
 /* admin7Design off in dark mode: today's dark values, exactly. Temporary:
    delete with the flag. */
 .dark [data-admin7-design='false'] {
+  --state-warning-surface: color-mix(in oklab, var(--state-warning) 10%, transparent);
+  --state-warning-border: color-mix(in oklab, var(--state-warning) 40%, transparent);
   --color-black: oklch(20.38% 0.0067 258.4);
   /* Less-saturated gray scale for dark mode (lightness + hue preserved, chroma halved again) */
   --color-gray-50: oklch(98.54% 0.0003 286.4);

@@ -73,7 +73,7 @@ function NavApp({
         {installation.status === 'suspended' && (
           <span
             aria-label="Needs approval"
-            className="size-2 shrink-0 rounded-full bg-state-warning"
+            className="size-2 shrink-0 rounded-full bg-state-warning-fill"
             data-testid="nav-app-needs-approval"
             role="img"
           />

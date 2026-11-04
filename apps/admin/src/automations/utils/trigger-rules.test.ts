@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { comparableTriggerRules, buildTriggerRules, getTriggerTierIds } from './trigger-rules';
+import {
+  comparableTriggerRules,
+  buildTriggerRules,
+  getTriggerTierIds,
+  subscriptionChangedSelectionFromRules,
+} from './trigger-rules';
 
 describe('signup trigger rules', () => {
   it('encodes a free signup with no tier or direction', () => {
@@ -26,7 +31,7 @@ describe('signup trigger rules', () => {
     ).toEqual([]);
   });
 
-  it('encodes each selected paid tier without a lifecycle direction', () => {
+  it('encodes each selected paid tier without a From/To direction', () => {
     expect(
       buildTriggerRules({
         triggerType: 'paid_subscription_started',
@@ -80,5 +85,60 @@ describe('trigger tier IDs', () => {
     expect(
       getTriggerTierIds(buildTriggerRules({ triggerType: 'paid_subscription_started' })),
     ).toEqual([]);
+  });
+});
+
+describe('incomplete paid_subscription_changed rules', () => {
+  it('retains empty selections', () => {
+    expect(
+      buildTriggerRules({
+        triggerType: 'paid_subscription_changed',
+        selection: { from: [], to: [] },
+      }),
+    ).toEqual([]);
+    expect(subscriptionChangedSelectionFromRules([])).toEqual({ from: [], to: [] });
+  });
+
+  it('retains a destination while the source is unanswered', () => {
+    const rules = [
+      {
+        trigger_type: 'paid_subscription_changed',
+        scope: 'specific_paid_tier',
+        product_id: 'gold',
+        direction: 'to',
+      },
+    ] as const;
+    expect(
+      buildTriggerRules({
+        triggerType: 'paid_subscription_changed',
+        selection: { from: [], to: ['gold'] },
+      }),
+    ).toEqual(rules);
+    expect(subscriptionChangedSelectionFromRules(rules)).toEqual({ from: [], to: ['gold'] });
+  });
+});
+
+describe('paid_subscription_changed rule dirty comparison', () => {
+  it('ignores ordering when paid_subscription_changed rules have no product IDs', () => {
+    const rules = buildTriggerRules({
+      triggerType: 'paid_subscription_changed',
+      selection: {
+        from: 'any_paid',
+        to: 'downgraded_to_free',
+      },
+    });
+    expect(comparableTriggerRules(rules)).toEqual(comparableTriggerRules([...rules].reverse()));
+  });
+
+  it('detects a change in direction for the same tier', () => {
+    const from = {
+      trigger_type: 'paid_subscription_changed',
+      scope: 'specific_paid_tier',
+      product_id: 'silver',
+      direction: 'from',
+    } as const;
+    expect(comparableTriggerRules([from])).not.toEqual(
+      comparableTriggerRules([{ ...from, direction: 'to' }]),
+    );
   });
 });

@@ -869,7 +869,7 @@ services:
       - automations/automations-api.ts
     notes: >-
       Manage both the polling instance and the separately composed API repository; preserve
-      scheduling, signup triggers, legacy welcome runs and retained analytics/click consumers.
+      scheduling, automation notifications, legacy welcome runs and retained analytics/click consumers.
       Audited means investigated, not covered or ready to migrate.
     contracts:
       exports:
@@ -877,7 +877,7 @@ services:
           The root exports one named automationsService. Its receiver-dependent init returns
           synchronously; rescheduleAll and the test enqueue method return promises, but immediate
           enqueue completion means an event was dispatched, not that polls finished. The separate
-          API exports receiver-independent async reads, graph edits, signup triggering, step and
+          API exports receiver-independent async reads, graph edits, event notifications, step and
           recipient operations; requestPoll synchronously dispatches and returns undefined.
           Repository methods retain injected Knex/configuration in closures. API units assert
           selected validated arguments, count forwarding and add result identity with substituted

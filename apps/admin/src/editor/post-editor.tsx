@@ -169,7 +169,7 @@ function TkIndicator({
   return (
     <button
       className={cn(
-        'absolute rounded-sm bg-state-warning px-1.5 py-0.5 text-2xs font-bold text-foreground',
+        'absolute rounded-sm bg-state-warning-fill px-1.5 py-0.5 text-2xs font-bold text-foreground',
         className,
       )}
       data-testid={testId}

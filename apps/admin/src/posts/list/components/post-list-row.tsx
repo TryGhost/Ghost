@@ -252,7 +252,7 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                 {post.featured && (
                   <LucideIcon.Star
                     aria-label="Featured"
-                    className="size-4 shrink-0 fill-state-warning text-state-warning"
+                    className="size-4 shrink-0 fill-state-warning-fill text-state-warning-fill"
                     data-testid="post-featured"
                   />
                 )}
