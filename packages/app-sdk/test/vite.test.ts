@@ -398,8 +398,62 @@ describe('vite dev', () => {
       const { logger } = await startDevServer();
       expect(await readFile(join(root, '.dev.vars'), 'utf8')).toBe('GHOST_APP_BACKEND_KEY=mine\n');
       expect(logger.messages).toContainEqual(
-        expect.objectContaining({ level: 'warn', text: expect.stringContaining('another key') }),
+        expect.objectContaining({
+          level: 'warn',
+          text: expect.stringContaining("to something that isn't a private key as JSON"),
+        }),
       );
+    });
+
+    describe("reads .dev.vars by dotenv's rules, as Wrangler does", () => {
+      async function warningsFor(text: (key: string) => string) {
+        await createKeys({ root, mode: 'development' });
+        const key = JSON.stringify(await readBackendKey({ root, mode: 'development' }));
+        await writeFile(join(root, '.dev.vars'), text(key));
+        const { logger } = await startDevServer();
+        await server!.close();
+        return logger.messages.filter(({ level }) => level === 'warn').map(({ text: t }) => t);
+      }
+
+      it.each([
+        [
+          'the last assignment',
+          (key: string) =>
+            `GHOST_APP_BACKEND_KEY=${JSON.stringify(generateKey())}\nGHOST_APP_BACKEND_KEY='${key}'\n`,
+        ],
+        [
+          'an unquoted value before a comment',
+          (key: string) => `GHOST_APP_BACKEND_KEY=${key} # development\n`,
+        ],
+        [
+          'an exported, double-quoted value',
+          (key: string) => `export GHOST_APP_BACKEND_KEY="${key}"\n`,
+        ],
+      ])('takes %s', async (_name, text) => {
+        expect(await warningsFor(text)).toEqual([]);
+      });
+
+      it("says a value with escaped quotes isn't a key, as Wrangler keeps the backslashes", async () => {
+        const warnings = await warningsFor(
+          (key) => `GHOST_APP_BACKEND_KEY="${key.replaceAll('"', '\\"')}"\n`,
+        );
+        expect(warnings).toEqual([expect.stringContaining("isn't a private key as JSON")]);
+      });
+
+      it("says a public key isn't the private key the Worker needs", async () => {
+        const warnings = await warningsFor(
+          (key) => `GHOST_APP_BACKEND_KEY='${JSON.stringify(publicKeyOf(JSON.parse(key)))}'\n`,
+        );
+        expect(warnings).toEqual([expect.stringContaining("isn't a private key as JSON")]);
+      });
+
+      it('says when the last assignment is another key', async () => {
+        const warnings = await warningsFor(
+          (key) =>
+            `GHOST_APP_BACKEND_KEY='${key}'\nGHOST_APP_BACKEND_KEY='${JSON.stringify(generateKey())}'\n`,
+        );
+        expect(warnings).toEqual([expect.stringContaining('to another key')]);
+      });
     });
 
     it('leaves .env to the developer, which Wrangler reads only without .dev.vars', async () => {

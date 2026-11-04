@@ -16,18 +16,33 @@ const DEV_VARS = '.dev.vars';
 
 const ENV = '.env';
 
-const ASSIGNMENT = new RegExp(
-  `^[ \\t]*(?:export[ \\t]+)?${BACKEND_KEY_VARIABLE}[ \\t]*=(.*)$`,
-  'm',
-);
+// dotenv's own line rule (dotenv 17), which Wrangler reads `.dev.vars` and `.env` with: an
+// optional `export`, a quoted value (quotes escaped inside it), or an unquoted one up to a `#`.
+const LINE =
+  /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/gm;
+
+/** What a dotenv file sets each name to, by dotenv's rules: the last assignment wins. */
+function parseDotenv(text: string): Map<string, string> {
+  const values = new Map<string, string>();
+  const lines = text.replace(/\r\n?/gm, '\n');
+  for (const [, name = '', raw = ''] of lines.matchAll(LINE)) {
+    const trimmed = raw.trim();
+    let value = trimmed.replace(/^(['"`])([\s\S]*)\1$/gm, '$2');
+    if (trimmed.startsWith('"')) {
+      value = value.replace(/\\n/g, '\n').replace(/\\r/g, '\r');
+    }
+    values.set(name, value);
+  }
+  return values;
+}
 
 type Message = { level: 'info' | 'warn'; message: string };
 
 /**
- * A dotenv file's text and what it sets the backend key to, `undefined` if nothing; or
+ * A dotenv file's text and what it sets the backend key to, as text, `undefined` if nothing; or
  * `undefined` if there's no file.
  */
-async function readDotenv(file: string): Promise<{ text: string; value: unknown } | undefined> {
+async function readDotenv(file: string): Promise<{ text: string; value?: string } | undefined> {
   let text: string;
   try {
     text = await readFile(file, 'utf8');
@@ -37,22 +52,41 @@ async function readDotenv(file: string): Promise<{ text: string; value: unknown 
     }
     throw error;
   }
-  const assigned = ASSIGNMENT.exec(text);
-  const value = assigned?.[1]?.trim().replace(/^(['"])(.*)\1$/, '$2');
-  try {
-    return { text, value: value === undefined ? undefined : (JSON.parse(value) as unknown) };
-  } catch {
-    return { text, value };
-  }
+  return { text, value: parseDotenv(text).get(BACKEND_KEY_VARIABLE) };
 }
 
-const isKey = (value: unknown, key: PrivateKeyJwk) => {
-  const { x, d } = (typeof value === 'object' && value !== null ? value : {}) as Record<
+/** Whether a value is the development backend key; `undefined` if it isn't a key at all. */
+function matches(value: string, key: PrivateKeyJwk): boolean | undefined {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    return undefined;
+  }
+  const { x, d } = (typeof parsed === 'object' && parsed !== null ? parsed : {}) as Record<
     string,
     unknown
   >;
+  if (typeof x !== 'string' || typeof d !== 'string') {
+    return undefined;
+  }
   return x === key.x && d === key.d;
-};
+}
+
+/** Nothing to say if a file's key is the development key; otherwise how it differs. */
+function compare(file: string, value: string, key: PrivateKeyJwk): Message | undefined {
+  const same = matches(value, key);
+  if (same) {
+    return undefined;
+  }
+  if (same === false) {
+    return anotherKey(file);
+  }
+  return {
+    level: 'warn',
+    message: `${file} sets ${BACKEND_KEY_VARIABLE} to something that isn't a private key as JSON, so the Worker can't answer Ghost's challenge. Remove that line from ${file} and restart to use the development key.`,
+  };
+}
 
 const anotherKey = (file: string): Message => ({
   level: 'warn',
@@ -83,7 +117,7 @@ export async function provideDevBackendKey(root: string): Promise<Message | unde
 
   const existing = stats ? await readDotenv(file) : undefined;
   if (existing?.value !== undefined) {
-    return isKey(existing.value, key) ? undefined : anotherKey(DEV_VARS);
+    return compare(DEV_VARS, existing.value, key);
   }
 
   // Wrangler reads .env only when there's no .dev.vars, so creating one would hide it.
@@ -95,7 +129,7 @@ export async function provideDevBackendKey(root: string): Promise<Message | unde
         message: `Add ${BACKEND_KEY_VARIABLE} to ${ENV}, set to the output of \`ghost-app backend-key\`, so the Worker can answer Ghost's challenge.`,
       };
     }
-    return isKey(env.value, key) ? undefined : anotherKey(ENV);
+    return compare(ENV, env.value, key);
   }
 
   const ignored = await isGitIgnored(root, DEV_VARS);
