@@ -345,6 +345,22 @@ describe('signing', () => {
     expect(!result.success && result.errors[0]?.message).toContain('as Ghost fetches it');
   });
 
+  it('reads a manifest from an absolute path, as it is', async () => {
+    await createKeys({ root, mode: 'development' });
+    const elsewhere = await makeProject();
+    try {
+      const result = await signProject({
+        root,
+        mode: 'development',
+        manifestUrl: 'http://localhost:5173/ghost-app.json',
+        manifestFile: join(elsewhere.root, 'ghost-app.json'),
+      });
+      expect(result.success).toBe(true);
+    } finally {
+      await elsewhere.cleanup();
+    }
+  });
+
   it('refuses a manifest URL Ghost would refuse', async () => {
     const result = await signAppManifest(SOURCE, {
       manifestUrl: 'ftp://x.example/m.json',

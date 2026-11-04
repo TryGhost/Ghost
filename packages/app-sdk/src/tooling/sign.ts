@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { resolve } from 'node:path';
 
 import { signManifest } from '@tryghost/app-contracts/identity';
 import { parseManifest, parseManifestUrl } from '@tryghost/app-contracts/manifest';
@@ -160,7 +160,8 @@ export async function signProject({
   manifestUrl,
   manifestFile = MANIFEST_FILE,
 }: SignProjectOptions): Promise<SignResult> {
-  const source = await readManifestSource(join(root, manifestFile));
+  // Resolved, so an absolute path is taken as it is.
+  const source = await readManifestSource(resolve(root, manifestFile));
   const keys = await readSigningKeys({ root, mode, env });
   return signAppManifest(source, { manifestUrl, ...keys, development: isDevelopment(mode) });
 }
