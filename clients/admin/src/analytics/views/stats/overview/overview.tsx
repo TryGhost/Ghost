@@ -90,6 +90,7 @@ const Overview: React.FC = () => {
   const { startDate, endDate, timezone } = getRangeDates(range);
   const {
     isLoading: isGrowthStatsLoading,
+    isMrrError,
     chartData: growthChartData,
     totals: growthTotals,
     currencySymbol,
@@ -228,9 +229,10 @@ const Overview: React.FC = () => {
     /* ---------------------------------------------------------------------- */
   // A site that earns nothing gets more from its subscriber count than from a
   // flat $0 MRR line, so only look for subscribers once there's no revenue.
+  // A failed MRR request says nothing about revenue, so it keeps the MRR card.
   const hasRevenue =
     paidMembersEnabled === true &&
-    (growthTotals.mrr > 0 || mrrChartData.some((item) => item.value > 0));
+    (isMrrError || growthTotals.mrr > 0 || mrrChartData.some((item) => item.value > 0));
   const { subscribers, isLoading: isSubscribersLoading } = useSoleNewsletterSubscribers(
     range,
     !isGrowthStatsLoading && !hasRevenue,

@@ -14,7 +14,7 @@ export interface SoleNewsletterSubscribers {
   total: number;
   chartData: GhAreaChartDataItem[];
   chartRange: number;
-  diffDirection: 'up' | 'down' | 'same';
+  diffDirection: 'up' | 'down' | 'same' | 'empty';
   diffValue: string;
   trendingFromValue: string;
 }
@@ -40,8 +40,11 @@ export const useSoleNewsletterSubscribers = (range: number, enabled: boolean) =>
     return active.length === 1 ? active[0] : null;
   }, [newslettersData]);
 
-  const { data: subscriberStatsData, isLoading: isSubscriberStatsLoading } =
-    useSubscriberCountWithRange(range, soleNewsletter?.id, shouldBrowse && !!soleNewsletter);
+  const {
+    data: subscriberStatsData,
+    isLoading: isSubscriberStatsLoading,
+    isError: isSubscriberStatsError,
+  } = useSubscriberCountWithRange(range, soleNewsletter?.id, shouldBrowse && !!soleNewsletter);
 
   const subscribers = useMemo((): SoleNewsletterSubscribers | null => {
     if (!shouldBrowse || !soleNewsletter) {
@@ -50,6 +53,19 @@ export const useSoleNewsletterSubscribers = (range: number, enabled: boolean) =>
 
     const stat = subscriberStatsData?.stats?.[0];
     const total = soleNewsletter.count?.active_members ?? stat?.total ?? 0;
+
+    // Without the history there's no trend to show, but the count still stands.
+    if (isSubscriberStatsError) {
+      return {
+        total,
+        chartData: [],
+        chartRange: range,
+        diffDirection: 'empty',
+        diffValue: '',
+        trendingFromValue: '',
+      };
+    }
+
     let values = stat?.values ?? [];
 
     // A flat history comes back as a single point; stretch it across the range.
@@ -80,7 +96,7 @@ export const useSoleNewsletterSubscribers = (range: number, enabled: boolean) =>
       diffValue: formatPercentage(change),
       trendingFromValue: formatNumber(first),
     };
-  }, [shouldBrowse, soleNewsletter, subscriberStatsData, range]);
+  }, [shouldBrowse, soleNewsletter, subscriberStatsData, isSubscriberStatsError, range]);
 
   return {
     subscribers,
