@@ -28,6 +28,55 @@
   }
 }
 
+/* admin7Design: a heading for a section inside a page, one step below the page's
+   title. Comes after the utilities at their specificity, so it beats text classes. */
+.section-heading:where([data-admin7-design='true'] *) {
+  font-size: var(--text-section-heading);
+  font-weight: var(--font-weight-title);
+  letter-spacing: 0;
+  line-height: 1.35;
+  font-variation-settings:
+    'opsz' 22,
+    'wght' var(--font-weight-title);
+  font-feature-settings: 'dlig', 'zero', 'ss01', 'ss02', 'cv10', 'cv06';
+}
+
+/* admin7Design: a small label above a stat or a value, and a large, light number
+   for stats. Any unit inside the number is the number's size too. */
+.stat-label:where([data-admin7-design='true'] *) {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.stat-value:where([data-admin7-design='true'] *) {
+  font-size: 32px;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  font-variation-settings:
+    'opsz' 36,
+    'wght' 400;
+
+  & > span {
+    color: inherit;
+    font-size: inherit;
+  }
+}
+
+/* admin7Design: the label style of column headers, whichever element holds
+   them. Comes after the utilities at their specificity, so it beats their text
+   classes but not a parent's, like the Members list's hidden sizing header. A
+   TableHead used as a row title is not a column header. */
+.column-label:where([data-admin7-design='true'] :not([scope='row'])) {
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 /* admin7Design: banners are a flat color with darker shades of it for text and no
    outline. Text inside takes those shades, whichever tone it asks for. */
 [data-admin7-design='true']

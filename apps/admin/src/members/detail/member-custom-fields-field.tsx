@@ -44,6 +44,7 @@ import {
   type SetSettings,
   type TextSize,
 } from '@tryghost/metafield-types/structure';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { partOf } from '@/members/custom-fields/addressing';
 import {
   formatMemberCustomFieldValue,
@@ -488,7 +489,7 @@ const MemberCustomFieldEditModal: React.FC<{
 // select-text: button text is unselectable by default, and values (addresses especially) get
 // copied.
 const TextValue: React.FC<{ text: string }> = ({ text }) => (
-  <span className="block break-words select-text">{text}</span>
+  <span className="block break-words select-text in-data-[admin7-design=true]:text-md">{text}</span>
 );
 
 // A list's answers as the chips its editor shows, since an option can hold a comma and a
@@ -519,7 +520,9 @@ const CustomFieldValue: React.FC<{ field: MemberCustomField; stored: unknown }> 
 }) => {
   const text = formatMemberCustomFieldValue(field, stored);
   if (!text) {
-    return <span className="block text-muted-foreground">–</span>;
+    return (
+      <span className="block text-muted-foreground in-data-[admin7-design=true]:text-md">–</span>
+    );
   }
   return matchShape<React.ReactElement>(field.type, {
     scalar: () => <TextValue text={text} />,
@@ -550,6 +553,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
   metafields,
   disabled,
 }) => {
+  const admin7Design = useFeatureFlag('admin7Design');
   const { data, isLoading } = useCustomFieldDefinitions();
   const fields = data ?? [];
   const values = getEditableCustomFieldValues(metafields, fields);
@@ -559,20 +563,28 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
     return null;
   }
 
+  const heading = (
+    <h3
+      className="section-heading text-base font-semibold in-data-[admin7-design=true]:mb-4"
+      id="member-custom-fields-heading"
+    >
+      Custom fields
+    </h3>
+  );
+
   return (
     <section
       aria-labelledby="member-custom-fields-heading"
       className="flex flex-col gap-3"
       data-testid="member-custom-fields-field"
     >
-      <h3 className="text-base font-semibold" id="member-custom-fields-heading">
-        Custom fields
-      </h3>
+      {!admin7Design && heading}
       <Card>
         {/* Rows are uniform (py-3, no first/last trims) so hover chips are all
                     the same height; the card's vertical padding is what gives the
                     first and last chips breathing room from the card edge. */}
-        <CardContent className="px-6 py-4">
+        <CardContent className="px-6 py-4 in-data-[admin7-design=true]:pt-6">
+          {admin7Design && heading}
           <ul>
             {fields.map((field) => {
               const stored = metafields?.[field.namespace]?.[field.key];
@@ -611,7 +623,9 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
                     }}
                   >
                     <span className="min-w-0">
-                      <span className="block text-sm text-muted-foreground">{field.name}</span>
+                      <span className="block text-sm text-muted-foreground in-data-[admin7-design=true]:text-base">
+                        {field.name}
+                      </span>
                       <CustomFieldValue field={field} stored={stored} />
                     </span>
                     <LucideIcon.Pen

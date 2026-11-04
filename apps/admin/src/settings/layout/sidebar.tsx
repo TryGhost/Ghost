@@ -81,7 +81,13 @@ const NavSection: React.FC<NavSectionProps> = ({ children, isVisible, title }) =
 
   return (
     <>
-      <Text as="h2" className="mb-4 ml-2 tracking-normal" size="md" weight="semibold" data-nav-row>
+      <Text
+        as="h2"
+        className="section-heading mb-4 ml-2 tracking-normal"
+        size="md"
+        weight="semibold"
+        data-nav-row
+      >
         {title}
       </Text>
       {children && <SidebarMenu className="-mt-1 mb-7 gap-0">{children}</SidebarMenu>}

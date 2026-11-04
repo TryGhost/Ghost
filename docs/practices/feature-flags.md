@@ -137,6 +137,10 @@ Settings, the editor, the automation editor, mobile and pages without a
 navigation inside the same sidebar, pinned without changing the stored mode. Mobile keeps the sidebar sheet, and the flag-off path
 preserves the docked sidebar and the separate Settings sidebar.
 
+The `admin7Design` milestone also sets column headers in a small uppercase label
+style. Section headings on member details, tag details and Settings share one
+style, and member stats and list text follow the prototype.
+
 The `admin7Design` milestone also gives text-entry fields 4px corners and 14px
 text. Checkboxes, radios, Filter bar items and Koenig keep their current look.
 
