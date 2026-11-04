@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
-import { request } from 'node:http';
+import { chmod, mkdir, readFile, readdir, rm, stat, symlink, writeFile } from 'node:fs/promises';
+import { createServer as createHttpServer, request } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { join } from 'node:path';
 
@@ -12,6 +12,7 @@ import {
   createServer,
   type Logger,
   type Plugin,
+  type ServerOptions,
   type ViteDevServer,
 } from 'vite';
 
@@ -38,6 +39,8 @@ beforeEach(async () => {
   vi.stubEnv('GHOST_APP_TUNNEL_URL', undefined);
   vi.stubEnv('GHOST_APP_IDENTITY_KEY', undefined);
   vi.stubEnv('GHOST_APP_BACKEND_KEY', undefined);
+  // These tests run the plugin as `vite dev` would, not as Vitest loads a project's config.
+  vi.stubEnv('VITEST', undefined);
 });
 
 afterEach(async () => {
@@ -74,14 +77,25 @@ async function startDevServer(
   {
     logger = recordingLogger(),
     allowedHosts,
-  }: { logger?: ReturnType<typeof recordingLogger>; allowedHosts?: true } = {},
+    worker = true,
+    mode,
+    serverOptions = {},
+  }: {
+    logger?: ReturnType<typeof recordingLogger>;
+    allowedHosts?: true;
+    /** Whether a plugin answers every other request, as Cloudflare's does with the Worker. */
+    worker?: boolean;
+    mode?: string;
+    serverOptions?: ServerOptions;
+  } = {},
 ) {
   server = await createServer({
     root,
     configFile: false,
     customLogger: logger,
-    plugins: [ghostApp(options), catchAll],
-    server: { port: 0, host: 'localhost', allowedHosts },
+    mode,
+    plugins: [ghostApp(options), ...(worker ? [catchAll] : [])],
+    server: { port: 0, host: 'localhost', allowedHosts, ...serverOptions },
   });
   await server.listen();
   const port = (server.httpServer!.address() as AddressInfo).port;
@@ -200,6 +214,123 @@ describe('vite dev', () => {
     expect(logger.messages.some(({ level }) => level === 'error')).toBe(true);
   });
 
+  describe('never serves a private key as a file', () => {
+    const KEY_FILES = [
+      '.ghost-app/development/identity.json',
+      '.ghost-app/development/backend.json',
+      '.ghost-app/production/identity.json',
+      '.ghost-app/production/backend.json',
+      '.dev.vars',
+      '.dev.vars.staging',
+    ];
+
+    beforeEach(async () => {
+      await createKeys({ root, mode: 'production' });
+      await writeFile(join(root, '.dev.vars'), 'SECRET=1\n');
+      await writeFile(join(root, '.dev.vars.staging'), 'SECRET=1\n');
+    });
+
+    it.each(KEY_FILES)('refuses %s, as a file, through /@fs/ or as an import', async (file) => {
+      const { port } = await startDevServer(
+        { tunnelUrl: 'https://tunnel.example' },
+        { worker: false },
+      );
+      for (const host of [`localhost:${port}`, 'tunnel.example']) {
+        for (const path of [`/${file}`, `/@fs${root}/${file}`, `/${file}?import`, `/${file}?raw`]) {
+          const response = await get(port, host, path);
+          expect(response.status, `${host}${path}`).toBe(403);
+          expect(response.body).not.toContain('"d"');
+          expect(response.body).not.toContain('SECRET');
+        }
+      }
+    });
+
+    it("keeps Vite's own refusals, and the project's", async () => {
+      await writeFile(join(root, '.env'), 'SECRET=1\n');
+      await writeFile(join(root, 'secret.txt'), 'SECRET=1\n');
+      const { port } = await startDevServer(undefined, { worker: false });
+      expect((await get(port, `localhost:${port}`, '/.env')).status).toBe(403);
+      await server!.close();
+
+      const own = await startDevServer(undefined, {
+        worker: false,
+        serverOptions: { fs: { deny: ['secret.txt'] } },
+      });
+      for (const path of ['/secret.txt', '/.ghost-app/production/identity.json']) {
+        expect((await get(own.port, `localhost:${own.port}`, path)).status).toBe(403);
+      }
+    });
+  });
+
+  it.each([
+    ['VITEST is set', { env: 'true' }],
+    ['the mode is test', { mode: 'test' }],
+  ])('creates no keys and writes no .dev.vars when %s, as under Vitest', async (_name, how) => {
+    await writeFile(join(root, 'wrangler.jsonc'), '{}');
+    if ('env' in how) {
+      vi.stubEnv('VITEST', how.env);
+    }
+    await startDevServer(undefined, { mode: 'mode' in how ? how.mode : undefined });
+    expect(existsSync(join(root, '.ghost-app'))).toBe(false);
+    expect(existsSync(join(root, '.dev.vars'))).toBe(false);
+  });
+
+  describe('in middleware mode', () => {
+    /** A dev server in middleware mode, which doesn't listen itself. */
+    async function startMiddlewareServer(serverOptions: ServerOptions) {
+      const logger = recordingLogger();
+      server = await createServer({
+        root,
+        configFile: false,
+        customLogger: logger,
+        plugins: [ghostApp()],
+        server: { middlewareMode: true, ...serverOptions },
+      });
+      return { logger };
+    }
+
+    /** Serves the dev server's middleware on a port of its own, as an app's own server would. */
+    async function host() {
+      const http = createHttpServer(server!.middlewares);
+      await new Promise<void>((resolve) => {
+        http.listen(0, resolve);
+      });
+      return { http, port: (http.address() as AddressInfo).port };
+    }
+
+    it('warns, and signs for nothing, without a port or a tunnel', async () => {
+      const { logger } = await startMiddlewareServer({});
+      expect(logger.messages).toContainEqual(
+        expect.objectContaining({
+          level: 'warn',
+          text: expect.stringContaining('middleware mode'),
+        }),
+      );
+      const { http, port } = await host();
+      try {
+        const response = await get(port, `localhost:${port}`);
+        expect(response.status).toBe(421);
+        expect(response.body).not.toContain('undefined');
+      } finally {
+        http.close();
+      }
+    });
+
+    it("signs for the port it's given, its scheme's default included", async () => {
+      await startMiddlewareServer({ port: 80 });
+      const { http, port } = await host();
+      try {
+        for (const hostHeader of ['localhost', 'localhost:80']) {
+          const response = await get(port, hostHeader);
+          expect(response.status).toBe(200);
+          await readAsGhost(JSON.parse(response.body), 'http://localhost/ghost-app.json');
+        }
+      } finally {
+        http.close();
+      }
+    });
+  });
+
   it('answers a manifest that cannot be signed with its problems', async () => {
     await writeFile(join(root, 'ghost-app.json'), JSON.stringify({ name: 'Hello' }));
     const { port, logger } = await startDevServer();
@@ -262,9 +393,55 @@ describe('vite dev', () => {
       );
     });
 
-    it('fails on a .dev.vars it cannot read', async () => {
-      await mkdir(join(root, '.dev.vars'));
+    it('says nothing once .env has the development key, and warns about another', async () => {
+      await createKeys({ root, mode: 'development' });
+      const key = await readBackendKey({ root, mode: 'development' });
+      await writeFile(join(root, '.env'), `GHOST_APP_BACKEND_KEY='${JSON.stringify(key)}'\n`);
+      const { logger } = await startDevServer();
+      expect(logger.messages.filter(({ level }) => level === 'warn')).toEqual([]);
+      await server!.close();
+
+      await writeFile(
+        join(root, '.env'),
+        `GHOST_APP_BACKEND_KEY='${JSON.stringify(generateKey())}'\n`,
+      );
+      const other = await startDevServer();
+      expect(other.logger.messages).toContainEqual(
+        expect.objectContaining({
+          level: 'warn',
+          text: expect.stringContaining('.env sets GHOST_APP_BACKEND_KEY to another key'),
+        }),
+      );
+      expect(existsSync(join(root, '.dev.vars'))).toBe(false);
+    });
+
+    it('fails on a .env it cannot read', async () => {
+      await mkdir(join(root, '.env'));
       await expect(startDevServer()).rejects.toThrow(/EISDIR/);
+    });
+
+    it('makes an existing .dev.vars private before adding the key', async () => {
+      await writeFile(join(root, '.dev.vars'), 'OTHER=1\n');
+      await chmod(join(root, '.dev.vars'), 0o644);
+      await startDevServer();
+      expect((await stat(join(root, '.dev.vars'))).mode & 0o777).toBe(0o600);
+      expect(await readFile(join(root, '.dev.vars'), 'utf8')).toContain('GHOST_APP_BACKEND_KEY=');
+    });
+
+    it.each([
+      ['a link', () => symlink(join(root, 'elsewhere'), join(root, '.dev.vars'))],
+      ['a directory', () => mkdir(join(root, '.dev.vars'))],
+    ])("doesn't write through a .dev.vars that is %s", async (_name, make) => {
+      await writeFile(join(root, 'elsewhere'), 'OTHER=1\n');
+      await make();
+      const { logger } = await startDevServer();
+      expect(await readFile(join(root, 'elsewhere'), 'utf8')).toBe('OTHER=1\n');
+      expect(logger.messages).toContainEqual(
+        expect.objectContaining({
+          level: 'warn',
+          text: expect.stringContaining("it isn't a regular file"),
+        }),
+      );
     });
 
     it("doesn't write the key where git would commit it", async () => {

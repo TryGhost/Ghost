@@ -21,6 +21,25 @@ import { provideDevBackendKey } from './dev-vars.ts';
 
 const MANIFEST_PATH = '/ghost-app.json';
 
+// What Vite denies when a project names nothing to deny, as of Vite 8. A project's own list
+// replaces these rather than adding to them, so they're added again here alongside the keys.
+const VITE_DEFAULT_DENY = [
+  '.env',
+  '.env.*',
+  '*.{crt,pem,key,p12,pfx,cer,der}',
+  '.npmrc',
+  '.yarnrc.yml',
+  '**/.git/**',
+];
+
+// The private keys, and `.dev.vars`, which holds the development backend key. Vite serves the
+// project's root, so without these anyone who can reach the dev server, through a tunnel too,
+// could read them as files, through `/@fs/` or as imports.
+const DENY = ['**/.ghost-app/**', '.dev.vars*'];
+
+/** A URL's port, or the scheme's default when the URL leaves it out. */
+const effectivePort = (url: URL) => url.port || (url.protocol === 'https:' ? '443' : '80');
+
 export interface GhostAppOptions {
   /** The readable manifest, relative to Vite's root. `ghost-app.json` by default. */
   manifest?: string;
@@ -84,6 +103,8 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
   let config: ResolvedConfig;
   let pending: { level: 'info' | 'warn'; message: string } | undefined;
   let warnedUnsigned = false;
+  // The port the project names, for middleware mode, where the dev server doesn't listen itself.
+  let configuredPort: number | undefined;
 
   /** The manifest URL to sign for a request's Host, or `undefined` if it isn't one of ours. */
   function manifestUrlFor(host: string | undefined, port: number | undefined): string | undefined {
@@ -97,7 +118,7 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
     if (tunnel) {
       return `${tunnel}${MANIFEST_PATH}`;
     }
-    if (port !== undefined && url.port === String(port) && isLocalhost(url.hostname)) {
+    if (port !== undefined && effectivePort(url) === String(port) && isLocalhost(url.hostname)) {
       return `${url.origin}${MANIFEST_PATH}`;
     }
     return undefined;
@@ -105,7 +126,7 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
 
   const portOf = (server: ViteDevServer) => {
     const address = server.httpServer?.address();
-    return typeof address === 'object' && address ? address.port : undefined;
+    return typeof address === 'object' && address ? address.port : configuredPort;
   };
 
   async function serveManifest(server: ViteDevServer, req: IncomingMessage, res: ServerResponse) {
@@ -151,18 +172,29 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
     // before Vite serves `ghost-app.json` from the project as a file.
     enforce: 'pre',
 
-    async config(userConfig, { command, isPreview }) {
+    async config(userConfig, { command, isPreview, mode }) {
       if (command !== 'serve' || isPreview) {
-        return;
+        return undefined;
       }
-      const root = resolve(userConfig.root ?? '');
-      await createKeys({ root, mode: 'development' });
-      pending = await provideDevBackendKey(root);
-      // Vite refuses requests for a host it doesn't know, so the tunnels are added.
-      if (tunnels.length > 0 && userConfig.server?.allowedHosts !== true) {
-        return { server: { allowedHosts: tunnels.map((origin) => new URL(origin).hostname) } };
+      // Port 0 asks for any free port, which only a dev server listening itself can have.
+      configuredPort = (userConfig.server?.middlewareMode && userConfig.server.port) || undefined;
+      // Vitest loads the project's Vite config as a dev server, which shouldn't create keys or
+      // write `.dev.vars` on every test run.
+      if (!process.env.VITEST && mode !== 'test') {
+        const root = resolve(userConfig.root ?? '');
+        await createKeys({ root, mode: 'development' });
+        pending = await provideDevBackendKey(root);
       }
-      return undefined;
+      return {
+        server: {
+          // Merged after the project's own list, which replaces Vite's defaults when it has one.
+          fs: { deny: [...(userConfig.server?.fs?.deny ? [] : VITE_DEFAULT_DENY), ...DENY] },
+          // Vite refuses requests for a host it doesn't know, so the tunnels are added.
+          ...(tunnels.length > 0 && userConfig.server?.allowedHosts !== true
+            ? { allowedHosts: tunnels.map((origin) => new URL(origin).hostname) }
+            : {}),
+        },
+      };
     },
 
     configResolved(resolved) {
@@ -174,6 +206,11 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
     },
 
     configureServer(server) {
+      if (config.server.middlewareMode && configuredPort === undefined && tunnels.length === 0) {
+        config.logger.warn(
+          `ghost-app: in middleware mode, set server.port to the port the app is served on, or name a tunnel with GHOST_APP_TUNNEL_URL, so the dev server can sign ghost-app.json for it.`,
+        );
+      }
       server.middlewares.use((req, res, next) => {
         const path = req.url?.split('?')[0];
         if (path !== MANIFEST_PATH || (req.method !== 'GET' && req.method !== 'HEAD')) {
@@ -196,7 +233,7 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
         const port = portOf(server);
         const scheme = config.server.https ? 'https' : 'http';
         const urls = [
-          `${scheme}://localhost:${port}${MANIFEST_PATH}`,
+          ...(port === undefined ? [] : [`${scheme}://localhost:${port}${MANIFEST_PATH}`]),
           ...tunnels.map((origin) => `${origin}${MANIFEST_PATH}`),
         ];
         const lines = urls.flatMap((url) => [
