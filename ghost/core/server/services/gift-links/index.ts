@@ -3,8 +3,6 @@ import { defineService } from '../../../kernel/define-service';
 import { GiftLinksService } from './service';
 import { recordGiftLinkAction, type RecordGiftLinkAction } from './actions';
 
-export type { RequestContext } from './actions';
-
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
 export default defineService('Gift Links', () => {
   const { knex } = require('../../data/db');

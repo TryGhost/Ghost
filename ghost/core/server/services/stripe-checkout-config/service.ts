@@ -14,7 +14,8 @@ import {
 } from '@tryghost/metafield-types/identity';
 import { snakeKeys } from '../../lib/case-keys';
 import { toDatabaseDate } from '../../lib/db-types/date';
-import type { RecordCheckoutConfigAction, RequestContext } from './actions';
+import type { RequestContext } from '../../lib/actor';
+import type { RecordCheckoutConfigAction } from './actions';
 import { configRow, type ConfigRowSchema, type TierScope } from './codec';
 import {
   COLLECTED_NOUNS,

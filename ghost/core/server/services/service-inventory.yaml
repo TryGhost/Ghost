@@ -469,15 +469,6 @@ services:
     disposition: migrate
     status: auditing
     migrated: true
-    extras:
-      actingContext:
-        purpose: Convert API authentication context into the staff actor recorded in installation history.
-        callers:
-          - core/server/api/endpoints/app-installations.ts
-        timing: Pure conversion when an API command runs; it does not require initialization.
-        dependencies: []
-        failurePolicy: A missing staff user or an integration yields a null actor; permission checks remain with the API.
-        destination: A normalized request actor supplied by the API framework Frame, with actor policy owned by the application.
     migration:
       complexity: straightforward
       modelImpact: fits
@@ -513,8 +504,8 @@ services:
       exports:
         summary: >-
           The root default-exports the shared initializer with async init and a guarded
-          service getter and a typed actingContext extra. There are no named runtime
-          exports. Reading service before readiness throws.
+          service getter. There are no extras or named runtime exports. Reading service
+          before readiness throws.
         sources:
           - core/server/services/app-installations/index.ts
         tests:
@@ -8441,7 +8432,7 @@ services:
       exports:
         summary: >-
           Named runtime exports are synchronous init, mutable namespaces/fields/definitions/values/bindings,
-          audience/access constants, canWrite, actingContext and adminWriteOrigin. fields is the
+          audience/access constants, canWrite and adminWriteOrigin. fields is the
           field source every read of a field goes through, reading a field in an unavailable
           namespace as archived. Service
           bindings are undefined before init; class methods depend on their receiver. Namespaces
@@ -13918,15 +13909,6 @@ services:
     disposition: migrate
     status: auditing
     migrated: true
-    extras:
-      actingContext:
-        purpose: Convert API authentication context into the staff actor recorded in the config's history.
-        callers:
-          - core/server/api/endpoints/stripe-checkout-config.ts
-        timing: Pure conversion when an API command runs; it does not require initialization.
-        dependencies: []
-        failurePolicy: A missing staff user or an integration yields a null actor; permission checks remain with the API.
-        destination: A normalized request actor supplied by the API framework Frame, with actor policy owned by the application.
     migration:
       complexity: straightforward
       modelImpact: fits
@@ -13978,8 +13960,8 @@ services:
       exports:
         summary: >-
           The TypeScript root default-exports defineService with init, the guarded service getter
-          for the config, checkouts, previews and branding services, and actingContext as its only
-          extra. Its named exports are type-only. API endpoints read the services through service;
+          for the config, checkouts, previews and branding services, and no extras. Its named
+          exports are type-only. API endpoints read the services through service;
           the members API reads checkouts when it is built and boot passes it to gifts init; and
           the API's output serializers and the collection-flag checks import the wire serializers
           and the collected parts' constants from the service's own modules.

@@ -1,52 +1,16 @@
 import logging from '@tryghost/logging';
-import { z } from 'zod';
+import { actorFrom, readFrameIdentity, type RequestContext } from '../../lib/actor';
 import type { MemberAccess } from './access';
 import type { SingleWriteOrigin } from './schema';
 
-export interface Actor {
-  id: string;
-  type: 'user' | 'integration';
-  /** An API key rather than a signed-in session, which a user's staff token also is. */
-  viaApiKey: boolean;
-}
-
-export interface RequestContext {
-  actor: Actor | null;
-}
-
-const ApiFrameContext = z.object({
-  user: z.string().nullish(),
-  integration: z.object({ id: z.string() }).nullish(),
-  api_key: z.unknown().optional(),
-});
-
 /**
- * Who is acting, read off an API frame's context.
- *
- * Here rather than in each endpoint, because two resources now record metafield history
- * and a second reading of the same shape is a second chance to disagree about it. An
- * integration and a user are both actors; a request that is neither — a webhook, a job —
- * has none, and the history says so rather than guessing.
- */
-export function actingContext(context: unknown): RequestContext {
-  const frame = ApiFrameContext.safeParse(context).data ?? {};
-  const viaApiKey = Boolean(frame.api_key);
-  if (frame.integration) {
-    return { actor: { id: frame.integration.id, type: 'integration', viaApiKey } };
-  }
-  if (frame.user) {
-    return { actor: { id: frame.user, type: 'user', viaApiKey } };
-  }
-  return { actor: null };
-}
-
-/**
- * Who made a write through the Admin API and where, read off the same context as
- * `actingContext`, so the values a request writes and the history it records name the
- * same writer. Null when nobody is acting, which no Admin API write should be.
+ * Who made a write through the Admin API and where, read the same way as `actingContext`, so
+ * the values a request writes and the history it records name the same writer. Null when
+ * nobody is acting, which no Admin API write should be.
  */
 export function adminWriteOrigin(context: unknown): SingleWriteOrigin | null {
-  const { actor } = actingContext(context);
+  const identity = readFrameIdentity(context);
+  const actor = actorFrom(identity);
   if (!actor) {
     return null;
   }
@@ -56,7 +20,7 @@ export function adminWriteOrigin(context: unknown): SingleWriteOrigin | null {
   // A staff token authenticates as its user but is a call to the API, not a visit to Admin.
   return {
     writtenBy: { type: 'user', id: actor.id },
-    source: actor.viaApiKey ? 'admin_api' : 'admin',
+    source: identity.viaApiKey ? 'admin_api' : 'admin',
   };
 }
 

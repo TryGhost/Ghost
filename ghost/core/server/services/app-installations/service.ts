@@ -1,7 +1,8 @@
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
-import type { RecordAppInstallationAction, RequestContext } from './actions';
+import type { RequestContext } from '../../lib/actor';
+import type { RecordAppInstallationAction } from './actions';
 import {
   alreadyInstalled,
   AppInstallationsRepository,

@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import logging from '@tryghost/logging';
 import { GiftLinksService } from '../../../core/server/services/gift-links/service';
+import type { RequestContext } from '../../../core/server/lib/actor';
 import {
   recordGiftLinkAction,
   type RecordGiftLinkAction,
-  type RequestContext,
 } from '../../../core/server/services/gift-links/actions';
 import type { GiftLink } from '../../../core/server/services/gift-links/models';
 

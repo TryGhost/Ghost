@@ -1,27 +1,5 @@
 import type { GhostLogger } from '@tryghost/logging';
-
-export interface Actor {
-  id: string;
-  type: 'user';
-}
-
-export interface RequestContext {
-  actor: Actor | null;
-}
-
-/**
- * Who is acting, read off an API frame's context.
- *
- * Only a staff user counts, whether signed in or using their own staff token.
- * Integrations hold no permission to manage apps, so they never get this far.
- */
-export function actingContext(context: unknown): RequestContext {
-  const frame = (context ?? {}) as { user?: string; integration?: unknown };
-  if (frame.user && !frame.integration) {
-    return { actor: { id: frame.user, type: 'user' } };
-  }
-  return { actor: null };
-}
+import type { RequestContext } from '../../lib/actor';
 
 export interface ActionRecorder {
   add(data: Record<string, unknown>, options: { autoRefresh: boolean }): Promise<unknown>;

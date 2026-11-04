@@ -1,13 +1,5 @@
 import type { GhostLogger } from '@tryghost/logging';
-
-export interface Actor {
-  id: string;
-  type: 'user' | 'integration';
-}
-
-export interface RequestContext {
-  actor: Actor | null;
-}
+import type { RequestContext } from '../../lib/actor';
 
 export interface ActionRecorder {
   add(data: Record<string, unknown>, options: { autoRefresh: boolean }): Promise<unknown>;

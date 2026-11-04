@@ -3,7 +3,8 @@ import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { GiftLinkRow, giftLinkCodec, giftLinkColumns } from './codec';
 import { generateGiftLinkToken, type GiftLink, type Post } from './models';
-import { type RecordGiftLinkAction, type RequestContext } from './actions';
+import type { RequestContext } from '../../lib/actor';
+import type { RecordGiftLinkAction } from './actions';
 
 // The LEFT JOIN leaves every link column nullable; the explicit generic names a row shape knex
 // can't infer from a dynamic column list.

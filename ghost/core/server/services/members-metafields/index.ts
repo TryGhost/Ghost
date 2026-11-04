@@ -13,8 +13,7 @@ import { metafieldsTracking } from './tracking';
 
 export type { Metafield } from './models';
 export type { FieldSource } from './queries';
-export type { RequestContext } from './actions';
-export { actingContext, adminWriteOrigin } from './actions';
+export { adminWriteOrigin } from './actions';
 export type { BoundField } from './bindings-service';
 export type { MetafieldChangeEvent, WriteOrigin, WrittenBy } from './schema';
 

@@ -1,33 +1,5 @@
 import type { GhostLogger } from '@tryghost/logging';
-import { z } from 'zod';
-
-export interface Actor {
-  id: string;
-  type: 'user';
-}
-
-export interface RequestContext {
-  actor: Actor | null;
-}
-
-const FrameContext = z.object({
-  user: z.string().nullish(),
-  integration: z.unknown(),
-});
-
-/**
- * Who is saving the config, read off an API frame's context.
- *
- * Only a staff user counts, whether signed in or using their own staff token. Integrations
- * can't reach the config, so they never get this far.
- */
-export function actingContext(context: unknown): RequestContext {
-  const frame = FrameContext.safeParse(context);
-  if (frame.success && frame.data.user && !frame.data.integration) {
-    return { actor: { id: frame.data.user, type: 'user' } };
-  }
-  return { actor: null };
-}
+import type { RequestContext } from '../../lib/actor';
 
 export interface ActionRecorder {
   add(data: Record<string, unknown>, options: { autoRefresh: boolean }): Promise<unknown>;

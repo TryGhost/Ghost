@@ -1,9 +1,7 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import {
-  recordGiftLinkAction,
-  type RequestContext,
-} from '../../../../../core/server/services/gift-links/actions';
+import type { RequestContext } from '../../../../../core/server/lib/actor';
+import { recordGiftLinkAction } from '../../../../../core/server/services/gift-links/actions';
 import { createLoggingFake } from '../../../../utils/logging-utils';
 
 const CTX: RequestContext = { actor: { id: 'actor-id', type: 'user' } };

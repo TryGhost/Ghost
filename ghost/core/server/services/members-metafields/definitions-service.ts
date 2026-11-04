@@ -36,7 +36,8 @@ import {
 } from './queries';
 import { mintableKey } from './key';
 import { parseRequest } from '../../lib/parse-request';
-import { type RecordMetafieldAction, type RequestContext } from './actions';
+import type { RequestContext } from '../../lib/actor';
+import type { RecordMetafieldAction } from './actions';
 import type { MetafieldsTracking } from './tracking';
 
 // Column limits come from the canonical schema — the same source the migration and
