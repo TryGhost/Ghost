@@ -86,8 +86,8 @@ An app describes itself to Ghost in a JSON manifest, which it serves as a
   most once.
 - URLs must be `https`. `localhost` and other addresses of the machine itself are
   accepted, over `http` too, only when Ghost runs in development. The manifest
-  still can't be on Ghost's own host, on any port: with Ghost on `localhost`,
-  serve the app from `127.0.0.1`.
+  still can't be on Ghost's own host, on any port: serve the app from whichever
+  of `localhost` and `127.0.0.1` neither the site nor Admin uses.
 
 The format is unversioned while only Ghost builds apps. Unknown fields are
 rejected, so adding one is always a deliberate change to `src/manifest/`.
