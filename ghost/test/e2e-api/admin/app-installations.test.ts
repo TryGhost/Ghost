@@ -402,11 +402,14 @@ describe('App installations Admin API', function () {
     // Every path in a manifest is on the manifest's origin, so this keeps the whole app off
     // Ghost's host, where browsers would send it Ghost's cookies whatever the port.
     it('refuses a manifest URL on the site’s own host, on any port, before fetching anything', async function () {
-      // The test site is on the machine itself, which only development accepts.
+      // The test site is on the machine itself, which only development accepts. Development
+      // also trusts the machine without a challenge, so the composition root's unit test
+      // checks that no challenge goes out either.
       configUtils.set('env', 'development');
       const site = new URL(configUtils.config.get('url'));
+      const sitePort = Number(site.port || (site.protocol === 'https:' ? 443 : 80));
       const otherPort = new URL(site);
-      otherPort.port = String(Number(site.port) + 1);
+      otherPort.port = String(sitePort + 1);
 
       for (const manifestUrl of [
         new URL('/content/files/ghost-app.json', site).href,
