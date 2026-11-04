@@ -132,7 +132,8 @@ describe('the package', () => {
     expect(loaded).not.toMatch(/jose|zod|node:/);
   });
 
-  it.each(['tooling', 'bin'])('%s.js loads only Node builtins, jose and zod', (entry) => {
+  // Vite is an optional peer dependency, so the plugin only imports its types.
+  it.each(['tooling', 'vite', 'bin'])('%s.js loads only Node builtins, jose and zod', (entry) => {
     const loaded = [...reachableImports(code(entry))].filter(
       (specifier) => !specifier.startsWith('node:'),
     );
@@ -157,6 +158,7 @@ describe('the package', () => {
         'serveManifest',
       ],
     ],
+    ['vite', ['ghostApp']],
   ])('%s.js exports %j', (entry, names) => {
     expect(exportsOf(code(entry))).toEqual(names);
   });
@@ -165,6 +167,7 @@ describe('the package', () => {
     ['index', []],
     ['backend', []],
     ['tooling', []],
+    ['vite', ['"vite"']],
   ])(
     '%s.d.ts declares its types without importing or referring to any other package but %j',
     (entry, expected) => {

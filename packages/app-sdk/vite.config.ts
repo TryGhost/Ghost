@@ -47,7 +47,7 @@ const refuseNodeBuiltins: Plugin = {
 };
 
 // The entry points that run in Node, and only those, may import Node builtins.
-const NODE_ENTRIES: ReadonlySet<string> = new Set(['tooling', 'bin']);
+const NODE_ENTRIES: ReadonlySet<string> = new Set(['tooling', 'vite', 'bin']);
 
 // The package build has entry points for Node too, so a builtin imported as `node:…` stays an
 // import, and the build fails if any module the other entry points reach imports one: they run
@@ -177,13 +177,14 @@ const packageBuild = (): UserConfig => ({
         backend: 'src/backend/index.ts',
         // An app's tooling, in Node.
         tooling: 'src/tooling/index.ts',
+        vite: 'src/vite/index.ts',
         bin: 'src/bin.ts',
       },
       formats: ['es'],
       fileName: (_format, name) => `${name}.js`,
     },
     rolldownOptions: {
-      external: [/^(?:@quilted\/threads|jose|zod)(?:\/|$)/],
+      external: [/^(?:@quilted\/threads|jose|zod|vite)(?:\/|$)/],
       output: {
         sourcemapPathTransform: fromNodeModules,
         chunkFileNames: 'chunks/[name]-[hash].js',
