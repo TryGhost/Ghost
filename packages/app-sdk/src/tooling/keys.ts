@@ -1,5 +1,5 @@
 import { createPrivateKey, createPublicKey, generateKeyPairSync, randomUUID } from 'node:crypto';
-import { link, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { chmod, link, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 
 import { isGitIgnored } from './git.ts';
@@ -197,6 +197,10 @@ async function publishKey(file: string): Promise<boolean> {
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
       throw error;
+    }
+    // Kept, but only for its owner, as a key written by hand or copied in may not be.
+    if (process.platform !== 'win32' && ((await stat(file)).mode & 0o077) !== 0) {
+      await chmod(file, 0o600);
     }
     return false;
   } finally {
