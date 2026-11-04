@@ -79,7 +79,10 @@ describe('Card Components', () => {
 
     const card = screen.getByTestId('card');
     expect(card.className, 'Should have a top rule').toContain('border-t');
-    expect(card.className, 'Should not have an outline').not.toContain('rounded-xl');
+    expect(card.className, 'Should not have an outline').not.toContain('rounded-card');
+    expect(card.className.split(' '), 'Should not have an all-sides border').not.toContain(
+      'border',
+    );
     expect(screen.getByTestId('content').className, 'Should have no side padding').toBe('pt-5');
   });
 

@@ -108,11 +108,19 @@ const SubscriptionRow: React.FC<{
   const status = getSubscriptionStatusLabel(sub);
   const validity = getSubscriptionValidityLabel(sub);
   const priceLabel = getSubscriptionPriceLabel(sub);
+  // Gift subs get no action menu. Comp subs get their own menu with Remove
+  // complimentary; paid subs get Cancel/Continue + Stripe links.
+  const actions =
+    kind === 'paid' ? (
+      <MemberSubscriptionActions memberId={member.id} subscription={sub} />
+    ) : kind === 'complimentary' && sub.tier?.id ? (
+      <MemberSubscriptionCompActions member={member} tierId={sub.tier.id} />
+    ) : null;
 
   return (
     <div
       className={cn(
-        'flex items-start justify-between gap-4 py-5 first:pt-0 last:pb-0 in-data-[admin7-design=true]:items-center',
+        'flex items-start justify-between gap-4 py-5 first:pt-0 last:pb-0',
         showDivider && 'border-t border-border',
       )}
       data-testid="member-subscription"
@@ -157,12 +165,11 @@ const SubscriptionRow: React.FC<{
           {showDetails && <SubscriptionDetails sub={sub} />}
         </div>
       </div>
-      {/* Gift subs get no action menu. Comp subs get their
-                own menu with Remove complimentary; paid subs get Cancel/Continue +
-                Stripe links. */}
-      {kind === 'paid' && <MemberSubscriptionActions memberId={member.id} subscription={sub} />}
-      {kind === 'complimentary' && sub.tier?.id && (
-        <MemberSubscriptionCompActions member={member} tierId={sub.tier.id} />
+      {/* Admin 7 centres the menu on the price block, so opening Details doesn't move it. */}
+      {actions && (
+        <div className="in-data-[admin7-design=true]:flex in-data-[admin7-design=true]:h-20 in-data-[admin7-design=true]:items-center">
+          {actions}
+        </div>
       )}
     </div>
   );

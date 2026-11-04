@@ -372,6 +372,16 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     title = 'Member not found';
   }
 
+  const sidebar = (
+    <MemberDetailSidebar
+      draftEmail={committedIdentity.email}
+      draftName={committedIdentity.name}
+      engagementEnabled={engagementEnabled}
+      member={member}
+      showIdentity={!mapEnabled}
+    />
+  );
+
   return (
     <Box
       className={
@@ -506,14 +516,8 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
             )}
 
             {showEditor && draft && (
-              <div className="flex flex-1 flex-col gap-8 lg:flex-row lg:items-start lg:gap-12 in-data-[admin7-design=true]:lg:flex-row-reverse in-data-[admin7-design=true]:lg:gap-20">
-                <MemberDetailSidebar
-                  draftEmail={committedIdentity.email}
-                  draftName={committedIdentity.name}
-                  engagementEnabled={engagementEnabled}
-                  member={member}
-                  showIdentity={!mapEnabled}
-                />
+              <div className="flex flex-1 flex-col gap-8 lg:flex-row lg:items-start lg:gap-12 in-data-[admin7-design=true]:lg:gap-20">
+                {!admin7Design && sidebar}
                 <div className="flex min-w-0 flex-1 flex-col gap-8 in-data-[admin7-design=true]:gap-18 in-data-[admin7-design=true]:[--text-section-heading:var(--text-section-heading-lg)]">
                   {/* First card: name, email, labels, note. Admin 7 gives it a heading
                                     like the sections below it. */}
@@ -609,6 +613,9 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                     />
                   )}
                 </div>
+                {/* Admin 7 shows the sidebar on the right, so it comes after the form
+                                    for the keyboard too. */}
+                {admin7Design && sidebar}
               </div>
             )}
           </DetailPage.Body>

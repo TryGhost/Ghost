@@ -74,6 +74,19 @@
      AA as small text. */
   --publish-accent: var(--color-green-600);
   --character-count: var(--color-green-600);
+  /* Activity feed icons: a color pair for each kind of event. */
+  --event-email-surface: var(--color-blue-200);
+  --event-email-icon: var(--color-blue-700);
+  --event-gain-surface: var(--color-green-200);
+  --event-gain-icon: var(--color-green-700);
+  --event-loss-surface: var(--color-red-200);
+  --event-loss-icon: var(--color-red-700);
+  --event-warning-surface: var(--color-yellow-200);
+  --event-warning-icon: var(--color-yellow-700);
+  --event-engagement-surface: var(--color-purple-200);
+  --event-engagement-icon: var(--color-purple-700);
+  --event-gift-surface: var(--color-pink-200);
+  --event-gift-icon: var(--color-pink-700);
   --state-success-foreground: var(--color-black);
   --state-warning: var(--color-yellow-700);
   /* --state-warning is dark enough for text, so a tint or a solid mark made from it
@@ -334,6 +347,18 @@
 
   --publish-accent: var(--state-success);
   --character-count: var(--state-success);
+  --event-email-surface: var(--color-blue-900);
+  --event-email-icon: var(--color-blue-300);
+  --event-gain-surface: var(--color-green-900);
+  --event-gain-icon: var(--color-green-300);
+  --event-loss-surface: var(--color-red-900);
+  --event-loss-icon: var(--color-red-300);
+  --event-warning-surface: var(--color-yellow-900);
+  --event-warning-icon: var(--color-yellow-300);
+  --event-engagement-surface: var(--color-purple-900);
+  --event-engagement-icon: var(--color-purple-300);
+  --event-gift-surface: var(--color-pink-900);
+  --event-gift-icon: var(--color-pink-300);
   --state-warning-surface: var(--color-yellow-900);
   --state-warning-border: transparent;
   --state-warning-fill: var(--state-warning);

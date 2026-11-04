@@ -83,14 +83,16 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
         {member.attribution.title}
       </span>
     ));
+  // Admin 7 drops the Signup info heading, so Engagement sits one level higher.
+  const EngagementHeading = admin7Design ? 'h3' : 'h4';
   const engagement = member && engagementEnabled && (
     <section
       className={cn('flex flex-col text-sm', admin7Design ? 'gap-5' : 'mt-4 gap-3')}
       data-testid="member-detail-engagement"
     >
-      <h4 className="section-heading border-b border-border pb-2 text-base font-semibold in-data-[admin7-design=true]:pb-3">
+      <EngagementHeading className="section-heading border-b border-border pb-2 text-base font-semibold in-data-[admin7-design=true]:pb-3">
         Engagement
-      </h4>
+      </EngagementHeading>
       {/* A missing `email_count` counts as no newsletters received. */}
       {(member.email_count ?? 0) === 0 ? (
         // Falls back to a generic "this member" when no name is known.
@@ -135,7 +137,7 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
 
   return (
     <aside
-      className="flex w-full shrink-0 flex-col gap-6 lg:w-80"
+      className="flex w-full shrink-0 flex-col gap-6 in-data-[admin7-design=true]:max-lg:order-first lg:w-80"
       data-testid="member-detail-sidebar"
     >
       {showIdentity && (

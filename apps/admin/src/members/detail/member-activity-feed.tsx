@@ -77,21 +77,21 @@ export const EventIcon: React.FC<{ iconName: string }> = ({ iconName }) => {
   }
 };
 
-// admin7Design: each kind of event gets a color pair, a flat step 200 with its step
-// 700 for the icon. Written out in full so Tailwind can see the classes. Anything
-// not listed, like profile changes and logins, stays neutral.
+// admin7Design: each kind of event gets a color pair from Shade's event tokens.
+// Written out in full so Tailwind can see the classes. Anything not listed, like
+// profile changes and logins, stays neutral.
 const EMAIL_TONE =
-  'in-data-[admin7-design=true]:bg-blue-200 in-data-[admin7-design=true]:[&_svg]:text-blue-700';
+  'in-data-[admin7-design=true]:bg-event-email-surface in-data-[admin7-design=true]:[&_svg]:text-event-email-icon';
 const GAIN_TONE =
-  'in-data-[admin7-design=true]:bg-green-200 in-data-[admin7-design=true]:[&_svg]:text-green-700';
+  'in-data-[admin7-design=true]:bg-event-gain-surface in-data-[admin7-design=true]:[&_svg]:text-event-gain-icon';
 const LOSS_TONE =
-  'in-data-[admin7-design=true]:bg-red-200 in-data-[admin7-design=true]:[&_svg]:text-red-700';
+  'in-data-[admin7-design=true]:bg-event-loss-surface in-data-[admin7-design=true]:[&_svg]:text-event-loss-icon';
 const WARNING_TONE =
-  'in-data-[admin7-design=true]:bg-yellow-200 in-data-[admin7-design=true]:[&_svg]:text-yellow-700';
+  'in-data-[admin7-design=true]:bg-event-warning-surface in-data-[admin7-design=true]:[&_svg]:text-event-warning-icon';
 const ENGAGEMENT_TONE =
-  'in-data-[admin7-design=true]:bg-purple-200 in-data-[admin7-design=true]:[&_svg]:text-purple-700';
+  'in-data-[admin7-design=true]:bg-event-engagement-surface in-data-[admin7-design=true]:[&_svg]:text-event-engagement-icon';
 const GIFT_TONE =
-  'in-data-[admin7-design=true]:bg-pink-200 in-data-[admin7-design=true]:[&_svg]:text-pink-700';
+  'in-data-[admin7-design=true]:bg-event-gift-surface in-data-[admin7-design=true]:[&_svg]:text-event-gift-icon';
 
 const EVENT_TONES: Record<string, string> = {
   'event-received-email': EMAIL_TONE,
