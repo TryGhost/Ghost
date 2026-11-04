@@ -15,7 +15,7 @@ import { resolve } from 'node:path';
 import { isLocalhost } from '@tryghost/app-contracts';
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite';
 
-import { createKeys, keyFile } from '../tooling/keys.ts';
+import { createKeys, signingKeySource } from '../tooling/keys.ts';
 import { MANIFEST_PATH, formatErrors } from '../shared/manifest.ts';
 import { MANIFEST_FILE, serialiseSigned, signProject } from '../tooling/sign.ts';
 import { DENY, VITE_DEFAULT_DENY } from './deny.ts';
@@ -288,7 +288,7 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
         source: serialiseSigned(result.signed),
       });
       config.logger.info(
-        `ghost-app: signed ghost-app.json for ${manifestUrl} with ${process.env.GHOST_APP_IDENTITY_KEY ? 'GHOST_APP_IDENTITY_KEY' : keyFile('production', 'identity')}`,
+        `ghost-app: signed ghost-app.json for ${manifestUrl} with ${signingKeySource('production', 'identity')}`,
       );
     },
   };

@@ -203,6 +203,19 @@ export interface ReadKeysOptions extends KeyOptions {
 }
 
 /**
+ * Where `readSigningKeys` reads a mode's key from: the variable, in production when it's set to
+ * anything but blanks, or else the key's file.
+ */
+export function signingKeySource(
+  mode: Mode,
+  name: KeyName,
+  env: Record<string, string | undefined> = process.env,
+): string {
+  const variable = name === 'identity' ? IDENTITY_KEY_VARIABLE : BACKEND_KEY_VARIABLE;
+  return mode === 'production' && env[variable]?.trim() ? variable : keyFile(mode, name);
+}
+
+/**
  * The keys to sign a mode's manifest with. In production, `GHOST_APP_IDENTITY_KEY` and
  * `GHOST_APP_BACKEND_KEY` take the place of the files, so CI can sign without them; the
  * backend key may be its public half. A missing key is an error that says how to create it:
@@ -213,10 +226,10 @@ export async function readSigningKeys({
   mode,
   env = process.env,
 }: ReadKeysOptions): Promise<SigningKeys> {
-  const fromEnv = (name: string) =>
-    mode === 'production' ? env[name]?.trim() || undefined : undefined;
-  const identityText = fromEnv(IDENTITY_KEY_VARIABLE);
-  const backendText = fromEnv(BACKEND_KEY_VARIABLE);
+  const fromEnv = (name: KeyName, variable: string) =>
+    signingKeySource(mode, name, env) === variable ? env[variable]!.trim() : undefined;
+  const identityText = fromEnv('identity', IDENTITY_KEY_VARIABLE);
+  const backendText = fromEnv('backend', BACKEND_KEY_VARIABLE);
   const identityKey = identityText
     ? readKey(identityText, IDENTITY_KEY_VARIABLE)
     : await readKeyFile(root, mode, 'identity');

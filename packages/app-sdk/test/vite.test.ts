@@ -596,6 +596,23 @@ describe('vite build', () => {
     }
   });
 
+  it('says which identity key it signed with', async () => {
+    await createKeys({ root, mode: 'production' });
+    vi.stubEnv('GHOST_APP_URL', 'https://hello.example.com');
+    // Blank, so the file is used, and named.
+    vi.stubEnv('GHOST_APP_IDENTITY_KEY', '  ');
+    const fromFile = await buildApp();
+    expect(fromFile.messages.map(({ text }) => text)).toContain(
+      'ghost-app: signed ghost-app.json for https://hello.example.com/ghost-app.json with .ghost-app/production/identity.json',
+    );
+
+    vi.stubEnv('GHOST_APP_IDENTITY_KEY', JSON.stringify(generateKey()));
+    const fromEnv = await buildApp();
+    expect(fromEnv.messages.map(({ text }) => text)).toContain(
+      'ghost-app: signed ghost-app.json for https://hello.example.com/ghost-app.json with GHOST_APP_IDENTITY_KEY',
+    );
+  });
+
   it('emits no manifest without GHOST_APP_URL, and says so', async () => {
     const logger = await buildApp();
     expect(existsSync(join(outDir(), 'index.html'))).toBe(true);
