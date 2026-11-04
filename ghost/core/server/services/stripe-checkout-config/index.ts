@@ -3,7 +3,7 @@ import logging from '@tryghost/logging';
 import { defineService } from '../../../kernel/define-service';
 import urlUtils from '../../../shared/url-utils';
 import * as metafields from '../members-metafields';
-import { recordCheckoutConfigAction, type RecordCheckoutConfigAction } from './actions';
+import { ActionLog } from '../../lib/action-log/action-log';
 import { CheckoutBrandingService } from './branding-service';
 import { CheckoutService } from './checkout-service';
 import { CheckoutPreviewService, type PreviewableTier } from './preview-service';
@@ -37,7 +37,6 @@ export interface StripeCheckoutServices {
 // connected.
 export default defineService('Stripe Checkout Config', (): StripeCheckoutServices => {
   const { knex } = require('../../data/db');
-  const models = require('../../models');
   const labs = require('../../../shared/labs');
 
   // Boot sets up the custom fields services first, as shipping saves into custom fields.
@@ -46,12 +45,9 @@ export default defineService('Stripe Checkout Config', (): StripeCheckoutService
       message: 'The custom fields services must be set up before the Stripe Checkout config.',
     });
   }
-  const recordAction: RecordCheckoutConfigAction = (input) =>
-    recordCheckoutConfigAction({ Action: models.Action, logging, ...input });
-
   const config = new StripeCheckoutConfigService({
     knex,
-    recordAction,
+    actionLog: new ActionLog({ knex, logging }),
     bindings: metafields.bindings,
     fields: metafields.fields,
     logging,

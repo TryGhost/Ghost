@@ -13917,7 +13917,7 @@ services:
       reason: >-
         Boot awaits the defineService initializer in initCore after the custom fields services.
         It builds the config, checkout, preview and branding services as one ready aggregate from
-        member-metafield bindings, knex, models, labs and logging, and keeps the deferred Stripe,
+        member-metafield bindings, knex, the shared action log, labs and logging, and keeps the deferred Stripe,
         tier and member callbacks so construction does not pull later boot dependencies
         forward. The constructors own no startup resources.
       reviewedAt: f276513ba32b7114fd5cc4f7b02d3f82c0c31e3e
