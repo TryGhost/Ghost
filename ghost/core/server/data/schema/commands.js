@@ -7,7 +7,7 @@ const DatabaseInfo = require('@tryghost/database-info');
 const schema = require('./schema');
 const { defaultIndexName } = require('./lib/default-index-name');
 const { foreignKeySpecsOf, onDeleteOf } = require('./lib/foreign-keys');
-const { patternChecksOf } = require('./lib/column-patterns');
+const { tableChecksOf, conditionOf } = require('./lib/table-checks');
 
 const messages = {
   hasPrimaryKeySQLiteError: 'Must use hasPrimaryKeySQLite on an SQLite3 database',
@@ -74,9 +74,9 @@ function addTableColumn(
 }
 
 /**
- * The check constraints a table's column patterns become. Read on every database, so a
- * pattern MySQL would refuse fails everywhere, but held only on MySQL: SQLite is being
- * removed, and its driver here has no regular expression function.
+ * The check constraints a table declares, on its columns' patterns and on the table itself.
+ * Read on every database, so a check MySQL would refuse fails everywhere, but held only on
+ * MySQL: SQLite is being removed, and its driver here has no regular expression function.
  *
  * Each is declared on the table rather than on its column, because MariaDB can only name a
  * check on the table.
@@ -84,11 +84,72 @@ function addTableColumn(
  * @param {string} tableName
  * @param {object} tableSpec
  * @param {import('knex').Knex} transaction - the connection the table is built on
- * @returns {import('./lib/column-patterns').PatternCheck[]}
+ * @returns {import('./lib/table-checks').TableCheck[]}
  */
-function patternChecksOn(tableName, tableSpec, transaction) {
-  const checks = patternChecksOf(tableName, tableSpec);
+function checksOn(tableName, tableSpec, transaction) {
+  const checks = tableChecksOf(tableName, tableSpec);
   return DatabaseInfo.isMySQL(transaction) ? checks : [];
+}
+
+/**
+ * The clause that adds a check, as one item of an ALTER TABLE.
+ *
+ * @param {import('knex').Knex} transaction
+ * @param {import('./lib/table-checks').TableCheck} check
+ */
+function addCheckClause(transaction, check) {
+  const { sql, bindings } = conditionOf(check);
+  return transaction.raw(`add constraint ?? check (${sql})`, [check.constraintName, ...bindings]);
+}
+
+/**
+ * Adds a check a table declares to the table as it is, on MySQL only, as `checksOn` holds
+ * them. Fails, adding nothing, when a row already in the table breaks it.
+ *
+ * @param {string} tableName
+ * @param {import('./lib/table-checks').TableCheck} check
+ * @param {import('knex').Knex} [transaction]
+ */
+async function addCheck(tableName, check, transaction = db.knex) {
+  if (!DatabaseInfo.isMySQL(transaction)) {
+    return;
+  }
+  const { sql, bindings } = conditionOf(check);
+  await transaction.raw(`alter table ?? add constraint ?? check (${sql})`, [
+    tableName,
+    check.constraintName,
+    ...bindings,
+  ]);
+}
+
+/**
+ * @param {string} tableName
+ * @param {string} constraintName
+ * @param {import('knex').Knex} [transaction]
+ */
+async function dropCheck(tableName, constraintName, transaction = db.knex) {
+  if (!DatabaseInfo.isMySQL(transaction)) {
+    return;
+  }
+  await transaction.raw('alter table ?? drop check ??', [tableName, constraintName]);
+}
+
+/**
+ * Whether a table holds a check by that name: always false off MySQL, which holds none.
+ *
+ * @param {string} tableName
+ * @param {string} constraintName
+ * @param {import('knex').Knex} [transaction]
+ */
+async function hasCheck(tableName, constraintName, transaction = db.knex) {
+  if (!DatabaseInfo.isMySQL(transaction)) {
+    return false;
+  }
+  const [rows] = await transaction.raw(
+    "SELECT 1 FROM information_schema.TABLE_CONSTRAINTS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND CONSTRAINT_NAME = ? AND CONSTRAINT_TYPE = 'CHECK'",
+    [tableName, constraintName],
+  );
+  return rows.length > 0;
 }
 
 /**
@@ -219,7 +280,7 @@ async function addColumn(
   columnSpec = schema[tableName][column],
   options = {},
 ) {
-  const checks = patternChecksOn(tableName, { [column]: columnSpec }, transaction);
+  const checks = checksOn(tableName, { [column]: columnSpec }, transaction);
   const addColumnBuilder = transaction.schema.table(tableName, function (table) {
     addTableColumn(tableName, table, column, columnSpec);
     foreignKeySpecsOf({ [column]: columnSpec }).forEach((foreignKey) =>
@@ -246,17 +307,7 @@ async function addColumn(
     // column that rows already in the table would break is not added at all. A knex table
     // check would be a statement of its own, and loses its bindings when altering a table.
     if (index === 0) {
-      sql += checks
-        .map((check) =>
-          transaction
-            .raw(', add constraint ?? check (?? REGEXP ?)', [
-              check.constraintName,
-              check.column,
-              check.pattern,
-            ])
-            .toQuery(),
-        )
-        .join('');
+      sql += checks.map((check) => `, ${addCheckClause(transaction, check).toQuery()}`).join('');
     }
     // default to copy if not specified
     await rawWithAlgorithm(transaction, sql, options?.algorithm || 'copy');
@@ -752,9 +803,10 @@ function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
       t.primary(tableSpec['@@PRIMARY_KEY@@']);
     }
     foreignKeySpecsOf(tableSpec).forEach((foreignKey) => addForeignKey(t, foreignKey));
-    patternChecksOn(table, tableSpec, transaction).forEach((check) =>
-      t.check('?? REGEXP ?', [check.column, check.pattern], check.constraintName),
-    );
+    checksOn(table, tableSpec, transaction).forEach((check) => {
+      const { sql, bindings } = conditionOf(check);
+      t.check(sql, bindings, check.constraintName);
+    });
   });
 }
 
@@ -899,6 +951,9 @@ module.exports = {
   dropColumn,
   setNullable,
   dropNullable,
+  addCheck,
+  dropCheck,
+  hasCheck,
   getColumns,
   createColumnMigration,
   // NOTE: below are exposed for testing purposes only

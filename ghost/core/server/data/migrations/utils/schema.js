@@ -362,7 +362,84 @@ function createDropNullableMigration(table, column, options = {}) {
   );
 }
 
+/**
+ * Adds a check to a table that already exists, and drops it again on the way down, on MySQL only,
+ * which is where Ghost holds checks. Fails, adding nothing, when a row already in the table breaks
+ * it.
+ *
+ * @param {string} table
+ * @param {import('../../schema/lib/table-checks').TableCheck} check
+ * @returns {Migration}
+ */
+function createAddCheckMigration(table, check) {
+  return createNonTransactionalMigration(
+    async function up(knex) {
+      if (!DatabaseInfo.isMySQL(knex)) {
+        return;
+      }
+      if (await commands.hasCheck(table, check.constraintName, knex)) {
+        logging.warn(`Adding check ${table}.${check.constraintName} - skipping as it exists`);
+        return;
+      }
+      logging.info(`Adding check ${table}.${check.constraintName}`);
+      await commands.addCheck(table, check, knex);
+    },
+    async function down(knex) {
+      if (!DatabaseInfo.isMySQL(knex)) {
+        return;
+      }
+      if (!(await commands.hasCheck(table, check.constraintName, knex))) {
+        logging.warn(
+          `Dropping check ${table}.${check.constraintName} - skipping as it doesn't exist`,
+        );
+        return;
+      }
+      logging.info(`Dropping check ${table}.${check.constraintName}`);
+      await commands.dropCheck(table, check.constraintName, knex);
+    },
+  );
+}
+
+/**
+ * Replaces a check on a table that already exists with another of the same name, such as one over
+ * a group of columns that has grown, and puts the first back on the way down. On MySQL only, which
+ * is where Ghost holds checks. Fails, changing nothing, when a row already in the table breaks the
+ * check being added.
+ *
+ * @param {string} table
+ * @param {import('../../schema/lib/table-checks').TableCheck} from
+ * @param {import('../../schema/lib/table-checks').TableCheck} to
+ * @returns {Migration}
+ */
+function createReplaceCheckMigration(table, from, to) {
+  const replace = (knex, was, now) =>
+    knex.transaction(async (trx) => {
+      if (await commands.hasCheck(table, was.constraintName, trx)) {
+        await commands.dropCheck(table, was.constraintName, trx);
+      }
+      await commands.addCheck(table, now, trx);
+    });
+  return createNonTransactionalMigration(
+    async function up(knex) {
+      if (!DatabaseInfo.isMySQL(knex)) {
+        return;
+      }
+      logging.info(`Replacing check ${table}.${from.constraintName}`);
+      await replace(knex, from, to);
+    },
+    async function down(knex) {
+      if (!DatabaseInfo.isMySQL(knex)) {
+        return;
+      }
+      logging.info(`Restoring check ${table}.${from.constraintName}`);
+      await replace(knex, to, from);
+    },
+  );
+}
+
 module.exports = {
+  createAddCheckMigration,
+  createReplaceCheckMigration,
   createAddColumnMigration,
   createDropColumnMigration,
   createSetNullableMigration,

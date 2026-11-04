@@ -4,7 +4,7 @@ const _ = require('lodash');
 
 const schema = require('../../../../../core/server/data/schema/schema');
 const { foreignKeysOf } = require('../../../../../core/server/data/schema/lib/foreign-keys');
-const { patternChecksOf } = require('../../../../../core/server/data/schema/lib/column-patterns');
+const { tableChecksOf } = require('../../../../../core/server/data/schema/lib/table-checks');
 
 const VALID_KEYS = {
   bigInteger: ['nullable'],
@@ -39,9 +39,13 @@ describe('schema validations', function () {
 
       _.each(table, function (column, columnName) {
         if (
-          ['@@INDEXES@@', '@@UNIQUE_CONSTRAINTS@@', '@@PRIMARY_KEY@@', '@@FOREIGN_KEYS@@'].includes(
-            columnName,
-          )
+          [
+            '@@INDEXES@@',
+            '@@UNIQUE_CONSTRAINTS@@',
+            '@@PRIMARY_KEY@@',
+            '@@FOREIGN_KEYS@@',
+            '@@CHECKS@@',
+          ].includes(columnName)
         ) {
           return;
         }
@@ -107,8 +111,8 @@ describe('schema validations', function () {
         check(constraintName, `${tableName} foreign key`);
       }
 
-      for (const { constraintName } of patternChecksOf(tableName, table)) {
-        check(constraintName, `${tableName} column pattern`);
+      for (const { constraintName } of tableChecksOf(tableName, table)) {
+        check(constraintName, `${tableName} check`);
       }
 
       _.each(table, function (column, columnName) {
@@ -171,9 +175,9 @@ describe('schema validations', function () {
   });
 
   // MySQL holds a check constraint's name unique across the whole database, not per table.
-  it('names every column pattern check uniquely across the schema', function () {
+  it('names every check uniquely across the schema', function () {
     const names = Object.entries(schema).flatMap(([tableName, table]) =>
-      patternChecksOf(tableName, table).map((check) => check.constraintName),
+      tableChecksOf(tableName, table).map((check) => check.constraintName),
     );
     assert.deepEqual(
       names.filter((name, i) => names.indexOf(name) !== i),

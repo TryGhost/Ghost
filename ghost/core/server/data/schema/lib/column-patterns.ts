@@ -6,6 +6,7 @@ import { columnsOf } from './columns';
  * and column, so the rule binds every writer rather than only the code that remembers it.
  */
 export type PatternCheck = {
+  kind: 'pattern';
   constraintName: string;
   column: string;
   /**
@@ -46,7 +47,7 @@ export function patternChecksOf(
   return Object.entries(columnsOf(tableSpec, ColumnSpec)).flatMap(([column, { pattern }]) =>
     pattern === undefined
       ? []
-      : [{ constraintName: `${tableName}_${column}_check`, column, pattern }],
+      : [{ kind: 'pattern', constraintName: `${tableName}_${column}_check`, column, pattern }],
   );
 }
 
