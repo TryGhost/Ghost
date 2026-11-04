@@ -1,10 +1,21 @@
 # @tryghost/app-sdk
 
-The SDK apps use to talk to Ghost from inside Admin.
+The SDK apps use to talk to Ghost: from their page inside Admin, from their
+backend, and from their tooling.
 
 An app's page runs in a frame inside Ghost Admin. The SDK connects it to Admin,
 gives it the site, the user and the theme, and lets it call the Admin API, keep
 its route in sync with Admin's URL, and send the publisher elsewhere in Admin.
+
+| Entry point                 | Runs in                    | What it's for                                                                                |
+| --------------------------- | -------------------------- | -------------------------------------------------------------------------------------------- |
+| `@tryghost/app-sdk`         | The app's page             | Talking to Admin (below)                                                                     |
+| `@tryghost/app-sdk/backend` | Any platform with web APIs | [Answering Ghost's challenge, serving the manifest, framing and the Admin API](#the-backend) |
+| `@tryghost/app-sdk/tooling` | Node 22 or later           | [Creating keys, and signing and checking the manifest](#signing-the-manifest)                |
+| `@tryghost/app-sdk/vite`    | Vite 6 or later            | [Signing the manifest in `vite dev` and `vite build`](#the-vite-plugin)                      |
+| `ghost-app`                 | Node 22 or later           | [The same tooling on the command line](#the-ghost-app-cli)                                   |
+
+The page's entry point loads none of the others' code.
 
 > **Alpha.** CI publishes each change to npm as the next `0.1.0-alpha.N` under
 > the `latest` tag. Alphas make no compatibility promise.
@@ -251,6 +262,174 @@ documents in a row, each replaced within three seconds of starting. A publisher
 clicking quickly through more than five pages of a multi-page app would trip it
 too.
 
+## Signing the manifest
+
+Ghost installs an app from its manifest URL, where the app serves a signed
+manifest: its `ghost-app.json`, with the fields below added, signed with the
+app's identity key. Ghost pins that key when a site installs the app, and
+challenges the app's origin to prove it holds the backend key the manifest
+names. The manifest format is in
+[`@tryghost/app-contracts`](../app-contracts/README.md#the-manifest).
+
+`ghost-app.json` is the readable part, which the project keeps:
+
+```json
+{
+  "id": "com.example.hello",
+  "name": "Hello",
+  "description": "Says hello.",
+  "author": { "name": "Example", "url": "https://example.com" },
+  "accent_color": "#ff5500",
+  "icon": { "name": "hand" },
+  "surfaces": [{ "type": "admin_page", "url": "/" }]
+}
+```
+
+Signing adds `manifest_url` (the address it's signed for), `identity_key` and
+`backend_key` (the public keys) and `development`, and refuses a file that sets
+any of them. It checks the manifest with the rules Ghost applies first, so a
+manifest Ghost would refuse is never signed: the error lists every problem by
+field. Ghost also refuses a manifest that points at the site's own origin, which
+only Ghost knows.
+
+### Keys
+
+Each mode has its own identity key and backend key, as two pairs of private
+Ed25519 JWKs, in files only their owner can read:
+
+- `.ghost-app/development/identity.json` and `backend.json`, for `vite dev`
+  and apps on `localhost`, which the Vite plugin creates on its first run;
+- `.ghost-app/production/identity.json` and `backend.json`, which only
+  `ghost-app keys --production` creates.
+
+Keys are created only when git ignores `.ghost-app/` (in a repository), and an
+existing key is never replaced. Keep a copy of the production identity key
+somewhere safe: sites keep the identity key they installed an app with, and a
+manifest signed with another one is another app. A development installation
+and a production one are different apps for the same reason, so going from your
+computer to a host means installing the app again.
+
+The identity key stays with the developer, or CI. It never reaches the backend
+or a build: only the signed manifest is served or emitted. The backend key goes
+to the backend, which answers challenges with it. Developers who share a
+development identity key must share its backend key too: a new backend key
+retires the old one on every site that reads the new manifest.
+
+In CI, set `GHOST_APP_IDENTITY_KEY` to the production identity key and
+`GHOST_APP_BACKEND_KEY` to the backend key (its public half is enough), in place
+of the files.
+
+### The Vite plugin
+
+```ts
+import { cloudflare } from '@cloudflare/vite-plugin';
+import { ghostApp } from '@tryghost/app-sdk/vite';
+import { defineConfig } from 'vite';
+
+export default defineConfig({ plugins: [ghostApp(), cloudflare()] });
+```
+
+In `vite dev`, the plugin creates the development keys if there are none, and
+serves `/ghost-app.json` signed for the address it's requested at:
+`http://localhost:<port>/ghost-app.json`, another name for the machine on that
+port, or a tunnel named by the `tunnelUrl` option or `GHOST_APP_TUNNEL_URL`
+(comma-separated). It refuses any other host with a 421, so the dev server
+never signs a manifest for someone else's address. Ghost in Docker reaches
+`localhost` through `host.docker.internal` with the original Host, which counts
+as `localhost`. It prints the install link, for `GHOST_URL` or
+`http://localhost:2368`.
+
+In a Cloudflare Workers project (one with a `wrangler.json`, `wrangler.jsonc`
+or `wrangler.toml`), it adds `GHOST_APP_BACKEND_KEY` to `.dev.vars` with the
+development backend key, so the Worker answers challenges in development as it
+does in production. It never changes a value that's already there, says so when
+it differs, and writes nothing unless git ignores `.dev.vars`.
+
+In `vite build`, it signs `ghost-app.json` for `GHOST_APP_URL`, the app's public
+address (the manifest is at `<GHOST_APP_URL>/ghost-app.json`), with the
+production keys, and emits it with the client build. A missing key fails the
+build with how to create one; the plugin never creates a production key.
+Without `GHOST_APP_URL`, the build emits no manifest and warns.
+
+List the plugin before `cloudflare()`. `options.manifest` names another file
+than `ghost-app.json`.
+
+### The ghost-app CLI
+
+```sh
+ghost-app keys [--production]
+ghost-app sign --url <manifest URL> [--production] [--out <file>]
+ghost-app check <manifest URL>
+ghost-app backend-key [--production] | wrangler secret put GHOST_APP_BACKEND_KEY
+```
+
+- `keys` creates the mode's keys, keeping any that exist.
+- `sign` prints the signed manifest, or writes it to `--out`.
+- `check` checks an app as Ghost does before installing it: it fetches the
+  signed manifest, verifies it, and challenges the app's origin, even on
+  `localhost`, which Ghost in development doesn't. A failure is reported with
+  Ghost's own code, such as `APP_MANIFEST_URL_MISMATCH`,
+  `APP_MANIFEST_SIGNATURE_INVALID` or `APP_CHALLENGE_FAILED`, and what exactly
+  was wrong. It can't check what only a site knows: the key it installed the app
+  with, and backend keys a newer manifest replaced.
+- `backend-key` prints the mode's private backend key, for a host's secret
+  store. It's the only command that prints a private key.
+
+`--dir` points any of them at another project directory.
+
+### From code
+
+`@tryghost/app-sdk/tooling` is what the plugin and the CLI are built on:
+
+| Export                                                                           | What it does                                                                                    |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `createKeys({ root, mode })`                                                     | Creates the mode's missing keys. Resolves with `{ created, kept }`.                             |
+| `readSigningKeys({ root, mode, env? })`                                          | The identity key and the backend key's public half, from the files or, in production, `env`.    |
+| `readBackendKey({ root, mode })`                                                 | The mode's private backend key.                                                                 |
+| `signProject({ root, mode, manifestUrl, manifestFile? })`                        | Signs the project's `ghost-app.json` with the mode's keys.                                      |
+| `signAppManifest(source, { manifestUrl, identityKey, backendKey, development })` | Signs a manifest with the keys given.                                                           |
+| `checkApp(manifestUrl, { fetch? })`                                              | What `ghost-app check` runs. Resolves with the parsed manifest, or a failure with Ghost's code. |
+| `generateKey()`, `publicKeyOf(key)`                                              | A new private key, and a key's public half.                                                     |
+
+Signing resolves with `{ success: true, signed, manifest }`, or
+`{ success: false, code, errors }`.
+
+## The backend
+
+`@tryghost/app-sdk/backend` uses only `Request`, `Response`, `fetch` and
+WebCrypto, so the same code runs on Cloudflare Workers, Node, Bun and Deno, and
+in frameworks such as Hono. Configuration is passed in.
+
+```ts
+import { CHALLENGE_PATH, allowFraming, handleChallenge } from '@tryghost/app-sdk/backend';
+
+export default {
+  async fetch(request, env) {
+    if (new URL(request.url).pathname === CHALLENGE_PATH) {
+      return handleChallenge(request, { backendKey: env.GHOST_APP_BACKEND_KEY });
+    }
+    return allowFraming(await env.ASSETS.fetch(request), {
+      adminOrigins: ['https://site.example'],
+    });
+  },
+};
+```
+
+| Export                                     | What it does                                                                                                                                                                                                                                                                 |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `handleChallenge(request, { backendKey })` | Answers Ghost's challenge, posted to `CHALLENGE_PATH`, with the backend key: a private JWK, or its JSON as a secret holds it. `405` for any method but `POST`, `413` past 4 KB, `400` for anything that isn't a challenge for `request.url`'s origin, `200` with the answer. |
+| `serveManifest(signed)`                    | A response for the signed manifest, for a backend that doesn't serve it as a file. Caches must revalidate it, so a new manifest reaches Ghost the next time it reads it.                                                                                                     |
+| `allowFraming(response, { adminOrigins })` | A copy of a page's response that only those Ghost Admin origins may frame: it sets `frame-ancestors` in its Content-Security-Policy and drops `X-Frame-Options`.                                                                                                             |
+| `createAdminApiToken(key)`                 | A 5-minute Admin API token from a custom integration's Admin API key (`<id>:<secret>`), for `Authorization: Ghost <token>`.                                                                                                                                                  |
+| `createAdminApiClient({ url, key })`       | A client whose `fetch(path, init?)` calls the site's Admin API with a fresh token. `path` is relative to the API root (`/posts/?limit=5`), never a URL.                                                                                                                      |
+
+`handleChallenge` refuses a challenge for any origin but the one the platform
+reports in `request.url`, so pass the request as the platform hands it over,
+never one rebuilt from `X-Forwarded-Host`. Serving the manifest and answering
+the challenge need no Admin API key. Only calls to the Admin API do: keep the
+key on the server, and don't expose the client as an endpoint that relays any
+path, as the key can do anything its integration can.
+
 ## Who can frame the page
 
 The SDK talks to whichever window frames the page. It can't know a site's Admin
@@ -260,7 +439,8 @@ credential is ever in the page. But whatever the publisher types into the page
 is exposed, and the app acts on whatever responses it gets.
 
 Serve app pages with a `frame-ancestors` Content Security Policy that names the
-Ghost Admin origins of the sites using the app, so nothing else can frame them:
+Ghost Admin origins of the sites using the app, so nothing else can frame them.
+The backend's `allowFraming` sets it:
 
 ```http
 Content-Security-Policy: frame-ancestors https://site.example
@@ -286,9 +466,10 @@ This is a workspace package in the Ghost monorepo. From the package directory:
 
 ```bash
 pnpm build   # the package to build/ and the browser bundle to dist/, with Vite
-pnpm test    # type-check + unit tests (jsdom, with a fake Admin on a real MessageChannel),
-             # which build both afresh to check what they import, and pack build/ and dist/
-             # to use them from an app outside the workspace (after pnpm build; Nx runs it)
+pnpm test    # type-check + unit tests (jsdom for the page, with a fake Admin on a real
+             # MessageChannel; Node for the backend, tooling, CLI and plugin), which build both
+             # afresh to check what they import, and pack build/ and dist/ to use them from an
+             # app outside the workspace (after pnpm build; Nx runs it)
 pnpm lint    # lint source and tests
 ```
 
@@ -298,14 +479,20 @@ and also writes `dist/`, which is in `files` and in the Nx build outputs.
 
 It uses `@tryghost/app-contracts` for the bridge's message types, limits and
 shape checks, so the SDK and Admin apply the same rules to paths, themes and
-start contexts. It imports only the contracts' root entry point, which doesn't
-load `zod`, and the build inlines what it uses into the SDK, so the contracts
-are a dev dependency:
+start contexts, and for signing and checking manifests and challenges, so the
+tooling and the backend apply Ghost's own rules. The build inlines what it uses
+into the SDK, so the contracts are a dev dependency. `build/` has an ES module
+per entry point, which share chunks:
 
-- `build/index.js` imports only `@quilted/threads`;
-- `build/index.d.ts`, emitted by TypeScript 7 and bundled by
-  `rolldown-plugin-dts`, imports nothing;
+- `index.js` loads only `@quilted/threads`, never `jose`, `zod` or a Node
+  builtin;
+- `backend.js` loads only `jose` and `zod`, and no Node builtin;
+- `tooling.js`, `vite.js` and `bin.js` load Node builtins, `jose` and `zod`;
+  `vite.js` imports only Vite's types, as Vite is an optional peer dependency;
+- each entry point's declarations, emitted by TypeScript 7 and bundled by
+  `rolldown-plugin-dts`, import nothing, but Vite's types for `vite.d.ts`;
 - `dist/` imports nothing at all.
 
-`test/bundle.test.ts` checks this on a fresh build. The build fails if the code
-imports a Node builtin, which Vite would otherwise replace with an empty stub.
+`test/bundle.test.ts` checks this on a fresh build. The build fails if the page
+or the backend imports a Node builtin, which Vite would otherwise replace with
+an empty stub.
