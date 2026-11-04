@@ -12,6 +12,7 @@ import type {
 import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
 // @ts-expect-error This module lacks type definitions.
 import testUtils from '../../../utils';
+import { alphabeticalDescribe } from '../../../utils/alphabetical-describe';
 // @ts-expect-error This module lacks type definitions.
 import * as dbUtils from '../../../utils/db-utils';
 
@@ -169,7 +170,7 @@ describe('database automations repository', function () {
     });
   });
 
-  describe('findEmailRecipientForClick', function () {
+  alphabeticalDescribe('findEmailRecipientForClick', function () {
     const fixture = useEmailClickFixture();
     const { repository, findEmailRecipientForClick } = fixture;
 
@@ -231,7 +232,7 @@ describe('database automations repository', function () {
     });
   });
 
-  describe('findFirstActionRevisions', function () {
+  alphabeticalDescribe('findFirstActionRevisions', function () {
     let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
     let automationIds: string[];
     let actionIds: string[];
@@ -564,7 +565,7 @@ describe('database automations repository', function () {
     });
   });
 
-  describe('getNumberOfAutomations', function () {
+  alphabeticalDescribe('getNumberOfAutomations', function () {
     it('returns the number of automations', async function () {
       const repository = createDatabaseAutomationsRepository2({ knex });
 
@@ -576,7 +577,7 @@ describe('database automations repository', function () {
     });
   });
 
-  describe('hasMemberEnteredAutomation', function () {
+  alphabeticalDescribe('hasMemberEnteredAutomation', function () {
     let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
     let automationId: string;
     let otherAutomationId: string;
@@ -628,7 +629,7 @@ describe('database automations repository', function () {
     });
   });
 
-  describe('incrementEmailClickedCount', function () {
+  alphabeticalDescribe('incrementEmailClickedCount', function () {
     const fixture = useEmailClickFixture();
     const { repository } = fixture;
 
@@ -654,7 +655,7 @@ describe('database automations repository', function () {
     );
   });
 
-  describe('insertActions', function () {
+  alphabeticalDescribe('insertActions', function () {
     let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
     let automationId: string;
 
@@ -711,7 +712,7 @@ describe('database automations repository', function () {
     });
   });
 
-  describe('insertRunSteps', function () {
+  alphabeticalDescribe('insertRunSteps', function () {
     let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
     let automationId: string;
     let memberId: string;
@@ -786,7 +787,7 @@ describe('database automations repository', function () {
     });
   });
 
-  describe('insertRuns', function () {
+  alphabeticalDescribe('insertRuns', function () {
     let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
     let automationId: string;
     let memberId: string;
@@ -837,7 +838,7 @@ describe('database automations repository', function () {
     });
   });
 
-  describe('isAutomationActiveForRun', function () {
+  alphabeticalDescribe('isAutomationActiveForRun', function () {
     const isAutomationActiveForRun = async (status: string) => {
       const repository = createDatabaseAutomationsRepository2({ knex });
 
@@ -864,7 +865,7 @@ describe('database automations repository', function () {
     );
   });
 
-  describe('isAutomationActiveForRunStep', function () {
+  alphabeticalDescribe('isAutomationActiveForRunStep', function () {
     const isAutomationActiveForRunStep = async (status: string) => {
       const repository = createDatabaseAutomationsRepository2({ knex });
 
@@ -897,7 +898,7 @@ describe('database automations repository', function () {
     );
   });
 
-  describe('loadEdgeRows', function () {
+  alphabeticalDescribe('loadEdgeRows', function () {
     let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
     let automationId: string;
     let otherAutomationId: string;
@@ -970,7 +971,7 @@ describe('database automations repository', function () {
     });
   });
 
-  describe('lockActionRevisions', function () {
+  alphabeticalDescribe('lockActionRevisions', function () {
     const fixture = useEmailClickFixture();
     const { repository } = fixture;
 
@@ -997,7 +998,7 @@ describe('database automations repository', function () {
     });
   });
 
-  describe('lockMember', function () {
+  alphabeticalDescribe('lockMember', function () {
     let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
     let memberId: string;
 
@@ -1036,7 +1037,7 @@ describe('database automations repository', function () {
     });
   });
 
-  describe('setEmailRecipientClickedAt', function () {
+  alphabeticalDescribe('setEmailRecipientClickedAt', function () {
     const fixture = useEmailClickFixture();
     const { repository, findEmailRecipientForClick } = fixture;
 
@@ -1062,7 +1063,7 @@ describe('database automations repository', function () {
     });
   });
 
-  describe('withConnection', function () {
+  alphabeticalDescribe('withConnection', function () {
     it('runs the callback and returns the result', async function () {
       const repository = createDatabaseAutomationsRepository2({ knex });
 
@@ -1075,7 +1076,7 @@ describe('database automations repository', function () {
     });
   });
 
-  describe('withTransaction', function () {
+  alphabeticalDescribe('withTransaction', function () {
     it('runs the callback and returns the result', async function () {
       const repository = createDatabaseAutomationsRepository2({ knex });
 
