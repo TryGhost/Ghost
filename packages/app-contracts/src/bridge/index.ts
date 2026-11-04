@@ -20,6 +20,7 @@ export {
 } from './fetch.ts';
 export { HelloMessageSchema, type HelloMessage } from './messages.ts';
 export { APP_PATH_MAX_LENGTH, AppPathSchema, PathMoveSchema, type AppPath } from './paths.ts';
+export { OverlayOptionsSchema, type OverlayOptions } from './overlay.ts';
 export { PlaceSchema } from './places.ts';
 export {
   checkAdminApiRequest,
@@ -36,6 +37,8 @@ export {
   FETCH_RESPONSE_STATUS_MIN,
   HELLO_MESSAGE_TYPE,
   HOST_ERROR_CODES,
+  OVERLAY_FRAME_NAME,
+  OVERLAY_TINTS,
   START_TIMEOUT_MS,
   TITLE_MAX_LENGTH,
   decodeBridgeError,
@@ -55,6 +58,7 @@ export {
   type FetchMethod,
   type FetchResponse,
   type HostErrorCode,
+  type OverlayTint,
   type PathMove,
   type Place,
   type StartContext,
