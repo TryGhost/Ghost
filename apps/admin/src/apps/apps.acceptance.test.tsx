@@ -1387,7 +1387,8 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.row('Podcast')).toBeVisible();
     const row = appsScreen.row('Podcast').element();
     expect(imageSources(row)).toEqual([ICON_DATA_URL]);
-    await expect.poll(() => row.querySelector('img')!.naturalWidth).toBeGreaterThan(0);
+    // An SVG `<image>` has no naturalWidth, but decode() settles once it has loaded.
+    await (row.querySelector('image') as SVGImageElement & { decode(): Promise<void> }).decode();
     expect(imageSources(appsScreen.sidebarApps().element())).toEqual([ICON_DATA_URL]);
 
     await appsScreen.rowActions('Podcast').click();
@@ -1395,6 +1396,35 @@ describe('Managing apps', () => {
 
     await expect.element(appsScreen.details()).toHaveTextContent('Example Audio');
     expect(imageSources(appsScreen.details().element())).toEqual([ICON_DATA_URL]);
+  });
+
+  it('flattens an app’s own icon to white on its tile and to the nav icons’ colour in the sidebar', async () => {
+    fakeInstallations([
+      installation({
+        manifest: manifest({ icon: { url: ICON_URL } }),
+        icon_data_url: ICON_DATA_URL,
+      }),
+    ]);
+
+    await renderAdminApp('/apps', { labs });
+
+    await expect.element(appsScreen.row('Podcast')).toBeVisible();
+    const tileIcon = appsScreen.row('Podcast').element().querySelector('svg:has(mask)')!;
+    expect(tileIcon.querySelector('rect')!.getAttribute('fill')).toBe('currentColor');
+    expect(tileIcon.parentElement).toHaveClass('text-white');
+
+    const icon = appsScreen
+      .sidebarApps()
+      .element()
+      .querySelector('[data-sidebar=menu-button] > svg:has(mask)')!;
+    expect(icon.querySelector('rect')!.getAttribute('fill')).toBe('currentColor');
+    expect(icon.getBoundingClientRect().width).toBe(16);
+    // A native nav item in the same sidebar, which is neither active nor hovered.
+    const nativeIcon = icon
+      .closest('[data-sidebar=sidebar]')!
+      .querySelector('[data-sidebar=menu-button][data-active=false]:not(:hover) > svg.lucide');
+    expect(nativeIcon).not.toBeNull();
+    expect(getComputedStyle(icon).color).toBe(getComputedStyle(nativeIcon!).color);
   });
 
   it('draws the default icon for an app’s own icon without a stored copy', async () => {

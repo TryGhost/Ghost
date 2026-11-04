@@ -57,9 +57,12 @@ An app describes itself to Ghost in a JSON manifest, which it serves as a
   ever linked to.
 - `icon` is drawn on `accent_color`, a six-digit hex colour. It is either
   `{ "name": "audio-lines" }`, one of the icons Admin ships, or
-  `{ "url": "/icon.svg" }`, an image the app serves: SVG, PNG, JPEG, GIF or
-  WebP, at most 16 KB. Ghost keeps a copy of the image with each manifest
-  version it stores, and only shows that copy, as an image. An image replaced at
+  `{ "url": "/icon.svg" }`, an image the app serves: SVG, PNG or WebP,
+  at most 16 KB. Ghost keeps a copy of the image with each manifest
+  version it stores, and only shows that copy, as an image. Admin draws it in a
+  single colour, like the icons it ships, keeping only the shape of its opaque
+  pixels, so draw a glyph on a transparent background. JPEG and GIF are
+  refused. An image replaced at
   the same URL shows the next time the manifest changes, even by a field that
   needs no approval. A name Admin does not know is not rejected here;
   Admin falls back to a default icon.
