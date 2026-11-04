@@ -12,10 +12,10 @@ const USABLE_MEMORY_SHARE = 0.67;
  * split it between them.
  */
 function machineShare() {
-  const raw = process.env.TEST_MACHINE_SHARE;
+  const raw = process.env.GHOST_TEST_MACHINE_SHARE;
   const share = Number(raw || 1);
   if (!(share > 0 && share <= 1)) {
-    throw new Error(`TEST_MACHINE_SHARE must be greater than 0 and at most 1, got "${raw}"`);
+    throw new Error(`GHOST_TEST_MACHINE_SHARE must be greater than 0 and at most 1, got "${raw}"`);
   }
   return share;
 }
