@@ -23,6 +23,17 @@ export const CONNECT_MESSAGE_TYPE = 'ghost-app:connect';
  */
 export const START_TIMEOUT_MS = 10_000;
 
+/**
+ * The name Admin gives the overlay frame, a second copy of the app's page that its dialogs and
+ * sheets render into. Only Admin can set a frame's name, so the app's URL can't fake it.
+ */
+export const OVERLAY_FRAME_NAME = 'ghost-app-overlay';
+
+/** Admin's tint while the overlay shows: as dark as Shade's for a dialog, or for a sheet. */
+export const OVERLAY_TINTS = ['dialog', 'sheet'] as const;
+
+export type OverlayTint = (typeof OVERLAY_TINTS)[number];
+
 /** Long enough for any real page title, short enough that Admin's own name still shows. */
 export const TITLE_MAX_LENGTH = 200;
 
@@ -79,6 +90,7 @@ export const ARGUMENT_MESSAGES = {
   pathMove: 'Expected a move of push or replace',
   place:
     'Expected a place such as { post: { id } }, { page: { id } }, { member: { id } } or { apps: true }',
+  overlayOptions: `Expected overlay options such as { tint: 'dialog' }, with a tint of: ${OVERLAY_TINTS.join(', ')}`,
 } as const;
 
 /**
@@ -177,9 +189,11 @@ const SAFE_AREA_EDGES = ['top', 'right', 'bottom', 'left'] as const;
  */
 export type SafeArea = Record<(typeof SAFE_AREA_EDGES)[number], number>;
 
-/** How Admin lays out the page's frame. */
+/** How Admin lays out the page's frame, and the overlay frame above it. */
 export type Layout = {
   safeArea: SafeArea;
+  /** The part of the overlay frame Admin shows, as insets from the window's edges. */
+  overlaySafeArea: SafeArea;
 };
 
 /**
@@ -329,7 +343,7 @@ export function isSafeArea(value: unknown): value is SafeArea {
 }
 
 export function isLayout(value: unknown): value is Layout {
-  return isRecord(value) && isSafeArea(value.safeArea);
+  return isRecord(value) && isSafeArea(value.safeArea) && isSafeArea(value.overlaySafeArea);
 }
 
 export function isStartContext(value: unknown): value is StartContext {
