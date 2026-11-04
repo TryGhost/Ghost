@@ -112,6 +112,7 @@ function seedEmptyAnalyticsWorld() {
   fakeTinybirdToken();
   fakeTinybirdPipe('api_active_visitors', []);
   fakeTinybirdPipe('api_kpis', []);
+  fakeNewsletters([]);
 }
 
 /** The web traffic view's own cards, all empty. */
@@ -274,6 +275,59 @@ describe('Analytics overview', () => {
 
     await expect.poll(currentRoute).toMatch(/^\/analytics\/growth\//);
     await expect.element(analyticsScreen.totalMembersCard()).toBeVisible();
+  });
+
+  it('shows newsletter subscribers instead of MRR on a site without revenue and one newsletter', async () => {
+    seedEmptyAnalyticsWorld();
+    const newsletterId = '64d623b64676110001e897d2';
+    fakeNewsletters([
+      newsletter({
+        id: newsletterId,
+        name: 'Weekly Digest',
+        status: 'active',
+        count: { posts: 3, active_members: 158 },
+      }),
+    ]);
+    const subscriberRequests = fakeAdminStats.newsletterSubscribers({
+      total: 158,
+      values: [
+        { date: daysAgo(2), value: 150 },
+        { date: daysAgo(1), value: 158 },
+      ],
+    });
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+    await expect.element(analyticsScreen.newsletterSubscribersValue()).toHaveTextContent('158');
+    await expect.element(analyticsScreen.membersValue()).toBeVisible();
+    await expect.element(analyticsScreen.mrrCard()).not.toBeInTheDocument();
+    expect(new URL(subscriberRequests.requests.at(-1)!.url).searchParams.get('newsletter_id')).toBe(
+      newsletterId,
+    );
+
+    fakeAdminStats.newsletterBasic();
+    fakeAdminEndpoint('GET', /^\/stats\/newsletter-click-stats\//, { stats: [], meta: {} });
+    await analyticsScreen.newsletterSubscribersViewMoreButton().click();
+    await expect.poll(currentRoute).toMatch(/^\/analytics\/newsletters\//);
+  });
+
+  it('keeps MRR when the site sends more than one newsletter', async () => {
+    seedEmptyAnalyticsWorld();
+    fakeNewsletters([
+      newsletter({ status: 'active', count: { posts: 1, active_members: 10 } }),
+      newsletter({ status: 'active', count: { posts: 1, active_members: 20 } }),
+    ]);
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+    await expect.element(analyticsScreen.mrrValue()).toHaveTextContent(/^\$0$/);
+    await expect.element(analyticsScreen.newsletterSubscribersCard()).not.toBeInTheDocument();
+  });
+
+  it('keeps MRR on a site with revenue without looking up newsletters', async () => {
+    seedAnalyticsWorld();
+    seedTopPostsViews();
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+    await expect.element(analyticsScreen.mrrValue()).toHaveTextContent('$500');
   });
 });
 

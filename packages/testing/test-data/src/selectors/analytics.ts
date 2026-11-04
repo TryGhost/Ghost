@@ -8,6 +8,7 @@
 export const uniqueVisitors = 'Unique visitors';
 export const members = 'Members';
 export const mrr = 'MRR';
+export const newsletterSubscribers = 'Newsletter subscribers';
 export const kpiCardHeaderValue = 'kpi-card-header-value';
 export const latestPost = 'latest-post';
 export const latestPostVisitors = 'latest-post-visitors';
