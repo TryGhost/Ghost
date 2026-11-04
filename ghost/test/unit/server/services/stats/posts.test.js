@@ -1,3 +1,7 @@
+const fs = require('node:fs');
+const os = require('node:os');
+const nodePath = require('node:path');
+const Database = require('better-sqlite3');
 const knex = require('knex').default;
 const assert = require('node:assert/strict');
 const moment = require('moment-timezone');
@@ -2738,6 +2742,97 @@ describe('PostsStatsService', function () {
         [1, 1, 2],
         'member2 counts on Jan 6, member3 does not',
       );
+    });
+
+    it('should read the total and the changes from one snapshot', async function () {
+      // A file database in WAL mode lets a second connection commit while
+      // the service's read is in progress, like a concurrent request would
+      const dir = fs.mkdtempSync(nodePath.join(os.tmpdir(), 'posts-stats-'));
+      const filename = nodePath.join(dir, 'stats.db');
+      const reader = knex({
+        client: 'better-sqlite3',
+        useNullAsDefault: true,
+        connection: { filename },
+      });
+      let writer;
+
+      try {
+        await reader.raw('PRAGMA journal_mode = WAL');
+        await reader.schema.createTable('members', function (table) {
+          table.string('id').primary();
+          table.boolean('email_disabled').defaultTo(false);
+        });
+        await reader.schema.createTable('members_newsletters', function (table) {
+          table.string('id').primary();
+          table.string('member_id');
+          table.string('newsletter_id');
+        });
+        await reader.schema.createTable('members_subscribe_events', function (table) {
+          table.string('id').primary();
+          table.string('member_id');
+          table.string('newsletter_id');
+          table.boolean('subscribed');
+          table.dateTime('created_at');
+        });
+
+        await reader('members').insert([{ id: 'member1' }, { id: 'member2' }]);
+        await reader('members_newsletters').insert([
+          { id: 'mn1', member_id: 'member1', newsletter_id: 'newsletter1' },
+          { id: 'mn2', member_id: 'member2', newsletter_id: 'newsletter1' },
+        ]);
+        await reader('members_subscribe_events').insert([
+          {
+            id: 'e1',
+            member_id: 'member1',
+            newsletter_id: 'newsletter1',
+            subscribed: 1,
+            created_at: '2024-01-01T12:00:00.000Z',
+          },
+          {
+            id: 'e2',
+            member_id: 'member2',
+            newsletter_id: 'newsletter1',
+            subscribed: 1,
+            created_at: '2024-01-08T12:00:00.000Z',
+          },
+        ]);
+
+        // Between the service's reads, member2 unsubscribes on another connection
+        writer = new Database(filename);
+        const unsubscribe = writer.transaction(() => {
+          writer.prepare("DELETE FROM members_newsletters WHERE id = 'mn2'").run();
+          writer
+            .prepare(
+              "INSERT INTO members_subscribe_events VALUES ('e3', 'member2', 'newsletter1', 0, '2024-02-01T12:00:00.000Z')",
+            )
+            .run();
+        });
+        let reads = 0;
+        reader.on('query-response', function () {
+          reads += 1;
+          if (reads === 2) {
+            unsubscribe();
+          }
+        });
+
+        const snapshotService = new PostsStatsService({ knex: reader, logging, urlUtils });
+        const result = await snapshotService.getNewsletterSubscriberStats('newsletter1', {
+          date_from: '2024-01-04',
+          date_to: '2024-01-06',
+          timezone: 'UTC',
+        });
+
+        assert.equal(reads, 3, 'The unsubscribe should happen between the reads');
+        assert.deepEqual(
+          result.data[0].values.map((v) => v.value),
+          [1, 1, 1],
+          'Only member1 was subscribed during Jan 4-6',
+        );
+      } finally {
+        writer?.close();
+        await reader.destroy();
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
     });
   });
 

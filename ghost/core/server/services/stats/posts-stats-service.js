@@ -1067,24 +1067,33 @@ class PostsStatsService {
       const timezone = options.timezone || 'UTC';
       const { dateFrom, dateTo } = getDateBoundaries(options);
 
-      // Run both queries in parallel for better performance
-      const [totalResult, rawDeltas, changeAfterRange] = await Promise.all([
-        // Get total subscriber count (optimized query - avoid JOIN)
-        this.knex('members_newsletters as mn')
-          .countDistinct('mn.member_id as total')
-          .where('mn.newsletter_id', newsletterId)
-          .whereNotExists(function () {
-            this.select('*')
-              .from('members as m')
-              .whereRaw('m.id = mn.member_id')
-              .where('m.email_disabled', 1);
-          }),
-
-        // Get daily deltas (optimized query)
-        this._getNewsletterSubscriberDeltas(newsletterId, options),
-        // Net change after the range, which the current total already includes
-        this._getNewsletterSubscriberChangeAfter(newsletterId, options),
-      ]);
+      // Read everything in one transaction so the total, in-range deltas and
+      // post-range change all come from the same snapshot. A subscription
+      // change committed between separate reads would otherwise skew every
+      // historical value.
+      const [totalResult, rawDeltas, changeAfterRange] = await this.knex.transaction(
+        async (trx) => {
+          // Get total subscriber count (optimized query - avoid JOIN)
+          const totalRows = await trx('members_newsletters as mn')
+            .countDistinct('mn.member_id as total')
+            .where('mn.newsletter_id', newsletterId)
+            .whereNotExists(function () {
+              this.select('*')
+                .from('members as m')
+                .whereRaw('m.id = mn.member_id')
+                .where('m.email_disabled', 1);
+            });
+          // Get daily deltas (optimized query)
+          const deltas = await this._getNewsletterSubscriberDeltas(newsletterId, options, trx);
+          // Net change after the range, which the current total already includes
+          const changeAfter = await this._getNewsletterSubscriberChangeAfter(
+            newsletterId,
+            options,
+            trx,
+          );
+          return [totalRows, deltas, changeAfter];
+        },
+      );
 
       const totalValue = totalResult[0] ? totalResult[0].total : 0;
       const total = parseInt(String(totalValue), 10);
@@ -1159,12 +1168,13 @@ class PostsStatsService {
    * @param {string} [options.date_from] - Optional start date filter (YYYY-MM-DD)
    * @param {string} [options.date_to] - Optional end date filter (YYYY-MM-DD)
    * @param {string} [options.timezone] - Timezone to use for date interpretation
+   * @param {import('knex').Knex} [db] - Knex instance or transaction to query with
    */
-  async _getNewsletterSubscriberDeltas(newsletterId, options = {}) {
+  async _getNewsletterSubscriberDeltas(newsletterId, options = {}, db = this.knex) {
     const { dateFrom, dateTo } = getDateBoundaries(options);
 
     // Build optimized deltas query - avoid expensive JOIN
-    const deltasQuery = this.knex('members_subscribe_events as mse')
+    const deltasQuery = db('members_subscribe_events as mse')
       .select(
         this.knex.raw(`DATE(mse.created_at) as date`),
         this.knex.raw(`SUM(CASE WHEN mse.subscribed = 1 THEN 1 ELSE -1 END) as value`),
@@ -1191,15 +1201,16 @@ class PostsStatsService {
    * @private
    * @param {string} newsletterId - ID of the newsletter
    * @param {Object} options - Same options as getNewsletterSubscriberStats
+   * @param {import('knex').Knex} [db] - Knex instance or transaction to query with
    * @returns {Promise<number>}
    */
-  async _getNewsletterSubscriberChangeAfter(newsletterId, options = {}) {
+  async _getNewsletterSubscriberChangeAfter(newsletterId, options = {}, db = this.knex) {
     const { dateTo } = getDateBoundaries(options);
     if (!dateTo) {
       return 0;
     }
 
-    const [result] = await this.knex('members_subscribe_events as mse')
+    const [result] = await db('members_subscribe_events as mse')
       .select(this.knex.raw('SUM(CASE WHEN mse.subscribed = 1 THEN 1 ELSE -1 END) as value'))
       .where('mse.newsletter_id', newsletterId)
       .whereNotExists(function () {
