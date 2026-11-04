@@ -9,6 +9,8 @@ import type { PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import tailwindcss from '@tailwindcss/vite';
+// From source: the package isn't built yet when this config loads.
+import { OVERLAY_FRAME_NAME } from '../../packages/app-contracts/src/bridge/rules';
 
 import { sharedDefine, sharedResolve } from './vite.shared';
 
@@ -162,12 +164,17 @@ const bundleAppSdk: BrowserCommand<[]> = () => buildOnce('app-sdk', buildAppSdk)
 const FRAME_ATTACH_TIMEOUT_MS = 5000;
 
 // Returns the newest frame on `origin`, waiting for Playwright to attach to it if it hasn't yet.
+// An app's overlay frame loads the app's page too, so it's left out: the page frame is the one
+// that runs the app.
 async function newestFrameOn(page: BrowserPage, origin: string, purpose: string) {
   const newestOnOrigin = () =>
     page
       .frames()
       .filter(
-        (candidate) => URL.canParse(candidate.url()) && new URL(candidate.url()).origin === origin,
+        (candidate) =>
+          candidate.name() !== OVERLAY_FRAME_NAME &&
+          URL.canParse(candidate.url()) &&
+          new URL(candidate.url()).origin === origin,
       )
       .at(-1);
   const deadline = Date.now() + FRAME_ATTACH_TIMEOUT_MS;

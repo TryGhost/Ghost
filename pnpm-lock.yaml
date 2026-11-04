@@ -497,6 +497,9 @@ catalogs:
     ajv-formats:
       specifier: 3.0.1
       version: 3.0.1
+    aria-hidden:
+      specifier: 1.2.6
+      version: 1.2.6
     better-sqlite3:
       specifier: 12.11.1
       version: 12.11.1
@@ -1147,6 +1150,9 @@ importers:
       '@xyflow/react':
         specifier: 12.12.0
         version: 12.12.0(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      aria-hidden:
+        specifier: 'catalog:'
+        version: 1.2.6(patch_hash=8a2e148001c763e9eb7fd3ad21da0f290fd50e099f6a3d6abe6c2ec9a14b3bb8)
       clsx:
         specifier: 'catalog:'
         version: 2.1.1
