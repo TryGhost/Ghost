@@ -172,8 +172,9 @@ describe('Gift Links Admin API', function () {
       });
     });
 
-    it('records revoking every gift link with no resource', async function () {
+    it('records revoking every gift link as how many were revoked', async function () {
       await agent.put(`posts/${postId}/gift_links/`).expectStatus(200);
+      await agent.put(`pages/${pageId}/gift_links/`).expectStatus(200);
       await agent.put('gift_links/remove_all/').expectStatus(200);
 
       const revoked = await assertActionLogged(agent, {
@@ -182,7 +183,7 @@ describe('Gift Links Admin API', function () {
         resourceId: null,
         actor: staff,
       });
-      assert.equal(revoked.details, null);
+      assert.deepEqual(revoked.details, { count: 2 });
     });
   });
 });

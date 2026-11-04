@@ -83,6 +83,7 @@ export class GiftLinksService {
         resourceType: 'gift_link',
         event: 'deleted',
         resourceId: null,
+        count: removed,
       });
     }
     return removed;
