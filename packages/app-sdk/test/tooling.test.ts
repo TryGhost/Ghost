@@ -102,6 +102,13 @@ describe('createKeys', () => {
       expect((await createKeys({ root: project, mode: 'development' })).created).toHaveLength(2);
     });
 
+    it('reads a path outside ASCII as ignored, which git would otherwise quote', async () => {
+      await writeFile(join(root, '.gitignore'), '.ghost-app/\n');
+      // Not created yet, so git is asked from the repository about `appär-日本/.ghost-app/…`.
+      const project = join(root, 'appär-日本');
+      expect((await createKeys({ root: project, mode: 'development' })).created).toHaveLength(2);
+    });
+
     it('asks git once for both keys', async () => {
       const bin = join(root, 'bin');
       await mkdir(bin);

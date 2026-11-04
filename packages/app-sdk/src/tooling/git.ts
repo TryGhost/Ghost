@@ -4,11 +4,14 @@ import { dirname, join, relative, resolve } from 'node:path';
 
 export type IgnoredResult = { ignored: true } | { ignored: false; reason: string };
 
-function git(args: string[], cwd: string) {
+function git(args: string[], cwd: string, input?: string) {
   return new Promise<{ code: number | string | null; stdout: string; stderr: string }>((done) => {
-    execFile('git', args, { cwd }, (error, stdout, stderr) => {
+    const child = execFile('git', args, { cwd }, (error, stdout, stderr) => {
       done({ code: error ? ((error as { code?: number | string }).code ?? 1) : 0, stdout, stderr });
     });
+    // A git that couldn't start has no stdin to write to; its error arrives above.
+    child.stdin?.on('error', () => undefined);
+    child.stdin?.end(input);
   });
 }
 
@@ -63,15 +66,17 @@ export async function isGitIgnored(
       ? { ignored: false, reason: `git couldn't read the repository: ${inside.stderr.trim()}` }
       : { ignored: true };
   }
-  // Lists the paths it ignores, a line each as asked, and exits with 1 when it ignores none.
+  // Lists the paths it ignores as asked, and exits with 1 when it ignores none. Paths go in and
+  // out separated by NUL, as git would otherwise quote one with any byte outside ASCII.
   const { code, stdout, stderr } = await git(
-    ['check-ignore', '--', ...paths.map(({ asked }) => asked)],
+    ['check-ignore', '--stdin', '-z'],
     cwd,
+    paths.map(({ asked }) => `${asked}\0`).join(''),
   );
   if (code !== 0 && code !== 1) {
     return { ignored: false, reason: `git couldn't check ${named} ignored: ${stderr.trim()}` };
   }
-  const ignored = new Set(stdout.split('\n'));
+  const ignored = new Set(stdout.split('\0'));
   const tracked = paths.find(({ asked }) => !ignored.has(asked));
   return tracked
     ? { ignored: false, reason: `git doesn't ignore ${tracked.shown}` }
