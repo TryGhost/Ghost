@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Embed preview</title>
+</head>
+<body>
+<script>
+// Ghost embed renderer, protocol version 2.
+//
+// Ghost Admin loads this page in an iframe and sends it html to render: an
+// embed or html card, or a whole site page for a preview. That html runs with
+// this page's origin, so serve it from a domain used for nothing else: never
+// from Ghost's own domains, and never alongside cookies or other data. Code on
+// that origin is never trusted, however the domain limits who may frame it, and
+// renderer frames in one tab can reach each other.
+//
+// Version 2 changes the protocol:
+// - the ready message carries a `token`, which a render message must repeat, so
+//   only a window that heard the ready message, sent to the parent, can render
+// - `sizing: false` renders the html as a page, without the card sizing below.
+//   Relative URLs then resolve against this page, so the html needs a `<base>`
+//
+// Render messages may come from any ancestor, such as Ghost Admin above a host
+// document of its own that hears the ready message for it. Card sizing reports
+// still go to the parent, so a card is rendered by its parent.
+(function () {
+    var VERSION = 2;
+    var TOKEN = Array.prototype.join.call(window.crypto.getRandomValues(new Uint32Array(4)), '-');
+
+    // runs inside the rendered embed and reports the height it needs
+    function reportHeight(parentOrigin, version) {
+        var body = document.body;
+        body.style.display = 'flex';
+        body.style.margin = '0';
+        body.style.justifyContent = 'center';
+        // don't stretch embeds to the frame, or ones that clip overflow (eg, TikTok) never grow
+        body.style.alignItems = 'flex-start';
+        // the frame is sized to fit, and a scrollbar would change the width the height is worked out from
+        document.documentElement.style.overflow = 'hidden';
+
+        function setSize(element, property, value) {
+            if (element.style[property] !== value) {
+                element.style[property] = value;
+            }
+        }
+
+        function getHeight() {
+            var firstElement = body.firstElementChild;
+
+            // get ratio from nested iframe if present (eg, Spotify)
+            if (firstElement && firstElement.tagName === 'IFRAME') {
+                var widthAttr = firstElement.getAttribute('width');
+                var heightAttr = firstElement.getAttribute('height');
+
+                if (widthAttr && heightAttr && widthAttr.indexOf('%') === -1 && heightAttr.indexOf('%') === -1) {
+                    var height = document.documentElement.clientWidth / (parseInt(widthAttr) / parseInt(heightAttr));
+                    setSize(firstElement, 'height', height + 'px');
+                    setSize(firstElement, 'width', '100%');
+                    return height;
+                }
+
+                if (heightAttr && heightAttr.indexOf('%') === -1) {
+                    return parseInt(heightAttr);
+                }
+            }
+
+            // otherwise use the document's own height (eg, Instagram)
+            return document.scrollingElement ? document.scrollingElement.scrollHeight : body.scrollHeight;
+        }
+
+        function report() {
+            window.parent.postMessage({type: 'kg-embed-resize', version: version, height: getHeight()}, parentOrigin);
+        }
+
+        // embeds such as Twitter load richer content after the first render
+        new MutationObserver(report).observe(document, {attributes: true, characterData: true, childList: true, subtree: true});
+        window.addEventListener('resize', report);
+        window.addEventListener('load', report);
+        report();
+    }
+
+    // Admin may frame the renderer inside a host document of its own, so it talks to an
+    // ancestor rather than only the parent. Any ancestor could frame the renderer directly anyway.
+    function isAncestor(source) {
+        for (var ancestor = window.parent; ; ancestor = ancestor.parent) {
+            if (source === ancestor) {
+                return true;
+            }
+            if (ancestor === ancestor.parent) {
+                return false;
+            }
+        }
+    }
+
+    window.addEventListener('message', function onRender(event) {
+        var data = event.data;
+
+        if (!isAncestor(event.source) || !data || data.type !== 'kg-embed-render' || data.version !== VERSION || data.token !== TOKEN || typeof data.html !== 'string') {
+            return;
+        }
+
+        // an editor on this page's own origin means the renderer is being served
+        // from the editor's domain, where embed scripts would get the editor's access
+        if (event.origin === window.location.origin) {
+            return;
+        }
+
+        window.removeEventListener('message', onRender);
+
+        var html = data.html;
+
+        if (data.sizing !== false) {
+            html = html + '<script>(' + reportHeight.toString() + ')(' + JSON.stringify(event.origin) + ', ' + VERSION + ');<\/script>';
+        }
+
+        document.open();
+        document.write(html);
+        document.close();
+    });
+
+    if (window.parent !== window) {
+        window.parent.postMessage({type: 'kg-embed-ready', version: VERSION, token: TOKEN}, '*');
+    }
+})();
+</script>
+</body>
+</html>

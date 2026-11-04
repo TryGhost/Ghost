@@ -4,7 +4,8 @@
 
 // Bump when the messages below change, and add public/embed-renderer/v<N>.html
 // alongside the old file, so editors and renderers on either side of a deploy
-// keep working together.
+// keep working together. The editor speaks version 1; version 2 adds page
+// previews and a ready token, for Ghost Admin.
 export const EMBED_RENDERER_VERSION = 1;
 
 export const EMBED_READY_MESSAGE = 'kg-embed-ready';
