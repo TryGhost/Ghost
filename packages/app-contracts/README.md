@@ -127,7 +127,10 @@ const manifest = AppManifestSchema.parse(JSON.parse(stored));
 `ghostUrls` is required and cannot be empty. Nothing Ghost loads from a manifest
 may point at the site's own origin or Admin's: a surface there would not be
 contained by its sandbox, and an icon there would let the app make Ghost request
-any of the site's own URLs. The author's link is exempt, since Ghost never loads it.
+any of the site's own URLs. Its path, query and fragment must also be a path
+`isContainedPath` accepts, as Admin opens the app there: not one starting with
+`//`, as `/.//admin` resolves to, nor one with a `\` in the query or fragment.
+The author's link is exempt from both, since Ghost never loads it.
 
 There is no list of allowed origins in the manifest. The only origin that may
 talk to Ghost from a surface is the origin of that surface's resolved `url`;
@@ -268,8 +271,10 @@ the root entry point exports them as well:
 - the message types, `START_TIMEOUT_MS`, `TITLE_MAX_LENGTH`, `FETCH_METHODS` and
   the statuses a fetch response may have;
 - `isContainedPath`, and `normaliseAppPath`, which returns the one normalised
-  form both sides store an app path in, with `..` resolved within the app
-  (`AppPathSchema` already returns it, so Admin doesn't need to call it);
+  form both sides store an app path in, with `..` resolved within the app.
+  Resolving `.` and `..` can leave a contained path starting with `//`, such as
+  `/.//host`, so check the result with `isContainedPath` before resolving it
+  against anything (`AppPathSchema` does both);
 - `isReservedRequestHeader` for the headers only Admin sets,
   `isJsonContentType` for the one content type a body may have,
   `methodAllowsBody`, and the messages both sides refuse an argument with

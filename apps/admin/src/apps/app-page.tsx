@@ -41,7 +41,13 @@ import { useThemeContext } from '@/providers/theme-context';
 import { AppsGate } from './components/apps-gate';
 import { InstallDialog, type InstallDone } from './components/install-dialog/install-dialog';
 import { createAppFrameSession } from './lib/app-frame-session';
-import { appEntryPath, appPathFromLocation, appPathRoute, isAppLocation } from './lib/app-path';
+import {
+  appEntryPath,
+  appFrameUrl,
+  appPathFromLocation,
+  appPathRoute,
+  isAppLocation,
+} from './lib/app-path';
 import { createAdminApiFetch } from './lib/bridge-fetch';
 import { placeRoute } from './lib/bridge-places';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostOrigin } from './lib/frame';
@@ -289,9 +295,9 @@ const AppFrame: React.FC<{
   // Each load of the frame opens the app's page at the app's current route, so a reload of Admin,
   // or coming back to the app, shows the page the publisher was on, also in a multi-page app. The
   // address is fixed for the life of the frame: changing it would reload the page.
-  const [frameSource, setFrameSource] = useState(() => ({ attempt, src: new URL(path, url).href }));
+  const [frameSource, setFrameSource] = useState(() => ({ attempt, src: appFrameUrl(url, path) }));
   if (frameSource.attempt !== attempt) {
-    setFrameSource({ attempt, src: new URL(path, url).href });
+    setFrameSource({ attempt, src: appFrameUrl(url, path) });
   }
 
   useAppTitle(manifest.name, title);

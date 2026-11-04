@@ -971,7 +971,14 @@ describe('Managing apps', () => {
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
-      for (const path of ['//evil.example/', 'https://evil.example/', 'episodes']) {
+      for (const path of [
+        '//evil.example/',
+        'https://evil.example/',
+        'episodes',
+        // Contained as written, but `//evil.example/` once `.` and `..` are resolved.
+        '/.//evil.example/',
+        '/a/..//evil.example/',
+      ]) {
         expect(refusal(await callHostRaw(APP_ORIGIN, 'pathChanged', path, 'push'))).toMatch(
           /^invalid_path: /,
         );
@@ -982,6 +989,15 @@ describe('Managing apps', () => {
       // `..` is resolved within the app's own routes, never Admin's.
       await callHostRaw(APP_ORIGIN, 'pathChanged', '/../../settings', 'push');
       await expect.poll(currentRoute).toBe(`${APP_ROUTE}/settings`);
+    });
+
+    it('opens the app’s entry page from a link whose route would load another site', async () => {
+      await fakeAppPage(installation());
+      await renderAdminApp(`${APP_ROUTE}/.//evil.example/p/1234/`, { labs });
+
+      await expect.element(appsScreen.frame()).toBeVisible();
+      await expect.element(appsScreen.frame()).toHaveAttribute('src', APP_PAGE_URL);
+      expect((await appState()).context?.path).toBe('/admin');
     });
   });
 
