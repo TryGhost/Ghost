@@ -97,7 +97,7 @@ describe('createKeys', () => {
       await rm(join(root, '.git'), { recursive: true });
       await writeFile(join(root, '.git'), 'nonsense');
       await expect(createKeys({ root, mode: 'development' })).rejects.toThrow(
-        "git couldn't check .ghost-app/development/identity.json is ignored: fatal: invalid gitfile format",
+        "git couldn't read the repository: fatal: invalid gitfile format",
       );
     });
 
@@ -120,6 +120,39 @@ describe('createKeys', () => {
         "git doesn't ignore .ghost-app/development/identity.json",
       );
     });
+  });
+});
+
+describe('whatever language git speaks', () => {
+  // A git that answers only in German, so nothing can depend on what git says.
+  async function germanGit(script: string) {
+    const bin = join(root, 'bin');
+    await mkdir(bin);
+    await writeFile(join(bin, 'git'), `#!/bin/sh\n${script}\n`, { mode: 0o755 });
+    vi.stubEnv('PATH', `${bin}:${process.env.PATH}`);
+  }
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('tells no repository from one git cannot read by its exit code', async () => {
+    await germanGit('echo "fatal: Kein Git-Repository" >&2; exit 128');
+    expect((await createKeys({ root, mode: 'development' })).created).toHaveLength(2);
+
+    await mkdir(join(root, '.git'));
+    await expect(createKeys({ root, mode: 'production' })).rejects.toThrow(
+      "git couldn't read the repository: fatal: Kein Git-Repository",
+    );
+  });
+
+  it('refuses when git fails to check a file', async () => {
+    await germanGit(
+      'if [ "$1" = rev-parse ]; then echo true; exit 0; fi; echo "fatal: Fehler" >&2; exit 128',
+    );
+    await expect(createKeys({ root, mode: 'development' })).rejects.toThrow(
+      "git couldn't check .ghost-app/development/identity.json is ignored: fatal: Fehler",
+    );
   });
 });
 

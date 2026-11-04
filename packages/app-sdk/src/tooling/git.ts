@@ -4,9 +4,9 @@ import { dirname, join, relative, resolve } from 'node:path';
 
 export type IgnoredResult = { ignored: true } | { ignored: false; reason: string };
 
-function run(file: string, cwd: string) {
+function git(args: string[], cwd: string) {
   return new Promise<{ code: number | string | null; stderr: string }>((done) => {
-    execFile('git', ['check-ignore', '--quiet', '--', file], { cwd }, (error, _stdout, stderr) => {
+    execFile('git', args, { cwd }, (error, _stdout, stderr) => {
       done({ code: error ? ((error as { code?: number | string }).code ?? 1) : 0, stderr });
     });
   });
@@ -30,20 +30,25 @@ function insideRepository(directory: string): boolean {
  */
 export async function isGitIgnored(root: string, file: string): Promise<IgnoredResult> {
   const path = relative(root, resolve(root, file));
-  const { code, stderr } = await run(path, root);
+  // Whether there's a repository is read from what git exits with, never from what it says,
+  // which is in the developer's language. A `.git` that git can't read is still a repository.
+  const inside = await git(['rev-parse', '--is-inside-work-tree'], root);
+  if (inside.code === 'ENOENT') {
+    return insideRepository(root)
+      ? { ignored: false, reason: `git isn't installed, so it can't check ${path} is ignored` }
+      : { ignored: true };
+  }
+  if (inside.code !== 0) {
+    return insideRepository(root)
+      ? { ignored: false, reason: `git couldn't read the repository: ${inside.stderr.trim()}` }
+      : { ignored: true };
+  }
+  const { code, stderr } = await git(['check-ignore', '--quiet', '--', path], root);
   if (code === 0) {
     return { ignored: true };
   }
   if (code === 1) {
     return { ignored: false, reason: `git doesn't ignore ${path}` };
-  }
-  if (code === 'ENOENT') {
-    return insideRepository(root)
-      ? { ignored: false, reason: `git isn't installed, so it can't check ${path} is ignored` }
-      : { ignored: true };
-  }
-  if (/not a git repository/i.test(stderr)) {
-    return { ignored: true };
   }
   return { ignored: false, reason: `git couldn't check ${path} is ignored: ${stderr.trim()}` };
 }
