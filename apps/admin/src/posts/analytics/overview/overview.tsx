@@ -115,7 +115,12 @@ const Overview: React.FC = () => {
     return baseParams;
   }, [isPostLoading, post, statsConfig?.id, chartStartDate, chartEndDate, chartTimezone]);
 
-  const { data: chartData, loading: chartLoading } = useTinybirdQuery({
+  const {
+    data: chartData,
+    loading: chartLoading,
+    error: chartError,
+    refetch: refetchChart,
+  } = useTinybirdQuery({
     endpoint: 'api_kpis',
     statsConfig,
     params: params,
@@ -153,7 +158,12 @@ const Overview: React.FC = () => {
   });
 
   // Get sources data
-  const { data: sourcesData, loading: isSourcesLoading } = useTinybirdQuery({
+  const {
+    data: sourcesData,
+    loading: isSourcesLoading,
+    error: sourcesError,
+    refetch: refetchSources,
+  } = useTinybirdQuery({
     endpoint: 'api_top_sources',
     statsConfig,
     params: params,
@@ -195,11 +205,15 @@ const Overview: React.FC = () => {
           {showWebSection && (
             <WebOverview
               chartData={processedChartData}
+              chartError={chartError}
               isLoading={chartIsLoading || kpiIsLoading || isSourcesLoading}
               isNewsletterShown={showNewsletterSection}
               range={displayChartRange}
               sourcesData={sourcesData}
+              sourcesError={sourcesError}
               visitors={totalVisitors}
+              onRetryChart={refetchChart}
+              onRetrySources={refetchSources}
             />
           )}
           {showNewsletterSection && (

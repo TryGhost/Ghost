@@ -76,6 +76,7 @@ export type {
 export {
   TINYBIRD_SITE_UUID,
   fakeTinybirdPipe,
+  fakeTinybirdPipeError,
   fakeTinybirdToken,
   webAnalyticsBootOverrides,
 } from './tinybird';

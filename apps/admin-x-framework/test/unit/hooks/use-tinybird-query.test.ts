@@ -11,6 +11,7 @@ vi.mock('../../../src/api/settings', () => ({
 }));
 
 import {
+  TinybirdRequestError,
   fetchTinybirdPipe,
   parseTinybirdPipeResponse,
   useTinybirdQuery,
@@ -147,7 +148,7 @@ describe('useTinybirdQuery', () => {
 
     expect(mockUseTinybirdToken).toHaveBeenCalledWith({ enabled: false });
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(result.current).toEqual({ data: null, meta: null, loading: false, error: null });
+    expect(result.current).toMatchObject({ data: null, meta: null, loading: false, error: null });
   });
 
   it('does not fetch a token or query Tinybird without statsConfig', () => {
@@ -155,7 +156,7 @@ describe('useTinybirdQuery', () => {
 
     expect(mockUseTinybirdToken).toHaveBeenCalledWith({ enabled: false });
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(result.current).toEqual({ data: null, meta: null, loading: false, error: null });
+    expect(result.current).toMatchObject({ data: null, meta: null, loading: false, error: null });
   });
 
   it('noops when the web analytics kill-switch is off', () => {
@@ -165,7 +166,7 @@ describe('useTinybirdQuery', () => {
 
     expect(mockUseTinybirdToken).toHaveBeenCalledWith({ enabled: false });
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(result.current).toEqual({ data: null, meta: null, loading: false, error: null });
+    expect(result.current).toMatchObject({ data: null, meta: null, loading: false, error: null });
   });
 
   it('keeps the cached result when the token rotates', async () => {
@@ -224,6 +225,57 @@ describe('useTinybirdQuery', () => {
     expect(result.current.data).toBe(null);
     expect(result.current.loading).toBe(false);
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('refetches a failed query and reports the retry as loading', async () => {
+    fetchMock.mockResolvedValueOnce(errorResponse(429, 'rate limited'));
+    let resolveRetry: (value: ReturnType<typeof okResponse>) => void = () => {};
+    fetchMock.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveRetry = resolve;
+      }),
+    );
+
+    const { result } = renderQuery();
+
+    await waitFor(() => {
+      expect(result.current.error).toBeInstanceOf(TinybirdRequestError);
+    });
+    expect((result.current.error as TinybirdRequestError).reason).toBe('rate_limited');
+
+    act(() => {
+      result.current.refetch();
+    });
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(true);
+    });
+    expect(result.current.error).toBe(null);
+
+    await act(async () => {
+      resolveRetry(okResponse());
+    });
+
+    await waitFor(() => {
+      expect(result.current.data).toEqual(rows);
+    });
+    expect(result.current.loading).toBe(false);
+    expect(result.current.error).toBe(null);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('retries the token request when the token is what failed', () => {
+    const tokenError = new Error('Token error');
+    const refetchToken = vi.fn().mockResolvedValue('token-b');
+    mockUseTinybirdToken.mockReturnValue(
+      tokenState({ token: undefined, error: tokenError, refetch: refetchToken }),
+    );
+
+    const { result } = renderQuery();
+    result.current.refetch();
+
+    expect(refetchToken).toHaveBeenCalledTimes(1);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('surfaces the token query error', () => {
@@ -309,6 +361,83 @@ describe('fetchTinybirdPipe', () => {
       fetchTinybirdPipe({ url: PIPE_URL, token: 'token-a', refreshToken }),
     ).rejects.toThrow('Tinybird request failed (401): Error');
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    [429, 'rate_limited'],
+    [500, 'server'],
+    [503, 'server'],
+    [504, 'timeout'],
+    [400, 'request'],
+  ])('classifies a %i response as %s', async (status, reason) => {
+    fetchMock.mockResolvedValue(errorResponse(status));
+
+    const error = await fetchTinybirdPipe({
+      url: PIPE_URL,
+      token: 'token-a',
+      refreshToken: vi.fn(),
+    }).catch((err: unknown) => err);
+
+    expect(error).toBeInstanceOf(TinybirdRequestError);
+    expect(error).toMatchObject({ reason, status });
+  });
+
+  it('aborts and reports a timeout when Tinybird does not respond in time', async () => {
+    fetchMock.mockImplementation(
+      (_url: string, init: RequestInit) =>
+        new Promise((_resolve, reject) => {
+          init.signal?.addEventListener('abort', () => {
+            reject(new DOMException('The operation was aborted.', 'AbortError'));
+          });
+        }),
+    );
+
+    const error = await fetchTinybirdPipe({
+      url: PIPE_URL,
+      token: 'token-a',
+      refreshToken: vi.fn(),
+      timeout: 10,
+    }).catch((err: unknown) => err);
+
+    expect(error).toBeInstanceOf(TinybirdRequestError);
+    expect(error).toMatchObject({ reason: 'timeout' });
+  });
+
+  it('passes a caller abort through without reporting a timeout', async () => {
+    const controller = new AbortController();
+    fetchMock.mockImplementation(
+      (_url: string, init: RequestInit) =>
+        new Promise((_resolve, reject) => {
+          init.signal?.addEventListener('abort', () => {
+            reject(new DOMException('The operation was aborted.', 'AbortError'));
+          });
+        }),
+    );
+
+    const promise = fetchTinybirdPipe({
+      url: PIPE_URL,
+      token: 'token-a',
+      refreshToken: vi.fn(),
+      signal: controller.signal,
+    });
+    controller.abort();
+
+    const error = await promise.catch((err: unknown) => err);
+    expect(error).not.toBeInstanceOf(TinybirdRequestError);
+    expect(error).toMatchObject({ name: 'AbortError' });
+  });
+
+  it('classifies a network failure', async () => {
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+
+    const error = await fetchTinybirdPipe({
+      url: PIPE_URL,
+      token: 'token-a',
+      refreshToken: vi.fn(),
+    }).catch((err: unknown) => err);
+
+    expect(error).toBeInstanceOf(TinybirdRequestError);
+    expect(error).toMatchObject({ reason: 'network' });
   });
 
   it('does not refresh the token for non-auth failures', async () => {

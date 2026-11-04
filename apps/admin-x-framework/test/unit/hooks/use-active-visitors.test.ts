@@ -19,6 +19,7 @@ const queryState = (overrides: Partial<ReturnType<typeof useTinybirdQuery>> = {}
   meta: null,
   loading: false,
   error: null,
+  refetch: vi.fn(),
   ...overrides,
 });
 

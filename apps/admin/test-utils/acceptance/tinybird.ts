@@ -104,3 +104,18 @@ export function fakeTinybirdPipe<Pipe extends TinybirdPipeName>(
     },
   };
 }
+
+/**
+ * Fail one Tinybird pipe for the current test with the given HTTP status
+ * (429 rate limit, 500, 504...). A later `fakeTinybirdPipe` for the same pipe
+ * takes precedence, so a spec can fail a pipe, then serve rows for the retry.
+ */
+export function fakeTinybirdPipeError(
+  pipe: TinybirdPipeName,
+  status: number,
+  body: Record<string, unknown> = { error: 'Tinybird error' },
+): EndpointCapture {
+  const url = `${TINYBIRD_ORIGIN}/v0/pipes/${pipe}.json`;
+  registerRoute('GET', url);
+  return fakeEndpoint('GET', url, body, { status });
+}

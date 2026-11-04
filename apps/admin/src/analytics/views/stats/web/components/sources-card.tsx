@@ -1,4 +1,5 @@
 import React from 'react';
+import AnalyticsErrorState from '@/shared/analytics/analytics-error-state';
 import SourceIcon from '@/shared/analytics/source-icon';
 import {
   type BaseSourceData,
@@ -140,6 +141,8 @@ interface SourcesCardProps {
   siteIcon?: string;
   defaultSourceIconUrl?: string;
   isLoading: boolean;
+  error?: Error | null;
+  onRetry?: () => void;
   onSourceClick?: (source: string) => void;
 }
 
@@ -151,6 +154,8 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
   siteIcon,
   defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL,
   isLoading,
+  error,
+  onRetry,
   onSourceClick,
 }) => {
   // Process and group sources data with pre-computed icons and display values
@@ -199,6 +204,8 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
         <Separator />
         {isLoading && !data ? (
           <SkeletonTable className="mt-3" />
+        ) : error ? (
+          <AnalyticsErrorState className="py-20" error={error} onRetry={onRetry} />
         ) : topSources.length > 0 ? (
           <SourcesTable
             data={topSources}
@@ -213,7 +220,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
           </EmptyIndicator>
         )}
       </CardContent>
-      {extendedData.length > 6 && (
+      {!error && extendedData.length > 6 && (
         <CardFooter>
           <Sheet>
             <SheetTrigger asChild>

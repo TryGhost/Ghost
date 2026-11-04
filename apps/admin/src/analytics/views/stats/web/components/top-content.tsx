@@ -1,3 +1,4 @@
+import AnalyticsErrorState from '@/shared/analytics/analytics-error-state';
 import {
   Button,
   Card,
@@ -175,9 +176,16 @@ const TopContent: React.FC<TopContentProps> = ({
   }, [startDate, endDate, timezone, audience, selectedContentType, filterParams]);
 
   // Get filtered content data
-  const { data: topContentData, isLoading: isLoading } = useTopContent({
+  const {
+    data: topContentData,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = useTopContent({
     searchParams: queryParams,
   });
+  const isRetrying = Boolean(error) && isFetching;
 
   // Transform data for display
   const transformedData = useMemo((): UnifiedContentData[] | null => {
@@ -230,8 +238,16 @@ const TopContent: React.FC<TopContentProps> = ({
           </div>
         </div>
         <Separator />
-        {isLoading ? (
+        {isLoading || isRetrying ? (
           <SkeletonTable className="mt-3" />
+        ) : error ? (
+          <AnalyticsErrorState
+            className="py-20"
+            error={error}
+            onRetry={() => {
+              void refetch();
+            }}
+          />
         ) : topContent.length > 0 ? (
           <TopContentTable
             contentType={selectedContentType}
@@ -246,7 +262,7 @@ const TopContent: React.FC<TopContentProps> = ({
         )}
       </CardContent>
 
-      {transformedData && transformedData.length > 6 && (
+      {!error && transformedData && transformedData.length > 6 && (
         <CardFooter>
           <Sheet>
             <SheetTrigger asChild>

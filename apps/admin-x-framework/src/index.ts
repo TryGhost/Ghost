@@ -18,8 +18,12 @@ export { default as useHandleError } from './hooks/use-handle-error';
 export { default as useFilterableApi } from './hooks/use-filterable-api';
 export { useTinybirdToken } from './hooks/use-tinybird-token';
 export type { UseTinybirdTokenResult } from './hooks/use-tinybird-token';
-export { useTinybirdQuery } from './hooks/use-tinybird-query';
-export type { UseTinybirdQueryOptions } from './hooks/use-tinybird-query';
+export { TinybirdRequestError, useTinybirdQuery } from './hooks/use-tinybird-query';
+export type {
+  TinybirdErrorReason,
+  UseTinybirdQueryOptions,
+  UseTinybirdQueryResult,
+} from './hooks/use-tinybird-query';
 export { useKoenigFileUpload, koenigFileUploadTypes } from './hooks/use-koenig-file-upload';
 export { useKoenigFetchEmbed } from './hooks/use-koenig-fetch-embed';
 export { useKoenigLinkSuggestions } from './hooks/use-koenig-link-suggestions';

@@ -113,7 +113,12 @@ const Overview: React.FC = () => {
     member_status: getAudienceQueryParam(ALL_AUDIENCES),
   };
 
-  const { data: visitorsData, loading: isVisitorsLoading } = useTinybirdQuery({
+  const {
+    data: visitorsData,
+    loading: isVisitorsLoading,
+    error: visitorsError,
+    refetch: refetchVisitors,
+  } = useTinybirdQuery({
     endpoint: 'api_kpis',
     statsConfig,
     params: visitorsParams,
@@ -261,7 +266,9 @@ const Overview: React.FC = () => {
           mrrChartData={mrrChartData}
           visitorsChartData={visitorsChartData}
           visitorsChartRange={visitorsChartRange}
+          visitorsError={visitorsError}
           visitorsYRange={visitorsYRange}
+          onRetryVisitors={refetchVisitors}
         />
         <LatestPost isLoading={isLatestPostLoading} latestPostStats={latestPostStats} />
         <TopPosts isLoading={isTopPostsLoading} topPostsData={topPostsData} />

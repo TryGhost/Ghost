@@ -13,6 +13,7 @@ import {
   fakePostsListScreen,
   fakeSnippets,
   fakeTinybirdPipe,
+  fakeTinybirdPipeError,
   fakeTinybirdToken,
   post,
   renderAdminApp,
@@ -851,6 +852,27 @@ describe('Post analytics web', () => {
     await expect.element(postAnalyticsScreen.sourceRow('google.com')).toHaveTextContent('170');
     await expect.poll(() => topLocationsApi.lastRequest?.params.get('post_uuid')).toBe(POST_UUID);
     await expect.poll(() => topSourcesApi.lastRequest?.params.get('post_uuid')).toBe(POST_UUID);
+  });
+
+  it('shows an error instead of "No visitors" when a pipe times out, and retries it', async () => {
+    seedPostAnalyticsWorld();
+    fakeTinybirdPipeError('api_kpis', 504);
+    await renderAdminApp(`/posts/analytics/${POST_ID}/web`, { boot: webAnalyticsBootOverrides() });
+
+    const errorState = page.getByTestId('analytics-error-state');
+    await expect.element(errorState).toHaveTextContent('took too long to respond');
+    await expect.element(page.getByText('No visitors')).not.toBeInTheDocument();
+
+    fakeTinybirdPipe('api_kpis', [
+      { date: daysAgo(2), visits: 100 },
+      { date: daysAgo(1), visits: 150 },
+    ]);
+    await errorState.getByRole('button', { name: 'Retry' }).click();
+
+    await expect
+      .element(page.getByRole('tab', { name: 'Unique visitors' }))
+      .toHaveTextContent('250');
+    await expect.element(errorState).not.toBeInTheDocument();
   });
 
   it('filters the post analytics pipes when a location row is clicked', async () => {

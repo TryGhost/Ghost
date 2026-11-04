@@ -10,6 +10,7 @@ import {
   fakePosts,
   fakeSnippets,
   fakeTinybirdPipe,
+  fakeTinybirdPipeError,
   fakeTinybirdToken,
   newsletter,
   post,
@@ -253,6 +254,30 @@ describe('Analytics overview', () => {
     await expect.element(editorScreen.analyticsBackLink()).toHaveAttribute('href', '#/analytics');
   });
 
+  it('shows an error with a retry when the visitors request fails', async () => {
+    seedAnalyticsWorld();
+    seedTopPostsViews();
+    fakeTinybirdPipeError('api_kpis', 500);
+    await renderAdminApp('/analytics', { boot: webAnalyticsBootOverrides() });
+
+    const visitorsCard = analyticsScreen.uniqueVisitorsCard();
+    await expect
+      .element(visitorsCard.getByRole('alert'))
+      .toHaveTextContent('Couldn’t load analytics');
+    await expect.element(analyticsScreen.uniqueVisitorsValue()).toHaveTextContent('—');
+    // The rest of the overview is unaffected by the failed pipe.
+    await expect.element(analyticsScreen.membersValue()).toHaveTextContent('175');
+
+    fakeTinybirdPipe('api_kpis', [
+      { date: daysAgo(2), visits: 100 },
+      { date: daysAgo(1), visits: 150 },
+    ]);
+    await visitorsCard.getByRole('button', { name: 'Retry' }).click();
+
+    await expect.element(analyticsScreen.uniqueVisitorsValue()).toHaveTextContent('250');
+    await expect.element(visitorsCard.getByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('navigates to the web traffic view from the visitors KPI', async () => {
     seedEmptyAnalyticsWorld();
     seedEmptyWebTraffic();
@@ -332,6 +357,27 @@ describe('Analytics web traffic', () => {
     await expect.element(analyticsScreen.topContentCard()).toHaveTextContent('No visitors');
     await expect.element(analyticsScreen.topSourcesCard()).toHaveTextContent('No visitors');
     await expect.element(analyticsScreen.locationsCard()).toHaveTextContent('No visitors');
+  });
+
+  it('explains a rate-limited request instead of showing an empty card, and retries it', async () => {
+    seedAnalyticsWorld();
+    seedTopPostsViews();
+    fakeAdminStats.topContent([]);
+    fakeTinybirdPipe('api_top_locations', [{ location: 'US', visits: 200 }]);
+    fakeTinybirdPipeError('api_top_sources', 429);
+    await renderAdminApp('/analytics/web', { boot: webAnalyticsBootOverrides() });
+
+    const sourcesCard = analyticsScreen.topSourcesCard();
+    await expect.element(sourcesCard.getByRole('alert')).toHaveTextContent('a lot of requests');
+    await expect.element(sourcesCard).not.toHaveTextContent('No visitors');
+    // Other cards still render their own data.
+    await expect.element(analyticsScreen.locationRow('US')).toHaveTextContent('United States');
+
+    fakeTinybirdPipe('api_top_sources', [{ source: 'google.com', visits: 170 }]);
+    await sourcesCard.getByRole('button', { name: 'Retry' }).click();
+
+    await expect.element(analyticsScreen.sourceRow('google.com')).toHaveTextContent('170');
+    await expect.element(sourcesCard.getByRole('alert')).not.toBeInTheDocument();
   });
 
   it('keeps the empty state across the top content tabs', async () => {

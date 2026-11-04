@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import AnalyticsErrorState from '@/shared/analytics/analytics-error-state';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
@@ -90,6 +91,8 @@ interface LocationsCardProps {
     | undefined;
   isLoading: boolean;
   range: number;
+  error?: Error | null;
+  onRetry?: () => void;
   onLocationClick?: (location: string) => void;
 }
 
@@ -97,6 +100,8 @@ const LocationsCard: React.FC<LocationsCardProps> = ({
   data,
   isLoading,
   range,
+  error,
+  onRetry,
   onLocationClick,
 }) => {
   const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
@@ -247,127 +252,135 @@ const LocationsCard: React.FC<LocationsCardProps> = ({
           A geographic breakdown of your readers {getPeriodText(range)}
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-0">
-        <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-stretch">
-          <div className="svg-map-container relative mx-auto w-full max-w-[740px] px-8 py-12 [&_.svg-map]:stroke-background">
-            <SVGMap
-              locationClassName={getLocationClassName}
-              map={worldMap}
-              onLocationClick={handleLocationClick}
-              onLocationMouseOut={handleLocationMouseOut}
-              onLocationMouseOver={handleLocationMouseOver}
-            />
-            {tooltipData && (
-              <div
-                className="pointer-events-none fixed z-50 min-w-[120px] rounded-lg border bg-background px-3 py-2 text-sm text-foreground shadow-lg transition-all duration-150 ease-in-out"
-                style={{
-                  left: tooltipData.x + 10,
-                  top: tooltipData.y + 10,
-                  transform: 'translate3d(0, 0, 0)',
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <Flag
-                    countryCode={`${normalizeCountryCode(tooltipData.countryCode)}`}
-                    height="12px"
-                    width="20px"
-                  />
-                  <span className="font-medium">{tooltipData.countryName}</span>
-                </div>
-                <div className="mt-1 flex grow items-center justify-between gap-3">
-                  <div className="text-sm text-muted-foreground">Visitors</div>
-                  <div className="font-mono font-medium">{formatNumber(tooltipData.visits)}</div>
-                </div>
-              </div>
-            )}
-          </div>
-          <div
-            className="group/datalist flex flex-col justify-between overflow-hidden px-6"
-            data-testid="visitors-card"
-          >
-            <DataList className="mb-6 grow lg:ml-4">
-              <DataListHeader className="px-0 pt-8">
-                <DataListHead>Country</DataListHead>
-                <DataListHead>Visitors</DataListHead>
-              </DataListHeader>
-              {isLoading ? (
-                <SkeletonTable className="mt-5" />
-              ) : tableData && tableData.length > 0 ? (
-                <>
-                  <DataListBody>
-                    {tableData.map((row) => {
-                      const countryName = getCountryName(`${row.location}`) || 'Unknown';
-                      const isClickable = row.location !== 'Unknown' && onLocationClick;
-                      return (
-                        <DataListRow
-                          key={row.location || 'unknown'}
-                          className={
-                            isClickable ? 'cursor-pointer transition-colors hover:bg-accent/50' : ''
-                          }
-                          data-testid={`location-row-${row.location || 'unknown'}`}
-                          onClick={isClickable ? () => handleRowClick(row.location) : undefined}
-                        >
-                          <DataListBar
-                            style={{
-                              width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`,
-                            }}
-                          />
-                          <DataListItemContent className="group-hover/data:max-w-[calc(100%-140px)]">
-                            <div className="flex items-center space-x-3 overflow-hidden">
-                              <Flag
-                                countryCode={`${normalizeCountryCode(row.location)}`}
-                                data-testid="country-flag"
-                                fallback={
-                                  <span className="flex h-[14px] w-[22px] items-center justify-center rounded-[2px] bg-black text-white">
-                                    <Icon.SkullAndBones className="size-3" />
-                                  </span>
-                                }
-                              />
-                              <div className="truncate font-medium" data-testid="country-name">
-                                {countryName}
-                              </div>
-                            </div>
-                          </DataListItemContent>
-                          <DataListItemValue>
-                            <DataListItemValueAbs>
-                              {formatNumber(Number(row.visits))}
-                            </DataListItemValueAbs>
-                            <DataListItemValuePerc>
-                              {formatPercentage(row.percentage)}
-                            </DataListItemValuePerc>
-                          </DataListItemValue>
-                        </DataListRow>
-                      );
-                    })}
-                  </DataListBody>
-                  {totalPages > 1 && (
-                    <SimplePagination className="mt-5">
-                      <SimplePaginationPages
-                        currentPage={currentPage.toString()}
-                        totalPages={totalPages.toString()}
-                      />
-                      <SimplePaginationNavigation>
-                        <SimplePaginationPreviousButton
-                          disabled={!hasPreviousPage}
-                          onClick={previousPage}
-                        />
-                        <SimplePaginationNextButton disabled={!hasNextPage} onClick={nextPage} />
-                      </SimplePaginationNavigation>
-                    </SimplePagination>
-                  )}
-                </>
-              ) : (
-                <EmptyIndicator
-                  className="size-full py-20"
-                  title={`No visitors ${getPeriodText(range)}`}
+      {!isLoading && error ? (
+        <CardContent className="p-0">
+          <AnalyticsErrorState className="py-24" error={error} onRetry={onRetry} />
+        </CardContent>
+      ) : (
+        <CardContent className="p-0">
+          <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-stretch">
+            <div className="svg-map-container relative mx-auto w-full max-w-[740px] px-8 py-12 [&_.svg-map]:stroke-background">
+              <SVGMap
+                locationClassName={getLocationClassName}
+                map={worldMap}
+                onLocationClick={handleLocationClick}
+                onLocationMouseOut={handleLocationMouseOut}
+                onLocationMouseOver={handleLocationMouseOver}
+              />
+              {tooltipData && (
+                <div
+                  className="pointer-events-none fixed z-50 min-w-[120px] rounded-lg border bg-background px-3 py-2 text-sm text-foreground shadow-lg transition-all duration-150 ease-in-out"
+                  style={{
+                    left: tooltipData.x + 10,
+                    top: tooltipData.y + 10,
+                    transform: 'translate3d(0, 0, 0)',
+                  }}
                 >
-                  <LucideIcon.MapPin strokeWidth={1.5} />
-                </EmptyIndicator>
+                  <div className="flex items-center gap-2">
+                    <Flag
+                      countryCode={`${normalizeCountryCode(tooltipData.countryCode)}`}
+                      height="12px"
+                      width="20px"
+                    />
+                    <span className="font-medium">{tooltipData.countryName}</span>
+                  </div>
+                  <div className="mt-1 flex grow items-center justify-between gap-3">
+                    <div className="text-sm text-muted-foreground">Visitors</div>
+                    <div className="font-mono font-medium">{formatNumber(tooltipData.visits)}</div>
+                  </div>
+                </div>
               )}
-            </DataList>
+            </div>
+            <div
+              className="group/datalist flex flex-col justify-between overflow-hidden px-6"
+              data-testid="visitors-card"
+            >
+              <DataList className="mb-6 grow lg:ml-4">
+                <DataListHeader className="px-0 pt-8">
+                  <DataListHead>Country</DataListHead>
+                  <DataListHead>Visitors</DataListHead>
+                </DataListHeader>
+                {isLoading ? (
+                  <SkeletonTable className="mt-5" />
+                ) : tableData && tableData.length > 0 ? (
+                  <>
+                    <DataListBody>
+                      {tableData.map((row) => {
+                        const countryName = getCountryName(`${row.location}`) || 'Unknown';
+                        const isClickable = row.location !== 'Unknown' && onLocationClick;
+                        return (
+                          <DataListRow
+                            key={row.location || 'unknown'}
+                            className={
+                              isClickable
+                                ? 'cursor-pointer transition-colors hover:bg-accent/50'
+                                : ''
+                            }
+                            data-testid={`location-row-${row.location || 'unknown'}`}
+                            onClick={isClickable ? () => handleRowClick(row.location) : undefined}
+                          >
+                            <DataListBar
+                              style={{
+                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`,
+                              }}
+                            />
+                            <DataListItemContent className="group-hover/data:max-w-[calc(100%-140px)]">
+                              <div className="flex items-center space-x-3 overflow-hidden">
+                                <Flag
+                                  countryCode={`${normalizeCountryCode(row.location)}`}
+                                  data-testid="country-flag"
+                                  fallback={
+                                    <span className="flex h-[14px] w-[22px] items-center justify-center rounded-[2px] bg-black text-white">
+                                      <Icon.SkullAndBones className="size-3" />
+                                    </span>
+                                  }
+                                />
+                                <div className="truncate font-medium" data-testid="country-name">
+                                  {countryName}
+                                </div>
+                              </div>
+                            </DataListItemContent>
+                            <DataListItemValue>
+                              <DataListItemValueAbs>
+                                {formatNumber(Number(row.visits))}
+                              </DataListItemValueAbs>
+                              <DataListItemValuePerc>
+                                {formatPercentage(row.percentage)}
+                              </DataListItemValuePerc>
+                            </DataListItemValue>
+                          </DataListRow>
+                        );
+                      })}
+                    </DataListBody>
+                    {totalPages > 1 && (
+                      <SimplePagination className="mt-5">
+                        <SimplePaginationPages
+                          currentPage={currentPage.toString()}
+                          totalPages={totalPages.toString()}
+                        />
+                        <SimplePaginationNavigation>
+                          <SimplePaginationPreviousButton
+                            disabled={!hasPreviousPage}
+                            onClick={previousPage}
+                          />
+                          <SimplePaginationNextButton disabled={!hasNextPage} onClick={nextPage} />
+                        </SimplePaginationNavigation>
+                      </SimplePagination>
+                    )}
+                  </>
+                ) : (
+                  <EmptyIndicator
+                    className="size-full py-20"
+                    title={`No visitors ${getPeriodText(range)}`}
+                  >
+                    <LucideIcon.MapPin strokeWidth={1.5} />
+                  </EmptyIndicator>
+                )}
+              </DataList>
+            </div>
           </div>
-        </div>
-      </CardContent>
+        </CardContent>
+      )}
     </Card>
   );
 };

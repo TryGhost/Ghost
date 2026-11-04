@@ -1,3 +1,4 @@
+import AnalyticsErrorState from '@/shared/analytics/analytics-error-state';
 import React from 'react';
 import {
   BarChartLoadingIndicator,
@@ -160,6 +161,8 @@ interface OverviewKPIsProps {
   growthChartRange: number;
   currencySymbol: string;
   isLoading: boolean;
+  visitorsError?: Error | null;
+  onRetryVisitors?: () => void;
 }
 
 const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
@@ -173,6 +176,8 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
   growthChartRange,
   currencySymbol,
   isLoading,
+  visitorsError,
+  onRetryVisitors,
 }) => {
   const navigate = useNavigate();
   const webAnalyticsEnabled = useWebAnalyticsEnabled();
@@ -213,7 +218,7 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
         <OverviewKPICard
           description="Number of individual people who visited your website"
           diffDirection="empty"
-          formattedValue={kpiValues.visits}
+          formattedValue={visitorsError ? '—' : kpiValues.visits}
           iconName="Globe"
           linkto="/analytics/web/"
           title="Unique visitors"
@@ -221,17 +226,21 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
             navigate('/analytics/web/');
           }}
         >
-          <GhAreaChart
-            className={areaChartClassName}
-            color="var(--chart-blue)"
-            data={visitorsChartData}
-            id="visitors"
-            range={visitorsChartRange}
-            showHorizontalLines={true}
-            showYAxisValues={false}
-            syncId="overview-charts"
-            yAxisRange={visitorsYRange}
-          />
+          {visitorsError ? (
+            <AnalyticsErrorState className="py-2" error={visitorsError} onRetry={onRetryVisitors} />
+          ) : (
+            <GhAreaChart
+              className={areaChartClassName}
+              color="var(--chart-blue)"
+              data={visitorsChartData}
+              id="visitors"
+              range={visitorsChartRange}
+              showHorizontalLines={true}
+              showYAxisValues={false}
+              syncId="overview-charts"
+              yAxisRange={visitorsYRange}
+            />
+          )}
         </OverviewKPICard>
       )}
 

@@ -1,3 +1,4 @@
+import AnalyticsErrorState from '@/shared/analytics/analytics-error-state';
 import DateRangeSelect from '@/shared/analytics/date-range-select';
 import Kpis from './components/kpis';
 import Locations from './components/locations';
@@ -176,25 +177,37 @@ const Web: React.FC = () => {
   }, [isPostLoading, post, statsConfig?.id, startDate, endDate, timezone, audience, filterParams]);
 
   // Get web kpi data
-  const { data: kpiData, loading: isKpisLoading } = useTinybirdQuery({
+  const kpisQuery = useTinybirdQuery({
     endpoint: 'api_kpis',
     statsConfig,
     params: params,
   });
 
   // Get locations data
-  const { data: locationsData, loading: isLocationsLoading } = useTinybirdQuery({
+  const locationsQuery = useTinybirdQuery({
     endpoint: 'api_top_locations',
     statsConfig,
     params: params,
   });
 
   // Get sources data
-  const { data: sourcesData, loading: isSourcesLoading } = useTinybirdQuery({
+  const sourcesQuery = useTinybirdQuery({
     endpoint: 'api_top_sources',
     statsConfig,
     params: params,
   });
+
+  const { data: kpiData, loading: isKpisLoading } = kpisQuery;
+  const { data: locationsData, loading: isLocationsLoading } = locationsQuery;
+  const { data: sourcesData, loading: isSourcesLoading } = sourcesQuery;
+
+  // Every section of this tab depends on all three pipes, so one failure
+  // replaces the page with an error state; retry re-runs only what failed.
+  const failedQueries = [kpisQuery, locationsQuery, sourcesQuery].filter((query) => query.error);
+  const webDataError = failedQueries[0]?.error ?? null;
+  const retryFailedQueries = () => {
+    failedQueries.forEach((query) => query.refetch());
+  };
 
   // Calculate total visits for percentage calculation
   const totalVisits = useMemo(
@@ -286,6 +299,10 @@ const Web: React.FC = () => {
               <BarChartLoadingIndicator />
             </CardContent>
           </Card>
+        ) : webDataError ? (
+          <div className="flex grow items-center justify-center">
+            <AnalyticsErrorState error={webDataError} onRetry={retryFailedQueries} />
+          </div>
         ) : kpiData && kpiData.length !== 0 && kpiValues.visits !== '0' ? (
           <>
             <Kpis data={kpiData as KpiDataItem[] | null} range={chartRange} />

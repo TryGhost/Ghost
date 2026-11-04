@@ -1,3 +1,4 @@
+import AnalyticsErrorState from '@/shared/analytics/analytics-error-state';
 import React, { useMemo } from 'react';
 import Sources from '@/posts/analytics/web/components/sources';
 import {
@@ -29,6 +30,10 @@ interface WebOverviewProps {
   isLoading: boolean;
   visitors: number;
   isNewsletterShown?: boolean;
+  chartError?: Error | null;
+  sourcesError?: Error | null;
+  onRetryChart?: () => void;
+  onRetrySources?: () => void;
 }
 
 const WebOverview: React.FC<WebOverviewProps> = ({
@@ -38,6 +43,10 @@ const WebOverview: React.FC<WebOverviewProps> = ({
   visitors,
   sourcesData,
   isNewsletterShown = true,
+  chartError,
+  sourcesError,
+  onRetryChart,
+  onRetrySources,
 }) => {
   const { postId } = useParams();
   const navigate = useNavigate();
@@ -87,7 +96,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({
             >
               <div className="flex grow flex-col gap-1.5 border-none pb-0">
                 <KpiCardHeaderLabel color="var(--chart-blue)">Unique visitors</KpiCardHeaderLabel>
-                <KpiCardHeaderValue value={formatNumber(visitors)} />
+                <KpiCardHeaderValue value={chartError ? '—' : formatNumber(visitors)} />
               </div>
             </KpiCardHeader>
             <Separator />
@@ -95,6 +104,10 @@ const WebOverview: React.FC<WebOverviewProps> = ({
               {isLoading ? (
                 <div className="flex h-[16vw] min-h-[240px] items-center justify-center">
                   <BarChartLoadingIndicator />
+                </div>
+              ) : chartError ? (
+                <div className="flex h-[16vw] min-h-[240px] items-center justify-center">
+                  <AnalyticsErrorState error={chartError} onRetry={onRetryChart} />
                 </div>
               ) : (
                 <GhAreaChart
@@ -118,7 +131,13 @@ const WebOverview: React.FC<WebOverviewProps> = ({
                   <HTable>Visitors</HTable>
                 </div>
               </div>
-              {sourcesData && sourcesData.length > 0 ? (
+              {sourcesError && !isLoading ? (
+                <AnalyticsErrorState
+                  className="py-10"
+                  error={sourcesError}
+                  onRetry={onRetrySources}
+                />
+              ) : sourcesData && sourcesData.length > 0 ? (
                 <Sources
                   data={sourcesData}
                   range={range}

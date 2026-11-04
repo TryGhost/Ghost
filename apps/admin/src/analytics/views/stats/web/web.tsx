@@ -139,21 +139,36 @@ const Web: React.FC = () => {
   );
 
   // Get KPI data
-  const { data: kpiData, loading: kpiLoading } = useTinybirdQuery({
+  const {
+    data: kpiData,
+    loading: kpiLoading,
+    error: kpiError,
+    refetch: refetchKpis,
+  } = useTinybirdQuery({
     endpoint: 'api_kpis',
     statsConfig,
     params,
   });
 
   // Get top sources data
-  const { data: sourcesData, loading: isSourcesLoading } = useTinybirdQuery({
+  const {
+    data: sourcesData,
+    loading: isSourcesLoading,
+    error: sourcesError,
+    refetch: refetchSources,
+  } = useTinybirdQuery({
     endpoint: 'api_top_sources',
     statsConfig,
     params,
   });
 
   // Get top locations data
-  const { data: locationsData, loading: isLocationsLoading } = useTinybirdQuery({
+  const {
+    data: locationsData,
+    loading: isLocationsLoading,
+    error: locationsError,
+    refetch: refetchLocations,
+  } = useTinybirdQuery({
     endpoint: 'api_top_locations',
     statsConfig,
     params,
@@ -200,7 +215,13 @@ const Web: React.FC = () => {
       <StatsView isLoading={isPageLoading} loadingComponent={<></>}>
         <Card>
           <CardContent>
-            <WebKPIs data={kpiData as KpiDataItem[] | null} isLoading={kpiLoading} range={range} />
+            <WebKPIs
+              data={kpiData as KpiDataItem[] | null}
+              error={kpiError}
+              isLoading={kpiLoading}
+              range={range}
+              onRetry={refetchKpis}
+            />
           </CardContent>
         </Card>
         <div className="flex grid-cols-2 flex-col gap-6 lg:grid">
@@ -213,19 +234,23 @@ const Web: React.FC = () => {
           <SourcesCard
             data={sourcesData}
             defaultSourceIconUrl={STATS_DEFAULT_SOURCE_ICON_URL}
+            error={sourcesError}
             isLoading={isSourcesLoading}
             range={range}
             siteIcon={siteIcon}
             siteUrl={siteUrl}
             totalVisitors={totalVisitors}
+            onRetry={refetchSources}
             onSourceClick={handleSourceClick}
           />
         </div>
         <LocationsCard
           data={locationsData}
+          error={locationsError}
           isLoading={isLocationsLoading}
           range={range}
           onLocationClick={handleLocationClick}
+          onRetry={refetchLocations}
         />
       </StatsView>
     </StatsLayout>

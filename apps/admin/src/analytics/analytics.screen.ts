@@ -46,6 +46,9 @@ export const analyticsScreen = {
   totalSubscribersValue: () => page.getByTestId(sel.totalSubscribersValue),
   topNewslettersCard: () => page.getByTestId(sel.topNewslettersCard),
 
+  // Error state shown in place of a chart or table whose request failed
+  errorState: () => page.getByTestId('analytics-error-state'),
+
   // Header
   activeVisitors: () => page.getByText(/\d+ online/),
   // The header's date-range select (the only combobox on the stats views).

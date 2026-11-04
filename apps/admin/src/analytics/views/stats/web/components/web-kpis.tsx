@@ -16,6 +16,7 @@ import {
 import { KPI_METRICS } from '@/analytics/views/stats/web/web-kpi-metrics';
 import { formatDuration, formatNumber, formatPercentage, getYRange } from '@tryghost/shade/utils';
 import { getEffectiveChartRange, sanitizeChartData } from '@/shared/analytics/chart-helpers';
+import AnalyticsErrorState from '@/shared/analytics/analytics-error-state';
 import { useMemo, useState } from 'react';
 
 export interface KpiDataItem {
@@ -27,9 +28,11 @@ interface WebKPIsProps {
   data: KpiDataItem[] | null;
   range: number;
   isLoading: boolean;
+  error?: Error | null;
+  onRetry?: () => void;
 }
 
-const WebKPIs: React.FC<WebKPIsProps> = ({ data, range, isLoading }) => {
+const WebKPIs: React.FC<WebKPIsProps> = ({ data, range, isLoading, error, onRetry }) => {
   const [currentTab, setCurrentTab] = useState('visits');
   const currentMetric = KPI_METRICS[currentTab];
 
@@ -97,6 +100,14 @@ const WebKPIs: React.FC<WebKPIsProps> = ({ data, range, isLoading }) => {
     return (
       <div className="-mb-6 flex h-[calc(16vw+132px)] w-full items-start justify-center">
         <BarChartLoadingIndicator />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="-mb-6 flex h-[calc(16vw+132px)] max-h-[452px] min-h-[312px] w-full items-center justify-center">
+        <AnalyticsErrorState error={error} onRetry={onRetry} />
       </div>
     );
   }
