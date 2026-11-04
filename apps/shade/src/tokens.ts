@@ -365,6 +365,7 @@ export const SHADE_TOKEN_NAMES = [
   'text-primary',
   'text-secondary',
   'text-section-heading',
+  'text-section-heading-lg',
   'text-sm',
   'text-tertiary',
   'text-xl',

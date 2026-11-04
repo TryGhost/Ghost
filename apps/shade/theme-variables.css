@@ -150,6 +150,7 @@
   --control-disabled-surface: var(--color-gray-100);
   --control-border: color-mix(in oklab, var(--color-gray-200), var(--color-gray-300));
   --text-section-heading: 1.6rem;
+  --text-section-heading-lg: 1.9rem;
   /* Text-entry fields are white with a light outline. */
   --field-surface: var(--control-surface);
   --field-readonly-surface: var(--control-readonly-surface);

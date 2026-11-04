@@ -14,6 +14,7 @@ import {
   getSubscriptionValidityLabel,
   groupSubscriptionsByTier,
 } from './member-subscription';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { getSymbol } from '@tryghost/admin-x-framework';
 import type { Member, MemberSubscription } from '@tryghost/admin-x-framework/api/members';
 import type { SubscriptionKind } from './member-subscription';
@@ -111,7 +112,7 @@ const SubscriptionRow: React.FC<{
   return (
     <div
       className={cn(
-        'flex items-start justify-between gap-4 py-5 first:pt-0 last:pb-0',
+        'flex items-start justify-between gap-4 py-5 first:pt-0 last:pb-0 in-data-[admin7-design=true]:items-center',
         showDivider && 'border-t border-border',
       )}
       data-testid="member-subscription"
@@ -174,8 +175,6 @@ interface MemberSubscriptionsSectionProps {
   // True when there is at least one active paid tier the member could be
   // granted a comp on. Caller (`member-detail.tsx`) fetches tiers and computes.
   canAddComp: boolean;
-  // Admin 7 puts the section heading inside the card.
-  heading?: React.ReactNode;
 }
 
 /**
@@ -190,8 +189,8 @@ interface MemberSubscriptionsSectionProps {
 const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
   member,
   canAddComp,
-  heading,
 }) => {
+  const admin7Design = useFeatureFlag('admin7Design');
   const [showAddComp, setShowAddComp] = React.useState(false);
 
   // Create mode: no saved member yet, no subscriptions to enumerate, no
@@ -200,9 +199,8 @@ const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
   // SubscriptionRow / MemberAddCompModal props type-check without a cast.
   if (!member) {
     return (
-      <Card data-testid="member-subscriptions">
-        <CardContent className="pt-6">
-          {heading}
+      <Card data-testid="member-subscriptions" variant={admin7Design ? 'ruled' : 'outline'}>
+        <CardContent className={admin7Design ? undefined : 'pt-6'}>
           <div className="flex flex-col items-center gap-3 py-4">
             <EmptyIndicator title="No subscriptions">
               <LucideIcon.CreditCard />
@@ -235,9 +233,8 @@ const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
 
   return (
     <>
-      <Card data-testid="member-subscriptions">
-        <CardContent className="pt-6">
-          {heading}
+      <Card data-testid="member-subscriptions" variant={admin7Design ? 'ruled' : 'outline'}>
+        <CardContent className={admin7Design ? undefined : 'pt-6'}>
           {hasSubscriptions ? (
             <>
               {groups.map((group) => (

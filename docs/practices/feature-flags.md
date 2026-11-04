@@ -150,6 +150,10 @@ shades of it for text and no outline.
 The `admin7Design` milestone also gives cards 8px corners and makes large titles
 and the space above them follow the width of the page area.
 
+The `admin7Design` milestone also moves the member detail sidebar to the right with
+Engagement first, and sections sit under larger headings with a line across the
+top instead of a card.
+
 The `admin7CustomizeFromViewSite` experiment adds Customize to the frame's top
 bar on View site, opening the Design settings in a panel over a live, browsable
 preview of the site, with its state in the URL (`/site?customize`). It needs

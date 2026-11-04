@@ -70,6 +70,19 @@ describe('Card Components', () => {
     expect(header.className, 'Header should have appropriate padding').toContain('p-6');
   });
 
+  it('renders Card with ruled variant', () => {
+    render(
+      <Card data-testid="card" variant="ruled">
+        <CardContent data-testid="content">Content</CardContent>
+      </Card>,
+    );
+
+    const card = screen.getByTestId('card');
+    expect(card.className, 'Should have a top rule').toContain('border-t');
+    expect(card.className, 'Should not have an outline').not.toContain('rounded-xl');
+    expect(screen.getByTestId('content').className, 'Should have no side padding').toBe('pt-5');
+  });
+
   it('renders CardHeader with plain variant styling', () => {
     render(
       <Card data-testid="card" variant="plain">

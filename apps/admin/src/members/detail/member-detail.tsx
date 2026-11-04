@@ -97,14 +97,6 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
   // Admin 7 runs the map full bleed, from the top of the page and under the
   // floating sidebar
   const admin7Design = useFeatureFlag('admin7Design');
-  const subscriptionsHeading = (
-    <h3
-      className="section-heading text-base font-semibold in-data-[admin7-design=true]:mb-4"
-      id="member-subscriptions-heading"
-    >
-      Subscriptions
-    </h3>
-  );
   // Without a map, the header opens with the list pages' space above their
   // large titles, where they show them
   const { largeTitles } = usePageChrome();
@@ -492,7 +484,9 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
             </MemberMapHeader>
           </DetailPage.Header>
 
-          <DetailPage.Body>
+          {/* The body scrolls, so it clips anything past its edges. Fields now run flush
+              to the left edge, so give their focus rings room to show. */}
+          <DetailPage.Body className="in-data-[admin7-design=true]:-mx-3 in-data-[admin7-design=true]:px-3">
             {loadError && (
               <div
                 className="flex flex-1 flex-col items-center justify-center gap-3"
@@ -512,7 +506,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
             )}
 
             {showEditor && draft && (
-              <div className="flex flex-1 flex-col gap-8 lg:flex-row lg:items-start lg:gap-12">
+              <div className="flex flex-1 flex-col gap-8 lg:flex-row lg:items-start lg:gap-12 in-data-[admin7-design=true]:lg:flex-row-reverse in-data-[admin7-design=true]:lg:gap-20">
                 <MemberDetailSidebar
                   draftEmail={committedIdentity.email}
                   draftName={committedIdentity.name}
@@ -520,23 +514,37 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                   member={member}
                   showIdentity={!mapEnabled}
                 />
-                <div className="flex min-w-0 flex-1 flex-col gap-8">
-                  {/* First card: name, email, labels, note — no external header. */}
-                  <Card>
-                    <CardContent className="p-6">
-                      <MemberDetailForm
-                        disabled={activeMutation.isPending}
-                        draft={draft}
-                        emailError={emailError}
-                        onChange={onFieldChange}
-                        onEmailBlur={() => {
-                          setEmailTouched(true);
-                          commitIdentityFromDraft();
-                        }}
-                        onNameBlur={commitIdentityFromDraft}
-                      />
-                    </CardContent>
-                  </Card>
+                <div className="flex min-w-0 flex-1 flex-col gap-8 in-data-[admin7-design=true]:gap-18 in-data-[admin7-design=true]:[--text-section-heading:var(--text-section-heading-lg)]">
+                  {/* First card: name, email, labels, note. Admin 7 gives it a heading
+                                    like the sections below it. */}
+                  <section
+                    aria-labelledby={admin7Design ? 'member-details-heading' : undefined}
+                    className="flex flex-col gap-3"
+                  >
+                    {admin7Design && (
+                      <h3
+                        className="section-heading text-base font-semibold"
+                        id="member-details-heading"
+                      >
+                        Details
+                      </h3>
+                    )}
+                    <Card variant={admin7Design ? 'ruled' : 'outline'}>
+                      <CardContent className={admin7Design ? undefined : 'p-6'}>
+                        <MemberDetailForm
+                          disabled={activeMutation.isPending}
+                          draft={draft}
+                          emailError={emailError}
+                          onChange={onFieldChange}
+                          onEmailBlur={() => {
+                            setEmailTouched(true);
+                            commitIdentityFromDraft();
+                          }}
+                          onNameBlur={commitIdentityFromDraft}
+                        />
+                      </CardContent>
+                    </Card>
+                  </section>
 
                   {/* Custom fields: a read-only record of the member's values —
                                     each field edits and saves individually through its own
@@ -576,12 +584,13 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                       aria-labelledby="member-subscriptions-heading"
                       className="flex flex-col gap-3"
                     >
-                      {!admin7Design && subscriptionsHeading}
-                      <MemberSubscriptionsSection
-                        canAddComp={canAddComp}
-                        heading={admin7Design ? subscriptionsHeading : undefined}
-                        member={member}
-                      />
+                      <h3
+                        className="section-heading text-base font-semibold"
+                        id="member-subscriptions-heading"
+                      >
+                        Subscriptions
+                      </h3>
+                      <MemberSubscriptionsSection canAddComp={canAddComp} member={member} />
                     </section>
                   )}
 

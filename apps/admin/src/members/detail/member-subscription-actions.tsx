@@ -10,6 +10,7 @@ import {
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import {
   useEditMemberSubscription,
   useMembersFetching,
@@ -36,6 +37,7 @@ const MemberSubscriptionActions: React.FC<MemberSubscriptionActionsProps> = ({
   memberId,
   subscription,
 }) => {
+  const admin7Design = useFeatureFlag('admin7Design');
   const editSubscription = useEditMemberSubscription();
   // Keep the trigger disabled until the invalidated members refetch lands so a
   // user can't fire the same action twice in the window between the mutation
@@ -67,7 +69,7 @@ const MemberSubscriptionActions: React.FC<MemberSubscriptionActionsProps> = ({
           data-testid="subscription-actions"
           disabled={busy}
           size="icon"
-          variant="subtle"
+          variant={admin7Design ? 'outline' : 'subtle'}
         >
           {busy ? <LoadingIndicator size="sm" /> : <LucideIcon.MoreHorizontal />}
         </Button>
