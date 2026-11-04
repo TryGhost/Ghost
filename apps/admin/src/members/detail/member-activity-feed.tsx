@@ -1,10 +1,10 @@
 import React from 'react';
 import moment from 'moment-timezone';
 import { Button, Card, CardContent, EmptyIndicator, Skeleton } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { isSafeHref } from './is-safe-href';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { parseMemberEvent } from './member-event';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useMemberActivityFeed } from '@tryghost/admin-x-framework/api/members';
 import { activityQueryOptions } from '@/members/activity/activity-filters';
 import { useActivitySettings } from '@/members/activity/use-activity-settings';
@@ -77,10 +77,47 @@ export const EventIcon: React.FC<{ iconName: string }> = ({ iconName }) => {
   }
 };
 
+// admin7Design: each kind of event gets a color pair from Shade's event tokens.
+// Written out in full so Tailwind can see the classes. Anything not listed, like
+// profile changes and logins, stays neutral.
+const EMAIL_TONE =
+  'in-data-[admin7-design=true]:bg-event-email-surface in-data-[admin7-design=true]:[&_svg]:text-event-email-icon';
+const GAIN_TONE =
+  'in-data-[admin7-design=true]:bg-event-gain-surface in-data-[admin7-design=true]:[&_svg]:text-event-gain-icon';
+const LOSS_TONE =
+  'in-data-[admin7-design=true]:bg-event-loss-surface in-data-[admin7-design=true]:[&_svg]:text-event-loss-icon';
+const WARNING_TONE =
+  'in-data-[admin7-design=true]:bg-event-warning-surface in-data-[admin7-design=true]:[&_svg]:text-event-warning-icon';
+const ENGAGEMENT_TONE =
+  'in-data-[admin7-design=true]:bg-event-engagement-surface in-data-[admin7-design=true]:[&_svg]:text-event-engagement-icon';
+const GIFT_TONE =
+  'in-data-[admin7-design=true]:bg-event-gift-surface in-data-[admin7-design=true]:[&_svg]:text-event-gift-icon';
+
+const EVENT_TONES: Record<string, string> = {
+  'event-received-email': EMAIL_TONE,
+  'event-opened-email': EMAIL_TONE,
+  'event-sent-email': EMAIL_TONE,
+  'event-signed-up': GAIN_TONE,
+  'event-subscribed-to-email': GAIN_TONE,
+  'event-subscriptions': GAIN_TONE,
+  'event-unsubscribed-from-email': LOSS_TONE,
+  'event-canceled-subscription': LOSS_TONE,
+  'event-email-delivery-failed': LOSS_TONE,
+  'event-email-delivery-spam': WARNING_TONE,
+  'event-comment': ENGAGEMENT_TONE,
+  'event-click': ENGAGEMENT_TONE,
+  'event-more-like-this': ENGAGEMENT_TONE,
+  'event-less-like-this': ENGAGEMENT_TONE,
+  'event-gift': GIFT_TONE,
+};
+
 /** "View all member activity →" link to the member's full activity feed. */
-const ViewAllLink: React.FC<{ memberId: string }> = ({ memberId }) => {
+const ViewAllLink: React.FC<{ memberId: string; className?: string }> = ({
+  memberId,
+  className = 'mt-3',
+}) => {
   return (
-    <Button className="mt-3" variant="ghost" asChild>
+    <Button className={className} variant="ghost" asChild>
       <a data-testid="member-activity-view-all" href={`#/members-activity?member=${memberId}`}>
         View all member activity →
       </a>
@@ -124,8 +161,16 @@ const ActivityRow: React.FC<{ event: ParsedMemberEvent }> = ({ event }) => {
       '—';
 
   return (
-    <div className="flex items-start gap-3 py-3" data-testid="member-activity-event">
-      <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted">
+    <div
+      className="flex items-start gap-3 py-3 in-data-[admin7-design=true]:items-center in-data-[admin7-design=true]:py-4 in-data-[admin7-design=true]:first:pt-0"
+      data-testid="member-activity-event"
+    >
+      <div
+        className={cn(
+          'flex size-8 shrink-0 items-center justify-center rounded-full bg-muted',
+          EVENT_TONES[event.icon],
+        )}
+      >
         <EventIcon iconName={event.icon} />
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -183,14 +228,6 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
   paidMembersEnabled,
 }) => {
   const admin7Design = useFeatureFlag('admin7Design');
-  const heading = (
-    <h3
-      className="section-heading text-base font-semibold in-data-[admin7-design=true]:mb-4"
-      id="member-activity-heading"
-    >
-      Activity
-    </h3>
-  );
   // Cap the inline feed to 5 events. Anything beyond that lives
   // behind the "View all" link. On the create screen there's no memberId
   // to query against, so disable the fetch entirely — an unsaved member has
@@ -231,13 +268,14 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
   if (!memberId) {
     return (
       <section aria-labelledby="member-activity-heading" className="flex flex-col gap-3">
-        {!admin7Design && heading}
-        <Card>
+        <h3 className="section-heading text-base font-semibold" id="member-activity-heading">
+          Activity
+        </h3>
+        <Card variant={admin7Design ? 'ruled' : 'outline'}>
           {/* Same wrapper padding as the Subscriptions empty state
                         (`member-subscriptions-section.tsx`) so both cards line
                         up visually when they render side-by-side. */}
-          <CardContent className="pt-6">
-            {admin7Design && heading}
+          <CardContent className={admin7Design ? undefined : 'pt-6'}>
             <div className="flex flex-col items-center gap-3 py-4">
               <EmptyIndicator description={NEW_MEMBER_ACTIVITY_COPY} title="Activity">
                 <LucideIcon.Activity />
@@ -249,12 +287,18 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
     );
   }
 
+  const showViewAll = !isLoading && events.length > 0;
+
   return (
     <section aria-labelledby="member-activity-heading" className="flex flex-col gap-3">
-      {!admin7Design && heading}
-      <Card>
-        <CardContent className="pt-3 in-data-[admin7-design=true]:pt-6">
-          {admin7Design && heading}
+      <div className="flex flex-wrap items-center justify-between gap-x-4">
+        <h3 className="section-heading text-base font-semibold" id="member-activity-heading">
+          Activity
+        </h3>
+        {admin7Design && showViewAll && <ViewAllLink className="-mr-3" memberId={memberId} />}
+      </div>
+      <Card variant={admin7Design ? 'ruled' : 'outline'}>
+        <CardContent className="pt-3">
           {isLoading ? (
             // Held back like the loading spinners, so a quick feed never flashes skeletons
             <div className="delayed-fade-in flex flex-col gap-3">
@@ -292,7 +336,7 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
           )}
           {/* Only meaningful once there is activity to view — an empty
                         feed has nothing for the link to lead to. */}
-          {!isLoading && events.length > 0 && <ViewAllLink memberId={memberId} />}
+          {!admin7Design && showViewAll && <ViewAllLink memberId={memberId} />}
         </CardContent>
       </Card>
     </section>

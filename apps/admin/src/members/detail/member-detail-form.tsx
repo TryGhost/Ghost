@@ -45,7 +45,7 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({
     ? 'text-destructive'
     : usedCharacters >= NOTE_MAX_LENGTH * 0.8
       ? 'text-state-warning'
-      : 'text-state-success';
+      : 'text-character-count';
 
   return (
     // `items-stretch` on the grid so both columns share the tallest child's

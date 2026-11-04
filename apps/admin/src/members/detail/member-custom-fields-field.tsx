@@ -44,8 +44,8 @@ import {
   type SetSettings,
   type TextSize,
 } from '@tryghost/metafield-types/structure';
-import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { partOf } from '@/members/custom-fields/addressing';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import {
   formatMemberCustomFieldValue,
   memberCustomFieldIdentity,
@@ -563,28 +563,20 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
     return null;
   }
 
-  const heading = (
-    <h3
-      className="section-heading text-base font-semibold in-data-[admin7-design=true]:mb-4"
-      id="member-custom-fields-heading"
-    >
-      Custom fields
-    </h3>
-  );
-
   return (
     <section
       aria-labelledby="member-custom-fields-heading"
       className="flex flex-col gap-3"
       data-testid="member-custom-fields-field"
     >
-      {!admin7Design && heading}
-      <Card>
+      <h3 className="section-heading text-base font-semibold" id="member-custom-fields-heading">
+        Custom fields
+      </h3>
+      <Card variant={admin7Design ? 'ruled' : 'outline'}>
         {/* Rows are uniform (py-3, no first/last trims) so hover chips are all
                     the same height; the card's vertical padding is what gives the
                     first and last chips breathing room from the card edge. */}
-        <CardContent className="px-6 py-4 in-data-[admin7-design=true]:pt-6">
-          {admin7Design && heading}
+        <CardContent className={admin7Design ? 'pt-3' : 'px-6 py-4'}>
           <ul>
             {fields.map((field) => {
               const stored = metafields?.[field.namespace]?.[field.key];
@@ -609,7 +601,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
                     // -mx/px + calc width: the hover tint bleeds past the text
                     // column like the settings rows, while the row text (and the
                     // li dividers) stay aligned with the rest of the card.
-                    className="group -mx-3 flex w-[calc(100%+1.5rem)] items-center justify-between gap-4 rounded-md p-3 text-left transition-colors hover:bg-table-row-hover disabled:cursor-not-allowed disabled:opacity-50"
+                    className="group -mx-3 flex w-[calc(100%+1.5rem)] items-center justify-between gap-4 rounded-md p-3 text-left transition-colors hover:bg-table-row-hover disabled:cursor-not-allowed disabled:opacity-50 in-data-[admin7-design=true]:py-4"
                     disabled={disabled}
                     type="button"
                     onClick={() => {

@@ -29,10 +29,10 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
   disabled,
   onChange,
 }) => {
+  const admin7Design = useFeatureFlag('admin7Design');
   // A new member can't be suppressed yet — skip the suppression branch
   // entirely by treating a missing memberId as "not suppressed".
   const suppression = memberId ? getMemberSuppressionInfo(emailSuppression) : null;
-  const admin7Design = useFeatureFlag('admin7Design');
   const removeSuppression = useRemoveMemberEmailSuppression();
 
   // Only active newsletters are shown; archived ones are managed elsewhere and
@@ -75,15 +75,6 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
     );
   };
 
-  const heading = (
-    <h3
-      className="section-heading text-base font-semibold in-data-[admin7-design=true]:mb-4"
-      id="member-newsletters-heading"
-    >
-      Newsletters
-    </h3>
-  );
-
   // The whole section — external heading + card — is owned by this component
   // so an empty-newsletters state can hide it cleanly (returning null above).
   return (
@@ -92,10 +83,11 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
       className="flex flex-col gap-3"
       data-testid="member-newsletters-field"
     >
-      {!admin7Design && heading}
-      <Card>
-        <CardContent className="p-6">
-          {admin7Design && heading}
+      <h3 className="section-heading text-base font-semibold" id="member-newsletters-heading">
+        Newsletters
+      </h3>
+      <Card variant={admin7Design ? 'ruled' : 'outline'}>
+        <CardContent className={admin7Design ? 'pt-3' : 'p-6'}>
           {suppression ? (
             <div
               className="flex items-center justify-between gap-4"
@@ -137,7 +129,7 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
                   return (
                     <li
                       key={newsletter.id}
-                      className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
+                      className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0 in-data-[admin7-design=true]:py-4"
                     >
                       <div className="min-w-0">
                         <div className="font-medium in-data-[admin7-design=true]:text-md">
@@ -162,7 +154,7 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
                   );
                 })}
               </ul>
-              <p className="mt-4 text-sm text-muted-foreground in-data-[admin7-design=true]:text-base in-data-[admin7-design=true]:italic">
+              <p className="mt-4 text-sm text-muted-foreground in-data-[admin7-design=true]:border-t in-data-[admin7-design=true]:border-border in-data-[admin7-design=true]:pt-3 in-data-[admin7-design=true]:text-base in-data-[admin7-design=true]:italic">
                 If disabled, member will <em>not</em> receive newsletter emails
               </p>
             </>
