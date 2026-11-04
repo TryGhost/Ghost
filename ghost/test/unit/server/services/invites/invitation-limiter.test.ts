@@ -10,12 +10,6 @@ describe('Invitation limiter', function () {
       Settings: { findOne: async () => assert.fail('Unexpected settings access') },
       getPeriodStart: () => assert.fail('Unexpected period lookup'),
     });
-    assert.equal(
-      await limiter.run(
-        { email: 'recipient@example.com', role_id: 'author-role' },
-        async () => 'prepared',
-      ),
-      'prepared',
-    );
+    assert.equal(await limiter.run('recipient@example.com', async () => 'prepared'), 'prepared');
   });
 });

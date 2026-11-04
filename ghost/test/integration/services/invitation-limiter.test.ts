@@ -88,11 +88,11 @@ describe('Trial invitation admission', function () {
   it('enforces the email allowance without a trial seat cap', async function () {
     config.set('hostSettings:limits', { inviteEmails: { maxPeriodic: 1 } });
     initLimits();
-    await limiter.run({ email: 'first@example.com', role_id: roleId }, (transaction) =>
+    await limiter.run('first@example.com', (transaction) =>
       prepare('first@example.com', transaction),
     );
     await assert.rejects(
-      limiter.run({ email: 'second@example.com', role_id: roleId }, (transaction) =>
+      limiter.run('second@example.com', (transaction) =>
         prepare('second@example.com', transaction),
       ),
       { errorType: 'HostLimitError' },
@@ -104,16 +104,16 @@ describe('Trial invitation admission', function () {
     const [{ count }] = await db.knex('users').count('* as count');
     config.set('hostSettings:limits', { allStaff: { max: Number(count) + 1 } });
     initLimits();
-    await limiter.run({ email: 'first@example.com', role_id: roleId }, (transaction) =>
+    await limiter.run('first@example.com', (transaction) =>
       prepare('first@example.com', transaction),
     );
     await assert.rejects(
-      limiter.run({ email: 'second@example.com', role_id: roleId }, (transaction) =>
+      limiter.run('second@example.com', (transaction) =>
         prepare('second@example.com', transaction),
       ),
       { errorType: 'HostLimitError' },
     );
-    await limiter.run({ email: 'first@example.com', role_id: roleId }, (transaction) =>
+    await limiter.run('first@example.com', (transaction) =>
       prepare('first@example.com', transaction),
     );
     assert.equal((await db.knex('invites')).length, 1);
@@ -137,9 +137,7 @@ describe('Trial invitation admission', function () {
     await db.knex('settings').where({ key: 'invite_emails_limit_usage' }).delete();
     try {
       await assert.rejects(
-        limiter.run({ email: 'missing-setting@example.com', role_id: roleId }, () =>
-          assert.fail('Must not prepare an email'),
-        ),
+        limiter.run('missing-setting@example.com', () => assert.fail('Must not prepare an email')),
         /Cannot lock the staff invitation email counter/,
       );
     } finally {
@@ -155,7 +153,7 @@ describe('Trial invitation admission', function () {
       .insert({ key: 'expired-test', firstRequest: 0, lastRequest: 0, lifetime: 0, count: 0 });
     let read: Promise<unknown> | undefined;
     try {
-      await limiter.run({ email: 'cleanup@example.com', role_id: roleId }, async () => {
+      await limiter.run('cleanup@example.com', async () => {
         read = new Promise((resolve, reject) => {
           store.get('unrelated-login', (error: Error | null, value: unknown) =>
             error ? reject(error) : resolve(value),
@@ -189,9 +187,7 @@ describe('Trial invitation admission', function () {
     const results = await Promise.allSettled(
       Array.from({ length: 25 }, (_, i) => {
         const email = `person-${i}@example.com`;
-        return limiter.run({ email, role_id: roleId }, (transaction) =>
-          prepare(email, transaction),
-        );
+        return limiter.run(email, (transaction) => prepare(email, transaction));
       }),
     );
     assert.equal(results.filter((r) => r.status === 'fulfilled').length, 15);
@@ -207,12 +203,12 @@ describe('Trial invitation admission', function () {
   it('retains stored usage when the limiter is recreated', async function () {
     config.set('hostSettings:limits:inviteEmails:maxPeriodic', 1);
     initLimits();
-    await limiter.run({ email: 'existing@example.com', role_id: roleId }, (transaction) =>
+    await limiter.run('existing@example.com', (transaction) =>
       prepare('existing@example.com', transaction),
     );
     const restarted = new InvitationLimiter(dependencies);
     await assert.rejects(
-      restarted.run({ email: 'new@example.com', role_id: roleId }, async () => assert.fail()),
+      restarted.run('new@example.com', async () => assert.fail()),
       /staff invitation emails/,
     );
     assert.equal((await savedCounter()).count, 1);
@@ -225,7 +221,7 @@ describe('Trial invitation admission', function () {
     initLimits();
     const results = await Promise.allSettled(
       Array.from({ length: 5 }, (_, i) =>
-        limiter.run({ email: `person-${i}@example.com`, role_id: roleId }, (transaction) =>
+        limiter.run(`person-${i}@example.com`, (transaction) =>
           prepare(`person-${i}@example.com`, transaction),
         ),
       ),
@@ -236,12 +232,11 @@ describe('Trial invitation admission', function () {
   });
 
   it('leaves counted records available to other transactions during preparation', async function () {
-    const existing = await limiter.run(
-      { email: 'existing@example.com', role_id: roleId },
-      (transaction) => prepare('existing@example.com', transaction),
+    const existing = await limiter.run('existing@example.com', (transaction) =>
+      prepare('existing@example.com', transaction),
     );
 
-    await limiter.run({ email: 'new@example.com', role_id: roleId }, async (transaction) => {
+    await limiter.run('new@example.com', async (transaction) => {
       await db.knex.transaction(async (other: Knex.Transaction) => {
         await other('users').where({ id: actorId }).forUpdate().noWait().first();
         await other('invites').where({ id: existing.id }).forUpdate().noWait().first();
@@ -252,7 +247,7 @@ describe('Trial invitation admission', function () {
 
   it('rolls back email allowance and invitation changes on preparation failure', async function () {
     await assert.rejects(
-      limiter.run({ email: 'person@example.com', role_id: roleId }, async (transaction) => {
+      limiter.run('person@example.com', async (transaction) => {
         await prepare('person@example.com', transaction);
         throw new Error('Invalid invitation');
       }),
@@ -263,12 +258,12 @@ describe('Trial invitation admission', function () {
   });
 
   it('stops enforcing on upgrade without erasing the previously used allowance', async function () {
-    await limiter.run({ email: 'person@example.com', role_id: roleId }, (transaction) =>
+    await limiter.run('person@example.com', (transaction) =>
       prepare('person@example.com', transaction),
     );
     config.set('hostSettings:limits', undefined);
     initLimits();
-    await limiter.run({ email: 'paid@example.com', role_id: roleId }, async (transaction) =>
+    await limiter.run('paid@example.com', async (transaction) =>
       assert.equal(transaction, undefined),
     );
     assert.equal((await savedCounter()).count, 1);
@@ -278,7 +273,7 @@ describe('Trial invitation admission', function () {
     });
     initLimits();
     await assert.rejects(
-      limiter.run({ email: 'trial-again@example.com', role_id: roleId }, async () => assert.fail()),
+      limiter.run('trial-again@example.com', async () => assert.fail()),
       /staff invitation emails/,
     );
   });
@@ -295,14 +290,14 @@ describe('Trial invitation admission', function () {
         created_at: new Date(),
       })),
     );
-    await limiter.run({ email: 'fresh@example.com', role_id: roleId }, (transaction) =>
+    await limiter.run('fresh@example.com', (transaction) =>
       prepare('fresh@example.com', transaction),
     );
     assert.equal((await savedCounter()).count, 1);
   });
 
   it('reserves an email without requiring an audit actor', async function () {
-    await limiter.run({ email: 'internal@example.com', role_id: roleId }, (transacting) =>
+    await limiter.run('internal@example.com', (transacting) =>
       models.Invite.add(
         { email: 'internal@example.com', role_id: roleId, status: 'pending' },
         { transacting, context: { internal: true } },
@@ -320,7 +315,7 @@ describe('Trial invitation admission', function () {
       .update({
         value: JSON.stringify({ periodStart: oldPeriod, count: 14 }),
       });
-    await limiter.run({ email: 'last@example.com', role_id: roleId }, async (transaction) => {
+    await limiter.run('last@example.com', async (transaction) => {
       vi.setSystemTime(new Date('2026-11-10T10:00:01Z'));
       return prepare('last@example.com', transaction);
     });
@@ -328,7 +323,7 @@ describe('Trial invitation admission', function () {
     await limitService.errorIfWouldGoOverLimit('inviteEmails');
     // Reading the new period does not rewrite the saved counter.
     assert.deepEqual(await savedCounter(), { periodStart: oldPeriod, count: 15 });
-    await limiter.run({ email: 'new-month@example.com', role_id: roleId }, (transaction) =>
+    await limiter.run('new-month@example.com', (transaction) =>
       prepare('new-month@example.com', transaction),
     );
     assert.deepEqual(await savedCounter(), { periodStart: '2026-11-10T10:00:00.000Z', count: 1 });
@@ -354,13 +349,11 @@ describe('Trial invitation admission', function () {
       },
     );
     await assert.rejects(
-      limiter.run({ email: 'boundary@example.com', role_id: roleId }, () =>
-        assert.fail('Must not prepare an email'),
-      ),
+      limiter.run('boundary@example.com', () => assert.fail('Must not prepare an email')),
       { errorType: 'HostLimitError' },
     );
     assert.deepEqual(await savedCounter(), { periodStart: oldPeriod, count: 15 });
-    await limiter.run({ email: 'next-request@example.com', role_id: roleId }, (transaction) =>
+    await limiter.run('next-request@example.com', (transaction) =>
       prepare('next-request@example.com', transaction),
     );
     assert.deepEqual(await savedCounter(), { periodStart: '2026-11-10T10:00:00.000Z', count: 1 });
@@ -369,34 +362,33 @@ describe('Trial invitation admission', function () {
   it('keeps usage when only the allowance changes and follows a new subscription date', async function () {
     config.set('hostSettings:limits:inviteEmails:maxPeriodic', 1);
     initLimits();
-    await limiter.run({ email: 'first@example.com', role_id: roleId }, (transaction) =>
+    await limiter.run('first@example.com', (transaction) =>
       prepare('first@example.com', transaction),
     );
     config.set('hostSettings:limits:inviteEmails:maxPeriodic', 2);
     initLimits();
-    await limiter.run({ email: 'second@example.com', role_id: roleId }, (transaction) =>
+    await limiter.run('second@example.com', (transaction) =>
       prepare('second@example.com', transaction),
     );
     assert.equal((await savedCounter()).count, 2);
     config.set('hostSettings:subscription:start', '2026-10-25T12:34:56Z');
     initLimits();
-    await limiter.run({ email: 'new-sub@example.com', role_id: roleId }, (transaction) =>
+    await limiter.run('new-sub@example.com', (transaction) =>
       prepare('new-sub@example.com', transaction),
     );
     assert.deepEqual(await savedCounter(), { periodStart: '2026-10-25T12:34:56.000Z', count: 1 });
   });
 
   it('blocks sends and resends with a disabled flag and no subscription date', async function () {
-    const original = await limiter.run(
-      { email: 'existing@example.com', role_id: roleId },
-      (transaction) => prepare('existing@example.com', transaction),
+    const original = await limiter.run('existing@example.com', (transaction) =>
+      prepare('existing@example.com', transaction),
     );
     config.set('hostSettings:limits', { inviteEmails: { disabled: true } });
     config.set('hostSettings:subscription', undefined);
     initLimits();
     for (const email of ['new@example.com', 'existing@example.com']) {
       await assert.rejects(
-        limiter.run({ email, role_id: roleId }, () => assert.fail('Must not prepare an email')),
+        limiter.run(email, () => assert.fail('Must not prepare an email')),
         { errorType: 'HostLimitError' },
       );
     }

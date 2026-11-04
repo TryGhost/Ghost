@@ -19,10 +19,7 @@ export default class InvitationLimiter {
     this.deps = deps;
   }
 
-  async run<T>(
-    invite: { email: string; role_id: string },
-    prepare: (transaction?: Knex.Transaction) => Promise<T>,
-  ): Promise<T> {
+  async run<T>(email: string, prepare: (transaction?: Knex.Transaction) => Promise<T>): Promise<T> {
     const hasStaffLimit = this.deps.limitService.isLimited('staff');
     const hasAllStaffLimit = this.deps.limitService.isLimited('allStaff');
     const hasEmailLimit = this.deps.limitService.isLimited('inviteEmails');
@@ -39,7 +36,7 @@ export default class InvitationLimiter {
         counterValue = await this.getAndLockInviteEmailCounter(transaction);
       }
 
-      const email = invite.email.trim();
+      email = email.trim();
       const existingInvite = await this.findAndLockInvite(transaction, email);
       // Acceptance may have completed since the API's permission check.
       await this.errorIfAlreadyRegistered(transaction, email);
@@ -50,9 +47,6 @@ export default class InvitationLimiter {
       if (hasAllStaffLimit && !existingInvite) {
         await this.deps.limitService.errorIfWouldGoOverLimit('allStaff', options);
       }
-      if (hasStaffLimit) {
-        await this.checkStaffLimit(transaction, invite.role_id, existingInvite?.role_id);
-      }
       return prepare(transaction);
     });
   }
@@ -60,8 +54,8 @@ export default class InvitationLimiter {
   private async findAndLockInvite(
     transaction: Knex.Transaction,
     email: string,
-  ): Promise<{ role_id: string } | undefined> {
-    return transaction('invites').where({ email }).forUpdate().first('role_id');
+  ): Promise<{ id: string } | undefined> {
+    return transaction('invites').where({ email }).forUpdate().first('id');
   }
 
   private async errorIfAlreadyRegistered(
@@ -75,21 +69,6 @@ export default class InvitationLimiter {
         code: 'USER_ALREADY_REGISTERED',
       });
     }
-  }
-
-  private async checkStaffLimit(
-    transaction: Knex.Transaction,
-    roleId: string,
-    previousRoleId?: string,
-  ): Promise<void> {
-    const contributor = await transaction('roles').where('name', 'Contributor').first('id');
-    if (roleId === contributor.id) {
-      return;
-    }
-    await this.deps.limitService.errorIfWouldGoOverLimit('staff', {
-      transacting: transaction,
-      addedCount: previousRoleId && previousRoleId !== contributor.id ? 0 : 1,
-    });
   }
 
   private async getAndLockInviteEmailCounter(
