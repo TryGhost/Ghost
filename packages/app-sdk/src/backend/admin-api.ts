@@ -51,7 +51,11 @@ export async function createAdminApiToken(
 }
 
 export interface AdminApiClientOptions {
-  /** The site's URL, such as `https://site.example`, or with its subdirectory. */
+  /**
+   * Where the site's Admin is, such as `https://site.example`, or with its subdirectory: the
+   * site's own URL, unless the site has a separate Admin domain, as in
+   * `https://admin.site.example`, when it's that. The Admin API is served from Admin's address.
+   */
   url: string;
   /** A custom integration's Admin API key, `<id>:<secret>`. Keep it on the server. */
   key: string;

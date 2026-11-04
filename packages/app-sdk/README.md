@@ -440,7 +440,7 @@ export default {
 | `serveManifest(signed)`                    | A response for the signed manifest, for a backend that doesn't serve it as a file. Caches must revalidate it, so a new manifest reaches Ghost the next time it reads it.                                                                                                     |
 | `allowFraming(response, { adminOrigins })` | A copy of a page's response that only those Ghost Admin origins may frame: it sets `frame-ancestors` in its Content-Security-Policy and drops `X-Frame-Options`.                                                                                                             |
 | `createAdminApiToken(key)`                 | A 5-minute Admin API token from a custom integration's Admin API key (`<id>:<secret>`), for `Authorization: Ghost <token>`.                                                                                                                                                  |
-| `createAdminApiClient({ url, key })`       | A client whose `fetch(path, init?)` calls the site's Admin API with a fresh token. `path` is relative to the API root (`/posts/?limit=5`), never a URL.                                                                                                                      |
+| `createAdminApiClient({ url, key })`       | A client whose `fetch(path, init?)` calls the site's Admin API with a fresh token. `url` is where Admin is: the site's URL, or its Admin domain if it has one. `path` is relative to the API root (`/posts/?limit=5`), never a URL.                                          |
 
 `handleChallenge` refuses a challenge for any origin but the one the platform
 reports in `request.url`, so pass the request as the platform hands it over,
