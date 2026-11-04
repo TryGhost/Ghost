@@ -24,6 +24,11 @@ SQL >
         {% if defined(date_to) %}
             AND timestamp < toDateTime({{ Date(date_to) }}, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=False) }}) + interval 1 day
         {% end %}
+        {% if defined(member_status) or defined(location) or defined(pathname) or defined(post_uuid) or defined(gift_link) %}
+            {# Only build the sessions that the hit-level filters can match. Every consumer inner joins on filtered_sessions, #}
+            {# which is a subset of these sessions, so the output is unchanged. Keeps all hits of each kept session. #}
+            AND session_id IN (SELECT session_id FROM hit_filtered_sessions)
+        {% end %}
     GROUP BY site_uuid, session_id
 
 
