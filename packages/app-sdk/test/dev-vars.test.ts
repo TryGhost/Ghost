@@ -30,12 +30,16 @@ describe('.dev.vars', () => {
     expect(results).toContain(undefined);
   });
 
-  it('fails on any other reason it cannot create the file', async () => {
-    await chmod(root, 0o500);
-    try {
-      await expect(provideDevBackendKey(root)).rejects.toThrow(/EACCES/);
-    } finally {
-      await chmod(root, 0o700);
-    }
-  });
+  // Directory modes don't stop writes on Windows, or for a process that bypasses them (root).
+  it.skipIf(process.platform === 'win32' || process.getuid?.() === 0)(
+    'fails on any other reason it cannot create the file',
+    async () => {
+      await chmod(root, 0o500);
+      try {
+        await expect(provideDevBackendKey(root)).rejects.toThrow(/EACCES/);
+      } finally {
+        await chmod(root, 0o700);
+      }
+    },
+  );
 });

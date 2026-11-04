@@ -75,15 +75,19 @@ describe('createKeys', () => {
     });
   });
 
-  it('makes a key it keeps readable only by its owner', async () => {
-    await createKeys({ root, mode: 'development' });
-    const file = join(root, '.ghost-app/development/identity.json');
-    const before = await read('.ghost-app/development/identity.json');
-    await chmod(file, 0o644);
-    expect((await createKeys({ root, mode: 'development' })).kept).toContain('identity');
-    expect((await stat(file)).mode & 0o777).toBe(0o600);
-    expect(await read('.ghost-app/development/identity.json')).toBe(before);
-  });
+  // Windows has no separate group and other permission bits to tighten.
+  it.skipIf(process.platform === 'win32')(
+    'makes a key it keeps readable only by its owner',
+    async () => {
+      await createKeys({ root, mode: 'development' });
+      const file = join(root, '.ghost-app/development/identity.json');
+      const before = await read('.ghost-app/development/identity.json');
+      await chmod(file, 0o644);
+      expect((await createKeys({ root, mode: 'development' })).kept).toContain('identity');
+      expect((await stat(file)).mode & 0o777).toBe(0o600);
+      expect(await read('.ghost-app/development/identity.json')).toBe(before);
+    },
+  );
 
   it('publishes each key whole, leaving nothing else behind, even when runs race', async () => {
     const runs = await Promise.all(
