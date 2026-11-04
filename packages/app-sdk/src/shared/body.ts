@@ -7,7 +7,8 @@ export async function readBytes(
   maxBytes: number,
 ): Promise<Uint8Array | undefined> {
   if (Number(message.headers.get('content-length')) > maxBytes) {
-    await message.body?.cancel();
+    // Too large either way, so a body that refuses to be cancelled changes nothing.
+    await message.body?.cancel().catch(() => undefined);
     return undefined;
   }
   if (!message.body) {
@@ -23,7 +24,7 @@ export async function readBytes(
     }
     length += value.byteLength;
     if (length > maxBytes) {
-      await reader.cancel();
+      await reader.cancel().catch(() => undefined);
       return undefined;
     }
     chunks.push(value);
