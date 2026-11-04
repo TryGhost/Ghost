@@ -29,6 +29,15 @@ describe('member creation source', () => {
     expect(parsed.action).toBe(action);
     expect(parsed.actionTitle).toBe(action);
   });
+
+  it.each([undefined, null, 'agent', '', 'constructor', '__proto__', 42, {}, ['admin']])(
+    'falls back to signed up for an unrecognized source: %j',
+    (source) => {
+      const parsed = parseMemberEvent(ev('signup_event', { source }), defaultCtx);
+      expect(parsed.action).toBe('signed up');
+      expect(parsed.actionTitle).toBe('signed up');
+    },
+  );
 });
 
 describe('parseMemberEvent — subject', () => {
