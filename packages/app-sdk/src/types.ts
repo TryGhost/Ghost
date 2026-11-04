@@ -1,8 +1,8 @@
-import type { Place, StartContext, Theme } from '@tryghost/app-contracts';
+import type { OverlayTint, Place, StartContext, Theme } from '@tryghost/app-contracts';
 
 import type { GhostAppError } from './errors.ts';
 
-export type { Place, StartContext, Theme };
+export type { OverlayTint, Place, StartContext, Theme };
 
 // The context is read-only: the SDK hands out frozen copies, so no part of a page can change
 // what every other part reads.
@@ -55,6 +55,35 @@ export interface GhostPath {
 
 export type Unsubscribe = () => void;
 
+/** A dialog or sheet's hold on the overlay, from when it mounts until it unmounts. */
+export interface OverlayHold {
+  /** True from when the dialog opens, false once it starts to close. */
+  setOpen(open: boolean): void;
+  /** Called once the dialog has unmounted, after its closing animation. */
+  release(): void;
+}
+
+/**
+ * Where the app's dialogs and sheets render to cover all of Admin: the app's page, loaded a
+ * second time over the whole window. In it, `--ghost-safe-area-inset-*` are measured from the
+ * window's edges.
+ *
+ * That copy never connects, but code that runs before `connect()` resolves runs there too, so
+ * start fetches, analytics and the like once `connect()` has resolved.
+ */
+export interface GhostOverlay {
+  /**
+   * The element to render a dialog or sheet into, or undefined to render it in the page while
+   * the overlay is still loading.
+   */
+  container(): HTMLElement | undefined;
+  /**
+   * Called by a dialog or sheet rendered into `container()` when it mounts, with its
+   * `role="dialog"` element.
+   */
+  hold(tint: OverlayTint, element: HTMLElement): OverlayHold;
+}
+
 /**
  * The connection to Ghost, once Admin has started the app.
  *
@@ -99,4 +128,6 @@ export interface Ghost {
   fetch(path: string, init?: GhostFetchInit): Promise<Response>;
   /** Sends the person using the app to a place in Admin, such as `{ post: { id } }`. */
   open(place: Place): Promise<void>;
+  /** Where dialogs and sheets render to cover all of Admin. */
+  readonly overlay: GhostOverlay;
 }

@@ -665,6 +665,7 @@ describe('the Ghost object an app gets', () => {
       'onSessionEnd',
       'onThemeChange',
       'open',
+      'overlay',
       'path',
       'session',
       'site',
@@ -728,6 +729,7 @@ describe('safe area', () => {
 
     await fake.thread.imports.layoutChanged({
       safeArea: { top: 0, right: 24, bottom: 57.5, left: 24 },
+      overlaySafeArea: { top: 44, right: 32, bottom: 65.5, left: 32 },
     });
 
     expect(insets()).toEqual(['0px', '24px', '57.5px', '24px']);
@@ -735,7 +737,12 @@ describe('safe area', () => {
 
   it('refuses a layout it does not understand, keeping the one it has', async () => {
     const { admin: fake } = await started();
-    for (const layout of [null, {}, { safeArea: { top: 0, right: 0, bottom: -1, left: 0 } }]) {
+    for (const layout of [
+      null,
+      {},
+      { ...startContext().layout, safeArea: { top: 0, right: 0, bottom: -1, left: 0 } },
+      { safeArea: startContext().layout.safeArea },
+    ]) {
       await expect(fake.thread.imports.layoutChanged(layout as never)).rejects.toThrow(
         "invalid_argument: Ghost sent a layout this SDK doesn't understand",
       );
