@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 import { describe, it } from 'vitest';
 
-import { isGhostHost } from '../../src/manifest/index.ts';
+import { isGhostHost, isLocalhost } from '../../src/manifest/index.ts';
 
 describe('isGhostHost', function () {
   const ghostUrls = ['https://site.example.com/', 'https://admin.example.com/ghost/'];
@@ -30,6 +30,17 @@ describe('isGhostHost', function () {
       true,
     );
     assert.equal(isGhostHost('http://127.1:5173/', ['http://127.0.0.1:2368/']), true);
+  });
+
+  it('reads a host with many dots in it in linear time, as isLocalhost does', function () {
+    // A regular expression for trailing dots retries from every dot in a run that doesn't
+    // end the host, which on this one would take quadratic time.
+    const host = `a${'.'.repeat(200_000)}b`;
+    const started = performance.now();
+    assert.equal(isGhostHost(`https://${host}/`, [`https://${host}./`]), true);
+    assert.equal(isLocalhost(`${host}.localhost.`), true);
+    assert.equal(isLocalhost(host), false);
+    assert.ok(performance.now() - started < 1000);
   });
 
   it('is false for another host, a sibling subdomain included', function () {

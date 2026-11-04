@@ -1,3 +1,5 @@
+import { withoutTrailingDots } from './localhost.ts';
+
 /**
  * Whether a URL is on a host Ghost itself is served from: the site's, or Admin's, on any
  * port and over either scheme. A page on Ghost's origin would be Ghost, not the app,
@@ -44,5 +46,5 @@ export function hostOf(value: string | URL): string | null {
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
     return null;
   }
-  return url.hostname.replace(/\.+$/, '') || null;
+  return withoutTrailingDots(url.hostname) || null;
 }

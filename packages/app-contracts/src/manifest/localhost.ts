@@ -11,12 +11,24 @@ const LOOPBACK_HOSTS = [
 ];
 
 /**
+ * A hostname without its trailing dots, which the URL parser keeps, every one of them:
+ * `localhost..` is `localhost`. A loop rather than a regular expression, which would take
+ * time quadratic in the number of dots on a hostname with many dots before its end.
+ */
+export function withoutTrailingDots(hostname: string): string {
+  let end = hostname.length;
+  while (end > 0 && hostname[end - 1] === '.') {
+    end -= 1;
+  }
+  return hostname.slice(0, end);
+}
+
+/**
  * Whether a host is the machine itself: `localhost`, or a loopback or unspecified address.
  * Pass `URL.hostname`, so the host is already normalised. Trailing dots are dropped, as
- * `isGhostHost` drops them, since the URL parser keeps every one: `localhost..` is localhost
- * too.
+ * `isGhostHost` drops them.
  */
 export function isLocalhost(hostname: string): boolean {
-  const host = hostname.replace(/\.+$/, '');
+  const host = withoutTrailingDots(hostname);
   return LOOPBACK_HOSTS.some((pattern) => pattern.test(host));
 }
