@@ -1597,11 +1597,11 @@ jobs:
 
   job_docker:
     name: Build Docker Images
-    # NOT gated on job_build_admin or job_build_e2e_public_apps: the core image
-    # needs neither. It builds concurrently and only synchronises on the admin
-    # artifact (via wait-for-artifact) just before the full image, and on the
-    # e2e-public-apps artifact just before the E2E image.
-    needs: [job_setup]
+    # Starts after job_build_admin, because the full image includes its build.
+    # Not gated on job_build_e2e_public_apps: that artifact is only needed for the
+    # E2E image, and on tag runs a failure there must not block the release, so
+    # the job waits for it (via wait-for-artifact) just before the E2E image.
+    needs: [job_setup, job_build_admin]
     # Root of the build + browser-E2E lane (see run_e2e in job_setup).
     if: needs.job_setup.outputs.run_e2e == 'true'
     runs-on: ubuntu-latest
@@ -1737,8 +1737,7 @@ jobs:
           BUILDKIT_PROGRESS: plain
         with:
           # Context is the repo root: the Dockerfile deploy stage runs `pnpm deploy`
-          # against the workspace. core needs no admin, so it builds now while
-          # job_build_admin runs concurrently.
+          # against the workspace.
           context: .
           file: Dockerfile.production
           target: core
@@ -1778,16 +1777,6 @@ jobs:
           path: ${{ runner.temp }}/docker-image-core.tar.gz
           retention-days: 1
           if-no-files-found: error
-
-      # Synchronise with job_build_admin only now, after core is built: the full
-      # image is core + admin. No `needs` edge, so the two jobs run concurrently
-      # and core builds during the wait.
-      - name: Wait for admin build
-        uses: ./.github/actions/wait-for-artifact
-        with:
-          artifact-name: admin-build
-          job-name: Build Admin
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download admin build
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
