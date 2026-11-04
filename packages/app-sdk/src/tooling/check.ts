@@ -7,6 +7,8 @@ import {
 } from '@tryghost/app-contracts/identity';
 import { parseManifest, parseManifestUrl } from '@tryghost/app-contracts/manifest';
 
+import { readBytes } from '../shared/body.ts';
+import { UNKNOWN_GHOST_URL, formatErrors } from '../shared/manifest.ts';
 import type { PublicKeyJwk } from './keys.ts';
 import type { AppManifest, ManifestError } from './types.ts';
 
@@ -16,9 +18,6 @@ const MAX_REDIRECTS = 3;
 const MANIFEST_MAX_BYTES = 64 * 1024;
 const SIGNED_MANIFEST_MAX_BYTES = Math.ceil((MANIFEST_MAX_BYTES * 4) / 3) + 1024;
 const ANSWER_MAX_BYTES = 4 * 1024;
-
-// As in signing: a name that's never any site's.
-const UNKNOWN_GHOST_URL = 'https://ghost.invalid/';
 
 /** The codes Ghost refuses an app with, which `checkApp` reports the same problems with. */
 export type CheckCode =
@@ -88,23 +87,8 @@ interface Answer {
   body: Uint8Array | undefined;
 }
 
-/** Reads a response's body up to `maxBytes`, or `undefined` past it. */
-async function readBody(response: Response, maxBytes: number): Promise<Uint8Array | undefined> {
-  if (Number(response.headers.get('content-length')) > maxBytes) {
-    await response.body?.cancel();
-    return undefined;
-  }
-  const chunks: Uint8Array[] = [];
-  let length = 0;
-  for await (const chunk of response.body ?? []) {
-    length += chunk.byteLength;
-    if (length > maxBytes) {
-      return undefined;
-    }
-    chunks.push(chunk);
-  }
-  return Buffer.concat(chunks);
-}
+// Decoded as UTF-8, which is what JSON should use, whatever charset the app names, as in Ghost.
+const decode = (bytes: Uint8Array) => new TextDecoder().decode(bytes);
 
 const describe = (error: unknown) => {
   const { message, cause } = error as {
@@ -135,7 +119,7 @@ async function send(
     return {
       status: response.status,
       location: response.headers.get('location'),
-      body: await readBody(response, maxBytes),
+      body: await readBytes(response, maxBytes),
     };
   } catch (error) {
     throw new Failure(code, `${String(url)}: ${describe(error)}`);
@@ -224,7 +208,7 @@ async function challenge(origin: string, backendKey: PublicKeyJwk, request: type
     ANSWER_MAX_BYTES,
     'APP_CHALLENGE_UNREACHABLE',
   );
-  const text = answer.body && Buffer.from(answer.body).toString('utf8');
+  const text = answer.body && decode(answer.body);
   if (!isSuccess(answer.status)) {
     // The backend's own explanation, such as handleChallenge's, if it's short.
     const said = text && text.length < 500 ? `: ${text.trim()}` : '';
@@ -256,7 +240,7 @@ async function check(input: string, request: typeof fetch): Promise<CheckResult>
   const { manifestUrl } = address;
 
   const body = await fetchManifest(manifestUrl, request);
-  const signed = readSignedManifest(parseJson(Buffer.from(body).toString('utf8'), manifestUrl));
+  const signed = readSignedManifest(parseJson(decode(body), manifestUrl));
   if (!signed.success) {
     throw new Failure('APP_MANIFEST_UNSIGNED', signed.error);
   }
@@ -266,9 +250,7 @@ async function check(input: string, request: typeof fetch): Promise<CheckResult>
     allowLocalhost: true,
   });
   if (!parsed.success) {
-    const detail = parsed.errors
-      .map(({ path, message }) => (path ? `${path}: ${message}` : message))
-      .join('; ');
+    const detail = formatErrors(parsed.errors, '; ');
     if (parsed.reason === 'manifest_url_mismatch') {
       throw new Failure('APP_MANIFEST_URL_MISMATCH', detail);
     }

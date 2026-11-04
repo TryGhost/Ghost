@@ -4,7 +4,8 @@ import { parseArgs } from 'node:util';
 
 import { checkApp } from './tooling/check.ts';
 import { createKeys, keyFile, readBackendKey, type Mode } from './tooling/keys.ts';
-import { MANIFEST_FILE, formatErrors, signProject } from './tooling/sign.ts';
+import { formatErrors } from './shared/manifest.ts';
+import { MANIFEST_FILE, signProject } from './tooling/sign.ts';
 
 const USAGE = `Usage: ghost-app <command> [options]
 

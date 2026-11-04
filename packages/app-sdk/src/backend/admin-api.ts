@@ -1,4 +1,5 @@
 import { isContainedPath } from '@tryghost/app-contracts';
+import { SignJWT } from 'jose';
 
 // An Admin API key as Ghost shows it for a custom integration: the key's ID, then its secret
 // in hex.
@@ -24,16 +25,6 @@ function readKey(key: string): { id: string; secret: Uint8Array<ArrayBuffer> } {
   return { id, secret };
 }
 
-function base64url(bytes: Uint8Array): string {
-  let binary = '';
-  for (const byte of bytes) {
-    binary += String.fromCharCode(byte);
-  }
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-const encodeJson = (value: unknown) => base64url(new TextEncoder().encode(JSON.stringify(value)));
-
 export interface AdminApiTokenOptions {
   /** When the token is issued, in milliseconds since the epoch. Now, by default. */
   now?: number;
@@ -51,20 +42,12 @@ export async function createAdminApiToken(
 ): Promise<string> {
   const { id, secret } = readKey(key);
   const iat = Math.floor(now / 1000);
-  const unsigned = `${encodeJson({ alg: 'HS256', typ: 'JWT', kid: id })}.${encodeJson({
-    iat,
-    exp: iat + TOKEN_LIFETIME_SECONDS,
-    aud: '/admin/',
-  })}`;
-  const hmac = await crypto.subtle.importKey(
-    'raw',
-    secret,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign'],
-  );
-  const signature = await crypto.subtle.sign('HMAC', hmac, new TextEncoder().encode(unsigned));
-  return `${unsigned}.${base64url(new Uint8Array(signature))}`;
+  return new SignJWT()
+    .setProtectedHeader({ alg: 'HS256', typ: 'JWT', kid: id })
+    .setIssuedAt(iat)
+    .setExpirationTime(iat + TOKEN_LIFETIME_SECONDS)
+    .setAudience('/admin/')
+    .sign(secret);
 }
 
 export interface AdminApiClientOptions {

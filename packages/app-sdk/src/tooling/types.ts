@@ -3,19 +3,7 @@ import type { PublicKeyJwk } from './keys.ts';
 // Written out rather than taken from the contracts, whose manifest types are inferred from
 // zod, so the declarations an app installs need nothing but these.
 
-/** A signed manifest: flattened JWS JSON, as an app serves it. */
-export interface SignedManifest {
-  protected: string;
-  payload: string;
-  signature: string;
-}
-
-/** One problem with a manifest. */
-export interface ManifestError {
-  /** Where in the manifest the problem is, such as `surfaces[0].url`. Empty for the whole. */
-  path: string;
-  message: string;
-}
+export type { ManifestError, SignedManifest } from '../shared/manifest.ts';
 
 /**
  * What `ghost-app.json` holds: the manifest, without the fields the tooling adds when it

@@ -1,12 +1,6 @@
-/** Where an app serves its signed manifest by convention, and where the SDK's tooling signs it for. */
-export const MANIFEST_PATH = '/ghost-app.json';
+import type { SignedManifest } from '../shared/manifest.ts';
 
-/** A signed manifest, as `ghost-app sign` or the Vite plugin writes it. */
-export interface SignedManifest {
-  protected: string;
-  payload: string;
-  signature: string;
-}
+export { MANIFEST_PATH, type SignedManifest } from '../shared/manifest.ts';
 
 /**
  * A response that serves the signed manifest, for a backend that doesn't serve it as a static

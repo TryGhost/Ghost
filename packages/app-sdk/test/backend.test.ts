@@ -264,8 +264,10 @@ describe('createAdminApiToken', () => {
   it('is valid for 5 minutes', async () => {
     const now = Date.parse('2026-11-04T12:00:00Z');
     const token = await createAdminApiToken(ADMIN_API_KEY, { now });
-    const { iat, exp } = jwt.decode(token) as { iat: number; exp: number };
-    expect([iat, exp]).toEqual([now / 1000, now / 1000 + 300]);
+    // Exactly what Ghost's own Admin API SDK sends: nothing more, nothing less.
+    const decoded = jwt.decode(token, { complete: true });
+    expect(decoded?.header).toEqual({ alg: 'HS256', typ: 'JWT', kid: '6'.repeat(24) });
+    expect(decoded?.payload).toEqual({ iat: now / 1000, exp: now / 1000 + 300, aud: '/admin/' });
 
     vi.useFakeTimers({ now: now + 4 * 60 * 1000, toFake: ['Date'] });
     try {

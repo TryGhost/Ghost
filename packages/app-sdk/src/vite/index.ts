@@ -16,10 +16,9 @@ import { isLocalhost } from '@tryghost/app-contracts';
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite';
 
 import { createKeys, keyFile } from '../tooling/keys.ts';
-import { MANIFEST_FILE, formatErrors, signProject } from '../tooling/sign.ts';
+import { MANIFEST_PATH, formatErrors } from '../shared/manifest.ts';
+import { MANIFEST_FILE, signProject } from '../tooling/sign.ts';
 import { provideDevBackendKey } from './dev-vars.ts';
-
-const MANIFEST_PATH = '/ghost-app.json';
 
 // What Vite denies when a project names nothing to deny, as of Vite 8. A project's own list
 // replaces these rather than adding to them, so they're added again here alongside the keys.

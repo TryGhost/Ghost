@@ -171,25 +171,44 @@ describe('the package', () => {
   ])(
     '%s.d.ts declares its types without importing or referring to any other package but %j',
     (entry, expected) => {
-      const file = declarations(entry);
-      const source = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.ES2022);
+      // The package's own declaration chunks, which entry points share, are followed.
       const imports: string[] = [];
-      const visit = (node: ts.Node) => {
-        if (
-          (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
-          node.moduleSpecifier
-        ) {
-          imports.push(node.moduleSpecifier.getText(source));
-        } else if (ts.isImportTypeNode(node)) {
-          imports.push(node.argument.getText(source));
+      const seen = new Set<string>();
+      const read = (file: string) => {
+        if (seen.has(file)) {
+          return;
         }
-        ts.forEachChild(node, visit);
+        seen.add(file);
+        const source = ts.createSourceFile(
+          file,
+          readFileSync(file, 'utf8'),
+          ts.ScriptTarget.ES2022,
+        );
+        const visit = (node: ts.Node) => {
+          let specifier: string | undefined;
+          if (
+            (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
+            node.moduleSpecifier
+          ) {
+            specifier = node.moduleSpecifier.getText(source);
+          } else if (ts.isImportTypeNode(node)) {
+            specifier = node.argument.getText(source);
+          }
+          const own = specifier && /^["']\.\/(.*)\.js["']$/.exec(specifier);
+          if (own) {
+            read(join(dirname(file), `${own[1]}.d.ts`));
+          } else if (specifier) {
+            imports.push(specifier);
+          }
+          ts.forEachChild(node, visit);
+        };
+        visit(source);
+        expect(source.referencedFiles).toEqual([]);
+        expect(source.typeReferenceDirectives).toEqual([]);
       };
-      visit(source);
+      read(declarations(entry));
 
       expect(imports).toEqual(expected);
-      expect(source.referencedFiles).toEqual([]);
-      expect(source.typeReferenceDirectives).toEqual([]);
     },
   );
 

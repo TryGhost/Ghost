@@ -12,6 +12,7 @@ import {
   type PublicKeyJwk,
   type ReadKeysOptions,
 } from './keys.ts';
+import { UNKNOWN_GHOST_URL } from '../shared/manifest.ts';
 import type { ManifestError, SignedManifest } from './types.ts';
 
 /** The readable manifest a project keeps, which the tooling signs. */
@@ -19,11 +20,6 @@ export const MANIFEST_FILE = 'ghost-app.json';
 
 /** The fields the tooling adds, which `ghost-app.json` mustn't set. */
 const ADDED_FIELDS = ['manifest_url', 'identity_key', 'backend_key', 'development'] as const;
-
-// Nothing an app serves may share an origin with Ghost, which the tooling can't know. This
-// stands in for it: a name that's never any site's, so the rest of the rules apply as Ghost
-// applies them.
-const UNKNOWN_GHOST_URL = 'https://ghost.invalid/';
 
 export interface SignOptions {
   /** The address the signed manifest will be served from, which it names as its own. */
@@ -139,8 +135,3 @@ export async function signProject({
 }
 
 const isDevelopment = (mode: Mode) => mode === 'development';
-
-/** A failed signing's problems, one per line, as `path: message`. */
-export function formatErrors(errors: readonly ManifestError[]): string {
-  return errors.map(({ path, message }) => (path ? `${path}: ${message}` : message)).join('\n');
-}
