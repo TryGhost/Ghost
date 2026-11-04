@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 
 import { currentRoute, watchHistory, type HistoryWatch } from '../src/history.ts';
 
@@ -198,6 +198,8 @@ describe('the page’s history, once Admin owns it', () => {
     const handled = (event: Event) => event.preventDefault();
     for (const [attributes, init] of [
       [{ href: 'https://elsewhere.example/' }, {}],
+      // An object URL the page made is on its origin, but isn't one of its routes.
+      [{ href: `blob:${window.location.origin}/0c4e` }, {}],
       [{ href: '/x', target: '_blank' }, {}],
       [{ href: '/x', target: 'other' }, {}],
       [{ href: '/x', download: '' }, {}],
@@ -216,6 +218,57 @@ describe('the page’s history, once Admin owns it', () => {
 
     expect(moved).not.toHaveBeenCalled();
     expect(load).not.toHaveBeenCalled();
+  });
+
+  it('follows a link in the app’s overlay from the page, a web page elsewhere too', async () => {
+    const overlayDocument = () => {
+      const frame = document.createElement('iframe');
+      document.body.append(frame);
+      onTestFinished(() => frame.remove());
+      const OverlayMouseEvent = (frame.contentWindow as unknown as typeof globalThis).MouseEvent;
+      const overlay = frame.contentDocument as Document;
+      const clickLink = (href: string) => {
+        const link = overlay.createElement('a');
+        link.setAttribute('href', href);
+        overlay.body.append(link);
+        return link.dispatchEvent(
+          new OverlayMouseEvent('click', { bubbles: true, cancelable: true, button: 0 }),
+        );
+      };
+      return { overlay, click: clickLink };
+    };
+    const first = overlayDocument();
+    watch?.watchLinks(first.overlay);
+    watch?.watchLinks(first.overlay);
+    window.history.replaceState(null, '', '/episodes/');
+    moved.mockClear();
+
+    // Relative to the page's route, not to the overlay's own address.
+    expect(first.click('next')).toBe(false);
+    expect(moved).toHaveBeenCalledExactlyOnceWith('/episodes/next', 'push');
+    await vi.waitFor(() =>
+      expect(load).toHaveBeenCalledExactlyOnceWith('http://localhost:3000/episodes/next'),
+    );
+
+    expect(first.click('https://example.com/')).toBe(false);
+    expect(load).toHaveBeenLastCalledWith('https://example.com/');
+    expect(first.click('mailto:support@example.com')).toBe(true);
+    expect(load).toHaveBeenCalledTimes(2);
+    expect(moved).toHaveBeenCalledOnce();
+
+    // Admin loaded the overlay again: its previous document is done with.
+    const second = overlayDocument();
+    watch?.watchLinks(second.overlay);
+    expect(first.click('https://example.com/')).toBe(true);
+    expect(second.click('https://example.com/')).toBe(false);
+    expect(load).toHaveBeenCalledTimes(3);
+
+    watch?.stop();
+    watch?.watchLinks(first.overlay);
+    watch = undefined;
+    expect(first.click('/after')).toBe(true);
+    expect(second.click('/after')).toBe(true);
+    expect(load).toHaveBeenCalledTimes(3);
   });
 
   it('gives the page its own history and links back when stopped', () => {
