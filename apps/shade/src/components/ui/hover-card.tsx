@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as HoverCardPrimitive from '@radix-ui/react-hover-card';
 import { ShadeScope } from '@/shade-scope';
 
+import { usePortalContainer } from '@/lib/app-overlay';
 import { cn } from '@/lib/utils';
 
 const HoverCard = HoverCardPrimitive.Root;
@@ -12,7 +13,7 @@ const HoverCardContent = React.forwardRef<
   React.ElementRef<typeof HoverCardPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof HoverCardPrimitive.Content>
 >(({ className, align = 'center', sideOffset = 4, ...props }, ref) => (
-  <HoverCardPrimitive.Portal>
+  <HoverCardPrimitive.Portal container={usePortalContainer()}>
     <ShadeScope>
       <HoverCardPrimitive.Content
         ref={ref}

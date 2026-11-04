@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
 import { Check, ChevronRight, Circle } from 'lucide-react';
 
+import { usePortalContainer } from '@/lib/app-overlay';
 import { cn } from '@/lib/utils';
 import { ShadeScope } from '@/shade-scope';
 
@@ -11,7 +12,10 @@ const ContextMenuTrigger = ContextMenuPrimitive.Trigger;
 
 const ContextMenuGroup = ContextMenuPrimitive.Group;
 
-const ContextMenuPortal = ContextMenuPrimitive.Portal;
+// In the overlay, like the menu's own content, when it's in a dialog there.
+const ContextMenuPortal = (props: React.ComponentProps<typeof ContextMenuPrimitive.Portal>) => (
+  <ContextMenuPrimitive.Portal container={usePortalContainer()} {...props} />
+);
 
 const ContextMenuSub = ContextMenuPrimitive.Sub;
 
@@ -59,7 +63,7 @@ const ContextMenuContent = React.forwardRef<
   React.ElementRef<typeof ContextMenuPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof ContextMenuPrimitive.Content>
 >(({ className, ...props }, ref) => (
-  <ContextMenuPrimitive.Portal>
+  <ContextMenuPrimitive.Portal container={usePortalContainer()}>
     <ShadeScope>
       <ContextMenuPrimitive.Content
         ref={ref}
