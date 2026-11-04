@@ -3960,14 +3960,13 @@ services:
       dependencies:
         complexity: straightforward
         reason: >-
-          Knex and action recording are already injected and acquired after the database connects.
-          Logging in the action helper and case-key conversion in the codec/serializer are the
-          remaining boundary violations. The data shape is small, so these can be removed or wired
+          Knex and the action log are already injected and acquired after the database connects.
+          Case-key conversion in the codec/serializer is the remaining boundary violation. The data shape is small, so these can be removed or wired
           without changing transactions or introducing service dependencies.
         preparation:
           - >-
-            Supply logging to the action recorder through the root while preserving best-effort
-            action failures.
+            The root constructs the shared action log from knex and logging; failures stay
+            best-effort.
           - >-
             Use explicit field mapping for the small codec/serializer shapes, or separately review
             an exact-file case-keys allowance; do not make importable serializers depend on an
@@ -3975,7 +3974,7 @@ services:
         reviewedAt: 44ad405bff4a8700af2ed51f833ebc08d25dddff
         sources:
           - core/server/services/gift-links/index.ts
-          - core/server/services/gift-links/actions.ts
+          - core/server/lib/action-log/action-log.ts
           - core/server/services/gift-links/codec.ts
           - core/server/services/gift-links/serializers.ts
           - core/server/services/gift-links/service.ts
@@ -3984,14 +3983,14 @@ services:
       - gift-links/index.ts
     notes: >-
       Migration rechecked against base e7ab0fe5a8406036cfb0d790e8db7afdb58bfe36; the original
-      audit and dependency-assessment revisions are retained above. The root now supplies action
-      logging; case-key and date codecs use the existing exact-file library allowances. Deferred
+      audit and dependency-assessment revisions are retained above. The root now constructs the
+      shared action log; case-key and date codecs use the existing exact-file library allowances. Deferred
       database binding, token history and public access/cache policy are unchanged. No extras.
     contracts:
       exports:
         summary: >-
           The TypeScript root default-exports defineService with async init and a guarded service
-          getter; RequestContext remains type-only. Reading service before readiness throws,
+          getter and no named exports. Reading service before readiness throws,
           and awaited receiver-independent init resolves undefined.
           The deep class requires its receiver: getPost/ensure/create return a post id plus
           giftLinks, getPostByToken returns that shape or null, and removeAll returns a number.
@@ -4013,18 +4012,18 @@ services:
       construction:
         summary: >-
           Import declares the initializer without constructing a service. Its factory reads the
-          shared database knex and models, partially applies the best-effort action recorder with
-          root-supplied logging and returns one GiftLinksService retaining knex and the callback.
-          The recorder still reads models.Action per invocation. Later init calls preserve it.
+          shared database knex, builds the shared ActionLog from it and root-supplied logging, and
+          returns one GiftLinksService retaining knex and the action log. Later init calls
+          preserve it.
           No separate production deep construction was found. The constructor validates neither
           dependency nor database readiness; an early init can publish an unusable captured
           dependency. Integration tests construct the class with real model knex and matching
-          recorder wiring. Root tests assert deferred acquisition and retained knex/instance across
+          action-log wiring. Root tests assert deferred acquisition and retained knex/instance across
           init calls and exercise earlier public/Admin consumers.
         sources:
           - core/server/services/gift-links/index.ts
           - core/server/services/gift-links/service.ts
-          - core/server/services/gift-links/actions.ts
+          - core/server/lib/action-log/action-log.ts
           - core/server/data/db/index.js
           - core/server/data/db/connection.ts
         tests:
@@ -4139,8 +4138,8 @@ services:
       resources:
         summary: >-
           No owned client, timer, worker, listener or memory cache. The service borrows the shared
-          knex pool and owns per-mint transaction work; action history is a separate awaited model
-          write after the command's database change. Database rows carry token history/live state,
+          knex pool and owns per-mint transaction work; a mint's action is written inside its
+          transaction, and revoking all links writes its action right after the delete. Database rows carry token history/live state,
           with foreign-key cascade deletion and no scheduled pruning here. The public response cache
           belongs to posts-public, and rendering/analytics belong to frontend consumers. There is no
           root drain or cleanup registration; shutdown depends on shared HTTP/database ownership.
@@ -4148,7 +4147,7 @@ services:
           association write; deletion cascades and in-flight shutdown remain untested.
         sources:
           - core/server/services/gift-links/service.ts
-          - core/server/services/gift-links/actions.ts
+          - core/server/lib/action-log/action-log.ts
           - core/server/data/db/connection.ts
           - core/server/data/schema/schema.js
           - core/server/models/action.js
@@ -4164,10 +4163,10 @@ services:
           Missing posts throw NotFound; unknown or no-longer-live tokens return null. Query, codec,
           random generation and transaction errors propagate, without retries. Factory rejection
           leaves service unavailable and boot fails; the shared initializer permits an explicit
-          retry, without service-specific failure/retry coverage. Action writes run
-          after persistence and the production recorder logs/swallows failures, skipping writes when
-          actor is absent. That boundary is enforced by action units and a real-DB deep-service test
-          with a failing recorder. Gift access refuses missing key-resolution setup and rejects
+          retry, without service-specific failure/retry coverage. The shared action log logs and
+          swallows failed writes, which on MySQL leave the mint's transaction usable, and skips
+          writes when no actor is present. Action-log units and a real-DB deep-service test with a
+          failing action insert enforce that boundary. Gift access refuses missing key-resolution setup and rejects
           mismatched tokens; frontend strips invalid gifts with a 301 while other failures reach
           normal error handling. Product lookup failure logs and grants a paid shim with no tiers.
           Units pin those helpers and root query-error propagation. Real DB tests pin mint rollback
@@ -4177,7 +4176,7 @@ services:
           - core/kernel/define-service.ts
           - core/boot.js
           - core/server/services/gift-links/service.ts
-          - core/server/services/gift-links/actions.ts
+          - core/server/lib/action-log/action-log.ts
           - core/server/services/gift-links/codec.ts
           - core/server/services/gift-links/models.ts
           - core/server/api/endpoints/utils/gift-link-access.ts
@@ -4185,7 +4184,7 @@ services:
           - core/frontend/services/routing/controllers/entry/gift-links.ts
           - core/server/services/members/create-paid-member-shim.ts
         tests:
-          - test/unit/server/services/gift-links/actions.test.ts
+          - test/unit/server/lib/action-log/action-log.test.ts
           - test/integration/services/gift-links.test.ts
           - test/e2e-api/admin/gift-links.test.ts
           - test/unit/api/endpoints/utils/gift-link-access.test.ts
