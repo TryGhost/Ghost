@@ -333,6 +333,7 @@
   "compress": true,
   "preloadHeaders": false,
   "adminFrameProtection": true,
+  "siteFrameProtection": false,
   "sendWelcomeEmail": true,
   "stripeDirect": false,
   "machinePayments": {

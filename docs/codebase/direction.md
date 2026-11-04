@@ -40,6 +40,7 @@ TypeScript and validate runtime boundaries with Zod.
 | Database support     | Remove SQLite support in Ghost 7.0                   | Planned          |
 | Editor content       | Remove Mobiledoc support in Ghost 7.0                | Planned          |
 | Self-hosting         | Deprecate Ghost-CLI in favour of Docker in Ghost 7.0 | Active migration |
+| Site framing         | Site frame protection on by default in Ghost 7.0     | Planned          |
 | Node.js runtime      | Keep pace with Node Current                          | Planned          |
 | Authentication       | Standards-based auth built on Better Auth            | Active migration |
 | Linting              | ESLint to Oxlint                                     | Planned          |
@@ -164,6 +165,13 @@ Ghost 7.0 is planned to deprecate Ghost-CLI in favour of Docker for
 self-hosting, and to remove support for Mobiledoc and SQLite. Until then,
 preserve the existing contracts where they are still supported, but do not
 build new features around them.
+
+Ghost 7.0 is also planned to turn on `siteFrameProtection` by default. Where
+Admin shares the site's host, only the site, Admin and the sites the setting
+lists can then frame the site's pages. That stops other sites embedding them,
+so it is opt-in until then. It also cuts the link back to the opener of a
+window opened on a site page from elsewhere, Admin included, and stops popups
+from sandboxed frames, such as an app's, opening the site's pages.
 
 ### SQLite
 

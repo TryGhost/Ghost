@@ -59,6 +59,49 @@ describe('Default Frontend routing', function () {
     });
   });
 
+  describe('Framing', function () {
+    it('leaves framing alone unless switched on', async function () {
+      const res = await request.get('/').expect(200);
+      assert.equal(res.headers['content-security-policy'], undefined);
+      assert.equal(res.headers['cross-origin-opener-policy'], undefined);
+    });
+
+    // The policy is worked out at boot. A separate admin host, which lifts it, also changes how
+    // Ghost is mounted at boot, so the unit tests cover that.
+    describe('switched on', function () {
+      beforeAll(async function () {
+        configUtils.set('siteFrameProtection', true);
+
+        await testUtils.startGhost();
+        request = supertest.agent(configUtils.config.get('url'));
+      });
+
+      afterAll(async function () {
+        await configUtils.restore();
+
+        await testUtils.startGhost();
+        request = supertest.agent(configUtils.config.get('url'));
+      });
+
+      it("lets only the site frame its pages and files while Admin shares the site's host", async function () {
+        await request
+          .get('/')
+          .expect(200)
+          .expect('Content-Security-Policy', "frame-ancestors 'self'")
+          .expect('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+        await request
+          .get('/content/images/some/file/that/doesnt-exist.jpg')
+          .expect(404)
+          .expect('Content-Security-Policy', "frame-ancestors 'self'");
+      });
+
+      it("leaves the members API's responses alone", async function () {
+        const res = await request.get('/members/api/site/').expect(200);
+        assert.equal(res.headers['content-security-policy'], undefined);
+      });
+    });
+  });
+
   describe('Main Routes', function () {
     it('/ should respond with valid HTML', async function () {
       await request

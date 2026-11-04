@@ -15,6 +15,7 @@ describe('vhost utils', function () {
     it('uses the default arg for both backend and frontend', function () {
       assert.deepEqual(configUtils.config.getBackendMountPath(), /.*/);
       assert.deepEqual(configUtils.config.getFrontendMountPath(), /.*/);
+      assert.equal(configUtils.config.hasSeparateAdminHost(), false);
     });
   });
 
@@ -28,6 +29,7 @@ describe('vhost utils', function () {
     it('should use admin url and inverse as args', function () {
       assert.equal(configUtils.config.getBackendMountPath(), 'admin.ghost.blog');
       assert.deepEqual(configUtils.config.getFrontendMountPath(), /^(?!admin\.ghost\.blog).*/);
+      assert.equal(configUtils.config.hasSeparateAdminHost(), true);
     });
 
     it('should have regex that excludes admin traffic on front-end', function () {
@@ -50,6 +52,8 @@ describe('vhost utils', function () {
     it('should mount and assign correct routes', function () {
       assert.deepEqual(configUtils.config.getBackendMountPath(), /.*/);
       assert.deepEqual(configUtils.config.getFrontendMountPath(), /.*/);
+      // Admin is still served on the site's host
+      assert.equal(configUtils.config.hasSeparateAdminHost(), false);
     });
   });
 });
