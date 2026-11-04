@@ -135,6 +135,10 @@ In dark mode `--interactive-hover`, `--button-hover`, and `--tab-hover` are tran
 
 Inputs, textareas, outline `Button`s, dropdown triggers, and the `inputSurface` recipe use `--control-border`, not `--border-default`. In dark mode it lifts a step above the page border so form controls keep enough contrast against the page surface. Borders inside cards or popovers can keep using `--border-default`.
 
+## Warning colors
+
+With `admin7Design` on, `--state-warning` is dark enough for text and icons on white, but don't tint it or use it as a fill, because it goes brown. With the flag off it's a lighter yellow that's too faint for text on white. Warning `Banner`s already handle this: with `admin7Design` on, all colored banners are a flat color with darker shades of it for text and no outline. Use `--state-warning-surface` for other warning boxes, and `--state-warning-fill` for dots, stars, solid labels and card borders.
+
 ## Dropdown surface contract
 
 `DropdownMenu`, `Select`, and `Popover` (the three Radix-backed floating menus that Filters uses) share one visual recipe: `bg-surface-elevated-2` + `border border-border/60 dark:border-border/30` + `shadow-md`. The one exception is a `DropdownMenu` submenu, which uses `shadow-lg` so it stands apart from the menu it overlaps. Treat them as one component for any surface decision — change all three together.
