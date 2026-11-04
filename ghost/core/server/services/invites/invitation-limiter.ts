@@ -33,40 +33,21 @@ export default class InvitationLimiter {
     return this.deps.transaction(async (transaction) => {
       const counterValue = await this.getAndLockInviteEmailCounter(transaction);
       const options = { transacting: transaction };
-
-      email = email.trim();
-      const existingInvite = await this.findAndLockInvite(transaction, email);
-      // Acceptance may have completed since the API's permission check.
-      await this.errorIfAlreadyRegistered(transaction, email);
       if (this.deps.limitService.isLimited('inviteEmails')) {
         await this.reserveEmail(transaction, counterValue);
       }
       // Replacing a pending invitation does not occupy another seat, even after an import.
-      if (this.deps.limitService.isLimited('allStaff') && !existingInvite) {
-        await this.deps.limitService.errorIfWouldGoOverLimit('allStaff', options);
+      if (this.deps.limitService.isLimited('allStaff')) {
+        const existingInvite = await transaction('invites')
+          .where('email', email.trim())
+          .forUpdate()
+          .first('id');
+        if (!existingInvite) {
+          await this.deps.limitService.errorIfWouldGoOverLimit('allStaff', options);
+        }
       }
       return prepare(transaction);
     });
-  }
-
-  private async findAndLockInvite(
-    transaction: Knex.Transaction,
-    email: string,
-  ): Promise<{ id: string } | undefined> {
-    return transaction('invites').where({ email }).forUpdate().first('id');
-  }
-
-  private async errorIfAlreadyRegistered(
-    transaction: Knex.Transaction,
-    email: string,
-  ): Promise<void> {
-    const registered = await transaction('users').where({ email }).first('id');
-    if (registered) {
-      throw new errors.ValidationError({
-        message: 'User is already registered.',
-        code: 'USER_ALREADY_REGISTERED',
-      });
-    }
   }
 
   private async getAndLockInviteEmailCounter(
