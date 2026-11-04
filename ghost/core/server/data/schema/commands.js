@@ -111,14 +111,54 @@ function addForeignKey(tableBuilder, foreignKey) {
 }
 
 /**
+ * Changes whether a column can be null, keeping everything else about it.
+ *
+ * On MySQL the column is restated with the exact type MySQL reports for it. knex instead
+ * rebuilds the type from a name and a length, which MySQL's text types can't take: `text`
+ * comes back as `text(65535)`, which MySQL widens to MEDIUMTEXT, and `mediumtext` as
+ * `mediumtext(16777215)`, which is a syntax error. SQLite rebuilds the table, which knex
+ * does correctly.
+ *
+ * @param {string} tableName
+ * @param {string} column
+ * @param {boolean} nullable
+ * @param {import('knex').Knex} transaction
+ */
+async function setNullableState(tableName, column, nullable, transaction) {
+  if (!DatabaseInfo.isMySQL(transaction)) {
+    return transaction.schema.table(tableName, function (table) {
+      if (nullable) {
+        table.setNullable(column);
+      } else {
+        table.dropNullable(column);
+      }
+    });
+  }
+
+  const [rows] = await transaction.raw(
+    'SELECT COLUMN_TYPE, COLUMN_DEFAULT FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?',
+    [tableName, column],
+  );
+  if (rows.length === 0) {
+    throw new errors.InternalServerError({
+      message: `Column ${column} does not exist in table ${tableName}.`,
+    });
+  }
+  const { COLUMN_TYPE: type, COLUMN_DEFAULT: defaultValue } = rows[0];
+  const hasDefault = defaultValue !== null && defaultValue !== undefined;
+  await transaction.raw(
+    `ALTER TABLE ?? MODIFY ?? ${type} ${nullable ? 'NULL' : 'NOT NULL'}${hasDefault ? ' DEFAULT ?' : ''}`,
+    hasDefault ? [tableName, column, defaultValue] : [tableName, column],
+  );
+}
+
+/**
  * @param {string} tableName
  * @param {string} column
  * @param {import('knex').Knex} [transaction]
  */
 function setNullable(tableName, column, transaction = db.knex) {
-  return transaction.schema.table(tableName, function (table) {
-    table.setNullable(column);
-  });
+  return setNullableState(tableName, column, true, transaction);
 }
 
 /**
@@ -127,9 +167,7 @@ function setNullable(tableName, column, transaction = db.knex) {
  * @param {import('knex').Knex} [transaction]
  */
 function dropNullable(tableName, column, transaction = db.knex) {
-  return transaction.schema.table(tableName, function (table) {
-    table.dropNullable(column);
-  });
+  return setNullableState(tableName, column, false, transaction);
 }
 
 // MySQL raises these when an explicit ALGORITHM isn't supported for the operation,

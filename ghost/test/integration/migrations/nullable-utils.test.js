@@ -56,6 +56,8 @@ describe('Migrations - schema utils', function () {
       table.string('mixed_col').notNullable();
       table.string('with_default').notNullable().defaultTo('default');
       table.integer('foreign_key_col').unsigned();
+      table.text('text_col').notNullable();
+      table.text('medium_text_col', 'mediumtext').notNullable();
     });
 
     // Note: We're not adding actual foreign key constraints in these tests
@@ -71,6 +73,8 @@ describe('Migrations - schema utils', function () {
       mixed_col: 'data',
       with_default: 'custom',
       foreign_key_col: 1,
+      text_col: 'text',
+      medium_text_col: 'medium text',
     });
   });
 
@@ -279,6 +283,30 @@ describe('Migrations - schema utils', function () {
       const response = await db.knex.raw('SHOW COLUMNS FROM ??', [tableName]);
       const columnInfo = response[0].find((col) => col.Field === 'with_default');
       assert.equal(columnInfo.Default, 'default', 'Column should still have its default value');
+    });
+
+    // MySQL can't take a length on its text types the way knex rebuilds a column, as
+    // `text(65535)` (which MySQL widens to MEDIUMTEXT) or `mediumtext(16777215)` (a syntax error).
+    it('Keeps a text column its type when changing whether it is nullable', async function () {
+      const typeOf = async (column) => {
+        const response = await db.knex.raw('SHOW COLUMNS FROM ??', [tableName]);
+        return response[0].find((col) => col.Field === column).Type;
+      };
+
+      for (const [column, type] of [
+        ['text_col', 'text'],
+        ['medium_text_col', 'mediumtext'],
+      ]) {
+        const migration = utils.createSetNullableMigration(tableName, column);
+
+        await runMigrationStep(migration, 'up');
+        assert.equal(await isColumnNullable(tableName, column), true, `${column} is nullable`);
+        assert.equal(await typeOf(column), type, `${column} is still ${type} once nullable`);
+
+        await runMigrationStep(migration, 'down');
+        assert.equal(await isColumnNotNullable(tableName, column), true, `${column} is required`);
+        assert.equal(await typeOf(column), type, `${column} is still ${type} once required`);
+      }
     });
 
     it('Handles non-existent table errors', async function () {
