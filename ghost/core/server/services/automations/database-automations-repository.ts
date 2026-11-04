@@ -576,17 +576,17 @@ export function createDatabaseAutomationsRepository({
         return;
       }
 
-      await knex.transaction(async (trx) => {
-        const revisionIds = new Set<string>();
-        for (const {
-          openedAt,
-          automationActionRevisionId,
-        } of eventsByAutomatedEmailRecipientId.values()) {
-          if (openedAt) {
-            revisionIds.add(automationActionRevisionId);
-          }
+      const revisionIds = new Set<string>();
+      for (const {
+        openedAt,
+        automationActionRevisionId,
+      } of eventsByAutomatedEmailRecipientId.values()) {
+        if (openedAt) {
+          revisionIds.add(automationActionRevisionId);
         }
+      }
 
+      await knex.transaction(async (trx) => {
         await repository2.lockActionRevisions(trx, revisionIds);
 
         const notYetOpened = await lockNotYetOpened(trx, eventsByAutomatedEmailRecipientId);
