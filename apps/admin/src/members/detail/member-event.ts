@@ -3,6 +3,7 @@ import {
   type MetafieldChangeEntry,
   type MetafieldChangeSource,
 } from '@tryghost/metafield-types';
+import type { MemberSignupSource } from '@tryghost/admin-x-framework/api/members';
 
 // Settings-derived context is passed in explicitly so the transform stays pure
 // and testable, with no React context or hooks hidden inside.
@@ -230,20 +231,22 @@ function metafieldChangeAction(event: MetafieldChangeEvent): string {
   return place ? `updated ${changed} ${place}` : `updated ${changed}`;
 }
 
+const SIGNUP_LABELS: Record<MemberSignupSource, string> = {
+  admin: 'signed up via Admin',
+  api: 'signed up via API',
+  import: 'signed up via import',
+  system: 'signed up via system',
+  member: 'signed up',
+};
+
+function isMemberSignupSource(source: unknown): source is MemberSignupSource {
+  return typeof source === 'string' && Object.hasOwn(SIGNUP_LABELS, source);
+}
+
 function getAction(event: RawMemberEvent, hasMultipleNewsletters: boolean): string | undefined {
   if (event.type === 'signup_event') {
-    switch (event.data.source) {
-      case 'admin':
-        return 'signed up via Admin';
-      case 'api':
-        return 'signed up via API';
-      case 'import':
-        return 'signed up via import';
-      case 'system':
-        return 'signed up via system';
-      default:
-        return 'signed up';
-    }
+    const { source } = event.data;
+    return isMemberSignupSource(source) ? SIGNUP_LABELS[source] : 'signed up';
   }
   if (event.type === 'subscription_event' && event.data.type === 'created' && event.data.signup) {
     return 'signed up';

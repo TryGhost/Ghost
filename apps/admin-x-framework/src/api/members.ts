@@ -845,6 +845,9 @@ export const useRemoveMemberEmailSuppression = createMutation<void, { id: string
 // Per-member activity feed (GET /members/events)
 // -----------------------------------------------------------------------------
 
+// Mirrors Core's MemberCreatedEventData.source.
+export type MemberSignupSource = 'admin' | 'api' | 'import' | 'system' | 'member';
+
 export interface MemberActivityEventMember {
   id: string;
   uuid: string;
