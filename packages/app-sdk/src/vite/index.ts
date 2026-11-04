@@ -10,12 +10,12 @@
  * ```
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { resolve } from 'node:path';
+import { isAbsolute, join, relative, resolve } from 'node:path';
 
 import { isLocalhost } from '@tryghost/app-contracts';
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite';
 
-import { createKeys, signingKeySource } from '../tooling/keys.ts';
+import { KEYS_DIRECTORY, createKeys, signingKeySource } from '../tooling/keys.ts';
 import { MANIFEST_PATH, formatErrors } from '../shared/manifest.ts';
 import { parseOrigin } from '../shared/parse.ts';
 import { MANIFEST_FILE, serialiseSigned, signProject } from '../tooling/sign.ts';
@@ -51,6 +51,32 @@ function readTunnels(input: string | readonly string[] | undefined): string[] {
       }
       return origin;
     });
+}
+
+const isWithin = (parent: string, child: string) => {
+  const path = relative(parent, child);
+  return path === '' || (!path.startsWith('..') && !isAbsolute(path));
+};
+
+/**
+ * Refuses a public directory that holds the private keys or `.dev.vars`, or sits among the
+ * keys. Vite serves it as it is, without `server.fs.deny`, and copies it into the build.
+ */
+function refusePublicKeys(root: string, publicDir: string) {
+  // An empty publicDir is none at all.
+  if (!publicDir) {
+    return;
+  }
+  const keys = join(root, KEYS_DIRECTORY);
+  if (
+    isWithin(publicDir, keys) ||
+    isWithin(keys, publicDir) ||
+    isWithin(publicDir, join(root, '.dev.vars'))
+  ) {
+    throw new Error(
+      `ghost-app: publicDir (${publicDir}) holds ${KEYS_DIRECTORY}/ or .dev.vars, which Vite would serve and copy into the build with the private keys in them. Point publicDir at a directory of public files only, such as public/.`,
+    );
+  }
 }
 
 /**
@@ -209,6 +235,7 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
 
     async configResolved(resolved) {
       config = resolved;
+      refusePublicKeys(resolved.root, resolved.publicDir);
       appUrl = await readEnv(resolved.mode, resolved.envDir, 'GHOST_APP_URL');
       ghostUrl = await readEnv(resolved.mode, resolved.envDir, 'GHOST_URL');
       if (pending) {

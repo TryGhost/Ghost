@@ -647,6 +647,34 @@ describe('vite build', () => {
     );
   });
 
+  describe('publicDir', () => {
+    const buildWith = (publicDir: string | false) =>
+      build({
+        root,
+        configFile: false,
+        publicDir,
+        customLogger: recordingLogger(),
+        plugins: [ghostApp()],
+        build: { outDir: outDir() },
+      });
+
+    // Vite serves it without fs.deny, and copies it into the build.
+    it.each(['.', '.ghost-app', '.ghost-app/production'])(
+      'refuses %s, which would serve and ship the private keys',
+      async (publicDir) => {
+        await createKeys({ root, mode: 'production' });
+        await expect(buildWith(publicDir)).rejects.toThrow(
+          'holds .ghost-app/ or .dev.vars, which Vite would serve',
+        );
+        expect(existsSync(outDir())).toBe(false);
+      },
+    );
+
+    it.each(['public', false] as const)('accepts %s', async (publicDir) => {
+      await expect(buildWith(publicDir)).resolves.toBeDefined();
+    });
+  });
+
   it('emits no manifest without GHOST_APP_URL, and says so', async () => {
     const logger = await buildApp();
     expect(existsSync(join(outDir(), 'index.html'))).toBe(true);
