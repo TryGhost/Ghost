@@ -597,8 +597,8 @@ catalogs:
       specifier: 16.0.0
       version: 16.0.0
     hono:
-      specifier: 4.13.14
-      version: 4.13.14
+      specifier: 4.13.16
+      version: 4.13.16
     html-minifier-next:
       specifier: 8.10.7
       version: 8.10.7
@@ -2331,7 +2331,7 @@ importers:
         version: 2.29.0
       '@x402/hono':
         specifier: 'catalog:'
-        version: 2.29.0(hono@4.13.14)
+        version: 2.29.0(hono@4.13.16)
       archiver:
         specifier: 8.0.0
         version: 8.0.0
@@ -2454,7 +2454,7 @@ importers:
         version: 2.1.0
       hono:
         specifier: 'catalog:'
-        version: 4.13.14
+        version: 4.13.16
       html-to-text:
         specifier: 'catalog:'
         version: 10.0.1
@@ -2529,7 +2529,7 @@ importers:
         version: 0.6.6
       mppx:
         specifier: 'catalog:'
-        version: 0.17.0(@x402/core@2.29.0)(@x402/hono@2.29.0(hono@4.13.14))(express@4.22.3(supports-color@10.2.2))(hono@4.13.14)(viem@2.57.13)
+        version: 0.17.0(@x402/core@2.29.0)(@x402/hono@2.29.0(hono@4.13.16))(express@4.22.3(supports-color@10.2.2))(hono@4.13.16)(viem@2.57.13)
       multer:
         specifier: 2.5.0
         version: 2.5.0
@@ -12219,8 +12219,8 @@ packages:
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
 
-  hono@4.13.14:
-    resolution: {integrity: sha512-yhRLQ21U6qa9Hsu2N7Qcbh8tE+WKEcoErjIo56LeSGiGXGp9sA7UpE86Ui9uexb61KakiGwuHMn2QdV7w6i6kQ==}
+  hono@4.13.16:
+    resolution: {integrity: sha512-AOLOEhvrV+iH92xXCnFr/5+3KjPKcI3xP63XJtX5spAnkznPdHijlIsUTpi7/9EhWqrTCekw5c5zh1K+YsVw7A==}
     engines: {node: '>=16.9.0'}
 
   hookified@1.15.1:
@@ -22194,11 +22194,11 @@ snapshots:
       - ethers
       - utf-8-validate
 
-  '@x402/hono@2.29.0(hono@4.13.14)':
+  '@x402/hono@2.29.0(hono@4.13.16)':
     dependencies:
       '@x402/core': 2.29.0
       '@x402/extensions': 2.29.0
-      hono: 4.13.14
+      hono: 4.13.16
     transitivePeerDependencies:
       - bufferutil
       - ethers
@@ -25087,7 +25087,7 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono@4.13.14: {}
+  hono@4.13.16: {}
 
   hookified@1.15.1: {}
 
@@ -26972,7 +26972,7 @@ snapshots:
 
   moment@2.31.0: {}
 
-  mppx@0.17.0(@x402/core@2.29.0)(@x402/hono@2.29.0(hono@4.13.14))(express@4.22.3(supports-color@10.2.2))(hono@4.13.14)(viem@2.57.13):
+  mppx@0.17.0(@x402/core@2.29.0)(@x402/hono@2.29.0(hono@4.13.16))(express@4.22.3(supports-color@10.2.2))(hono@4.13.16)(viem@2.57.13):
     dependencies:
       '@stripe/stripe-js': 9.17.0
       eventsource-parser: 4.1.1
@@ -26982,9 +26982,9 @@ snapshots:
       zod: 4.6.7
     optionalDependencies:
       '@x402/core': 2.29.0
-      '@x402/hono': 2.29.0(hono@4.13.14)
+      '@x402/hono': 2.29.0(hono@4.13.16)
       express: 4.22.3(supports-color@10.2.2)
-      hono: 4.13.14
+      hono: 4.13.16
 
   mrmime@2.0.1: {}
 
