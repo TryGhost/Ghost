@@ -455,6 +455,10 @@ describe('Import members custom fields', () => {
     const dialog = importMembersScreen.createFieldForm();
     await dialog.getByRole('combobox', { name: 'Type' }).click();
     await importMembersScreen.option('List').click();
+    // After you pick an option, Radix moves focus back to the select a frame later. If that
+    // lands while the first option is being typed, the text goes to the select and is lost.
+    // So wait for the select to get focus back before moving on.
+    await expect.element(dialog.getByRole('combobox', { name: 'Type' })).toHaveFocus();
     for (const option of ['London', 'Paris']) {
       await userEvent.fill(dialog.getByLabelText('New option'), option);
       await dialog.getByRole('button', { name: 'Add option' }).click();
