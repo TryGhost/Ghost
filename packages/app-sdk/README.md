@@ -11,9 +11,9 @@ its route in sync with Admin's URL, and send the publisher elsewhere in Admin.
 | --------------------------- | -------------------------- | -------------------------------------------------------------------------------------------- |
 | `@tryghost/app-sdk`         | The app's page             | Talking to Admin (below)                                                                     |
 | `@tryghost/app-sdk/backend` | Any platform with web APIs | [Answering Ghost's challenge, serving the manifest, framing and the Admin API](#the-backend) |
-| `@tryghost/app-sdk/tooling` | Node 22 or later           | [Creating keys, and signing and checking the manifest](#signing-the-manifest)                |
+| `@tryghost/app-sdk/tooling` | Node 22.1 or later         | [Creating keys, and signing and checking the manifest](#signing-the-manifest)                |
 | `@tryghost/app-sdk/vite`    | Vite 6 or later            | [Signing the manifest in `vite dev` and `vite build`](#the-vite-plugin)                      |
-| `ghost-app`                 | Node 22 or later           | [The same tooling on the command line](#the-ghost-app-cli)                                   |
+| `ghost-app`                 | Node 22.1 or later         | [The same tooling on the command line](#the-ghost-app-cli)                                   |
 
 The page's entry point loads none of the others' code.
 

@@ -1,5 +1,5 @@
-import { writeFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 
 import { checkApp } from './tooling/check.ts';
@@ -16,6 +16,7 @@ Commands:
        [--production]          with the production keys instead of the development ones
        [--out <file>]          write it to a file instead of printing it
        [--manifest <file>]     sign another file than ghost-app.json
+                               (both in the project's directory)
   check <manifest URL>         Check an app as Ghost does before installing it
   backend-key [--production]   Print the mode's private backend key, to pipe into a secret
                                store: ghost-app backend-key --production |
@@ -79,8 +80,11 @@ async function sign(
   }
   const text = `${JSON.stringify(result.signed, null, 2)}\n`;
   if (out) {
-    await writeFile(resolve(out), text);
-    io.err(`Wrote ${out}, signed for ${String(result.manifest.manifest_url)}`);
+    // Against the project's directory, like --manifest and the keys.
+    const written = resolve(root, out);
+    await mkdir(dirname(written), { recursive: true });
+    await writeFile(written, text);
+    io.err(`Wrote ${written}, signed for ${String(result.manifest.manifest_url)}`);
   } else {
     io.out(text);
   }

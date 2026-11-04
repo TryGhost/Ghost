@@ -81,7 +81,7 @@
     }
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22.1"
   },
   "nx": {
     "targets": {

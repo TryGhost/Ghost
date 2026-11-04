@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { createServer, type IncomingMessage, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
+import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -249,6 +250,24 @@ describe('ghost-app keys, sign and backend-key', () => {
     expect(JSON.parse((await cli('backend-key', '--production', '--dir', root)).out)).toEqual(
       backend,
     );
+  });
+
+  it("writes --out in the project's directory, like --manifest, and says where", async () => {
+    await cli('keys', '--dir', root);
+    await writeFile(join(root, 'readable.json'), JSON.stringify(SOURCE));
+    const result = await cli(
+      'sign',
+      '--url',
+      'http://localhost:5173/ghost-app.json',
+      '--manifest',
+      'readable.json',
+      '--out',
+      'public/ghost-app.json',
+      '--dir',
+      root,
+    );
+    expect(result.err).toContain(`Wrote ${join(root, 'public/ghost-app.json')}, signed for`);
+    expect(existsSync(join(root, 'public/ghost-app.json'))).toBe(true);
   });
 
   it('reports a manifest that cannot be signed with its problems', async () => {
