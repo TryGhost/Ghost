@@ -107,7 +107,7 @@ export function SidePanel({ visible, framed, locked }: SidePanelProps) {
     <div
       ref={regionRef}
       className={cn(
-        'h-full shrink-0 overflow-hidden bg-background duration-200 ease-out motion-reduce:transition-none',
+        'flex h-full shrink-0 justify-end overflow-hidden bg-background duration-200 ease-out motion-reduce:transition-none',
         // Visible as soon as it opens, so it can take focus, and hidden once it has closed
         shown
           ? cn(
@@ -123,10 +123,14 @@ export function SidePanel({ visible, framed, locked }: SidePanelProps) {
       )}
       data-side-panel={shown ? state.size : 'closed'}
     >
-      {/* At its full width while the panel animates, so the content doesn't reflow */}
+      {/* At its full width while the panel animates, so the content doesn't reflow, and against
+          the right edge, where it ends up as the panel opens, closes or collapses */}
       <div
         ref={contentRef}
-        className={cn('h-full *:size-full', state.size === 'full' ? 'w-full' : 'w-[380px]')}
+        className={cn(
+          'h-full shrink-0 *:size-full',
+          state.size === 'full' ? 'w-full' : 'w-[380px]',
+        )}
       />
     </div>
   );

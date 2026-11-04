@@ -12,6 +12,7 @@ import {
   createTestAutomationsRepository2,
   type TestAutomationsRepositoryConnection,
 } from './test-automations-repository-2';
+import { alphabeticalDescribe } from '../../../../utils/alphabetical-describe';
 
 describe('automations API', function () {
   const createTestDomainEvents = () => ({
@@ -49,7 +50,7 @@ describe('automations API', function () {
     });
   });
 
-  describe('getNumberOfAutomations', function () {
+  alphabeticalDescribe('getNumberOfAutomations', function () {
     it('returns the number of automations', async function () {
       const repository = createTestAutomationsRepository2({
         getNumberOfAutomations: () => 123,
@@ -60,7 +61,7 @@ describe('automations API', function () {
     });
   });
 
-  describe('notify', function () {
+  alphabeticalDescribe('notify', function () {
     type Repository = AutomationsRepository2<TestAutomationsRepositoryConnection>;
     type FirstAction = Awaited<ReturnType<Repository['findFirstActionRevisions']>>[number];
 
@@ -440,7 +441,7 @@ describe('automations API', function () {
     });
   });
 
-  describe('requestPoll', function () {
+  alphabeticalDescribe('requestPoll', function () {
     it('dispatches a "start automations poll" event', function () {
       const domainEvents = { dispatch: vi.fn<(event: unknown) => unknown>() };
       const api = createApi({ domainEvents });
@@ -453,7 +454,7 @@ describe('automations API', function () {
     });
   });
 
-  describe('trackEmailClicked', function () {
+  alphabeticalDescribe('trackEmailClicked', function () {
     const click = {
       automationActionRevisionId: 'revision-id',
       automationRunStepId: 'step-id',
