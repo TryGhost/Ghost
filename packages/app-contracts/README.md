@@ -154,7 +154,7 @@ given, so such an address reads as a change of manifest URL.
 ```ts
 import { parseManifestUrl } from '@tryghost/app-contracts/manifest';
 
-const result = parseManifestUrl(' https://Podcast.Example.com/ghost-app.json#install ', false);
+const result = parseManifestUrl(' https://Podcast.Example.com/ghost-app.json ', false);
 
 if (result.success) {
   result.manifestUrl; // https://podcast.example.com/ghost-app.json
