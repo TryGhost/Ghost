@@ -13,12 +13,14 @@ import { installHistoryPopGate } from './hooks/use-history-pop-navigation-guard'
 import { ScreenTransitionProvider } from './layout/screen-transition-provider';
 import { RouteError } from './route-error';
 import { routes } from './routes.tsx';
+import { installSidePanelApi } from './layout/side-panel/side-panel-api';
 import { SiteTimezoneSync } from './shared/analytics/site-timezone-sync';
 import { useThemeContext } from './providers/theme-context';
 import { ThemeProvider } from './providers/theme-provider';
 
 // At module scope, so it is in place before `AdminAppRoot` creates the router.
 installHistoryPopGate();
+installSidePanelApi();
 
 // Lets body-level CSS (index.css) react to the mounted app. A class keeps
 // that cheap: `body:has(#root ...)` makes Chromium restyle the whole document
