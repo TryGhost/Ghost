@@ -16,7 +16,6 @@ import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { Link } from '@tryghost/admin-x-framework';
 import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-installations';
-import { AppProvenance } from './app-author';
 import { AppIcon } from './app-icon';
 import { appDetailsRoute, appReviewRoute, appRoute } from '@/apps/lib/routes';
 import { openRowLink, openRowLinkInNewTab } from '@/apps/lib/row-link';
@@ -50,7 +49,7 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall, pins })
                 <Inline gap="lg">
                   <AppIcon app={installation} size="lg" />
                   <span className="min-w-0">
-                    <Inline gap="xs" wrap>
+                    <Inline gap="xs">
                       <Link className="text-md font-semibold" to={appRoute(id)}>
                         {manifest.name}
                       </Link>
@@ -60,11 +59,7 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall, pins })
                           Needs approval
                         </Badge>
                       )}
-                      <AppProvenance
-                        className="text-sm text-muted-foreground"
-                        linked={false}
-                        manifest={manifest}
-                      />
+                      <span className="text-sm text-muted-foreground">{manifest.author.name}</span>
                     </Inline>
                     <span className="block max-w-2xl text-balance text-muted-foreground">
                       {manifest.description}

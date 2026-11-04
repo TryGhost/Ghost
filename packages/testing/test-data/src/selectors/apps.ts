@@ -11,7 +11,6 @@ export const appInstallDialog = 'app-install-dialog';
 export const appInstallNotAllowedDialog = 'app-install-not-allowed-dialog';
 export const appInstallNotice = 'app-install-notice';
 export const appCapability = 'app-capability';
-export const appInstallTrustedOrigins = 'app-install-trusted-origins';
 export const appInstallProblems = 'app-install-problems';
 export const appInstallUnreachable = 'app-install-unreachable';
 export const appInstallUnconfirmed = 'app-install-unconfirmed';

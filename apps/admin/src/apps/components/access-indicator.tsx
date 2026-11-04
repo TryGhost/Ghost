@@ -12,12 +12,11 @@ interface AccessIndicatorProps {
 }
 
 /** How an app gets what's on the list, on an app's details page. */
-export const OPENED_APP_ACCESS_INTRO =
-  'Apps use the account of whoever opens them, so this app can do the following, as far as that person’s role allows.';
+export const OPENED_APP_ACCESS_INTRO = 'The app acts as whoever opens it, within their role.';
 
 /** How an app gets what's on the list, for anyone deciding to let it in. */
 export const ACCOUNT_ACCESS_INTRO =
-  'This app uses the account of whoever opens it, yours included, to do the following, as far as that person’s role allows. Only install apps from developers you trust.';
+  'The app acts as whoever opens it, within their role. Only install apps from developers you trust.';
 
 /**
  * The one way Ghost shows what an app can access: one entry per kind of access,
@@ -25,13 +24,15 @@ export const ACCOUNT_ACCESS_INTRO =
  * what the bridge allows; Permissions and auth gives them their own scopes.
  */
 export const AccessIndicator: React.FC<AccessIndicatorProps> = ({ items, intro, className }) => (
-  <Stack className={className} data-testid="access-indicator" gap="sm">
-    <SectionEyebrow>Required permissions</SectionEyebrow>
-    {intro && (
-      <Text size="sm" tone="secondary">
-        {intro}
-      </Text>
-    )}
+  <Stack className={className} data-testid="access-indicator" gap="md">
+    <Stack gap="xs">
+      <SectionEyebrow>Required permissions</SectionEyebrow>
+      {intro && (
+        <Text size="sm" tone="secondary">
+          {intro}
+        </Text>
+      )}
+    </Stack>
     <ul className="m-0 flex list-none flex-col gap-3 rounded-lg border border-border-default p-4">
       {items.map((item) => (
         <li key={item.title} data-testid="access-item">

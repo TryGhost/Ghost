@@ -36,7 +36,6 @@ import { historyTitle, installedBy } from './lib/history';
 import { isInstallationNotFound } from './lib/not-found';
 import { appReviewRoute, appRoute } from './lib/routes';
 import { useInstalledApps } from './lib/use-app-pins';
-import { servedFrom } from './lib/served-from';
 import { AppAuthor, UnverifiedDeveloperBadge } from './components/app-author';
 
 const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
@@ -106,9 +105,6 @@ const Details: React.FC<{ installation: AppInstallation; timezone: string }> = (
         {status !== 'uninstalled' && <CapabilitySummary manifest={manifest} />}
 
         <div className="divide-y border-y">
-          <Fact label="Served from">
-            <span className="break-all">{servedFrom(manifest)}</span>
-          </Fact>
           <Fact label="Made by">
             <Inline gap="xs" wrap>
               <AppAuthor manifest={manifest} />

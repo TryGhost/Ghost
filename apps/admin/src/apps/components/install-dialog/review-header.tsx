@@ -10,18 +10,18 @@ import {
 import { Inline, Text } from '@tryghost/shade/primitives';
 import type { AppInstallationPreview } from '@tryghost/admin-x-framework/api/app-installations';
 import { AppBanner, AppIcon } from '@/apps/components/app-icon';
-import { AppProvenance, UnverifiedDeveloperBadge } from '@/apps/components/app-author';
+import { AppAuthor, UnverifiedDeveloperBadge } from '@/apps/components/app-author';
 
 /**
- * Who the app is: the same for installing and approving. Where it's served from comes first,
- * as what Ghost checked, then who made it, with a badge while Ghost hasn’t verified them.
+ * Who made the app: the same for installing and approving, with a badge while Ghost hasn’t
+ * verified them. Where it runs is listed with what it can access, as a place it sends data to.
  */
 const AppIdentity: React.FC<{ preview: AppInstallationPreview }> = ({ preview }) => {
   const { manifest } = preview;
   return (
     <Inline gap="xs" wrap>
       <Text as="span" size="sm" tone="secondary">
-        <AppProvenance manifest={manifest} emphasised />
+        By <AppAuthor manifest={manifest} emphasised />
       </Text>
       <UnverifiedDeveloperBadge manifest={manifest} />
       {manifest.development && (
@@ -60,25 +60,6 @@ export const ReviewHeader: React.FC<{
 
 /** Runs edge to edge, past the dialog's padding, to set the app apart from what it asks. */
 export const ReviewSeparator: React.FC = () => <Separator className="-mx-6 w-auto" />;
-
-/**
- * Names the app's origins that the site's configuration trusts, which Ghost didn't ask to prove
- * they hold the app's key, so the review doesn't claim more than Ghost checked.
- */
-export const TrustedOriginsNote: React.FC<{ preview: AppInstallationPreview }> = ({ preview }) => {
-  const hosts = (preview.trusted_origins ?? []).map((origin) => new URL(origin).host);
-  if (hosts.length === 0) {
-    return null;
-  }
-  return (
-    <Banner data-testid="app-install-trusted-origins" size="md" variant="info">
-      <Text as="p" size="sm">
-        {hosts.join(', ')} {hosts.length === 1 ? 'is' : 'are'} trusted by this site’s configuration
-        rather than verified.
-      </Text>
-    </Banner>
-  );
-};
 
 /** Why this review replaced the one the publisher was looking at. */
 export const NoticeBanner: React.FC<{ notice?: string }> = ({ notice }) =>

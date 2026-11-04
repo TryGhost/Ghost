@@ -15,8 +15,9 @@ export interface AccessItem {
  * The allowlist leaves out members, settings, integrations and everything else that hands out
  * lasting access, but that isn't a line an app can't cross: it can write script into a post or
  * page, which runs as whoever views it on the site, and as Admin where the site and Admin share
- * an origin. So posts and pages say an app can add scripts to them, and that publishing can send
- * an email.
+ * an origin. Each entry stays one short line all the same: editing posts covers what's in them
+ * (scripts, authors, who can read them) and publishing covers sending, so those aren't spelled
+ * out.
  *
  * Reading takes Core's includes too, so a scope covers more than its routes' plain answers: how
  * posts did by email and in signups comes with `posts:read`, and is listed with newsletters, where
@@ -25,8 +26,7 @@ export interface AccessItem {
 export const ACCOUNT_ACCESS: AccessItem[] = [
   {
     title: 'Posts and pages',
-    description:
-      'View, create, edit, publish and delete posts and pages, including drafts, scheduled posts and earlier versions. Change who wrote them and who can read them, and add HTML and scripts that run for anyone who views them. Publishing a post that’s scheduled as a newsletter emails it to your members.',
+    description: 'View, create, edit, publish and delete posts and pages.',
     scopes: ['posts:read', 'posts:write', 'pages:read', 'pages:write', 'slugs:read'],
   },
   {
@@ -36,23 +36,22 @@ export const ACCOUNT_ACCESS: AccessItem[] = [
   },
   {
     title: 'Staff',
-    description: 'View staff users, including their email addresses and roles.',
+    description: 'View staff users and their email addresses.',
     scopes: ['users:read'],
   },
   {
     title: 'Tiers',
-    description: 'View your tiers, including their prices.',
+    description: 'View your tiers and prices.',
     scopes: ['tiers:read'],
   },
   {
     title: 'Newsletters and post performance',
-    description:
-      'View your newsletters and how many members subscribe to each, and how posts did: email opens and clicks, feedback, signups and paid conversions.',
+    description: 'View your newsletters and how your posts performed.',
     scopes: ['newsletters:read'],
   },
   {
     title: 'Site details',
-    description: 'View your site’s public details, like its title, logo, language and timezone.',
+    description: 'View your site’s title, logo, language and timezone.',
     scopes: ['site:read'],
   },
 ];

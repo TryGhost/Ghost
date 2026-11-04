@@ -193,11 +193,9 @@ describe('Managing apps', () => {
     const { sessionsApi, readApi } = await fakeAppPage(installation());
 
     await renderAdminApp('/apps', { labs });
-    // Where it's served from, which Ghost checked, before who made it. The review and the details
-    // page mark the developer as unverified; every app is for now, so the list doesn't repeat it.
-    await expect
-      .element(appsScreen.row('Podcast'))
-      .toHaveTextContent('Served from podcast.example.com · By Example Audio');
+    // The review and the details page mark the developer as unverified; every app is for now,
+    // so the list doesn't repeat it.
+    await expect.element(appsScreen.row('Podcast')).toHaveTextContent('Example Audio');
     await expect.element(appsScreen.unverifiedDeveloperBadge()).not.toBeInTheDocument();
     await appsScreen.row('Podcast').getByText('Publish episodes and embed players.').click();
 
@@ -1347,7 +1345,6 @@ describe('Managing apps', () => {
     await renderAdminApp(DETAILS_ROUTE, { labs });
 
     const details = appsScreen.details();
-    await expect.element(details).toHaveTextContent(/Served from\s*podcast\.example\.net/);
     await expect
       .element(details)
       .toHaveTextContent(/Made by\s*Example Audio\s*Unverified developer/);

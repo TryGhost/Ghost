@@ -10,6 +10,7 @@ import {
   Banner,
   Button,
 } from '@tryghost/shade/components';
+import { Stack } from '@tryghost/shade/primitives';
 import { toast } from 'sonner';
 import {
   type AppInstallation,
@@ -71,10 +72,14 @@ export const UninstallDialog: React.FC<UninstallDialogProps> = ({
       <AlertDialogContent data-testid="app-uninstall-dialog">
         <AlertDialogHeader>
           <AlertDialogTitle>Uninstall {shown?.manifest.name}?</AlertDialogTitle>
-          <AlertDialogDescription>
-            The app stops opening for everyone. Where it’s already open, in another tab or for
-            another staff user, it can keep running until that tab is reloaded. Reinstalling it
-            later is like installing it for the first time.
+          <AlertDialogDescription asChild>
+            <Stack gap="sm">
+              <p>
+                The app stops opening for everyone. Where it’s already open, in another tab or for
+                another staff user, it can keep running until that tab is reloaded.
+              </p>
+              <p>Reinstalling it later is like installing it for the first time.</p>
+            </Stack>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <Banner data-testid="app-uninstall-integration-key-note" size="md" variant="warning">

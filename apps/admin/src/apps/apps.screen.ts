@@ -18,7 +18,6 @@ export const appsScreen = {
   accessItems: () => page.getByTestId(sel.accessItem),
   capabilities: () => page.getByTestId(sel.appCapability),
   notice: () => page.getByTestId(sel.appInstallNotice),
-  trustedOrigins: () => page.getByTestId(sel.appInstallTrustedOrigins),
   problems: () => page.getByTestId(sel.appInstallProblems),
   unreachable: () => page.getByTestId(sel.appInstallUnreachable),
   unconfirmed: () => page.getByTestId(sel.appInstallUnconfirmed),
