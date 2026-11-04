@@ -20,21 +20,17 @@ export default class InvitationLimiter {
   }
 
   async run<T>(email: string, prepare: (transaction?: Knex.Transaction) => Promise<T>): Promise<T> {
-    const hasStaffLimit = this.deps.limitService.isLimited('staff');
     const hasAllStaffLimit = this.deps.limitService.isLimited('allStaff');
     const hasEmailLimit = this.deps.limitService.isLimited('inviteEmails');
-    const isLimited = hasStaffLimit || hasAllStaffLimit || hasEmailLimit;
+    const isLimited = hasAllStaffLimit || hasEmailLimit;
 
     if (!isLimited) {
       return prepare();
     }
     return this.deps.transaction(async (transaction) => {
       const options = { transacting: transaction };
-      let counterValue: string | null = null;
       // Serialize allStaff and email allowance checks before reading invitations or counts.
-      if (hasAllStaffLimit || hasEmailLimit) {
-        counterValue = await this.getAndLockInviteEmailCounter(transaction);
-      }
+      const counterValue = await this.getAndLockInviteEmailCounter(transaction);
 
       email = email.trim();
       const existingInvite = await this.findAndLockInvite(transaction, email);
