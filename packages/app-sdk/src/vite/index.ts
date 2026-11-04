@@ -17,7 +17,7 @@ import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite';
 
 import { createKeys, keyFile } from '../tooling/keys.ts';
 import { MANIFEST_PATH, formatErrors } from '../shared/manifest.ts';
-import { MANIFEST_FILE, signProject } from '../tooling/sign.ts';
+import { MANIFEST_FILE, serialiseSigned, signProject } from '../tooling/sign.ts';
 import { provideDevBackendKey } from './dev-vars.ts';
 
 // What Vite denies when a project names nothing to deny, as of Vite 8. A project's own list
@@ -301,7 +301,7 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
       this.emitFile({
         type: 'asset',
         fileName: MANIFEST_PATH.slice(1),
-        source: `${JSON.stringify(result.signed, null, 2)}\n`,
+        source: serialiseSigned(result.signed),
       });
       config.logger.info(
         `ghost-app: signed ghost-app.json for ${manifestUrl} with ${process.env.GHOST_APP_IDENTITY_KEY ? 'GHOST_APP_IDENTITY_KEY' : keyFile('production', 'identity')}`,

@@ -13,7 +13,13 @@ import {
   type ReadKeysOptions,
 } from './keys.ts';
 import { UNKNOWN_GHOST_URL } from '../shared/manifest.ts';
-import { MANIFEST_MAX_BYTES, storedSize, tooLargeMessage } from './limits.ts';
+import {
+  MANIFEST_MAX_BYTES,
+  SIGNED_MANIFEST_MAX_BYTES,
+  signedTooLargeMessage,
+  storedSize,
+  tooLargeMessage,
+} from './limits.ts';
 import type { ManifestError, SignedManifest } from './types.ts';
 
 /** The readable manifest a project keeps, which the tooling signs. */
@@ -108,8 +114,22 @@ export async function signAppManifest(source: unknown, options: SignOptions): Pr
       errors: [{ path: '', message: tooLargeMessage() }],
     };
   }
-  const signed = await signManifest(`${JSON.stringify(manifest, null, 2)}\n`, options.identityKey);
+  // Ghost limits the signed manifest it fetches too, and the payload keeps whatever the file had,
+  // such as text Ghost trims, so a manifest Ghost stores can still be too large to fetch.
+  const signed = await signManifest(JSON.stringify(manifest), options.identityKey);
+  if (new TextEncoder().encode(serialiseSigned(signed)).byteLength > SIGNED_MANIFEST_MAX_BYTES) {
+    return {
+      success: false,
+      code: 'APP_MANIFEST_TOO_LARGE',
+      errors: [{ path: '', message: signedTooLargeMessage() }],
+    };
+  }
   return { success: true, signed, manifest };
+}
+
+/** A signed manifest as the CLI and the Vite plugin write it to a file. */
+export function serialiseSigned(signed: SignedManifest): string {
+  return `${JSON.stringify(signed, null, 2)}\n`;
 }
 
 /** Reads `ghost-app.json`, or another readable manifest, as JSON. */

@@ -5,7 +5,7 @@ import { parseArgs } from 'node:util';
 import { checkApp } from './tooling/check.ts';
 import { createKeys, keyFile, readBackendKey, type Mode } from './tooling/keys.ts';
 import { formatErrors } from './shared/manifest.ts';
-import { MANIFEST_FILE, signProject } from './tooling/sign.ts';
+import { MANIFEST_FILE, serialiseSigned, signProject } from './tooling/sign.ts';
 
 const USAGE = `Usage: ghost-app <command> [options]
 
@@ -78,7 +78,7 @@ async function sign(
     );
     return 1;
   }
-  const text = `${JSON.stringify(result.signed, null, 2)}\n`;
+  const text = serialiseSigned(result.signed);
   if (out) {
     // Against the project's directory, like --manifest and the keys.
     const written = resolve(root, out);

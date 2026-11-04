@@ -30,5 +30,8 @@ export function storedSize(manifest: AppManifest): number {
   return new TextEncoder().encode(JSON.stringify(z.encode(AppManifestSchema, manifest))).byteLength;
 }
 
+export const signedTooLargeMessage = () =>
+  `Expected a signed manifest of at most ${Math.floor(SIGNED_MANIFEST_MAX_BYTES / 1024)} KB, as Ghost fetches it; text Ghost trims still counts`;
+
 export const tooLargeMessage = () =>
   `Expected a manifest of at most ${MANIFEST_MAX_BYTES / 1024} KB once its paths are resolved, as Ghost stores it`;

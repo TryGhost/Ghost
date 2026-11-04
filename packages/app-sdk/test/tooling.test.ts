@@ -335,6 +335,16 @@ describe('signing', () => {
     ).rejects.toThrow(`${join(root, 'ghost-app.json')} isn't JSON`);
   });
 
+  it('refuses a manifest whose signed form is larger than Ghost fetches, though Ghost would store it', async () => {
+    // Ghost trims the name, so what it stores is small, but the payload keeps every space.
+    const result = await signAppManifest(
+      { ...SOURCE, name: `Hello${' '.repeat(70_000)}` },
+      { manifestUrl: MANIFEST_URL, ...keys },
+    );
+    expect(result).toMatchObject({ success: false, code: 'APP_MANIFEST_TOO_LARGE' });
+    expect(!result.success && result.errors[0]?.message).toContain('as Ghost fetches it');
+  });
+
   it('refuses a manifest URL Ghost would refuse', async () => {
     const result = await signAppManifest(SOURCE, {
       manifestUrl: 'ftp://x.example/m.json',
