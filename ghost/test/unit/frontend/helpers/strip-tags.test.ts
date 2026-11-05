@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
-// @ts-expect-error This module lacks type definitions.
-import strip_tags from '../../../../core/frontend/helpers/strip_tags';
+import { strip_tags } from '../../../../core/frontend/helpers/strip_tags';
 // @ts-expect-error This module lacks type definitions.
 import { SafeString } from '../../../../core/frontend/services/handlebars';
 // @ts-expect-error This module lacks type definitions.
 import { registerHelper, shouldCompileToExpected } from './utils/handlebars';
+// @ts-expect-error This module lacks type definitions.
+import handlebarsService from '../../../../core/frontend/services/handlebars';
+
+const { handlebars } = handlebarsService.hbs;
 
 function inline(input: unknown): string {
   return strip_tags.call({}, input, { hash: {} });
@@ -133,7 +136,7 @@ describe('{{strip_tags}} helper', function () {
 
   describe('inline template usage', function () {
     beforeAll(function () {
-      registerHelper('strip_tags');
+      handlebars.registerHelper('strip_tags', strip_tags);
       registerHelper('content');
       registerHelper('match');
     });
@@ -201,7 +204,7 @@ describe('{{strip_tags}} helper', function () {
 
   describe('block template usage', function () {
     beforeAll(function () {
-      registerHelper('strip_tags');
+      handlebars.registerHelper('strip_tags', strip_tags);
       registerHelper('content');
     });
 
@@ -218,6 +221,18 @@ describe('{{strip_tags}} helper', function () {
         '{{#strip_tags}}{{content}}{{/strip_tags}}',
         { html: '<p>First &amp; <a href="/">second</a></p><p>third</p>' },
         'First &amp; second third',
+      );
+    });
+
+    it('strips tags from content truncated by words', function () {
+      shouldCompileToExpected(
+        '{{#strip_tags}}{{content words="10"}}{{/strip_tags}}',
+        {
+          html:
+            '<p>The <a href="/quick">quick</a> <strong>brown</strong> fox jumps over the lazy dog</p>' +
+            '<p>and then <em>keeps</em> running &amp; running until the sun sets.</p>',
+        },
+        'The quick brown fox jumps over the lazy dog and',
       );
     });
 
