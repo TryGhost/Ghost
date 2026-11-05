@@ -106,15 +106,19 @@ describe('the package', () => {
     expect(loaded).not.toMatch(/jose|zod|node:/);
   });
 
-  it.each([['tooling', ['jose', 'zod']]])(
-    '%s.js loads only Node builtins and %j',
-    (entry, packages) => {
-      const loaded = [...reachableImports(code(entry))].filter(
-        (specifier) => !specifier.startsWith('node:'),
-      );
-      expect(new Set(loaded)).toEqual(new Set(packages));
-    },
-  );
+  it.each([
+    ['tooling', ['jose', 'zod']],
+    ['bin', ['jose', 'zod', 'commander']],
+  ])('%s.js loads only Node builtins and %j', (entry, packages) => {
+    const loaded = [...reachableImports(code(entry))].filter(
+      (specifier) => !specifier.startsWith('node:'),
+    );
+    expect(new Set(loaded)).toEqual(new Set(packages));
+  });
+
+  it('runs the CLI with Node', () => {
+    expect(readFileSync(code('bin'), 'utf8').split('\n')[0]).toBe('#!/usr/bin/env node');
+  });
 
   it.each([
     ['index', ['GhostAppError', 'connect']],

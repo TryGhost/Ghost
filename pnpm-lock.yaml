@@ -524,6 +524,9 @@ catalogs:
     clsx:
       specifier: 2.1.1
       version: 2.1.1
+    commander:
+      specifier: 15.0.0
+      version: 15.0.0
     concurrently:
       specifier: 10.0.6
       version: 10.0.6
@@ -4047,6 +4050,9 @@ importers:
       '@quilted/threads':
         specifier: 'catalog:'
         version: 4.1.0(@preact/signals-core@1.14.4)
+      commander:
+        specifier: 'catalog:'
+        version: 15.0.0
       jose:
         specifier: 'catalog:'
         version: 6.2.15

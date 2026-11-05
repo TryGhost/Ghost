@@ -9,6 +9,9 @@
     "url": "git+https://github.com/TryGhost/Ghost.git",
     "directory": "packages/app-sdk"
   },
+  "bin": {
+    "ghost-app": "build/bin.js"
+  },
   "files": [
     "build",
     "dist"
@@ -44,6 +47,7 @@
   },
   "dependencies": {
     "@quilted/threads": "catalog:",
+    "commander": "catalog:",
     "jose": "catalog:",
     "zod": "catalog:"
   },
