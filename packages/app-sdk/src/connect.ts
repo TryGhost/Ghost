@@ -7,6 +7,7 @@ import {
 } from '@tryghost/app-contracts';
 
 import { GhostAppError, invalidArgument } from './errors.ts';
+import { isOverlayDocument, prepareOverlayDocument } from './overlay.ts';
 import { Channel } from './session.ts';
 import type { ConnectOptions, Ghost } from './types.ts';
 import { SDK_VERSION } from './version.ts';
@@ -170,8 +171,16 @@ function forget(attempt: Promise<Ghost>) {
  * fails or its session ends, every call rejects with the error it ended with, and only a new
  * document (after a reload, for example) can connect again. A failure before Admin answered,
  * such as a bad option or a timeout, can be retried.
+ *
+ * In the app's overlay, the copy of the app's page Admin loads for its dialogs and sheets, it
+ * never resolves: the app doesn't start there, and the page frame renders into it instead.
  */
 export function connect(options: ConnectOptions = {}): Promise<Ghost> {
+  // In the overlay, the app doesn't start: the page frame renders its dialogs here instead.
+  if (isOverlayDocument()) {
+    prepareOverlayDocument();
+    return new Promise<Ghost>(() => {});
+  }
   // Two copies would both send a hello for the same document, and Admin answers each document
   // only once.
   if (!claimPage()) {

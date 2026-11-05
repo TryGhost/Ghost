@@ -73,6 +73,7 @@ can be retried.
 | `onPathChange(callback)`  | Called when Admin moves the app: back or forward in Admin, or one of Admin's links. The page's URL is already there and `popstate` has fired; a multi-page app loads it (see below). |
 | `fetch(path, init?)`      | Calls the Admin API as the staff user. `path` is relative to the API root (`/posts/?limit=5`), never a URL. Resolves with a real `Response`.                                         |
 | `open(place)`             | Sends the publisher to `{ post: { id } }`, `{ page: { id } }`, `{ member: { id } }` or `{ apps: true }`. Rejects with `rejected` if they're already leaving the app.                 |
+| `overlay`                 | Where dialogs and sheets render to cover all of Admin (see below).                                                                                                                   |
 | `connected`               | `false` once the session has ended.                                                                                                                                                  |
 | `onSessionEnd(callback)`  | Called once, with the `session_ended` error, when this document leaves the app session (a reload, form post or link) or the session ends.                                            |
 
@@ -177,6 +178,31 @@ links. The SDK turns each into a single entry in Admin's history:
 Not intercepted, so each still adds an entry of the frame's own, which back
 steps through without Admin: a form that posts, a change to `location.hash`,
 and the Navigation API. Route with the History API rather than the hash.
+
+### Dialogs over Admin
+
+A dialog, alert dialog or modal sheet that renders into
+`ghost.overlay.container()` and calls `ghost.overlay.hold()` covers all of
+Admin, as Admin's own do, rather than only the app's page. Admin loads the
+app's page a second time, hidden, in a frame above its own chrome, and the page
+renders those dialogs into it from its own React tree. That copy never connects, so it shows nothing of its own.
+Code that runs before `connect()` resolves runs in it too, so start fetches,
+analytics and the like once `connect()` has resolved.
+
+- Admin shows the overlay only right after the publisher clicks or types in the
+  app. A dialog that opens without that, such as one open as the page loads,
+  renders in the page, as does one Admin refuses to show as it opens.
+- Pressing Admin's tint presses outside the topmost dialog, which closes it
+  unless it stays open when pressed outside, as an alert dialog does.
+- Code in the page reads the page's `document`, not the overlay's. The SDK
+  moves focus into the dialog and keeps Tab in it, and `instanceof` checks in
+  the page accept the overlay's nodes and events.
+- A link to a web page in a dialog loads in the page, as it would from there.
+  Any other link, such as a `mailto:`, opens as it is. If the overlay loads
+  another document under a dialog anyway, such as for a form that posts
+  natively, the page loads again.
+- Styles the page adds at runtime, rather than in its stylesheets, don't reach
+  the overlay, and toasts stay in the page.
 
 ### The frame
 

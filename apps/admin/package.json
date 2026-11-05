@@ -57,6 +57,7 @@
     "@tryghost/timezone-data": "catalog:",
     "@uiw/react-codemirror": "catalog:",
     "@xyflow/react": "12.12.0",
+    "aria-hidden": "catalog:",
     "clsx": "catalog:",
     "dequal": "catalog:",
     "dompurify": "catalog:",

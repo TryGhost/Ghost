@@ -39,6 +39,8 @@ describe('the root entry point', () => {
       'FETCH_RESPONSE_STATUS_MIN',
       'HELLO_MESSAGE_TYPE',
       'HOST_ERROR_CODES',
+      'OVERLAY_FRAME_NAME',
+      'OVERLAY_TINTS',
       'START_TIMEOUT_MS',
       'TITLE_MAX_LENGTH',
       'UNCONFIRMED_APP_CODES',

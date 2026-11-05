@@ -6,6 +6,8 @@ import {
   FetchRequestSchema,
   HelloMessageSchema,
   type HostExports,
+  type OverlayOptions,
+  OverlayOptionsSchema,
   type PathMove,
   PathMoveSchema,
   type Place,
@@ -29,6 +31,14 @@ export interface AppFrameHandlers {
   pathChanged(path: string, move: PathMove): string;
   /** Takes the publisher to `place`, and returns whether Admin navigated there. */
   open(place: Place): boolean;
+  /**
+   * Shows the overlay frame and Admin's tint, or changes the tint of one already shown, and
+   * returns whether Admin did. Admin shows it only while the app is started, and only when the
+   * publisher has just clicked or typed in it.
+   */
+  overlayShown(options: OverlayOptions): boolean;
+  /** Hides the overlay frame and Admin's tint. */
+  overlayHidden(): void;
   /**
    * The started page was replaced by a new document in the same frame (after a reload, a form post
    * or a link), and its channel closed. The app isn't started again until the new document starts.
@@ -60,6 +70,8 @@ export interface AppFrameHost {
   readonly connected: boolean;
   themeChanged(theme: Theme): void;
   pathChanged(path: string): void;
+  /** Tells the page the publisher pressed Admin's tint, so it closes its topmost dialog. */
+  overlayDismissed(): void;
   /** Ends the session. The channel closes and Admin refuses every further call from the page. */
   dispose(): void;
 }
@@ -179,6 +191,17 @@ export function bindAppFrame({
         if (!handlers.open(parseFromFrame(PlaceSchema, place))) {
           throw new BridgeError('rejected', 'The publisher is on their way elsewhere in Admin');
         }
+      }),
+      overlayShown: guarded((options: unknown) => {
+        if (!handlers.overlayShown(parseFromFrame(OverlayOptionsSchema, options))) {
+          throw new BridgeError(
+            'rejected',
+            'Admin shows the overlay only while the app is started, right after the publisher clicks or types in it',
+          );
+        }
+      }),
+      overlayHidden: guarded(() => {
+        handlers.overlayHidden();
       }),
     });
   };
@@ -307,6 +330,7 @@ export function bindAppFrame({
     },
     themeChanged: (theme) => tell((app) => app.themeChanged(theme)),
     pathChanged: (path) => tell((app) => app.pathChanged(path)),
+    overlayDismissed: () => tell((app) => app.overlayDismissed()),
     dispose() {
       if (disposed) {
         return;
