@@ -22,7 +22,6 @@ export { useTinybirdQuery } from './hooks/use-tinybird-query';
 export type { UseTinybirdQueryOptions } from './hooks/use-tinybird-query';
 export { useKoenigFileUpload, koenigFileUploadTypes } from './hooks/use-koenig-file-upload';
 export { useKoenigFetchEmbed } from './hooks/use-koenig-fetch-embed';
-export { useKoenigLinkSuggestions } from './hooks/use-koenig-link-suggestions';
 export { useFeaturebase } from './hooks/use-featurebase';
 
 // API status

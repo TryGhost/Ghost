@@ -1,6 +1,6 @@
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 import { useGlobalData } from '@/settings/providers/global-data-context';
-import { useKoenigLinkSuggestions } from '@tryghost/admin-x-framework';
+import { useKoenigLinkSuggestions } from '@/shared/use-koenig-link-suggestions';
 
 export const useWelcomeEmailLinkSuggestions = () => {
   const { settings, siteData } = useGlobalData();

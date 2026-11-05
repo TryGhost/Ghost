@@ -1,16 +1,10 @@
-import { useBrowseOffers } from '../api/offers';
-import { useBrowsePosts } from '../api/posts';
 import { useCallback, useMemo } from 'react';
-import useFilterableApi from './use-filterable-api';
-
-type SearchIndexResult = {
-  id: string;
-  title: string;
-  url: string;
-  status: string;
-  visibility?: string;
-  published_at?: string;
-};
+import { useQueryClient } from '@tanstack/react-query';
+import { useBrowseOffers } from '@tryghost/admin-x-framework/api/offers';
+import { useBrowsePosts } from '@tryghost/admin-x-framework/api/posts';
+import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
+import { isLinkablePost, matchesWords } from '@/shared/link-search';
+import { type SearchIndexItem, searchIndexQueryOptions } from '@/shared/search-index';
 
 type LinkItem = {
   id: string;
@@ -51,16 +45,22 @@ export const useKoenigLinkSuggestions = ({
       limit: '5',
     },
   });
-  const searchPosts = useFilterableApi<SearchIndexResult, 'posts', 'title'>({
-    path: '/search-index/posts/',
-    filterKey: 'title',
-    responseKey: 'posts',
-  });
-  const searchPages = useFilterableApi<SearchIndexResult, 'pages', 'title'>({
-    path: '/search-index/pages/',
-    filterKey: 'title',
-    responseKey: 'pages',
-  });
+  const fetchApi = useFetchApi();
+  const queryClient = useQueryClient();
+
+  // Shared with global search and the other link pickers. A failed download
+  // only leaves out its own group.
+  const loadIndex = useCallback(
+    async (key: 'posts' | 'pages'): Promise<SearchIndexItem[]> => {
+      try {
+        const response = await queryClient.fetchQuery(searchIndexQueryOptions(key, fetchApi));
+        return response[key] ?? [];
+      } catch {
+        return [];
+      }
+    },
+    [fetchApi, queryClient],
+  );
 
   const defaultLinks = useMemo<LinkGroup[]>(() => {
     const posts = latestPostsData?.posts || [];
@@ -80,7 +80,7 @@ export const useKoenigLinkSuggestions = ({
     ];
   }, [latestPostsData?.posts]);
 
-  const fetchAutocompleteLinks = useCallback(async () => {
+  const fetchAutocompleteLinks = useCallback(() => {
     const defaults = [
       { label: 'Homepage', value: siteUrl },
       { label: 'Free signup', value: '#/portal/signup/free' },
@@ -109,14 +109,14 @@ export const useKoenigLinkSuggestions = ({
         value: new URL(offer.code, siteUrl).toString(),
       }));
 
-    return [
+    return Promise.resolve([
       ...defaults,
       ...memberLinks,
       ...donationLink,
       ...shareLink,
       ...recommendationLink,
       ...offersLinks,
-    ];
+    ]);
   }, [
     donationsEnabled,
     includeShareLink,
@@ -129,43 +129,30 @@ export const useKoenigLinkSuggestions = ({
 
   const searchLinks = useCallback(
     async (term: string) => {
-      if (!term) {
+      if (!term.trim()) {
         return defaultLinks;
       }
 
-      const [posts, pages] = await Promise.all([
-        searchPosts.loadData(term),
-        searchPages.loadData(term),
-      ]);
+      const [posts, pages] = await Promise.all([loadIndex('posts'), loadIndex('pages')]);
+
+      const toItems = (entries: SearchIndexItem[]): LinkItem[] =>
+        entries
+          .filter(isLinkablePost)
+          .filter((entry) => matchesWords(entry.title ?? '', term))
+          .map((entry) => ({
+            id: entry.id,
+            title: entry.title ?? '',
+            url: entry.url,
+            visibility: entry.visibility,
+            publishedAt: entry.published_at ?? undefined,
+          }));
 
       return [
-        {
-          label: 'Posts',
-          items: posts
-            .filter((item) => item.status === 'published')
-            .map((item) => ({
-              id: item.id,
-              title: item.title,
-              url: item.url,
-              visibility: item.visibility,
-              publishedAt: item.published_at,
-            })),
-        },
-        {
-          label: 'Pages',
-          items: pages
-            .filter((item) => item.status === 'published')
-            .map((item) => ({
-              id: item.id,
-              title: item.title,
-              url: item.url,
-              visibility: item.visibility,
-              publishedAt: item.published_at,
-            })),
-        },
+        { label: 'Posts', items: toItems(posts) },
+        { label: 'Pages', items: toItems(pages) },
       ].filter((group) => group.items.length > 0);
     },
-    [defaultLinks, searchPages, searchPosts],
+    [defaultLinks, loadIndex],
   );
 
   return {
