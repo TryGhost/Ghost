@@ -145,6 +145,7 @@
     "@x402/evm": "catalog:",
     "@x402/hono": "catalog:",
     "archiver": "8.0.0",
+    "better-auth": "catalog:",
     "body-parser": "catalog:",
     "bookshelf": "1.2.0",
     "bookshelf-relations": "3.0.0",
@@ -238,6 +239,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@better-auth/test-utils": "catalog:",
     "@eslint/js": "catalog:",
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-test-workers": "workspace:*",
