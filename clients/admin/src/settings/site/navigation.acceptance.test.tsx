@@ -226,6 +226,25 @@ describe('Navigation settings', () => {
     expect(posts.requests).toHaveLength(1);
   });
 
+  it('reuses the search indexes when the modal is opened again', async () => {
+    fakeSettingsScreens();
+    const pages = fakeAdminEndpoint('GET', /^\/search-index\/pages\//, { pages: [aboutPage] });
+    const posts = fakeAdminEndpoint('GET', /^\/search-index\/posts\//, { posts: [] });
+    await renderAdminApp('/settings/navigation/edit');
+
+    await newItem().getByLabelText('URL').click();
+    await expect.element(suggestions().getByRole('option', { name: /^About/ })).toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
+    await settingsScreen.navigationModal().getByRole('button', { name: 'Close' }).click();
+    await expect(settingsScreen.navigationModal()).toHaveCount(0);
+
+    await settingsScreen.navigation().getByRole('button', { name: 'Customize' }).click();
+    await newItem().getByLabelText('URL').click();
+    await expect.element(suggestions().getByRole('option', { name: /^About/ })).toBeInTheDocument();
+    expect(pages.requests).toHaveLength(1);
+    expect(posts.requests).toHaveLength(1);
+  });
+
   it('retries a search index download that failed', async () => {
     fakeSettingsScreens();
     let failNext = true;
@@ -258,6 +277,31 @@ describe('Navigation settings', () => {
     // Wait for the debounced search to replace the list shown on focus
     await expect(suggestions().getByRole('option', { name: /^Welcome to Ghost/ })).toHaveCount(0);
     await expect.element(suggestions().getByRole('option', { name: /^About/ })).toBeInTheDocument();
+  });
+
+  it('suggests content whose title has the typed words in any order', async () => {
+    fakeSettingsScreens();
+    fakeSearchIndex({
+      posts: [
+        {
+          id: 'p2',
+          title: 'Welcome to Ghost',
+          url: 'http://test.com/welcome/',
+          status: 'published',
+        },
+        { id: 'p4', title: 'Sale for spring', url: 'http://test.com/sale/', status: 'published' },
+      ],
+    });
+    await renderAdminApp('/settings/navigation/edit');
+
+    await newItem().getByLabelText('URL').click();
+    await userEvent.keyboard('spring sale');
+
+    // Wait for the debounced search to replace the list shown on focus
+    await expect(suggestions().getByRole('option', { name: /^Welcome to Ghost/ })).toHaveCount(0);
+    await expect
+      .element(suggestions().getByRole('option', { name: /^Sale for spring/ }))
+      .toBeInTheDocument();
   });
 
   it('finds an offer past the first five by typing its name', async () => {
