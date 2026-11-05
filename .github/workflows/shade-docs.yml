@@ -1,0 +1,65 @@
+name: Shade Docs
+
+# Builds the Shade Storybook and hands it to TryGhost/shade-gh-pages, which
+# deploys it to https://shade.ghost.org on main pushes that touch apps/shade/.
+# The dispatch token needs `actions: write` on TryGhost/shade-gh-pages.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/shade/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/shade-docs.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: shade-docs
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 22.23.4
+  ARTIFACT_NAME: shade-storybook
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    if: github.repository == 'TryGhost/Ghost' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          install-args: --filter @tryghost/shade...
+          store-cache: 'false'
+
+      - name: Build Storybook
+        working-directory: apps/shade
+        run: pnpm build-storybook
+
+      - name: Upload Storybook artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: apps/shade/storybook-static
+          retention-days: 1
+          if-no-files-found: error
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-slim
+    permissions: {}
+    # No checkout or execution of source code in this credential-bearing job.
+    steps:
+      - name: Trigger shade-gh-pages deploy
+        env:
+          GH_TOKEN: ${{ secrets.CANARY_DOCKER_BUILD }}
+        run: |
+          gh workflow run deploy.yml --repo TryGhost/shade-gh-pages \
+            -f run_id="$GITHUB_RUN_ID" -f artifact_name="$ARTIFACT_NAME"

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { appEntryPath, appPathFromLocation, appPathRoute, isAppLocation } from './app-path';
+import {
+  appEntryPath,
+  appFrameUrl,
+  appPathFromLocation,
+  appPathRoute,
+  isAppLocation,
+} from './app-path';
 
 const at = (pathname: string, search = '', hash = '') => ({ pathname, search, hash });
 const ENTRY = '/admin';
@@ -28,6 +34,61 @@ describe('appPathFromLocation', () => {
   it('returns the entry route for anything that isn’t a path the app could have reported', () => {
     expect(appPathFromLocation('abc', at('/apps/abc//evil.example/'), ENTRY)).toBe(ENTRY);
     expect(appPathFromLocation('abc', at('/apps/abcdef/episodes'), ENTRY)).toBe(ENTRY);
+  });
+
+  it('returns the entry route for a part the URL parser would read as another site', () => {
+    for (const pathname of [
+      '/apps/abc/.//site.example/p/1234/',
+      '/apps/abc/..//site.example/p/1234/',
+      '/apps/abc/a/../..//site.example/',
+      '/apps/abc/%2e//site.example/',
+      '/apps/abc/%2E%2E//site.example/',
+      '/apps/abc/./\\site.example/',
+      '/apps/abc/.\t//site.example/',
+      '/apps/abc/.\n//site.example/',
+    ]) {
+      expect(appPathFromLocation('abc', at(pathname), ENTRY), pathname).toBe(ENTRY);
+    }
+  });
+});
+
+describe('appFrameUrl', () => {
+  const PAGE = 'https://app.example/admin';
+
+  it('resolves the app’s route against its page', () => {
+    for (const [path, url] of [
+      ['/admin', PAGE],
+      ['/', 'https://app.example/'],
+      ['/episodes/12/notes/', 'https://app.example/episodes/12/notes/'],
+      ['/search?q=a%20b&page=2', 'https://app.example/search?q=a%20b&page=2'],
+      ['/tab#details', 'https://app.example/tab#details'],
+      ['/search?next=//site.example/', 'https://app.example/search?next=//site.example/'],
+      ['/%2F%2Fsite.example', 'https://app.example/%2F%2Fsite.example'],
+      ['/caf%C3%A9', 'https://app.example/caf%C3%A9'],
+    ]) {
+      expect(appFrameUrl(PAGE, path), path).toBe(url);
+    }
+  });
+
+  it('gives the app’s page for a route that resolves to another origin, or to nothing', () => {
+    for (const path of [
+      '//site.example/p/1234/',
+      '/\\site.example/',
+      '\\\\site.example/',
+      '/\t/site.example/',
+      'https://site.example/',
+      'http://app.example/admin',
+      '//',
+    ]) {
+      expect(appFrameUrl(PAGE, path), path).toBe(PAGE);
+    }
+  });
+
+  it('only ever gives an address on the app’s origin for a route read from Admin’s URL', () => {
+    for (const pathname of ['/apps/abc/.//site.example/p/1234/', '/apps/abc/episodes/12']) {
+      const path = appPathFromLocation('abc', at(pathname), ENTRY);
+      expect(new URL(appFrameUrl(PAGE, path)).origin, pathname).toBe('https://app.example');
+    }
   });
 });
 

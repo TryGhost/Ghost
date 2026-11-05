@@ -9,6 +9,8 @@ const {
   dbUtils,
   hostLimits,
 } = require('../../utils/e2e-framework');
+const DatabaseInfo = require('@tryghost/database-info');
+const { knex } = require('../../../core/server/data/db');
 const models = require('../../../core/server/models');
 const events = require('../../../core/server/lib/common/events');
 
@@ -26,7 +28,7 @@ describe('Member Custom Fields Admin API', function () {
 
   // The key is minted server-side from the name, so callers pass just a name
   // (and optionally a type) and read the derived key off the result.
-  async function createField(field: { name: string; type?: string }) {
+  async function createField(field: { name: string; type?: string; settings?: unknown }) {
     const { body } = await agent
       .post('members/metafields/custom/')
       .body({ members_metafields: [{ type: 'short_text', ...field }] })
@@ -2359,6 +2361,103 @@ describe('Member Custom Fields Admin API', function () {
 
       assert.equal(editedEvents, 0);
       assert.equal((await memberEditedActions(memberId)).length, 0);
+    });
+  });
+
+  // Saving custom field values must lock only the rows it changes, or two members created at
+  // once each wait for the other's lock until MySQL cancels one of the requests. These tests
+  // create members rather than edit them, because editing two members who get the same
+  // newsletter makes the second edit wait for the first, so their saves never overlap.
+  describe.runIf(DatabaseInfo.isMySQL(knex))('Two members created at once', function () {
+    // How many transactions are waiting for a lock on members_metafield_values.
+    async function savesWaitingToWriteValues(): Promise<number> {
+      const [rows] = await models.Base.knex.raw(`
+        SELECT COUNT(DISTINCT waits.REQUESTING_ENGINE_TRANSACTION_ID) AS waiting
+        FROM performance_schema.data_lock_waits AS waits
+        JOIN performance_schema.data_locks AS requested
+          ON requested.ENGINE_LOCK_ID = waits.REQUESTING_ENGINE_LOCK_ID
+        WHERE requested.OBJECT_SCHEMA = DATABASE()
+          AND requested.OBJECT_NAME = 'members_metafield_values'
+      `);
+      return Number(rows[0].waiting);
+    }
+
+    // Sends both creates while a transaction holds a lock on the whole members_metafield_values
+    // table, so neither create can write a value yet. Once both creates are waiting on that
+    // lock, or one has already answered, the lock is released and both write their values at
+    // the same time, which is when a deadlock can happen. The table is empty at the start of
+    // each test, so a locking read of every row blocks every insert into the table.
+    async function createBothAtOnce(
+      values: [Record<string, unknown>, Record<string, unknown>],
+    ): Promise<Array<Record<string, unknown>>> {
+      const gate = await models.Base.knex.transaction();
+      let created: Array<{ statusCode: number; body: { members: Array<{ id: string }> } }>;
+      let creates: Array<Promise<(typeof created)[number]>> = [];
+      try {
+        await gate('members_metafield_values').forUpdate();
+        let answered = 0;
+        creates = values.map((custom) => {
+          memberCounter += 1;
+          return agent
+            .post('members/')
+            .body({
+              members: [
+                { email: `custom-fields-${memberCounter}@example.com`, metafields: { custom } },
+              ],
+            })
+            .then((response: (typeof created)[number]) => {
+              answered += 1;
+              return response;
+            });
+        });
+        await vi.waitFor(
+          async () => assert.equal((await savesWaitingToWriteValues()) + answered, 2),
+          { timeout: 5000 },
+        );
+        await gate.commit();
+        created = await Promise.all(creates);
+      } finally {
+        if (!gate.isCompleted()) {
+          await gate.rollback();
+        }
+        // Waited for however the test ends, so no create is still writing when the next test
+        // starts.
+        await Promise.allSettled(creates);
+      }
+
+      assert.deepEqual(
+        created.map(({ statusCode }) => statusCode),
+        [201, 201],
+        'one of the creates failed',
+      );
+      return Promise.all(created.map(({ body }) => readValues(body.members[0].id)));
+    }
+
+    it('keeps both lists', async function () {
+      const animals = await createField({
+        name: 'Favourite animals',
+        type: 'list',
+        settings: { options: ['Dog', 'Cat'], multiple: true },
+      });
+
+      const saved = await createBothAtOnce([
+        { [animals.key]: ['Dog'] },
+        { [animals.key]: ['Cat'] },
+      ]);
+
+      assert.deepEqual(saved, [{ [animals.key]: ['Dog'] }, { [animals.key]: ['Cat'] }]);
+    });
+
+    it('keeps both when each clears a field and fills another', async function () {
+      const topic = await createField({ name: 'Favourite topic' });
+      const company = await createField({ name: 'Company' });
+
+      const saved = await createBothAtOnce([
+        { [topic.key]: null, [company.key]: 'Ghost' },
+        { [topic.key]: null, [company.key]: 'Acme' },
+      ]);
+
+      assert.deepEqual(saved, [{ [company.key]: 'Ghost' }, { [company.key]: 'Acme' }]);
     });
   });
 

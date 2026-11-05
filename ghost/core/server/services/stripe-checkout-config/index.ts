@@ -73,7 +73,7 @@ export default defineService(
       // Looked up on each use: Stripe, tiers and members are set up later in boot.
       previews: new CheckoutPreviewService({
         stripeConnected: () => require('../stripe').api.configured,
-        readTier: (id) => require('../tiers').api.read(id),
+        readTier: (id) => require('../tiers').default.service.api.read(id),
         checkouts,
         createPreviewLink: (params) =>
           require('../members').api.paymentsService.getPreviewLink(params),

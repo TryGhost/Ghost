@@ -20,6 +20,7 @@ const COLUMNS_BESIDE_STATUS = Object.keys({
   key: true,
   name: true,
   type: true,
+  settings: true,
   member_access: true,
   sort_order: true,
   created_at: true,

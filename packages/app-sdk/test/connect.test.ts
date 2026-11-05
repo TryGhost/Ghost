@@ -10,6 +10,7 @@ import {
   settle,
   startContext,
 } from './fake-admin.ts';
+import { SDK_VERSION } from '../src/version.ts';
 
 type Sdk = typeof import('../src/index.ts');
 
@@ -90,7 +91,7 @@ describe('connect', () => {
     expect(parent.postMessage).toHaveBeenCalledWith(
       {
         type: HELLO_MESSAGE_TYPE,
-        sdk: 'private',
+        sdk: SDK_VERSION,
         document: expect.stringMatching(/^[0-9a-z]+-[0-9a-z]+$/),
       },
       '*',

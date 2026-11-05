@@ -5,6 +5,7 @@ import {
   ExplorePingService,
   type ExplorePingServiceDeps,
 } from '../../../../../core/server/services/explore-ping/explore-ping-service';
+import { createLoggingFake } from '../../../../utils/logging-utils';
 
 type RequestFn = ExplorePingServiceDeps['request'];
 type StatsApi = NonNullable<NonNullable<ExplorePingServiceDeps['statsService']>['api']>;
@@ -15,7 +16,6 @@ type StubbedMethods<T> = {
 };
 
 type GetStub = sinon.SinonStub<[string], unknown>;
-type LogStub = sinon.SinonStub<unknown[], void>;
 type RequestStub = sinon.SinonStub<Parameters<RequestFn>, ReturnType<RequestFn>>;
 type PostsStub = { stats: StubbedMethods<ExplorePingServiceDeps['posts']['stats']> };
 type MembersStub = { stats: StubbedMethods<ExplorePingServiceDeps['members']['stats']> };
@@ -25,7 +25,7 @@ describe('ExplorePingService', function () {
   let explorePingService: ExplorePingService;
   let settingsCacheStub: { get: GetStub };
   let configStub: { get: GetStub };
-  let loggingStub: { info: LogStub; warn: LogStub };
+  let loggingStub: ReturnType<typeof createLoggingFake>;
   let ghostVersionStub: ExplorePingServiceDeps['ghostVersion'];
   let requestStub: RequestStub;
   let postsStub: PostsStub;
@@ -53,10 +53,7 @@ describe('ExplorePingService', function () {
     configStub.get.withArgs('url').returns('https://example.com');
     configStub.get.withArgs('explore:update_url').returns('https://explore.testing.com');
 
-    loggingStub = {
-      info: sinon.stub(),
-      warn: sinon.stub(),
-    };
+    loggingStub = createLoggingFake();
 
     ghostVersionStub = {
       full: '4.0.0',

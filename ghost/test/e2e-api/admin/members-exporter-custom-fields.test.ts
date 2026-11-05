@@ -62,10 +62,10 @@ describe('Members API — exportCSV with custom fields', function () {
   };
 
   // The key is minted server-side from the name, so callers read it off the result.
-  async function createField(name: string, type: string) {
+  async function createField(name: string, type: string, settings?: unknown) {
     const { body } = await agent
       .post('members/metafields/custom/')
-      .body({ members_metafields: [{ name, type }] })
+      .body({ members_metafields: [{ name, type, settings }] })
       .expectStatus(201);
     return body.members_metafields[0];
   }
@@ -185,6 +185,22 @@ describe('Members API — exportCSV with custom fields', function () {
         FULL_ADDRESS[part as keyof typeof FULL_ADDRESS],
       );
     }
+  });
+
+  // One column for the field, never one per option, holding the options' names as they read.
+  it("writes a list's options in one column, separated so they split back apart", async function () {
+    const topics = await createField('Topics', 'list', {
+      options: ['Film, TV', 'Cooking', 'Travel'],
+      multiple: true,
+    });
+    const member = await createMember({ [topics.key]: ['Travel', 'Film, TV'] });
+    const unanswered = await createMember();
+
+    const { columns, rowFor } = await exportCSV();
+
+    assert.deepEqual(columns, [...CORE_COLUMNS, columnFor(topics.key)]);
+    assert.equal(rowFor(member.id)[columnFor(topics.key)], 'Film, TV | Travel');
+    assert.equal(rowFor(unanswered.id)[columnFor(topics.key)], '');
   });
 
   it('leaves cells empty for fields a member has not filled in', async function () {

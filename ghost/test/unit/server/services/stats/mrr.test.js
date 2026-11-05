@@ -361,5 +361,52 @@ describe('MrrStatsService', function () {
       const lastEntry = history.data[history.data.length - 1];
       assertMrrEntry(lastEntry, todayDate, 180);
     });
+
+    it('Includes events from exactly 90 days ago by default and excludes the day before', async function () {
+      const ninetyDaysAgo = testToday.clone().subtract(90, 'days').startOf('day');
+      const ninetyOneDaysAgo = testToday.clone().subtract(91, 'days').startOf('day');
+
+      await addMrrEvents([
+        { date: ninetyOneDaysAgo.format('YYYY-MM-DD HH:mm:ss'), delta: 100 },
+        { date: ninetyDaysAgo.format('YYYY-MM-DD HH:mm:ss'), delta: 50 },
+        { date: today, delta: 20 },
+      ]);
+
+      await addCurrentSubscriptions([{ mrr: 170 }]);
+
+      const history = await getMrrHistory();
+
+      // The window opens at the start of the UTC day 90 days ago, so the
+      // older delta is never replayed: the baseline a day earlier keeps it.
+      assert.equal(history.count, 3);
+      assertMrrEntry(history.data[0], ninetyOneDaysAgo.format('YYYY-MM-DD'), 100);
+      assertMrrEntry(history.data[1], ninetyDaysAgo.format('YYYY-MM-DD'), 150);
+      assertMrrEntry(history.data[2], todayDate, 170);
+    });
+
+    it('Opens dateFrom at the start of its UTC day', async function () {
+      const sixtyDaysAgo = testToday.clone().subtract(60, 'days').startOf('day');
+
+      await addMrrEvents([
+        { date: sixtyDaysAgo.format('YYYY-MM-DD HH:mm:ss'), delta: 50 },
+        { date: today, delta: 30 },
+      ]);
+
+      await addCurrentSubscriptions([{ mrr: 80 }]);
+
+      // The midnight event precedes this instant but falls inside its day.
+      const history = await mrrStatsService.getHistory({
+        dateFrom: sixtyDaysAgo.clone().add(12, 'hours').toISOString(),
+      });
+
+      assert.equal(history.data.length, 3);
+      assertMrrEntry(
+        history.data[0],
+        sixtyDaysAgo.clone().subtract(1, 'days').format('YYYY-MM-DD'),
+        0,
+      );
+      assertMrrEntry(history.data[1], sixtyDaysAgo.format('YYYY-MM-DD'), 50);
+      assertMrrEntry(history.data[2], todayDate, 80);
+    });
   });
 });

@@ -1,4 +1,3 @@
-import * as assert from 'assert/strict';
 import { type CustomThemeSetting } from '@tryghost/admin-x-framework/api/custom-theme-settings';
 import { isCustomThemeSettingVisible } from '@/settings/utils/is-custom-theme-settings-visible';
 
@@ -26,7 +25,7 @@ describe('isCustomThemeSettingVisible', function () {
       {},
     );
 
-    assert.equal(isCustomThemeSettingVisible(settings[0], settingsKeyValueObj), true);
-    assert.equal(isCustomThemeSettingVisible(settings[1], settingsKeyValueObj), false);
+    expect(isCustomThemeSettingVisible(settings[0], settingsKeyValueObj)).toBe(true);
+    expect(isCustomThemeSettingVisible(settings[1], settingsKeyValueObj)).toBe(false);
   });
 });

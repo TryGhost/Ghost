@@ -1,9 +1,7 @@
 import * as contracts from '@tryghost/app-contracts/bridge';
 import { describe, expect, expectTypeOf, it } from 'vitest';
 
-import manifest from '../package.json' with { type: 'json' };
 import * as sdk from '../src/index.ts';
-import { SDK_VERSION } from '../src/version.ts';
 
 describe('@tryghost/app-sdk', () => {
   it('exports connect and its error, and nothing else at runtime', () => {
@@ -21,10 +19,6 @@ describe('@tryghost/app-sdk', () => {
     expectTypeOf<sdk.User>().toEqualTypeOf<Readonly<contracts.StartContext['user']>>();
     expectTypeOf<sdk.Session>().toEqualTypeOf<Readonly<contracts.StartContext['session']>>();
     expectTypeOf<sdk.Ghost['theme']>().toEqualTypeOf<Readonly<contracts.Theme>>();
-  });
-
-  it('sends the version from package.json in the hello', () => {
-    expect(SDK_VERSION).toBe(manifest.version);
   });
 
   it('gives errors a name and a code', () => {

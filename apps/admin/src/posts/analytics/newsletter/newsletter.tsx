@@ -37,7 +37,6 @@ import {
 import { HTable } from '@tryghost/shade/primitives';
 import {
   LucideIcon,
-  cn,
   formatNumber,
   formatPercentage,
   useSimplePagination,
@@ -57,7 +56,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePostNewsletterStats } from '@/posts/analytics/hooks/use-post-newsletter-stats';
 import { useResponsiveChartSize } from '@/posts/analytics/hooks/use-responsive-chart-size';
 import { useEmailSendingStatusContext } from '@/posts/analytics/email-sending-status/email-sending-status-context';
-import { useShade } from '@tryghost/shade/app';
 
 const FunnelArrow: React.FC = () => {
   return (
@@ -100,7 +98,6 @@ const BlockTooltip: React.FC<BlockTooltipProps> = ({ dataColor, value, avgValue 
 };
 
 const Newsletter: React.FC = () => {
-  const { isAdmin7 } = useShade();
   const navigate = useNavigate();
   const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
   const [editedUrl, setEditedUrl] = useState('');
@@ -568,9 +565,9 @@ const Newsletter: React.FC = () => {
                                   <>
                                     <Button
                                       aria-label="Edit link"
-                                      className={cn('mr-2 shrink-0', !isAdmin7 && 'bg-background')}
-                                      size={isAdmin7 ? 'icon-sm' : 'sm'}
-                                      title={isAdmin7 ? 'Edit link' : undefined}
+                                      className="mr-2 shrink-0"
+                                      size="icon-sm"
+                                      title="Edit link"
                                       variant="subtle"
                                       onClick={() => handleEdit(linkId)}
                                     >

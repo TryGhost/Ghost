@@ -4,13 +4,27 @@ const fs = require('fs');
 const sinon = require('sinon');
 const nock = require('nock');
 const path = require('path');
-const loggingLib = require('@tryghost/logging');
+const { createLoggingFake } = require('../../../../../utils/logging-utils');
 const configUtils = require('../../../../../utils/config-utils');
 const urlUtilsHelper = require('../../../../../utils/url-utils');
+const request = require('../../../../../../core/server/lib/request-external');
+const urlUtils = require('../../../../../../core/shared/url-utils').default;
 const ExternalMediaInliner = require('../../../../../../core/server/services/media-inliner/external-media-inliner');
 
+let logging;
+
+// The root supplies these collaborators in production; the tests keep the real ones.
+const createInliner = (deps = {}) =>
+  new ExternalMediaInliner({
+    logging,
+    request,
+    urlUtils,
+    loadFileType: () => import('file-type'),
+    loadHeicConvert: () => require('heic-convert'),
+    ...deps,
+  });
+
 describe('ExternalMediaInliner', function () {
-  let logging;
   let ghostLogoPng;
   let exeFile;
   let heicFile;
@@ -28,11 +42,7 @@ describe('ExternalMediaInliner', function () {
     heicFile = fs.readFileSync(path.join(__dirname, 'fixtures', 'image.heic'));
     heifFile = fs.readFileSync(path.join(__dirname, 'fixtures', 'image.heif'));
     GIF1x1 = Buffer.from('R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'base64');
-    logging = {
-      info: sinon.stub(loggingLib, 'info'),
-      error: sinon.stub(loggingLib, 'error'),
-      warn: sinon.stub(loggingLib, 'warn'),
-    };
+    logging = createLoggingFake();
 
     postModelStub = {
       findAll: sinon.stub().resolves([]),
@@ -64,14 +74,14 @@ describe('ExternalMediaInliner', function () {
   });
 
   it('Creates an External Media Inliner instance', function () {
-    assert.ok(new ExternalMediaInliner({}));
+    assert.ok(createInliner({}));
   });
 
   describe('importUrl', function () {
     function harness() {
       const response = { body: Buffer.from('media') };
       const media = { fileBuffer: response.body, filename: 'media.jpg', extension: '.jpg' };
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const getRemoteMedia = sinon.stub(inliner, 'getRemoteMedia').resolves(response);
       const extractFileDataFromResponse = sinon
         .stub(inliner, 'extractFileDataFromResponse')
@@ -186,7 +196,7 @@ describe('ExternalMediaInliner', function () {
     });
 
     it('preserves legacy processing errors at the existing catch boundary', async function () {
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const error = new Error('could not inspect media');
       sinon.stub(inliner, 'importUrl').resolves({
         status: 'failed',
@@ -203,7 +213,7 @@ describe('ExternalMediaInliner', function () {
     });
 
     it('preserves legacy falsy thrown values at the existing catch boundary', async function () {
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       sinon.stub(inliner, 'importUrl').resolves({
         status: 'failed',
         sourceUrl: 'https://example.com/media.jpg',
@@ -247,7 +257,7 @@ describe('ExternalMediaInliner', function () {
         .stub(path, 'relative')
         .withArgs('/content/images', '/content/images/unique-image.jpg')
         .returns('unique-image.jpg');
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -312,7 +322,7 @@ describe('ExternalMediaInliner', function () {
         .stub(path, 'relative')
         .withArgs('/content/images', '/content/images/unique-image.jpg')
         .returns('unique-image.jpg');
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -371,7 +381,7 @@ describe('ExternalMediaInliner', function () {
         .stub(path, 'relative')
         .withArgs('/content/images', '/content/images/unique-image.jpg')
         .returns('unique-image.jpg');
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -433,7 +443,7 @@ describe('ExternalMediaInliner', function () {
         .stub(path, 'relative')
         .withArgs('/content/images', '/content/images/unique-image.jpg')
         .returns('unique-image.jpg');
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -494,7 +504,7 @@ describe('ExternalMediaInliner', function () {
         .stub(path, 'relative')
         .withArgs('/content/images', '/content/images/unique-image.jpg')
         .returns('unique-image.jpg');
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -556,7 +566,7 @@ describe('ExternalMediaInliner', function () {
         .stub(path, 'relative')
         .withArgs('/content/images', '/content/images/unique-image.jpg')
         .returns('unique-image.jpg');
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -607,7 +617,7 @@ describe('ExternalMediaInliner', function () {
         findAll: sinon.stub().returns([postModelInstanceStub]),
       };
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -639,7 +649,7 @@ describe('ExternalMediaInliner', function () {
         }),
       };
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -672,7 +682,7 @@ describe('ExternalMediaInliner', function () {
         findAll: sinon.stub().returns([postModelInstanceStub]),
         edit: sinon.stub().resolves(),
       };
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -712,7 +722,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/unique-image.jpg')
         .returns('unique-image.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -758,7 +768,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/unique-image.jpg')
         .returns('unique-image.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -799,7 +809,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/unique-feature-image.jpg')
         .returns('unique-feature-image.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelMock,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -854,7 +864,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/unique-feature-image.jpg')
         .returns('unique-feature-image.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -906,7 +916,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/unique-tag-twitter-image.jpg')
         .returns('unique-tag-twitter-image.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -958,7 +968,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/user-cover-image.jpg')
         .returns('user-cover-image.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -996,7 +1006,7 @@ describe('ExternalMediaInliner', function () {
         .get(encodeURI('/image.heic'))
         .reply(200, heicFile);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1011,7 +1021,7 @@ describe('ExternalMediaInliner', function () {
         .get(encodeURI('/image.heif'))
         .reply(200, heifFile);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1028,7 +1038,7 @@ describe('ExternalMediaInliner', function () {
         .get(encodeURI('/files/f/ghost-logo’s-cool.png'))
         .reply(200, ghostLogoPng);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1043,7 +1053,7 @@ describe('ExternalMediaInliner', function () {
         .get(encodeURI('/files/f/ghost logo with spaces.png'))
         .reply(200, ghostLogoPng);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1058,7 +1068,7 @@ describe('ExternalMediaInliner', function () {
         .get('/files/f/ghost-logo')
         .reply(200, ghostLogoPng);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1073,7 +1083,7 @@ describe('ExternalMediaInliner', function () {
         .get(encodeURI('/files/f/你好.png'))
         .reply(200, ghostLogoPng);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1088,7 +1098,7 @@ describe('ExternalMediaInliner', function () {
         .get('/files/f/cover%20image.png')
         .reply(200, ghostLogoPng);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
 
       assert.ok(requestMock.isDone());
@@ -1101,7 +1111,7 @@ describe('ExternalMediaInliner', function () {
         .get('/files/f/caf%C3%A9.png')
         .reply(200, ghostLogoPng);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
 
       assert.ok(requestMock.isDone());
@@ -1117,7 +1127,7 @@ describe('ExternalMediaInliner', function () {
         )
         .reply(200, ghostLogoPng);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
 
       assert.ok(requestMock.isDone());
@@ -1130,7 +1140,7 @@ describe('ExternalMediaInliner', function () {
         .get('/files/f/ghost%20logo%20100%25.png')
         .reply(200, ghostLogoPng);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
 
       assert.ok(requestMock.isDone());
@@ -1143,7 +1153,7 @@ describe('ExternalMediaInliner', function () {
         .get('/files/f/ghost-logo.png')
         .reply(200, ghostLogoPng);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1158,7 +1168,7 @@ describe('ExternalMediaInliner', function () {
         .get('/files/f/ghost-logo.png?version=1&size=large')
         .reply(200, ghostLogoPng);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1173,7 +1183,7 @@ describe('ExternalMediaInliner', function () {
         .get('/files/f/ghost---logo.png')
         .reply(200, ghostLogoPng);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1191,7 +1201,7 @@ describe('ExternalMediaInliner', function () {
         .get('/files/f/photo.gif?v=1&s=2')
         .reply(200);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1206,7 +1216,7 @@ describe('ExternalMediaInliner', function () {
         .get('/files/f/photo.gif?v=1&s=2')
         .reply(200);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1230,7 +1240,7 @@ describe('ExternalMediaInliner', function () {
     it('passes the file contents when picking the storage', async function () {
       const storage = createStorage();
       const getMediaStorage = sinon.stub().resolves(storage);
-      const inliner = new ExternalMediaInliner({ getMediaStorage });
+      const inliner = createInliner({ getMediaStorage });
 
       await inliner.storeMediaLocally({
         fileBuffer: GIF1x1,
@@ -1245,7 +1255,7 @@ describe('ExternalMediaInliner', function () {
     it('sanitizes SVGs before storing them', async function () {
       const storage = createStorage();
       const getMediaStorage = sinon.stub().resolves(storage);
-      const inliner = new ExternalMediaInliner({ getMediaStorage });
+      const inliner = createInliner({ getMediaStorage });
 
       await inliner.storeMediaLocally({
         fileBuffer: imageFixture('svg-with-unsafe-script.svg'),
@@ -1261,7 +1271,7 @@ describe('ExternalMediaInliner', function () {
 
     it('does not store SVGs that cannot be sanitized', async function () {
       const getMediaStorage = sinon.stub();
-      const inliner = new ExternalMediaInliner({ getMediaStorage });
+      const inliner = createInliner({ getMediaStorage });
 
       const result = await inliner.storeMediaLocally({
         fileBuffer: imageFixture('svg-malformed.svg'),
@@ -1276,7 +1286,7 @@ describe('ExternalMediaInliner', function () {
 
     it('does not store files when picking the storage fails', async function () {
       const getMediaStorage = sinon.stub().rejects(new Error('Detection failed'));
-      const inliner = new ExternalMediaInliner({ getMediaStorage });
+      const inliner = createInliner({ getMediaStorage });
 
       const result = await inliner.storeMediaLocally({
         fileBuffer: GIF1x1,
@@ -1415,7 +1425,7 @@ describe('ExternalMediaInliner', function () {
         })),
       );
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -1481,7 +1491,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/unique-photo.jpg')
         .returns('unique-photo.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -1516,7 +1526,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/unique-photo.jpg')
         .returns('unique-photo.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -1552,7 +1562,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/unique-feature.jpg')
         .returns('unique-feature.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         getMediaStorage: sinon
           .stub()
           .withArgs('.gif')
@@ -1587,7 +1597,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/unique-feature.jpg')
         .returns('unique-feature.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         getMediaStorage: sinon
           .stub()
           .withArgs('.gif')
@@ -1625,7 +1635,7 @@ describe('ExternalMediaInliner', function () {
       });
 
       try {
-        const inliner = new ExternalMediaInliner({});
+        const inliner = createInliner({});
         const result = await inliner.getRemoteMedia('https://malicious-site.com/image.jpg');
 
         assert.equal(result, null);

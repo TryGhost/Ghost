@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Badge,
   Button,
   Card,
   CardContent,
@@ -17,6 +18,7 @@ import {
   LoadingIndicator,
   MultiSelectCombobox,
   Textarea,
+  tokenFieldClasses,
 } from '@tryghost/shade/components';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { dequal } from 'dequal';
@@ -32,13 +34,18 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { IdentityTextSchema } from '@tryghost/metafield-types/identity';
 import {
+  FIELD_STRUCTURES,
+  inOptionOrder,
   isRecordValue,
+  matchField,
   matchLeaf,
   matchShape,
   type Leaf,
+  type SetSettings,
   type TextSize,
 } from '@tryghost/metafield-types/structure';
 import { partOf } from '@/members/custom-fields/addressing';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import {
   formatMemberCustomFieldValue,
   memberCustomFieldIdentity,
@@ -47,6 +54,7 @@ import {
   type MemberCustomFieldChoiceList,
   type MemberCustomFieldPart,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { ChipPicker } from '@/shared/pickers/chip-picker';
 import { useCustomFieldDefinitions } from '@/shared/member-custom-fields/use-definitions';
 import { useEditMember } from '@tryghost/admin-x-framework/api/members';
 import type { EditableCustomFieldValue, EditableRecordValue } from './member-detail-edit';
@@ -103,6 +111,77 @@ const ChoiceInput: React.FC<{
           values={value ? [value] : []}
           autoCloseOnSelect
           onChange={(values) => onChange(values[0] ?? '')}
+          onClose={() => setOpen(false)}
+        />
+      </ComboboxContent>
+    </Combobox>
+  );
+};
+
+// The options a list field offers: several as chips, like a post's tiers, or one, like a country.
+// Only the options it offers now: one it no longer offers can't be picked again.
+const ListInput: React.FC<{
+  id: string;
+  label: string;
+  settings: SetSettings;
+  value: string[];
+  invalid?: boolean;
+  disabled?: boolean;
+  onChange: (options: string[]) => void;
+  /** Says when the chips' list opens and closes, for a dialog that must leave Escape to it. */
+  onOpenChange: (open: boolean) => void;
+}> = ({ id, label, settings, value, invalid, disabled, onChange, onOpenChange }) => {
+  const [open, setOpen] = React.useState(false);
+  // Kept in the field's order, however they were picked.
+  const inOrder = (picked: readonly string[]) => inOptionOrder(settings, picked);
+
+  if (settings.multiple) {
+    return (
+      <ChipPicker<string, string>
+        disabled={disabled}
+        emptyMessage="No options found"
+        getKey={(option) => option}
+        getLabel={(option) => option}
+        inputId={id}
+        inputLabel={label}
+        invalid={invalid}
+        matches={(option, term) => option.toLowerCase().includes(term.toLowerCase())}
+        options={settings.options}
+        placeholder="Select..."
+        renderOption={(option, { chosen }) => (
+          <>
+            <span className="truncate">{option}</span>
+            {chosen && <LucideIcon.Check className="ms-auto size-4 shrink-0 text-primary" />}
+          </>
+        )}
+        selected={inOrder(value)}
+        onAdd={(option) => onChange(inOrder([...value, option]))}
+        onOpenChange={onOpenChange}
+        onRemove={(option) => onChange(inOrder(value.filter((answer) => answer !== option)))}
+      />
+    );
+  }
+
+  return (
+    <Combobox open={open} modal onOpenChange={setOpen}>
+      <ComboboxTrigger
+        aria-invalid={invalid || undefined}
+        aria-label={label}
+        disabled={disabled}
+        id={id}
+      >
+        <ComboboxValue placeholder={inOrder(value).length === 0}>
+          {inOrder(value)[0] ?? 'Select...'}
+        </ComboboxValue>
+      </ComboboxTrigger>
+      <ComboboxContent>
+        <MultiSelectCombobox
+          i18n={{ searchPlaceholder: 'Search options...' }}
+          isMultiSelect={false}
+          options={settings.options.map((option) => ({ value: option, label: option }))}
+          values={inOrder(value)}
+          autoCloseOnSelect
+          onChange={(picked) => onChange(inOrder(picked))}
           onClose={() => setOpen(false)}
         />
       </ComboboxContent>
@@ -176,7 +255,13 @@ const RecordInput: React.FC<{
       const partId = `${inputId}-${part}`;
       const error = errors?.[part];
       return (
-        <div key={part} className={cn('flex flex-col gap-1.5', fullRow && 'md:col-span-2')}>
+        <div
+          key={part}
+          className={cn(
+            'flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2',
+            fullRow && 'md:col-span-2',
+          )}
+        >
           <Label htmlFor={partId}>{label}</Label>
           <LeafInput
             disabled={disabled}
@@ -204,20 +289,21 @@ const CustomFieldInput: React.FC<{
   errors?: Record<string, string>;
   disabled?: boolean;
   onChange: (value: EditableCustomFieldValue) => void;
-}> = ({ field, inputId, value, errors, disabled, onChange }) =>
-  matchShape(field.type, {
-    scalar: ({ leaf }) => (
+  onOpenChange: (open: boolean) => void;
+}> = ({ field, inputId, value, errors, disabled, onChange, onOpenChange }) =>
+  matchField<MemberCustomField, React.ReactElement>(field, {
+    scalar: ({ type }) => (
       <LeafInput
         disabled={disabled}
         id={inputId}
         invalid={Boolean(errors?.[''])}
         label={field.name}
-        leaf={leaf}
+        leaf={FIELD_STRUCTURES[type].leaf}
         value={typeof value === 'string' ? value : ''}
         onChange={onChange}
       />
     ),
-    record: (_structure, type) => (
+    record: ({ type }) => (
       <RecordInput
         disabled={disabled}
         errors={errors}
@@ -225,6 +311,18 @@ const CustomFieldInput: React.FC<{
         parts={memberCustomFieldParts(type) ?? []}
         value={isRecordValue(value) ? value : {}}
         onChange={onChange}
+      />
+    ),
+    set: ({ settings }) => (
+      <ListInput
+        disabled={disabled}
+        id={inputId}
+        invalid={Boolean(errors?.[''])}
+        label={field.name}
+        settings={settings}
+        value={Array.isArray(value) ? value : []}
+        onChange={onChange}
+        onOpenChange={onOpenChange}
       />
     ),
   });
@@ -240,12 +338,17 @@ const MemberCustomFieldEditModal: React.FC<{
   memberId: string;
   field: MemberCustomField;
   initialValue: EditableCustomFieldValue | undefined;
+  /** Whether the member holds a value, including one the editor can't show. */
+  holdsValue: boolean;
   onClose: () => void;
-}> = ({ memberId, field, initialValue, onClose }) => {
+}> = ({ memberId, field, initialValue, holdsValue, onClose }) => {
   const [value, setValue] = React.useState<EditableCustomFieldValue>(
     initialValue ?? emptyEditableValue(field),
   );
   const [saveAttempted, setSaveAttempted] = React.useState(false);
+  // Whether a picker inside is open. Its Escape closes the picker, and the dialog hears the key
+  // first, so it lets the key go while the picker is open.
+  const [pickerOpen, setPickerOpen] = React.useState(false);
   const [serverErrors, setServerErrors] = React.useState<Record<string, string> | undefined>();
   const editMutation = useEditMember();
 
@@ -267,6 +370,9 @@ const MemberCustomFieldEditModal: React.FC<{
   // refuses casual dismissal — Cancel is the one explicit way to discard,
   // so typed values can never be lost by a stray click.
   const isDirty = !dequal(editableValueOf(field, value), editableValueOf(field, initialValue));
+  // An empty editor clears what the member holds, even when it opened empty because none of their
+  // answers can be picked any more, such as an option the field no longer offers.
+  const clears = holdsValue && editableValueOf(field, value) === undefined;
 
   const onSave = () => {
     if (editMutation.isPending) {
@@ -276,7 +382,7 @@ const MemberCustomFieldEditModal: React.FC<{
     // merge is keyed on the field, so a no-op save would still declare a
     // member change and fire member.edited (webhooks, audit) for a value
     // that didn't move. Mirrors the page-level save's dirty gate.
-    if (!isDirty) {
+    if (!isDirty && !clears) {
       onClose();
       return;
     }
@@ -314,13 +420,23 @@ const MemberCustomFieldEditModal: React.FC<{
       <DialogContent
         data-testid="member-custom-field-edit-modal"
         onEscapeKeyDown={(event) => {
-          if (isDirty || editMutation.isPending) {
+          if (isDirty || editMutation.isPending || pickerOpen) {
             event.preventDefault();
           }
         }}
         onInteractOutside={(event) => {
           if (isDirty || editMutation.isPending) {
             event.preventDefault();
+          }
+        }}
+        // The value's own input, rather than whatever comes first: in a list's editor that is
+        // the remove button on its first chip, which a stray Enter would act on. A value in
+        // parts has no input of that id, and its first part gets focus as before.
+        onOpenAutoFocus={(event) => {
+          const input = document.getElementById(inputId);
+          if (input) {
+            event.preventDefault();
+            input.focus();
           }
         }}
       >
@@ -331,7 +447,7 @@ const MemberCustomFieldEditModal: React.FC<{
           {/* The dialog title names the field visually; this gives the
                         scalar control a real label association (a record's parts
                         carry their own labels). */}
-          {matchShape(field.type, { scalar: () => true, record: () => false }) && (
+          {matchShape(field.type, { scalar: () => true, record: () => false, set: () => true }) && (
             <Label className="sr-only" htmlFor={inputId}>
               {field.name}
             </Label>
@@ -346,6 +462,7 @@ const MemberCustomFieldEditModal: React.FC<{
               setServerErrors(undefined);
               setValue(next);
             }}
+            onOpenChange={setPickerOpen}
           />
           <ErrorMessage message={inputErrors['']} />
         </div>
@@ -369,6 +486,59 @@ const MemberCustomFieldEditModal: React.FC<{
   );
 };
 
+// select-text: button text is unselectable by default, and values (addresses especially) get
+// copied.
+const TextValue: React.FC<{ text: string }> = ({ text }) => (
+  <span className="block break-words select-text in-data-[admin7-design=true]:text-md">{text}</span>
+);
+
+// A list's answers as the chips its editor shows, since an option can hold a comma and a
+// comma-joined line would split it.
+const ListAnswers: React.FC<{ answers: readonly string[] }> = ({ answers }) => (
+  <span className="mt-1 flex flex-wrap gap-1 select-text">
+    {answers.map((answer) => (
+      <Badge
+        key={answer}
+        className={cn(tokenFieldClasses.chip, 'cursor-[inherit] bg-secondary pr-2')}
+        variant="outline"
+        asChild
+      >
+        <span>{answer}</span>
+      </Badge>
+    ))}
+  </span>
+);
+
+/**
+ * What a member holds in a field, read as it is stored and drawn by the field's shape, or a dash
+ * when they hold nothing. The editor starts from only the options a list still offers, but an
+ * answer to one it no longer offers is still theirs, so it is shown here.
+ */
+const CustomFieldValue: React.FC<{ field: MemberCustomField; stored: unknown }> = ({
+  field,
+  stored,
+}) => {
+  const text = formatMemberCustomFieldValue(field, stored);
+  if (!text) {
+    return (
+      <span className="block text-muted-foreground in-data-[admin7-design=true]:text-md">–</span>
+    );
+  }
+  return matchShape<React.ReactElement>(field.type, {
+    scalar: () => <TextValue text={text} />,
+    record: () => <TextValue text={text} />,
+    set: () => (
+      <ListAnswers
+        answers={
+          Array.isArray(stored)
+            ? stored.filter((answer): answer is string => typeof answer === 'string')
+            : []
+        }
+      />
+    ),
+  });
+};
+
 /**
  * The Custom fields section of the member detail screen: a read-only list of
  * the member's values, one row per field defined in Settings. This screen is
@@ -383,6 +553,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
   metafields,
   disabled,
 }) => {
+  const admin7Design = useFeatureFlag('admin7Design');
   const { data, isLoading } = useCustomFieldDefinitions();
   const fields = data ?? [];
   const values = getEditableCustomFieldValues(metafields, fields);
@@ -398,20 +569,19 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
       className="flex flex-col gap-3"
       data-testid="member-custom-fields-field"
     >
-      <h3 className="text-base font-semibold" id="member-custom-fields-heading">
+      <h3 className="section-heading text-base font-semibold" id="member-custom-fields-heading">
         Custom fields
       </h3>
-      <Card>
+      <Card variant={admin7Design ? 'ruled' : 'outline'}>
         {/* Rows are uniform (py-3, no first/last trims) so hover chips are all
                     the same height; the card's vertical padding is what gives the
                     first and last chips breathing room from the card edge. */}
-        <CardContent className="px-6 py-4">
+        <CardContent className={admin7Design ? 'pt-3' : 'px-6 py-4'}>
           <ul>
             {fields.map((field) => {
-              // Null rather than an empty line, so an unset value shows its placeholder.
-              const display =
-                formatMemberCustomFieldValue(field, values[memberCustomFieldIdentity(field)]) ||
-                null;
+              const stored = metafields?.[field.namespace]?.[field.key];
+              // Null rather than an empty line, so an unset value has no value in the label.
+              const display = formatMemberCustomFieldValue(field, stored) || null;
               return (
                 // Dividers fade around the hovered row (its own border-b, and the
                 // previous row's via :has), so the hover tint floats free of the
@@ -431,7 +601,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
                     // -mx/px + calc width: the hover tint bleeds past the text
                     // column like the settings rows, while the row text (and the
                     // li dividers) stay aligned with the rest of the card.
-                    className="group -mx-3 flex w-[calc(100%+1.5rem)] items-center justify-between gap-4 rounded-md p-3 text-left transition-colors hover:bg-table-row-hover disabled:cursor-not-allowed disabled:opacity-50"
+                    className="group -mx-3 flex w-[calc(100%+1.5rem)] items-center justify-between gap-4 rounded-md p-3 text-left transition-colors hover:bg-table-row-hover disabled:cursor-not-allowed disabled:opacity-50 in-data-[admin7-design=true]:py-4"
                     disabled={disabled}
                     type="button"
                     onClick={() => {
@@ -445,14 +615,10 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
                     }}
                   >
                     <span className="min-w-0">
-                      <span className="block text-sm text-muted-foreground">{field.name}</span>
-                      {/* select-text: button text is unselectable by default,
-                                                and values (addresses especially) get copied. */}
-                      {display ? (
-                        <span className="block break-words select-text">{display}</span>
-                      ) : (
-                        <span className="block text-muted-foreground">–</span>
-                      )}
+                      <span className="block text-sm text-muted-foreground in-data-[admin7-design=true]:text-base">
+                        {field.name}
+                      </span>
+                      <CustomFieldValue field={field} stored={stored} />
                     </span>
                     <LucideIcon.Pen
                       aria-hidden="true"
@@ -470,6 +636,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
         <MemberCustomFieldEditModal
           key={editingField.key}
           field={editingField}
+          holdsValue={metafields?.[editingField.namespace]?.[editingField.key] !== undefined}
           initialValue={values[memberCustomFieldIdentity(editingField)]}
           memberId={memberId}
           onClose={() => setEditingField(null)}

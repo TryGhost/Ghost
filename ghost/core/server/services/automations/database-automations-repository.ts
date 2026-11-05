@@ -12,7 +12,7 @@ import crypto from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import ObjectId from 'bson-objectid';
 import { type Knex } from 'knex';
-import { DefaultMap } from '../../../shared/default-map';
+import { AutoFillingMap } from '../../lib/auto-filling-map';
 // @ts-expect-error This module currently lacks type definitions.
 import lexicalLib from '../../lib/lexical';
 import urlUtils from '../../../shared/url-utils';
@@ -98,8 +98,6 @@ const messages = {
     'Automation action "{actionId}" already exists with a different type.',
   defaultEmailDesignSettingNotFound: 'Default automated email design setting not found.',
 };
-
-const DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE = DEFAULT_EMAIL_DESIGN_SETTING_SLUG;
 
 type AutomationRow = {
   id: string;
@@ -250,12 +248,6 @@ export function createDatabaseAutomationsRepository({
           },
         };
       });
-    },
-
-    async getNumberOfAutomations() {
-      return await repository2.withConnection((connection) =>
-        repository2.getNumberOfAutomations(connection),
-      );
     },
 
     async exists(id) {
@@ -595,10 +587,10 @@ export function createDatabaseAutomationsRepository({
           }
         }
 
-        const orderedRevisionIds = await lockActionRevisions(trx, revisionIds);
+        await repository2.lockActionRevisions(trx, revisionIds);
 
         const notYetOpened = await lockNotYetOpened(trx, eventsByAutomatedEmailRecipientId);
-        const newOpensPerRevision = new DefaultMap<string, number>(() => 0);
+        const newOpensPerRevision = new AutoFillingMap<string, number>(() => 0);
 
         for (const [
           id,
@@ -630,7 +622,7 @@ export function createDatabaseAutomationsRepository({
           }
         }
 
-        for (const id of orderedRevisionIds) {
+        for (const id of revisionIds) {
           const opens = newOpensPerRevision.get(id);
           if (!opens) {
             continue;
@@ -642,52 +634,6 @@ export function createDatabaseAutomationsRepository({
             });
         }
       });
-    },
-
-    async trackEmailClicked(
-      { automationActionRevisionId, automationRunStepId, memberId, clickedAt },
-      { transacting } = {},
-    ) {
-      const trackClick = async (trx: Knex.Transaction) => {
-        await lockActionRevisions(trx, [automationActionRevisionId]);
-
-        const recipient = await trx('automated_email_recipients')
-          .select('id', 'clicked_at')
-          .where({
-            automation_action_revision_id: automationActionRevisionId,
-            automation_run_step_id: automationRunStepId,
-            member_id: memberId,
-            track_clicks: true,
-          })
-          .forUpdate()
-          .first();
-
-        if (!recipient || recipient.clicked_at !== null) {
-          return;
-        }
-
-        const updated = await trx('automated_email_recipients')
-          .where({ id: recipient.id })
-          .whereNull('clicked_at')
-          .update({ clicked_at: clickedAt });
-
-        if (updated === 0) {
-          return;
-        }
-
-        await trx('automation_action_revisions')
-          .where({ id: automationActionRevisionId })
-          .update({
-            email_clicked_count: trx.raw('COALESCE(email_clicked_count, 0) + 1'),
-          });
-      };
-
-      if (transacting) {
-        await trackClick(transacting);
-        return;
-      }
-
-      await knex.transaction(trackClick);
     },
   };
 }
@@ -816,6 +762,7 @@ function getRunHistoryStatus(steps: AutomationRunHistoryStep[]): AutomationRunHi
       case 'automation disabled':
       case 'failed':
       case 'member changed status':
+      case 'member changed tier':
       case 'member unsubscribed':
         if (status !== 'in_progress') {
           status = 'exited_early';
@@ -849,30 +796,6 @@ function buildRunHistory(
     failed: status === 'exited_early' && steps.some((step) => step.status === 'failed'),
     steps,
   };
-}
-
-/**
- * Lock revisions before recipients because inserting a recipient takes a shared
- * foreign-key lock on its revision. Updating that revision later can deadlock
- * with another transaction that has already locked the revision and is waiting
- * for the recipient. Keep multi-revision lock acquisition deterministic.
- */
-async function lockActionRevisions(
-  trx: Knex.Transaction,
-  revisionIds: Iterable<string>,
-): Promise<string[]> {
-  const sortedRevisionIds = [...new Set(revisionIds)].sort((left, right) =>
-    left.localeCompare(right),
-  );
-
-  if (sortedRevisionIds.length > 0) {
-    await trx('automation_action_revisions')
-      .select('id')
-      .whereIn('id', sortedRevisionIds)
-      .forUpdate();
-  }
-
-  return sortedRevisionIds;
 }
 
 /**
@@ -1186,8 +1109,8 @@ async function fetchAndLockSteps(
 async function getRulesByAutomation(
   trx: Knex.Transaction,
   stepsToRun: ReadonlyDeep<StepToRunRow[]>,
-): Promise<DefaultMap<string, AutomationTriggerRule[]>> {
-  const result = new DefaultMap<string, AutomationTriggerRule[]>(() => []);
+): Promise<AutoFillingMap<string, AutomationTriggerRule[]>> {
+  const result = new AutoFillingMap<string, AutomationTriggerRule[]>(() => []);
 
   const automationIds = [...new Set(stepsToRun.map((step) => step.automation_id))];
   if (automationIds.length === 0) {
@@ -1592,7 +1515,7 @@ async function resolveEmailDesignSettingIds(
     !actions.some(
       (action) =>
         action.type === 'send_email' &&
-        action.data.email_design_setting_id === DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE,
+        action.data.email_design_setting_id === DEFAULT_EMAIL_DESIGN_SETTING_SLUG,
     )
   ) {
     return [...actions];
@@ -1603,7 +1526,7 @@ async function resolveEmailDesignSettingIds(
   return actions.map((action) => {
     if (
       action.type !== 'send_email' ||
-      action.data.email_design_setting_id !== DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE
+      action.data.email_design_setting_id !== DEFAULT_EMAIL_DESIGN_SETTING_SLUG
     ) {
       return action;
     }

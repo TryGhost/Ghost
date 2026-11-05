@@ -21,9 +21,11 @@ export const createTestAutomationsRepository2 = (
     withTransaction: (fn) => fn(fakeConnection),
     ...errorIfCalled([
       'deleteTriggerRules',
+      'findEmailRecipientForClick',
       'findFirstActionRevisions',
       'getNumberOfAutomations',
       'hasMemberEnteredAutomation',
+      'incrementEmailClickedCount',
       'insertActions',
       'insertRunSteps',
       'insertRuns',
@@ -31,7 +33,9 @@ export const createTestAutomationsRepository2 = (
       'isAutomationActiveForRun',
       'isAutomationActiveForRunStep',
       'loadEdgeRows',
+      'lockActionRevisions',
       'lockMember',
+      'setEmailRecipientClickedAt',
     ]),
     ...overrides,
   } satisfies AutomationsRepository2<TestAutomationsRepositoryConnection>;

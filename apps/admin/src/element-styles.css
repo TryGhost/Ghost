@@ -1,5 +1,5 @@
-/* Element defaults Admin screens inherited from Ember's global stylesheet. Imported before Shade and
-   kept at element specificity so Shade's preflight and utilities still override them. */
+/* Element defaults for Admin screens. Imported before Shade and kept at element specificity so
+   Shade's preflight and utilities still override them. */
 
 body:where(.react-admin) {
   color: var(--color-gray-900);
@@ -17,6 +17,11 @@ body:where(.react-admin) {
 
 :where(html.dark body.react-admin) ::selection {
   background: rgb(88 101 116 / 0.99);
+}
+
+/* admin7Design on: the neutral gray at the same lightness. */
+:where(html.dark body.react-admin [data-admin7-design='true']) ::selection {
+  background: oklch(47% 0.0025 255 / 0.99);
 }
 
 /* Text */
@@ -122,6 +127,23 @@ body:where(.react-admin) {
   white-space: pre-wrap;
   font-size: 0.85em;
   line-height: 1em;
+}
+
+/* admin7Design on: saved-view dots with no palette family of their own take the
+   palette's coral and the charts' teal. Flag off falls back to the old literals
+   in shared-views.ts. */
+:where(body.react-admin [data-admin7-design='true']) {
+  --saved-view-teal: oklch(0.685 0.13 210);
+  --saved-view-orange: var(--color-orange-500);
+}
+
+/* admin7Design on: the palette's pink, a lighter step on dark backgrounds. */
+:where(body.react-admin [data-admin7-design='true']) code {
+  color: var(--color-pink-600);
+}
+
+:where(html.dark body.react-admin [data-admin7-design='true']) code {
+  color: var(--color-pink-400);
 }
 
 :where(body.react-admin) pre {

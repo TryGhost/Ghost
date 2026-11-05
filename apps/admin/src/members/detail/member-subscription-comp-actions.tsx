@@ -16,9 +16,9 @@ import {
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useEditMember, useMembersFetching } from '@tryghost/admin-x-framework/api/members';
 import type { Member } from '@tryghost/admin-x-framework/api/members';
-import { useShade } from '@tryghost/shade/app';
 
 interface MemberSubscriptionCompActionsProps {
   member: Member;
@@ -27,15 +27,15 @@ interface MemberSubscriptionCompActionsProps {
 
 /**
  * Actions menu for a complimentary subscription row. The only action here is
- * "Remove complimentary subscription" — Ember flow: filter the tier out of
- * `member.tiers` and PUT the remaining set back. Gift subscriptions get NO menu
- * (Ember parity) and are gated out by the caller.
+ * "Remove complimentary subscription": filter the tier out of `member.tiers` and
+ * PUT the remaining set back. Gift subscriptions get NO menu and are gated out
+ * by the caller.
  */
 const MemberSubscriptionCompActions: React.FC<MemberSubscriptionCompActionsProps> = ({
   member,
   tierId,
 }) => {
-  const { isAdmin7 } = useShade();
+  const admin7Design = useFeatureFlag('admin7Design');
   const editMember = useEditMember();
   const [confirmOpen, setConfirmOpen] = React.useState(false);
   // Keep the trigger disabled through the invalidated members refetch so the
@@ -50,7 +50,6 @@ const MemberSubscriptionCompActions: React.FC<MemberSubscriptionCompActionsProps
     const remainingTiers = (member.tiers ?? [])
       .filter((tier) => tier.id !== tierId)
       .map((tier) => ({ id: tier.id, expiry_at: tier.expiry_at ?? null }));
-    // Include `email` to match Ember exactly (`gh-member-settings-form.js:194-198`).
     editMember.mutate(
       { id: member.id, email: member.email, tiers: remainingTiers },
       {
@@ -71,8 +70,8 @@ const MemberSubscriptionCompActions: React.FC<MemberSubscriptionCompActionsProps
             aria-label="Subscription menu"
             data-testid="subscription-actions"
             disabled={busy}
-            size={isAdmin7 ? 'icon' : 'sm'}
-            variant="subtle"
+            size="icon"
+            variant={admin7Design ? 'outline' : 'subtle'}
           >
             {busy ? <LoadingIndicator size="sm" /> : <LucideIcon.MoreHorizontal />}
           </Button>

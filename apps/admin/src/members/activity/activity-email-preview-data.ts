@@ -37,7 +37,7 @@ export function activityEmailPreviewData(value: unknown) {
   };
 }
 
-/** Matches Ember's sender-email-address helper, including managed domains. */
+/** The sender address, or the default when managed email can't send from it. */
 export function activitySenderAddress(
   sender: string | undefined,
   defaultAddress: string | undefined,

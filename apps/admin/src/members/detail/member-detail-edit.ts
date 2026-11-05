@@ -2,7 +2,12 @@ import moment from 'moment-timezone';
 import validator from 'validator';
 import { z } from 'zod';
 import { PartSchema, QUALIFIER, SEPARATOR } from '@tryghost/metafield-types/identity';
-import { isRecordValue, matchShape } from '@tryghost/metafield-types/structure';
+import {
+  FIELD_STRUCTURES,
+  editableAnswers,
+  isRecordValue,
+  matchField,
+} from '@tryghost/metafield-types/structure';
 import {
   memberCustomFieldIdentity,
   memberCustomFieldValueSchema,
@@ -13,7 +18,10 @@ import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-c
 
 export type EditableRecordValue = Partial<Record<string, string>>;
 
-export type EditableCustomFieldValue = string | EditableRecordValue;
+/** The options picked for a list, in the field's order. */
+export type EditableListValue = string[];
+
+export type EditableCustomFieldValue = string | EditableRecordValue | EditableListValue;
 
 export interface MemberEditableLabel {
   name: string;
@@ -42,15 +50,15 @@ interface MemberFieldSource {
   newsletters?: Array<{ id: string }> | null;
 }
 
-// Soft limit shown as a countdown (Ember imposes no hard maxlength; the DB column
-// allows 2000). The counter may go negative, matching the Ember behaviour.
+// Soft limit shown as a countdown, not a hard maxlength (the DB column allows
+// 2000). The counter may go negative.
 export const NOTE_MAX_LENGTH = 500;
 
 /**
  * The editable slice used for both dirty detection (compare draft vs server) and
- * the save payload. Name/email are trimmed to match the Ember blur-trim behaviour;
- * note preserves its whitespace. Missing fields normalize to '' so a member with a
- * null field and a draft with '' don't read as dirty.
+ * the save payload. Name/email are trimmed; note preserves its whitespace.
+ * Missing fields normalize to '' so a member with a null field and a draft with
+ * '' don't read as dirty.
  */
 export function getMemberEditableSlice(member: MemberFieldSource): MemberEditableFields {
   return {
@@ -66,12 +74,11 @@ export function getMemberEditableSlice(member: MemberFieldSource): MemberEditabl
   };
 }
 
-export function emptyEditableValue(
-  field: Pick<MemberCustomField, 'type'>,
-): EditableCustomFieldValue {
-  return matchShape<EditableCustomFieldValue>(field.type, {
+export function emptyEditableValue(field: MemberCustomField): EditableCustomFieldValue {
+  return matchField<MemberCustomField, EditableCustomFieldValue>(field, {
     scalar: () => '',
     record: () => ({}),
+    set: () => [],
   });
 }
 
@@ -93,21 +100,32 @@ function trimmedParts(
 /**
  * The value trimmed and with empty parts dropped, or undefined when nothing is left, so a value of
  * only blanks counts as no value whatever its shape.
+ *
+ * A list is edited as the options the field still offers, in its order. An option the field no
+ * longer offers can't be picked again, and a field that has gone from several answers to one reads
+ * as unanswered while it holds several, so the next answer replaces them rather than one being
+ * kept for the member.
  */
 export function editableValueOf(
-  field: Pick<MemberCustomField, 'type'>,
+  field: MemberCustomField,
   value: unknown,
 ): EditableCustomFieldValue | undefined {
-  return matchShape<EditableCustomFieldValue | undefined>(field.type, {
+  return matchField<MemberCustomField, EditableCustomFieldValue | undefined>(field, {
     scalar: () => (typeof value === 'string' && value.trim() !== '' ? value.trim() : undefined),
-    record: ({ parts }) => {
+    record: ({ type }) => {
       if (!isRecordValue(value)) {
         return undefined;
       }
       const record = Object.fromEntries(
-        Object.entries(trimmedParts(parts, value)).filter(([, held]) => held !== ''),
+        Object.entries(trimmedParts(FIELD_STRUCTURES[type].parts, value)).filter(
+          ([, held]) => held !== '',
+        ),
       );
       return Object.keys(record).length ? record : undefined;
+    },
+    set: ({ settings }) => {
+      const answers = editableAnswers(settings, Array.isArray(value) ? value : []);
+      return answers.length > 0 ? answers : undefined;
     },
   });
 }
@@ -156,9 +174,7 @@ export function isValidMemberEmail(email: string, storedEmail?: string): boolean
 /**
  * Message to render under the email field. Gated on `touched` so the empty
  * initial state on the New member screen (or an email cleared briefly during
- * a paste) doesn't render as an error the user hasn't provoked yet. Ember's
- * validator runs on save-attempt for the same reason
- * (`ghost/admin/app/validators/member.js:15`).
+ * a paste) doesn't render as an error the user hasn't provoked yet.
  */
 export function getEmailErrorMessage(
   email: string,
@@ -179,8 +195,8 @@ export function getEmailErrorMessage(
 
 export interface MemberSuppressionInfo {
   // Undefined for a `suppressed:true` member without a bounce/complaint history —
-  // e.g. `email_disabled` was flipped directly. Ember still renders the banner in
-  // that case, just without the reason line.
+  // e.g. `email_disabled` was flipped directly. The banner still renders in that
+  // case, just without the reason line.
   reason?: string;
   label: string | null;
 }
@@ -188,10 +204,9 @@ export interface MemberSuppressionInfo {
 /**
  * Extract a display-ready suppression status for the newsletter/suppression banner.
  * Returns null only when the member is not suppressed. `suppressed:true` is enough
- * to render the banner even without the info block, matching Ember's behaviour
- * where `email_disabled` alone (with the Mailgun row already cleaned) still shows
- * "Email disabled" + the Re-enable button. Dates use site-local formatting to
- * match the Ember copy exactly.
+ * to render the banner even without the info block: `email_disabled` alone (with
+ * the Mailgun row already cleaned) still shows "Email disabled" + the Re-enable
+ * button. Dates use site-local formatting.
  */
 export function getMemberSuppressionInfo(
   emailSuppression: Member['email_suppression'],
@@ -216,13 +231,11 @@ export function getMemberSuppressionInfo(
 }
 
 /**
- * Newsletters that Ember auto-subscribes a new member to on save. Ports
- * `gh-member-settings-form.js:233-241`: keep only newsletters that opt in
+ * Newsletters a new member is auto-subscribed to on save: those that opt in
  * via `subscribe_on_signup` AND are visible to member-tier subscribers
  * (`visibility: 'members'`). The result feeds the create-screen draft so
- * the toggles render as CHECKED, as on Ember's create screen, and the same
- * list is included in the POST payload so the server never has to fall back
- * to its own default.
+ * the toggles render as CHECKED, and the same list is included in the POST
+ * payload so the server never has to fall back to its own default.
  */
 export function getDefaultNewsletterIdsForNewMember(
   newsletters:
@@ -241,8 +254,7 @@ export function getDefaultNewsletterIdsForNewMember(
 /**
  * Characters remaining under the note soft limit. Counts unicode code points (via
  * spread) rather than UTF-16 code units so multi-byte characters like emoji count
- * as one — matching the Ember `gh-count-down-characters` helper. Goes negative when
- * the limit is exceeded.
+ * as one. Goes negative when the limit is exceeded.
  */
 export function getNoteCharactersLeft(note: string): number {
   return NOTE_MAX_LENGTH - [...note].length;
@@ -284,21 +296,23 @@ export function buildMemberFieldEditPayload(
  * refuses it rather than the save treating it as a clear and deleting what the member holds.
  */
 function customFieldValueToSave(
-  field: Pick<MemberCustomField, 'type'>,
+  field: MemberCustomField,
   value: EditableCustomFieldValue,
 ): EditableCustomFieldValue | undefined {
-  return matchShape<EditableCustomFieldValue | undefined>(field.type, {
+  return matchField<MemberCustomField, EditableCustomFieldValue | undefined>(field, {
     scalar: () => (typeof value === 'string' ? value.trim() || undefined : value),
     // A write changes only the parts it names, so an emptied part has to be sent as an empty
     // string; leaving it out would leave it unchanged. A record with nothing left in it clears the
     // whole field, which the caller sends as `null`.
-    record: ({ parts }) => {
-      if (typeof value === 'string') {
+    record: ({ type }) => {
+      if (typeof value === 'string' || Array.isArray(value)) {
         return value;
       }
-      const record = trimmedParts(parts, value);
+      const record = trimmedParts(FIELD_STRUCTURES[type].parts, value);
       return Object.values(record).some((part) => part !== '') ? record : undefined;
     },
+    // A list is written whole, and one picking nothing clears it.
+    set: () => (Array.isArray(value) && value.length === 0 ? undefined : value),
   });
 }
 
@@ -309,7 +323,7 @@ function customFieldValueToSave(
  */
 export function buildCustomFieldSavePayload(
   memberId: string,
-  field: Pick<MemberCustomField, 'namespace' | 'key' | 'type'>,
+  field: MemberCustomField,
   value: EditableCustomFieldValue,
 ): EditMemberData {
   return {

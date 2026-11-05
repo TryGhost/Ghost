@@ -41,7 +41,7 @@ describe('classifyMemberSubscription', () => {
   });
 
   it('classifies "Complimentary" plan with an empty-string Stripe id as complimentary', () => {
-    // Ember requires BOTH: id must be falsy (no real Stripe sub — the members
+    // Requires BOTH: id must be falsy (no real Stripe sub — the members
     // BREAD service synthesises comps/gifts with `id: ''`) AND nickname must match.
     expect(
       classifyMemberSubscription(
@@ -53,7 +53,7 @@ describe('classifyMemberSubscription', () => {
     ).toBe('complimentary');
   });
 
-  it('is case-insensitive on the plan nickname (Ember uses toLowerCase)', () => {
+  it('is case-insensitive on the plan nickname', () => {
     expect(
       classifyMemberSubscription(
         makeSub({
@@ -77,7 +77,7 @@ describe('classifyMemberSubscription', () => {
 
   it('does NOT classify a real paid subscription named "Complimentary" as complimentary', () => {
     // A Stripe sub id present means it's real — even if the price was named
-    // "Complimentary" by accident. Ember's `!sub.id` guard prevents this.
+    // "Complimentary" by accident.
     expect(
       classifyMemberSubscription(
         makeSub({
@@ -99,9 +99,7 @@ describe('formatSubscriptionAmount', () => {
     expect(formatSubscriptionAmount(499, 'usd')).toBe('$4.99');
   });
 
-  it('includes locale thousands separators (matching the Ember gh-price-amount helper)', () => {
-    // Bug caught in the earlier subscription attempt: raw string interpolation
-    // dropped the thousands separator that Ember toLocaleString provides.
+  it('includes locale thousands separators', () => {
     // Locale-tolerant: accept both `,` (en-US) and `.` (many EU locales), so
     // this passes whichever locale the runtime is set to.
     expect(formatSubscriptionAmount(1000000, 'usd')).toMatch(/^\$10[.,]000$/);
@@ -114,7 +112,7 @@ describe('formatSubscriptionAmount', () => {
 });
 
 describe('formatSubscriptionInterval', () => {
-  it('maps the Stripe interval to Ember copy', () => {
+  it('maps the Stripe interval to its display copy', () => {
     expect(formatSubscriptionInterval('month')).toBe('monthly');
     expect(formatSubscriptionInterval('year')).toBe('yearly');
   });
@@ -146,7 +144,7 @@ describe('getSubscriptionStatusLabel', () => {
 });
 
 describe('getSubscriptionValidityLabel', () => {
-  it('renders "Renews <date>" for a normal active subscription (no "on", matching Ember validityDetails)', () => {
+  it('renders "Renews <date>" for a normal active subscription (no "on")', () => {
     expect(getSubscriptionValidityLabel(makeSub())).toBe('Renews 1 Feb 2026');
   });
 
@@ -162,13 +160,13 @@ describe('getSubscriptionValidityLabel', () => {
     ).toBe('Ended 1 Feb 2026');
   });
 
-  it('is empty for a subscription canceled immediately (Ember blanks validUntil to avoid a stale date)', () => {
+  it('is empty for a subscription canceled immediately, to avoid a stale date', () => {
     expect(
       getSubscriptionValidityLabel(makeSub({ status: 'canceled', cancel_at_period_end: false })),
     ).toBe('');
   });
 
-  it('renders "Expires <date>" for a complimentary sub with a tier expiry (UTC, matching Ember compExpiry)', () => {
+  it('renders "Expires <date>" in UTC for a complimentary sub with a tier expiry', () => {
     // Mid-day UTC — same output UTC or local, so the format is unambiguous.
     expect(
       getSubscriptionValidityLabel(
@@ -181,7 +179,7 @@ describe('getSubscriptionValidityLabel', () => {
     ).toBe('Expires 31 Dec 2026');
   });
 
-  it('is empty for a complimentary sub with no tier expiry (matches Ember "forever" comp)', () => {
+  it('is empty for a forever complimentary sub with no tier expiry', () => {
     expect(
       getSubscriptionValidityLabel(
         makeSub({
@@ -216,9 +214,7 @@ describe('getSubscriptionValidityLabel', () => {
     ).toContain('Ends ');
   });
 
-  it('prefers cancel copy over trial copy — matches Ember validityDetails order', () => {
-    // A canceled trial keeps its cancel copy; Ember's validityDetails checks
-    // hasEnded/willEndSoon before trialUntil, so we do too.
+  it('prefers cancel copy over trial copy', () => {
     const future = new Date();
     future.setDate(future.getDate() + 7);
     const sub = makeSub({
@@ -253,7 +249,7 @@ describe('getSubscriptionPriceLabel', () => {
     );
   });
 
-  it('is the custom nickname for a comp (Ember surfaces "Complimentary" this way)', () => {
+  it('is the custom nickname for a comp', () => {
     expect(
       getSubscriptionPriceLabel(
         makeSub({
@@ -323,7 +319,7 @@ describe('groupSubscriptionsByTier', () => {
 
   it('skips subscriptions without a tier defensively', () => {
     // The type says `tier` is present, but the server has been observed to omit
-    // it in edge cases (`gh-member-settings-form.js:57` explicitly falls back).
+    // it in edge cases.
     const good = makeSub();
     const bad = makeSub({
       id: 'sub_bad',
@@ -333,8 +329,6 @@ describe('groupSubscriptionsByTier', () => {
   });
 
   it('skips subscriptions without a price to avoid a row-render crash', () => {
-    // Ember explicitly filters `subs.filter(sub => !!sub.price)` before
-    // rendering (`gh-member-settings-form.js:63`); we mirror that here.
     const good = makeSub();
     const bad = makeSub({
       id: 'sub_no_price',

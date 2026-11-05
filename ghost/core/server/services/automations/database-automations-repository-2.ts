@@ -5,6 +5,11 @@ import type { AutomationsRepository2 } from './automations-repository-2';
 
 type Connection = Knex | Knex.Transaction;
 
+const emailRecipientClickRowSchema = z.object({
+  id: z.string(),
+  clicked_at: z.coerce.date().nullable(),
+});
+
 const nextActionRevisionRowBaseSchema = z.object({
   automation_id: z.string(),
   action_id: z.string(),
@@ -28,6 +33,111 @@ const selectExists = async (connection: Connection, query: Knex.QueryBuilder): P
   return Boolean(Number(row?.exists));
 };
 
+const applyMembershipStartedFilters = (
+  query: Knex.QueryBuilder,
+  connection: Connection,
+  {
+    memberStatus,
+    memberTierIds,
+  }: Extract<
+    Parameters<AutomationsRepository2<Connection>['findFirstActionRevisions']>[1],
+    { eventName: 'membership_started' }
+  >,
+): void => {
+  query.whereExists(
+    connection('automation_trigger_rules as rule')
+      .select('rule.id')
+      .where('rule.automation_id', connection.ref('automation.id'))
+      .where((builder) => {
+        switch (memberStatus) {
+          case 'free':
+            builder.where('rule.trigger_type', 'free_signup');
+            break;
+          case 'paid':
+            builder.where('rule.trigger_type', 'paid_subscription_started').where((paid) => {
+              paid.where('rule.scope', 'any_paid_tier');
+              if (memberTierIds.length > 0) {
+                paid.orWhere((specific) =>
+                  specific
+                    .where('rule.scope', 'specific_paid_tier')
+                    .whereIn('rule.product_id', memberTierIds),
+                );
+              }
+            });
+            break;
+          default: {
+            const _exhaustive: never = memberStatus;
+            throw new errors.InternalServerError({
+              message: `Unexpected member status: ${_exhaustive}`,
+            });
+          }
+        }
+      }),
+  );
+};
+
+const applyPaidSubscriptionChangedFilters = (
+  query: Knex.QueryBuilder,
+  connection: Connection,
+  {
+    memberStatus,
+    memberTierIds,
+    previousMemberTierIds,
+  }: Extract<
+    Parameters<AutomationsRepository2<Connection>['findFirstActionRevisions']>[1],
+    { eventName: 'paid_subscription_changed' }
+  >,
+): void => {
+  const lostTierIds = previousMemberTierIds.filter((id) => !memberTierIds.includes(id));
+  if (lostTierIds.length === 0) {
+    // If no tiers were lost, no paid subscription change triggers will match.
+    query.whereRaw('FALSE');
+    return;
+  }
+
+  const gainedTierIds = memberTierIds.filter((id) => !previousMemberTierIds.includes(id));
+
+  // Is there a matching "from" rule?
+  query.whereExists(
+    connection('automation_trigger_rules as rule')
+      .select('rule.id')
+      .where('rule.automation_id', connection.ref('automation.id'))
+      .where('rule.trigger_type', 'paid_subscription_changed')
+      .where('rule.direction', 'from')
+      .where((from) => {
+        from.whereIn('rule.product_id', lostTierIds);
+        from.orWhere((anyPaid) => {
+          anyPaid
+            .where('rule.scope', 'any_paid_tier')
+            // Don't include "from" rules if they overlap with "to" rules.
+            .whereNotExists(
+              connection('automation_trigger_rules as previous_destination')
+                .select('previous_destination.id')
+                .where('previous_destination.automation_id', connection.ref('automation.id'))
+                .where('previous_destination.trigger_type', 'paid_subscription_changed')
+                .where('previous_destination.direction', 'to')
+                .whereIn('previous_destination.product_id', previousMemberTierIds),
+            );
+        });
+      }),
+  );
+
+  // Is there a matching "to" rule?
+  query.whereExists(
+    connection('automation_trigger_rules as destination')
+      .select('destination.id')
+      .where('destination.automation_id', connection.ref('automation.id'))
+      .where('destination.trigger_type', 'paid_subscription_changed')
+      .where('destination.direction', 'to')
+      .where((to) => {
+        to.whereIn('destination.product_id', gainedTierIds);
+        if (memberStatus === 'free' && memberTierIds.length === 0) {
+          to.orWhere('destination.scope', 'free');
+        }
+      }),
+  );
+};
+
 /**
  * Create a database-backed automations repository. See `AutomationsRepository2`
  * for details on what should (and should not) be in here.
@@ -44,8 +154,25 @@ export const createDatabaseAutomationsRepository2 = ({
       await connection('automation_trigger_rules').where('automation_id', automationId).delete();
     },
 
-    async findFirstActionRevisions(connection, memberStatus, memberTierIds) {
-      const rows = await connection('automations as automation')
+    async findEmailRecipientForClick(
+      connection,
+      { automationActionRevisionId, automationRunStepId, memberId },
+    ) {
+      const row = await connection('automated_email_recipients')
+        .select('id', 'clicked_at')
+        .where({
+          automation_action_revision_id: automationActionRevisionId,
+          automation_run_step_id: automationRunStepId,
+          member_id: memberId,
+          track_clicks: true,
+        })
+        .forUpdate()
+        .first();
+      return row === undefined ? undefined : emailRecipientClickRowSchema.parse(row);
+    },
+
+    async findFirstActionRevisions(connection, options) {
+      const rows: unknown[] = await connection('automations as automation')
         .select(
           'automation.id as automation_id',
           'actions.id as action_id',
@@ -55,36 +182,22 @@ export const createDatabaseAutomationsRepository2 = ({
         )
         .innerJoin('automation_actions as actions', 'actions.automation_id', 'automation.id')
         .innerJoin('automation_action_revisions as revisions', 'revisions.action_id', 'actions.id')
-        .whereExists(
-          connection('automation_trigger_rules as rule')
-            .select('rule.id')
-            .where('rule.automation_id', connection.ref('automation.id'))
-            .where((builder) => {
-              switch (memberStatus) {
-                case 'free':
-                  builder.where('rule.trigger_type', 'free_signup');
-                  break;
-                case 'paid':
-                  builder.where('rule.trigger_type', 'paid_subscription_started').where((paid) => {
-                    paid.where('rule.scope', 'any_paid_tier');
-                    if (memberTierIds.length > 0) {
-                      paid.orWhere((specific) =>
-                        specific
-                          .where('rule.scope', 'specific_paid_tier')
-                          .whereIn('rule.product_id', memberTierIds),
-                      );
-                    }
-                  });
-                  break;
-                default: {
-                  const _exhaustive: never = memberStatus;
-                  throw new errors.InternalServerError({
-                    message: `Unexpected member status: ${_exhaustive}`,
-                  });
-                }
-              }
-            }),
-        )
+        .modify((query) => {
+          switch (options.eventName) {
+            case 'membership_started':
+              applyMembershipStartedFilters(query, connection, options);
+              break;
+            case 'paid_subscription_changed':
+              applyPaidSubscriptionChangedFilters(query, connection, options);
+              break;
+            default: {
+              const _exhaustive: never = options;
+              throw new errors.InternalServerError({
+                message: `Unexpected automation event: ${_exhaustive}`,
+              });
+            }
+          }
+        })
         .where('automation.status', 'active')
         .whereNull('actions.deleted_at')
         .whereNotExists(
@@ -118,6 +231,12 @@ export const createDatabaseAutomationsRepository2 = ({
         .select(connection.raw('1'))
         .where({ automation_id: automationId, member_id: memberId });
       return await selectExists(connection, query);
+    },
+
+    async incrementEmailClickedCount(connection, revisionId) {
+      await connection('automation_action_revisions')
+        .where({ id: revisionId })
+        .update({ email_clicked_count: connection.raw('COALESCE(email_clicked_count, 0) + 1') });
     },
 
     async insertActions(connection, toInsert) {
@@ -192,8 +311,28 @@ export const createDatabaseAutomationsRepository2 = ({
         .orderBy(['e.source_action_id', 'e.target_action_id']);
     },
 
+    async lockActionRevisions(connection, revisionIds) {
+      const ids = [...new Set(revisionIds)];
+      if (ids.length === 0) {
+        return;
+      }
+      await connection('automation_action_revisions')
+        .select('id')
+        .whereIn('id', ids)
+        .orderBy('id')
+        .forUpdate();
+    },
+
     async lockMember(connection, memberId) {
       await connection('members').where('id', memberId).forUpdate().first('id');
+    },
+
+    async setEmailRecipientClickedAt(connection, recipientId, clickedAt) {
+      const updated = await connection('automated_email_recipients')
+        .where({ id: recipientId })
+        .whereNull('clicked_at')
+        .update({ clicked_at: clickedAt });
+      return updated > 0;
     },
 
     withConnection: (fn) => fn(knex),

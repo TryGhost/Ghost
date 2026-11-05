@@ -1,5 +1,5 @@
-import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
+import type { GhostLogger } from '@tryghost/logging';
 import type { ConfigInstance } from '../../../../shared/config/loader';
 
 type StatsConfig = {
@@ -65,6 +65,13 @@ type TinybirdDependencies = {
   request: RequestClient;
   settingsCache: SettingsCache;
   tinybirdService: TinybirdService;
+  logging: Pick<GhostLogger, 'error'>;
+};
+
+type TinybirdGateDependencies = {
+  config: Pick<ConfigInstance, 'get'>;
+  settingsCache: SettingsCache;
+  tinybirdWrapper: { init(): void };
 };
 
 type TinybirdResponse = {
@@ -111,8 +118,30 @@ function isTinybirdResponse(value: unknown): value is TinybirdResponse {
   return isRecord(value);
 }
 
+/**
+ * Initializes the shared Tinybird service when web analytics is enabled or
+ * stats are configured, and reports whether web analytics is enabled.
+ */
+export function initializeTinybirdForStats({
+  config,
+  settingsCache,
+  tinybirdWrapper,
+}: TinybirdGateDependencies): boolean {
+  const webAnalyticsEnabled = Boolean(settingsCache.get('web_analytics_enabled'));
+  if (webAnalyticsEnabled || config.get('tinybird:stats')) {
+    tinybirdWrapper.init();
+  }
+  return webAnalyticsEnabled;
+}
+
 /** Creates a configured Tinybird client. */
-export function create({ config, request, settingsCache, tinybirdService }: TinybirdDependencies) {
+export function create({
+  config,
+  request,
+  settingsCache,
+  tinybirdService,
+  logging,
+}: TinybirdDependencies) {
   /** Builds a Tinybird API request. */
   const buildRequest = (pipeName: string, options: TinybirdOptions = {}) => {
     const rawStatsConfig: unknown = config.get('tinybird:stats');

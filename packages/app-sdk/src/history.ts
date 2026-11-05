@@ -1,12 +1,18 @@
-import { normaliseAppPath, type PathMove } from '@tryghost/app-contracts';
+import { isContainedPath, type PathMove } from '@tryghost/app-contracts';
 
 /**
- * The page's route: the path, query and fragment of its URL, in the normalised form Admin
- * stores app paths in.
+ * A URL's route: its path, query and fragment. The URL parser has already put them in the
+ * normalised form Admin stores app paths in. Resolving them again would read a path that starts
+ * with `//` as a host, so a page at `//evil.example/x` would report `/x`; kept as it is, that
+ * route fails `isContainedPath` and is never reported.
  */
+function routeOf({ pathname, search, hash }: { pathname: string; search: string; hash: string }) {
+  return `${pathname}${search}${hash}`;
+}
+
+/** The page's route. */
 export function currentRoute(): string {
-  const { pathname, search, hash } = window.location;
-  return normaliseAppPath(`${pathname}${search}${hash}`);
+  return routeOf(window.location);
 }
 
 /** Whether a node is an HTML or SVG link, which the browser follows when it's clicked. */
@@ -28,6 +34,34 @@ export interface HistoryWatch {
 }
 
 /**
+ * Whether a route is one Admin would take. Admin owns the app's address, so the page never
+ * moves to a route Admin refuses: it would show a place that a reload, Back or a copied Admin
+ * link doesn't lead to. `isContainedPath` refuses the same route every time, so the move is
+ * dropped, with a warning for the app's developer.
+ */
+function isContained(route: string): boolean {
+  if (isContainedPath(route)) {
+    return true;
+  }
+  // The only place the app's developer would learn why the move did nothing.
+  // eslint-disable-next-line no-console
+  console.warn(`Ghost Admin can't open the app at ${route}, so the page stays where it is.`);
+  return false;
+}
+
+/**
+ * Whether a `pushState` or `replaceState` URL leads to a route Admin refuses. One the URL
+ * parser can't read is left to the browser, which throws as it would without the SDK.
+ */
+function refuses(url: string | URL | null | undefined): boolean {
+  if (url === undefined || url === null) {
+    return false;
+  }
+  const next = URL.parse(url, window.location.href);
+  return next !== null && next.origin === window.location.origin && !isContained(routeOf(next));
+}
+
+/**
  * Makes Admin the owner of the page's history. A frame's history entries are part of the tab's,
  * and browsers keep them in ways Admin can't follow: Chromium and WebKit keep a removed frame's
  * entries, which left back steps that did nothing once the app's page opened again, and WebKit
@@ -40,6 +74,7 @@ export interface HistoryWatch {
  * - A click on a link to the app's own origin, which a router hasn't already handled, is reported
  *   as a push, and the page then loads the link's address in place of its own entry. A link that
  *   opens elsewhere (a `target`, `download`, or a modifier key) is left alone.
+ * - Neither is made to a route Admin would refuse, one that isn't contained.
  * - When Admin moves the page, `follow` replaces the frame's entry and dispatches `popstate`.
  *
  * Not intercepted: a form that posts adds one entry of the frame's own, and so do a change to the
@@ -67,10 +102,16 @@ export function watchHistory(
   };
 
   const push: History['pushState'] = (data, unused, url) => {
+    if (refuses(url)) {
+      return;
+    }
     replaceState.call(history, data, unused, url);
     report('push');
   };
   const replace: History['replaceState'] = (data, unused, url) => {
+    if (refuses(url)) {
+      return;
+    }
     replaceState.call(history, data, unused, url);
     report('replace');
   };
@@ -101,7 +142,10 @@ export function watchHistory(
     }
     event.preventDefault();
     const go = () => load(url.href);
-    const next = normaliseAppPath(`${url.pathname}${url.search}${url.hash}`);
+    const next = routeOf(url);
+    if (!isContained(next)) {
+      return;
+    }
     if (next === route) {
       go();
       return;

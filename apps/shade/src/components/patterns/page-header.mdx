@@ -105,13 +105,9 @@ pass `shortcut` when the screen implements a matching shortcut.
 ```
 
 Do not duplicate `addButtonClassName`, icons or Filter/Add filter label conditions
-in pages. The shared trigger owns both rollout states. Existing screens can set
-`fallbackStyle="funnel"` or `"funnel-plus"` to preserve their previous icons and
-labelled add buttons; the default `"list"` preserves the consolidated icon-only
-add button. `collapseLabel` preserves the previous icon-only header below `lg`.
-These compatibility choices are ignored by the Admin 7 header. A unique previous
-surface override can use `fallbackClassName`; repeated rules belong in the shared
-trigger. Retain fallback props while legacy surfaces still require them.
+in pages; the shared trigger owns them. Once filters are applied the add button
+uses the list icon; analytics screens set `fallbackStyle="funnel-plus"` to keep
+the funnel icon.
 
 ## Tooltips and focus
 
@@ -168,13 +164,12 @@ Expanded search must not push the primary off-screen.
 
 This section is for Admin's own screens; a Ghost app uses the defaults and can skip it.
 
-React Admin headers use the pill design by default without a Labs flag.
+Headers use the pill design and header tooltips on every Admin screen.
 Shade owns visual differences; features retain only historical structural
-differences that cannot be expressed through shared controls. Existing consumers may supply `fallbackVariant` and
-`fallbackSize` to preserve their prior controls. New consumers should use defaults.
+differences that cannot be expressed through shared controls.
 
-With `useShade().isAdmin7` false, the header retains its previous spacing, chevrons,
-control appearance and absence of new header tooltips. Follow the
+Admin 7 changes that are still behind the `admin7Design` Labs flag read
+`useShade().admin7Design`. Follow the
 [Admin 7 milestone convention](https://github.com/TryGhost/Ghost/blob/main/docs/practices/feature-flags.md#admin-7-milestones)
 for flag usage and removal; ordinary page code already uses the intended
 defaults.

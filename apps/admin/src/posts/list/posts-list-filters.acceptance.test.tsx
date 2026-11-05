@@ -224,7 +224,7 @@ describe('Posts list filters', () => {
     });
   });
 
-  // Ember hides these for roles that can only see their own posts.
+  // Hidden for roles that can only see their own posts.
   describe('role restrictions', () => {
     it('offers only the type and featured filters to a contributor', async () => {
       fakePosts([]);

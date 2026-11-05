@@ -15,15 +15,12 @@ const manifestRow = (
   {
     source = 'update',
     requiresApproval = false,
-    host = 'podcast.example.com',
   }: {
     source?: HistoryManifest['source'];
     requiresApproval?: boolean;
-    host?: string;
   } = {},
 ): HistoryManifest => ({
   id,
-  manifest_url: `https://${host}/ghost-app.json`,
   source,
   requires_approval: requiresApproval,
   created_at: new Date(createdAt),
@@ -33,7 +30,10 @@ const installed = (id: string, createdAt: string) =>
   manifestRow(id, createdAt, { source: 'install' });
 
 const servedFrom = (host: string) =>
-  ({ surfaces: [{ type: 'admin_page', url: `https://${host}/admin` }] }) as AppManifest;
+  ({
+    manifest_url: `https://${host}/ghost-app.json`,
+    surfaces: [{ type: 'admin_page', url: `https://${host}/admin` }],
+  }) as AppManifest;
 
 const action = (
   id: string,
@@ -191,10 +191,7 @@ describe('buildHistory', function () {
     const history = buildHistory(
       [
         installed('m1', '2026-10-01T10:00:00.000Z'),
-        manifestRow('m2', '2026-10-02T10:00:00.000Z', {
-          source: 'approval',
-          host: 'podcast.example.net',
-        }),
+        manifestRow('m2', '2026-10-02T10:00:00.000Z', { source: 'approval' }),
       ],
       [
         action('a2', 'changes_approved', '2026-10-02T10:00:00.000Z', {
@@ -219,10 +216,7 @@ describe('buildHistory', function () {
     const history = buildHistory(
       [
         installed('m1', '2026-10-01T10:00:00.000Z'),
-        manifestRow('m2', '2026-10-02T10:00:00.000Z', {
-          source: 'approval',
-          host: 'podcast.example.net',
-        }),
+        manifestRow('m2', '2026-10-02T10:00:00.000Z', { source: 'approval' }),
       ],
       [
         action('a2', 'changes_approved', '2026-10-02T10:00:00.000Z', {

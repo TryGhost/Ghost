@@ -67,6 +67,11 @@ export default tseslint.config(
           paths: [
             ...shadeRestrictedPaths,
             {
+              name: '@tryghost/app-contracts/identity',
+              message:
+                'App identity is for servers: it loads jose. Act on what the Admin API reports about an app instead.',
+            },
+            {
               name: 'react-router',
               message:
                 'Import routing APIs (and their types) from @tryghost/admin-x-framework instead of react-router directly.',

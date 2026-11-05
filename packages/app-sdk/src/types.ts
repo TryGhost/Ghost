@@ -12,7 +12,7 @@ export type Site = Readonly<StartContext['site']>;
 
 /**
  * Who is using the app, by ID and role. Read anything more, such as their name, through
- * `ghost.fetch(`/users/?filter=id:${ghost.user.id}`)`: `/users/:id/` isn't allowed.
+ * `` ghost.fetch(`/users/?filter=id:${ghost.user.id}`) ``: `/users/:id/` isn't allowed.
  */
 export type User = Readonly<StartContext['user']>;
 
@@ -31,6 +31,10 @@ export type JsonBody = Record<string, unknown> | readonly unknown[];
 export interface GhostFetchInit {
   /** Any case; sent in uppercase. Defaults to `GET`. */
   method?: string;
+  /**
+   * Anything `Headers` accepts, except the headers only Admin sets, such as `authorization`,
+   * `cookie` and `content-type`, which are refused.
+   */
   headers?: HeadersInit;
   /** Always JSON: text is sent as it is, and an object or array is sent as JSON. */
   body?: string | JsonBody | null;
@@ -53,11 +57,15 @@ export type Unsubscribe = () => void;
 
 /** The connection to Ghost, once Admin has started the app. */
 export interface Ghost {
+  /** The site the app is running in: its URL, title, timezone and locale. */
   readonly site: Site;
+  /** The staff user using the app, by ID and role. */
   readonly user: User;
   /** The theme Admin shows now. `mode` is always `light` or `dark`. */
   readonly theme: Readonly<Theme>;
+  /** The installation's revision when this session started. */
   readonly session: Session;
+  /** The app's route, kept in step with Admin's URL. */
   readonly path: GhostPath;
   /** False once the session has ended; every call then rejects with `session_ended`. */
   readonly connected: boolean;

@@ -1,5 +1,6 @@
 import GlobalSettings, { type GlobalSettingValues } from './global-settings';
-import React, { useState } from 'react';
+import React from 'react';
+import { useLocation, useSearchParams } from '@tryghost/admin-x-framework';
 import ThemeSettings from './theme-settings';
 import { type CustomThemeSetting } from '@tryghost/admin-x-framework/api/custom-theme-settings';
 import { type SettingValue } from '@tryghost/admin-x-framework/api/settings';
@@ -12,19 +13,16 @@ const DesignSidebar: React.FC<{
   themeSettingSections: ThemeSettingSection[];
   updateGlobalSetting: (key: string, value: SettingValue) => void;
   updateThemeSetting: (updated: CustomThemeSetting) => void;
-  onTabChange?: (id: string) => void;
-}> = ({
-  globalSettings,
-  themeSettingSections,
-  updateGlobalSetting,
-  updateThemeSetting,
-  onTabChange,
-}) => {
-  const [selectedTab, setSelectedTab] = useState('global');
+}> = ({ globalSettings, themeSettingSections, updateGlobalSetting, updateThemeSetting }) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+  const routeState: unknown = location.state;
+  const selectedTab = searchParams.get('tab') === 'theme' ? 'theme-settings' : 'global';
 
   const handleTabChange = (id: string) => {
-    setSelectedTab(id);
-    onTabChange?.(id);
+    const params = new URLSearchParams(searchParams);
+    params.set('tab', id === 'theme-settings' ? 'theme' : 'brand');
+    setSearchParams(params, { replace: true, state: routeState });
   };
 
   return (

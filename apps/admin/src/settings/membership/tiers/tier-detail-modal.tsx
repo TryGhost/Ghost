@@ -48,14 +48,12 @@ import {
 import { getSettingValues, useEditSettings } from '@tryghost/admin-x-framework/api/settings';
 import { toast } from 'sonner';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
-import { useShade } from '@tryghost/shade/app';
 
 export type TierFormState = Partial<Omit<Tier, 'trial_days'>> & {
   trial_days: string;
 };
 
 const TierDetailModalContent: React.FC<{ tier?: Tier }> = ({ tier }) => {
-  const { isAdmin7 } = useShade();
   const isFreeTier = tier?.type === 'free';
   const [currencyOpen, setCurrencyOpen] = React.useState(false);
 
@@ -208,22 +206,13 @@ const TierDetailModalContent: React.FC<{ tier?: Tier }> = ({ tier }) => {
     buttonProps: React.ComponentProps<typeof Button>,
     wrapInput: (input: React.ReactNode) => React.ReactNode = (input) => input,
   ) => {
-    if (isAdmin7) {
-      return wrapInput(
-        <InputGroup>
-          <InputGroupInput {...inputProps} />
-          <InputGroupAddon align="inline-end">
-            <InputGroupButton {...buttonProps} shape="rounded" size="icon-xs" />
-          </InputGroupAddon>
-        </InputGroup>,
-      );
-    }
-
-    return (
-      <>
-        {wrapInput(<Input {...inputProps} />)}
-        <Button {...buttonProps} />
-      </>
+    return wrapInput(
+      <InputGroup>
+        <InputGroupInput {...inputProps} />
+        <InputGroupAddon align="inline-end">
+          <InputGroupButton {...buttonProps} shape="rounded" size="icon-xs" />
+        </InputGroupAddon>
+      </InputGroup>,
     );
   };
 
@@ -554,9 +543,8 @@ const TierDetailModalContent: React.FC<{ tier?: Tier }> = ({ tier }) => {
                       },
                       {
                         'aria-label': 'Delete benefit',
-                        className: isAdmin7
-                          ? 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'
-                          : 'absolute top-1/2 right-1 z-10 size-5! -translate-y-1/2 p-0! opacity-0 group-hover:opacity-100',
+                        className:
+                          'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100',
                         size: 'icon',
                         type: 'button',
                         variant: 'secondary',
@@ -589,9 +577,6 @@ const TierDetailModalContent: React.FC<{ tier?: Tier }> = ({ tier }) => {
                   {
                     'aria-label': 'Add benefit',
                     variant: 'default',
-                    className: isAdmin7
-                      ? undefined
-                      : 'absolute top-1/2 right-1 z-10 size-[22px]! -translate-y-1/2 p-0!',
                     size: 'icon',
                     type: 'button',
                     onClick: addBenefit,

@@ -1,4 +1,3 @@
-import type { Knex } from 'knex';
 import type { ReadonlyDeep } from 'type-fest';
 import type { AddAutomationData, EditAutomationData } from './automations-schemas';
 import type { AutomationTriggerRule, AutomationTriggerRuleDefinition } from './trigger-rules';
@@ -155,6 +154,7 @@ export const AUTOMATION_STEP_TERMINAL_STATUSES = [
   'failed',
   'finished',
   'member changed status',
+  'member changed tier',
   'member unsubscribed',
 ] as const;
 
@@ -199,7 +199,6 @@ export type AutomationRunMember = {
 
 export type AutomationsRepository = {
   browse(): Promise<Page<AutomationSummary>>;
-  getNumberOfAutomations(): Promise<number>;
   exists(id: string): Promise<boolean>;
   getById(id: string): Promise<Automation | null>;
   getRunHistory(automationId: string, runId: string): Promise<AutomationRunHistory | null>;
@@ -273,20 +272,5 @@ export type AutomationsRepository = {
    */
   trackEmailDeliveredAndOpened(
     eventsByAutomatedEmailRecipientId: ReadonlyDeep<Map<string, AutomatedEmailEvents>>,
-  ): Promise<void>;
-  /**
-   * Record the first click timestamp for the automated email recipient identified by a run step.
-   *
-   */
-  trackEmailClicked(
-    options: {
-      automationActionRevisionId: string;
-      automationRunStepId: string;
-      memberId: string;
-      clickedAt: Readonly<Date>;
-    },
-    transactionOptions?: {
-      transacting?: Knex.Transaction;
-    },
   ): Promise<void>;
 };

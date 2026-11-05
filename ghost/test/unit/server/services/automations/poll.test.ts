@@ -36,13 +36,9 @@ type AutomationsApiStubs = {
 };
 
 type MemberWelcomeEmailServiceStubs = PollOptions['memberWelcomeEmailService'] & {
-  init: StubbedFunction<PollOptions['memberWelcomeEmailService']['init']>;
-  api: PollOptions['memberWelcomeEmailService']['api'] & {
-    loadMemberWelcomeEmails: sinon.SinonStub<[], Promise<void>>;
-    sendAutomationEmail: StubbedFunction<
-      PollOptions['memberWelcomeEmailService']['api']['sendAutomationEmail']
-    >;
-  };
+  sendAutomationEmail: StubbedFunction<
+    PollOptions['memberWelcomeEmailService']['sendAutomationEmail']
+  >;
 };
 
 type PollOptionsStubs = PollOptions & {
@@ -160,12 +156,8 @@ describe('automations poll', function () {
     };
 
     memberWelcomeEmailService = {
-      init: fake<PollOptions['memberWelcomeEmailService']['init']>(),
-      api: {
-        loadMemberWelcomeEmails: sinon.stub<[], Promise<void>>().resolves(),
-        sendAutomationEmail:
-          fake<PollOptions['memberWelcomeEmailService']['api']['sendAutomationEmail']>().resolves(),
-      },
+      sendAutomationEmail:
+        fake<PollOptions['memberWelcomeEmailService']['sendAutomationEmail']>().resolves(),
     };
 
     scheduleAutomationEmailAnalyticsJob = sinon.stub().resolves();
@@ -192,7 +184,6 @@ describe('automations poll', function () {
 
     sinon.assert.calledOnceWithExactly(automationsApi.fetchAndLockSteps, MAX_STEPS_PER_BATCH);
     sinon.assert.notCalled(options.enqueueAnotherPollAt);
-    sinon.assert.notCalled(memberWelcomeEmailService.init);
   });
 
   it('does not run when no steps are ready, but does enqueue a future poll if one will be ready in the future', async function () {
@@ -202,7 +193,6 @@ describe('automations poll', function () {
     await poll(options);
 
     sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextStepReadyAt);
-    sinon.assert.notCalled(memberWelcomeEmailService.init);
   });
 
   it('keeps processing other steps if one step execution fails', async function () {
@@ -247,7 +237,7 @@ describe('automations poll', function () {
 
     await poll(options);
 
-    sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.notCalled(memberWelcomeEmailService.sendAutomationEmail);
     sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'failed');
     sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextStepReadyAt);
   });
@@ -258,7 +248,7 @@ describe('automations poll', function () {
 
     await poll(options);
 
-    sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.notCalled(memberWelcomeEmailService.sendAutomationEmail);
     sinon.assert.calledOnceWithExactly(
       automationsApi.markStepTerminal,
       step,
@@ -273,7 +263,7 @@ describe('automations poll', function () {
 
     await poll(options);
 
-    sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.notCalled(memberWelcomeEmailService.sendAutomationEmail);
     sinon.assert.calledOnceWithExactly(
       automationsApi.markStepTerminal,
       step,
@@ -281,151 +271,167 @@ describe('automations poll', function () {
     );
   });
 
-  it('bails if the member status changed from free to paid', async function () {
-    const step = buildEmailStep();
-    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-    Member.findOne.resolves(buildMember({ status: 'paid' }));
+  describe('free signup trigger', function () {
+    let step: SendEmailStep;
 
-    await poll(options);
-
-    sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
-    sinon.assert.calledOnceWithExactly(
-      automationsApi.markStepTerminal,
-      step,
-      'member changed status',
-    );
-  });
-
-  it('bails if the member status changed paid to free', async function () {
-    const step = buildEmailStep({
-      automation_trigger_rules: [
-        {
-          id: 'trigger-rule-2',
-          automation_id: 'automation-id',
-          created_at: new Date('2026-01-01T00:00:00Z'),
-          trigger_type: 'paid_subscription_started',
-          scope: 'any_paid_tier',
-          product_id: null,
-          direction: null,
-        },
-      ],
+    beforeEach(function () {
+      step = buildEmailStep({
+        automation_trigger_rules: [
+          {
+            id: 'free-signup-rule',
+            automation_id: 'automation-id',
+            created_at: new Date('2026-01-01T00:00:00Z'),
+            trigger_type: 'free_signup',
+            scope: null,
+            product_id: null,
+            direction: null,
+          },
+        ],
+      });
+      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     });
-    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-    Member.findOne.resolves(buildMember({ status: 'free' }));
 
-    await poll(options);
+    it('bails out if the member becomes paid', async function () {
+      Member.findOne.resolves(buildMember({ status: 'paid' }));
 
-    sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
-    sinon.assert.calledOnceWithExactly(
-      automationsApi.markStepTerminal,
-      step,
-      'member changed status',
-    );
-  });
+      await poll(options);
 
-  it('stays in the automation if tier still matches', async function () {
-    const step = buildWaitStep({
-      automation_trigger_rules: [
-        {
-          id: 'trigger-rule-3',
-          automation_id: 'automation-id',
-          created_at: new Date('2026-01-01T00:00:00Z'),
-          trigger_type: 'paid_subscription_started',
-          scope: 'specific_paid_tier',
-          product_id: 'bronze',
-          direction: null,
-        },
-        {
-          id: 'trigger-rule-4',
-          automation_id: 'automation-id',
-          created_at: new Date('2026-01-01T00:00:00Z'),
-          trigger_type: 'paid_subscription_started',
-          scope: 'specific_paid_tier',
-          product_id: 'silver',
-          direction: null,
-        },
-      ],
+      sinon.assert.notCalled(memberWelcomeEmailService.sendAutomationEmail);
+      sinon.assert.calledOnceWithExactly(
+        automationsApi.markStepTerminal,
+        step,
+        'member changed status',
+      );
     });
-    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-    (Member.findOne as sinon.SinonStub).resolves(
-      buildMember({ status: 'paid', products: [{ id: 'bronze' }] }),
-    );
 
-    await poll(options);
+    it('continues when the member remains free', async function () {
+      await poll(options);
 
-    sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
-    sinon.assert.notCalled(automationsApi.markStepTerminal);
+      sinon.assert.notCalled(automationsApi.markStepTerminal);
+      sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+      sinon.assert.calledOnce(memberWelcomeEmailService.sendAutomationEmail);
+    });
   });
 
-  it('does not restart the automation if the tier has changed, but still matches', async function () {
-    const attrs = {
-      automation_trigger_rules: [
-        {
-          id: 'trigger-rule-5',
-          automation_id: 'automation-id',
-          created_at: new Date('2026-01-01T00:00:00Z'),
-          trigger_type: 'paid_subscription_started' as const,
-          scope: 'specific_paid_tier' as const,
-          product_id: 'silver',
-          direction: null,
-        },
-        {
-          id: 'trigger-rule-6',
-          automation_id: 'automation-id',
-          created_at: new Date('2026-01-01T00:00:00Z'),
-          trigger_type: 'paid_subscription_started' as const,
-          scope: 'specific_paid_tier' as const,
-          product_id: 'gold',
-          direction: null,
-        },
-      ],
-    };
-    const waitStep = buildWaitStep({ ...attrs, id: 'wait-step' });
-    const emailStep = buildEmailStep({ ...attrs, id: 'email-step' });
-    const products = [{ id: 'silver' }];
-    (Member.findOne as sinon.SinonStub).resolves(buildMember({ status: 'paid', products }));
-    automationsApi.fetchAndLockSteps
-      .onFirstCall()
-      .resolves({ steps: [waitStep], nextStepReadyAt: null });
-    automationsApi.fetchAndLockSteps
-      .onSecondCall()
-      .resolves({ steps: [emailStep], nextStepReadyAt: null });
+  describe('paid subscription started', function () {
+    it('bails out if the member becomes free', async function () {
+      const step = buildEmailStep({
+        automation_trigger_rules: [
+          {
+            id: 'trigger-rule-2',
+            automation_id: 'automation-id',
+            created_at: new Date('2026-01-01T00:00:00Z'),
+            trigger_type: 'paid_subscription_started',
+            scope: 'any_paid_tier',
+            product_id: null,
+            direction: null,
+          },
+        ],
+      });
+      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+      Member.findOne.resolves(buildMember({ status: 'free' }));
 
-    await poll(options);
-    sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, waitStep);
-    sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+      await poll(options);
 
-    products[0].id = 'gold';
-    await poll(options);
+      sinon.assert.notCalled(memberWelcomeEmailService.sendAutomationEmail);
+      sinon.assert.calledOnceWithExactly(
+        automationsApi.markStepTerminal,
+        step,
+        'member changed status',
+      );
+    });
 
-    sinon.assert.calledTwice(automationsApi.finishStepAndEnqueueNext);
-    sinon.assert.calledWithExactly(automationsApi.finishStepAndEnqueueNext, emailStep);
-    sinon.assert.notCalled(automationsApi.markStepTerminal);
-    sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
-  });
+    it('continues when the member still matches at least one trigger rule', async function () {
+      const step = buildWaitStep({
+        automation_trigger_rules: [
+          {
+            id: 'trigger-rule-3',
+            automation_id: 'automation-id',
+            created_at: new Date('2026-01-01T00:00:00Z'),
+            trigger_type: 'paid_subscription_started',
+            scope: 'specific_paid_tier',
+            product_id: 'bronze',
+            direction: null,
+          },
+          {
+            id: 'trigger-rule-4',
+            automation_id: 'automation-id',
+            created_at: new Date('2026-01-01T00:00:00Z'),
+            trigger_type: 'paid_subscription_started',
+            scope: 'specific_paid_tier',
+            product_id: 'silver',
+            direction: null,
+          },
+        ],
+      });
+      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+      Member.findOne.resolves(buildMember({ status: 'paid', products: [{ id: 'bronze' }] }));
 
-  it.each([
-    {
-      specName: 'tier does not match',
-      status: 'paid',
-      products: [{ id: 'gold' }],
-      automationTiers: ['bronze', 'silver'],
-    },
-    {
-      specName: 'member has no tiers',
-      status: 'paid',
-      products: [],
-      automationTiers: ['bronze', 'silver'],
-    },
-    {
-      specName: 'member has matching tiers, but is now free somehow',
-      status: 'free',
-      products: [{ id: 'bronze' }],
-      automationTiers: ['bronze'],
-    },
-  ])(
-    'bails out of a per-tier automation when $specName',
-    async ({ status, products, automationTiers }) => {
+      await poll(options);
+
+      sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+      sinon.assert.notCalled(automationsApi.markStepTerminal);
+    });
+
+    it('continues when the member moves between matching tiers', async function () {
+      const attrs: Partial<StepBase> = {
+        automation_trigger_rules: [
+          {
+            id: 'trigger-rule-5',
+            automation_id: 'automation-id',
+            created_at: new Date('2026-01-01T00:00:00Z'),
+            trigger_type: 'paid_subscription_started',
+            scope: 'specific_paid_tier',
+            product_id: 'silver',
+            direction: null,
+          },
+          {
+            id: 'trigger-rule-6',
+            automation_id: 'automation-id',
+            created_at: new Date('2026-01-01T00:00:00Z'),
+            trigger_type: 'paid_subscription_started',
+            scope: 'specific_paid_tier',
+            product_id: 'gold',
+            direction: null,
+          },
+        ],
+      };
+      const waitStep = buildWaitStep({ ...attrs, id: 'wait-step' });
+      const emailStep = buildEmailStep({ ...attrs, id: 'email-step' });
+      const products = [{ id: 'silver' }];
+      Member.findOne.resolves(buildMember({ status: 'paid', products }));
+      automationsApi.fetchAndLockSteps
+        .onFirstCall()
+        .resolves({ steps: [waitStep], nextStepReadyAt: null });
+      automationsApi.fetchAndLockSteps
+        .onSecondCall()
+        .resolves({ steps: [emailStep], nextStepReadyAt: null });
+
+      await poll(options);
+      sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, waitStep);
+      sinon.assert.notCalled(memberWelcomeEmailService.sendAutomationEmail);
+
+      products[0].id = 'gold';
+      await poll(options);
+
+      sinon.assert.calledTwice(automationsApi.finishStepAndEnqueueNext);
+      sinon.assert.calledWithExactly(automationsApi.finishStepAndEnqueueNext, emailStep);
+      sinon.assert.notCalled(automationsApi.markStepTerminal);
+      sinon.assert.calledOnce(memberWelcomeEmailService.sendAutomationEmail);
+    });
+
+    it.each([
+      {
+        specName: 'tier does not match',
+        products: [{ id: 'gold' }],
+        automationTiers: ['bronze', 'silver'],
+      },
+      {
+        specName: 'member has no tiers',
+        products: [],
+        automationTiers: ['bronze', 'silver'],
+      },
+    ])('bails out when $specName', async ({ products, automationTiers }) => {
       const step = buildEmailStep({
         automation_trigger_rules: automationTiers.map((productId) => ({
           id: `trigger-rule-${productId}`,
@@ -438,19 +444,188 @@ describe('automations poll', function () {
         })),
       });
       automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-      (Member.findOne as sinon.SinonStub).resolves(buildMember({ status, products }));
+      Member.findOne.resolves(buildMember({ status: 'paid', products }));
 
       await poll(options);
 
       sinon.assert.calledOnceWithExactly(
         automationsApi.markStepTerminal,
         step,
-        'member changed status',
+        'member changed tier',
       );
       sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
-      sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
-    },
-  );
+      sinon.assert.notCalled(memberWelcomeEmailService.sendAutomationEmail);
+    });
+
+    it('continues when the member has a gift subscription', async function () {
+      const step = buildEmailStep({
+        automation_trigger_rules: [
+          {
+            id: 'trigger-rule-8',
+            automation_id: 'automation-id',
+            created_at: new Date('2026-01-01T00:00:00Z'),
+            trigger_type: 'paid_subscription_started',
+            scope: 'any_paid_tier',
+            product_id: null,
+            direction: null,
+          },
+        ],
+      });
+      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+      Member.findOne.resolves(buildMember({ status: 'gift' }));
+
+      await poll(options);
+
+      sinon.assert.calledOnceWithExactly(
+        memberWelcomeEmailService.sendAutomationEmail,
+        sinon.match({
+          memberStatus: 'paid',
+        }),
+      );
+      sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+    });
+  });
+
+  describe('paid subscription changed', function () {
+    describe('paid tier destination', function () {
+      let step: SendEmailStep;
+
+      beforeEach(function () {
+        step = buildEmailStep({
+          automation_trigger_rules: [
+            {
+              id: 'from-bronze',
+              automation_id: 'automation-id',
+              created_at: new Date('2026-01-01T00:00:00Z'),
+              trigger_type: 'paid_subscription_changed',
+              scope: 'specific_paid_tier',
+              product_id: 'bronze',
+              direction: 'from',
+            },
+            {
+              id: 'to-silver',
+              automation_id: 'automation-id',
+              created_at: new Date('2026-01-01T00:00:00Z'),
+              trigger_type: 'paid_subscription_changed',
+              scope: 'specific_paid_tier',
+              product_id: 'silver',
+              direction: 'to',
+            },
+          ],
+        });
+        automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+      });
+
+      it('bails out for a tier change when the member only matches the From tier', async function () {
+        Member.findOne.resolves(buildMember({ status: 'paid', products: [{ id: 'bronze' }] }));
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(
+          automationsApi.markStepTerminal,
+          step,
+          'member changed tier',
+        );
+        sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+        sinon.assert.notCalled(memberWelcomeEmailService.sendAutomationEmail);
+      });
+
+      it('bails out for a status change even when the member still has the To tier', async function () {
+        Member.findOne.resolves(buildMember({ status: 'free', products: [{ id: 'silver' }] }));
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(
+          automationsApi.markStepTerminal,
+          step,
+          'member changed status',
+        );
+        sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+        sinon.assert.notCalled(memberWelcomeEmailService.sendAutomationEmail);
+      });
+
+      it('continues when the member still matches the To tier', async function () {
+        Member.findOne.resolves(buildMember({ status: 'paid', products: [{ id: 'silver' }] }));
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+        sinon.assert.notCalled(automationsApi.markStepTerminal);
+        sinon.assert.calledOnceWithExactly(
+          memberWelcomeEmailService.sendAutomationEmail,
+          sinon.match({ memberStatus: 'paid' }),
+        );
+      });
+
+      it('continues when a gift member still matches the To tier', async function () {
+        Member.findOne.resolves(buildMember({ status: 'gift', products: [{ id: 'silver' }] }));
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+        sinon.assert.notCalled(automationsApi.markStepTerminal);
+        sinon.assert.calledOnce(memberWelcomeEmailService.sendAutomationEmail);
+      });
+    });
+
+    describe('free destination', function () {
+      let step: SendEmailStep;
+
+      beforeEach(function () {
+        step = buildEmailStep({
+          automation_trigger_rules: [
+            {
+              id: 'from-paid',
+              automation_id: 'automation-id',
+              created_at: new Date('2026-01-01T00:00:00Z'),
+              trigger_type: 'paid_subscription_changed',
+              scope: 'any_paid_tier',
+              product_id: null,
+              direction: 'from',
+            },
+            {
+              id: 'to-free',
+              automation_id: 'automation-id',
+              created_at: new Date('2026-01-01T00:00:00Z'),
+              trigger_type: 'paid_subscription_changed',
+              scope: 'free',
+              product_id: null,
+              direction: 'to',
+            },
+          ],
+        });
+        automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+      });
+
+      it('continues when the member remains free', async function () {
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+        sinon.assert.notCalled(automationsApi.markStepTerminal);
+        sinon.assert.calledOnceWithExactly(
+          memberWelcomeEmailService.sendAutomationEmail,
+          sinon.match({ memberStatus: 'free' }),
+        );
+      });
+
+      it.each(['paid', 'gift'])(
+        'bails out for a status change when the member becomes %s',
+        async function (status) {
+          Member.findOne.resolves(buildMember({ status }));
+
+          await poll(options);
+
+          sinon.assert.calledOnceWithExactly(
+            automationsApi.markStepTerminal,
+            step,
+            'member changed status',
+          );
+          sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+          sinon.assert.notCalled(memberWelcomeEmailService.sendAutomationEmail);
+        },
+      );
+    });
+  });
 
   it('ends the automation run if the member unsubscribed from updates & announcements', async function () {
     const step = buildEmailStep();
@@ -459,8 +634,7 @@ describe('automations poll', function () {
 
     await poll(options);
 
-    sinon.assert.notCalled(memberWelcomeEmailService.init);
-    sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.notCalled(memberWelcomeEmailService.sendAutomationEmail);
     sinon.assert.notCalled(automationsApi.recordEmailSent);
     sinon.assert.calledOnceWithExactly(
       automationsApi.markStepTerminal,
@@ -483,8 +657,7 @@ describe('automations poll', function () {
 
     await poll(options);
 
-    sinon.assert.calledOnce(memberWelcomeEmailService.init);
-    sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.calledOnce(memberWelcomeEmailService.sendAutomationEmail);
     sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
   });
 
@@ -500,8 +673,7 @@ describe('automations poll', function () {
 
     await poll(options);
 
-    sinon.assert.notCalled(memberWelcomeEmailService.init);
-    sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.notCalled(memberWelcomeEmailService.sendAutomationEmail);
     sinon.assert.notCalled(automationsApi.recordEmailSent);
     sinon.assert.calledOnceWithExactly(
       automationsApi.markStepTerminal,
@@ -512,34 +684,6 @@ describe('automations poll', function () {
     sinon.assert.notCalled(options.enqueueAnotherPollAt);
   });
 
-  it('gift members run through paid automations', async function () {
-    const step = buildEmailStep({
-      automation_trigger_rules: [
-        {
-          id: 'trigger-rule-8',
-          automation_id: 'automation-id',
-          created_at: new Date('2026-01-01T00:00:00Z'),
-          trigger_type: 'paid_subscription_started',
-          scope: 'any_paid_tier',
-          product_id: null,
-          direction: null,
-        },
-      ],
-    });
-    automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-    Member.findOne.resolves(buildMember({ status: 'gift' }));
-
-    await poll(options);
-
-    sinon.assert.calledOnceWithExactly(
-      memberWelcomeEmailService.api.sendAutomationEmail,
-      sinon.match({
-        memberStatus: 'paid',
-      }),
-    );
-    sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
-  });
-
   it('sends email revision content and enqueues the next step', async function () {
     const nextReadyAt = new Date(Date.now() + 60 * 1000);
     const step = buildEmailStep({ email_design_setting_id: 'design-id' });
@@ -548,9 +692,8 @@ describe('automations poll', function () {
 
     await poll(options);
 
-    sinon.assert.calledOnce(memberWelcomeEmailService.init);
     sinon.assert.calledOnceWithExactly(
-      memberWelcomeEmailService.api.sendAutomationEmail,
+      memberWelcomeEmailService.sendAutomationEmail,
       sinon.match({
         email: {
           designSettingId: 'design-id',
@@ -568,14 +711,14 @@ describe('automations poll', function () {
       automation_action_revision_id: 'revision-id',
     });
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-    memberWelcomeEmailService.api.sendAutomationEmail.resolves({
+    memberWelcomeEmailService.sendAutomationEmail.resolves({
       id: ' <mailgun-message-id> ',
     });
 
     await poll(options);
 
     sinon.assert.calledOnceWithExactly(
-      memberWelcomeEmailService.api.sendAutomationEmail,
+      memberWelcomeEmailService.sendAutomationEmail,
       sinon.match({
         trackOpens: false,
       }),
@@ -592,7 +735,7 @@ describe('automations poll', function () {
       trackOpens: false,
     });
     sinon.assert.callOrder(
-      memberWelcomeEmailService.api.sendAutomationEmail,
+      memberWelcomeEmailService.sendAutomationEmail,
       automationsApi.recordEmailSent,
       scheduleAutomationEmailAnalyticsJob,
       automationsApi.finishStepAndEnqueueNext,
@@ -603,12 +746,12 @@ describe('automations poll', function () {
     const step = buildEmailStep();
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     settingsCacheGet.withArgs('email_track_opens').returns(true);
-    memberWelcomeEmailService.api.sendAutomationEmail.resolves({ id: '<mailgun-message-id>' });
+    memberWelcomeEmailService.sendAutomationEmail.resolves({ id: '<mailgun-message-id>' });
 
     await poll(options);
 
     sinon.assert.calledOnceWithExactly(
-      memberWelcomeEmailService.api.sendAutomationEmail,
+      memberWelcomeEmailService.sendAutomationEmail,
       sinon.match({
         trackOpens: true,
       }),
@@ -625,12 +768,12 @@ describe('automations poll', function () {
     const step = buildEmailStep();
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     settingsCacheGet.withArgs('email_track_opens').returns(false);
-    memberWelcomeEmailService.api.sendAutomationEmail.resolves({ id: '<mailgun-message-id>' });
+    memberWelcomeEmailService.sendAutomationEmail.resolves({ id: '<mailgun-message-id>' });
 
     await poll(options);
 
     sinon.assert.calledOnceWithExactly(
-      memberWelcomeEmailService.api.sendAutomationEmail,
+      memberWelcomeEmailService.sendAutomationEmail,
       sinon.match({
         trackOpens: false,
       }),
@@ -646,7 +789,7 @@ describe('automations poll', function () {
   it('does not schedule email analytics when the send has no Mailgun message ID', async function () {
     const step = buildEmailStep();
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-    memberWelcomeEmailService.api.sendAutomationEmail.resolves({
+    memberWelcomeEmailService.sendAutomationEmail.resolves({
       messageId: '<smtp-message-id>',
       response: '250 Message accepted',
     });
@@ -671,7 +814,7 @@ describe('automations poll', function () {
       }),
     );
     sinon.assert.calledOnceWithExactly(
-      memberWelcomeEmailService.api.sendAutomationEmail,
+      memberWelcomeEmailService.sendAutomationEmail,
       sinon.match({
         trackClicks: true,
         automationActionRevisionId: step.automation_action_revision_id,
@@ -695,7 +838,7 @@ describe('automations poll', function () {
       }),
     );
     sinon.assert.calledOnceWithExactly(
-      memberWelcomeEmailService.api.sendAutomationEmail,
+      memberWelcomeEmailService.sendAutomationEmail,
       sinon.match({
         trackClicks: false,
         automationActionRevisionId: step.automation_action_revision_id,
@@ -710,7 +853,7 @@ describe('automations poll', function () {
     });
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     settingsCacheGet.withArgs('email_track_opens').returns(true);
-    memberWelcomeEmailService.api.sendAutomationEmail.resolves({
+    memberWelcomeEmailService.sendAutomationEmail.resolves({
       messageId: '<smtp-message-id>',
       response: '250 Message accepted',
     });
@@ -718,7 +861,7 @@ describe('automations poll', function () {
     await poll(options);
 
     sinon.assert.calledOnceWithExactly(
-      memberWelcomeEmailService.api.sendAutomationEmail,
+      memberWelcomeEmailService.sendAutomationEmail,
       sinon.match({
         trackOpens: true,
       }),
@@ -734,7 +877,7 @@ describe('automations poll', function () {
       trackOpens: false,
     });
     sinon.assert.callOrder(
-      memberWelcomeEmailService.api.sendAutomationEmail,
+      memberWelcomeEmailService.sendAutomationEmail,
       automationsApi.recordEmailSent,
       automationsApi.finishStepAndEnqueueNext,
     );
@@ -747,7 +890,7 @@ describe('automations poll', function () {
 
     await poll(options);
 
-    sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.calledOnce(memberWelcomeEmailService.sendAutomationEmail);
     sinon.assert.calledOnce(automationsApi.recordEmailSent);
     sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
     sinon.assert.notCalled(automationsApi.retryStep);
@@ -757,12 +900,12 @@ describe('automations poll', function () {
   it('does not retry the email send when scheduling email analytics fails', async function () {
     const step = buildEmailStep();
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-    memberWelcomeEmailService.api.sendAutomationEmail.resolves({ id: '<mailgun-message-id>' });
+    memberWelcomeEmailService.sendAutomationEmail.resolves({ id: '<mailgun-message-id>' });
     scheduleAutomationEmailAnalyticsJob.rejects(new Error('email analytics scheduling failed'));
 
     await poll(options);
 
-    sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
+    sinon.assert.calledOnce(memberWelcomeEmailService.sendAutomationEmail);
     sinon.assert.calledOnce(scheduleAutomationEmailAnalyticsJob);
     sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
     sinon.assert.notCalled(automationsApi.retryStep);
@@ -785,7 +928,7 @@ describe('automations poll', function () {
     const step = buildEmailStep({ step_attempts: 1 });
     const pollStart = Date.now();
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-    memberWelcomeEmailService.api.sendAutomationEmail.rejects(new Error('send failed'));
+    memberWelcomeEmailService.sendAutomationEmail.rejects(new Error('send failed'));
 
     await poll(options);
 
@@ -800,7 +943,7 @@ describe('automations poll', function () {
     const error = new Error('Mailgun request timed out');
     const logError = sinon.stub(logging, 'error');
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-    memberWelcomeEmailService.api.sendAutomationEmail.rejects(error);
+    memberWelcomeEmailService.sendAutomationEmail.rejects(error);
 
     await poll(options);
 
@@ -824,7 +967,7 @@ describe('automations poll', function () {
     const error = new Error('Mailgun request timed out');
     const logError = sinon.stub(logging, 'error');
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-    memberWelcomeEmailService.api.sendAutomationEmail.rejects({
+    memberWelcomeEmailService.sendAutomationEmail.rejects({
       error,
       messageData: { html: 'Private email content' },
     });
@@ -849,7 +992,7 @@ describe('automations poll', function () {
   it('permanently fails email send failures at the attempt limit', async function () {
     const step = buildEmailStep({ step_attempts: 10 });
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
-    memberWelcomeEmailService.api.sendAutomationEmail.rejects(new Error('send failed'));
+    memberWelcomeEmailService.sendAutomationEmail.rejects(new Error('send failed'));
 
     await poll(options);
 

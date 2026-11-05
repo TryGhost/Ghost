@@ -1,4 +1,3 @@
-import * as assert from 'assert/strict';
 import { formatUrl } from '@/settings/utils/format-url';
 
 describe('formatUrl', function () {
@@ -14,19 +13,15 @@ describe('formatUrl', function () {
       ];
 
       for (const uri of uris) {
-        assert.deepEqual(
-          formatUrl(uri, baseUrl),
-          {
-            save: uri,
-            display: uri,
-          },
-          uri,
-        );
+        expect(formatUrl(uri, baseUrl), uri).toStrictEqual({
+          save: uri,
+          display: uri,
+        });
       }
     });
 
     it('continues to add a slash to HTTP child paths', function () {
-      assert.deepEqual(formatUrl('https://example.com/blog/about', baseUrl), {
+      expect(formatUrl('https://example.com/blog/about', baseUrl)).toStrictEqual({
         save: '/about/',
         display: 'https://example.com/blog/about/',
       });
@@ -61,27 +56,19 @@ describe('formatUrl', function () {
       ];
 
       for (const fixture of cases) {
-        assert.deepEqual(
-          formatUrl(fixture.input, baseUrl),
-          {
-            save: fixture.save,
-            display: fixture.display,
-          },
-          fixture.input,
-        );
+        expect(formatUrl(fixture.input, baseUrl), fixture.input).toStrictEqual({
+          save: fixture.save,
+          display: fixture.display,
+        });
       }
     });
 
     it('saves the bare subdirectory as the homepage', function () {
       for (const input of ['https://example.com/blog', '/blog']) {
-        assert.deepEqual(
-          formatUrl(input, baseUrl),
-          {
-            save: '/',
-            display: 'https://example.com/blog/',
-          },
-          input,
-        );
+        expect(formatUrl(input, baseUrl), input).toStrictEqual({
+          save: '/',
+          display: 'https://example.com/blog/',
+        });
       }
     });
   });

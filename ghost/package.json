@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.74.0-rc.0",
+  "version": "6.75.1-rc.0",
   "description": "The professional publishing platform",
   "keywords": [
     "blog",
@@ -52,12 +52,14 @@
     "pretest": "pnpm build:assets",
     "test": "pnpm test:unit",
     "test:watch": "vitest --reporter=default",
-    "test:single": "f() { case \"$1\" in test/unit/*) vitest run \"$1\" ;; test/*) vitest run -c vitest.config.db.ts \"$1\" ;; *) vitest run \"$1\" || vitest run -c vitest.config.db.ts \"$1\" ;; esac; }; f",
+    "test:single": "f() { case \"$1\" in test/unit/*) vitest run \"$1\" ;; test/*) vitest run -c vitest.config.db.ts --project '!bullmq-*' \"$1\" ;; *) vitest run \"$1\" || vitest run -c vitest.config.db.ts --project '!bullmq-*' \"$1\" ;; esac; }; f",
     "test:all": "pnpm test:unit && pnpm test:integration && pnpm test:e2e && pnpm test:types && pnpm lint",
     "test:debug": "DEBUG=ghost:test* pnpm test",
     "test:unit": "vitest run",
     "test:integration": "vitest run -c vitest.config.db.ts --project integration --project integration-migrations",
     "test:e2e": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --project e2e-isolated",
+    "test:bullmq": "vitest run -c vitest.config.db.ts --project bullmq-newsletters",
+    "test:bullmq:scenarios": "vitest run -c vitest.config.db.ts --project bullmq-scenarios && vitest run -c vitest.config.db.ts --project bullmq-scenarios-outbox-off",
     "test:legacy": "vitest run -c vitest.config.db.ts --project legacy",
     "test:ci:e2e": "COVERAGE_LANE=e2e pnpm test:e2e --coverage",
     "test:ci:integration": "COVERAGE_LANE=integration pnpm test:integration --coverage",
@@ -75,7 +77,7 @@
     "lint": "pnpm run '/^lint:(server|kernel|shared|frontend|test)$/'"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.1079.0",
+    "@aws-sdk/client-s3": "3.1161.0",
     "@breejs/later": "catalog:",
     "@extractus/oembed-extractor": "catalog:",
     "@faker-js/faker": "catalog:",
@@ -91,13 +93,13 @@
     "@tryghost/admin-api-schema": "workspace:*",
     "@tryghost/api-framework": "workspace:*",
     "@tryghost/app-contracts": "workspace:*",
-    "@tryghost/bookshelf-plugins": "2.3.20",
+    "@tryghost/bookshelf-plugins": "2.3.21",
     "@tryghost/brute-knex": "catalog:",
     "@tryghost/checkout": "workspace:*",
     "@tryghost/color-utils": "catalog:",
     "@tryghost/config-url-helpers": "1.0.30",
     "@tryghost/custom-fonts": "catalog:",
-    "@tryghost/database-info": "2.3.18",
+    "@tryghost/database-info": "2.3.19",
     "@tryghost/debug": "catalog:",
     "@tryghost/domain-events": "catalog:",
     "@tryghost/errors": "catalog:",
@@ -120,25 +122,25 @@
     "@tryghost/mg-clean-html": "catalog:",
     "@tryghost/mongo-knex": "catalog:",
     "@tryghost/mongo-utils": "0.6.6",
-    "@tryghost/mw-error-handler": "3.3.19",
-    "@tryghost/mw-vhost": "3.3.18",
-    "@tryghost/nodemailer": "2.3.19",
+    "@tryghost/mw-error-handler": "3.3.20",
+    "@tryghost/mw-vhost": "3.3.19",
+    "@tryghost/nodemailer": "2.3.20",
     "@tryghost/nql": "catalog:",
     "@tryghost/nql-lang": "catalog:",
     "@tryghost/nql-string": "workspace:*",
     "@tryghost/parse-email-address": "workspace:*",
-    "@tryghost/prometheus-metrics": "5.0.5",
+    "@tryghost/prometheus-metrics": "5.0.6",
     "@tryghost/referrer-parser": "0.1.25",
     "@tryghost/request": "catalog:",
-    "@tryghost/root-utils": "2.3.18",
+    "@tryghost/root-utils": "2.3.19",
     "@tryghost/security": "catalog:",
     "@tryghost/social-urls": "0.1.66",
     "@tryghost/string": "catalog:",
     "@tryghost/tpl": "catalog:",
     "@tryghost/url-utils": "catalog:",
     "@tryghost/validator": "catalog:",
-    "@tryghost/version": "2.3.18",
-    "@tryghost/zip": "3.5.18",
+    "@tryghost/version": "2.3.19",
+    "@tryghost/zip": "4.0.0",
     "@x402/core": "catalog:",
     "@x402/evm": "catalog:",
     "@x402/hono": "catalog:",
@@ -147,6 +149,7 @@
     "bookshelf": "1.2.0",
     "bookshelf-relations": "3.0.0",
     "bson-objectid": "catalog:",
+    "bullmq": "catalog:",
     "cache-manager": "4.1.0",
     "cache-manager-ioredis": "2.1.0",
     "chalk": "4.1.2",
@@ -159,7 +162,7 @@
     "cookie-session": "2.1.1",
     "cookies": "0.9.2",
     "cors": "2.8.6",
-    "countries-and-timezones": "3.9.0",
+    "countries-and-timezones": "3.11.0",
     "cron-validate": "catalog:",
     "csso": "5.0.5",
     "dompurify": "catalog:",
@@ -177,7 +180,7 @@
     "ghost-storage-base": "workspace:*",
     "glob": "catalog:",
     "got": "catalog:",
-    "gscan": "6.6.1",
+    "gscan": "6.7.0",
     "handlebars": "4.7.10",
     "heic-convert": "2.1.0",
     "hono": "catalog:",
@@ -206,7 +209,7 @@
     "moment": "catalog:",
     "moment-timezone": "catalog:",
     "mppx": "catalog:",
-    "multer": "2.4.0",
+    "multer": "2.5.0",
     "mysql2": "3.24.6",
     "nconf": "0.13.0",
     "node-html-markdown": "catalog:",
@@ -218,7 +221,7 @@
     "probability-distributions": "0.9.1",
     "probe-image-size": "7.4.0",
     "rss": "1.2.2",
-    "sanitize-html": "2.17.7",
+    "sanitize-html": "2.18.1",
     "semver": "catalog:",
     "simple-dom": "1.4.0",
     "snakecase-keys": "catalog:",
@@ -236,9 +239,10 @@
   "devDependencies": {
     "@eslint/js": "catalog:",
     "@internal/cfg-eslint": "workspace:*",
-    "@tryghost/email-mock-receiver": "2.3.18",
-    "@tryghost/express-test": "2.3.19",
-    "@tryghost/webhook-mock-receiver": "2.3.18",
+    "@internal/cfg-test-workers": "workspace:*",
+    "@tryghost/email-mock-receiver": "2.3.19",
+    "@tryghost/express-test": "2.3.20",
+    "@tryghost/webhook-mock-receiver": "2.3.19",
     "@types/bookshelf": "1.2.9",
     "@types/common-tags": "1.8.4",
     "@types/csso": "catalog:",
@@ -290,7 +294,7 @@
     "better-sqlite3": "catalog:"
   },
   "overrides": {
-    "cron-validate": "1.4.5"
+    "cron-validate": "1.5.3"
   },
   "engines": {
     "cli": "^1.29.1",
@@ -335,6 +339,18 @@
         ]
       },
       "test:e2e": {
+        "dependsOn": [
+          "build:assets",
+          "^build"
+        ]
+      },
+      "test:bullmq": {
+        "dependsOn": [
+          "build:assets",
+          "^build"
+        ]
+      },
+      "test:bullmq:scenarios": {
         "dependsOn": [
           "build:assets",
           "^build"

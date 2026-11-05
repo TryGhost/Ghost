@@ -15,6 +15,26 @@ describe('buildCommentPermalink', function () {
   });
 });
 
+describe('buildCommentShareUrl', function () {
+  it('builds an absolute link to the comment on the current page', function () {
+    expect(helpers.buildCommentShareUrl('abc123', 'https://example.com/my-post/')).toEqual(
+      'https://example.com/my-post/#ghost-comments-abc123',
+    );
+  });
+
+  it('replaces an existing hash', function () {
+    expect(
+      helpers.buildCommentShareUrl('abc123', 'https://example.com/my-post/#ghost-comments-def456'),
+    ).toEqual('https://example.com/my-post/#ghost-comments-abc123');
+  });
+
+  it('drops the query string so member-specific params are not shared', function () {
+    expect(
+      helpers.buildCommentShareUrl('abc123', 'https://example.com/my-post/?ref=newsletter&uuid=1'),
+    ).toEqual('https://example.com/my-post/#ghost-comments-abc123');
+  });
+});
+
 describe('buildCommentsRootPermalink', function () {
   it('builds a fragment-only permalink for the comments root', function () {
     expect(helpers.buildCommentsRootPermalink()).toEqual('#ghost-comments');

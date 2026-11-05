@@ -1,4 +1,4 @@
-const tiersService = require('../../services/tiers');
+const tiers = require('../../services/tiers').default;
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -13,7 +13,7 @@ const controller = {
       docName: 'products',
     },
     async query(frame) {
-      const page = await tiersService.api.browse(frame.options);
+      const page = await tiers.service.api.browse(frame.options);
       return page;
     },
   },
@@ -27,7 +27,7 @@ const controller = {
       docName: 'products',
     },
     async query(frame) {
-      return await tiersService.api.read(frame.data.id);
+      return await tiers.service.api.read(frame.data.id);
     },
   },
 
@@ -45,7 +45,7 @@ const controller = {
       docName: 'products',
     },
     async query(frame) {
-      return await tiersService.api.add(frame.data);
+      return await tiers.service.api.add(frame.data);
     },
   },
 
@@ -66,7 +66,7 @@ const controller = {
       docName: 'products',
     },
     async query(frame) {
-      return await tiersService.api.edit(frame.options.id, frame.data);
+      return await tiers.service.api.edit(frame.options.id, frame.data);
     },
   },
 };

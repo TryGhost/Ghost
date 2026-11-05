@@ -4,7 +4,7 @@ const nock = require('nock');
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const markdownToLexical = require('../../utils/fixtures/data-generator').markdownToLexical;
-const mentionsService = require('../../../core/server/services/mentions');
+const mentionsService = require('../../../core/server/services/mentions').default;
 const SendWebmentionsJob =
   require('../../../core/server/services/mentions/send-webmentions-job').default;
 const jobsService = require('../../../core/server/services/jobs-service');
@@ -78,7 +78,7 @@ function recordProcessed(job) {
 // Wrap the seam the job handler calls: completion here means the job ran,
 // without coupling the test to the queue or its backend.
 function trackWebmentionSending() {
-  const sendingService = mentionsService.sendingService;
+  const sendingService = mentionsService.service.sendingService;
   const original = sendingService.sendWebmentions.bind(sendingService);
   sinon.stub(sendingService, 'sendWebmentions').callsFake(async (job) => {
     try {

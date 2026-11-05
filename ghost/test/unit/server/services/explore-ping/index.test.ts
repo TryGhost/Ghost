@@ -16,7 +16,7 @@ const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
 const ghostVersion = require('@tryghost/version');
 const members = require('../../../../../core/server/services/members');
-const statsService = require('../../../../../core/server/services/stats');
+const statsRoot = require('../../../../../core/server/services/stats').default;
 const models = require('../../../../../core/server/models');
 const PostStats = require('../../../../../core/server/services/posts/stats/post-stats');
 const POSTS_PATH =
@@ -41,7 +41,7 @@ describe('explore-ping root', function () {
   let info: sinon.SinonStub;
   let warn: sinon.SinonStub;
 
-  beforeEach(function () {
+  beforeEach(async function () {
     originalModules = new Map([ROOT_PATH, POSTS_PATH].map((path) => [path, require.cache[path]]));
     delete require.cache[ROOT_PATH];
     createPosts = sandbox.spy(postsFactory);
@@ -65,7 +65,9 @@ describe('explore-ping root', function () {
     sandbox.stub(PostStats.prototype, 'getMostRecentlyPublishedPostDate').resolves(null);
     sandbox.stub(PostStats.prototype, 'getFirstPublishedPostDate').resolves(null);
     totalMembers = sandbox.stub(members.stats, 'getTotalMembers').resolves(7);
-    sandbox.stub(statsService, 'api').value(null);
+    // Boot awaits Stats before Explore; the root passes its ready aggregate.
+    await statsRoot.init();
+    sandbox.stub(statsRoot.service, 'api').value(null);
     info = sandbox.stub(logging, 'info');
     warn = sandbox.stub(logging, 'warn');
     root = require(ROOT_PATH).default;
@@ -118,6 +120,18 @@ describe('explore-ping root', function () {
     });
   }
 
+  for (const url of ['http://localhost:2368/', 'http://127.0.0.1:2368/']) {
+    it(`constructs but does not ping for the local site URL ${url}`, async function () {
+      getConfig.withArgs('url').returns(url);
+
+      assert.equal(await root.init(), undefined);
+
+      sinon.assert.calledOnce(createPosts);
+      sinon.assert.notCalled(ping);
+      sinon.assert.notCalled(info);
+    });
+  }
+
   it('retains one instance and pings once across repeated init', async function () {
     assert.equal(await root.init(), undefined);
     assert.equal(await root.init(), undefined);
@@ -156,7 +170,7 @@ describe('explore-ping root', function () {
       const send = sandbox.stub(service, 'request').returns(response.promise);
       assert.equal(wiredRequest, request);
       assert.equal(service.members, members);
-      assert.equal(service.statsService, statsService);
+      assert.equal(service.statsService, statsRoot.service);
       await setImmediate();
       assert.equal(initialized, true, 'Init waited for payload collection');
       assert.equal(completed, false);
@@ -164,7 +178,7 @@ describe('explore-ping root', function () {
       sinon.assert.notCalled(totalMembers);
 
       const getCurrentMrr = sandbox.stub().resolves([{ currency: 'gbp', mrr: 2500 }]);
-      statsService.api = { mrr: { getCurrentMrr } };
+      statsRoot.service.api = { mrr: { getCurrentMrr } };
       posts.resolve(5);
       await setImmediate();
 

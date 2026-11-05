@@ -8,6 +8,8 @@ import createKnex, { type Knex } from 'knex';
 import moment from 'moment';
 import { NON_EMPTY_EMAIL_LEXICAL } from '../../../../utils/automations-fixtures';
 import ghostConfig from '../../../../../core/shared/config';
+import { createAutomationsApi2 } from '../../../../../core/server/services/automations/automations-api-2';
+import { createDatabaseAutomationsRepository2 } from '../../../../../core/server/services/automations/database-automations-repository-2';
 import { createDatabaseAutomationsRepository } from '../../../../../core/server/services/automations/database-automations-repository';
 import type {
   AutomatedEmailEvents,
@@ -1224,16 +1226,7 @@ describe('automations repository', function () {
     });
   });
 
-  describe('getNumberOfAutomations', function () {
-    it('counts active, inactive, and archived automations without creating defaults', async function () {
-      const rows = await knex('automations').select('id');
-      assert.equal(await repo.getNumberOfAutomations(), rows.length);
-      for (const status of ['inactive', 'archived'] as const) {
-        await knex('automations').update({ status });
-        assert.equal(await repo.getNumberOfAutomations(), rows.length);
-      }
-    });
-
+  describe('browse archived automations', function () {
     it('includes archived automations in browse results', async function () {
       const initial = await getAutomationBySlug('member-welcome-email-free');
       await repo.edit(initial.id, { status: 'archived' });
@@ -1242,15 +1235,6 @@ describe('automations repository', function () {
         result.data.find((automation) => automation.id === initial.id)?.status,
         'archived',
       );
-    });
-
-    it('returns zero for an empty automations table', async function () {
-      await knex('automation_action_edges').del();
-      await knex('automation_action_revisions').del();
-      await knex('automation_actions').del();
-      await knex('automations').del();
-      assert.equal(await repo.getNumberOfAutomations(), 0);
-      assert.equal((await knex('automations').select('id')).length, 0);
     });
   });
 
@@ -3045,10 +3029,15 @@ describe('automations repository', function () {
   });
 
   describe('trackEmailClicked', function () {
+    const createClickApi = () =>
+      createAutomationsApi2({
+        repository: createDatabaseAutomationsRepository2({ knex }),
+        domainEvents: { dispatch: () => {} },
+        labs: { isSet: () => true },
+        fakeWaitHoursMultiplier: null,
+      });
     const FIRST_CLICK = new Date('2026-01-01T00:00:00.000Z');
     const LATER_CLICK = new Date('2026-02-02T00:00:00.000Z');
-    const EARLIER_DELIVERY = new Date('2025-11-01T00:00:00.000Z');
-    const LATER_DELIVERY = new Date('2025-12-01T00:00:00.000Z');
 
     let firstRevisionId: string;
     let secondRevisionId: string;
@@ -3059,24 +3048,20 @@ describe('automations repository', function () {
       revisionId = firstRevisionId,
       memberId = 'member-id',
       trackClicks = true,
-      createdAt = EARLIER_DELIVERY,
-      automationRunStepId,
     }: {
       id: string;
       revisionId?: string;
       memberId?: string;
       trackClicks?: boolean;
-      createdAt?: Date;
-      automationRunStepId?: string;
     }): Promise<string> => {
-      const runStepId = automationRunStepId ?? (await insertStepForRevision(revisionId)).id;
+      const runStepId = (await insertStepForRevision(revisionId)).id;
       await knex('automated_email_recipients').insert({
         id,
         automation_action_revision_id: revisionId,
         automation_run_step_id: runStepId,
         member_id: memberId,
         track_clicks: trackClicks,
-        created_at: toDatabaseDate(createdAt),
+        created_at: toDatabaseDate(FIRST_CLICK),
       });
       return runStepId;
     };
@@ -3090,11 +3075,16 @@ describe('automations repository', function () {
       clickedAt?: Date;
       automationRunStepId?: string;
     } = {}): Promise<void> => {
-      await repo.trackEmailClicked({
-        automationActionRevisionId: firstRevisionId,
-        automationRunStepId,
-        memberId,
-        clickedAt,
+      await knex.transaction(async (transaction) => {
+        await createClickApi().trackEmailClicked(
+          {
+            automationActionRevisionId: firstRevisionId,
+            automationRunStepId,
+            memberId,
+            clickedAt,
+          },
+          { connection: transaction },
+        );
       });
     };
 
@@ -3137,32 +3127,7 @@ describe('automations repository', function () {
       assert.equal(await getClickedCount(firstRevisionId), 1);
     });
 
-    it('locks the action revision before selecting the recipient', async function () {
-      const queries: Array<{ sql: string; bindings: unknown[] }> = [];
-      const recordQuery = (query: { sql: string; bindings: unknown[] }) => queries.push(query);
-      knex.on('query', recordQuery);
-
-      try {
-        await trackClick();
-      } finally {
-        knex.off('query', recordQuery);
-      }
-
-      const revisionSelect = queries.findIndex(
-        ({ sql }) => sql.startsWith('select') && sql.includes('automation_action_revisions'),
-      );
-      const recipientSelect = queries.findIndex(
-        ({ sql }) => sql.startsWith('select') && sql.includes('automated_email_recipients'),
-      );
-
-      assert.notEqual(revisionSelect, -1);
-      assert.equal(queries[revisionSelect].sql.includes('where `id` in (?)'), true);
-      assert.deepEqual(queries[revisionSelect].bindings, [firstRevisionId]);
-      assert.notEqual(recipientSelect, -1);
-      assert(revisionSelect < recipientSelect);
-    });
-
-    it('does not update a run step that belongs to another member or revision', async function () {
+    it('ignores clicks for another member or a different email', async function () {
       const otherMemberRunStepId = await insertRecipient({
         id: 'other-member-recipient',
         memberId: 'other-member-id',
@@ -3190,6 +3155,40 @@ describe('automations repository', function () {
       assert.equal(await getClickedCount(firstRevisionId), 1);
     });
 
+    it('keeps the first recorded click when events arrive out of order', async function () {
+      await trackClick({ clickedAt: LATER_CLICK });
+      await trackClick({ clickedAt: FIRST_CLICK });
+
+      assert.deepEqual(await getClickedAt('tracked-recipient'), LATER_CLICK);
+      assert.equal(await getClickedCount(firstRevisionId), 1);
+    });
+
+    it('ignores clicks for an unknown email', async function () {
+      await trackClick({ automationRunStepId: 'missing-step' });
+      assert.equal(await getClickedAt('tracked-recipient'), null);
+      assert.equal(await getClickedCount(firstRevisionId), null);
+    });
+
+    it('leaves the click unrecorded when its count cannot be saved', async function () {
+      // Fail the second write after the click timestamp has been saved.
+      await knex.raw(`
+        CREATE TRIGGER fail_email_clicked_count
+        BEFORE UPDATE OF email_clicked_count ON automation_action_revisions
+        BEGIN
+          SELECT RAISE(FAIL, 'click count update failed');
+        END
+      `);
+
+      try {
+        await assert.rejects(trackClick(), /click count update failed/);
+      } finally {
+        await knex.raw('DROP TRIGGER fail_email_clicked_count');
+      }
+
+      assert.equal(await getClickedAt('tracked-recipient'), null);
+      assert.equal(await getClickedCount(firstRevisionId), null);
+    });
+
     it('increments an existing click count', async function () {
       await knex('automation_action_revisions')
         .where({ id: firstRevisionId })
@@ -3200,10 +3199,9 @@ describe('automations repository', function () {
       assert.equal(await getClickedCount(firstRevisionId), 6);
     });
 
-    it('tracks the recipient identified by the run step when a member received the same revision more than once', async function () {
+    it('records the click for the correct delivery when a member receives the same email twice', async function () {
       await insertRecipient({
         id: 'other-delivery-recipient',
-        createdAt: LATER_DELIVERY,
       });
 
       await trackClick();
@@ -3226,49 +3224,6 @@ describe('automations repository', function () {
       });
 
       assert.equal(await getClickedAt('tracking-disabled-recipient'), null);
-      assert.equal(await getClickedCount(firstRevisionId), null);
-    });
-
-    it('rolls back the timestamp when incrementing the count fails', async function () {
-      await knex.raw(`
-                CREATE TRIGGER fail_email_clicked_count
-                BEFORE UPDATE OF email_clicked_count ON automation_action_revisions
-                BEGIN
-                    SELECT RAISE(FAIL, 'click count update failed');
-                END
-            `);
-
-      try {
-        await assert.rejects(trackClick(), /click count update failed/);
-      } finally {
-        await knex.raw('DROP TRIGGER fail_email_clicked_count');
-      }
-
-      assert.equal(await getClickedAt('tracked-recipient'), null);
-      assert.equal(await getClickedCount(firstRevisionId), null);
-    });
-
-    it('joins an existing transaction and rolls back both analytics updates with it', async function () {
-      const error = new Error('outer transaction failed');
-
-      await assert.rejects(
-        knex.transaction(async (transacting) => {
-          await repo.trackEmailClicked(
-            {
-              automationActionRevisionId: firstRevisionId,
-              automationRunStepId: trackedRunStepId,
-              memberId: 'member-id',
-              clickedAt: FIRST_CLICK,
-            },
-            { transacting },
-          );
-
-          throw error;
-        }),
-        error,
-      );
-
-      assert.equal(await getClickedAt('tracked-recipient'), null);
       assert.equal(await getClickedCount(firstRevisionId), null);
     });
   });
@@ -3429,7 +3384,10 @@ describe('automations repository', function () {
 
       assert.equal(revisionLocks.length, 1);
       assert.equal(revisionLocks[0].sql.includes('where `id` in (?, ?)'), true);
-      assert.deepEqual(revisionLocks[0].bindings, [firstRevisionId, secondRevisionId]);
+      assert.deepEqual(
+        revisionLocks[0].bindings.toSorted(),
+        [firstRevisionId, secondRevisionId].toSorted(),
+      );
       assert.notEqual(recipientLockIndex, -1);
       assert(queries.indexOf(revisionLocks[0]) < recipientLockIndex);
     });

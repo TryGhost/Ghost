@@ -1,7 +1,10 @@
 import validator from 'validator';
 import { SEPARATOR } from '@tryghost/metafield-types/identity';
+import { MAX_OPTIONS, optionText } from '@tryghost/metafield-types/structure';
+import type { ListSuggestion } from '@/shared/member-custom-fields/create-custom-field-popover';
 import {
   isMetafieldColumn,
+  splitListCell,
   type MemberCustomFieldCsvColumn,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
@@ -268,4 +271,30 @@ export function suggestedFieldName(column: string): string {
   const [, , key] = isMetafieldColumn(column) ? column.split(SEPARATOR) : [];
   const words = (key ?? column).replace(/[._-]+/g, ' ').trim();
   return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+/**
+ * What a column's cells say about a list made from it. Its options are every different answer
+ * once, in the order they first appear, split where a cell holds several the way the import reads
+ * them. Several answers are allowed when any cell holds more than one, and such a column starts
+ * out as a list. A column with more different answers than a list can offer can't be made one,
+ * since the import would refuse its rows for the answers the list left out.
+ */
+export function listSuggestionFor(cells: readonly string[]): ListSuggestion {
+  const found = new Set<string>();
+  let multiple = false;
+  for (const cell of cells) {
+    const answers = splitListCell(cell).map(optionText);
+    multiple ||= answers.length > 1;
+    for (const answer of answers) {
+      found.add(answer);
+      if (found.size > MAX_OPTIONS) {
+        return {
+          kind: 'refused',
+          reason: `A list offers at most ${MAX_OPTIONS} options, and this column holds more different answers than that.`,
+        };
+      }
+    }
+  }
+  return { kind: 'list', settings: { options: [...found], multiple }, startAsList: multiple };
 }

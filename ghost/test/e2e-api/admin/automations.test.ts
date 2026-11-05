@@ -9,6 +9,7 @@ import sinon from 'sinon';
 import nock from 'nock';
 // @ts-expect-error Module has no type declarations.
 import TinybirdServiceWrapper from '../../../core/server/services/tinybird';
+import settingsCache from '../../../core/shared/settings-cache';
 import configUtils from '../../utils/config-utils';
 // @ts-expect-error Module has no type declarations.
 import domainEvents from '@tryghost/domain-events';
@@ -808,15 +809,18 @@ describe('Automations API', function () {
         TinybirdServiceWrapper.instance = previousTinybirdInstance;
       });
 
-      it('initializes automation stats through StatsService with web analytics disabled', async function () {
+      it('initializes automation stats through the Stats Tinybird gate with web analytics disabled', async function () {
         TinybirdServiceWrapper.reset();
-        const { default: statsService } =
-          // @ts-expect-error Module has no type declarations.
-          await import('../../../core/server/services/stats/stats-service.js');
-        statsService.create({
-          knex: models.Base.knex,
-          models,
-        });
+        const { initializeTinybirdForStats } =
+          await import('../../../core/server/services/stats/utils/tinybird');
+        assert.equal(
+          initializeTinybirdForStats({
+            config: configUtils.config,
+            settingsCache,
+            tinybirdWrapper: TinybirdServiceWrapper,
+          }),
+          false,
+        );
         const beforeBody = {
           automations: await models.Base.knex('automations').select('id').orderBy('name'),
         };

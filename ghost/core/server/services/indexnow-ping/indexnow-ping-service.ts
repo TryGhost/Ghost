@@ -23,6 +23,7 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 
+import type { GhostLogger } from '@tryghost/logging';
 import {
   messages,
   INDEXNOW_LOG_KEY,
@@ -50,12 +51,6 @@ type UrlService = {
 type UrlUtils = {
   urlFor(context: string, absolute: boolean): string;
   urlJoin(...parts: string[]): string;
-};
-
-type Logging = {
-  info(...args: unknown[]): void;
-  warn(...args: unknown[]): void;
-  error(...args: unknown[]): void;
 };
 
 type RequestFn = (url: string, options: Record<string, unknown>) => Promise<{ statusCode: number }>;
@@ -87,7 +82,7 @@ export type IndexNowPingServiceDeps = {
   urlService: UrlService;
   urlUtils: UrlUtils;
   request: RequestFn;
-  logging: Logging;
+  logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
   events: ModelEvents;
 };
 
@@ -97,7 +92,7 @@ export class IndexNowPingService {
   urlService: UrlService;
   urlUtils: UrlUtils;
   request: RequestFn;
-  logging: Logging;
+  logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
   events: ModelEvents;
   listener: ModelEventListener;
 

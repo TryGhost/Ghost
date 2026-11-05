@@ -4,10 +4,7 @@ import { TopPostViewsStats } from '../api/stats';
 /**
  * Determines if a post has been sent as a newsletter
  *
- * This follows the same logic as the Ember app's 'hasBeenEmailed' computed property:
- * https://github.com/TryGhost/Ghost/blob/main/ghost/admin/app/models/post.js
- *
- * But also handles the case where emails exist but might not have a proper status field.
+ * Also handles the case where emails exist but might not have a proper status field.
  *
  * @param post - The post to check
  * @returns true if the post has been sent as a newsletter

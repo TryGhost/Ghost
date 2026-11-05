@@ -38,7 +38,7 @@ export const StickyFooter = ({
       {children}
     </div>
     <div
-      className="sticky mx-2 block h-6 rounded-full shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-border)_25%,transparent),0_-8px_16px_-3px_color-mix(in_oklab,var(--color-foreground)_8%,transparent)]"
+      className="sticky mx-2 block h-6 rounded-full shadow-[0_0_0_1px_color-mix(in_oklab,var(--border)_25%,transparent),0_-8px_16px_-3px_color-mix(in_oklab,var(--foreground)_8%,transparent)]"
       style={{ bottom: shiftY ? `calc(${shiftY} + ${height - 24}px)` : `${height - 24}px` }}
     />
   </div>
