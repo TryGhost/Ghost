@@ -194,11 +194,6 @@ async function initCore({ ghostServer, config }) {
   await integrations.init();
   debug('End: Integrations Service');
 
-  debug('Begin: Support Requests Service');
-  const supportRequests = require('./server/services/support-requests').default;
-  await supportRequests.init();
-  debug('End: Support Requests Service');
-
   // Stripe Checkout config service: knex-backed, wired once the DB is ready.
   debug('Begin: Stripe Checkout Config Service');
   const stripeCheckoutConfig = require('./server/services/stripe-checkout-config').default;

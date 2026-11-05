@@ -5002,17 +5002,17 @@ services:
           - test/unit/server/services/integrations/index.test.ts
       startup:
         summary: >-
-          initCore awaits Integrations initialization after Invites and before Support Requests,
-          frontend initialization and API request serving. The root defers model acquisition and
-          construction until init, and its guarded getter rejects pre-init access according to
-          the kernel contract. Admin router construction still uses the lazy endpoint getter, and
+          initCore awaits Integrations initialization after Invites and before Stripe Checkout
+          Config, frontend initialization and API request serving. The root defers model
+          acquisition and construction until init, and its guarded getter rejects pre-init
+          access according to the kernel contract. Admin router construction still uses the lazy endpoint getter, and
           loading the endpoint reads no service, so router construction does not depend on
           initialization; each edit request reads the published instance. Existing HTTP cases
           exercise real boot and request composition; adapted preparation fixtures explicitly
           await root initialization. initCore orchestration units hold the root's init promise
           pending and reject it, proving awaited readiness and unchanged error propagation
-          before Support Requests starts. These units stub the root; real factory failure and
-          same-process restart behavior remain untested.
+          before Stripe Checkout Config starts. These units stub the root; real factory failure
+          and same-process restart behavior remain untested.
         sources:
           - core/server/services/integrations/index.ts
           - core/boot.js
@@ -14011,84 +14011,6 @@ services:
       - configuration
       - resources
       - failures
-    blockers: []
-  support-requests:
-    kind: directory
-    disposition: migrate
-    status: auditing
-    migrated: true
-    migration:
-      complexity: straightforward
-      modelImpact: fits
-      reason: >-
-        Added with the initializer: init composes one resource-free instance from config,
-        logging and the request transport. Configuration, signing and delivery happen per
-        request, mirroring export requests, so there is no startup work or cleanup.
-      reviewedAt: c538745fe27d8782fc3a6d847bb626d2b6ff130e
-      sources:
-        - core/server/services/support-requests/index.ts
-        - core/server/services/support-requests/support-requests-service.ts
-        - core/server/api/endpoints/support-requests.ts
-        - core/boot.js
-    entryPoints:
-      - support-requests/index.ts
-    notes: >-
-      Composition-only service that forwards a staff user's support request to the host as a
-      signed webhook. Root-level tests for init, identity and boot ordering are still to be
-      added.
-    contracts:
-      exports:
-        summary: >-
-          The root default-exports the shared initializer with async init and a guarded service
-          getter exposing SupportRequestsService, and re-exports the SupportRequest type.
-          send requires its receiver and resolves undefined after delivery; it does not inspect
-          the response body.
-        sources:
-          - core/server/services/support-requests/index.ts
-          - core/server/services/support-requests/support-requests-service.ts
-        tests:
-          - test/unit/server/services/support-requests/support-requests-service.test.ts
-          - test/e2e-api/admin/support-requests.test.ts
-      construction:
-        summary: >-
-          The factory constructs the service with shared config, logging and @tryghost/request
-          and performs no reads or delivery. Boot awaits init during core startup, after
-          Export Requests. POST /support_requests is the only runtime consumer.
-        sources:
-          - core/server/services/support-requests/index.ts
-          - core/server/api/endpoints/support-requests.ts
-          - core/boot.js
-        tests:
-          - test/e2e-api/admin/support-requests.test.ts
-      configuration:
-        summary: >-
-          hostSettings:supportRequest:webhookUrl, webhookSecret and hostSettings:siteId are read
-          on every send, not at construction. A missing URL is a NotFoundError; a missing secret
-          or site ID is logged and rejected as IncorrectUsageError before any delivery. The
-          secret is omitted from the public config endpoint.
-        sources:
-          - core/server/services/support-requests/support-requests-service.ts
-          - core/server/api/endpoints/utils/public-config/config.js
-        tests:
-          - test/unit/server/services/support-requests/support-requests-service.test.ts
-          - test/unit/server/api/endpoints/utils/public-config/config.test.js
-          - test/e2e-api/admin/support-requests.test.ts
-      failures:
-        summary: >-
-          Delivery uses no retries because a repeated delivery would duplicate the support
-          request. A transport
-          failure is logged with the URL reduced to its origin and surfaces as a generic 502.
-        sources:
-          - core/server/services/support-requests/support-requests-service.ts
-          - core/server/lib/signed-webhook.ts
-        tests:
-          - test/unit/server/services/support-requests/support-requests-service.test.ts
-          - test/e2e-api/admin/support-requests.test.ts
-    unverified:
-      - consumers
-      - startup
-      - lifetime
-      - resources
     blockers: []
   tags-public:
     kind: directory
