@@ -37,4 +37,22 @@ const pathsObject: { contentPath: string; migrationPath: string } = config.get('
 // @ts-expect-error a key the paths schema does not name
 const pathsTypo = config.get('paths').contentPatth;
 
-export { url, env, contentPath, database, fromDynamic, whole, wrongType, pathsObject, pathsTypo };
+// a key under an optional section may be absent with it
+const exploreUrl: string | undefined = config.get('explore:update_url');
+
+// @ts-expect-error ...so it is not typed as always present
+const exploreUrlPresent: string = config.get('explore:update_url');
+
+export {
+  exploreUrl,
+  exploreUrlPresent,
+  url,
+  env,
+  contentPath,
+  database,
+  fromDynamic,
+  whole,
+  wrongType,
+  pathsObject,
+  pathsTypo,
+};
