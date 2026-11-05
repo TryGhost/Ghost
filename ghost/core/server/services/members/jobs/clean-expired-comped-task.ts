@@ -1,20 +1,15 @@
 import type { Knex } from 'knex';
 import type { GhostLogger } from '@tryghost/logging';
-import { z } from 'zod';
-
-import { DbDate } from '../../../lib/db-types/date';
 
 const ObjectId = require('bson-objectid').default;
 const { chunk: chunkArray } = require('lodash');
 const moment = require('moment');
 
-const MemberRowSchema = z.object({
-  id: z.string(),
-  status: z.string(),
-  updated_at: DbDate.nullable(),
-});
-
-type MemberRow = z.infer<typeof MemberRowSchema>;
+interface MemberRow {
+  id: string;
+  status: string;
+  updated_at: Date | string;
+}
 
 interface ExpiredCompedRow {
   id: string;
@@ -92,15 +87,10 @@ async function cleanExpiredComped({
       // stop a concurrent status change slipping between this read and the
       // update below (forUpdate is a no-op on SQLite, where the single-writer
       // transaction already guarantees this).
-      const lockedMembers = z
-        .array(MemberRowSchema)
-        .parse(
-          await trx('members')
-            .whereIn('id', memberIds)
-            .orderBy('id')
-            .select('id', 'status', 'updated_at')
-            .forUpdate(),
-        );
+      const lockedMembers: MemberRow[] = await trx('members')
+        .whereIn('id', memberIds)
+        .orderBy('id')
+        .forUpdate();
 
       // Only members still in the comped status change; anyone already paid,
       // free or deleted is left untouched
