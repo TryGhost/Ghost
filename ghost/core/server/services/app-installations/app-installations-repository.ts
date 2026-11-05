@@ -75,7 +75,9 @@ export async function retryOnDeadlock<T>(run: () => Promise<T>): Promise<T> {
     try {
       return await run();
     } catch (err) {
-      if ((err as { code?: unknown } | null)?.code === 'ER_LOCK_DEADLOCK' && attempt < 2) {
+      const deadlocked =
+        typeof err === 'object' && err !== null && 'code' in err && err.code === 'ER_LOCK_DEADLOCK';
+      if (deadlocked && attempt < 2) {
         continue;
       }
       throw err;
