@@ -444,6 +444,40 @@ describe('MemberRepository', function () {
     });
   });
 
+  describe('bulkEdit', function () {
+    it('reports the members of a failed chunk as unsuccessful and keeps the committed chunks', async function () {
+      const memberIds = Array.from(
+        { length: 1001 },
+        (_, i) => `member-${String(i).padStart(4, '0')}`,
+      );
+      const lockError = new Error('Lock wait timeout exceeded');
+      Member.getFilteredCollectionQuery = sinon.stub().returns({
+        select: () => ({ distinct: async () => memberIds.map((id) => ({ id })) }),
+      });
+      Member.lockForUpdate = sinon
+        .stub()
+        .callsFake(async (ids) => (ids.length === 1 ? Promise.reject(lockError) : ids));
+      Member.bulkAdd = sinon.stub().callsFake(async (relations) => ({
+        successful: relations.length,
+        unsuccessful: 0,
+        unsuccessfulData: [],
+        errors: [],
+      }));
+
+      const result = await buildRepo().bulkEdit(
+        { action: 'addLabel', meta: { label: { id: 'label-id' } } },
+        { filter: 'status:free' },
+      );
+
+      assert.equal(result.successful, 1000);
+      assert.equal(result.unsuccessful, 1);
+      assert.deepEqual(result.unsuccessfulData, ['member-1000']);
+      assert.equal(result.errors.length, 1);
+      assert.equal(result.errors[0].message, 'Lock wait timeout exceeded');
+      assert.equal(result.errors[0].errorDetails, 'member-1000');
+    });
+  });
+
   describe('newsletter subscriptions', function () {
     let existingNewsletters;
 

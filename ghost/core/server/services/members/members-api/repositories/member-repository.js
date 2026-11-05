@@ -1352,15 +1352,30 @@ module.exports = class MemberRepository {
 
     // Each action changes the members' relations, so lock them as an edit would.
     // A chunk at a time, so a bulk action across every member doesn't hold
-    // every member's lock until it finishes
+    // every member's lock until it finishes. Earlier chunks stay committed when
+    // a later one fails, so its members are reported as unsuccessful rather
+    // than failing the whole action
     const results = [];
     for (const chunk of _.chunk(memberIds.sort(), BULK_EDIT_CHUNK_SIZE)) {
-      results.push(
-        await this._Member.transaction(async (transacting) => {
-          await this._Member.lockForUpdate(chunk, { transacting });
-          return this.#bulkEditChunk(data, chunk, { transacting });
-        }),
-      );
+      try {
+        results.push(
+          await this._Member.transaction(async (transacting) => {
+            await this._Member.lockForUpdate(chunk, { transacting });
+            return this.#bulkEditChunk(data, chunk, { transacting });
+          }),
+        );
+      } catch (err) {
+        results.push({
+          successful: 0,
+          unsuccessful: chunk.length,
+          unsuccessfulData: chunk,
+          errors: chunk.map((id) => {
+            const e = Object.create(err);
+            e.errorDetails = id;
+            return e;
+          }),
+        });
+      }
     }
 
     return {
