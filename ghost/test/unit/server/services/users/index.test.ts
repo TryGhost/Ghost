@@ -449,13 +449,21 @@ describe('Users service', function () {
       });
     });
 
-    it('runs revision cleanup, tagging, reassignment, key removal and deletion in order inside the transaction', async function () {
-      const { models: fakes, state } = createModels();
+    it("locks the user's posts, then runs revision cleanup, tagging, reassignment, key removal and deletion in order inside the transaction", async function () {
+      const { models: fakes, state, transaction } = createModels();
       const service = createService(fakes);
 
       await service.destroyUser({ id: 'user-id', context });
 
+      sinon.assert.calledOnceWithExactly(
+        fakes.Post.lockLinkedForUpdate,
+        'posts_authors',
+        'post_id',
+        { author_id: 'user-id' },
+        { transacting: transaction },
+      );
       sinon.assert.callOrder(
+        fakes.Post.lockLinkedForUpdate,
         fakes.PostRevision.findAll,
         fakes.User.findOne,
         fakes.Post.addActions,
