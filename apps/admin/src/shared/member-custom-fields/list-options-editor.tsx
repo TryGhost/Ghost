@@ -52,7 +52,7 @@ export function FixedOptionText({
       <span
         aria-describedby={problemId}
         aria-invalid={Boolean(problemId) || undefined}
-        className="flex min-w-0 flex-1 items-center px-3 py-1.5 text-control wrap-anywhere"
+        className="flex min-w-0 flex-1 items-center px-3 py-1 text-control wrap-anywhere"
       >
         {text}
       </span>
@@ -123,7 +123,7 @@ function ListedOption({
   return (
     <OptionWithProblem problem={problem} problemId={problemId}>
       <FixedOptionText problemId={describedBy} text={option.text}>
-        <InputGroupAddon align="inline-end">
+        <InputGroupAddon align="inline-end" className="py-0">
           <RemoveOptionButton
             describedBy={describedBy}
             name={optionName(option, index)}
