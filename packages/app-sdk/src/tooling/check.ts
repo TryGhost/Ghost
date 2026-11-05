@@ -10,7 +10,7 @@ import {
   parseJsonText,
   readLocation,
   readSignedManifest,
-  staysOnHost,
+  refusedRedirect,
   verifyChallengeAnswer,
   verifySignedManifest,
   type AppLoadCode,
@@ -143,9 +143,13 @@ async function fetchManifest(manifestUrl: string, fetchFn: Fetch): Promise<Uint8
       // A redirect's or an error's body is dropped unread, as Ghost drops it.
       wantsBody: isSuccess,
     });
+    // An empty Location is none, as Ghost reads it, so the response is an answer.
+    const target = answer.location ? readLocation(answer.location, current) : undefined;
+    // On any 3xx, as Ghost refuses it even on the ones it doesn't follow.
+    refuseRedirect(manifestUrl, answer.status, current, target);
     // Ghost's HTTP client follows only these, and treats any other status as an answer.
-    if (REDIRECT_STATUSES.has(answer.status) && answer.location !== null) {
-      current = followRedirect(manifestUrl, current, answer.status, answer.location, redirects);
+    if (REDIRECT_STATUSES.has(answer.status) && target) {
+      current = followRedirect(manifestUrl, target, redirects);
       continue;
     }
     if (!isSuccess(answer.status)) {
@@ -161,24 +165,27 @@ async function fetchManifest(manifestUrl: string, fetchFn: Fetch): Promise<Uint8
   }
 }
 
-/** The URL a redirect leads to, if Ghost would follow it. */
-function followRedirect(
+/** Throws Ghost's refusal of a redirect to another host, or to a Location that isn't a URL. */
+function refuseRedirect(
   manifestUrl: string,
-  current: URL,
   status: number,
-  location: string,
-  redirects: number,
-): URL {
-  const target = readLocation(location, current);
-  if (!target) {
+  current: URL,
+  target: URL | null | undefined,
+) {
+  const refusal = refusedRedirect(status, current, target);
+  if (refusal?.reason === 'redirected') {
+    throw new Failure('APP_MANIFEST_REDIRECTED', `${manifestUrl} redirects to ${refusal.host}`);
+  }
+  if (refusal) {
     throw new Failure(
       'APP_MANIFEST_UNREACHABLE',
       `${manifestUrl} answered with HTTP ${status} and a Location that is not a URL`,
     );
   }
-  if (!staysOnHost(current, target)) {
-    throw new Failure('APP_MANIFEST_REDIRECTED', `${manifestUrl} redirects to ${target.host}`);
-  }
+}
+
+/** The URL a redirect leads to, unless it's one too many. */
+function followRedirect(manifestUrl: string, target: URL, redirects: number): URL {
   if (redirects === MAX_REDIRECTS) {
     throw new Failure(
       'APP_MANIFEST_UNREACHABLE',

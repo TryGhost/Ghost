@@ -317,6 +317,44 @@ describe('checkApp', () => {
   });
 
   it.each([300, 304, 305])(
+    'refuses HTTP %i with a Location on another host, as Ghost does',
+    async (status) => {
+      const result = await checkApp(MANIFEST_URL, {
+        fetch: fakeApp({
+          [MANIFEST_URL]: () =>
+            new Response(null, {
+              status,
+              headers: { location: 'https://elsewhere.example/ghost-app.json' },
+            }),
+        }),
+      });
+      expect(result).toMatchObject({
+        success: false,
+        code: 'APP_MANIFEST_REDIRECTED',
+        detail: `${MANIFEST_URL} redirects to elsewhere.example`,
+      });
+    },
+  );
+
+  it('treats a redirect with an empty Location as an answer, as Ghost does', async () => {
+    let requests = 0;
+    const result = await checkApp(MANIFEST_URL, {
+      fetch: fakeApp({
+        [MANIFEST_URL]: () => {
+          requests += 1;
+          return new Response(null, { status: 302, headers: { location: '' } });
+        },
+      }),
+    });
+    expect(result).toMatchObject({
+      success: false,
+      code: 'APP_MANIFEST_UNREACHABLE',
+      detail: `${MANIFEST_URL} answered with HTTP 302`,
+    });
+    expect(requests).toBe(1);
+  });
+
+  it.each([300, 304, 305])(
     'treats HTTP %i as an answer, not a redirect, as Ghost does',
     async (status) => {
       const result = await checkApp(MANIFEST_URL, {

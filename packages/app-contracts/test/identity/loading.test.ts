@@ -10,6 +10,7 @@ import {
   isSuccess,
   parseJsonText,
   readLocation,
+  refusedRedirect,
   staysOnHost,
 } from '../../src/identity/index.ts';
 import { formatManifestErrors } from '../../src/manifest/index.ts';
@@ -59,6 +60,34 @@ describe('staysOnHost', () => {
     expect(from('https://app.example.com/')('https://other.example.com/')).toBe(false);
     expect(from('https://app.example.com/')('http://app.example.com/')).toBe(false);
     expect(from('https://app.example.com/')('https://app.example.com:8443/')).toBe(false);
+  });
+});
+
+describe('refusedRedirect', () => {
+  const from = new URL('https://app.example.com/ghost-app.json');
+  const to = (location: string) => readLocation(location, from);
+
+  it.each([301, 300, 304, 305])(
+    'refuses another host on HTTP %i, a status Ghost follows or not',
+    (status) => {
+      expect(refusedRedirect(status, from, to('https://elsewhere.example/m.json'))).toEqual({
+        reason: 'redirected',
+        host: 'elsewhere.example',
+      });
+    },
+  );
+
+  it('refuses a Location that is not a URL on a 3xx', () => {
+    expect(refusedRedirect(302, from, to('http://['))).toEqual({
+      reason: 'location_not_url',
+      status: 302,
+    });
+  });
+
+  it('refuses nothing for the same host, no Location, or a status that is not a 3xx', () => {
+    expect(refusedRedirect(302, from, to('/other.json'))).toBeUndefined();
+    expect(refusedRedirect(302, from, undefined)).toBeUndefined();
+    expect(refusedRedirect(200, from, to('https://elsewhere.example/'))).toBeUndefined();
   });
 });
 

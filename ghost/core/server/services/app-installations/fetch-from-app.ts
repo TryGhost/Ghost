@@ -5,6 +5,7 @@ import {
   isRedirect,
   isSuccess,
   readLocation,
+  refusedRedirect as refusalOf,
   staysOnHost,
 } from '@tryghost/app-contracts/identity';
 import { isLocalhost } from '@tryghost/app-contracts/manifest';
@@ -182,15 +183,14 @@ export function createAppFetcher({
           ? false
           : (response) => {
               const target = locationOf(response);
-              if (target === undefined || (target && staysOnHost(current, target))) {
-                return true;
+              const refusal = refusalOf(response.statusCode, current, target);
+              if (refusal) {
+                refusedRedirect = refusal;
+                return false;
               }
-              if (isRedirect(response.statusCode)) {
-                refusedRedirect = target
-                  ? { reason: 'redirected', host: target.host }
-                  : { reason: 'location_not_url', status: response.statusCode };
-              }
-              return false;
+              // A Location on another host, or one that isn't a URL, is never followed, even on
+              // a status that isn't a redirect, where it's ignored rather than refused.
+              return target === undefined || (target !== null && staysOnHost(current, target));
             },
       hooks: {
         beforeRedirect: [
