@@ -3,6 +3,7 @@ import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import type { FieldType } from '@tryghost/metafield-types';
+import { isRecordValue, matchShape } from '@tryghost/metafield-types/structure';
 import { IdentityTextSchema, type Key, type Namespace } from '@tryghost/metafield-types/identity';
 import { INTERNAL, MEMBERS } from './access';
 import {
@@ -13,7 +14,7 @@ import {
   type FieldIdentity,
   type FieldSource,
 } from './queries';
-import { DbBoundField, DbNamedBinding, FIELD_STATUS, type WriteOrigin } from './schema';
+import { DbBoundField, DbNamedBinding, FIELD_STATUS } from './schema';
 import type { MetafieldPlan, MetafieldValuesService } from './values-service';
 
 const BINDINGS_TABLE = 'members_metafield_bindings';
@@ -25,19 +26,28 @@ export interface BoundField {
   type: FieldType;
 }
 
-/**
- * What a value's provenance is, once the port it came through has been resolved.
- *
- * An intersection rather than `Extract`: a member writes from more than one place, so only
- * narrowing each pairing to checkout keeps the member among the writers here.
- */
-type Attribution = (binding: BoundField) => WriteOrigin & { source: 'checkout' };
-
 /** Plans for the values a source sent, in the order they arrived. */
+/**
+ * Who answers for the values sent through ports: for a checkout, the binding that routed each
+ * value, and for a member giving them in Portal, the member. Where each was written follows from
+ * who wrote it, so a pairing that can't happen can't be asked for.
+ */
+export type PortWriter = { type: 'binding' } | { type: 'member'; id: string };
+
+/** One value refused, named by the port it was sent through, with the part refused after it. */
+export interface PortRefusal {
+  message: string;
+  property: string;
+}
+
+/** What the values a source sent through ports come to. */
 export interface RoutedPlans {
+  /** The writes for the values accepted, one plan for each writer, in the order values arrived. */
   plans: MetafieldPlan[];
-  /** The first value that couldn't be placed or was refused. The rest are still planned. */
-  failure?: unknown;
+  /** Every value refused, named by its port, as `<port>[.<part>]`. */
+  refused: PortRefusal[];
+  /** The ports that write into an active field, whose values are kept rather than dropped. */
+  kept: ReadonlySet<string>;
 }
 
 /**
@@ -47,7 +57,7 @@ export interface RoutedPlans {
 export class MetafieldBindingsService {
   private knex: Knex;
   private fields: FieldSource;
-  private values: Pick<MetafieldValuesService, 'planWrite'>;
+  private values: Pick<MetafieldValuesService, 'planOrRefuse'>;
 
   constructor({
     knex,
@@ -56,7 +66,7 @@ export class MetafieldBindingsService {
   }: {
     knex: Knex;
     fields: FieldSource;
-    values: Pick<MetafieldValuesService, 'planWrite'>;
+    values: Pick<MetafieldValuesService, 'planOrRefuse'>;
   }) {
     this.knex = knex;
     this.fields = fields;
@@ -128,132 +138,151 @@ export class MetafieldBindingsService {
   }
 
   /**
-   * Plans the values a processor collected on Ghost's behalf and sent back.
+   * Plans the values a source sent through ports into the fields they write into, writing
+   * nothing, for whoever saves them.
    *
-   * Nobody supplied these in a sense the site can name — a payment page asked, and a
-   * machine reported the answers — so what is recorded against them is the binding that
-   * routed each one. That resolves back to what it was collected as and the field it
-   * landed in, which is everything worth knowing about how the value arrived.
-   */
-  async planCollected(collected: Array<{ port: string; value: unknown }>): Promise<RoutedPlans> {
-    return this.planThrough(collected, (binding) => ({
-      writtenBy: { type: 'binding', id: binding.bindingId },
-      source: 'checkout',
-    }));
-  }
-
-  /**
-   * Plans values a member supplied about themselves, through the same ports a checkout uses.
+   * Every source shares the same rules. Each value replaces what its field holds, as `whole`
+   * says. A value for a port bound nowhere, or into an archived field, is dropped. The binding
+   * admits the rest, whoever sent them: a port exists because a publisher pointed it at a field,
+   * and that decision is what admits a value, rather than who is looking. The values accepted are
+   * planned whatever is refused of the others, as they have nothing to do with each other beyond
+   * arriving together, and every refusal comes back, named by its port, for the caller to act on:
+   * a checkout webhook has already taken the money, so saves what it can, while a member giving
+   * answers is owed every refusal before anything changes. Where two values land in one field, the
+   * last of them is what the field holds.
    *
-   * A member typing their own address into a form is answerable for it in a way no
-   * routing is, and a record saying a binding wrote it would be wrong. The member is the
-   * one whose record this is, so there is nobody else it could be.
+   * What is recorded against the values is the writer. For a checkout, nobody supplied them in a
+   * sense the site can name, so each is recorded against the binding that routed it, which
+   * resolves back to what it was collected as and the field it landed in. A member typing their
+   * own address is answerable for it in a way no routing is, so their values are theirs.
    */
-  async planSuppliedByMember(
-    memberId: string,
-    supplied: Array<{ port: string; value: unknown }>,
-  ): Promise<RoutedPlans> {
-    return this.planThrough(supplied, () => ({
-      writtenBy: { type: 'member', id: memberId },
-      source: 'checkout',
-    }));
-  }
-
-  /**
-   * Plans come back in the order values arrive, which is the order to apply them: where
-   * two land in one field, the last of them is what the field holds.
-   *
-   * Every value is attempted, and the first failure is returned alongside the plans for
-   * the rest. Attempting them all is this method's business: one refused answer must not
-   * cost a publisher the address a courier needs, and the values have nothing to do with
-   * each other beyond arriving together. Whether the failure is worth acting on is the
-   * caller's — a checkout webhook has already taken the money and must never fail, while
-   * a member filling in a form is owed the news.
-   */
-  private async planThrough(
+  async planThrough(
     values: Array<{ port: string; value: unknown }>,
-    attribute: Attribution,
+    writer: PortWriter,
   ): Promise<RoutedPlans> {
-    const plans: MetafieldPlan[] = [];
-    let failure: unknown;
-
+    const fields = await this.fieldsFor(values.map(({ port }) => port));
+    const input: Record<string, unknown> = {};
+    const routed = new Map<string, { port: string; field: BoundField }>();
     for (const { port, value } of values) {
-      try {
-        // Inside, because working out where a value goes can fail the same way checking
-        // it can, and a value nobody could place is no more reason to abandon the rest
-        // than one the catalog refused.
-        const destination = await this.resolve(port);
-        if (!destination) {
-          continue;
-        }
-        // Internal: what may be set is bounded by the binding rather than by who is
-        // looking. A port exists because a publisher pointed it at a field, and that
-        // decision is what admits the value, whoever supplied it.
-        const writes = await this.values.planWrite(
-          {
-            [z.encode(IdentityTextSchema, {
-              namespace: destination.namespace,
-              key: destination.key,
-              parts: [],
-            })]: value,
-          },
-          INTERNAL,
-        );
-        plans.push({ writes, origin: attribute(destination) });
-      } catch (err) {
-        failure = failure ?? err;
+      const field = fields.get(port);
+      if (field) {
+        input[identityOf(field)] = whole(field.type, value);
+        routed.set(identityOf(field), { port, field });
       }
     }
+    const kept = new Set(fields.keys());
+    if (routed.size === 0) {
+      return { plans: [], refused: [], kept };
+    }
 
-    return { plans, failure };
+    const { writes, refusals } = await this.values.planOrRefuse(
+      input,
+      INTERNAL,
+      // Every value planned came through a port, so each refusal names one.
+      (identity) => routed.get(identity)?.port ?? identity,
+    );
+
+    // One plan for each writer, so a member's answers are one change and each binding's value is
+    // its own.
+    const plans = new Map<string, MetafieldPlan>();
+    for (const write of writes) {
+      const field = routed.get(identityOf(write.field))?.field;
+      if (!field) {
+        continue;
+      }
+      const origin = originOf(writer, field);
+      const key = JSON.stringify(origin);
+      const plan = plans.get(key) ?? { writes: [], origin };
+      plan.writes.push(write);
+      plans.set(key, plan);
+    }
+    return { plans: [...plans.values()], refused: refusals, kept };
   }
 
-  private async resolve(port: string): Promise<BoundField | null> {
-    const row = await this.knex(BINDINGS_TABLE)
+  /**
+   * The field each of these ports writes into, by port, leaving out a port bound nowhere or into
+   * an archived field, as nothing can be saved into one there.
+   */
+  private async fieldsFor(ports: readonly string[]): Promise<Map<string, BoundField>> {
+    const fields = new Map<string, BoundField>();
+    if (!ports.length) {
+      return fields;
+    }
+
+    const rows = await this.knex(BINDINGS_TABLE)
       .join(this.fields.table(this.knex), onField(FIELDS_TABLE, BINDINGS_TABLE))
-      .where(`${BINDINGS_TABLE}.port`, port)
-      // An archived destination is still where this goes, and still not somewhere a value
-      // can land, so the write drops rather than waiting.
+      .whereIn(`${BINDINGS_TABLE}.port`, ports)
+      // An archived field is still where a port points, and still not somewhere a value can
+      // land, so it's left out rather than waited for.
       .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active)
       .select(
+        `${BINDINGS_TABLE}.port`,
         `${BINDINGS_TABLE}.id as binding_id`,
         `${FIELDS_TABLE}.namespace`,
         `${FIELDS_TABLE}.key`,
         `${FIELDS_TABLE}.type`,
-      )
-      .first();
-
-    if (!row) {
-      return null;
-    }
-
-    // Decoded rather than trusted: a join is a read boundary, and `type` is what decides
-    // how the collected value is read. Unreadable counts as unresolved rather than
-    // throwing, so one bad row skips its value the way an unbound port does instead of
-    // failing everything else the same checkout collected.
-    const bound = DbBoundField.safeParse(row);
-    if (!bound.success) {
-      logging.warn(
-        {
-          event: { name: 'members.metafields.binding_unreadable' },
-          err: bound.error,
-          port,
-        },
-        'A binding could not be read',
       );
-      return null;
-    }
 
-    return {
-      bindingId: bound.data.binding_id,
-      namespace: bound.data.namespace,
-      key: bound.data.key,
-      type: bound.data.type,
-    };
+    for (const row of rows) {
+      // Decoded rather than trusted: a join is a read boundary, and `type` is what decides
+      // how a value is read. Unreadable counts as unbound rather than throwing, so one bad row
+      // skips its port instead of failing every other value that came with it.
+      const bound = DbBoundField.safeParse(row);
+      if (!bound.success) {
+        logging.warn(
+          {
+            event: { name: 'members.metafields.binding_unreadable' },
+            err: bound.error,
+            port: row.port,
+          },
+          'A binding could not be read',
+        );
+        continue;
+      }
+      fields.set(bound.data.port, {
+        bindingId: bound.data.binding_id,
+        namespace: bound.data.namespace,
+        key: bound.data.key,
+        type: bound.data.type,
+      });
+    }
+    return fields;
   }
 }
 
 /** A field's identity as text, such as `custom.delivery_address`. */
 function identityOf(field: { namespace: Namespace; key: Key }): string {
   return z.encode(IdentityTextSchema, { namespace: field.namespace, key: field.key, parts: [] });
+}
+
+/** Where a value was written, from who wrote it and the field it landed in. */
+function originOf(writer: PortWriter, field: BoundField): MetafieldPlan['origin'] {
+  return writer.type === 'binding'
+    ? { writtenBy: { type: 'binding', id: field.bindingId }, source: 'checkout' }
+    : { writtenBy: { type: 'member', id: writer.id }, source: 'portal' };
+}
+
+/**
+ * An answer as a whole value of its field's type, so it replaces what the field holds rather
+ * than merging into it, whoever collected it: a record names every part its type declares, one
+ * left out as `null`. Anything else is already whole, and a value that isn't a record is left for
+ * the field's rule to refuse.
+ */
+function whole(type: FieldType, value: unknown): unknown {
+  return matchShape(type, {
+    scalar: () => value,
+    set: () => value,
+    record: ({ parts }) => {
+      if (!isRecordValue(value)) {
+        return value;
+      }
+      const declared = Object.keys(parts);
+      // An answer holds something: one with no part to give is the empty record the field's
+      // rule refuses, rather than every part cleared.
+      if (!declared.some((part) => value[part] !== undefined && value[part] !== null)) {
+        return {};
+      }
+      return { ...Object.fromEntries(declared.map((part) => [part, null])), ...value };
+    },
+  });
 }
