@@ -1657,6 +1657,9 @@ importers:
       '@testing-library/user-event':
         specifier: 14.6.8
         version: 14.6.8(@testing-library/dom@10.4.2)
+      '@tryghost/checkout':
+        specifier: workspace:*
+        version: link:../../packages/checkout
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../../packages/i18n

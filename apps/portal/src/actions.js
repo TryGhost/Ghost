@@ -14,6 +14,7 @@ import {
   getRefDomain,
 } from './utils/helpers';
 import { refusedInput } from './utils/custom-fields';
+import { refusedAnswer } from './utils/tier-requirements';
 import { t } from './utils/i18n';
 import { clearGiftFormState } from './components/pages/gift/form-state';
 import { restoreGiftEntryRoute } from './components/pages/gift/navigation';
@@ -483,11 +484,27 @@ async function checkoutGift({ data, state, api }) {
   }
 }
 
+/**
+ * Where one refusal of an answer to what a new tier requires belongs, among the inputs the member
+ * was asked in. The server names a refused answer `answers[.<port>[.<part>]]`; anything else, such
+ * as a refused change of plan, is left to the notification's own sentence.
+ */
+function placeAnswerRefusal({ property, message }, asked) {
+  if (typeof property !== 'string' || !/^answers(\.|$)/.test(property)) {
+    return {};
+  }
+  const said = chooseBestErrorMessage({ message });
+  const refused = refusedAnswer(asked, property);
+  return refused ? placeOnField(refused.field, refused.part, said) : { sentence: said };
+}
+
 async function updateSubscription({ data, state, api }) {
+  const { plan, planId, subscriptionId, cancelAtPeriodEnd, answers, asked = [] } = data;
   try {
-    const { plan, planId, subscriptionId, cancelAtPeriodEnd } = data;
     const { tierId, cadence } = getProductCadenceFromPrice({ site: state?.site, priceId: planId });
 
+    // The answers to what the new tier requires ride along, checked before the plan changes, so
+    // a member whose answers are refused stays on their plan to correct them.
     await api.member.updateSubscription({
       planName: plan,
       tierId,
@@ -495,11 +512,13 @@ async function updateSubscription({ data, state, api }) {
       subscriptionId,
       cancelAtPeriodEnd,
       planId: planId,
+      answers,
     });
     const member = await api.member.sessionData();
     const action = 'updateSubscription:success';
     return {
       action,
+      fieldErrors: {},
       popupNotification: createPopupNotification({
         type: action,
         autoHide: true,
@@ -512,18 +531,27 @@ async function updateSubscription({ data, state, api }) {
       member: member,
     };
   } catch (e) {
+    const refusal = refusalOf(
+      e,
+      (refused) => placeAnswerRefusal(refused, asked),
+      t('Failed to update subscription, please try again'),
+    );
     return {
       action: 'updateSubscription:failed',
-      popupNotification: createPopupNotification({
+      fieldErrors: refusal.fieldErrors,
+      popupNotification: failureNotification({
+        ...refusal,
+        state,
         type: 'updateSubscription:failed',
         autoHide: false,
-        closeable: true,
-        state,
-        status: 'error',
-        message: t('Failed to update subscription, please try again'),
       }),
     };
   }
+}
+
+/** Forgets what the site refused once the inputs it was about are gone, such as on going back. */
+function clearFieldErrors() {
+  return { fieldErrors: {} };
 }
 
 async function cancelSubscription({ data, state, api }) {
@@ -881,7 +909,7 @@ async function refreshMemberData({ state, api }) {
  * gives that part's input, so the box itself carries the message, the way a malformed
  * email address does.
  */
-function refusalOf(error, state, fallback) {
+function refusalOf(error, place, fallback) {
   // The site names every value it refused. The error's own message and property are the
   // first of them, so one refusal and several are read the same way.
   const refusals = error?.details?.length
@@ -892,7 +920,7 @@ function refusalOf(error, state, fallback) {
   let sentence = null;
 
   for (const refusal of refusals) {
-    const placed = placeRefusal(refusal, state);
+    const placed = place(refusal);
     if (placed.input) {
       fieldErrors[placed.input] = placed.message;
     } else if (placed.sentence && !sentence) {
@@ -902,7 +930,7 @@ function refusalOf(error, state, fallback) {
     }
   }
 
-  return { fieldErrors, message: sentence ?? fallback };
+  return { fieldErrors, sentence, message: sentence ?? fallback };
 }
 
 /**
@@ -931,11 +959,18 @@ function placeRefusal({ property, message }, state) {
     return { sentence: said };
   }
 
-  const input = refusedInput(field, parts.join('.'));
+  return placeOnField(field, parts.join('.'), said);
+}
+
+/**
+ * Where a refusal of a field's value belongs, given the part refused, or `''` for the whole value:
+ * on the input that holds it, or, when no one input does, in the notification, naming the field.
+ */
+function placeOnField(field, part, said) {
+  const input = refusedInput(field, part);
   if (!input) {
     return { sentence: t('{field}: {message}', { field: field.name, message: said }) };
   }
-
   return { input, message: said };
 }
 
@@ -945,15 +980,23 @@ function placeRefusal({ property, message }, state) {
  * Nothing, when the inputs are already saying it: the boxes are marked, each carries its
  * reason, and the button offers to try again, so a notification over the top of that
  * repeats what is already on the page. A failure no input can show — the site unreachable,
- * a verification mail refused, a field this build cannot place — has nowhere else to go.
+ * a verification mail refused, a field this build cannot place — has nowhere else to go, so
+ * it's said even beside marked inputs.
  */
-function failureNotification({ fieldErrors, message, state }) {
-  if (Object.keys(fieldErrors).length > 0) {
+function failureNotification({
+  fieldErrors,
+  sentence,
+  message,
+  state,
+  type = 'updateProfile:failed',
+  autoHide = true,
+}) {
+  if (Object.keys(fieldErrors).length > 0 && !sentence) {
     return null;
   }
   return createPopupNotification({
-    type: 'updateProfile:failed',
-    autoHide: true,
+    type,
+    autoHide,
     closeable: true,
     status: 'error',
     message,
@@ -988,7 +1031,11 @@ async function updateProfile({ data, state, api }) {
 
     const refusal = dataUpdate.success
       ? { fieldErrors: {}, message: t('Failed to send verification email') }
-      : refusalOf(dataUpdate.error, state, t('Failed to update account data'));
+      : refusalOf(
+          dataUpdate.error,
+          (refused) => placeRefusal(refused, state),
+          t('Failed to update account data'),
+        );
     return {
       action: 'updateProfile:failed',
       fieldErrors: refusal.fieldErrors,
@@ -1000,7 +1047,11 @@ async function updateProfile({ data, state, api }) {
     const status = dataUpdate.success ? 'success' : 'error';
     const refusal = dataUpdate.success
       ? { fieldErrors: {}, message: t('Account details updated successfully') }
-      : refusalOf(dataUpdate.error, state, t('Failed to update account details'));
+      : refusalOf(
+          dataUpdate.error,
+          (refused) => placeRefusal(refused, state),
+          t('Failed to update account details'),
+        );
     return {
       action,
       fieldErrors: refusal.fieldErrors,
@@ -1140,6 +1191,7 @@ const Actions = {
   updateProfile,
   refreshMemberData,
   clearPopupNotification,
+  clearFieldErrors,
   editBilling,
   manageBilling,
   checkoutPlan,

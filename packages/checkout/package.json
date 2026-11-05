@@ -21,6 +21,11 @@
       "source": "./src/index.ts",
       "types": "./build/index.d.ts",
       "default": "./build/index.js"
+    },
+    "./allowed-countries": {
+      "source": "./src/allowed-countries.ts",
+      "types": "./build/allowed-countries.d.ts",
+      "default": "./build/allowed-countries.js"
     }
   },
   "scripts": {

@@ -78,7 +78,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
     tiers() {
       const url = contentEndpointFor({
         resource: 'tiers',
-        params: { limit: 100, include: 'monthly_price,yearly_price,benefits' },
+        params: { limit: 100, include: 'monthly_price,yearly_price,benefits,requirements' },
       });
       return makeRequest({
         url,
@@ -294,6 +294,20 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
           .then((data) => data.members_metafields)
           .catch(() => []);
       });
+    },
+
+    /**
+     * The member's answers to what tiers require, by the port each is collected under. A change
+     * of tier saves new ones.
+     */
+    async answers() {
+      const url = endpointFor({ type: 'members', resource: 'member/answers' });
+      const res = await makeRequest({ url, credentials: 'same-origin' });
+      if (!res.ok) {
+        throw new Error('Failed to read answers');
+      }
+      const data = await res.json();
+      return data.answers ?? {};
     },
 
     update({
@@ -954,6 +968,7 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       smartCancel,
       cancelAtPeriodEnd,
       cancellationReason,
+      answers,
     }) {
       const identity = await api.member.identity();
       const url =
@@ -964,6 +979,8 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         cancellation_reason: cancellationReason,
         identity: identity,
         priceId: planId,
+        // The member's answers to what the new tier requires, by port, saved with the change.
+        answers: answers && Object.keys(answers).length > 0 ? answers : undefined,
       };
 
       if (tierId && cadence) {
@@ -985,7 +1002,11 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
       });
 
       if (!res.ok) {
-        throw new Error('Failed to update subscription');
+        // A refused answer comes back naming its port, which is how the page places it.
+        throw (
+          (await HumanReadableError.fromApiResponse(res)) ??
+          new Error('Failed to update subscription')
+        );
       }
 
       return res;

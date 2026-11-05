@@ -4,7 +4,9 @@ import {
   MembersListPage,
   SettingsPage,
 } from '@/admin-pages';
+import { HomePage, PortalAccountPage, PortalAccountPlanPage } from '@/helpers/pages';
 import {
+  completePaidSignupViaPortal,
   completePaidUpgradeViaPortal,
   createPaidPortalTier,
   expect,
@@ -123,6 +125,60 @@ test.describe('Ghost Admin - Checkout fields', () => {
 
     await startPaidSignupViaPortal(page, { tierName: shipped });
     expect(latestShippingRequest(stripe!)?.allowed_countries.length).toBeGreaterThan(1);
+  });
+
+  test('specific tiers - a paying member changing to one gives an address in Portal, and it lands on their record', async ({
+    page,
+    stripe,
+  }) => {
+    const digital = await paidTier(page, stripe!, 'Digital');
+    const shipped = await paidTier(page, stripe!, 'Print Edition');
+
+    const checkout = await openCheckoutFields(page);
+    await checkout.collectShipping({
+      tiers: [shipped],
+      addressField: { create: 'Delivery address' },
+      nameField: { create: 'Recipient' },
+    });
+    await checkout.save();
+    await checkout.close();
+
+    const { name } = await completePaidSignupViaPortal(page, stripe!, { tierName: digital });
+
+    // Changing plan has no checkout to ask for the address, so Portal asks before the change.
+    const homePage = new HomePage(page);
+    await homePage.goto();
+    await homePage.openAccountPortal();
+    const accountPage = new PortalAccountPage(page);
+    await accountPage.waitForPortalToOpen();
+    await accountPage.openPlanSelection();
+    const planPage = new PortalAccountPlanPage(page);
+    await planPage.waitUntilLoaded();
+    await planPage.selectTier(shipped);
+
+    const portal = planPage.portalFrame;
+    await portal.getByLabel('Recipient name').fill('Ada Lovelace');
+    await expect(planPage.confirmActionButton).toBeDisabled();
+    const address = portal.getByRole('group', { name: 'Shipping address' });
+    await address.getByLabel('Address line 1').fill('12 Ada Street');
+    await address.getByLabel('City').fill('London');
+    await address.getByLabel('Postal code').fill('N1 9GU');
+    await address.getByLabel('Country').selectOption('GB');
+    await planPage.confirmAction();
+    // Back on the account once the plan has changed, which saves the answers first.
+    await expect(accountPage.changePlanButton).toBeVisible();
+    await expect(portal.getByText(shipped)).toBeVisible();
+
+    const membersPage = new MembersListPage(page);
+    await membersPage.goto();
+    await membersPage.getMemberLinkByName(name).click();
+    const memberPage = new MemberDetailsPage(page);
+    await expect(memberPage.customFieldRow('Delivery address')).toHaveAccessibleName(
+      /12 Ada Street, London, N1 9GU/,
+    );
+    await expect(memberPage.customFieldRow('Recipient')).toHaveAccessibleName(
+      'Edit Recipient: Ada Lovelace',
+    );
   });
 
   test('preview in Stripe - asks for an address as the unsaved settings say', async ({
