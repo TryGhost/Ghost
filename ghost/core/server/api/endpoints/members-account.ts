@@ -61,10 +61,23 @@ const controller = {
       return membersService.api.account.edit(frame.data, memberOf(frame)!.id);
     },
   },
+
+  /**
+   * What the member holds for each port a tier can ask through, by port, so a page asking
+   * them for what a new tier needs can show their answers.
+   */
+  readAnswers: {
+    headers: { cacheInvalidate: false },
+    permissions: false,
+    query(frame: AccountFrame) {
+      return membersService.api.account.readAnswers(memberOf(frame)!.id);
+    },
+  },
 } satisfies Controller<{
   read: AccountFrame;
   destroySuppression: AccountFrame;
   update: AccountFrame;
+  readAnswers: AccountFrame;
 }>;
 
 export default controller;
