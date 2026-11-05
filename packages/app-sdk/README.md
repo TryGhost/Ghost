@@ -11,8 +11,8 @@ its route in sync with Admin's URL, and send the publisher elsewhere in Admin.
 | --------------------------- | -------------------------- | ----------------------------------------------------------------------------- |
 | `@tryghost/app-sdk`         | The app's page             | Talking to Admin (below)                                                      |
 | `@tryghost/app-sdk/backend` | Any platform with web APIs | [Answering Ghost's challenge and serving the manifest](#the-backend)          |
-| `@tryghost/app-sdk/tooling` | Node 22.1 or later         | [Creating keys, and signing and checking the manifest](#signing-the-manifest) |
-| `ghost-app`                 | Node 22.1 or later         | [The same tooling on the command line](#the-ghost-app-cli)                    |
+| `@tryghost/app-sdk/tooling` | Node 22.12 or later        | [Creating keys, and signing and checking the manifest](#signing-the-manifest) |
+| `ghost-app`                 | Node 22.12 or later        | [The same tooling on the command line](#the-ghost-app-cli)                    |
 
 The page's entry point loads none of the others' code.
 
@@ -328,7 +328,7 @@ only signs, so it never needs the backend's private key.
 
 ```sh
 ghost-app keys [--production]
-ghost-app sign --url <manifest URL> [--production] [--out <file>]
+ghost-app sign --url <manifest URL> [--production] [--out <file>] [--manifest <file>]
 ghost-app check <manifest URL>
 ghost-app backend-key [--production] [--public | --check]
 ```
@@ -465,7 +465,8 @@ per entry point, which share chunks:
 - `index.js` loads only `@quilted/threads`, never `jose`, `zod` or a Node
   builtin;
 - `backend.js` loads only `jose` and `zod`, and no Node builtin;
-- `tooling.js` loads Node builtins, `jose` and `zod`;
+- `tooling.js` loads Node builtins, `jose` and `zod`, and `bin.js` those and
+  `commander`;
 - each entry point's declarations, emitted by TypeScript 7 and bundled by
   `rolldown-plugin-dts`, import nothing;
 - `dist/` imports nothing at all.

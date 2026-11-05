@@ -67,7 +67,7 @@
     "vitest": "catalog:"
   },
   "engines": {
-    "node": ">=22.1"
+    "node": ">=22.12"
   },
   "nx": {
     "targets": {
