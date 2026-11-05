@@ -168,7 +168,7 @@ catalog:
   flexsearch: 0.7.43
   fs-extra: 11.4.1
   glob: 13.0.6
-  globals: 17.7.0
+  globals: 17.14.0
   got: 16.0.0
   html-minifier-next: 8.10.7
   html-to-text: 10.0.1
