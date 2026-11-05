@@ -23,7 +23,7 @@ import { hasMode } from '../../utils/check-mode';
 import { isCookiesDisabled } from '../../utils/helpers';
 import { t } from '../../utils/i18n';
 import { compositeValue, listValue, scalarValue } from '../../utils/custom-fields';
-import type { CustomFieldValue, MemberCustomField, PartsByName } from '../../utils/custom-fields';
+import type { CustomFieldValue, FieldInput, PartsByName } from '../../utils/custom-fields';
 
 export const MemberCustomFieldsStyles = `
     .gh-portal-custom-field-errors {
@@ -93,13 +93,13 @@ const RECORD_FORMS: {
 
 /** What a field of shape `S` is drawn from. */
 interface FieldProps<S extends FieldShape> {
-  field: FieldOfShape<S, MemberCustomField>;
+  field: FieldOfShape<S, FieldInput>;
   value: CustomFieldValue;
   /** What the site refused, keyed by the name of the input that holds it. */
   errors: Record<string, string | undefined>;
   /** What the field's inputs hold once a member changes one, each leaf as its text. */
   onChange: (text: ShapeText[S]) => void;
-  onKeyDown: (event: React.KeyboardEvent) => void;
+  onKeyDown?: ((event: React.KeyboardEvent) => void) | undefined;
 }
 
 /** A field that holds one value: one input, carrying its own reason. */
@@ -115,7 +115,7 @@ function ScalarField({ field, value, errors, onChange, onKeyDown }: FieldProps<'
           label: field.name,
           name,
           errorMessage: errors[name] ?? '',
-          readOnly: field.access.member !== 'write',
+          readOnly: field.readOnly,
         },
       ]}
       onChange={(event: { target: { value: string } }) => onChange(event.target.value)}
@@ -128,7 +128,7 @@ interface RecordRowProps {
   parts: readonly string[];
   input: (part: string) => Record<string, unknown>;
   onChange: (part: string | null, value: string) => void;
-  onKeyDown: (event: React.KeyboardEvent) => void;
+  onKeyDown?: ((event: React.KeyboardEvent) => void) | undefined;
 }
 
 /**
@@ -172,7 +172,7 @@ function RecordField({ field, value, errors, onChange, onKeyDown }: FieldProps<'
       .filter((part) => !placed.includes(part))
       .map((part) => [part]),
   ];
-  const readOnly = field.access.member !== 'write';
+  const { readOnly } = field;
   const labelId = `custom-${field.key}-label`;
   const errorsId = `custom-${field.key}-errors`;
   const nameOf = (part: string) => `custom:${field.key}:${part}`;
@@ -241,7 +241,7 @@ function ListField({ field, value, errors, onChange }: FieldProps<'set'>) {
   const { settings } = field;
   const name = `custom:${field.key}`;
   const held = listValue(value);
-  const readOnly = field.access.member !== 'write';
+  const { readOnly } = field;
   const picked = readOnly ? inOptionOrder(settings, held) : editableAnswers(settings, held);
   const error = errors[name];
   const id = `input-${name}`;
@@ -280,22 +280,22 @@ function ListField({ field, value, errors, onChange }: FieldProps<'set'>) {
 }
 
 /** Reports what a field's inputs hold once a member changes one, each leaf as its text. */
-type CustomFieldChange = <F extends MemberCustomField>(
+type CustomFieldChange = <F extends FieldInput>(
   field: F,
   text: ShapeText[ShapeOf<F['type']>],
 ) => void;
 
 interface DrawnFieldProps {
-  field: MemberCustomField;
+  field: FieldInput;
   value: CustomFieldValue;
   errors: Record<string, string | undefined>;
   onChange: CustomFieldChange;
-  onKeyDown: (event: React.KeyboardEvent) => void;
+  onKeyDown?: ((event: React.KeyboardEvent) => void) | undefined;
 }
 
 /** A field drawn from the blocks its type is composed of. */
 function DrawnField({ field, onChange, ...drawn }: DrawnFieldProps) {
-  return matchField<MemberCustomField, React.ReactElement>(field, {
+  return matchField<FieldInput, React.ReactElement>(field, {
     scalar: (scalar) => (
       <ScalarField {...drawn} field={scalar} onChange={(value) => onChange(scalar, value)} />
     ),
@@ -309,14 +309,14 @@ function DrawnField({ field, onChange, ...drawn }: DrawnFieldProps) {
 }
 
 interface MemberCustomFieldsProps {
-  fields: MemberCustomField[];
+  fields: FieldInput[];
   values: Record<string, CustomFieldValue>;
   errors: Record<string, string | undefined>;
   onChange: CustomFieldChange;
-  onKeyDown: (event: React.KeyboardEvent) => void;
+  onKeyDown?: ((event: React.KeyboardEvent) => void) | undefined;
 }
 
-/** The fields a publisher has opened to members, as the member fills them in. */
+/** Custom fields as a member fills them in, each read-only where they may only see it. */
 export default function MemberCustomFields({
   fields,
   values,
