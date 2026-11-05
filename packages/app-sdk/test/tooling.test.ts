@@ -497,6 +497,17 @@ describe('signing', () => {
     }
   });
 
+  it.each(['identityKey', 'backendKey'] as const)(
+    "throws for a %s whose public half is another key's",
+    async (name) => {
+      const mismatched = { ...generateKey(), x: generateKey().x };
+      await expect(
+        signAppManifest(SOURCE, { manifestUrl: MANIFEST_URL, ...keys, [name]: mismatched }),
+        // Newer Node refuses the pair while importing it, so the reason varies.
+      ).rejects.toThrow(`${name} isn't a usable Ed25519 key`);
+    },
+  );
+
   it('refuses a manifest URL Ghost would refuse', async () => {
     const result = await signAppManifest(SOURCE, {
       manifestUrl: 'ftp://x.example/m.json',

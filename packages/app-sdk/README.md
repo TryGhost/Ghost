@@ -440,7 +440,7 @@ per entry point, which share chunks:
 - `index.js` loads only `@quilted/threads`, never `jose`, `zod` or a Node
   builtin;
 - `backend.js` loads only `jose` and `zod`, and no Node builtin;
-- `tooling.js` and `bin.js` load Node builtins, `jose` and `zod`;
+- `tooling.js` loads Node builtins, `jose` and `zod`;
 - each entry point's declarations, emitted by TypeScript 7 and bundled by
   `rolldown-plugin-dts`, import nothing;
 - `dist/` imports nothing at all.
