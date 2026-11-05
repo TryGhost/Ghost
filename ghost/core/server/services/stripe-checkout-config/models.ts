@@ -124,15 +124,12 @@ export const COLLECTED_NOUNS = {
  */
 export const COLLECTION_FLAG = 'stripeCheckoutCollection';
 
-/** What a checkout needs to know about every collected part to ask for it. */
-export interface AskedPart extends z.infer<typeof CollectedPart> {
-  /**
-   * Whether checkouts can ask for it right now. A saved part can't while a field it can't do
-   * without is archived or no longer holds what it collects, as the answer would have nowhere
-   * to go, so checkouts stop asking until the field is restored.
-   */
-  collectable: boolean;
-}
+/**
+ * What a checkout needs to know about every collected part to ask for it: the tiers it asks on.
+ * A saved part is asked for while it's on, even while a field it saves into is archived, so an
+ * archived field never changes what buyers are asked. The answers for that field are dropped.
+ */
+export type AskedPart = z.infer<typeof CollectedPart>;
 
 /**
  * What a checkout needs to know about each collected part to ask for it: which tiers ask and

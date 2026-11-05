@@ -71,11 +71,6 @@ const PARTS: {
     destinations: Array<
       Omit<Destination, 'customFieldKey'> & {
         customFieldKey: (settings: CollectedSettings[Section]) => Key;
-        /**
-         * Whether checkouts stop asking for the part while this field can't take a value, as
-         * the answer would have nowhere to go.
-         */
-        essential: boolean;
       }
     >;
   };
@@ -92,7 +87,6 @@ const PARTS: {
         property: 'shipping.address.custom_field_key',
         wrongType: 'Choose an address custom field for the shipping address.',
         holds: 'the shipping address',
-        essential: true,
       },
       {
         port: STRIPE_PORT.shippingName,
@@ -100,8 +94,6 @@ const PARTS: {
         property: 'shipping.name.custom_field_key',
         wrongType: "Choose a short text custom field for the recipient's name.",
         holds: "the recipient's name",
-        // Without the name, the address is still kept.
-        essential: false,
       },
     ],
   },
@@ -114,7 +106,6 @@ const PARTS: {
         property: 'phone.custom_field_key',
         wrongType: 'Choose a short text custom field for the phone number.',
         holds: 'the phone number',
-        essential: true,
       },
     ],
   },
@@ -198,36 +189,24 @@ function storedColumns(requested: RequestedParts): {
 
 /**
  * One row of the config read: the row's parts, one tier a collected part names and that tier
- * again only if it is paid (or nulls), and one port the collected parts bind with its field,
- * and that field again only while it is active (or nulls). A config whose parts name several
- * tiers or bind several ports comes back as a row for each pairing.
+ * again only if it is paid (or nulls), and one port the collected parts bind with its field (or
+ * nulls). A config whose parts name several tiers or bind several ports comes back as a row for
+ * each pairing.
  */
 const ReadRow = DbConfigParts.extend({
   section: DbSection.nullable(),
   paid_tier_id: z.string().nullable(),
   port: z.enum(STRIPE_PORTS).nullable(),
   bound_key: z.nullable(KeySchema),
-  active_key: z.string().nullable(),
-  active_type: z.string().nullable(),
 });
 type ReadRow = z.output<typeof ReadRow>;
 
-/** A port's custom field as the read found it, and whether it can take a value right now. */
-interface Bound {
-  customFieldKey: Key;
-  ready: boolean;
-}
-
 /** The custom field each port is bound to, as the read found them. */
-function boundFields(rows: ReadRow[]): Map<StripePort, Bound> {
-  const bound = new Map<StripePort, Bound>();
+function boundFields(rows: ReadRow[]): Map<StripePort, Key> {
+  const bound = new Map<StripePort, Key>();
   for (const row of rows) {
     if (row.port && row.bound_key) {
-      bound.set(row.port, {
-        customFieldKey: row.bound_key,
-        // Ready while the field is active and still holds what the port supplies.
-        ready: row.active_key !== null && row.active_type === PORT_FIELD[row.port].type,
-      });
+      bound.set(row.port, row.bound_key);
     }
   }
   return bound;
@@ -249,7 +228,7 @@ export interface PortBinder {
 }
 
 /** The custom fields as the metafields domain reads them for this site. */
-type FieldReads = Pick<FieldSource, 'table' | 'locked'>;
+type FieldReads = Pick<FieldSource, 'locked'>;
 
 /** Reads and saves the site-wide Stripe Checkout config. */
 export class StripeCheckoutConfigService {
@@ -287,13 +266,12 @@ export class StripeCheckoutConfigService {
    * being deleted takes its binding with it, which also reads as off.
    */
   async read(): Promise<StripeCheckoutConfig> {
-    const { config } = await this.readSaved();
-    return config;
+    return this.readSaved();
   }
 
   /**
    * Reads the config as checkouts use it: the design, and for each collected part the tiers it
-   * asks on and whether it can ask right now.
+   * asks on and how.
    *
    * Parts given unsaved take the place of the saved ones, refused as saving them would be, so a
    * preview asks for each part exactly as checkouts would once it was saved. Nothing is written.
@@ -301,37 +279,26 @@ export class StripeCheckoutConfigService {
   async readForCheckout(unsaved: RequestedParts = {}): Promise<CheckoutSessionConfig> {
     const changes = changesOf(unsaved);
     // Checked in the same transaction as the read, so both see the same tiers and fields.
-    const { named, saved } = changes.length
-      ? await this.knex.transaction(async (trx) => ({
-          named: await assertTargets(trx, changes, this.fields),
-          saved: await this.readSaved(trx),
-        }))
-      : { named: new Map<StripePort, Bound>(), saved: await this.readSaved() };
-    const config = { ...saved.config, ...unsaved };
-    const bound = new Map([...saved.bound, ...named]);
+    const saved = changes.length
+      ? await this.knex.transaction(async (trx) => {
+          await assertTargets(trx, changes, this.fields);
+          return this.readSaved(trx);
+        })
+      : await this.readSaved();
+    const config = { ...saved, ...unsaved };
     return {
       design: config.design,
       shipping: config.shipping && {
         tierIds: config.shipping.tierIds,
         allowedCountries: config.shipping.allowedCountries,
-        collectable: collectableFrom('shipping', bound),
       },
-      phone: config.phone && {
-        tierIds: config.phone.tierIds,
-        collectable: collectableFrom('phone', bound),
-      },
-      taxNumber: config.taxNumber && {
-        tierIds: config.taxNumber.tierIds,
-        collectable: collectableFrom('taxNumber', bound),
-      },
+      phone: config.phone && { tierIds: config.phone.tierIds },
+      taxNumber: config.taxNumber && { tierIds: config.taxNumber.tierIds },
     };
   }
 
-  /** The config as saved, and the custom field each port is bound to. */
-  private async readSaved(db: Knex = this.knex): Promise<{
-    config: StripeCheckoutConfig;
-    bound: Map<StripePort, Bound>;
-  }> {
+  /** The config as saved, with the custom field each port is bound to. */
+  private async readSaved(db: Knex = this.knex): Promise<StripeCheckoutConfig> {
     const rows = z.array(ReadRow).parse(
       await db(`${CONFIG_TABLE} as config`)
         // Every part's tiers in one join and every port in another, so the rows grow with the
@@ -351,12 +318,6 @@ export class StripeCheckoutConfigService {
             .onIn('binding.port', COLLECTED_PORTS)
             .andOnVal('binding.metafield_namespace', '=', CUSTOM_NAMESPACE),
         )
-        .leftJoin(this.fields.table(db, 'field'), (join) =>
-          join
-            .on('field.namespace', '=', 'binding.metafield_namespace')
-            .andOn('field.key', '=', 'binding.metafield_key')
-            .andOnVal('field.status', '=', ACTIVE),
-        )
         .where('config.slug', CONFIG_SLUG)
         .select(
           ...DbConfigParts.keyof().options.map((column) => `config.${column}`),
@@ -364,25 +325,20 @@ export class StripeCheckoutConfigService {
           'tier.id as paid_tier_id',
           'binding.port',
           'binding.metafield_key as bound_key',
-          'field.key as active_key',
-          'field.type as active_type',
         ),
     );
 
     const [first] = rows;
     const bound = boundFields(rows);
     if (!first) {
-      return { config: { design: null, shipping: null, phone: null, taxNumber: null }, bound };
+      return { design: null, shipping: null, phone: null, taxNumber: null };
     }
     const { design, shipping, phone, tax_number: taxNumber } = z.decode(this.configRow, first);
     return {
-      config: {
-        design,
-        shipping: shipping && shippingFrom(shipping, tierIdsOf('shipping', shipping, rows), bound),
-        phone: phone && phoneFrom(tierIdsOf('phone', phone, rows), bound),
-        taxNumber: taxNumber && taxNumberFrom(tierIdsOf('taxNumber', taxNumber, rows)),
-      },
-      bound,
+      design,
+      shipping: shipping && shippingFrom(shipping, tierIdsOf('shipping', shipping, rows), bound),
+      phone: phone && phoneFrom(tierIdsOf('phone', phone, rows), bound),
+      taxNumber: taxNumber && taxNumberFrom(tierIdsOf('taxNumber', taxNumber, rows)),
     };
   }
 
@@ -492,7 +448,7 @@ function tierIdsOf(
 function shippingFrom(
   stored: StoredPart<'shipping'>,
   tierIds: string[] | null,
-  bound: Map<StripePort, Bound>,
+  bound: Map<StripePort, Key>,
 ): ShippingSettings | null {
   const address = bound.get(STRIPE_PORT.shippingAddress);
   const name = bound.get(STRIPE_PORT.shippingName);
@@ -502,30 +458,23 @@ function shippingFrom(
   return {
     tierIds,
     allowedCountries: stored.allowed_countries,
-    addressCustomFieldKey: address.customFieldKey,
-    nameCustomFieldKey: name.customFieldKey,
+    addressCustomFieldKey: address,
+    nameCustomFieldKey: name,
   };
 }
 
 /** The phone number settings as the read found them, or null when what they point at is gone. */
-function phoneFrom(tierIds: string[] | null, bound: Map<StripePort, Bound>): PhoneSettings | null {
+function phoneFrom(tierIds: string[] | null, bound: Map<StripePort, Key>): PhoneSettings | null {
   const field = bound.get(STRIPE_PORT.phone);
   if (!field || tierIds?.length === 0) {
     return null;
   }
-  return { tierIds, customFieldKey: field.customFieldKey };
+  return { tierIds, customFieldKey: field };
 }
 
 /** The tax ID settings as the read found them, or null once every tier they named is gone. */
 function taxNumberFrom(tierIds: string[] | null): TaxNumberSettings | null {
   return tierIds?.length === 0 ? null : { tierIds };
-}
-
-/** Whether checkouts can ask for a part: while every field it can't do without can take a value. */
-function collectableFrom(section: CollectedSection, bound: Map<StripePort, Bound>): boolean {
-  return PARTS[section].destinations.every(
-    ({ port, essential }) => !essential || bound.get(port)?.ready === true,
-  );
 }
 
 /**
@@ -540,19 +489,17 @@ function collectableFrom(section: CollectedSection, bound: Map<StripePort, Bound
  * its port supplies. A publisher who named a field meant that field, so being told now beats
  * finding out later that nothing was saved. Each port needs a field of its own, as two ports
  * writing one field would overwrite each other on every checkout.
- *
- * Returns the custom field each port the parts name would be bound to once saved.
  */
 async function assertTargets(
   trx: Knex.Transaction,
   changes: Change[],
   fieldReads: FieldReads,
-): Promise<Map<StripePort, Bound>> {
+): Promise<void> {
   const switchedOn = changes.flatMap(({ section, targets }) =>
     targets ? [{ section, ...targets }] : [],
   );
   if (!switchedOn.length) {
-    return new Map();
+    return;
   }
 
   const tierIds = [...new Set(switchedOn.flatMap((part) => part.tierIds ?? []))];
@@ -638,16 +585,4 @@ async function assertTargets(
       });
     }
   }
-
-  return new Map(
-    destinations.map(({ port, customFieldKey }): [StripePort, Bound] => [
-      port,
-      {
-        customFieldKey,
-        // Each field was checked to be the type its port supplies, so only an archived one
-        // kept from before can't take a value.
-        ready: fields.some((field) => field.key === customFieldKey && field.status === ACTIVE),
-      },
-    ]),
-  );
 }
