@@ -25,6 +25,7 @@ import {
 } from '../tooling/keys.ts';
 import { MANIFEST_PATH } from '../shared/manifest.ts';
 import { parseOrigin } from '../shared/parse.ts';
+import { messageOf } from '../tooling/errors.ts';
 import { formatErrors } from '../tooling/format.ts';
 import { MANIFEST_FILE, serialiseSigned, signProject } from '../tooling/sign.ts';
 import { DENY, VITE_DEFAULT_DENY } from './deny.ts';
@@ -202,7 +203,7 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
             res.end(req.method === 'HEAD' ? undefined : serialiseSigned(result.signed));
           })
           .catch((error: unknown) => {
-            const message = `ghost-app: ${(error as Error).message}`;
+            const message = `ghost-app: ${messageOf(error)}`;
             config.logger.error(message, { timestamp: true });
             res.statusCode = 500;
             res.setHeader('content-type', 'text/plain; charset=utf-8');
@@ -251,7 +252,7 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
         mode: 'production',
         manifestUrl,
         manifestFile,
-      }).catch((error: unknown) => this.error(`ghost-app: ${(error as Error).message}`));
+      }).catch((error: unknown) => this.error(`ghost-app: ${messageOf(error)}`));
       if (!result.success) {
         this.error(
           `ghost-app: ${manifestFile} can't be signed for ${manifestUrl}:\n${formatErrors(result.errors)}`,
