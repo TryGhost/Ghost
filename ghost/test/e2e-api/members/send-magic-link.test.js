@@ -1058,6 +1058,17 @@ describe('sendMagicLink', function () {
       assert.equal(redirectUrl.searchParams.get('r'), 'https://www.test.com/post');
     });
 
+    it('/verify-otc endpoint preserves the offer fragment and subdirectory in redirectUrl', async function () {
+      const offerUrl = 'https://www.test.com/blog/#/portal/offers/offer-id';
+      const verifyResponse = await sendAndVerifyOTC('member1@test.com', 'signin', {
+        referer: 'https://www.test.com/blog/',
+        redirect: offerUrl,
+      });
+
+      const redirectUrl = new URL(verifyResponse.body.redirectUrl);
+      assert.equal(redirectUrl.searchParams.get('r'), offerUrl);
+    });
+
     describe('Rate limiting', function () {
       beforeAll(async function () {
         // Adjust rate limits for faster testing
