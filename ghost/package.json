@@ -274,7 +274,7 @@
     "esbuild": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",
-    "globals": "17.7.0",
+    "globals": "17.14.0",
     "html-validate": "11.5.5",
     "lodash-es": "4.18.1",
     "nock": "catalog:",
