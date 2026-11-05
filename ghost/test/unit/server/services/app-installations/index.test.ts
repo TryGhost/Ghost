@@ -350,20 +350,21 @@ describe('App installations composition root', function () {
       errorType: 'ValidationError',
     });
     sinon.assert.calledTwice(request);
+    // A manifest URL on one of Ghost's hosts is refused before either the manifest or the
+    // challenge is fetched. The Admin URL is a separate rule from the site URL.
     urlFor.withArgs('home', true).returns('https://podcast.example/');
-    await assert.rejects(service.preview('https://podcast.example/manifest.json'), {
-      errorType: 'ValidationError',
-    });
-    // The manifest, and the challenge that goes out with it.
-    sinon.assert.callCount(request, 4);
-    assert.equal(request.lastCall.args[0].hostname, 'podcast.example');
-    // The Admin URL is a separate rule from the site URL.
     urlFor.withArgs('admin', true).returns('https://admin.example/ghost/');
-    await assert.rejects(service.preview('https://admin.example/manifest.json'), {
-      errorType: 'ValidationError',
-    });
-    sinon.assert.callCount(request, 6);
-    assert.equal(request.lastCall.args[0].hostname, 'admin.example');
+    for (const manifestUrl of [
+      'https://podcast.example/manifest.json',
+      'https://admin.example/manifest.json',
+      'https://admin.example:8443/manifest.json',
+    ]) {
+      await assert.rejects(service.preview(manifestUrl), {
+        errorType: 'ValidationError',
+        code: 'APP_MANIFEST_URL_INVALID',
+      });
+    }
+    sinon.assert.calledTwice(request);
     assert.equal(root.service, service);
   });
 });

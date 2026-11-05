@@ -13785,10 +13785,10 @@ services:
           Configuration reads active settings keys and the immutable config facade when invoked,
           then captures key, URL, promo and environment values; shared URL helpers freeze their
           base URLs. Automatic-tax remains a labs getter and additional-payment-method checks
-          happen per call. With stripeCheckoutDesign enabled, whatever opens each checkout passes
-          the saved design from the checkout-config's checkout service, and a preview passes the
-          design being previewed. Checkout HTTP tests assert saved/cleared designs, flag gating and
-          malformed stored-design fallback with Stripe mocked, not real root replacement or
+          happen per call. Whatever opens each checkout passes the saved design from the
+          checkout-config's checkout service, and a preview passes the design being previewed.
+          Checkout HTTP tests assert saved/cleared designs and malformed stored-design fallback
+          with Stripe mocked, not real root replacement or
           provider acceptance. Nonproduction normally supplies a local placeholder secret;
           explicit remote-webhook mode omits it and marks registration ephemeral. Production
           registration remains persistent. Config units inject key/URL helpers and test-only
