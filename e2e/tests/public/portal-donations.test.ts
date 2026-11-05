@@ -5,6 +5,7 @@ import {
   SupportNotificationPage,
   SupportSuccessPage,
 } from '@/helpers/pages';
+import { MailPit } from '@/helpers/services/email/mail-pit';
 import { SettingsService } from '@/helpers/services/settings/settings-service';
 import {
   completeDonationViaFakeCheckout,
@@ -13,6 +14,18 @@ import {
   test,
 } from '@/helpers/playwright';
 import { createMemberFactory } from '@/data-factory';
+
+async function donationNotifications(email: string) {
+  const mailpit = new MailPit();
+  const candidates = await mailpit.search(
+    { subject: 'One-time payment received:' },
+    { timeoutMs: null },
+  );
+  const messages = await Promise.all(
+    candidates.map((message) => mailpit.getMessageDetailed(message)),
+  );
+  return messages.filter((message) => message.HTML.includes(email));
+}
 
 test.describe('Ghost Public - Portal Donations', () => {
   test.use({ stripeEnabled: true });
@@ -28,11 +41,13 @@ test.describe('Ghost Public - Portal Donations', () => {
     await checkoutPage.waitUntilPaymentReady();
     await expect(checkoutPage.totalAmount).toHaveText('$5.00');
 
-    await completeDonationViaFakeCheckout(page, stripe!, {
+    const donorEmail = await completeDonationViaFakeCheckout(page, stripe!, {
       amount: '12.50',
       email: `member-donation-${Date.now()}@ghost.org`,
       name: 'Test Member Donations',
     });
+
+    await expect.poll(() => donationNotifications(donorEmail)).toHaveLength(1);
 
     const supportSuccessPage = new SupportSuccessPage(page);
     await supportSuccessPage.waitForPortalToOpen();
@@ -65,10 +80,12 @@ test.describe('Ghost Public - Portal Donations', () => {
     await checkoutPage.waitUntilPaymentReady();
     await expect(checkoutPage.emailInput).toHaveValue(member.email);
 
-    await completeDonationViaFakeCheckout(page, stripe!, {
+    const donorEmail = await completeDonationViaFakeCheckout(page, stripe!, {
       amount: '12.50',
       name: member.name ?? 'Test Member Donations',
     });
+
+    await expect.poll(() => donationNotifications(donorEmail)).toHaveLength(1);
 
     const notificationPage = new SupportNotificationPage(page);
     await expect(notificationPage.successMessage).toBeVisible();
@@ -89,9 +106,11 @@ test.describe('Ghost Public - Portal Donations', () => {
     await checkoutPage.waitUntilPaymentReady();
     await expect(checkoutPage.totalAmount).toHaveText('€98.00');
 
-    await completeDonationViaFakeCheckout(page, stripe!, {
+    const donorEmail = await completeDonationViaFakeCheckout(page, stripe!, {
       email: `member-donation-fixed-${Date.now()}@ghost.org`,
     });
+
+    await expect.poll(() => donationNotifications(donorEmail)).toHaveLength(1);
 
     const supportSuccessPage = new SupportSuccessPage(page);
     await supportSuccessPage.waitForPortalToOpen();

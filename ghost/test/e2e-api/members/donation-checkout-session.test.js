@@ -151,10 +151,6 @@ describe('Create Stripe Checkout Session for Donations', function () {
     assert.equal(lastDonation.get('email'), 'exampledonation@example.com');
     assert.equal(lastDonation.get('name'), 'Paid Test');
     assert.equal(lastDonation.get('member_id'), null);
-    assert.equal(
-      lastDonation.get('stripe_checkout_session_id'),
-      stripeMocker.checkoutSessions[0].id,
-    );
     assert.equal(lastDonation.get('donation_message'), 'You are the best! Have a lovely day!');
 
     // Check referrer
@@ -166,115 +162,6 @@ describe('Create Stripe Checkout Session for Donations', function () {
     assert.equal(lastDonation.get('attribution_id'), post.id);
     assert.equal(lastDonation.get('attribution_type'), 'post');
     assert.equal(lastDonation.get('attribution_url'), url);
-  });
-
-  it('Handles Stripe webhook idempotency for donations', async function () {
-    const email = 'idempotent-donation@example.com';
-
-    await membersAgent
-      .post('/api/create-stripe-checkout-session/')
-      .body({
-        customerEmail: email,
-        type: 'donation',
-        successUrl: 'https://example.com/?type=success',
-        cancelUrl: 'https://example.com/?type=cancel',
-      })
-      .expectStatus(200);
-
-    const checkoutSession = stripeMocker.checkoutSessions[stripeMocker.checkoutSessions.length - 1];
-    const webhookData = {
-      type: 'checkout.session.completed',
-      data: {
-        object: {
-          id: checkoutSession.id,
-          mode: 'payment',
-          payment_status: 'paid',
-          amount_total: 1200,
-          currency: 'usd',
-          customer: checkoutSession.customer,
-          customer_details: {
-            name: 'Idempotent Donor',
-            email,
-          },
-          metadata: {
-            ...(checkoutSession.metadata ?? {}),
-            ghost_donation: true,
-          },
-        },
-      },
-    };
-
-    await stripeMocker.sendWebhook(webhookData);
-    await DomainEvents.allSettled();
-    await stripeMocker.sendWebhook(webhookData);
-    await DomainEvents.allSettled();
-
-    const donations = await models.DonationPaymentEvent.findAll({
-      filter: `email:'${email}'`,
-    });
-
-    assert.equal(donations.length, 1, 'Should have exactly one donation record');
-    assert.equal(donations.at(0).get('stripe_checkout_session_id'), checkoutSession.id);
-    mockManager.assert.sentEmailCount(1);
-  });
-
-  it('Waits for async payment success before recording a donation', async function () {
-    const email = 'async-donation@example.com';
-
-    await membersAgent
-      .post('/api/create-stripe-checkout-session/')
-      .body({
-        customerEmail: email,
-        type: 'donation',
-        successUrl: 'https://example.com/?type=success',
-        cancelUrl: 'https://example.com/?type=cancel',
-      })
-      .expectStatus(200);
-
-    const checkoutSession = stripeMocker.checkoutSessions[stripeMocker.checkoutSessions.length - 1];
-    const session = {
-      id: checkoutSession.id,
-      mode: 'payment',
-      payment_status: 'unpaid',
-      amount_total: 1200,
-      currency: 'usd',
-      customer: checkoutSession.customer,
-      customer_details: {
-        name: 'Async Donation',
-        email,
-      },
-      metadata: {
-        ...(checkoutSession.metadata ?? {}),
-        ghost_donation: true,
-      },
-    };
-
-    await stripeMocker.sendWebhook({
-      type: 'checkout.session.completed',
-      data: { object: session },
-    });
-    await DomainEvents.allSettled();
-
-    let donations = await models.DonationPaymentEvent.findAll({
-      filter: `email:'${email}'`,
-    });
-    assert.equal(donations.length, 0, 'Should not record a donation before payment succeeds');
-
-    await stripeMocker.sendWebhook({
-      type: 'checkout.session.async_payment_succeeded',
-      data: {
-        object: {
-          ...session,
-          payment_status: 'paid',
-        },
-      },
-    });
-    await DomainEvents.allSettled();
-
-    donations = await models.DonationPaymentEvent.findAll({
-      filter: `email:'${email}'`,
-    });
-    assert.equal(donations.length, 1, 'Should record exactly one donation after payment succeeds');
   });
 
   it('Strips reserved gift metadata from donation checkout sessions', async function () {

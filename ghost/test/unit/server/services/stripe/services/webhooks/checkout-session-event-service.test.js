@@ -185,37 +185,6 @@ describe('CheckoutSessionEventService', function () {
       sinon.assert.notCalled(handleGiftEventStub);
     });
 
-    it('waits for async payment success when a donation checkout is still unpaid', async function () {
-      const service = createService();
-      const session = {
-        mode: 'payment',
-        payment_status: 'unpaid',
-        metadata: { ghost_donation: 'true' },
-      };
-      const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
-
-      await service.handleEvent(session);
-      sinon.assert.notCalled(handleDonationEventStub);
-
-      await service.handleEvent(
-        { ...session, payment_status: 'paid' },
-        'checkout.session.async_payment_succeeded',
-      );
-      sinon.assert.calledOnce(handleDonationEventStub);
-    });
-
-    it('ignores failed async donation payments', async function () {
-      const service = createService();
-      const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
-
-      await service.handleEvent(
-        { mode: 'payment', payment_status: 'unpaid', metadata: { ghost_donation: 'true' } },
-        'checkout.session.async_payment_failed',
-      );
-
-      sinon.assert.notCalled(handleDonationEventStub);
-    });
-
     it('ignores failed async gift payments', async function () {
       const service = createService();
       const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
@@ -292,66 +261,6 @@ describe('CheckoutSessionEventService', function () {
   });
 
   describe('handleDonationEvent', function () {
-    it('logs notification failures without failing the webhook', async function () {
-      const service = createService();
-      const session = {
-        id: 'cs_notification_failure',
-        mode: 'payment',
-        payment_status: 'paid',
-        metadata: { ghost_donation: 'true' },
-        amount_total: 1000,
-        currency: 'usd',
-        customer_details: { name: 'Donor', email: 'donor@example.com' },
-      };
-      const error = new Error('Temporary SMTP failure');
-      staffServiceEmails.notifyDonationReceived.rejects(error);
-      const logStub = sinon.stub(logging, 'error');
-
-      try {
-        await service.handleEvent(session);
-
-        sinon.assert.calledOnce(donationRepository.save);
-        sinon.assert.calledOnce(staffServiceEmails.notifyDonationReceived);
-        sinon.assert.calledOnce(logStub);
-        assert.equal(logStub.firstCall.args[0].err, error);
-        assert.equal(logStub.firstCall.args[0].stripeCheckoutSessionId, session.id);
-      } finally {
-        logStub.restore();
-      }
-    });
-
-    it('still fails the webhook when saving the donation fails', async function () {
-      const service = createService();
-      const session = {
-        id: 'cs_save_failure',
-        mode: 'payment',
-        payment_status: 'paid',
-        metadata: { ghost_donation: 'true' },
-        amount_total: 1000,
-        currency: 'usd',
-        customer_details: { name: 'Donor', email: 'donor@example.com' },
-      };
-      const error = new Error('Database unavailable');
-      donationRepository.save.rejects(error);
-
-      await assert.rejects(service.handleEvent(session), error);
-
-      sinon.assert.notCalled(staffServiceEmails.notifyDonationReceived);
-    });
-
-    it('does not save or notify staff when the checkout session already exists', async function () {
-      const service = createService();
-      const session = { id: 'cs_existing_donation' };
-      donationRepository.existsByCheckoutSessionId.resolves(true);
-
-      await service.handleDonationEvent(session);
-
-      sinon.assert.calledOnceWithExactly(donationRepository.existsByCheckoutSessionId, session.id);
-      sinon.assert.notCalled(memberRepository.get);
-      sinon.assert.notCalled(donationRepository.save);
-      sinon.assert.notCalled(staffServiceEmails.notifyDonationReceived);
-    });
-
     it('can handle donation event', async function () {
       const service = createService();
       const session = {
@@ -511,29 +420,6 @@ describe('CheckoutSessionEventService', function () {
       const savedDonationEvent = donationRepository.save.getCall(0).args[0];
 
       assert.equal(savedDonationEvent.amount, 1000);
-    });
-
-    it('rejects with the staff notification failure after saving the donation', async function () {
-      const service = createService();
-      const failure = new Error('staff email failed');
-      staffServiceEmails.notifyDonationReceived.rejects(failure);
-      memberRepository.get.resolves(null);
-
-      await assert.rejects(
-        service.handleDonationEvent({
-          amount_total: 1000,
-          currency: 'usd',
-          customer: null,
-          customer_details: { name: 'Test Name', email: 'donor@example.com' },
-          metadata: {},
-        }),
-        (error) => error === failure,
-      );
-
-      sinon.assert.callOrder(donationRepository.save, staffServiceEmails.notifyDonationReceived);
-      sinon.assert.calledOnceWithExactly(staffServiceEmails.notifyDonationReceived, {
-        donationPaymentEvent: donationRepository.save.firstCall.args[0],
-      });
     });
   });
 

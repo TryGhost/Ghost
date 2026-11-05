@@ -16,7 +16,9 @@ type DonationsRoot = typeof donationsRoot;
 
 function donationSession() {
   return {
+    id: 'cs_donation_root',
     mode: 'payment',
+    payment_status: 'paid',
     customer: null,
     customer_details: { name: 'A reader', email: 'reader@example.com' },
     amount_total: 2500,
@@ -41,6 +43,7 @@ describe('donations root with its Stripe consumer', function () {
     previousModule = require.cache[ROOT_PATH];
     delete require.cache[ROOT_PATH];
     add = sandbox.stub(models.DonationPaymentEvent, 'add').resolves({ id: 'saved-donation' });
+    sandbox.stub(models.DonationPaymentEvent, 'findOne').resolves(null);
     notifyDonationReceived = sandbox
       .stub<[{ donationPaymentEvent: DonationPaymentEvent }], Promise<void>>()
       .resolves();
@@ -103,6 +106,7 @@ describe('donations root with its Stripe consumer', function () {
       member_id: null,
       amount: 2500,
       currency: 'gbp',
+      stripe_checkout_session_id: 'cs_donation_root',
       donation_message: 'Keep writing',
       attribution_id: null,
       attribution_url: null,

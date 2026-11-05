@@ -218,10 +218,7 @@ test.describe('Stripe fixtures - donation webhook payloads', () => {
 
   test('capture version matches the API version Ghost uses for clients and webhooks', () => {
     const source = fs.readFileSync(
-      path.resolve(
-        fixtureDir,
-        '../../../../../ghost/core/core/server/services/stripe/stripe-api.js',
-      ),
+      path.resolve(fixtureDir, '../../../../../ghost/core/server/services/stripe/stripe-api.js'),
       'utf8',
     );
     const pinnedVersion = source.match(/const STRIPE_API_VERSION = '([^']+)'/)?.[1];

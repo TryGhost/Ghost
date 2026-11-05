@@ -130,6 +130,37 @@ test.describe('Stripe donation payment lifecycle', () => {
     expect(await donationEmails(name)).toHaveLength(1);
   });
 
+  test('overlapping paid events record and notify one donation after retries', async ({
+    request,
+    stripe,
+  }) => {
+    const { member, name } = await createDonationCheckout(request);
+    const options = { email: member.email, name, amount: 1250, paymentStatus: 'paid' as const };
+    const deliveries = await Promise.allSettled([
+      stripe!.sendLatestDonationCheckoutEvent({
+        ...options,
+        eventType: 'checkout.session.completed',
+      }),
+      stripe!.sendLatestDonationCheckoutEvent({
+        ...options,
+        eventType: 'checkout.session.async_payment_succeeded',
+      }),
+    ]);
+    expect(deliveries.some((delivery) => delivery.status === 'fulfilled')).toBe(true);
+    // A concurrent unique-index collision may fail a delivery. Stripe retries it;
+    // replay both event types to prove that either retry is harmless.
+    await stripe!.sendLatestDonationCheckoutEvent({
+      ...options,
+      eventType: 'checkout.session.completed',
+    });
+    await stripe!.sendLatestDonationCheckoutEvent({
+      ...options,
+      eventType: 'checkout.session.async_payment_succeeded',
+    });
+    expect(await donationEvents(request, member.id)).toHaveLength(1);
+    await expect.poll(() => donationEmails(name)).toHaveLength(1);
+  });
+
   for (const scenario of unpaidScenarios) {
     test(`${scenario.name} leaves no donation or staff notification`, async ({
       request,
@@ -150,4 +181,36 @@ test.describe('Stripe donation payment lifecycle', () => {
       }
     });
   }
+});
+
+test.describe('Stripe donation with unavailable staff email', () => {
+  test.use({
+    stripeEnabled: true,
+    config: {
+      mail__options__host: '127.0.0.1',
+      mail__options__port: '1',
+      mail__options__connectionTimeout: '1000',
+    },
+  });
+
+  test('acknowledges the paid donation and its retry when SMTP is unavailable', async ({
+    request,
+    stripe,
+  }) => {
+    const { member, name } = await createDonationCheckout(request);
+    const event = {
+      email: member.email,
+      name,
+      amount: 1250,
+      eventType: 'checkout.session.completed' as const,
+      paymentStatus: 'paid' as const,
+    };
+
+    // The helper rejects non-2xx webhook responses. A failed email must not
+    // change a successfully recorded payment into a failed webhook delivery.
+    await stripe!.sendLatestDonationCheckoutEvent(event);
+    await stripe!.sendLatestDonationCheckoutEvent(event);
+    expect(await donationEvents(request, member.id)).toHaveLength(1);
+    expect(await donationEmails(name)).toEqual([]);
+  });
 });
