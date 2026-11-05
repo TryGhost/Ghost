@@ -433,14 +433,15 @@ export default class OfferPage extends React.Component {
     if (member) {
       return null;
     }
-    const { brandColor, doAction } = this.context;
+    const { brandColor, doAction, site, pageData: offer } = this.context;
+    const redirect = new URL(`#/portal/offers/${offer.id}`, site.url).href;
     return (
       <div className="gh-portal-signup-message">
         <div>{t('Already a member?')}</div>
         <button
           className="gh-portal-btn gh-portal-btn-link"
           style={{ color: brandColor }}
-          onClick={() => doAction('switchPage', { page: 'signin' })}
+          onClick={() => doAction('switchPage', { page: 'signin', pageData: { redirect } })}
         >
           <span>{t('Sign in')}</span>
         </button>
