@@ -63,22 +63,23 @@ const MEMBERS_TABLE = 'members';
 const MAX_KEY_LENGTH: number = require('../../data/schema').tables[FIELDS_TABLE].key.maxlength;
 
 /**
- * Rows per insert or delete statement, bounded by knex rather than by either database.
- * SQLite takes a multi-row `VALUES` perfectly well; knex's SQLite dialect emits that form
- * only for a single row and compiles anything longer into `INSERT ... SELECT ? UNION ALL
- * SELECT ?`, which SQLite refuses past 500 terms.
+ * Rows per insert statement, bounded by knex rather than by either database. SQLite takes
+ * a multi-row `VALUES` perfectly well; knex's SQLite dialect emits that form only for a
+ * single row and compiles anything longer into `INSERT ... SELECT ? UNION ALL SELECT ?`,
+ * which SQLite refuses past 500 terms.
  *
  * Open as knex#721 since 2015, with an approved but unmerged fix in knex#5780. This can
- * go when that lands; until then the alternative is hand-written SQL per engine.
+ * go when that lands; until then the alternative is hand-written upsert SQL per engine.
  */
-const WRITE_CHUNK = 400;
+const UPSERT_CHUNK = 400;
 
 /** Derived, not restated, so a column changing shape in `schema.ts` changes here too. */
 type DbValueRow = z.infer<typeof DbMetafieldValue>;
 
 /**
- * The columns a value row is keyed by, from the canonical schema, so a write that addresses
- * rows by their key cannot fall behind the table's primary key.
+ * The columns a value row is keyed by, from the canonical schema, so a write's conflict target
+ * cannot fall behind the table's primary key. Only SQLite would notice if it did: MySQL ignores
+ * a conflict target, and SQLite refuses one that names no key.
  */
 const VALUE_KEY = z
   .array(DbMetafieldValue.keyof())
@@ -579,7 +580,15 @@ export class MetafieldValuesService {
     await this.store(memberId, writes, IMPORTED, executor);
   }
 
-  /** Stores a write and its activity feed entry, joining `executor`'s transaction if given. */
+  /**
+   * Stores a write and its activity feed entry, joining `executor`'s transaction if given.
+   *
+   * The member's existing values are read without a lock. On MySQL that read sees the database
+   * as it was when the transaction first read anything without a lock, so it can miss values
+   * another request saved to the same member since then. A caller that may save a member while
+   * another request saves the same member must lock the member before reading anything, as the
+   * member edit does. The second save then waits for the first, and reads the values it saved.
+   */
   private async store(
     memberId: string,
     writes: PlannedWrite[],
@@ -589,28 +598,35 @@ export class MetafieldValuesService {
     const apply = async (trx: Knex) => {
       // Built first, then sent as whole statements: a handful per member rather
       // than one per part, under one timestamp, because a write happened once
-      // however many rows record it.
+      // however many rows record it. Rows are removed one statement each, for
+      // the reasons given where they are.
       const now = new Date();
-      const clearedFields: FieldIdentity[] = [];
-      const clearedPaths: Array<{ field: FieldIdentity; paths: string[] }> = [];
-      const replaced: Array<{ field: FieldIdentity; kept: string[] }> = [];
+      // The fields this write deletes rows from, each with a check on a row's path that says
+      // whether to delete that row.
+      const removals: Array<{ field: FieldIdentity; removes: (path: string) => boolean }> = [];
       const rows: DbValueRow[] = [];
 
       for (const { field, value } of writes) {
         if (value === undefined) {
-          clearedFields.push(field);
+          removals.push({ field, removes: () => true });
           continue;
         }
 
         const toWrite = valueRowsToWrite(field, value);
         const { set } = toWrite;
         switch (toWrite.mode) {
-          case 'replace':
-            replaced.push({ field, kept: set.map((row) => row.path) });
+          // A set is replaced as a whole. Rows for options the new set no longer picks are
+          // deleted, while rows for options it still picks are kept, along with when they were
+          // first picked.
+          case 'replace': {
+            const kept = new Set(set.map((row) => row.path));
+            removals.push({ field, removes: (path) => !kept.has(path) });
             break;
+          }
           case 'merge':
             if (toWrite.cleared.length > 0) {
-              clearedPaths.push({ field, paths: toWrite.cleared });
+              const cleared = new Set(toWrite.cleared);
+              removals.push({ field, removes: (path) => cleared.has(path) });
             }
             break;
         }
@@ -629,84 +645,58 @@ export class MetafieldValuesService {
         );
       }
 
-      // The key leads with the field, so this member's rows sit among every other member's.
-      // A range delete or an upsert would lock the gaps beside other members' rows and
-      // deadlock their concurrent writes, so rows are deleted and updated by their whole key
-      // and new rows are plainly inserted, which locks this member's rows alone.
-      const existing: Array<Pick<DbValueRow, 'metafield_namespace' | 'metafield_key' | 'path'>> =
-        await trx(VALUES_TABLE)
+      for (let from = 0; from < rows.length; from += UPSERT_CHUNK) {
+        // Typed as the plain row because `merge` takes its columns as `keyof` the
+        // builder's record, which for a composite table registration is the scope
+        // names rather than the columns.
+        await trx<DbValueRow>(VALUES_TABLE)
+          .insert(rows.slice(from, from + UPSERT_CHUNK))
+          // Naming the columns rather than giving values takes each from the row
+          // that lost the conflict, so every part updates to its own value.
+          .onConflict(VALUE_KEY)
+          // The writer is merged with the value, so a row names who wrote what
+          // it currently holds rather than who wrote its first value.
+          .merge(['value_text', 'written_by_type', 'written_by_id', 'updated_at']);
+      }
+
+      // Rows are removed after the rows above are written, with one DELETE per row that names
+      // the row by its primary key. On MySQL, at its default isolation level:
+      //
+      // - A DELETE that searches also locks the stretch of the index it searched through, even
+      //   when it finds no rows. New members get IDs that sort next to each other, so two
+      //   members created at once would lock the same stretch, then each wait for the other's
+      //   lock to insert its own values there, until MySQL cancels one of the requests.
+      // - MySQL can run a DELETE that names many rows as a scan of the whole table, once those
+      //   rows are a large share of it, and the scan locks every row in the table.
+      // - A DELETE of one row locks that row, and can also lock the end of an index page next
+      //   to it. Deleting after the inserts means a write takes those locks after its last
+      //   insert into this table, so it doesn't wait for another write while it holds them,
+      //   unless its transaction writes values again.
+      //
+      // The rows written above are never ones removed here: a write sets and clears different
+      // parts of a field.
+      if (removals.length > 0) {
+        const held = await trx<DbValueRow>(VALUES_TABLE)
+          .select(VALUE_KEY)
           .where('member_id', memberId)
           .where((builder) => {
-            for (const { field } of writes) {
+            for (const { field } of removals) {
               builder.orWhere((rowsOf) => rowsOf.where(fieldReference(field)));
             }
-          })
-          .select('metafield_namespace', 'metafield_key', 'path');
-
-      const fieldId = (namespace: string, key: string) => JSON.stringify([namespace, key]);
-      const rowId = (row: { metafield_namespace: string; metafield_key: string; path: string }) =>
-        JSON.stringify([row.metafield_namespace, row.metafield_key, row.path]);
-
-      const cleared = new Set(clearedFields.map((field) => fieldId(field.namespace, field.key)));
-      const clearedRows = new Set(
-        clearedPaths.flatMap(({ field, paths }) =>
-          paths.map((path) => rowId({ ...fieldReference(field), path })),
-        ),
-      );
-      // A set is replaced as a whole: every row it no longer picks goes, and the ones it still
-      // picks stay, keeping when they were first picked.
-      const keptPaths = new Map(
-        replaced.map(({ field, kept }) => [fieldId(field.namespace, field.key), new Set(kept)]),
-      );
-      const isStale = (row: (typeof existing)[number]) => {
-        const id = fieldId(row.metafield_namespace, row.metafield_key);
-        return (
-          cleared.has(id) ||
-          clearedRows.has(rowId(row)) ||
-          keptPaths.get(id)?.has(row.path) === false
-        );
-      };
-
-      const stale = existing.filter(isStale);
-      for (let from = 0; from < stale.length; from += WRITE_CHUNK) {
-        await trx(VALUES_TABLE)
-          .whereIn(
-            VALUE_KEY,
-            stale.slice(from, from + WRITE_CHUNK).map((row) => {
-              const key: Record<string, string> = { ...row, member_id: memberId };
-              return VALUE_KEY.map((column) => key[column]);
-            }),
-          )
-          .del();
-      }
-
-      const kept = new Set(existing.filter((row) => !isStale(row)).map(rowId));
-      const inserts: DbValueRow[] = [];
-      for (const row of rows) {
-        if (!kept.has(rowId(row))) {
-          inserts.push(row);
-          continue;
-        }
-
-        // The writer is updated with the value, so a row names who wrote what it currently
-        // holds rather than who wrote its first value.
-        await trx(VALUES_TABLE)
-          .where({
-            metafield_namespace: row.metafield_namespace,
-            metafield_key: row.metafield_key,
-            path: row.path,
-            member_id: memberId,
-          })
-          .update({
-            value_text: row.value_text,
-            written_by_type: row.written_by_type,
-            written_by_id: row.written_by_id,
-            updated_at: row.updated_at,
           });
-      }
-
-      for (let from = 0; from < inserts.length; from += WRITE_CHUNK) {
-        await trx<DbValueRow>(VALUES_TABLE).insert(inserts.slice(from, from + WRITE_CHUNK));
+        const removed = held.filter((row) =>
+          removals.some(
+            ({ field, removes }) =>
+              row.metafield_namespace === field.namespace &&
+              row.metafield_key === field.key &&
+              removes(row.path),
+          ),
+        );
+        for (const row of removed) {
+          await trx(VALUES_TABLE)
+            .where(Object.fromEntries(VALUE_KEY.map((column) => [column, row[column]])))
+            .del();
+        }
       }
 
       const fields: MetafieldChangeEventField[] = writes.map(({ field }) => ({
