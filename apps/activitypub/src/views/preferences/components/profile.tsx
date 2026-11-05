@@ -20,7 +20,7 @@ import {
 import { H2 } from '@tryghost/shade/primitives';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { fixFirefoxTextSpacing } from '@src/utils/screenshot';
-import { imageUrlToDataUrl } from '@src/utils/image';
+import { convertImageWithRetry } from '@src/utils/image';
 import { toast } from 'sonner';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 
@@ -251,51 +251,56 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
   const [bannerDataUrl, setBannerDataUrl] = useState<string | null>(null);
   const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null);
   const [imageConversionFailed, setImageConversionFailed] = useState(false);
+  // Identifies the latest image-conversion run. A run that is no longer the
+  // latest must not write state: a slow fetch from an earlier run could
+  // otherwise overwrite the results of a newer conversion
+  const conversionRunRef = useRef(0);
   const shareText = `${account?.name} is now available across the social web, on ${account?.handle}`;
 
   const convertImagesToDataUrls = useCallback(async () => {
+    const runId = ++conversionRunRef.current;
     let failed = false;
+    let bannerDataUrl: string | null = null;
+    let avatarDataUrl: string | null = null;
 
     if (account?.bannerImageUrl || coverImage) {
       const bannerUrl = account?.bannerImageUrl || coverImage;
       if (bannerUrl) {
-        const dataUrl = await imageUrlToDataUrl(bannerUrl);
-        if (dataUrl === null) {
-          // The image could not be fetched (usually the host does not send
-          // CORS headers), so it would be dropped from the copied image
+        bannerDataUrl = await convertImageWithRetry(bannerUrl);
+        if (bannerDataUrl === null) {
           failed = true;
         }
-        setBannerDataUrl(dataUrl);
       }
     }
 
     if (account?.avatarUrl || publicationIcon) {
       const avatarUrl = account?.avatarUrl || publicationIcon;
       if (avatarUrl) {
-        const dataUrl = await imageUrlToDataUrl(avatarUrl);
-        if (dataUrl === null) {
+        avatarDataUrl = await convertImageWithRetry(avatarUrl);
+        if (avatarDataUrl === null) {
           failed = true;
         }
-        setAvatarDataUrl(dataUrl);
       }
     }
 
+    if (runId !== conversionRunRef.current) {
+      // A newer conversion has started since this run began; its results
+      // win, so discard this run's state writes
+      return;
+    }
+
+    setBannerDataUrl(bannerDataUrl);
+    setAvatarDataUrl(avatarDataUrl);
     setImageConversionFailed(failed);
   }, [account?.bannerImageUrl, account?.avatarUrl, coverImage, publicationIcon]);
 
   useEffect(() => {
-    let isMounted = true;
-
-    const convert = async () => {
-      await convertImagesToDataUrls();
-    };
-
-    if (isMounted) {
-      convert();
-    }
+    convertImagesToDataUrls();
 
     return () => {
-      isMounted = false;
+      // Invalidate any conversion still in flight so it cannot write state
+      // after unmount (or after a newer run has taken over)
+      conversionRunRef.current += 1;
     };
   }, [convertImagesToDataUrls]);
 
@@ -332,9 +337,11 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
 
     if (imageConversionFailed) {
       // The profile or cover image could not be loaded, so the copied image
-      // would be missing it — say so instead of reporting a success
+      // would be missing it — say so instead of reporting a success. The
+      // failure can have many causes (an unreachable host, an error status,
+      // the browser being offline), so do not blame any single one
       toast.error(
-        'Could not load the profile or cover image. The image host must allow cross-origin requests (CORS).',
+        'Could not load the profile or cover image. Check that the image is reachable and try again.',
       );
       return;
     }

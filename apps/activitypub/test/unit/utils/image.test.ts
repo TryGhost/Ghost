@@ -3,7 +3,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { imageUrlToDataUrl } from '../../../src/utils/image';
+import { convertImageWithRetry, imageUrlToDataUrl } from '../../../src/utils/image';
 
 describe('imageUrlToDataUrl', function () {
   const fetchMock = vi.fn();
@@ -45,6 +45,54 @@ describe('imageUrlToDataUrl', function () {
 
     const result = await imageUrlToDataUrl('https://cdn.example.com/avatar.png');
 
+    expect(result).toBeNull();
+  });
+});
+
+describe('convertImageWithRetry', function () {
+  const fetchMock = vi.fn();
+
+  beforeEach(function () {
+    vi.stubGlobal('fetch', fetchMock);
+    fetchMock.mockReset();
+  });
+
+  afterEach(function () {
+    vi.unstubAllGlobals();
+  });
+
+  it('returns a data URL without retrying when the first fetch succeeds', async function () {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      blob: async () => new Blob(['fake-image-bytes'], { type: 'image/png' }),
+    });
+
+    const result = await convertImageWithRetry('https://cdn.example.com/avatar.png');
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(result).toMatch(/^data:image\/png;base64,/);
+  });
+
+  it('retries once and returns the data URL when the retry succeeds', async function () {
+    fetchMock
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce({
+        ok: true,
+        blob: async () => new Blob(['fake-image-bytes'], { type: 'image/png' }),
+      });
+
+    const result = await convertImageWithRetry('https://cdn.example.com/avatar.png');
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(result).toMatch(/^data:image\/png;base64,/);
+  });
+
+  it('returns null after both attempts fail', async function () {
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
+
+    const result = await convertImageWithRetry('https://cdn.example.com/avatar.png');
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(result).toBeNull();
   });
 });

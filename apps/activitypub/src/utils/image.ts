@@ -32,6 +32,19 @@ export const imageUrlToDataUrl = async (url: string): Promise<string | null> => 
 };
 
 /**
+ * Converts an image URL to a data URL, retrying once when the first attempt
+ * fails. A one-off failure (network blip, slow host) should not block the
+ * copy — only a failure of both attempts counts as a conversion failure.
+ */
+export const convertImageWithRetry = async (url: string): Promise<string | null> => {
+  const dataUrl = await imageUrlToDataUrl(url);
+  if (dataUrl !== null) {
+    return dataUrl;
+  }
+  return imageUrlToDataUrl(url);
+};
+
+/**
  * Checks if an image file's dimensions are within specified maximum limits
  */
 export const checkImageDimensions = (
