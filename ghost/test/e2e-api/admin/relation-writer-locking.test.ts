@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import sinon from 'sinon';
 import { agentProvider, fixtureManager } from '../../utils/e2e-framework';
 
 // @ts-expect-error Module has no type declarations.
@@ -93,6 +94,58 @@ describe('Relation writers lock the records they change', function () {
     );
 
     assertLockedBeforeWriting(sqls, 'posts', 'posts_tags');
+  });
+
+  // Each request reads its posts' existing links before inserting new ones. A locking read
+  // there takes gap locks the other request's insert waits on, so both would deadlock
+  it('bulk tags different posts with the same tag at once', async function () {
+    const tag = await models.Tag.add({ name: 'Locking concurrent tag' });
+    const posts = [await addPost(), await addPost()];
+
+    // Hold each request once it has locked its posts, until both have
+    const { lockForUpdate } = models.Post;
+    let locked = 0;
+    let release!: () => void;
+    const bothLocked = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const stub = sinon.stub(models.Post, 'lockForUpdate').callsFake(async function (
+      this: unknown,
+      ...args: unknown[]
+    ) {
+      const rows = await lockForUpdate.apply(this, args);
+      locked += 1;
+      if (locked === posts.length) {
+        release();
+      }
+      await Promise.race([
+        bothLocked,
+        new Promise((resolve) => {
+          setTimeout(resolve, 3000);
+        }),
+      ]);
+      return rows;
+    });
+
+    try {
+      const responses: { statusCode: number }[] = await Promise.all(
+        posts.map((post) =>
+          agent
+            .put(`/posts/bulk/?filter=id:'${post.id}'`)
+            .body({ bulk: { action: 'addTag', meta: { tags: [{ id: tag.id }] } } }),
+        ),
+      );
+
+      assert.deepEqual(
+        responses.map((res) => res.statusCode),
+        [200, 200],
+      );
+    } finally {
+      stub.restore();
+    }
+
+    const linked = await models.Base.knex('posts_tags').where('tag_id', tag.id).pluck('post_id');
+    assert.deepEqual(linked.sort(), posts.map((post) => post.id).sort());
   });
 
   it('bulk changing access to tiers locks the posts', async function () {

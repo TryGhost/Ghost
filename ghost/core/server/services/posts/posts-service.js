@@ -307,14 +307,28 @@ class PostsService {
    * @returns {Promise<{successful: number, unsuccessful: number, editIds: string[]}>}
    */
   async #bulkAddTags(data, options) {
-    if (!options.transacting) {
-      return await this.models.Post.transaction(async (transacting) => {
-        return await this.#bulkAddTags(data, {
-          ...options,
-          transacting,
-        });
-      });
-    }
+    // The posts are found before the transaction and locked as its first statement, so the
+    // reads of their links that follow are current without being locking reads, whose gap
+    // locks would deadlock two bulk tag requests for different posts
+    const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
+    const run = (transacting) =>
+      this.#addTagsToPosts(
+        data,
+        postRows.map((post) => post.id),
+        { ...options, transacting },
+      );
+
+    return options.transacting
+      ? await run(options.transacting)
+      : await this.models.Post.transaction(run);
+  }
+
+  async #addTagsToPosts(data, selectedIds, options) {
+    // Adding tags changes the posts' relations, so lock them as an edit would
+    const lockedRows = await this.models.Post.lockForUpdate(selectedIds, {
+      transacting: options.transacting,
+    });
+    const postIds = lockedRows.map((post) => post.id);
 
     // The same tag can be passed more than once in a single request. Dedupe
     // before creating, otherwise a repeated name-only tag is created twice
@@ -362,12 +376,6 @@ class PostsService {
       tag.id = createdTag.id;
     }
 
-    const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
-    const postIds = postRows.map((post) => post.id);
-
-    // Adding tags changes the posts' relations, so lock them as an edit would
-    await this.models.Post.lockForUpdate(postIds, { transacting: options.transacting });
-
     const tagIds = [...new Set(tags.map((tag) => tag.id))];
 
     // Posts in the selection may already carry the tag, filter those pairs out
@@ -377,7 +385,6 @@ class PostsService {
             .transacting('posts_tags')
             .whereIn('post_id', postIds)
             .select('post_id', 'tag_id', 'sort_order')
-            .forUpdate()
         : [];
     const existing = new Set(existingRows.map((row) => `${row.post_id}:${row.tag_id}`));
 
@@ -410,15 +417,11 @@ class PostsService {
       await options.transacting('posts_tags').insert(postTags);
     }
 
-    await this.models.Post.addActions(
-      'edited',
-      postRows.map((p) => p.id),
-      options,
-    );
+    await this.models.Post.addActions('edited', postIds, options);
 
     return {
-      editIds: postRows.map((p) => p.id),
-      successful: postRows.length,
+      editIds: postIds,
+      successful: postIds.length,
       unsuccessful: 0,
     };
   }
