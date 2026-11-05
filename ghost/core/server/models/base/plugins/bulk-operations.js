@@ -1,5 +1,9 @@
 const _ = require('lodash');
+const errors = require('@tryghost/errors');
 const { byColumnValues, CHUNK_SIZE } = require('./bulk-filters');
+
+const LINKED_RECORDS_CHANGED = 'LINKED_RECORDS_CHANGED';
+const LINKED_TRANSACTION_ATTEMPTS = 3;
 
 function createBulkOperation(singular, multiple) {
   return async function (knex, table, data, options) {
@@ -128,9 +132,13 @@ module.exports = function (Bookshelf) {
        *
        * The first read is a plain read, so it can't wait on the rows it finds
        * before locking them, and a locking read afterwards catches rows linked
-       * in between. The plain read fixes the transaction's snapshot before the
-       * locks are held, which is why reads that decide writes afterwards must
-       * be locking reads.
+       * in between. Locking a row found that late would take its lock after its
+       * links', the reverse of an edit, so this throws instead and
+       * `transactionLockingLinked` starts the transaction again.
+       *
+       * The plain read fixes the transaction's snapshot before the locks are
+       * held, which is why reads that decide writes afterwards must be locking
+       * reads.
        *
        * @param {string} linkTable
        * @param {string} foreignKey - Column in `linkTable` holding this model's id
@@ -156,9 +164,35 @@ module.exports = function (Bookshelf) {
           .where(where)
           .forUpdate()
           .pluck(foreignKey);
-        await this.lockForUpdate(_.difference(currentIds, ids), { transacting });
+        if (_.difference(currentIds, ids).length > 0) {
+          throw new errors.ConflictError({
+            message: 'Records were linked while being changed, please try again.',
+            code: LINKED_RECORDS_CHANGED,
+          });
+        }
 
         return _.uniq(currentIds);
+      },
+
+      /**
+       * Runs `callback` in a new transaction for a writer that uses
+       * `lockLinkedForUpdate`, starting again when records are linked while it
+       * runs.
+       *
+       * @template T
+       * @param {(transacting: import('knex').Knex.Transaction) => Promise<T>} callback
+       * @returns {Promise<T>}
+       */
+      transactionLockingLinked: async function transactionLockingLinked(callback) {
+        for (let attempt = 1; ; attempt += 1) {
+          try {
+            return await Bookshelf.transaction(callback);
+          } catch (err) {
+            if (err.code !== LINKED_RECORDS_CHANGED || attempt >= LINKED_TRANSACTION_ATTEMPTS) {
+              throw err;
+            }
+          }
+        }
       },
 
       bulkAdd: function bulkAdd(data, tableName, options = {}) {

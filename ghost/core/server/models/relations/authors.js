@@ -333,12 +333,16 @@ module.exports.extendModel = function extendModel(Post, Posts, ghostBookshelf) {
             // remove author as secondary author from any other posts
             await knex('posts_authors').transacting(trx).where('author_id', authorId).del();
           } catch (err) {
+            // Lets `transactionLockingLinked` start again when posts gain the author meanwhile
+            if (err.code === 'LINKED_RECORDS_CHANGED') {
+              throw err;
+            }
             throw new errors.InternalServerError({ err: err });
           }
         };
 
         if (!options.transacting) {
-          return ghostBookshelf.transaction((transacting) => {
+          return this.transactionLockingLinked((transacting) => {
             options.transacting = transacting;
             return reassignPost();
           });

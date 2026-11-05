@@ -35,6 +35,9 @@ type Models = {
       where: object,
       options: { transacting: Knex.Transaction },
     ): Promise<string[]>;
+    transactionLockingLinked<T>(
+      callback: (transacting: Knex.Transaction) => Promise<T>,
+    ): Promise<T>;
   };
   ApiKey: {
     destroy(options: object): Promise<unknown>;
@@ -208,7 +211,7 @@ export class UsersService {
   }
 
   async destroyUser(frameOptions: UserFrameOptions): Promise<void> {
-    return this.models.Base.transaction(async (t) => {
+    return this.models.Post.transactionLockingLinked(async (t) => {
       frameOptions.transacting = t;
 
       // The user's posts are tagged and reassigned below, so lock them first

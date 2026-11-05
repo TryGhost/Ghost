@@ -207,6 +207,91 @@ describe('Post Model: edit row locking', function () {
     return { edit, writtenDuringEdit };
   }
 
+  // A deletion finds the tag's posts, locks them, then reads the tag's links again with a lock
+  // to catch posts linked in between. Locking a post found that late would take its lock after
+  // its links', the reverse of an edit, so the deletion starts again instead
+  describe('post linked to a tag while the tag is being deleted', function () {
+    const held = () => {
+      let release!: () => void;
+      const promise = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      return { promise, release };
+    };
+
+    it('deletes the tag without deadlocking an edit of that post', async function () {
+      const tag = await models.Tag.add({ name: 'Doomed late link' }, owner);
+      await models.Post.add({ title: 'Early', status: 'draft', tags: [{ id: tag.id }] }, owner);
+      const late = await models.Post.add(
+        { title: 'Late', status: 'draft', tags: [{ id: sharedTag.id }] },
+        owner,
+      );
+
+      // The deletion is held once it has locked the posts it first found
+      const deletionLocked = held();
+      const deletionResumed = held();
+      const { lockForUpdate } = models.Post;
+      let first = true;
+      sinon.stub(models.Post, 'lockForUpdate').callsFake(async function (
+        this: unknown,
+        ...args: unknown[]
+      ) {
+        const rows = await lockForUpdate.apply(this, args);
+        if (first) {
+          first = false;
+          deletionLocked.release();
+          await deletionResumed.promise;
+        }
+        return rows;
+      });
+
+      const deletion = models.Tag.destroy({ ...owner, id: tag.id }).then(
+        () => 'ok',
+        (err: any) => err.code || err.message,
+      );
+      await deletionLocked.promise;
+
+      await models.Post.edit(
+        { tags: [{ id: sharedTag.id }, { id: tag.id }] },
+        { ...owner, id: late.id },
+      );
+
+      // An edit of the late post is held once it has locked the post, before reordering its tags
+      const editLocked = held();
+      const editResumed = held();
+      const onSaving = models.Post.prototype.onSaving;
+      sinon.stub(models.Post.prototype, 'onSaving').callsFake(async function (
+        this: any,
+        ...args: unknown[]
+      ) {
+        editLocked.release();
+        await editResumed.promise;
+        return onSaving.apply(this, args);
+      });
+
+      const edit = models.Post.edit(
+        { title: 'Late edit', tags: [{ id: tag.id }, { id: sharedTag.id }] },
+        { ...owner, id: late.id },
+      ).then(
+        () => 'ok',
+        (err: any) => err.code || err.message,
+      );
+      await editLocked.promise;
+
+      deletionResumed.release();
+      await new Promise((resolve) => {
+        setTimeout(resolve, 500);
+      });
+      editResumed.release();
+
+      assert.deepEqual(await Promise.all([deletion, edit]), ['ok', 'ok']);
+      assert.equal((await db.knex('tags').where('id', tag.id)).length, 0);
+      assert.deepEqual(await db.knex('posts_tags').where('post_id', late.id).pluck('tag_id'), [
+        sharedTag.id,
+      ]);
+    });
+  });
+
   describe('tag deleted during an edit', function () {
     async function editWhileDeletingTag(keepTag: boolean) {
       const tag = await models.Tag.add({ name: `Doomed ${keepTag}` }, owner);

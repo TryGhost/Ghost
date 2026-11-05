@@ -171,7 +171,7 @@ const Label = ghostBookshelf.Model.extend(
 
       return options.transacting
         ? destroyLabel(options.transacting)
-        : ghostBookshelf.transaction(destroyLabel);
+        : this.transactionLockingLinked(destroyLabel);
     },
   },
 );

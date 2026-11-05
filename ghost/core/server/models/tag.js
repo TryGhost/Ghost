@@ -215,7 +215,7 @@ const Tag = ghostBookshelf.Model.extend(
 
       return options.transacting
         ? destroyTag(options.transacting)
-        : ghostBookshelf.transaction(destroyTag);
+        : this.transactionLockingLinked(destroyTag);
     },
   },
 );

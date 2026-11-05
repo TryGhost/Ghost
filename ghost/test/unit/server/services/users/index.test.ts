@@ -66,18 +66,20 @@ function createModels({
       return Promise.resolve(value);
     });
   class NotFoundError extends Error {}
+  const inTransaction = () =>
+    sinon.stub().callsFake(async (run: (tx: object) => Promise<unknown>) => {
+      state.open = true;
+      try {
+        return await run(transaction);
+      } finally {
+        state.open = false;
+        state.settled = true;
+      }
+    });
   const fakes = {
     Base: {
       knex,
-      transaction: sinon.stub().callsFake(async (run: (tx: object) => Promise<unknown>) => {
-        state.open = true;
-        try {
-          return await run(transaction);
-        } finally {
-          state.open = false;
-          state.settled = true;
-        }
-      }),
+      transaction: inTransaction(),
     },
     User: {
       findOne: sinon.stub().resolves(author),
@@ -91,8 +93,8 @@ function createModels({
     Post: {
       addActions: sinon.stub().resolves(),
       reassignByAuthor: whileOpen(sinon.stub(), undefined),
-      // Row locking helper used by newer deletion code paths; nothing here asserts on it.
       lockLinkedForUpdate: sinon.stub().resolves([]),
+      transactionLockingLinked: inTransaction(),
     },
     ApiKey: {
       destroy: whileOpen(sinon.stub(), undefined),
@@ -411,7 +413,7 @@ describe('Users service', function () {
 
       await service.destroyUser(frameOptions);
 
-      sinon.assert.calledOnce(fakes.Base.transaction);
+      sinon.assert.calledOnce(fakes.Post.transactionLockingLinked);
       assert.equal(
         frameOptions.transacting,
         transaction,
