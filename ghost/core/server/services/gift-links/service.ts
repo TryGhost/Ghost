@@ -12,6 +12,8 @@ type LiveLinkRow = {
   [K in keyof z.input<typeof GiftLinkRow>]: z.input<typeof GiftLinkRow>[K] | null;
 };
 
+const PostTitle = z.object({ title: z.string() });
+
 type GiftLinkAction = Pick<
   Extract<ActionRow, { resourceType: 'gift_link' }>,
   'event' | 'actionName'
@@ -112,13 +114,11 @@ export class GiftLinksService {
   }
 
   private async titleOf(trx: Knex.Transaction, postId: string): Promise<string> {
-    const post = await trx('posts')
-      .where('id', postId)
-      .first<{ title: string } | undefined>('title');
+    const post: unknown = await trx('posts').where('id', postId).first('title');
     if (!post) {
       throw new errors.NotFoundError({ message: `Post ${postId} does not exist.` });
     }
-    return post.title;
+    return PostTitle.parse(post).title;
   }
 
   private addToHistory(trx: Knex.Transaction, postId: string, link: GiftLink) {
