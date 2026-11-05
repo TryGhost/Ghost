@@ -12,7 +12,9 @@ type LiveLinkRow = {
   [K in keyof z.input<typeof GiftLinkRow>]: z.input<typeof GiftLinkRow>[K] | null;
 };
 
-const PostTitle = z.object({ title: z.string() });
+type PostLinkRow = LiveLinkRow & { post_title: unknown };
+
+const PostTitle = z.object({ post_title: z.string() });
 
 type GiftLinkAction = Pick<
   Extract<ActionRow, { resourceType: 'gift_link' }>,
@@ -35,22 +37,7 @@ export class GiftLinksService {
   }
 
   async getPost(postId: string): Promise<Post> {
-    // Anchored on posts: zero rows means the post itself doesn't exist, not merely that it has
-    // no live link.
-    const rows = await this.knex('posts')
-      .where('posts.id', postId)
-      .leftJoin('post_gift_links', 'post_gift_links.post_id', 'posts.id')
-      .leftJoin('gift_links', 'gift_links.token', 'post_gift_links.gift_link_token')
-      .select<LiveLinkRow[]>(giftLinkColumns);
-
-    if (rows.length === 0) {
-      throw new errors.NotFoundError({ message: `Post ${postId} does not exist.` });
-    }
-
-    const giftLinks = rows
-      .filter((row): row is z.input<typeof GiftLinkRow> => row.token !== null)
-      .map((row) => z.decode(giftLinkCodec, row));
-    return { id: postId, giftLinks };
+    return (await this.readPost(postId)).post;
   }
 
   async getPostByToken(token: string): Promise<Post | null> {
@@ -65,16 +52,16 @@ export class GiftLinksService {
   }
 
   async ensure(context: RequestContext, postId: string): Promise<Post> {
-    const post = await this.getPost(postId);
+    const { post, title } = await this.readPost(postId);
     if (post.giftLinks.length) {
       return post;
     }
-    return this.mint(context, postId, ADDED);
+    return this.mint(context, post.id, title, ADDED);
   }
 
   async create(context: RequestContext, postId: string): Promise<Post> {
-    await this.getPost(postId); // asserts the post exists (throws NotFound)
-    return this.mint(context, postId, RESET);
+    const { post, title } = await this.readPost(postId);
+    return this.mint(context, post.id, title, RESET);
   }
 
   // gift_links rows are kept as history; only the live association is removed.
@@ -93,6 +80,7 @@ export class GiftLinksService {
   private async mint(
     context: RequestContext,
     postId: string,
+    title: string,
     action: GiftLinkAction,
   ): Promise<Post> {
     const link: GiftLink = { token: generateGiftLinkToken(), createdAt: new Date() };
@@ -103,18 +91,30 @@ export class GiftLinksService {
         resourceType: 'gift_link',
         ...action,
         resourceId: postId,
-        primaryName: await this.titleOf(trx, postId),
+        primaryName: title,
       });
     });
     return { id: postId, giftLinks: [link] };
   }
 
-  private async titleOf(trx: Knex.Transaction, postId: string): Promise<string> {
-    const post: unknown = await trx('posts').where('id', postId).first('title');
-    if (!post) {
+  /** A post with its live links, and its title, which actions on its links are named after. */
+  private async readPost(postId: string): Promise<{ post: Post; title: string }> {
+    // Anchored on posts: zero rows means the post itself doesn't exist, not merely that it has
+    // no live link.
+    const rows = await this.knex('posts')
+      .where('posts.id', postId)
+      .leftJoin('post_gift_links', 'post_gift_links.post_id', 'posts.id')
+      .leftJoin('gift_links', 'gift_links.token', 'post_gift_links.gift_link_token')
+      .select<PostLinkRow[]>([...giftLinkColumns, 'posts.title as post_title']);
+
+    if (rows.length === 0) {
       throw new errors.NotFoundError({ message: `Post ${postId} does not exist.` });
     }
-    return PostTitle.parse(post).title;
+
+    const giftLinks = rows
+      .filter((row): row is PostLinkRow & z.input<typeof GiftLinkRow> => row.token !== null)
+      .map((row) => z.decode(giftLinkCodec, row));
+    return { post: { id: postId, giftLinks }, title: PostTitle.parse(rows[0]).post_title };
   }
 
   private addToHistory(trx: Knex.Transaction, postId: string, link: GiftLink) {
