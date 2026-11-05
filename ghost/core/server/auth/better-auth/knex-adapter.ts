@@ -7,7 +7,6 @@ import {
 } from 'better-auth/adapters';
 import type { BetterAuthOptions } from 'better-auth/types';
 import errors from '@tryghost/errors';
-import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 
 /**
@@ -290,7 +289,13 @@ function createCustomAdapter(
     return {
       async create({ model, modelKey = model, data }) {
         const idColumn = fieldColumn(modelKey, 'id');
-        const id = data[idColumn] ?? new ObjectId().toHexString();
+        const id = data[idColumn];
+        if (id === undefined || id === null) {
+          // Rows are read back by id, so a database-generated id can't be used
+          throw new errors.IncorrectUsageError({
+            message: `${model}: the Knex adapter needs Better Auth to generate ids (advanced.database.generateId).`,
+          });
+        }
         const row = { ...data, [idColumn]: id };
         await db(model).insert(stripVirtual(model, { ...createDefaults[model]?.(row), ...row }));
         return (await findById(db, model, modelKey, id)) as never;
@@ -453,7 +458,7 @@ export function createKnexAdapter(options: KnexAdapterOptions) {
     adapterId: 'ghost-knex',
     adapterName: 'Ghost Knex Adapter',
     debugLogs: options.debugLogs,
-    // Ghost uses ObjectIds
+    // String ids from advanced.database.generateId only
     supportsNumericIds: false,
     supportsUUIDs: false,
     // Ghost has no native JSON or boolean columns
@@ -464,7 +469,6 @@ export function createKnexAdapter(options: KnexAdapterOptions) {
     supportsDates: true,
     // Table names are mapped explicitly through Better Auth's modelName options
     usePlural: false,
-    customIdGenerator: () => new ObjectId().toHexString(),
   };
 
   const adapter = createAdapterFactory({

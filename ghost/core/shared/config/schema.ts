@@ -105,6 +105,19 @@ export const configSchema = z.looseObject({
       .string()
       .meta({ description: 'Default settings loaded on a fresh install.' }),
   }),
+
+  /**
+   * Central because the engine decides what boot builds and how Express is
+   * wired. defaults.json supplies `engine`, so it is always present. Closed:
+   * `engine` is the only `auth:` key and nothing reads another.
+   */
+  auth: z.object({
+    engine: z.enum(['legacy', 'better-auth']).meta({
+      description:
+        'Staff authentication engine. `better-auth` is in development and needs MySQL and the in-development auth tables.',
+      examples: ['legacy', 'better-auth'],
+    }),
+  }),
 });
 
 export type ValidatedConfig = z.infer<typeof configSchema>;
