@@ -14,6 +14,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { dirname, join, resolve } from 'node:path';
 
 import { isLocalhost, isValidAppId } from '@tryghost/app-contracts';
+import { parseJsonText } from '@tryghost/app-contracts/identity';
 import type { Plugin, ResolvedConfig, ViteDevServer } from 'vite';
 
 import {
@@ -27,11 +28,13 @@ import {
   type Mode,
 } from '../tooling/keys.ts';
 import { canonicalPath, isWithin } from '../tooling/paths.ts';
-import { MANIFEST_PATH, formatErrors } from '../shared/manifest.ts';
-import { parseJsonText, parseOrigin } from '../shared/parse.ts';
+import { MANIFEST_PATH } from '../shared/manifest.ts';
+import { formatErrors } from '../tooling/format.ts';
+import { parseOrigin } from '../shared/parse.ts';
 import { MANIFEST_FILE, serialiseSigned, signProject } from '../tooling/sign.ts';
 import { DENY, VITE_DEFAULT_DENY } from './deny.ts';
 import { provideDevBackendKey } from './dev-vars.ts';
+import { checkEnv } from './env.ts';
 
 // The modes whose keys `.ghost-app/` holds, from a record of every `Mode`, so a mode added later
 // is a type error here until its keys are protected too.
@@ -313,8 +316,14 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
         keysRoot = root;
         await createKeys({ root, mode: 'development' });
         // Read as Cloudflare's plugin reads it, which picks the Worker's `.dev.vars` file by it.
-        const cloudflareEnv = await readEnv(mode, envDir, 'CLOUDFLARE_ENV');
-        pending = await provideDevBackendKey(root, { cloudflareEnv });
+        const cloudflareEnv = checkEnv(
+          'CLOUDFLARE_ENV',
+          await readEnv(mode, envDir, 'CLOUDFLARE_ENV'),
+        );
+        if (!cloudflareEnv.success) {
+          throw new Error(cloudflareEnv.problem);
+        }
+        pending = await provideDevBackendKey(root, { cloudflareEnv: cloudflareEnv.value });
       }
       return {
         server: {
@@ -363,7 +372,17 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
         );
       }
       appUrl = await readEnv(resolved.mode, resolved.envDir, 'GHOST_APP_URL');
-      ghostUrl = await readEnv(resolved.mode, resolved.envDir, 'GHOST_URL');
+      // Only the dev server prints an install link.
+      if (resolved.command === 'serve') {
+        const ghost = checkEnv(
+          'GHOST_URL',
+          await readEnv(resolved.mode, resolved.envDir, 'GHOST_URL'),
+        );
+        if (!ghost.success) {
+          throw new Error(ghost.problem);
+        }
+        ghostUrl = ghost.value;
+      }
       if (pending) {
         config.logger[pending.level](`ghost-app: ${pending.message}`);
         pending = undefined;
@@ -433,14 +452,11 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
         }
         return;
       }
-      const base = URL.parse(appUrl.endsWith('/') ? appUrl : `${appUrl}/`);
-      // A query or fragment would land in the middle of the manifest's address, or swallow it,
-      // so it's refused, written out or empty.
-      if (!base || /[?#]/.test(appUrl)) {
-        this.error(
-          `ghost-app: GHOST_APP_URL must be the app's public address, such as https://app.example.com, not ${appUrl}`,
-        );
+      const address = checkEnv('GHOST_APP_URL', appUrl);
+      if (!address.success) {
+        this.error(address.problem);
       }
+      const base = new URL(appUrl.endsWith('/') ? appUrl : `${appUrl}/`);
       const manifestUrl = new URL(MANIFEST_PATH.slice(1), base).href;
       // So `vite build --watch` signs it again when it changes.
       this.addWatchFile(resolve(config.root, manifestFile));

@@ -1,9 +1,15 @@
+import {
+  FETCH_TIMEOUT_MS,
+  MAX_REDIRECTS,
+  dropCredentials,
+  isRedirect,
+  isSuccess,
+  readLocation,
+  staysOnHost,
+} from '@tryghost/app-contracts/identity';
 import { isLocalhost } from '@tryghost/app-contracts/manifest';
 import type { Got, PlainResponse } from 'got';
 import { z } from 'zod';
-
-const TIMEOUT_MS = 5000;
-const MAX_REDIRECTS = 3;
 
 /**
  * Why an app's URL could not be read.
@@ -80,23 +86,6 @@ function statusOf(err: unknown, { stoppedDownload }: { stoppedDownload: boolean 
   return failed.response.statusCode;
 }
 
-const isSuccess = (status: number) => status >= 200 && status < 300;
-const isRedirect = (status: number) => status >= 300 && status < 400;
-
-/** A redirect may stay on the host it started on, or move it from HTTP to HTTPS. */
-function staysOnHost(from: URL, to: URL): boolean {
-  if (to.origin === from.origin) {
-    return true;
-  }
-  return (
-    from.protocol === 'http:' &&
-    to.protocol === 'https:' &&
-    to.hostname === from.hostname &&
-    from.port === '' &&
-    to.port === ''
-  );
-}
-
 /**
  * Fetches a URL an app serves, server-side, through the outbound request guard.
  *
@@ -130,8 +119,7 @@ export function createAppFetcher({
     }
     // got would send the credentials in the URL it starts from, though it drops a
     // redirect's. These are dropped too, so none are ever sent or reported.
-    start.username = '';
-    start.password = '';
+    dropCredentials(start);
     const alias = getLocalhostAlias();
     // The URL being fetched now, as the browser would see it (without the alias).
     let current = start;
@@ -155,7 +143,7 @@ export function createAppFetcher({
         return undefined;
       }
       // Headers arrive as latin1; got reads the location as UTF-8, and so does this.
-      const target = URL.parse(Buffer.from(rawLocation, 'binary').toString('utf8'), response.url);
+      const target = readLocation(rawLocation, response.url);
       // Undo the alias, so the redirect is checked against the URL the browser would use.
       if (target && isAliased(current) && target.hostname === alias) {
         target.hostname = current.hostname;
@@ -175,7 +163,7 @@ export function createAppFetcher({
       maxRedirects: MAX_REDIRECTS,
       // One deadline for the whole fetch, redirects included. got's own timeout restarts
       // on every hop, which would let a slow app stall a preview several times over.
-      signal: AbortSignal.any([abort.signal, AbortSignal.timeout(TIMEOUT_MS)]),
+      signal: AbortSignal.any([abort.signal, AbortSignal.timeout(FETCH_TIMEOUT_MS)]),
       // Checked here rather than in a redirect hook, because got calls this before any
       // hook. A redirect to another host is refused before the outbound guard resolves
       // it, so that host is never looked up.
@@ -212,9 +200,7 @@ export function createAppFetcher({
             const target = locationOf(response)!;
             // got drops credentials from a Location, as browsers do, so the tracked URL
             // drops them too.
-            target.username = '';
-            target.password = '';
-            current = target;
+            current = dropCredentials(target);
             // Only an aliased hop needs its URL rewritten; otherwise got's own redirect
             // URL is used.
             if (isAliased(current)) {

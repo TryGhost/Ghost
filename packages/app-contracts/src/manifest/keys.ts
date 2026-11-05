@@ -31,6 +31,3 @@ export const publicKeyField = z.strictObject(
     },
   },
 );
-
-/** A public Ed25519 key as a JWK (RFC 8037), with nothing but the members it needs. */
-export type PublicKeyJwk = z.infer<typeof publicKeyField>;

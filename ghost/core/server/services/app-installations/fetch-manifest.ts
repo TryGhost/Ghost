@@ -1,13 +1,11 @@
+import {
+  APP_LOAD_MESSAGES,
+  SIGNED_MANIFEST_MAX_BYTES,
+  parseJsonText,
+} from '@tryghost/app-contracts/identity';
 import errors from '@tryghost/errors';
 import type { GhostLogger } from '@tryghost/logging';
 import type { AppFetchFailure, FetchFromApp } from './fetch-from-app';
-
-// The manifest is stored in a TEXT column, so anything larger could not be kept anyway.
-export const MANIFEST_MAX_BYTES = 64 * 1024;
-
-// The signed manifest carries the manifest in base64url, a third larger, with a header and
-// signature well under a kilobyte, so a manifest of the largest size still fits.
-const SIGNED_MANIFEST_MAX_BYTES = Math.ceil((MANIFEST_MAX_BYTES * 4) / 3) + 1024;
 
 /** The signed manifest's JSON, as the app served it. */
 type FetchManifest = (manifestUrl: string) => Promise<unknown>;
@@ -33,7 +31,7 @@ function unreachable(
   // A refused redirect has no cause beyond the answer, so the answer is logged.
   logging.warn(failure.reason === 'unreachable' ? failure.cause : context);
   return new errors.ValidationError({
-    message: 'Could not load the app’s manifest.',
+    message: APP_LOAD_MESSAGES.APP_MANIFEST_UNREACHABLE,
     code: 'APP_MANIFEST_UNREACHABLE',
     context,
   });
@@ -51,7 +49,7 @@ function manifestError(
       return unreachable(manifestUrl, failure, logging);
     case 'redirected':
       return new errors.ValidationError({
-        message: 'The app’s manifest redirects to another host.',
+        message: APP_LOAD_MESSAGES.APP_MANIFEST_REDIRECTED,
         code: 'APP_MANIFEST_REDIRECTED',
         context: `${manifestUrl} redirects to ${failure.host}`,
       });
@@ -62,7 +60,7 @@ function manifestError(
 
 export function manifestTooLarge(manifestUrl: string): errors.ValidationError {
   return new errors.ValidationError({
-    message: `The app’s manifest is larger than ${MANIFEST_MAX_BYTES / 1024} KB.`,
+    message: APP_LOAD_MESSAGES.APP_MANIFEST_TOO_LARGE,
     code: 'APP_MANIFEST_TOO_LARGE',
     context: manifestUrl,
   });
@@ -93,16 +91,13 @@ export function createManifestFetcher({
   };
 }
 
-/**
- * Parses JSON the app served: the signed manifest, or the manifest inside it. A byte order
- * mark is valid at the start of a JSON file, but JSON.parse rejects it.
- */
+/** Parses JSON the app served: the signed manifest, or the manifest inside it. */
 export function parseJson(text: string, manifestUrl: string): unknown {
   try {
-    return JSON.parse(text.charCodeAt(0) === 0xfeff ? text.slice(1) : text);
+    return parseJsonText(text);
   } catch {
     throw new errors.ValidationError({
-      message: 'The app’s manifest is not JSON.',
+      message: APP_LOAD_MESSAGES.APP_MANIFEST_NOT_JSON,
       code: 'APP_MANIFEST_NOT_JSON',
       context: manifestUrl,
     });

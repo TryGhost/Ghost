@@ -1,14 +1,12 @@
 import { z } from 'zod';
 
+import type { AppIcon } from './types.ts';
 import type { UrlField } from './url.ts';
 
 const ICON_NAME_MAX_LENGTH = 64;
 const ICON_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const EITHER = 'Expected an icon with either a name or a url';
-
-/** One of the icons Admin ships, by name, or an image the app serves. */
-export type AppIcon = { name: string } | { url: string };
 
 /**
  * Ghost draws the icon on the app's accent colour: a named Admin icon or an image the app

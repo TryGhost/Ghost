@@ -9,6 +9,7 @@ import {
   allowFraming,
   handleChallenge,
   serveManifest,
+  type SignedManifest,
   withGhostApp,
 } from '../src/backend/index.ts';
 
@@ -248,6 +249,18 @@ describe('serveManifest', () => {
     expect(response.headers.get('content-type')).toBe('application/json; charset=utf-8');
     expect(response.headers.get('cache-control')).toBe('no-cache');
     expect(await response.text()).toBe(body);
+  });
+
+  it.each([
+    ['a member missing', { protected: 'p', payload: 'q' }],
+    ['another member', { ...signed, header: {} }],
+    ['a member that is not text', { ...signed, signature: 1 }],
+  ])('refuses an object with %s, which Ghost would', (_name, input) => {
+    expect(() => serveManifest(input as unknown as SignedManifest)).toThrow(
+      new TypeError(
+        'Expected a signed manifest, with only protected, payload and signature, or its text',
+      ),
+    );
   });
 });
 

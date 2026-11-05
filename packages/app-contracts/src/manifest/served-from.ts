@@ -1,4 +1,4 @@
-import type { AppManifest } from './schema.ts';
+import type { AppManifest } from './types.ts';
 
 function pageUrl(manifest: AppManifest): URL {
   const page =

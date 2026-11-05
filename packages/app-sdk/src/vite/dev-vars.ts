@@ -3,6 +3,8 @@ import { randomUUID } from 'node:crypto';
 import { link, open, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { PrivateKeyJwkSchema } from '@tryghost/app-contracts/identity';
+
 import { isGitIgnored } from '../tooling/git.ts';
 import {
   BACKEND_KEY_VARIABLE,
@@ -65,14 +67,12 @@ function matches(value: string, key: PrivateKeyJwk): boolean | undefined {
   } catch {
     return undefined;
   }
-  const { kty, crv, x, d } = (
-    typeof parsed === 'object' && parsed !== null ? parsed : {}
-  ) as Record<string, unknown>;
   // The Worker imports it as an Ed25519 key, so anything else can't answer, whatever its x and d.
-  if (kty !== 'OKP' || crv !== 'Ed25519' || typeof x !== 'string' || typeof d !== 'string') {
+  const read = PrivateKeyJwkSchema.safeParse(parsed);
+  if (!read.success) {
     return undefined;
   }
-  return x === key.x && d === key.d;
+  return read.data.x === key.x && read.data.d === key.d;
 }
 
 /** Nothing to say if a file's key is the development key; otherwise how it differs. */
