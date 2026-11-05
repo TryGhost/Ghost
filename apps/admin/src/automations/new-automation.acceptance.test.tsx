@@ -476,4 +476,22 @@ describe('New automation', () => {
       });
     });
   }
+
+  it('shows trigger chooser when lead magnets is enabled, even if Stripe is not', async () => {
+    fakeAutomations([]);
+    await renderAdminApp('/automations/new', {
+      labs: { ...labs, automationsLeadMagnets: true, automationsLifecycleTriggers: true },
+    });
+
+    await expect.element(page.getByText('Select a trigger', { exact: true })).toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: /^Free member signed up/ }))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: /^Paid subscription started/ }))
+      .not.toBeInTheDocument();
+    await expect
+      .element(page.getByRole('button', { name: /^Paid subscription changed/ }))
+      .not.toBeInTheDocument();
+  });
 });
