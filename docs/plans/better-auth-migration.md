@@ -197,11 +197,11 @@ without them.
 
 | Concern               | Setting                                                                                                                                                                                                                                                                                                                                        |
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Base path             | `basePath` `/ghost/api/admin/auth`; `baseURL` is the origin of `urlUtils.getAdminUrl()` only, since a subdirectory install's path would otherwise override `basePath` (tested on a subdirectory install)                                                                                                                                       |
+| Base path             | `basePath` is the subdirectory plus `/ghost/api/admin/auth`, since Ghost mounts at the subdirectory and requests arrive with it; `baseURL` is the origin of `urlUtils.getAdminUrl()` only, since a path there would override `basePath` (tested on a subdirectory install)                                                                     |
 | Secret                | `admin_session_secret` setting                                                                                                                                                                                                                                                                                                                 |
 | IDs                   | `advanced.database.generateId` returns ObjectIds                                                                                                                                                                                                                                                                                               |
-| Cookie                | `advanced.cookies.session_token` named `ghost-admin-api-session` with today's path, `sameSite`, `secure`, `httpOnly`                                                                                                                                                                                                                           |
-| Session               | `modelName: 'user_sessions'`; `expiresIn` is `admin:sessionMaxAgeMs / 1000` (Better Auth takes seconds; the cookie `maxAge` stays in milliseconds), with an exact-expiry test; `disableSessionRefresh: true` (absolute expiry, as today); `additionalFields` `verified`, `origin` (`input: false`)                                             |
+| Cookie                | `advanced.cookies.session_token` named `ghost-admin-api-session` with today's path, `sameSite`, `httpOnly`; `useSecureCookies` on an HTTPS admin URL adds `Secure` and the `__Secure-` prefix (§5.2)                                                                                                                                           |
+| Session               | `modelName: 'user_sessions'`; `expiresIn` is `admin:sessionMaxAgeMs / 1000` (Better Auth takes seconds, and so does the cookie `maxAge` it derives), with an exact-expiry test; `disableSessionRefresh: true` (absolute expiry, as today); `additionalFields` `verified`, `origin` (`input: false`)                                            |
 | User                  | `modelName: 'users'`; `image` → `profile_image`, timestamps mapped; `emailVerified` virtual (§4.3); `additionalFields` `status`, `slug`, `last_seen` (`input: false`)                                                                                                                                                                          |
 | Account, verification | `user_accounts`, `verifications`                                                                                                                                                                                                                                                                                                               |
 | Email + password      | `disableSignUp: true`; bcrypt `hash`/`verify` via `@tryghost/security`; `sendResetPassword` with Ghost's template; 24-hour reset tokens; `revokeSessionsOnPasswordReset: true`; `onPasswordReset` re-activates locked users                                                                                                                    |
@@ -514,8 +514,15 @@ Existing tests (§7) must pass unchanged under every engine setting.
 
 ### 5.2 Cookie
 
-`ghost-admin-api-session` with today's attributes and lifetime, issued by
-Better Auth under the new engine.
+`ghost-admin-api-session` with today's path, `httpOnly` and lifetime, issued
+by Better Auth under the new engine. When the admin URL is HTTPS it is
+`__Secure-ghost-admin-api-session` (Better Auth's `useSecureCookies`) with
+`sameSite: none`, so browsers only accept it over HTTPS; otherwise `lax`.
+Today's cookie takes `secure` and `sameSite` from the site URL; this follows
+the admin URL, which is where the cookie lives. Not `__Host-`: that needs
+`Path=/`, which would send the admin session with every frontend request. The
+two engines' values are not interchangeable either way, so the name carries no
+compatibility.
 
 ### 5.3 Error mapping
 

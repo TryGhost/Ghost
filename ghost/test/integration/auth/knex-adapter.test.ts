@@ -9,12 +9,12 @@ import {
 } from '@better-auth/test-utils/adapter';
 import type { BetterAuthOptions } from 'better-auth/types';
 import { getAuthTables } from 'better-auth/db';
-import ObjectId from 'bson-objectid';
 import knex, { type Knex } from 'knex';
 import config from '../../../core/shared/config';
 import { configure, type DatabaseConfig } from '../../../core/server/data/db/configure-knex';
 import { createKnexAdapter } from '../../../core/server/auth/better-auth/knex-adapter';
 import {
+  generateGhostId,
   ghostCreateDefaults,
   ghostModelOptions,
   ghostVirtualColumns,
@@ -126,6 +126,10 @@ function lane(name: string, { ghostUsers }: { ghostUsers: boolean }) {
         fields: { ...mapping.fields, ...current?.fields },
       };
     }
+    // ObjectIds, as the instance generates them, unless a test sets its own
+    merged.advanced = {
+      database: { generateId: opts.advanced?.database?.generateId ?? generateGhostId },
+    };
     return merged as BetterAuthOptions;
   };
 
@@ -185,7 +189,7 @@ function lane(name: string, { ghostUsers }: { ghostUsers: boolean }) {
       }),
     runMigrations,
     overrideBetterAuthOptions: withGhostModels,
-    customIdGenerator: () => new ObjectId().toHexString(),
+    customIdGenerator: generateGhostId,
     prefixTests: name,
     tests: [
       normalTestSuite({ disableTests: ghostUsers ? ghostUsersSkips : {} }),

@@ -3,11 +3,46 @@
 Staff authentication on [Better Auth](https://www.better-auth.com), behind the
 `auth:engine` config key. See the
 [migration plan](../../../../../docs/plans/better-auth-migration.md)
-for the design. Only the credential seeder below runs at boot.
+for the design.
+
+## Engine
+
+`auth:engine` is `legacy` (default) or `better-auth`. Under `legacy` boot never
+loads Better Auth or reads its tables, so Ghost runs without them. Under
+`better-auth` boot builds the instance after settings and refuses to start on
+SQLite or where in-development tables are off (`createInDevelopmentTables`
+outside development and testing). Boot creates those tables before it builds
+the instance, so the check reads config rather than the database; it becomes a
+real table check, or goes away, when the tables get a migration. Nothing
+mounts its handler yet.
+
+- `create-auth.ts`: `createAuth()` builds the instance with Ghost's options
+  (plan §3.1) from injected dependencies; `assertDatabaseSupported()` is the
+  boot check above.
+- `index.ts`: the boot-owned service root, exposed as `auth.betterAuth`. Boot
+  calls `init()`; consumers read `.service`.
+
+Ghost mounts at the subdirectory, so on a subdirectory install requests reach
+Better Auth as `/blog/ghost/api/admin/auth/...`. `basePath` therefore carries
+the subdirectory, and `baseURL` is the admin origin only, because Better Auth
+ignores `basePath` when `baseURL` has a path.
+
+The session cookie is `ghost-admin-api-session` with the legacy path and
+`httpOnly`. When the admin URL is HTTPS, `useSecureCookies` makes it `Secure`
+and names it `__Secure-ghost-admin-api-session`, so a browser only accepts it
+over HTTPS, and `sameSite` is `none`; otherwise it is `lax`. Unlike the legacy
+cookie this follows the admin URL rather than the site URL, since the cookie
+lives on the admin origin: an HTTPS site with an HTTP admin URL still gets a
+cookie the browser accepts. It is not `__Host-`, which would need `Path=/` and
+send the admin session with every frontend request. Its `maxAge` is Better
+Auth's, in seconds, from `expiresIn`. The auth frame (`web/admin/app.js`)
+accepts either name.
 
 - `knex-adapter.ts`: a Better Auth database adapter over a Knex instance. It
   imports nothing from Ghost, so it can become a package later. Ghost
-  migrations own the DDL, so there is no `createSchema`.
+  migrations own the DDL, so there is no `createSchema`. It generates no ids:
+  it needs `advanced.database.generateId`, and Ghost passes `generateGhostId`
+  (ObjectIds) from `ghost-models.ts`.
 - `ghost-models.ts`: maps Better Auth's `user`, `session`, `account` and
   `verification` models onto `users`, `user_sessions`, `user_accounts` and
   `verifications`, plus the `users` gaps described below.
