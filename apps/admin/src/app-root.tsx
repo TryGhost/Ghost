@@ -14,6 +14,7 @@ import { ScreenTransitionProvider } from './layout/screen-transition-provider';
 import { RouteError } from './route-error';
 import { routes } from './routes.tsx';
 import { installSidePanelApi } from './layout/side-panel/side-panel-api';
+import { captureDeliveredSecureKey } from './settings/api';
 import { SiteTimezoneSync } from './shared/analytics/site-timezone-sync';
 import { useThemeContext } from './providers/theme-context';
 import { ThemeProvider } from './providers/theme-provider';
@@ -63,6 +64,8 @@ function ThemedAdminApp() {
  * client) differ between the two.
  */
 export function AdminAppRoot({ framework }: { framework: TopLevelFrameworkProps }) {
+  // Before the router and Sentry see the address: it may carry a Stripe key.
+  captureDeliveredSecureKey();
   return (
     <StrictMode>
       <FrameworkProvider {...framework}>

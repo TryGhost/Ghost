@@ -8,7 +8,9 @@ import {
   fakeAdminEndpoint,
   fakeEndpoint,
   fakeMembers,
+  fakeSettingsScreens,
   fakeTags,
+  fakeTiers,
   member,
   renderAdminApp,
   settleRequests,
@@ -100,6 +102,24 @@ describe('Sentry', () => {
         user: { role: 'Owner' },
         tags: { route: '/tags', shown_to_user: false },
       });
+  });
+
+  it('never reports a Stripe secure key delivered in the address', async () => {
+    fakeSettingsScreens();
+    fakeTiers([]);
+    fakeAdminEndpoint('PUT', '/settings/', {}, { status: 400 });
+    const ingest = fakeEndpoint('POST', ENVELOPE_URL, {});
+    const key = 'SECUREKEYMARKER0123456789';
+
+    await renderAdminApp(`/settings/stripe-connect?secure_key=${key}`, { boot: sentryBoot() });
+    await expect
+      .poll(() => envelopeItems(ingest).some(({ type }) => type === 'session'))
+      .toBe(true);
+    await settleRequests();
+    Sentry.captureMessage('Acceptance probe');
+
+    await expect.poll(() => envelopeItems(ingest).some(({ type }) => type === 'event')).toBe(true);
+    expect(ingest.requests.some(({ body }) => String(body).includes(key))).toBe(false);
   });
 
   it('reports an automatic reload after code failed to load as a warning of its own', async () => {
