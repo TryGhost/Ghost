@@ -21,6 +21,7 @@ import {
   tooLargeMessage,
 } from './limits.ts';
 import type { ManifestError, SignedManifest } from './types.ts';
+import { messageOf } from './errors.ts';
 
 /** The readable manifest a project keeps, which the tooling signs. */
 export const MANIFEST_FILE = 'ghost-app.json';
@@ -142,7 +143,7 @@ export async function readManifestSource(file: string): Promise<unknown> {
   try {
     return parseJsonText(text);
   } catch (error) {
-    throw new Error(`${file} isn't JSON: ${(error as Error).message}`, { cause: error });
+    throw new Error(`${file} isn't JSON: ${messageOf(error)}`, { cause: error });
   }
 }
 

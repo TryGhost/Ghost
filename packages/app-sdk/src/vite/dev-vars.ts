@@ -13,6 +13,7 @@ import {
   readBackendKey,
   type PrivateKeyJwk,
 } from '../tooling/keys.ts';
+import { isErrnoException } from '../tooling/errors.ts';
 
 const WRANGLER_CONFIGS = ['wrangler.json', 'wrangler.jsonc', 'wrangler.toml'];
 
@@ -51,7 +52,7 @@ async function readDotenv(file: string): Promise<{ text: string; value?: string 
   try {
     text = await readFile(file, 'utf8');
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+    if (isErrnoException(error) && error.code === 'ENOENT') {
       return undefined;
     }
     throw error;
@@ -184,7 +185,7 @@ export async function provideDevBackendKey(
       await link(join(root, pending), file);
     } catch (error) {
       // Another dev server created it first: what it holds now decides, once.
-      if ((error as NodeJS.ErrnoException).code === 'EEXIST' && !retried) {
+      if (isErrnoException(error) && error.code === 'EEXIST' && !retried) {
         return provideDevBackendKey(root, { retried: true, cloudflareEnv });
       }
       throw error;

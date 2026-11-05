@@ -35,6 +35,7 @@ import { MANIFEST_FILE, serialiseSigned, signProject } from '../tooling/sign.ts'
 import { DENY, VITE_DEFAULT_DENY } from './deny.ts';
 import { provideDevBackendKey } from './dev-vars.ts';
 import { checkEnv } from './env.ts';
+import { messageOf } from '../tooling/errors.ts';
 
 // The modes whose keys `.ghost-app/` holds, from a record of every `Mode`, so a mode added later
 // is a type error here until its keys are protected too.
@@ -404,7 +405,7 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
         serveManifest(server, req, res).catch((error: unknown) => {
           // The detail, such as a path on this machine, goes to the terminal, not to whoever
           // asked, who may be anyone reaching a tunnel.
-          config.logger.error(`ghost-app: ${(error as Error).message}`, { timestamp: true });
+          config.logger.error(`ghost-app: ${messageOf(error)}`, { timestamp: true });
           if (!res.headersSent) {
             res.statusCode = 500;
             res.setHeader('content-type', 'text/plain; charset=utf-8');
@@ -469,7 +470,7 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
           manifestFile,
         });
       } catch (error) {
-        this.error(`ghost-app: ${(error as Error).message}`);
+        this.error(`ghost-app: ${messageOf(error)}`);
       }
       if (!result.success) {
         this.error(

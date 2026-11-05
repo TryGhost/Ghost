@@ -7,6 +7,7 @@ import { PrivateKeyJwkSchema, type PrivateKeyJwk } from '@tryghost/app-contracts
 import type { PublicKeyJwk } from '@tryghost/app-contracts/manifest';
 
 import { isGitIgnored } from './git.ts';
+import { isErrnoException } from './errors.ts';
 
 /**
  * Which keys to use. Development and production have separate identity keys, so an app
@@ -119,7 +120,7 @@ async function readKeyFile(root: string, mode: Mode, name: KeyName): Promise<Pri
   try {
     text = await readFile(join(root, file), 'utf8');
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+    if (!isErrnoException(error) || error.code !== 'ENOENT') {
       throw error;
     }
     throw new Error(missingKeyMessage(mode, name, file), { cause: error });
@@ -197,7 +198,7 @@ async function publishKey(file: string, pending: string): Promise<boolean> {
     await link(pending, file);
     return true;
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
+    if (!isErrnoException(error) || error.code !== 'EEXIST') {
       throw error;
     }
     // Kept, but only for its owner, as a key written by hand or copied in may not be.
