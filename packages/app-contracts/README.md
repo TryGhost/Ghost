@@ -284,7 +284,8 @@ SDK checks an app by the same ones before Ghost does:
 - `SIGNED_MANIFEST_MAX_BYTES` for a signed manifest, `MANIFEST_MAX_BYTES` for
   the manifest as Ghost stores it, with its paths resolved, and
   `ANSWER_MAX_BYTES` for an answer to a challenge;
-- JSON that may start with a byte order mark (`parseJsonText`);
+- a manifest's JSON, which may start with a byte order mark (`parseJsonText`),
+  unlike an answer to a challenge;
 - the codes Ghost refuses an app with, and its message for each
   (`APP_LOAD_MESSAGES`). A manifest's problems are listed as `path: message`
   (`formatManifestErrors`, from `./manifest`).

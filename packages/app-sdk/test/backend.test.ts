@@ -1,7 +1,11 @@
 // @vitest-environment node
 import { generateKeyPairSync } from 'node:crypto';
 
-import { createChallenge, verifyChallengeAnswer } from '@tryghost/app-contracts/identity';
+import {
+  createChallenge,
+  signManifest,
+  verifyChallengeAnswer,
+} from '@tryghost/app-contracts/identity';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -238,28 +242,39 @@ describe('withGhostApp', () => {
   });
 });
 
-describe('serveManifest', () => {
-  const signed = { protected: 'p', payload: 'q', signature: 's' };
+// A real signed manifest, as the tests' cases are built from it.
+const signed = await signManifest(
+  '{"id":"com.example.hello"}',
+  generateKeyPairSync('ed25519').privateKey,
+);
 
+describe('serveManifest', () => {
   it.each([
     ['an object', signed, JSON.stringify(signed)],
+    // JSON leaves out a member that is undefined, so what's served is a signed manifest.
+    [
+      'an object with a member that is undefined',
+      { ...signed, header: undefined },
+      JSON.stringify(signed),
+    ],
     ['text, exactly as it is', ' {"protected":"p"}\n', ' {"protected":"p"}\n'],
   ])('serves %s as JSON that caches revalidate', async (_name, input, body) => {
-    const response = serveManifest(input);
+    const response = serveManifest(input as SignedManifest | string);
     expect(response.headers.get('content-type')).toBe('application/json; charset=utf-8');
     expect(response.headers.get('cache-control')).toBe('no-cache');
     expect(await response.text()).toBe(body);
   });
 
   it.each([
-    ['a member missing', { protected: 'p', payload: 'q' }],
+    ['a member missing', { protected: signed.protected, payload: signed.payload }],
     ['another member', { ...signed, header: {} }],
     ['a member that is not text', { ...signed, signature: 1 }],
+    ['another protected header', { ...signed, protected: 'eyJhbGciOiJub25lIn0' }],
+    ['a payload that is not base64url', { ...signed, payload: '!!' }],
   ])('refuses an object with %s, which Ghost would', (_name, input) => {
+    expect(() => serveManifest(input as unknown as SignedManifest)).toThrow(TypeError);
     expect(() => serveManifest(input as unknown as SignedManifest)).toThrow(
-      new TypeError(
-        'Expected a signed manifest, with only protected, payload and signature, or its text',
-      ),
+      'Expected a signed manifest, or its text.',
     );
   });
 });

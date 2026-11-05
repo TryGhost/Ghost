@@ -374,7 +374,7 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
       }
       appUrl = await readEnv(resolved.mode, resolved.envDir, 'GHOST_APP_URL');
       // Only the dev server prints an install link.
-      if (resolved.command === 'serve') {
+      if (resolved.command === 'serve' && !preview) {
         const ghost = checkEnv(
           'GHOST_URL',
           await readEnv(resolved.mode, resolved.envDir, 'GHOST_URL'),
