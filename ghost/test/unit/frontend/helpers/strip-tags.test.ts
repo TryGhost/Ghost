@@ -38,6 +38,14 @@ describe('{{strip_tags}} helper', function () {
       assert.equal(inline('<span>hello</span>there'), 'hello there');
     });
 
+    it('replaces an unmatched closing tag with a single space', function () {
+      assert.equal(inline('hello</span>world'), 'hello world');
+    });
+
+    it('replaces an unmatched closing tag inside an element with a single space', function () {
+      assert.equal(inline('<p>hello</span>world</p>'), 'hello world');
+    });
+
     it('does not double up spaces when tags are already separated by whitespace', function () {
       assert.equal(inline('<b>Hello</b> <i>there</i>'), 'Hello there');
     });

@@ -56,7 +56,10 @@ function stripTags(input: unknown): string {
     return '';
   }
 
-  const $ = load(html, null, false);
+  // The parser silently drops tags it cannot place, such as an unmatched closing tag, and merges the
+  // text on either side into one node. Put a space in front of every tag first so a dropped tag still
+  // leaves a word boundary. The extra whitespace collapses below.
+  const $ = load(html.replace(/</g, ' <'), null, false);
   const root = $.root()[0] as unknown as { children: DomNode[] };
   const parts: string[] = [];
   collectText(root.children, parts);
