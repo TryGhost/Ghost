@@ -67,7 +67,6 @@ describe('Custom field outcomes', function () {
   });
 
   beforeEach(function () {
-    mockManager.mockLabsEnabled('membersCustomFields');
     metrics = mockManager.mockMetrics();
   });
 

@@ -846,7 +846,6 @@ describe('Create Stripe Checkout Session', function () {
     beforeEach(async function () {
       mockManager.mockStripe();
       mockManager.mockLabsEnabled('stripeCheckoutCollection');
-      mockManager.mockLabsEnabled('membersCustomFields');
       await createShippingFields();
       const {
         body: { tiers },
@@ -919,7 +918,6 @@ describe('Create Stripe Checkout Session', function () {
     beforeEach(async function () {
       mockManager.mockStripe();
       mockManager.mockLabsEnabled('stripeCheckoutCollection');
-      mockManager.mockLabsEnabled('membersCustomFields');
       await adminAgent
         .post('/members/metafields/custom/')
         .body({ members_metafields: [{ name: 'Contact phone', type: 'short_text' }] })
@@ -1044,7 +1042,6 @@ describe('Create Stripe Checkout Session', function () {
 
     // Asks for a shipping address on every paid tier, saved into custom fields made for it.
     async function collectShipping() {
-      mockManager.mockLabsEnabled('membersCustomFields');
       await createShippingFields();
       await adminAgent
         .put('/stripe/checkout/config/')

@@ -5,6 +5,7 @@ const {
   agentProvider,
   fixtureManager,
   mockManager,
+  configUtils,
   hostLimits,
 } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
@@ -65,10 +66,6 @@ describe('List custom fields', function () {
     agent = await agentProvider.getAdminAPIAgent();
     await fixtureManager.init('users');
     await agent.loginAsOwner();
-  });
-
-  beforeEach(function () {
-    mockManager.mockLabsEnabled('membersCustomFields');
   });
 
   afterEach(async function () {
@@ -472,9 +469,13 @@ describe('List custom fields', function () {
     it('is read while the flag is off', async function () {
       const field = await createList(ANIMALS);
       await setValues(await createMember(), { [field.key]: ['Cat'] });
-      mockManager.mockLabsDisabled('membersCustomFields');
+      configUtils.set('labs', { membersCustomFields: false });
 
-      assert.deepEqual(await heldValues(field.key), ['Cat']);
+      try {
+        assert.deepEqual(await heldValues(field.key), ['Cat']);
+      } finally {
+        await configUtils.restore();
+      }
     });
 
     it('is not found for an archived field, or for any field while the host switches custom fields off', async function () {
