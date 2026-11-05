@@ -11,8 +11,13 @@ interface ActionOf<K extends ActionKind> {
   /** What happened, in words, when the event alone doesn't say it, such as "reset". */
   actionName?: string;
   /** Anything else stored with the action, such as a field's key. */
-  context?: Record<string, unknown>;
+  context?: ExtraContext;
 }
+
+/** The context keys the row's own fields are stored under, which extra context can't replace. */
+type ReservedKey = 'primary_name' | 'action_name' | 'count';
+
+type ExtraContext = Record<string, unknown> & { [key in ReservedKey]?: never };
 
 /**
  * A change to one resource. The name is stored with the action, so the history still reads
@@ -115,9 +120,20 @@ function isDeadlock(err: unknown): boolean {
 function contextOf(row: ActionRow): string | null {
   const context = {
     ...(row.primaryName === undefined ? {} : { primary_name: row.primaryName }),
-    ...row.context,
+    ...withoutReservedKeys(row.context),
     ...(row.actionName === undefined ? {} : { action_name: row.actionName }),
     ...(row.count === undefined ? {} : { count: row.count }),
   };
   return Object.keys(context).length ? JSON.stringify(context) : null;
+}
+
+const RESERVED_KEYS: ReadonlySet<string> = new Set<ReservedKey>([
+  'primary_name',
+  'action_name',
+  'count',
+]);
+
+// The type already rules these out; this keeps an untyped caller from replacing them too.
+function withoutReservedKeys(context: ExtraContext = {}): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(context).filter(([key]) => !RESERVED_KEYS.has(key)));
 }

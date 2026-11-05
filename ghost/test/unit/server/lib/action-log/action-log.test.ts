@@ -91,6 +91,21 @@ describe('Unit: lib/action-log/action-log', function () {
     );
   });
 
+  it("doesn't let extra context replace the fields the row names", async function () {
+    await actionLog.record(knex, ACTING, {
+      resourceType: 'member_custom_field',
+      event: 'edited',
+      resourceId: POST_ID,
+      primaryName: 'Company',
+      context: { key: 'company', primary_name: 'Employer', action_name: 'x', count: 2 } as {
+        key: string;
+      },
+    });
+
+    const [row] = await knex('actions').select();
+    assert.equal(row.context, JSON.stringify({ primary_name: 'Company', key: 'company' }));
+  });
+
   it('stores a bulk change without a resource', async function () {
     await actionLog.record(knex, ACTING, {
       resourceType: 'member_custom_field',
@@ -305,5 +320,14 @@ export function rejectedAtCompileTime(actionLog: ActionLog, knex: Knex) {
     event: 'deleted',
     resourceId: null,
     primaryName: 'A post',
+  });
+
+  void actionLog.record(knex, ACTING, {
+    resourceType: 'gift_link',
+    event: 'added',
+    resourceId: POST_ID,
+    primaryName: 'A post',
+    // @ts-expect-error Extra context can't replace the name.
+    context: { primary_name: 'Another post' },
   });
 }
