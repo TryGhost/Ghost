@@ -299,8 +299,8 @@ Each mode has its own identity key and backend key, as two pairs of private
 Ed25519 JWKs, in files only their owner can read:
 
 - `.ghost-app/development/identity.json` and `backend.json`, for `vite dev`
-  and apps on this machine, such as on `my-app.localhost`, which the Vite plugin
-  creates on its first run;
+  and apps on this machine, such as on `my-app.localhost`, which `ghost-app keys`
+  or the Vite plugin's first run creates;
 - `.ghost-app/production/identity.json` and `backend.json`, which only
   `ghost-app keys --production` creates.
 
@@ -348,6 +348,12 @@ own under `.localhost`, from the last part of its ID, such as
 `org.ghost.hello-world`, as Ghost on `localhost` refuses an app on its own host
 on any port. It prints the install link too, for `GHOST_URL` or
 `http://localhost:2368`.
+
+The dev server is for development only. The plugin adds `.ghost-app/`,
+`.dev.vars*`, `.env` and `.env.*` to Vite's `server.fs.deny`, and refuses to start with
+`server.fs.strict` off, which would make Vite skip that list. Like Vite's own
+`.env` protection, the list matches files by name: a link or alias you make to
+the keys elsewhere in the project is served like any other file.
 
 In a Cloudflare Workers project (one with a `wrangler.json`, `wrangler.jsonc`
 or `wrangler.toml`), it adds `GHOST_APP_BACKEND_KEY` to `.dev.vars` with the

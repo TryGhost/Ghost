@@ -37,7 +37,7 @@ import {
 } from '../src/tooling/index.ts';
 import { VITE_DEFAULT_DENY } from '../src/vite/deny.ts';
 import { ghostApp, type GhostAppOptions } from '../src/vite/index.ts';
-import { git, makeProject, readAsGhost } from './helpers.ts';
+import { SOURCE, git, makeProject, readAsGhost } from './helpers.ts';
 
 let root: string;
 let cleanup: () => Promise<void>;
@@ -267,6 +267,15 @@ describe('vite dev', () => {
     );
   });
 
+  it('prints the name from an ID in a manifest that starts with a byte order mark', async () => {
+    const { port, logger } = await startDevServer();
+    await writeFile(join(root, 'ghost-app.json'), `\uFEFF${JSON.stringify(SOURCE)}`);
+    server!.printUrls();
+    expect(logger.messages.map(({ text }) => text).join('\n')).toContain(
+      `Ghost app: http://hello.localhost:${port}/ghost-app.json`,
+    );
+  });
+
   it.each([
     ['names no valid ID', '{"id":"Not an ID"}'],
     ['is not JSON', 'not JSON'],
@@ -284,8 +293,12 @@ describe('vite dev', () => {
     await rm(join(root, 'ghost-app.json'));
     const response = await get(port, `hello.localhost:${port}`);
     expect(response.status).toBe(500);
-    expect(response.body).toContain('ENOENT');
-    expect(logger.messages.some(({ level }) => level === 'error')).toBe(true);
+    // The detail, with a path on this machine, goes to the terminal only.
+    expect(response.body).not.toContain('ENOENT');
+    expect(response.body).toContain("ghost-app.json couldn't be signed");
+    expect(
+      logger.messages.some(({ level, text }) => level === 'error' && text.includes('ENOENT')),
+    ).toBe(true);
   });
 
   describe('never serves a private key as a file', () => {
@@ -338,9 +351,16 @@ describe('vite dev', () => {
         worker: false,
         serverOptions: { fs: { deny: ['secret.txt'] } },
       });
-      for (const path of ['/secret.txt', '/.ghost-app/production/identity.json']) {
+      // `.env` too, which the project's list leaves out, as the plugin may put the key there.
+      for (const path of ['/secret.txt', '/.ghost-app/production/identity.json', '/.env']) {
         expect((await get(own.port, `localhost:${own.port}`, path)).status).toBe(403);
       }
+    });
+
+    it('refuses to start with server.fs.strict off, which would serve every file', async () => {
+      await expect(
+        startDevServer(undefined, { worker: false, serverOptions: { fs: { strict: false } } }),
+      ).rejects.toThrow('server.fs.strict is false');
     });
   });
 
