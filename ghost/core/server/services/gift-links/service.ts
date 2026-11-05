@@ -3,7 +3,7 @@ import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { GiftLinkRow, giftLinkCodec, giftLinkColumns } from './codec';
 import { generateGiftLinkToken, type GiftLink, type Post } from './models';
-import type { ActionChange, KindLog } from '../../lib/action-log/action-log';
+import type { ActionChange, ResourceActionLog } from '../../lib/action-log/action-log';
 import type { RequestContext } from '../../lib/actor';
 import type { giftLinkActions } from './actions';
 
@@ -19,9 +19,15 @@ const PostTitle = z.object({ post_title: z.string() });
 
 export class GiftLinksService {
   private knex: Knex;
-  private actionLog: KindLog<typeof giftLinkActions>;
+  private actionLog: ResourceActionLog<typeof giftLinkActions>;
 
-  constructor({ knex, actionLog }: { knex: Knex; actionLog: KindLog<typeof giftLinkActions> }) {
+  constructor({
+    knex,
+    actionLog,
+  }: {
+    knex: Knex;
+    actionLog: ResourceActionLog<typeof giftLinkActions>;
+  }) {
     this.knex = knex;
     this.actionLog = actionLog;
   }

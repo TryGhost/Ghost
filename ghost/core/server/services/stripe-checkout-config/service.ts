@@ -15,7 +15,7 @@ import {
 import { snakeKeys } from '../../lib/case-keys';
 import { toDatabaseDate } from '../../lib/db-types/date';
 import type { RequestContext } from '../../lib/actor';
-import type { KindLog } from '../../lib/action-log/action-log';
+import type { ResourceActionLog } from '../../lib/action-log/action-log';
 import type { stripeCheckoutConfigActions } from './actions';
 import { configRow, type ConfigRowSchema, type TierScope } from './codec';
 import {
@@ -256,7 +256,7 @@ type FieldReads = Pick<FieldSource, 'table' | 'locked'>;
 /** Reads and saves the site-wide Stripe Checkout config. */
 export class StripeCheckoutConfigService {
   private knex: Knex;
-  private actionLog: KindLog<typeof stripeCheckoutConfigActions>;
+  private actionLog: ResourceActionLog<typeof stripeCheckoutConfigActions>;
   private bindings: PortBinder;
   private fields: FieldReads;
   private configRow: ConfigRowSchema;
@@ -269,7 +269,7 @@ export class StripeCheckoutConfigService {
     logging,
   }: {
     knex: Knex;
-    actionLog: KindLog<typeof stripeCheckoutConfigActions>;
+    actionLog: ResourceActionLog<typeof stripeCheckoutConfigActions>;
     bindings: PortBinder;
     fields: FieldReads;
     logging: GhostLogger;

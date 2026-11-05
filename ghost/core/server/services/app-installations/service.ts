@@ -1,7 +1,7 @@
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
-import type { ActionRow, KindLog } from '../../lib/action-log/action-log';
+import type { ActionRow, ResourceActionLog } from '../../lib/action-log/action-log';
 import type { RequestContext } from '../../lib/actor';
 import {
   alreadyInstalled,
@@ -160,7 +160,7 @@ function appAction(
 export class AppInstallationsService {
   private knex: Knex;
   private repository: AppInstallationsRepository;
-  private actionLog: KindLog<typeof appInstallationActions>;
+  private actionLog: ResourceActionLog<typeof appInstallationActions>;
   private loadManifest: LoadManifest;
   private identity: IdentityChecker;
   private fetchIcon: FetchIcon;
@@ -175,7 +175,7 @@ export class AppInstallationsService {
     fetchIcon,
   }: {
     knex: Knex;
-    actionLog: KindLog<typeof appInstallationActions>;
+    actionLog: ResourceActionLog<typeof appInstallationActions>;
     loadManifest: LoadManifest;
     identity: IdentityChecker;
     fetchIcon: FetchIcon;

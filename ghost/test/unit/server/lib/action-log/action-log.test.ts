@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import createKnex, { type Knex } from 'knex';
-import { ActionLog, type KindLog } from '../../../../../core/server/lib/action-log/action-log';
+import {
+  ActionLog,
+  type ResourceActionLog,
+} from '../../../../../core/server/lib/action-log/action-log';
 import { appInstallationActions } from '../../../../../core/server/services/app-installations/actions';
 import { giftLinkActions } from '../../../../../core/server/services/gift-links/actions';
 import { customFieldActions } from '../../../../../core/server/services/members-metafields/actions';
@@ -40,10 +43,10 @@ async function createDatabase({ withActions = true } = {}): Promise<Knex> {
 describe('Unit: lib/action-log/action-log', function () {
   let knex: Knex;
   let logging: ReturnType<typeof createLoggingFake>;
-  let giftLinks: KindLog<typeof giftLinkActions>;
-  let customFields: KindLog<typeof customFieldActions>;
-  let appInstallations: KindLog<typeof appInstallationActions>;
-  let stripeCheckoutConfig: KindLog<typeof stripeCheckoutConfigActions>;
+  let giftLinks: ResourceActionLog<typeof giftLinkActions>;
+  let customFields: ResourceActionLog<typeof customFieldActions>;
+  let appInstallations: ResourceActionLog<typeof appInstallationActions>;
+  let stripeCheckoutConfig: ResourceActionLog<typeof stripeCheckoutConfigActions>;
 
   beforeEach(async function () {
     knex = await createDatabase();
@@ -242,8 +245,8 @@ describe('Unit: lib/action-log/action-log', function () {
 
 // Checked by the compiler rather than run: a mistake in an action fails to compile.
 export function rejectedAtCompileTime(
-  giftLinks: KindLog<typeof giftLinkActions>,
-  customFields: KindLog<typeof customFieldActions>,
+  giftLinks: ResourceActionLog<typeof giftLinkActions>,
+  customFields: ResourceActionLog<typeof customFieldActions>,
   knex: Knex,
 ) {
   void giftLinks.record(knex, ACTING, {

@@ -87,24 +87,24 @@ export class ActionLog {
   }
 
   /**
-   * A writer for one kind's actions. It also gives the `Action` model a read model for the
-   * kind's table, so call it at boot.
+   * The action log for one kind's resource type. It also gives the `Action` model a read model
+   * for the kind's table, so call it at boot.
    */
-  for<K extends ActionKind>(kind: K): KindLog<K> {
+  for<K extends ActionKind>(kind: K): ResourceActionLog<K> {
     register(kind);
-    return new KindLog(kind, this.logging);
+    return new ResourceActionLog(kind, this.logging);
   }
 }
 
 /**
- * Logs one kind's actions.
+ * Logs the actions on one resource type, as its kind declares them.
  *
  * Call it from the command that makes the change, with the command's transaction where it has
  * one, so the action is only kept if the change is. Inside a transaction the action is part of
  * the change: a failed write fails the command, and its change rolls back. Outside one, logging
  * is best-effort: a failed write is logged and the change stands.
  */
-export class KindLog<K extends ActionKind> {
+export class ResourceActionLog<K extends ActionKind> {
   private kind: K;
   private logging: Pick<GhostLogger, 'error'>;
 
