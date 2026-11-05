@@ -414,7 +414,7 @@ const GlobalSettings: React.FC<{
           >
             <SelectTrigger
               aria-label="Heading font"
-              className={`h-16 pl-2 text-left [&>span]:line-clamp-none ${selectFont(selectedHeadingFont.label, true)}`}
+              className={`h-16 pl-2 text-left [&>span]:line-clamp-none [&>span]:min-w-0 ${selectFont(selectedHeadingFont.label, true)}`}
               data-testid="heading-font-select"
             >
               <SelectValue>
@@ -449,7 +449,7 @@ const GlobalSettings: React.FC<{
           >
             <SelectTrigger
               aria-label="Body font"
-              className={`h-16 pl-2 text-left [&>span]:line-clamp-none ${selectFont(selectedBodyFont.label, false)}`}
+              className={`h-16 pl-2 text-left [&>span]:line-clamp-none [&>span]:min-w-0 ${selectFont(selectedBodyFont.label, false)}`}
               data-testid="body-font-select"
             >
               <SelectValue>
