@@ -121,7 +121,10 @@ describe('Exporter', function () {
       'tags',
       'tinybird_syncs',
       'tokens',
+      'user_accounts',
+      'user_sessions',
       'users',
+      'verifications',
       'webhooks',
       'welcome_email_automated_emails',
       'welcome_email_automation_runs',
@@ -144,6 +147,9 @@ describe('Exporter', function () {
     // excludes table should contain no data
     const excludedTables = [
       'sessions',
+      'user_accounts',
+      'user_sessions',
+      'verifications',
       'mobiledoc_revisions',
       'post_revisions',
       'email_batches',
