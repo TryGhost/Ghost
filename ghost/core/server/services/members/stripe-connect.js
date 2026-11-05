@@ -14,7 +14,9 @@ const STATE_PROP = 'stripe-connect-state';
 
 const liveClientID = 'ca_8LBuZWhYshxF0A55KgCXu8PRTquCKC5x';
 const testClientID = 'ca_8LBum4Ctv3mmJ1oD0ZRmxjdAhNrrBUy3';
-const redirectURI = 'https://stripe.ghost.org';
+// account.ghost.org's Connect page, which delivers the secure key to this
+// site's Ghost Admin. Older Ghost versions send users to stripe.ghost.org.
+const redirectURI = 'https://account.ghost.org/oauth/stripe';
 
 /**
  * @function getStripeConnectOAuthUrl
@@ -32,6 +34,9 @@ async function getStripeConnectOAuthUrl(setSessionProp, mode = 'live') {
     JSON.stringify({
       mode,
       randomState,
+      // Lets account.ghost.org offer this site among the user's saved sites.
+      // The user still confirms the site there.
+      site: urlUtils.getSiteUrl(),
     }),
   ).toString('base64');
 

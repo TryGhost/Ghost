@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../utils/assertions');
 const stripeConnect = require('../../../../../core/server/services/members/stripe-connect');
+const urlUtils = require('../../../../../core/shared/url-utils').default;
 
 describe('Members - Stripe Connect', function () {
   it('getStripeConnectOAuthUrl returns the correct url and sets the necessary state on session and url', async function () {
@@ -20,6 +21,18 @@ describe('Members - Stripe Connect', function () {
     assert.equal(url.searchParams.get('response_type'), 'code');
     assert.equal(url.searchParams.get('scope'), 'read_write');
     assert.equal(url.searchParams.get('state'), session.get(stripeConnect.STATE_PROP));
+  });
+
+  it('getStripeConnectOAuthUrl returns to account.ghost.org, naming the site in the state', async function () {
+    const session = new Map();
+    const url = await stripeConnect.getStripeConnectOAuthUrl(session.set.bind(session), 'test');
+
+    const state = JSON.parse(Buffer.from(url.searchParams.get('state'), 'base64').toString());
+
+    assert.equal(state.mode, 'test');
+    assert.match(state.randomState, /^[0-9a-f]{32}$/);
+    assert.equal(state.site, urlUtils.getSiteUrl());
+    assert.equal(url.searchParams.get('redirect_uri'), 'https://account.ghost.org/oauth/stripe');
   });
 
   it('getStripeConnectTokenData returns token data when the state is correct', async function () {

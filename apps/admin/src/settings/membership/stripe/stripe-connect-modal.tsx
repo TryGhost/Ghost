@@ -1,7 +1,7 @@
 import BookmarkThumb from '@/settings/assets/images/stripe-thumb.jpg';
 import GhostLogo from '@/settings/assets/images/orb-squircle.png';
 import GhostLogoPink from '@/settings/assets/images/orb-pink.png';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import StripeButton from '@/settings/components/stripe-button';
 import StripeLogo from '@/settings/assets/images/stripe-emblem.svg';
 import StripeVerifiedBadge from '@/settings/assets/images/stripe-verified.svg';
@@ -9,13 +9,11 @@ import useSettingGroup from '@/settings/hooks/use-setting-group';
 import {
   Button,
   Field,
-  FieldError,
   FieldGroup,
   FieldLabel,
   Input,
   Link,
   Switch,
-  Textarea,
 } from '@tryghost/shade/components';
 import { HostLimitError, JSONError } from '@tryghost/admin-x-framework/errors';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -38,6 +36,7 @@ import { useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 import { navigateTo } from '@/utils/navigation';
+import { deliveredSecureKey, forgetDeliveredSecureKey } from './delivered-secure-key';
 
 const RETRY_PRODUCT_SAVE_POLL_LENGTH = 1000;
 const RETRY_PRODUCT_SAVE_MAX_POLL = 15 * RETRY_PRODUCT_SAVE_POLL_LENGTH;
@@ -64,12 +63,11 @@ const Start: React.FC<{ onNext?: () => void }> = ({ onNext }) => {
   );
 };
 
-const Connect: React.FC = () => {
-  const [submitEnabled, setSubmitEnabled] = useState(false);
-  const [token, setToken] = useState('');
-  const [testMode, setTestMode] = useState(false);
-  const [error, setError] = useState('');
-
+/**
+ * Saves the secure key account.ghost.org delivers, then sets up the default
+ * prices and Portal plans. Resolves to an error to show, or '' on success.
+ */
+const useSaveStripeConnection = () => {
   const { refetch: fetchActiveTiers } = useBrowseTiers({
     searchParams: { filter: 'type:paid+active:true' },
     enabled: false,
@@ -77,11 +75,6 @@ const Connect: React.FC = () => {
   const { mutateAsync: editTier } = useEditTier();
   const { mutateAsync: editSettings } = useEditSettings();
   const handleError = useHandleError();
-
-  const onTokenChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setToken(event.target.value);
-    setSubmitEnabled(Boolean(event.target.value));
-  };
 
   const saveTier = async () => {
     const { data } = await fetchActiveTiers();
@@ -116,31 +109,30 @@ const Connect: React.FC = () => {
     }
   };
 
-  const onSubmit = async () => {
-    setError('');
-
-    if (token) {
-      try {
-        await editSettings([{ key: 'stripe_connect_integration_token', value: token }]);
-
-        await saveTier();
-
-        await editSettings([
-          { key: 'portal_plans', value: JSON.stringify(['free', 'monthly', 'yearly']) },
-        ]);
-      } catch (e) {
-        if (e instanceof JSONError && e.data?.errors) {
-          setError('Invalid secure key');
-          return;
-        } else {
-          handleError(e);
-          return;
-        }
+  return async (secureKey: string) => {
+    try {
+      await editSettings([{ key: 'stripe_connect_integration_token', value: secureKey }]);
+    } catch (e) {
+      if (e instanceof JSONError && e.data?.errors) {
+        return 'Stripe couldn’t be connected. The connection may have expired or been started in another browser. Connect with Stripe to try again.';
       }
-    } else {
-      setError('Please enter a secure key');
+      handleError(e);
+      return 'Stripe couldn’t be connected. Connect with Stripe to try again.';
     }
+    await saveTier();
+    try {
+      await editSettings([
+        { key: 'portal_plans', value: JSON.stringify(['free', 'monthly', 'yearly']) },
+      ]);
+    } catch (e) {
+      handleError(e);
+    }
+    return '';
   };
+};
+
+const Connect: React.FC<{ error?: string }> = ({ error }) => {
+  const [testMode, setTestMode] = useState(false);
 
   const { apiRoot } = getGhostPaths();
   const stripeConnectUrl = `${apiRoot}/members/stripe_connect?mode=${testMode ? 'test' : 'live'}`;
@@ -166,35 +158,46 @@ const Connect: React.FC = () => {
           />
         </Field>
       </div>
-      <Text as="h6" className="text-base" tone="secondary" weight="semibold">
-        Step 1 — <span className="text-foreground">Generate secure key</span>
-      </Text>
-      <div className="mt-2 mb-4">
-        Click on the <strong>“Connect with Stripe”</strong> button to generate a secure key that
-        connects your Ghost site with Stripe.
-      </div>
-      <StripeButton href={stripeConnectUrl} target="_blank" />
-      <Text as="h6" className="mt-8 mb-2 text-base" tone="secondary" weight="semibold">
-        Step 2 — <span className="text-foreground">Paste secure key</span>
-      </Text>
-      <Field data-invalid={Boolean(error) || undefined}>
-        <FieldLabel className="sr-only" htmlFor="stripe-secure-key">
-          Secure key
-        </FieldLabel>
-        <Textarea
-          aria-invalid={Boolean(error) || undefined}
-          id="stripe-secure-key"
-          placeholder="Paste your secure key here"
-          onChange={onTokenChange}
-        />
-        {error && <FieldError>{error}</FieldError>}
-      </Field>
-      {submitEnabled && (
-        <Button className="mt-5" type="button" onClick={() => void onSubmit()}>
-          Save Stripe settings
-        </Button>
+      {error && (
+        <Text as="p" className="mb-4 text-red" role="alert">
+          {error}
+        </Text>
       )}
+      <div className="mb-4">
+        Click on the <strong>“Connect with Stripe”</strong> button to connect your Ghost site with
+        Stripe. You’ll come back here once Stripe is connected.
+      </div>
+      <StripeButton href={stripeConnectUrl} />
     </div>
+  );
+};
+
+/** Saves a key account.ghost.org delivered, without a click. */
+const Connecting: React.FC<{ secureKey: string; onFailed: (error: string) => void }> = ({
+  secureKey,
+  onFailed,
+}) => {
+  const save = useSaveStripeConnection();
+  const started = useRef(false);
+
+  useEffect(() => {
+    // The key's state works once, so a second effect run must not save again.
+    if (started.current) {
+      return;
+    }
+    started.current = true;
+    forgetDeliveredSecureKey();
+    void save(secureKey).then((error) => {
+      if (error) {
+        onFailed(error);
+      }
+    });
+  }, [save, secureKey, onFailed]);
+
+  return (
+    <Text as="h3" className="md:text-2xl" leading="heading" size="xl" weight="bold">
+      Connecting Stripe…
+    </Text>
   );
 };
 
@@ -374,7 +377,11 @@ const StripeConnectModal: React.FC = () => {
   const stripeConnectAccountId = getSettingValue(settings, 'stripe_connect_account_id');
   const { updateRoute } = useSettingsNavigation();
   const upgradeRoute = useUpgradeRoute();
-  const [step, setStep] = useState<'start' | 'connect'>('start');
+  // A key account.ghost.org delivered (see delivered-secure-key.ts) is saved
+  // straight away; if that fails, the user connects again from here.
+  const [secureKey] = useState(deliveredSecureKey);
+  const [connectError, setConnectError] = useState('');
+  const [step, setStep] = useState<'start' | 'connect'>(secureKey ? 'connect' : 'start');
   const limiter = useLimiter();
   const { showLimit } = useConfirmation();
 
@@ -427,8 +434,10 @@ const StripeConnectModal: React.FC = () => {
     contents = <Connected onClose={close} />;
   } else if (step === 'start') {
     contents = <Start onNext={startFlow} />;
+  } else if (secureKey && !connectError) {
+    contents = <Connecting secureKey={secureKey} onFailed={setConnectError} />;
   } else {
-    contents = <Connect />;
+    contents = <Connect error={connectError} />;
   }
 
   return (
