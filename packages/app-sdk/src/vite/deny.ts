@@ -13,5 +13,7 @@ export const VITE_DEFAULT_DENY = [
 
 // The private keys, and `.dev.vars`, which holds the development backend key. Vite serves the
 // project's root, so without these anyone who can reach the dev server, through a tunnel too,
-// could read them as files, through `/@fs/` or as imports.
-export const DENY = ['**/.ghost-app/**', '.dev.vars*'];
+// could read them as files, through `/@fs/` or as imports. `.env` files are denied even when a
+// project's own list leaves them out, as the plugin may tell a Workers project to put the
+// development backend key in one.
+export const DENY = ['**/.ghost-app/**', '.dev.vars*', '.env', '.env.*'];

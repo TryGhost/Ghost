@@ -28,7 +28,7 @@ import {
 } from '../tooling/keys.ts';
 import { canonicalPath, isWithin } from '../tooling/paths.ts';
 import { MANIFEST_PATH, formatErrors } from '../shared/manifest.ts';
-import { parseOrigin } from '../shared/parse.ts';
+import { parseJsonText, parseOrigin } from '../shared/parse.ts';
 import { MANIFEST_FILE, serialiseSigned, signProject } from '../tooling/sign.ts';
 import { DENY, VITE_DEFAULT_DENY } from './deny.ts';
 import { provideDevBackendKey } from './dev-vars.ts';
@@ -69,6 +69,11 @@ function readTunnels(input: string | readonly string[] | undefined): string[] {
     });
 }
 
+/** The `.dev.vars*` files at the project's root, in any case, as `DENY` names them. */
+const devVarsFiles = (root: string) =>
+  // A filesystem that ignores case serves `.DEV.VARS` as `.dev.vars`.
+  readdirSync(root).filter((name) => name.toLowerCase().startsWith('.dev.vars'));
+
 /**
  * Refuses a public directory that holds the private keys or `.dev.vars`, or sits among the
  * keys. Vite serves it as it is, without `server.fs.deny`, and copies it into the build.
@@ -82,10 +87,7 @@ function refusePublicKeys(root: string, publicDir: string) {
   const keys = canonicalPath(join(root, KEYS_DIRECTORY));
   // Every `.dev.vars*` at the project's root, as `DENY` names them, `.dev.vars.<environment>`
   // included, where it really is, so one that is itself a link counts where it leads.
-  const devVars = readdirSync(root)
-    // In any case, as a filesystem that ignores case serves `.DEV.VARS` as `.dev.vars`.
-    .filter((name) => name.toLowerCase().startsWith('.dev.vars'))
-    .map((name) => canonicalPath(join(root, name)));
+  const devVars = devVarsFiles(root).map((name) => canonicalPath(join(root, name)));
   // Each mode's directory and keys, where they really are, so one that is a link counts where it
   // leads.
   const modeKeys = MODES.flatMap((mode) =>
@@ -164,7 +166,8 @@ async function readEnv(
  */
 function devHostname(manifestFile: string): string {
   try {
-    const { id } = JSON.parse(readFileSync(manifestFile, 'utf8')) as { id?: unknown };
+    // Read as signing reads it, so a leading byte order mark is fine here too.
+    const { id } = parseJsonText(readFileSync(manifestFile, 'utf8')) as { id?: unknown };
     // A label is at most 63 characters, and the ID's segments are labels already.
     const name = isValidAppId(id) ? id.slice(id.lastIndexOf('.') + 1) : '';
     if (name.length > 0 && name.length <= 63) {
@@ -211,6 +214,8 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
   let config: ResolvedConfig;
   let pending: { level: 'info' | 'warn'; message: string } | undefined;
   let warnedUnsigned = false;
+  // Whether this is `vite preview`, which serves only the build.
+  let preview = false;
   // Where `vite dev` created the development keys, before any later plugin could move the root.
   let keysRoot: string | undefined;
   // The port the project names, for middleware mode, where the dev server doesn't listen itself.
@@ -241,7 +246,9 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
 
   async function serveManifest(server: ViteDevServer, req: IncomingMessage, res: ServerResponse) {
     const port = portOf(server);
-    const manifestUrl = manifestUrlFor(req.headers.host, port);
+    // HTTP/2, which Vite serves with server.https, names the host in `:authority` instead.
+    const host = req.headers.host ?? (req.headers[':authority'] as string | undefined);
+    const manifestUrl = manifestUrlFor(host, port);
     if (!manifestUrl) {
       const devHost = `${devHostname(resolve(config.root, manifestFile))}:${port ?? '<port>'}`;
       const allowed = [
@@ -251,7 +258,7 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
       res.statusCode = 421;
       res.setHeader('content-type', 'text/plain; charset=utf-8');
       res.end(
-        `The dev server signs ghost-app.json only for ${allowed.join(', ')}, not ${req.headers.host ?? 'a request without a Host'}. Name a tunnel's address with GHOST_APP_TUNNEL_URL.\n`,
+        `The dev server signs ghost-app.json only for ${allowed.join(', ')}, not ${host ?? 'a request without a Host'}. Name a tunnel's address with GHOST_APP_TUNNEL_URL.\n`,
       );
       return;
     }
@@ -285,6 +292,7 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
     enforce: 'pre',
 
     async config(userConfig, { command, isPreview, mode }) {
+      preview = Boolean(isPreview);
       const root = resolve(userConfig.root ?? '');
       // As Vite resolves it: against the project's root.
       const envDir = userConfig.envDir === false ? false : resolve(root, userConfig.envDir ?? '');
@@ -342,6 +350,18 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
         );
       }
       refusePublicKeys(resolved.root, resolved.publicDir);
+      // Vite checks `server.fs.deny` only when `fs.strict` is on, so with it off the dev server
+      // serves any file. Preview serves only the build, and Vitest serves nothing to anyone.
+      if (
+        resolved.command === 'serve' &&
+        !preview &&
+        !process.env.VITEST &&
+        !resolved.server.fs.strict
+      ) {
+        throw new Error(
+          `ghost-app: server.fs.strict is false, so the dev server would serve ${KEYS_DIRECTORY}/ and .dev.vars, the private keys, to anyone who can reach it. Leave server.fs.strict on, as Vite has it by default.`,
+        );
+      }
       appUrl = await readEnv(resolved.mode, resolved.envDir, 'GHOST_APP_URL');
       ghostUrl = await readEnv(resolved.mode, resolved.envDir, 'GHOST_URL');
       if (pending) {
@@ -363,12 +383,14 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
           return;
         }
         serveManifest(server, req, res).catch((error: unknown) => {
+          // The detail, such as a path on this machine, goes to the terminal, not to whoever
+          // asked, who may be anyone reaching a tunnel.
           config.logger.error(`ghost-app: ${(error as Error).message}`, { timestamp: true });
           if (!res.headersSent) {
             res.statusCode = 500;
             res.setHeader('content-type', 'text/plain; charset=utf-8');
           }
-          res.end(`${(error as Error).message}\n`);
+          res.end("ghost-app.json couldn't be signed. The dev server's output says why.\n");
         });
       });
 
@@ -420,6 +442,8 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
         );
       }
       const manifestUrl = new URL(MANIFEST_PATH.slice(1), base).href;
+      // So `vite build --watch` signs it again when it changes.
+      this.addWatchFile(resolve(config.root, manifestFile));
       let result;
       try {
         result = await signProject({
