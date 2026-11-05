@@ -13,7 +13,7 @@ import { Stack } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 
 const MAX_WAIT_DAYS = 30;
-export const WAIT_VALIDATION_MESSAGE = 'Enter a wait between 1 and 30 days.';
+const WAIT_VALIDATION_MESSAGE = 'Enter a wait up to 30 days';
 const WHOLE_NUMBER_PATTERN = /^\d+$/;
 const NON_DIGITS_PATTERN = /\D/g;
 const LEADING_ZEROS_PATTERN = /^0+/;
@@ -36,8 +36,7 @@ export const WaitDurationField: React.FC<{
   onUpdate: (hours: number) => void;
   inline?: boolean;
   onValidityChange?: (valid: boolean) => void;
-  onErrorVisibilityChange?: (visible: boolean) => void;
-}> = ({ waitHours, onUpdate, inline = false, onValidityChange, onErrorVisibilityChange }) => {
+}> = ({ waitHours, onUpdate, inline = false, onValidityChange }) => {
   const fieldId = useId();
   const inputId = inline ? fieldId : 'automation-wait-days';
   const errorId = `${inputId}-error`;
@@ -52,10 +51,6 @@ export const WaitDurationField: React.FC<{
   const [hasBlurredDaysInput, setHasBlurredDaysInput] = useState(false);
   // Shown on blur and cleared once valid; validity itself is still reported on every change.
   const [isInlineErrorVisible, setIsInlineErrorVisible] = useState(false);
-  const showInlineError = (visible: boolean) => {
-    setIsInlineErrorVisible(visible);
-    onErrorVisibilityChange?.(visible);
-  };
 
   const days = Number(daysText);
   const isValid = getValidWaitDays(daysText) !== null;
@@ -90,7 +85,7 @@ export const WaitDurationField: React.FC<{
     if (nextDays === null) {
       return;
     }
-    showInlineError(false);
+    setIsInlineErrorVisible(false);
     updateWaitDays(nextDays);
   };
 
@@ -111,7 +106,7 @@ export const WaitDurationField: React.FC<{
               id={inputId}
               inputMode="numeric"
               value={daysText}
-              onBlur={() => showInlineError(!isValid)}
+              onBlur={() => setIsInlineErrorVisible(!isValid)}
               onChange={handleChange}
             />
             <InputGroupAddon align="inline-end">
@@ -159,9 +154,7 @@ export const WaitDurationField: React.FC<{
           </InputGroup>
         )}
         {inline && isInlineErrorVisible && (
-          <span className="sr-only" id={errorId}>
-            {WAIT_VALIDATION_MESSAGE}
-          </span>
+          <FieldError id={errorId}>{WAIT_VALIDATION_MESSAGE}</FieldError>
         )}
         {!inline && showValidationError && (
           <FieldError className="text-xs" id={errorId}>

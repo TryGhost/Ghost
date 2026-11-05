@@ -65,11 +65,11 @@ const getTriggerErrors = (
 ): Record<string, string> => {
   if (triggerType === 'paid_subscription_changed') {
     return hasMissingTierSelection(subscriptionChangedSelectionFromRules(automation.trigger_rules))
-      ? { [TRIGGER_CANVAS_ID]: 'Select at least one tier.' }
+      ? { [TRIGGER_CANVAS_ID]: 'Select one or more tiers' }
       : {};
   }
   return !automation.trigger_rules.length
-    ? { [TRIGGER_CANVAS_ID]: 'Select at least one paid tier.' }
+    ? { [TRIGGER_CANVAS_ID]: 'Select one or more tiers' }
     : {};
 };
 
