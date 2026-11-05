@@ -18,7 +18,7 @@ import type { ShapeText } from '@tryghost/metafield-types/shapes';
 
 import InputForm from './input-form';
 import ListPicker from './list-picker';
-import { countryOptions } from '../../utils/countries';
+import { countryOptions, countryOptionsAmong } from '../../utils/countries';
 import { hasMode } from '../../utils/check-mode';
 import { isCookiesDisabled } from '../../utils/helpers';
 import { t } from '../../utils/i18n';
@@ -43,11 +43,19 @@ export const MemberCustomFieldsStyles = `
 
 type RecordFieldType = FieldTypeOfShape<'record'>;
 
-/** How each list a choice picks from is offered to a member, given the key they hold. */
+/**
+ * How each list a choice picks from is offered to a member, given the key they hold, and the
+ * countries they may choose from when fewer than all. What they hold is offered too, so they see
+ * it and can pick away from it, unless they may only choose from some countries: then only those
+ * are offered, so they can't pick one that would be refused.
+ */
 const LIST_OPTIONS: {
-  [F in ListSource]: (held?: string) => { value: string; label: string }[];
+  [F in ListSource]: (
+    held: string | undefined,
+    within: readonly string[] | undefined,
+  ) => { value: string; label: string }[];
 } = {
-  countries: (held) => countryOptions(held),
+  countries: (held, within) => (within ? countryOptionsAmong(within) : countryOptions(held)),
 };
 
 const TEXT_INPUT: { [S in TextSize]: 'text' | 'textarea' } = {
@@ -61,10 +69,14 @@ interface LeafInput {
   options?: { value: string; label: string }[];
 }
 
-const leafInput = (leaf: Leaf, held: string | undefined): LeafInput =>
+const leafInput = (
+  leaf: Leaf,
+  held: string | undefined,
+  within?: readonly string[] | undefined,
+): LeafInput =>
   matchLeaf<LeafInput>(leaf, {
     text: ({ size }) => ({ type: TEXT_INPUT[size] }),
-    choice: ({ from }) => ({ type: 'select', options: LIST_OPTIONS[from](held) }),
+    choice: ({ from }) => ({ type: 'select', options: LIST_OPTIONS[from](held, within) }),
   });
 
 /**
@@ -180,7 +192,7 @@ function RecordField({ field, value, errors, onChange, onKeyDown }: FieldProps<'
   const input = (part: string) => {
     const leaf = leaves[part];
     return {
-      ...(leaf ? leafInput(leaf, held[part]) : { type: 'text' }),
+      ...(leaf ? leafInput(leaf, held[part], field.countries) : { type: 'text' }),
       value: held[part] ?? '',
       // The part's label is read by assistive tech and shown as the placeholder; the
       // field's own name labels the group.
