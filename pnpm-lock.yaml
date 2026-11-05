@@ -585,8 +585,8 @@ catalogs:
       specifier: 4.0.6
       version: 4.0.6
     fs-extra:
-      specifier: 11.3.6
-      version: 11.3.6
+      specifier: 11.4.1
+      version: 11.4.1
     glob:
       specifier: 13.0.6
       version: 13.0.6
@@ -2433,7 +2433,7 @@ importers:
         version: 4.0.6
       fs-extra:
         specifier: 'catalog:'
-        version: 11.3.6
+        version: 11.4.1
       ghost-storage-base:
         specifier: workspace:*
         version: link:../packages/adapters/storage-base
@@ -3553,7 +3553,7 @@ importers:
         version: 9.6.0
       fs-extra:
         specifier: 'catalog:'
-        version: 11.3.6
+        version: 11.4.1
       globals:
         specifier: 'catalog:'
         version: 17.7.0
@@ -11946,8 +11946,8 @@ packages:
   fs-constants@1.0.0:
     resolution: {integrity: sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==}
 
-  fs-extra@11.3.6:
-    resolution: {integrity: sha512-w8ZNZr2mKIc7qeNaQ9AVPT1+iFaI+Avd4xudVOvdDJ8VytREi1Ft5Ih7hd9jjehod8vAM5GMsfQ/TpPf4EyoEA==}
+  fs-extra@11.4.1:
+    resolution: {integrity: sha512-KYAb4c9BJQI6QqGKthV68OHe0badztdXJWKo0WtBA9IuCFPTKvE5ZdUBglP833aMjhaSPNO4A5j/EkzZtGlKjA==}
     engines: {node: '>=14.14'}
 
   fs-extra@8.1.0:
@@ -24700,7 +24700,7 @@ snapshots:
 
   fs-constants@1.0.0: {}
 
-  fs-extra@11.3.6:
+  fs-extra@11.4.1:
     dependencies:
       graceful-fs: 4.2.11
       jsonfile: 6.2.1
@@ -25215,7 +25215,7 @@ snapshots:
       commander: 12.1.0
       eol: 0.9.1
       esbuild: 0.25.12
-      fs-extra: 11.3.6
+      fs-extra: 11.4.1
       gulp-sort: 2.0.0
       i18next: 23.16.8
       js-yaml: 4.3.2
@@ -27838,7 +27838,7 @@ snapshots:
     dependencies:
       chokidar: 3.6.0
       dependency-graph: 1.0.0
-      fs-extra: 11.3.6
+      fs-extra: 11.4.1
       picocolors: 1.1.1
       postcss: 8.5.32
       postcss-load-config: 5.1.0(jiti@2.7.0)(postcss@8.5.32)(tsx@4.23.15)
