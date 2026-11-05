@@ -2,6 +2,8 @@ import type { Knex } from 'knex';
 import type { GhostLogger } from '@tryghost/logging';
 import { z } from 'zod';
 
+import { DbDate } from '../../../lib/db-types/date';
+
 const ObjectId = require('bson-objectid').default;
 const { chunk: chunkArray } = require('lodash');
 const moment = require('moment');
@@ -9,8 +11,7 @@ const moment = require('moment');
 const MemberRowSchema = z.object({
   id: z.string(),
   status: z.string(),
-  // A Date on MySQL, text on SQLite
-  updated_at: z.union([z.date(), z.string()]),
+  updated_at: DbDate,
 });
 
 type MemberRow = z.infer<typeof MemberRowSchema>;
