@@ -56,6 +56,13 @@
       "excludeFiles": ["apps/admin/src/**/*.test.*"]
     },
     {
+      "files": ["packages/app-sdk/**/*.ts"],
+      "plugins": ["unicorn"],
+      "rules": {
+        "unicorn/prefer-node-protocol": "error"
+      }
+    },
+    {
       "files": ["e2e/tests/**/*.ts"],
       "rules": {
         "local/no-unsafe-reset-environment": "error"
