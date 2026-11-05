@@ -66,6 +66,7 @@ const entryPoints = Object.entries(manifest.exports as Record<string, unknown>)
 const USAGE = `
 import { connect, GhostAppError, type Ghost, type GhostAppErrorCode } from '@tryghost/app-sdk';
 import { CHALLENGE_PATH, handleChallenge, withGhostApp } from '@tryghost/app-sdk/backend';
+import { checkApp, signProject } from '@tryghost/app-sdk/tooling';
 
 declare const env: { GHOST_APP_BACKEND_KEY: string };
 export const worker = withGhostApp({
@@ -74,6 +75,12 @@ export const worker = withGhostApp({
 });
 export const answer = (request: Request) =>
   handleChallenge(request, { backendKey: env.GHOST_APP_BACKEND_KEY });
+
+export async function tooling() {
+  const signed = await signProject({ root: '.', mode: 'production', manifestUrl: 'https://app.example/ghost-app.json' });
+  const checked = await checkApp('https://app.example/ghost-app.json');
+  return signed.success && checked.success ? checked.manifest.id : undefined;
+}
 
 try {
   const ghost: Ghost = await connect({ timeout: 5000 });
