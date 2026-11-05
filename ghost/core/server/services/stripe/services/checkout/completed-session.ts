@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { PORT_FIELD, CHECKOUT_PORT, CHECKOUT_PORTS, type CheckoutPort } from '@tryghost/checkout';
-import { FIELD_STRUCTURES, keysOf, type WriteOf } from '@tryghost/metafield-types';
+import { FIELD_STRUCTURES, keysOf, type ValueOf } from '@tryghost/metafield-types';
 
 const Collected = z
   .string()
@@ -41,25 +41,25 @@ type CompletedSession = z.output<typeof CompletedSession>;
 
 const ADDRESS_PARTS = keysOf(FIELD_STRUCTURES.address.parts);
 
-type AddressWrite = WriteOf<'address'>;
+type AddressValue = ValueOf<'address'>;
 
 /**
- * The address as a write to an address custom field, or nothing when Stripe gave no part of
- * one. A write only changes the parts it names, so every part is named, and one Stripe left
- * out is named as `null`, which clears whatever an earlier address left there.
+ * The address as an answer for an address custom field, or nothing when Stripe gave no part of
+ * one. Only the parts Stripe gave are named: an answer replaces whatever the field held, so the
+ * bindings clear the rest.
  */
 function addressValue(
   address: Record<string, string | undefined> | null | undefined,
-): AddressWrite | undefined {
+): AddressValue | undefined {
   const given = address ?? {};
-  if (!ADDRESS_PARTS.some((part) => given[part] !== undefined)) {
-    return undefined;
-  }
-  const write: { -readonly [P in keyof AddressWrite]: AddressWrite[P] } = {};
+  const value: { -readonly [P in keyof AddressValue]: AddressValue[P] } = {};
   for (const part of ADDRESS_PARTS) {
-    write[part] = given[part] ?? null;
+    const text = given[part];
+    if (text !== undefined) {
+      value[part] = text;
+    }
   }
-  return write;
+  return Object.keys(value).length > 0 ? value : undefined;
 }
 
 /** The shipping details, if the checkout asked for an address. */
@@ -72,14 +72,14 @@ function shippingAsked(session: CompletedSession) {
 }
 
 /**
- * What a completed checkout gave back for each port, as a write to the field the port is
+ * What a completed checkout gave back for each port, as a whole value for the field the port is
  * collected into, or nothing when it didn't ask. Stripe returns the recipient's name beside
  * the shipping address rather than as part of it, so it is saved separately.
  */
 const ANSWERS: {
   [Port in CheckoutPort]: (
     session: CompletedSession,
-  ) => WriteOf<(typeof PORT_FIELD)[Port]['type']> | undefined;
+  ) => ValueOf<(typeof PORT_FIELD)[Port]['type']> | undefined;
 } = {
   [CHECKOUT_PORT.shippingAddress]: (session) => addressValue(shippingAsked(session)?.address),
   [CHECKOUT_PORT.shippingName]: (session) => shippingAsked(session)?.name,

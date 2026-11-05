@@ -8472,8 +8472,8 @@ services:
           values receives the ceiling callback; all three receive the field source. Constructors
           store dependencies without querying or starting work.
           The shared DB getter can create the module-cached Knex client if not already loaded.
-          No other production construction of these classes was found. Binding units construct
-          the class with fake query/values collaborators, not the root or publication sequence.
+          No other production construction of these classes was found. HTTP covers the
+          bindings only through the published root.
         sources:
           - core/server/services/members-metafields/index.ts
           - core/server/services/members-metafields/namespaces.ts
@@ -8484,7 +8484,7 @@ services:
           - core/server/data/db/index.js
           - core/server/data/db/connection.ts
         tests:
-          - test/unit/server/services/members-metafields/bindings-service.test.ts
+          - test/e2e-api/members/webhooks.test.js
       consumers:
         summary: >-
           Admin/member endpoints use definitions; members retains values for BREAD, account,
@@ -8494,9 +8494,11 @@ services:
           also deep-import helpers. The Stripe Checkout config binds and removes ports through the
           exported bindings service, the Stripe webhook plans collected values through it, the tiers
           root reads which ports are bound, and which field each names, through it, and the custom
-          fields endpoints ask it whether a field is bound before clearing the site cache. Real HTTP asserts field/value visibility, CSV cells/import
-          provenance, filter matches and filtered bulk actions. Binding units exercise planning
-          with fake query/value collaborators, not a production consumer.
+          fields endpoints ask it whether a field is bound before clearing the site cache.
+          The member account saves the answers a member gives with a change of tier through it, as
+          a checkout does. Real HTTP asserts field/value visibility, CSV cells/import
+          provenance, filter matches, filtered bulk actions, and what checkouts and a member's
+          change of tier save through ports, with their provenance and refusals.
         sources:
           - core/server/api/endpoints/member-metafields.ts
           - core/server/api/endpoints/member-metafields-members.ts
@@ -8523,7 +8525,8 @@ services:
           - test/e2e-api/admin/members-import-custom-fields.test.ts
           - test/e2e-api/admin/members-exporter-custom-fields.test.ts
           - test/e2e-api/admin/members-filter-custom-fields.test.ts
-          - test/unit/server/services/members-metafields/bindings-service.test.ts
+          - test/e2e-api/members/member-answers.test.ts
+          - test/e2e-api/members/webhooks.test.js
       startup:
         summary: >-
           Boot calls init during initCore after database/settings/signing-key/i18n setup and
@@ -8609,11 +8612,11 @@ services:
         summary: >-
           Invalid plans reject before writes; malformed value leaves are logged/omitted and
           malformed history field lists become empty, while invalid definition decoding rejects
-          the read. Bindings skip unresolved/invalid rows and return ordered good plans plus the
-          first failure. Definition action failures are logged after data writes. Multi-property definition edits are not atomic; limit
+          the read. Bindings skip unresolved/invalid rows, and return the plans for the values
+          accepted, one per writer, beside every refusal named by port; a failed lookup rejects. Definition action failures are logged after data writes. Multi-property definition edits are not atomic; limit
           counting deliberately permits concurrent overshoot, and applying a plan does not
           revalidate its captured definition. HTTP asserts selected refusals/corrupt reads and
-          successful actions; fake binding/import tests assert continuation/reporting.
+          successful actions; webhook HTTP and fake import tests assert continuation/reporting.
           Action failure, partial edits, stale plans and concurrency guarantees remain untested.
         sources:
           - core/server/services/members-metafields/definitions-service.ts
@@ -8624,7 +8627,7 @@ services:
         tests:
           - test/e2e-api/admin/member-custom-fields.test.ts
           - test/e2e-api/members/custom-fields.test.ts
-          - test/unit/server/services/members-metafields/bindings-service.test.ts
+          - test/e2e-api/members/webhooks.test.js
           - test/unit/server/services/members/import-export/import/error-handling.test.ts
     unverified: []
     blockers:
@@ -14685,7 +14688,8 @@ services:
           Source searches found boot, Admin/Content tier endpoints, post/page/
           preview/email-post serializers, members imports/access middleware/controllers, gifts
           and Stripe checkout previews, and the Stripe Checkout config reads and writes tier
-          requirements through service.requirements on each use. These consumers resolve the
+          requirements through service.requirements on each use, which the member account also reads
+          when a member changes tier. These consumers resolve the
           service's api at use; the
           Members API and gift services receive a getter that does so, and payments deep-imports
           three tier event classes. The preview callback resolves the current api.read for each

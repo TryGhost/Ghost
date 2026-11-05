@@ -4559,7 +4559,12 @@ describe('Members API', function () {
     // What the checkout asked for, as Stripe reports it on the completed session.
     async function completeCheckout(
       email,
-      { asked = { shipping: true }, metadata = {}, created = Math.floor(Date.now() / 1000) } = {},
+      {
+        asked = { shipping: true },
+        metadata = {},
+        created = Math.floor(Date.now() / 1000),
+        name = 'Jamie Doe',
+      } = {},
     ) {
       set(customer, {
         id: 'cus_shipping',
@@ -4577,7 +4582,7 @@ describe('Members API', function () {
             subscription: subscription.id,
             metadata,
             shipping_address_collection: asked.shipping ? { allowed_countries: ['GB'] } : null,
-            shipping: { name: 'Jamie Doe', address },
+            shipping: { name, address },
             phone_number_collection: { enabled: Boolean(asked.phone) },
             customer_details: { email, phone: '+442079460000' },
           },
@@ -4628,6 +4633,28 @@ describe('Members API', function () {
       assert.deepEqual(
         new Set(writes.flatMap(({ labels }) => labels.field_types)),
         new Set(['address', 'short_text']),
+      );
+    });
+
+    it('saves what a field accepts when another refuses what the checkout collected, as each binding', async function () {
+      // Longer than the recipient's short text field takes. The money is taken, so the address
+      // is still saved.
+      const saved = await completeCheckout('shipping-refused@example.com', {
+        name: 'x'.repeat(300),
+      });
+
+      assert.equal(saved.delivery_address.line1, '1 High Street');
+      assert.equal(saved.recipient_name, undefined);
+      const {
+        body: { members },
+      } = await adminAgent.get('/members/?search=shipping-refused%40example.com');
+      const filter = encodeURIComponent(
+        `data.member_id:'${members[0].id}'+type:metafield_change_event`,
+      );
+      const { body } = await adminAgent.get(`/members/events/?filter=${filter}`).expectStatus(200);
+      assert.deepEqual(
+        body.events.map(({ data }) => [data.written_by_type, data.source]),
+        [['binding', 'checkout']],
       );
     });
 
