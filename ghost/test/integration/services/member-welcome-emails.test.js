@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const cheerio = require('cheerio');
 const ObjectId = require('bson-objectid').default;
 const { mockManager, startGhost } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
@@ -660,10 +661,8 @@ describe('Member Welcome Emails Integration', function () {
       const message = sendCall.args[0];
       const recipientData = sendCall.args[1];
 
-      assert.match(
-        message.html,
-        /\/unsubscribe\/\?uuid=99999999-9999-4999-8999-999999999999&amp;key=[a-f0-9]+&amp;updatesandannouncements=1/,
-      );
+      const unsubscribeUrl = cheerio.load(message.html)('a[href*="/unsubscribe/"]').attr('href');
+      assert.equal(unsubscribeUrl, recipientData['automation-member@example.com'].list_unsubscribe);
       assert.match(
         recipientData['automation-member@example.com'].list_unsubscribe,
         /^http.*\/unsubscribe\/\?uuid=99999999-9999-4999-8999-999999999999&key=[a-f0-9]+&updatesandannouncements=1$/,
