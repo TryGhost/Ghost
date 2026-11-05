@@ -122,10 +122,11 @@ For initial data and settings defaults, see the
 
 ## Row locking
 
-`Model.edit` and `Model.destroy` lock only the record's own row. Eager-loaded
-relations such as tags, authors, labels, tiers and newsletters are read
-without locks, because many records share them and locking them made
-concurrent edits of different records deadlock. A record's row lock is what
+Inside a transaction (`options.transacting`), `Model.edit` and
+`Model.destroy` lock only the record's own row; without one they take no
+lock. Eager-loaded relations such as tags, authors, labels, tiers and
+newsletters are read without locks, because many records share them and
+locking them made concurrent edits of different records deadlock. A record's row lock is what
 serialises changes to its relations.
 
 Code that changes a record's relations without editing it must take that lock

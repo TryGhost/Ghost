@@ -11,7 +11,7 @@ const moment = require('moment');
 const MemberRowSchema = z.object({
   id: z.string(),
   status: z.string(),
-  updated_at: DbDate,
+  updated_at: DbDate.nullable(),
 });
 
 type MemberRow = z.infer<typeof MemberRowSchema>;

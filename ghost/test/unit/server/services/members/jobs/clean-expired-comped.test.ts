@@ -223,6 +223,19 @@ describe('clean-expired-comped task', function () {
     assert.deepEqual(updateCalls[0]!.ids, ['comped-member-id']);
   });
 
+  it('updates a comped member that has never been updated', async function () {
+    const { trx, updateCalls } = createTrx({
+      expiredRows: [{ id: 'expired-product-relation-id', member_id: 'member-id' }],
+      compedMembers: [{ id: 'member-id', status: 'comped', updated_at: null }],
+    });
+
+    await cleanExpiredComped(createDeps(trx));
+
+    assert.deepEqual(updateCalls[0]!.ids, ['member-id']);
+    sinon.assert.calledOnce(events.emit);
+    assert.equal(events.emit.firstCall.args[1]._previousAttributes!.updated_at, null);
+  });
+
   it('emits a member.edited model event per updated member after the transaction', async function () {
     const { trx, updateCalls } = createTrx({
       expiredRows: [{ id: 'expired-product-relation-id', member_id: 'member-id' }],
