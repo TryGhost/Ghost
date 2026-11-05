@@ -6,5 +6,5 @@ import { GiftLinksService } from './service';
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
 export default defineService('Gift Links', () => {
   const { knex } = require('../../data/db');
-  return new GiftLinksService({ knex, actionLog: new ActionLog({ knex, logging }) });
+  return new GiftLinksService({ knex, actionLog: new ActionLog({ logging }) });
 });

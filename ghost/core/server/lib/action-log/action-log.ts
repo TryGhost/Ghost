@@ -1,7 +1,7 @@
 import ObjectID from 'bson-objectid';
 import type { Knex } from 'knex';
 import type { GhostLogger } from '@tryghost/logging';
-import type { Actor } from '../actor';
+import type { RequestContext } from '../actor';
 import { toDatabaseDate } from '../db-types/date';
 import type { ActionEvent, ActionKind, ActionName } from './kinds';
 
@@ -11,8 +11,13 @@ interface ActionOf<K extends ActionKind> {
   /** What happened, in words, when the event alone doesn't say it, such as "reset". */
   actionName?: ActionName<K>;
   /** Anything else stored with the action, such as a field's key. */
-  context?: Record<string, unknown>;
+  context?: ExtraContext;
 }
+
+/** The context keys the row's own fields are stored under, which extra context can't replace. */
+type ReservedKey = 'primary_name' | 'action_name' | 'count';
+
+type ExtraContext = Record<string, unknown> & { [key in ReservedKey]?: never };
 
 /**
  * A change to one resource. The name is stored with the action, so the history still reads
@@ -40,33 +45,34 @@ export type ActionRow = {
   [K in ActionKind]: ActionOf<K> & (SingleChange | BulkChange);
 }[ActionKind];
 
-export interface RecordOptions {
-  /** The command's transaction, so the action is only kept if the change is. */
-  transacting?: Knex.Transaction;
-}
-
 /**
  * Logs staff actions to the `actions` table, which Admin's History page reads.
  *
- * Call it from the command that makes the change, inside its transaction where it has one.
- * Logging is best-effort: a failed write is logged and doesn't fail the command, unless it
- * deadlocks inside the command's transaction.
+ * Call it from the command that makes the change, with the command's transaction where it has
+ * one, so the action is only kept if the change is. Logging is best-effort: a failed write is
+ * logged and doesn't fail the command, unless it deadlocks inside the command's transaction.
  */
 export class ActionLog {
-  private knex: Knex;
   private logging: Pick<GhostLogger, 'error'>;
 
-  constructor({ knex, logging }: { knex: Knex; logging: Pick<GhostLogger, 'error'> }) {
-    this.knex = knex;
+  constructor({ logging }: { logging: Pick<GhostLogger, 'error'> }) {
     this.logging = logging;
   }
 
-  /** Logs an action by `actor`. Nothing is logged when nobody is acting. */
-  async record(actor: Actor | null, row: ActionRow, options: RecordOptions = {}): Promise<void> {
+  /**
+   * Logs an action by whoever `context` says is acting, through `db`: the command's transaction,
+   * or the database itself for a change that commits on its own. Nothing is logged when nobody
+   * is acting.
+   */
+  async record(
+    db: Knex | Knex.Transaction,
+    context: RequestContext,
+    row: ActionRow,
+  ): Promise<void> {
+    const { actor } = context;
     if (!actor) {
       return;
     }
-    const db = options.transacting ?? this.knex;
     try {
       await db('actions').insert({
         // ObjectIds increase over time, which readers rely on to order actions within a second.
@@ -83,7 +89,7 @@ export class ActionLog {
       // A deadlock rolls back the whole transaction, not just this insert, so the command's
       // own writes are gone too. Failing lets the command retry or report it, rather than
       // carry on as if its change was kept.
-      if (options.transacting && isDeadlock(err)) {
+      if (db.isTransaction && isDeadlock(err)) {
         throw err;
       }
       this.logging.error(
@@ -115,8 +121,19 @@ function isDeadlock(err: unknown): boolean {
 function contextOf(row: ActionRow): string {
   return JSON.stringify({
     ...(row.primaryName === undefined ? {} : { primary_name: row.primaryName }),
-    ...row.context,
+    ...withoutReservedKeys(row.context),
     ...(row.actionName === undefined ? {} : { action_name: row.actionName }),
     ...(row.count === undefined ? {} : { count: row.count }),
   });
+}
+
+const RESERVED_KEYS: ReadonlySet<string> = new Set<ReservedKey>([
+  'primary_name',
+  'action_name',
+  'count',
+]);
+
+// The type already rules these out; this keeps an untyped caller from replacing them too.
+function withoutReservedKeys(context: ExtraContext = {}): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(context).filter(([key]) => !RESERVED_KEYS.has(key)));
 }

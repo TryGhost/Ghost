@@ -248,9 +248,9 @@ export class AppInstallationsService {
       this.knex.transaction(async (transacting) => {
         const installation = await this.repository.insert(loaded, iconDataUrl, { transacting });
         await this.actionLog.record(
-          context.actor,
+          transacting,
+          context,
           appAction('installed', installation.id, loaded.manifest),
-          { transacting },
         );
         return installation;
       }),
@@ -306,12 +306,12 @@ export class AppInstallationsService {
       const outcome = await this.store(current, write, { transacting });
       if (outcome.status === 'written' && outcome.value) {
         await this.actionLog.record(
-          context.actor,
+          transacting,
+          context,
           appAction('changes_approved', id, loaded.manifest, {
             from_manifest_id: current.manifest_id,
             to_manifest_id: outcome.value,
           }),
-          { transacting },
         );
       }
       return outcome;
@@ -355,7 +355,8 @@ export class AppInstallationsService {
     }
 
     await this.actionLog.record(
-      context.actor,
+      this.knex,
+      context,
       appAction('uninstalled', id, { id: installation.app_id, name: installation.manifest.name }),
     );
   }

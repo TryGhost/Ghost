@@ -36,7 +36,7 @@ describe('GiftLinksService (integration)', function () {
     // Mirror init()'s wiring.
     service = new GiftLinksService({
       knex: models.Base.knex,
-      actionLog: new ActionLog({ knex: models.Base.knex, logging }),
+      actionLog: new ActionLog({ logging }),
     });
   });
 

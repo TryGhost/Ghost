@@ -3965,7 +3965,7 @@ services:
           without changing transactions or introducing service dependencies.
         preparation:
           - >-
-            The root constructs the shared action log from knex and logging; failures stay
+            The root constructs the shared action log from logging; failures stay
             best-effort.
           - >-
             Use explicit field mapping for the small codec/serializer shapes, or separately review
@@ -4012,7 +4012,7 @@ services:
       construction:
         summary: >-
           Import declares the initializer without constructing a service. Its factory reads the
-          shared database knex, builds the shared ActionLog from it and root-supplied logging, and
+          shared database knex, builds the shared ActionLog from root-supplied logging, and
           returns one GiftLinksService retaining knex and the action log. Later init calls
           preserve it.
           No separate production deep construction was found. The constructor validates neither
@@ -8437,7 +8437,7 @@ services:
           namespace as archived. Service
           bindings are undefined before init; class methods depend on their receiver. Namespaces
           resolves a namespace's policy (owner and limits) and refuses what it doesn't allow. Definitions
-          exposes asynchronous CRUD/reorder and addOne/find/recordCreated helpers; values
+          exposes asynchronous CRUD/reorder and addOne/find helpers; values
           exposes synchronous unwrapWire plus asynchronous read/plan/apply/feed methods; bindings exposes asynchronous
           bind/remove/planning. HTTP tests assert selected serialized definitions, values, access
           rules and provenance; they do not pin the root export shape or init return timing.
@@ -8458,7 +8458,7 @@ services:
           fields, definitions, values and bindings sequentially; bindings retains that values instance.
           Namespaces is built from custom fields' policy, which holds the host limit service and a
           ceiling callback, both asked on each use.
-          Definitions receives the shared ActionLog, built from Knex and logging, and the namespaces;
+          Definitions receives the shared ActionLog, built from logging, and the namespaces;
           values receives the ceiling callback; all three receive the field source. Constructors
           store dependencies without querying or starting work.
           The shared DB getter can create the module-cached Knex client if not already loaded.

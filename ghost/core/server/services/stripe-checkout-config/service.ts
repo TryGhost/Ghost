@@ -430,17 +430,13 @@ export class StripeCheckoutConfigService {
           message: 'The Stripe Checkout config was not found right after saving it.',
         });
       }
-      await this.actionLog.record(
-        context.actor,
-        {
-          resourceType: 'stripe_checkout_config',
-          event: 'edited',
-          resourceId: saved.id,
-          // The config has no name of its own, so the entry is named after what it configures.
-          primaryName: 'Stripe Checkout',
-        },
-        { transacting: trx },
-      );
+      await this.actionLog.record(trx, context, {
+        resourceType: 'stripe_checkout_config',
+        event: 'edited',
+        resourceId: saved.id,
+        // The config has no name of its own, so the entry is named after what it configures.
+        primaryName: 'Stripe Checkout',
+      });
     });
   }
 
