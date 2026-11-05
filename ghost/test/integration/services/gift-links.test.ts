@@ -17,7 +17,7 @@ const CTX: RequestContext = { actor: { id: 'test-actor-id', type: 'user' } };
 // action history; e2e-frontend: ?gift access, redirects, analytics). This suite pins the
 // service-level behaviours that are invisible or non-deterministic through HTTP: revocation
 // of a replaced token, idempotent ensure, removeAll's cross-post scope, the DB-enforced
-// one-live-link invariant, and the best-effort action-recording composition init() wires up.
+// one-live-link invariant, and the action-recording composition init() wires up.
 describe('GiftLinksService (integration)', function () {
   let postId: string;
   let otherPostId: string;
@@ -152,26 +152,25 @@ describe('GiftLinksService (integration)', function () {
     });
   }
 
-  it('does not fail the command when recording the action throws', async function () {
-    // Fail the action insert inside the command's transaction: on MySQL a failed statement
-    // doesn't abort the transaction, so the link must still be committed.
+  it('fails the command and keeps no link when recording the action throws', async function () {
+    // The action is part of the change, so a failed insert inside the command's transaction
+    // rolls the link back with it.
     const errorLog = sinon.stub(logging, 'error');
+    const linksBefore = await liveLinks(postId);
+    const actionsBefore = (await loggedActions()).length;
     await models.Base.knex.raw(`
       CREATE TRIGGER fail_gift_link_action
       BEFORE INSERT ON actions FOR EACH ROW
       SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'action write failed'
     `);
     try {
-      await assert.doesNotReject(() => service.create(CTX, postId));
+      await assert.rejects(service.create(CTX, postId), /action write failed/);
     } finally {
       await models.Base.knex.raw('DROP TRIGGER fail_gift_link_action');
     }
 
-    sinon.assert.calledOnce(errorLog);
-    assert.deepEqual((errorLog.firstCall.args[0] as { event: unknown }).event, {
-      name: 'action_log.write_failed',
-    });
-    assert.equal((await liveLinks(postId)).length, 1, 'the gift link is still created');
-    assert.equal((await loggedActions()).length, 0);
+    sinon.assert.notCalled(errorLog);
+    assert.deepEqual(await liveLinks(postId), linksBefore, 'the gift link is rolled back');
+    assert.equal((await loggedActions()).length, actionsBefore);
   });
 });

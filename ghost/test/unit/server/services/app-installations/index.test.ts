@@ -259,14 +259,18 @@ describe('App installations composition root', function () {
     sinon.assert.notCalled(error);
   });
 
-  it('logs action recording failures without failing the installation', async function () {
+  // Staff history is where the installer lives, so an install whose action can't be kept fails.
+  it('fails the installation when its action cannot be recorded', async function () {
     const failure = new Error('History write failed');
     const error = sandbox.stub(logging, 'error');
     const insert = sandbox.stub().resolves();
     const insertAction = sandbox.stub().rejects(failure);
-    const trx = sandbox
-      .stub()
-      .callsFake((table: string) => ({ insert: table === 'actions' ? insertAction : insert }));
+    const trx = Object.assign(
+      sandbox
+        .stub()
+        .callsFake((table: string) => ({ insert: table === 'actions' ? insertAction : insert })),
+      { isTransaction: true },
+    );
     Object.assign(query, {
       transaction: async (write: (connection: Knex.Transaction) => Promise<void>) =>
         write(trx as unknown as Knex.Transaction),
@@ -277,18 +281,17 @@ describe('App installations composition root', function () {
     const manifestUrl = 'https://podcast.example/manifest.json';
     const preview = await root.service.preview(manifestUrl);
 
-    const installed = await root.service.create(
-      { actor: { id: 'staff-id', type: 'user' } },
-      { manifestUrl, digest: preview.digest },
+    await assert.rejects(
+      root.service.create(
+        { actor: { id: 'staff-id', type: 'user' } },
+        { manifestUrl, digest: preview.digest },
+      ),
+      failure,
     );
 
-    assert.equal(installed.app_id, manifest.id);
     sinon.assert.calledTwice(insert);
     sinon.assert.calledOnce(insertAction);
-    assert.equal(insertAction.firstCall.args[0].resource_id, installed.id);
-    sinon.assert.calledOnce(error);
-    assert.deepEqual(error.firstCall.args[0].event, { name: 'action_log.write_failed' });
-    assert.equal(error.firstCall.args[0].err, failure);
+    sinon.assert.notCalled(error);
   });
 
   // Found at boot, rather than failing every app.

@@ -520,8 +520,8 @@ services:
           initialization retains that ready instance. Root units prove no connection access
           on import, one retained instance without queries/delivery, and no publication after
           a failed connection acquisition followed by a successful retry. They also verify
-          logged transport failures keep generic public errors and logged action-write failures
-          do not fail installation. The retained instance also holds the in-flight re-check
+          logged transport failures keep generic public errors and that an action-write failure
+          fails the installation inside its transaction. The retained instance also holds the in-flight re-check
           per installation that app sessions starting together share; e2e tests cover two
           sessions making one fetch.
         sources:
@@ -3965,8 +3965,8 @@ services:
           without changing transactions or introducing service dependencies.
         preparation:
           - >-
-            The root constructs the shared action log from logging, scoped to gift links' kind; failures stay
-            best-effort.
+            The root constructs the shared action log from logging, scoped to gift links' kind; a
+            failed action write fails a command inside its transaction and is logged outside one.
           - >-
             Use explicit field mapping for the small codec/serializer shapes, or separately review
             an exact-file case-keys allowance; do not make importable serializers depend on an
@@ -4163,11 +4163,11 @@ services:
           Missing posts throw NotFound; unknown or no-longer-live tokens return null. Query, codec,
           random generation and transaction errors propagate, without retries. Factory rejection
           leaves service unavailable and boot fails; the shared initializer permits an explicit
-          retry, without service-specific failure/retry coverage. The shared action log logs and
-          swallows failed writes and skips writes when no actor is present. A real-DB deep-service
-          test fails the action insert with a SIGNAL error and asserts the mint still commits. A
-          deadlock rolls back the whole InnoDB transaction, so the action log rethrows it and the
-          mint fails; only action-log units cover that. Gift access refuses missing key-resolution setup and rejects
+          retry, without service-specific failure/retry coverage. The shared action log fails a
+          command whose action write fails inside its transaction, rolling the mint back, and logs
+          and swallows a failed write outside one (revoking all links); it skips writes when no
+          actor is present. A real-DB deep-service test fails the action insert with a SIGNAL error
+          and asserts the mint fails and keeps no link. Gift access refuses missing key-resolution setup and rejects
           mismatched tokens; frontend strips invalid gifts with a 301 while other failures reach
           normal error handling. Product lookup failure logs and grants a paid shim with no tiers.
           Units pin those helpers and root query-error propagation. Real DB tests pin mint rollback
@@ -8598,8 +8598,9 @@ services:
           Invalid plans reject before writes; malformed value leaves are logged/omitted and
           malformed history field lists become empty, while invalid definition decoding rejects
           the read. Bindings skip unresolved/invalid rows and return ordered good plans plus the
-          first failure. The shared action log logs and swallows failed action writes, except a deadlock inside
-          add or reorder, which it rethrows as the transaction is already rolled back. Multi-property definition edits are not atomic; limit
+          first failure. A failed action write fails add or reorder and
+          rolls it back, as they log inside their transaction; the other edits log after their own
+          statement, where a failed action write is logged and swallowed. Multi-property definition edits are not atomic; limit
           counting deliberately permits concurrent overshoot, and applying a plan does not
           revalidate its captured definition. HTTP asserts selected refusals/corrupt reads and
           successful actions; fake binding/import tests assert continuation/reporting.
