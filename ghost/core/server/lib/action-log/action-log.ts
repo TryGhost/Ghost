@@ -1,17 +1,45 @@
 import ObjectID from 'bson-objectid';
+import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { GhostLogger } from '@tryghost/logging';
 import type { RequestContext } from '../actor';
 import { toDatabaseDate } from '../db-types/date';
-import type { ActionEvent, ActionKind, ActionName } from './kinds';
 
-interface ActionOf<K extends ActionKind> {
-  resourceType: K;
+/** Every action is a resource being added, edited or deleted. Its name, if any, says how. */
+export type ActionEvent = 'added' | 'edited' | 'deleted';
+
+/**
+ * What a service logs actions about. Each service declares its own kind next to the code that
+ * logs it, as a plain object that `satisfies ActionKind`, and logs through `ActionLog.for`.
+ *
+ * - `resourceType` is stored with each action as its `resource_type`.
+ * - `table` is where a `resource_id` of that kind points. Resource types and tables don't
+ *   correspond one to one (a gift link's entry points at its post), so it can't be derived
+ *   from the schema. The `Action` model builds a read model from it, so `include=resource`
+ *   loads the resource.
+ * - `actionNames` maps each name the kind may give an action, such as "reset", to the one
+ *   event it always is. Something that sometimes adds and sometimes edits gets two names.
+ *
+ * Bookshelf models log their own actions and don't declare a kind.
+ */
+export interface ActionKind {
+  resourceType: string;
+  table: string;
+  actionNames: Readonly<Record<string, ActionEvent>>;
+}
+
+type ActionName<K extends ActionKind> = Extract<keyof K['actionNames'], string>;
+
+/** A change the kind names, such as a reset. Its event comes from the kind's declaration. */
+interface NamedChange<K extends ActionKind> {
+  actionName: ActionName<K>;
+  event?: never;
+}
+
+/** A change that reads as its event alone, such as a field being added. */
+interface PlainChange {
   event: ActionEvent;
-  /** What happened, in words, when the event alone doesn't say it, such as "reset". */
-  actionName?: ActionName<K>;
-  /** Anything else stored with the action, such as a field's key. */
-  context?: ExtraContext;
+  actionName?: never;
 }
 
 /** The context keys the row's own fields are stored under, which extra context can't replace. */
@@ -37,25 +65,50 @@ interface BulkChange {
   count: number;
 }
 
-/**
- * An action to log. Only the kinds in `ACTION_KINDS` can be logged, as added, edited or
- * deleted, and only with the action names each declares.
- */
-export type ActionRow = {
-  [K in ActionKind]: ActionOf<K> & (SingleChange | BulkChange);
-}[ActionKind];
+/** What happened: one of the names `K` declares, or a plain added, edited or deleted. */
+export type ActionChange<K extends ActionKind> = NamedChange<K> | PlainChange;
+
+/** An action of kind `K` to log. */
+export type ActionRow<K extends ActionKind> = ActionChange<K> &
+  (SingleChange | BulkChange) & {
+    /** Anything else stored with the action, such as a field's key. */
+    context?: ExtraContext;
+  };
 
 /**
- * Logs staff actions to the `actions` table, which Admin's History page reads.
- *
- * Call it from the command that makes the change, with the command's transaction where it has
- * one, so the action is only kept if the change is. Logging is best-effort: a failed write is
- * logged and doesn't fail the command, unless it deadlocks inside the command's transaction.
+ * Logs staff actions to the `actions` table, which Admin's History page reads. A service's root
+ * builds one and scopes it to the service's kind with `for`.
  */
 export class ActionLog {
   private logging: Pick<GhostLogger, 'error'>;
 
   constructor({ logging }: { logging: Pick<GhostLogger, 'error'> }) {
+    this.logging = logging;
+  }
+
+  /**
+   * A writer for one kind's actions. It also gives the `Action` model a read model for the
+   * kind's table, so call it at boot.
+   */
+  for<K extends ActionKind>(kind: K): KindLog<K> {
+    register(kind);
+    return new KindLog(kind, this.logging);
+  }
+}
+
+/**
+ * Logs one kind's actions.
+ *
+ * Call it from the command that makes the change, with the command's transaction where it has
+ * one, so the action is only kept if the change is. Logging is best-effort: a failed write is
+ * logged and doesn't fail the command, unless it deadlocks inside the command's transaction.
+ */
+export class KindLog<K extends ActionKind> {
+  private kind: K;
+  private logging: Pick<GhostLogger, 'error'>;
+
+  constructor(kind: K, logging: Pick<GhostLogger, 'error'>) {
+    this.kind = kind;
     this.logging = logging;
   }
 
@@ -67,21 +120,22 @@ export class ActionLog {
   async record(
     db: Knex | Knex.Transaction,
     context: RequestContext,
-    row: ActionRow,
+    row: ActionRow<K>,
   ): Promise<void> {
     const { actor } = context;
     if (!actor) {
       return;
     }
+    const event = row.actionName === undefined ? row.event : this.kind.actionNames[row.actionName];
     try {
       await db('actions').insert({
         // ObjectIds increase over time, which readers rely on to order actions within a second.
         id: new ObjectID().toHexString(),
         resource_id: row.resourceId,
-        resource_type: row.resourceType,
+        resource_type: this.kind.resourceType,
         actor_id: actor.id,
         actor_type: actor.type,
-        event: row.event,
+        event,
         context: contextOf(row),
         created_at: toDatabaseDate(new Date()),
       });
@@ -98,8 +152,8 @@ export class ActionLog {
           err,
           // Nested, as `event` is the log entry's own name.
           action: {
-            resource_type: row.resourceType,
-            event: row.event,
+            resource_type: this.kind.resourceType,
+            event,
             resource_id: row.resourceId,
             actor_type: actor.type,
             actor_id: actor.id,
@@ -111,6 +165,24 @@ export class ActionLog {
   }
 }
 
+// Registered at boot by each service's root, and read by the `Action` model on each query.
+const registered = new Map<string, ActionKind>();
+
+function register(kind: ActionKind): void {
+  const existing = registered.get(kind.resourceType);
+  if (existing && existing.table !== kind.table) {
+    throw new errors.IncorrectUsageError({
+      message: `The ${kind.resourceType} actions are declared twice, pointing at ${existing.table} and ${kind.table}.`,
+    });
+  }
+  registered.set(kind.resourceType, kind);
+}
+
+/** The kinds services have logged through so far, which the `Action` model loads resources of. */
+export function registeredKinds(): ActionKind[] {
+  return [...registered.values()];
+}
+
 function isDeadlock(err: unknown): boolean {
   return (
     typeof err === 'object' && err !== null && 'code' in err && err.code === 'ER_LOCK_DEADLOCK'
@@ -118,7 +190,7 @@ function isDeadlock(err: unknown): boolean {
 }
 
 // Only the fields that carry meaning are stored, as Bookshelf's action log does.
-function contextOf(row: ActionRow): string {
+function contextOf(row: ActionRow<ActionKind>): string {
   return JSON.stringify({
     ...(row.primaryName === undefined ? {} : { primary_name: row.primaryName }),
     ...withoutReservedKeys(row.context),

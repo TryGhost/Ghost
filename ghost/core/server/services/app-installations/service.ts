@@ -1,7 +1,7 @@
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
-import type { ActionLog, ActionRow } from '../../lib/action-log/action-log';
+import type { ActionRow, KindLog } from '../../lib/action-log/action-log';
 import type { RequestContext } from '../../lib/actor';
 import {
   alreadyInstalled,
@@ -19,7 +19,8 @@ import {
   type ManifestWrite,
 } from './decide-on-manifest';
 import type { FetchIcon } from './fetch-icon';
-import { approvalManifestIds, buildHistory, type AppInstallationActionName } from './history';
+import type { AppInstallationActionName, appInstallationActions } from './action-kind';
+import { approvalManifestIds, buildHistory } from './history';
 import type { IdentityChecker, PinnedIdentity, StartedChallenge } from './identity-check';
 import type { LoadedManifest, LoadManifest } from './load-manifest';
 import type { AppInstallationStatus } from './schema';
@@ -137,16 +138,6 @@ function iconCopyKeptBy(
   }
 }
 
-type AppInstallationAction = Extract<ActionRow, { resourceType: 'app_installation' }>;
-
-// Installing adds an installation, approving changes edits it, and uninstalling ends it. The
-// action name says which, so the history reads "installed" rather than "added".
-const EVENTS = {
-  installed: 'added',
-  changes_approved: 'edited',
-  uninstalled: 'deleted',
-} as const satisfies Record<AppInstallationActionName, AppInstallationAction['event']>;
-
 /**
  * Staff history is where "who installed this, and when" lives; the installation itself does
  * not hold it. The resource is the installation, and the app's name and ID ride along, so the
@@ -157,10 +148,8 @@ function appAction(
   installationId: string,
   app: { id: string; name: string },
   approval?: { from_manifest_id: string; to_manifest_id: string },
-): AppInstallationAction {
+): ActionRow<typeof appInstallationActions> {
   return {
-    resourceType: 'app_installation',
-    event: EVENTS[actionName],
     actionName,
     resourceId: installationId,
     primaryName: app.name,
@@ -171,7 +160,7 @@ function appAction(
 export class AppInstallationsService {
   private knex: Knex;
   private repository: AppInstallationsRepository;
-  private actionLog: ActionLog;
+  private actionLog: KindLog<typeof appInstallationActions>;
   private loadManifest: LoadManifest;
   private identity: IdentityChecker;
   private fetchIcon: FetchIcon;
@@ -186,7 +175,7 @@ export class AppInstallationsService {
     fetchIcon,
   }: {
     knex: Knex;
-    actionLog: ActionLog;
+    actionLog: KindLog<typeof appInstallationActions>;
     loadManifest: LoadManifest;
     identity: IdentityChecker;
     fetchIcon: FetchIcon;

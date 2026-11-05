@@ -4,6 +4,7 @@ import sinon from 'sinon';
 import logging from '@tryghost/logging';
 import { GiftLinksService } from '../../../core/server/services/gift-links/service';
 import { ActionLog } from '../../../core/server/lib/action-log/action-log';
+import { giftLinkActions } from '../../../core/server/services/gift-links/action-kind';
 import type { RequestContext } from '../../../core/server/lib/actor';
 import type { GiftLink } from '../../../core/server/services/gift-links/models';
 
@@ -24,7 +25,7 @@ describe('GiftLinksService (integration)', function () {
 
   const liveLinks = async (id: string): Promise<GiftLink[]> =>
     (await service.getPost(id)).giftLinks;
-  const giftLinkActions = () => models.Base.knex('actions').where('resource_type', 'gift_link');
+  const loggedActions = () => models.Base.knex('actions').where('resource_type', 'gift_link');
 
   afterAll(testUtils.teardownDb);
 
@@ -36,7 +37,7 @@ describe('GiftLinksService (integration)', function () {
     // Mirror init()'s wiring.
     service = new GiftLinksService({
       knex: models.Base.knex,
-      actionLog: new ActionLog({ logging }),
+      actionLog: new ActionLog({ logging }).for(giftLinkActions),
     });
   });
 
@@ -60,7 +61,7 @@ describe('GiftLinksService (integration)', function () {
     await service.create(CTX, postId);
 
     const { title } = await models.Base.knex('posts').where('id', postId).first('title');
-    const contexts = (await giftLinkActions().orderBy('id')).map(
+    const contexts = (await loggedActions().orderBy('id')).map(
       ({ event, context }: { event: string; context: string }) => ({
         event,
         context: JSON.parse(context),
@@ -123,7 +124,7 @@ describe('GiftLinksService (integration)', function () {
       const existing = command === 'create' ? await service.create(CTX, postId) : undefined;
       const before = await models.Base.knex('gift_links').where('post_id', postId);
       const previousLiveLinks = await liveLinks(postId);
-      const actionsBefore = (await giftLinkActions()).length;
+      const actionsBefore = (await loggedActions()).length;
       // Fail the second write in the real transaction, after the history row
       // has been inserted. A rejected transaction stub cannot prove rollback.
       await models.Base.knex.raw(`
@@ -139,7 +140,7 @@ describe('GiftLinksService (integration)', function () {
 
       assert.deepEqual(await models.Base.knex('gift_links').where('post_id', postId), before);
       assert.deepEqual(await liveLinks(postId), previousLiveLinks);
-      assert.equal((await giftLinkActions()).length, actionsBefore);
+      assert.equal((await loggedActions()).length, actionsBefore);
       if (existing) {
         assert.equal((await service.getPostByToken(existing.giftLinks[0]!.token))?.id, postId);
       }
@@ -147,7 +148,7 @@ describe('GiftLinksService (integration)', function () {
       // The failed command must not leave the connection or transaction stuck.
       const recovered = await service[command](CTX, postId);
       assert.equal((await liveLinks(postId))[0]?.token, recovered.giftLinks[0]?.token);
-      assert.equal((await giftLinkActions()).length, actionsBefore + 1);
+      assert.equal((await loggedActions()).length, actionsBefore + 1);
     });
   }
 
@@ -171,6 +172,6 @@ describe('GiftLinksService (integration)', function () {
       name: 'action_log.write_failed',
     });
     assert.equal((await liveLinks(postId)).length, 1, 'the gift link is still created');
-    assert.equal((await giftLinkActions()).length, 0);
+    assert.equal((await loggedActions()).length, 0);
   });
 });

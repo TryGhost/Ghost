@@ -4,6 +4,7 @@ import { defineService } from '../../../kernel/define-service';
 import urlUtils from '../../../shared/url-utils';
 import * as metafields from '../members-metafields';
 import { ActionLog } from '../../lib/action-log/action-log';
+import { stripeCheckoutConfigActions } from './action-kind';
 import { CheckoutBrandingService } from './branding-service';
 import { CheckoutService } from './checkout-service';
 import { CheckoutPreviewService, type PreviewableTier } from './preview-service';
@@ -47,7 +48,7 @@ export default defineService('Stripe Checkout Config', (): StripeCheckoutService
   }
   const config = new StripeCheckoutConfigService({
     knex,
-    actionLog: new ActionLog({ logging }),
+    actionLog: new ActionLog({ logging }).for(stripeCheckoutConfigActions),
     bindings: metafields.bindings,
     fields: metafields.fields,
     logging,

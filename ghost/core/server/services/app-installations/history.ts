@@ -1,7 +1,7 @@
 import { movedBetween, type AppManifest } from '@tryghost/app-contracts/manifest';
 import { z } from 'zod';
-import type { ActionName } from '../../lib/action-log/kinds';
 import { DbJson } from '../../lib/db-types/json';
+import type { AppInstallationActionName } from './action-kind';
 import type { AppInstallationHistoryEntry, HistoryActor } from './codec';
 import type { AppInstallationManifestSource } from './schema';
 
@@ -20,9 +20,6 @@ export interface HistoryAction {
   context: string | null;
   created_at: Date;
 }
-
-/** What happened to an installation, as its action names it. */
-export type AppInstallationActionName = ActionName<'app_installation'>;
 
 // Context that isn't JSON, or names nothing, matches no name rather than failing the history.
 const NamedContext = DbJson(z.object({ action_name: z.string() }));

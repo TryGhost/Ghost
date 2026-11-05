@@ -1,21 +1,20 @@
-import type { ActionRow } from '../../lib/action-log/action-log';
+import type { ActionChange, ActionRow } from '../../lib/action-log/action-log';
 import type { MemberAccess } from './access';
+import type { customFieldActions } from './action-kind';
 
-type FieldAction = Extract<ActionRow, { resourceType: 'member_custom_field' }>;
+type FieldAction = ActionRow<typeof customFieldActions>;
 
-// Field-definition changes map to activity-feed events. A field's timeline reads
-// added -> edited -> archived -> restored, and a permanent delete (only from the
-// archived state) ends it with deleted. Archiving and restoring are edits named for
-// what they did.
+// What each command on a field logs. Archiving and restoring are named, and their event comes
+// from the kind's declaration.
 const COMMANDS = {
   create: { event: 'added' },
   rename: { event: 'edited' },
   changeAccess: { event: 'edited' },
   changeSettings: { event: 'edited' },
-  archive: { event: 'edited', actionName: 'archived' },
-  restore: { event: 'edited', actionName: 'restored' },
+  archive: { actionName: 'archived' },
+  restore: { actionName: 'restored' },
   delete: { event: 'deleted' },
-} as const satisfies Record<string, Pick<FieldAction, 'event' | 'actionName'>>;
+} as const satisfies Record<string, ActionChange<typeof customFieldActions>>;
 
 export type MetafieldVerb = keyof typeof COMMANDS;
 
@@ -38,7 +37,6 @@ export function fieldAction(
   } = {},
 ): FieldAction {
   return {
-    resourceType: 'member_custom_field',
     ...COMMANDS[verb],
     resourceId: field.id,
     primaryName: field.name,
@@ -49,8 +47,6 @@ export function fieldAction(
 /** A reorder names no field: it carries the count and the word the feed reads it by. */
 export function reorderAction(count: number): FieldAction {
   return {
-    resourceType: 'member_custom_field',
-    event: 'edited',
     resourceId: null,
     actionName: 'reordered',
     count,
