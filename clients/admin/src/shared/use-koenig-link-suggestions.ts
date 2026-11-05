@@ -128,8 +128,8 @@ export const useKoenigLinkSuggestions = ({
   ]);
 
   const searchLinks = useCallback(
-    async (term: string) => {
-      if (!term.trim()) {
+    async (term?: string) => {
+      if (!term?.trim()) {
         return defaultLinks;
       }
 

@@ -73,7 +73,7 @@ async function renderSuggestions(
 
 type SuggestionsHook = Awaited<ReturnType<typeof renderSuggestions>>;
 
-async function searchLinks(hook: SuggestionsHook, term: string) {
+async function searchLinks(hook: SuggestionsHook, term?: string) {
   let results: Awaited<ReturnType<SuggestionsHook['result']['current']['links']['searchLinks']>> =
     [];
   await hook.act(async () => {
@@ -118,12 +118,17 @@ describe('useKoenigLinkSuggestions', () => {
     });
   });
 
-  it('offers the latest posts for a blank term', async () => {
+  // Koenig loads its default list with `searchLinks()`
+  it.each([
+    ['no term', undefined],
+    ['an empty term', ''],
+    ['a blank term', ' '],
+  ])('offers the latest posts for %s', async (_case, term) => {
     const index = fakeContent();
     const hook = await renderSuggestions();
 
     await expect
-      .poll(() => searchLinks(hook, ' '))
+      .poll(() => searchLinks(hook, term))
       .toEqual([
         {
           label: 'Latest posts',
