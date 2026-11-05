@@ -108,19 +108,16 @@ export default defineService(
       request: externalRequest,
       getLocalhostAlias: localhostAlias,
     });
+    // Read per use, not once at boot: it's config, which tests change.
+    const getManifestRules = () => ({
+      ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],
+      allowLocalhost: isDevelopment(),
+    });
 
     return new AppInstallationsService({
       knex,
       recordAction,
-      loadManifest: createManifestLoader({
-        fetchFromApp,
-        logging,
-        // Read per load, not once at boot: it's config, which tests change.
-        getManifestRules: () => ({
-          ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],
-          allowLocalhost: isDevelopment(),
-        }),
-      }),
+      loadManifest: createManifestLoader({ fetchFromApp, logging, getManifestRules }),
       identity: createIdentityChecker({
         fetchFromApp,
         logging,
@@ -129,7 +126,7 @@ export default defineService(
           trustedOrigins: appsConfig().trustedOrigins,
           trustLoopback: isDevelopment(),
         }),
-        getAllowLocalhost: isDevelopment,
+        getManifestRules,
       }),
       fetchIcon: createIconFetcher({ fetchFromApp, logging }),
     });

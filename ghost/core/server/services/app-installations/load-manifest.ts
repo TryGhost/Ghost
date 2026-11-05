@@ -64,6 +64,11 @@ function digestOf(serialisedManifest: string): string {
  * staying on the same host (or upgrading HTTP to HTTPS); the manifest must name the URL it
  * was asked for, wherever that redirects.
  *
+ * A manifest URL on one of Ghost's own hosts, on any port, is refused before anything is
+ * fetched. Every path in the manifest resolves onto that host, where browsers send Ghost's
+ * cookies whatever the port. And the outbound request guard lets a request to the site's
+ * own address through without checking where it resolves.
+ *
  * Every problem is thrown as a Ghost error with an `APP_MANIFEST_*` code, which Admin
  * explains to the publisher. `getManifestRules` is called on every load because it reads
  * config.
@@ -81,7 +86,7 @@ export function createManifestLoader({
 
   return async function loadManifest(input) {
     const rules = getManifestRules();
-    const address = parseManifestUrl(input, rules.allowLocalhost);
+    const address = parseManifestUrl(input, rules);
     if (!address.success) {
       throw new errors.ValidationError({
         message: 'The app manifest URL is not valid.',

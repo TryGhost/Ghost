@@ -81,8 +81,9 @@ compared and kept in this form.
 _Avoid_: validated manifest, resolved manifest
 
 **Ghost URLs**:
-The addresses of the site and of Admin. Nothing Ghost loads from a manifest may
-share their origins.
+The addresses of the site and of Admin. A manifest may not be on their hosts, on
+any port or scheme, as a host's cookies reach every port on it, and so neither
+may anything Ghost loads from it.
 
 ### Surfaces
 

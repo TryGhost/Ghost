@@ -367,6 +367,22 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.frame()).not.toBeInTheDocument();
   });
 
+  it('refuses to frame an app whose page is on another port of Admin’s host', async () => {
+    // An older Ghost accepted this, as it refused only Admin's exact origin. The page would
+    // be sent Admin's session cookie, which ignores the port.
+    const { protocol, hostname, port } = window.location;
+    const otherPort = port === '8443' ? '8444' : '8443';
+    const onAdminHost = manifest({
+      surfaces: [{ type: 'admin_page', url: `${protocol}//${hostname}:${otherPort}/app/` }],
+    });
+    fakeSessionStart('installation-1', installation({ manifest: onAdminHost }));
+
+    await renderAdminApp(APP_ROUTE, { labs });
+
+    await expect.element(appsScreen.notFramed()).toBeVisible();
+    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
+  });
+
   it('refuses to frame an app whose page is on the site’s address', async () => {
     // Admin isn't necessarily served from the site's address, so that one is read.
     const site = siteResponse();

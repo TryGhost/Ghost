@@ -7,7 +7,7 @@ import {
 } from '@tryghost/app-contracts/identity';
 import { isLocalhost, parseManifestUrl } from '@tryghost/app-contracts/manifest';
 import type { AppFetchFailure, FetchFromApp } from './fetch-from-app';
-import type { LoadedManifest } from './load-manifest';
+import type { LoadedManifest, ManifestRules } from './load-manifest';
 
 const ANSWER_MAX_BYTES = 4 * 1024;
 
@@ -112,13 +112,13 @@ export function createIdentityChecker({
   fetchFromApp,
   logging,
   getTrustConfig,
-  getAllowLocalhost,
+  getManifestRules,
 }: {
   fetchFromApp: FetchFromApp;
   logging: Pick<GhostLogger, 'warn'>;
   getTrustConfig: () => TrustConfig;
-  /** Whether a manifest URL on localhost is one Ghost fetches, as the manifest rules say. */
-  getAllowLocalhost: () => boolean;
+  /** The rules that say which manifest URLs Ghost fetches. */
+  getManifestRules: () => ManifestRules;
 }): IdentityChecker {
   function isTrusted(origin: string) {
     const { trustedOrigins, trustLoopback } = getTrustConfig();
@@ -155,7 +155,7 @@ export function createIdentityChecker({
   function challenge(manifestUrl: string): StartedChallenge {
     // Only an address Ghost would fetch the manifest from gets a request. Loading the
     // manifest refuses the rest with its own error.
-    const address = parseManifestUrl(manifestUrl, getAllowLocalhost());
+    const address = parseManifestUrl(manifestUrl, getManifestRules());
     if (!address.success) {
       return { origin: null, outcome: Promise.resolve({ kind: 'skipped' }) };
     }

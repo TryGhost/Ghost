@@ -90,7 +90,11 @@ An app describes itself to Ghost in a JSON manifest, which it serves as a
 - `surfaces` lists what the app asks for. Only `admin_page` exists today, at
   most once.
 - URLs must be `https`. `localhost` and other addresses of the machine itself are
-  accepted, over `http` too, only when Ghost runs in development.
+  accepted, over `http` too, only when Ghost runs in development. The manifest
+  still can't be on Ghost's own host, on any port: serve the app from a name of
+  its own under `.localhost`, such as `my-app.localhost`. Browsers send such
+  names to the machine itself, and so does Ghost in development, even where the
+  system's resolver doesn't know them.
 
 The format is unversioned while only Ghost builds apps. Unknown fields are
 rejected, so adding one is always a deliberate change to `src/manifest/`.
@@ -132,13 +136,21 @@ const stored = JSON.stringify(z.encode(AppManifestSchema, result.manifest));
 const manifest = AppManifestSchema.parse(JSON.parse(stored));
 ```
 
-`ghostUrls` is required and cannot be empty. Nothing Ghost loads from a manifest
-may point at the site's own origin or Admin's: a surface there would not be
-contained by its sandbox, and an icon there would let the app make Ghost request
-any of the site's own URLs. Its path, query and fragment must also be a path
-`isContainedPath` accepts, as Admin opens the app there: not one starting with
-`//`, as `/.//admin` resolves to, nor one with a `\` in the query or fragment.
-The author's link is exempt from both, since Ghost never loads it.
+`ghostUrls` is required and cannot be empty. The manifest may not be on the
+site's host or Admin's, whatever the port or scheme, and so neither may anything
+Ghost loads from it, as that is on the manifest's origin. A surface on Ghost's
+origin would not be contained by its sandbox, and on another port it would be
+sent the staff user's session cookie, as cookies ignore ports. An icon there
+would let the app make Ghost request any of the site's own URLs. Hosts are
+compared as the URL parser reads them, without a trailing dot. A sibling host,
+such as another subdomain, is not Ghost's, nor is a name under Ghost's or
+another name for the same machine: `my-app.localhost` or `127.0.0.1` next to
+Ghost on `localhost` is fine. Anything Ghost loads
+must also have a path, query and fragment `isContainedPath` accepts, as Admin
+opens the app there: not one starting with `//`, as `/.//admin` resolves to, nor
+one with a `\` in the query or fragment. The author's link is exempt from both,
+since Ghost never loads it. `isGhostHost` applies the host rule on its own, for
+Admin to ask again before it frames a page.
 
 There is no list of allowed origins in the manifest. The only origin that may
 talk to Ghost from a surface is the origin of that surface's resolved `url`;
@@ -149,8 +161,9 @@ must serve only the app (the SDK's README lists what to keep off it).
 
 ### The manifest URL
 
-`parseManifestUrl(input, allowLocalhost)` applies the same rules to the address a
-manifest is read from, so it can run before anything is fetched. It hands back the
+`parseManifestUrl(input, { ghostUrls, allowLocalhost })` applies the same rules to
+the address a manifest is read from, Ghost's hosts included, so it can run before
+anything is fetched. It hands back the
 address to keep, as the URL parser reads it. An address with a fragment, even an empty
 one, is refused, as is a `manifest_url` with one. The parser settles most differences
 in spelling, but a trailing dot on the host or the case of a percent-encoding stays as
@@ -159,7 +172,9 @@ given, so such an address reads as a change of manifest URL.
 ```ts
 import { parseManifestUrl } from '@tryghost/app-contracts/manifest';
 
-const result = parseManifestUrl(' https://Podcast.Example.com/ghost-app.json ', false);
+const result = parseManifestUrl(' https://Podcast.Example.com/ghost-app.json ', {
+  ghostUrls: ['https://site.example.com', 'https://admin.example.com'],
+});
 
 if (result.success) {
   result.manifestUrl; // https://podcast.example.com/ghost-app.json
