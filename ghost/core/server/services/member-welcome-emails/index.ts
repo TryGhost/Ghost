@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { IncorrectUsageError } from '@tryghost/errors';
 import { defineService } from '../../../kernel/define-service';
+import { memoize } from '../../../shared/memoize';
 
 const VERIFICATION_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const VERIFICATION_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
@@ -73,6 +74,7 @@ export default defineService('Member welcome emails', () => {
     // Forwarded rather than captured: the Lexical facade builds its renderer lazily.
     renderLexical: (lexical: string, options: { target: 'email'; design: object }) =>
       lexicalLib.render(lexical, options),
+    memoize,
     readTemplate,
   });
 
