@@ -9,6 +9,9 @@
     "redirects": true,
     "sessionMaxAgeMs": 15552000000
   },
+  "auth": {
+    "engine": "legacy"
+  },
   "externalRequest": {
     "keepAlive": true,
     "keepAliveMsecs": 60000,

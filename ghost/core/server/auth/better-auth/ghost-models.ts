@@ -1,7 +1,11 @@
+import ObjectId from 'bson-objectid';
 import type { BetterAuthOptions } from 'better-auth/types';
 import type { VirtualColumn } from './knex-adapter';
 
 const timestamps = { createdAt: 'created_at', updatedAt: 'updated_at' };
+
+/** Ghost ids are ObjectIds. Pass as `advanced.database.generateId`. */
+export const generateGhostId = () => new ObjectId().toHexString();
 
 /**
  * Maps Better Auth's core models onto Ghost's tables: `user` onto the existing

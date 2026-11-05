@@ -161,6 +161,14 @@ async function initCore({ ghostServer, config }) {
   await i18n.init({ events: require('./server/lib/common/events') });
   debug('End: i18n');
 
+  // Reads admin_session_secret, so it follows settings. Under legacy nothing loads
+  // Better Auth or reads its tables.
+  if (config.get('auth:engine') === 'better-auth') {
+    debug('Begin: Better Auth');
+    await require('./server/auth').betterAuth.init();
+    debug('End: Better Auth');
+  }
+
   // Gift links service: wires the (knex-backed) repository once the DB is ready.
   debug('Begin: Gift Links Service');
   const giftLinksService = require('./server/services/gift-links').default;

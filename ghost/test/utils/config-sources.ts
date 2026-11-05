@@ -21,6 +21,7 @@ export function configSources(extra: Record<string, unknown> = {}): Record<strin
       env: 'testing',
       url: 'http://localhost:2368',
       paths: { ...defaults.paths, ...overrides.paths },
+      auth: defaults.auth,
     },
     extra,
   );

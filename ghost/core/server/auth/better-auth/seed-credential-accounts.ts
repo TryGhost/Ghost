@@ -1,6 +1,6 @@
-import ObjectId from 'bson-objectid';
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
+import { generateGhostId } from './ghost-models';
 
 /**
  * Gives every user without one a `credential` row in `user_accounts`, holding
@@ -32,7 +32,7 @@ export async function seedCredentialAccounts(knex: Knex): Promise<void> {
   await knex('user_accounts')
     .insert(
       users.map((user) => ({
-        id: new ObjectId().toHexString(),
+        id: generateGhostId(),
         user_id: user.id,
         account_id: user.id,
         provider_id: 'credential',
