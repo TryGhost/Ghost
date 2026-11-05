@@ -77,12 +77,12 @@ const ListOptionsEditor: React.FC<{
           <span
             aria-describedby={problem ? problemId : undefined}
             aria-invalid={Boolean(problem) || undefined}
-            className="flex min-w-0 flex-1 items-center px-3 py-1.5 text-control wrap-anywhere"
+            className="flex min-w-0 flex-1 items-center px-3 py-1 text-control wrap-anywhere"
           >
             {option}
           </span>
           {removable && (
-            <InputGroupAddon align="inline-end">
+            <InputGroupAddon align="inline-end" className="py-0">
               <InputGroupButton
                 aria-describedby={problem ? problemId : undefined}
                 aria-label={`Remove ${option}`}
