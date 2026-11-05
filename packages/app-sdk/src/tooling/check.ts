@@ -1,41 +1,47 @@
 import {
+  ANSWER_TOO_LARGE,
+  APP_LOAD_MESSAGES,
+  REDIRECT_STATUSES,
   challengeUrl,
   createChallenge,
+  dropCredentials,
+  isRedirect,
+  isSuccess,
+  parseJsonText,
+  readLocation,
   readSignedManifest,
+  staysOnHost,
   verifyChallengeAnswer,
   verifySignedManifest,
+  type AppLoadCode,
 } from '@tryghost/app-contracts/identity';
-import { parseManifest, parseManifestUrl } from '@tryghost/app-contracts/manifest';
+import {
+  formatManifestErrors,
+  parseManifest,
+  parseManifestUrl,
+} from '@tryghost/app-contracts/manifest';
 
 import { readBytes } from '../shared/body.ts';
 import { ignoreError } from '../shared/ignore.ts';
-import { UNKNOWN_GHOST_URL, formatErrors } from '../shared/manifest.ts';
-import { parseJsonText } from '../shared/parse.ts';
+import { UNKNOWN_GHOST_URL } from '../shared/manifest.ts';
 import type { PublicKeyJwk } from './keys.ts';
 import {
   ANSWER_MAX_BYTES,
+  FETCH_TIMEOUT_MS,
   MANIFEST_MAX_BYTES,
   MAX_REDIRECTS,
   SIGNED_MANIFEST_MAX_BYTES,
-  TIMEOUT_MS,
   storedSize,
   tooLargeMessage,
 } from './limits.ts';
 import type { AppManifest, ManifestError } from './types.ts';
 
-/** The codes Ghost refuses an app with, which `checkApp` reports the same problems with. */
-export type CheckCode =
-  | 'APP_MANIFEST_URL_INVALID'
-  | 'APP_MANIFEST_UNREACHABLE'
-  | 'APP_MANIFEST_REDIRECTED'
-  | 'APP_MANIFEST_TOO_LARGE'
-  | 'APP_MANIFEST_NOT_JSON'
-  | 'APP_MANIFEST_UNSIGNED'
-  | 'APP_MANIFEST_URL_MISMATCH'
-  | 'APP_MANIFEST_INVALID'
-  | 'APP_MANIFEST_SIGNATURE_INVALID'
-  | 'APP_CHALLENGE_UNREACHABLE'
-  | 'APP_CHALLENGE_FAILED';
+/**
+ * The codes Ghost refuses an app with, which `checkApp` reports the same problems with. Only a
+ * site can tell an app is signed with another key than the one it installed, or names a
+ * backend key a newer manifest replaced.
+ */
+export type CheckCode = Exclude<AppLoadCode, 'APP_IDENTITY_MISMATCH' | 'APP_BACKEND_KEY_RETIRED'>;
 
 /** What `checkApp` resolves with: the manifest Ghost would install, or why Ghost would refuse. */
 export type CheckResult =
@@ -63,21 +69,6 @@ export interface CheckOptions {
 
 type Fetch = typeof fetch;
 
-// Ghost's own message for each code.
-const MESSAGES: Record<CheckCode, string> = {
-  APP_MANIFEST_URL_INVALID: 'The app manifest URL is not valid.',
-  APP_MANIFEST_UNREACHABLE: 'Could not load the app’s manifest.',
-  APP_MANIFEST_REDIRECTED: 'The app’s manifest redirects to another host.',
-  APP_MANIFEST_TOO_LARGE: `The app’s manifest is larger than ${MANIFEST_MAX_BYTES / 1024} KB.`,
-  APP_MANIFEST_NOT_JSON: 'The app’s manifest is not JSON.',
-  APP_MANIFEST_UNSIGNED: 'The app’s manifest is not signed.',
-  APP_MANIFEST_URL_MISMATCH: 'The app’s manifest is for another address.',
-  APP_MANIFEST_INVALID: 'The app manifest is not valid.',
-  APP_MANIFEST_SIGNATURE_INVALID: 'The app’s manifest signature is not valid.',
-  APP_CHALLENGE_UNREACHABLE: 'Could not reach the app to confirm it comes from its developer.',
-  APP_CHALLENGE_FAILED: 'Ghost couldn’t confirm the app comes from its developer.',
-};
-
 /** Thrown by any step, and turned into a failed `CheckResult` by `checkApp`. */
 class Failure extends Error {
   constructor(
@@ -85,7 +76,7 @@ class Failure extends Error {
     readonly detail: string,
     readonly errors?: ManifestError[],
   ) {
-    super(MESSAGES[code]);
+    super(APP_LOAD_MESSAGES[code]);
   }
 }
 
@@ -142,7 +133,7 @@ function readManifestUrl(input: string): string {
 async function fetchManifest(manifestUrl: string, fetchFn: Fetch): Promise<Uint8Array> {
   // One deadline for the whole read, redirects included, as in Ghost, so a slow app can't stall
   // it several times over.
-  const signal = AbortSignal.timeout(TIMEOUT_MS);
+  const signal = AbortSignal.timeout(FETCH_TIMEOUT_MS);
   let current = new URL(manifestUrl);
   for (let redirects = 0; ; redirects++) {
     const answer = await fetchOnce(fetchFn, current, {
@@ -170,8 +161,6 @@ async function fetchManifest(manifestUrl: string, fetchFn: Fetch): Promise<Uint8
   }
 }
 
-const REDIRECT_STATUSES: ReadonlySet<number> = new Set([301, 302, 303, 307, 308]);
-
 /** The URL a redirect leads to, if Ghost would follow it. */
 function followRedirect(
   manifestUrl: string,
@@ -180,8 +169,7 @@ function followRedirect(
   location: string,
   redirects: number,
 ): URL {
-  // Headers arrive as latin1, and Ghost reads the Location as UTF-8, as got and browsers do.
-  const target = URL.parse(Buffer.from(location, 'binary').toString('utf8'), current);
+  const target = readLocation(location, current);
   if (!target) {
     throw new Failure(
       'APP_MANIFEST_UNREACHABLE',
@@ -197,24 +185,8 @@ function followRedirect(
       `${manifestUrl} redirects more than ${MAX_REDIRECTS} times`,
     );
   }
-  // Ghost drops credentials from a Location, as browsers do, and fetch would refuse them.
-  target.username = '';
-  target.password = '';
-  return target;
-}
-
-/** Ghost follows a redirect on the same origin, or from HTTP to HTTPS on the same host. */
-function staysOnHost(from: URL, to: URL): boolean {
-  if (to.origin === from.origin) {
-    return true;
-  }
-  return (
-    from.protocol === 'http:' &&
-    to.protocol === 'https:' &&
-    to.hostname === from.hostname &&
-    from.port === '' &&
-    to.port === ''
-  );
+  // Ghost drops credentials from a Location, and fetch would refuse them.
+  return dropCredentials(target);
 }
 
 function readSigned(body: Uint8Array, manifestUrl: string) {
@@ -234,7 +206,7 @@ function parse(payload: string, manifestUrl: string): AppManifest {
   if (parsed.success) {
     return parsed.manifest;
   }
-  const detail = formatErrors(parsed.errors, '; ');
+  const detail = formatManifestErrors(parsed.errors, '; ');
   // A manifest signed for another address has its own code, as it's the usual mistake.
   if (parsed.reason === 'manifest_url_mismatch') {
     throw new Failure('APP_MANIFEST_URL_MISMATCH', detail);
@@ -268,7 +240,7 @@ async function challenge(origin: string, backendKey: PublicKeyJwk, fetchFn: Fetc
       method: 'POST',
       body: sent,
       headers: { accept: 'application/json', 'content-type': 'application/json' },
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     },
     maxBytes: ANSWER_MAX_BYTES,
     code: 'APP_CHALLENGE_UNREACHABLE',
@@ -280,10 +252,7 @@ async function challenge(origin: string, backendKey: PublicKeyJwk, fetchFn: Fetc
     throw new Failure('APP_CHALLENGE_UNREACHABLE', describeRefusal(origin, answer.status, text));
   }
   if (text === undefined) {
-    throw new Failure(
-      'APP_CHALLENGE_FAILED',
-      `${origin}: The answer is larger than ${ANSWER_MAX_BYTES / 1024} KB`,
-    );
+    throw new Failure('APP_CHALLENGE_FAILED', `${origin}: ${ANSWER_TOO_LARGE}`);
   }
   const verified = await verifyChallengeAnswer(sent, text, backendKey);
   if (!verified.success) {
@@ -360,6 +329,3 @@ function parseJson(text: string, manifestUrl: string): unknown {
 // Kept with any byte order mark, as Ghost's `Buffer#toString` keeps it: a manifest may start with
 // one, which its JSON parse allows, and an answer to the challenge may not.
 const decode = (bytes: Uint8Array) => new TextDecoder('utf-8', { ignoreBOM: true }).decode(bytes);
-
-const isRedirect = (status: number) => status >= 300 && status < 400;
-const isSuccess = (status: number) => status >= 200 && status < 300;

@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-import { signManifest } from '@tryghost/app-contracts/identity';
+import { parseJsonText, signManifest } from '@tryghost/app-contracts/identity';
 import { parseManifest, parseManifestUrl } from '@tryghost/app-contracts/manifest';
 
 import {
@@ -13,7 +13,6 @@ import {
   type ReadKeysOptions,
 } from './keys.ts';
 import { UNKNOWN_GHOST_URL } from '../shared/manifest.ts';
-import { parseJsonText } from '../shared/parse.ts';
 import {
   MANIFEST_MAX_BYTES,
   SIGNED_MANIFEST_MAX_BYTES,

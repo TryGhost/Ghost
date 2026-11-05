@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 
 import { FlattenedSign } from 'jose';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, expectTypeOf, it } from 'vitest';
+import type { z } from 'zod';
 
 import {
+  SignedManifestSchema,
   readSignedManifest,
   signManifest,
   verifySignedManifest,
@@ -144,5 +146,11 @@ describe('verifySignedManifest', () => {
       success: false,
       error: 'identity_key is not a usable Ed25519 key',
     });
+  });
+});
+
+describe('SignedManifestSchema', () => {
+  it('reads a SignedManifest', () => {
+    expectTypeOf<z.output<typeof SignedManifestSchema>>().toEqualTypeOf<SignedManifest>();
   });
 });

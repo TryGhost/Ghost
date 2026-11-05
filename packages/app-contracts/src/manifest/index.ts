@@ -15,10 +15,9 @@
 export { compareManifests, type ManifestChange, type ManifestComparison } from './compare.ts';
 export { isGhostHost } from './ghost-host.ts';
 export { APP_ID_MAX_LENGTH, isValidAppId } from './id.ts';
-export type { AppIcon } from './icon.ts';
-export type { PublicKeyJwk } from './keys.ts';
 export { URL_MAX_LENGTH } from './limits.ts';
 export {
+  formatManifestErrors,
   parseManifest,
   parseManifestUrl,
   type ManifestError,
@@ -26,11 +25,7 @@ export {
   type ParseManifestResult,
   type ParseManifestUrlResult,
 } from './parse.ts';
-export {
-  AppManifestSchema,
-  type AppManifest,
-  type AppSurface,
-  type AppSurfaceType,
-} from './schema.ts';
+export { AppManifestSchema } from './schema.ts';
+export type { AppIcon, AppManifest, AppSurface, AppSurfaceType, PublicKeyJwk } from './types.ts';
 export { isLocalhost } from './localhost.ts';
 export { appPageUrl, movedBetween, servedFrom, type AppMove } from './served-from.ts';

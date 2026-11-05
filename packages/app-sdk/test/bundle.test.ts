@@ -101,11 +101,6 @@ describe('the package', () => {
     expect(reachableImports(code(entry))).toEqual(new Set(packages));
   });
 
-  it("keeps the page's SDK free of the contracts' validation", () => {
-    const loaded = [...reachableImports(code('index'))].join();
-    expect(loaded).not.toMatch(/jose|zod|node:/);
-  });
-
   it.each([
     ['tooling', ['jose', 'zod']],
     ['bin', ['jose', 'zod', 'commander']],
@@ -190,6 +185,22 @@ describe('the package', () => {
     },
   );
 
+  /** Type-checks an entry point's declarations, as an app's TypeScript reads them. */
+  const checkDeclarations = (entry: string) => {
+    const file = declarations(entry);
+    const program = ts.createProgram([file], {
+      strict: true,
+      noEmit: true,
+      types: [],
+      lib: ['lib.es2022.d.ts', 'lib.dom.d.ts'],
+    });
+    const diagnostics = ts
+      .getPreEmitDiagnostics(program)
+      .map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
+    expect(diagnostics).toEqual([]);
+    return { program, file };
+  };
+
   // Type-checking against the DOM lib is quick locally, but can time out on a CPU-constrained
   // CI runner. A backend's platform has the same web standards as a page.
   it.each([
@@ -228,31 +239,19 @@ describe('the package', () => {
         'withGhostApp',
       ],
     ],
-    ['tooling', undefined],
   ])(
     'declares every type %s exports, with nothing missing',
     { timeout: 60_000 },
     (entry, expected) => {
-      const file = declarations(entry);
-      const program = ts.createProgram([file], {
-        strict: true,
-        noEmit: true,
-        types: [],
-        lib: ['lib.es2022.d.ts', 'lib.dom.d.ts'],
-      });
-      const diagnostics = ts
-        .getPreEmitDiagnostics(program)
-        .map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
-      expect(diagnostics).toEqual([]);
-
-      if (expected) {
-        const checker = program.getTypeChecker();
-        const module = checker.getSymbolAtLocation(program.getSourceFile(file) as ts.Node);
-        const exported = checker
-          .getExportsOfModule(module as ts.Symbol)
-          .map((symbol) => symbol.name);
-        expect(exported.sort()).toEqual([...expected].sort());
-      }
+      const { program, file } = checkDeclarations(entry);
+      const checker = program.getTypeChecker();
+      const module = checker.getSymbolAtLocation(program.getSourceFile(file) as ts.Node);
+      const exported = checker.getExportsOfModule(module as ts.Symbol).map((symbol) => symbol.name);
+      expect(exported.sort()).toEqual([...expected].sort());
     },
   );
+
+  it('declares every type tooling exports', { timeout: 60_000 }, () => {
+    checkDeclarations('tooling');
+  });
 });

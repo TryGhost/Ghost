@@ -1,4 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import type { z } from 'zod';
+
+import type { PublicKeyJwk } from '../../src/manifest/index.ts';
+import { publicKeyField } from '../../src/manifest/keys.ts';
 
 import { BACKEND_KEY, IDENTITY_KEY, errorsOf, manifest, manifestOf } from './helpers.ts';
 
@@ -87,5 +91,11 @@ describe('identity_key and backend_key', () => {
     expect(
       errorsOf(manifest({ backend_key: IDENTITY_KEY, name: '' })).map(({ path }) => path),
     ).toEqual(['name', 'backend_key']);
+  });
+});
+
+describe('PublicKeyJwk', () => {
+  it('is what publicKeyField reads', () => {
+    expectTypeOf<z.output<typeof publicKeyField>>().toEqualTypeOf<PublicKeyJwk>();
   });
 });

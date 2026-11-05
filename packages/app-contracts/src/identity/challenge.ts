@@ -1,7 +1,7 @@
 import { CompactSign, base64url, compactVerify, importJWK } from 'jose';
 import { z } from 'zod';
 
-import type { PublicKeyJwk } from '../manifest/keys.ts';
+import type { PublicKeyJwk } from '../manifest/types.ts';
 import { ALGORITHM, readExactHeader } from './jws.ts';
 import { decodeUtf8, type PrivateKey } from './keys.ts';
 import type { VerifyResult } from './signed-manifest.ts';

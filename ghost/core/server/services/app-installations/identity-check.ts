@@ -1,6 +1,9 @@
 import errors from '@tryghost/errors';
 import type { GhostLogger } from '@tryghost/logging';
 import {
+  ANSWER_MAX_BYTES,
+  ANSWER_TOO_LARGE,
+  APP_LOAD_MESSAGES,
   challengeUrl,
   createChallenge,
   verifyChallengeAnswer,
@@ -8,8 +11,6 @@ import {
 import { isLocalhost, parseManifestUrl } from '@tryghost/app-contracts/manifest';
 import type { AppFetchFailure, FetchFromApp } from './fetch-from-app';
 import type { LoadedManifest, ManifestRules } from './load-manifest';
-
-const ANSWER_MAX_BYTES = 4 * 1024;
 
 /** What the site has to say about an app it already has. */
 export interface PinnedIdentity {
@@ -94,7 +95,7 @@ function challengeUnreachable(
   logging.warn(`Could not challenge the app at ${origin}`);
   logging.warn(failure.reason === 'unreachable' ? failure.cause : context);
   return new errors.ValidationError({
-    message: 'Could not reach the app to confirm it comes from its developer.',
+    message: APP_LOAD_MESSAGES.APP_CHALLENGE_UNREACHABLE,
     code: 'APP_CHALLENGE_UNREACHABLE',
     context,
   });
@@ -102,7 +103,7 @@ function challengeUnreachable(
 
 function challengeFailed(origin: string, why: string) {
   return new errors.ValidationError({
-    message: 'Ghost couldn’t confirm the app comes from its developer.',
+    message: APP_LOAD_MESSAGES.APP_CHALLENGE_FAILED,
     code: 'APP_CHALLENGE_FAILED',
     context: `${origin}: ${why}`,
   });
@@ -142,8 +143,7 @@ export function createIdentityChecker({
       if (answered.failure.reason === 'too_large') {
         return {
           kind: 'failed',
-          error: () =>
-            challengeFailed(origin, `The answer is larger than ${ANSWER_MAX_BYTES / 1024} KB`),
+          error: () => challengeFailed(origin, ANSWER_TOO_LARGE),
         };
       }
       const { failure } = answered;
@@ -176,13 +176,13 @@ export function createIdentityChecker({
     if (pinned && loaded.identityKeyThumbprint !== pinned.identityKeyThumbprint) {
       // No detail: the publisher is told it isn't from the same developer, never about keys.
       throw new errors.ValidationError({
-        message: 'This app doesn’t come from the same developer as the installed one.',
+        message: APP_LOAD_MESSAGES.APP_IDENTITY_MISMATCH,
         code: 'APP_IDENTITY_MISMATCH',
       });
     }
     if (pinned?.retiredBackendKeys.has(loaded.backendKeyThumbprint)) {
       throw new errors.ValidationError({
-        message: 'Ghost couldn’t confirm the app comes from its developer.',
+        message: APP_LOAD_MESSAGES.APP_BACKEND_KEY_RETIRED,
         code: 'APP_BACKEND_KEY_RETIRED',
         context: 'backend_key has been replaced, and can’t be used again',
       });

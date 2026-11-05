@@ -1,7 +1,8 @@
 import { calculateJwkThumbprint } from 'jose';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
+import type { z } from 'zod';
 
-import { thumbprintOf } from '../../src/identity/index.ts';
+import { PrivateKeyJwkSchema, thumbprintOf, type PrivateKeyJwk } from '../../src/identity/index.ts';
 import { newKeyPair } from './helpers.ts';
 
 describe('thumbprintOf', () => {
@@ -20,5 +21,28 @@ describe('thumbprintOf', () => {
     const { publicJwk } = await newKeyPair();
     const reordered = { x: publicJwk.x, crv: publicJwk.crv, kty: publicJwk.kty };
     expect(await thumbprintOf(reordered)).toBe(await calculateJwkThumbprint(publicJwk));
+  });
+});
+
+describe('PrivateKeyJwkSchema', () => {
+  const key = { kty: 'OKP', crv: 'Ed25519', x: 'public', d: 'private' };
+
+  it('reads a private Ed25519 key, leaving out any other member', () => {
+    expect(PrivateKeyJwkSchema.parse({ ...key, kid: 'one', use: 'sig' })).toEqual(key);
+  });
+
+  it.each([
+    ['another key type', { ...key, kty: 'EC' }],
+    ['another curve', { ...key, crv: 'Ed448' }],
+    ['no x', { ...key, x: undefined }],
+    ['no d', { ...key, d: undefined }],
+    ['a d that is not a string', { ...key, d: 1 }],
+    ['something else', 'key'],
+  ])('refuses %s', (_name, value) => {
+    expect(PrivateKeyJwkSchema.safeParse(value).success).toBe(false);
+  });
+
+  it('reads a PrivateKeyJwk', () => {
+    expectTypeOf<z.output<typeof PrivateKeyJwkSchema>>().toEqualTypeOf<PrivateKeyJwk>();
   });
 });

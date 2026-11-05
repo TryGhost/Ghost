@@ -1,4 +1,4 @@
-import type { AppManifest } from './schema.ts';
+import type { AppManifest } from './types.ts';
 
 /**
  * The only fields that may change without the publisher approving it again: text, colour

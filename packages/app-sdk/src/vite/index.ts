@@ -13,6 +13,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { isLocalhost, isValidAppId } from '@tryghost/app-contracts';
+import { parseJsonText } from '@tryghost/app-contracts/identity';
 import type { Plugin, ResolvedConfig } from 'vite';
 
 import {
@@ -22,8 +23,9 @@ import {
   createKeys,
   signingKeySource,
 } from '../tooling/keys.ts';
-import { MANIFEST_PATH, formatErrors } from '../shared/manifest.ts';
-import { parseJsonText, parseOrigin } from '../shared/parse.ts';
+import { MANIFEST_PATH } from '../shared/manifest.ts';
+import { parseOrigin } from '../shared/parse.ts';
+import { formatErrors } from '../tooling/format.ts';
 import { MANIFEST_FILE, serialiseSigned, signProject } from '../tooling/sign.ts';
 import { DENY, VITE_DEFAULT_DENY } from './deny.ts';
 import { provideDevBackendKey } from './dev-vars.ts';
