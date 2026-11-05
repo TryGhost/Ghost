@@ -902,12 +902,35 @@ describe('External Request', function () {
         found: ['::1', 6],
       });
       assert.deepEqual(await lookUp(lookup, 'a.b.localhost.'), { error: null, found: ['::1', 6] });
+      assert.deepEqual(await lookUp(lookup, 'my-app.localhost..'), {
+        error: null,
+        found: ['::1', 6],
+      });
       assert.deepEqual(system.asked, [
         'my-app.localhost',
         'localhost',
         'a.b.localhost.',
         'localhost',
+        'my-app.localhost..',
+        'localhost',
       ]);
+    });
+
+    it('tells a name under .localhost in linear time, however many dots it has', async function () {
+      // A pattern for trailing dots that could start at any dot would retry from each one
+      // in a run that doesn't end the name, taking quadratic time on this one.
+      const dots = '.'.repeat(200_000);
+      const system = resolver({ localhost: '::1' });
+      const lookup = externalRequest._lookupLocalhostNames(system.lookup);
+
+      const started = performance.now();
+      assert.deepEqual(await lookUp(lookup, `my-app.localhost${dots}`), {
+        error: null,
+        found: ['::1', 6],
+      });
+      assert.equal((await lookUp(lookup, `a${dots}b`)).error.code, 'ENOTFOUND');
+      assert.ok(performance.now() - started < 1000);
+      assert.equal(system.asked.length, 3);
     });
 
     it('keeps the system’s answer for a name under .localhost it knows', async function () {
@@ -941,18 +964,36 @@ describe('External Request', function () {
       assert.equal(error.hostname, 'my-app.localhost');
     });
 
-    it('gives any other error as the system gave it, without looking up localhost', async function () {
-      const asked = [];
-      const timedOut = Object.assign(new Error('getaddrinfo EAI_AGAIN my-app.localhost'), {
-        code: 'EAI_AGAIN',
-      });
-      const lookup = externalRequest._lookupLocalhostNames((hostname, options, callback) => {
-        asked.push(hostname);
-        process.nextTick(callback, timedOut);
-      });
+    it('looks up localhost whatever error the system gave, as offline it gives EAI_AGAIN', async function () {
+      // Offline, a name the hosts file doesn't have can't be asked of a nameserver, but
+      // `localhost` is in the hosts file.
+      const offline = (hostsFile) => {
+        const asked = [];
+        const lookup = (hostname, options, callback) => {
+          asked.push(hostname);
+          if (hostsFile[hostname]) {
+            return process.nextTick(callback, null, hostsFile[hostname], 4);
+          }
+          const error = new Error(`getaddrinfo EAI_AGAIN ${hostname}`);
+          error.code = 'EAI_AGAIN';
+          error.hostname = hostname;
+          process.nextTick(callback, error);
+        };
+        return { lookup, asked };
+      };
 
-      assert.equal((await lookUp(lookup, 'my-app.localhost')).error, timedOut);
-      assert.deepEqual(asked, ['my-app.localhost']);
+      const system = offline({ localhost: '127.0.0.1' });
+      const lookup = externalRequest._lookupLocalhostNames(system.lookup);
+      assert.deepEqual(await lookUp(lookup, 'my-app.localhost'), {
+        error: null,
+        found: ['127.0.0.1', 4],
+      });
+      assert.deepEqual(system.asked, ['my-app.localhost', 'localhost']);
+
+      const withoutLocalhost = externalRequest._lookupLocalhostNames(offline({}).lookup);
+      const { error } = await lookUp(withoutLocalhost, 'my-app.localhost');
+      assert.equal(error.code, 'EAI_AGAIN');
+      assert.equal(error.hostname, 'my-app.localhost');
     });
 
     it('passes the lookup’s options on, and takes a callback in their place', async function () {

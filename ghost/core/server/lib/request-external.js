@@ -172,12 +172,14 @@ async function disableRetries(options) {
 
 /**
  * Whether a hostname is a name under `.localhost`, such as `my-app.localhost`, which is
- * always the machine itself (RFC 6761), with or without the root's trailing dot.
+ * always the machine itself (RFC 6761), with any number of trailing dots, as the URL
+ * parser keeps every one of them. The dots can only start after `.localhost`, so the test
+ * takes linear time however many there are.
  *
  * @param {string} hostname
  */
 function isUnderLocalhost(hostname) {
-  return /\.localhost\.?$/i.test(hostname);
+  return /\.localhost\.*$/i.test(hostname);
 }
 
 /**
@@ -188,9 +190,12 @@ function isUnderLocalhost(hostname) {
  * hosts lookup, nor slim container images', so Ghost couldn't reach the server there.
  *
  * The system is asked first, so a name it maps somewhere else, in a hosts file say,
- * still goes there. Looking up `localhost` gives the machine's addresses in its own
- * order, as a server listening on `localhost` listens on the first of them. If that
- * fails too, the system's error is given, as it names the host that was asked for.
+ * still goes there. Whatever error it gives, `localhost` is looked up next: offline, or
+ * in a container that can't reach its nameserver, the error is `EAI_AGAIN` rather than
+ * `ENOTFOUND`, yet `localhost` still resolves from the hosts file. Looking up `localhost`
+ * gives the machine's addresses in its own order, as a server listening on `localhost`
+ * listens on the first of them. If that fails too, the system's error is given, as it
+ * names the host that was asked for.
  *
  * @param {typeof dns.lookup} lookup
  * @returns {typeof dns.lookup}
@@ -206,8 +211,8 @@ function lookupLocalhostNames(lookup) {
         return lookup(hostname, options, callback);
       }
       lookup(hostname, options, (error, ...found) => {
-        if (error?.code !== 'ENOTFOUND') {
-          return callback(error, ...found);
+        if (!error) {
+          return callback(null, ...found);
         }
         lookup('localhost', options, (localhostError, ...onLocalhost) => {
           if (localhostError) {
