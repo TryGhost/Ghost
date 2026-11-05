@@ -37,7 +37,8 @@ ES module with everything inlined:
 ```
 
 With a bundler, install the package. It includes the types and code it uses
-from Ghost's contracts, so its only dependency is `@quilted/threads`:
+from Ghost's contracts. The page needs only `@quilted/threads`, and the backend
+adds `jose` and `zod`:
 
 ```sh
 pnpm add @tryghost/app-sdk
