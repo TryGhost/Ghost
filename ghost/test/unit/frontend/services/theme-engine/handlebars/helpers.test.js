@@ -107,8 +107,8 @@ describe('Helpers', function () {
       const helpersDir = path.join(__dirname, '../../../../../../core/frontend/helpers');
       const globalHelperFiles = fs
         .readdirSync(helpersDir)
-        .filter((f) => /\.(js|ts)$/.test(f) && f !== 'index.js' && f !== 'register.js')
-        .map((f) => f.replace(/\.(js|ts)$/, ''));
+        .filter((f) => f.endsWith('.js') && f !== 'index.js' && f !== 'register.js')
+        .map((f) => f.replace('.js', ''));
 
       const missing = globalHelperFiles
         .filter((h) => !internalHelpers.includes(h))
