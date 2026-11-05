@@ -27,7 +27,7 @@ const ASKING: { [Section in CollectedSection]: (part: AskedParts[Section]) => As
 
 /**
  * The checkout the config makes for a subscription to this paid tier: its design, asking for
- * each collected part that covers the tier and has somewhere to keep the answer.
+ * each collected part that covers the tier.
  */
 function checkoutForTier(config: CheckoutSessionConfig, tierId: string): CheckoutDefinition {
   const ask = <Section extends CollectedSection>(
@@ -47,7 +47,7 @@ function checkoutForTier(config: CheckoutSessionConfig, tierId: string): Checkou
 
 /** Whether a checkout for this paid tier asks for what a collected part collects. */
 function asksOn(part: AskedPart, tierId: string) {
-  return part.collectable && (part.tierIds === null || part.tierIds.includes(tierId));
+  return part.tierIds === null || part.tierIds.includes(tierId);
 }
 
 /** What deciding checkouts needs. */
