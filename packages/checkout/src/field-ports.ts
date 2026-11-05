@@ -1,3 +1,5 @@
+// Portal imports this file on its own, as `@tryghost/checkout/field-ports`, so it imports nothing
+// but types from the rest of the package, which is built out of zod.
 import type { CollectedPart } from './collected-parts.ts';
 
 /**

@@ -29,7 +29,11 @@ export type MemberCustomField = Omit<ListedCustomField, 'type' | 'settings'> & T
  * takes, and whether the member may change it or only see it.
  */
 export type FieldInput = Pick<MemberCustomField, 'key' | 'name'> &
-  TypedSettings & { readOnly: boolean };
+  TypedSettings & {
+    readOnly: boolean;
+    /** The countries a member may choose from, when fewer than every country. */
+    countries?: readonly string[] | undefined;
+  };
 
 /** A field the publisher opened to members, as a form asks for it: theirs to change if they may write it. */
 export function fieldInput(field: MemberCustomField): FieldInput {
