@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
-import {assertPrettifiesTo, callRenderer, html} from '../test-utils/index.js';
+import {assertPrettifiesTo, callRenderer, createDocument, html} from '../test-utils/index.js';
 
 describe('renderers/video-renderer', function () {
+    // URLs containing characters that are special in HTML attributes and in CSS
+    const awkwardThumbnailSrc = 'https://example.org/a>b <c>.jpg';
+    const awkwardCustomThumbnailSrc = 'https://example.org/it\'s "a" (thumbnail)\\ 1.jpg';
+    const encodedAwkwardCustomThumbnailSrc = 'https://example.org/it%27s%20%22a%22%20(thumbnail)%5C%201.jpg';
+
     function getTestData(overrides = {}) {
         return {
             src: '/content/images/2022/11/koenig-lexical.mp4',
@@ -107,6 +112,19 @@ describe('renderers/video-renderer', function () {
             assert.ok(result.html.includes('poster="data:image/gif;base64,'));
         });
 
+        it('renders thumbnail URLs containing special characters', function () {
+            const result = renderForWeb(getTestData({thumbnailSrc: awkwardThumbnailSrc, customThumbnailSrc: awkwardCustomThumbnailSrc}));
+            const document = createDocument(result.html);
+            const figure = document.querySelector('figure.kg-video-card');
+            const video = document.querySelector('video');
+
+            assert.equal(document.body.children.length, 1);
+            assert.deepEqual(figure?.getAttributeNames(), ['class', 'data-kg-thumbnail', 'data-kg-custom-thumbnail']);
+            assert.equal(figure?.getAttribute('data-kg-thumbnail'), awkwardThumbnailSrc);
+            assert.equal(figure?.getAttribute('data-kg-custom-thumbnail'), awkwardCustomThumbnailSrc);
+            assert.equal(video?.getAttribute('style'), `aspect-ratio: 200 / 100; background: transparent url('${encodedAwkwardCustomThumbnailSrc}') 50% 50% / cover no-repeat;`);
+        });
+
         it('renders loop attribute', function () {
             const result = renderForWeb(getTestData({loop: true}));
 
@@ -166,6 +184,17 @@ describe('renderers/video-renderer', function () {
             assert.ok(result.html.includes('https://img.spacergif.org/v1/150x338/0a/spacer.png'));
             assert.ok(result.html.includes('height:338px;'));
             assert.ok(!result.html.includes('NaN'));
+        });
+
+        it('renders a thumbnail URL containing special characters', function () {
+            const result = renderForEmail(getTestData({customThumbnailSrc: awkwardCustomThumbnailSrc}));
+            const document = createDocument(result.html);
+            const table = document.querySelector('.kg-video-preview table');
+
+            assert.deepEqual(table?.getAttributeNames(), ['cellpadding', 'cellspacing', 'border', 'width', 'background', 'role', 'style']);
+            assert.equal(table?.getAttribute('background'), awkwardCustomThumbnailSrc);
+            assert.equal(table?.getAttribute('style'), `background: url('${encodedAwkwardCustomThumbnailSrc}') left top / cover; mso-hide: all`);
+            assert.ok(result.html.includes('<v:fill src="https://example.org/it&#039;s &quot;a&quot; (thumbnail)\\ 1.jpg" type="frame"/>'));
         });
 
         it('links to the video file when postUrl is missing', function () {
