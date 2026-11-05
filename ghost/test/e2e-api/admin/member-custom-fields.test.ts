@@ -251,7 +251,7 @@ describe('Member Custom Fields Admin API', function () {
     it('rejects an unsupported type', async function () {
       await agent
         .post('members/metafields/custom/')
-        .body({ members_metafields: [{ name: 'Topic', type: 'boolean' }] })
+        .body({ members_metafields: [{ name: 'Topic', type: 'not_a_type' }] })
         .expectStatus(422);
     });
 
@@ -740,7 +740,7 @@ describe('Member Custom Fields Admin API', function () {
         .body({
           members_metafields: [
             { name: 'Company', type: 'short_text' },
-            { name: 'Role', type: 'boolean' },
+            { name: 'Role', type: 'not_a_type' },
           ],
         })
         .expectStatus(422);
@@ -772,7 +772,7 @@ describe('Member Custom Fields Admin API', function () {
           members_metafields: [
             { name: 'Company', type: 'short_text' },
             { name: 'Role', type: 'short_text' },
-            { name: 'Bio', type: 'boolean' },
+            { name: 'Bio', type: 'not_a_type' },
           ],
         })
         .expectStatus(422);
@@ -787,7 +787,7 @@ describe('Member Custom Fields Admin API', function () {
     it('does not point at an item when only one definition was sent', async function () {
       const { body } = await agent
         .post('members/metafields/custom/')
-        .body({ members_metafields: [{ name: 'Bio', type: 'boolean' }] })
+        .body({ members_metafields: [{ name: 'Bio', type: 'not_a_type' }] })
         .expectStatus(422);
 
       assert.equal(body.errors[0].property, 'type');
@@ -1470,19 +1470,22 @@ describe('Member Custom Fields Admin API', function () {
       assert.deepEqual(await readValues(memberId), { [company.key]: 'Ghost' });
     });
 
-    it('clears a text value with an empty string', async function () {
+    // A value is never empty, so there is one way to hold nothing: `null` clears, for every type.
+    it('refuses an empty string for a text field, which clears with null', async function () {
       const field = await createField({ name: 'Favourite topic' });
       const memberId = await createMember();
       await setValues(memberId, { [field.key]: 'Ghosts' });
 
-      await setValues(memberId, { [field.key]: '' });
+      const body = await setValues(memberId, { [field.key]: '' }, 422);
+      assert.equal(body.errors[0].context, 'Enter a value, or send null to clear it.');
+      assert.deepEqual(await readValues(memberId), { [field.key]: 'Ghosts' });
 
+      await setValues(memberId, { [field.key]: null });
       assert.deepEqual(await readValues(memberId), {});
     });
 
     it('rejects an empty string for a non-text field rather than clearing it', async function () {
-      // '' clears a text field (an emptied input), but for a non-text type
-      // it isn't a clear — it's an invalid value, and nothing is coerced.
+      // '' is no value of any type, so it's an invalid value, and nothing is coerced.
       const field = await createField({ name: 'Home address', type: 'address' });
       const memberId = await createMember();
 
@@ -2024,16 +2027,16 @@ describe('Member Custom Fields Admin API', function () {
       });
     });
 
-    it('clears the part a request names as empty', async function () {
+    it('clears the part a request names as null', async function () {
       const field = await createField({ name: 'Home address', type: 'address' });
       const memberId = await createMember();
 
       await setValues(memberId, {
         [field.key]: { line1: '62 Ghost Lane', city: 'Dublin', country: 'IE' },
       });
-      await setValues(memberId, { [field.key]: { city: '' } });
+      await setValues(memberId, { [field.key]: { city: null } });
 
-      // Emptying is said out loud, because absence already means "no change".
+      // Clearing is said out loud, because absence already means "no change".
       assert.deepEqual(await readValues(memberId), {
         [field.key]: { line1: '62 Ghost Lane', country: 'IE' },
       });
@@ -2046,11 +2049,11 @@ describe('Member Custom Fields Admin API', function () {
       await setValues(memberId, {
         [field.key]: { line1: '62 Ghost Lane', city: 'Dublin', country: 'IE' },
       });
-      await setValues(memberId, { [field.key]: { country: '' } });
+      await setValues(memberId, { [field.key]: { country: null } });
 
       // Every part clears the same way. A country's rule is a pattern that nothing
-      // empty can match, so a rule per part would make this the one part a member
-      // could be given but never rid of.
+      // empty can match, so a clear per part's rule would make this the one part a
+      // member could be given but never rid of.
       assert.deepEqual(await readValues(memberId), {
         [field.key]: { line1: '62 Ghost Lane', city: 'Dublin' },
       });
@@ -2067,16 +2070,16 @@ describe('Member Custom Fields Admin API', function () {
       });
     });
 
-    it('drops a part sent as an empty string rather than storing it as one', async function () {
+    it('refuses a part sent as an empty string rather than storing it as one', async function () {
       const field = await createField({ name: 'Home address', type: 'address' });
       const memberId = await createMember();
 
-      // A part with nothing in it gets no row, so it reads back absent rather than
-      // present-and-empty. That is the whole point of a row per part: there is no
-      // place to record "this part is empty" separately from "this part is unset".
-      await setValues(memberId, { [field.key]: { line1: '62 Ghost Lane', city: '' } });
+      // There is no place to record "this part is empty" separately from "this part is unset":
+      // a part holding nothing has no row. So an empty part is refused rather than read as one
+      // of the two.
+      await setValues(memberId, { [field.key]: { line1: '62 Ghost Lane', city: '' } }, 422);
 
-      assert.deepEqual(await readValues(memberId), { [field.key]: { line1: '62 Ghost Lane' } });
+      assert.deepEqual(await readValues(memberId), {});
     });
 
     it('rejects an address with nothing in it', async function () {

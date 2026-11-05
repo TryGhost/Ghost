@@ -89,7 +89,7 @@ catalog:
   '@storybook/react-vite': 10.6.5
   '@tailwindcss/postcss': 4.3.3
   '@tailwindcss/vite': 4.3.3
-  '@tanstack/react-query': 5.105.0
+  '@tanstack/react-query': 5.105.1
   '@tanstack/react-virtual': 3.14.13
   '@testing-library/dom': 10.4.2
   '@testing-library/jest-dom': 6.9.1
@@ -167,13 +167,13 @@ catalog:
   express: 4.22.3
   flexsearch: 0.7.43
   glob: 13.0.6
-  globals: 17.7.0
+  globals: 17.14.0
   got: 16.0.0
   html-minifier-next: 8.10.7
   html-to-text: 10.0.1
   ipaddr.js: 2.5.0
   jiti: 2.7.0
-  jose: 6.2.13
+  jose: 6.2.15
   js-yaml: 4.3.2
   jsdom: 30.0.1
   jsonc-parser: 3.3.1

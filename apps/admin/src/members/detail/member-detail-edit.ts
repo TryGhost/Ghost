@@ -3,11 +3,19 @@ import validator from 'validator';
 import { z } from 'zod';
 import { PartSchema, QUALIFIER, SEPARATOR } from '@tryghost/metafield-types/identity';
 import {
-  FIELD_STRUCTURES,
-  editableAnswers,
-  isRecordValue,
   matchField,
+  type FieldOfShape,
+  type FieldShape,
 } from '@tryghost/metafield-types/structure';
+import {
+  formShows,
+  formTextOf,
+  formWrite,
+  heldValue,
+  shaped,
+  type ShapeText,
+  type ShapeWrite,
+} from '@tryghost/metafield-types/shapes';
 import {
   memberCustomFieldIdentity,
   memberCustomFieldValueSchema,
@@ -16,12 +24,30 @@ import { dequal } from 'dequal';
 import type { EditMemberData, Member } from '@tryghost/admin-x-framework/api/members';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
-export type EditableRecordValue = Partial<Record<string, string>>;
+/**
+ * One field's editor: the field with its shape and what its inputs hold, together, so the inputs
+ * drawn for a shape only ever hold that shape's text.
+ */
+export type CustomFieldEditor = { [S in FieldShape]: EditorOf<S> }[FieldShape];
 
-/** The options picked for a list, in the field's order. */
-export type EditableListValue = string[];
+interface EditorOf<S extends FieldShape> {
+  readonly shape: S;
+  readonly field: FieldOfShape<S, MemberCustomField>;
+  readonly text: ShapeText[S];
+}
 
-export type EditableCustomFieldValue = string | EditableRecordValue | EditableListValue;
+/**
+ * What saving an editor writes: its field, with a write of the field's own shape, or `null` to
+ * clear the field. Made only by `customFieldSave`, so a write can't be paired with a field of
+ * another shape.
+ */
+export type CustomFieldSave = { [S in FieldShape]: SaveOf<S> }[FieldShape];
+
+interface SaveOf<S extends FieldShape> {
+  readonly shape: S;
+  readonly field: FieldOfShape<S, MemberCustomField>;
+  readonly write: ShapeWrite[S] | null;
+}
 
 export interface MemberEditableLabel {
   name: string;
@@ -74,75 +100,90 @@ export function getMemberEditableSlice(member: MemberFieldSource): MemberEditabl
   };
 }
 
-export function emptyEditableValue(field: MemberCustomField): EditableCustomFieldValue {
-  return matchField<MemberCustomField, EditableCustomFieldValue>(field, {
-    scalar: () => '',
-    record: () => ({}),
-    set: () => [],
+/**
+ * The editor for a field as it opens: what the field's form can show of what the member holds, each
+ * leaf as its text, or blank inputs. A list shows only the options the field still offers; what
+ * saving does to an answer it can't show is `customFieldSave`'s to say.
+ */
+export function editorFor(field: MemberCustomField, held: unknown): CustomFieldEditor {
+  return matchField<MemberCustomField, CustomFieldEditor>(field, {
+    scalar: (of) => ({
+      shape: 'scalar',
+      field: of,
+      text: formTextOf({ shape: 'scalar', field: of }, held) ?? '',
+    }),
+    record: (of) => ({
+      shape: 'record',
+      field: of,
+      text: formTextOf({ shape: 'record', field: of }, held) ?? {},
+    }),
+    set: (of) => ({
+      shape: 'set',
+      field: of,
+      text: formTextOf({ shape: 'set', field: of }, held) ?? [],
+    }),
   });
 }
 
-/** Each declared part's text, trimmed. A part the value holds no text for is left out. */
-function trimmedParts(
-  parts: Readonly<Record<string, unknown>>,
-  value: Record<string, unknown>,
-): EditableRecordValue {
-  const record: EditableRecordValue = {};
-  for (const part of Object.keys(parts)) {
-    const held = value[part];
-    if (typeof held === 'string') {
-      record[part] = held.trim();
-    }
-  }
-  return record;
+/** An editor as it opened: what the member held then, and the inputs as they started from it. */
+export interface OpenedEditor {
+  readonly held: unknown;
+  readonly editor: CustomFieldEditor;
 }
 
 /**
- * The value trimmed and with empty parts dropped, or undefined when nothing is left, so a value of
- * only blanks counts as no value whatever its shape.
- *
- * A list is edited as the options the field still offers, in its order. An option the field no
- * longer offers can't be picked again, and a field that has gone from several answers to one reads
- * as unanswered while it holds several, so the next answer replaces them rather than one being
- * kept for the member.
+ * The save an editor's inputs make to what the member held when it opened, or undefined when there
+ * is nothing to save. An editor nobody touched saves nothing, so a value that didn't move isn't
+ * written and doesn't count as a member change. The one exception is an editor that opened empty
+ * while the member holds answers it can't show, such as answers to options the field no longer
+ * offers: saving it clears them. Such an answer held beside one the editor can show stays until
+ * the editor is changed, since an untouched save writes nothing. A touched editor writes what
+ * changed: `null` when a value goes, an emptied part of a record named as `null`, and the parts
+ * left alone not named, so a part another writer set in the meantime survives.
  */
-export function editableValueOf(
-  field: MemberCustomField,
-  value: unknown,
-): EditableCustomFieldValue | undefined {
-  return matchField<MemberCustomField, EditableCustomFieldValue | undefined>(field, {
-    scalar: () => (typeof value === 'string' && value.trim() !== '' ? value.trim() : undefined),
-    record: ({ type }) => {
-      if (!isRecordValue(value)) {
-        return undefined;
-      }
-      const record = Object.fromEntries(
-        Object.entries(trimmedParts(FIELD_STRUCTURES[type].parts, value)).filter(
-          ([, held]) => held !== '',
-        ),
-      );
-      return Object.keys(record).length ? record : undefined;
-    },
-    set: ({ settings }) => {
-      const answers = editableAnswers(settings, Array.isArray(value) ? value : []);
-      return answers.length > 0 ? answers : undefined;
-    },
-  });
+export function customFieldSave(
+  editor: CustomFieldEditor,
+  opened: OpenedEditor,
+): CustomFieldSave | undefined {
+  if (!isEdited(editor, opened.editor) && !openedEmptyOnAnswers(opened)) {
+    return undefined;
+  }
+  return saveBetween(editor, opened.held);
 }
 
-/** Keyed by each field's identity. A field with no value is left out. */
-export function getEditableCustomFieldValues(
-  metafields: Record<string, Record<string, unknown> | undefined> | null | undefined,
-  fields: readonly MemberCustomField[],
-): Record<string, EditableCustomFieldValue> {
-  const values: Record<string, EditableCustomFieldValue> = {};
-  for (const field of fields) {
-    const value = editableValueOf(field, metafields?.[field.namespace]?.[field.key]);
-    if (value !== undefined) {
-      values[memberCustomFieldIdentity(field)] = value;
-    }
+/**
+ * Whether an editor opened showing nothing while the member holds a value for its field. Only a
+ * list's editor can: it shows only the options the field offers now, where a text's or an address's
+ * shows whatever is held.
+ */
+function openedEmptyOnAnswers({ held, editor }: OpenedEditor): boolean {
+  const of = shaped(editor.field);
+  return formShows(of, editor.text) === undefined && heldValue(of, held) !== undefined;
+}
+
+/** The write that turns `held` into what the editor's inputs show, with the field it is to. */
+function saveBetween(editor: CustomFieldEditor, held: unknown): CustomFieldSave | undefined {
+  switch (editor.shape) {
+    case 'scalar':
+      return saveOf(editor, formWrite({ shape: 'scalar', field: editor.field }, editor.text, held));
+    case 'record':
+      return saveOf(editor, formWrite({ shape: 'record', field: editor.field }, editor.text, held));
+    case 'set':
+      return saveOf(editor, formWrite({ shape: 'set', field: editor.field }, editor.text, held));
   }
-  return values;
+}
+
+function saveOf<S extends FieldShape>(
+  { shape, field }: EditorOf<S>,
+  write: ShapeWrite[S] | null | undefined,
+): SaveOf<S> | undefined {
+  return write === undefined ? undefined : { shape, field, write };
+}
+
+/** Whether an editor's inputs show something other than what they showed when it opened. */
+export function isEdited(editor: CustomFieldEditor, opened: CustomFieldEditor): boolean {
+  const of = shaped(editor.field);
+  return formWrite(of, editor.text, formShows(of, opened.text)) !== undefined;
 }
 
 /**
@@ -288,82 +329,37 @@ export function buildMemberFieldEditPayload(
 }
 
 /**
- * The value the save sends, or undefined when the save clears the field. Validation checks this
- * same value rather than the one on display: the editor keeps an emptied address part so the save
- * can clear it, and the displayed value drops it.
- *
- * A value of another shape than its field's is passed through unchanged, so the field's rule
- * refuses it rather than the save treating it as a clear and deleting what the member holds.
- */
-function customFieldValueToSave(
-  field: MemberCustomField,
-  value: EditableCustomFieldValue,
-): EditableCustomFieldValue | undefined {
-  return matchField<MemberCustomField, EditableCustomFieldValue | undefined>(field, {
-    scalar: () => (typeof value === 'string' ? value.trim() || undefined : value),
-    // A write changes only the parts it names, so an emptied part has to be sent as an empty
-    // string; leaving it out would leave it unchanged. A record with nothing left in it clears the
-    // whole field, which the caller sends as `null`.
-    record: ({ type }) => {
-      if (typeof value === 'string' || Array.isArray(value)) {
-        return value;
-      }
-      const record = trimmedParts(FIELD_STRUCTURES[type].parts, value);
-      return Object.values(record).some((part) => part !== '') ? record : undefined;
-    },
-    // A list is written whole, and one picking nothing clears it.
-    set: () => (Array.isArray(value) && value.length === 0 ? undefined : value),
-  });
-}
-
-/**
- * The save payload for ONE custom field, from the per-field editor. Merge
- * semantics do the rest: only this key is touched, `null` clears it, and an
- * address is sent whole (the merge is per field, not per part).
+ * The save payload for ONE custom field, from the per-field editor. Merge semantics do the rest:
+ * only this key is touched, and `null` clears it.
  */
 export function buildCustomFieldSavePayload(
   memberId: string,
-  field: MemberCustomField,
-  value: EditableCustomFieldValue,
+  { field, write }: CustomFieldSave,
 ): EditMemberData {
-  return {
-    id: memberId,
-    metafields: {
-      [field.namespace]: { [field.key]: customFieldValueToSave(field, value) ?? null },
-    },
-  };
+  return { id: memberId, metafields: { [field.namespace]: { [field.key]: write } } };
 }
 
 /**
- * Client-side validation of custom field values against the shared catalog
- * schemas. Each rule carries its own message, so what this returns for a
- * violation is the same sentence the server returns for it, and the screen
- * reads the same whichever tier caught it. Returns messages keyed by
- * `namespace.fieldKey` (scalar) or `namespace.fieldKey.part` (composite
- * part), the path shape of the server's 422 `property` once its
- * `metafields.` prefix is dropped, so both error sources render through one map.
- * Cleared/empty values are always valid — fields are optional.
+ * Client-side validation of the write a save sends, against the shared catalog schemas, so what
+ * passes here is what the server is asked to accept. Each rule carries its own message, so what
+ * this returns for a violation is the same sentence the server returns for it. Returns messages
+ * keyed by `namespace.fieldKey` (scalar) or `namespace.fieldKey.part` (composite part), the path
+ * shape of the server's 422 `property` once its `metafields.` prefix is dropped, so both error
+ * sources render through one map. A clear, or no write at all, is always valid: no field is
+ * required, and a clear says nothing for a rule to be about.
  */
 export function getCustomFieldValidationErrors(
-  draftCustomFields: Record<string, EditableCustomFieldValue>,
-  fields: MemberCustomField[],
+  save: CustomFieldSave | undefined,
 ): Record<string, string> {
+  if (save === undefined || save.write === null) {
+    return {};
+  }
   const errors: Record<string, string> = {};
-  for (const field of fields) {
-    const draft = draftCustomFields[field.key];
-    // Checked as the save would send it, so what passes here is what the server is
-    // asked to accept. A value that clears the field is always valid: no field is
-    // required, and a clear says nothing for a rule to be about.
-    const value = draft === undefined ? undefined : customFieldValueToSave(field, draft);
-    if (value === undefined) {
-      continue;
-    }
-    const result = memberCustomFieldValueSchema(field).safeParse(value);
-    if (!result.success) {
-      for (const issue of result.error.issues) {
-        const parts = z.array(PartSchema).safeParse(issue.path);
-        errors[memberCustomFieldIdentity(field, parts.data ?? [])] ??= issue.message;
-      }
+  const result = memberCustomFieldValueSchema(save.field).safeParse(save.write);
+  if (!result.success) {
+    for (const issue of result.error.issues) {
+      const parts = z.array(PartSchema).safeParse(issue.path);
+      errors[memberCustomFieldIdentity(save.field, parts.data ?? [])] ??= issue.message;
     }
   }
   return errors;
