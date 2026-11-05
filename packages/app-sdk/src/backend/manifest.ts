@@ -1,4 +1,4 @@
-import { SignedManifestSchema, type SignedManifest } from '@tryghost/app-contracts/identity';
+import { readSignedManifest, type SignedManifest } from '@tryghost/app-contracts/identity';
 
 export type { SignedManifest };
 export { MANIFEST_PATH } from '../shared/manifest.ts';
@@ -12,12 +12,16 @@ export { MANIFEST_PATH } from '../shared/manifest.ts';
  * Ghost the next time Ghost reads it.
  */
 export function serveManifest(signed: SignedManifest | string): Response {
-  if (typeof signed !== 'string' && !SignedManifestSchema.safeParse(signed).success) {
-    throw new TypeError(
-      'Expected a signed manifest, with only protected, payload and signature, or its text',
-    );
+  const text = typeof signed === 'string' ? signed : JSON.stringify(signed);
+  // An object is checked as it will be served, as JSON, which leaves out a member that is
+  // undefined, and by the rules Ghost reads a signed manifest by, header and payload included.
+  if (typeof signed !== 'string') {
+    const read = readSignedManifest(JSON.parse(text));
+    if (!read.success) {
+      throw new TypeError(`Expected a signed manifest, or its text. ${read.error}`);
+    }
   }
-  return new Response(typeof signed === 'string' ? signed : JSON.stringify(signed), {
+  return new Response(text, {
     headers: {
       'content-type': 'application/json; charset=utf-8',
       'cache-control': 'no-cache',
