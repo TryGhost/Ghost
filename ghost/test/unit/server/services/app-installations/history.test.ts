@@ -54,6 +54,20 @@ const summary = (entries: ReturnType<typeof buildHistory>) =>
   entries.map(({ event, actor, moved_to }) => [event, actor?.name ?? null, moved_to ?? null]);
 
 describe('buildHistory', function () {
+  it('passes over actions whose context names nothing, rather than failing', function () {
+    const history = buildHistory(
+      [installed('m1', '2026-10-01T10:00:00.000Z')],
+      [
+        { ...action('a1', 'uninstalled', '2026-10-02T10:00:00.000Z'), context: '{not json' },
+        { ...action('a2', 'uninstalled', '2026-10-03T10:00:00.000Z'), context: null },
+        { ...action('a3', 'uninstalled', '2026-10-04T10:00:00.000Z'), context: '{}' },
+      ],
+      new Map(),
+    );
+
+    assert.deepEqual(summary(history), [['installed', null, null]]);
+  });
+
   it('shows the install from the install manifest row, with who installed the app', function () {
     const history = buildHistory(
       [installed('m1', '2026-10-01T10:00:00.000Z')],
