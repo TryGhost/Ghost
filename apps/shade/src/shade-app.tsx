@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import React from 'react';
+import { type AppOverlay, AppOverlayContext } from '@/lib/app-overlay';
 import ShadeProvider from '@/providers/shade-provider';
 import type { ControlShape } from '@/providers/shade-context';
 
@@ -18,12 +19,18 @@ export interface ShadeAppProps extends React.HTMLProps<HTMLDivElement> {
    * previews and standalone apps default to the Admin 7 design. Removed with the flag.
    */
   admin7Design?: boolean;
+  /**
+   * For an app inside Ghost Admin: where dialogs, alert dialogs and sheets render so they cover
+   * all of Admin, not just the app's frame. Pass the app SDK's `ghost.overlay`.
+   */
+  overlay?: AppOverlay;
 }
 
 const ShadeApp: React.FC<ShadeAppProps> = ({
   darkMode,
   controlShape,
   admin7Design = true,
+  overlay,
   className,
   children,
   ...props
@@ -33,7 +40,7 @@ const ShadeApp: React.FC<ShadeAppProps> = ({
   return (
     <div className={appClassName} {...props} data-admin7-design={admin7Design}>
       <ShadeProvider admin7Design={admin7Design} controlShape={controlShape} darkMode={darkMode}>
-        {children}
+        <AppOverlayContext.Provider value={overlay}>{children}</AppOverlayContext.Provider>
       </ShadeProvider>
     </div>
   );

@@ -96,10 +96,12 @@ Load Shade's stylesheet once, through the app stylesheet above, and render one `
 ```tsx
 import {ShadeApp} from '@tryghost/shade/app';
 
-<ShadeApp darkMode={mode === 'dark'}>
+<ShadeApp darkMode={mode === 'dark'} overlay={ghost.overlay}>
   <App />
 </ShadeApp>
 ```
+
+Pass the app SDK's `ghost.overlay` as `overlay`. Shade's dialogs, alert dialogs and sheets then cover all of Admin, as Admin's own do, rather than only the app's page, and the menus, popovers, selects and tooltips inside them follow. Without it they render in the page.
 
 `ShadeApp` also renders the toaster. Show toasts with `toast` from `@tryghost/shade/components`, such as `toast.success('Saved')`. Don't add `sonner` as a dependency: a second copy of it shows nothing.
 
