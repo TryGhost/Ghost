@@ -45,7 +45,9 @@ Further filters the stage 1 sessions by session-level attributes (source, device
 
 ### Building Sessions Only for Matching Sessions
 
-`mv_session_data.pipe` builds sessions from raw hits on every request. When a hit-level filter is set, it only builds the sessions returned by `hit_filtered_sessions`. Every endpoint inner joins `mv_session_data` with `filtered_sessions`, whose sessions are a subset of those, so the output is unchanged. This avoids building every session in the date range just to report on the few that touched one post or page.
+`mv_session_data.pipe` builds sessions from raw hits on every request. When a post, pathname, location or gift link filter is set, it only builds the sessions returned by `hit_filtered_sessions`. Every endpoint inner joins `mv_session_data` with `filtered_sessions`, whose sessions are a subset of those, so the output is unchanged. This avoids building every session in the date range just to report on the few that touched one post or page.
+
+`member_status` on its own doesn't turn this on. Admin sends every status for the default Everyone audience, which matches nearly every session, so the extra lookup would cost more than it saves.
 
 `mv_session_data` can't reference `filtered_sessions` directly, because `filtered_sessions` reads from `mv_session_data` when a session-level filter is set.
 
