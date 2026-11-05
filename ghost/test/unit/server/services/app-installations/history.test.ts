@@ -6,6 +6,7 @@ import {
   type HistoryAction,
   type HistoryManifest,
 } from '../../../../../core/server/services/app-installations/history';
+import type { AppInstallationActionName } from '../../../../../core/server/services/app-installations/action-kind';
 
 const jamie = { id: 'user-1', name: 'Jamie Larson' };
 
@@ -35,16 +36,13 @@ const servedFrom = (host: string) =>
     surfaces: [{ type: 'admin_page', url: `https://${host}/admin` }],
   }) as AppManifest;
 
-const EVENTS = { installed: 'added', changes_approved: 'edited', uninstalled: 'deleted' };
-
 const action = (
   id: string,
-  actionName: keyof typeof EVENTS,
+  actionName: AppInstallationActionName,
   createdAt: string,
   context: Record<string, string> = {},
 ): HistoryAction => ({
   id,
-  event: EVENTS[actionName],
   actor: jamie,
   context: JSON.stringify({ ...context, action_name: actionName }),
   created_at: new Date(createdAt),
@@ -66,6 +64,26 @@ describe('buildHistory', function () {
     );
 
     assert.deepEqual(summary(history), [['installed', null, null]]);
+  });
+
+  it("shows an approval whose manifests can't be read, without where it moved", function () {
+    const history = buildHistory(
+      [installed('m1', '2026-10-01T10:00:00.000Z')],
+      [
+        {
+          ...action('a1', 'changes_approved', '2026-10-02T10:00:00.000Z'),
+          context: '{"action_name":"changes_approved","from_manifest_id":3}',
+        },
+        action('a2', 'changes_approved', '2026-10-03T10:00:00.000Z'),
+      ],
+      new Map(),
+    );
+
+    assert.deepEqual(summary(history), [
+      ['changes_approved', 'Jamie Larson', null],
+      ['changes_approved', 'Jamie Larson', null],
+      ['installed', null, null],
+    ]);
   });
 
   it('shows the install from the install manifest row, with who installed the app', function () {
@@ -285,5 +303,14 @@ describe('approvalManifestIds', function () {
     ]);
 
     assert.deepEqual(ids, ['m1', 'm2']);
+  });
+
+  it("passes over approvals whose manifests can't be read", function () {
+    const ids = approvalManifestIds([
+      { ...action('a1', 'changes_approved', '2026-10-02T10:00:00.000Z'), context: '{not json' },
+      action('a2', 'changes_approved', '2026-10-03T10:00:00.000Z'),
+    ]);
+
+    assert.deepEqual(ids, []);
   });
 });

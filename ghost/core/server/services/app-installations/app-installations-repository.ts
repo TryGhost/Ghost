@@ -37,7 +37,6 @@ const BackendKeyRow = DbAppInstallationManifest.pick({ backend_key_thumbprint: t
 const HistoryActionRow = z
   .object({
     id: z.string(),
-    event: z.string(),
     actor_id: z.string(),
     actor_name: z.string().nullable(),
     context: z.string().nullable(),
@@ -45,7 +44,6 @@ const HistoryActionRow = z
   })
   .transform((row): HistoryAction => ({
     id: row.id,
-    event: row.event,
     context: row.context,
     created_at: row.created_at,
     actor: { id: row.actor_id, name: row.actor_name },
@@ -281,7 +279,6 @@ export class AppInstallationsRepository {
       .orderBy('action.id', 'asc')
       .select<z.input<typeof HistoryActionRow>[]>(
         'action.id',
-        'action.event',
         'action.actor_id',
         'action.context',
         'action.created_at',

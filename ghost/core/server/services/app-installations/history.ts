@@ -14,7 +14,6 @@ export interface HistoryManifest {
 
 export interface HistoryAction {
   id: string;
-  event: string;
   actor: HistoryActor;
   /** JSON text, not yet parsed. */
   context: string | null;
@@ -24,15 +23,18 @@ export interface HistoryAction {
 // Context that isn't JSON, or names nothing, matches no name rather than failing the history.
 const NamedContext = DbJson(z.object({ action_name: z.string() }));
 
-const ApprovalContext = z.object({
-  from_manifest_id: z.string(),
-  to_manifest_id: z.string(),
-});
+// An approval whose context can't be read still shows, without where it moved.
+const ApprovalContext = DbJson(
+  z.object({
+    from_manifest_id: z.string(),
+    to_manifest_id: z.string(),
+  }),
+);
 
 interface Approval {
   action: HistoryAction;
-  from: string;
-  to: string;
+  /** The manifests before and after, unless the action's context can't be read. */
+  between: { from: string; to: string } | null;
 }
 
 type Entry = AppInstallationHistoryEntry;
@@ -57,7 +59,11 @@ export function buildHistory(
 
 /** The ids of the manifests before and after each approval. */
 export function approvalManifestIds(actions: HistoryAction[]): string[] {
-  return [...new Set(approvalsIn(actions).flatMap(({ from, to }) => [from, to]))];
+  return [
+    ...new Set(
+      approvalsIn(actions).flatMap(({ between }) => (between ? [between.from, between.to] : [])),
+    ),
+  ];
 }
 
 function installOf(manifests: HistoryManifest[], actions: HistoryAction[]): Entry[] {
@@ -97,9 +103,9 @@ function updatesSuspensionsAndResumesOf(manifests: HistoryManifest[]): Entry[] {
     }));
 }
 
-function approvalEntry({ action, from, to }: Approval, contents: Map<string, AppManifest>): Entry {
-  const before = contents.get(from);
-  const after = contents.get(to);
+function approvalEntry({ action, between }: Approval, contents: Map<string, AppManifest>): Entry {
+  const before = between && contents.get(between.from);
+  const after = between && contents.get(between.to);
   const move = before && after ? movedBetween(before, after) : null;
   return {
     id: action.id,
@@ -121,11 +127,10 @@ function uninstallsIn(actions: HistoryAction[]): Entry[] {
 
 function approvalsIn(actions: HistoryAction[]): Approval[] {
   return actions.filter(withEvent('changes_approved')).map((action) => {
-    const context = ApprovalContext.parse(JSON.parse(action.context ?? 'null'));
+    const context = ApprovalContext.safeParse(action.context).data;
     return {
       action,
-      from: context.from_manifest_id,
-      to: context.to_manifest_id,
+      between: context ? { from: context.from_manifest_id, to: context.to_manifest_id } : null,
     };
   });
 }
