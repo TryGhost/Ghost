@@ -24,6 +24,7 @@ const PREFERRED_HEIGHT = 256;
 const MIN_HEIGHT = 120;
 // Kept clear of the viewport edge so the list never sits flush against it.
 const GUTTER = 16;
+const HIGHLIGHT_MS = 1000;
 
 type PickerLabel = Pick<Label, 'id' | 'name' | 'slug'> & {
   /** Optional heading for related options; omitted for a flat label list. */
@@ -144,6 +145,12 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
     groups.set(group, groupLabels);
   }
   const showEdit = !!onEdit;
+  const handleToggle = (slug: string) => {
+    onToggle(slug);
+    if (search) {
+      onSearchClear?.();
+    }
+  };
   const handleCreate = async () => {
     if (!onCreate) {
       return;
@@ -194,7 +201,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
                   label={label}
                   showEdit={showEdit}
                   onEditClick={() => setEditingLabelId(label.id)}
-                  onToggle={onToggle}
+                  onToggle={handleToggle}
                 />
               ),
             )}
@@ -300,16 +307,22 @@ const LoadMoreSentinel: React.FC<LoadMoreSentinelProps> = ({ isLoading, itemCoun
 
 interface SelectedPillsProps {
   labels: PickerLabel[];
+  highlightedSlug?: string;
   onToggle: (slug: string) => void;
 }
 
-const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, onToggle }) => {
+const SelectedPills: React.FC<SelectedPillsProps> = ({ labels, highlightedSlug, onToggle }) => {
   return (
     <>
       {labels.map((label) => (
         <Badge
           key={label.id}
-          className={cn('cursor-pointer gap-1 pr-1', tokenFieldClasses.chip)}
+          className={cn(
+            'cursor-pointer gap-1 pr-1 transition-shadow duration-500',
+            tokenFieldClasses.chip,
+            label.slug === highlightedSlug && 'ring-2 ring-focus-ring',
+          )}
+          data-highlighted={label.slug === highlightedSlug || undefined}
           variant="outline"
           asChild
         >
@@ -470,7 +483,37 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     return () => window.removeEventListener('keydown', handleEscape, true);
   }, [open]);
 
+  // Enter on an already-added label highlights its pill instead of removing it.
+  const [highlight, setHighlight] = useState<{ slug: string; at: number } | null>(null);
+  const [announcement, setAnnouncement] = useState('');
+  useEffect(() => {
+    if (!highlight) {
+      return;
+    }
+    const timer = setTimeout(() => setHighlight(null), HIGHLIGHT_MS);
+    return () => clearTimeout(timer);
+  }, [highlight]);
+
+  const pointAtAddedLabel = (e: React.KeyboardEvent) => {
+    if (e.key !== 'Enter' || !search.trim() || e.nativeEvent.isComposing) {
+      return;
+    }
+    const slug = containerRef.current
+      ?.querySelector('[cmdk-item][data-selected="true"]')
+      ?.getAttribute('data-value');
+    if (!slug || !selectedSlugs.includes(slug)) {
+      return;
+    }
+    // Stops cmdk from toggling the row.
+    e.preventDefault();
+    handleSearchChange('');
+    setHighlight({ slug, at: Date.now() });
+    const name = selectedLabels.find((label) => label.slug === slug)?.name ?? slug;
+    setAnnouncement(`${name} is already added`);
+  };
+
   const handleInputKeyDown = (e: React.KeyboardEvent) => {
+    pointAtAddedLabel(e);
     if (e.key === 'Backspace' && !search && selectedSlugs.length > 0) {
       onToggle(selectedSlugs[selectedSlugs.length - 1]);
     }
@@ -495,6 +538,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
           }}
         >
           <SelectedPills
+            highlightedSlug={highlight?.slug}
             labels={selectedLabels}
             onToggle={(slug) => {
               onToggle(slug);
@@ -522,6 +566,9 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
           </CommandInput>
           <LucideIcon.ChevronDown className={tokenFieldClasses.chevron} />
         </div>
+        <span aria-live="polite" className="sr-only">
+          {announcement}
+        </span>
         {open && (
           // As wide as its longest row, from the field's width up to 480px, past which a
           // row wraps: a long name reads whole rather than cut short.
