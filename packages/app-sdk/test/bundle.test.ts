@@ -106,6 +106,16 @@ describe('the package', () => {
     expect(loaded).not.toMatch(/jose|zod|node:/);
   });
 
+  it.each([['tooling', ['jose', 'zod']]])(
+    '%s.js loads only Node builtins and %j',
+    (entry, packages) => {
+      const loaded = [...reachableImports(code(entry))].filter(
+        (specifier) => !specifier.startsWith('node:'),
+      );
+      expect(new Set(loaded)).toEqual(new Set(packages));
+    },
+  );
+
   it.each([
     ['index', ['GhostAppError', 'connect']],
     [
@@ -119,6 +129,7 @@ describe('the package', () => {
   it.each([
     ['index', []],
     ['backend', []],
+    ['tooling', []],
   ])(
     '%s.d.ts declares its types without importing or referring to any other package but %j',
     (entry, expected) => {
@@ -201,6 +212,7 @@ describe('the package', () => {
         'withGhostApp',
       ],
     ],
+    ['tooling', undefined],
   ])(
     'declares every type %s exports, with nothing missing',
     { timeout: 60_000 },
