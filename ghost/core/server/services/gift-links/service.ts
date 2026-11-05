@@ -81,7 +81,7 @@ export class GiftLinksService {
   async removeAll(context: RequestContext): Promise<number> {
     const removed = await this.knex('post_gift_links').del();
     if (removed > 0) {
-      await this.actionLog.record(context.actor, {
+      await this.actionLog.record(this.knex, context, {
         resourceType: 'gift_link',
         event: 'deleted',
         resourceId: null,
@@ -99,16 +99,12 @@ export class GiftLinksService {
     await this.knex.transaction(async (trx) => {
       await this.addToHistory(trx, postId, link);
       await this.setLiveLink(trx, postId, link);
-      await this.actionLog.record(
-        context.actor,
-        {
-          resourceType: 'gift_link',
-          ...action,
-          resourceId: postId,
-          primaryName: await this.titleOf(trx, postId),
-        },
-        { transacting: trx },
-      );
+      await this.actionLog.record(trx, context, {
+        resourceType: 'gift_link',
+        ...action,
+        resourceId: postId,
+        primaryName: await this.titleOf(trx, postId),
+      });
     });
     return { id: postId, giftLinks: [link] };
   }

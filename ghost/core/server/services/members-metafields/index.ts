@@ -91,7 +91,7 @@ export function init(): void {
   definitions = new MetafieldDefinitionsService({
     knex,
     fields,
-    actionLog: new ActionLog({ knex, logging }),
+    actionLog: new ActionLog({ logging }),
     namespaces,
     tracking,
   });

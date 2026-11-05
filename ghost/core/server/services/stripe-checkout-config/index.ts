@@ -47,7 +47,7 @@ export default defineService('Stripe Checkout Config', (): StripeCheckoutService
   }
   const config = new StripeCheckoutConfigService({
     knex,
-    actionLog: new ActionLog({ knex, logging }),
+    actionLog: new ActionLog({ logging }),
     bindings: metafields.bindings,
     fields: metafields.fields,
     logging,

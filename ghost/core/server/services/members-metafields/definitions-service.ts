@@ -271,9 +271,7 @@ export class MetafieldDefinitionsService {
           }
           const added = await this.readMany(trx, namespace, keys);
           for (const field of added) {
-            await this.actionLog.record(context.actor, fieldAction('create', field), {
-              transacting: trx,
-            });
+            await this.actionLog.record(trx, context, fieldAction('create', field));
           }
           return added;
         });
@@ -441,9 +439,7 @@ export class MetafieldDefinitionsService {
         const list = await this.list(
           this.fields.definitions(trx, { audience: ADMIN, status: ANY_STATUS, namespace }),
         );
-        await this.actionLog.record(context.actor, reorderAction(list.length), {
-          transacting: trx,
-        });
+        await this.actionLog.record(trx, context, reorderAction(list.length));
         return list;
       });
 
@@ -644,7 +640,8 @@ export class MetafieldDefinitionsService {
           throw err;
         }
         await this.actionLog.record(
-          context.actor,
+          this.knex,
+          context,
           fieldAction(
             'rename',
             { id: existing.id, name: patch.name, key },
@@ -660,7 +657,8 @@ export class MetafieldDefinitionsService {
           .where({ namespace, key })
           .update({ ...z.encode(DbTypedSettings, settings.data), updated_at: new Date() });
         await this.actionLog.record(
-          context.actor,
+          this.knex,
+          context,
           fieldAction('changeSettings', {
             id: existing.id,
             name: patch.name ?? existing.name,
@@ -675,7 +673,8 @@ export class MetafieldDefinitionsService {
           .where({ namespace, key })
           .update({ member_access: patch.access.member, updated_at: new Date() });
         await this.actionLog.record(
-          context.actor,
+          this.knex,
+          context,
           fieldAction(
             'changeAccess',
             { id: existing.id, name: patch.name ?? existing.name, key },
@@ -696,7 +695,8 @@ export class MetafieldDefinitionsService {
           .where({ namespace, key })
           .update({ status: patch.status, updated_at: new Date() });
         await this.actionLog.record(
-          context.actor,
+          this.knex,
+          context,
           fieldAction(verb, { id: existing.id, name: patch.name ?? existing.name, key }),
         );
       }
@@ -727,7 +727,8 @@ export class MetafieldDefinitionsService {
       }
       await this.knex(FIELDS_TABLE).where({ namespace, key }).del();
       await this.actionLog.record(
-        context.actor,
+        this.knex,
+        context,
         fieldAction('delete', { id: field.id, name: field.name, key }),
       );
     });

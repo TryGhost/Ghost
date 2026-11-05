@@ -228,9 +228,12 @@ describe('App installations composition root', function () {
       .onFirstCall()
       .rejects(Object.assign(new Error('Deadlock found'), { code: 'ER_LOCK_DEADLOCK' }))
       .resolves();
-    const trx = sandbox
-      .stub()
-      .callsFake((table: string) => ({ insert: table === 'actions' ? insertAction : insert }));
+    const trx = Object.assign(
+      sandbox
+        .stub()
+        .callsFake((table: string) => ({ insert: table === 'actions' ? insertAction : insert })),
+      { isTransaction: true },
+    );
     const transaction = sandbox
       .stub()
       .callsFake(async (write: (connection: Knex.Transaction) => Promise<unknown>) =>
