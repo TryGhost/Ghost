@@ -4,12 +4,11 @@ import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import {
+  accept,
   isRecordValue,
   matchField,
-  matchShape,
-  valueSchemaFor,
-  type FieldType,
-  type FieldValue,
+  shaped,
+  type AcceptedValue,
   type MetafieldChangeEventField,
   type TypedSettings,
 } from '@tryghost/metafield-types';
@@ -47,7 +46,13 @@ import {
 } from './queries';
 import { ADMIN, MemberAccessSchema, canWrite, type Audience } from './access';
 import { readStoredField } from './stored-fields';
-import { heldOptionTexts, storedValueAs, valueRowsToWrite, valuesFromRows } from './storage';
+import {
+  VALUE_COLUMNS,
+  heldOptionTexts,
+  storedValueAs,
+  valueRowsToWrite,
+  valuesFromRows,
+} from './storage';
 
 const VALUES_TABLE = 'members_metafield_values';
 
@@ -163,10 +168,10 @@ const STORED_VALUE_COLUMNS = {
 
 type AllowedField = z.output<typeof WritableField.asStored>;
 
-/** An absent `value` means clear the field. */
+/** An absent `accepted` means clear the field. */
 export interface PlannedWrite {
   field: AllowedField;
-  value?: FieldValue;
+  accepted?: AcceptedValue;
 }
 
 /** Checked writes and who is making them: everything needed to store them. */
@@ -183,19 +188,6 @@ const IMPORTED: Extract<WriteOrigin, { source: 'import' }> = {
   writtenBy: { type: 'import', id: null },
   source: 'import',
 };
-
-/**
- * Whether a write of `raw` clears the whole field. The caller handles `null`, which clears any
- * field; `''` clears a scalar, and a set picking no options clears it. For a record `''` names no
- * part, so it goes on to fail validation rather than being read as a delete.
- */
-function clearsWhole(type: FieldType, raw: unknown): boolean {
-  return matchShape(type, {
-    scalar: () => raw === '',
-    record: () => false,
-    set: () => Array.isArray(raw) && raw.length === 0,
-  });
-}
 
 /**
  * What a member holds for each defined field. Separate from the definitions service
@@ -487,7 +479,8 @@ export class MetafieldValuesService {
         continue;
       }
 
-      if (raw === null || clearsWhole(field.type, raw)) {
+      // `null` clears any field; any other value, `''` and `[]` included, must pass the field's rule.
+      if (raw === null) {
         writes.push({ field });
         continue;
       }
@@ -496,11 +489,11 @@ export class MetafieldValuesService {
       // `context` when `context` is empty and prepends it when it is not, so
       // anything added here reaches the client glued to the front of the reason.
       // Which field failed rides in `property`.
-      const value = valueSchemaFor(field).safeParse(raw);
-      if (!value.success) {
+      const acceptance = accept(shaped(field), raw);
+      if (!acceptance.success) {
         // Every issue, not the first: a value with parts fails once per part, and each
         // names the part it belongs to, which is what lets a client mark them all.
-        for (const issue of value.error.issues) {
+        for (const issue of acceptance.issues) {
           refusals.push({
             message: issue.message,
             property: [wireProperty(identity), ...issue.path].join(SEPARATOR),
@@ -508,7 +501,7 @@ export class MetafieldValuesService {
         }
         continue;
       }
-      writes.push({ field, value: value.data });
+      writes.push({ field, accepted: acceptance.accepted });
     }
 
     const [first, ...rest] = refusals;
@@ -522,9 +515,9 @@ export class MetafieldValuesService {
   /**
    * Apply a plan from `planWrite`.
    *
-   * A write touches the paths it names and nothing else, at every level: naming a path
-   * with an empty value clears that part, naming the field with `null` clears all of
-   * them, and saying nothing about a path leaves it alone, so a caller that does not know
+   * A write touches the paths it names and nothing else, at every level: naming a part
+   * as `null` clears that part, naming the field as `null` clears all of them, and saying
+   * nothing about a path leaves it alone, so a caller that does not know
    * about a field cannot erase it. A list is the one value replaced whole: the options a
    * write picks are all it holds afterwards.
    *
@@ -606,13 +599,13 @@ export class MetafieldValuesService {
       const removals: Array<{ field: FieldIdentity; removes: (path: string) => boolean }> = [];
       const rows: DbValueRow[] = [];
 
-      for (const { field, value } of writes) {
-        if (value === undefined) {
+      for (const { field, accepted } of writes) {
+        if (accepted === undefined) {
           removals.push({ field, removes: () => true });
           continue;
         }
 
-        const toWrite = valueRowsToWrite(field, value);
+        const toWrite = valueRowsToWrite(accepted);
         const { set } = toWrite;
         switch (toWrite.mode) {
           // A set is replaced as a whole. Rows for options the new set no longer picks are
@@ -632,11 +625,11 @@ export class MetafieldValuesService {
         }
 
         rows.push(
-          ...set.map((row): DbValueRow => ({
+          ...set.map(({ path, ...columns }): DbValueRow => ({
             ...fieldReference(field),
             member_id: memberId,
-            path: row.path,
-            value_text: row.value_text,
+            path,
+            ...columns,
             written_by_type: writtenBy.type,
             written_by_id: writtenBy.id,
             created_at: now,
@@ -656,7 +649,7 @@ export class MetafieldValuesService {
           .onConflict(VALUE_KEY)
           // The writer is merged with the value, so a row names who wrote what
           // it currently holds rather than who wrote its first value.
-          .merge(['value_text', 'written_by_type', 'written_by_id', 'updated_at']);
+          .merge([...VALUE_COLUMNS, 'written_by_type', 'written_by_id', 'updated_at']);
       }
 
       // Rows are removed after the rows above are written, with one DELETE per row that names
