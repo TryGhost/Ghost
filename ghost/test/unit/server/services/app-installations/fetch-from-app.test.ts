@@ -90,6 +90,18 @@ describe('createAppFetcher', function () {
       assert.equal(failure.status, 404);
     });
 
+    // An empty Location is none, so the redirect is an answer, which the SDK's check matches.
+    it('reports a redirect with an empty Location as unreachable, with the status', async function () {
+      const manifest = nock('https://podcast.example.com')
+        .get('/ghost-app.json')
+        .reply(302, '', { location: '' });
+
+      const failure = unreachable(await fetcher()(APP_URL, OPTIONS));
+
+      assert.equal(failure.status, 302);
+      assert.equal(manifest.isDone(), true);
+    });
+
     // got resolves a 304 rather than rejecting it, but it is no more a read than a 404.
     it('reports a 304 as unreachable, with the status', async function () {
       nock('https://podcast.example.com').get('/ghost-app.json').reply(304);

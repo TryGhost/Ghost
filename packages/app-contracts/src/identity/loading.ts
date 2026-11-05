@@ -42,6 +42,30 @@ export function staysOnHost(from: URL, to: URL): boolean {
   );
 }
 
+/** Why Ghost refuses a redirect. */
+export type RedirectRefusal =
+  | { reason: 'redirected'; host: string }
+  | { reason: 'location_not_url'; status: number };
+
+/**
+ * Whether Ghost refuses a response's redirect, and why: a Location on another host, or one that
+ * isn't a URL, on any 3xx, including the ones Ghost's HTTP client doesn't follow. `target` is
+ * the Location as `readLocation` reads it, or `undefined` for none: an empty Location is none,
+ * so the response is an answer, as Ghost reads it.
+ */
+export function refusedRedirect(
+  status: number,
+  from: URL,
+  target: URL | null | undefined,
+): RedirectRefusal | undefined {
+  if (!isRedirect(status) || target === undefined || (target && staysOnHost(from, target))) {
+    return undefined;
+  }
+  return target
+    ? { reason: 'redirected', host: target.host }
+    : { reason: 'location_not_url', status };
+}
+
 /**
  * A Location header as the URL it names, resolved against `base`, or `null` if it isn't one.
  * Headers arrive as latin1, and Ghost reads a Location as UTF-8, as got and browsers do.

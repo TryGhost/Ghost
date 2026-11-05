@@ -32,8 +32,10 @@ export {
   isSuccess,
   parseJsonText,
   readLocation,
+  refusedRedirect,
   staysOnHost,
   type AppLoadCode,
+  type RedirectRefusal,
 } from './loading.ts';
 export { UNCONFIRMED_APP_CODES, isUnconfirmedAppCode, type UnconfirmedAppCode } from './codes.ts';
 export { PrivateKeyJwkSchema, decodeUtf8, thumbprintOf, type PrivateKey } from './keys.ts';
