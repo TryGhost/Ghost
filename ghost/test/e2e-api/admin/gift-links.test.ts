@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { assertActionLogged } from '../../utils/action-log';
+import { giftLinkActions } from '../../../core/server/services/gift-links/action-kind';
 
 const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
@@ -149,12 +150,11 @@ describe('Gift Links Admin API', function () {
     it('records a gift link being added, with its post', async function () {
       await agent.put(`posts/${postId}/gift_links/`).expectStatus(200);
 
-      const entry = await assertActionLogged(agent, {
-        resourceType: 'gift_link',
+      const entry = await assertActionLogged(agent, giftLinkActions, {
         event: 'added',
         resourceId: postId,
         actor: staff,
-        details: { primary_name: postTitle, action_name: undefined },
+        details: { primary_name: postTitle },
       });
       assert.equal(entry.resource?.title, postTitle);
     });
@@ -163,12 +163,11 @@ describe('Gift Links Admin API', function () {
       await agent.put(`posts/${postId}/gift_links/`).expectStatus(200);
       await agent.post(`posts/${postId}/gift_links/`).expectStatus(200);
 
-      await assertActionLogged(agent, {
-        resourceType: 'gift_link',
-        event: 'edited',
+      await assertActionLogged(agent, giftLinkActions, {
+        actionName: 'reset',
         resourceId: postId,
         actor: staff,
-        details: { primary_name: postTitle, action_name: 'reset' },
+        details: { primary_name: postTitle },
       });
     });
 
@@ -177,8 +176,7 @@ describe('Gift Links Admin API', function () {
       await agent.put(`pages/${pageId}/gift_links/`).expectStatus(200);
       await agent.put('gift_links/remove_all/').expectStatus(200);
 
-      const revoked = await assertActionLogged(agent, {
-        resourceType: 'gift_link',
+      const revoked = await assertActionLogged(agent, giftLinkActions, {
         event: 'deleted',
         resourceId: null,
         actor: staff,

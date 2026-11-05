@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { z } from 'zod';
 import { assertActionLogged, readActions } from '../../utils/action-log';
+import { customFieldActions } from '../../../core/server/services/members-metafields/action-kind';
 
 const {
   agentProvider,
@@ -1307,7 +1308,7 @@ describe('Member Custom Fields Admin API', function () {
 
       // The key identifies the field publicly; it rides in the action's context
       // because resource_id holds the row id.
-      const logged = await readActions(agent, { resourceType: 'member_custom_field' });
+      const logged = await readActions(agent, customFieldActions);
       assert.deepEqual(
         logged.map((action) => action.details?.key),
         ['company'],
@@ -2496,7 +2497,6 @@ describe('Member Custom Fields Admin API', function () {
   });
 
   describe('records actions in the action log (via the actions API)', function () {
-    const customFields = { resourceType: 'member_custom_field' };
     let staff: { type: 'user'; id: string };
 
     beforeAll(async function () {
@@ -2513,8 +2513,7 @@ describe('Member Custom Fields Admin API', function () {
         .body({ members_metafields: [{ access: { member: 'write' } }] })
         .expectStatus(200);
 
-      await assertActionLogged(agent, {
-        ...customFields,
+      await assertActionLogged(agent, customFieldActions, {
         event: 'edited',
         actor: staff,
         details: { key: field.key, member_access: 'write', previous_member_access: 'none' },
@@ -2524,14 +2523,13 @@ describe('Member Custom Fields Admin API', function () {
     it('records an "added" action when a field is created', async function () {
       const field = await createField({ name: 'Favourite topic' });
 
-      const added = await assertActionLogged(agent, {
-        ...customFields,
+      const added = await assertActionLogged(agent, customFieldActions, {
         event: 'added',
         actor: staff,
         details: { key: field.key, primary_name: field.name },
       });
       assert.equal(added.resource?.name, field.name);
-      assert.equal((await readActions(agent, customFields)).length, 1);
+      assert.equal((await readActions(agent, customFieldActions)).length, 1);
     });
 
     // `resource_id` holds 24 characters and a key derived from a publisher-chosen
@@ -2545,8 +2543,7 @@ describe('Member Custom Fields Admin API', function () {
       );
 
       const row = await models.Base.knex('members_metafields').where('key', field.key).first();
-      await assertActionLogged(agent, {
-        ...customFields,
+      await assertActionLogged(agent, customFieldActions, {
         event: 'added',
         resourceId: row.id,
         details: { key: field.key },
@@ -2569,16 +2566,15 @@ describe('Member Custom Fields Admin API', function () {
         })
         .expectStatus(200);
 
-      const reordered = await assertActionLogged(agent, {
-        ...customFields,
-        event: 'edited',
+      const reordered = await assertActionLogged(agent, customFieldActions, {
+        actionName: 'reordered',
         resourceId: null,
         actor: staff,
-        details: { action_name: 'reordered', count: 3 },
+        details: { count: 3 },
       });
       assert.deepEqual(reordered.details, { action_name: 'reordered', count: 3 });
       assert.equal(
-        (await readActions(agent, { ...customFields, event: 'edited' })).length,
+        (await readActions(agent, customFieldActions, { event: 'edited' })).length,
         1,
         'a reorder records one action, not one per field',
       );
@@ -2591,8 +2587,7 @@ describe('Member Custom Fields Admin API', function () {
         .body({ members_metafields: [{ name: 'Topic' }] })
         .expectStatus(200);
 
-      await assertActionLogged(agent, {
-        ...customFields,
+      await assertActionLogged(agent, customFieldActions, {
         event: 'edited',
         actor: staff,
         details: { key: field.key, primary_name: 'Topic', previous_name: 'Favourite topic' },
@@ -2607,7 +2602,7 @@ describe('Member Custom Fields Admin API', function () {
         .expectStatus(200);
 
       assert.deepEqual(
-        (await readActions(agent, customFields)).map((action) => action.event),
+        (await readActions(agent, customFieldActions)).map((action) => action.event),
         ['added'],
         'a no-op rename should not record an action',
       );
@@ -2617,11 +2612,10 @@ describe('Member Custom Fields Admin API', function () {
       const field = await createField({ name: 'Favourite topic' });
       await setStatus(field.key, 'archived');
 
-      await assertActionLogged(agent, {
-        ...customFields,
-        event: 'edited',
+      await assertActionLogged(agent, customFieldActions, {
+        actionName: 'archived',
         actor: staff,
-        details: { key: field.key, action_name: 'archived' },
+        details: { key: field.key },
       });
     });
 
@@ -2630,11 +2624,10 @@ describe('Member Custom Fields Admin API', function () {
       await setStatus(field.key, 'archived');
       await setStatus(field.key, 'active');
 
-      await assertActionLogged(agent, {
-        ...customFields,
-        event: 'edited',
+      await assertActionLogged(agent, customFieldActions, {
+        actionName: 'restored',
         actor: staff,
-        details: { key: field.key, action_name: 'restored' },
+        details: { key: field.key },
       });
     });
 
@@ -2643,7 +2636,7 @@ describe('Member Custom Fields Admin API', function () {
       await setStatus(field.key, 'active');
 
       assert.deepEqual(
-        (await readActions(agent, customFields)).map((action) => action.event),
+        (await readActions(agent, customFieldActions)).map((action) => action.event),
         ['added'],
         'a no-op status change should not record an action',
       );
@@ -2654,8 +2647,7 @@ describe('Member Custom Fields Admin API', function () {
       await setStatus(field.key, 'archived');
       await agent.delete(`members/metafields/custom/${field.key}/`).expectStatus(204);
 
-      const deleted = await assertActionLogged(agent, {
-        ...customFields,
+      const deleted = await assertActionLogged(agent, customFieldActions, {
         event: 'deleted',
         actor: staff,
         details: { key: field.key, primary_name: 'Favourite topic' },
@@ -2678,7 +2670,7 @@ describe('Member Custom Fields Admin API', function () {
 
       // Oldest first: action ids sort in creation order even for events that land in the
       // same second, which created_at ordering can't tell apart.
-      const timeline = (await readActions(agent, customFields)).filter(
+      const timeline = (await readActions(agent, customFieldActions)).filter(
         (entry) => entry.details?.key === field.key,
       );
 

@@ -12,6 +12,7 @@ import {
 } from '../../utils/app-identity';
 import { agentProvider, fixtureManager, mockManager } from '../../utils/e2e-framework';
 import { assertActionLogged, readActions } from '../../utils/action-log';
+import { appInstallationActions } from '../../../core/server/services/app-installations/action-kind';
 
 // Required, not imported, so this is the same module instance Ghost initialised at boot.
 const appInstallations: typeof import('../../../core/server/services/app-installations').default =
@@ -142,7 +143,7 @@ describe('App installations Admin API', function () {
       .expectStatus(status);
     return status === 200 ? body.app_installation_previews[0] : body.errors[0];
   };
-  const loggedActions = () => readActions(agent, { resourceType: 'app_installation' });
+  const loggedActions = () => readActions(agent, appInstallationActions);
   const installationRow = (id: string) =>
     models.Base.knex('app_installations').where({ id }).first();
   const manifestRows = () => models.Base.knex('app_installation_manifests').orderBy('id', 'asc');
@@ -283,9 +284,8 @@ describe('App installations Admin API', function () {
     it('records who installed the app in the staff history', async function () {
       const installation = await install();
 
-      const installed = await assertActionLogged(agent, {
-        resourceType: 'app_installation',
-        event: 'added',
+      const installed = await assertActionLogged(agent, appInstallationActions, {
+        actionName: 'installed',
         resourceId: installation.id,
         actor: owner.actor,
       });
@@ -2344,15 +2344,13 @@ describe('App installations Admin API', function () {
 
       await agent.delete(`apps/installations/${installation.id}/`).expectStatus(204);
 
-      await assertActionLogged(agent, {
-        resourceType: 'app_installation',
-        event: 'deleted',
+      await assertActionLogged(agent, appInstallationActions, {
+        actionName: 'uninstalled',
         resourceId: installation.id,
         actor: owner.actor,
         details: {
           primary_name: 'Podcast',
           app_id: 'com.example.podcast',
-          action_name: 'uninstalled',
         },
       });
     });

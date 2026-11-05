@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { assertActionLogged } from '../../utils/action-log';
+import { stripeCheckoutConfigActions } from '../../../core/server/services/stripe-checkout-config/action-kind';
 
 const {
   agentProvider,
@@ -142,8 +143,7 @@ describe('Stripe Checkout Config Admin API', function () {
 
       await setCheckout(design());
 
-      const saved = await assertActionLogged(agent, {
-        resourceType: 'stripe_checkout_config',
+      const saved = await assertActionLogged(agent, stripeCheckoutConfigActions, {
         event: 'edited',
         actor: { type: 'user', id: me.users[0].id },
       });
