@@ -48,8 +48,9 @@ export type ActionRow = {
  * Logs staff actions to the `actions` table, which Admin's History page reads.
  *
  * Call it from the command that makes the change, with the command's transaction where it has
- * one, so the action is only kept if the change is. Logging is best-effort: a failed write is
- * logged and doesn't fail the command, unless it deadlocks inside the command's transaction.
+ * one, so the action is only kept if the change is. Inside a transaction the action is part of
+ * the change: a failed write fails the command, and its change rolls back. Outside one, logging
+ * is best-effort: a failed write is logged and the change stands.
  */
 export class ActionLog {
   private logging: Pick<GhostLogger, 'error'>;
@@ -85,10 +86,7 @@ export class ActionLog {
         created_at: toDatabaseDate(new Date()),
       });
     } catch (err) {
-      // A deadlock rolls back the whole transaction, not just this insert, so the command's
-      // own writes are gone too. Failing lets the command retry or report it, rather than
-      // carry on as if its change was kept.
-      if (db.isTransaction && isDeadlock(err)) {
+      if (db.isTransaction) {
         throw err;
       }
       this.logging.error(
@@ -108,12 +106,6 @@ export class ActionLog {
       );
     }
   }
-}
-
-function isDeadlock(err: unknown): boolean {
-  return (
-    typeof err === 'object' && err !== null && 'code' in err && err.code === 'ER_LOCK_DEADLOCK'
-  );
 }
 
 // Only the fields that carry meaning are stored, as Bookshelf's action log does.

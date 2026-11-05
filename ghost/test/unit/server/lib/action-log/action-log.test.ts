@@ -205,7 +205,7 @@ describe('Unit: lib/action-log/action-log', function () {
       await broken.destroy();
     });
 
-    it('logs the failure and still resolves', async function () {
+    it('logs the failure and still resolves outside a transaction', async function () {
       await actionLog.record(broken, ACTING, {
         resourceType: 'app_installation',
         event: 'installed',
@@ -233,59 +233,23 @@ describe('Unit: lib/action-log/action-log', function () {
       assert.ok(entry.err instanceof Error);
     });
 
-    it("doesn't fail the command's transaction", async function () {
-      await broken.transaction(async (transacting) => {
-        await transacting('posts').insert({ id: POST_ID });
-        await actionLog.record(transacting, ACTING, {
-          resourceType: 'gift_link',
-          event: 'added',
-          resourceId: POST_ID,
-          primaryName: 'A post',
-        });
-      });
+    it('fails the command and rolls back its change inside its transaction', async function () {
+      await assert.rejects(
+        broken.transaction(async (transacting) => {
+          await transacting('posts').insert({ id: POST_ID });
+          await actionLog.record(transacting, ACTING, {
+            resourceType: 'gift_link',
+            event: 'added',
+            resourceId: POST_ID,
+            primaryName: 'A post',
+          });
+        }),
+        /no such table: actions/,
+      );
 
-      assert.equal((await broken('posts').select()).length, 1);
-      assert.equal(logging.error.callCount, 1);
+      assert.equal((await broken('posts').select()).length, 0);
+      assert.equal(logging.error.callCount, 0);
     });
-  });
-});
-
-describe('Unit: lib/action-log/action-log deadlocks', function () {
-  const deadlock = () => Object.assign(new Error('Deadlock found'), { code: 'ER_LOCK_DEADLOCK' });
-  const deadlocking = ({ inTransaction }: { inTransaction: boolean }) =>
-    Object.assign(
-      () => ({
-        insert: async () => {
-          throw deadlock();
-        },
-      }),
-      { isTransaction: inTransaction },
-    ) as unknown as Knex;
-  const row = {
-    resourceType: 'gift_link',
-    event: 'added',
-    resourceId: POST_ID,
-    primaryName: 'A post',
-  } as const;
-
-  // MySQL has already rolled the whole transaction back, so the command's writes are gone.
-  it("fails the command when it deadlocks in the command's transaction", async function () {
-    const logging = createLoggingFake();
-    const actionLog = new ActionLog({ logging });
-
-    await assert.rejects(actionLog.record(deadlocking({ inTransaction: true }), ACTING, row), {
-      code: 'ER_LOCK_DEADLOCK',
-    });
-    assert.equal(logging.error.callCount, 0);
-  });
-
-  it('logs a deadlock outside a transaction like any other failure', async function () {
-    const logging = createLoggingFake();
-    const actionLog = new ActionLog({ logging });
-
-    await actionLog.record(deadlocking({ inTransaction: false }), ACTING, row);
-
-    assert.equal(logging.error.callCount, 1);
   });
 });
 
