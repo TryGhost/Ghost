@@ -1,6 +1,6 @@
 import { getSettingValues, useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
-import { useKoenigLinkSuggestions } from '@tryghost/admin-x-framework';
+import { useKoenigLinkSuggestions } from '@/shared/use-koenig-link-suggestions';
 
 // Provides Koenig link autocomplete config for the email editor. Reads settings
 // and site directly from framework hooks (no global data provider required) and
