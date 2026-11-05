@@ -2,7 +2,7 @@
 import { createServer, type IncomingMessage, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { existsSync } from 'node:fs';
-import { readFile, symlink, writeFile } from 'node:fs/promises';
+import { readFile, rename, symlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -287,6 +287,32 @@ describe('ghost-app keys, sign and backend-key', () => {
     expect(existsSync(join(root, '.ghost-app/development/next.json'))).toBe(false);
     expect(existsSync(join(root, '.ghost-app/development/next.json'))).toBe(false);
   });
+
+  // A key that is itself a link lands outside .ghost-app/, so neither the path as written nor
+  // where it lands is enough on its own.
+  it.each(['.ghost-app/development/identity.json', 'identity-secret.json'])(
+    'refuses an --out of %s, when the identity key is a link out of .ghost-app/',
+    async (out) => {
+      await cli('keys', '--dir', root);
+      const key = join(root, '.ghost-app/development/identity.json');
+      const secret = join(root, 'identity-secret.json');
+      await rename(key, secret);
+      await symlink(secret, key);
+      const before = await readFile(secret, 'utf8');
+      const result = await cli(
+        'sign',
+        '--url',
+        'http://my-app.localhost:5173/ghost-app.json',
+        '--out',
+        out,
+        '--dir',
+        root,
+      );
+      expect(result.code).toBe(1);
+      expect(result.err).toContain('Refusing to write the signed manifest into .ghost-app/');
+      expect(await readFile(secret, 'utf8')).toBe(before);
+    },
+  );
 
   // Only where the filesystem ignores case, as macOS's does by default.
   it.skipIf(!existsSync(fileURLToPath(import.meta.url).toUpperCase())).each([

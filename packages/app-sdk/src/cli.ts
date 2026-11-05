@@ -6,6 +6,7 @@ import { Command, CommanderError } from 'commander';
 import { checkApp } from './tooling/check.ts';
 import {
   KEYS_DIRECTORY,
+  KEY_NAMES,
   createKeys,
   keyFile,
   publicKeyOf,
@@ -40,6 +41,34 @@ async function keys(root: string, mode: Mode, io: Io) {
   }
 }
 
+const MODES: readonly Mode[] = ['development', 'production'];
+
+/** Throws if writing to `written` would overwrite the manifest it's signed from, or a key. */
+function refuseToOverwrite(root: string, written: string, manifestFile: string) {
+  // Where the write would really land, through every link.
+  const lands = canonicalPath(written);
+  if (lands === canonicalPath(resolve(root, manifestFile))) {
+    throw new Error(
+      `Refusing to write the signed manifest over ${manifestFile}, which it's signed from`,
+    );
+  }
+  // Refused by the path as written, by where it really lands, and by where each key really is,
+  // so neither a link out of .ghost-app/ nor a key that is itself a link lets it reach a key.
+  const keysDirectory = join(root, KEYS_DIRECTORY);
+  const keyFiles = MODES.flatMap((mode) =>
+    KEY_NAMES.map((name) => canonicalPath(join(root, keyFile(mode, name)))),
+  );
+  if (
+    isWithin(keysDirectory, written) ||
+    isWithin(canonicalPath(keysDirectory), lands) ||
+    keyFiles.includes(lands)
+  ) {
+    throw new Error(
+      `Refusing to write the signed manifest into ${KEYS_DIRECTORY}/, which holds the keys`,
+    );
+  }
+}
+
 async function sign(
   root: string,
   {
@@ -53,17 +82,8 @@ async function sign(
   const manifestFile = manifest ?? MANIFEST_FILE;
   // Against the project's directory, like --manifest and the keys.
   const written = out === undefined ? undefined : resolve(root, out);
-  // Where the write would really land, so a link to the manifest or a key counts too.
-  const lands = written === undefined ? undefined : canonicalPath(written);
-  if (lands === canonicalPath(resolve(root, manifestFile))) {
-    throw new Error(
-      `Refusing to write the signed manifest over ${manifestFile}, which it's signed from`,
-    );
-  }
-  if (lands && isWithin(canonicalPath(join(root, KEYS_DIRECTORY)), lands)) {
-    throw new Error(
-      `Refusing to write the signed manifest into ${KEYS_DIRECTORY}/, which holds the keys`,
-    );
+  if (written) {
+    refuseToOverwrite(root, written, manifestFile);
   }
   const result = await signProject({
     root,
@@ -163,7 +183,7 @@ export async function run(args: string[], io: Io): Promise<number> {
   program
     .command('backend-key')
     .description(
-      "Prints the mode's private backend key, to pipe into a secret store: ghost-app backend-key --production | wrangler secret put GHOST_APP_BACKEND_KEY",
+      "Prints the mode's private backend key, to pipe into a secret store: ghost-app backend-key --production --check && ghost-app backend-key --production | wrangler secret put GHOST_APP_BACKEND_KEY",
     )
     .option('--production', 'the production key instead of the development one')
     .option('--public', 'print only its public half, which is all CI needs to sign')
@@ -177,11 +197,11 @@ export async function run(args: string[], io: Io): Promise<number> {
     return exitCode;
   } catch (error) {
     // Commander has already printed help, or the mistake and the help: 0 for asking for help,
-    // and 2 for a mistake in how the CLI was called, as before.
+    // and 2 for a mistake in how the CLI was called.
     if (error instanceof CommanderError) {
       return error.exitCode === 0 ? 0 : 2;
     }
-    io.err((error as Error).message);
+    io.err(error instanceof Error ? error.message : String(error));
     return 1;
   }
 }
