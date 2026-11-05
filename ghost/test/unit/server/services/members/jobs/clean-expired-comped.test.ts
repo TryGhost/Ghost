@@ -39,6 +39,7 @@ function createTrx({
       whereInField: undefined as string | undefined,
       andWhereArgs: undefined as [string, string] | undefined,
       orderByField: undefined as string | undefined,
+      columns: undefined as string[] | undefined,
 
       where() {
         return query;
@@ -67,12 +68,17 @@ function createTrx({
           ids: query.ids,
           ...(query.andWhereArgs && { where: query.andWhereArgs }),
           ...(query.orderByField && { orderBy: query.orderByField }),
+          ...(query.columns && { columns: query.columns }),
         });
         ops.push(`forUpdate:${tableName}`);
         return Promise.resolve(compedMembers);
       },
 
-      select() {
+      select(...columns: string[]) {
+        if (tableName === 'members') {
+          query.columns = columns;
+          return query;
+        }
         return Promise.resolve(expiredRows);
       },
 
@@ -158,7 +164,13 @@ describe('clean-expired-comped task', function () {
     // and the update. The ops assertion pins the whole write sequence of the
     // transaction.
     assert.deepEqual(forUpdateCalls, [
-      { tableName: 'members', whereInField: 'id', ids: ['member-id'], orderBy: 'id' },
+      {
+        tableName: 'members',
+        whereInField: 'id',
+        ids: ['member-id'],
+        orderBy: 'id',
+        columns: ['id', 'status', 'updated_at'],
+      },
     ]);
     assert.deepEqual(ops, [
       'forUpdate:members',
