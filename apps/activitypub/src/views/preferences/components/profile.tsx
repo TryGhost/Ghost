@@ -250,13 +250,21 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [bannerDataUrl, setBannerDataUrl] = useState<string | null>(null);
   const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null);
+  const [imageConversionFailed, setImageConversionFailed] = useState(false);
   const shareText = `${account?.name} is now available across the social web, on ${account?.handle}`;
 
   const convertImagesToDataUrls = useCallback(async () => {
+    let failed = false;
+
     if (account?.bannerImageUrl || coverImage) {
       const bannerUrl = account?.bannerImageUrl || coverImage;
       if (bannerUrl) {
         const dataUrl = await imageUrlToDataUrl(bannerUrl);
+        if (dataUrl === null) {
+          // The image could not be fetched (usually the host does not send
+          // CORS headers), so it would be dropped from the copied image
+          failed = true;
+        }
         setBannerDataUrl(dataUrl);
       }
     }
@@ -265,9 +273,14 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
       const avatarUrl = account?.avatarUrl || publicationIcon;
       if (avatarUrl) {
         const dataUrl = await imageUrlToDataUrl(avatarUrl);
+        if (dataUrl === null) {
+          failed = true;
+        }
         setAvatarDataUrl(dataUrl);
       }
     }
+
+    setImageConversionFailed(failed);
   }, [account?.bannerImageUrl, account?.avatarUrl, coverImage, publicationIcon]);
 
   useEffect(() => {
@@ -314,6 +327,15 @@ const Profile: React.FC<ProfileProps> = ({ account, isLoading }) => {
 
   const handleCopy = async () => {
     if (!profileCardRef.current || isProcessing) {
+      return;
+    }
+
+    if (imageConversionFailed) {
+      // The profile or cover image could not be loaded, so the copied image
+      // would be missing it — say so instead of reporting a success
+      toast.error(
+        'Could not load the profile or cover image. The image host must allow cross-origin requests (CORS).',
+      );
       return;
     }
 

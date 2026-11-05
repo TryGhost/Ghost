@@ -5,9 +5,13 @@ export const PROFILE_MAX_DIMENSIONS = { width: 400, height: 400 };
 export const COVER_MAX_DIMENSIONS = { width: 4000, height: 3000 };
 
 /**
- * Converts an image URL to a data URL to avoid CORS issues
+ * Converts an image URL to a data URL to avoid CORS issues.
+ * Returns `null` when the image cannot be fetched (for example when the
+ * host does not send CORS headers), so callers can tell the conversion
+ * failed instead of silently falling back to the raw URL — which
+ * html2canvas drops from the rendered image.
  */
-export const imageUrlToDataUrl = async (url: string): Promise<string> => {
+export const imageUrlToDataUrl = async (url: string): Promise<string | null> => {
   try {
     const response = await fetch(url, {
       mode: 'cors',
@@ -23,8 +27,7 @@ export const imageUrlToDataUrl = async (url: string): Promise<string> => {
       reader.readAsDataURL(blob);
     });
   } catch {
-    // Return original URL as fallback if conversion fails
-    return url;
+    return null;
   }
 };
 
