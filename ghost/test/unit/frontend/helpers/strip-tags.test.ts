@@ -1,5 +1,16 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { promisify } from 'node:util';
+import sinon from 'sinon';
+import type { SinonStub } from 'sinon';
+import logging from '@tryghost/logging';
+import errors from '@tryghost/errors';
 import { strip_tags } from '../../../../core/frontend/helpers/strip_tags';
+// @ts-expect-error This module lacks type definitions.
+import { registerAsyncThemeHelper } from '../../../../core/frontend/services/helpers/handlebars';
+import configUtils from '../../../utils/config-utils';
 // @ts-expect-error This module lacks type definitions.
 import { SafeString } from '../../../../core/frontend/services/handlebars';
 // @ts-expect-error This module lacks type definitions.
@@ -139,6 +150,54 @@ describe('{{strip_tags}} helper', function () {
 
     it('converts a number to a string', function () {
       assert.equal(inline(42), '42');
+    });
+  });
+
+  describe('async helpers inside the block form', function () {
+    let loggingErrorStub: SinonStub;
+
+    beforeEach(function () {
+      loggingErrorStub = sinon.stub(logging, 'error');
+    });
+
+    afterEach(function () {
+      loggingErrorStub.restore();
+    });
+
+    it('returns an empty string and logs an error when the block contains an async placeholder', function () {
+      const options = { hash: {}, fn: () => '<p>Before</p> __aSyNcId__<_abcdefgh__ after' };
+      const result = strip_tags.call({}, options);
+
+      assert.equal(result.toString(), '');
+      sinon.assert.calledOnce(loggingErrorStub);
+      sinon.assert.calledWith(loggingErrorStub, sinon.match.instanceOf(errors.IncorrectUsageError));
+    });
+
+    it('does not output escaped markup when an async helper is rendered inside the block', async function () {
+      const render = handlebarsService.hbs.express4({
+        partialsDir: [configUtils.config.get('paths').helperTemplates],
+      });
+      handlebars.registerHelper('strip_tags', strip_tags);
+      registerAsyncThemeHelper('strip_tags_test_async', async function () {
+        return new SafeString('<p>Hello</p>');
+      });
+
+      const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'strip-tags-'));
+      const file = path.join(dir, 'index.hbs');
+      fs.writeFileSync(file, '[{{#strip_tags}}{{strip_tags_test_async "x"}}{{/strip_tags}}]');
+
+      try {
+        const html = await promisify(render)(file, {
+          settings: { views: dir },
+          layout: false,
+          cache: false,
+        });
+
+        assert.equal(html, '[]');
+        sinon.assert.calledOnce(loggingErrorStub);
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
     });
   });
 

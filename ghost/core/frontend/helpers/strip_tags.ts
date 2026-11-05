@@ -7,6 +7,8 @@
 // for the raw text.
 
 import { load } from 'cheerio/slim';
+import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 // @ts-expect-error JavaScript module has no type declarations.
 import { SafeString, escapeExpression } from '../services/handlebars';
 
@@ -22,6 +24,17 @@ type DomNode = {
 type BlockOptions = { fn?: (context: unknown) => string };
 
 const IGNORED_ELEMENTS = new Set(['script', 'style', 'template']);
+
+// express-hbs renders an async helper such as {{#get}} as a placeholder with this prefix and swaps in
+// the real output after the whole template has rendered. The block form of this helper runs before
+// that swap, so it cannot strip async output; it refuses rather than mangling the placeholder.
+const ASYNC_PLACEHOLDER_PREFIX = '__aSyNcId__';
+
+const messages = {
+  asyncHelperInBlock:
+    'The {{#strip_tags}} block cannot contain an async helper such as {{#get}}. ' +
+    "Use {{strip_tags}} or {{#strip_tags}} inside the async helper's block instead.",
+};
 
 function collectText(nodes: DomNode[], parts: string[]): void {
   for (const node of nodes) {
@@ -74,7 +87,14 @@ export function strip_tags(this: unknown, ...args: unknown[]): string {
   // Block form: Handlebars does not escape a block helper's output, so escape it here
   // to keep the result safe by default, matching the inline form.
   if (options && typeof options.fn === 'function') {
-    return new SafeString(escapeExpression(stripTags(options.fn(this))));
+    const rendered = options.fn(this);
+
+    if (typeof rendered === 'string' && rendered.includes(ASYNC_PLACEHOLDER_PREFIX)) {
+      logging.error(new errors.IncorrectUsageError({ message: messages.asyncHelperInBlock }));
+      return new SafeString('');
+    }
+
+    return new SafeString(escapeExpression(stripTags(rendered)));
   }
 
   return stripTags(args[0]);
