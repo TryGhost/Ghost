@@ -1,6 +1,6 @@
 import type { ActionChange, ActionRow } from '../../lib/action-log/action-log';
 import type { MemberAccess } from './access';
-import type { customFieldActions } from './action-kind';
+import type { customFieldActions } from './actions';
 
 type FieldAction = ActionRow<typeof customFieldActions>;
 

@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import createKnex, { type Knex } from 'knex';
 import { ActionLog, type KindLog } from '../../../../../core/server/lib/action-log/action-log';
-import { appInstallationActions } from '../../../../../core/server/services/app-installations/action-kind';
-import { giftLinkActions } from '../../../../../core/server/services/gift-links/action-kind';
-import { customFieldActions } from '../../../../../core/server/services/members-metafields/action-kind';
-import { stripeCheckoutConfigActions } from '../../../../../core/server/services/stripe-checkout-config/action-kind';
+import { appInstallationActions } from '../../../../../core/server/services/app-installations/actions';
+import { giftLinkActions } from '../../../../../core/server/services/gift-links/actions';
+import { customFieldActions } from '../../../../../core/server/services/members-metafields/actions';
+import { stripeCheckoutConfigActions } from '../../../../../core/server/services/stripe-checkout-config/actions';
 import type { RequestContext } from '../../../../../core/server/lib/actor';
 import { createLoggingFake } from '../../../../utils/logging-utils';
 

@@ -1,7 +1,7 @@
 import logging from '@tryghost/logging';
 import { defineService } from '../../../kernel/define-service';
 import { ActionLog } from '../../lib/action-log/action-log';
-import { giftLinkActions } from './action-kind';
+import { giftLinkActions } from './actions';
 import { GiftLinksService } from './service';
 
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.

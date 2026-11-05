@@ -1,7 +1,7 @@
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import { ActionLog } from '../../lib/action-log/action-log';
-import { customFieldActions } from './action-kind';
+import { customFieldActions } from './actions';
 import { limitService } from '../limits';
 import { MetafieldDefinitionsService } from './definitions-service';
 import { MetafieldValuesService } from './values-service';

@@ -16,7 +16,7 @@ import { snakeKeys } from '../../lib/case-keys';
 import { toDatabaseDate } from '../../lib/db-types/date';
 import type { RequestContext } from '../../lib/actor';
 import type { KindLog } from '../../lib/action-log/action-log';
-import type { stripeCheckoutConfigActions } from './action-kind';
+import type { stripeCheckoutConfigActions } from './actions';
 import { configRow, type ConfigRowSchema, type TierScope } from './codec';
 import {
   COLLECTED_NOUNS,

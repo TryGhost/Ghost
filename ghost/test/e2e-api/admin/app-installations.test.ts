@@ -12,7 +12,7 @@ import {
 } from '../../utils/app-identity';
 import { agentProvider, fixtureManager, mockManager } from '../../utils/e2e-framework';
 import { assertActionLogged, readActions } from '../../utils/action-log';
-import { appInstallationActions } from '../../../core/server/services/app-installations/action-kind';
+import { appInstallationActions } from '../../../core/server/services/app-installations/actions';
 
 // Required, not imported, so this is the same module instance Ghost initialised at boot.
 const appInstallations: typeof import('../../../core/server/services/app-installations').default =

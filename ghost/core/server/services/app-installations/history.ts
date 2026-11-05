@@ -1,7 +1,7 @@
 import { movedBetween, type AppManifest } from '@tryghost/app-contracts/manifest';
 import { z } from 'zod';
 import { DbJson } from '../../lib/db-types/json';
-import type { AppInstallationActionName } from './action-kind';
+import type { AppInstallationActionName } from './actions';
 import type { AppInstallationHistoryEntry, HistoryActor } from './codec';
 import type { AppInstallationManifestSource } from './schema';
 

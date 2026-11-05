@@ -19,7 +19,7 @@ import {
   type ManifestWrite,
 } from './decide-on-manifest';
 import type { FetchIcon } from './fetch-icon';
-import type { AppInstallationActionName, appInstallationActions } from './action-kind';
+import type { AppInstallationActionName, appInstallationActions } from './actions';
 import { approvalManifestIds, buildHistory } from './history';
 import type { IdentityChecker, PinnedIdentity, StartedChallenge } from './identity-check';
 import type { LoadedManifest, LoadManifest } from './load-manifest';

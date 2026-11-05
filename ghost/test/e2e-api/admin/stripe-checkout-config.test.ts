@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { assertActionLogged } from '../../utils/action-log';
-import { stripeCheckoutConfigActions } from '../../../core/server/services/stripe-checkout-config/action-kind';
+import { stripeCheckoutConfigActions } from '../../../core/server/services/stripe-checkout-config/actions';
 
 const {
   agentProvider,

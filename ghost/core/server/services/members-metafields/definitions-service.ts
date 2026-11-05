@@ -38,7 +38,7 @@ import { mintableKey } from './key';
 import { parseRequest } from '../../lib/parse-request';
 import type { RequestContext } from '../../lib/actor';
 import type { KindLog } from '../../lib/action-log/action-log';
-import type { customFieldActions } from './action-kind';
+import type { customFieldActions } from './actions';
 import { fieldAction, reorderAction } from './field-actions';
 import type { MetafieldsTracking } from './tracking';
 

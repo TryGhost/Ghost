@@ -6,7 +6,7 @@ import {
   type HistoryAction,
   type HistoryManifest,
 } from '../../../../../core/server/services/app-installations/history';
-import type { AppInstallationActionName } from '../../../../../core/server/services/app-installations/action-kind';
+import type { AppInstallationActionName } from '../../../../../core/server/services/app-installations/actions';
 
 const jamie = { id: 'user-1', name: 'Jamie Larson' };
 

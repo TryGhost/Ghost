@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { assertActionLogged } from '../../utils/action-log';
-import { giftLinkActions } from '../../../core/server/services/gift-links/action-kind';
+import { giftLinkActions } from '../../../core/server/services/gift-links/actions';
 
 const { agentProvider, fixtureManager } = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');

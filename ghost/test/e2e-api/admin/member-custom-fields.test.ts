@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { z } from 'zod';
 import { assertActionLogged, readActions } from '../../utils/action-log';
-import { customFieldActions } from '../../../core/server/services/members-metafields/action-kind';
+import { customFieldActions } from '../../../core/server/services/members-metafields/actions';
 
 const {
   agentProvider,

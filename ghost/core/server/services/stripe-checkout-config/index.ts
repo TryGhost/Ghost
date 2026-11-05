@@ -4,7 +4,7 @@ import { defineService } from '../../../kernel/define-service';
 import urlUtils from '../../../shared/url-utils';
 import * as metafields from '../members-metafields';
 import { ActionLog } from '../../lib/action-log/action-log';
-import { stripeCheckoutConfigActions } from './action-kind';
+import { stripeCheckoutConfigActions } from './actions';
 import { CheckoutBrandingService } from './branding-service';
 import { CheckoutService } from './checkout-service';
 import { CheckoutPreviewService, type PreviewableTier } from './preview-service';

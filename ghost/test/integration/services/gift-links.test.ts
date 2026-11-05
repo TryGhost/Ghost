@@ -4,7 +4,7 @@ import sinon from 'sinon';
 import logging from '@tryghost/logging';
 import { GiftLinksService } from '../../../core/server/services/gift-links/service';
 import { ActionLog } from '../../../core/server/lib/action-log/action-log';
-import { giftLinkActions } from '../../../core/server/services/gift-links/action-kind';
+import { giftLinkActions } from '../../../core/server/services/gift-links/actions';
 import type { RequestContext } from '../../../core/server/lib/actor';
 import type { GiftLink } from '../../../core/server/services/gift-links/models';
 
