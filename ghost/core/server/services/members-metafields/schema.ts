@@ -15,6 +15,7 @@ import {
 import { DbDate } from '../../lib/db-types/date';
 import { DbJson } from '../../lib/db-types/json';
 import { MemberAccessSchema } from './access';
+import type { ValueColumn, ValueColumns } from './storage';
 import { KeySchema, NamespaceSchema } from '@tryghost/metafield-types/identity';
 
 // schema.js lists the same statuses in its `isIn`, because static schema config can't import this.
@@ -111,6 +112,14 @@ export const WrittenBy = z.discriminatedUnion('type', [
 ]);
 export type WrittenBy = z.infer<typeof WrittenBy>;
 
+/**
+ * Each column a value is kept in, as the database holds it. Keyed by storage's columns, so a kind of
+ * value storage adds fails to compile here until its column is read.
+ */
+const VALUE_COLUMN_SCHEMAS = {
+  value_text: z.string(),
+} satisfies { readonly [C in ValueColumn]: z.ZodType<ValueColumns[C]> };
+
 // One part of a member's value. What a `path` means is storage.ts's business, so the row
 // carries it as a plain string.
 export const DbMetafieldValue = z.object({
@@ -118,7 +127,7 @@ export const DbMetafieldValue = z.object({
   metafield_key: z.string(),
   member_id: z.string(),
   path: z.string(),
-  value_text: z.string(),
+  ...VALUE_COLUMN_SCHEMAS,
   // Plain columns rather than the `WrittenBy` union: the rule holds at the write
   // boundary, so one malformed row cannot throw away a member's whole profile on read.
   written_by_type: z.string(),
@@ -139,7 +148,7 @@ export const DbStoredValueRow = z.object({
   key: KeySchema,
   type: FieldTypeSchema,
   path: z.string(),
-  value_text: z.string(),
+  ...VALUE_COLUMN_SCHEMAS,
 });
 
 export const DbMetafieldBinding = z.object({

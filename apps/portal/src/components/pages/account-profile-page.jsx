@@ -8,7 +8,7 @@ import InputForm from '../common/input-form';
 import { ValidateInputForm } from '../../utils/form';
 import { t } from '../../utils/i18n';
 import MemberCustomFields from '../common/member-custom-fields';
-import { changedCustomFields } from '../../utils/custom-fields';
+import { changedCustomFields, customFieldTexts } from '../../utils/custom-fields';
 
 export default class AccountProfilePage extends React.Component {
   static contextType = AppContext;
@@ -19,7 +19,7 @@ export default class AccountProfilePage extends React.Component {
     this.state = {
       name,
       email,
-      metafields: metafields?.custom || {},
+      metafields: customFieldTexts(context.customFields ?? [], metafields?.custom || {}),
     };
   }
 

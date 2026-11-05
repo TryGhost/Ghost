@@ -1,9 +1,9 @@
 /**
  * What a field type is made of, with no opinion on what a valid value looks like.
  *
- * Every type is composed from a few building blocks. A leaf is one value: text of a size, or a
- * choice from a list. A type is a leaf on its own, a record of named leaves, or a set of options
- * its field offers. Everything that stores, exports, edits, filters or draws a value is written
+ * Every type is composed from a few building blocks. A leaf is one value: text of a size, a
+ * choice from a list. A type is a leaf on its own, a record of named leaves, or a set of options its
+ * field offers. Everything that stores, exports, edits, filters or draws a value is written
  * once per building block, so a type composed from existing blocks needs nothing beyond its entry
  * here.
  *
@@ -30,9 +30,17 @@ export interface ChoiceLeaf {
   readonly from: ListSource;
 }
 
-/** One value, stored as one string. */
+/** One value. */
 export type Leaf = TextLeaf | ChoiceLeaf;
 export type LeafKind = Leaf['leaf'];
+
+/** What a value of each kind of leaf is, as JSON carries it. */
+export interface LeafValues {
+  text: string;
+  choice: string;
+}
+
+export type LeafValue<L extends Leaf> = LeafValues[L['leaf']];
 
 export const text = <const S extends TextSize>(size: S) => ({ leaf: 'text', size }) as const;
 export const choice = <const F extends ListSource>(from: F) => ({ leaf: 'choice', from }) as const;
@@ -115,8 +123,10 @@ export type PartsOf<T extends FieldType> = T extends FieldType
   : never;
 
 type ValueOfStructure<S extends FieldStructure> = {
-  scalar: string;
-  record: S extends { parts: infer P } ? { [K in keyof P]?: string } : never;
+  scalar: S extends { leaf: infer L extends Leaf } ? LeafValue<L> : never;
+  record: S extends { parts: infer P }
+    ? { [K in keyof P]?: P[K] extends Leaf ? LeafValue<P[K]> : never }
+    : never;
   set: string[];
 }[S['shape']];
 
@@ -129,6 +139,35 @@ type ValueOfStructure<S extends FieldStructure> = {
 export type ValueOf<T extends FieldType> = T extends FieldType
   ? ValueOfStructure<StructureOf<T>>
   : never;
+
+type WriteOfStructure<S extends FieldStructure> = {
+  scalar: ValueOfStructure<S>;
+  record: S extends { parts: infer P }
+    ? { [K in keyof P]?: (P[K] extends Leaf ? LeafValue<P[K]> : never) | null }
+    : never;
+  set: ValueOfStructure<S>;
+}[S['shape']];
+
+/**
+ * What a write gives a field of a type that still holds a value afterwards; `null` clears the
+ * whole field. As in JSON Merge Patch, a record's write names a part as `null` to clear it and
+ * leaves out a part to leave it alone, so a write is not a value: a value never holds `null`.
+ */
+export type WriteOf<T extends FieldType> = T extends FieldType
+  ? WriteOfStructure<StructureOf<T>>
+  : never;
+
+/**
+ * The keys a value has, typed as its type's keys rather than as strings, which is what
+ * `Object.keys` gives: a `for...in` over a value of a generic type gives each key as typed.
+ */
+export function keysOf<R extends object>(value: R): Extract<keyof R, string>[] {
+  const keys: Extract<keyof R, string>[] = [];
+  for (const key in value) {
+    keys.push(key);
+  }
+  return keys;
+}
 
 /**
  * What a field of a set type is set up with: the options it offers, in the order they are shown,

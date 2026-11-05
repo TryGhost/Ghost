@@ -129,14 +129,24 @@ describe('paths', () => {
     ]);
   });
 
-  // Ghost fetches it server-side and never loads it as a page, but nothing in it may load
-  // from there.
-  it('rejects every path when the manifest is served from the site or from Admin', () => {
-    const manifestUrl = 'https://site.example.com/content/files/ghost-app.json';
-    expect(errorsOf(manifest({ manifest_url: manifestUrl }), { ...options, manifestUrl })).toEqual([
-      { path: 'icon.url', message: expect.stringContaining('Ghost itself') },
-      { path: 'surfaces[0].url', message: expect.stringContaining('Ghost itself') },
-    ]);
+  // Every path is on the manifest's origin, so the manifest's address is the one checked.
+  it('rejects the manifest whole when it is served from the site’s or Admin’s host, on any port', () => {
+    for (const manifestUrl of [
+      'https://site.example.com/content/files/ghost-app.json',
+      'https://site.example.com:8443/ghost-app.json',
+      'https://admin.example.com:8443/ghost-app.json',
+    ]) {
+      expect(
+        errorsOf(manifest({ manifest_url: manifestUrl }), { ...options, manifestUrl }),
+      ).toEqual([{ path: '', message: expect.stringContaining('Ghost itself is served from') }]);
+    }
+  });
+
+  it('accepts a manifest on a sibling of the site’s host', () => {
+    const manifestUrl = 'https://app.site.example.com/ghost-app.json';
+    expect(
+      manifestOf(manifest({ manifest_url: manifestUrl }), { ...options, manifestUrl }).surfaces,
+    ).toEqual([{ type: 'admin_page', url: 'https://app.site.example.com/admin' }]);
   });
 
   it('leaves the author’s link absolute, on any origin', () => {
@@ -156,17 +166,18 @@ describe('paths', () => {
 describe('localhost', () => {
   it('resolves paths against a manifest on localhost in development', () => {
     const parsed = manifestOf(devManifest(), devOptions);
-    expect(parsed.surfaces[0]?.url).toBe('http://localhost:8787/admin');
-    expect(parsed.icon).toEqual({ url: 'http://localhost:8787/icon.svg' });
+    expect(parsed.surfaces[0]?.url).toBe('http://my-app.localhost:8787/admin');
+    expect(parsed.icon).toEqual({ url: 'http://my-app.localhost:8787/icon.svg' });
   });
 
-  it('still rejects a manifest on the port Ghost is served from', () => {
-    const manifestUrl = 'http://localhost:2368/ghost-app.json';
-    expect(
-      errorsOf(devManifest({ manifest_url: manifestUrl }), { ...devOptions, manifestUrl }),
-    ).toEqual([
-      { path: 'icon.url', message: expect.stringContaining('Ghost itself') },
-      { path: 'surfaces[0].url', message: expect.stringContaining('Ghost itself') },
-    ]);
+  it('still rejects a manifest on Ghost’s host, on any port', () => {
+    for (const manifestUrl of [
+      'http://localhost:2368/ghost-app.json',
+      'http://localhost:8787/ghost-app.json',
+    ]) {
+      expect(
+        errorsOf(devManifest({ manifest_url: manifestUrl }), { ...devOptions, manifestUrl }),
+      ).toEqual([{ path: '', message: expect.stringContaining('Ghost itself is served from') }]);
+    }
   });
 });
