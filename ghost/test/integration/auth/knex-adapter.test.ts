@@ -34,7 +34,8 @@ const schema = require('../../../core/server/data/schema/schema');
 //
 //  - `better-auth tables`: every model in Better Auth's own shape under Ghost's
 //    names. Isolates the adapter's query handling from Ghost's schema.
-//  - `ghost users`: `users` in Ghost's shape (schema.js) with the virtual
+//  - `ghost users`: every table schema.js defines (`users`, `user_accounts`,
+//    `user_sessions`, `verifications`) built from it, with the virtual
 //    `email_verified` column, as the instance will run.
 
 const dbConfig = config.get('database') as DatabaseConfig;
@@ -97,6 +98,19 @@ const ghostUsersSkips = {
   'findOne - should join a model with modified field name': true,
 };
 
+// Some tests rename the user model, so point schema.js's `users.id` foreign
+// keys at whatever table it is built as
+function referencingUserTable(tableSpec: Record<string, unknown>, userTable: string) {
+  return Object.fromEntries(
+    Object.entries(tableSpec).map(([column, spec]) => {
+      const references = (spec as { references?: unknown }).references;
+      return references === 'users.id'
+        ? [column, { ...(spec as object), references: `${userTable}.id` }]
+        : [column, spec];
+    }),
+  );
+}
+
 function lane(name: string, { ghostUsers }: { ghostUsers: boolean }) {
   const database = `${baseDatabase}_ba_${ghostUsers ? 'ghost' : 'plain'}`;
   const db = knexFor(database);
@@ -130,19 +144,19 @@ function lane(name: string, { ghostUsers }: { ghostUsers: boolean }) {
     }
     await db.raw('SET FOREIGN_KEY_CHECKS = 1');
 
-    for (const table of Object.values(getAuthTables(options))) {
+    const tables = getAuthTables(options);
+    for (const table of Object.values(tables)) {
       const fields = Object.entries(table.fields).map(
         ([key, field]) => [field.fieldName ?? key, field] as const,
       );
 
-      if (ghostUsers && table.modelName === 'users') {
-        await commands.createTable('users', db, schema.users);
-        const virtual = ghostVirtualColumns.users;
-        const missing = fields.filter(
-          ([column]) => !(column in schema.users) && !(column in virtual),
-        );
+      if (ghostUsers && Object.hasOwn(schema, table.modelName)) {
+        const tableSpec = referencingUserTable(schema[table.modelName], tables.user.modelName);
+        await commands.createTable(table.modelName, db, tableSpec);
+        const virtual = ghostVirtualColumns[table.modelName] ?? {};
+        const missing = fields.filter(([column]) => !(column in tableSpec) && !(column in virtual));
         if (missing.length) {
-          await db.schema.alterTable('users', (t) => {
+          await db.schema.alterTable(table.modelName, (t) => {
             for (const [column, field] of missing) {
               addColumn(t, column, field);
             }
