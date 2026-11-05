@@ -46,6 +46,7 @@ exports.registerGhostHelpers = () => {
   registry.registerHelper('social_accounts', require('../../helpers/social_accounts'));
   registry.registerHelper('social_url', require('../../helpers/social_url'));
   registry.registerHelper('split', require('../../helpers/split'));
+  registry.registerHelper('strip_tags', require('../../helpers/strip_tags'));
   registry.registerHelper('t', require('../../helpers/t'));
   registry.registerHelper('tags', require('../../helpers/tags'));
   registry.registerHelper('tiers', require('../../helpers/tiers'));
