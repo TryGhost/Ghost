@@ -1,6 +1,7 @@
 import { page } from 'vitest/browser';
 import {
   chooseDateButton,
+  firstNameReminderDialog,
   publicPreviewWarningDialog,
   publishAlreadySent,
   publishBackToSettings,
@@ -80,6 +81,7 @@ export const publishScreen = {
   revertToDraft: () => page.getByTestId(publishRevertToDraft),
   tkReminder: () => page.getByTestId(tkReminderDialog),
   publicPreviewWarning: () => page.getByTestId(publicPreviewWarningDialog),
+  firstNameReminder: () => page.getByTestId(firstNameReminderDialog),
   updateFlow: () => page.getByTestId(updateFlowModal),
   updateFlowCloseButton: () =>
     page.getByTestId(updateFlowModal).getByRole('button', { name: 'Close', exact: true }),
