@@ -352,7 +352,7 @@ const controller = {
       data: {
         action: {
           required: true,
-          values: ['unsubscribe', 'addLabel', 'removeLabel'],
+          values: ['unsubscribe', 'addLabel', 'removeLabel', 'removeLabels'],
         },
       },
     },

@@ -8,6 +8,7 @@ import {
   useMemberSigninUrl,
   useAddMember,
   useBrowseMembersInfinite,
+  useBulkEditMembers,
   useBulkDeleteMembers,
   useDeleteMember,
   useEditMember,
@@ -249,6 +250,41 @@ describe('members api', () => {
         });
       },
     );
+  });
+
+  it.each([
+    { bulk: { meta: { stats: { successful: 2, unsuccessful: 0 }, errors: [] } } },
+    { bulk: { action: 'removeLabels', meta: { stats: { successful: 2, unsuccessful: 0 } } } },
+  ])('accepts bulk-edit responses with or without action', async (response) => {
+    await withMockFetch({ json: response }, async () => {
+      const { result } = renderHookWithProviders(() => useBulkEditMembers());
+      await act(async () => {
+        await expect(
+          result.current.mutateAsync({
+            all: true,
+            action: { type: 'removeLabel', meta: { label: { id: 'label-id' } } },
+          }),
+        ).resolves.toEqual(response);
+      });
+    });
+  });
+
+  it.each([
+    { bulk: { meta: { stats: { successful: 2 } } } },
+    { bulk: { meta: { stats: { successful: 2, unsuccessful: '0' } } } },
+    { bulk: { meta: { stats: { successful: 2, unsuccessful: -1 } } } },
+  ])('rejects malformed bulk-edit stats', async (response) => {
+    await withMockFetch({ json: response }, async () => {
+      const { result } = renderHookWithProviders(() => useBulkEditMembers());
+      await act(async () => {
+        await expect(
+          result.current.mutateAsync({
+            all: true,
+            action: { type: 'removeLabel', meta: { label: { id: 'label-id' } } },
+          }),
+        ).rejects.toThrow();
+      });
+    });
   });
 
   it('invalidates member queries after bulk deleting members', async () => {

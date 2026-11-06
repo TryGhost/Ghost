@@ -15,6 +15,7 @@ import { useLabelPicker } from '@/members/hooks/use-label-picker';
 interface RemoveLabelModalProps {
   open: boolean;
   memberCount: number;
+  allowMultiple: boolean;
   nql?: string;
   search?: string;
   onOpenChange: (open: boolean) => void;
@@ -25,6 +26,7 @@ interface RemoveLabelModalProps {
 export function RemoveLabelModal({
   open,
   memberCount,
+  allowMultiple,
   nql,
   search,
   onOpenChange,
@@ -58,7 +60,7 @@ export function RemoveLabelModal({
 
   const picker = useLabelPicker({
     selectedSlugs,
-    onSelectionChange: setSelectedSlugs,
+    onSelectionChange: (slugs) => setSelectedSlugs(allowMultiple ? slugs : slugs.slice(-1)),
   });
 
   // Only the labels these members carry are listed. Paging the site's labels to
@@ -113,11 +115,24 @@ export function RemoveLabelModal({
           onToggle={picker.toggleLabel}
         />
 
+        {!allowMultiple && (
+          <p className="text-sm text-muted-foreground">
+            Select one label at a time. Update Ghost to remove multiple labels at once.
+          </p>
+        )}
+
         <DialogFooter>
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Cancel
           </Button>
-          <Button disabled={selectedSlugs.length === 0 || isLoading} onClick={handleConfirm}>
+          <Button
+            disabled={
+              selectedSlugs.length === 0 ||
+              isLoading ||
+              (!allowMultiple && selectedSlugs.length > 1)
+            }
+            onClick={handleConfirm}
+          >
             {isLoading
               ? 'Removing...'
               : selectedSlugs.length > 1

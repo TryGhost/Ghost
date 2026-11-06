@@ -3,6 +3,9 @@
 exports[`Config API As Owner Can retrieve config and all expected properties 1: [body] 1`] = `
 Object {
   "config": Object {
+    "capabilities": Object {
+      "membersBulkRemoveLabels": true,
+    },
     "clientExtensions": Object {},
     "database": "mysql8",
     "emailAnalytics": true,

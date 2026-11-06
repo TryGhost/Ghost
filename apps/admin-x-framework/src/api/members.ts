@@ -1,5 +1,6 @@
 import { InfiniteData, useIsFetching, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
+import { z } from 'zod';
 import {
   Meta,
   createInfiniteQuery,
@@ -673,9 +674,10 @@ export function useBrowseMembersInfinite(
 
 // Bulk operations
 export interface BulkEditAction {
-  type: 'addLabel' | 'removeLabel' | 'unsubscribe';
+  type: 'addLabel' | 'removeLabel' | 'removeLabels' | 'unsubscribe';
   meta?: {
     label?: { id: string };
+    labels?: Array<{ id: string }>;
   };
   newsletter?: string | null;
 }
@@ -690,6 +692,19 @@ export interface BulkOperationResponseType {
     errors?: Array<{ id?: string; message: string }>;
   };
 }
+
+const BulkEditResponseSchema = z.looseObject({
+  bulk: z.looseObject({
+    meta: z.looseObject({
+      stats: z.looseObject({
+        successful: z.number().int().nonnegative(),
+        unsuccessful: z.number().int().nonnegative(),
+      }),
+    }),
+  }),
+});
+
+export type BulkEditResponseType = z.infer<typeof BulkEditResponseSchema>;
 
 function buildBulkMemberSearchParams({
   filter,
@@ -722,7 +737,7 @@ function buildBulkMemberSearchParams({
 }
 
 export const useBulkEditMembers = createMutation<
-  BulkOperationResponseType,
+  BulkEditResponseType,
   { filter?: string; search?: string; all?: boolean; action: BulkEditAction }
 >({
   method: 'PUT',
@@ -735,6 +750,7 @@ export const useBulkEditMembers = createMutation<
     },
   }),
   searchParams: buildBulkMemberSearchParams,
+  parseResponse: (data) => BulkEditResponseSchema.parse(data),
   invalidateQueries: { dataType },
 });
 

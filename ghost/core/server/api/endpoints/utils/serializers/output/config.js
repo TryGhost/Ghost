@@ -7,6 +7,7 @@ module.exports = {
 
     const keys = [
       'version',
+      'capabilities',
       'environment',
       'database',
       'mail',

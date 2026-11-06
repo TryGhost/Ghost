@@ -1323,7 +1323,7 @@ module.exports = class MemberRepository {
   async bulkEdit(data, options) {
     const { all, filter, search } = options;
 
-    if (!['unsubscribe', 'addLabel', 'removeLabel'].includes(data.action)) {
+    if (!['unsubscribe', 'addLabel', 'removeLabel', 'removeLabels'].includes(data.action)) {
       throw new errors.IncorrectUsageError({
         message: 'Unsupported bulk action',
       });
@@ -1341,6 +1341,54 @@ module.exports = class MemberRepository {
       // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
       Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
     }
+
+    if (data.action === 'removeLabel' || data.action === 'removeLabels') {
+      let labelIds;
+      if (data.action === 'removeLabel') {
+        labelIds = [data.meta.label.id];
+      } else {
+        const labels = data.meta?.labels;
+        if (
+          !Array.isArray(labels) ||
+          labels.length === 0 ||
+          Object.hasOwn(data.meta, 'label') ||
+          labels.some((label) => typeof label?.id !== 'string' || !/^[a-f\d]{24}$/i.test(label.id))
+        ) {
+          throw new errors.BadRequestError({ message: 'A valid list of label IDs is required' });
+        }
+        labelIds = _.uniq(labels.map((label) => label.id));
+      }
+
+      const removeLabels = async (transacting) => {
+        const memberIds = await this._Member
+          .getFilteredCollectionQuery({ ...filterOptions, transacting })
+          .distinct()
+          .pluck('members.id');
+        const relationIds = [];
+        // Both IN lists share SQLite's parameter limit, which can be as low as 999.
+        const labelChunks = _.chunk(labelIds, 400);
+        for (const memberChunk of _.chunk(memberIds, 400)) {
+          for (const labelChunk of labelChunks) {
+            const relations = await this._Member.getLabelRelations(
+              { labelIds: labelChunk, memberIds: memberChunk },
+              { transacting },
+            );
+            for (const relation of relations) {
+              relationIds.push(relation.id);
+            }
+          }
+        }
+        return this._Member.bulkDestroy(relationIds, 'members_labels', {
+          transacting,
+          throwErrors: true,
+        });
+      };
+
+      return options.transacting
+        ? removeLabels(options.transacting)
+        : this._Member.transaction(removeLabels);
+    }
+
     const memberRows = await this._Member
       .getFilteredCollectionQuery(filterOptions)
       .select('members.id')
@@ -1365,17 +1413,6 @@ module.exports = class MemberRepository {
         });
       }
     }
-    if (data.action === 'removeLabel') {
-      const membersLabelsRows = await this._Member.getLabelRelations({
-        labelId: data.meta.label.id,
-        memberIds,
-      });
-
-      const membersLabelsIds = membersLabelsRows.map((row) => row.id);
-
-      return this._Member.bulkDestroy(membersLabelsIds, 'members_labels');
-    }
-
     if (data.action === 'addLabel') {
       const relations = memberIds.map((id) => {
         return {
