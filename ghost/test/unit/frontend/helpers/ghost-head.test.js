@@ -922,29 +922,82 @@ describe('{{ghost_head}} helper', function () {
     });
 
     it('disallows indexing for preview pages', async function () {
-      await testGhostHead(
+      const rendered = await testGhostHead(
         testUtils.createHbsResponse({
           locals: {
             context: ['preview', 'post'],
           },
         }),
       );
+      assert.equal(rendered.includes('<meta name="robots" content="noindex,nofollow">'), true);
+      assert.equal(rendered.includes('max-image-preview'), false);
       // Unknown Request error for favico
       // TypeError for primary_author being undefined
       sinon.assert.calledOnce(loggingErrorStub);
     });
 
     it('implicit indexing settings for non-preview pages', async function () {
-      await testGhostHead(
+      const rendered = await testGhostHead(
         testUtils.createHbsResponse({
           locals: {
             context: ['featured', 'paged', 'index', 'post', 'home', 'unicorn'],
           },
         }),
       );
+      assert.equal(
+        rendered.includes('<meta name="robots" content="max-image-preview:large">'),
+        true,
+      );
+      assert.equal(rendered.includes('noindex'), false);
       // Unknown Request error for favico
       // TypeError for primary_author being undefined
       sinon.assert.calledOnce(loggingErrorStub);
+    });
+
+    it('allows a large image preview on public pages', async function () {
+      for (const context of [['home', 'index'], ['post'], ['page'], ['tag'], ['author']]) {
+        const rendered = (
+          await ghost_head(
+            testUtils.createHbsResponse({
+              locals: {
+                context,
+                safeVersion: '0.3',
+                relativeUrl: '/',
+              },
+            }),
+          )
+        ).toString();
+
+        assert.equal(
+          rendered.includes('<meta name="robots" content="max-image-preview:large">'),
+          true,
+          context.join(','),
+        );
+        assert.equal(rendered.includes('noindex'), false, context.join(','));
+      }
+    });
+
+    it('keeps a code-injected robots tag beside the Discover tag', async function () {
+      getStub
+        .withArgs('codeinjection_head')
+        .returns('<meta name="robots" content="max-image-preview:large">');
+
+      const rendered = (
+        await ghost_head(
+          testUtils.createHbsResponse({
+            locals: {
+              context: ['post'],
+              safeVersion: '0.3',
+              relativeUrl: '/post/',
+            },
+          }),
+        )
+      ).toString();
+
+      assert.equal(
+        rendered.match(/<meta name="robots" content="max-image-preview:large">/g).length,
+        2,
+      );
     });
 
     it('outputs structured data but not schema for custom collection', async function () {
