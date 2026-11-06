@@ -54,6 +54,7 @@
     "@quilted/threads": "catalog:",
     "commander": "catalog:",
     "jose": "catalog:",
+    "undici": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -80,7 +81,7 @@
     }
   },
   "engines": {
-    "node": ">=22.12"
+    "node": ">=22.19"
   },
   "nx": {
     "targets": {

@@ -102,8 +102,8 @@ describe('the package', () => {
   });
 
   it.each([
-    ['tooling', ['jose', 'zod']],
-    ['bin', ['jose', 'zod', 'commander']],
+    ['tooling', ['jose', 'undici', 'zod']],
+    ['bin', ['jose', 'undici', 'zod', 'commander']],
     ['vite', ['jose', 'zod', 'vite']],
   ])('%s.js loads only Node builtins and %j', (entry, packages) => {
     const loaded = [...reachableImports(code(entry))].filter(

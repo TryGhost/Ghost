@@ -11,9 +11,9 @@ its route in sync with Admin's URL, and send the publisher elsewhere in Admin.
 | --------------------------- | -------------------------- | ----------------------------------------------------------------------------- |
 | `@tryghost/app-sdk`         | The app's page             | Talking to Admin (below)                                                      |
 | `@tryghost/app-sdk/backend` | Any platform with web APIs | [Answering Ghost's challenge, serving the manifest and framing](#the-backend) |
-| `@tryghost/app-sdk/tooling` | Node 22.12 or later        | [Creating keys, and signing and checking the manifest](#signing-the-manifest) |
+| `@tryghost/app-sdk/tooling` | Node 22.19 or later        | [Creating keys, and signing and checking the manifest](#signing-the-manifest) |
 | `@tryghost/app-sdk/vite`    | Vite 6 or later            | [Signing the manifest in `vite dev` and `vite build`](#the-vite-plugin)       |
-| `ghost-app`                 | Node 22.12 or later        | [The same tooling on the command line](#the-ghost-app-cli)                    |
+| `ghost-app`                 | Node 22.19 or later        | [The same tooling on the command line](#the-ghost-app-cli)                    |
 
 The page's entry point loads none of the others' code.
 
@@ -431,6 +431,12 @@ carries Ghost's own code, such as `APP_MANIFEST_URL_MISMATCH`,
 wrong. It can't check what only a site knows: the key it installed the app
 with, and backend keys a newer manifest replaced.
 
+Like Ghost in development, `checkApp` reaches a name under `.localhost` even
+where the system's resolver doesn't know it, as on Windows, WSL and slim
+containers, by looking it up as `localhost`. It makes its requests with undici,
+as Node's own `fetch` can't change how it looks up names. A `fetch` passed in
+is used as it is.
+
 ## The backend
 
 `@tryghost/app-sdk/backend` uses only `Request`, `Response`, `fetch` and
@@ -509,8 +515,8 @@ or Admin's host, whatever the port, because browsers send a host's cookies to
 every port on it, Ghost's session cookie included. On your own machine, serve
 the app from a name of its own under `.localhost`, such as `my-app.localhost`.
 Browsers treat it as another host and send it to the machine itself, Vite
-accepts it with no setup, and Ghost in development reaches it even where the
-system's resolver doesn't know it. Open Admin on the name Ghost is configured
+accepts it with no setup, and Ghost in development and `ghost-app check` reach
+it even where the system's resolver doesn't know it. Open Admin on the name Ghost is configured
 with, as Admin refuses an app on the host it's opened from too.
 
 ## Develop
