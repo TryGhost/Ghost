@@ -114,4 +114,11 @@ describe('Members Stripe Connect API', function () {
       },
     );
   });
+
+  it('refuses a start from another site', async function () {
+    await agent
+      .get(`members/stripe_connect`)
+      .header('Sec-Fetch-Site', 'cross-site')
+      .expectStatus(403);
+  });
 });
