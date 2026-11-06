@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useRef } from 'react';
 import {
   Field,
   FieldError,
@@ -170,6 +170,40 @@ function SavedOption({
   );
 }
 
+/** The nearest ancestor of `element` that scrolls, such as a modal's body, or null. */
+const scrollerOf = (element: HTMLElement): HTMLElement | null => {
+  for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+    if (/(auto|scroll)/.test(getComputedStyle(parent).overflowY)) {
+      return parent;
+    }
+  }
+  return null;
+};
+
+/**
+ * Keeps `input` where it is on screen, with focus, once the option just added has pushed it a row
+ * down, as a tier's new benefit input is kept. A list can then be typed in one go, and a long one
+ * doesn't carry the input under a pinned footer. The scroll is instant: the input is meant not to
+ * move, and a smooth scroll still running when the next option is added would make it drift.
+ */
+const keepInPlace = (input: HTMLInputElement | null) => {
+  const before = input?.getBoundingClientRect().top;
+  window.requestAnimationFrame(() => {
+    if (!input || before === undefined) {
+      return;
+    }
+    // Focus goes back only if it hasn't gone somewhere else meanwhile: it is on the input, on the
+    // add button that was clicked, or on nothing.
+    const active = document.activeElement;
+    const group = input.closest('[data-slot="input-group"]');
+    if (active && active !== document.body && !group?.contains(active)) {
+      return;
+    }
+    input.focus({ preventScroll: true });
+    scrollerOf(input)?.scrollBy({ top: input.getBoundingClientRect().top - before });
+  });
+};
+
 /**
  * The options a list field offers, in the order members are offered them: added one at a time or
  * as a pasted list with one option per line, dragged to reorder, and removed. An option not yet
@@ -191,8 +225,11 @@ export function ListOptionsEditor({
   /** Says why the typed text wasn't added, until the inputs next change. */
   onRefuse: (reason: string) => void;
 }) {
+  const newOptionRef = useRef<HTMLInputElement>(null);
+
   const add = (texts: readonly string[]) => {
     onChange((current) => withAdded(current, texts));
+    keepInPlace(newOptionRef.current);
   };
 
   // Typed text is added only if the rules take it as the list's next option, and stays in the
@@ -205,6 +242,7 @@ export function ListOptionsEditor({
       return;
     }
     onChange(() => added);
+    keepInPlace(newOptionRef.current);
   };
 
   const listProblem = errors.options;
@@ -252,6 +290,7 @@ export function ListOptionsEditor({
               </FieldLabel>
               <InputGroup>
                 <InputGroupInput
+                  ref={newOptionRef}
                   aria-describedby={
                     [
                       typedProblem && `${idPrefix}-new-option-error`,
