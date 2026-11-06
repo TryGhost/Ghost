@@ -53,7 +53,12 @@ describe('Members - Stripe Connect', function () {
           ...fields,
         }),
       ).toString('base64');
-    return { getSessionProp: (prop) => session.get(prop), key };
+    return {
+      session,
+      getSessionProp: (prop) => session.get(prop),
+      deleteSessionProp: (prop) => session.delete(prop),
+      key,
+    };
   }
 
   const rejects = (promise) =>
@@ -65,9 +70,13 @@ describe('Members - Stripe Connect', function () {
     );
 
   it('getStripeConnectTokenData returns token data when the state is correct', async function () {
-    const { getSessionProp, key } = await startConnection('live');
+    const { session, getSessionProp, deleteSessionProp, key } = await startConnection('live');
 
-    const tokenData = await stripeConnect.getStripeConnectTokenData(key(), getSessionProp);
+    const tokenData = await stripeConnect.getStripeConnectTokenData(
+      key(),
+      getSessionProp,
+      deleteSessionProp,
+    );
 
     assert.deepEqual(tokenData, {
       public_key: 'pk_connected',
@@ -76,35 +85,72 @@ describe('Members - Stripe Connect', function () {
       display_name: 'Rediverge',
       account_id: 'acct_1',
     });
+    // The state is good for one key.
+    assert.equal(session.has(stripeConnect.STATE_PROP), false);
+    await rejects(
+      stripeConnect.getStripeConnectTokenData(key(), getSessionProp, deleteSessionProp),
+    );
   });
 
-  it('getStripeConnectTokenData throws when the state is incorrect', async function () {
-    const { getSessionProp, key } = await startConnection();
+  it('getStripeConnectTokenData throws when the state is incorrect, and keeps the connection going', async function () {
+    const { getSessionProp, deleteSessionProp, key } = await startConnection();
 
-    await rejects(stripeConnect.getStripeConnectTokenData(key({ s: 'other' }), getSessionProp));
+    // Any well-formed key, say one in a link from another site.
+    await rejects(
+      stripeConnect.getStripeConnectTokenData(
+        Buffer.from('{}').toString('base64'),
+        getSessionProp,
+        deleteSessionProp,
+      ),
+    );
+    await rejects(
+      stripeConnect.getStripeConnectTokenData(
+        key({ s: 'other' }),
+        getSessionProp,
+        deleteSessionProp,
+      ),
+    );
+
+    // The key for this connection still works.
+    const tokenData = await stripeConnect.getStripeConnectTokenData(
+      key(),
+      getSessionProp,
+      deleteSessionProp,
+    );
+    assert.equal(tokenData.account_id, 'acct_1');
   });
 
   it('getStripeConnectTokenData throws for a key without a state when no connection started', async function () {
     const { key } = await startConnection();
 
-    await rejects(stripeConnect.getStripeConnectTokenData(key({ s: undefined }), () => undefined));
+    await rejects(
+      stripeConnect.getStripeConnectTokenData(
+        key({ s: undefined }),
+        () => undefined,
+        () => {},
+      ),
+    );
   });
 
   it('getStripeConnectTokenData throws an hour after the connection started', async function () {
     const clock = sinon.useFakeTimers({ now: Date.now(), toFake: ['Date'] });
     try {
-      const { getSessionProp, key } = await startConnection();
+      const { getSessionProp, deleteSessionProp, key } = await startConnection();
       clock.tick(60 * 60 * 1000);
 
-      await rejects(stripeConnect.getStripeConnectTokenData(key(), getSessionProp));
+      await rejects(
+        stripeConnect.getStripeConnectTokenData(key(), getSessionProp, deleteSessionProp),
+      );
     } finally {
       clock.restore();
     }
   });
 
   it('getStripeConnectTokenData throws for a test-mode account in a live-mode connection', async function () {
-    const { getSessionProp, key } = await startConnection('live');
+    const { getSessionProp, deleteSessionProp, key } = await startConnection('live');
 
-    await rejects(stripeConnect.getStripeConnectTokenData(key({ l: false }), getSessionProp));
+    await rejects(
+      stripeConnect.getStripeConnectTokenData(key({ l: false }), getSessionProp, deleteSessionProp),
+    );
   });
 });
