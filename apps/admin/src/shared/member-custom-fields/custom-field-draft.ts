@@ -5,8 +5,11 @@ import {
 } from '@tryghost/metafield-types';
 import { dequal } from 'dequal';
 import {
+  MAX_OPTIONS,
+  MIN_OPTIONS,
   matchField,
   matchShape,
+  optionText,
   type FieldType,
   type TypedSettings,
 } from '@tryghost/metafield-types/structure';
@@ -81,8 +84,38 @@ export function customFieldDraftErrors(
     for (const issue of checked.error?.issues ?? []) {
       errors[refusedProperty(issue.path)] ??= issue.message;
     }
+    Object.assign(errors, repeatedOptionErrors(draft, errors));
   }
   return errors;
+}
+
+/** Why an option that repeats another is refused, said of the option, as a taken name is. */
+export const REPEATED_OPTION = 'This option already exists.';
+
+/**
+ * The rules refuse a list that offers the same text twice as a whole. Each repeat is shown on its
+ * own row instead, so the one to change is the one marked: the second and any later, since the
+ * first was there before it.
+ */
+function repeatedOptionErrors(
+  draft: CustomFieldDraft,
+  errors: Record<string, string>,
+): Record<string, string> {
+  const options = draft.settings?.options.map(optionText) ?? [];
+  // Two emptied options repeat too, but each row already asks for its text, so it isn't marked twice.
+  const repeats = options.flatMap((option, index) =>
+    options.indexOf(option) < index ? [index] : [],
+  );
+  // Between the bounds, a repeat is the only problem with the list as a whole, so the rows say it.
+  if (repeats.length === 0 || options.length < MIN_OPTIONS || options.length > MAX_OPTIONS) {
+    return {};
+  }
+  delete errors['settings.options'];
+  return Object.fromEntries(
+    repeats
+      .filter((index) => !errors[`settings.options.${index}`])
+      .map((index) => [`settings.options.${index}`, REPEATED_OPTION]),
+  );
 }
 
 /** The field a draft asks to create. No key: the backend mints it from the name. */

@@ -44,10 +44,14 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
 
   // An edit shows the field's own type, which can't change.
   const offeredTypes = field ? [userTypeForFieldType(field.type)] : memberCustomFieldUserTypes;
+  // What the form opened with, kept to tell whether anything has changed since.
+  const [initialDraft] = React.useState(() =>
+    field ? draftOf(field) : newDraft(offeredTypes[0].id),
+  );
 
   const { formState, updateForm, handleSave, errors, clearError, setErrors, okProps, saveState } =
     useForm<CustomFieldDraft>({
-      initialState: field ? draftOf(field) : newDraft(offeredTypes[0].id),
+      initialState: initialDraft,
       savingDelay: 500,
       // Name uniqueness is enforced by the API (unique among custom fields); a 422 comes back
       // through onSaveError and highlights the field.
@@ -60,12 +64,17 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
           const name = state.name.trim();
           // Settings are sent whole, and only when they change.
           const { settings } = state;
-          await editField({
-            key: field.key,
+          const changes = {
             ...(name === field.name ? {} : { name }),
             ...(state.access === field.access.member ? {} : { access: { member: state.access } }),
             ...(settings && !dequal(settings, field.settings) ? { settings } : {}),
-          });
+          };
+          // An edit changed back to what was saved has nothing to send, and Ghost refuses an
+          // empty one, so it saves as if nothing had been touched.
+          if (Object.keys(changes).length === 0) {
+            return;
+          }
+          await editField({ key: field.key, ...changes });
         } else {
           await createField(newCustomField(state));
         }
@@ -229,6 +238,11 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
     <SettingsModal
       buttonsDisabled={okProps.disabled}
       cancelLabel={isEdit ? 'Close' : 'Cancel'}
+      // Closing with edits, by Cancel, Escape or a click outside, asks first, as the tier modal
+      // does: a list's options can be a lot to lose. Judged by what the form holds rather than by
+      // the save state, which a refused save sets to an error while the edits are still there,
+      // and which stays unsaved after an edit is changed back.
+      dirty={!dequal(formState, initialDraft)}
       leftButton={leftButton}
       okLabel={okProps.label || 'Save'}
       okVariant={okProps.variant}
@@ -236,6 +250,9 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
       testId="custom-field-modal"
       title={isEdit ? 'Edit custom field' : 'Add custom field'}
       topRightContent={field && isArchived ? archivedFieldMenu(field) : undefined}
+      // A list's options can run long, so Save stays in reach, as the tier modal keeps it beside
+      // a long list of benefits.
+      stickyFooter
       onClose={onClose}
       onOk={async () => {
         try {

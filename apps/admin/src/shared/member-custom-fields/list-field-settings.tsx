@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import ListOptionsEditor from '@/shared/member-custom-fields/list-options-editor';
+import { type OptionRow, optionRow } from '@/shared/member-custom-fields/list-option-row';
+import { REPEATED_OPTION } from '@/shared/member-custom-fields/custom-field-draft';
 import {
   Field,
   FieldContent,
@@ -12,7 +14,7 @@ import { SHAPE_SETTINGS } from '@tryghost/metafield-types';
 import { optionText, type SetSettings } from '@tryghost/metafield-types/structure';
 
 interface ListInputs {
-  options: string[];
+  options: OptionRow[];
   /** What is typed into the new option input but not yet added. */
   newOption: string;
   multiple: boolean;
@@ -20,11 +22,38 @@ interface ListInputs {
 
 /** The settings the inputs ask for, with text typed but not yet added saved as an option too. */
 const settingsOf = ({ options, newOption, multiple }: ListInputs): SetSettings => {
+  const texts = options.map((row) => optionText(row.text));
   const typed = optionText(newOption);
   return {
-    options: typed === '' || options.includes(typed) ? options : [...options, typed],
+    options: typed === '' || texts.includes(typed) ? texts : [...texts, typed],
     multiple,
   };
+};
+
+/**
+ * Each row's problem, by its position. A repeat is marked on the later of two rows with the same
+ * text, which can be a saved row whose text can't change, so it is moved to the row with that text
+ * that can be changed.
+ */
+const rowErrors = (
+  options: readonly OptionRow[],
+  errors: Readonly<Record<string, string | undefined>>,
+): Array<string | undefined> => {
+  const found = options.map((_, index) => errors[`options.${index}`]);
+  options.forEach((row, index) => {
+    if (!row.saved || found[index] !== REPEATED_OPTION) {
+      return;
+    }
+    const text = optionText(row.text);
+    const editable = options.findIndex(
+      (other, at) => !other.saved && !found[at] && optionText(other.text) === text,
+    );
+    if (editable !== -1) {
+      found[editable] = REPEATED_OPTION;
+      found[index] = undefined;
+    }
+  });
+  return found;
 };
 
 /**
@@ -52,11 +81,12 @@ const ListFieldSettings: React.FC<{
   onChange: (settings: SetSettings) => void;
 }> = ({ saved, initial, errors = {}, disabled, idPrefix, onChange }) => {
   const start = initial ?? saved ?? SHAPE_SETTINGS.set.defaults;
-  const [inputs, setInputs] = useState<ListInputs>({
-    options: start.options,
+  const [inputs, setInputs] = useState<ListInputs>(() => ({
+    // An option the field is saved with keeps its text, as the field keeps its type.
+    options: start.options.map((text) => optionRow(text, saved?.options.includes(text))),
     newOption: '',
     multiple: start.multiple,
-  });
+  }));
 
   const update = (changes: Partial<ListInputs>) => {
     const next = { ...inputs, ...changes };
@@ -74,8 +104,9 @@ const ListFieldSettings: React.FC<{
         // Text typed but not yet added is saved as the last option, so a problem one past the
         // options added is about it.
         newOptionError={errors[`options.${inputs.options.length}`]}
-        optionErrors={inputs.options.map((_, index) => errors[`options.${index}`])}
+        optionErrors={rowErrors(inputs.options, errors)}
         options={inputs.options}
+        savedOptions={saved?.options}
         onChange={({ options, newOption }) => update({ options, newOption })}
       />
       <Field data-disabled={disabled || undefined} orientation="horizontal">
