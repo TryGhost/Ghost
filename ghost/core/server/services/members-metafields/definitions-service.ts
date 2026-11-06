@@ -36,7 +36,9 @@ import {
 } from './queries';
 import { mintableKey } from './key';
 import { parseRequest } from '../../lib/parse-request';
-import { type RecordMetafieldAction, type RequestContext } from './actions';
+import type { RequestContext } from '../../lib/actor';
+import type { ActionLog } from '../../lib/action-log/action-log';
+import { fieldAction, reorderAction } from './field-actions';
 import type { MetafieldsTracking } from './tracking';
 
 // Column limits come from the canonical schema — the same source the migration and
@@ -123,26 +125,26 @@ const EditFieldInput = z.object({
 export class MetafieldDefinitionsService {
   private knex: Knex;
   private fields: FieldSource;
-  private recordAction: RecordMetafieldAction;
+  private actionLog: ActionLog;
   private namespaces: Namespaces;
   private tracking: MetafieldsTracking;
 
   constructor({
     knex,
     fields,
-    recordAction,
+    actionLog,
     namespaces,
     tracking,
   }: {
     knex: Knex;
     fields: FieldSource;
-    recordAction: RecordMetafieldAction;
+    actionLog: ActionLog;
     namespaces: Namespaces;
     tracking: MetafieldsTracking;
   }) {
     this.knex = knex;
     this.fields = fields;
-    this.recordAction = recordAction;
+    this.actionLog = actionLog;
     this.namespaces = namespaces;
     this.tracking = tracking;
   }
@@ -267,7 +269,11 @@ export class MetafieldDefinitionsService {
             });
             keys.push(key);
           }
-          return this.readMany(trx, namespace, keys);
+          const added = await this.readMany(trx, namespace, keys);
+          for (const field of added) {
+            await this.actionLog.record(trx, context, fieldAction('create', field));
+          }
+          return added;
         });
       } catch (err) {
         // mintKey already picked a free key, so a unique violation here only
@@ -281,10 +287,6 @@ export class MetafieldDefinitionsService {
         throw err;
       }
 
-      // Logged after the commit: the action log is a separate Bookshelf write
-      // outside this transaction, so recording inside it would leave orphaned
-      // "added" entries for fields a rollback never created.
-      await this.recordCreated(context, created);
       return created;
     });
   }
@@ -294,9 +296,6 @@ export class MetafieldDefinitionsService {
    * `add`, the key is stated rather than minted from the name, and nothing about it is
    * worked around: a caller states a key because something else already names that key,
    * so a variant of it would be a field nothing points at.
-   *
-   * The field is returned rather than logged: the history writes on its own connection,
-   * which a single-connection pool would deadlock against an open transaction.
    */
   async addOne(
     namespace: Namespace,
@@ -387,18 +386,6 @@ export class MetafieldDefinitionsService {
     return row ? this.readField(row) : null;
   }
 
-  /** The same entry `add` writes. Only the caller knows its transaction committed. */
-  async recordCreated(context: RequestContext, fields: Metafield[]): Promise<void> {
-    for (const field of fields) {
-      await this.recordAction({
-        context,
-        verb: 'create',
-        subject: field.id,
-        details: { primary_name: field.name, key: field.key },
-      });
-    }
-  }
-
   /**
    * Refuses adding `adding` fields to a namespace its limits leave no room in, counting every
    * field it holds, archived ones included.
@@ -449,17 +436,13 @@ export class MetafieldDefinitionsService {
         }
 
         // An order covers the whole list, archived definitions included.
-        return this.list(
+        const list = await this.list(
           this.fields.definitions(trx, { audience: ADMIN, status: ANY_STATUS, namespace }),
         );
+        await this.actionLog.record(trx, context, reorderAction(list.length));
+        return list;
       });
 
-      await this.recordAction({
-        context,
-        verb: 'reorder',
-        subject: null,
-        details: { action_name: 'reordered', count: ordered.length },
-      });
       return ordered;
     });
   }
@@ -656,12 +639,15 @@ export class MetafieldDefinitionsService {
           }
           throw err;
         }
-        await this.recordAction({
+        await this.actionLog.record(
+          this.knex,
           context,
-          verb: 'rename',
-          subject: existing.id,
-          details: { primary_name: patch.name, key, previous_name: existing.name },
-        });
+          fieldAction(
+            'rename',
+            { id: existing.id, name: patch.name, key },
+            { previous_name: existing.name },
+          ),
+        );
       }
 
       // Only a change is written and logged, so re-saving the same options is a no-op.
@@ -670,12 +656,15 @@ export class MetafieldDefinitionsService {
         await this.knex(FIELDS_TABLE)
           .where({ namespace, key })
           .update({ ...z.encode(DbTypedSettings, settings.data), updated_at: new Date() });
-        await this.recordAction({
+        await this.actionLog.record(
+          this.knex,
           context,
-          verb: 'changeSettings',
-          subject: existing.id,
-          details: { primary_name: patch.name ?? existing.name, key },
-        });
+          fieldAction('changeSettings', {
+            id: existing.id,
+            name: patch.name ?? existing.name,
+            key,
+          }),
+        );
       }
 
       if (patch.access !== undefined && patch.access.member !== existing.access.member) {
@@ -683,17 +672,18 @@ export class MetafieldDefinitionsService {
         await this.knex(FIELDS_TABLE)
           .where({ namespace, key })
           .update({ member_access: patch.access.member, updated_at: new Date() });
-        await this.recordAction({
+        await this.actionLog.record(
+          this.knex,
           context,
-          verb: 'changeAccess',
-          subject: existing.id,
-          details: {
-            primary_name: patch.name ?? existing.name,
-            key,
-            member_access: patch.access.member,
-            previous_member_access: existing.access.member,
-          },
-        });
+          fieldAction(
+            'changeAccess',
+            { id: existing.id, name: patch.name ?? existing.name, key },
+            {
+              member_access: patch.access.member,
+              previous_member_access: existing.access.member,
+            },
+          ),
+        );
       }
 
       // A status change is the archive/restore transition. Only write (and log)
@@ -704,12 +694,11 @@ export class MetafieldDefinitionsService {
         await this.knex(FIELDS_TABLE)
           .where({ namespace, key })
           .update({ status: patch.status, updated_at: new Date() });
-        await this.recordAction({
+        await this.actionLog.record(
+          this.knex,
           context,
-          verb,
-          subject: existing.id,
-          details: { primary_name: patch.name ?? existing.name, key },
-        });
+          fieldAction(verb, { id: existing.id, name: patch.name ?? existing.name, key }),
+        );
       }
 
       return this.read(namespace, key, ADMIN);
@@ -737,12 +726,11 @@ export class MetafieldDefinitionsService {
         });
       }
       await this.knex(FIELDS_TABLE).where({ namespace, key }).del();
-      await this.recordAction({
+      await this.actionLog.record(
+        this.knex,
         context,
-        verb: 'delete',
-        subject: field.id,
-        details: { primary_name: field.name, key },
-      });
+        fieldAction('delete', { id: field.id, name: field.name, key }),
+      );
     });
   }
 }

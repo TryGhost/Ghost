@@ -2552,8 +2552,8 @@ describe('Member Custom Fields Admin API', function () {
     });
 
     // `resource_id` holds 24 characters and a key derived from a publisher-chosen
-    // name can be far longer, so only the row id fits every field. The action
-    // write is best-effort, so a row that does not fit is dropped without error.
+    // name can be far longer, so only the row id fits every field. The action is
+    // written in the add's transaction, so a row that did not fit would fail the add.
     it('records an action for a field whose key is longer than resource_id allows', async function () {
       const field = await createField({ name: 'Favourite ice cream flavour' });
       assert.ok(

@@ -65,6 +65,26 @@ export type WriteOutcome<T> =
   | { status: 'uninstalled' }
   | { status: 'changed' };
 
+/**
+ * Runs `run` again when the database picks it as a deadlock's victim, up to three times in
+ * all. MySQL rolls back the victim's whole transaction, so `run` must open the transaction
+ * itself, to redo all of it.
+ */
+export async function retryOnDeadlock<T>(run: () => Promise<T>): Promise<T> {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await run();
+    } catch (err) {
+      const deadlocked =
+        typeof err === 'object' && err !== null && 'code' in err && err.code === 'ER_LOCK_DEADLOCK';
+      if (deadlocked && attempt < 2) {
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
 function isUniqueViolation(err: unknown): boolean {
   const code = (err as { code?: unknown } | null)?.code;
   return (
@@ -299,9 +319,14 @@ export class AppInstallationsRepository {
    * Every install creates a new installation with a new ID, reinstalls included; an
    * uninstalled installation is never reused. The unique `current_app_id` column blocks a
    * second installation of the same app, so when two installs race, one succeeds and the
-   * other gets `APP_ALREADY_INSTALLED`.
+   * other gets `APP_ALREADY_INSTALLED`. Concurrent inserts can deadlock over that column, so
+   * the caller runs the transaction with `retryOnDeadlock`.
    */
-  async insert(loaded: LoadedManifest, iconDataUrl: string | null): Promise<Installation> {
+  async insert(
+    loaded: LoadedManifest,
+    iconDataUrl: string | null,
+    { transacting }: { transacting: Knex.Transaction },
+  ): Promise<Installation> {
     const { manifest } = loaded;
     const id = new ObjectId().toHexString();
     const manifestId = new ObjectId().toHexString();
@@ -322,75 +347,60 @@ export class AppInstallationsRepository {
       created_at: now,
       updated_at: now,
     };
-    for (let attempt = 0; ; attempt += 1) {
-      try {
-        await this.knex.transaction(async (trx) => {
-          await trx(INSTALLATIONS).insert({
-            id,
-            app_id: written.app_id,
-            current_app_id: written.app_id,
-            identity_key_thumbprint: written.identity_key_thumbprint,
-            status: written.status,
-            manifest_id: written.manifest_id,
-            created_at: now,
-            updated_at: now,
-          });
-          await trx(MANIFESTS).insert({
-            id: manifestId,
-            installation_id: id,
-            manifest_url: written.manifest_url,
-            manifest: loaded.serialised,
-            digest: loaded.digest,
-            backend_key_thumbprint: loaded.backendKeyThumbprint,
-            icon_data_url: iconDataUrl,
-            source: 'install',
-            requires_approval: false,
-            created_at: now,
-          });
-        });
-        break;
-      } catch (err) {
-        // Duplicate inserts can deadlock when several confirmations compete for
-        // the unique current_app_id. MySQL rolls back the victim's transaction;
-        // retry the whole write so it either commits or sees the winning install.
-        if ((err as { code?: unknown } | null)?.code === 'ER_LOCK_DEADLOCK' && attempt < 2) {
-          continue;
-        }
-        if (isUniqueViolation(err)) {
-          throw alreadyInstalled(manifest.id);
-        }
-        throw err;
-      }
+    try {
+      await transacting(INSTALLATIONS).insert({
+        id,
+        app_id: written.app_id,
+        current_app_id: written.app_id,
+        identity_key_thumbprint: written.identity_key_thumbprint,
+        status: written.status,
+        manifest_id: written.manifest_id,
+        created_at: now,
+        updated_at: now,
+      });
+    } catch (err) {
+      throw isUniqueViolation(err) ? alreadyInstalled(manifest.id) : err;
     }
+    await transacting(MANIFESTS).insert({
+      id: manifestId,
+      installation_id: id,
+      manifest_url: written.manifest_url,
+      manifest: loaded.serialised,
+      digest: loaded.digest,
+      backend_key_thumbprint: loaded.backendKeyThumbprint,
+      icon_data_url: iconDataUrl,
+      source: 'install',
+      requires_approval: false,
+      created_at: now,
+    });
     return z.decode(InstallationRow, written);
   }
 
   /**
    * Locks the installation and runs `write` on it, unless it has been uninstalled or changed
    * since `installation` was read. Every write moves the revision on, so a different revision
-   * means it changed.
+   * means it changed. The lock is held until the caller's transaction ends.
    */
-  whileUnchanged<T>(
+  async whileUnchanged<T>(
     installation: Installation,
     write: (locked: LockedInstallation) => Promise<T>,
+    { transacting }: { transacting: Knex.Transaction },
   ): Promise<WriteOutcome<T>> {
-    return this.knex.transaction(async (trx): Promise<WriteOutcome<T>> => {
-      const row = await trx(INSTALLATIONS)
-        .where({ id: installation.id })
-        .forUpdate()
-        .first<z.input<typeof LockedRow> | undefined>('status', 'revision');
-      const locked = row ? z.decode(LockedRow, row) : undefined;
-      if (!locked || locked.status === 'uninstalled') {
-        return { status: 'uninstalled' };
-      }
-      if (locked.revision !== installation.revision) {
-        return { status: 'changed' };
-      }
-      return {
-        status: 'written',
-        value: await write(new LockedInstallation(trx, installation.id)),
-      };
-    });
+    const row = await transacting(INSTALLATIONS)
+      .where({ id: installation.id })
+      .forUpdate()
+      .first<z.input<typeof LockedRow> | undefined>('status', 'revision');
+    const locked = row ? z.decode(LockedRow, row) : undefined;
+    if (!locked || locked.status === 'uninstalled') {
+      return { status: 'uninstalled' };
+    }
+    if (locked.revision !== installation.revision) {
+      return { status: 'changed' };
+    }
+    return {
+      status: 'written',
+      value: await write(new LockedInstallation(transacting, installation.id)),
+    };
   }
 
   /** Returns false if it was already uninstalled. */

@@ -1,10 +1,12 @@
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
-import type { RecordAppInstallationAction, RequestContext } from './actions';
+import type { ActionLog, ActionRow } from '../../lib/action-log/action-log';
+import type { RequestContext } from '../../lib/actor';
 import {
   alreadyInstalled,
   AppInstallationsRepository,
+  retryOnDeadlock,
   type AddedRow,
   type WriteOutcome,
 } from './app-installations-repository';
@@ -135,9 +137,32 @@ function iconCopyKeptBy(
   }
 }
 
+type AppInstallationAction = Extract<ActionRow, { resourceType: 'app_installation' }>;
+
+/**
+ * Staff history is where "who installed this, and when" lives; the installation itself does
+ * not hold it. The resource is the installation, and the app's name and ID ride along, so the
+ * history still reads as "Podcast" long after the manifest has changed.
+ */
+function appAction(
+  event: AppInstallationAction['event'],
+  installationId: string,
+  app: { id: string; name: string },
+  approval?: { from_manifest_id: string; to_manifest_id: string },
+): AppInstallationAction {
+  return {
+    resourceType: 'app_installation',
+    event,
+    resourceId: installationId,
+    primaryName: app.name,
+    context: { app_id: app.id, ...approval },
+  };
+}
+
 export class AppInstallationsService {
+  private knex: Knex;
   private repository: AppInstallationsRepository;
-  private recordAction: RecordAppInstallationAction;
+  private actionLog: ActionLog;
   private loadManifest: LoadManifest;
   private identity: IdentityChecker;
   private fetchIcon: FetchIcon;
@@ -146,19 +171,20 @@ export class AppInstallationsService {
 
   constructor({
     knex,
-    recordAction,
+    actionLog,
     loadManifest,
     identity,
     fetchIcon,
   }: {
     knex: Knex;
-    recordAction: RecordAppInstallationAction;
+    actionLog: ActionLog;
     loadManifest: LoadManifest;
     identity: IdentityChecker;
     fetchIcon: FetchIcon;
   }) {
+    this.knex = knex;
     this.repository = new AppInstallationsRepository(knex);
-    this.recordAction = recordAction;
+    this.actionLog = actionLog;
     this.loadManifest = loadManifest;
     this.identity = identity;
     this.fetchIcon = fetchIcon;
@@ -209,14 +235,17 @@ export class AppInstallationsService {
         ? alreadyInstalled(loaded.manifest.id)
         : error;
     });
-    const installation = await this.repository.insert(loaded, iconDataUrl);
-    await this.recordAction({
-      context,
-      event: 'installed',
-      subject: installation.id,
-      details: { primary_name: loaded.manifest.name, app_id: loaded.manifest.id },
-    });
-    return installation;
+    return retryOnDeadlock(() =>
+      this.knex.transaction(async (transacting) => {
+        const installation = await this.repository.insert(loaded, iconDataUrl, { transacting });
+        await this.actionLog.record(
+          transacting,
+          context,
+          appAction('installed', installation.id, loaded.manifest),
+        );
+        return installation;
+      }),
+    );
   }
 
   /**
@@ -264,26 +293,25 @@ export class AppInstallationsService {
       }
       throw error;
     });
-    const stored = await this.store(current, write);
+    const stored = await this.knex.transaction(async (transacting) => {
+      const outcome = await this.store(current, write, { transacting });
+      if (outcome.status === 'written' && outcome.value) {
+        await this.actionLog.record(
+          transacting,
+          context,
+          appAction('changes_approved', id, loaded.manifest, {
+            from_manifest_id: current.manifest_id,
+            to_manifest_id: outcome.value,
+          }),
+        );
+      }
+      return outcome;
+    });
     if (stored.status === 'uninstalled') {
       throw uninstalled();
     }
     if (stored.status === 'changed') {
       throw await this.changedSinceReview(checked, id);
-    }
-    const approved = stored.value;
-    if (approved) {
-      await this.recordAction({
-        context,
-        event: 'changes_approved',
-        subject: id,
-        details: {
-          primary_name: loaded.manifest.name,
-          app_id: loaded.manifest.id,
-          from_manifest_id: current.manifest_id,
-          to_manifest_id: approved,
-        },
-      });
     }
     return this.read(id);
   }
@@ -317,12 +345,11 @@ export class AppInstallationsService {
       return;
     }
 
-    await this.recordAction({
+    await this.actionLog.record(
+      this.knex,
       context,
-      event: 'uninstalled',
-      subject: id,
-      details: { primary_name: installation.manifest.name, app_id: installation.app_id },
-    });
+      appAction('uninstalled', id, { id: installation.app_id, name: installation.manifest.name }),
+    );
   }
 
   private async historyOf(id: string): Promise<AppInstallationHistoryEntry[]> {
@@ -499,32 +526,37 @@ export class AppInstallationsService {
   private store(
     current: Installation,
     write: ManifestWrite<AddedRow>,
+    { transacting }: { transacting: Knex.Transaction },
   ): Promise<WriteOutcome<string | null>> {
-    return this.repository.whileUnchanged(current, async (locked) => {
-      switch (write.kind) {
-        case 'nothing':
-          return null;
-        case 'approve_existing':
-          await locked.activate(write.manifestId);
-          return write.manifestId;
-        case 'add_approved': {
-          const added = await locked.addManifest(write.row);
-          await locked.activate(added);
-          return added;
+    return this.repository.whileUnchanged(
+      current,
+      async (locked) => {
+        switch (write.kind) {
+          case 'nothing':
+            return null;
+          case 'approve_existing':
+            await locked.activate(write.manifestId);
+            return write.manifestId;
+          case 'add_approved': {
+            const added = await locked.addManifest(write.row);
+            await locked.activate(added);
+            return added;
+          }
+          case 'add_pending': {
+            const added = await locked.addManifest(write.row);
+            await locked.suspend(added);
+            return added;
+          }
+          default: {
+            const _exhaustive: never = write;
+            throw new errors.InternalServerError({
+              message: `Unhandled manifest write: ${JSON.stringify(_exhaustive)}`,
+            });
+          }
         }
-        case 'add_pending': {
-          const added = await locked.addManifest(write.row);
-          await locked.suspend(added);
-          return added;
-        }
-        default: {
-          const _exhaustive: never = write;
-          throw new errors.InternalServerError({
-            message: `Unhandled manifest write: ${JSON.stringify(_exhaustive)}`,
-          });
-        }
-      }
-    });
+      },
+      { transacting },
+    );
   }
 
   private recheck(id: string): Promise<void> {
@@ -588,7 +620,9 @@ export class AppInstallationsService {
       return this.unavailableUnlessChanged(before, err);
     }
 
-    const stored = await this.store(before, write);
+    const stored = await this.knex.transaction((transacting) =>
+      this.store(before, write, { transacting }),
+    );
     if (stored.status === 'uninstalled') {
       throw notInstalled();
     }

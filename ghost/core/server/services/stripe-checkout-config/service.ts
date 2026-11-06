@@ -14,7 +14,8 @@ import {
 } from '@tryghost/metafield-types/identity';
 import { snakeKeys } from '../../lib/case-keys';
 import { toDatabaseDate } from '../../lib/db-types/date';
-import type { RecordCheckoutConfigAction, RequestContext } from './actions';
+import type { RequestContext } from '../../lib/actor';
+import type { ActionLog } from '../../lib/action-log/action-log';
 import { configRow, type ConfigRowSchema, type TierScope } from './codec';
 import {
   COLLECTED_NOUNS,
@@ -254,26 +255,26 @@ type FieldReads = Pick<FieldSource, 'table' | 'locked'>;
 /** Reads and saves the site-wide Stripe Checkout config. */
 export class StripeCheckoutConfigService {
   private knex: Knex;
-  private recordAction: RecordCheckoutConfigAction;
+  private actionLog: ActionLog;
   private bindings: PortBinder;
   private fields: FieldReads;
   private configRow: ConfigRowSchema;
 
   constructor({
     knex,
-    recordAction,
+    actionLog,
     bindings,
     fields,
     logging,
   }: {
     knex: Knex;
-    recordAction: RecordCheckoutConfigAction;
+    actionLog: ActionLog;
     bindings: PortBinder;
     fields: FieldReads;
     logging: GhostLogger;
   }) {
     this.knex = knex;
-    this.recordAction = recordAction;
+    this.actionLog = actionLog;
     this.bindings = bindings;
     this.fields = fields;
     this.configRow = configRow(logging);
@@ -421,16 +422,22 @@ export class StripeCheckoutConfigService {
       for (const change of changes) {
         await this.writeTargets(trx, change, at);
       }
-    });
 
-    // An existing row keeps its id, so read the id back for the history entry.
-    const saved = await this.knex(CONFIG_TABLE).where('slug', CONFIG_SLUG).first('id');
-    if (!saved) {
-      throw new errors.InternalServerError({
-        message: 'The Stripe Checkout config was not found right after saving it.',
+      // An existing row keeps its id, so read the id back for the history entry.
+      const saved = await trx(CONFIG_TABLE).where('slug', CONFIG_SLUG).first('id');
+      if (!saved) {
+        throw new errors.InternalServerError({
+          message: 'The Stripe Checkout config was not found right after saving it.',
+        });
+      }
+      await this.actionLog.record(trx, context, {
+        resourceType: 'stripe_checkout_config',
+        event: 'edited',
+        resourceId: saved.id,
+        // The config has no name of its own, so the entry is named after what it configures.
+        primaryName: 'Stripe Checkout',
       });
-    }
-    await this.recordAction({ context, subject: saved.id });
+    });
   }
 
   /**

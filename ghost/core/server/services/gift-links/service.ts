@@ -3,7 +3,8 @@ import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { GiftLinkRow, giftLinkCodec, giftLinkColumns } from './codec';
 import { generateGiftLinkToken, type GiftLink, type Post } from './models';
-import { type RecordGiftLinkAction, type RequestContext } from './actions';
+import type { ActionLog, ActionRow } from '../../lib/action-log/action-log';
+import type { RequestContext } from '../../lib/actor';
 
 // The LEFT JOIN leaves every link column nullable; the explicit generic names a row shape knex
 // can't infer from a dynamic column list.
@@ -11,32 +12,32 @@ type LiveLinkRow = {
   [K in keyof z.input<typeof GiftLinkRow>]: z.input<typeof GiftLinkRow>[K] | null;
 };
 
+type PostLinkRow = LiveLinkRow & { post_title: unknown };
+
+const PostTitle = z.object({ post_title: z.string() });
+
+type GiftLinkAction = Pick<
+  Extract<ActionRow, { resourceType: 'gift_link' }>,
+  'event' | 'actionName'
+>;
+
+// Admin's History only shows an action name for 'edited' actions; 'added' and 'deleted' show
+// the bare event. So a reset is an edit named "reset", while adding and revoking read as
+// plain "added" and "deleted".
+const ADDED: GiftLinkAction = { event: 'added' };
+const RESET: GiftLinkAction = { event: 'edited', actionName: 'reset' };
+
 export class GiftLinksService {
   private knex: Knex;
-  private recordAction: RecordGiftLinkAction;
+  private actionLog: ActionLog;
 
-  constructor({ knex, recordAction }: { knex: Knex; recordAction: RecordGiftLinkAction }) {
+  constructor({ knex, actionLog }: { knex: Knex; actionLog: ActionLog }) {
     this.knex = knex;
-    this.recordAction = recordAction;
+    this.actionLog = actionLog;
   }
 
   async getPost(postId: string): Promise<Post> {
-    // Anchored on posts: zero rows means the post itself doesn't exist, not merely that it has
-    // no live link.
-    const rows = await this.knex('posts')
-      .where('posts.id', postId)
-      .leftJoin('post_gift_links', 'post_gift_links.post_id', 'posts.id')
-      .leftJoin('gift_links', 'gift_links.token', 'post_gift_links.gift_link_token')
-      .select<LiveLinkRow[]>(giftLinkColumns);
-
-    if (rows.length === 0) {
-      throw new errors.NotFoundError({ message: `Post ${postId} does not exist.` });
-    }
-
-    const giftLinks = rows
-      .filter((row): row is z.input<typeof GiftLinkRow> => row.token !== null)
-      .map((row) => z.decode(giftLinkCodec, row));
-    return { id: postId, giftLinks };
+    return (await this.readPost(postId)).post;
   }
 
   async getPostByToken(token: string): Promise<Post | null> {
@@ -51,38 +52,69 @@ export class GiftLinksService {
   }
 
   async ensure(context: RequestContext, postId: string): Promise<Post> {
-    const post = await this.getPost(postId);
+    const { post, title } = await this.readPost(postId);
     if (post.giftLinks.length) {
       return post;
     }
-    const minted = await this.mint(postId);
-    await this.recordAction({ context, verb: 'add', subject: postId });
-    return minted;
+    return this.mint(context, post.id, title, ADDED);
   }
 
   async create(context: RequestContext, postId: string): Promise<Post> {
-    await this.getPost(postId); // asserts the post exists (throws NotFound)
-    const minted = await this.mint(postId);
-    await this.recordAction({ context, verb: 'reset', subject: postId });
-    return minted;
+    const { post, title } = await this.readPost(postId);
+    return this.mint(context, post.id, title, RESET);
   }
 
   // gift_links rows are kept as history; only the live association is removed.
   async removeAll(context: RequestContext): Promise<number> {
     const removed = await this.knex('post_gift_links').del();
     if (removed > 0) {
-      await this.recordAction({ context, verb: 'remove', subject: null });
+      await this.actionLog.record(this.knex, context, {
+        resourceType: 'gift_link',
+        event: 'deleted',
+        resourceId: null,
+      });
     }
     return removed;
   }
 
-  private async mint(postId: string): Promise<Post> {
+  private async mint(
+    context: RequestContext,
+    postId: string,
+    title: string,
+    action: GiftLinkAction,
+  ): Promise<Post> {
     const link: GiftLink = { token: generateGiftLinkToken(), createdAt: new Date() };
     await this.knex.transaction(async (trx) => {
       await this.addToHistory(trx, postId, link);
       await this.setLiveLink(trx, postId, link);
+      await this.actionLog.record(trx, context, {
+        resourceType: 'gift_link',
+        ...action,
+        resourceId: postId,
+        primaryName: title,
+      });
     });
     return { id: postId, giftLinks: [link] };
+  }
+
+  /** A post with its live links, and its title, which actions on its links are named after. */
+  private async readPost(postId: string): Promise<{ post: Post; title: string }> {
+    // Anchored on posts: zero rows means the post itself doesn't exist, not merely that it has
+    // no live link.
+    const rows = await this.knex('posts')
+      .where('posts.id', postId)
+      .leftJoin('post_gift_links', 'post_gift_links.post_id', 'posts.id')
+      .leftJoin('gift_links', 'gift_links.token', 'post_gift_links.gift_link_token')
+      .select<PostLinkRow[]>([...giftLinkColumns, 'posts.title as post_title']);
+
+    if (rows.length === 0) {
+      throw new errors.NotFoundError({ message: `Post ${postId} does not exist.` });
+    }
+
+    const giftLinks = rows
+      .filter((row): row is PostLinkRow & z.input<typeof GiftLinkRow> => row.token !== null)
+      .map((row) => z.decode(giftLinkCodec, row));
+    return { post: { id: postId, giftLinks }, title: PostTitle.parse(rows[0]).post_title };
   }
 
   private addToHistory(trx: Knex.Transaction, postId: string, link: GiftLink) {

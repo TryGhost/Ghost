@@ -9,8 +9,6 @@ const endpointPaths = [
   require.resolve('../../../../../core/server/api/endpoints/app-sessions'),
 ];
 const requestPath = require.resolve('../../../../../core/server/lib/request-external');
-// Load the real model registry before substituting the root's database connection.
-const models = require('../../../../../core/server/models');
 const db = require('../../../../../core/server/data/db');
 const { IncorrectUsageError } = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
@@ -220,16 +218,28 @@ describe('App installations composition root', function () {
     );
   });
 
-  it('logs action recording failures without failing the installation', async function () {
-    const failure = new Error('History write failed');
+  // MySQL rolls back the whole install when its action insert deadlocks, so the install
+  // has to run again, action and all.
+  it('reruns the whole install when its action insert deadlocks', async function () {
     const error = sandbox.stub(logging, 'error');
-    const add = sandbox.stub(models.Action, 'add').rejects(failure);
     const insert = sandbox.stub().resolves();
-    const trx = sandbox.stub().returns({ insert });
-    Object.assign(query, {
-      transaction: async (write: (connection: Knex.Transaction) => Promise<void>) =>
+    const insertAction = sandbox
+      .stub()
+      .onFirstCall()
+      .rejects(Object.assign(new Error('Deadlock found'), { code: 'ER_LOCK_DEADLOCK' }))
+      .resolves();
+    const trx = Object.assign(
+      sandbox
+        .stub()
+        .callsFake((table: string) => ({ insert: table === 'actions' ? insertAction : insert })),
+      { isTransaction: true },
+    );
+    const transaction = sandbox
+      .stub()
+      .callsFake(async (write: (connection: Knex.Transaction) => Promise<unknown>) =>
         write(trx as unknown as Knex.Transaction),
-    });
+      );
+    Object.assign(query, { transaction });
     sandbox.stub(config, 'get').withArgs('env').returns('production');
     sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
     await root.init();
@@ -242,10 +252,46 @@ describe('App installations composition root', function () {
     );
 
     assert.equal(installed.app_id, manifest.id);
+    sinon.assert.calledTwice(transaction);
+    assert.equal(insert.callCount, 4, 'both attempts insert the installation and its manifest');
+    sinon.assert.calledTwice(insertAction);
+    assert.equal(insertAction.secondCall.args[0].resource_id, installed.id);
+    sinon.assert.notCalled(error);
+  });
+
+  // Staff history is where the installer lives, so an install whose action can't be kept fails.
+  it('fails the installation when its action cannot be recorded', async function () {
+    const failure = new Error('History write failed');
+    const error = sandbox.stub(logging, 'error');
+    const insert = sandbox.stub().resolves();
+    const insertAction = sandbox.stub().rejects(failure);
+    const trx = Object.assign(
+      sandbox
+        .stub()
+        .callsFake((table: string) => ({ insert: table === 'actions' ? insertAction : insert })),
+      { isTransaction: true },
+    );
+    Object.assign(query, {
+      transaction: async (write: (connection: Knex.Transaction) => Promise<void>) =>
+        write(trx as unknown as Knex.Transaction),
+    });
+    sandbox.stub(config, 'get').withArgs('env').returns('production');
+    sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
+    await root.init();
+    const manifestUrl = 'https://podcast.example/manifest.json';
+    const preview = await root.service.preview(manifestUrl);
+
+    await assert.rejects(
+      root.service.create(
+        { actor: { id: 'staff-id', type: 'user' } },
+        { manifestUrl, digest: preview.digest },
+      ),
+      failure,
+    );
+
     sinon.assert.calledTwice(insert);
-    sinon.assert.calledOnce(add);
-    assert.equal(add.firstCall.args[0].resource_id, installed.id);
-    sinon.assert.calledOnceWithExactly(error, failure);
+    sinon.assert.calledOnce(insertAction);
+    sinon.assert.notCalled(error);
   });
 
   // Found at boot, rather than failing every app.
