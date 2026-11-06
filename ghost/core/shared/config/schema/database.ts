@@ -70,27 +70,27 @@ const sqliteConnection = z.object({
 });
 
 const mysqlDatabase = z.looseObject({
-  client: z.literal('mysql2'),
-  connection: mysqlConnection,
+  client: z.enum(['mysql', 'mysql2']).transform(() => 'mysql2' as const),
+  // a filename left over from sqlite config would reach mysql2, which warns on it
+  connection: mysqlConnection.transform(({ filename: _filename, ...connection }) => connection),
   ...databaseBase,
 });
 
 const sqliteDatabase = z.looseObject({
-  client: z.literal('better-sqlite3'),
+  client: z.enum(['sqlite3', 'better-sqlite3']).transform(() => 'better-sqlite3' as const),
   connection: sqliteConnection,
   ...databaseBase,
 });
 
 /**
- * A union on `client`. Describes the tree after sanitizeDatabaseProperties
- * in ../utils.ts, which renames `mysql`/`sqlite3` to their driver names and
- * drops the other client's connection keys. It stays in the loader: the raw
- * tree is used when validation fails.
+ * A union on `client`. Each option renames its config alias to the driver name
+ * and drops the other client's connection keys, which a sqlite default
+ * overridden with mysql would otherwise carry over.
  *
  * Required, with its connection, as knex-migrator and both drivers
  * dereference them. Only two clients, as knex-migrator refuses any other.
  */
 export const database = z.discriminatedUnion('client', [mysqlDatabase, sqliteDatabase]).meta({
   description:
-    'Database connection. `client` is `mysql` or `sqlite3` in config; Ghost normalises them to their driver names.',
+    'Database connection. `mysql` and `sqlite3` are accepted as aliases for their driver names.',
 });

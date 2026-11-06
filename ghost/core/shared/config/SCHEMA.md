@@ -30,8 +30,9 @@ One schema also means one place a key is described, a type at every existing
 `config.get()` call site rather than only the code that opted in, and a
 reference for self-hosters generated from `configSchema` alone.
 
-The schema knows feature names, but not feature code: the files hold shapes and
-import only `zod`. That is the same trade `schema.js` makes.
+The schema knows feature names, but not feature code: the files hold shapes,
+import `zod` and pure helpers from this directory such as `makePathsAbsolute`, and
+never a feature module. That is the same trade `schema.js` makes.
 
 Organise it by area:
 
@@ -46,6 +47,8 @@ Organise it by area:
   are the first. An area file may export named types for its values, such as
   `AuthEngine`, so code that passes a value around imports it rather than
   restating it.
+- **Field types more than one area uses**, such as `httpUrl()`, are in
+  [`schema/primitives.ts`](schema/primitives.ts).
 
 An area file is reviewed by the people who own the code that reads it, in the
 same change as that code.
@@ -72,70 +75,55 @@ schema cannot say who owns a shared one.
    Those are real mismatches between what the code assumes and what the schema
    says — one of the two is wrong.
 4. Run `pnpm --dir ghost test:single test/unit/shared/config/validated.test.ts`.
-   It round-trips `defaults.json` against every shipped env config and fails if
-   the schema changed a value rather than only checking it.
+   It parses `defaults.json` with every shipped env config and fails if the
+   output differs from what Ghost produced before - a value the schema changed
+   that it should only have checked.
 
 Adding a key to the schema enforces its type: a caller that treated a string as
 a number, or assumed a key is always present, stops compiling.
 
 ## Rules
 
-- **Validate, don't transform — for now.** `z.coerce.*` rewrites values, which
-  would silently change config a running site already has, and the round-trip
-  test fails if it does. Use plain validators. Secrets are deliberately left
-  unparsed by [`secrets.ts`](secrets.ts) — a password of `01234` must stay a
-  string.
+- **Transform only what Ghost already transformed.** A transform's output must
+  match what a running site already gets, which the round-trip test checks.
+  `z.coerce.*` is the usual trap: it rewrites values Ghost has always passed
+  through. Secrets are deliberately left unparsed by [`secrets.ts`](secrets.ts) —
+  a password of `01234` must stay a string.
 
-  Unknown **keys** are a separate decision, and not covered by this rule: the top
-  level is `z.looseObject()` and must stay so, while a nested section like
-  `paths` is `z.object()` and strips what it does not name. See
+  The transforms in the schema today are the loader's old ones: `paths` resolves
+  against Ghost's install directory, `database:client` accepts `mysql` and
+  `sqlite3` as aliases for their driver names, and each client drops the other's
+  connection keys. `database:connection:port` coerces a quoted port, which
+  mysql2 accepts as a string anyway.
+
+  A transform must also be idempotent, because `config.set()` re-parses on every
+  call, and one that moved a value further each pass would corrupt config on the
+  second override.
+
+  Unknown **keys** are a separate decision: the top level is `z.looseObject()`
+  and must stay so, while a nested section like `paths` is `z.object()` and
+  strips what it does not name. See
   [Why the top level is loose](#why-the-top-level-is-loose-and-nested-sections-are-not)
   before adding a section either way.
 
-  A zod `.transform()` is the wrong tool here, and that is not a style
-  preference. zod's output is all-or-nothing: one bad key anywhere and
-  `safeParse` returns no data at all. Outside `development` and `test*` a
-  violation only logs and the raw tree is used, so a transform attached to the
-  schema silently would not run in exactly the environments that do not throw.
-  For `paths` that would leave every path relative to the working directory on a
-  live site — content, migrations and Admin assets all missing — triggered by an
-  unrelated mistake elsewhere in the schema. This was measured, not reasoned
-  about: with one bad `url` and nothing else changed, `paths:contentPath` came
-  back `content/` instead of absolute.
+- **One bad key costs only that key.** zod's own parse is all-or-nothing: one
+  bad leaf and it returns no data, so no transform or default anywhere would run.
+  Outside strict environments, [`lenient.ts`](lenient.ts) parses a copy of the
+  schema in which every leaf falls back to its raw value instead, and every
+  section falls back as a whole if it fails as a whole — a missing section, or
+  an unknown key in a strict object. Everything else parses, transforms
+  included, and each fallback is logged by its key path. Strict environments
+  parse the schema itself and throw.
 
-  So a transform may not be conditional on the schema being right. Today that
-  means a plain function applied **before** `safeParse` and used on both
-  branches, not in the schema object.
+  This was the reason transforms used to live in the loader: with one bad `url`
+  and nothing else changed, `paths:contentPath` came back `content/` instead of
+  absolute, because the parse failed and the raw tree was used.
 
-  There is a second route, for when a transform genuinely belongs with the
-  schema. Wrapping every field in `.catch((ctx) => ctx.value)` makes a field fall
-  back to its raw input instead of failing the parse, so the parse always
-  succeeds and an object-level transform always runs — a bad `url` no longer
-  costs `paths` its transform, and a bad leaf inside `paths` costs only that
-  leaf. `ctx.error` is still available, so the handler can collect issues and
-  strict mode can throw on them. Two things to weigh first: `ctx.error.issues[]`
-  arrives with an empty `path`, so each wrapper has to name its own key or the
-  log stops saying which key was wrong; and it inverts the default from
-  fail-closed to fail-open, since the parse then always succeeds and strictness
-  becomes a check someone has to remember — which wants a single entry point
-  where that check cannot be skipped.
-
-  The exception is a transform whose raw input still works for its reader:
-  `database:connection:port` coerces a quoted port, and mysql2 accepts the
-  string anyway if the parse is skipped.
-
-  Either way a transform must be idempotent, because `config.set()` re-parses
-  from source on every call, and one that moved a value further each pass would
-  corrupt config on the second override.
-
-  Both existing transforms stay in [`utils.ts`](utils.ts) for now.
-  `makePathsAbsolute` is unconditional there already, which is the property that
-  matters, so moving it buys nothing until there is a second transform to share
-  the plumbing.
-
-  `sanitizeDatabaseProperties` stays in the loader too. Its client rename is a
-  transform, so the schema describes the tree it leaves: only `mysql2` or
-  `better-sqlite3`.
+- **Some keys are fatal everywhere.** Mark a key `.meta({fatal: true})` when
+  Ghost cannot run without it being right, and has always refused to boot
+  without it. A fatal key's failure throws in every environment, whatever
+  `GHOST_CONFIG_SCHEMA_STRICT` says. `url` is the only one today; it replaced a
+  loader check that had always thrown.
 
 - **Nothing may be stricter than the loader already was.** Tightening beyond
   that is its own change, with its own release note.
@@ -151,7 +139,8 @@ a number, or assumed a key is always present, stops compiling.
   `production`, and whatever NODE_ENV a self-hoster or embedder picks — logs and
   carries on. A schema mistake should fail a developer's boot or CI, never a live
   site's. `GHOST_CONFIG_SCHEMA_STRICT` overrides in either direction, which is how
-  a production deploy opts in once it trusts the schema.
+  a production deploy opts in once it trusts the schema. Fatal keys throw
+  regardless.
 
 ## Why the top level is loose, and nested sections are not
 
@@ -184,12 +173,10 @@ Add both.
 common ones are validated.
 
 That is affordable for `paths` because its readers are enumerable. For a section
-where they are not, the safe form is `z.strictObject({...}).catch((ctx) => ctx.value)`
-— an unknown key drops that section back to raw and logs it, the rest of the tree
-stays validated, and strict environments still throw. Plain `z.strictObject()` is
-not: rejection fails the whole tree, so outside `development` and `test*` one
-unexpected key would quietly disable validation of _all_ config. That depends on
-the `.catch` mechanism described under Rules.
+where they are not, use `z.strictObject()`: outside strict environments an
+unknown key drops that section back to raw and logs it, the rest of the tree
+stays validated, and strict environments still throw. See
+[One bad key costs only that key](#rules).
 
 ## Don't mutate what `get()` returns
 
