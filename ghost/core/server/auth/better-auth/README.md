@@ -113,7 +113,7 @@ foreign keys and `NOT NULL` columns hold for every test.
 | `findOne - should find a model with modified field name`, `findOne - should join a model with modified field name`                                                                                                                      | ghost users, normal and joins | The suite renames `users.email`, which Ghost's fixed table cannot follow.                                                                                              |
 
 The virtual columns cost only the tests that store `emailVerified: false`, so
-plan §10 open decision 1 does not need real columns on these grounds.
+they stay (plan §10).
 
 `test/integration/auth/knex-adapter-ghost.test.ts` covers what the suite
 can't, against Ghost's own test database:
@@ -127,3 +127,106 @@ can't, against Ghost's own test database:
   `@tryghost/security` rejects.
 - `user_sessions`, `user_accounts` and `verifications` dates keep their
   milliseconds through the adapter.
+
+## Phase 0 findings
+
+Checked against Better Auth 1.7.15 and `@better-auth/api-key` 1.7.15. Recheck
+when the catalog version changes.
+
+### API names
+
+| Plan relies on                     | Exact name and behaviour                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Server-only endpoints              | `createAuthEndpoint.serverOnly(options, handler)`. `metadata: { SERVER_ONLY: true }` still works but is deprecated. Either way the HTTP router never registers the route, and `auth.api.*` can still call it.                                                                                                                                                                                                                                                                                                     |
+| Headers from a server-side sign-in | `auth.api.signInEmail({body, headers, returnHeaders: true})` returns `{headers, response}`. Passing `request` makes it return a `Response` instead, so compatibility controllers pass `headers` only.                                                                                                                                                                                                                                                                                                             |
+| Session cookie with a path         | `advanced.cookies.session_token` with `name` and `attributes.path`. The same attributes set and clear it (sign-out and expiry), and `useSecureCookies` still adds `__Secure-`. The `dont_remember` and `session_data` cookies keep `path: "/"` unless they are configured too.                                                                                                                                                                                                                                    |
+| Server-set session fields          | `session.additionalFields.<field>.input: false`. A truthy client value throws `FIELD_NOT_ALLOWED`; a falsy one is dropped. This also covers `/update-session`.                                                                                                                                                                                                                                                                                                                                                    |
+| New session in after-hooks         | `ctx.context.newSession`. Set by `setSessionCookie`: in core, `/sign-in/email`, `/sign-up/email`, `/change-password` with `revokeOtherSessions`, `/update-session`, `/update-user`, and a `/get-session` refresh (off for Ghost). Plugins call it too (`magicLink`'s `/magic-link/verify`, `twoFactor`), so verification matches every enabled sign-in endpoint.                                                                                                                                                  |
+| Creating a session directly        | `ctx.context.internalAdapter.createSession(userId, dontRememberMe?, override?, overrideAll?)`. Field defaults are applied after `override`, so `{verified: true}` is overwritten by its `defaultValue` unless `overrideAll` is `true`. `createVerifiedSession` and `ghostSso` pass `overrideAll`. Rotations Ghost doesn't call (`/change-password` with `revokeOtherSessions`, `twoFactor` enable and disable) reset `verified` too, so a `session.create.before` hook carries it over from the replaced session. |
+| API keys                           | The `apiKey` plugin is the separate `@better-auth/api-key` package, not `better-auth/plugins`. The key getter is `customAPIKeyGetter(ctx)` (default header `x-api-key`, or `apiKeyHeaders`). Permissions are `permissions.defaultPermissions` and `verifyApiKey({body: {key, permissions}})`, as `Record<resource, action[]>`.                                                                                                                                                                                    |
+
+Two notes for Phase 4: `apiKey`'s `references` is `user` or `organization`
+only, so a site token's owner needs a decision before `api_tokens` lands, and
+several `configId`s can separate Personal Access Tokens from site tokens. Its
+session option is `enableSessionForAPIKeys` (default `false`), not
+`disableSessionForAPIKeys`.
+
+### Hook transactions
+
+`databaseHooks.*.before` hooks share a transaction only when one is open.
+Better Auth's `*WithHooks` wrappers run the hook and then write through
+`getCurrentAdapter()`, which is the transaction's adapter if `runWithTransaction`
+opened one. `auth.handler` opens none itself. `after` hooks wait for the commit
+(`queueAfterTransactionHook`), or run at once outside a transaction.
+
+| Path                                                             | In a transaction             |
+| ---------------------------------------------------------------- | ---------------------------- |
+| `/sign-in/email` (session create)                                | No                           |
+| `/sign-up/email` (disabled)                                      | Yes                          |
+| `/change-password`                                               | Yes                          |
+| `/reset-password`                                                | Yes                          |
+| `/set-password`                                                  | Only if the caller opens one |
+| `internalAdapter.createSession`, `updatePassword`, `linkAccount` | Only if the caller opens one |
+| `/sign-out`, `/revoke-session(s)`, `/revoke-other-sessions`      | No                           |
+
+`update.before` receives only the update's data and context, never its
+`where`, so it cannot tell whose row changed. `/reset-password` creates a
+missing credential row, which runs `create` hooks rather than `update` hooks.
+A dual write through `databaseHooks` would have to work out the user for each
+path. There is none: the legacy engine moves to `user_accounts` in Phase 2
+wherever it exists, and the migration that graduates it copies the hashes
+(plan §4.5).
+
+Ghost transactions around several Better Auth writes (`createVerifiedSession`)
+must use `runWithTransaction` from `@better-auth/core/context`, a direct
+dependency, so the hooks see the transaction. Calling the adapter's
+`transaction` alone does not. `acceptInvitation` also writes Ghost tables
+through Bookshelf, which cannot join Better Auth's transaction: the
+transaction adapter does not expose its Knex `trx`. Plan §3.3 needs a bridge
+for it before Phase 6. Inside a hook
+or plugin, write through `getCurrentAdapter(ctx.context.adapter)` (exported
+from `better-auth`); `ctx.context.adapter` is outside the transaction, so a
+write through it survives a rollback.
+
+### Decisions
+
+Settled in Phase 0 (plan §10):
+
+- `emailVerified` and `twoFactorEnabled` stay virtual. Real per-user
+  verification is a prerequisite for SSO account linking in Phase 8.
+- Sessions last 180 days, absolute (`disableSessionRefresh`). Rolling sessions
+  come later.
+- Email codes are 6 random digits, hashed in `verifications`, expiring after
+  5 minutes. Five wrong attempts delete the code; `express-brute` stays on top.
+- Magic link, passkey, TOTP and SSO sign-ins count as verified.
+  `require_email_mfa` applies to password sign-in only.
+- Scopes use the `object_type:action` permission keys, with finer scopes where
+  one key covers more than one capability. They are checked on includes and
+  relations too. Phase 4 starts with a spike on both.
+- The principal has `kind: 'app'` with `actingFor: User | null` for installed
+  apps. It lands with `resolvePrincipal` in Phase 2.
+- No `bearer` plugin. Better Auth still returns session tokens in JSON
+  without it: a top-level `token` from `/sign-in/email` and
+  `/change-password`, `session.token` from `/get-session`, and a `token` on
+  each session from `/list-sessions`. A global after-hook strips them from
+  every native response before the handler is mounted (Phase 2). Because
+  `revokeSession` takes a token, revoking one session (Phase 8) uses a Ghost
+  endpoint that takes a session id and checks ownership.
+- OAuth clients for apps are Phase 4b, alongside Phase 5.
+- Rollback to `legacy` stays possible until 7.0 removes it.
+- `/update-session` is disabled.
+- `user_accounts` becomes the only password store. Every legacy password
+  read and write moves to it in Phase 2 wherever it exists, and the migration
+  that graduates it copies `users.password`.
+
+Still open:
+
+- Content API keys: the 8.0 schedule, or public site tokens. Decide in
+  Phase 11, during 7.x. They are not removed in 7.0 either way.
+- Whether credential rows join content exports. Decide in Phase 10 (7.0).
+
+### Go/no-go
+
+Go for Week 3 (sessions on Better Auth). The adapter suite passes on MySQL,
+the instance boots as a service, and every API the plan relies on exists. The
+plan is updated for the findings above.
