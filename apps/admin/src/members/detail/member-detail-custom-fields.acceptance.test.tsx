@@ -490,6 +490,31 @@ describe('Member detail custom fields', () => {
     });
   });
 
+  it('shows long text with its line breaks, up to four lines of it', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    const about = 'First line\n\nThird line\nFourth line\nFifth line';
+    fakeMemberDetailWorld(m, { job_title: 'Editor', company: about });
+    await renderAdminApp(`/members/${m.id}`);
+
+    const row = memberDetailScreen.editFieldButton('Company');
+    await expect.element(row).toBeVisible();
+    const spans = [...row.element().querySelectorAll('span')];
+    const value = spans.find((span) => span.textContent === about);
+    if (!value) {
+      throw new Error('the long text value is not shown as it is held');
+    }
+    const style = getComputedStyle(value);
+    expect(style.whiteSpace).toBe('pre-line');
+    // Five lines held, four shown: the row opens the editor, which shows all of them.
+    expect(value.getBoundingClientRect().height).toBeCloseTo(4 * parseFloat(style.lineHeight), 0);
+
+    // Short text stays on the line it's written on.
+    const short = [
+      ...memberDetailScreen.editFieldButton('Job title').element().querySelectorAll('span'),
+    ].find((span) => span.textContent === 'Editor');
+    expect(short && getComputedStyle(short).whiteSpace).toBe('normal');
+  });
+
   it('hides the section when the site has no custom fields defined', async () => {
     const m = member({ name: 'Ada Lovelace' });
     fakeMembers([m]);

@@ -486,10 +486,27 @@ const MemberCustomFieldEditModal: React.FC<{
   );
 };
 
+/** Whether a leaf's text is written in a textarea, so it can hold line breaks. */
+const isMultiline = (leaf: Leaf) =>
+  matchLeaf(leaf, {
+    text: ({ size }) => TEXT_CONTROL[size] === 'textarea',
+    choice: () => false,
+  });
+
 // select-text: button text is unselectable by default, and values (addresses especially) get
 // copied.
-const TextValue: React.FC<{ text: string }> = ({ text }) => (
-  <span className="block break-words select-text in-data-[admin7-design=true]:text-md">{text}</span>
+const TextValue: React.FC<{ text: string; multiline?: boolean }> = ({ text, multiline }) => (
+  <span
+    className={cn(
+      'break-words select-text in-data-[admin7-design=true]:text-md',
+      // Text written in a textarea keeps its line breaks: pre-line shows them and still collapses
+      // runs of spaces, as the rest of the screen's text does. A long one shows its first four
+      // lines, since the row opens the editor, which shows all of it.
+      multiline ? 'line-clamp-4 whitespace-pre-line' : 'block',
+    )}
+  >
+    {text}
+  </span>
 );
 
 // A list's answers as the chips its editor shows, since an option can hold a comma and a
@@ -525,7 +542,7 @@ const CustomFieldValue: React.FC<{ field: MemberCustomField; stored: unknown }> 
     );
   }
   return matchShape<React.ReactElement>(field.type, {
-    scalar: () => <TextValue text={text} />,
+    scalar: ({ leaf }) => <TextValue multiline={isMultiline(leaf)} text={text} />,
     record: () => <TextValue text={text} />,
     set: () => (
       <ListAnswers
