@@ -5,7 +5,7 @@ import {$getNodeByKey, CLICK_COMMAND, COMMAND_PRIORITY_LOW} from 'lexical';
 import {$isKoenigCard} from '@tryghost/kg-default-nodes';
 import {CardWrapper} from './ui/CardWrapper';
 import {EDIT_CARD_COMMAND, SELECT_CARD_COMMAND, SHOW_CARD_VISIBILITY_SETTINGS_COMMAND} from '../plugins/KoenigBehaviourPlugin';
-import {VISIBILITY_SETTINGS} from '../utils/visibility';
+import {cardHasEditMode, isVisibilityEnabled} from '../utils/visibility';
 import {mergeRegister} from '@lexical/utils';
 import {useKoenigSelectedCardContext} from '../context/KoenigSelectedCardContext';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
@@ -140,15 +140,41 @@ const KoenigCardWrapper = ({nodeKey, width, wrapperStyle, IndicatorIcon, childre
             }
         }
 
+        // cards without an edit mode of their own (image, gallery, embed) keep a
+        // second click for captions and their own controls, so their settings
+        // panel opens on double-click instead
+        function handleDoubleClick(event) {
+            if (isEditing || event.target.closest('[data-kg-card-toolbar], [data-kg-settings-panel], input, textarea')) {
+                return;
+            }
+
+            // double-clicking a word in a caption should select it, not open the panel
+            if (event.target.closest('[contenteditable]')?.getAttribute('contenteditable') === 'true') {
+                return;
+            }
+
+            let shouldEdit = false;
+            editor.getEditorState().read(() => {
+                const cardNode = $getNodeByKey(nodeKey);
+                shouldEdit = $isKoenigCard(cardNode) && !cardNode.hasEditMode() && cardHasEditMode(cardNode, cardConfig);
+            });
+
+            if (shouldEdit) {
+                editor.dispatchCommand(EDIT_CARD_COMMAND, {cardKey: nodeKey});
+            }
+        }
+
         container?.addEventListener('mousedown', handleMousedown);
+        container?.addEventListener('dblclick', handleDoubleClick);
 
         return () => {
             container?.removeEventListener('mousedown', handleMousedown);
+            container?.removeEventListener('dblclick', handleDoubleClick);
         };
-    }, [editor, isSelected, isEditing, nodeKey, containerRef]);
+    }, [editor, isSelected, isEditing, nodeKey, containerRef, cardConfig]);
 
     let isVisibilityActive = false;
-    if (cardConfig?.visibilitySettings !== VISIBILITY_SETTINGS.NONE) {
+    if (isVisibilityEnabled(cardConfig)) {
         editor.getEditorState().read(() => {
             const cardNode = $getNodeByKey(nodeKey);
             isVisibilityActive = $isKoenigCard(cardNode) ? cardNode.getIsVisibilityActive() : false;

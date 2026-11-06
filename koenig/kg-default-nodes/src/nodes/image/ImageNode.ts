@@ -14,17 +14,18 @@ const imageProperties = {
     href: {default: '', urlType: 'url'}
 } satisfies DecoratorNodePropertyMap;
 
-export type ImageData = DecoratorNodeData<typeof imageProperties>;
+export type ImageData = DecoratorNodeData<typeof imageProperties, true>;
 
 export class ImageNode extends generateDecoratorNode({
     nodeType: 'image',
+    hasVisibility: true,
     properties: imageProperties,
     defaultRenderFn: renderImageNode
 }) {
     /* @override */
     exportJSON() {
         // checks if src is a data string
-        const {src, width, height, title, alt, caption, cardWidth, href} = this;
+        const {src, width, height, title, alt, caption, cardWidth, href, visibility} = this;
         const isBlob = src && src.startsWith('data:');
 
         const dataset = {
@@ -37,7 +38,8 @@ export class ImageNode extends generateDecoratorNode({
             alt,
             caption,
             cardWidth,
-            href
+            href,
+            visibility
         };
         return dataset;
     }
