@@ -24,6 +24,22 @@ function inline(input: unknown): string {
   return strip_tags.call({}, input, { hash: {} });
 }
 
+// The handlebars instance is shared across the unit suite, so remember what each helper was
+// registered as (or that it was absent) and put that back once a suite is done with it.
+function snapshotHelpers(names: string[]): () => void {
+  const previous = names.map((name) => [name, handlebars.helpers[name]] as const);
+
+  return function restoreHelpers() {
+    for (const [name, helper] of previous) {
+      if (helper === undefined) {
+        handlebars.unregisterHelper(name);
+      } else {
+        handlebars.registerHelper(name, helper);
+      }
+    }
+  };
+}
+
 describe('{{strip_tags}} helper', function () {
   describe('direct calls', function () {
     it('returns plain text unchanged', function () {
@@ -177,6 +193,7 @@ describe('{{strip_tags}} helper', function () {
       const render = handlebarsService.hbs.express4({
         partialsDir: [configUtils.config.get('paths').helperTemplates],
       });
+      const restoreHelpers = snapshotHelpers(['strip_tags', 'strip_tags_test_async']);
       handlebars.registerHelper('strip_tags', strip_tags);
       registerAsyncThemeHelper('strip_tags_test_async', async function () {
         return new SafeString('<p>Hello</p>');
@@ -196,17 +213,24 @@ describe('{{strip_tags}} helper', function () {
         assert.equal(html, '[]');
         sinon.assert.calledOnce(loggingErrorStub);
       } finally {
-        handlebars.unregisterHelper('strip_tags_test_async');
+        restoreHelpers();
         fs.rmSync(dir, { recursive: true, force: true });
       }
     });
   });
 
   describe('inline template usage', function () {
+    let restoreHelpers: () => void;
+
     beforeAll(function () {
+      restoreHelpers = snapshotHelpers(['strip_tags', 'content', 'match']);
       handlebars.registerHelper('strip_tags', strip_tags);
       registerHelper('content');
       registerHelper('match');
+    });
+
+    afterAll(function () {
+      restoreHelpers();
     });
 
     it('strips tags from a context field', function () {
@@ -271,9 +295,16 @@ describe('{{strip_tags}} helper', function () {
   });
 
   describe('block template usage', function () {
+    let restoreHelpers: () => void;
+
     beforeAll(function () {
+      restoreHelpers = snapshotHelpers(['strip_tags', 'content']);
       handlebars.registerHelper('strip_tags', strip_tags);
       registerHelper('content');
+    });
+
+    afterAll(function () {
+      restoreHelpers();
     });
 
     it('strips tags from the rendered block content', function () {
