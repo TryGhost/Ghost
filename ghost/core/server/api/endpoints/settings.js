@@ -22,25 +22,25 @@ async function getStripeConnectData(frame, checked) {
   );
 
   if (stripeConnectIntegrationToken && stripeConnectIntegrationToken.value) {
-    // Better Auth has no session object: its state is cleared once the
-    // settings are saved (editSettings). On the legacy session the
-    // connection's state is good for one key: reading it removes it.
+    // Better Auth has no session object. Its state is used up once the
+    // settings are saved (editSettings); the legacy session's, once a key
+    // passes every check.
     const getSessionProp = isBetterAuth
       ? async () => {
           checked.state = await auth.stripeConnectState.get(frame.options.context.user);
           return checked.state;
         }
+      : (prop) => frame.original.session?.[prop];
+    const deleteSessionProp = isBetterAuth
+      ? async () => {}
       : (prop) => {
-          const value = frame.original.session?.[prop];
-          if (frame.original.session) {
-            delete frame.original.session[prop];
-          }
-          return value;
+          delete frame.original.session[prop];
         };
 
     return await settingsBREADService.getStripeConnectData(
       stripeConnectIntegrationToken,
       getSessionProp,
+      deleteSessionProp,
       membersService.stripeConnect.getStripeConnectTokenData,
     );
   }
