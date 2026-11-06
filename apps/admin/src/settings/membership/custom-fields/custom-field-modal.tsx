@@ -60,12 +60,17 @@ const CustomFieldModal: React.FC<{ field?: MemberCustomField; onClose: () => voi
           const name = state.name.trim();
           // Settings are sent whole, and only when they change.
           const { settings } = state;
-          await editField({
-            key: field.key,
+          const changes = {
             ...(name === field.name ? {} : { name }),
             ...(state.access === field.access.member ? {} : { access: { member: state.access } }),
             ...(settings && !dequal(settings, field.settings) ? { settings } : {}),
-          });
+          };
+          // An edit changed back to what was saved has nothing to send, and Ghost refuses an
+          // empty one, so it saves as if nothing had been touched.
+          if (Object.keys(changes).length === 0) {
+            return;
+          }
+          await editField({ key: field.key, ...changes });
         } else {
           await createField(newCustomField(state));
         }
