@@ -189,19 +189,19 @@ describe('{{strip_tags}} helper', function () {
       sinon.assert.calledWith(loggingErrorStub, sinon.match.instanceOf(errors.IncorrectUsageError));
     });
 
-    it('does not output escaped markup when an async helper is rendered inside the block', async function () {
+    it('returns an empty string and logs an error when an async helper is rendered inside the block', async function () {
       const render = handlebarsService.hbs.express4({
         partialsDir: [configUtils.config.get('paths').helperTemplates],
       });
-      const restoreHelpers = snapshotHelpers(['strip_tags', 'strip_tags_test_async']);
+      const restoreHelpers = snapshotHelpers(['strip_tags', 'fake_async_helper']);
       handlebars.registerHelper('strip_tags', strip_tags);
-      registerAsyncThemeHelper('strip_tags_test_async', async function () {
+      registerAsyncThemeHelper('fake_async_helper', async function () {
         return new SafeString('<p>Hello</p>');
       });
 
       const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'strip-tags-'));
       const file = path.join(dir, 'index.hbs');
-      fs.writeFileSync(file, '[{{#strip_tags}}{{strip_tags_test_async "x"}}{{/strip_tags}}]');
+      fs.writeFileSync(file, '[{{#strip_tags}}{{fake_async_helper "x"}}{{/strip_tags}}]');
 
       try {
         const html = await promisify(render)(file, {
