@@ -34,6 +34,7 @@ import {
   storedSize,
   tooLargeMessage,
 } from './limits.ts';
+import { createLocalhostFetch } from './localhost.ts';
 import type { AppManifest, ManifestError } from './types.ts';
 
 /**
@@ -63,11 +64,17 @@ export type CheckResult =
     };
 
 export interface CheckOptions {
-  /** The fetch to make requests with. Node's own, by default. */
+  /**
+   * The fetch to make requests with. By default, one that reaches names under `.localhost`
+   * even where the system doesn't know them, as Ghost in development does.
+   */
   fetch?: typeof fetch;
 }
 
 type Fetch = typeof fetch;
+
+// Made on first use, so loading the tooling opens no connection pool.
+let localhostFetch: Fetch | undefined;
 
 /** Thrown by any step, and turned into a failed `CheckResult` by `checkApp`. */
 class Failure extends Error {
@@ -86,7 +93,7 @@ class Failure extends Error {
  */
 export async function checkApp(
   manifestUrl: string,
-  { fetch: fetchFn = globalThis.fetch }: CheckOptions = {},
+  { fetch: fetchFn = (localhostFetch ??= createLocalhostFetch()) }: CheckOptions = {},
 ): Promise<CheckResult> {
   try {
     return await runChecks(manifestUrl, fetchFn);

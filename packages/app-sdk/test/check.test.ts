@@ -1,9 +1,10 @@
 // @vitest-environment node
+import dns from 'node:dns';
 import { createServer, type IncomingMessage, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 
 import { signManifest } from '@tryghost/app-contracts/identity';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { CHALLENGE_PATH, handleChallenge } from '../src/backend/index.ts';
 import {
@@ -45,7 +46,8 @@ beforeAll(async () => {
       const request = await toRequest(req);
       let response: Response;
       if (req.url === '/ghost-app.json') {
-        response = Response.json(await app.manifest(`${origin}/ghost-app.json`));
+        // Signed for the host it was asked for, which may be a name under `.localhost`.
+        response = Response.json(await app.manifest(new URL(req.url, request.url).href));
       } else if (req.url === '/moved.json') {
         response = new Response(null, {
           status: 301,
@@ -517,5 +519,34 @@ describe('checkApp', () => {
   it("throws a mistake of the caller's rather than blaming the app", async () => {
     // A URL object where a string belongs, which Ghost never passes.
     await expect(checkApp(new URL(MANIFEST_URL) as never)).rejects.toThrow(TypeError);
+  });
+});
+
+describe('checkApp, against an app on a name under .localhost', () => {
+  beforeEach(() => serveSigned(generateKey()));
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("reaches the app where the system doesn't know the name, as Ghost in development does", async () => {
+    // A system whose resolver knows `localhost` but no name under it, as on Windows.
+    const { lookup } = dns;
+    const asked: string[] = [];
+    vi.spyOn(dns, 'lookup').mockImplementation(((
+      hostname: string,
+      options: dns.LookupOptions,
+      callback: (error: Error | null) => void,
+    ) => {
+      asked.push(hostname);
+      if (hostname === 'localhost') {
+        return lookup(hostname, options, callback);
+      }
+      callback(
+        Object.assign(new Error(`getaddrinfo ENOTFOUND ${hostname}`), { code: 'ENOTFOUND' }),
+      );
+    }) as typeof dns.lookup);
+    const manifestUrl = `${origin.replace('//localhost', '//my-app.localhost')}/ghost-app.json`;
+    expect(await checkApp(manifestUrl)).toMatchObject({ success: true, manifestUrl });
+    expect(asked).toContain('my-app.localhost');
   });
 });
