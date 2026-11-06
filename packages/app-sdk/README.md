@@ -12,6 +12,7 @@ its route in sync with Admin's URL, and send the publisher elsewhere in Admin.
 | `@tryghost/app-sdk`         | The app's page             | Talking to Admin (below)                                                      |
 | `@tryghost/app-sdk/backend` | Any platform with web APIs | [Answering Ghost's challenge, serving the manifest and framing](#the-backend) |
 | `@tryghost/app-sdk/tooling` | Node 22.12 or later        | [Creating keys, and signing and checking the manifest](#signing-the-manifest) |
+| `@tryghost/app-sdk/vite`    | Vite 6 or later            | [Signing the manifest in `vite dev` and `vite build`](#the-vite-plugin)       |
 | `ghost-app`                 | Node 22.12 or later        | [The same tooling on the command line](#the-ghost-app-cli)                    |
 
 The page's entry point loads none of the others' code.
@@ -297,8 +298,9 @@ which only Ghost knows.
 Each mode has its own identity key and backend key, as two pairs of private
 Ed25519 JWKs, in files only their owner can read:
 
-- `.ghost-app/development/identity.json` and `backend.json`, for apps on this
-  machine, such as on `my-app.localhost`, which `ghost-app keys` creates;
+- `.ghost-app/development/identity.json` and `backend.json`, for `vite dev`
+  and apps on this machine, such as on `my-app.localhost`, which `ghost-app keys`
+  or the Vite plugin's first run creates;
 - `.ghost-app/production/identity.json` and `backend.json`, which only
   `ghost-app keys --production` creates.
 
@@ -323,6 +325,61 @@ In CI, set `GHOST_APP_IDENTITY_KEY` to the production identity key and
 `GHOST_APP_BACKEND_KEY` to the backend key's public half, which
 `ghost-app backend-key --production --public` prints, in place of the files. CI
 only signs, so it never needs the backend's private key.
+
+### The Vite plugin
+
+```ts
+import { cloudflare } from '@cloudflare/vite-plugin';
+import { ghostApp } from '@tryghost/app-sdk/vite';
+import { defineConfig } from 'vite';
+
+export default defineConfig({ plugins: [ghostApp(), cloudflare()] });
+```
+
+In `vite dev`, the plugin creates the development keys if there are none, and
+serves `/ghost-app.json` signed for the address it's requested at: a name for
+the machine on the dev server's port, or a tunnel named by the `tunnelUrl`
+option or `GHOST_APP_TUNNEL_URL` (comma-separated). It refuses any other host
+with a 421, so the dev server never signs a manifest for someone else's address.
+Ghost in Docker reaches the machine through `host.docker.internal` with the
+original Host, which counts as the machine. It prints the app at a name of its
+own under `.localhost`, from the last part of its ID, such as
+`http://hello-world.localhost:<port>/ghost-app.json` for
+`org.ghost.hello-world`, as Ghost on `localhost` refuses an app on its own host
+on any port. It prints the install link too, for `GHOST_URL` or
+`http://localhost:2368`.
+
+The dev server is for development only. The plugin adds `.ghost-app/`,
+`.dev.vars*`, `.env` and `.env.*` to Vite's `server.fs.deny`, and refuses to start with
+`server.fs.strict` off, which would make Vite skip that list. Like Vite's own
+`.env` protection, the list matches files by name: a link or alias you make to
+the keys elsewhere in the project is served like any other file.
+
+In a Cloudflare Workers project (one with a `wrangler.json`, `wrangler.jsonc`
+or `wrangler.toml`), it adds `GHOST_APP_BACKEND_KEY` to `.dev.vars` with the
+development backend key, so the Worker answers challenges in development as it
+does in production. It never changes a value that's already there, says so when
+it differs, and writes nothing unless git ignores `.dev.vars`.
+
+In `vite build`, it signs `ghost-app.json` for `GHOST_APP_URL`, the app's public
+address (the manifest is at `<GHOST_APP_URL>/ghost-app.json`), with the
+production keys, and emits it with the client build. A missing key fails the
+build with how to create one; the plugin never creates a production key.
+Without `GHOST_APP_URL`, the build emits no manifest and warns, and deploying
+it takes the app down wherever it's installed.
+
+The plugin reads `GHOST_APP_URL`, `GHOST_APP_TUNNEL_URL` and `GHOST_URL` from
+the environment, or from the mode's `.env` files as Vite reads them; the
+environment wins. `.env.development` is the easy way to name a tunnel or your
+Ghost in development, on Windows too. Commit the app's address in `.env.production` once it has
+one, so no deploy can forget it:
+
+```sh
+GHOST_APP_URL=https://hello.example.com
+```
+
+List the plugin before `cloudflare()`. `options.manifest` names another file
+than `ghost-app.json`.
 
 ### The ghost-app CLI
 
@@ -462,7 +519,7 @@ This is a workspace package in the Ghost monorepo. From the package directory:
 ```bash
 pnpm build   # the package to build/ and the browser bundle to dist/, with Vite
 pnpm test    # type-check + unit tests (jsdom for the page, with a fake Admin on a real
-             # MessageChannel; Node for the backend, tooling and CLI), which build both
+             # MessageChannel; Node for the backend, tooling, CLI and plugin), which build both
              # afresh to check what they import, and pack build/ and dist/ to use them from an
              # app outside the workspace (after pnpm build; Nx runs it)
 pnpm lint    # lint source and tests
@@ -482,10 +539,11 @@ per entry point, which share chunks:
 - `index.js` loads only `@quilted/threads`, never `jose`, `zod` or a Node
   builtin;
 - `backend.js` loads only `jose` and `zod`, and no Node builtin;
-- `tooling.js` loads Node builtins, `jose` and `zod`, and `bin.js` those and
-  `commander`;
+- `tooling.js`, `vite.js` and `bin.js` load Node builtins, `jose` and `zod`, and
+  `bin.js` `commander` too; `vite.js` imports Vite only when Vite runs the
+  plugin, not when it loads, as Vite is an optional peer dependency;
 - each entry point's declarations, emitted by TypeScript 7 and bundled by
-  `rolldown-plugin-dts`, import nothing;
+  `rolldown-plugin-dts`, import nothing, but Vite's types for `vite.d.ts`;
 - `dist/` imports nothing at all.
 
 `test/bundle.test.ts` checks this on a fresh build. The build keeps `node:`
