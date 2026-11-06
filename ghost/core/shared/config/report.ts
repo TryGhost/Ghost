@@ -34,3 +34,18 @@ export function reportInvalid(
     `Ghost config failed validation (not enforced in the ${env} environment):\n${report}`,
   );
 }
+
+/**
+ * Warn about keys a closed section does not name. Ghost strips and never reads
+ * them, so this never throws.
+ */
+export function reportUnknownKeys(paths: readonly (readonly PropertyKey[])[]): void {
+  if (!paths.length) {
+    return;
+  }
+
+  const report = paths.map((path) => `  ${path.map(String).join(':')}`).join('\n');
+
+  // eslint-disable-next-line no-console
+  console.warn(`Ghost config has unknown keys, which are ignored:\n${report}`);
+}
