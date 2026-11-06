@@ -199,7 +199,7 @@
     "jsonrepair": "catalog:",
     "jsonwebtoken": "catalog:",
     "juice": "catalog:",
-    "knex": "2.4.2",
+    "knex": "catalog:",
     "knex-migrator": "catalog:",
     "leaky-bucket": "2.2.0",
     "lodash": "catalog:",
