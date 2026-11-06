@@ -415,8 +415,9 @@ describe('Custom fields', () => {
     await modal.getByRole('button', { name: 'Save' }).click();
 
     await expect(modal).toHaveCount(0);
-    // Nothing about access is sent, so the level the API holds stays as it was.
-    expect(editApi.lastRequest?.body).toEqual({ members_metafields: [{}] });
+    // Nothing about access is sent, so the level the API holds stays as it was. Nothing else
+    // changed either, so there is no request at all.
+    expect(editApi.lastRequest).toBeUndefined();
   });
 
   it('leaves a view-only field at that level when only the name changes', async () => {
@@ -1247,6 +1248,75 @@ describe('Custom fields', () => {
 
       release();
       await expect(modal).toHaveCount(0);
+    });
+
+    it('sends nothing when an edit is changed back to what was saved', async () => {
+      fakeSettingsScreens();
+      fakeListedFields([animalsField]);
+      const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/favourite_animals/', {
+        members_metafields: [animalsField],
+      });
+      await renderAdminApp('/settings', flagOn);
+
+      await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+      const modal = settingsScreen.customFieldModal();
+      await modal.getByLabelText('Name').fill('Pets');
+      await modal.getByLabelText('Name').fill('Favourite animals');
+      await modal.getByLabelText('New option').fill('Fish');
+      await modal.getByLabelText('New option').fill('');
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect(modal).toHaveCount(0);
+      expect(editApi.lastRequest).toBeUndefined();
+    });
+
+    it('sends a change made after another was changed back', async () => {
+      fakeSettingsScreens();
+      fakeListedFields([animalsField]);
+      const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/favourite_animals/', {
+        members_metafields: [animalsField],
+      });
+      await renderAdminApp('/settings', flagOn);
+
+      await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+      const modal = settingsScreen.customFieldModal();
+      await modal.getByLabelText('Name').fill('Pets');
+      await modal.getByLabelText('Name').fill('Favourite animals');
+      await modal.getByLabelText('Allow multiple answers').click();
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect(modal).toHaveCount(0);
+      expect(editApi.lastRequest?.body).toEqual({
+        members_metafields: [{ settings: { options: ['Dog', 'Cat'], multiple: false } }],
+      });
+    });
+
+    it('sends every change made in one edit together', async () => {
+      fakeSettingsScreens();
+      fakeListedFields([animalsField]);
+      const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/favourite_animals/', {
+        members_metafields: [animalsField],
+      });
+      await renderAdminApp('/settings', flagOn);
+
+      await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+      const modal = settingsScreen.customFieldModal();
+      await modal.getByLabelText('Name').fill('Pets');
+      await modal.getByLabelText('New option').fill('Fish');
+      await userEvent.keyboard('{Enter}');
+      await modal.getByLabelText('Visible to members').click();
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect(modal).toHaveCount(0);
+      expect(editApi.lastRequest?.body).toEqual({
+        members_metafields: [
+          {
+            name: 'Pets',
+            access: { member: 'write' },
+            settings: { options: ['Dog', 'Cat', 'Fish'], multiple: true },
+          },
+        ],
+      });
     });
 
     // Settings saved under an older rule are kept, so an edit that leaves them alone doesn't

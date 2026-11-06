@@ -152,18 +152,20 @@ export const newFieldOf = (values: CustomFieldValues): NewMemberCustomField => {
  * What an edit sends: only what the values change from `start`, the field as it was opened.
  * Sending the whole field would carry whatever the list of fields held when it was loaded, so
  * saving a rename would silently undo an access change a colleague made meanwhile. A list's
- * settings are sent whole.
+ * settings are sent whole. Null when nothing changes, since Ghost refuses an edit with nothing in
+ * it.
  */
 export const editOf = (
   values: CustomFieldValues,
   start: CustomFieldValues,
-): Omit<MemberCustomFieldEdit, 'key'> => {
+): Omit<MemberCustomFieldEdit, 'key'> | null => {
   const { name, access, settings } = changesOf(values, start) ?? {};
-  return {
+  const edit = {
     ...(name === undefined ? {} : { name }),
     ...(access === undefined ? {} : { access: { member: access } }),
     ...(settings === undefined ? {} : { settings }),
   };
+  return Object.keys(edit).length === 0 ? null : edit;
 };
 
 /** Where a form shows a problem: beside the name, a list's parts, or one of its options. */

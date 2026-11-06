@@ -189,7 +189,12 @@ export function EditCustomFieldModal({
   const { state, modalProps } = useCustomFieldModal({
     start,
     validate: (values) => editErrors(values, start),
-    save: (values) => editField({ key: field.key, ...editOf(values, start) }),
+    save: async (values) => {
+      const edit = editOf(values, start);
+      if (edit) {
+        await editField({ key: field.key, ...edit });
+      }
+    },
     onClose,
   });
   const isArchived = field.status === 'archived';
