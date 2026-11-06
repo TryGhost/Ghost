@@ -486,6 +486,9 @@ const MemberCustomFieldEditModal: React.FC<{
   );
 };
 
+// How many fields show before the rest collapse behind "Show all": Settings' preview size.
+const PREVIEW_COUNT = 5;
+
 /** Whether a leaf's text is written in a textarea, so it can hold line breaks. */
 const isMultiline = (leaf: Leaf) =>
   matchLeaf(leaf, {
@@ -574,10 +577,16 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
   const { data, isLoading } = useCustomFieldDefinitions();
   const fields = data ?? [];
   const [editingField, setEditingField] = React.useState<MemberCustomField | null>(null);
+  const [showAll, setShowAll] = React.useState(false);
 
   if (isLoading || fields.length === 0) {
     return null;
   }
+
+  // A long list of fields collapses behind "Show all", as it does in Settings, so the rest of the
+  // member's record stays in reach.
+  const isTruncated = !showAll && fields.length > PREVIEW_COUNT;
+  const visibleFields = isTruncated ? fields.slice(0, PREVIEW_COUNT) : fields;
 
   return (
     <section
@@ -594,7 +603,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
                     first and last chips breathing room from the card edge. */}
         <CardContent className={admin7Design ? 'pt-3' : 'px-6 py-4'}>
           <ul>
-            {fields.map((field) => {
+            {visibleFields.map((field) => {
               const stored = metafields?.[field.namespace]?.[field.key];
               // Null rather than an empty line, so an unset value has no value in the label.
               const display = formatMemberCustomFieldValue(field, stored) || null;
@@ -646,6 +655,14 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
               );
             })}
           </ul>
+          {/* The divider fades with the last row's hover, as the lines between rows do. */}
+          {isTruncated && (
+            <div className="border-t border-border pt-3 transition-colors [ul:has(>li:last-child:hover)+&]:border-t-transparent">
+              <Button size="sm" type="button" variant="outline" onClick={() => setShowAll(true)}>
+                Show all
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
       {editingField && (

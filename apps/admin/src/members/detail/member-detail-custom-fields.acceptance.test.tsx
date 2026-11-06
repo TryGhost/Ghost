@@ -515,6 +515,42 @@ describe('Member detail custom fields', () => {
     expect(short && getComputedStyle(short).whiteSpace).toBe('normal');
   });
 
+  it('shows the first five fields, and the rest when asked', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    const more = ['Nickname', 'Team', 'Pronouns'].map((name): MemberCustomField => ({
+      ...FIELDS[0],
+      key: KeySchema.parse(name.toLowerCase()),
+      name,
+    }));
+    fakeMemberDetailWorld(m, {}, [...FIELDS, ...more]);
+    await renderAdminApp(`/members/${m.id}`);
+
+    const section = memberDetailScreen.customFieldsSection();
+    await expect.element(section.getByRole('button', { name: 'Show all' })).toBeVisible();
+    await expect(section.getByRole('button', { name: /^Edit / })).toHaveCount(5);
+    await expect(section.getByRole('button', { name: 'Edit Pronouns' })).toHaveCount(0);
+
+    await section.getByRole('button', { name: 'Show all' }).click();
+
+    await expect(section.getByRole('button', { name: /^Edit / })).toHaveCount(6);
+    await expect(section.getByRole('button', { name: 'Show all' })).toHaveCount(0);
+  });
+
+  it('shows five fields without asking', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    const more = ['Nickname', 'Team'].map((name): MemberCustomField => ({
+      ...FIELDS[0],
+      key: KeySchema.parse(name.toLowerCase()),
+      name,
+    }));
+    fakeMemberDetailWorld(m, {}, [...FIELDS, ...more]);
+    await renderAdminApp(`/members/${m.id}`);
+
+    const section = memberDetailScreen.customFieldsSection();
+    await expect(section.getByRole('button', { name: /^Edit / })).toHaveCount(5);
+    await expect(section.getByRole('button', { name: 'Show all' })).toHaveCount(0);
+  });
+
   it('hides the section when the site has no custom fields defined', async () => {
     const m = member({ name: 'Ada Lovelace' });
     fakeMembers([m]);
