@@ -1,3 +1,4 @@
+const errors = require('@tryghost/errors');
 const membersService = require('../../services/members');
 
 /** @type {import('@tryghost/api-framework').Controller} */
@@ -18,7 +19,15 @@ const controller = {
     },
     query(frame) {
       // This is something you have to do if you want to use the "framework" with access to the raw req/res
-      frame.response = async function (req, res) {
+      frame.response = async function (req, res, next) {
+        // Only Ghost Admin's own link may start a connection: another site
+        // could otherwise reset the admin's connection in progress.
+        const fetchSite = req.get('sec-fetch-site');
+        if (fetchSite && fetchSite !== 'same-origin' && fetchSite !== 'none') {
+          return next(
+            new errors.NoPermissionError({ message: 'Start connecting Stripe from Ghost Admin.' }),
+          );
+        }
         function setSessionProp(prop, val) {
           req.session[prop] = val;
         }
