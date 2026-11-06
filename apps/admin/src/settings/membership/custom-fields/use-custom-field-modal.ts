@@ -1,6 +1,7 @@
 import {
   type CustomFieldErrors,
   type CustomFieldValues,
+  hasChanged,
   refusalErrors,
 } from '@/shared/member-custom-fields/custom-field-values';
 import { useForm, useHandleError } from '@tryghost/admin-x-framework/hooks';
@@ -10,9 +11,11 @@ import type { SettingsModalProps } from '@tryghost/shade/patterns';
 type CustomFieldModalProps = Pick<
   SettingsModalProps,
   | 'buttonsDisabled'
+  | 'dirty'
   | 'okLabel'
   | 'okVariant'
   | 'size'
+  | 'stickyFooter'
   | 'testId'
   | 'onClose'
   | 'onOk'
@@ -64,9 +67,15 @@ export function useCustomFieldModal({
     },
     modalProps: {
       buttonsDisabled: okProps.disabled,
+      // Closing with edits asks first. Whether there are edits is judged by what the form asks
+      // for rather than by the save state, which a save refused by validation sets to an error
+      // while the edits are still there, and which stays unsaved after an edit is changed back.
+      dirty: hasChanged(formState, start),
       okLabel: okProps.label || 'Save',
       okVariant: okProps.variant,
       size: 'sm',
+      // A list's options can run long, so Save stays in reach.
+      stickyFooter: true,
       testId: 'custom-field-modal',
       onClose,
       onOk: async () => {
