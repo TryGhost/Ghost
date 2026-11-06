@@ -146,6 +146,16 @@ describe.each([
   });
 });
 
+describe('flex search provider', () => {
+  it('caps by rank before sorting by status', () => {
+    const published = postsTitled(Array.from({ length: 150 }, (_, index) => `Post ${index}`));
+    const posts = [...published, { id: 'd1', title: 'Draft post', status: 'draft' }];
+    const groups = createFlexSearchProvider([contentSearchSource('posts', posts)]).search('post');
+
+    expect(titles(groups, 'Posts')).toEqual(published.slice(0, 100).map(({ title }) => title));
+  });
+});
+
 describe('basic search provider', () => {
   it('sorts by status before capping', () => {
     const posts = [
