@@ -196,6 +196,7 @@ describe('{{strip_tags}} helper', function () {
         assert.equal(html, '[]');
         sinon.assert.calledOnce(loggingErrorStub);
       } finally {
+        handlebars.unregisterHelper('strip_tags_test_async');
         fs.rmSync(dir, { recursive: true, force: true });
       }
     });
