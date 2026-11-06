@@ -4,6 +4,7 @@ import { noop } from 'lodash';
 import { createAutomationsApi2 } from '../../../../../core/server/services/automations/automations-api-2';
 import type {
   AutomationsRepository2,
+  AutomatedEmailRecipientTrackingData,
   RunStepToInsert,
   RunToInsert,
 } from '../../../../../core/server/services/automations/automations-repository-2';
@@ -13,6 +14,8 @@ import {
   type TestAutomationsRepositoryConnection,
 } from './test-automations-repository-2';
 import { alphabeticalDescribe } from '../../../../utils/alphabetical-describe';
+
+type Repository = AutomationsRepository2<TestAutomationsRepositoryConnection>;
 
 describe('automations API', function () {
   const createTestDomainEvents = () => ({
@@ -62,7 +65,6 @@ describe('automations API', function () {
   });
 
   alphabeticalDescribe('notify', function () {
-    type Repository = AutomationsRepository2<TestAutomationsRepositoryConnection>;
     type FirstAction = Awaited<ReturnType<Repository['findFirstActionRevisions']>>[number];
 
     let repository: ReturnType<typeof createTestAutomationsRepository2>;
@@ -544,6 +546,142 @@ describe('automations API', function () {
       await expect(trackClick()).rejects.toBe(error);
 
       expect(repository.incrementEmailClickedCount).not.toHaveBeenCalled();
+    });
+  });
+
+  alphabeticalDescribe('trackEmailDeliveredAndOpened', function () {
+    const deliveredAt = new Date('2026-01-01T00:00:00Z');
+    const openedAt = new Date('2026-01-02T00:00:00Z');
+
+    let repository: ReturnType<typeof createTestAutomationsRepository2>;
+    let api: ReturnType<typeof createApi>;
+
+    beforeEach(function () {
+      repository = createTestAutomationsRepository2({
+        incrementEmailOpenedCount: vi.fn<Repository['incrementEmailOpenedCount']>(),
+        lockActionRevisions: vi.fn<Repository['lockActionRevisions']>(),
+        lockNotYetOpenedEmailRecipients: vi.fn<Repository['lockNotYetOpenedEmailRecipients']>(
+          () => new Set(['recipient-1', 'recipient-2', 'recipient-3']),
+        ),
+        setEmailRecipientDeliveredAndOpenedAt:
+          vi.fn<Repository['setEmailRecipientDeliveredAndOpenedAt']>(),
+      });
+      vi.spyOn(repository, 'withTransaction');
+      api = createApi({ repository });
+    });
+
+    const track = (entries: Array<[string, AutomatedEmailRecipientTrackingData]>) =>
+      api.trackEmailDeliveredAndOpened(new Map(entries));
+
+    it('does nothing for an empty batch', async function () {
+      await track([]);
+
+      expect(repository.withTransaction).not.toHaveBeenCalled();
+    });
+
+    it('tracks deliveries and opens', async function () {
+      await track([
+        ['recipient-1', { automationActionRevisionId: 'revision-1', deliveredAt }],
+        ['recipient-2', { automationActionRevisionId: 'revision-2', openedAt }],
+        ['recipient-3', { automationActionRevisionId: 'revision-1', deliveredAt, openedAt }],
+      ]);
+
+      expect(repository.withTransaction).toHaveBeenCalledOnce();
+      expect(repository.setEmailRecipientDeliveredAndOpenedAt).toHaveBeenCalledTimes(3);
+      const connection = vi.mocked(repository.lockActionRevisions).mock.calls[0][0];
+      expect(repository.lockNotYetOpenedEmailRecipients).toHaveBeenCalledWith(connection, [
+        'recipient-2',
+        'recipient-3',
+      ]);
+      expect(repository.setEmailRecipientDeliveredAndOpenedAt).toHaveBeenNthCalledWith(
+        1,
+        connection,
+        'recipient-1',
+        { deliveredAt, openedAt: undefined },
+      );
+      expect(repository.setEmailRecipientDeliveredAndOpenedAt).toHaveBeenNthCalledWith(
+        2,
+        connection,
+        'recipient-2',
+        { deliveredAt: undefined, openedAt },
+      );
+      expect(repository.setEmailRecipientDeliveredAndOpenedAt).toHaveBeenNthCalledWith(
+        3,
+        connection,
+        'recipient-3',
+        { deliveredAt, openedAt },
+      );
+      expect(repository.incrementEmailOpenedCount).toHaveBeenCalledWith(
+        connection,
+        'revision-1',
+        1,
+      );
+      expect(repository.incrementEmailOpenedCount).toHaveBeenCalledWith(
+        connection,
+        'revision-2',
+        1,
+      );
+    });
+
+    it('counts first opens for each email version', async function () {
+      await track([
+        ['recipient-1', { automationActionRevisionId: 'revision-1', openedAt }],
+        ['recipient-2', { automationActionRevisionId: 'revision-2', openedAt }],
+        ['recipient-3', { automationActionRevisionId: 'revision-1', openedAt }],
+      ]);
+
+      const [connection, revisions] = vi.mocked(repository.lockActionRevisions).mock.calls[0];
+      expect([...revisions]).toEqual(['revision-1', 'revision-2']);
+      expect(repository.incrementEmailOpenedCount).toHaveBeenCalledTimes(2);
+      expect(repository.incrementEmailOpenedCount).toHaveBeenCalledWith(
+        connection,
+        'revision-1',
+        2,
+      );
+      expect(repository.incrementEmailOpenedCount).toHaveBeenCalledWith(
+        connection,
+        'revision-2',
+        1,
+      );
+    });
+
+    it('does not count already-opened or unknown recipients', async function () {
+      vi.mocked(repository.lockNotYetOpenedEmailRecipients).mockReturnValue(new Set());
+
+      await track([
+        ['already-opened', { automationActionRevisionId: 'revision-1', openedAt }],
+        ['unknown', { automationActionRevisionId: 'revision-2', openedAt }],
+      ]);
+
+      expect(repository.setEmailRecipientDeliveredAndOpenedAt).toHaveBeenCalledTimes(2);
+      expect(repository.incrementEmailOpenedCount).not.toHaveBeenCalled();
+    });
+
+    it('does not count deliveries as opens', async function () {
+      await track([['recipient-1', { automationActionRevisionId: 'revision-1', deliveredAt }]]);
+
+      expect(repository.incrementEmailOpenedCount).not.toHaveBeenCalled();
+    });
+
+    it('does not lock delivery-only events', async function () {
+      await track([['recipient-1', { automationActionRevisionId: 'revision-1', deliveredAt }]]);
+
+      expect([...vi.mocked(repository.lockActionRevisions).mock.calls[0][1]]).toEqual([]);
+      expect(repository.lockNotYetOpenedEmailRecipients).toHaveBeenCalledWith(
+        expect.anything(),
+        [],
+      );
+    });
+
+    it('passes events without timestamps to the repository without counting opens', async function () {
+      await track([['recipient-1', { automationActionRevisionId: 'revision-1' }]]);
+
+      expect(repository.setEmailRecipientDeliveredAndOpenedAt).toHaveBeenCalledWith(
+        expect.anything(),
+        'recipient-1',
+        { deliveredAt: undefined, openedAt: undefined },
+      );
+      expect(repository.incrementEmailOpenedCount).not.toHaveBeenCalled();
     });
   });
 });

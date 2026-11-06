@@ -5,6 +5,10 @@ import type { AutomationsRepository2 } from './automations-repository-2';
 
 type Connection = Knex | Knex.Transaction;
 
+const emailRecipientIdRowSchema = z.object({
+  id: z.string(),
+});
+
 const emailRecipientClickRowSchema = z.object({
   id: z.string(),
   clicked_at: z.coerce.date().nullable(),
@@ -239,6 +243,15 @@ export const createDatabaseAutomationsRepository2 = ({
         .update({ email_clicked_count: connection.raw('COALESCE(email_clicked_count, 0) + 1') });
     },
 
+    async incrementEmailOpenedCount(connection, actionRevisionId, count) {
+      await connection('automation_action_revisions')
+        .where('id', actionRevisionId)
+        .update(
+          'email_opened_count',
+          connection.raw('COALESCE(email_opened_count, 0) + ?', [count]),
+        );
+    },
+
     async insertActions(connection, toInsert) {
       if (toInsert.length > 0) {
         await connection('automation_actions').insert(toInsert);
@@ -327,12 +340,50 @@ export const createDatabaseAutomationsRepository2 = ({
       await connection('members').where('id', memberId).forUpdate().first('id');
     },
 
+    async lockNotYetOpenedEmailRecipients(connection, automatedEmailRecipientIds) {
+      if (automatedEmailRecipientIds.length === 0) {
+        return new Set<string>();
+      }
+      const rows: unknown[] = await connection('automated_email_recipients')
+        .select('id')
+        .whereIn('id', automatedEmailRecipientIds)
+        .whereNull('opened_at')
+        .forUpdate();
+      return new Set(rows.map((row) => emailRecipientIdRowSchema.parse(row).id));
+    },
+
     async setEmailRecipientClickedAt(connection, recipientId, clickedAt) {
       const updated = await connection('automated_email_recipients')
         .where({ id: recipientId })
         .whereNull('clicked_at')
         .update({ clicked_at: clickedAt });
       return updated > 0;
+    },
+
+    async setEmailRecipientDeliveredAndOpenedAt(
+      connection,
+      automatedEmailRecipientId,
+      { deliveredAt, openedAt },
+    ) {
+      if (!deliveredAt && !openedAt) {
+        return;
+      }
+      const updates: { delivered_at?: Knex.Raw; opened_at?: Knex.Raw } = {};
+      if (deliveredAt) {
+        updates.delivered_at = connection.raw(
+          'CASE WHEN delivered_at IS NULL OR delivered_at > ? THEN ? ELSE delivered_at END',
+          [deliveredAt, deliveredAt],
+        );
+      }
+      if (openedAt) {
+        updates.opened_at = connection.raw(
+          'CASE WHEN opened_at IS NULL OR opened_at > ? THEN ? ELSE opened_at END',
+          [openedAt, openedAt],
+        );
+      }
+      await connection('automated_email_recipients')
+        .where('id', automatedEmailRecipientId)
+        .update(updates);
     },
 
     withConnection: (fn) => fn(knex),
