@@ -8,7 +8,12 @@ const urlUtils = require('../../../shared/url-utils').default;
 
 const messages = {
   incorrectState: 'State did not match.',
+  expiredState: 'This Stripe connection has expired.',
+  incorrectMode: 'The Stripe account is not in the mode this connection started in.',
 };
+
+// How long after the admin clicks Connect the secure key is accepted.
+const STATE_MAX_AGE_MS = 60 * 60 * 1000;
 
 const STATE_PROP = 'stripe-connect-state';
 
@@ -34,6 +39,7 @@ async function getStripeConnectOAuthUrl(setSessionProp, mode = 'live') {
     JSON.stringify({
       mode,
       randomState,
+      createdAt: Date.now(),
       // Lets account.ghost.org offer this site among the user's saved sites.
       // The user still confirms the site there.
       site: urlUtils.getSiteUrl(),
@@ -59,7 +65,8 @@ async function getStripeConnectOAuthUrl(setSessionProp, mode = 'live') {
  * @desc Returns the api keys and the livemode for a Stripe Connect integration after validating the state.
  *
  * @param {string} encodedData - A string encoding the response from Stripe Connect
- * @param {(prop: string) => Promise<any>} getSessionProp - A function to retrieve data from the current session
+ * @param {(prop: string) => Promise<any>} getSessionProp - A function to retrieve data from the current session.
+ *   The state is only good for one key, so callers should remove it as they read it.
  *
  * @returns {Promise<{secret_key: string, public_key: string, livemode: boolean, display_name: string, account_id: string}>}
  */
@@ -68,8 +75,18 @@ async function getStripeConnectTokenData(encodedData, getSessionProp) {
 
   const state = await getSessionProp(STATE_PROP);
 
-  if (state !== data.s) {
+  // Both must be present: a session that never started a connection must not
+  // match a key without `s`.
+  if (typeof state !== 'string' || !state || state !== data.s) {
     throw new errors.NoPermissionError({ message: tpl(messages.incorrectState) });
+  }
+
+  const { mode, createdAt } = JSON.parse(Buffer.from(state, 'base64').toString());
+  if (!(Date.now() - createdAt < STATE_MAX_AGE_MS)) {
+    throw new errors.NoPermissionError({ message: tpl(messages.expiredState) });
+  }
+  if (data.l !== (mode === 'live')) {
+    throw new errors.NoPermissionError({ message: tpl(messages.incorrectMode) });
   }
 
   return {

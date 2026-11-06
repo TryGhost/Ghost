@@ -14,11 +14,16 @@ async function getStripeConnectData(frame) {
   );
 
   if (stripeConnectIntegrationToken && stripeConnectIntegrationToken.value) {
-    const getSessionProp = (prop) => frame.original.session[prop];
+    // The connection's state is good for one key: reading it removes it.
+    const takeSessionProp = (prop) => {
+      const value = frame.original.session[prop];
+      delete frame.original.session[prop];
+      return value;
+    };
 
     return await settingsBREADService.getStripeConnectData(
       stripeConnectIntegrationToken,
-      getSessionProp,
+      takeSessionProp,
       membersService.stripeConnect.getStripeConnectTokenData,
     );
   }
