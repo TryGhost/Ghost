@@ -5,22 +5,37 @@ import _ from 'lodash';
 import { z } from 'zod';
 import { formatIssues } from '../../../../core/shared/config/report';
 import { configSchema } from '../../../../core/shared/config/schema';
-import { sanitizeDatabaseProperties } from '../../../../core/shared/config/utils';
 import { createConfig, deepFreeze, validateConfig } from '../../../../core/shared/config/validated';
 import { configSources } from '../../../utils/config-sources';
 
 const sloppy = require('../../../utils/fixtures/sloppy-config-writer');
 
 const configDir = path.join(__dirname, '../../../../core/shared/config');
+const packageRoot = path.resolve(__dirname, '../../../../');
 
 function readJson(...parts: string[]): Record<string, unknown> {
   return JSON.parse(fs.readFileSync(path.join(configDir, ...parts), 'utf8'));
 }
 
-/** The schema describes `database` after the loader sanitises it. */
-function sanitizeDatabase(tree: Record<string, unknown>): Record<string, unknown> {
-  sanitizeDatabaseProperties(tree.database);
-  return tree;
+/**
+ * What the loader produced before the schema took over its transforms: driver
+ * names for `client`, only that driver's connection keys, absolute paths.
+ */
+function loaderOutput(tree: Record<string, unknown>): Record<string, unknown> {
+  const out = _.cloneDeep(tree) as Record<string, any>;
+  const aliases: Record<string, string> = { mysql: 'mysql2', sqlite3: 'better-sqlite3' };
+  out.database.client = aliases[out.database.client] ?? out.database.client;
+  out.database.connection =
+    out.database.client === 'mysql2'
+      ? _.omit(out.database.connection, 'filename')
+      : _.pick(out.database.connection, 'filename');
+  // restated rather than calling makePathsAbsolute, which the schema itself uses
+  out.paths = _.mapValues(out.paths, (value) =>
+    typeof value === 'string' && (/[/\\]/.test(value) || value === '.') && !path.isAbsolute(value)
+      ? path.normalize(path.join(packageRoot, value))
+      : value,
+  );
+  return out;
 }
 
 // the smallest tree the schema accepts; `paths` is covered now, so a literal
@@ -33,20 +48,18 @@ describe('Config Schema', function () {
     const overrides = readJson('overrides.json');
     const envFiles = fs.readdirSync(path.join(configDir, 'env')).filter((f) => f.endsWith('.json'));
 
-    // Anything this rejects or rewrites is config a running Ghost already has.
-    // Adding a key to the schema only ever adds validation, never transformation.
+    // Anything this rejects or rewrites differently is config a running Ghost
+    // already has. The schema's output must match what the loader used to produce.
     envFiles.forEach(function (file) {
-      it(`accepts env/${file} without changing it`, function () {
-        const merged = sanitizeDatabase(
-          _.merge({}, defaults, readJson('env', file), overrides, {
-            env: 'testing',
-          }),
-        );
+      it(`accepts env/${file} and matches the old loader's output`, function () {
+        const merged = _.merge({}, defaults, readJson('env', file), overrides, {
+          env: 'testing',
+        });
 
         const result = configSchema.safeParse(_.cloneDeep(merged));
 
         assert.ok(result.success, result.success ? '' : z.prettifyError(result.error));
-        assert.deepEqual(result.data, merged);
+        assert.deepEqual(result.data, loaderOutput(merged));
       });
     });
 
@@ -133,14 +146,39 @@ describe('Config Schema', function () {
       assert.ok(configSchema.safeParse(configSources()).success);
     });
 
-    // renamed by the loader, or unsupported
-    ['mysql', 'sqlite3', 'pg'].forEach(function (client) {
-      it(`rejects client ${client}, which never survives the loader`, function () {
-        const result = configSchema.safeParse(withDatabase({ ...mysql, client }));
+    it('normalises the client names config has always used', function () {
+      assert.equal(
+        configSchema.parse(withDatabase({ ...mysql, client: 'mysql' })).database.client,
+        'mysql2',
+      );
+      assert.equal(
+        configSchema.parse(withDatabase({ client: 'sqlite3', connection: { filename: '/a.db' } }))
+          .database.client,
+        'better-sqlite3',
+      );
+    });
 
-        assert.ok(!result.success);
-        assert.match(formatIssues(result.error.issues), /database:client:/);
-      });
+    it("drops the other client's connection keys", function () {
+      const parsed = configSchema.parse(
+        withDatabase({ ...mysql, connection: { ...mysql.connection, filename: '/a.db' } }),
+      );
+
+      assert.equal('filename' in parsed.database.connection, false);
+    });
+
+    it('drops mysql keys from a sqlite connection', function () {
+      const parsed = configSchema.parse(
+        withDatabase({ client: 'sqlite3', connection: { ...mysql.connection, filename: '/a.db' } }),
+      );
+
+      assert.deepEqual(parsed.database.connection, { filename: '/a.db' });
+    });
+
+    it('rejects an unsupported client', function () {
+      const result = configSchema.safeParse(withDatabase({ ...mysql, client: 'pg' }));
+
+      assert.ok(!result.success);
+      assert.match(formatIssues(result.error.issues), /database:client:/);
     });
 
     it('requires a connection, which knex-migrator and the drivers dereference', function () {
@@ -332,17 +370,70 @@ describe('Validated Config', function () {
       it(`warns instead of throwing in ${env}`, function () {
         const error = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-        const validated = validateConfig(configSources({ env, url: 'no-protocol' }));
+        const validated = validateConfig(configSources({ env, auth: { engine: 'nope' } }));
 
-        assert.equal(validated.url, 'no-protocol');
-        assert.match(error.mock.calls[0][0] as string, /not enforced/);
+        assert.equal(validated.auth.engine, 'nope');
+        assert.match(error.mock.calls[0][0] as string, /not enforced[^]*auth:engine: /);
       });
+    });
+
+    it('keeps one bad key from costing the rest of the tree its transforms', function () {
+      vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const validated = validateConfig(
+        configSources({
+          env: 'production',
+          auth: { engine: 'nope' },
+          database: { client: 'sqlite3', connection: { filename: '/a.db' } },
+        }),
+      );
+
+      assert.ok(path.isAbsolute(validated.paths.migrationPath));
+      assert.equal(validated.database.client, 'better-sqlite3');
+    });
+
+    it('throws for a fatal key in every environment', function () {
+      assert.throws(
+        () => validateConfig(configSources({ env: 'production', url: 'no-protocol' })),
+        /url: URL in config must be provided with protocol/,
+      );
+    });
+
+    it('throws for a fatal key even when GHOST_CONFIG_SCHEMA_STRICT is false', function () {
+      vi.stubEnv('GHOST_CONFIG_SCHEMA_STRICT', 'false');
+
+      assert.throws(
+        () => validateConfig(configSources({ env: 'development', url: 'no-protocol' })),
+        /url: URL in config must be provided with protocol/,
+      );
+    });
+
+    it('logs instead of throwing for a missing or null transformed section', function () {
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const validated = validateConfig(
+        configSources({
+          env: 'production',
+          paths: null,
+          database: { client: 'mysql', connection: null },
+        }),
+      );
+
+      assert.equal(validated.paths, null);
+      assert.equal(validated.database.connection, null);
+      assert.match(
+        error.mock.calls[0][0] as string,
+        /\n {2}paths: [^]*\n {2}database:connection: /,
+      );
     });
 
     it('is forced strict by GHOST_CONFIG_SCHEMA_STRICT', function () {
       vi.stubEnv('GHOST_CONFIG_SCHEMA_STRICT', 'true');
 
-      assert.throws(() => validateConfig(configSources({ env: 'staging', url: 'no-protocol' })));
+      assert.throws(
+        () => validateConfig(configSources({ env: 'staging', auth: { engine: 'nope' } })),
+        /Ghost config failed validation:\n {2}auth:engine: /,
+      );
     });
 
     it('is forced lenient by GHOST_CONFIG_SCHEMA_STRICT', function () {
@@ -350,8 +441,8 @@ describe('Validated Config', function () {
       vi.stubEnv('GHOST_CONFIG_SCHEMA_STRICT', 'false');
 
       assert.equal(
-        validateConfig(configSources({ env: 'development', url: 'no-protocol' })).url,
-        'no-protocol',
+        validateConfig(configSources({ env: 'development', auth: { engine: 'nope' } })).auth.engine,
+        'nope',
       );
     });
   });
@@ -367,7 +458,8 @@ describe('Validated Config', function () {
       assert.equal(config.get('url'), 'http://localhost:2368');
       assert.equal(config.get('paths:contentPath'), '/a');
       // a key the test did not pin still arrives, layered out of overrides.json
-      assert.equal(config.get('paths:migrationPath'), 'core/server/data/migrations');
+      assert.ok(config.get('paths:migrationPath').endsWith('core/server/data/migrations'));
+      assert.ok(path.isAbsolute(config.get('paths:migrationPath')));
     });
 
     it('makes every key read-only, not only the ones with a schema', function () {

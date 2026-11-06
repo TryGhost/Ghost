@@ -6,8 +6,8 @@ import { z } from 'zod';
  * Closed: its two readers - the explore ping and the public config endpoint -
  * read only the keys named here.
  *
- * @TODO: Ghost 7.0 - tighten both URLs to `z.url({ protocol: /^https?$/ })`,
- * still allowing `''`, which turns the ping off. Stricter than 6.x accepts.
+ * @TODO: Ghost 7.0 - tighten both URLs to `httpUrl()` from ./primitives, still
+ * allowing `''`, which turns the ping off. Stricter than 6.x accepts.
  */
 export const explore = z
   .object({
