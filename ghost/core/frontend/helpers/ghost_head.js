@@ -424,8 +424,6 @@ module.exports = async function ghost_head(options) {
           head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));
           head.push(writeMetaTag('referrer', 'same-origin', 'name'));
         } else {
-          // Lets Google Discover use a large image. It does not change indexing
-          // or ranking, and Google merges a duplicate tag from code injection.
           head.push(writeMetaTag('robots', 'max-image-preview:large', 'name'));
           head.push(writeMetaTag('referrer', referrerPolicy, 'name'));
         }
