@@ -1,4 +1,4 @@
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 

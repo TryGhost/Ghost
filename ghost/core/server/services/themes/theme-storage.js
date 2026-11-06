@@ -1,4 +1,5 @@
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
+const { createReadStream } = require('node:fs');
 const os = require('os');
 const path = require('path');
 const config = require('../../../shared/config');
@@ -45,7 +46,7 @@ class ThemeStorage extends LocalStorageBase {
       const zipPath = path.join(zipBasePath, zipName);
       let stream;
 
-      fs.ensureDir(zipBasePath)
+      fs.mkdir(zipBasePath, { recursive: true })
         .then(function () {
           return self.zipToFile(themeName, zipPath);
         })
@@ -59,14 +60,14 @@ class ThemeStorage extends LocalStorageBase {
             'Content-Length': result.size,
           });
 
-          stream = fs.createReadStream(zipPath);
+          stream = createReadStream(zipPath);
           stream.pipe(res);
         })
         .catch(function (err) {
           next(err);
         })
         .finally(function () {
-          return fs.remove(zipBasePath);
+          return fs.rm(zipBasePath, { recursive: true, force: true });
         });
     };
   }
@@ -81,7 +82,7 @@ class ThemeStorage extends LocalStorageBase {
     const src = path.join(this.getTargetDir(), srcName);
     const dest = path.join(this.getTargetDir(), destName);
 
-    return fs.move(src, dest);
+    return fs.rename(src, dest);
   }
 
   /**
@@ -91,7 +92,7 @@ class ThemeStorage extends LocalStorageBase {
    * @returns {Promise<void>}
    */
   delete(fileName) {
-    return fs.remove(path.join(this.getTargetDir(), fileName));
+    return fs.rm(path.join(this.getTargetDir(), fileName), { recursive: true, force: true });
   }
 }
 

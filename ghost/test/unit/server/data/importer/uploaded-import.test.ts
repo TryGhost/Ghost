@@ -4,7 +4,8 @@ import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { Readable } from 'node:stream';
 import { open } from 'node:fs/promises';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
+import fsSync from 'node:fs';
 import sinon from 'sinon';
 import { afterEach, beforeEach, describe, it } from 'vitest';
 import LocalStorageBase from '../../../../../core/server/adapters/storage/LocalStorageBase';
@@ -35,11 +36,11 @@ describe('Uploaded site imports', function () {
       storagePath: path.join(directory, 'assets'),
       staticFileURLPrefix: '/content/images',
     });
-    await fs.ensureDir(storage.storagePath);
+    await fs.mkdir(storage.storagePath, { recursive: true });
   });
   afterEach(async function () {
     sinon.restore();
-    await fs.remove(directory);
+    await fs.rm(directory, { recursive: true, force: true });
   });
   function subject() {
     const deps = {
@@ -77,7 +78,7 @@ describe('Uploaded site imports', function () {
   async function archive(entries: Record<string, string>, name = 'upload.zip') {
     const target = path.join(directory, name);
     const zip = new ZipArchive();
-    const written = pipeline(zip, fs.createWriteStream(target));
+    const written = pipeline(zip, fsSync.createWriteStream(target));
     for (const [entry, value] of Object.entries(entries)) {
       zip.append(value, { name: entry });
     }
@@ -97,7 +98,7 @@ describe('Uploaded site imports', function () {
     sinon.assert.notCalled(deps.jobsService.dispatch);
     sinon.assert.notCalled(deps.mailer.send);
     const extracted = await extract.firstCall.returnValue;
-    assert.equal(await fs.pathExists(extracted), false);
+    assert.equal(fsSync.existsSync(extracted), false);
   });
   for (const [name, entries, message] of [
     ['malformed JSON', { 'data.json': '{' }, 'JSON'],
@@ -117,7 +118,7 @@ describe('Uploaded site imports', function () {
           return true;
         },
       );
-      assert.equal(await fs.pathExists(await extract.firstCall.returnValue), false);
+      assert.equal(fsSync.existsSync(await extract.firstCall.returnValue), false);
       assert.deepEqual(await fs.readdir(storage.storagePath), []);
       sinon.assert.notCalled(deps.jobsService.dispatch);
       sinon.assert.notCalled(deps.mailer.send);
@@ -167,7 +168,7 @@ describe('Uploaded site imports', function () {
       importPersistUser: false,
     });
     assert.deepEqual(await fs.readdir(storage.storagePath), [job.uploadKey]);
-    await fs.remove(file.path);
+    await fs.rm(file.path, { recursive: true, force: true });
     const later = subject();
     const imported = sinon
       .stub(later.manager, 'doImport')
@@ -206,7 +207,7 @@ describe('Uploaded site imports', function () {
         await fs.readFile(path.join(storage.storagePath, job.uploadKey), 'utf8'),
         content,
       );
-      await fs.remove(source.path);
+      await fs.rm(source.path, { recursive: true, force: true });
       const later = subject();
       const imported = sinon.stub(later.manager, 'doImport').callsFake(async (data: unknown) => {
         assert.deepEqual(data, expected);
@@ -369,9 +370,9 @@ describe('Uploaded site imports', function () {
         });
       }
       if (stage === 'write') {
-        const write = fs.createWriteStream.bind(fs);
+        const write = fsSync.createWriteStream.bind(fsSync);
         sinon
-          .stub(fs, 'createWriteStream')
+          .stub(fsSync, 'createWriteStream')
           .callsFake(() => write(path.join(directory, 'absent', 'destination')));
       }
       if (stage === 'extraction') {
@@ -379,7 +380,9 @@ describe('Uploaded site imports', function () {
       }
       if (stage === 'parsing') {
         const corrupt = await archive({ 'data.json': '{' }, 'corrupt.zip');
-        await fs.copy(corrupt.path, path.join(storage.storagePath, job.uploadKey));
+        await fs.cp(corrupt.path, path.join(storage.storagePath, job.uploadKey), {
+          recursive: true,
+        });
       }
       if (stage === 'import') {
         sinon.stub(manager, 'doImport').rejects(failure);
@@ -392,7 +395,7 @@ describe('Uploaded site imports', function () {
       for (const call of [...local.getCalls(), ...extract.getCalls()]) {
         const owned = await Promise.resolve(call.returnValue).catch(() => undefined);
         if (owned) {
-          assert.equal(await fs.pathExists(owned), false);
+          assert.equal(fsSync.existsSync(owned), false);
         }
       }
     });
@@ -407,28 +410,29 @@ describe('Uploaded site imports', function () {
       const job = queuedJob(first);
       const extract = sinon.spy(manager, 'extractZip');
       const downloads = sinon.spy(fs, 'mkdtemp');
-      const remove = fs.remove.bind(fs);
+      const rm = fs.rm.bind(fs);
+      const remove = (target: string) => rm(target, { recursive: true, force: true });
       const failed: string[] = [];
       if (failedCleanup === 'stored') {
         sinon.stub(storage, 'delete').rejects(new Error('storage offline'));
       } else {
-        sinon.stub(fs, 'remove').callsFake(async (target: string) => {
+        sinon.stub(fs, 'rm').callsFake(async (target) => {
           if (target === (await extract.firstCall?.returnValue)) {
-            failed.push(target);
+            failed.push(String(target));
             throw new Error('busy directory');
           }
-          await remove(target);
+          await remove(String(target));
         });
       }
       assert.deepEqual(await manager.executeImport(job), {});
       sinon.assert.calledOnce(deps.mailer.send);
       sinon.assert.calledOnce(deps.logging.error);
       assert.equal(
-        await fs.pathExists(await (downloads.firstCall.returnValue as unknown as Promise<string>)),
+        fsSync.existsSync(await (downloads.firstCall.returnValue as unknown as Promise<string>)),
         false,
       );
       if (failedCleanup === 'stored') {
-        assert.equal(await fs.pathExists(await extract.firstCall.returnValue), false);
+        assert.equal(fsSync.existsSync(await extract.firstCall.returnValue), false);
       } else {
         assert.deepEqual(await fs.readdir(storage.storagePath), []);
       }
@@ -451,7 +455,7 @@ describe('Uploaded site imports', function () {
     sinon.assert.calledOnce(deps.mailer.send);
     assert.deepEqual(await fs.readdir(storage.storagePath), []);
     assert.equal(
-      await fs.pathExists(await (downloads.firstCall.returnValue as unknown as Promise<string>)),
+      fsSync.existsSync(await (downloads.firstCall.returnValue as unknown as Promise<string>)),
       false,
     );
   });
@@ -470,7 +474,7 @@ describe('Uploaded site imports', function () {
       }
       const file = { name: 'large.zip', path: path.join(directory, 'large.zip') };
       const zip = new ZipArchive();
-      const written = pipeline(zip, fs.createWriteStream(file.path));
+      const written = pipeline(zip, fsSync.createWriteStream(file.path));
       zip.append(json, { name: 'data.json' });
       zip.file(source, { name: 'content/media/large.mp4' });
       zip.append('', { name: 'content/media/empty.mp4' });
@@ -485,8 +489,8 @@ describe('Uploaded site imports', function () {
       assert.deepEqual(await fs.readdir(storage.storagePath), [job.uploadKey]);
       sinon.assert.calledOnce(save);
       sinon.assert.notCalled(raw);
-      await fs.remove(source);
-      await fs.remove(file.path);
+      await fs.rm(source, { recursive: true, force: true });
+      await fs.rm(file.path, { recursive: true, force: true });
       const later = subject();
       const imported = sinon.stub(later.manager, 'doImport').callsFake(async (data: any) => {
         const large = data.media.find((asset: any) => asset.name === 'large.mp4');

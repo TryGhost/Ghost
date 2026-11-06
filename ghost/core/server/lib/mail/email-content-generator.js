@@ -1,5 +1,5 @@
 const _ = require('lodash').runInContext();
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const path = require('path');
 
 _.templateSettings.interpolate = /{{([\s\S]+?)}}/g;

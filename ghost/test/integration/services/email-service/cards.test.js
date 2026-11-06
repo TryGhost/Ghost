@@ -5,12 +5,14 @@ const assert = require('node:assert/strict');
 const configUtils = require('../../../utils/config-utils');
 const { sendEmail, matchEmailSnapshot } = require('../../../utils/batch-email-utils');
 const cheerio = require('cheerio');
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const { DEFAULT_NODES } = require('@tryghost/kg-default-nodes');
 const ImageSize = require('../../../../core/server/lib/image/image-size');
 const { malformedCssCases } = require('../../../utils/fixtures/email-service/malformed-css');
 
-const goldenPost = fs.readJsonSync('./test/utils/fixtures/email-service/golden-post.json');
+const goldenPost = JSON.parse(
+  fs.readFileSync('./test/utils/fixtures/email-service/golden-post.json', 'utf8'),
+);
 
 // some nodes are not cards or will never be emailed so we exclude them from tests
 // that check if all default nodes are rendered or have associated renderers called

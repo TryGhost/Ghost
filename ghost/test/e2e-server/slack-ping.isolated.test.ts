@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import nock from 'nock';
@@ -276,7 +276,7 @@ taxonomies:
         await configUtils.restore();
       } finally {
         if (routesPath) {
-          await fs.remove(routesPath);
+          await fs.rm(routesPath, { recursive: true, force: true });
         }
       }
     }

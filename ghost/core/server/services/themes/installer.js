@@ -1,4 +1,4 @@
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const os = require('os');
 const path = require('path');
 const security = require('@tryghost/security');
@@ -41,7 +41,7 @@ const installFromGithub = async (ref) => {
   const downloadBase = path.join(os.tmpdir(), security.identifier.uid(10));
   const downloadPath = path.join(downloadBase, zipName);
 
-  await fs.ensureDir(downloadBase);
+  await fs.mkdir(downloadBase, { recursive: true });
 
   try {
     // download zip file
@@ -81,7 +81,7 @@ const installFromGithub = async (ref) => {
     throw e;
   } finally {
     // clean up tmp dir with downloaded file
-    fs.remove(downloadBase);
+    fs.rm(downloadBase, { recursive: true, force: true });
   }
 };
 

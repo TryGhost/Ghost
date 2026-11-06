@@ -6,7 +6,8 @@ import os from 'os';
 import http from 'http';
 import express from 'express';
 import sinon from 'sinon';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
+import { createWriteStream } from 'node:fs';
 import request from 'supertest';
 import LocalStorageBase from '../../../../../core/server/adapters/storage/LocalStorageBase';
 
@@ -165,8 +166,8 @@ describe('Local Storage Base', function () {
           'stored at root',
         );
       } finally {
-        await fs.remove(storagePath);
-        await fs.remove(sourcePath);
+        await fs.rm(storagePath, { recursive: true, force: true });
+        await fs.rm(sourcePath, { recursive: true, force: true });
       }
     });
 
@@ -304,7 +305,7 @@ describe('Local Storage Base streaming reads', function () {
     storage = new LocalStorageBase({ storagePath: path.join(root, 'objects') });
   });
   afterEach(async function () {
-    await fs.remove(root);
+    await fs.rm(root, { recursive: true, force: true });
   });
   for (const size of [0, 1024 * 1024 + 1]) {
     it(`streams ${size} bytes from a saved file without buffered reads`, async function () {
@@ -317,7 +318,7 @@ describe('Local Storage Base streaming reads', function () {
       const buffered = sinon.spy(storage, 'read');
       const stream = await storage.readStream({ path: key });
       const target = path.join(root, 'target');
-      await pipeline(stream, fs.createWriteStream(target));
+      await pipeline(stream, createWriteStream(target));
       assert.equal((await fs.stat(target)).size, size);
       assert.equal(
         createHash('sha256')
@@ -340,12 +341,13 @@ describe('Local Storage Base streaming reads', function () {
     });
   }
   it('closes the source when the destination fails', async function () {
-    await fs.outputFile(path.join(storage.storagePath, 'source'), 'data');
+    const outputPath = path.join(storage.storagePath, 'source');
+    await fs.mkdir(path.dirname(outputPath), { recursive: true });
+    await fs.writeFile(outputPath, 'data');
     const stream = await storage.readStream({ path: 'source' });
-    await assert.rejects(
-      pipeline(stream, fs.createWriteStream(path.join(root, 'absent', 'target'))),
-      { code: 'ENOENT' },
-    );
+    await assert.rejects(pipeline(stream, createWriteStream(path.join(root, 'absent', 'target'))), {
+      code: 'ENOENT',
+    });
     assert.equal(stream.destroyed, true);
   });
 });

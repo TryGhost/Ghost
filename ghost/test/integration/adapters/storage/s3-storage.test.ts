@@ -1,6 +1,7 @@
 import { describe, it, beforeAll, afterEach, afterAll } from 'vitest';
 import assert from 'node:assert/strict';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
+import { createWriteStream } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { pipeline } from 'node:stream/promises';
@@ -67,17 +68,14 @@ describe.skipIf(process.env.GHOST_TEST_S3_AVAILABLE !== '1')(
             await storage.save({ name: 'opaque', path: source }, storage.storagePath),
           );
           const destination = path.join(root, 'destination');
-          await pipeline(
-            await storage.readStream({ path: key }),
-            fs.createWriteStream(destination),
-          );
+          await pipeline(await storage.readStream({ path: key }), createWriteStream(destination));
           assert.deepEqual(await fs.readFile(destination), bytes);
           await assert.rejects(
             createStorage({ tenantPrefix: 'tenant-b' }).readStream({ path: key }),
             { errorType: 'NotFoundError' },
           );
         } finally {
-          await fs.remove(root);
+          await fs.rm(root, { recursive: true, force: true });
         }
       });
     }

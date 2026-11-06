@@ -1,6 +1,6 @@
 const debug = require('@tryghost/debug')('themes');
 const _ = require('lodash');
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const config = require('../../../shared/config');
 const labs = require('../../../shared/labs');
 const tpl = require('@tryghost/tpl');
@@ -139,7 +139,7 @@ const checkSafe = async function checkSafe(themeName, theme, isZip) {
   //       directory, this would allow keeping gscan to do just one thing - validate the theme, and
   //       file manipulations could be left to another module/library
   if (isZip) {
-    fs.remove(checkedTheme.path);
+    fs.rm(checkedTheme.path, { recursive: true, force: true });
   }
 
   throw getThemeValidationError('themeHasErrors', themeName, checkedTheme);

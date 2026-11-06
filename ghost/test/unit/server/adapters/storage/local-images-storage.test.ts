@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import errors from '@tryghost/errors';
 import sinon from 'sinon';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import moment from 'moment';
 import path from 'path';
 import type { StorageFile } from 'ghost-storage-base';
@@ -46,8 +46,8 @@ describe('Local Images Storage', function () {
   });
 
   beforeEach(function () {
-    fsMkdirsStub = sinon.stub(fs, 'mkdirs').resolves();
-    fsCopyStub = sinon.stub(fs, 'copy').resolves();
+    fsMkdirsStub = sinon.stub(fs, 'mkdir').resolves();
+    fsCopyStub = sinon.stub(fs, 'cp').resolves();
     fsStatStub = sinon.stub(fs, 'stat').rejects();
     sinon.stub(fs, 'unlink').resolves();
 

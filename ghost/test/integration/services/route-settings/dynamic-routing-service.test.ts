@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import crypto from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import sinon from 'sinon';
 import { afterEach, beforeEach, describe, it } from 'vitest';
 
@@ -59,7 +59,7 @@ describe('Integration: DynamicRoutingService over a real FileStore', function ()
 
   beforeEach(async function () {
     contentDir = path.join(os.tmpdir(), `route-settings-integration-${crypto.randomUUID()}`);
-    await fs.ensureDir(contentDir);
+    await fs.mkdir(contentDir, { recursive: true });
 
     service = new DynamicRoutingService();
     service.configure({
@@ -72,7 +72,7 @@ describe('Integration: DynamicRoutingService over a real FileStore', function ()
 
   afterEach(async function () {
     sinon.restore();
-    await fs.remove(contentDir);
+    await fs.rm(contentDir, { recursive: true, force: true });
   });
 
   const writeRoutes = (yaml: string) =>

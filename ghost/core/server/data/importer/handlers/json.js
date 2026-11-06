@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const fs = require('fs-extra');
+const fs = require('node:fs/promises');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('importer:handler:data');

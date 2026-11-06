@@ -1,7 +1,6 @@
 // # Local File Base Storage module
 // The (default) module for storing files using the local file system
-import fs from 'fs-extra';
-import { open } from 'node:fs/promises';
+import fs from 'node:fs/promises';
 import type { Readable } from 'node:stream';
 import os from 'os';
 import path from 'path';
@@ -162,10 +161,10 @@ class LocalStorageBase extends StorageBase {
       throw new errors.BadRequestError({ message: 'Cannot save to the given filename' });
     }
 
-    await fs.mkdirs(targetDir);
+    await fs.mkdir(targetDir, { recursive: true });
 
     try {
-      await fs.copy(file.path, targetFilename);
+      await fs.cp(file.path, targetFilename, { recursive: true });
     } catch (err) {
       if ((err as NodeJS.ErrnoException).code === 'ENAMETOOLONG') {
         throw new errors.BadRequestError({ err: errify(err) });
@@ -199,7 +198,7 @@ class LocalStorageBase extends StorageBase {
     const storagePath = path.join(this.storagePath, this._normalizeStorageRelativePath(targetPath));
     const targetDir = path.dirname(storagePath);
 
-    await fs.mkdirs(targetDir);
+    await fs.mkdir(targetDir, { recursive: true });
     await fs.writeFile(storagePath, buffer);
 
     // For local file system storage can use relative path so add a slash
@@ -321,13 +320,13 @@ class LocalStorageBase extends StorageBase {
 
   async delete(fileName: string, targetDir?: string): Promise<void> {
     const filePath = this._resolveAndValidateStoragePath(targetDir, fileName);
-    return await fs.remove(filePath);
+    return await fs.rm(filePath, { recursive: true, force: true });
   }
 
   async readStream(options: Partial<ReadOptions> = {}): Promise<Readable> {
     const normalizedPath = this._normalizeStorageRelativePath(options.path);
     try {
-      const file = await open(path.join(this.storagePath, normalizedPath), 'r');
+      const file = await fs.open(path.join(this.storagePath, normalizedPath), 'r');
       return file.createReadStream();
     } catch (error) {
       throw this.readError(error, options.path);

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import os from 'node:os';
-import fs from 'fs-extra';
+import fs from 'node:fs';
 import type LocalStorageBaseClass from '../../../../../core/server/adapters/storage/LocalStorageBase';
 import type adapterManagerInstance from '../../../../../core/server/services/adapter-manager';
 

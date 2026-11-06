@@ -1,7 +1,6 @@
 const { agentProvider, fixtureManager, matchers } = require('../../utils/e2e-framework');
 const FormData = require('form-data');
 const p = require('path');
-const fsExtra = require('fs-extra');
 const { promises: fs } = require('fs');
 const assert = require('node:assert/strict');
 const { Blob } = require('node:buffer');
@@ -527,7 +526,7 @@ describe('Images API', function () {
 
   it('Does not try to delete non-existing file upon invalid request', async function () {
     sinon.stub(logging, 'error');
-    const unlinkStub = sinon.stub(fsExtra, 'unlink');
+    const unlinkStub = sinon.stub(fs, 'unlink');
 
     await agent
       .post('/images/upload/')

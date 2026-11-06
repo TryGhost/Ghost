@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const { assertExists } = require('../../../utils/assertions');
 const path = require('path');
 const os = require('os');
-const fs = require('fs-extra');
+const fs = require('node:fs');
 const crypto = require('crypto');
 const supertest = require('supertest');
 const sinon = require('sinon');
@@ -86,8 +86,8 @@ describe('DB API', function () {
         const jsonResponse = res.body;
         assertExists(jsonResponse.db);
 
-        fs.ensureDirSync(exportFolder);
-        fs.writeJSONSync(exportPath, jsonResponse);
+        fs.mkdirSync(exportFolder, { recursive: true });
+        fs.writeFileSync(exportPath, JSON.stringify(jsonResponse));
 
         return request
           .post(localUtils.API.getApiQuery('db/'))
@@ -99,7 +99,7 @@ describe('DB API', function () {
       })
       .then((res) => {
         assert.equal(res.body.problems.length, 6);
-        fs.removeSync(exportFolder);
+        fs.rmSync(exportFolder, { recursive: true, force: true });
       });
   });
 
