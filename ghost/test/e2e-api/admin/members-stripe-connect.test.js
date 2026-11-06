@@ -30,4 +30,12 @@ describe('Members Stripe Connect API', function () {
       .header('Sec-Fetch-Site', 'cross-site')
       .expectStatus(403);
   });
+
+  it('refuses a start that says neither where it came from nor that it is same-origin', async function () {
+    await agent
+      .get(`members/stripe_connect`)
+      .header('Origin', '')
+      .header('Referer', '')
+      .expectStatus(403);
+  });
 });

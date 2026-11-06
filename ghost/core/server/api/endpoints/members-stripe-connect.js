@@ -1,5 +1,23 @@
 const errors = require('@tryghost/errors');
 const membersService = require('../../services/members');
+const urlUtils = require('../../../shared/url-utils').default;
+
+/** Whether a request came from Ghost Admin's own pages. */
+function isFromAdmin(req) {
+  const fetchSite = req.get('sec-fetch-site');
+  if (fetchSite) {
+    return fetchSite === 'same-origin' || fetchSite === 'none';
+  }
+  // Browsers without Fetch Metadata still say where a link was clicked.
+  const adminOrigin = new URL(urlUtils.getAdminUrl() || urlUtils.getSiteUrl()).origin;
+  return [req.get('origin'), req.get('referer')].some((value) => {
+    try {
+      return new URL(value).origin === adminOrigin;
+    } catch {
+      return false;
+    }
+  });
+}
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -22,8 +40,7 @@ const controller = {
       frame.response = async function (req, res, next) {
         // Only Ghost Admin's own link may start a connection: another site
         // could otherwise reset the admin's connection in progress.
-        const fetchSite = req.get('sec-fetch-site');
-        if (fetchSite && fetchSite !== 'same-origin' && fetchSite !== 'none') {
+        if (!isFromAdmin(req)) {
           return next(
             new errors.NoPermissionError({ message: 'Start connecting Stripe from Ghost Admin.' }),
           );
