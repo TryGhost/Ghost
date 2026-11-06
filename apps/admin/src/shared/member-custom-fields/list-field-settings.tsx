@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ListOptionsEditor from '@/shared/member-custom-fields/list-options-editor';
+import { type OptionRow, optionRow } from '@/shared/member-custom-fields/list-option-row';
 import {
   Field,
   FieldContent,
@@ -12,7 +13,7 @@ import { SHAPE_SETTINGS } from '@tryghost/metafield-types';
 import { optionText, type SetSettings } from '@tryghost/metafield-types/structure';
 
 interface ListInputs {
-  options: string[];
+  options: OptionRow[];
   /** What is typed into the new option input but not yet added. */
   newOption: string;
   multiple: boolean;
@@ -20,9 +21,10 @@ interface ListInputs {
 
 /** The settings the inputs ask for, with text typed but not yet added saved as an option too. */
 const settingsOf = ({ options, newOption, multiple }: ListInputs): SetSettings => {
+  const texts = options.map((row) => optionText(row.text));
   const typed = optionText(newOption);
   return {
-    options: typed === '' || options.includes(typed) ? options : [...options, typed],
+    options: typed === '' || texts.includes(typed) ? texts : [...texts, typed],
     multiple,
   };
 };
@@ -52,11 +54,12 @@ const ListFieldSettings: React.FC<{
   onChange: (settings: SetSettings) => void;
 }> = ({ saved, initial, errors = {}, disabled, idPrefix, onChange }) => {
   const start = initial ?? saved ?? SHAPE_SETTINGS.set.defaults;
-  const [inputs, setInputs] = useState<ListInputs>({
-    options: start.options,
+  const [inputs, setInputs] = useState<ListInputs>(() => ({
+    // An option the field is saved with keeps its text, as the field keeps its type.
+    options: start.options.map((text) => optionRow(text, saved?.options.includes(text))),
     newOption: '',
     multiple: start.multiple,
-  });
+  }));
 
   const update = (changes: Partial<ListInputs>) => {
     const next = { ...inputs, ...changes };
@@ -76,6 +79,7 @@ const ListFieldSettings: React.FC<{
         newOptionError={errors[`options.${inputs.options.length}`]}
         optionErrors={inputs.options.map((_, index) => errors[`options.${index}`])}
         options={inputs.options}
+        savedOptions={saved?.options}
         onChange={({ options, newOption }) => update({ options, newOption })}
       />
       <Field data-disabled={disabled || undefined} orientation="horizontal">
