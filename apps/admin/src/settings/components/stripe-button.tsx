@@ -44,7 +44,13 @@ const StripeButton: React.FC<StripeButtonProps> = ({
   if (href) {
     return (
       <Button className={classNames} variant={variant ?? null} asChild {...props}>
-        <a href={href} rel="noopener noreferrer" target={target}>
+        <a
+          href={href}
+          // A same-tab link (Connect with Stripe) keeps its Referer: Ghost
+          // checks it where browsers don't say a request is same-origin.
+          rel={target === '_blank' ? 'noopener noreferrer' : undefined}
+          target={target}
+        >
           {label}
         </a>
       </Button>
