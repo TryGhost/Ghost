@@ -36,7 +36,13 @@ import { useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 import { navigateTo } from '@/utils/navigation';
-import { deliveredSecureKey, forgetDeliveredSecureKey } from './delivered-secure-key';
+import {
+  connectionStartedHere,
+  deliveredSecureKey,
+  describeSecureKey,
+  forgetDeliveredSecureKey,
+  markConnectionStarted,
+} from './delivered-secure-key';
 
 const RETRY_PRODUCT_SAVE_POLL_LENGTH = 1000;
 const RETRY_PRODUCT_SAVE_MAX_POLL = 15 * RETRY_PRODUCT_SAVE_POLL_LENGTH;
@@ -167,10 +173,41 @@ const Connect: React.FC<{ error?: string }> = ({ error }) => {
         Click on the <strong>“Connect with Stripe”</strong> button to connect your Ghost site with
         Stripe. You’ll come back here once Stripe is connected.
       </div>
-      <StripeButton href={stripeConnectUrl} />
+      <StripeButton href={stripeConnectUrl} onClick={markConnectionStarted} />
     </div>
   );
 };
+
+/**
+ * A delivered key that this tab didn't ask for: it came in a link, so the
+ * admin checks which account it connects before it's saved.
+ */
+const ConfirmAccount: React.FC<{
+  account: { name: string; id: string; livemode: boolean };
+  onConfirm: () => void;
+  onCancel: () => void;
+}> = ({ account, onConfirm, onCancel }) => (
+  <div>
+    <Text as="h3" className="md:text-2xl" leading="heading" size="xl" weight="bold">
+      Connect this Stripe account?
+    </Text>
+    <div className="mt-6 mb-2 text-lg font-semibold">
+      {account.name || 'Unnamed account'}
+      {!account.livemode && <span className="ml-2 text-orange">Test mode</span>}
+    </div>
+    <div className="mb-6 text-muted-foreground">{account.id}</div>
+    <div className="mb-7 text-pretty">
+      This link didn’t come from a connection started in this browser tab. Only connect the account
+      if you just connected it in Stripe yourself.
+    </div>
+    <div className="flex items-center gap-3">
+      <StripeButton label="Connect this account" onClick={onConfirm} />
+      <Button variant="outline" onClick={onCancel}>
+        Cancel
+      </Button>
+    </div>
+  </div>
+);
 
 /** Saves a key account.ghost.org delivered, without a click. */
 const Connecting: React.FC<{ secureKey: string; onFailed: (error: string) => void }> = ({
@@ -186,7 +223,6 @@ const Connecting: React.FC<{ secureKey: string; onFailed: (error: string) => voi
       return;
     }
     started.current = true;
-    forgetDeliveredSecureKey();
     void save(secureKey).then((error) => {
       if (error) {
         onFailed(error);
@@ -377,11 +413,28 @@ const StripeConnectModal: React.FC = () => {
   const stripeConnectAccountId = getSettingValue(settings, 'stripe_connect_account_id');
   const { updateRoute } = useSettingsNavigation();
   const upgradeRoute = useUpgradeRoute();
-  // A key account.ghost.org delivered (see delivered-secure-key.ts) is saved
-  // straight away; if that fails, the user connects again from here.
-  const [secureKey] = useState(deliveredSecureKey);
-  const [connectError, setConnectError] = useState('');
+  // A key account.ghost.org delivered (see delivered-secure-key.ts) counts
+  // only if this modal can connect it now, and only for this modal: it's
+  // forgotten as the modal opens, whichever screen it shows. It's saved
+  // straight away when this tab started the connection, and confirmed first
+  // otherwise. If saving fails, the user connects again from here.
+  const canConnect =
+    !config?.stripeDirect &&
+    !checkStripeEnabled(settings || [], config || {}) &&
+    !stripeConnectAccountId;
+  const [secureKey, setSecureKey] = useState(() => (canConnect ? deliveredSecureKey() : ''));
+  const [startedHere] = useState(connectionStartedHere);
+  const [account] = useState(() => (secureKey ? describeSecureKey(secureKey) : null));
+  const [confirmed, setConfirmed] = useState(false);
+  const [connectError, setConnectError] = useState(() =>
+    secureKey && !startedHere && !account
+      ? 'This link isn’t a Stripe connection. Connect with Stripe to try again.'
+      : '',
+  );
   const [step, setStep] = useState<'start' | 'connect'>(secureKey ? 'connect' : 'start');
+  useEffect(() => {
+    forgetDeliveredSecureKey();
+  }, []);
   const limiter = useLimiter();
   const { showLimit } = useConfirmation();
 
@@ -434,8 +487,16 @@ const StripeConnectModal: React.FC = () => {
     contents = <Connected onClose={close} />;
   } else if (step === 'start') {
     contents = <Start onNext={startFlow} />;
-  } else if (secureKey && !connectError) {
+  } else if (secureKey && !connectError && (startedHere || confirmed)) {
     contents = <Connecting secureKey={secureKey} onFailed={setConnectError} />;
+  } else if (secureKey && !connectError && account) {
+    contents = (
+      <ConfirmAccount
+        account={account}
+        onCancel={() => setSecureKey('')}
+        onConfirm={() => setConfirmed(true)}
+      />
+    );
   } else {
     contents = <Connect error={connectError} />;
   }
