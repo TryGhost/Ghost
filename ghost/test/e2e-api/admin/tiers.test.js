@@ -5,6 +5,7 @@ const {
   mockManager,
   matchers,
 } = require('../../utils/e2e-framework');
+const db = require('../../../core/server/data/db');
 const models = require('../../../core/server/models/index');
 const { anyContentVersion, anyEtag } = matchers;
 
@@ -291,5 +292,39 @@ describe('Tiers API', function () {
     assert(benefit.attributes.name === 'Test benefit', 'The benefit should have been updated.');
     const previousBenefit = await models.Benefit.findOne({ slug: 'test-benefit-2' });
     assert(!previousBenefit, 'The previous benefit should have been overwritten');
+  });
+
+  it('Can save tiers that share benefits concurrently', async function () {
+    const benefits = Array.from({ length: 10 }, (_, i) => `Shared benefit ${i}`);
+
+    const tierIds = [];
+    for (const name of ['shared a', 'shared b', 'shared c', 'shared d']) {
+      const { body } = await agent
+        .post('/tiers/')
+        .body({ tiers: [{ name, monthly_price: 100, currency: 'usd', benefits }] })
+        .expectStatus(201);
+      tierIds.push(body.tiers[0].id);
+    }
+
+    // A freshly created test database has no index statistics, so MySQL
+    // wouldn't plan the queries the way it does on a real site
+    await db.knex.raw('ANALYZE TABLE products_benefits');
+
+    const statuses = [];
+    for (let round = 0; round < 10; round++) {
+      statuses.push(
+        ...(await Promise.all(
+          tierIds.map(async (id) => {
+            const res = await agent.put(`/tiers/${id}/`).body({ tiers: [{ benefits }] });
+            return res.statusCode;
+          }),
+        )),
+      );
+    }
+
+    assert.deepEqual(
+      statuses.filter((status) => status !== 200),
+      [],
+    );
   });
 });
