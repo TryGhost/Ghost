@@ -151,6 +151,7 @@ catalog:
   chrono-node: 2.10.3
   cli-progress: 3.12.0
   clsx: 2.1.1
+  commander: 15.0.0
   concurrently: 10.0.6
   country-flag-icons: 1.6.20
   dependency-cruiser: ^18.1.1

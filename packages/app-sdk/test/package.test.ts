@@ -204,6 +204,12 @@ describe('the packed package', () => {
     );
   });
 
+  it('runs the ghost-app CLI from its bin', { timeout: 60_000 }, async () => {
+    expect(await run(join(app, 'node_modules/.bin/ghost-app'), ['--help'], app)).toContain(
+      'Usage: ghost-app',
+    );
+  });
+
   // Each starts Node, which can be slow on a CPU-constrained CI runner.
   it.each(entryPoints)('loads %s', { timeout: 60_000 }, async (specifier) => {
     expect((await loadedExports(app, specifier)).length).toBeGreaterThan(0);

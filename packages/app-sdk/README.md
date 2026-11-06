@@ -11,7 +11,8 @@ its route in sync with Admin's URL, and send the publisher elsewhere in Admin.
 | --------------------------- | -------------------------- | ----------------------------------------------------------------------------- |
 | `@tryghost/app-sdk`         | The app's page             | Talking to Admin (below)                                                      |
 | `@tryghost/app-sdk/backend` | Any platform with web APIs | [Answering Ghost's challenge, serving the manifest and framing](#the-backend) |
-| `@tryghost/app-sdk/tooling` | Node 22.1 or later         | [Creating keys, and signing and checking the manifest](#signing-the-manifest) |
+| `@tryghost/app-sdk/tooling` | Node 22.12 or later        | [Creating keys, and signing and checking the manifest](#signing-the-manifest) |
+| `ghost-app`                 | Node 22.12 or later        | [The same tooling on the command line](#the-ghost-app-cli)                    |
 
 The page's entry point loads none of the others' code.
 
@@ -297,10 +298,9 @@ Each mode has its own identity key and backend key, as two pairs of private
 Ed25519 JWKs, in files only their owner can read:
 
 - `.ghost-app/development/identity.json` and `backend.json`, for apps on this
-  machine, such as on `my-app.localhost`;
-- `.ghost-app/production/identity.json` and `backend.json`.
-
-`createKeys({ root, mode })` creates them.
+  machine, such as on `my-app.localhost`, which `ghost-app keys` creates;
+- `.ghost-app/production/identity.json` and `backend.json`, which only
+  `ghost-app keys --production` creates.
 
 Only the owner can read a key on macOS and Linux. On Windows, a key gets the
 permissions of the folder it's in, so keep the project in a folder only you can
@@ -320,13 +320,38 @@ development identity key must share its backend key too: a new backend key
 retires the old one on every site that reads the new manifest.
 
 In CI, set `GHOST_APP_IDENTITY_KEY` to the production identity key and
-`GHOST_APP_BACKEND_KEY` to the backend key's public half, `publicKeyOf` of the
-production backend key, in place of the files. CI only signs, so it never needs
-the backend's private key.
+`GHOST_APP_BACKEND_KEY` to the backend key's public half, which
+`ghost-app backend-key --production --public` prints, in place of the files. CI
+only signs, so it never needs the backend's private key.
+
+### The ghost-app CLI
+
+```sh
+ghost-app keys [--production]
+ghost-app sign --url <manifest URL> [--production] [--out <file>] [--manifest <file>]
+ghost-app check <manifest URL>
+ghost-app backend-key [--production] [--public | --check]
+```
+
+- `keys` creates the mode's keys, keeping any that exist.
+- `sign` prints the signed manifest, or writes it to `--out`.
+- `check` checks an app as Ghost does before installing it, with `checkApp`
+  (below), and prints Ghost's own code and what exactly was wrong.
+- `backend-key` prints the mode's private backend key, for a host's secret
+  store. It's the only command that prints a private key. `--public` prints
+  only its public half, for CI. `--check` prints nothing, and exits with 0
+  only if the key is there and usable, with the reason on stderr otherwise,
+  so a script can stop before piping nothing into a secret store, in any shell:
+
+  ```sh
+  ghost-app backend-key --production --check && ghost-app backend-key --production | wrangler secret put GHOST_APP_BACKEND_KEY
+  ```
+
+`--dir` points any of them at another project directory.
 
 ### From code
 
-`@tryghost/app-sdk/tooling` signs and checks from code:
+`@tryghost/app-sdk/tooling` is what the CLI is built on, to sign and check from code:
 
 | Export                                                                           | What it does                                                                                                         |
 | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
@@ -437,7 +462,7 @@ This is a workspace package in the Ghost monorepo. From the package directory:
 ```bash
 pnpm build   # the package to build/ and the browser bundle to dist/, with Vite
 pnpm test    # type-check + unit tests (jsdom for the page, with a fake Admin on a real
-             # MessageChannel; Node for the backend and tooling), which build both
+             # MessageChannel; Node for the backend, tooling and CLI), which build both
              # afresh to check what they import, and pack build/ and dist/ to use them from an
              # app outside the workspace (after pnpm build; Nx runs it)
 pnpm lint    # lint source and tests
@@ -457,7 +482,8 @@ per entry point, which share chunks:
 - `index.js` loads only `@quilted/threads`, never `jose`, `zod` or a Node
   builtin;
 - `backend.js` loads only `jose` and `zod`, and no Node builtin;
-- `tooling.js` loads Node builtins, `jose` and `zod`;
+- `tooling.js` loads Node builtins, `jose` and `zod`, and `bin.js` those and
+  `commander`;
 - each entry point's declarations, emitted by TypeScript 7 and bundled by
   `rolldown-plugin-dts`, import nothing;
 - `dist/` imports nothing at all.
