@@ -121,7 +121,7 @@ export function createAuth(deps: CreateAuthDeps) {
         verify: ({ hash, password }) => deps.password.compare(password, hash),
       },
     },
-    // express-brute wraps the native routes when they are mounted
+    // Ghost's spam-prevention limiters wrap the native routes when they are mounted
     rateLimit: { enabled: false },
     disabledPaths: [
       '/sign-up/email',
