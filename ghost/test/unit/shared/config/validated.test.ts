@@ -160,6 +160,13 @@ describe('Validated Config', function () {
       );
     });
 
+    it('names each invalid key by its nconf key path', function () {
+      const without = configSources();
+      delete (without.paths as Record<string, unknown>).migrationPath;
+
+      assert.throws(() => validateConfig(without), /\n {2}paths:migrationPath: /);
+    });
+
     it('throws for testing-mysql too, matching isTestEnv()', function () {
       assert.throws(() => validateConfig(configSources({ env: 'testing-mysql', url: 'nope' })));
     });

@@ -1,9 +1,9 @@
 import type { ReadonlyDeep } from 'type-fest';
 import _ from 'lodash';
-import { z } from 'zod';
 import { bindAll as bindUrlHelpers, type BoundHelpers } from '@tryghost/config-url-helpers';
 import { bindAll as bindHelpers, type ConfigHelpers } from './helpers';
 import { guardReadOnly, shouldGuard } from './guard';
+import { reportInvalid } from './report';
 import { configSchema, type ConfigAt, type ConfigPath, type ValidatedConfig } from './schema';
 
 /**
@@ -80,18 +80,9 @@ export function validateConfig(tree: Record<string, unknown>): ValidatedConfig {
     return readOnly(result.data as Record<string, unknown>);
   }
 
-  const report = z.prettifyError(result.error);
+  const env = String(tree.env);
 
-  if (isStrict(String(tree.env))) {
-    // new Error is allowed here, as we do not want config to depend on @tryghost/error
-    // oxlint-disable-next-line ghost/ghost-custom/no-native-error
-    throw new Error(`Ghost config failed validation:\n${report}`);
-  }
-
-  // eslint-disable-next-line no-console
-  console.error(
-    `Ghost config failed validation (not enforced in the ${tree.env} environment):\n${report}`,
-  );
+  reportInvalid(result.error.issues, { strict: isStrict(env), env });
 
   return readOnly(tree);
 }

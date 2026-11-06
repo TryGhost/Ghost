@@ -19,56 +19,46 @@ nconf's own reset-then-reapply rebuild was not.
 
 ## Where a schema belongs
 
-Not every key belongs in [`schema.ts`](schema.ts). This file is the bottom of the
-dependency graph, and it knows nothing about any feature. A schema covering every
-key would give it inbound knowledge of `bulkEmail`, `tinybird`, `machinePayments`
-and the rest — the lowest-level module in the tree describing the highest-level
-features. Keep it small on purpose.
+Every key belongs in the central schema, the same way every table belongs in
+`schema.js` however many models read it. Config is grouped by who sets it —
+Ghost(Pro), a self-hoster, a feature's deployment knobs — not by which code
+reads it, and most keys have readers in more than one place: `hostSettings`,
+`tinybird:stats`, `apps` and `explore` all do. A schema owned by one of those
+readers would be describing config the others read too.
 
-Split by who needs the guarantee:
+One schema also means one place a key is described, a type at every existing
+`config.get()` call site rather than only the code that opted in, and a
+reference for self-hosters generated from `configSchema` alone.
 
-- **Boot cannot start without it** — `url`, `env`, `paths`, `database`. Central,
-  so it fails at load. Small and stable, and genuinely config's own business.
-- **Everything else** — the feature's concern, validated by the feature when it
-  initialises.
+The schema knows feature names, but not feature code: the files hold shapes and
+import only `zod`. That is the same trade `schema.js` makes.
 
-The second needs nothing from this directory. The tree is loose and frozen, so a
-feature can parse its own slice today, next to the code that reads it:
+Organise it by area:
 
-```ts
-// in the feature, not here
-const schema = z.object({tag: z.string().default('bulk-email')});
+- **Keys boot cannot start without** — `url`, `env`, `paths`, `database` — live
+  in [`schema.ts`](schema.ts) itself.
+- **Every other area** gets its own file in [`schema/`](schema/), named after the
+  top-level key it describes and composed into `configSchema` in `schema.ts`.
+  [`schema/auth.ts`](schema/auth.ts) and [`schema/explore.ts`](schema/explore.ts)
+  are the first. An area file may export named types for its values, such as
+  `AuthEngine`, so code that passes a value around imports it rather than
+  restating it.
 
-export function mailgunOptions() {
-  return schema.parse(config.get('bulkEmail:mailgun') ?? {});
-}
-```
+An area file is reviewed by the people who own the code that reads it, in the
+same change as that code.
 
-Parsing a frozen subtree returns a fresh, unfrozen object, so that works as
-written. It is also the better place for it:
-
-- **It can use the things the central schema forbids.** `z.object()` to reject
-  unknown keys, defaults, coercion — all fine when the blast radius is one
-  feature rather than every running site.
-- **It fails the feature, not the site.** A broken Mailgun config should not stop
-  Ghost serving pages.
-- **The people who own the code own the schema**, and review it in the same
-  change as the code that reads it.
-
-Read central keys through `config.get('url')`. Read a feature's keys through one
-accessor the feature owns, rather than `config.get` scattered across it.
-
-Two approaches were considered and rejected for the long tail. Self-registration
+Two alternatives were tried and rejected. Self-registration
 (`registerConfigSection()` at import time) cannot work: config is the first thing
 loaded — `loggingrc.js` and `MigratorConfig.js` require it before any feature
-module exists — so which sections got validated would depend on import order.
-Generating this file from per-feature schemas does work, but it buys load-time
-failure for feature config, which is the wrong behaviour for most of it.
+module exists — so which keys got validated would depend on import order. A
+schema per feature, parsed by the feature at init, was built and dropped: no
+migrated service turned out to own a top-level key outright, and a feature
+schema cannot say who owns a shared one.
 
-## Adding a key to the central schema
+## Adding a key
 
-1. Check it belongs here at all — see above. Then add it to `configSchema` in
-   [`schema.ts`](schema.ts) with a schema that is
+1. Add it to its area's file in [`schema/`](schema/) — or a new file there,
+   composed into `configSchema` in [`schema.ts`](schema.ts) — with a schema that is
    **no stricter than what Ghost already accepts**. Look at `defaults.json`,
    `overrides.json`, `env/*.json`, and how the key is actually read first.
 2. Describe it with `.meta({description})`, and `examples` where the shape is not

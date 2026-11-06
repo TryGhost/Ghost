@@ -1,5 +1,7 @@
 import type { OmitIndexSignature } from 'type-fest';
 import { z } from 'zod';
+import { auth } from './schema/auth';
+import { explore } from './schema/explore';
 
 /**
  * The validated shape of Ghost's config.
@@ -106,18 +108,9 @@ export const configSchema = z.looseObject({
       .meta({ description: 'Default settings loaded on a fresh install.' }),
   }),
 
-  /**
-   * Central because the engine decides what boot builds and how Express is
-   * wired. defaults.json supplies `engine`, so it is always present. Closed:
-   * `engine` is the only `auth:` key and nothing reads another.
-   */
-  auth: z.object({
-    engine: z.enum(['legacy', 'better-auth']).meta({
-      description:
-        'Staff authentication engine. `better-auth` is in development and needs MySQL and the in-development auth tables.',
-      examples: ['legacy', 'better-auth'],
-    }),
-  }),
+  // Feature config, one file per area in ./schema. See SCHEMA.md.
+  auth,
+  explore,
 });
 
 export type ValidatedConfig = z.infer<typeof configSchema>;
@@ -144,13 +137,16 @@ export type ConfigPath<T = ValidatedConfig> = T extends object
       }[keyof Known<T> & string]
   : never;
 
+/** `undefined` when a section on the path may be absent, so its children may be too. */
+type Absent<T> = undefined extends T ? undefined : never;
+
 /** The value a key path resolves to, or `unknown` if the schema misses it. */
 export type ConfigAt<
   P extends string,
   T = ValidatedConfig,
 > = P extends `${infer Head}:${infer Rest}`
   ? Head extends keyof Known<T>
-    ? ConfigAt<Rest, Known<T>[Head]>
+    ? ConfigAt<Rest, NonNullable<Known<T>[Head]>> | Absent<Known<T>[Head]>
     : unknown
   : P extends keyof Known<T>
     ? Known<T>[P]
