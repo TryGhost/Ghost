@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import createKnex, { type Knex } from 'knex';
-import { ActionLog } from '../../../../../core/server/lib/action-log/action-log';
+import {
+  ActionLog,
+  type ResourceActionLog,
+} from '../../../../../core/server/lib/action-log/action-log';
+import { appInstallationActions } from '../../../../../core/server/services/app-installations/actions';
+import { giftLinkActions } from '../../../../../core/server/services/gift-links/actions';
+import { customFieldActions } from '../../../../../core/server/services/members-metafields/actions';
+import { stripeCheckoutConfigActions } from '../../../../../core/server/services/stripe-checkout-config/actions';
 import type { RequestContext } from '../../../../../core/server/lib/actor';
 import { createLoggingFake } from '../../../../utils/logging-utils';
 
@@ -36,12 +43,19 @@ async function createDatabase({ withActions = true } = {}): Promise<Knex> {
 describe('Unit: lib/action-log/action-log', function () {
   let knex: Knex;
   let logging: ReturnType<typeof createLoggingFake>;
-  let actionLog: ActionLog;
+  let giftLinks: ResourceActionLog<typeof giftLinkActions>;
+  let customFields: ResourceActionLog<typeof customFieldActions>;
+  let appInstallations: ResourceActionLog<typeof appInstallationActions>;
+  let stripeCheckoutConfig: ResourceActionLog<typeof stripeCheckoutConfigActions>;
 
   beforeEach(async function () {
     knex = await createDatabase();
     logging = createLoggingFake();
-    actionLog = new ActionLog({ logging });
+    const actionLog = new ActionLog({ logging });
+    giftLinks = actionLog.for(giftLinkActions);
+    customFields = actionLog.for(customFieldActions);
+    appInstallations = actionLog.for(appInstallationActions);
+    stripeCheckoutConfig = actionLog.for(stripeCheckoutConfigActions);
   });
 
   afterEach(async function () {
@@ -49,12 +63,10 @@ describe('Unit: lib/action-log/action-log', function () {
   });
 
   it('stores a change to one resource with its name', async function () {
-    await actionLog.record(knex, ACTING, {
-      resourceType: 'gift_link',
-      event: 'edited',
+    await giftLinks.record(knex, ACTING, {
+      actionName: 'reset',
       resourceId: POST_ID,
       primaryName: 'A post',
-      actionName: 'reset',
     });
 
     const [row] = await knex('actions').select();
@@ -76,8 +88,7 @@ describe('Unit: lib/action-log/action-log', function () {
   });
 
   it('stores extra context after the name', async function () {
-    await actionLog.record(knex, ACTING, {
-      resourceType: 'member_custom_field',
+    await customFields.record(knex, ACTING, {
       event: 'edited',
       resourceId: POST_ID,
       primaryName: 'Company',
@@ -92,8 +103,7 @@ describe('Unit: lib/action-log/action-log', function () {
   });
 
   it("doesn't let extra context replace the fields the row names", async function () {
-    await actionLog.record(knex, ACTING, {
-      resourceType: 'member_custom_field',
+    await customFields.record(knex, ACTING, {
       event: 'edited',
       resourceId: POST_ID,
       primaryName: 'Company',
@@ -107,11 +117,9 @@ describe('Unit: lib/action-log/action-log', function () {
   });
 
   it('stores a bulk change without a resource', async function () {
-    await actionLog.record(knex, ACTING, {
-      resourceType: 'member_custom_field',
-      event: 'edited',
-      resourceId: null,
+    await customFields.record(knex, ACTING, {
       actionName: 'reordered',
+      resourceId: null,
       count: 3,
     });
 
@@ -120,21 +128,9 @@ describe('Unit: lib/action-log/action-log', function () {
     assert.equal(row.context, JSON.stringify({ action_name: 'reordered', count: 3 }));
   });
 
-  it('stores no context when there is nothing to say', async function () {
-    await actionLog.record(knex, ACTING, {
-      resourceType: 'gift_link',
-      event: 'deleted',
-      resourceId: null,
-    });
-
-    const [row] = await knex('actions').select();
-    assert.equal(row.context, null);
-  });
-
   it('gives later actions higher ids', async function () {
     for (let i = 0; i < 3; i++) {
-      await actionLog.record(knex, ACTING, {
-        resourceType: 'stripe_checkout_config',
+      await stripeCheckoutConfig.record(knex, ACTING, {
         event: 'edited',
         resourceId: POST_ID,
         primaryName: 'Stripe Checkout',
@@ -146,11 +142,10 @@ describe('Unit: lib/action-log/action-log', function () {
   });
 
   it('logs nothing when nobody is acting', async function () {
-    await actionLog.record(
+    await giftLinks.record(
       knex,
       { actor: null },
       {
-        resourceType: 'gift_link',
         event: 'added',
         resourceId: POST_ID,
         primaryName: 'A post',
@@ -164,8 +159,7 @@ describe('Unit: lib/action-log/action-log', function () {
     await assert.rejects(
       knex.transaction(async (transacting) => {
         await transacting('posts').insert({ id: POST_ID });
-        await actionLog.record(transacting, ACTING, {
-          resourceType: 'gift_link',
+        await giftLinks.record(transacting, ACTING, {
           event: 'added',
           resourceId: POST_ID,
           primaryName: 'A post',
@@ -182,8 +176,7 @@ describe('Unit: lib/action-log/action-log', function () {
   it('keeps the action when the command commits', async function () {
     await knex.transaction(async (transacting) => {
       await transacting('posts').insert({ id: POST_ID });
-      await actionLog.record(transacting, ACTING, {
-        resourceType: 'gift_link',
+      await giftLinks.record(transacting, ACTING, {
         event: 'added',
         resourceId: POST_ID,
         primaryName: 'A post',
@@ -198,7 +191,6 @@ describe('Unit: lib/action-log/action-log', function () {
 
     beforeEach(async function () {
       broken = await createDatabase({ withActions: false });
-      actionLog = new ActionLog({ logging });
     });
 
     afterEach(async function () {
@@ -206,9 +198,8 @@ describe('Unit: lib/action-log/action-log', function () {
     });
 
     it('logs the failure and still resolves outside a transaction', async function () {
-      await actionLog.record(broken, ACTING, {
-        resourceType: 'app_installation',
-        event: 'installed',
+      await appInstallations.record(broken, ACTING, {
+        actionName: 'installed',
         resourceId: POST_ID,
         primaryName: 'Podcast',
       });
@@ -223,7 +214,7 @@ describe('Unit: lib/action-log/action-log', function () {
           err: undefined,
           action: {
             resource_type: 'app_installation',
-            event: 'installed',
+            event: 'added',
             resource_id: POST_ID,
             actor_type: 'user',
             actor_id: USER_ID,
@@ -237,8 +228,7 @@ describe('Unit: lib/action-log/action-log', function () {
       await assert.rejects(
         broken.transaction(async (transacting) => {
           await transacting('posts').insert({ id: POST_ID });
-          await actionLog.record(transacting, ACTING, {
-            resourceType: 'gift_link',
+          await giftLinks.record(transacting, ACTING, {
             event: 'added',
             resourceId: POST_ID,
             primaryName: 'A post',
@@ -254,40 +244,62 @@ describe('Unit: lib/action-log/action-log', function () {
 });
 
 // Checked by the compiler rather than run: a mistake in an action fails to compile.
-export function rejectedAtCompileTime(actionLog: ActionLog, knex: Knex) {
-  void actionLog.record(knex, ACTING, {
-    // @ts-expect-error A kind that isn't in ACTION_KINDS.
+export function rejectedAtCompileTime(
+  giftLinks: ResourceActionLog<typeof giftLinkActions>,
+  customFields: ResourceActionLog<typeof customFieldActions>,
+  knex: Knex,
+) {
+  void giftLinks.record(knex, ACTING, {
+    // @ts-expect-error The writer supplies the kind's resource type.
     resourceType: 'post',
     event: 'added',
     resourceId: POST_ID,
     primaryName: 'A post',
   });
 
-  // @ts-expect-error A verb the kind doesn't declare.
-  void actionLog.record(knex, ACTING, {
-    resourceType: 'stripe_checkout_config',
-    event: 'deleted',
+  void customFields.record(knex, ACTING, {
+    // @ts-expect-error An event other than added, edited or deleted.
+    event: 'archived',
     resourceId: POST_ID,
-    primaryName: 'Stripe Checkout',
+    primaryName: 'Company',
+  });
+
+  void giftLinks.record(knex, ACTING, {
+    // @ts-expect-error An action name the kind doesn't declare.
+    actionName: 'archived',
+    resourceId: POST_ID,
+    primaryName: 'A post',
+  });
+
+  void giftLinks.record(knex, ACTING, {
+    actionName: 'reset',
+    // @ts-expect-error A name already says which event it is.
+    event: 'edited',
+    resourceId: POST_ID,
+    primaryName: 'A post',
   });
 
   // @ts-expect-error A change to one resource needs its name.
-  void actionLog.record(knex, ACTING, {
-    resourceType: 'gift_link',
+  void giftLinks.record(knex, ACTING, {
     event: 'added',
     resourceId: POST_ID,
   });
 
   // @ts-expect-error A bulk change belongs to no resource, so has no name.
-  void actionLog.record(knex, ACTING, {
-    resourceType: 'gift_link',
+  void giftLinks.record(knex, ACTING, {
     event: 'deleted',
     resourceId: null,
+    count: 2,
     primaryName: 'A post',
   });
 
-  void actionLog.record(knex, ACTING, {
-    resourceType: 'gift_link',
+  // @ts-expect-error A bulk change says how many resources it changed.
+  void giftLinks.record(knex, ACTING, {
+    event: 'deleted',
+    resourceId: null,
+  });
+
+  void giftLinks.record(knex, ACTING, {
     event: 'added',
     resourceId: POST_ID,
     primaryName: 'A post',

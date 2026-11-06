@@ -37,7 +37,8 @@ import {
 import { mintableKey } from './key';
 import { parseRequest } from '../../lib/parse-request';
 import type { RequestContext } from '../../lib/actor';
-import type { ActionLog } from '../../lib/action-log/action-log';
+import type { ResourceActionLog } from '../../lib/action-log/action-log';
+import type { customFieldActions } from './actions';
 import { fieldAction, reorderAction } from './field-actions';
 import type { MetafieldsTracking } from './tracking';
 
@@ -125,7 +126,7 @@ const EditFieldInput = z.object({
 export class MetafieldDefinitionsService {
   private knex: Knex;
   private fields: FieldSource;
-  private actionLog: ActionLog;
+  private actionLog: ResourceActionLog<typeof customFieldActions>;
   private namespaces: Namespaces;
   private tracking: MetafieldsTracking;
 
@@ -138,7 +139,7 @@ export class MetafieldDefinitionsService {
   }: {
     knex: Knex;
     fields: FieldSource;
-    actionLog: ActionLog;
+    actionLog: ResourceActionLog<typeof customFieldActions>;
     namespaces: Namespaces;
     tracking: MetafieldsTracking;
   }) {

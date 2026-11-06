@@ -1,7 +1,7 @@
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
-import type { ActionLog, ActionRow } from '../../lib/action-log/action-log';
+import type { ActionRow, ResourceActionLog } from '../../lib/action-log/action-log';
 import type { RequestContext } from '../../lib/actor';
 import {
   alreadyInstalled,
@@ -19,6 +19,7 @@ import {
   type ManifestWrite,
 } from './decide-on-manifest';
 import type { FetchIcon } from './fetch-icon';
+import type { AppInstallationActionName, appInstallationActions } from './actions';
 import { approvalManifestIds, buildHistory } from './history';
 import type { IdentityChecker, PinnedIdentity, StartedChallenge } from './identity-check';
 import type { LoadedManifest, LoadManifest } from './load-manifest';
@@ -137,22 +138,19 @@ function iconCopyKeptBy(
   }
 }
 
-type AppInstallationAction = Extract<ActionRow, { resourceType: 'app_installation' }>;
-
 /**
  * Staff history is where "who installed this, and when" lives; the installation itself does
  * not hold it. The resource is the installation, and the app's name and ID ride along, so the
  * history still reads as "Podcast" long after the manifest has changed.
  */
 function appAction(
-  event: AppInstallationAction['event'],
+  actionName: AppInstallationActionName,
   installationId: string,
   app: { id: string; name: string },
   approval?: { from_manifest_id: string; to_manifest_id: string },
-): AppInstallationAction {
+): ActionRow<typeof appInstallationActions> {
   return {
-    resourceType: 'app_installation',
-    event,
+    actionName,
     resourceId: installationId,
     primaryName: app.name,
     context: { app_id: app.id, ...approval },
@@ -162,7 +160,7 @@ function appAction(
 export class AppInstallationsService {
   private knex: Knex;
   private repository: AppInstallationsRepository;
-  private actionLog: ActionLog;
+  private actionLog: ResourceActionLog<typeof appInstallationActions>;
   private loadManifest: LoadManifest;
   private identity: IdentityChecker;
   private fetchIcon: FetchIcon;
@@ -177,7 +175,7 @@ export class AppInstallationsService {
     fetchIcon,
   }: {
     knex: Knex;
-    actionLog: ActionLog;
+    actionLog: ResourceActionLog<typeof appInstallationActions>;
     loadManifest: LoadManifest;
     identity: IdentityChecker;
     fetchIcon: FetchIcon;

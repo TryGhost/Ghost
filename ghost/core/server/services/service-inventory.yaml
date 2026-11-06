@@ -3965,8 +3965,8 @@ services:
           without changing transactions or introducing service dependencies.
         preparation:
           - >-
-            The root constructs the shared action log from logging; a failed action write fails
-            a command inside its transaction and is logged outside one.
+            The root constructs the shared action log from logging, scoped to gift links' kind; a
+            failed action write fails a command inside its transaction and is logged outside one.
           - >-
             Use explicit field mapping for the small codec/serializer shapes, or separately review
             an exact-file case-keys allowance; do not make importable serializers depend on an
@@ -4012,7 +4012,7 @@ services:
       construction:
         summary: >-
           Import declares the initializer without constructing a service. Its factory reads the
-          shared database knex, builds the shared ActionLog from root-supplied logging, and
+          shared database knex, builds the shared ActionLog from root-supplied logging, scoped to gift links' kind, and
           returns one GiftLinksService retaining knex and the action log. Later init calls
           preserve it.
           No separate production deep construction was found. The constructor validates neither
@@ -8458,7 +8458,7 @@ services:
           fields, definitions, values and bindings sequentially; bindings retains that values instance.
           Namespaces is built from custom fields' policy, which holds the host limit service and a
           ceiling callback, both asked on each use.
-          Definitions receives the shared ActionLog, built from logging, and the namespaces;
+          Definitions receives the shared ActionLog, built from logging and scoped to custom fields' kind, and the namespaces;
           values receives the ceiling callback; all three receive the field source. Constructors
           store dependencies without querying or starting work.
           The shared DB getter can create the module-cached Knex client if not already loaded.
