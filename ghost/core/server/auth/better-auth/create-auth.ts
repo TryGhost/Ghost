@@ -1,4 +1,6 @@
-import { betterAuth } from 'better-auth';
+// Minimal skips Kysely, which only serves direct connections and migrations;
+// Ghost brings its own Knex adapter and knex-migrator
+import { betterAuth } from 'better-auth/minimal';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { createKnexAdapter } from './knex-adapter';
