@@ -293,6 +293,112 @@ describe('Config Schema', function () {
     });
   });
 
+  describe('spam', function () {
+    const withSpam = (spam: Record<string, unknown>) =>
+      configSources({ spam: _.merge({}, readJson('defaults.json').spam, spam) });
+
+    it('requires every block, as defaults.json supplies them all', function () {
+      const tree = configSources();
+      delete (tree.spam as Record<string, unknown>).user_login;
+
+      assert.ok(configSchema.safeParse(tree).error);
+    });
+
+    it('rejects a minWait that is not a number', function () {
+      const result = configSchema.safeParse(withSpam({ user_login: { minWait: '600000' } }));
+
+      assert.deepEqual(result.error?.issues[0]?.path, ['spam', 'user_login', 'minWait']);
+    });
+
+    it('rejects a limiter value that is not a non-negative integer', function () {
+      for (const freeRetries of [1.5, -1]) {
+        const result = configSchema.safeParse(withSpam({ user_login: { freeRetries } }));
+
+        assert.deepEqual(result.error?.issues[0]?.path, ['spam', 'user_login', 'freeRetries']);
+      }
+    });
+
+    it('requires freeRetries, minWait and maxWait, but not lifetime', function () {
+      const tree = configSources();
+      const block = (tree.spam as Record<string, Record<string, unknown>>).user_reset;
+      delete block.lifetime;
+      assert.ok(configSchema.safeParse(tree).success);
+
+      delete block.maxWait;
+      const result = configSchema.safeParse(tree);
+      assert.deepEqual(result.error?.issues[0]?.path, ['spam', 'user_reset', 'maxWait']);
+    });
+
+    it('rejects blocked_email_domains that are not strings', function () {
+      assert.ok(configSchema.safeParse(withSpam({ blocked_email_domains: [42] })).error);
+    });
+
+    describe('unknown keys', function () {
+      const typo = () => withSpam({ user_logn: { freeRetries: 1 }, user_login: { minwait: 1 } });
+
+      afterEach(function () {
+        vi.unstubAllEnvs();
+        vi.restoreAllMocks();
+      });
+
+      it('fails the parse on an unknown block under test', function () {
+        for (const env of ['testing', 'testing-mysql']) {
+          vi.stubEnv('NODE_ENV', env);
+          const issues = configSchema.safeParse(typo()).error?.issues;
+
+          assert.deepEqual(
+            issues?.map((issue) => ({
+              code: issue.code,
+              path: issue.path,
+              keys: 'keys' in issue && issue.keys,
+            })),
+            [{ code: 'unrecognized_keys', path: ['spam'], keys: ['user_logn'] }],
+          );
+        }
+      });
+
+      for (const env of ['development', 'production']) {
+        it(`warns on an unknown block in ${env}, then strips it`, function () {
+          vi.stubEnv('NODE_ENV', env);
+          const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+          const parsed = configSchema.parse(typo());
+
+          assert.ok(!('user_logn' in parsed.spam));
+          assert.match(String(warn.mock.calls[0]?.[0]), /spam:user_logn/);
+        });
+      }
+
+      it('only warns under GHOST_CONFIG_SCHEMA_STRICT', function () {
+        vi.stubEnv('NODE_ENV', 'production');
+        vi.stubEnv('GHOST_CONFIG_SCHEMA_STRICT', 'true');
+        vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+        assert.ok(configSchema.safeParse(typo()).success);
+      });
+
+      it('still reports an unknown block when a limiter value is invalid', function () {
+        vi.stubEnv('NODE_ENV', 'production');
+        vi.spyOn(console, 'error').mockImplementation(() => {});
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+        const tree = withSpam({ user_logn: { freeRetries: 1 }, user_login: { minWait: 'x' } });
+        const config = validateConfig({ ...tree, env: 'production' });
+
+        assert.ok(!('user_logn' in config.spam));
+        assert.match(String(warn.mock.calls[0]?.[0]), /spam:user_logn/);
+      });
+
+      it('strips an unknown limiter key without reporting it', function () {
+        const warn = vi.spyOn(console, 'warn');
+        const parsed = configSchema.parse(withSpam({ user_login: { minwait: 1 } }));
+
+        assert.ok(!('minwait' in parsed.spam.user_login));
+        assert.equal(warn.mock.calls.length, 0);
+      });
+    });
+  });
+
   describe('url', function () {
     it('requires a protocol, matching the long-standing boot check', function () {
       assert.ok(configSchema.safeParse(configSources({ url: 'my-ghost-blog.com' })).error);
