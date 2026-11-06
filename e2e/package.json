@@ -68,7 +68,7 @@
         "dependsOn": [
           "build"
         ],
-        "cache": true
+        "cache": false
       }
     }
   }

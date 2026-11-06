@@ -63,6 +63,7 @@ const config = {
         'analytics/**/*.test.ts',
         'stripe-fixtures/**/*.test.ts',
         'fake-services/**/*.test.ts',
+        'frontend-apps/**/*.test.ts',
       ],
       testDir: './tests',
       use: {
@@ -73,7 +74,11 @@ const config = {
     {
       name: 'fixtures',
       testDir: './tests',
-      testMatch: ['stripe-fixtures/**/*.test.ts', 'fake-services/**/*.test.ts'],
+      testMatch: [
+        'stripe-fixtures/**/*.test.ts',
+        'fake-services/**/*.test.ts',
+        'frontend-apps/**/*.test.ts',
+      ],
     },
     {
       name: 'analytics',
