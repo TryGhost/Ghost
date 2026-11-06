@@ -8,14 +8,15 @@ See [tooling ownership](../../tools/README.md)
 for the boundary with repository automation, contributor commands and installed
 tools.
 
-| File                                                                 | Format                             | Purpose and invocation                                                                       | Placement                       |
-| -------------------------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------- |
-| [build-card-assets.mts](build-card-assets.mts)                       | TypeScript ESM                     | Card CSS/JS manifest; `pnpm --filter ghost build:assets:cards`                               | Keep: Ghost asset build         |
-| [build-stale-assets.mts](build-stale-assets.mts)                     | TypeScript ESM                     | Rebuild stale browser assets before nodemon starts Ghost                                     | Keep: automatic build lifecycle |
-| [minify-assets.mts](minify-assets.mts)                               | TypeScript ESM                     | Browser JS bundling/minification; `pnpm --filter ghost build:assets:js`                      | Keep: Ghost asset build         |
-| [pack.mjs](pack.mjs)                                                 | JavaScript ESM                     | Ghost tarball assembly; root `pnpm archive` via Nx                                           | Keep: Ghost packaging           |
-| [prune.mts](prune.mts)                                               | TypeScript ESM                     | Prune built image/archive trees; Dockerfile, archive builder and downstream callers          | Keep: shipped build contract    |
-| [export-query-parameter-policy.ts](export-query-parameter-policy.ts) | TypeScript, CommonJS through `tsx` | Validate/export normalized policy JSON; `pnpm query-parameter-policy:export --output <file>` | Keep: Ghost policy export       |
+| File                                                                 | Format                             | Purpose and invocation                                                                                      | Placement                       |
+| -------------------------------------------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| [build-card-assets.mts](build-card-assets.mts)                       | TypeScript ESM                     | Card CSS/JS manifest; `pnpm --filter ghost build:assets:cards`                                              | Keep: Ghost asset build         |
+| [build-stale-assets.mts](build-stale-assets.mts)                     | TypeScript ESM                     | Rebuild stale browser assets before nodemon starts Ghost                                                    | Keep: automatic build lifecycle |
+| [minify-assets.mts](minify-assets.mts)                               | TypeScript ESM                     | Browser JS bundling/minification; `pnpm --filter ghost build:assets:js`                                     | Keep: Ghost asset build         |
+| [pack.mjs](pack.mjs)                                                 | JavaScript ESM                     | Ghost tarball assembly; root `pnpm archive` via Nx                                                          | Keep: Ghost packaging           |
+| [prune.mts](prune.mts)                                               | TypeScript ESM                     | Prune built image/archive trees; Dockerfile, archive builder and downstream callers                         | Keep: shipped build contract    |
+| [export-query-parameter-policy.ts](export-query-parameter-policy.ts) | TypeScript, CommonJS through `tsx` | Validate/export normalized policy JSON; `pnpm query-parameter-policy:export --output <file>`                | Keep: Ghost policy export       |
+| [generate-config-reference.ts](generate-config-reference.ts)         | TypeScript, CommonJS through `tsx` | Self-hoster config reference from the config schema; `pnpm --filter ghost config:reference [--json <file>]` | Keep: Ghost config export       |
 
 ## Build and distribution
 
