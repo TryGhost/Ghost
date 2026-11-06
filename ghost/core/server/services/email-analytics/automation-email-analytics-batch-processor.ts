@@ -16,6 +16,7 @@ type EmailAnalyticsEvent = {
   type: string;
   providerId: string;
   timestamp: Date;
+  bot?: string | null;
 };
 
 const getMailgunMessageIds = (events: Iterable<EmailAnalyticsEvent>): Set<string> => {
@@ -113,7 +114,8 @@ export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcess
         }
         case 'opened': {
           const recipient = getRecipient();
-          if (recipient) {
+          // Mailgun flags scanner opens as 'generic'; 'apple' and 'gmail' are proxied real opens
+          if (recipient && event.bot !== 'generic') {
             trackEarliest(
               eventsByAutomatedEmailRecipientId,
               recipient,
