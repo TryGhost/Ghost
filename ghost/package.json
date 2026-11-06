@@ -197,7 +197,7 @@
     "jsdom": "catalog:",
     "jsonc-parser": "catalog:",
     "jsonrepair": "catalog:",
-    "jsonwebtoken": "8.5.1",
+    "jsonwebtoken": "9.0.0",
     "juice": "catalog:",
     "knex": "2.4.2",
     "knex-migrator": "catalog:",

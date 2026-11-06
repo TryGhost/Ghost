@@ -182,7 +182,7 @@ catalog:
   jsonc-parser: 3.3.1
   jsonrepair: 3.15.0
   inquirer: 8.2.7
-  jsonwebtoken: 8.5.1
+  jsonwebtoken: 9.0.0
   juice: 11.1.1
   knex: 2.4.2
   knex-migrator: 6.2.1
@@ -446,6 +446,8 @@ minimumReleaseAgeExclude:
   - '@nx/nx-*'
   # Renovate security update: markdown-it@14.3.3
   - markdown-it@14.3.3
+  # Renovate security update: jsonwebtoken@9.0.0
+  - jsonwebtoken@9.0.0
 
 # configuration for pnpm's native versioning (changesets). Private packages opt out
 # by carrying the non-semver placeholder version "private", so only published
