@@ -54,7 +54,10 @@ describe('Members bulk actions', () => {
     await expect
       .poll(() => bulkApi.lastRequest?.body)
       .toEqual({
-        bulk: { action: 'removeLabel', meta: { label: { id: existing.id } } },
+        bulk: {
+          action: 'removeLabel',
+          meta: { label: { id: existing.id }, labels: [{ id: existing.id }] },
+        },
       });
     expect(bulkApi.lastRequest?.url).toContain('filter=label%3A%5Bexisting%5D');
   });

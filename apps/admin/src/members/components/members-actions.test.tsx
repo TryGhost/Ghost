@@ -3,16 +3,19 @@ import MembersActions from '@/members/components/members-actions';
 import { exportMembers } from '@/members/components/members-actions-helpers';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render as testingLibraryRender, screen } from '@testing-library/react';
+import { act, render as testingLibraryRender, screen } from '@testing-library/react';
 
 const render = (ui: React.ReactElement) => testingLibraryRender(ui, { wrapper: TooltipProvider });
 
 const importModalPropsRef: { current: Record<string, unknown> | null } = { current: null };
-const { mockBlobDownloadFromEndpoint, mockUseLocation, mockUseNavigate } = vi.hoisted(() => ({
-  mockBlobDownloadFromEndpoint: vi.fn(),
-  mockUseLocation: vi.fn(),
-  mockUseNavigate: vi.fn(),
-}));
+const removeLabelModalPropsRef: { current: Record<string, unknown> | null } = { current: null };
+const { mockBlobDownloadFromEndpoint, mockBulkEditAsync, mockUseLocation, mockUseNavigate } =
+  vi.hoisted(() => ({
+    mockBlobDownloadFromEndpoint: vi.fn(),
+    mockBulkEditAsync: vi.fn(),
+    mockUseLocation: vi.fn(),
+    mockUseNavigate: vi.fn(),
+  }));
 
 vi.mock('@tryghost/admin-x-framework', () => ({
   useLocation: mockUseLocation,
@@ -29,7 +32,10 @@ vi.mock('@/members/components/bulk-action-modals', () => ({
     return React.createElement('div', { 'data-testid': 'import-members-modal' });
   },
   AddLabelModal: () => React.createElement('div'),
-  RemoveLabelModal: () => React.createElement('div'),
+  RemoveLabelModal: (props: Record<string, unknown>) => {
+    removeLabelModalPropsRef.current = props;
+    return React.createElement('div');
+  },
   UnsubscribeModal: () => React.createElement('div'),
   DeleteModal: () => React.createElement('div'),
 }));
@@ -43,7 +49,7 @@ vi.mock('@tryghost/admin-x-framework/api/newsletters', () => ({
 
 vi.mock('@tryghost/admin-x-framework/api/members', () => ({
   useBulkEditMembers: () => ({
-    mutateAsync: vi.fn(),
+    mutateAsync: mockBulkEditAsync,
     isPending: false,
   }),
   useBulkDeleteMembers: () => ({
@@ -70,7 +76,9 @@ const renderMembersActions = (props: Partial<React.ComponentProps<typeof Members
 describe('MembersActions', () => {
   beforeEach(() => {
     importModalPropsRef.current = null;
+    removeLabelModalPropsRef.current = null;
     mockBlobDownloadFromEndpoint.mockReset();
+    mockBulkEditAsync.mockReset();
     setLocation('/members');
     mockUseNavigate.mockReturnValue(vi.fn());
   });
@@ -163,5 +171,52 @@ describe('MembersActions', () => {
     expect(screen.queryByTestId('members-actions')).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'New member' })).not.toBeInTheDocument();
     expect(importModalPropsRef.current).not.toBeNull();
+  });
+
+  it('removes every selected label from the members the label filter matched', async () => {
+    // A fake server that, like MemberRepository.bulkEdit, selects members from the
+    // filter afresh on every request.
+    const labelIdsBySlug: Record<string, string> = { alpha: 'label-alpha', zeta: 'label-zeta' };
+    const memberLabels = new Map([['member-1', new Set(['label-alpha', 'label-zeta'])]]);
+
+    mockBulkEditAsync.mockImplementation(
+      ({
+        filter,
+        action,
+      }: {
+        filter?: string;
+        action: { type: string; meta: { label?: { id: string }; labels?: { id: string }[] } };
+      }) => {
+        const labelFilter = filter?.match(/^label:\[(.*)\]$/);
+        if (!labelFilter) {
+          throw new Error(`Unexpected filter: ${filter}`);
+        }
+        const filterLabelIds = labelFilter[1].split(',').map((slug) => labelIdsBySlug[slug]);
+        const removedLabelIds = action.meta.labels
+          ? action.meta.labels.map((label) => label.id)
+          : [action.meta.label!.id];
+
+        let successful = 0;
+        for (const labels of memberLabels.values()) {
+          if (filterLabelIds.some((id) => labels.has(id))) {
+            removedLabelIds.forEach((id) => labels.delete(id));
+            successful += 1;
+          }
+        }
+        return Promise.resolve({ bulk: { meta: { stats: { successful, unsuccessful: 0 } } } });
+      },
+    );
+
+    renderMembersActions({ hasFilterOrSearch: true, memberCount: 1, nql: 'label:[alpha]' });
+
+    const onConfirm = removeLabelModalPropsRef.current?.onConfirm as (labelIds: string[]) => void;
+    await act(() => {
+      onConfirm(['label-alpha', 'label-zeta']);
+      return new Promise((resolve) => {
+        setTimeout(resolve, 0);
+      });
+    });
+
+    expect([...memberLabels.get('member-1')!]).toEqual([]);
   });
 });

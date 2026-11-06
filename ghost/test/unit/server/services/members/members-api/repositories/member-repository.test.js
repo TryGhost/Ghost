@@ -3268,6 +3268,42 @@ describe('MemberRepository', function () {
     });
   });
 
+  describe('bulkEdit', function () {
+    it('removes every label in meta.labels from the members the filter selected', async function () {
+      const distinct = sinon.stub().resolves([{ id: 'member-1' }]);
+      Member = {
+        getFilteredCollectionQuery: sinon.stub().returns({
+          select: sinon.stub().returns({ distinct }),
+        }),
+        getLabelRelations: sinon
+          .stub()
+          .resolves([{ id: 'relation-alpha' }, { id: 'relation-zeta' }]),
+        bulkDestroy: sinon.stub().resolves(),
+      };
+
+      const repo = buildRepo();
+
+      await repo.bulkEdit(
+        {
+          action: 'removeLabel',
+          meta: { labels: [{ id: 'label-alpha' }, { id: 'label-zeta' }] },
+        },
+        { filter: 'label:[alpha]' },
+      );
+
+      sinon.assert.calledOnce(Member.getFilteredCollectionQuery);
+      sinon.assert.calledOnceWithExactly(Member.getLabelRelations, {
+        labelIds: ['label-alpha', 'label-zeta'],
+        memberIds: ['member-1'],
+      });
+      sinon.assert.calledOnceWithExactly(
+        Member.bulkDestroy,
+        ['relation-alpha', 'relation-zeta'],
+        'members_labels',
+      );
+    });
+  });
+
   describe('destroy', function () {
     it('returns early when member does not exist', async function () {
       Member = {
