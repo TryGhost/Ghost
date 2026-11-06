@@ -174,6 +174,29 @@ SQL >
     inner join filtered_sessions fs on fs.session_id = h.session_id
     where
         site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
+        {% if defined(date_from) %}
+            and timestamp >= toDateTime(
+                {{ Date(date_from) }},
+                {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }}
+            )
+        {% else %}
+            and timestamp >= toDateTime(
+                dateAdd(day, -7, today()),
+                {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }}
+            )
+        {% end %}
+        {% if defined(date_to) %}
+            and timestamp < toDateTime(
+                {{ Date(date_to) }},
+                {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }}
+            )
+            + interval 1 day
+        {% else %}
+            and timestamp < toDateTime(
+                dateAdd(day, 1, today()),
+                {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }}
+            )
+        {% end %}
         {% if defined(member_status) %}
             and member_status IN (
                 select
