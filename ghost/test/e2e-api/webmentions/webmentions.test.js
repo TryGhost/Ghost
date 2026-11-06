@@ -94,7 +94,7 @@ describe('Webmentions (receiving)', function () {
   afterEach(async function () {
     await DomainEvents.allSettled();
     mockManager.restore();
-    await dbUtils.truncate('brute');
+    await dbUtils.truncate('rate_limits');
   });
 
   it('can receive a webmention', async function () {
@@ -499,7 +499,7 @@ describe('Webmentions (receiving)', function () {
   // NOTE: this test needs to be last; it will disrupt other tests based on the fact we can't
   //  await the jobService completion for multiple concurrent requests
   it('is rate limited against spamming mention requests', async function () {
-    await dbUtils.truncate('brute');
+    await dbUtils.truncate('rate_limits');
     const webmentionBlock = configUtils.config.get('spam').webmentions_block;
     const targetUrl = new URL(urlUtils.getSiteUrl());
     const sourceUrl = new URL('http://testpage.com/external-article-brute-test/');

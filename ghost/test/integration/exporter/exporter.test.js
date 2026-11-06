@@ -103,6 +103,7 @@ describe('Exporter', function () {
       'posts_tags',
       'products',
       'products_benefits',
+      'rate_limits',
       'recommendation_click_events',
       'recommendation_subscribe_events',
       'recommendations',
