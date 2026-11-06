@@ -3,7 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import _ from 'lodash';
 import { z } from 'zod';
+import { formatIssues } from '../../../../core/shared/config/report';
 import { configSchema } from '../../../../core/shared/config/schema';
+import { sanitizeDatabaseProperties } from '../../../../core/shared/config/utils';
 import { createConfig, deepFreeze, validateConfig } from '../../../../core/shared/config/validated';
 import { configSources } from '../../../utils/config-sources';
 
@@ -13,6 +15,12 @@ const configDir = path.join(__dirname, '../../../../core/shared/config');
 
 function readJson(...parts: string[]): Record<string, unknown> {
   return JSON.parse(fs.readFileSync(path.join(configDir, ...parts), 'utf8'));
+}
+
+/** The schema describes `database` after the loader sanitises it. */
+function sanitizeDatabase(tree: Record<string, unknown>): Record<string, unknown> {
+  sanitizeDatabaseProperties(tree.database);
+  return tree;
 }
 
 // the smallest tree the schema accepts; `paths` is covered now, so a literal
@@ -29,9 +37,11 @@ describe('Config Schema', function () {
     // Adding a key to the schema only ever adds validation, never transformation.
     envFiles.forEach(function (file) {
       it(`accepts env/${file} without changing it`, function () {
-        const merged = _.merge({}, defaults, readJson('env', file), overrides, {
-          env: 'testing',
-        });
+        const merged = sanitizeDatabase(
+          _.merge({}, defaults, readJson('env', file), overrides, {
+            env: 'testing',
+          }),
+        );
 
         const result = configSchema.safeParse(_.cloneDeep(merged));
 
@@ -97,6 +107,151 @@ describe('Config Schema', function () {
       assert.ok(!('storage' in parsed.paths));
       // the top level keeps its unknown key, which is the contrast
       assert.deepEqual(parsed.somethingProInjects, { nested: true });
+    });
+  });
+
+  describe('database', function () {
+    const mysql = {
+      client: 'mysql2',
+      connection: { host: '127.0.0.1', user: 'root', password: '', database: 'ghost' },
+    };
+
+    // replaced, not merged: configSources' sqlite default would leak `filename`
+    function withDatabase(database: unknown) {
+      return { ...configSources(), database };
+    }
+
+    it('is required, as boot cannot connect without it', function () {
+      const result = configSchema.safeParse(withDatabase(undefined));
+
+      assert.ok(!result.success);
+      assert.match(formatIssues(result.error.issues), /database/);
+    });
+
+    it('accepts both clients as the loader leaves them', function () {
+      assert.ok(configSchema.safeParse(withDatabase(mysql)).success);
+      assert.ok(configSchema.safeParse(configSources()).success);
+    });
+
+    // renamed by the loader, or unsupported
+    ['mysql', 'sqlite3', 'pg'].forEach(function (client) {
+      it(`rejects client ${client}, which never survives the loader`, function () {
+        const result = configSchema.safeParse(withDatabase({ ...mysql, client }));
+
+        assert.ok(!result.success);
+        assert.match(formatIssues(result.error.issues), /database:client:/);
+      });
+    });
+
+    it('requires a connection, which knex-migrator and the drivers dereference', function () {
+      const result = configSchema.safeParse(withDatabase({ client: 'mysql2' }));
+
+      assert.ok(!result.success);
+      assert.match(formatIssues(result.error.issues), /database:connection:/);
+    });
+
+    it('accepts the numbers nconf parses out of env vars where the driver does', function () {
+      const parsed = configSchema.parse(
+        withDatabase({
+          ...mysql,
+          connection: { ...mysql.connection, port: 3306 },
+          pool: { min: 0, max: 5 },
+        }),
+      );
+
+      assert.equal(parsed.database.client, 'mysql2');
+      assert.equal(
+        parsed.database.client === 'mysql2' ? parsed.database.connection.port : undefined,
+        3306,
+      );
+      assert.equal(parsed.database.pool?.max, 5);
+    });
+
+    it('coerces a quoted port, and leaves a number alone', function () {
+      for (const port of ['3306', 3306]) {
+        const { database } = configSchema.parse(
+          withDatabase({ ...mysql, connection: { ...mysql.connection, port } }),
+        );
+
+        assert.equal(database.client === 'mysql2' ? database.connection.port : undefined, 3306);
+      }
+    });
+
+    ['', 'abc', true, 0, 70000, 3306.5].forEach(function (port) {
+      it(`rejects port ${JSON.stringify(port)} rather than coercing it into one`, function () {
+        const result = configSchema.safeParse(
+          withDatabase({ ...mysql, connection: { ...mysql.connection, port } }),
+        );
+
+        assert.ok(!result.success);
+        assert.match(formatIssues(result.error.issues), /database:connection:port:/);
+      });
+    });
+
+    // an all-digit env var parses as a number, which mysql2 rejects
+    ['user', 'password', 'database'].forEach(function (key) {
+      it(`rejects a ${key} that is not a string, as mysql2 does`, function () {
+        const result = configSchema.safeParse(
+          withDatabase({ ...mysql, connection: { ...mysql.connection, [key]: 1234 } }),
+        );
+
+        assert.ok(!result.success);
+        assert.match(formatIssues(result.error.issues), new RegExp(`database:connection:${key}:`));
+      });
+    });
+
+    it('rejects a filename that is not a string', function () {
+      const result = configSchema.safeParse(
+        configSources({ database: { connection: { filename: 7 } } }),
+      );
+
+      assert.ok(!result.success);
+      assert.match(formatIssues(result.error.issues), /database:connection:filename:/);
+    });
+
+    it('keeps mysql2 options it does not name', function () {
+      const connection = {
+        ...mysql.connection,
+        ssl: { rejectUnauthorized: false },
+        socketPath: '/var/run/mysqld/mysqld.sock',
+      };
+
+      const parsed = configSchema.parse(withDatabase({ ...mysql, connection }));
+
+      assert.deepEqual(parsed.database.connection, connection);
+    });
+
+    it('accepts ssl: false, which mysql2 reads as disabled', function () {
+      const connection = { ...mysql.connection, ssl: false };
+
+      const parsed = configSchema.parse(withDatabase({ ...mysql, connection }));
+
+      assert.deepEqual(parsed.database.connection, connection);
+    });
+
+    it('strips everything but filename from a sqlite connection', function () {
+      const parsed = configSchema.parse(
+        configSources({ database: { connection: { host: '127.0.0.1', mode: 'wal' } } }),
+      );
+
+      assert.deepEqual(parsed.database.connection, { filename: '/tmp/ghost-test.db' });
+    });
+
+    it('keeps knex options it does not name', function () {
+      const parsed = configSchema.parse(
+        withDatabase({ ...mysql, acquireConnectionTimeout: 60000 }),
+      );
+
+      assert.equal((parsed.database as Record<string, unknown>).acquireConnectionTimeout, 60000);
+    });
+
+    it('narrows the connection type on client', function () {
+      const { database } = configSchema.parse(withDatabase(mysql));
+
+      assert.equal(database.client, 'mysql2');
+      if (database.client === 'mysql2') {
+        assert.equal(database.connection.host, '127.0.0.1');
+      }
     });
   });
 

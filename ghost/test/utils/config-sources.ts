@@ -10,6 +10,7 @@ import overrides from '../../core/shared/config/overrides.json';
  * asserting on how many adapters it configured should not silently inherit the
  * five in defaults.json. `paths` is layered out of the shipped files the way
  * loader.ts layers them, so its keys stay correct without being restated here.
+ * `database` is the sqlite test default; defaults.json has none to layer.
  *
  * `extra` is merged last so a test can pin the one value it cares about, and
  * deeply, so pinning `paths:contentPath` leaves the other path keys in place.
@@ -22,6 +23,7 @@ export function configSources(extra: Record<string, unknown> = {}): Record<strin
       url: 'http://localhost:2368',
       paths: { ...defaults.paths, ...overrides.paths },
       auth: defaults.auth,
+      database: { client: 'better-sqlite3', connection: { filename: '/tmp/ghost-test.db' } },
     },
     extra,
   );

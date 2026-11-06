@@ -1,6 +1,7 @@
 import type { OmitIndexSignature } from 'type-fest';
 import { z } from 'zod';
 import { auth } from './schema/auth';
+import { database } from './schema/database';
 import { explore } from './schema/explore';
 
 /**
@@ -14,13 +15,9 @@ import { explore } from './schema/explore';
  *
  * Two rules keep this safe to grow against config that is already running:
  *
- * 1. Validate, don't transform - for now. `z.object()` strips unknown keys and
- *    `z.coerce` rewrites values; either would silently change a live site's
- *    config, and the round-trip test in the unit suite fails if one does.
- *    Secrets are deliberately left unparsed by ./secrets.ts - a password of
- *    `01234` must stay a string. Deliberate transforms can come later, but they
- *    need `get()` rerouted by top-level key first, so a raw read of an unlisted
- *    sibling path can't disagree with a transformed one.
+ * 1. Validate, don't transform. A failed parse hands over the raw tree, so a
+ *    transform is only safe if its raw input still works, like
+ *    `database:connection:port`. See SCHEMA.md.
  * 2. Nothing here may be stricter than what the loader already enforced.
  *    Tightening beyond that is its own change, with its own release note.
  */
@@ -107,6 +104,9 @@ export const configSchema = z.looseObject({
       .string()
       .meta({ description: 'Default settings loaded on a fresh install.' }),
   }),
+
+  // Boot-critical, but in its own file for its size. See SCHEMA.md.
+  database,
 
   // Feature config, one file per area in ./schema. See SCHEMA.md.
   auth,
