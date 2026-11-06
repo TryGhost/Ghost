@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/app-sdk",
   "version": "0.1.0-alpha.0",
-  "description": "The SDK apps use to talk to Ghost: from their page inside Admin, and from their backend",
+  "description": "The SDK apps use to talk to Ghost: from their page inside Admin, from their backend, and from their tooling",
   "license": "MIT",
   "author": "Ghost Foundation",
   "repository": {
@@ -26,6 +26,11 @@
       "source": "./src/backend/index.ts",
       "types": "./build/backend.d.ts",
       "default": "./build/backend.js"
+    },
+    "./tooling": {
+      "source": "./src/tooling/index.ts",
+      "types": "./build/tooling.d.ts",
+      "default": "./build/tooling.js"
     }
   },
   "scripts": {
