@@ -1,6 +1,7 @@
 import { hostOf, isGhostHost } from './ghost-host.ts';
 import { isLocalhost } from './localhost.ts';
-import { manifestSchema, type AppManifest } from './schema.ts';
+import { manifestSchema } from './schema.ts';
+import type { AppManifest } from './types.ts';
 import { checkResolvedUrl, FRAGMENT_PROBLEM, hasFragment } from './url.ts';
 
 export interface ParseManifestOptions {
@@ -25,6 +26,13 @@ export interface ManifestError {
   /** Where in the manifest the problem is, e.g. `surfaces[0].url`. Empty for the whole. */
   path: string;
   message: string;
+}
+
+/** A manifest's problems as text, each as `path: message`, joined by `separator`. */
+export function formatManifestErrors(errors: readonly ManifestError[], separator: string): string {
+  return errors
+    .map(({ path, message }) => (path ? `${path}: ${message}` : message))
+    .join(separator);
 }
 
 /**

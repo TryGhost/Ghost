@@ -3,7 +3,11 @@ import { existsSync } from 'node:fs';
 import { chmod, link, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 
+import { PrivateKeyJwkSchema, type PrivateKeyJwk } from '@tryghost/app-contracts/identity';
+import type { PublicKeyJwk } from '@tryghost/app-contracts/manifest';
+
 import { isGitIgnored } from './git.ts';
+import { isErrnoException } from './errors.ts';
 
 /**
  * Which keys to use. Development and production have separate identity keys, so an app
@@ -23,20 +27,7 @@ export type KeyName = 'identity' | 'backend';
 
 export const KEY_NAMES: readonly KeyName[] = ['identity', 'backend'];
 
-/** A private Ed25519 key as a JWK. */
-export interface PrivateKeyJwk {
-  kty: 'OKP';
-  crv: 'Ed25519';
-  x: string;
-  d: string;
-}
-
-/** A public Ed25519 key as a JWK, as a manifest names it. */
-export interface PublicKeyJwk {
-  kty: 'OKP';
-  crv: 'Ed25519';
-  x: string;
-}
+export type { PrivateKeyJwk, PublicKeyJwk };
 
 /** The production identity key, as CI provides it, instead of `.ghost-app/production/identity.json`. */
 export const IDENTITY_KEY_VARIABLE = 'GHOST_APP_IDENTITY_KEY';
@@ -89,32 +80,29 @@ function readAnyKey(text: string, source: string): PrivateKeyJwk | PublicKeyJwk 
   } catch {
     throw new Error(`${source} isn't a key: it isn't JSON`);
   }
-  if (!isEd25519(value)) {
-    throw new Error(`${source} isn't an Ed25519 key as a JWK, with kty "OKP", crv "Ed25519" and x`);
+  const read = AnyKey.safeParse(value);
+  if (!read.success) {
+    // A key with a private part that doesn't read isn't a public key either.
+    throw new Error(
+      read.error.issues.every(({ path }) => path[0] === 'd')
+        ? `${source} isn't a usable Ed25519 key: its d isn't a string`
+        : `${source} isn't an Ed25519 key as a JWK, with kty "OKP", crv "Ed25519" and x`,
+    );
   }
-  const { d } = value as { d?: unknown };
+  const { x, d } = read.data;
   if (d === undefined) {
-    return publicKeyOf(value);
-  }
-  // A key with a private part that doesn't read isn't a public key either.
-  if (typeof d !== 'string') {
-    throw new Error(`${source} isn't a usable Ed25519 key: its d isn't a string`);
+    return publicKeyOf(read.data);
   }
   // A JWK carries both halves, so a hand-edited or pasted one could pair a private half with
   // someone else's public half, and sign for a key the manifest doesn't name.
-  if (publicHalfOf(value.x, d, source) !== value.x) {
+  if (publicHalfOf(x, d, source) !== x) {
     throw new Error(`${source} isn't a usable Ed25519 key: its x doesn't match its d`);
   }
-  return { kty: 'OKP', crv: 'Ed25519', x: value.x, d } satisfies PrivateKeyJwk;
+  return { kty: 'OKP', crv: 'Ed25519', x, d } satisfies PrivateKeyJwk;
 }
 
-function isEd25519(value: unknown): value is { kty: 'OKP'; crv: 'Ed25519'; x: string } {
-  const { kty, crv, x } = (typeof value === 'object' && value !== null ? value : {}) as Record<
-    string,
-    unknown
-  >;
-  return kty === 'OKP' && crv === 'Ed25519' && typeof x === 'string';
-}
+// A key whose private part may be missing, as a public key's is.
+const AnyKey = PrivateKeyJwkSchema.partial({ d: true });
 
 /** The public half Node derives from a private half, as `x`. */
 function publicHalfOf(x: string, d: string, source: string): string | undefined {
@@ -132,7 +120,7 @@ async function readKeyFile(root: string, mode: Mode, name: KeyName): Promise<Pri
   try {
     text = await readFile(join(root, file), 'utf8');
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+    if (!isErrnoException(error) || error.code !== 'ENOENT') {
       throw error;
     }
     throw new Error(missingKeyMessage(mode, name, file), { cause: error });
@@ -210,7 +198,7 @@ async function publishKey(file: string, pending: string): Promise<boolean> {
     await link(pending, file);
     return true;
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
+    if (!isErrnoException(error) || error.code !== 'EEXIST') {
       throw error;
     }
     // Kept, but only for its owner, as a key written by hand or copied in may not be.

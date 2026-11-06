@@ -14,7 +14,7 @@ import {
   type Mode,
 } from './tooling/keys.ts';
 import { canonicalPath, isWithin } from './tooling/paths.ts';
-import { formatErrors } from './shared/manifest.ts';
+import { formatErrors } from './tooling/format.ts';
 import { MANIFEST_FILE, serialiseSigned, signProject } from './tooling/sign.ts';
 
 export interface Io {

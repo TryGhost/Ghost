@@ -1,21 +1,16 @@
 import { FlattenedSign, flattenedVerify, importJWK } from 'jose';
 import { z } from 'zod';
 
-import type { PublicKeyJwk } from '../manifest/keys.ts';
+import type { PublicKeyJwk } from '../manifest/types.ts';
 import { ALGORITHM, readExactHeader } from './jws.ts';
 import { decodeText, type PrivateKey } from './keys.ts';
+import type { SignedManifest } from './types.ts';
 
 /** The `typ` a signed manifest's protected header carries, so no other signature passes as one. */
 export const SIGNED_MANIFEST_TYPE = 'ghost-app-manifest';
 
-/** A signed manifest as an app serves it: flattened JWS JSON (RFC 7515, section 7.2.2). */
-export interface SignedManifest {
-  protected: string;
-  payload: string;
-  signature: string;
-}
-
-const SignedManifestShape = z.strictObject({
+/** A signed manifest, with exactly the members an app serves it with, all text. */
+export const SignedManifestSchema = z.strictObject({
   protected: z.string(),
   payload: z.string(),
   signature: z.string(),
@@ -60,7 +55,7 @@ export async function signManifest(
  * nothing in it may be used until `verifySignedManifest` has passed.
  */
 export function readSignedManifest(body: unknown): ReadSignedManifestResult {
-  const shape = SignedManifestShape.safeParse(body);
+  const shape = SignedManifestSchema.safeParse(body);
   if (!shape.success) {
     return {
       success: false,

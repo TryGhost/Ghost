@@ -3,6 +3,8 @@ import { randomUUID } from 'node:crypto';
 import { link, open, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { PrivateKeyJwkSchema } from '@tryghost/app-contracts/identity';
+
 import { isGitIgnored } from '../tooling/git.ts';
 import {
   BACKEND_KEY_VARIABLE,
@@ -11,6 +13,7 @@ import {
   readBackendKey,
   type PrivateKeyJwk,
 } from '../tooling/keys.ts';
+import { isErrnoException } from '../tooling/errors.ts';
 
 const WRANGLER_CONFIGS = ['wrangler.json', 'wrangler.jsonc', 'wrangler.toml'];
 
@@ -49,7 +52,7 @@ async function readDotenv(file: string): Promise<{ text: string; value?: string 
   try {
     text = await readFile(file, 'utf8');
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+    if (isErrnoException(error) && error.code === 'ENOENT') {
       return undefined;
     }
     throw error;
@@ -65,14 +68,12 @@ function matches(value: string, key: PrivateKeyJwk): boolean | undefined {
   } catch {
     return undefined;
   }
-  const { kty, crv, x, d } = (
-    typeof parsed === 'object' && parsed !== null ? parsed : {}
-  ) as Record<string, unknown>;
   // The Worker imports it as an Ed25519 key, so anything else can't answer, whatever its x and d.
-  if (kty !== 'OKP' || crv !== 'Ed25519' || typeof x !== 'string' || typeof d !== 'string') {
+  const read = PrivateKeyJwkSchema.safeParse(parsed);
+  if (!read.success) {
     return undefined;
   }
-  return x === key.x && d === key.d;
+  return read.data.x === key.x && read.data.d === key.d;
 }
 
 /** Nothing to say if a file's key is the development key; otherwise how it differs. */
@@ -184,7 +185,7 @@ export async function provideDevBackendKey(
       await link(join(root, pending), file);
     } catch (error) {
       // Another dev server created it first: what it holds now decides, once.
-      if ((error as NodeJS.ErrnoException).code === 'EEXIST' && !retried) {
+      if (isErrnoException(error) && error.code === 'EEXIST' && !retried) {
         return provideDevBackendKey(root, { retried: true, cloudflareEnv });
       }
       throw error;

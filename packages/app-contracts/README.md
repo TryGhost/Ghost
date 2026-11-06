@@ -271,6 +271,25 @@ backend. Ghost can't see this check, so it only helps on platforms that route
 requests by host (Workers, Vercel, Netlify, Fly); a server that answers for any
 host gains nothing from it.
 
+### Reading an app
+
+Ghost core reads an app by the rules in `src/identity/loading.ts`, and the app
+SDK checks an app by the same ones before Ghost does:
+
+- one deadline, `FETCH_TIMEOUT_MS`, for each read, redirects and body included;
+- at most `MAX_REDIRECTS` redirects for a manifest, each with one of
+  `REDIRECT_STATUSES`, and only on the same host or from HTTP to HTTPS on it
+  (`staysOnHost`). A Location is read as UTF-8 (`readLocation`), and its
+  credentials are dropped (`dropCredentials`). A challenge follows no redirect;
+- `SIGNED_MANIFEST_MAX_BYTES` for a signed manifest, `MANIFEST_MAX_BYTES` for
+  the manifest as Ghost stores it, with its paths resolved, and
+  `ANSWER_MAX_BYTES` for an answer to a challenge;
+- a manifest's JSON, which may start with a byte order mark (`parseJsonText`),
+  unlike an answer to a challenge;
+- the codes Ghost refuses an app with, and its message for each
+  (`APP_LOAD_MESSAGES`). A manifest's problems are listed as `path: message`
+  (`formatManifestErrors`, from `./manifest`).
+
 ## The bridge
 
 Admin frames an app's page and talks to it over a `MessagePort`. The page's SDK

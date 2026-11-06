@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import { z } from 'zod';
 
-import { AppManifestSchema } from '../../src/manifest/index.ts';
+import { AppManifestSchema, type AppManifest } from '../../src/manifest/index.ts';
 import { devManifest, devOptions, errorsOf, manifest, manifestOf } from './helpers.ts';
 
 describe('shape', () => {
@@ -328,5 +328,11 @@ describe('AppManifestSchema', () => {
     expect(AppManifestSchema.safeParse({ ...parsed, id: 'Podcast' }).success).toBe(false);
     expect(AppManifestSchema.safeParse({ ...parsed, icon: {} }).success).toBe(false);
     expect(AppManifestSchema.safeParse({ ...parsed, extra: true }).success).toBe(false);
+  });
+});
+
+describe('AppManifest', () => {
+  it('is what AppManifestSchema reads', () => {
+    expectTypeOf<z.output<typeof AppManifestSchema>>().toEqualTypeOf<AppManifest>();
   });
 });

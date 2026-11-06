@@ -1,3 +1,5 @@
+import { decodeUtf8 } from '@tryghost/app-contracts/identity';
+
 import { readBytes } from '../shared/body.ts';
 
 /**
@@ -6,7 +8,7 @@ import { readBytes } from '../shared/body.ts';
  */
 export async function readText(request: Request, maxBytes: number): Promise<string | undefined> {
   const bytes = await readBytes(request, maxBytes);
-  return bytes && new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
+  return bytes && decodeUtf8(bytes);
 }
 
 export function json(status: number, body: unknown, headers: Record<string, string> = {}) {

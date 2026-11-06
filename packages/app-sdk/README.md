@@ -370,7 +370,8 @@ it takes the app down wherever it's installed.
 
 The plugin reads `GHOST_APP_URL`, `GHOST_APP_TUNNEL_URL` and `GHOST_URL` from
 the environment, or from the mode's `.env` files as Vite reads them; the
-environment wins. `.env.development` is the easy way to name a tunnel or your
+environment wins. `GHOST_URL` and `GHOST_APP_URL` must be `http` or `https`
+URLs, and `CLOUDFLARE_ENV` an environment's name, without `/` or `\`. `.env.development` is the easy way to name a tunnel or your
 Ghost in development, on Windows too. Commit the app's address in `.env.production` once it has
 one, so no deploy can forget it:
 
@@ -463,7 +464,7 @@ itself. `fetch` gets whatever else the platform passes too, such as a Worker's
 | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `withGhostApp({ backendKey, fetch, adminOrigins? })` | The app's backend, as `{ fetch }`: answers the challenge at `CHALLENGE_PATH` with `handleChallenge`, and passes every other request to `fetch`. With `adminOrigins`, `fetch`'s responses go through `allowFraming`.                                                                                            |
 | `handleChallenge(request, { backendKey, origin? })`  | Answers Ghost's challenge, posted to `CHALLENGE_PATH`, with the backend key: a private JWK, or its JSON as a secret holds it. `405` for any method but `POST`, `413` past 4 KB, `400` for anything that isn't a challenge for `origin` when it's given, or else `request.url`'s origin, `200` with the answer. |
-| `serveManifest(signed)`                              | A response for the signed manifest, for a backend that doesn't serve it as a file. Caches must revalidate it, so a new manifest reaches Ghost the next time it reads it.                                                                                                                                       |
+| `serveManifest(signed)`                              | A response for the signed manifest, for a backend that doesn't serve it as a file, from its text or the object it holds; an object that isn't a signed manifest throws. Caches must revalidate it, so a new manifest reaches Ghost the next time it reads it.                                                  |
 | `allowFraming(response, { adminOrigins })`           | A copy of a page's response that only those Ghost Admin origins may frame: it sets `frame-ancestors` in its Content-Security-Policy and drops `X-Frame-Options`.                                                                                                                                               |
 
 `handleChallenge` refuses a challenge for any origin but the one the platform

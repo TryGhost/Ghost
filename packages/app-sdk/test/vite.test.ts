@@ -243,6 +243,15 @@ describe('vite dev', () => {
     );
   });
 
+  it('refuses a GHOST_URL that is not an http or https URL', async () => {
+    for (const ghostUrl of ['ghost', 'localhost:2368']) {
+      vi.stubEnv('GHOST_URL', ghostUrl);
+      await expect(startDevServer(), ghostUrl).rejects.toThrow(
+        `ghost-app: GHOST_URL must be Ghost's address, such as https://site.example.com, not ${ghostUrl}`,
+      );
+    }
+  });
+
   it("reads GHOST_APP_TUNNEL_URL from the mode's .env files", async () => {
     await writeFile(
       join(root, '.env.development'),
@@ -618,6 +627,16 @@ describe('vite dev', () => {
           text: expect.stringContaining('Wrangler reads .dev.vars.staging instead of .dev.vars'),
         }),
       );
+      expect(existsSync(join(root, '.dev.vars'))).toBe(false);
+    });
+
+    it('refuses a CLOUDFLARE_ENV that is a path rather than a name', async () => {
+      for (const name of ['../staging', 'staging/../..', 'a\\b']) {
+        vi.stubEnv('CLOUDFLARE_ENV', name);
+        await expect(startDevServer(), name).rejects.toThrow(
+          `ghost-app: CLOUDFLARE_ENV must be the name of a Wrangler environment, such as staging, not ${name}`,
+        );
+      }
       expect(existsSync(join(root, '.dev.vars'))).toBe(false);
     });
 
@@ -1041,6 +1060,7 @@ describe('vite build', () => {
     await createKeys({ root, mode: 'production' });
     for (const appUrl of [
       'hello',
+      'ftp://hello.example.com',
       'https://hello.example.com?v=1',
       'https://hello.example.com/#x',
       'https://hello.example.com?',

@@ -1,4 +1,8 @@
-import { CHALLENGE_PATH, answerChallenge } from '@tryghost/app-contracts/identity';
+import {
+  CHALLENGE_PATH,
+  PrivateKeyJwkSchema,
+  answerChallenge,
+} from '@tryghost/app-contracts/identity';
 
 import { parseOrigin } from '../shared/parse.ts';
 import { json, readText } from './body.ts';
@@ -82,14 +86,12 @@ async function importPrivateKey(text: string): Promise<CryptoKey> {
     // Never says what the text was: it's a secret.
     throw new TypeError(`${INVALID_KEY}; it isn't JSON`);
   }
-  const { kty, crv, x, d } = (typeof jwk === 'object' && jwk !== null ? jwk : {}) as BackendJwk;
-  if (kty !== 'OKP' || crv !== 'Ed25519' || typeof x !== 'string' || typeof d !== 'string') {
+  const key = PrivateKeyJwkSchema.safeParse(jwk);
+  if (!key.success) {
     throw new TypeError(INVALID_KEY);
   }
   try {
-    return await crypto.subtle.importKey('jwk', { kty, crv, x, d }, { name: 'Ed25519' }, false, [
-      'sign',
-    ]);
+    return await crypto.subtle.importKey('jwk', key.data, { name: 'Ed25519' }, false, ['sign']);
   } catch (error) {
     throw new TypeError(INVALID_KEY, { cause: error });
   }

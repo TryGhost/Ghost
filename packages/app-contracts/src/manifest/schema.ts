@@ -117,13 +117,3 @@ export function manifestSchema(rules: UrlRules) {
  * shape, so what is stored is what will be read.
  */
 export const AppManifestSchema = manifestShape(absoluteUrl, storedText);
-
-/**
- * A parsed manifest. Every URL in it is absolute, and a surface's origin is the only one
- * allowed to talk to Ghost from that surface.
- */
-export type AppManifest = z.output<typeof AppManifestSchema>;
-
-export type AppSurface = AppManifest['surfaces'][number];
-
-export type AppSurfaceType = AppSurface['type'];
