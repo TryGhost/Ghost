@@ -185,6 +185,11 @@ export function CreateCustomFieldPopover({
           className="space-y-5"
           data-testid={testId}
           onKeyDown={(event) => {
+            // Enter that confirms what an input method is composing isn't saving the form: the
+            // composed text isn't in the input yet.
+            if (event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) {
+              return;
+            }
             if (
               event.key === 'Enter' &&
               event.target instanceof HTMLInputElement &&

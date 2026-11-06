@@ -92,6 +92,7 @@ export function CustomFieldForm({
       setErrors(withoutListErrors);
       update((current) => withList(current, change));
     },
+    refuseNewOption: (reason) => setErrors((current) => ({ ...current, newOption: reason })),
     setAccess: (access) => update((current) => ({ ...current, access })),
   };
   return (

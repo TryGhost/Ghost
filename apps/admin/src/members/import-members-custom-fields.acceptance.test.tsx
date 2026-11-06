@@ -9,6 +9,7 @@ import {
   member,
   renderAdminApp,
   settleAnimations,
+  settleRequests,
 } from '@test-utils/acceptance';
 import { importMembersScreen } from './import-members.screen';
 import { membersScreen } from './members.screen';
@@ -251,6 +252,26 @@ describe('Import members custom fields', () => {
       await expect.element(form.getByRole('button', { name: /^Remove / })).not.toBeInTheDocument();
       await form.getByRole('button', { name: 'Save' }).click();
       await expect.element(refusal).toBeVisible();
+      expect(createApi.requests).toHaveLength(0);
+    });
+
+    it('stays open when Enter confirms text an input method is composing in an option', async () => {
+      const createApi = fakeSiteCreatingLists();
+      await renderAdminApp('/members', FLAGS);
+      await openMappingStep(TOPICS_CSV);
+
+      await openCreateForm('topics');
+      const form = createForm();
+      const option = form.getByLabelText('Option 1');
+      await expect.element(option).toHaveValue('Film');
+      option
+        .element()
+        .dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'Enter', isComposing: true, bubbles: true }),
+        );
+
+      await settleRequests();
+      await expect.element(form).toBeVisible();
       expect(createApi.requests).toHaveLength(0);
     });
   });

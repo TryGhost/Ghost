@@ -29,6 +29,7 @@ export interface CustomFieldFormParts {
   readonly setName: (name: string) => void;
   readonly setType: (type: FieldType) => void;
   readonly changeList: (change: (list: ListInputs) => ListInputs) => void;
+  readonly refuseNewOption: (reason: string) => void;
   readonly setAccess: (access: MemberCustomFieldAccess) => void;
 }
 
