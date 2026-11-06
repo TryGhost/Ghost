@@ -7,3 +7,5 @@
 // `lazy:`, so static re-exports would pull the chunks into the shell bundle.
 export const lazyAutomationsScreen = () => import('./automations');
 export const lazyAutomationEditorScreen = () => import('./editor');
+// PROTOTYPE ONLY (NY-1750): every trigger card on one page. Don't merge.
+export const lazyTriggerPatternsScreen = () => import('./prototype/trigger-patterns');

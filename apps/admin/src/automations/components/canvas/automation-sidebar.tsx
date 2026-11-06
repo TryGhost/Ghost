@@ -1,6 +1,7 @@
 import { getTriggerTierIds } from '@/automations/utils/trigger-rules';
 import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
 import { useAutomationPerformanceStats } from '@/automations/hooks/use-automation-performance-stats';
+import type { Label } from '@tryghost/admin-x-framework/api/labels';
 import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
 import React, { useId, useState } from 'react';
 import type {
@@ -250,6 +251,9 @@ export const AutomationSidebar: React.FC<{
   description: string;
   triggerRules: readonly AutomationTriggerRule[];
   tiers: readonly Tier[];
+  // Set for a "Label added to a member" trigger, whose labels replace the tier scope (NY-1750).
+  triggerLabelSlug?: string | null;
+  labels: readonly Label[];
   performanceEnabled: boolean;
   metadata: AutomationMetadata;
   onDescriptionChange: (description: string) => void;
@@ -266,6 +270,8 @@ export const AutomationSidebar: React.FC<{
   description,
   triggerRules,
   tiers,
+  triggerLabelSlug,
+  labels,
   performanceEnabled,
   metadata,
   onDescriptionChange,
@@ -313,10 +319,17 @@ export const AutomationSidebar: React.FC<{
     setHasOpened(true);
   }
 
-  const stopConditionDescription = getStopConditionDescription({
-    triggerRules,
-    tiers,
-  });
+  const labelName =
+    triggerLabelSlug === undefined
+      ? undefined
+      : (labels.find((label) => label.slug === triggerLabelSlug)?.name ?? 'selected label');
+  const stopConditionDescription =
+    labelName === undefined
+      ? getStopConditionDescription({
+          triggerRules,
+          tiers,
+        })
+      : `Members stop early if they unsubscribe or the ${labelName} is removed.`;
 
   return (
     <>

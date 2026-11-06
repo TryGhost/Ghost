@@ -7,7 +7,9 @@ import { HostLimitError } from '@tryghost/admin-x-framework/errors';
 import { useBrowseConfig, upgradeRoute } from '@tryghost/admin-x-framework/api/config';
 import { LimitModalContent } from '@/settings/api';
 import NewAutomation from './new-automation';
-import AutomationStatusDialog from './components/automation-status-dialog';
+import AutomationStatusDialog, {
+  type PublishLabelTrigger,
+} from './components/automation-status-dialog';
 import { TRIGGER_CANVAS_ID } from './components/canvas/nodes';
 import AutomationCanvas from './components/canvas/automation-canvas';
 import AutomationHeader, { type AutomationValidationAction } from './components/automation-header';
@@ -28,6 +30,8 @@ import {
 } from '@tryghost/shade/components';
 import { DirtyConfirmDialog, useDirtyConfirmation } from '@tryghost/shade/patterns';
 import { useAddAutomation, useEditAutomation } from '@tryghost/admin-x-framework/api/automations';
+import { useBrowseLabelsInfinite } from '@tryghost/admin-x-framework/api/labels';
+import { useMembersCount } from '@tryghost/admin-x-framework/api/members';
 import type {
   AutomationDetail,
   AutomationStatus,
@@ -39,7 +43,7 @@ import { toast } from 'sonner';
 import { useLocation, useMatches, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { navigateTo } from '@/utils/navigation';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
-import type { AutomationEditState } from './types';
+import type { AutomationEditState, LabelSelection } from './types';
 import { hasMissingTierSelection } from './utils/tier-selection';
 import { isAutomationStatusActive } from './utils/is-automation-status-active';
 import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
@@ -62,7 +66,11 @@ const editableSlice = (automation: AutomationDetail) => ({
 const getTriggerErrors = (
   automation: AutomationDetail,
   triggerType: AutomationTriggerRule['trigger_type'] | undefined,
+  labelSelection: LabelSelection | undefined,
 ): Record<string, string> => {
+  if (labelSelection !== undefined) {
+    return labelSelection === null ? { [TRIGGER_CANVAS_ID]: 'Select a label.' } : {};
+  }
   if (triggerType === 'paid_subscription_changed') {
     return hasMissingTierSelection(subscriptionChangedSelectionFromRules(automation.trigger_rules))
       ? { [TRIGGER_CANVAS_ID]: 'Select at least one tier.' }
@@ -106,6 +114,7 @@ const AutomationEditorContent: React.FC<{
     initialAutomation: AutomationDetail;
     triggerTop?: number;
     triggerType: AutomationTriggerRule['trigger_type'];
+    labelSelection?: LabelSelection;
     onCreated: (id: string) => void;
   };
 }> = ({ automationId, creation }) => {
@@ -153,6 +162,8 @@ const AutomationEditorContent: React.FC<{
   const [triggerType, setTriggerType] = React.useState<
     AutomationTriggerRule['trigger_type'] | undefined
   >(creation?.triggerType);
+  // Kept outside the draft until the API can hold it (NY-1750).
+  const [labelSelection, setLabelSelection] = React.useState(creation?.labelSelection);
   React.useEffect(() => {
     if (!automation) {
       return;
@@ -193,7 +204,7 @@ const AutomationEditorContent: React.FC<{
 
         const nextErrors = {
           ...getActionErrors(next),
-          ...getTriggerErrors(next, triggerType),
+          ...getTriggerErrors(next, triggerType, labelSelection),
         };
         return Object.fromEntries(
           Object.entries(oldErrors).filter(([actionId]) => nextErrors[actionId]),
@@ -201,11 +212,46 @@ const AutomationEditorContent: React.FC<{
       });
       setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
     },
-    [triggerType],
+    [triggerType, labelSelection],
   );
   const savedTriggerTierIds = React.useMemo(
     () => (savedAutomation ? getTriggerTierIds(savedAutomation.trigger_rules) : []),
     [savedAutomation],
+  );
+
+  const onLabelSelectionChange = React.useCallback((next: LabelSelection) => {
+    setValidationFeedback(null);
+    setLabelSelection(next);
+    setActionErrors((oldErrors) =>
+      oldErrors[TRIGGER_CANVAS_ID] && next !== null
+        ? Object.fromEntries(
+            Object.entries(oldErrors).filter(([stepId]) => stepId !== TRIGGER_CANVAS_ID),
+          )
+        : oldErrors,
+    );
+    setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
+  }, []);
+  // The publish confirmation names the trigger's label and asks about members who already have it.
+  const { data: labelData } = useBrowseLabelsInfinite({
+    searchParams: { limit: 'all' },
+    enabled: Boolean(labelSelection),
+  });
+  const { count: labelMemberCount } = useMembersCount(
+    labelSelection ? `label:${labelSelection}` : null,
+  );
+  const publishLabelTrigger: PublishLabelTrigger | undefined = labelSelection
+    ? {
+        name:
+          labelData?.labels.find((label) => label.slug === labelSelection)?.name ?? labelSelection,
+        memberCount: labelMemberCount,
+      }
+    : undefined;
+  const triggerLabelSelection = React.useMemo(
+    () =>
+      labelSelection !== undefined
+        ? { value: labelSelection, onChange: onLabelSelectionChange }
+        : undefined,
+    [labelSelection, onLabelSelectionChange],
   );
 
   const validateForAction = (
@@ -219,7 +265,7 @@ const AutomationEditorContent: React.FC<{
     }
     const nextActionErrors = {
       ...(action === 'publish' ? getActionErrors(automationToValidate) : {}),
-      ...getTriggerErrors(automationToValidate, triggerType),
+      ...getTriggerErrors(automationToValidate, triggerType, labelSelection),
     };
     if (Object.keys(nextActionErrors).length > 0 || invalidWaitIds.size > 0) {
       setActionErrors(nextActionErrors);
@@ -283,6 +329,12 @@ const AutomationEditorContent: React.FC<{
       setEditState(errorState);
       toast.error('Automation couldn’t be saved');
     };
+
+    // The API would save the draft's stand-in free signup rule instead, until NY-1750.
+    if (labelSelection !== undefined) {
+      handleSaveError(new Error('Saving a label added trigger is not supported yet.'));
+      return;
+    }
 
     setEditState(requestState);
 
@@ -547,6 +599,7 @@ const AutomationEditorContent: React.FC<{
         initialTriggerTop={creation?.triggerTop}
         isError={isEditorError}
         isLoading={isEditorLoading}
+        labelSelection={triggerLabelSelection}
         savedTriggerTierIds={savedTriggerTierIds}
         selectedRunId={selectedRunId}
         triggerType={triggerType}
@@ -577,6 +630,7 @@ const AutomationEditorContent: React.FC<{
       <AutomationStatusDialog
         isError={editState.phase === 'failed'}
         isPending={isEditRequestActive}
+        labelTrigger={publishLabelTrigger}
         open={isConfirmPublishAlertOpen || isConfirmUnpublishAlertOpen}
         status={isConfirmUnpublishAlertOpen ? 'inactive' : 'active'}
         onConfirm={() => void save(isConfirmUnpublishAlertOpen ? 'inactive' : 'active')}
@@ -647,13 +701,14 @@ const AutomationEditor: React.FC = () => {
     <ScreenEntranceProvider>
       {automationId === 'new' || automationId === session.createdId ? (
         <NewAutomation key={session.key}>
-          {({ automation: initialAutomation, triggerType, triggerTop }) => (
+          {({ automation: initialAutomation, triggerType, triggerTop, labelSelection }) => (
             <AutomationEditorContent
               automationId={null}
               creation={{
                 initialAutomation,
                 triggerTop,
                 triggerType,
+                labelSelection,
                 onCreated: (createdId) => setSession((current) => ({ ...current, createdId })),
               }}
             />

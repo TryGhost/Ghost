@@ -27,7 +27,11 @@ import {
   lazyAppPageScreen,
   lazyAppsScreen,
 } from './apps/api';
-import { lazyAutomationEditorScreen, lazyAutomationsScreen } from './automations/api';
+import {
+  lazyAutomationEditorScreen,
+  lazyAutomationsScreen,
+  lazyTriggerPatternsScreen,
+} from './automations/api';
 import { lazyCommentsScreen } from './comments/api';
 import { lazyMigrateScreen } from './migrate/api';
 import { lazyMemberActivityScreen, membersRouteChildren } from './members/api';
@@ -103,6 +107,12 @@ const appRoutes: RouteObject[] = [
     path: '/apps/:installationId/*',
     handle: { requiresAccess: canManageApps } satisfies AccessRouteHandle,
     lazy: lazyComponent(lazyAppPageScreen),
+  },
+  {
+    // PROTOTYPE ONLY (NY-1750): every trigger card on one page. Don't merge.
+    path: '/automations/triggers',
+    handle: { requiresAccess: canManageAutomations } satisfies AccessRouteHandle,
+    lazy: lazyComponent(lazyTriggerPatternsScreen),
   },
   {
     // The automation editor hides the admin sidebar for a focused,
