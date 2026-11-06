@@ -578,6 +578,15 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
   const fields = data ?? [];
   const [editingField, setEditingField] = React.useState<MemberCustomField | null>(null);
   const [showAll, setShowAll] = React.useState(false);
+  const listRef = React.useRef<HTMLUListElement>(null);
+
+  // "Show all" leaves with its click, so focus moves to the first field it revealed rather than
+  // dropping back to the page.
+  React.useEffect(() => {
+    if (showAll) {
+      listRef.current?.children[PREVIEW_COUNT]?.querySelector('button')?.focus();
+    }
+  }, [showAll]);
 
   if (isLoading || fields.length === 0) {
     return null;
@@ -602,7 +611,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
                     the same height; the card's vertical padding is what gives the
                     first and last chips breathing room from the card edge. */}
         <CardContent className={admin7Design ? 'pt-3' : 'px-6 py-4'}>
-          <ul>
+          <ul ref={listRef}>
             {visibleFields.map((field) => {
               const stored = metafields?.[field.namespace]?.[field.key];
               // Null rather than an empty line, so an unset value has no value in the label.

@@ -534,6 +534,43 @@ describe('Member detail custom fields', () => {
 
     await expect(section.getByRole('button', { name: /^Edit / })).toHaveCount(6);
     await expect(section.getByRole('button', { name: 'Show all' })).toHaveCount(0);
+    // The button is gone, so focus moves to the first field it revealed.
+    await expect.element(section.getByRole('button', { name: 'Edit Pronouns' })).toHaveFocus();
+  });
+
+  it('starts the next member on the first five fields', async () => {
+    const ada = member({ name: 'Ada Lovelace' });
+    const grace = member({ name: 'Grace Hopper' });
+    const more = ['Nickname', 'Team', 'Pronouns'].map((name): MemberCustomField => ({
+      ...FIELDS[0],
+      key: KeySchema.parse(name.toLowerCase()),
+      name,
+    }));
+    fakeMembers([ada, grace]);
+    for (const m of [ada, grace]) {
+      fakeAdminEndpoint('GET', new RegExp(`^/members/${m.id}/`), {
+        members: [{ ...m, metafields: { custom: {} } }],
+      });
+    }
+    fakeMemberCustomFields([...FIELDS, ...more]);
+    fakeAdminEndpoint('GET', new RegExp('^/members/events/'), {
+      events: [],
+      meta: { pagination: { page: 1, limit: 5, pages: 1, total: 0, next: null, prev: null } },
+    });
+    // Grace's record is cached, so moving back to her keeps the section on screen.
+    await renderAdminApp(`/members/${grace.id}`);
+    const section = memberDetailScreen.customFieldsSection();
+    await expect.element(section.getByRole('button', { name: 'Show all' })).toBeVisible();
+    window.location.hash = `/members/${ada.id}`;
+    await expect.element(page.getByRole('heading', { name: 'Ada Lovelace' })).toBeVisible();
+    await section.getByRole('button', { name: 'Show all' }).click();
+    await expect(section.getByRole('button', { name: /^Edit / })).toHaveCount(6);
+
+    window.location.hash = `/members/${grace.id}`;
+
+    await expect.element(page.getByRole('heading', { name: 'Grace Hopper' })).toBeVisible();
+    await expect(section.getByRole('button', { name: /^Edit / })).toHaveCount(5);
+    await expect.element(section.getByRole('button', { name: 'Show all' })).toBeVisible();
   });
 
   it('shows five fields without asking', async () => {
