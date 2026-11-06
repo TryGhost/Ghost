@@ -182,8 +182,9 @@ describe('Newsletter sends on BullMQ under failure', function () {
       'submitted',
       'submitted',
     ]);
+    // Interrupted, the send's job is back in the queue rather than completed
     const [job] = await findSendJobs(email.id);
-    assert.equal(job.state, 'completed');
+    assert.equal(job.state, 'delayed');
 
     await reboot();
     await waitForEmailStatus(email.id);
