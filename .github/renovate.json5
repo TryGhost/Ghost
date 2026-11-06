@@ -141,21 +141,6 @@
     // covers the `codemirror@<5.58.2` pnpm override key.
     'codemirror',
 
-    // https://linear.app/ghost/issue/PLA-78
-    // https://github.com/TryGhost/Ghost/pull/28180
-    // ghost is pinned to knex 2.4.2 and knex-migrator's knex is pinned
-    // back to the same version via the `knex-migrator>knex` pnpm override
-    // (knex-migrator 5.4.x bundles knex 3.x). Migrations are built with
-    // core's query builder and executed by knex-migrator's, so the two must
-    // move together; 2.5.x also strips the password from the shared
-    // `config.get('database')` object before knex-migrator connects. Ignore
-    // until core moves to knex 3.x in one coordinated upgrade.
-    'knex',
-    // Same PLA-78 pin, but Renovate treats the pnpm override key
-    // `knex-migrator>knex` as its own dependency name, so the plain "knex"
-    // ignore above doesn't match it (see #29092).
-    'knex-migrator>knex',
-
     // https://github.com/TryGhost/Ghost/pull/29099
     // The pnpm override `path-to-regexp@<0.1.13` exists only to force
     // Express 4's transitive path-to-regexp to the ReDoS-patched 0.1.13.
