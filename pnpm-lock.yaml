@@ -4062,6 +4062,12 @@ importers:
       '@quilted/threads':
         specifier: 'catalog:'
         version: 4.1.0(@preact/signals-core@1.14.4)
+      jose:
+        specifier: 'catalog:'
+        version: 6.2.15
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
     devDependencies:
       '@internal/cfg-eslint':
         specifier: workspace:*
