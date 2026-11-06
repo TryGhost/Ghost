@@ -579,6 +579,23 @@ module.exports = {
     created_at: { type: 'dateTime', precision: 3, nullable: false },
     updated_at: { type: 'dateTime', precision: 3, nullable: false },
   },
+  // Better Auth's twoFactor plugin model (in development). A verified row is
+  // what the virtual users.two_factor_enabled reads.
+  user_two_factors: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    user_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'users.id',
+      cascadeDelete: true,
+    },
+    secret: { type: 'text', maxlength: 65535, nullable: false },
+    backup_codes: { type: 'text', maxlength: 65535, nullable: false },
+    verified: { type: 'boolean', nullable: false, defaultTo: false },
+    failed_verification_count: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
+    locked_until: { type: 'dateTime', precision: 3, nullable: true },
+  },
   integrations: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     type: {
