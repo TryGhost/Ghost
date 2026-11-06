@@ -2822,7 +2822,7 @@ describe('Member Custom Fields Admin API', function () {
     // Switching back to a session means logging in again, and this file already logs in
     // close to the limit on login attempts, so clear the count before the later blocks do.
     afterAll(async function () {
-      await dbUtils.truncate('brute');
+      await dbUtils.truncate('rate_limits');
       await agent.loginAsOwner();
     });
 

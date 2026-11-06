@@ -1,9 +1,14 @@
-import ExpressBrute from 'express-brute';
 import assert from 'node:assert/strict';
+import { RateLimiterMemory } from 'rate-limiter-flexible';
+import type { BackoffLimiter as Limiter } from '../../../../../../../core/server/web/shared/middleware/api/backoff-limiter';
 import configUtils from '../../../../../../utils/config-utils';
 import type { SpamPrevention } from '../../../../../../../core/server/web/shared/middleware/api/spam-prevention';
 
 const spamPrevention: SpamPrevention = require('../../../../../../../core/server/web/shared/middleware/api/spam-prevention');
+// required, not imported, so it is the same module instance spam-prevention loads
+const {
+  BackoffLimiter,
+} = require('../../../../../../../core/server/web/shared/middleware/api/backoff-limiter');
 
 type FactoryName =
   | 'upgradeBlock'
@@ -66,9 +71,10 @@ const factories: Array<{
   { name: 'emailPreviewBlock', attachResetToRequest: false },
 ];
 
-// express-brute's types leave out the options and name every instance has
-type Limiter = ExpressBrute & { name: string; options: ExpressBrute.Options };
-const build = (name: FactoryName) => spamPrevention[name]() as Limiter;
+const build = (name: FactoryName) => spamPrevention[name]();
+
+// the counter is private; tests read it to check which store a limiter uses
+const counter = (instance: Limiter) => (instance as unknown as { count: object }).count;
 
 const fakeSpamConfig = (seed: number) => ({
   freeRetries: seed,
@@ -84,27 +90,25 @@ describe('Spam Prevention', function () {
     spamPrevention.reset();
   });
 
-  it('creates and caches an express-brute limiter for every factory', function () {
-    const databaseStores = new Set<unknown>();
-
+  it('creates and caches a limiter for every factory', function () {
     for (const { name, isMemoryBacked } of factories) {
       const factory = spamPrevention[name];
       const instance = factory();
 
-      assert(instance instanceof ExpressBrute, `${name} returns ExpressBrute`);
+      assert(instance instanceof BackoffLimiter, `${name} returns a BackoffLimiter`);
       assert.strictEqual(factory(), instance, `${name} caches its limiter`);
-
-      // `store` is a property we test with, even though it's not on the types.
-      const { store } = instance as any;
-      if (isMemoryBacked) {
-        assert(store instanceof ExpressBrute.MemoryStore, `${name} uses MemoryStore`);
-      } else {
-        assert(!(store instanceof ExpressBrute.MemoryStore), `${name} does not use MemoryStore`);
-        databaseStores.add(store);
-      }
+      assert.equal(
+        counter(instance) instanceof RateLimiterMemory,
+        Boolean(isMemoryBacked),
+        `${name} store`,
+      );
     }
+  });
 
-    assert.equal(databaseStores.size, 1, 'all database-backed limiters share the same store');
+  it('gives every limiter its own name, as they share one table', function () {
+    const names = factories.map(({ name }) => build(name).name);
+
+    assert.equal(new Set(names).size, names.length);
   });
 
   it('configures each limiter correctly', function () {
@@ -167,7 +171,6 @@ describe('Spam Prevention', function () {
     assert.notEqual(secondRequestLimiter.name, secondApiLimiter.name);
     assert.equal(firstInviteLimiter.name, secondInviteLimiter.name);
     assert.notEqual(secondInviteLimiter.name, secondRequestLimiter.name);
-    assert.equal(secondInviteLimiter.options.refreshTimeoutOnRequest, false);
   });
 
   it('reset clears cached limiters and reloads spam configuration', function () {

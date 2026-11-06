@@ -347,9 +347,6 @@ catalogs:
     '@testing-library/react':
       specifier: 16.3.3
       version: 16.3.3
-    '@tryghost/brute-knex':
-      specifier: 4.0.0
-      version: 4.0.0
     '@tryghost/color-utils':
       specifier: 0.2.23
       version: 0.2.23
@@ -407,9 +404,6 @@ catalogs:
     '@types/express':
       specifier: 4.17.25
       version: 4.17.25
-    '@types/express-brute':
-      specifier: 1.0.6
-      version: 1.0.6
     '@types/js-yaml':
       specifier: 4.0.9
       version: 4.0.9
@@ -704,6 +698,9 @@ catalogs:
     prettier:
       specifier: 3.9.10
       version: 3.9.10
+    rate-limiter-flexible:
+      specifier: 11.2.3
+      version: 11.2.3
     react:
       specifier: 18.3.1
       version: 18.3.1
@@ -2188,9 +2185,6 @@ importers:
       '@tryghost/bookshelf-plugins':
         specifier: 2.3.21
         version: 2.3.21(supports-color@10.2.2)
-      '@tryghost/brute-knex':
-        specifier: 'catalog:'
-        version: 4.0.0(express@4.22.3(supports-color@10.2.2))(knex@3.3.0(better-sqlite3@12.11.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2))
       '@tryghost/checkout':
         specifier: workspace:*
         version: link:../packages/checkout
@@ -2416,9 +2410,6 @@ importers:
       express:
         specifier: 4.22.3
         version: 4.22.3(supports-color@10.2.2)
-      express-brute:
-        specifier: 1.0.1
-        version: 1.0.1(express@4.22.3(supports-color@10.2.2))
       express-hbs:
         specifier: 2.5.0
         version: 2.5.0
@@ -2572,6 +2563,9 @@ importers:
       probe-image-size:
         specifier: 7.4.0
         version: 7.4.0(supports-color@10.2.2)
+      rate-limiter-flexible:
+        specifier: 'catalog:'
+        version: 11.2.3
       rss:
         specifier: 1.2.2
         version: 1.2.2
@@ -2651,9 +2645,6 @@ importers:
       '@types/express':
         specifier: 'catalog:'
         version: 4.17.25
-      '@types/express-brute':
-        specifier: 'catalog:'
-        version: 1.0.6
       '@types/fs-extra':
         specifier: 11.0.4
         version: 11.0.4
@@ -8952,12 +8943,6 @@ packages:
   '@tryghost/bookshelf-transaction-events@2.3.19':
     resolution: {integrity: sha512-28sHDcTvV/1XS9f7neE1kZNqmMPELtmezsCxDUktx5z/2ArqmE50+ji8KwP0Sh0o+T3TRI7HJf8pTuZcp1JUVQ==}
 
-  '@tryghost/brute-knex@4.0.0':
-    resolution: {integrity: sha512-L8GAxWFfZg/ln9CqGrLddsJcrN9B/vZ4UyLT3rzEbt2qKdO1gNAIFYAq025agrHmH3Jrgp6CR+uFCjCbm/Ga1g==}
-    engines: {node: '>=22.23.4'}
-    peerDependencies:
-      knex: ^3.0.0
-
   '@tryghost/bunyan-rotating-filestream@0.0.25':
     resolution: {integrity: sha512-WpDFVach6lUbrphnnReWS+EMw5KrW/Td6isw9KYRJLUn0wwpYd5iZE026kfXXaGkOy1T+c6uiSzN36wZ/Kw8Vw==}
 
@@ -9226,9 +9211,6 @@ packages:
 
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
-
-  '@types/express-brute@1.0.6':
-    resolution: {integrity: sha512-yKVX0N9dTR4CNSMEMlSLfNkDgkNws2DMfRJZD6EsqZbtpDp4wAPSLo6N2e+c4OMPC72q2V82YWDtvYUCmBfvvA==}
 
   '@types/express-serve-static-core@4.19.8':
     resolution: {integrity: sha512-02S5fmqeoKzVZCHPZid4b8JH2eM5HzQLZWN2FohQEy/0eXTq8VXZfSN6Pcr3F6N9R/vNrj7cpgbhjie6m/1tCA==}
@@ -11903,11 +11885,6 @@ packages:
   expect@30.4.1:
     resolution: {integrity: sha512-PMARsyh/JtqC20HoGqlFcIlQAyqUtW4PlI1rup1uhYJtKuwAjbvWi3GQMAn+STdHum/dk8xrKfUM1+5SAwpolA==}
     engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
-
-  express-brute@1.0.1:
-    resolution: {integrity: sha512-ieZmwox3oIZdQCVjvvnwQvrKQumWdb/JjmC9mWplF42AuHCBXr6Yk/I+nLTRQx+9F+2aapOW9kYLwA6xIlwA9g==}
-    peerDependencies:
-      express: 4.22.3
 
   express-hbs@2.5.0:
     resolution: {integrity: sha512-i2O1ZBwKO32KF0MePnkgYHsAAILr9H9Sp5GoGp9JWz/qhsBfTMSq9VF1pN109DHysPX6YO88y7B+f6xnEEF/mg==}
@@ -15279,6 +15256,9 @@ packages:
     resolution: {integrity: sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==}
     engines: {node: '>= 0.6'}
 
+  rate-limiter-flexible@11.2.3:
+    resolution: {integrity: sha512-w4HX4toAsEbu1VksOauZwI9d6URb6/4WqJJ5Hg1bESihMt2KJfQ2iTwvDkhIg+y2HetLh65DGu/8xIkUz/xNPA==}
+
   raw-body@2.5.3:
     resolution: {integrity: sha512-s4VSOf6yN0rvbRZGxs8Om5CWj6seneMwK3oDb4lWDH0UPhWcxwOWw5+qk24bxq87szX1ydrwylIOp2uG1ojUpA==}
     engines: {node: '>= 0.8'}
@@ -16673,9 +16653,6 @@ packages:
 
   underscore.string@3.3.6:
     resolution: {integrity: sha512-VoC83HWXmCrF6rgkyxS9GHv8W9Q5nhMKho+OadDJGzL2oDYbYEppBaCMH6pFlwLeqj2QS+hhkw2kpXkSdD1JxQ==}
-
-  underscore@1.13.8:
-    resolution: {integrity: sha512-DXtD3ZtEQzc7M8m4cXotyHR+FAS18C64asBYY5vqZexfYryNNnDc02W4hKg3rdQuqOYas1jkseX0+nZXjTXnvQ==}
 
   undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
@@ -21409,13 +21386,6 @@ snapshots:
 
   '@tryghost/bookshelf-transaction-events@2.3.19': {}
 
-  '@tryghost/brute-knex@4.0.0(express@4.22.3(supports-color@10.2.2))(knex@3.3.0(better-sqlite3@12.11.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2))':
-    dependencies:
-      express-brute: 1.0.1(express@4.22.3(supports-color@10.2.2))
-      knex: 3.3.0(better-sqlite3@12.11.1)(mysql2@3.24.6(@types/node@22.20.5))(supports-color@10.2.2)
-    transitivePeerDependencies:
-      - express
-
   '@tryghost/bunyan-rotating-filestream@0.0.25':
     dependencies:
       long-timeout: 0.1.1
@@ -21831,10 +21801,6 @@ snapshots:
       '@types/estree': 1.0.9
 
   '@types/estree@1.0.9': {}
-
-  '@types/express-brute@1.0.6':
-    dependencies:
-      '@types/express': 4.17.25
 
   '@types/express-serve-static-core@4.19.8':
     dependencies:
@@ -24701,12 +24667,6 @@ snapshots:
       jest-message-util: 30.4.1
       jest-mock: 30.4.1
       jest-util: 30.4.1
-
-  express-brute@1.0.1(express@4.22.3(supports-color@10.2.2)):
-    dependencies:
-      express: 4.22.3(supports-color@10.2.2)
-      long-timeout: 0.1.1
-      underscore: 1.13.8
 
   express-hbs@2.5.0:
     dependencies:
@@ -28603,6 +28563,8 @@ snapshots:
 
   range-parser@1.2.1: {}
 
+  rate-limiter-flexible@11.2.3: {}
+
   raw-body@2.5.3:
     dependencies:
       bytes: 3.1.2
@@ -30381,8 +30343,6 @@ snapshots:
     dependencies:
       sprintf-js: 1.1.3
       util-deprecate: 1.0.2
-
-  underscore@1.13.8: {}
 
   undici-types@5.26.5: {}
 

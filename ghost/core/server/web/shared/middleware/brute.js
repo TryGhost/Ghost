@@ -3,7 +3,7 @@ const spamPrevention = require('./api/spam-prevention');
 const { limitService } = require('../../../services/limits');
 
 /**
- * We set ignoreIP to false, because we tell brute-knex to use `req.ip`.
+ * Limiters key on `req.ip` unless ignoreIP is set.
  * We can use `req.ip`, because express trust proxy option is enabled.
  */
 module.exports = {

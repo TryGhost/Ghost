@@ -115,7 +115,7 @@ describe('Stripe Checkout Branding Admin API', function () {
     // Each sign-in counts towards the login attempt limit, so clear it before signing the
     // owner back in.
     afterEach(async function () {
-      await dbUtils.truncate('brute');
+      await dbUtils.truncate('rate_limits');
       await agent.loginAsOwner();
     });
 

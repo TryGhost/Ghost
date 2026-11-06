@@ -1,13 +1,12 @@
-import BruteKnex from '@tryghost/brute-knex';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import tpl from '@tryghost/tpl';
-import type { NextFunction } from 'express';
-import ExpressBrute from 'express-brute';
-import { pick } from 'lodash';
 import moment from 'moment';
+import { RateLimiterMemory, RateLimiterMySQL, RateLimiterSQLite } from 'rate-limiter-flexible';
 import config from '../../../../../shared/config';
 import type { SpamBlock } from '../../../../../shared/config/schema/spam';
+import { BackoffLimiter } from './backoff-limiter';
+import type { BackoffOptions, LimiterFactory, StoreError } from './backoff-limiter';
 
 const messages = {
   forgottenPasswordEmail: {
@@ -36,11 +35,12 @@ const messages = {
   staffInviteBlock: 'Too many invitation requests. Try again in a minute.',
 };
 
-const spamConfigKeys = ['freeRetries', 'minWait', 'maxWait', 'lifetime'] as const;
+const TABLE = 'rate_limits';
+const CLEANUP_INTERVAL = 60 * 60 * 1000;
 
-let store: BruteKnex | undefined;
-let memoryStore: ExpressBrute.MemoryStore | undefined;
-const instances = new Map<string, ExpressBrute>();
+let databaseFactory: LimiterFactory | undefined;
+let cleanupTimer: NodeJS.Timeout | undefined;
+const instances = new Map<string, BackoffLimiter>();
 
 const settingsFor = (block: SpamBlock) => config.get('spam')[block];
 
@@ -54,18 +54,13 @@ const quotedLimits = (block: SpamBlock) => {
   };
 };
 
-type StoreError = Error & { parent?: Error; next?: NextFunction };
-
 const handleStoreError = (err: StoreError) => {
   const customError = new errors.InternalServerError({
     message: 'Unknown error',
-    err: err.parent ? err.parent : err,
+    err: err.parent instanceof Error ? err.parent : undefined,
   });
 
-  // see https://github.com/AdamPflug/express-brute/issues/45
-  // express-brute does not always forward a callback
-  // we are using reset as synchronous call, so we have to log the error if it occurs
-  // there is no way to try/catch, because the reset operation happens asynchronous
+  // resets have no request to fail, so they only log
   if (!err.next) {
     logging.error(err);
     return;
@@ -74,38 +69,66 @@ const handleStoreError = (err: StoreError) => {
   err.next(customError);
 };
 
-const databaseStore = () => {
-  // required late, as before: loading db builds the knex instance
-  const db: typeof import('../../../../data/db') = require('../../../../data/db');
+const memoryFactory: LimiterFactory = (options) => new RateLimiterMemory(options);
 
-  store ??= new BruteKnex({
-    tablename: 'brute',
-    createTable: false,
-    knex: db.knex,
-  });
+// required late, as before: loading db builds the knex instance
+const getDb = (): typeof import('../../../../data/db') => require('../../../../data/db');
 
-  return store;
+/** Deletes expired rows from every limiter. Runs hourly once a database limiter exists. */
+const clearExpired = () => getDb().knex(TABLE).where('expire', '<', Date.now()).del();
+
+/**
+ * Limiters over the `rate_limits` table, built lazily because loading db builds
+ * the knex instance. Ghost owns the table through a migration, and removes
+ * expired rows on one timer rather than one per limiter.
+ */
+const databaseStore = (): LimiterFactory => {
+  if (databaseFactory) {
+    return databaseFactory;
+  }
+
+  const db = getDb();
+  const { client, connection } = db.knex.client.config;
+  const shared = {
+    storeClient: db.knex,
+    storeType: 'knex',
+    tableName: TABLE,
+    tableCreated: true,
+    clearExpiredByTimeout: false,
+  };
+
+  databaseFactory = ['mysql', 'mysql2'].includes(client)
+    ? (options) => new RateLimiterMySQL({ ...shared, dbName: connection.database, ...options })
+    : (options) => new RateLimiterSQLite({ ...shared, ...options });
+
+  cleanupTimer = setInterval(() => {
+    clearExpired().catch((err: unknown) => logging.error(err));
+  }, CLEANUP_INTERVAL).unref();
+
+  return databaseFactory;
 };
+
+type LimiterOptions = Pick<BackoffOptions, 'attachResetToRequest' | 'failCallback'>;
 
 /** One limiter per name, until reset(), reading its block from config when built. */
 const limiter = (
   name: string,
   block: SpamBlock,
-  options: ExpressBrute.Options,
-  { memory = false, overrides = {} }: { memory?: boolean; overrides?: ExpressBrute.Options } = {},
-): ExpressBrute => {
+  options: LimiterOptions,
+  { memory = false }: { memory?: boolean } = {},
+): BackoffLimiter => {
   let instance = instances.get(name);
 
   if (!instance) {
-    const limiterStore = memory
-      ? (memoryStore ??= new ExpressBrute.MemoryStore())
-      : databaseStore();
+    const { freeRetries, minWait, maxWait, lifetime } = settingsFor(block);
 
-    instance = new ExpressBrute(limiterStore, {
+    instance = new BackoffLimiter(name, memory ? memoryFactory : databaseStore(), {
       handleStoreError,
       ...options,
-      ...pick(settingsFor(block), spamConfigKeys),
-      ...overrides,
+      freeRetries,
+      minWait,
+      maxWait,
+      lifetime,
     });
     instances.set(name, instance);
   }
@@ -113,40 +136,23 @@ const limiter = (
   return instance;
 };
 
-/**
- * A limiter for Admin requests that sets Retry-After when it blocks.
- *
- * Named, because ExpressBrute otherwise namespaces keys by construction order,
- * which can differ across Ghost instances and reset the shared database-backed
- * budget.
- */
+/** A limiter for Admin requests that sets Retry-After when it blocks. */
 const requestBlock = (
   name: string,
   block: SpamBlock,
   errorOptions: ConstructorParameters<typeof errors.TooManyRequestsError>[0],
-  overrides: ExpressBrute.Options = {},
-) => {
-  const instance = limiter(
-    name,
-    block,
-    {
-      attachResetToRequest: false,
-      failCallback(req, res, next, nextValidRequestDate) {
-        res.set(
-          'Retry-After',
-          String(Math.max(1, Math.ceil((nextValidRequestDate.getTime() - Date.now()) / 1000))),
-        );
+) =>
+  limiter(name, block, {
+    attachResetToRequest: false,
+    failCallback(req, res, next, nextValidRequestDate) {
+      res.set(
+        'Retry-After',
+        String(Math.max(1, Math.ceil((nextValidRequestDate.getTime() - Date.now()) / 1000))),
+      );
 
-        return next(new errors.TooManyRequestsError({ ...errorOptions }));
-      },
+      return next(new errors.TooManyRequestsError({ ...errorOptions }));
     },
-    { overrides },
-  );
-
-  (instance as ExpressBrute & { name: string }).name = name;
-
-  return instance;
-};
+  });
 
 const upgradeBlock = () =>
   requestBlock('upgrade_requests', 'upgrade_block', {
@@ -156,27 +162,17 @@ const upgradeBlock = () =>
   });
 
 const upgradeApiBlock = () =>
-  requestBlock(
-    'upgrade_api',
-    'upgrade_api_block',
-    {
-      message: messages.upgradeBlock,
-      context: 'The shared IP budget for update API requests has been exhausted.',
-      help: 'Wait for Retry-After before retrying. Reuse the original idempotency_key for the same update.',
-    },
-    {
-      // Continuous polling must not extend the counting window indefinitely.
-      refreshTimeoutOnRequest: false,
-    },
-  );
+  requestBlock('upgrade_api', 'upgrade_api_block', {
+    message: messages.upgradeBlock,
+    context: 'The shared IP budget for update API requests has been exhausted.',
+    help: 'Wait for Retry-After before retrying. Reuse the original idempotency_key for the same update.',
+  });
 
 const staffInviteBlock = () =>
-  requestBlock(
-    'staff_invites',
-    'staff_invite_block',
-    { message: messages.staffInviteBlock, code: 'STAFF_INVITE_RATE_LIMIT' },
-    { refreshTimeoutOnRequest: false },
-  );
+  requestBlock('staff_invites', 'staff_invite_block', {
+    message: messages.staffInviteBlock,
+    code: 'STAFF_INVITE_RATE_LIMIT',
+  });
 
 // This locks a single endpoint based on excessive requests from an IP.
 // Currently only used for auth type methods.
@@ -419,8 +415,9 @@ const contentApiKey = () =>
 /** Drop every limiter and store, so the next call rebuilds from current config. For tests. */
 const reset = () => {
   instances.clear();
-  store = undefined;
-  memoryStore = undefined;
+  databaseFactory = undefined;
+  clearInterval(cleanupTimer);
+  cleanupTimer = undefined;
 };
 
 const spamPrevention = {
@@ -443,6 +440,7 @@ const spamPrevention = {
   contentApiKey,
   webmentionsBlock,
   emailPreviewBlock,
+  clearExpired,
   reset,
 };
 

@@ -21,6 +21,7 @@ const BACKUP_TABLES = [
   'permissions',
   'permissions_roles',
   'permissions_users',
+  'rate_limits',
   'webhooks',
   'tokens',
   'sessions',
