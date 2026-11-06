@@ -71,6 +71,7 @@ describe('Helpers', function () {
     'readable_url',
     'social_url',
     'social_accounts',
+    'strip_tags',
   ];
   const experimentalHelpers = ['match', 'tiers', 'comments', 'search'];
 
