@@ -17,9 +17,12 @@ import { optionText } from '@tryghost/metafield-types/structure';
 import {
   type ListInputs,
   type OptionRow,
+  type UnsavedOptionRow,
   withAdded,
   withMoved,
   withNewOption,
+  withOptionText,
+  withTypedAdded,
   withoutOption,
 } from '@/shared/member-custom-fields/list-inputs';
 import {
@@ -32,10 +35,10 @@ const optionName = (option: OptionRow, index: number) =>
   optionText(option.text) || `option ${index + 1}`;
 
 /**
- * An option's text, drawn in an input's box like a tier's benefits but read rather than edited,
- * since an option's text is what names it. The box grows with a long option rather than holding it
- * to one line, and wraps anywhere rather than between words, since an option can be one unbroken
- * word that would otherwise widen the whole form.
+ * An option's text where it can't be changed, drawn in a disabled input's box as a saved field's
+ * type is. The box grows with a long option rather than holding it to one line, and wraps anywhere
+ * rather than between words, since an option can be one unbroken word that would otherwise widen
+ * the whole form.
  */
 export function FixedOptionText({
   text,
@@ -48,11 +51,11 @@ export function FixedOptionText({
   children?: ReactNode;
 }) {
   return (
-    <InputGroup className="h-auto min-h-(--control-height)">
+    <InputGroup className="h-auto min-h-(--control-height)" data-disabled>
       <span
         aria-describedby={problemId}
         aria-invalid={Boolean(problemId) || undefined}
-        className="flex min-w-0 flex-1 items-center px-3 py-1 text-control wrap-anywhere"
+        className="flex min-w-0 flex-1 cursor-not-allowed items-center px-3 py-1 text-control wrap-anywhere text-muted-foreground"
       >
         {text}
       </span>
@@ -111,8 +114,40 @@ interface OptionRowProps {
   onRemove: () => void;
 }
 
-/** An option in the list: its text, which can't be changed, and a button to remove it. */
-function ListedOption({
+/** An option not yet saved: an input, as a tier's benefit is, so a typo is fixed in place. */
+function UnsavedOption({
+  option,
+  index,
+  problem,
+  problemId,
+  onRemove,
+  onText,
+}: OptionRowProps & { option: UnsavedOptionRow; onText: (text: string) => void }) {
+  const describedBy = problem ? problemId : undefined;
+  return (
+    <OptionWithProblem problem={problem} problemId={problemId}>
+      <InputGroup>
+        <InputGroupInput
+          aria-describedby={describedBy}
+          aria-invalid={Boolean(problem) || undefined}
+          aria-label={`Option ${index + 1}`}
+          value={option.text}
+          onChange={(event) => onText(event.target.value)}
+        />
+        <InputGroupAddon align="inline-end">
+          <RemoveOptionButton
+            describedBy={describedBy}
+            name={optionName(option, index)}
+            onRemove={onRemove}
+          />
+        </InputGroupAddon>
+      </InputGroup>
+    </OptionWithProblem>
+  );
+}
+
+/** An option the field is saved with: its text is fixed, but it can be moved or removed. */
+function SavedOption({
   option,
   index,
   problem,
@@ -137,27 +172,40 @@ function ListedOption({
 
 /**
  * The options a list field offers, in the order members are offered them: added one at a time or
- * as a pasted list with one option per line, dragged to reorder, and removed. An option can't be
- * renamed: its text is all that names it, so different text is a different option. Changing a typo
- * is removing the option and adding the right one, and members who picked the old text keep it.
+ * as a pasted list with one option per line, dragged to reorder, and removed. An option not yet
+ * saved can be changed. An option the field is saved with keeps its text, so fixing a typo in one
+ * is removing it and adding the right one.
  */
 export function ListOptionsEditor({
   list,
   errors,
   idPrefix,
   onChange,
+  onRefuse,
 }: {
   list: ListInputs;
   errors: CustomFieldErrors;
   idPrefix: string;
   /** Each change is made to the inputs as they stand when it applies. */
   onChange: (change: (list: ListInputs) => ListInputs) => void;
+  /** Says why the typed text wasn't added, until the inputs next change. */
+  onRefuse: (reason: string) => void;
 }) {
   const add = (texts: readonly string[]) => {
     onChange((current) => withAdded(current, texts));
   };
 
-  const addTyped = () => add([list.newOption]);
+  // Typed text is added only if the rules take it as the list's next option, and stays in the
+  // input with their reason if not. A pasted list skips its repeats instead, as tidying a list
+  // someone already has.
+  const addTyped = () => {
+    const added = withTypedAdded(list);
+    if ('refused' in added) {
+      onRefuse(added.refused);
+      return;
+    }
+    onChange(() => added);
+  };
 
   const listProblem = errors.options;
   const typedProblem = errors.newOption;
@@ -177,15 +225,23 @@ export function ListOptionsEditor({
             getDragHandleLabel={({ option, index }) => `Reorder ${optionName(option, index)}`}
             items={rows}
             itemSeparator={false}
-            renderItem={({ option, index }) => (
-              <ListedOption
-                index={index}
-                option={option}
-                problem={optionProblem(option)}
-                problemId={`${idPrefix}-option-${index}-error`}
-                onRemove={() => onChange((current) => withoutOption(current, option))}
-              />
-            )}
+            renderItem={({ option, index }) => {
+              const props = {
+                index,
+                problem: optionProblem(option),
+                problemId: `${idPrefix}-option-${index}-error`,
+                onRemove: () => onChange((current) => withoutOption(current, option)),
+              };
+              return option.saved ? (
+                <SavedOption option={option} {...props} />
+              ) : (
+                <UnsavedOption
+                  option={option}
+                  {...props}
+                  onText={(text) => onChange((current) => withOptionText(current, option, text))}
+                />
+              );
+            }}
             onMove={(id, overId) => onChange((current) => withMoved(current, id, overId))}
           />
           <Inline align="center" className="py-1" gap="md">

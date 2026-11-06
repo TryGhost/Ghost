@@ -58,7 +58,7 @@ function MultipleField({
  * more than one. Draws nothing for a field that isn't a list.
  */
 export function ListField() {
-  const { values, errors, idPrefix, changeList } = useCustomFieldForm();
+  const { values, errors, idPrefix, changeList, refuseNewOption } = useCustomFieldForm();
   const { list } = values;
   if (!list) {
     return null;
@@ -70,6 +70,7 @@ export function ListField() {
         idPrefix={idPrefix}
         list={list}
         onChange={changeList}
+        onRefuse={refuseNewOption}
       />
       <MultipleField
         checked={list.multiple}

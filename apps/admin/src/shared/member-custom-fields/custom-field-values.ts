@@ -12,6 +12,7 @@ import {
 import {
   type ListInputs,
   type OptionRow,
+  inCheckingOrder,
   newListInputs,
   savedListInputs,
   settingsOf,
@@ -253,8 +254,10 @@ const nameErrors = (values: CustomFieldValues): CustomFieldErrors =>
  * so a refused form always says why.
  */
 const settingsErrors = (values: CustomFieldValues): CustomFieldErrors => {
-  const checked = values.list?.options ?? [];
-  const result = TypedSettingsInputSchema.safeParse(typedSettingsOf(values));
+  const checked = values.list ? inCheckingOrder(values.list.options) : [];
+  const result = TypedSettingsInputSchema.safeParse(
+    typedSettingsOf(withList(values, (list) => ({ ...list, options: checked }))),
+  );
   const problems = result.error?.issues ?? [];
   return filed(problems, (path) => placeOf(path, values, checked) ?? 'options') ?? {};
 };
