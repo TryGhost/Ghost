@@ -35,8 +35,11 @@ import only `zod`. That is the same trade `schema.js` makes.
 
 Organise it by area:
 
-- **Keys boot cannot start without** — `url`, `env`, `paths`, `database` — live
-  in [`schema.ts`](schema.ts) itself.
+- **Keys boot cannot start without** — `url`, `env`, `paths`, `database` — are
+  listed first in [`schema.ts`](schema.ts). The first three are defined there
+  too. `database` is a union on its client with shared helpers, so it is in
+  [`schema/database.ts`](schema/database.ts); a core key that outgrows an inline
+  shape moves out the same way.
 - **Every other area** gets its own file in [`schema/`](schema/), named after the
   top-level key it describes and composed into `configSchema` in `schema.ts`.
   [`schema/auth.ts`](schema/auth.ts) and [`schema/explore.ts`](schema/explore.ts)
@@ -117,6 +120,10 @@ a number, or assumed a key is always present, stops compiling.
   becomes a check someone has to remember — which wants a single entry point
   where that check cannot be skipped.
 
+  The exception is a transform whose raw input still works for its reader:
+  `database:connection:port` coerces a quoted port, and mysql2 accepts the
+  string anyway if the parse is skipped.
+
   Either way a transform must be idempotent, because `config.set()` re-parses
   from source on every call, and one that moved a value further each pass would
   corrupt config on the second override.
@@ -124,9 +131,11 @@ a number, or assumed a key is always present, stops compiling.
   Both existing transforms stay in [`utils.ts`](utils.ts) for now.
   `makePathsAbsolute` is unconditional there already, which is the property that
   matters, so moving it buys nothing until there is a second transform to share
-  the plumbing. `sanitizeDatabaseProperties` is not really a transform: it
-  deletes keys based on a sibling's value, making it a discriminated union on
-  `database:client`, and it waits for `database` to be schemafied.
+  the plumbing.
+
+  `sanitizeDatabaseProperties` stays in the loader too. Its client rename is a
+  transform, so the schema describes the tree it leaves: only `mysql2` or
+  `better-sqlite3`.
 
 - **Nothing may be stricter than the loader already was.** Tightening beyond
   that is its own change, with its own release note.
@@ -169,6 +178,10 @@ reader needs an unlisted key.
 **The consequence to know:** `z.object()` does not reject an unknown key, it
 strips it. A key added to config but not to its schema disappears, with no error.
 Add both.
+
+`database:connection` is closed for sqlite, where knex hands the driver only
+`filename`, and loose for mysql2, whose options are too many to list — only the
+common ones are validated.
 
 That is affordable for `paths` because its readers are enumerable. For a section
 where they are not, the safe form is `z.strictObject({...}).catch((ctx) => ctx.value)`

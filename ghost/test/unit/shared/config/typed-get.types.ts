@@ -13,9 +13,21 @@ declare const config: ConfigInstance;
 const url: string = config.get('url');
 const env: string = config.get('env');
 
-// a key with no schema keeps nconf's `any`, so existing call sites still compile
 const contentPath: string = config.get('paths:contentPath');
-const database: Record<string, unknown> = config.get('database');
+
+// database is a union on client
+const database = config.get('database');
+const client: 'mysql2' | 'better-sqlite3' = config.get('database:client');
+const host: string | undefined =
+  database.client === 'mysql2' ? database.connection.host : undefined;
+
+// @ts-expect-error a sqlite connection has no host
+const unnarrowedHost: string | undefined = database.connection.host;
+
+const connection: Record<string, unknown> = config.get('database:connection');
+
+// a key with no schema keeps nconf's `any`, so existing call sites still compile
+const logging: number = config.get('logging:level');
 
 // so does a key path built at runtime
 declare const dynamic: string;
@@ -50,6 +62,11 @@ export {
   env,
   contentPath,
   database,
+  client,
+  host,
+  unnarrowedHost,
+  connection,
+  logging,
   fromDynamic,
   whole,
   wrongType,
