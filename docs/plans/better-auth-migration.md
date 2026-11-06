@@ -164,7 +164,7 @@ screens use an `AuthClient` contract shaped like the Better Auth client
 `GET /users/me/`. `comments-ui` loads `/ghost/auth-frame`, which Core serves
 only when the cookie header contains `ghost-admin-api-session`.
 
-**Platform.** Node `^22.23.1 || ^24.20.0`; Core is TypeScript compiled to
+**Platform.** Node `^22.23.4 || ^24.22.1`; Core is TypeScript compiled to
 CommonJS; Better Auth 1.7 is ESM-only and loads with `require(esm)`, which
 Ghost already relies on. Express 4: Better Auth's `toNodeHandler` must mount before
 `body-parser`. MySQL 8 via Knex (Kysely would add a second pool outside Ghost's
