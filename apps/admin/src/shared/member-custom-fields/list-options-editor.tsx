@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { arrayMove } from '@dnd-kit/sortable';
 import {
   Field,
@@ -72,6 +72,40 @@ const ListOptionsEditor: React.FC<{
   const setText = (id: string, text: string) =>
     setOptions(options.map((row) => (row.id === id ? { ...row, text } : row)));
 
+  // The nearest ancestor that scrolls, such as a modal's body, or none.
+  const scrollerOf = (element: HTMLElement): HTMLElement | null => {
+    for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+      if (/(auto|scroll)/.test(getComputedStyle(parent).overflowY)) {
+        return parent;
+      }
+    }
+    return null;
+  };
+
+  // Each option added pushes the new option input a row down. It keeps its focus and its place on
+  // screen, as a tier's new benefit input does, so a list can be typed in one go and a long one
+  // doesn't carry the input under a pinned footer. The scroll is instant: the input is meant not
+  // to move, and a smooth one still running when the next option is added would make it drift.
+  const newOptionRef = useRef<HTMLInputElement>(null);
+  const keepNewOptionInPlace = () => {
+    const input = newOptionRef.current;
+    const before = input?.getBoundingClientRect().top;
+    window.requestAnimationFrame(() => {
+      if (!input || before === undefined) {
+        return;
+      }
+      // Focus goes back only if it hasn't gone somewhere else meanwhile: it is on the input, on
+      // the add button clicked, or on nothing.
+      const active = document.activeElement;
+      const group = input.closest('[data-slot="input-group"]');
+      if (active && active !== document.body && !group?.contains(active)) {
+        return;
+      }
+      input.focus({ preventScroll: true });
+      scrollerOf(input)?.scrollBy({ top: input.getBoundingClientRect().top - before });
+    });
+  };
+
   // Text already offered is skipped rather than added and then refused.
   const add = (texts: string[]) => {
     const offered = options.map((row) => optionText(row.text));
@@ -82,6 +116,7 @@ const ListOptionsEditor: React.FC<{
       .map((text) => optionRow(text, savedOptions.includes(text)));
     setRepeated(false);
     onChange({ options: [...options, ...added], newOption: '' });
+    keepNewOptionInPlace();
   };
 
   // One option typed and added is refused if it's already offered, rather than cleared as if it
@@ -192,6 +227,7 @@ const ListOptionsEditor: React.FC<{
                 </FieldLabel>
                 <InputGroup>
                   <InputGroupInput
+                    ref={newOptionRef}
                     aria-describedby={
                       [
                         typedProblem && `${idPrefix}-new-option-error`,

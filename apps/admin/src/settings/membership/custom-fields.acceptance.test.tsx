@@ -1164,6 +1164,33 @@ describe('Custom fields', () => {
       await expect(modal.getByText('Give each option once.')).toHaveCount(0);
     });
 
+    it('keeps the new option input focused and in place as options are added', async () => {
+      fakeSettingsScreens();
+      fakeListedFields();
+      await renderAdminApp('/settings', flagOn);
+
+      const modal = await openNewListField();
+      const input = modal.getByLabelText('New option');
+      await input.fill('Dog');
+      await modal.getByRole('button', { name: 'Add option' }).click();
+      await expect.element(input).toHaveFocus();
+
+      // Enough options that the modal scrolls, so each one added would push the input down.
+      for (let index = 1; index <= 15; index += 1) {
+        await input.fill(`Option ${index}`);
+        await userEvent.keyboard('{Enter}');
+      }
+      const top = () => input.element().getBoundingClientRect().top;
+      await input.fill('Fish');
+      input.element().scrollIntoView({ block: 'center' });
+      const before = top();
+      await modal.getByRole('button', { name: 'Add option' }).click();
+
+      await expect.element(modal.getByRole('button', { name: 'Remove Fish' })).toBeInTheDocument();
+      await expect.element(input).toHaveFocus();
+      await expect.poll(top).toBeCloseTo(before, 0);
+    });
+
     it('asks for text in an option emptied before saving', async () => {
       fakeSettingsScreens();
       fakeListedFields();
@@ -1306,6 +1333,61 @@ describe('Custom fields', () => {
         .toHaveAccessibleDescription('This option already exists.');
       await expect(modal.getByText('This option already exists.')).toHaveCount(1);
       expect(editApi.lastRequest).toBeUndefined();
+    });
+
+    it('asks before closing with edits, and closes straight away without', async () => {
+      fakeSettingsScreens();
+      fakeListedFields();
+      await renderAdminApp('/settings', flagOn);
+
+      await settingsScreen.customFields().getByRole('button', { name: 'Add custom field' }).click();
+      const untouched = settingsScreen.customFieldModal();
+      await untouched.getByRole('button', { name: 'Cancel' }).click();
+      await expect(untouched).toHaveCount(0);
+
+      // Choosing the type is an edit too, so from here the modal asks.
+      const edited = await openNewListField();
+      await edited.getByLabelText('New option').fill('Dog');
+      await userEvent.keyboard('{Enter}');
+      await userEvent.keyboard('{Escape}');
+      await expect.element(page.getByRole('alertdialog')).toBeVisible();
+      await page.getByRole('button', { name: 'Stay' }).click();
+      await expect.element(edited.getByRole('button', { name: 'Remove Dog' })).toBeVisible();
+
+      await edited.getByRole('button', { name: 'Cancel' }).click();
+      await page.getByRole('button', { name: 'Leave' }).click();
+      await expect(edited).toHaveCount(0);
+    });
+
+    it('still asks before closing after a save is refused', async () => {
+      fakeSettingsScreens();
+      fakeListedFields();
+      await renderAdminApp('/settings', flagOn);
+
+      const modal = await openNewListField();
+      await modal.getByLabelText('New option').fill('Dog');
+      await userEvent.keyboard('{Enter}');
+      // No name, so the save is refused.
+      await modal.getByRole('button', { name: 'Save' }).click();
+      await expect.element(modal.getByText('Enter a name for the field')).toBeVisible();
+
+      await userEvent.keyboard('{Escape}');
+      await expect.element(page.getByRole('alertdialog')).toBeVisible();
+    });
+
+    it('closes without asking once an edit is changed back', async () => {
+      fakeSettingsScreens();
+      fakeListedFields([animalsField]);
+      await renderAdminApp('/settings', flagOn);
+
+      await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+      const modal = settingsScreen.customFieldModal();
+      await modal.getByLabelText('Name').fill('Pets');
+      await modal.getByLabelText('Name').fill('Favourite animals');
+      await modal.getByRole('button', { name: 'Close' }).click();
+
+      await expect(modal).toHaveCount(0);
+      await expect(page.getByRole('alertdialog')).toHaveCount(0);
     });
 
     it('sends nothing when an edit is changed back to what was saved', async () => {
