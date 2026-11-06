@@ -23,7 +23,8 @@ type DomNode = {
 
 type BlockOptions = { fn?: (context: unknown) => string };
 
-const IGNORED_ELEMENTS = new Set(['script', 'style', 'template']);
+// Elements whose text is code, not prose. Their contents are dropped along with the tag.
+const NON_PLAINTEXT_ELEMENTS = new Set(['script', 'style', 'template']);
 
 // express-hbs renders an async helper such as {{#get}} as a placeholder with this prefix and swaps in
 // the real output after the whole template has rendered. The block form of this helper runs before
@@ -43,7 +44,7 @@ function collectText(nodes: DomNode[], parts: string[]): void {
     } else if (
       node.type === 'tag' &&
       node.name &&
-      !IGNORED_ELEMENTS.has(node.name) &&
+      !NON_PLAINTEXT_ELEMENTS.has(node.name) &&
       node.children
     ) {
       collectText(node.children, parts);
@@ -89,6 +90,7 @@ export function strip_tags(this: unknown, ...args: unknown[]): string {
   if (options && typeof options.fn === 'function') {
     const rendered = options.fn(this);
 
+    // Detect if the block has an async helper (e.g. #get), log an error and return ''.
     if (typeof rendered === 'string' && rendered.includes(ASYNC_PLACEHOLDER_PREFIX)) {
       logging.error(new errors.IncorrectUsageError({ message: messages.asyncHelperInBlock }));
       return new SafeString('');
