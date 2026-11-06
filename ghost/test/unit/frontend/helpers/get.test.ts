@@ -56,6 +56,25 @@ describe('{{#get}} helper', function () {
       assert.equal(options.filter, 'id:-abcdef1234567890abcdef12');
       assert.deepEqual(parseResult({ not: 'modified' }), { not: 'modified' });
     });
+    for (const page of [1, '1', 2, '2']) {
+      it(`Preserves paginated queries with page ${JSON.stringify(page)}`, function () {
+        const apiOptions = {
+          filter: 'id:-abcdef1234567890abcdef12',
+          limit: 3,
+          page,
+        };
+        const result = {
+          posts: [{ id: '1234567890abcdef12345678' }],
+          meta: {
+            pagination: { page: Number(page), limit: 3, total: 9, pages: 3 },
+          },
+        };
+        const { options, parseResult } = get.optimiseFilterCacheability('posts', apiOptions);
+
+        assert.deepEqual(options, apiOptions);
+        assert.strictEqual(parseResult(result), result);
+      });
+    }
     it('Changes the filter for simple id negations', function () {
       const apiOptions = {
         filter: 'id:-abcdef1234567890abcdef12',
@@ -125,6 +144,75 @@ describe('{{#get}} helper', function () {
       }
       sinon.assert.notCalled(logging.warn);
     });
+  });
+
+  describe('paginated ID exclusions', function () {
+    const posts = Array.from({ length: 10 }, (_, index) => ({
+      id: `abcdef${(index + 1).toString(16).padStart(18, '0')}`,
+    }));
+
+    for (const [excludedPost, limit] of [
+      [1, 3],
+      [5, 3],
+      [10, 3],
+      [10, 2],
+      [11, 3],
+    ]) {
+      it(`Returns complete pages and totals excluding post ${excludedPost} with limit ${limit}`, async function () {
+        const excludedId = `abcdef${excludedPost.toString(16).padStart(18, '0')}`;
+        // Model the API contract: filter first, then count and paginate.
+        const browse = sinon
+          .stub()
+          .callsFake(async (options: { filter: string; limit: number; page: string }) => {
+            const filtered = posts.filter((post) => `id:-${post.id}` !== options.filter);
+            const page = Number(options.page);
+            const pages = Math.ceil(filtered.length / options.limit);
+            return {
+              posts: filtered.slice((page - 1) * options.limit, page * options.limit),
+              meta: {
+                pagination: {
+                  page,
+                  limit: options.limit,
+                  total: filtered.length,
+                  pages,
+                  next: page < pages ? page + 1 : null,
+                  prev: page > 1 ? page - 1 : null,
+                },
+              },
+            };
+          });
+        sinon.stub(api, 'postsPublic').get(() => ({ browse }));
+
+        const expectedIds = posts.filter((post) => post.id !== excludedId).map((post) => post.id);
+        const pages = Math.ceil(expectedIds.length / limit);
+        const receivedIds: string[] = [];
+
+        for (let page = 1; page <= pages; page++) {
+          await get.call({}, 'posts', {
+            hash: { filter: `id:-${excludedId}`, limit, page: String(page) },
+            data: locals,
+            fn,
+            inverse,
+          });
+
+          sinon.assert.notCalled(inverse);
+          const result = fn.lastCall.args[0];
+          const ids = result.posts.map((post: { id: string }) => post.id);
+          assert.deepEqual(ids, expectedIds.slice((page - 1) * limit, page * limit));
+          assert.deepEqual(result.pagination, {
+            page,
+            limit,
+            total: expectedIds.length,
+            pages,
+            next: page < pages ? page + 1 : null,
+            prev: page > 1 ? page - 1 : null,
+          });
+          receivedIds.push(...ids);
+        }
+
+        assert.deepEqual(receivedIds, expectedIds);
+      });
+    }
   });
 
   describe('context preparation', function () {
