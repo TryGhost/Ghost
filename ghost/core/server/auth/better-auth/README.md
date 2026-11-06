@@ -51,6 +51,58 @@ accepts either name.
   it wherever the in-development tables are created (development and testing
   with `createInDevelopmentTables`); it skips users that already have one.
 
+- `auth-tables.ts`: `hasAuthTables()` says whether the database has Better
+  Auth's tables. Auth code checks it rather than the in-development table
+  config directly, so it has one place to change when the tables get a
+  migration.
+- `credential-passwords.ts`: keeps `users.password` and the `credential` row
+  in `user_accounts` on the same hash while both engines exist (plan §4.5).
+  See [Passwords](#passwords).
+
+## Passwords
+
+Both engines hash with bcrypt, so either engine can check the other's hash.
+Each write keeps `users.password` and the `credential` row equal, and does
+both in one transaction:
+
+- **Legacy:** the `User` model's `onSaved` calls `syncCredentialPassword` with
+  the save's `options.transacting` when `password` changed. It updates the
+  credential row, or inserts one if missing (an upsert's next-key locks
+  deadlock concurrent user inserts). It runs after the write, not in
+  `onSaving`, because a new user's credential row references `users.id`.
+  `add`, `changePassword` and `edit` with a password open a transaction when
+  the caller has none, so every password write runs in one.
+- **Better Auth:** the adapter's `onWrite` hook for `user_accounts`
+  (`ghostWriteHooks`) copies a credential hash Better Auth wrote to
+  `users.password`. A create, update or updateMany with a hook runs it inside
+  the write's transaction, so a throw rolls both back.
+- **Boot:** where the in-development tables are created, boot copies any hash
+  that differs from the active engine's store (`users.password` under
+  `legacy`, `user_accounts` under `better-auth`), one user per transaction,
+  logging failures. The daily cleanup job takes this over in Phase 2.
+
+All three are no-ops where `hasAuthTables()` is false.
+
+The plan's `databaseHooks.account.update.before` hook doesn't work, checked
+against Better Auth 1.7.15:
+
+- `before` hooks get only the update's data (`{ password }`) and the endpoint
+  context, never the `where`, so the hook can't tell whose credential changed.
+  `/reset-password` has no session, and it consumes its verification row,
+  which holds the user id, before it writes the password.
+- They don't always run in a transaction. `/change-password` and
+  `/reset-password` wrap the write in `runWithTransaction`, so a `before` hook
+  there runs in it. `/set-password` and the admin plugin's `setUserPassword`
+  don't. Neither is enabled, and Ghost users always have a hash, so
+  `/set-password` refuses anyway.
+- `/reset-password` creates the credential row when it's missing, which runs
+  `create` hooks, not `update` hooks.
+- `after` hooks wait for the commit (`queueAfterTransactionHook`), so a
+  failure in one would leave the two hashes different.
+
+The adapter sees the rows it writes and opens its own transaction when Better
+Auth hasn't, so it covers every path, including ones not enabled yet.
+
 ## Tables
 
 `user_accounts`, `user_sessions` and `verifications` are defined in

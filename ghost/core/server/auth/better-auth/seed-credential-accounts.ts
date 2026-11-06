@@ -1,5 +1,6 @@
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
+import { hasAuthTables } from './auth-tables';
 import { generateGhostId } from './ghost-models';
 
 /**
@@ -9,7 +10,7 @@ import { generateGhostId } from './ghost-models';
  * backfills them instead.
  */
 export async function seedCredentialAccounts(knex: Knex): Promise<void> {
-  if (!(await knex.schema.hasTable('user_accounts'))) {
+  if (!hasAuthTables()) {
     return;
   }
 

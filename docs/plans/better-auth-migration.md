@@ -456,13 +456,16 @@ bcrypt throughout the migration, via `@tryghost/security`, so hashes are
 interchangeable. Dual write while both engines exist, with both writes in one
 transaction:
 
-- Ghost's path: a helper called from `models/user.js` `onSaving` writes the
+- Ghost's path: a helper called from the `User` model's `onSaved` writes the
   credential row with the save's `options.transacting`. The importer writes
-  both the same way.
-- Better Auth's path: `databaseHooks.account.update.before` copies the hash to
-  `users.password` through the operation's adapter, inside its transaction.
-  Not an `after` hook: Better Auth queues those until the transaction commits,
-  so a failure there would leave the two hashes different.
+  both the same way, through `User.add`.
+- Better Auth's path: the Knex adapter's `onWrite` hook for `user_accounts`
+  copies the hash to `users.password` inside the write's transaction. Not a
+  `databaseHooks` hook: `before` hooks never see which account they update,
+  and `after` hooks wait until the transaction commits, so a failure there
+  would leave the two hashes different. The
+  [Better Auth README](../../ghost/core/server/auth/better-auth/README.md#passwords)
+  has the details.
 - Recovery: the active engine's store is the source of truth (`user_accounts`
   under `better-auth`, `users.password` under `legacy`). Switching engines at
   boot, and the daily cleanup job (§4.6), re-copy any credential whose hash

@@ -28,10 +28,17 @@ export type KnexAdapterOptions = {
    * Applied on insert beneath the row Better Auth writes.
    */
   createDefaults?: Record<string, (row: Record<string, unknown>) => Record<string, unknown>>;
+  /**
+   * Called inside the write's transaction with the rows a create, update or
+   * updateMany wrote and the values it wrote, keyed by table name. A throw
+   * rolls the write back.
+   */
+  onWrite?: Record<string, WriteHook>;
   debugLogs?: AdapterFactoryConfig['debugLogs'];
 };
 
 type Row = Record<string, unknown>;
+export type WriteHook = (trx: Knex.Transaction, rows: Row[], values: Row) => Promise<void>;
 type Executor = Knex | Knex.Transaction;
 type QB = Knex.QueryBuilder;
 
@@ -49,7 +56,7 @@ const toCount = (value: unknown) => {
 
 function createCustomAdapter(
   db: Executor,
-  { virtualColumns = {}, createDefaults = {} }: KnexAdapterOptions,
+  { virtualColumns = {}, createDefaults = {}, onWrite = {} }: KnexAdapterOptions,
   inTransaction: boolean,
 ): AdapterFactoryCustomizeAdapterCreator {
   return ({ getFieldName, getDefaultModelName, schema }) => {
@@ -74,6 +81,12 @@ function createCustomAdapter(
 
     const withTransaction = <T>(fn: (trx: Executor) => Promise<T>): Promise<T> =>
       inTransaction ? fn(db) : db.transaction((trx) => fn(trx));
+
+    const runWriteHook = async (trx: Executor, model: string, rows: Row[], values: Row) => {
+      if (rows.length) {
+        await onWrite[model]!(trx as Knex.Transaction, rows, values);
+      }
+    };
 
     // A column of `table` (aliased as `alias`), or its SQL expression when virtual
     const columnRef = (table: string, alias: string, column: string): Knex.Raw =>
@@ -297,8 +310,17 @@ function createCustomAdapter(
           });
         }
         const row = { ...data, [idColumn]: id };
-        await db(model).insert(stripVirtual(model, { ...createDefaults[model]?.(row), ...row }));
-        return (await findById(db, model, modelKey, id)) as never;
+        const values = stripVirtual(model, { ...createDefaults[model]?.(row), ...row });
+        if (!onWrite[model]) {
+          await db(model).insert(values);
+          return (await findById(db, model, modelKey, id)) as never;
+        }
+        return withTransaction(async (trx) => {
+          await trx(model).insert(values);
+          const created = await findById(trx, model, modelKey, id);
+          await runWriteHook(trx, model, created ? [created] : [], values);
+          return created as never;
+        });
       },
 
       async findOne({ model, modelKey = model, where, select, join }) {
@@ -373,17 +395,49 @@ function createCustomAdapter(
           if (Object.keys(values).length) {
             await trx(model).where(idColumn, target[idColumn]).update(values);
           }
-          return ((await findById(trx, model, modelKey, values[idColumn] ?? target[idColumn])) ??
-            null) as never;
+          const updated = await findById(
+            trx,
+            model,
+            modelKey,
+            values[idColumn] ?? target[idColumn],
+          );
+          if (onWrite[model] && updated && Object.keys(values).length) {
+            await runWriteHook(trx, model, [updated], values);
+          }
+          return (updated ?? null) as never;
         });
       },
 
-      async updateMany({ model, where, update }) {
+      async updateMany({ model, modelKey = model, where, update }) {
         const values = stripVirtual(model, update as Row);
         if (!Object.keys(values).length) {
           return countRows(model, where);
         }
-        return toCount(await applyWhere(db(model), model, where).update(values));
+        if (!onWrite[model]) {
+          return toCount(await applyWhere(db(model), model, where).update(values));
+        }
+        // Lock and collect the matching ids so the hook sees exactly the rows written
+        const idColumn = fieldColumn(modelKey, 'id');
+        return withTransaction(async (trx) => {
+          const targets: Row[] = await applyWhere(
+            trx.from(model).select(`${model}.${idColumn}`),
+            model,
+            where,
+          ).forUpdate();
+          const ids = targets.map((t) => t[idColumn]);
+          if (!ids.length) {
+            return 0;
+          }
+          const count = await trx(model)
+            .whereIn(idColumn, ids as never)
+            .update(values);
+          const rows: Row[] = await trx
+            .from(model)
+            .select(selectColumns(model, model))
+            .whereIn(`${model}.${idColumn}`, ids as never);
+          await runWriteHook(trx, model, rows, values);
+          return toCount(count);
+        });
       },
 
       async delete({ model, where }) {

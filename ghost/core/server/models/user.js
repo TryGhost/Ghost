@@ -334,6 +334,21 @@ const User = ghostBookshelf.Model.extend(
       return Promise.all(tasks);
     },
 
+    // After the write: a new user's credential row references users.id
+    onSaved: function onSaved(model, options) {
+      ghostBookshelf.Model.prototype.onSaved.apply(this, arguments);
+
+      if (model._changed && Object.hasOwn(model._changed, 'password')) {
+        const { syncCredentialPassword } = require('../auth/better-auth/credential-passwords');
+        return syncCredentialPassword(
+          options.transacting || ghostBookshelf.knex,
+          model.id,
+          model.get('password'),
+          { isNew: options.method === 'insert' },
+        );
+      }
+    },
+
     toJSON: function toJSON(unfilteredOptions) {
       const attrs = ghostBookshelf.Model.prototype.toJSON.call(this, unfilteredOptions);
 
@@ -588,6 +603,13 @@ const User = ghostBookshelf.Model.extend(
       const options = this.filterOptions(unfilteredOptions, 'edit');
       const self = this;
 
+      // One transaction for the password's dual write (plan §4.5)
+      if (data.password && !options.transacting) {
+        return ghostBookshelf.transaction((transacting) => {
+          return self.edit(data, { ...unfilteredOptions, transacting });
+        });
+      }
+
       if (data.roles && data.roles.length > 1) {
         throw new errors.ValidationError({
           message: tpl(messages.onlyOneRolePerUserSupported),
@@ -664,6 +686,14 @@ const User = ghostBookshelf.Model.extend(
     add: function add(dataToClone, unfilteredOptions) {
       const options = this.filterOptions(unfilteredOptions, 'add');
       const self = this;
+
+      // One transaction for the password's dual write (plan §4.5); every new
+      // user has a password, from the data or the model defaults
+      if (!options.transacting) {
+        return ghostBookshelf.transaction((transacting) => {
+          return self.add(dataToClone, { ...unfilteredOptions, transacting });
+        });
+      }
       const data = JSON.parse(JSON.stringify(dataToClone));
       let userData = this.filterData(data);
       let roles;
@@ -1164,6 +1194,14 @@ const User = ghostBookshelf.Model.extend(
      */
     changePassword: async function changePassword(object, unfilteredOptions) {
       const options = this.filterOptions(unfilteredOptions, 'changePassword');
+
+      // One transaction for the password's dual write (plan §4.5)
+      if (!options.transacting) {
+        return ghostBookshelf.transaction((transacting) => {
+          return this.changePassword(object, { ...unfilteredOptions, transacting });
+        });
+      }
+
       const newPassword = object.newPassword;
       const userId = object.user_id;
       const oldPassword = object.oldPassword;

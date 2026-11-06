@@ -36,9 +36,13 @@ const createMissingInDevelopmentTables = async () => {
   const db = require('./index');
   await inDevelopment.createMissingInDevelopmentTables(db.knex);
 
-  if (inDevelopment.shouldCreateInDevelopmentTables()) {
+  const { hasAuthTables } = require('../../auth/better-auth/auth-tables');
+  if (hasAuthTables()) {
     const { seedCredentialAccounts } = require('../../auth/better-auth/seed-credential-accounts');
     await seedCredentialAccounts(db.knex);
+
+    const { reconcileCredentialPasswords } = require('../../auth/better-auth/credential-passwords');
+    await reconcileCredentialPasswords(db.knex, config.get('auth:engine'));
   }
 };
 

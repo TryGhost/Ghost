@@ -1,6 +1,7 @@
 import { betterAuth } from 'better-auth';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
+import { ghostWriteHooks } from './credential-passwords';
 import { createKnexAdapter } from './knex-adapter';
 import {
   generateGhostId,
@@ -45,7 +46,7 @@ export function assertDatabaseSupported({
 }: {
   /** `config.get('database:client')`, where the loader normalizes `mysql` to `mysql2` */
   client: string;
-  /** `shouldCreateInDevelopmentTables()` */
+  /** `hasAuthTables()` */
   inDevelopmentTables: boolean;
 }): void {
   const help =
@@ -88,6 +89,7 @@ export function createAuth(deps: CreateAuthDeps) {
       db: deps.db,
       virtualColumns: ghostVirtualColumns,
       createDefaults: ghostCreateDefaults,
+      onWrite: ghostWriteHooks,
     }),
     ...ghostModelOptions,
     user: {
