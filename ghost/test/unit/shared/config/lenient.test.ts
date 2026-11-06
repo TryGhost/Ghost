@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { z } from 'zod';
-import { lenient, parseLeniently } from '../../../../core/shared/config/lenient';
+import { findUnknownKeys, lenient, parseLeniently } from '../../../../core/shared/config/lenient';
 
 const schema = z.looseObject({
   name: z.string().meta({ fatal: true }),
@@ -193,5 +193,121 @@ describe('lenient', function () {
 
   it('leaves the strict schema untouched', function () {
     assert.equal(schema.safeParse({ ...valid, section: { count: 'x' } }).success, false);
+  });
+});
+
+describe('findUnknownKeys', function () {
+  const warn = { unknownKeys: 'warn' } as const;
+  const marked = z.looseObject({
+    spam: z.object({ user_login: z.number() }).meta(warn),
+    paths: z.object({ appRoot: z.string() }),
+    outer: z
+      .object({
+        inner: z.object({ n: z.number() }).meta(warn).optional(),
+      })
+      .optional(),
+  });
+
+  it('names each unknown key in a marked section by its key path', function () {
+    assert.deepEqual(findUnknownKeys(marked, { spam: { user_login: 1, user_logn: 2 }, other: 1 }), [
+      ['spam', 'user_logn'],
+    ]);
+  });
+
+  it('names a nested marked section by its full key path', function () {
+    assert.deepEqual(findUnknownKeys(marked, { outer: { inner: { n: 1, typo: 2 }, x: 1 } }), [
+      ['outer', 'inner', 'typo'],
+    ]);
+  });
+
+  it('stays silent for an unmarked object', function () {
+    assert.deepEqual(findUnknownKeys(marked, { paths: { appRoot: '/', storage: 'x' } }), []);
+  });
+
+  it('leaves the parse stripping the key', function () {
+    const parsed = marked.parse({ spam: { user_login: 1, user_logn: 2 }, paths: { appRoot: '/' } });
+
+    assert.deepEqual(parsed.spam, { user_login: 1 });
+  });
+
+  it('ignores a section that is missing or not an object', function () {
+    assert.deepEqual(findUnknownKeys(marked, { spam: 'nope' }), []);
+    assert.deepEqual(findUnknownKeys(marked, {}), []);
+  });
+
+  it('ignores the mark on an object that is already loose or strict', function () {
+    const fixture = z.object({
+      loose: z.looseObject({ a: z.number() }).meta(warn),
+      strict: z.strictObject({ a: z.number() }).meta(warn),
+    });
+
+    assert.deepEqual(findUnknownKeys(fixture, { loose: { b: 1 }, strict: { b: 1 } }), []);
+  });
+
+  it('reaches the object through default, nullable, readonly and a transform', function () {
+    const object = z.object({ a: z.number() });
+    const fixture = z.object({
+      withDefault: object.meta(warn).default({ a: 1 }),
+      nullable: object.meta(warn).nullable(),
+      frozen: object.meta(warn).readonly(),
+      piped: object.meta(warn).transform((value) => value.a),
+      markedPipe: object.transform((value) => value.a).meta(warn),
+    });
+    const extra = { a: 1, b: 2 };
+
+    assert.deepEqual(
+      findUnknownKeys(fixture, {
+        withDefault: extra,
+        nullable: extra,
+        frozen: extra,
+        piped: extra,
+        markedPipe: extra,
+      }),
+      [
+        ['withDefault', 'b'],
+        ['nullable', 'b'],
+        ['frozen', 'b'],
+        ['piped', 'b'],
+        ['markedPipe', 'b'],
+      ],
+    );
+  });
+
+  it('walks only the discriminated union option the input picks', function () {
+    const fixture = z.object({
+      pick: z
+        .discriminatedUnion('kind', [
+          z.object({ kind: z.literal('a'), a: z.number() }),
+          z.object({ kind: z.literal('b'), b: z.number() }),
+        ])
+        .meta(warn),
+    });
+
+    assert.deepEqual(findUnknownKeys(fixture, { pick: { kind: 'a', a: 1, typo: 1 } }), [
+      ['pick', 'typo'],
+    ]);
+    assert.deepEqual(findUnknownKeys(fixture, { pick: { kind: 'z', a: 1 } }), []);
+  });
+
+  it('walks the first plain union option the input matches', function () {
+    const fixture = z.object({
+      either: z.union([z.number(), z.object({ a: z.number() }).meta(warn)]),
+    });
+
+    assert.deepEqual(findUnknownKeys(fixture, { either: { a: 1, b: 2 } }), [['either', 'b']]);
+    assert.deepEqual(findUnknownKeys(fixture, { either: 1 }), []);
+  });
+
+  it('walks each element of an array and each value of a record', function () {
+    const item = z.object({ a: z.number() }).meta(warn);
+    const fixture = z.object({ list: z.array(item), map: z.record(z.string(), item) });
+
+    assert.deepEqual(
+      findUnknownKeys(fixture, { list: [{ a: 1 }, { a: 1, b: 2 }], map: { x: { a: 1, c: 3 } } }),
+      [
+        ['list', '1', 'b'],
+        ['map', 'x', 'c'],
+      ],
+    );
   });
 });

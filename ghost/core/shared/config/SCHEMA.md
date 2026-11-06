@@ -101,10 +101,19 @@ a number, or assumed a key is always present, stops compiling.
   second override.
 
   Unknown **keys** are a separate decision: the top level is `z.looseObject()`
-  and must stay so, while a nested section like `paths` is `z.object()` and
-  strips what it does not name. See
+  and must stay so, while a nested section is closed in one of three ways. See
   [Why the top level is loose](#why-the-top-level-is-loose-and-nested-sections-are-not)
-  before adding a section either way.
+  before adding a section.
+
+- **A closed section picks how it treats an unknown key:**
+  - `z.object()` strips it silently. For a section whose readers are all in this
+    repo and read only keys the schema names, like `paths`.
+  - `z.object().meta({unknownKeys: 'warn'})` strips it and reports it by key
+    path, e.g. `spam:user_logn`. The default for a section people write by hand,
+    where a typo should not go unnoticed.
+  - `z.strictObject()` rejects it, as a schema violation. Only where an unknown
+    key really means Ghost is misconfigured, since once strict mode is the
+    default it makes every removal or rename of a key a breaking change.
 
 - **One bad key costs only that key.** zod's own parse is all-or-nothing: one
   bad leaf and it returns no data, so no transform or default anywhere would run.
@@ -141,6 +150,12 @@ a number, or assumed a key is always present, stops compiling.
   site's. `GHOST_CONFIG_SCHEMA_STRICT` overrides in either direction, which is how
   a production deploy opts in once it trusts the schema. Fatal keys throw
   regardless.
+- **An unknown key in a `warn` section throws only in this repo's own
+  environments.** In `development` and `test*` it is a mistake in this repo's
+  own config. Everywhere else it is logged and boot carries on, even with
+  `GHOST_CONFIG_SCHEMA_STRICT=true`: Ghost never reads the key, so failing boot
+  over it would turn a leftover key from an older or newer Ghost into a crash
+  loop. The override can relax it in development, never escalate it.
 
 ## Why the top level is loose, and nested sections are not
 
@@ -168,12 +183,35 @@ reader needs an unlisted key.
 strips it. A key added to config but not to its schema disappears, with no error.
 Add both.
 
+A closed section has three options for an unknown key:
+
+| Schema                                   | Unknown key                        | Choose it when                                                                   |
+| ---------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------- |
+| `z.object()`                             | stripped silently                  | every reader is in this repo and reads only named keys, like `paths`             |
+| `z.object().meta({unknownKeys: 'warn'})` | stripped, and reported by key path | people write the section by hand, so a typo like `spam:user_logn` should be seen |
+| `z.strictObject()`                       | a schema violation                 | an unknown key means Ghost is misconfigured and must not run as if it weren't    |
+
+`unknownKeys: 'warn'` is checked outside zod's parse, because zod can't warn:
+any issue fails the parse. [`lenient.ts`](lenient.ts) walks the raw tree beside
+the schema and lists every key a marked object does not name, reaching it
+through optional, default, transforms and union options. It throws in
+`development` and `test*` and warns everywhere else, whatever
+`GHOST_CONFIG_SCHEMA_STRICT` says. The mark applies to the object it is on, not
+the objects inside it, and does nothing on an object that is already loose or
+strict.
+
+Prefer `warn` over `z.strictObject()`. Once strict mode is the default, a strict
+section turns a key left over from another Ghost version, or a self-hoster's
+typo, into a boot failure, so removing or renaming any key in it is a breaking
+change.
+
 `database:connection` is closed for sqlite, where knex hands the driver only
 `filename`, and loose for mysql2, whose options are too many to list — only the
 common ones are validated.
 
 That is affordable for `paths` because its readers are enumerable. For a section
-where they are not, use `z.strictObject()`: outside strict environments an
+where they are not, or one people write by hand, mark it `unknownKeys: 'warn'`.
+If a section does need `z.strictObject()`, outside strict environments an
 unknown key drops that section back to raw and logs it, the rest of the tree
 stays validated, and strict environments still throw. See
 [One bad key costs only that key](#rules).

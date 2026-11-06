@@ -4,8 +4,8 @@ import { bindAll as bindUrlHelpers, type BoundHelpers } from '@tryghost/config-u
 import { bindAll as bindHelpers, type ConfigHelpers } from './helpers';
 import { guardReadOnly, shouldGuard } from './guard';
 import { z } from 'zod';
-import { lenient, parseLeniently } from './lenient';
-import { reportInvalid } from './report';
+import { findUnknownKeys, lenient, parseLeniently } from './lenient';
+import { reportInvalid, reportUnknownKeys } from './report';
 import { configSchema, type ConfigAt, type ConfigPath, type ValidatedConfig } from './schema';
 
 const lenientConfigSchema = lenient(configSchema);
@@ -57,7 +57,28 @@ function isStrict(env: string): boolean {
     return override === 'true';
   }
 
+  return isRepoEnv(env);
+}
+
+function isRepoEnv(env: string): boolean {
   return env === 'development' || env.startsWith('test');
+}
+
+/**
+ * Whether an unknown key in a section marked `unknownKeys: 'warn'` is fatal.
+ *
+ * Only in this repo's own environments, where a stray key is a mistake in its
+ * own config. Ghost never reads an unknown key, so elsewhere it only warns:
+ * `GHOST_CONFIG_SCHEMA_STRICT` can relax this but never escalate it, so a
+ * leftover key from another Ghost version can't become a boot crash-loop.
+ */
+function failsOnUnknownKeys(env: string): boolean {
+  return isRepoEnv(env) && isStrict(env);
+}
+
+/** Report unknown keys in marked sections of the raw `tree`: thrown or warned per env. */
+export function checkUnknownKeys(schema: z.ZodType, tree: unknown, env: string): void {
+  reportUnknownKeys(findUnknownKeys(schema, tree), { strict: failsOnUnknownKeys(env) });
 }
 
 /**
@@ -86,6 +107,7 @@ export function validateConfig(tree: Record<string, unknown>): ValidatedConfig {
     if (!result.success) {
       reportInvalid(result.error.issues, { strict: true, env });
     }
+    checkUnknownKeys(configSchema, tree, env);
     return readOnly(result.data as Record<string, unknown>);
   }
 
@@ -104,6 +126,7 @@ export function validateConfig(tree: Record<string, unknown>): ValidatedConfig {
   if (parsed.issues.length) {
     reportInvalid(parsed.issues, { strict: false, env });
   }
+  checkUnknownKeys(configSchema, tree, env);
 
   return readOnly(parsed.data as Record<string, unknown>);
 }

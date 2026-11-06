@@ -11,32 +11,49 @@ function isFatal(schema: Schema): boolean {
   return z.globalRegistry.get(schema)?.fatal === true;
 }
 
+/**
+ * Where a child schema reads its input from its parent's: one key of it, every
+ * element of it, the same value, or nothing a walk over the input can follow.
+ */
+type Step = { key: PropertyKey } | 'each' | 'self' | null;
+
 /** The schemas directly inside another, for walking the tree. */
-function children(schema: Schema): Schema[] {
+function children(schema: Schema): [Schema, Step][] {
   const def = schema._zod.def as z.core.$ZodTypeDef & Record<string, unknown>;
   switch (def.type) {
     case 'object':
       return [
-        ...Object.values(def.shape as Record<string, Schema>),
-        ...(def.catchall ? [def.catchall as Schema] : []),
+        ...Object.entries(def.shape as Record<string, Schema>).map(
+          ([key, child]): [Schema, Step] => [child, { key }],
+        ),
+        ...(def.catchall ? [[def.catchall as Schema, null] as [Schema, Step]] : []),
       ];
     case 'union':
-      return def.options as Schema[];
+      return (def.options as Schema[]).map((option) => [option, 'self']);
     case 'pipe':
-      return [def.in as Schema, def.out as Schema];
+      return [
+        [def.in as Schema, 'self'],
+        [def.out as Schema, null],
+      ];
     case 'array':
-      return [def.element as Schema];
+      return [[def.element as Schema, 'each']];
     case 'record':
-      return [def.keyType as Schema, def.valueType as Schema];
+      return [
+        [def.keyType as Schema, null],
+        [def.valueType as Schema, 'each'],
+      ];
     case 'tuple':
-      return [...(def.items as Schema[]), ...(def.rest ? [def.rest as Schema] : [])];
+      return [
+        ...(def.items as Schema[]).map((item, key): [Schema, Step] => [item, { key }]),
+        ...(def.rest ? [[def.rest as Schema, null] as [Schema, Step]] : []),
+      ];
     default:
-      return def.innerType ? [def.innerType as Schema] : [];
+      return def.innerType ? [[def.innerType as Schema, 'self']] : [];
   }
 }
 
 function containsFatal(schema: Schema): boolean {
-  return isFatal(schema) || children(schema).some(containsFatal);
+  return isFatal(schema) || children(schema).some(([child]) => containsFatal(child));
 }
 
 /** A leaf that falls back to its raw input instead of failing the parse, recording why. */
@@ -154,5 +171,89 @@ export function parseLeniently<T extends Schema>(
     return { data: schema.parse(input), issues };
   } finally {
     sink = null;
+  }
+}
+
+function warnsOnUnknownKeys(schema: Schema): boolean {
+  return z.globalRegistry.get(schema)?.unknownKeys === 'warn';
+}
+
+function isRecord(value: unknown): value is Record<PropertyKey, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+/** Whether a union option is one zod could pick for this input. */
+function canMatch(union: Schema, option: Schema, value: unknown): boolean {
+  const key = (union._zod.def as { discriminator?: string }).discriminator;
+  if (key === undefined) {
+    return option.safeParse(value).success;
+  }
+  const allowed = option._zod.propValues?.[key];
+  return isRecord(value) && allowed !== undefined && allowed.has(value[key] as never);
+}
+
+/**
+ * Every key in `input` that a section marked `.meta({unknownKeys: 'warn'})`
+ * does not name, by key path.
+ *
+ * The section still strips them; zod can't warn, as any issue fails the parse,
+ * so this walks the raw input alongside the schema instead. The mark reaches
+ * through wrappers, transforms and union options to the object they hold, and
+ * is ignored on an object that is already loose or strict.
+ */
+export function findUnknownKeys(schema: Schema, input: unknown): Path[] {
+  const found: Path[] = [];
+  walkUnknownKeys(schema, input, [], false, found);
+  return found;
+}
+
+function walkUnknownKeys(
+  schema: Schema,
+  value: unknown,
+  path: Path,
+  marked: boolean,
+  found: Path[],
+): void {
+  const def = schema._zod.def as z.core.$ZodTypeDef & Record<string, unknown>;
+  marked ||= warnsOnUnknownKeys(schema);
+
+  if (def.type === 'object') {
+    if (!isRecord(value)) {
+      return;
+    }
+    if (marked && !def.catchall) {
+      const shape = def.shape as Record<string, Schema>;
+      for (const key of Object.keys(value)) {
+        if (!Object.hasOwn(shape, key)) {
+          found.push([...path, key]);
+        }
+      }
+    }
+  }
+
+  if (def.type === 'union') {
+    // only the option zod would pick, so one option's keys aren't unknown to another
+    const option = children(schema).find(([child]) => canMatch(schema, child, value));
+    if (option) {
+      walkUnknownKeys(option[0], value, path, marked, found);
+    }
+    return;
+  }
+
+  const container = value !== null && typeof value === 'object';
+
+  for (const [child, step] of children(schema)) {
+    if (step === 'self') {
+      walkUnknownKeys(child, value, path, marked, found);
+    } else if (step === null || !container) {
+      continue;
+    } else if (step === 'each') {
+      for (const [key, item] of Object.entries(value)) {
+        walkUnknownKeys(child, item, [...path, key], false, found);
+      }
+    } else {
+      const item = (value as Record<PropertyKey, unknown>)[step.key];
+      walkUnknownKeys(child, item, [...path, step.key], false, found);
+    }
   }
 }

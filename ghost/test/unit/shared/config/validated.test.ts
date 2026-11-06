@@ -5,7 +5,13 @@ import _ from 'lodash';
 import { z } from 'zod';
 import { formatIssues } from '../../../../core/shared/config/report';
 import { configSchema } from '../../../../core/shared/config/schema';
-import { createConfig, deepFreeze, validateConfig } from '../../../../core/shared/config/validated';
+import {
+  checkUnknownKeys,
+  createConfig,
+  deepFreeze,
+  validateConfig,
+} from '../../../../core/shared/config/validated';
+import { findUnknownKeys } from '../../../../core/shared/config/lenient';
 import { configSources } from '../../../utils/config-sources';
 
 const sloppy = require('../../../utils/fixtures/sloppy-config-writer');
@@ -60,6 +66,16 @@ describe('Config Schema', function () {
 
         assert.ok(result.success, result.success ? '' : z.prettifyError(result.error));
         assert.deepEqual(result.data, loaderOutput(merged));
+      });
+    });
+
+    envFiles.forEach(function (file) {
+      it(`has no unknown keys in env/${file}`, function () {
+        const merged = _.merge({}, defaults, readJson('env', file), overrides, {
+          env: 'testing',
+        });
+
+        assert.deepEqual(findUnknownKeys(configSchema, merged), []);
       });
     });
 
@@ -444,6 +460,63 @@ describe('Validated Config', function () {
         validateConfig(configSources({ env: 'development', auth: { engine: 'nope' } })).auth.engine,
         'nope',
       );
+    });
+  });
+
+  describe('checkUnknownKeys', function () {
+    const schema = z.looseObject({
+      spam: z.object({ user_login: z.number() }).meta({ unknownKeys: 'warn' }),
+    });
+    const tree = { spam: { user_login: 1, user_logn: 2 } };
+
+    afterEach(function () {
+      vi.unstubAllEnvs();
+      vi.restoreAllMocks();
+    });
+
+    ['development', 'testing', 'testing-mysql'].forEach(function (env) {
+      it(`throws in ${env}, naming the key path`, function () {
+        assert.throws(
+          () => checkUnknownKeys(schema, tree, env),
+          /Ghost config has unknown keys:\n {2}spam:user_logn$/,
+        );
+      });
+    });
+
+    it('warns in production', function () {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      checkUnknownKeys(schema, tree, 'production');
+
+      assert.match(warn.mock.calls[0][0] as string, /unknown keys[^]*\n {2}spam:user_logn$/);
+    });
+
+    // strict mode becoming the default must not make a leftover key a crash-loop
+    it('only warns in production when GHOST_CONFIG_SCHEMA_STRICT is true', function () {
+      vi.stubEnv('GHOST_CONFIG_SCHEMA_STRICT', 'true');
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      checkUnknownKeys(schema, tree, 'production');
+
+      assert.equal(warn.mock.calls.length, 1);
+    });
+
+    it('only warns in development when GHOST_CONFIG_SCHEMA_STRICT is false', function () {
+      vi.stubEnv('GHOST_CONFIG_SCHEMA_STRICT', 'false');
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      checkUnknownKeys(schema, tree, 'development');
+
+      assert.equal(warn.mock.calls.length, 1);
+    });
+
+    it('stays silent when there is nothing to report', function () {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      checkUnknownKeys(schema, { spam: { user_login: 1 } }, 'production');
+      checkUnknownKeys(z.object({ spam: z.object({}) }), tree, 'development');
+
+      assert.equal(warn.mock.calls.length, 0);
     });
   });
 
