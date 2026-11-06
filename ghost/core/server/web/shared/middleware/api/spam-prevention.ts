@@ -1,3 +1,7 @@
+import type { NextFunction, Request, Response } from 'express';
+import type ExpressBrute from 'express-brute';
+import type BruteKnex from '@tryghost/brute-knex';
+
 const moment = require('moment');
 const extend = require('lodash/extend');
 const pick = require('lodash/pick');
@@ -52,31 +56,31 @@ let spamStaffInviteBlock = spam.staff_invite_block || {};
 let spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
 let spamOtcVerification = spam.otc_verification || {};
 
-let store;
-let memoryStore;
-let privateBlogInstance;
-let globalResetInstance;
-let globalBlockInstance;
-let webmentionsBlockInstance;
-let userLoginInstance;
-let membersAuthInstance;
-let membersAuthEnumerationInstance;
-let checkoutSessionGlobalInstance;
-let checkoutSessionEmailInstance;
-let userResetInstance;
-let sendVerificationCodeInstance;
-let userVerificationInstance;
-let contentApiKeyInstance;
-let emailPreviewBlockInstance;
-let upgradeBlockInstance;
-let upgradeApiBlockInstance;
-let staffInviteBlockInstance;
-let otcVerificationEnumerationInstance;
-let otcVerificationInstance;
+let store: BruteKnex | undefined;
+let memoryStore: ExpressBrute.MemoryStore | undefined;
+let privateBlogInstance: ExpressBrute | undefined;
+let globalResetInstance: ExpressBrute | undefined;
+let globalBlockInstance: ExpressBrute | undefined;
+let webmentionsBlockInstance: ExpressBrute | undefined;
+let userLoginInstance: ExpressBrute | undefined;
+let membersAuthInstance: ExpressBrute | undefined;
+let membersAuthEnumerationInstance: ExpressBrute | undefined;
+let checkoutSessionGlobalInstance: ExpressBrute | undefined;
+let checkoutSessionEmailInstance: ExpressBrute | undefined;
+let userResetInstance: ExpressBrute | undefined;
+let sendVerificationCodeInstance: ExpressBrute | undefined;
+let userVerificationInstance: ExpressBrute | undefined;
+let contentApiKeyInstance: ExpressBrute | undefined;
+let emailPreviewBlockInstance: ExpressBrute | undefined;
+let upgradeBlockInstance: ExpressBrute | undefined;
+let upgradeApiBlockInstance: ExpressBrute | undefined;
+let staffInviteBlockInstance: ExpressBrute | undefined;
+let otcVerificationEnumerationInstance: ExpressBrute | undefined;
+let otcVerificationInstance: ExpressBrute | undefined;
 
 const spamConfigKeys = ['freeRetries', 'minWait', 'maxWait', 'lifetime'];
 
-const handleStoreError = (err) => {
+const handleStoreError = (err: Error & { parent?: Error; next?: NextFunction }) => {
   const customError = new errors.InternalServerError({
     message: 'Unknown error',
     err: err.parent ? err.parent : err,
@@ -118,7 +122,12 @@ const globalBlock = () => {
       extend(
         {
           attachResetToRequest: false,
-          failCallback(req, res, next, nextValidRequestDate) {
+          failCallback(
+            req: Request,
+            res: Response,
+            next: NextFunction,
+            nextValidRequestDate: Date,
+          ) {
             return next(
               new errors.TooManyRequestsError({
                 message: `Too many attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
@@ -159,7 +168,12 @@ const globalReset = () => {
       extend(
         {
           attachResetToRequest: false,
-          failCallback(req, res, next, nextValidRequestDate) {
+          failCallback(
+            req: Request,
+            res: Response,
+            next: NextFunction,
+            nextValidRequestDate: Date,
+          ) {
             return next(
               new errors.TooManyRequestsError({
                 message: `Too many attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
@@ -200,7 +214,7 @@ const webmentionsBlock = () => {
       extend(
         {
           attachResetToRequest: false,
-          failCallback(req, res, next) {
+          failCallback(req: Request, res: Response, next: NextFunction) {
             return next(
               new errors.TooManyRequestsError({
                 message: messages.webmentionsBlock,
@@ -236,7 +250,7 @@ const emailPreviewBlock = () => {
       extend(
         {
           attachResetToRequest: false,
-          failCallback(req, res, next) {
+          failCallback(req: Request, res: Response, next: NextFunction) {
             return next(
               new errors.TooManyRequestsError({
                 message: messages.emailPreviewBlock,
@@ -252,7 +266,12 @@ const emailPreviewBlock = () => {
   return emailPreviewBlockInstance;
 };
 
-const createRequestBlock = (name, settings, errorOptions, options = {}) => {
+const createRequestBlock = (
+  name: string,
+  settings: object,
+  errorOptions: object,
+  options: object = {},
+) => {
   const ExpressBrute = require('express-brute');
   const BruteKnex = require('@tryghost/brute-knex');
   const db = require('../../../../data/db');
@@ -270,7 +289,7 @@ const createRequestBlock = (name, settings, errorOptions, options = {}) => {
     extend(
       {
         attachResetToRequest: false,
-        failCallback(req, res, next, nextValidRequestDate) {
+        failCallback(req: Request, res: Response, next: NextFunction, nextValidRequestDate: Date) {
           res.set(
             'Retry-After',
             String(Math.max(1, Math.ceil((nextValidRequestDate.getTime() - Date.now()) / 1000))),
@@ -356,7 +375,12 @@ const membersAuth = () => {
       extend(
         {
           attachResetToRequest: true,
-          failCallback(req, res, next, nextValidRequestDate) {
+          failCallback(
+            req: Request,
+            res: Response,
+            next: NextFunction,
+            nextValidRequestDate: Date,
+          ) {
             return next(
               new errors.TooManyRequestsError({
                 message: `Too many sign-in attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
@@ -397,7 +421,12 @@ const membersAuthEnumeration = () => {
       extend(
         {
           attachResetToRequest: true,
-          failCallback(req, res, next, nextValidRequestDate) {
+          failCallback(
+            req: Request,
+            res: Response,
+            next: NextFunction,
+            nextValidRequestDate: Date,
+          ) {
             return next(
               new errors.TooManyRequestsError({
                 message: `Too many different sign-in attempts, try again in ${moment(nextValidRequestDate).fromNow(true)}`,
@@ -435,7 +464,12 @@ const checkoutSessionGlobal = () => {
       extend(
         {
           attachResetToRequest: true,
-          failCallback(req, res, next, nextValidRequestDate) {
+          failCallback(
+            req: Request,
+            res: Response,
+            next: NextFunction,
+            nextValidRequestDate: Date,
+          ) {
             return next(
               new errors.TooManyRequestsError({
                 message: `Too many checkout attempts, try again in ${moment(nextValidRequestDate).fromNow(true)}`,
@@ -473,7 +507,12 @@ const checkoutSessionEmail = () => {
       extend(
         {
           attachResetToRequest: true,
-          failCallback(req, res, next, nextValidRequestDate) {
+          failCallback(
+            req: Request,
+            res: Response,
+            next: NextFunction,
+            nextValidRequestDate: Date,
+          ) {
             return next(
               new errors.TooManyRequestsError({
                 message: `Too many checkout attempts for this email, try again in ${moment(nextValidRequestDate).fromNow(true)}`,
@@ -511,7 +550,12 @@ const otcVerificationEnumeration = () => {
       extend(
         {
           attachResetToRequest: false,
-          failCallback(req, res, next, nextValidRequestDate) {
+          failCallback(
+            req: Request,
+            res: Response,
+            next: NextFunction,
+            nextValidRequestDate: Date,
+          ) {
             return next(
               new errors.TooManyRequestsError({
                 message: `Too many verification attempts across multiple codes, try again in ${moment(nextValidRequestDate).fromNow(true)}`,
@@ -550,7 +594,12 @@ const otcVerification = () => {
       extend(
         {
           attachResetToRequest: false,
-          failCallback(req, res, next, nextValidRequestDate) {
+          failCallback(
+            req: Request,
+            res: Response,
+            next: NextFunction,
+            nextValidRequestDate: Date,
+          ) {
             return next(
               new errors.TooManyRequestsError({
                 message: `Too many attempts for this verification code, try again in ${moment(nextValidRequestDate).fromNow(true)}`,
@@ -594,7 +643,12 @@ const userLogin = () => {
       extend(
         {
           attachResetToRequest: true,
-          failCallback(req, res, next, nextValidRequestDate) {
+          failCallback(
+            req: Request,
+            res: Response,
+            next: NextFunction,
+            nextValidRequestDate: Date,
+          ) {
             return next(
               new errors.TooManyRequestsError({
                 message: `Too many login attempts. Please wait ${moment(nextValidRequestDate).fromNow(true)} before trying again, or reset your password.`,
@@ -635,7 +689,12 @@ const userReset = function userReset() {
       extend(
         {
           attachResetToRequest: true,
-          failCallback(req, res, next, nextValidRequestDate) {
+          failCallback(
+            req: Request,
+            res: Response,
+            next: NextFunction,
+            nextValidRequestDate: Date,
+          ) {
             return next(
               new errors.TooManyRequestsError({
                 message: `Too many password reset attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
@@ -676,7 +735,7 @@ const userVerification = function userVerification() {
       extend(
         {
           attachResetToRequest: true,
-          failCallback(req, res, next) {
+          failCallback(req: Request, res: Response, next: NextFunction) {
             return next(
               new errors.TooManyRequestsError({
                 message: tpl(messages.tooManyAttempts),
@@ -712,7 +771,7 @@ const sendVerificationCode = function sendVerificationCode() {
       extend(
         {
           attachResetToRequest: true,
-          failCallback(req, res, next) {
+          failCallback(req: Request, res: Response, next: NextFunction) {
             return next(
               new errors.TooManyRequestsError({
                 message: tpl(messages.tooManyAttempts),
@@ -750,7 +809,12 @@ const privateBlog = () => {
       extend(
         {
           attachResetToRequest: false,
-          failCallback(req, res, next, nextValidRequestDate) {
+          failCallback(
+            req: Request,
+            res: Response,
+            next: NextFunction,
+            nextValidRequestDate: Date,
+          ) {
             logging.error(
               new errors.TooManyRequestsError({
                 message: tpl(messages.tooManySigninAttempts.error, {
@@ -788,7 +852,7 @@ const contentApiKey = () => {
       extend(
         {
           attachResetToRequest: true,
-          failCallback(req, res, next) {
+          failCallback(req: Request, res: Response, next: NextFunction) {
             const err = new errors.TooManyRequestsError({
               message: tpl(messages.tooManyAttempts),
             });
@@ -805,7 +869,7 @@ const contentApiKey = () => {
   return contentApiKeyInstance;
 };
 
-module.exports = {
+const spamPrevention = {
   upgradeBlock,
   upgradeApiBlock,
   staffInviteBlock,
@@ -865,3 +929,8 @@ module.exports = {
     spamOtcVerification = spam.otc_verification || {};
   },
 };
+
+export type SpamPrevention = typeof spamPrevention;
+
+// a plain object, not ES exports, so tests can stub each limiter
+module.exports = spamPrevention;
