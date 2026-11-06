@@ -59,6 +59,10 @@ development and testing databases and have no migration yet. Their dates are
 `DATETIME(3)` (the `precision` column option), because Better Auth expects
 dates to round-trip with their milliseconds.
 
+`user_two_factors`, the `twoFactor` plugin's model, is an in-development table
+too, ahead of the plugin (plan §5). It holds TOTP secrets and backup codes, so
+like the other three it is left out of exports by default.
+
 ## Columns `users` does not have
 
 Better Auth's `user` model expects `emailVerified` (and `twoFactorEnabled`
@@ -110,3 +114,16 @@ foreign keys and `NOT NULL` columns hold for every test.
 
 The virtual columns cost only the tests that store `emailVerified: false`, so
 plan §10 open decision 1 does not need real columns on these grounds.
+
+`test/integration/auth/knex-adapter-ghost.test.ts` covers what the suite
+can't, against Ghost's own test database:
+
+- `email_verified` reads `true` for every user, filters on that, and writes
+  of either value are dropped without error.
+- `two_factor_enabled` is `true` only with a verified `user_two_factors` row.
+  The test adds the `twoFactor` plugin's schema, which the instance doesn't
+  enable yet.
+- `createDefaults` sets `slug` to the id and `password` to `!`, which
+  `@tryghost/security` rejects.
+- `user_sessions`, `user_accounts` and `verifications` dates keep their
+  milliseconds through the adapter.

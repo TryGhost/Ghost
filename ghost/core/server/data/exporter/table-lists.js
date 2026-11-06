@@ -27,6 +27,7 @@ const BACKUP_TABLES = [
   'user_accounts',
   'user_sessions',
   'verifications',
+  'user_two_factors',
   'subscriptions',
   'mobiledoc_revisions',
   'post_revisions',
