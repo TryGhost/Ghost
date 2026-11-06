@@ -1278,6 +1278,36 @@ describe('Custom fields', () => {
       expect(editApi.lastRequest?.body).toEqual({ members_metafields: [{ name: 'Pets' }] });
     });
 
+    it('marks a repeat on the row that can change, not on a saved one', async () => {
+      fakeSettingsScreens();
+      fakeListedFields([animalsField]);
+      const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/favourite_animals/', {
+        members_metafields: [animalsField],
+      });
+      await renderAdminApp('/settings', flagOn);
+
+      await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+      const modal = settingsScreen.customFieldModal();
+      await modal.getByLabelText('New option').fill('Fox');
+      await userEvent.keyboard('{Enter}');
+      // The saved Dog below Fox, so the row typed into is the first of the two.
+      await settleRequests();
+      await userEvent.dragAndDrop(
+        modal.getByLabelText('Reorder Dog'),
+        modal.getByLabelText('Reorder Fox'),
+        { steps: 10 },
+      );
+      await expect.element(modal.getByLabelText('Option 2', { exact: true })).toHaveValue('Fox');
+      await modal.getByLabelText('Option 2', { exact: true }).fill('Dog');
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect
+        .element(modal.getByLabelText('Option 2', { exact: true }))
+        .toHaveAccessibleDescription('This option already exists.');
+      await expect(modal.getByText('This option already exists.')).toHaveCount(1);
+      expect(editApi.lastRequest).toBeUndefined();
+    });
+
     it('sends nothing when an edit is changed back to what was saved', async () => {
       fakeSettingsScreens();
       fakeListedFields([animalsField]);

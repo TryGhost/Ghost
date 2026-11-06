@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ListOptionsEditor from '@/shared/member-custom-fields/list-options-editor';
 import { type OptionRow, optionRow } from '@/shared/member-custom-fields/list-option-row';
+import { REPEATED_OPTION } from '@/shared/member-custom-fields/custom-field-draft';
 import {
   Field,
   FieldContent,
@@ -27,6 +28,32 @@ const settingsOf = ({ options, newOption, multiple }: ListInputs): SetSettings =
     options: typed === '' || texts.includes(typed) ? texts : [...texts, typed],
     multiple,
   };
+};
+
+/**
+ * Each row's problem, by its position. A repeat is marked on the later of two rows with the same
+ * text, which can be a saved row whose text can't change, so it is moved to the row with that text
+ * that can be changed.
+ */
+const rowErrors = (
+  options: readonly OptionRow[],
+  errors: Readonly<Record<string, string | undefined>>,
+): Array<string | undefined> => {
+  const found = options.map((_, index) => errors[`options.${index}`]);
+  options.forEach((row, index) => {
+    if (!row.saved || found[index] !== REPEATED_OPTION) {
+      return;
+    }
+    const text = optionText(row.text);
+    const editable = options.findIndex(
+      (other, at) => !other.saved && !found[at] && optionText(other.text) === text,
+    );
+    if (editable !== -1) {
+      found[editable] = REPEATED_OPTION;
+      found[index] = undefined;
+    }
+  });
+  return found;
 };
 
 /**
@@ -77,7 +104,7 @@ const ListFieldSettings: React.FC<{
         // Text typed but not yet added is saved as the last option, so a problem one past the
         // options added is about it.
         newOptionError={errors[`options.${inputs.options.length}`]}
-        optionErrors={inputs.options.map((_, index) => errors[`options.${index}`])}
+        optionErrors={rowErrors(inputs.options, errors)}
         options={inputs.options}
         savedOptions={saved?.options}
         onChange={({ options, newOption }) => update({ options, newOption })}
