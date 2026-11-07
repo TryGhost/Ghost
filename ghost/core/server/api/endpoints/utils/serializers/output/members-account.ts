@@ -14,9 +14,15 @@ const serialize = (member: unknown, _apiConfig: unknown, frame: Frame): void => 
   frame.response = formattedMemberResponse(member);
 };
 
+/** A member's answers by port, as they hold them. */
+const serializeAnswers = (answers: unknown, _apiConfig: unknown, frame: Frame): void => {
+  frame.response = { answers };
+};
+
 // The API framework loads this file with `require()`, so it exports CommonJS-style;
 // `export default` would not be picked up.
 module.exports = {
   read: serialize,
   update: serialize,
+  readAnswers: serializeAnswers,
 };

@@ -3,7 +3,9 @@ const bodyParser = require('body-parser');
 const config = require('../../../../shared/config');
 const { http } = require('@tryghost/api-framework');
 const api = require('../../../api').endpoints;
+const labs = require('../../../../shared/labs');
 const middleware = require('../../../services/members/middleware');
+const { COLLECTION_FLAG } = require('../../../services/stripe-checkout-config/models');
 
 /**
  * A member's own account, over HTTP.
@@ -56,6 +58,16 @@ module.exports = function accountRoutes() {
     '/metafields/:namespace',
     middleware.rejectWhenAnonymous,
     http(api.memberMetafieldsMembers.browse),
+  );
+
+  // The member's answers to what a tier asks, by the port each is collected under, so a page
+  // asking them again when they change tier can show what they gave. Only while checkouts ask
+  // for them. A change of tier saves new ones.
+  router.get(
+    '/answers',
+    labs.enabledMiddleware(COLLECTION_FLAG),
+    middleware.rejectWhenAnonymous,
+    http(api.membersAccount.readAnswers),
   );
 
   // Letting Ghost email this member again after it stopped.

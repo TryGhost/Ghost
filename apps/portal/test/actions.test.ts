@@ -1,5 +1,6 @@
 import ActionHandler from '../src/actions';
 import { HumanReadableError } from '../src/utils/errors';
+import { requirementInputs } from '../src/utils/tier-requirements';
 import { vi, type MockInstance } from 'vitest';
 import { GIFT_FORM_STATE_KEY, createGiftFormState } from '../src/components/pages/gift/form-state';
 import { ensureGiftPlanRoute, setGiftRoute } from '../src/components/pages/gift/navigation';
@@ -245,9 +246,46 @@ describe('updateProfile action', () => {
     );
   });
 
+  // A refusal no box holds still has to be said when another box is marked, or the member
+  // fixes the marked box and saves again without knowing what else was wrong.
+  test('says what no box holds, beside the box it marks', async () => {
+    const nickname = { key: 'nickname', name: 'Nickname', type: 'short_text' };
+    const address = { key: 'shipping_address', name: 'Shipping address', type: 'address' };
+    const refusal = new HumanReadableError('Keep it under 255 characters.', {
+      property: 'metafields.custom.nickname',
+      details: [
+        { property: 'metafields.custom.nickname', message: 'Keep it under 255 characters.' },
+        {
+          property: 'metafields.custom.shipping_address',
+          message: 'Enter at least one part of the address.',
+        },
+      ],
+    });
+    const mockApi = { member: { update: vi.fn(() => Promise.reject(refusal)) } };
+    const state = {
+      member: { name: 'Jamie', email: 'jamie@example.com' },
+      customFields: [nickname, address],
+    };
+
+    const result = await ActionHandler({
+      action: 'updateProfile',
+      data: {
+        name: 'Jamie',
+        email: 'jamie@example.com',
+        metafields: { custom: { nickname: 'x', shipping_address: { line1: 'x' } } },
+      },
+      state,
+      api: mockApi,
+    });
+
+    expect(result.fieldErrors).toEqual({ 'custom:nickname': 'Keep it under 255 characters.' });
+    expect(result.popupNotification.message).toBe(
+      'Shipping address: Enter at least one part of the address.',
+    );
+  });
+
   // A refusal naming a part the field does not have would mark a box that is not on the
-  // page, and the notification is held back whenever a box is marked - so the save would
-  // have failed without saying anything at all.
+  // page, so without the notification the save would have failed without saying anything.
   test('says so when a refusal names a part that is not drawn', async () => {
     const address = { key: 'shipping_address', name: 'Shipping address', type: 'address' };
     const refusal = new HumanReadableError('Unrecognized key: "line3"', {
@@ -789,6 +827,126 @@ describe('continueSubscription action', () => {
 
     expect(result.reloadOnPopupClose).toBeUndefined();
     expect(result.action).toBe('continueSubscription:failed');
+  });
+});
+
+describe('updateSubscription action', () => {
+  const answers = { 'checkout.shipping.address': { line1: '1 High Street' } };
+
+  test('sends the answers to what the new tier requires with the change of plan', async () => {
+    const mockApi = {
+      member: {
+        updateSubscription: vi.fn(() => Promise.resolve()),
+        sessionData: vi.fn(() => Promise.resolve({ email: 'test@example.com' })),
+      },
+    };
+
+    const result = await ActionHandler({
+      action: 'updateSubscription',
+      data: { plan: 'Silver', planId: 'price_1', subscriptionId: 'sub_123', answers },
+      state: { site: { products: [] } },
+      api: mockApi,
+    });
+
+    expect(mockApi.member.updateSubscription).toHaveBeenCalledWith(
+      expect.objectContaining({ subscriptionId: 'sub_123', answers }),
+    );
+    expect(result.action).toBe('updateSubscription:success');
+  });
+
+  const SHIPPING = [
+    {
+      name: 'shipping',
+      ports: { recipient: 'checkout.shipping.name', address: 'checkout.shipping.address' },
+    },
+  ];
+
+  /** A site whose tier on `price_1` requires a shipping address. */
+  const requiringShipping = {
+    portal_plans: ['monthly', 'yearly'],
+    products: [
+      {
+        id: 'tier_1',
+        monthlyPrice: { id: 'price_1', amount: 500, currency: 'usd' },
+        yearlyPrice: { id: 'price_2', amount: 5000, currency: 'usd' },
+        requirements: SHIPPING,
+      },
+    ],
+  };
+
+  /** What the action makes of the site refusing the change of plan with this error. */
+  async function refusedWith(error: Error) {
+    return ActionHandler({
+      action: 'updateSubscription',
+      data: {
+        plan: 'Silver',
+        planId: 'price_1',
+        subscriptionId: 'sub_123',
+        answers,
+        asked: requirementInputs(SHIPPING),
+      },
+      state: { site: requiringShipping },
+      api: { member: { updateSubscription: vi.fn(() => Promise.reject(error)) } },
+    });
+  }
+
+  test('marks the input when the site refuses a part of an answer', async () => {
+    const result = await refusedWith(
+      new HumanReadableError('Enter a 2-letter country code, like US.', {
+        property: 'answers.checkout.shipping.address.country',
+      }),
+    );
+
+    expect(result.action).toBe('updateSubscription:failed');
+    // The input says what's wrong, so a notification over it would say it twice.
+    expect(result.fieldErrors).toEqual({
+      'custom:checkout.shipping.address:country': 'Enter a 2-letter country code, like US.',
+    });
+    expect(result.popupNotification).toBeNull();
+  });
+
+  test('names the input in the notification when its whole answer is refused', async () => {
+    const result = await refusedWith(
+      new HumanReadableError('Enter at least one part of the address.', {
+        property: 'answers.checkout.shipping.address',
+      }),
+    );
+
+    expect(result.fieldErrors).toEqual({});
+    expect(result.popupNotification.message).toBe(
+      'Shipping address: Enter at least one part of the address.',
+    );
+  });
+
+  test('says a refusal no input holds, beside one an input does', async () => {
+    const result = await refusedWith(
+      new HumanReadableError('Use 255 characters or fewer.', {
+        property: 'answers.checkout.shipping.name',
+        details: [
+          { property: 'answers.checkout.shipping.name', message: 'Use 255 characters or fewer.' },
+          {
+            property: 'answers.checkout.shipping.address',
+            message: 'Enter at least one part of the address.',
+          },
+        ],
+      }),
+    );
+
+    expect(result.fieldErrors).toEqual({
+      'custom:checkout.shipping.name': 'Use 255 characters or fewer.',
+    });
+    expect(result.popupNotification.message).toBe(
+      'Shipping address: Enter at least one part of the address.',
+    );
+  });
+
+  test('says so when the plan fails to change for a reason no input holds', async () => {
+    const result = await refusedWith(new Error('Failed to update subscription'));
+
+    expect(result.fieldErrors).toEqual({});
+    expect(result.popupNotification.message).toBe(
+      'Failed to update subscription, please try again',
+    );
   });
 });
 

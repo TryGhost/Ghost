@@ -142,8 +142,18 @@ const controller = {
       return canManage(frame, 'destroy', frame.options.key);
     },
     async query(frame: WriteFrame) {
-      const { namespace, key } = fieldRoute(frame.options);
-      await booted().definitions.destroy(actingContext(frame.options.context), namespace, key);
+      const field = fieldRoute(frame.options);
+      // Deleting a field deletes its bindings, and tiers list to anyone a requirement only while
+      // each of its ports is bound, so the site's cache is cleared when a port writes into it.
+      // Checked before the delete takes the bindings with it.
+      if (await booted().bindings.isBound(field)) {
+        frame.setHeader('X-Cache-Invalidate', '/*');
+      }
+      await booted().definitions.destroy(
+        actingContext(frame.options.context),
+        field.namespace,
+        field.key,
+      );
       return null;
     },
   },
