@@ -6,6 +6,7 @@ const logging = require('@tryghost/logging');
 
 const api = require('../../../../../core/frontend/services/proxy').api;
 const data = require('../../../../../core/frontend/services/data');
+const { resolveApiCall } = require('../../../../../core/frontend/services/routing/api-adapter');
 const testUtils = require('../../../../utils');
 const configUtils = require('../../../../utils/config-utils');
 
@@ -276,5 +277,21 @@ describe('Unit - frontend/data/fetch-data', function () {
     // The response is still keyed off the resolved `posts` resource
     assert.equal(result.data.post.length, posts.length);
     assert.deepEqual(result.data.post.meta, { pagination: { pages: 2 } });
+  });
+
+  it('fetchEntry reads the route entry with entry relations and member context', async function () {
+    const page = testUtils.DataGenerator.forKnex.createPost({ slug: 'contact', type: 'page' });
+    const readPagesStub = sinon.stub().resolves({ pages: [page] });
+    sinon.stub(api, 'pagesPublic').get(() => ({ read: readPagesStub }));
+    locals.member = { uuid: 'member' };
+
+    const entry = await data.fetchEntry(resolveApiCall('page.contact'), locals);
+
+    assert.equal(entry, page);
+    sinon.assert.calledOnceWithExactly(readPagesStub, {
+      slug: 'contact',
+      include: 'authors,tags,tiers',
+      context: { member: locals.member },
+    });
   });
 });
