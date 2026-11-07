@@ -190,6 +190,16 @@ describe('database automations repository', function () {
       });
     });
 
+    it('selects the lowest ID when multiple deliveries match', async function () {
+      const id = '000000000000000000000001';
+      const recipient = await knex('automated_email_recipients')
+        .where('id', fixture.recipientId)
+        .first();
+      await knex('automated_email_recipients').insert({ ...recipient, id, created_at: later });
+
+      expect(await findEmailRecipientForClick()).toEqual({ id, clicked_at: null });
+    });
+
     it.each(['automationActionRevisionId', 'automationRunStepId', 'memberId'] as const)(
       'does not match a different %s',
       async function (field) {
