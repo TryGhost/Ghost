@@ -3,6 +3,7 @@ import ObjectId from 'bson-objectid';
 import { useMemo } from 'react';
 import { z } from 'zod';
 import { apiUrl } from '../utils/api/fetch-api';
+export { apiUrl } from '../utils/api/fetch-api';
 import {
   Meta,
   createInfiniteQuery,

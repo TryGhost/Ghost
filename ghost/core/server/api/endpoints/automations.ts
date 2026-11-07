@@ -5,6 +5,7 @@ import type {
 import type { Controller, Frame } from '@tryghost/api-framework';
 import errors from '@tryghost/errors';
 import * as automationsApi from '../../services/automations/automations-api';
+import { benchmarkDrain } from '../../services/automations/benchmark-drain';
 // @ts-expect-error This module lacks type definitions.
 import labs from '../../../shared/labs';
 
@@ -15,6 +16,9 @@ type AddFrame = Frame<{ data: AddAutomationData }>;
 type EditFrame = Frame<{
   options: { id: string };
   data: EditAutomationData;
+}>;
+type BenchmarkFrame = Frame<{
+  data: { numberOfRuns: number; steps: Array<'wait' | 'send_email'> };
 }>;
 
 const assertCanAddAutomations = (): void => {
@@ -103,10 +107,41 @@ export const controller = {
       automationsApi.requestPoll();
     },
   },
+
+  benchmarkDrain: {
+    permissions: { docName: 'automations', method: 'add' },
+    data: ['numberOfRuns', 'steps'],
+    async query(frame: BenchmarkFrame) {
+      const { numberOfRuns, steps } = frame.data;
+      if (
+        !Number.isSafeInteger(numberOfRuns) ||
+        numberOfRuns < 1 ||
+        numberOfRuns > 10000 ||
+        !Array.isArray(steps) ||
+        steps.length < 1 ||
+        steps.length > 50 ||
+        steps.some((step) => step !== 'wait' && step !== 'send_email')
+      ) {
+        throw new errors.BadRequestError({
+          message: 'Expected numberOfRuns (1–10000) and steps (wait, send_email).',
+        });
+      }
+      const previousBenchmarkFlag = process.env.GHOST_BENCHMARK_AUTOMATIONS_DRAIN;
+      process.env.GHOST_BENCHMARK_AUTOMATIONS_DRAIN = '1';
+      try {
+        return await benchmarkDrain({ numberOfRuns, steps });
+      } finally {
+        if (previousBenchmarkFlag === undefined)
+          delete process.env.GHOST_BENCHMARK_AUTOMATIONS_DRAIN;
+        else process.env.GHOST_BENCHMARK_AUTOMATIONS_DRAIN = previousBenchmarkFlag;
+      }
+    },
+  },
 } satisfies Controller<{
   browse: Frame;
   read: ReadFrame;
   add: AddFrame;
   edit: EditFrame;
   poll: Frame;
+  benchmarkDrain: BenchmarkFrame;
 }>;

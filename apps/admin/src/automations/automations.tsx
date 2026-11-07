@@ -11,6 +11,7 @@ import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { useVisibleAutomations } from './hooks/use-visible-automations';
 import { useIdlePreload } from '@/shared/use-idle-preload';
 import { lazyAutomationEditorScreen } from './api';
+import { apiUrl } from '@tryghost/admin-x-framework/api/automations';
 
 const MAX_AUTOMATIONS = 50;
 
@@ -35,6 +36,27 @@ const Automations: React.FC = () => {
     automationCount !== undefined &&
     automationCount < MAX_AUTOMATIONS;
 
+  const runBenchmark = async () => {
+    const count = window.prompt('Number of runs', '1000');
+    if (count === null) return;
+    const steps = window.prompt('Steps (comma separated: wait,send_email)', 'wait,send_email');
+    if (steps === null) return;
+    try {
+      const response = await fetch(apiUrl('/automations/benchmark-drain/'), {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          numberOfRuns: Number(count),
+          steps: steps.split(',').map((step) => step.trim()),
+        }),
+      });
+      window.alert(await response.text());
+    } catch (error) {
+      window.alert(String(error));
+    }
+  };
+
   if (isError) {
     throw error instanceof Error ? error : new Error('Failed to load automations');
   }
@@ -55,6 +77,13 @@ const Automations: React.FC = () => {
               </PageHeader.Left>
               <PageHeader.Actions>
                 <PageHeader.ActionGroup>
+                  <PageHeader.Action
+                    label="Benchmark drain"
+                    type="button"
+                    onClick={() => void runBenchmark()}
+                  >
+                    Benchmark drain
+                  </PageHeader.Action>
                   {hasArchivedAutomations && (
                     <Select
                       value={automationsToShow}
