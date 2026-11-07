@@ -118,8 +118,8 @@ const READ_ONLY_POST_FIELDS = [
   'author',
 ] as const;
 
-// Pages additionally never send email fields
-const POST_ONLY_FIELDS = ['email_subject', 'email_only', 'email_id'] as const;
+// Pages additionally never send email or post-only commenting fields
+const POST_ONLY_FIELDS = ['email_subject', 'email_only', 'email_id', 'comments_enabled'] as const;
 
 /**
  * Shape an editable post/page into the exact payload the API expects: strips

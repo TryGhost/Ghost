@@ -13,7 +13,10 @@ const memberAttribution =
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
 function createJsonModel(data) {
-  return Object.assign(data, { toJSON: sinon.stub().returns(data) });
+  return Object.assign(data, {
+    toJSON: sinon.stub().returns(data),
+    get: sinon.stub().callsFake((attr) => data[attr]),
+  });
 }
 
 describe('Unit: utils/serializers/output/mappers', function () {
@@ -1104,6 +1107,77 @@ describe('Unit: utils/serializers/output/mappers', function () {
         in_reply_to_snippet: null,
         pinned: false,
       });
+    });
+  });
+
+  describe('clean.post comments_enabled', function () {
+    it('keeps comments_enabled on posts', function () {
+      const attrs = {
+        type: 'post',
+        comments_enabled: true,
+      };
+      const cleaned = cleanUtil.post(attrs, {});
+      assert.equal(cleaned.comments_enabled, true);
+    });
+
+    it('strips comments_enabled on pages', function () {
+      const attrs = {
+        type: 'page',
+        comments_enabled: true,
+      };
+      const cleaned = cleanUtil.post(attrs, {});
+      assert.equal(cleaned.comments_enabled, undefined);
+    });
+
+    it('strips comments_enabled if fields filter does not include it', function () {
+      const attrs = {
+        type: 'post',
+        comments_enabled: true,
+      };
+      const frame = {
+        apiType: 'content',
+        original: {
+          query: {
+            fields: ['id', 'title'],
+          },
+        },
+      };
+      const cleaned = cleanUtil.post(attrs, frame);
+      assert.equal(cleaned.comments_enabled, undefined);
+    });
+  });
+
+  describe('mappers.posts comments_enabled', function () {
+    it('defaults comments_enabled to true on post when undefined', async function () {
+      const post = createJsonModel(
+        testUtils.DataGenerator.forKnex.createPost({
+          id: 'id1',
+          type: 'post',
+        }),
+      );
+      delete post.comments_enabled;
+
+      const frame = {
+        options: {},
+      };
+      const result = await mappers.posts(post, frame);
+      assert.equal(result.comments_enabled, true);
+    });
+
+    it('preserves comments_enabled false on post', async function () {
+      const post = createJsonModel(
+        testUtils.DataGenerator.forKnex.createPost({
+          id: 'id1',
+          type: 'post',
+          comments_enabled: false,
+        }),
+      );
+
+      const frame = {
+        options: {},
+      };
+      const result = await mappers.posts(post, frame);
+      assert.equal(result.comments_enabled, false);
     });
   });
 });

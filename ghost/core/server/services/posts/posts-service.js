@@ -30,6 +30,7 @@ const COPIED_POSTS_FIELDS = [
   'feature_image',
   'featured',
   'show_title_and_feature_image',
+  'comments_enabled',
   'type',
   'locale',
   'visibility',

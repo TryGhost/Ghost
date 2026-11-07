@@ -26,7 +26,11 @@ describe('Comments Service: CommentsService', function () {
     };
   }
 
-  function createClassInstance({ commentsEnabled = 'all', commentStatus = 'published' } = {}) {
+  function createClassInstance({
+    commentsEnabled = 'all',
+    commentStatus = 'published',
+    postCommentsEnabled = true,
+  } = {}) {
     let lastCommentColumns;
     const commentFetchModels = [];
     const memberModel = {
@@ -36,6 +40,12 @@ describe('Comments Service: CommentsService', function () {
     };
     const postModel = {
       id: 'post-id',
+      get: sinon.stub().callsFake((key) => {
+        if (key === 'comments_enabled') {
+          return postCommentsEnabled;
+        }
+      }),
+      comments_enabled: postCommentsEnabled,
       toJSON: sinon.stub().returns({ id: 'post-id' }),
     };
     const commentModel = {
@@ -553,6 +563,22 @@ describe('Comments Service: CommentsService', function () {
   });
 
   describe('replyToComment', function () {
+    it('rejects replies when the post has comments disabled', async function () {
+      const { instance, models } = createClassInstance({ postCommentsEnabled: false });
+
+      await assert.rejects(
+        () =>
+          instance.replyToComment('comment-id', undefined, 'member-id', '<p>Reply</p>', {
+            context: {
+              member: { id: 'member-id' },
+            },
+          }),
+        errors.NoPermissionError,
+      );
+
+      sinon.assert.notCalled(models.Comment.add);
+    });
+
     it('allows replies to hidden parent comments even when requested fields omit internal columns', async function () {
       const { instance, models } = createClassInstance({ commentStatus: 'hidden' });
 
@@ -892,6 +918,17 @@ describe('Comments Service: CommentsService', function () {
 
   describe('commentOnPost', function () {
     const options = { context: { member: { id: 'member-id' } } };
+
+    it('rejects comments when the post has comments disabled', async function () {
+      const { instance, models } = createClassInstance({ postCommentsEnabled: false });
+
+      await assert.rejects(
+        () => instance.commentOnPost('post-id', 'member-id', '<p>Comment</p>', options),
+        errors.NoPermissionError,
+      );
+
+      sinon.assert.notCalled(models.Comment.add);
+    });
 
     it('rejects after saving the comment when author notification fails, without dispatching the member comment event', async function () {
       const { instance, models, domainEvents } = createClassInstance();
