@@ -504,7 +504,10 @@ class MemberWelcomeEmailService {
         if (typeof mailgunTagFromConfig === 'string' && mailgunTagFromConfig.length > 0) {
           tags.push(mailgunTagFromConfig);
         }
-        sendEmail = this.#sendBulkEmail.bind(this);
+        sendEmail =
+          process.env.GHOST_BENCHMARK_AUTOMATIONS_DRAIN === '1'
+            ? this.#sendTransactionalEmail.bind(this)
+            : this.#sendBulkEmail.bind(this);
         break;
       }
       default: {
