@@ -9,11 +9,13 @@ import useSettingGroup from '@/settings/hooks/use-setting-group';
 import {
   Button,
   Field,
+  FieldError,
   FieldGroup,
   FieldLabel,
   Input,
   Link,
   Switch,
+  Textarea,
 } from '@tryghost/shade/components';
 import { HostLimitError, JSONError } from '@tryghost/admin-x-framework/errors';
 import { LucideIcon } from '@tryghost/shade/utils';
@@ -32,7 +34,7 @@ import { useBrowseMembers } from '@tryghost/admin-x-framework/api/members';
 import { useBrowseTiers, useEditTier } from '@tryghost/admin-x-framework/api/tiers';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useGlobalData } from '@/settings/providers/global-data-context';
-import { useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
+import { useFeatureFlag, useHandleError, useLimiter } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 import { navigateTo } from '@/utils/navigation';
@@ -70,8 +72,8 @@ const Start: React.FC<{ onNext?: () => void }> = ({ onNext }) => {
 };
 
 /**
- * Saves the secure key account.ghost.org delivers, then sets up the default
- * prices and Portal plans. Resolves to an error to show, or '' on success.
+ * Saves a secure key, then sets up the default prices and Portal plans.
+ * 'rejected': Ghost refused the key. 'failed': any other error, already shown.
  */
 const useSaveStripeConnection = () => {
   const { refetch: fetchActiveTiers } = useBrowseTiers({
@@ -115,15 +117,15 @@ const useSaveStripeConnection = () => {
     }
   };
 
-  return async (secureKey: string) => {
+  return async (secureKey: string): Promise<'connected' | 'rejected' | 'failed'> => {
     try {
       await editSettings([{ key: 'stripe_connect_integration_token', value: secureKey }]);
     } catch (e) {
       if (e instanceof JSONError && e.data?.errors) {
-        return 'Stripe couldn’t be connected. The connection may have expired or been started in another browser. Connect with Stripe to try again.';
+        return 'rejected';
       }
       handleError(e);
-      return 'Stripe couldn’t be connected. Connect with Stripe to try again.';
+      return 'failed';
     }
     await saveTier();
     try {
@@ -133,12 +135,64 @@ const useSaveStripeConnection = () => {
     } catch (e) {
       handleError(e);
     }
-    return '';
+    return 'connected';
   };
+};
+
+/** Without the oauthBridge lab: the admin pastes the key stripe.ghost.org shows. */
+const PasteSecureKey: React.FC<{ stripeConnectUrl: string }> = ({ stripeConnectUrl }) => {
+  const [token, setToken] = useState('');
+  const [error, setError] = useState('');
+  const save = useSaveStripeConnection();
+
+  const onSubmit = async () => {
+    setError('');
+    if (!token) {
+      setError('Please enter a secure key');
+      return;
+    }
+    if ((await save(token)) === 'rejected') {
+      setError('Invalid secure key');
+    }
+  };
+
+  return (
+    <>
+      <Text as="h6" className="text-base" tone="secondary" weight="semibold">
+        Step 1 — <span className="text-foreground">Generate secure key</span>
+      </Text>
+      <div className="mt-2 mb-4">
+        Click on the <strong>“Connect with Stripe”</strong> button to generate a secure key that
+        connects your Ghost site with Stripe.
+      </div>
+      <StripeButton href={stripeConnectUrl} target="_blank" />
+      <Text as="h6" className="mt-8 mb-2 text-base" tone="secondary" weight="semibold">
+        Step 2 — <span className="text-foreground">Paste secure key</span>
+      </Text>
+      <Field data-invalid={Boolean(error) || undefined}>
+        <FieldLabel className="sr-only" htmlFor="stripe-secure-key">
+          Secure key
+        </FieldLabel>
+        <Textarea
+          aria-invalid={Boolean(error) || undefined}
+          id="stripe-secure-key"
+          placeholder="Paste your secure key here"
+          onChange={(event) => setToken(event.target.value)}
+        />
+        {error && <FieldError>{error}</FieldError>}
+      </Field>
+      {token && (
+        <Button className="mt-5" type="button" onClick={() => void onSubmit()}>
+          Save Stripe settings
+        </Button>
+      )}
+    </>
+  );
 };
 
 const Connect: React.FC<{ error?: string }> = ({ error }) => {
   const [testMode, setTestMode] = useState(false);
+  const oauthBridge = useFeatureFlag('oauthBridge');
 
   const { apiRoot } = getGhostPaths();
   const stripeConnectUrl = `${apiRoot}/members/stripe_connect?mode=${testMode ? 'test' : 'live'}`;
@@ -164,16 +218,22 @@ const Connect: React.FC<{ error?: string }> = ({ error }) => {
           />
         </Field>
       </div>
-      {error && (
-        <Text as="p" className="mb-4 text-red" role="alert">
-          {error}
-        </Text>
+      {oauthBridge ? (
+        <>
+          {error && (
+            <Text as="p" className="mb-4 text-red" role="alert">
+              {error}
+            </Text>
+          )}
+          <div className="mb-4">
+            Click on the <strong>“Connect with Stripe”</strong> button to connect your Ghost site
+            with Stripe. You’ll come back here once Stripe is connected.
+          </div>
+          <StripeButton href={stripeConnectUrl} onClick={markConnectionStarted} />
+        </>
+      ) : (
+        <PasteSecureKey stripeConnectUrl={stripeConnectUrl} />
       )}
-      <div className="mb-4">
-        Click on the <strong>“Connect with Stripe”</strong> button to connect your Ghost site with
-        Stripe. You’ll come back here once Stripe is connected.
-      </div>
-      <StripeButton href={stripeConnectUrl} onClick={markConnectionStarted} />
     </div>
   );
 };
@@ -223,9 +283,13 @@ const Connecting: React.FC<{ secureKey: string; onFailed: (error: string) => voi
       return;
     }
     started.current = true;
-    void save(secureKey).then((error) => {
-      if (error) {
-        onFailed(error);
+    void save(secureKey).then((result) => {
+      if (result === 'rejected') {
+        onFailed(
+          'Stripe couldn’t be connected. The connection may have expired or been started in another browser. Connect with Stripe to try again.',
+        );
+      } else if (result === 'failed') {
+        onFailed('Stripe couldn’t be connected. Connect with Stripe to try again.');
       }
     });
   }, [save, secureKey, onFailed]);
@@ -413,12 +477,14 @@ const StripeConnectModal: React.FC = () => {
   const stripeConnectAccountId = getSettingValue(settings, 'stripe_connect_account_id');
   const { updateRoute } = useSettingsNavigation();
   const upgradeRoute = useUpgradeRoute();
-  // A key account.ghost.org delivered (see delivered-secure-key.ts) counts
+  const oauthBridge = useFeatureFlag('oauthBridge');
+  // With the oauthBridge lab, a key account.ghost.org delivered (see delivered-secure-key.ts) counts
   // only if this modal can connect it now, and only for this modal: it's
   // forgotten as the modal opens, whichever screen it shows. It's saved
   // straight away when this tab started the connection, and confirmed first
   // otherwise. If saving fails, the user connects again from here.
   const canConnect =
+    oauthBridge &&
     !config?.stripeDirect &&
     !checkStripeEnabled(settings || [], config || {}) &&
     !stripeConnectAccountId;

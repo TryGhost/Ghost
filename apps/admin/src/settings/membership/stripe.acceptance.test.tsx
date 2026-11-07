@@ -18,6 +18,8 @@ const freeTier = tier({ id: '645453f4d254799990dd0e21', name: 'Free', slug: 'fre
 // What clicking Connect with Stripe in this tab leaves behind.
 const startConnectionInThisTab = () =>
   sessionStorage.setItem('ghost-stripe-connect-started', String(Date.now()));
+// The account.ghost.org flow is behind this alpha lab.
+const labs = { oauthBridge: true };
 const accountKey = btoa(JSON.stringify({ n: 'Dummy Co', i: 'acct_123', l: false, s: 'state' }));
 
 describe('Stripe settings', () => {
@@ -46,7 +48,9 @@ describe('Stripe settings', () => {
     // A secure key is base64, so it carries characters URLs encode.
     const key = 'eyJsIjpmYWxzZX0+/=';
     startConnectionInThisTab();
-    await renderAdminApp(`/settings/stripe-connect?${new URLSearchParams({ secure_key: key })}`);
+    await renderAdminApp(`/settings/stripe-connect?${new URLSearchParams({ secure_key: key })}`, {
+      labs,
+    });
 
     expect(window.location.hash).toBe('#/settings/stripe-connect');
     const modal = settingsScreen.stripeModal();
@@ -70,7 +74,7 @@ describe('Stripe settings', () => {
       { status: 400 },
     );
     startConnectionInThisTab();
-    await renderAdminApp('/settings/stripe-connect?secure_key=stale');
+    await renderAdminApp('/settings/stripe-connect?secure_key=stale', { labs });
 
     const modal = settingsScreen.stripeModal();
     await expect
@@ -96,6 +100,7 @@ describe('Stripe settings', () => {
     const settingsApi = fakeEditSettings();
     await renderAdminApp(
       `/settings/stripe-connect?${new URLSearchParams({ secure_key: accountKey })}`,
+      { labs },
     );
 
     const modal = settingsScreen.stripeModal();
@@ -119,6 +124,7 @@ describe('Stripe settings', () => {
     const settingsApi = fakeEditSettings();
     await renderAdminApp(
       `/settings/stripe-connect?${new URLSearchParams({ secure_key: accountKey })}`,
+      { labs },
     );
 
     const modal = settingsScreen.stripeModal();
@@ -131,7 +137,7 @@ describe('Stripe settings', () => {
     fakeSettingsScreens();
     fakeTiers([freeTier]);
     const settingsApi = fakeEditSettings();
-    await renderAdminApp('/settings/stripe-connect?secure_key=stale');
+    await renderAdminApp('/settings/stripe-connect?secure_key=stale', { labs });
     await expect
       .element(settingsScreen.stripeModal().getByText(/This link isn’t a Stripe connection/))
       .toBeVisible();
@@ -165,6 +171,7 @@ describe('Stripe settings', () => {
     await renderAdminApp(
       `/settings/stripe-connect?${new URLSearchParams({ secure_key: accountKey })}`,
       {
+        labs,
         boot: {
           browseSettings: {
             response: () => Promise.resolve(settingsResponse({ settings: stripeSettings() })),
@@ -182,6 +189,49 @@ describe('Stripe settings', () => {
     await settingsScreen.tiers().getByRole('button', { name: 'Connect with Stripe' }).click();
     await expect.element(settingsScreen.stripeModal().getByText('Getting paid')).toBeVisible();
     expect(settingsApi.requests).toHaveLength(0);
+  });
+
+  it('without the oauthBridge lab, connects Stripe with a pasted secure key', async () => {
+    fakeSettingsScreens();
+    fakeTiers([freeTier]);
+    const settingsApi = fakeAdminEndpoint('PUT', '/settings/', ({ body }) => {
+      const request = body as { settings: Array<{ key: string; value: string }> };
+      const isConnectionComplete = request.settings.some(({ key }) => key === 'portal_plans');
+      return settingsResponse({
+        settings: {
+          ...(isConnectionComplete
+            ? {
+                stripe_connect_display_name: 'Dummy',
+                stripe_connect_livemode: false,
+                stripe_connect_account_id: 'acct_123',
+                stripe_connect_publishable_key: 'pk_test_123',
+                stripe_connect_secret_key: 'sk_test_123',
+              }
+            : {}),
+          ...Object.fromEntries(request.settings.map(({ key, value }) => [key, value])),
+        },
+      });
+    });
+    fakeAdminEndpoint('PUT', /^\/tiers\/[^/]+\/$/, ({ body }) => body);
+    // A key in the address is ignored without the lab.
+    await renderAdminApp(
+      `/settings/stripe-connect?${new URLSearchParams({ secure_key: accountKey })}`,
+    );
+
+    const modal = settingsScreen.stripeModal();
+    await modal.getByRole('button', { name: /I have a Stripe account/ }).click();
+    const connectLink = modal.getByRole('link', { name: 'Connect with Stripe' });
+    await expect.element(connectLink).toHaveAttribute('target', '_blank');
+    expect(settingsApi.requests).toHaveLength(0);
+
+    await modal.getByPlaceholder('Paste your secure key here').fill('token_test');
+    await modal.getByRole('button', { name: 'Save Stripe settings' }).click();
+
+    await expect.element(modal.getByText(/You are connected with Stripe!/)).toBeVisible();
+    expect(settingsApi.requests.map((request) => request.body)).toEqual([
+      { settings: [{ key: 'stripe_connect_integration_token', value: 'token_test' }] },
+      { settings: [{ key: 'portal_plans', value: '["free","monthly","yearly"]' }] },
+    ]);
   });
 
   it('saves Stripe Direct keys', async () => {

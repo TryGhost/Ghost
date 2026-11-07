@@ -111,7 +111,10 @@ describe('Sentry', () => {
     const ingest = fakeEndpoint('POST', ENVELOPE_URL, {});
     const key = 'SECUREKEYMARKER0123456789';
 
-    await renderAdminApp(`/settings/stripe-connect?secure_key=${key}`, { boot: sentryBoot() });
+    await renderAdminApp(`/settings/stripe-connect?secure_key=${key}`, {
+      labs: { oauthBridge: true },
+      boot: sentryBoot(),
+    });
     await expect
       .poll(() => envelopeItems(ingest).some(({ type }) => type === 'session'))
       .toBe(true);

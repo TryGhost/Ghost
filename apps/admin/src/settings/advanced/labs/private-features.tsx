@@ -118,6 +118,12 @@ const features: Feature[] = [
     description: 'Show comment volume, top posts and top commenters beside the comments list.',
     flag: 'commentsAnalytics',
   },
+  {
+    title: 'OAuth bridge',
+    description:
+      'Connect Stripe through account.ghost.org, which sends the connection back to Admin, instead of pasting a secure key.',
+    flag: 'oauthBridge',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {

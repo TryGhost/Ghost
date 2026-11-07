@@ -46,9 +46,9 @@ const StripeButton: React.FC<StripeButtonProps> = ({
       <Button className={classNames} variant={variant ?? null} asChild {...props}>
         <a
           href={href}
-          // A same-tab link (Connect with Stripe) keeps its Referer: Ghost
-          // checks it where browsers don't say a request is same-origin.
-          rel={target === '_blank' ? 'noopener noreferrer' : undefined}
+          // The only link is Ghost's own Connect start, which checks the
+          // Referer where browsers don't say a request is same-origin.
+          rel={target === '_blank' ? 'noopener' : undefined}
           target={target}
         >
           {label}

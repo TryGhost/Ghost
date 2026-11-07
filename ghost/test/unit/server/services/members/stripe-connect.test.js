@@ -3,8 +3,13 @@ const sinon = require('sinon');
 const { assertExists } = require('../../../../utils/assertions');
 const stripeConnect = require('../../../../../core/server/services/members/stripe-connect');
 const urlUtils = require('../../../../../core/shared/url-utils').default;
+const labs = require('../../../../../core/shared/labs');
 
 describe('Members - Stripe Connect', function () {
+  afterEach(function () {
+    sinon.restore();
+  });
+
   it('getStripeConnectOAuthUrl returns the correct url and sets the necessary state on session and url', async function () {
     const session = new Map();
     const setSessionProp = session.set.bind(session);
@@ -24,7 +29,19 @@ describe('Members - Stripe Connect', function () {
     assert.equal(url.searchParams.get('state'), session.get(stripeConnect.STATE_PROP));
   });
 
-  it('getStripeConnectOAuthUrl returns to account.ghost.org, naming the site in the state', async function () {
+  it('getStripeConnectOAuthUrl returns to stripe.ghost.org without the oauthBridge lab', async function () {
+    sinon.stub(labs, 'isSet').withArgs('oauthBridge').returns(false);
+    const session = new Map();
+    const url = await stripeConnect.getStripeConnectOAuthUrl(session.set.bind(session), 'test');
+
+    const state = JSON.parse(Buffer.from(url.searchParams.get('state'), 'base64').toString());
+
+    assert.equal(state.site, undefined);
+    assert.equal(url.searchParams.get('redirect_uri'), 'https://stripe.ghost.org');
+  });
+
+  it('getStripeConnectOAuthUrl returns to account.ghost.org with the oauthBridge lab, naming the site in the state', async function () {
+    sinon.stub(labs, 'isSet').withArgs('oauthBridge').returns(true);
     const session = new Map();
     const url = await stripeConnect.getStripeConnectOAuthUrl(session.set.bind(session), 'test');
 
