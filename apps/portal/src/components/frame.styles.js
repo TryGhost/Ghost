@@ -309,7 +309,7 @@ html[dir="rtl"] .gh-portal-btn-site-title-back span {
 /* Global layout styles
 /* ----------------------------------------------------- */
 .gh-portal-popup-background {
-    position: absolute;
+    position: fixed;
     display: block;
     top: 0;
     right: 0;
@@ -346,6 +346,7 @@ html[dir="rtl"] .gh-portal-btn-site-title-back span {
     height: 100%;
     max-height: 100vh;
     overflow: scroll;
+    overscroll-behavior-y: none;
 }
 
 /* Hiding scrollbars */
