@@ -5,8 +5,9 @@ import moment from 'moment';
 import { RateLimiterMemory, RateLimiterMySQL, RateLimiterSQLite } from 'rate-limiter-flexible';
 import config from '../../../../../shared/config';
 import type { SpamBlock } from '../../../../../shared/config/schema/spam';
+import type { Request } from 'express';
 import { BackoffLimiter } from './backoff-limiter';
-import type { BackoffOptions, LimiterFactory, StoreError } from './backoff-limiter';
+import type { BackoffOptions, LimiterFactory } from './backoff-limiter';
 
 const messages = {
   forgottenPasswordEmail: {
@@ -54,20 +55,8 @@ const quotedLimits = (block: SpamBlock) => {
   };
 };
 
-const handleStoreError = (err: StoreError) => {
-  const customError = new errors.InternalServerError({
-    message: 'Unknown error',
-    err: err.parent instanceof Error ? err.parent : undefined,
-  });
-
-  // resets have no request to fail, so they only log
-  if (!err.next) {
-    logging.error(err);
-    return;
-  }
-
-  err.next(customError);
-};
+/** How long a block lasts, as "10 minutes". */
+const waitText = (ms: number) => moment.duration(ms).humanize();
 
 const memoryFactory: LimiterFactory = (options) => new RateLimiterMemory(options);
 
@@ -108,7 +97,7 @@ const databaseStore = (): LimiterFactory => {
   return databaseFactory;
 };
 
-type LimiterOptions = Pick<BackoffOptions, 'attachResetToRequest' | 'failCallback'>;
+type LimiterOptions = Pick<BackoffOptions, 'key' | 'ignoreIP' | 'onBlocked'>;
 
 /** One limiter per name, until reset(), reading its block from config when built. */
 const limiter = (
@@ -123,7 +112,6 @@ const limiter = (
     const { freeRetries, minWait, maxWait, lifetime } = settingsFor(block);
 
     instance = new BackoffLimiter(name, memory ? memoryFactory : databaseStore(), {
-      handleStoreError,
       ...options,
       freeRetries,
       minWait,
@@ -136,31 +124,45 @@ const limiter = (
   return instance;
 };
 
+const bodyField = (req: Request, field: string): string | undefined =>
+  req.body?.[field] || undefined;
+
+/** Trims and lowercases an email, so case and spacing can't open a fresh bucket. */
+const emailKey = (email: unknown): string | undefined =>
+  email ? String(email).trim().toLowerCase() : undefined;
+
 /** A limiter for Admin requests that sets Retry-After when it blocks. */
 const requestBlock = (
   name: string,
   block: SpamBlock,
   errorOptions: ConstructorParameters<typeof errors.TooManyRequestsError>[0],
+  keyOptions: Pick<LimiterOptions, 'key' | 'ignoreIP'> = {},
 ) =>
   limiter(name, block, {
-    attachResetToRequest: false,
-    failCallback(req, res, next, nextValidRequestDate) {
-      res.set(
-        'Retry-After',
-        String(Math.max(1, Math.ceil((nextValidRequestDate.getTime() - Date.now()) / 1000))),
-      );
+    ...keyOptions,
+    onBlocked(retryAfterMs, res) {
+      res.set('Retry-After', String(Math.max(1, Math.ceil(retryAfterMs / 1000))));
 
-      return next(new errors.TooManyRequestsError({ ...errorOptions }));
+      return new errors.TooManyRequestsError({ ...errorOptions });
     },
   });
 
+// A staff user has one budget across IP addresses and Ghost instances.
+// Denied users cannot consume the owner or administrator budget.
 const upgradeBlock = () =>
-  requestBlock('upgrade_requests', 'upgrade_block', {
-    message: messages.upgradeBlock,
-    context: 'The staff user budget for update POST attempts has been exhausted.',
-    help: 'Wait for Retry-After before retrying. Reuse the original idempotency_key for the same update.',
-  });
+  requestBlock(
+    'upgrade_requests',
+    'upgrade_block',
+    {
+      message: messages.upgradeBlock,
+      context: 'The staff user budget for update POST attempts has been exhausted.',
+      help: 'Wait for Retry-After before retrying. Reuse the original idempotency_key for the same update.',
+    },
+    { ignoreIP: true, key: (req) => (req as Request & { user: { id: string } }).user.id },
+  );
 
+// Limits authentication work across all upgrade routes, before staff identity
+// is available. This is separate from the stricter per-user POST budget.
 const upgradeApiBlock = () =>
   requestBlock('upgrade_api', 'upgrade_api_block', {
     message: messages.upgradeBlock,
@@ -168,11 +170,17 @@ const upgradeApiBlock = () =>
     help: 'Wait for Retry-After before retrying. Reuse the original idempotency_key for the same update.',
   });
 
+// One budget for the whole site
 const staffInviteBlock = () =>
-  requestBlock('staff_invites', 'staff_invite_block', {
-    message: messages.staffInviteBlock,
-    code: 'STAFF_INVITE_RATE_LIMIT',
-  });
+  requestBlock(
+    'staff_invites',
+    'staff_invite_block',
+    {
+      message: messages.staffInviteBlock,
+      code: 'STAFF_INVITE_RATE_LIMIT',
+    },
+    { ignoreIP: true },
+  );
 
 // This locks a single endpoint based on excessive requests from an IP.
 // Currently only used for auth type methods.
@@ -180,64 +188,56 @@ const staffInviteBlock = () =>
 // Defaults to 50 attempts per hour and locks the endpoint for an hour
 const globalBlock = () =>
   limiter('globalBlock', 'global_block', {
-    attachResetToRequest: false,
-    failCallback(req, res, next, nextValidRequestDate) {
+    key: (req) => req.path,
+    onBlocked(retryAfterMs) {
       const { attempts, period } = quotedLimits('global_block');
 
-      return next(
-        new errors.TooManyRequestsError({
-          message: `Too many attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
-          context: tpl(messages.forgottenPasswordIp.error, { rfa: attempts, rfp: period }),
-          help: tpl(messages.tooManyAttempts),
-        }),
-      );
+      return new errors.TooManyRequestsError({
+        message: `Too many attempts try again in ${waitText(retryAfterMs)}`,
+        context: tpl(messages.forgottenPasswordIp.error, { rfa: attempts, rfp: period }),
+        help: tpl(messages.tooManyAttempts),
+      });
     },
   });
 
 const globalReset = () =>
   limiter('globalReset', 'global_reset', {
-    attachResetToRequest: false,
-    failCallback(req, res, next, nextValidRequestDate) {
+    key: (req) => req.path,
+    onBlocked(retryAfterMs) {
       const { attempts, period } = quotedLimits('global_reset');
 
-      return next(
-        new errors.TooManyRequestsError({
-          message: `Too many attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
-          context: tpl(messages.forgottenPasswordIp.error, { rfa: attempts, rfp: period }),
-          help: tpl(messages.forgottenPasswordIp.context),
-        }),
-      );
+      return new errors.TooManyRequestsError({
+        message: `Too many attempts try again in ${waitText(retryAfterMs)}`,
+        context: tpl(messages.forgottenPasswordIp.error, { rfa: attempts, rfp: period }),
+        help: tpl(messages.forgottenPasswordIp.context),
+      });
     },
   });
 
 const webmentionsBlock = () =>
   limiter('webmentionsBlock', 'webmentions_block', {
-    attachResetToRequest: false,
-    failCallback(req, res, next) {
-      return next(new errors.TooManyRequestsError({ message: messages.webmentionsBlock }));
-    },
+    onBlocked: () => new errors.TooManyRequestsError({ message: messages.webmentionsBlock }),
   });
 
+// One budget for the whole site
 const emailPreviewBlock = () =>
   limiter('emailPreviewBlock', 'email_preview_block', {
-    attachResetToRequest: false,
-    failCallback(req, res, next) {
-      return next(new errors.TooManyRequestsError({ message: messages.emailPreviewBlock }));
-    },
+    ignoreIP: true,
+    onBlocked: () => new errors.TooManyRequestsError({ message: messages.emailPreviewBlock }),
   });
 
+/**
+ * Block too many sign-in requests for the same email address
+ */
 const membersAuth = () =>
   limiter('membersAuth', 'user_login', {
-    attachResetToRequest: true,
-    failCallback(req, res, next, nextValidRequestDate) {
-      return next(
-        new errors.TooManyRequestsError({
-          message: `Too many sign-in attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
-          context: tpl(messages.tooManySigninAttempts.context),
-          help: tpl(messages.tooManySigninAttempts.context),
-        }),
-      );
-    },
+    key: (req) => emailKey(bodyField(req, 'email')),
+    onBlocked: (retryAfterMs) =>
+      new errors.TooManyRequestsError({
+        message: `Too many sign-in attempts try again in ${waitText(retryAfterMs)}`,
+        context: tpl(messages.tooManySigninAttempts.context),
+        help: tpl(messages.tooManySigninAttempts.context),
+      }),
   });
 
 /**
@@ -245,92 +245,80 @@ const membersAuth = () =>
  */
 const membersAuthEnumeration = () =>
   limiter('membersAuthEnumeration', 'member_login', {
-    attachResetToRequest: true,
-    failCallback(req, res, next, nextValidRequestDate) {
-      return next(
-        new errors.TooManyRequestsError({
-          message: `Too many different sign-in attempts, try again in ${moment(nextValidRequestDate).fromNow(true)}`,
-          context: tpl(messages.tooManySigninAttempts.context),
-          help: tpl(messages.tooManySigninAttempts.context),
-        }),
-      );
-    },
+    onBlocked: (retryAfterMs) =>
+      new errors.TooManyRequestsError({
+        message: `Too many different sign-in attempts, try again in ${waitText(retryAfterMs)}`,
+        context: tpl(messages.tooManySigninAttempts.context),
+        help: tpl(messages.tooManySigninAttempts.context),
+      }),
   });
 
 const checkoutSessionGlobal = () =>
   limiter('checkoutSessionGlobal', 'checkout_session_global', {
-    attachResetToRequest: true,
-    failCallback(req, res, next, nextValidRequestDate) {
-      return next(
-        new errors.TooManyRequestsError({
-          message: `Too many checkout attempts, try again in ${moment(nextValidRequestDate).fromNow(true)}`,
-          context: tpl(messages.tooManyCheckoutAttempts.context),
-          help: tpl(messages.tooManyCheckoutAttempts.context),
-        }),
-      );
-    },
+    onBlocked: (retryAfterMs) =>
+      new errors.TooManyRequestsError({
+        message: `Too many checkout attempts, try again in ${waitText(retryAfterMs)}`,
+        context: tpl(messages.tooManyCheckoutAttempts.context),
+        help: tpl(messages.tooManyCheckoutAttempts.context),
+      }),
   });
 
 const checkoutSessionEmail = () =>
   limiter('checkoutSessionEmail', 'checkout_session_email', {
-    attachResetToRequest: true,
-    failCallback(req, res, next, nextValidRequestDate) {
-      return next(
-        new errors.TooManyRequestsError({
-          message: `Too many checkout attempts for this email, try again in ${moment(nextValidRequestDate).fromNow(true)}`,
-          context: tpl(messages.tooManyCheckoutAttempts.context),
-          help: tpl(messages.tooManyCheckoutAttempts.context),
-        }),
-      );
-    },
+    // ignoring IP blocks rotating-IP attacks against a single email address
+    ignoreIP: true,
+    key: (req) => emailKey(req.body.customerEmail),
+    onBlocked: (retryAfterMs) =>
+      new errors.TooManyRequestsError({
+        message: `Too many checkout attempts for this email, try again in ${waitText(retryAfterMs)}`,
+        context: tpl(messages.tooManyCheckoutAttempts.context),
+        help: tpl(messages.tooManyCheckoutAttempts.context),
+      }),
   });
 
+/**
+ * Block too many OTC verification attempts from same IP (blocks user enumeration)
+ */
 const otcVerificationEnumeration = () =>
   limiter('otcVerificationEnumeration', 'otc_verification_enumeration', {
-    attachResetToRequest: false,
-    failCallback(req, res, next, nextValidRequestDate) {
-      return next(
-        new errors.TooManyRequestsError({
-          message: `Too many verification attempts across multiple codes, try again in ${moment(nextValidRequestDate).fromNow(true)}`,
-          context: tpl(messages.tooManyOTCVerificationAttempts.context),
-          help: tpl(messages.tooManyOTCVerificationAttempts.context),
-          code: 'OTC_TOTAL_ATTEMPTS_RATE_LIMITED',
-        }),
-      );
-    },
+    onBlocked: (retryAfterMs) =>
+      new errors.TooManyRequestsError({
+        message: `Too many verification attempts across multiple codes, try again in ${waitText(retryAfterMs)}`,
+        context: tpl(messages.tooManyOTCVerificationAttempts.context),
+        help: tpl(messages.tooManyOTCVerificationAttempts.context),
+        code: 'OTC_TOTAL_ATTEMPTS_RATE_LIMITED',
+      }),
   });
 
+/**
+ * Block too many attempts for the same otcRef
+ */
 const otcVerification = () =>
   limiter('otcVerification', 'otc_verification', {
-    attachResetToRequest: false,
-    failCallback(req, res, next, nextValidRequestDate) {
-      return next(
-        new errors.TooManyRequestsError({
-          message: `Too many attempts for this verification code, try again in ${moment(nextValidRequestDate).fromNow(true)}`,
-          context: tpl(messages.tooManyOTCVerificationAttempts.context),
-          help: tpl(messages.tooManyOTCVerificationAttempts.context),
-          code: 'OTC_CODE_ATTEMPTS_RATE_LIMITED',
-        }),
-      );
-    },
+    // ignoring IP blocks rotating-IP attacks; only one IP should receive an otcRef
+    ignoreIP: true,
+    key: (req) => bodyField(req, 'otcRef'),
+    onBlocked: (retryAfterMs) =>
+      new errors.TooManyRequestsError({
+        message: `Too many attempts for this verification code, try again in ${waitText(retryAfterMs)}`,
+        context: tpl(messages.tooManyOTCVerificationAttempts.context),
+        help: tpl(messages.tooManyOTCVerificationAttempts.context),
+        code: 'OTC_CODE_ATTEMPTS_RATE_LIMITED',
+      }),
   });
 
-// Stops login attempts for a user+IP pair with an increasing time period starting from 10 minutes
+// Stops login attempts for an IP with an increasing time period starting from 10 minutes
 // and rising to a week in a fibonnaci sequence
-// The user+IP count is reset when on successful login
-// Default value of 5 attempts per user+IP pair
+// The IP's count is reset on successful login
+// Default value of 5 attempts per IP
 const userLogin = () =>
   limiter('userLogin', 'user_login', {
-    attachResetToRequest: true,
-    failCallback(req, res, next, nextValidRequestDate) {
-      return next(
-        new errors.TooManyRequestsError({
-          message: `Too many login attempts. Please wait ${moment(nextValidRequestDate).fromNow(true)} before trying again, or reset your password.`,
-          context: tpl(messages.tooManySigninAttempts.context),
-          help: tpl(messages.tooManySigninAttempts.context),
-        }),
-      );
-    },
+    onBlocked: (retryAfterMs) =>
+      new errors.TooManyRequestsError({
+        message: `Too many login attempts. Please wait ${waitText(retryAfterMs)} before trying again, or reset your password.`,
+        context: tpl(messages.tooManySigninAttempts.context),
+        help: tpl(messages.tooManySigninAttempts.context),
+      }),
   });
 
 // Stop password reset requests when there are (freeRetries + 1) requests per lifetime per email
@@ -338,42 +326,33 @@ const userLogin = () =>
 // The endpoint is then locked for an hour
 const userReset = () =>
   limiter('userReset', 'user_reset', {
-    attachResetToRequest: true,
-    failCallback(req, res, next, nextValidRequestDate) {
+    key: (req) => emailKey(bodyField(req, 'username')),
+    onBlocked(retryAfterMs) {
       const { attempts, period } = quotedLimits('user_reset');
 
-      return next(
-        new errors.TooManyRequestsError({
-          message: `Too many password reset attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
-          context: tpl(messages.forgottenPasswordEmail.error, { rfa: attempts, rfp: period }),
-          help: tpl(messages.forgottenPasswordEmail.context),
-        }),
-      );
+      return new errors.TooManyRequestsError({
+        message: `Too many password reset attempts try again in ${waitText(retryAfterMs)}`,
+        context: tpl(messages.forgottenPasswordEmail.error, { rfa: attempts, rfp: period }),
+        help: tpl(messages.forgottenPasswordEmail.context),
+      });
     },
   });
 
 const userVerification = () =>
   limiter('userVerification', 'user_verification', {
-    attachResetToRequest: true,
-    failCallback(req, res, next) {
-      return next(new errors.TooManyRequestsError({ message: tpl(messages.tooManyAttempts) }));
-    },
+    onBlocked: () => new errors.TooManyRequestsError({ message: tpl(messages.tooManyAttempts) }),
   });
 
 const sendVerificationCode = () =>
   limiter('sendVerificationCode', 'send_verification_code', {
-    attachResetToRequest: true,
-    failCallback(req, res, next) {
-      return next(new errors.TooManyRequestsError({ message: tpl(messages.tooManyAttempts) }));
-    },
+    onBlocked: () => new errors.TooManyRequestsError({ message: tpl(messages.tooManyAttempts) }),
   });
 
 // This protects a private blog from spam attacks. The defaults here allow 10 attempts per IP per hour
 // The endpoint is then locked for an hour
 const privateBlog = () =>
   limiter('privateBlog', 'private_block', {
-    attachResetToRequest: false,
-    failCallback(req, res, next, nextValidRequestDate) {
+    onBlocked(retryAfterMs) {
       const { attempts, period } = quotedLimits('private_block');
 
       logging.error(
@@ -386,27 +365,25 @@ const privateBlog = () =>
         }),
       );
 
-      return next(
-        new errors.TooManyRequestsError({
-          message: `Too many private sign-in attempts try again in ${moment(nextValidRequestDate).fromNow(true)}`,
-        }),
-      );
+      return new errors.TooManyRequestsError({
+        message: `Too many private sign-in attempts try again in ${waitText(retryAfterMs)}`,
+      });
     },
   });
 
+// Counts Content API requests per IP; a successful request resets the count
 const contentApiKey = () =>
   limiter(
     'contentApiKey',
     'content_api_key',
     {
-      attachResetToRequest: true,
-      failCallback(req, res, next) {
+      onBlocked() {
         const err = new errors.TooManyRequestsError({
           message: tpl(messages.tooManyAttempts),
         });
 
         logging.error(err);
-        return next(err);
+        return err;
       },
     },
     { memory: true },
@@ -421,6 +398,7 @@ const reset = () => {
 };
 
 const spamPrevention = {
+  emailKey,
   upgradeBlock,
   upgradeApiBlock,
   staffInviteBlock,

@@ -8,11 +8,19 @@ import {
 } from '../../../../../../../core/server/web/shared/middleware/api/backoff-limiter';
 import type {
   BackoffOptions,
-  BruteRequest,
   LimiterFactory,
 } from '../../../../../../../core/server/web/shared/middleware/api/backoff-limiter';
 
 const memory: LimiterFactory = (options) => new RateLimiterMemory(options);
+
+class Blocked extends Error {
+  readonly waitMs: number;
+
+  constructor(waitMs: number) {
+    super('blocked');
+    this.waitMs = waitMs;
+  }
+}
 
 type Outcome = { allowed: true } | { allowed: false; waitMs: number };
 
@@ -22,8 +30,8 @@ function build(options: Partial<BackoffOptions> = {}, factory: LimiterFactory = 
     minWait: 1000,
     maxWait: 10000,
     lifetime: 3600,
-    failCallback() {},
-    handleStoreError() {},
+    key: (req) => req.body?.key,
+    onBlocked: (waitMs) => new Blocked(waitMs),
     ...options,
   });
 }
@@ -31,17 +39,23 @@ function build(options: Partial<BackoffOptions> = {}, factory: LimiterFactory = 
 /** Runs one request through the middleware and reports whether it got through. */
 function request(
   limiter: BackoffLimiter,
-  { ip = '127.0.0.1', key = 'key', req = {} as BruteRequest } = {},
+  { ip = '127.0.0.1', key = 'key' } = {},
 ): Promise<Outcome> {
-  return new Promise((resolve) => {
-    Object.assign(req, { ip });
-    const middleware = limiter.getMiddleware({
-      key,
-      failCallback: (_req, _res, _next, nextValidRequestDate) =>
-        resolve({ allowed: false, waitMs: nextValidRequestDate.getTime() - Date.now() }),
-    });
+  return new Promise((resolve, reject) => {
+    const req = { ip, body: { key } } as Request;
 
-    middleware(req as Request, {} as Response, (() => resolve({ allowed: true })) as NextFunction);
+    limiter.middleware(
+      req,
+      {} as Response,
+      ((err?: unknown) => {
+        if (!err) {
+          return resolve({ allowed: true });
+        }
+        return err instanceof Blocked
+          ? resolve({ allowed: false, waitMs: err.waitMs })
+          : reject(err);
+      }) as NextFunction,
+    );
   });
 }
 
@@ -58,12 +72,12 @@ describe('BackoffLimiter', function () {
     vi.useRealTimers();
   });
 
-  it('builds express-brute delays: a Fibonacci run from minWait, capped at maxWait', function () {
+  it('builds delays as a Fibonacci run from minWait, capped at maxWait', function () {
     assert.deepEqual(backoffDelays(1000, 10000), [1000, 1000, 2000, 3000, 5000, 8000, 10000]);
     assert.deepEqual(backoffDelays(5, 5), [5]);
   });
 
-  it('defaults lifetime to express-brute’s, long enough to reach maxWait', function () {
+  it('defaults lifetime to long enough to reach maxWait', function () {
     const limiter = build({ lifetime: undefined });
 
     // 7 delays plus 2 free retries, each up to 10 seconds
@@ -179,75 +193,83 @@ describe('BackoffLimiter', function () {
     assert.ok(limiter.options.lifetime >= 1);
   });
 
-  it('keys on IP unless told to ignore it', async function () {
+  it('keys on the request key and IP', async function () {
     const limiter = build({ freeRetries: 0 });
 
     assert.deepEqual(await run(limiter, 2, { ip: '10.0.0.1' }), [true, false]);
     assert.equal((await request(limiter, { ip: '10.0.0.2' })).allowed, true);
-
-    const ignoring = (ip: string) =>
-      new Promise<boolean>((resolve) => {
-        limiter.getMiddleware({
-          key: 'shared',
-          ignoreIP: true,
-          failCallback: () => resolve(false),
-        })({ ip } as Request, {} as Response, (() => resolve(true)) as NextFunction);
-      });
-    assert.equal(await ignoring('10.0.0.3'), true);
-    assert.equal(await ignoring('10.0.0.4'), false);
+    assert.equal((await request(limiter, { ip: '10.0.0.1', key: 'other' })).allowed, true);
   });
 
-  it('reset(ip, key) clears the count and the wait', async function () {
+  it('keys on the request key alone when told to ignore IP', async function () {
+    const limiter = build({ freeRetries: 0, ignoreIP: true });
+
+    assert.equal((await request(limiter, { ip: '10.0.0.1' })).allowed, true);
+    assert.equal((await request(limiter, { ip: '10.0.0.2' })).allowed, false);
+  });
+
+  it('reset({ip, key}) clears the count and the wait', async function () {
     const limiter = build({ freeRetries: 0 });
 
     await run(limiter, 2);
-    await new Promise<void>((resolve) => {
-      limiter.reset('127.0.0.1', 'key', () => resolve());
-    });
+    await limiter.reset({ ip: '127.0.0.1', key: 'key' });
 
     assert.equal((await request(limiter)).allowed, true);
   });
 
-  it('attaches req.brute.reset, chaining any limiter attached before it', async function () {
-    const first = new BackoffLimiter('first', memory, {
-      freeRetries: 0,
-      minWait: 1000,
-      maxWait: 1000,
-      failCallback() {},
-      handleStoreError() {},
-    });
-    const second = build({ freeRetries: 0 });
-    const req = {} as BruteRequest;
+  it('reset ignores ip on a limiter that ignores IP', async function () {
+    const limiter = build({ freeRetries: 0, ignoreIP: true });
 
-    await request(first, { req });
-    await request(second, { req });
-    await new Promise<void>((resolve) => {
-      req.brute!.reset(() => resolve());
-    });
+    await run(limiter, 2);
+    await limiter.reset({ ip: '10.9.9.9', key: 'key' });
 
-    assert.equal((await request(first)).allowed, true);
-    assert.equal((await request(second)).allowed, true);
+    assert.equal((await request(limiter)).allowed, true);
   });
 
-  it('hands store failures to handleStoreError with the request’s next', async function () {
+  it('resetRequest(req) clears the key the request counted against', async function () {
+    const limiter = build({ freeRetries: 0 });
+
+    await run(limiter, 2);
+    await limiter.resetRequest({ ip: '127.0.0.1', body: { key: 'key' } } as Request);
+
+    assert.equal((await request(limiter)).allowed, true);
+  });
+
+  it('fails the request with an InternalServerError when the store fails', async function () {
     const failure = new Error('database gone');
     const broken: LimiterFactory = (options) => {
       const limiter = new RateLimiterMemory(options);
       limiter.consume = () => Promise.reject(failure);
       return limiter;
     };
-    const next = vi.fn();
 
-    const err = await new Promise<{ parent?: unknown; next?: unknown }>((resolve) => {
-      build({ handleStoreError: resolve }, broken).prevent(
+    const err = await new Promise<{ errorType?: string; stack?: string }>((resolve) => {
+      build({}, broken).middleware(
         { ip: '127.0.0.1' } as Request,
         {} as Response,
-        next,
+        resolve as NextFunction,
       );
     });
 
-    assert.equal(err.parent, failure);
-    assert.equal(err.next, next);
-    assert.equal(next.mock.calls.length, 0);
+    assert.equal(err.errorType, 'InternalServerError');
+    // GhostError keeps the cause's stack
+    assert.match(err.stack ?? '', /database gone/);
+  });
+
+  it('passes an error thrown by onBlocked to next', async function () {
+    const failure = new Error('onBlocked failed');
+    const limiter = build({
+      freeRetries: 0,
+      onBlocked: () => {
+        throw failure;
+      },
+    });
+
+    await request(limiter);
+    await assert.rejects(request(limiter), failure);
+  });
+
+  it('treats a lifetime of 0 as 1 second rather than never expiring', function () {
+    assert.equal(build({ lifetime: 0 }).options.lifetime, 1);
   });
 });

@@ -3,6 +3,7 @@ const errors = require('@tryghost/errors');
 const models = require('../../models');
 const auth = require('../../auth');
 const api = require('./index');
+const spamPrevention = require('../../web/shared/middleware/api/spam-prevention');
 
 const messages = {
   accessDenied: 'Access Denied.',
@@ -36,15 +37,15 @@ const controller = {
       })
       .then((user) => {
         return Promise.resolve(function sessionMiddleware(req, res, next) {
-          req.brute.reset(function (err) {
-            if (err) {
-              return next(err);
-            }
-            req.user = user;
-            req.skipVerification = skipVerification;
+          return spamPrevention
+            .userLogin()
+            .resetRequest(req)
+            .then(() => {
+              req.user = user;
+              req.skipVerification = skipVerification;
 
-            auth.session.createSession(req, res, next);
-          });
+              auth.session.createSession(req, res, next);
+            }, next);
         });
       })
       .catch(async (err) => {
