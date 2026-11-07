@@ -369,8 +369,8 @@ catalogs:
       specifier: 3.7.2
       version: 3.7.2
     '@tryghost/mg-clean-html':
-      specifier: 0.12.6
-      version: 0.12.6
+      specifier: 0.12.7
+      version: 0.12.7
     '@tryghost/mongo-knex':
       specifier: 0.11.2
       version: 0.11.2
@@ -2265,7 +2265,7 @@ importers:
         version: 3.7.2(supports-color@10.2.2)
       '@tryghost/mg-clean-html':
         specifier: 'catalog:'
-        version: 0.12.6
+        version: 0.12.7
       '@tryghost/mongo-knex':
         specifier: 'catalog:'
         version: 0.11.2(supports-color@10.2.2)
@@ -6361,8 +6361,8 @@ packages:
     resolution: {integrity: sha512-X5XaVWZIBCT7HHZGm5I7ZQXDwLG+bGXuSrMQAW+7Zvl87h1kmc1ZB1VSRJcpUfoUrGQp4Fkoxm5kZ+Ms+aW+eA==}
     engines: {node: '>= 20.19.0'}
 
-  '@nodable/entities@3.0.0':
-    resolution: {integrity: sha512-8L9xFeTYKhm49xfIypoe2W5wV1m/3Z58kT+7kR9A8OyFxcPduI4VmxaUMQyKYrRjUoLLSXv6EKKID5Tvj9cUVw==}
+  '@nodable/entities@3.1.0':
+    resolution: {integrity: sha512-LsS/DjHr+uDM647Gru/cA8+J3a3HfhttwCKLyuoyN7yXTFCxKBtSgMQBvrW9yNPa2/zDRUNuGPaH5QUFoa4arQ==}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -9015,11 +9015,11 @@ packages:
   '@tryghost/metrics@3.7.2':
     resolution: {integrity: sha512-+NQZNGq8pippRvDr4cJqjqSvkB5ITDrCOQ2EGPBCyxNWsUXMuSYK+cpPOW8FcEDHUmyVS0P7qPeUi3bgRlwkmw==}
 
-  '@tryghost/mg-clean-html@0.12.6':
-    resolution: {integrity: sha512-ped/cNQdKvcX4F0B8Z5j0VnLuFjyHthElxT4Gny2yWtPHczvFsbVQXlynuHPpQcM3ZLE6o9lemm7Bin1uG/whQ==}
+  '@tryghost/mg-clean-html@0.12.7':
+    resolution: {integrity: sha512-J1D6NIOtWSDdzDLVQ5M+jcHJsFw7iKx3mz/QIywzDujr6a4WImhyQVRszEuTVumLgK511S1K0JEi5t/9NfDV7w==}
 
-  '@tryghost/mg-utils@0.11.6':
-    resolution: {integrity: sha512-or0H4aZyInx8xWX/pe60PO9eeuaEgLxezlyc2/ypUIyCjAWl4AojELYsAKt/zjFVedLRVnZOz+SMdCFjx5NhYQ==}
+  '@tryghost/mg-utils@0.11.7':
+    resolution: {integrity: sha512-05bGyDIc5qeLkvQHL6bnxgiXQAc+2nHC6kfFRn8FCrhP314+Ehq4uV1h/TriCfj6OA9P3WF5By8oZbaSO5wECQ==}
 
   '@tryghost/mongo-knex@0.11.2':
     resolution: {integrity: sha512-0l7L/J609p+12+rA15Muya1JoIeSfBxIUZRB2FfROtJ2U+FTEOzZ/c0HgxB8eAArJMW2VXECmLCAbNUwygRzfg==}
@@ -11927,8 +11927,8 @@ packages:
   fast-xml-builder@1.3.1:
     resolution: {integrity: sha512-pIM/1n3ntFXKYrUZwW7QCK0gAW7XY+wzj1YMIV3tLDvPj/V+zTGJK5e3/4WJfwj0qWw2ElNXiTixda/R+3YSug==}
 
-  fast-xml-parser@5.10.1:
-    resolution: {integrity: sha512-IEMIf7298kXuZSRFoGfMYrl7is8LpavODgbNz1cwIudv7KwVFnuU+UsMporfq6PD6aXSlawZlARiA3UywCTfMw==}
+  fast-xml-parser@5.11.2:
+    resolution: {integrity: sha512-R9iDuNrQYeQut46cn2r2wHKn4HYzVDvDm5J1wW+koZewykv0yuO2HChTYeZtrULyHIDM9cj9TUXloCsueCQUog==}
     hasBin: true
 
   fastest-levenshtein@1.0.16:
@@ -19011,7 +19011,7 @@ snapshots:
 
   '@noble/hashes@2.4.0': {}
 
-  '@nodable/entities@3.0.0': {}
+  '@nodable/entities@3.1.0': {}
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -21460,18 +21460,18 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/mg-clean-html@0.12.6':
+  '@tryghost/mg-clean-html@0.12.7':
     dependencies:
-      '@tryghost/mg-utils': 0.11.6
+      '@tryghost/mg-utils': 0.11.7
       escape-string-regexp: 5.0.0
       style-to-object: 2.0.2
     transitivePeerDependencies:
       - canvas
 
-  '@tryghost/mg-utils@0.11.6':
+  '@tryghost/mg-utils@0.11.7':
     dependencies:
       '@tryghost/kg-default-cards': link:koenig/kg-default-cards
-      fast-xml-parser: 5.10.1
+      fast-xml-parser: 5.11.2
       linkedom: 0.18.13
     transitivePeerDependencies:
       - canvas
@@ -24767,9 +24767,9 @@ snapshots:
       path-expression-matcher: 1.6.2
       xml-naming: 0.3.0
 
-  fast-xml-parser@5.10.1:
+  fast-xml-parser@5.11.2:
     dependencies:
-      '@nodable/entities': 3.0.0
+      '@nodable/entities': 3.1.0
       fast-xml-builder: 1.3.1
       is-unsafe: 2.0.0
       path-expression-matcher: 1.6.2
