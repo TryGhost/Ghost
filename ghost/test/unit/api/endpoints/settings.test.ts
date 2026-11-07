@@ -1,5 +1,6 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+
 const SettingsBREADService = require('../../../../core/server/services/settings/settings-bread-service');
 const stripeConnect = require('../../../../core/server/services/members/stripe-connect');
 const settingsController = require('../../../../core/server/api/endpoints/settings');
@@ -10,19 +11,19 @@ describe('Settings controller', function () {
   });
 
   describe('#edit with a Stripe Connect secure key', function () {
-    let session;
+    let session: Record<string, unknown>;
 
     beforeEach(async function () {
       sinon.stub(SettingsBREADService.prototype, 'edit').resolves({});
       sinon.stub(SettingsBREADService.prototype, 'browse').resolves([]);
       // The admin's session after clicking Connect with Stripe.
       session = {};
-      await stripeConnect.getStripeConnectOAuthUrl((prop, value) => {
+      await stripeConnect.getStripeConnectOAuthUrl((prop: string, value: unknown) => {
         session[prop] = value;
       }, 'test');
     });
 
-    const edit = (secureKey) =>
+    const edit = (secureKey: string) =>
       settingsController.edit.query({
         data: { settings: [{ key: 'stripe_connect_integration_token', value: secureKey }] },
         options: {},
@@ -30,7 +31,7 @@ describe('Settings controller', function () {
         setHeader() {},
       });
 
-    const keyFor = (state) =>
+    const keyFor = (state: unknown) =>
       Buffer.from(
         JSON.stringify({ l: false, a: 'sk_test', p: 'pk_test', s: state, n: 'Co', i: 'acct_1' }),
       ).toString('base64');
