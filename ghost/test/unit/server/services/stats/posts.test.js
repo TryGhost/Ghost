@@ -1,3 +1,7 @@
+const fs = require('node:fs');
+const os = require('node:os');
+const nodePath = require('node:path');
+const Database = require('better-sqlite3');
 const knex = require('knex').default;
 const assert = require('node:assert/strict');
 const moment = require('moment-timezone');
@@ -2583,17 +2587,252 @@ describe('PostsStatsService', function () {
 
       const stats = result.data[0];
       assert.equal(stats.values.length, 3, 'Should backfill all dates in range');
-      // Starting point: total (3) - changes in range (1 on Jan 5) = 2
+      // Starting point: total (3) - changes in range (1 on Jan 5) - changes after range (1 on Jan 10) = 1
       assert.equal(stats.values[0].date, '2024-01-04');
       assert.equal(
         stats.values[0].value,
-        2,
-        'Day 1 (Jan 4): Should show 2 (starting value before Jan 5 event)',
+        1,
+        'Day 1 (Jan 4): Should show 1 (only member1 subscribed so far)',
       );
       assert.equal(stats.values[1].date, '2024-01-05');
-      assert.equal(stats.values[1].value, 3, 'Day 2 (Jan 5): Should show 3 (2 + 1 new subscriber)');
+      assert.equal(stats.values[1].value, 2, 'Day 2 (Jan 5): Should show 2 (1 + 1 new subscriber)');
       assert.equal(stats.values[2].date, '2024-01-06');
-      assert.equal(stats.values[2].value, 3, 'Day 3 (Jan 6): Should carry forward 3 (no events)');
+      assert.equal(
+        stats.values[2].value,
+        2,
+        'Day 3 (Jan 6): Should carry forward 2 (Jan 10 event is after the range)',
+      );
+    });
+
+    it('should exclude subscriptions after date_to from historical values', async function () {
+      const newsletterId = 'newsletter1';
+      await _createNewsletter(newsletterId, 'Test Newsletter');
+
+      for (const memberId of ['member1', 'member2', 'member3']) {
+        await _createMember(memberId);
+        await _createMemberNewsletterSubscription(memberId, newsletterId);
+      }
+
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member1',
+        true,
+        new Date('2024-01-01T12:00:00Z'),
+      );
+      // Both after the requested range
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member2',
+        true,
+        new Date('2024-01-08T12:00:00Z'),
+      );
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member3',
+        true,
+        new Date('2024-01-09T12:00:00Z'),
+      );
+
+      const result = await service.getNewsletterSubscriberStats(newsletterId, {
+        date_from: '2024-01-02',
+        date_to: '2024-01-04',
+        timezone: 'UTC',
+      });
+
+      const stats = result.data[0];
+      assert.equal(stats.total, 3, 'Total should be the current count');
+      assert.deepEqual(
+        stats.values.map((v) => v.value),
+        [1, 1, 1],
+        'Only member1 was subscribed during Jan 2-4',
+      );
+    });
+
+    it('should exclude unsubscribes after date_to from historical values', async function () {
+      const newsletterId = 'newsletter1';
+      await _createNewsletter(newsletterId, 'Test Newsletter');
+
+      for (const memberId of ['member1', 'member2', 'member3']) {
+        await _createMember(memberId);
+      }
+      // member3 unsubscribed after the range, so only member1 and member2 are current
+      await _createMemberNewsletterSubscription('member1', newsletterId);
+      await _createMemberNewsletterSubscription('member2', newsletterId);
+
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member1',
+        true,
+        new Date('2024-01-01T12:00:00Z'),
+      );
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member2',
+        true,
+        new Date('2024-01-05T12:00:00Z'),
+      );
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member3',
+        true,
+        new Date('2024-01-06T12:00:00Z'),
+      );
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member3',
+        false,
+        new Date('2024-01-10T12:00:00Z'),
+      );
+
+      const result = await service.getNewsletterSubscriberStats(newsletterId, {
+        date_from: '2024-01-04',
+        date_to: '2024-01-06',
+        timezone: 'UTC',
+      });
+
+      const stats = result.data[0];
+      assert.equal(stats.total, 2, 'Total should be the current count');
+      assert.deepEqual(
+        stats.values.map((v) => v.value),
+        [1, 2, 3],
+        'member3 was still subscribed on Jan 6',
+      );
+    });
+
+    it('should count events at the end of date_to inside the range', async function () {
+      const newsletterId = 'newsletter1';
+      await _createNewsletter(newsletterId, 'Test Newsletter');
+
+      for (const memberId of ['member1', 'member2', 'member3']) {
+        await _createMember(memberId);
+        await _createMemberNewsletterSubscription(memberId, newsletterId);
+      }
+
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member1',
+        true,
+        new Date('2024-01-01T12:00:00Z'),
+      );
+      // Last second of date_to: inside the range
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member2',
+        true,
+        new Date('2024-01-06T23:59:59Z'),
+      );
+      // First second after date_to: outside the range
+      await _createNewsletterSubscription(
+        newsletterId,
+        'member3',
+        true,
+        new Date('2024-01-07T00:00:00Z'),
+      );
+
+      const result = await service.getNewsletterSubscriberStats(newsletterId, {
+        date_from: '2024-01-04',
+        date_to: '2024-01-06',
+        timezone: 'UTC',
+      });
+
+      const stats = result.data[0];
+      assert.equal(stats.total, 3);
+      assert.deepEqual(
+        stats.values.map((v) => v.value),
+        [1, 1, 2],
+        'member2 counts on Jan 6, member3 does not',
+      );
+    });
+
+    it('should read the total and the changes from one snapshot', async function () {
+      // A file database in WAL mode lets a second connection commit while
+      // the service's read is in progress, like a concurrent request would
+      const dir = fs.mkdtempSync(nodePath.join(os.tmpdir(), 'posts-stats-'));
+      const filename = nodePath.join(dir, 'stats.db');
+      const reader = knex({
+        client: 'better-sqlite3',
+        useNullAsDefault: true,
+        connection: { filename },
+      });
+      let writer;
+
+      try {
+        await reader.raw('PRAGMA journal_mode = WAL');
+        await reader.schema.createTable('members', function (table) {
+          table.string('id').primary();
+          table.boolean('email_disabled').defaultTo(false);
+        });
+        await reader.schema.createTable('members_newsletters', function (table) {
+          table.string('id').primary();
+          table.string('member_id');
+          table.string('newsletter_id');
+        });
+        await reader.schema.createTable('members_subscribe_events', function (table) {
+          table.string('id').primary();
+          table.string('member_id');
+          table.string('newsletter_id');
+          table.boolean('subscribed');
+          table.dateTime('created_at');
+        });
+
+        await reader('members').insert([{ id: 'member1' }, { id: 'member2' }]);
+        await reader('members_newsletters').insert([
+          { id: 'mn1', member_id: 'member1', newsletter_id: 'newsletter1' },
+          { id: 'mn2', member_id: 'member2', newsletter_id: 'newsletter1' },
+        ]);
+        await reader('members_subscribe_events').insert([
+          {
+            id: 'e1',
+            member_id: 'member1',
+            newsletter_id: 'newsletter1',
+            subscribed: 1,
+            created_at: '2024-01-01T12:00:00.000Z',
+          },
+          {
+            id: 'e2',
+            member_id: 'member2',
+            newsletter_id: 'newsletter1',
+            subscribed: 1,
+            created_at: '2024-01-08T12:00:00.000Z',
+          },
+        ]);
+
+        // Between the service's reads, member2 unsubscribes on another connection
+        writer = new Database(filename);
+        const unsubscribe = writer.transaction(() => {
+          writer.prepare("DELETE FROM members_newsletters WHERE id = 'mn2'").run();
+          writer
+            .prepare(
+              "INSERT INTO members_subscribe_events VALUES ('e3', 'member2', 'newsletter1', 0, '2024-02-01T12:00:00.000Z')",
+            )
+            .run();
+        });
+        let reads = 0;
+        reader.on('query-response', function () {
+          reads += 1;
+          if (reads === 2) {
+            unsubscribe();
+          }
+        });
+
+        const snapshotService = new PostsStatsService({ knex: reader, logging, urlUtils });
+        const result = await snapshotService.getNewsletterSubscriberStats('newsletter1', {
+          date_from: '2024-01-04',
+          date_to: '2024-01-06',
+          timezone: 'UTC',
+        });
+
+        assert.equal(reads, 3, 'The unsubscribe should happen between the reads');
+        assert.deepEqual(
+          result.data[0].values.map((v) => v.value),
+          [1, 1, 1],
+          'Only member1 was subscribed during Jan 4-6',
+        );
+      } finally {
+        writer?.close();
+        await reader.destroy();
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
     });
   });
 
