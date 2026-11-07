@@ -104,7 +104,7 @@ catalog:
   '@tryghost/errors': 3.4.5
   '@tryghost/helpers': 1.1.109
   '@tryghost/logging': 6.0.2
-  '@tryghost/mg-clean-html': 0.12.6
+  '@tryghost/mg-clean-html': 0.12.7
   '@tryghost/metrics': 3.7.2
   '@tryghost/mongo-knex': 0.11.2
   '@tryghost/nql': 0.13.4
