@@ -64,6 +64,7 @@ const PRIVATE_FEATURES = [
   'apps',
   'inAppSupport',
   'customFieldTypePhone',
+  'oauthBridge',
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

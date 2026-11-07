@@ -4,6 +4,7 @@ const { Buffer } = require('buffer');
 const { randomBytes } = require('crypto');
 
 const config = require('../../../shared/config');
+const labs = require('../../../shared/labs');
 const urlUtils = require('../../../shared/url-utils').default;
 
 const messages = {
@@ -19,9 +20,11 @@ const STATE_PROP = 'stripe-connect-state';
 
 const liveClientID = 'ca_8LBuZWhYshxF0A55KgCXu8PRTquCKC5x';
 const testClientID = 'ca_8LBum4Ctv3mmJ1oD0ZRmxjdAhNrrBUy3';
-// account.ghost.org's Connect page, which delivers the secure key to this
-// site's Ghost Admin. Older Ghost versions send users to stripe.ghost.org.
-const redirectURI = 'https://account.ghost.org/oauth/stripe';
+// stripe.ghost.org shows the secure key for the admin to paste. With the
+// oauthBridge flag, account.ghost.org's Connect page delivers it to this site's
+// Ghost Admin instead.
+const pasteRedirectURI = 'https://stripe.ghost.org';
+const bridgeRedirectURI = 'https://account.ghost.org/oauth/stripe';
 
 /**
  * @function getStripeConnectOAuthUrl
@@ -34,6 +37,7 @@ const redirectURI = 'https://account.ghost.org/oauth/stripe';
  */
 async function getStripeConnectOAuthUrl(setSessionProp, mode = 'live') {
   checkCanConnect();
+  const bridge = labs.isSet('oauthBridge');
   const randomState = randomBytes(16).toString('hex');
   const state = Buffer.from(
     JSON.stringify({
@@ -42,7 +46,7 @@ async function getStripeConnectOAuthUrl(setSessionProp, mode = 'live') {
       createdAt: Date.now(),
       // Lets account.ghost.org offer this site among the user's saved sites.
       // The user still confirms the site there.
-      site: urlUtils.getSiteUrl(),
+      site: bridge ? urlUtils.getSiteUrl() : undefined,
     }),
   ).toString('base64');
 
@@ -54,7 +58,7 @@ async function getStripeConnectOAuthUrl(setSessionProp, mode = 'live') {
   authUrl.searchParams.set('response_type', 'code');
   authUrl.searchParams.set('scope', 'read_write');
   authUrl.searchParams.set('client_id', clientID);
-  authUrl.searchParams.set('redirect_uri', redirectURI);
+  authUrl.searchParams.set('redirect_uri', bridge ? bridgeRedirectURI : pasteRedirectURI);
   authUrl.searchParams.set('state', state);
 
   return authUrl;
