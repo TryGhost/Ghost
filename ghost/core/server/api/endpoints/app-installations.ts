@@ -1,6 +1,7 @@
 import type { Controller, Frame } from '@tryghost/api-framework';
 import errors from '@tryghost/errors';
 import { z } from 'zod';
+import { actingContext } from '../../lib/actor';
 import appInstallations from '../../services/app-installations';
 
 interface InstallationOptions {
@@ -79,10 +80,7 @@ const controller = {
     headers: noCacheInvalidation,
     permissions: true,
     query(frame: WriteFrame) {
-      return appInstallations.service.create(
-        appInstallations.extras.actingContext(frame.options.context),
-        reviewed(frame),
-      );
+      return appInstallations.service.create(actingContext(frame.options.context), reviewed(frame));
     },
   },
 
@@ -95,7 +93,7 @@ const controller = {
     permissions: { method: 'add' },
     query(frame: WriteFrame) {
       return appInstallations.service.approve(
-        appInstallations.extras.actingContext(frame.options.context),
+        actingContext(frame.options.context),
         frame.options.id,
         reviewedChange(frame),
       );
@@ -110,7 +108,7 @@ const controller = {
     permissions: true,
     query(frame: ReadFrame) {
       return appInstallations.service.uninstall(
-        appInstallations.extras.actingContext(frame.options.context),
+        actingContext(frame.options.context),
         frame.options.id,
       );
     },

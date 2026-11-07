@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import logging from '@tryghost/logging';
 import { GiftLinksService } from '../../../core/server/services/gift-links/service';
-import {
-  recordGiftLinkAction,
-  type RecordGiftLinkAction,
-  type RequestContext,
-} from '../../../core/server/services/gift-links/actions';
+import type { RequestContext } from '../../../core/server/lib/actor';
+import { createChangeEvents } from '../../../core/server/lib/change-events';
+import { giftLinkActionLog } from '../../../core/server/services/action-log/gift-links';
+import type { GiftLinkEvent } from '../../../core/server/services/gift-links/events';
 import type { GiftLink } from '../../../core/server/services/gift-links/models';
+import { createLoggingFake } from '../../utils/logging-utils';
 
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
@@ -18,8 +18,8 @@ const CTX: RequestContext = { actor: { id: 'test-actor-id', type: 'user' } };
 // The HTTP suites own the request-level contract (e2e-api/admin: CRUD, permissions, 404s,
 // action history; e2e-frontend: ?gift access, redirects, analytics). This suite pins the
 // service-level behaviours that are invisible or non-deterministic through HTTP: revocation
-// of a replaced token, idempotent ensure, removeAll's cross-post scope, the DB-enforced
-// one-live-link invariant, and the best-effort action-recording composition init() wires up.
+// of a replaced token, idempotent ensure, removeAll's cross-post scope, and the DB-enforced
+// one-live-link invariant.
 describe('GiftLinksService (integration)', function () {
   let postId: string;
   let otherPostId: string;
@@ -35,17 +35,17 @@ describe('GiftLinksService (integration)', function () {
     await testUtils.setup('users:roles', 'posts')();
     postId = testUtils.DataGenerator.Content.posts[0].id;
     otherPostId = testUtils.DataGenerator.Content.posts[1].id;
-    // Mirror init()'s wiring: recordGiftLinkAction partially applied to models.Action.
-    const recordAction: RecordGiftLinkAction = ({ context, verb, subject }) =>
-      recordGiftLinkAction({ Action: models.Action, logging, context, verb, subject });
-    service = new GiftLinksService({ knex: models.Base.knex, recordAction });
+    // Nothing reacts to the events: the HTTP suites cover the action log.
+    service = new GiftLinksService({
+      knex: models.Base.knex,
+      events: createChangeEvents<GiftLinkEvent>({ logging }),
+    });
   });
 
   afterEach(async function () {
     sinon.restore();
     await models.Base.knex('post_gift_links').del();
     await models.Base.knex('gift_links').del();
-    await models.Base.knex('actions').where('resource_type', 'gift_link').del();
   });
 
   it('ensure is idempotent: a repeat ensure returns the same live token', async function () {
@@ -107,60 +107,72 @@ describe('GiftLinksService (integration)', function () {
       const existing = command === 'create' ? await service.create(CTX, postId) : undefined;
       const before = await models.Base.knex('gift_links').where('post_id', postId);
       const previousLiveLinks = await liveLinks(postId);
-      const recordAction = sinon.spy(models.Action, 'add');
-      // Fail the second write in the real transaction, after the history row
-      // has been inserted. A rejected transaction stub cannot prove rollback.
-      await models.Base.knex.raw(`
-        CREATE TRIGGER fail_gift_link_association
-        BEFORE INSERT ON post_gift_links FOR EACH ROW
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'live gift link write failed'
-      `);
+      const raised: GiftLinkEvent[] = [];
+      const stopCollecting = service.events.react(async (_actor, event) => {
+        raised.push(event);
+      });
       try {
-        await assert.rejects(service[command](CTX, postId), /live gift link write failed/);
+        // Fail the second write in the real transaction, after the history row
+        // has been inserted. A rejected transaction stub cannot prove rollback.
+        await models.Base.knex.raw(`
+          CREATE TRIGGER fail_gift_link_association
+          BEFORE INSERT ON post_gift_links FOR EACH ROW
+          SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'live gift link write failed'
+        `);
+        try {
+          await assert.rejects(service[command](CTX, postId), /live gift link write failed/);
+        } finally {
+          await models.Base.knex.raw('DROP TRIGGER fail_gift_link_association');
+        }
+
+        assert.deepEqual(await models.Base.knex('gift_links').where('post_id', postId), before);
+        assert.deepEqual(await liveLinks(postId), previousLiveLinks);
+        assert.equal(raised.length, 0, 'a failed command raises nothing');
+        if (existing) {
+          assert.equal((await service.getPostByToken(existing.giftLinks[0]!.token))?.id, postId);
+        }
+
+        // The failed command must not leave the connection or transaction stuck.
+        const recovered = await service[command](CTX, postId);
+        assert.equal((await liveLinks(postId))[0]?.token, recovered.giftLinks[0]?.token);
+        assert.equal(raised.length, 1);
       } finally {
-        await models.Base.knex.raw('DROP TRIGGER fail_gift_link_association');
+        stopCollecting();
       }
-
-      assert.deepEqual(await models.Base.knex('gift_links').where('post_id', postId), before);
-      assert.deepEqual(await liveLinks(postId), previousLiveLinks);
-      sinon.assert.notCalled(recordAction);
-      if (existing) {
-        assert.equal((await service.getPostByToken(existing.giftLinks[0]!.token))?.id, postId);
-      }
-
-      // The failed command must not leave the connection or transaction stuck.
-      const recovered = await service[command](CTX, postId);
-      assert.equal((await liveLinks(postId))[0]?.token, recovered.giftLinks[0]?.token);
-      sinon.assert.calledOnce(recordAction);
     });
   }
 
-  it('does not fail the command when recording the action throws', async function () {
-    // Compose the port exactly as init() does, over a recorder that always fails:
-    // the best-effort contract must hold through the wiring, not just in isolation.
-    const failing = new GiftLinksService({
-      knex: models.Base.knex,
-      recordAction: ({ context, verb, subject }) =>
-        recordGiftLinkAction({
-          logging,
-          Action: {
-            add: async () => {
-              throw new Error('action write failed');
-            },
-          },
-          context,
-          verb,
-          subject,
-        }),
+  it('keeps the change when its action cannot be logged', async function () {
+    const events = createChangeEvents<GiftLinkEvent>({ logging });
+    const actionLogging = createLoggingFake();
+    giftLinkActionLog.listen(
+      { knex: models.Base.knex, logging: actionLogging },
+      'gift_link',
+      events,
+    );
+    const logged = new GiftLinksService({ knex: models.Base.knex, events });
+    // Fail the action log's own insert, in the database.
+    await models.Base.knex.raw(`
+      CREATE TRIGGER fail_gift_link_action
+      BEFORE INSERT ON actions FOR EACH ROW
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'action write failed'
+    `);
+    try {
+      await assert.doesNotReject(() => logged.create(CTX, postId));
+    } finally {
+      await models.Base.knex.raw('DROP TRIGGER fail_gift_link_action');
+    }
+
+    sinon.assert.calledOnceWithMatch(actionLogging.error, {
+      event: { name: 'action_log.write_failed' },
+      actionKind: 'gift_link',
+      resourceId: postId,
+      actorId: CTX.actor.id,
     });
-
-    // recordGiftLinkAction swallows the failure and logs it. Stub the logger
-    // so we can assert that path fired instead of spamming stdout.
-    const errorLog = sinon.stub(logging, 'error');
-
-    await assert.doesNotReject(() => failing.create(CTX, postId));
-
-    sinon.assert.calledOnce(errorLog);
     assert.equal((await liveLinks(postId)).length, 1, 'the gift link is still created');
+    assert.equal(
+      (await models.Base.knex('actions').where({ resource_type: 'gift_link' })).length,
+      0,
+    );
   });
 });

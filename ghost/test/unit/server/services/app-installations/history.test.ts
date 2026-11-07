@@ -101,6 +101,44 @@ describe('buildHistory', function () {
     ]);
   });
 
+  it('reads actions by the name the action log gives them', function () {
+    const history = buildHistory(
+      [
+        installed('m1', '2026-10-01T10:00:00.000Z'),
+        manifestRow('m2', '2026-10-02T10:00:00.000Z', { source: 'approval' }),
+      ],
+      [
+        action('a1', 'added', '2026-10-01T10:00:00.000Z', { action_name: 'installed' }),
+        action('a2', 'edited', '2026-10-02T10:00:00.000Z', {
+          action_name: 'changes_approved',
+          from_manifest_id: 'm1',
+          to_manifest_id: 'm2',
+        }),
+        action('a3', 'deleted', '2026-10-03T10:00:00.000Z', { action_name: 'uninstalled' }),
+      ],
+      new Map(),
+    );
+
+    assert.deepEqual(summary(history), [
+      ['uninstalled', 'Jamie Larson', null],
+      ['changes_approved', 'Jamie Larson', null],
+      ['installed', 'Jamie Larson', null],
+    ]);
+  });
+
+  it('reads an action whose context is not JSON by its verb, without failing', function () {
+    const history = buildHistory(
+      [installed('m1', '2026-10-01T10:00:00.000Z')],
+      [
+        { ...action('a1', 'installed', '2026-10-01T10:00:00.000Z'), context: 'not json' },
+        { ...action('a2', 'changes_approved', '2026-10-02T10:00:00.000Z'), context: 'not json' },
+      ],
+      new Map(),
+    );
+
+    assert.deepEqual(summary(history), [['installed', 'Jamie Larson', null]]);
+  });
+
   it('keeps the suspension when an approval approves exactly the pending changes', function () {
     const history = buildHistory(
       [
