@@ -12,6 +12,9 @@ const moment = require('moment');
 const {
   EmailOpenedEvent,
 } = require('../../../../../core/server/services/email-service/events/email-opened-event');
+const {
+  AutomationEmailOpenedEvent,
+} = require('../../../../../core/server/services/email-service/events/automation-email-opened-event');
 const EventEmitter = require('events');
 const logging = require('@tryghost/logging');
 
@@ -172,91 +175,47 @@ describe('LastSeenAtUpdater', function () {
       assert(true, 'The LastSeenAtUpdater should catch errors in updateLastSeenAt');
     });
 
-    it('Calls updateLastSeenAtWithoutKnownLastSeen on EmailOpenedEvents', async function () {
-      const now = moment('2022-02-28T18:00:00Z').utc();
-      const settingsCache = sinon.stub().returns('Etc/UTC');
-      const db = {
-        knex() {
-          return this;
-        },
-        where() {
-          return this;
-        },
-        andWhere() {
-          return this;
-        },
-        update: sinon.stub(),
-      };
-      const updater = new LastSeenAtUpdater({
-        services: {
-          settingsCache: {
-            get: settingsCache,
-          },
-        },
-        getMembersApi() {
-          return {};
-        },
-        db,
-        events,
-      });
-      updater.subscribe(DomainEvents);
-      sinon.spy(updater, 'updateLastSeenAt');
-      sinon.spy(updater, 'updateLastSeenAtWithoutKnownLastSeen');
-      DomainEvents.dispatch(
-        EmailOpenedEvent.create({
-          memberId: '1',
-          emailRecipientId: '1',
-          emailId: '1',
-          timestamp: now.toDate(),
-        }),
-      );
-      await DomainEvents.allSettled();
-      assert(updater.updateLastSeenAtWithoutKnownLastSeen.calledOnceWithExactly('1', now.toDate()));
-      sinon.assert.calledOnce(db.update);
-    });
+    describe('email opens', function () {
+      const timestamp = new Date('2022-02-28T18:00:00Z');
+      let updateLastSeen;
 
-    it('Catches errors in updateLastSeenAtWithoutKnownLastSeen on EmailOpenedEvents', async function () {
-      const now = moment('2022-02-28T18:00:00Z').utc();
-      const settingsCache = sinon.stub().returns('Etc/UTC');
-      const db = {
-        knex() {
-          return this;
-        },
-        where() {
-          return this;
-        },
-        andWhere() {
-          return this;
-        },
-        update: sinon.stub(),
-      };
-      const updater = new LastSeenAtUpdater({
-        services: {
-          settingsCache: {
-            get: settingsCache,
-          },
-        },
-        getMembersApi() {
-          return {};
-        },
-        db,
-        events,
+      beforeEach(function () {
+        const updater = new LastSeenAtUpdater({
+          services: { settingsCache: { get: sinon.stub().returns('Etc/UTC') } },
+          getMembersApi: () => ({}),
+          events,
+        });
+        updateLastSeen = sinon.stub(updater, 'updateLastSeenAtWithoutKnownLastSeen').resolves();
+        updater.subscribe(DomainEvents);
       });
-      updater.subscribe(DomainEvents);
-      sinon.stub(updater, 'updateLastSeenAtWithoutKnownLastSeen').throws('Error');
-      DomainEvents.dispatch(
-        EmailOpenedEvent.create({
-          memberId: '1',
-          emailRecipientId: '1',
-          emailId: '1',
-          timestamp: now.toDate(),
-        }),
-      );
-      await DomainEvents.allSettled();
-      assert(
-        true,
-        'The LastSeenAtUpdater should catch errors in updateLastSeenAtWithoutKnownLastSeen',
-      );
+
+      async function dispatchOpen(Event) {
+        DomainEvents.dispatch(
+          Event.create({
+            memberId: 'member-1',
+            emailRecipientId: 'recipient-1',
+            emailId: 'email-1',
+            email: 'member@example.com',
+            timestamp,
+          }),
+        );
+        await DomainEvents.allSettled();
+      }
+
+      for (const Event of [EmailOpenedEvent, AutomationEmailOpenedEvent]) {
+        it(`updates last seen on ${Event.name}`, async function () {
+          await dispatchOpen(Event);
+          sinon.assert.calledOnceWithExactly(updateLastSeen, 'member-1', timestamp);
+        });
+
+        it(`logs failures on ${Event.name}`, async function () {
+          const error = new Error('Update failed');
+          updateLastSeen.rejects(error);
+          await dispatchOpen(Event);
+          sinon.assert.calledWith(logging.error, sinon.match(`LastSeenAtUpdater.${Event.name}`));
+          sinon.assert.calledWith(logging.error, error);
+        });
+      }
     });
 
     it('Calls updateLastCommentedAt on MemberCommentEvents', async function () {

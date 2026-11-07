@@ -6,6 +6,9 @@ const {
 const moment = require('moment-timezone');
 const { IncorrectUsageError } = require('@tryghost/errors');
 const { EmailOpenedEvent } = require('../email-service/events/email-opened-event');
+const {
+  AutomationEmailOpenedEvent,
+} = require('../email-service/events/automation-email-opened-event');
 const logging = require('@tryghost/logging');
 const LastSeenAtCache = require('./last-seen-at-cache');
 
@@ -87,16 +90,18 @@ class LastSeenAtUpdater {
       }
     });
 
-    domainEvents.subscribe(EmailOpenedEvent, async (event) => {
-      try {
-        await this.updateLastSeenAtWithoutKnownLastSeen(event.memberId, event.timestamp);
-      } catch (err) {
-        logging.error(
-          `Error in LastSeenAtUpdater.EmailOpenedEvent listener for member ${event.memberId}, emailRecipientId ${event.emailRecipientId}`,
-        );
-        logging.error(err);
-      }
-    });
+    for (const Event of [EmailOpenedEvent, AutomationEmailOpenedEvent]) {
+      domainEvents.subscribe(Event, async (event) => {
+        try {
+          await this.updateLastSeenAtWithoutKnownLastSeen(event.memberId, event.timestamp);
+        } catch (err) {
+          logging.error(
+            `Error in LastSeenAtUpdater.${Event.name} listener for member ${event.memberId}, emailRecipientId ${event.emailRecipientId}`,
+          );
+          logging.error(err);
+        }
+      });
+    }
   }
 
   /**
