@@ -8,23 +8,46 @@ const { anyContentLength, anyContentVersion, anyEtag, anyErrorId, stringMatching
 const { cacheInvalidateHeaderNotSet } = assertions;
 const { exportedBodyLatest } = require('../../utils/fixtures/export/body-generator');
 const fs = require('fs-extra');
-const sinon = require('sinon');
 const assert = require('node:assert/strict');
 
 describe('Backup Integration', function () {
-  let agent, fsStub;
+  let agent;
+
+  // @TODO: make a way do this with snapshots!
+  const assertBackupFile = async function (filePath) {
+    assert.match(filePath, /ghost-test\/data\/test\.json$/);
+
+    const fileJSON = await fs.readJson(filePath);
+    assert.deepEqual(Object.keys(fileJSON), ['meta', 'data']);
+    assert.deepEqual(Object.keys(fileJSON.meta), ['exported_on', 'version']);
+    assert.deepEqual(
+      Object.keys(fileJSON.data).sort(),
+      Object.keys(exportedBodyLatest().db[0].data).sort(),
+    );
+    assert(fileJSON.data.posts.length > 0, 'Written file contains posts');
+    assert(fileJSON.data.settings.length > 0, 'Written file contains settings');
+    assert.equal(
+      fileJSON.data.settings.filter((setting) => setting.group === 'core').length,
+      0,
+      'Written file excludes core settings',
+    );
+
+    await agent
+      .get('db/?filename=test.json')
+      .expectStatus(200)
+      .expect(({ body }) => {
+        assert.deepEqual(body.db[0].meta, fileJSON.meta);
+        assert.deepEqual(Object.keys(body.db[0].data), Object.keys(fileJSON.data));
+        assert.deepEqual(
+          body.db[0].data.posts.map((post) => post.id),
+          fileJSON.data.posts.map((post) => post.id),
+        );
+      });
+  };
 
   beforeAll(async function () {
     agent = await agentProvider.getAdminAPIAgent();
     await fixtureManager.init('users', 'members');
-  });
-
-  beforeEach(function () {
-    fsStub = sinon.stub(fs, 'writeFile').resolves();
-  });
-
-  afterEach(function () {
-    sinon.restore();
   });
 
   describe('Backup API', function () {
@@ -34,6 +57,7 @@ describe('Backup Integration', function () {
       });
 
       it('Can create a DB backup', async function () {
+        let backupFilePath;
         await agent
           .post('db/backup?filename=test')
           .expectStatus(200)
@@ -48,16 +72,12 @@ describe('Backup Integration', function () {
                 filename: stringMatching(/ghost-test\/data\/test\.json$/),
               },
             ],
+          })
+          .expect(({ body }) => {
+            backupFilePath = body.db[0].filename;
           });
 
-        sinon.assert.calledOnce(fsStub);
-        const args = fsStub.firstCall.args;
-        const fileJSON = JSON.parse(args[1]);
-
-        assert.match(args[0].toString(), /ghost-test\/data\/test.json$/);
-        // @TODO: make a way do this with snapshots!
-        assert.ok(fileJSON.meta, 'Written file has a property called meta');
-        assert.ok(fileJSON.data, 'Written file has a property called data');
+        await assertBackupFile(backupFilePath);
       });
 
       it('Can do a DB export', async function () {
@@ -186,6 +206,7 @@ describe('Backup Integration', function () {
       });
 
       it('Can create a DB backup', async function () {
+        let backupFilePath;
         await agent
           .post('db/backup?filename=test')
           .expectStatus(200)
@@ -200,16 +221,12 @@ describe('Backup Integration', function () {
                 filename: stringMatching(/ghost-test\/data\/test\.json$/),
               },
             ],
+          })
+          .expect(({ body }) => {
+            backupFilePath = body.db[0].filename;
           });
 
-        sinon.assert.calledOnce(fsStub);
-        const args = fsStub.firstCall.args;
-        const fileJSON = JSON.parse(args[1]);
-
-        assert.match(args[0].toString(), /ghost-test\/data\/test.json$/);
-        // @TODO: make a way do this with snapshots!
-        assert.ok(fileJSON.meta, 'Written file has a property called meta');
-        assert.ok(fileJSON.data, 'Written file has a property called data');
+        await assertBackupFile(backupFilePath);
       });
 
       it('Can export members CSV', async function () {
@@ -238,6 +255,7 @@ describe('Backup Integration', function () {
       });
 
       it('Can create a DB backup', async function () {
+        let backupFilePath;
         await agent
           .post('db/backup?filename=test')
           .expectStatus(200)
@@ -252,16 +270,12 @@ describe('Backup Integration', function () {
                 filename: stringMatching(/ghost-test\/data\/test\.json$/),
               },
             ],
+          })
+          .expect(({ body }) => {
+            backupFilePath = body.db[0].filename;
           });
 
-        sinon.assert.calledOnce(fsStub);
-        const args = fsStub.firstCall.args;
-        const fileJSON = JSON.parse(args[1]);
-
-        assert.match(args[0].toString(), /ghost-test\/data\/test.json$/);
-        // @TODO: make a way do this with snapshots!
-        assert.ok(fileJSON.meta, 'Written file has a property called meta');
-        assert.ok(fileJSON.data, 'Written file has a property called data');
+        await assertBackupFile(backupFilePath);
       });
 
       it('Can export members CSV', async function () {
