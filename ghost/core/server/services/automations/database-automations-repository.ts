@@ -1154,11 +1154,7 @@ async function finishStepAndEnqueueNext(
     return null;
   }
 
-  if (!(await repository2.isAutomationActiveForRun(trx, step.automation_run_id))) {
-    return null;
-  }
-
-  const next = await findNextActionRevision(trx, step.action_id);
+  const next = await findNextActionRevision(trx, step.action_id, step.automation_run_id);
 
   if (!next) {
     return null;
@@ -1184,6 +1180,7 @@ async function finishStepAndEnqueueNext(
 async function findNextActionRevision(
   trx: Knex.Transaction,
   sourceActionId: string,
+  automationRunId: string,
 ): Promise<NextActionRevisionRow | null> {
   const row = await trx('automation_action_edges as edge')
     .select(
@@ -1195,6 +1192,13 @@ async function findNextActionRevision(
     .innerJoin('automation_actions as action', 'action.id', 'edge.target_action_id')
     .innerJoin('automation_action_revisions as revision', 'revision.action_id', 'action.id')
     .where('edge.source_action_id', sourceActionId)
+    .whereExists(function () {
+      this.select(trx.raw('1'))
+        .from('automation_runs as run')
+        .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
+        .where('run.id', automationRunId)
+        .where('automation.status', 'active');
+    })
     .whereNull('action.deleted_at')
     .where(
       'revision.created_at',

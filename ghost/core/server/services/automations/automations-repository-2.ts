@@ -124,12 +124,6 @@ export type AutomationsRepository2<Connection> = {
     toInsert: ReadonlyArray<AutomationTriggerRule>,
   ) => Promisable<void>;
 
-  /** Is this run's automation active? */
-  isAutomationActiveForRun: (
-    connection: Connection,
-    automationRunId: string,
-  ) => Promisable<boolean>;
-
   /** Is this step's automation active? */
   isAutomationActiveForRunStep: (connection: Connection, runStepId: string) => Promisable<boolean>;
 
