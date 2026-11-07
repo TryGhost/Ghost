@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
-import { Inline } from '@tryghost/shade/primitives';
 import { AutomationCard, AutomationCardHeader } from './automation-card';
-import { AutomationCardWarning } from './automation-card-warning';
 import { AutomationCardMenu } from './automation-card-menu';
-import { WaitDurationField, WAIT_VALIDATION_MESSAGE } from './wait-duration-field';
+import { WaitDurationField } from './wait-duration-field';
 import { formatWait } from './format-wait';
 import type { NodeContextMenuEntry } from './nodes';
 
@@ -19,18 +17,14 @@ export const EditableWaitCard: React.FC<
   React.PropsWithChildren<{
     wait: EditableWaitData;
     isNew: boolean;
-    errorMessage?: string;
     menuItems: NodeContextMenuEntry[];
   }>
-> = ({ wait, isNew, errorMessage, menuItems, children }) => {
-  const [isInvalidShown, setIsInvalidShown] = useState(false);
-  const warning = isInvalidShown ? WAIT_VALIDATION_MESSAGE : errorMessage;
+> = ({ wait, isNew, menuItems, children }) => {
   return (
     <AutomationCard
       aria-label={`Wait: ${formatWait(wait.hours)}`}
       className={cn(
         'nodrag nopan w-[400px] text-left',
-        warning && 'border-state-warning-fill',
         isNew && 'animate-in duration-250 ease-out fade-in-0 zoom-in-90 motion-reduce:animate-none',
       )}
       gap="xl"
@@ -41,12 +35,7 @@ export const EditableWaitCard: React.FC<
     >
       {children}
       <AutomationCardHeader
-        actions={
-          <Inline gap="xs">
-            <AutomationCardWarning message={warning} />
-            <AutomationCardMenu label="Wait actions" menuItems={menuItems} />
-          </Inline>
-        }
+        actions={<AutomationCardMenu label="Wait actions" menuItems={menuItems} />}
         icon={<LucideIcon.Clock className="size-4" />}
         iconClassName="p-2.5 text-foreground"
         title="Wait"
@@ -54,7 +43,6 @@ export const EditableWaitCard: React.FC<
       <WaitDurationField
         waitHours={wait.hours}
         inline
-        onErrorVisibilityChange={setIsInvalidShown}
         onUpdate={wait.onUpdate}
         onValidityChange={wait.onValidityChange}
       />
