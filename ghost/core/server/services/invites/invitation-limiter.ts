@@ -32,12 +32,8 @@ export default class InvitationLimiter {
       return prepare();
     }
     return this.deps.transaction(async (transaction) => {
+      const counterValue = await this.getAndLockInviteEmailCounter(transaction);
       const options = { transacting: transaction };
-      let counterValue: string | null = null;
-      // Lock before counting so concurrent requests cannot claim the same remaining seat or email allowance.
-      if (hasAllStaffLimit || hasEmailLimit) {
-        counterValue = await this.getAndLockInviteEmailCounter(transaction);
-      }
 
       const email = invite.email.trim();
       const existingInvite = await this.findAndLockInvite(transaction, email);
