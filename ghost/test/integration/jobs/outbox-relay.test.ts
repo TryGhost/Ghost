@@ -169,6 +169,35 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
     });
   });
 
+  describe('JobsOutbox.releaseSubmitted', function () {
+    it('clears submitted_at on every submitted row and returns which it released', async function () {
+      const rows = [
+        { type: 'greet', submittedAt: new Date() },
+        { type: 'not-json', submittedAt: new Date() },
+        { type: 'greet', submittedAt: null },
+      ].map(({ type, submittedAt }) => ({
+        id: newId(),
+        envelope: type === 'not-json' ? '{' : JSON.stringify(envelopeFor(type)),
+        created_at: new Date(),
+        available_at: new Date(),
+        submitted_at: submittedAt,
+      }));
+      await knex(TABLE).insert(rows);
+
+      const released = await outbox.releaseSubmitted();
+
+      assert.deepEqual(
+        [...released].sort((a, b) => a.id.localeCompare(b.id)),
+        [
+          { id: rows[0].id, type: 'greet' },
+          { id: rows[1].id, type: null },
+        ].sort((a, b) => a.id.localeCompare(b.id)),
+      );
+      const [{ count }] = await knex(TABLE).whereNotNull('submitted_at').count({ count: '*' });
+      assert.equal(Number(count), 0);
+    });
+  });
+
   describe('JobsOutbox.remove', function () {
     it('deletes only the given row', async function () {
       const keep = newId();
