@@ -30,6 +30,7 @@ const messages = {
   emailPreviewBlock: 'Only 10 test emails can be sent per hour',
   upgradeBlock: 'Too many update requests. Try again in a minute.',
   staffInviteBlock: 'Too many invitation requests. Try again in a minute.',
+  memberEmailUpdateBlock: 'Too many email change requests. Try again in an hour.',
 };
 
 const TABLE = 'rate_limits';
@@ -158,6 +159,14 @@ const bodyField = (req: Request, field: string): string | undefined =>
 const emailKey = (email: unknown): string | undefined =>
   email ? String(email).trim().toLowerCase() : undefined;
 
+/**
+ * The id of the member a verified identity token names, as set by the members
+ * `loadIdentityTokenMember` middleware, or undefined. Not the email, which the
+ * member can change to get a fresh budget.
+ */
+const memberIdentityKey = (req: Request): string | undefined =>
+  (req as Request & { identityTokenMemberId?: string | null }).identityTokenMemberId || undefined;
+
 /** A limiter for Admin requests that sets Retry-After when it blocks. */
 const requestBlock = (
   name: string,
@@ -207,6 +216,18 @@ const staffInviteBlock = () =>
       code: 'STAFF_INVITE_RATE_LIMIT',
     },
     { ignoreIP: true },
+  );
+
+// Each request emails an address the member chooses, so a member has one
+// budget across IP addresses and email changes
+const memberEmailUpdateBlock = () =>
+  requestBlock(
+    'member_email_update',
+    'member_email_update',
+    {
+      message: messages.memberEmailUpdateBlock,
+    },
+    { ignoreIP: true, key: memberIdentityKey },
   );
 
 // This locks a single endpoint based on excessive requests from an IP.
@@ -425,9 +446,11 @@ const reset = () => {
 
 const spamPrevention = {
   emailKey,
+  memberIdentityKey,
   upgradeBlock,
   upgradeApiBlock,
   staffInviteBlock,
+  memberEmailUpdateBlock,
   globalBlock,
   globalReset,
   userLogin,
