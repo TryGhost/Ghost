@@ -19,34 +19,74 @@ export default class InvitationLimiter {
     this.deps = deps;
   }
 
-  private isLimited(): boolean {
-    return (
-      this.deps.limitService.isLimited('allStaff') ||
-      this.deps.limitService.isLimited('inviteEmails')
-    );
-  }
+  async run<T>(
+    invite: { email: string; role_id: string },
+    prepare: (transaction?: Knex.Transaction) => Promise<T>,
+  ): Promise<T> {
+    const hasStaffLimit = this.deps.limitService.isLimited('staff');
+    const hasAllStaffLimit = this.deps.limitService.isLimited('allStaff');
+    const hasEmailLimit = this.deps.limitService.isLimited('inviteEmails');
+    const isLimited = hasStaffLimit || hasAllStaffLimit || hasEmailLimit;
 
-  async run<T>(email: string, prepare: (transaction?: Knex.Transaction) => Promise<T>): Promise<T> {
-    if (!this.isLimited()) {
+    if (!isLimited) {
       return prepare();
     }
     return this.deps.transaction(async (transaction) => {
       const counterValue = await this.getAndLockInviteEmailCounter(transaction);
       const options = { transacting: transaction };
-      if (this.deps.limitService.isLimited('inviteEmails')) {
+
+      const email = invite.email.trim();
+      const existingInvite = await this.findAndLockInvite(transaction, email);
+      // Acceptance may have completed since the API's permission check.
+      await this.errorIfAlreadyRegistered(transaction, email);
+      if (hasEmailLimit) {
         await this.reserveEmail(transaction, counterValue);
       }
       // Replacing a pending invitation does not occupy another seat, even after an import.
-      if (this.deps.limitService.isLimited('allStaff')) {
-        const existingInvite = await transaction('invites')
-          .where('email', email.trim())
-          .forUpdate()
-          .first('id');
-        if (!existingInvite) {
-          await this.deps.limitService.errorIfWouldGoOverLimit('allStaff', options);
-        }
+      if (hasAllStaffLimit && !existingInvite) {
+        await this.deps.limitService.errorIfWouldGoOverLimit('allStaff', options);
+      }
+      if (hasStaffLimit) {
+        await this.checkStaffLimit(transaction, invite.role_id, existingInvite?.role_id);
       }
       return prepare(transaction);
+    });
+  }
+
+  private async findAndLockInvite(
+    transaction: Knex.Transaction,
+    email: string,
+  ): Promise<{ role_id: string } | undefined> {
+    return transaction('invites').where({ email }).forUpdate().first('role_id');
+  }
+
+  private async errorIfAlreadyRegistered(
+    transaction: Knex.Transaction,
+    email: string,
+  ): Promise<void> {
+    const registered = await transaction('users').where({ email }).first('id');
+    if (registered) {
+      throw new errors.ValidationError({
+        message: 'User is already registered.',
+        code: 'USER_ALREADY_REGISTERED',
+      });
+    }
+  }
+
+  private async checkStaffLimit(
+    transaction: Knex.Transaction,
+    roleId: string,
+    previousRoleId?: string,
+  ): Promise<void> {
+    const contributor = await transaction('roles').where('name', 'Contributor').first('id');
+    if (roleId === contributor.id) {
+      return;
+    }
+    if (previousRoleId && previousRoleId !== contributor.id) {
+      return;
+    }
+    await this.deps.limitService.errorIfWouldGoOverLimit('staff', {
+      transacting: transaction,
     });
   }
 

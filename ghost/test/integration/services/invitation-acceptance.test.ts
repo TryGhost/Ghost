@@ -90,19 +90,22 @@ describe('Invitation acceptance during limit checks', function () {
         User: models.User,
       };
 
-      await limiter.run('new-staff@example.com', async (transacting) => {
-        const results = await Promise.allSettled([
-          accept(invitation, acceptanceModels),
-          accept(invitation, acceptanceModels),
-        ]);
-        assert.equal(results.filter((result) => result.status === 'fulfilled').length, 1);
-        const rejected = results.find((result) => result.status === 'rejected');
-        assert.equal(rejected?.reason.errorType, 'NotFoundError');
-        return models.Invite.add(
-          { email: 'new-staff@example.com', role_id: roleId, status: 'pending' },
-          { transacting, context: { internal: true } },
-        );
-      });
+      await limiter.run(
+        { email: 'new-staff@example.com', role_id: roleId },
+        async (transacting) => {
+          const results = await Promise.allSettled([
+            accept(invitation, acceptanceModels),
+            accept(invitation, acceptanceModels),
+          ]);
+          assert.equal(results.filter((result) => result.status === 'fulfilled').length, 1);
+          const rejected = results.find((result) => result.status === 'rejected');
+          assert.equal(rejected?.reason.errorType, 'NotFoundError');
+          return models.Invite.add(
+            { email: 'new-staff@example.com', role_id: roleId, status: 'pending' },
+            { transacting, context: { internal: true } },
+          );
+        },
+      );
 
       assert.equal(await countStaff(db.knex), initialSeats + 1);
       const counter = await db.knex('settings').where('key', 'invite_emails_limit_usage').first();
