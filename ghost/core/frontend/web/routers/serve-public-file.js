@@ -220,6 +220,17 @@ function servePublicFiles(siteApp) {
     ),
   );
 
+  // Apps' cards: snapshot frames and live frames
+  siteApp.get(
+    '/public/app-cards.min.js',
+    createPublicFileMiddleware(
+      'static',
+      'public/app-cards.min.js',
+      'application/javascript',
+      config.get('caching:publicAssets:maxAge'),
+    ),
+  );
+
   // Member attribution
   siteApp.get(
     '/public/member-attribution.min.js',
