@@ -22,4 +22,9 @@ module.exports = {
   get resetAuthentication() {
     return require('./reset-authentication').default;
   },
+
+  // Loads Better Auth; only boot under auth:engine better-auth should touch it
+  get betterAuth() {
+    return require('./better-auth').default;
+  },
 };

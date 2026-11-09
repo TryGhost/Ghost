@@ -4,8 +4,10 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
 const supertest = require('supertest');
+const DatabaseInfo = require('@tryghost/database-info');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
+const { knex } = require('../../../core/server/data/db');
 const models = require('../../../core/server/models');
 const { mockManager, hostLimits } = require('../../utils/e2e-framework');
 
@@ -16,7 +18,11 @@ const { mockManager, hostLimits } = require('../../utils/e2e-framework');
 // two behaviours proven here; the end-to-end export -> import loop lives in
 // members-export-import.
 describe('Members import — custom fields', function () {
-  let request: { post: (_url: string) => any; get: (_url: string) => any };
+  let request: {
+    post: (_url: string) => any;
+    get: (_url: string) => any;
+    put: (_url: string) => any;
+  };
 
   // The key is minted server-side from the name, so callers read it off the result.
   async function createField(name: string, type: string, settings?: unknown): Promise<string> {
@@ -454,6 +460,111 @@ describe('Members import — custom fields', function () {
         res.body.meta.stats.invalid[0].error,
         `metafields.custom.${key}: Choose one option.`,
       );
+    });
+  });
+
+  // These run on MySQL only, as SQLite only runs one write at a time.
+  describe.runIf(DatabaseInfo.isMySQL(knex))('alongside other writes', function () {
+    // How many transactions are waiting for a lock on the table.
+    async function transactionsWaitingOn(table: string): Promise<number> {
+      const [rows] = await models.Base.knex.raw(
+        `
+        SELECT COUNT(DISTINCT waits.REQUESTING_ENGINE_TRANSACTION_ID) AS waiting
+        FROM performance_schema.data_lock_waits AS waits
+        JOIN performance_schema.data_locks AS requested
+          ON requested.ENGINE_LOCK_ID = waits.REQUESTING_ENGINE_LOCK_ID
+        WHERE requested.OBJECT_SCHEMA = DATABASE()
+          AND requested.OBJECT_NAME = ?
+      `,
+        [table],
+      );
+      return Number(rows[0].waiting);
+    }
+
+    // An import row has to see the custom field values an Admin edit to the same member saved
+    // just before it. Otherwise the row replaces only the values it saw, and leaves behind any
+    // the edit added.
+    describe('while an Admin edit saves', function () {
+      it('replaces the options the edit saved', async function () {
+        const key = await createField('Topics', 'list', TOPICS);
+        const email = 'cf-list-edit-race@example.com';
+        await importCSV(`email,metafields.custom.${key}\n${email},Travel\n`);
+        const member = await findMember(email);
+
+        // A locking read of every row of the activity feed blocks every insert into it. The edit
+        // writes its values and then its feed entry, so it stops there, still holding the member.
+        const gate = await models.Base.knex.transaction();
+        let edit: Promise<any> | undefined;
+        let imported: Promise<any> | undefined;
+        try {
+          await gate('members_metafield_change_events').forUpdate();
+          edit = (request.put(localUtils.API.getApiQuery(`members/${member.id}/`)) as any)
+            .set('Origin', config.get('url'))
+            .send({ members: [{ metafields: { custom: { [key]: ['Travel', 'Cooking'] } } }] })
+            .then((response: any) => response);
+          await vi.waitFor(
+            async () =>
+              assert.equal(await transactionsWaitingOn('members_metafield_change_events'), 1),
+            { timeout: 5000 },
+          );
+
+          imported = importCSV(`email,metafields.custom.${key}\n${email},"Film, TV"\n`);
+          await vi.waitFor(async () => assert.equal(await transactionsWaitingOn('members'), 1), {
+            timeout: 5000,
+          });
+          await gate.commit();
+          assert.equal((await edit).status, 200);
+          assert.equal((await imported).body.meta.stats.imported, 1);
+        } finally {
+          if (!gate.isCompleted()) {
+            await gate.rollback();
+          }
+          // Waited for however the test ends, so neither request is still writing when the next
+          // test starts.
+          await Promise.allSettled([edit, imported]);
+        }
+
+        assert.deepEqual((await findMember(email)).metafields.custom[key], ['Film, TV']);
+      });
+    });
+
+    // Each row locks the member that has its email before it reads anything, but a new email has
+    // no member to lock. Two imports adding members at once must not hold each other up.
+    describe('while another import adds members', function () {
+      it('imports the members of both', async function () {
+        // Both emails sort after every other member's, so nothing sits between them in the
+        // index of emails.
+        const emails = ['zz-import-race-a@example.com', 'zz-import-race-b@example.com'];
+
+        // A locking read of every member blocks every insert of a new one, so each import stops
+        // just before it adds its member, once it has looked for one with its email.
+        const gate = await models.Base.knex.transaction();
+        let imports: Array<Promise<any>> = [];
+        try {
+          await gate('members').forUpdate();
+          imports = emails.map((email) => importCSV(`email\n${email}\n`));
+          await vi.waitFor(async () => assert.equal(await transactionsWaitingOn('members'), 2), {
+            timeout: 5000,
+          });
+          await gate.commit();
+          for (const res of await Promise.all(imports)) {
+            assert.equal(
+              res.body.meta.stats.imported,
+              1,
+              JSON.stringify(res.body.meta.stats.invalid),
+            );
+          }
+        } finally {
+          if (!gate.isCompleted()) {
+            await gate.rollback();
+          }
+          await Promise.allSettled(imports);
+        }
+
+        for (const email of emails) {
+          assert.notEqual(await findMember(email), undefined);
+        }
+      });
     });
   });
 

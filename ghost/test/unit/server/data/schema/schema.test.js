@@ -10,7 +10,7 @@ const VALID_KEYS = {
   bigInteger: ['nullable'],
   binary: ['maxlength', 'nullable', 'index'],
   boolean: ['nullable', 'defaultTo'],
-  dateTime: ['nullable', 'index'],
+  dateTime: ['nullable', 'index', 'precision'],
   integer: ['nullable', 'unsigned', 'defaultTo', 'index'],
   string: [
     'maxlength',

@@ -161,6 +161,14 @@ async function initCore({ ghostServer, config }) {
   await i18n.init({ events: require('./server/lib/common/events') });
   debug('End: i18n');
 
+  // Reads admin_session_secret, so it follows settings. Under legacy nothing loads
+  // Better Auth or reads its tables.
+  if (config.get('auth:engine') === 'better-auth') {
+    debug('Begin: Better Auth');
+    await require('./server/auth').betterAuth.init();
+    debug('End: Better Auth');
+  }
+
   // Gift links service: wires the (knex-backed) repository once the DB is ready.
   debug('Begin: Gift Links Service');
   const giftLinksService = require('./server/services/gift-links').default;
@@ -193,11 +201,6 @@ async function initCore({ ghostServer, config }) {
   const integrations = require('./server/services/integrations').default;
   await integrations.init();
   debug('End: Integrations Service');
-
-  debug('Begin: Support Requests Service');
-  const supportRequests = require('./server/services/support-requests').default;
-  await supportRequests.init();
-  debug('End: Support Requests Service');
 
   // Stripe Checkout config service: knex-backed, wired once the DB is ready.
   debug('Begin: Stripe Checkout Config Service');

@@ -52,8 +52,8 @@
     "dotenv": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",
-    "eslint-plugin-no-relative-import-paths": "1.6.1",
-    "eslint-plugin-playwright": "2.12.1",
+    "eslint-plugin-no-relative-import-paths": "1.7.3",
+    "eslint-plugin-playwright": "2.12.2",
     "express": "catalog:",
     "knex": "catalog:",
     "stripe": "8.222.0",
@@ -68,7 +68,7 @@
         "dependsOn": [
           "build"
         ],
-        "cache": true
+        "cache": false
       }
     }
   }

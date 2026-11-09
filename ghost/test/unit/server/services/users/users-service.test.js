@@ -125,7 +125,13 @@ describe('Users service', function () {
                   where() {
                     return this;
                   },
+                  whereIn() {
+                    return this;
+                  },
                   select() {
+                    return this;
+                  },
+                  forUpdate() {
                     return Promise.resolve(userPostIds.map((post_id) => ({ post_id })));
                   },
                 };
@@ -139,7 +145,13 @@ describe('Users service', function () {
                   where() {
                     return this;
                   },
+                  whereIn() {
+                    return this;
+                  },
                   select() {
+                    return this;
+                  },
+                  forUpdate() {
                     return Promise.resolve(alreadyTaggedPostIds.map((post_id) => ({ post_id })));
                   },
                   insert(rows) {

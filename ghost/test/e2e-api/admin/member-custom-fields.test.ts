@@ -9,6 +9,8 @@ const {
   dbUtils,
   hostLimits,
 } = require('../../utils/e2e-framework');
+const DatabaseInfo = require('@tryghost/database-info');
+const { knex } = require('../../../core/server/data/db');
 const models = require('../../../core/server/models');
 const events = require('../../../core/server/lib/common/events');
 
@@ -26,7 +28,7 @@ describe('Member Custom Fields Admin API', function () {
 
   // The key is minted server-side from the name, so callers pass just a name
   // (and optionally a type) and read the derived key off the result.
-  async function createField(field: { name: string; type?: string }) {
+  async function createField(field: { name: string; type?: string; settings?: unknown }) {
     const { body } = await agent
       .post('members/metafields/custom/')
       .body({ members_metafields: [{ type: 'short_text', ...field }] })
@@ -249,7 +251,7 @@ describe('Member Custom Fields Admin API', function () {
     it('rejects an unsupported type', async function () {
       await agent
         .post('members/metafields/custom/')
-        .body({ members_metafields: [{ name: 'Topic', type: 'boolean' }] })
+        .body({ members_metafields: [{ name: 'Topic', type: 'not_a_type' }] })
         .expectStatus(422);
     });
 
@@ -738,7 +740,7 @@ describe('Member Custom Fields Admin API', function () {
         .body({
           members_metafields: [
             { name: 'Company', type: 'short_text' },
-            { name: 'Role', type: 'boolean' },
+            { name: 'Role', type: 'not_a_type' },
           ],
         })
         .expectStatus(422);
@@ -770,7 +772,7 @@ describe('Member Custom Fields Admin API', function () {
           members_metafields: [
             { name: 'Company', type: 'short_text' },
             { name: 'Role', type: 'short_text' },
-            { name: 'Bio', type: 'boolean' },
+            { name: 'Bio', type: 'not_a_type' },
           ],
         })
         .expectStatus(422);
@@ -785,7 +787,7 @@ describe('Member Custom Fields Admin API', function () {
     it('does not point at an item when only one definition was sent', async function () {
       const { body } = await agent
         .post('members/metafields/custom/')
-        .body({ members_metafields: [{ name: 'Bio', type: 'boolean' }] })
+        .body({ members_metafields: [{ name: 'Bio', type: 'not_a_type' }] })
         .expectStatus(422);
 
       assert.equal(body.errors[0].property, 'type');
@@ -1468,19 +1470,22 @@ describe('Member Custom Fields Admin API', function () {
       assert.deepEqual(await readValues(memberId), { [company.key]: 'Ghost' });
     });
 
-    it('clears a text value with an empty string', async function () {
+    // A value is never empty, so there is one way to hold nothing: `null` clears, for every type.
+    it('refuses an empty string for a text field, which clears with null', async function () {
       const field = await createField({ name: 'Favourite topic' });
       const memberId = await createMember();
       await setValues(memberId, { [field.key]: 'Ghosts' });
 
-      await setValues(memberId, { [field.key]: '' });
+      const body = await setValues(memberId, { [field.key]: '' }, 422);
+      assert.equal(body.errors[0].context, 'Enter a value, or send null to clear it.');
+      assert.deepEqual(await readValues(memberId), { [field.key]: 'Ghosts' });
 
+      await setValues(memberId, { [field.key]: null });
       assert.deepEqual(await readValues(memberId), {});
     });
 
     it('rejects an empty string for a non-text field rather than clearing it', async function () {
-      // '' clears a text field (an emptied input), but for a non-text type
-      // it isn't a clear — it's an invalid value, and nothing is coerced.
+      // '' is no value of any type, so it's an invalid value, and nothing is coerced.
       const field = await createField({ name: 'Home address', type: 'address' });
       const memberId = await createMember();
 
@@ -2022,16 +2027,16 @@ describe('Member Custom Fields Admin API', function () {
       });
     });
 
-    it('clears the part a request names as empty', async function () {
+    it('clears the part a request names as null', async function () {
       const field = await createField({ name: 'Home address', type: 'address' });
       const memberId = await createMember();
 
       await setValues(memberId, {
         [field.key]: { line1: '62 Ghost Lane', city: 'Dublin', country: 'IE' },
       });
-      await setValues(memberId, { [field.key]: { city: '' } });
+      await setValues(memberId, { [field.key]: { city: null } });
 
-      // Emptying is said out loud, because absence already means "no change".
+      // Clearing is said out loud, because absence already means "no change".
       assert.deepEqual(await readValues(memberId), {
         [field.key]: { line1: '62 Ghost Lane', country: 'IE' },
       });
@@ -2044,11 +2049,11 @@ describe('Member Custom Fields Admin API', function () {
       await setValues(memberId, {
         [field.key]: { line1: '62 Ghost Lane', city: 'Dublin', country: 'IE' },
       });
-      await setValues(memberId, { [field.key]: { country: '' } });
+      await setValues(memberId, { [field.key]: { country: null } });
 
       // Every part clears the same way. A country's rule is a pattern that nothing
-      // empty can match, so a rule per part would make this the one part a member
-      // could be given but never rid of.
+      // empty can match, so a clear per part's rule would make this the one part a
+      // member could be given but never rid of.
       assert.deepEqual(await readValues(memberId), {
         [field.key]: { line1: '62 Ghost Lane', city: 'Dublin' },
       });
@@ -2065,16 +2070,16 @@ describe('Member Custom Fields Admin API', function () {
       });
     });
 
-    it('drops a part sent as an empty string rather than storing it as one', async function () {
+    it('refuses a part sent as an empty string rather than storing it as one', async function () {
       const field = await createField({ name: 'Home address', type: 'address' });
       const memberId = await createMember();
 
-      // A part with nothing in it gets no row, so it reads back absent rather than
-      // present-and-empty. That is the whole point of a row per part: there is no
-      // place to record "this part is empty" separately from "this part is unset".
-      await setValues(memberId, { [field.key]: { line1: '62 Ghost Lane', city: '' } });
+      // There is no place to record "this part is empty" separately from "this part is unset":
+      // a part holding nothing has no row. So an empty part is refused rather than read as one
+      // of the two.
+      await setValues(memberId, { [field.key]: { line1: '62 Ghost Lane', city: '' } }, 422);
 
-      assert.deepEqual(await readValues(memberId), { [field.key]: { line1: '62 Ghost Lane' } });
+      assert.deepEqual(await readValues(memberId), {});
     });
 
     it('rejects an address with nothing in it', async function () {
@@ -2359,6 +2364,103 @@ describe('Member Custom Fields Admin API', function () {
 
       assert.equal(editedEvents, 0);
       assert.equal((await memberEditedActions(memberId)).length, 0);
+    });
+  });
+
+  // Saving custom field values must lock only the rows it changes, or two members created at
+  // once each wait for the other's lock until MySQL cancels one of the requests. These tests
+  // create members rather than edit them, because editing two members who get the same
+  // newsletter makes the second edit wait for the first, so their saves never overlap.
+  describe.runIf(DatabaseInfo.isMySQL(knex))('Two members created at once', function () {
+    // How many transactions are waiting for a lock on members_metafield_values.
+    async function savesWaitingToWriteValues(): Promise<number> {
+      const [rows] = await models.Base.knex.raw(`
+        SELECT COUNT(DISTINCT waits.REQUESTING_ENGINE_TRANSACTION_ID) AS waiting
+        FROM performance_schema.data_lock_waits AS waits
+        JOIN performance_schema.data_locks AS requested
+          ON requested.ENGINE_LOCK_ID = waits.REQUESTING_ENGINE_LOCK_ID
+        WHERE requested.OBJECT_SCHEMA = DATABASE()
+          AND requested.OBJECT_NAME = 'members_metafield_values'
+      `);
+      return Number(rows[0].waiting);
+    }
+
+    // Sends both creates while a transaction holds a lock on the whole members_metafield_values
+    // table, so neither create can write a value yet. Once both creates are waiting on that
+    // lock, or one has already answered, the lock is released and both write their values at
+    // the same time, which is when a deadlock can happen. The table is empty at the start of
+    // each test, so a locking read of every row blocks every insert into the table.
+    async function createBothAtOnce(
+      values: [Record<string, unknown>, Record<string, unknown>],
+    ): Promise<Array<Record<string, unknown>>> {
+      const gate = await models.Base.knex.transaction();
+      let created: Array<{ statusCode: number; body: { members: Array<{ id: string }> } }>;
+      let creates: Array<Promise<(typeof created)[number]>> = [];
+      try {
+        await gate('members_metafield_values').forUpdate();
+        let answered = 0;
+        creates = values.map((custom) => {
+          memberCounter += 1;
+          return agent
+            .post('members/')
+            .body({
+              members: [
+                { email: `custom-fields-${memberCounter}@example.com`, metafields: { custom } },
+              ],
+            })
+            .then((response: (typeof created)[number]) => {
+              answered += 1;
+              return response;
+            });
+        });
+        await vi.waitFor(
+          async () => assert.equal((await savesWaitingToWriteValues()) + answered, 2),
+          { timeout: 5000 },
+        );
+        await gate.commit();
+        created = await Promise.all(creates);
+      } finally {
+        if (!gate.isCompleted()) {
+          await gate.rollback();
+        }
+        // Waited for however the test ends, so no create is still writing when the next test
+        // starts.
+        await Promise.allSettled(creates);
+      }
+
+      assert.deepEqual(
+        created.map(({ statusCode }) => statusCode),
+        [201, 201],
+        'one of the creates failed',
+      );
+      return Promise.all(created.map(({ body }) => readValues(body.members[0].id)));
+    }
+
+    it('keeps both lists', async function () {
+      const animals = await createField({
+        name: 'Favourite animals',
+        type: 'list',
+        settings: { options: ['Dog', 'Cat'], multiple: true },
+      });
+
+      const saved = await createBothAtOnce([
+        { [animals.key]: ['Dog'] },
+        { [animals.key]: ['Cat'] },
+      ]);
+
+      assert.deepEqual(saved, [{ [animals.key]: ['Dog'] }, { [animals.key]: ['Cat'] }]);
+    });
+
+    it('keeps both when each clears a field and fills another', async function () {
+      const topic = await createField({ name: 'Favourite topic' });
+      const company = await createField({ name: 'Company' });
+
+      const saved = await createBothAtOnce([
+        { [topic.key]: null, [company.key]: 'Ghost' },
+        { [topic.key]: null, [company.key]: 'Acme' },
+      ]);
+
+      assert.deepEqual(saved, [{ [company.key]: 'Ghost' }, { [company.key]: 'Acme' }]);
     });
   });
 
@@ -2720,7 +2822,7 @@ describe('Member Custom Fields Admin API', function () {
     // Switching back to a session means logging in again, and this file already logs in
     // close to the limit on login attempts, so clear the count before the later blocks do.
     afterAll(async function () {
-      await dbUtils.truncate('brute');
+      await dbUtils.truncate('rate_limits');
       await agent.loginAsOwner();
     });
 

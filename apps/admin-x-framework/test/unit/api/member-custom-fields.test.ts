@@ -7,6 +7,7 @@ import {
   memberCustomFieldParts,
 } from '../../../src/api/member-custom-fields';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
+import { ALL_FIELD_FIXTURES, type AnyFieldFixture } from '@tryghost/metafield-types/test/fixtures';
 import { LucideIcon } from '@tryghost/shade/utils';
 
 // Compile-time cases: the build failing is the assertion. Each `@ts-expect-error` fails the
@@ -219,6 +220,21 @@ describe('member custom fields api helpers', () => {
   });
 
   describe('formatMemberCustomFieldValue', () => {
+    // A value a member holds, of any type, reads as a line and never as nothing.
+    it.each(
+      ALL_FIELD_FIXTURES.map((fixture): [string, AnyFieldFixture] => [fixture.field.type, fixture]),
+    )(
+      'reads every held %s value as a line, and nothing held as none',
+      (_type, { field: fixtureField, values }) => {
+        for (const value of values) {
+          expect(formatMemberCustomFieldValue(fixtureField, value), JSON.stringify(value)).not.toBe(
+            '',
+          );
+        }
+        expect(formatMemberCustomFieldValue(fixtureField, undefined)).toBe('');
+      },
+    );
+
     it('returns a scalar value as it stands', () => {
       expect(formatMemberCustomFieldValue({ type: 'short_text' }, 'Editor')).toBe('Editor');
       expect(formatMemberCustomFieldValue({ type: 'long_text' }, 'A longer note')).toBe(

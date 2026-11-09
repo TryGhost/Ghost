@@ -17,6 +17,12 @@ export type SigningKeyPurpose = 'members' | 'staff';
 export interface SigningKey {
   privateKey: string;
   kid: string;
+  /**
+   * A pre-2048-bit key still signing until its rotation completes; pass as
+   * jsonwebtoken's `allowInsecureKeySizes`.
+   * @TODO: Ghost 7.0 - drop once every site has rotated off 1024-bit keys
+   */
+  legacy: boolean;
 }
 
 export interface Jwks {
@@ -215,7 +221,7 @@ export class SigningKeyService {
       throw new errors.IncorrectUsageError({ message: `No ${purpose} signing key` });
     }
     const { kid } = await getPublicKeyInfo(privateKey);
-    return { privateKey, kid };
+    return { privateKey, kid, legacy: modulusLength(privateKey) < MIN_MODULUS_LENGTH };
   }
 
   private async getVerificationKey(purpose: SigningKeyPurpose, kid?: string): Promise<string> {

@@ -8,6 +8,7 @@ import {
   isFieldType,
   isRecordValue,
   matchField,
+  matchLeaf,
   matchShape,
   partsOf,
   refusedProperty,
@@ -63,6 +64,17 @@ describe('metafield-types catalog', function () {
 
     assert.equal(layout('long_text'), 'one text value');
     assert.equal(layout('address'), 'parts line1, line2, city, state, postal_code, country');
+  });
+
+  it('answers for each leaf by the kind it declares', function () {
+    const holds = (part: 'line1' | 'country') =>
+      matchLeaf(FIELD_STRUCTURES.address.parts[part], {
+        text: ({ size }) => `${size} text`,
+        choice: ({ from }) => `a choice from ${from}`,
+      });
+
+    assert.equal(holds('line1'), 'line text');
+    assert.equal(holds('country'), 'a choice from countries');
   });
 
   it('knows its own types, and nothing else as one', function () {
@@ -134,16 +146,16 @@ describe('metafield-types catalog', function () {
   });
 
   describe('text is trimmed, whatever type it belongs to', function () {
-    // Trimming decides whether a value is stored at all: a value that trims to
-    // nothing is a clear. Two text types disagreeing about that would mean the same
-    // keystrokes emptying one field and filling another.
+    // Trimming decides whether a value holds anything: one that trims to nothing is
+    // refused, since `null` is how a write clears. Two text types disagreeing about
+    // that would mean the same keystrokes saving in one field and refused in another.
     it('trims every text type alike', function () {
       for (const type of ['short_text', 'long_text'] as const) {
         const padded = valueSchemaFor({ type }).safeParse('  Ghosts  ');
         assert.equal(padded.success && padded.data, 'Ghosts', type);
 
         const blank = valueSchemaFor({ type }).safeParse('   ');
-        assert.equal(blank.success && blank.data, '', type);
+        assert.equal(blank.success, false, type);
       }
     });
 
@@ -231,19 +243,18 @@ describe('metafield-types catalog', function () {
       assert.equal(parse({ line1: undefined, country: undefined }), false);
     });
 
-    it('accepts an address that names parts as empty, which is how they are cleared', function () {
-      assert.equal(parse({ line1: '', city: '' }), true);
+    it('clears a part named as null, and refuses one named as empty', function () {
+      assert.equal(parse({ line1: null, city: null }), true);
+      assert.equal(parse({ line1: '', city: '' }), false);
     });
 
-    it('lets a part whose rule is a format be emptied too', function () {
-      // Empty is a statement about the write, not about the part, so every
-      // part takes it alike. A bound admits the empty string on its own; a
-      // pattern does not, which would leave a country the one part of an address
-      // that could be set but never removed.
-      assert.equal(parse({ line1: '62 Ghost Lane', city: 'Dublin', country: '' }), true);
-      assert.equal(parse({ country: '' }), true);
+    it('lets a part whose rule is a format be cleared too', function () {
+      // Clearing is a statement about the write, not about the part, so every
+      // part takes it alike, a country's two-letter format included.
+      assert.equal(parse({ line1: '62 Ghost Lane', city: 'Dublin', country: null }), true);
+      assert.equal(parse({ country: null }), true);
 
-      // Emptying it is still the only thing that gets in for free.
+      // Clearing it is still the only thing that gets in for free.
       assert.equal(parse({ country: 'DEU' }), false);
     });
 
@@ -330,19 +341,26 @@ describe('metafield-types catalog', function () {
       assert.equal(parse({ line1: 'x'.repeat(256) }), false);
     });
 
-    it('reads a part of nothing but whitespace as empty, so it clears', function () {
-      // Trimming happens per part above, so whitespace has already become the empty
-      // string by the time the rule runs — and empty is an instruction, not a value.
+    it('refuses a part of nothing but whitespace, which holds nothing', function () {
       const result = valueSchemaFor({ type: 'address' }).safeParse({
         line1: '   ',
         city: '\t',
       });
-      assert.equal(result.success, true);
-      assert.deepEqual(result.data, { line1: '', city: '' });
+      assert.equal(result.success, false);
     });
   });
 
   describe('a list', function () {
+    it('refuses a write that picks nothing, which clears with null', function () {
+      const field: TypedSettings = { type: 'list', settings: { options: ['Dog'], multiple: true } };
+      const result = valueSchemaFor(field).safeParse([]);
+      assert.equal(result.success, false);
+      assert.equal(
+        result.error?.issues[0]?.message,
+        'Choose at least one option, or send null to clear it.',
+      );
+    });
+
     it('edits only the answers its field offers, in its order', function () {
       const settings = { options: ['Dog', 'Cat', 'Fish'], multiple: true };
       assert.deepEqual(editableAnswers(settings, ['Fish', 'Dolphin', 'Dog']), ['Dog', 'Fish']);
@@ -367,6 +385,51 @@ describe('metafield-types catalog', function () {
       });
       assert.equal(result.success, false);
       assert.equal(refusedProperty(result.error?.issues[0]?.path ?? []), 'settings.options.1');
+    });
+
+    // The option that repeats an earlier one is the one to change, so the refusal points at it
+    // rather than at the list as a whole.
+    it('refuses a repeated option on the option that repeats an earlier one, whatever its case', function () {
+      const result = TypedSettingsInputSchema.safeParse({
+        type: 'list',
+        settings: { options: ['Dog', 'Cat', ' dog'], multiple: true },
+      });
+      assert.deepEqual(
+        result.error?.issues.map((issue) => [refusedProperty(issue.path), issue.message]),
+        [['settings.options.2', 'This option already exists.']],
+      );
+    });
+
+    it('refuses a repeat whose case differs in letters one change of case keeps apart', function () {
+      for (const options of [
+        ['Straße', 'STRASSE'],
+        ['ẞ', 'ß'],
+        ['ΟΣ', 'οσ'],
+      ]) {
+        const result = TypedSettingsInputSchema.safeParse({
+          type: 'list',
+          settings: { options, multiple: true },
+        });
+        assert.deepEqual(
+          result.error?.issues.map((issue) => [refusedProperty(issue.path), issue.message]),
+          [['settings.options.1', 'This option already exists.']],
+        );
+      }
+    });
+
+    // An emptied option already asks for its text, so two emptied options aren't also repeats.
+    it('asks only for text when two options are empty', function () {
+      const result = TypedSettingsInputSchema.safeParse({
+        type: 'list',
+        settings: { options: ['', 'Dog', ' '], multiple: true },
+      });
+      assert.deepEqual(
+        result.error?.issues.map((issue) => [refusedProperty(issue.path), issue.message]),
+        [
+          ['settings.options.0', 'Enter text for each option.'],
+          ['settings.options.2', 'Enter text for each option.'],
+        ],
+      );
     });
 
     const reasonFor = (

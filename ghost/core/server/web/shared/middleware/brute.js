@@ -3,7 +3,7 @@ const spamPrevention = require('./api/spam-prevention');
 const { limitService } = require('../../../services/limits');
 
 /**
- * We set ignoreIP to false, because we tell brute-knex to use `req.ip`.
+ * Limiters key on `req.ip` unless ignoreIP is set.
  * We can use `req.ip`, because express trust proxy option is enabled.
  */
 module.exports = {
@@ -220,19 +220,6 @@ module.exports = {
       ignoreIP: true,
       key(_req, _res, _next) {
         return _next('preview_email_blocked');
-      },
-    })(req, res, next);
-  },
-
-  /**
-   * Blocks support request spam
-   */
-
-  supportRequestLimiter(req, res, next) {
-    return spamPrevention.supportRequestBlock().getMiddleware({
-      ignoreIP: true,
-      key(_req, _res, _next) {
-        return _next('support_request_blocked');
       },
     })(req, res, next);
   },

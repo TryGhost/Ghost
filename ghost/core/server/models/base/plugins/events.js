@@ -118,9 +118,14 @@ module.exports = function (Bookshelf) {
        *
        * Lock target collection/model for further update operations.
        * This avoids collisions and possible content override cases.
+       *
+       * Eager-loaded relations are not locked. They are often shared between
+       * records (tags, authors, tiers), so locking them made concurrent edits
+       * of different records deadlock. Locking the parent row already
+       * serialises edits of the same record.
        */
       onFetching: function onFetching(model, columns, options) {
-        if (options.forUpdate && options.transacting) {
+        if (options.forUpdate && options.transacting && !options.isEager) {
           options.query.forUpdate();
         }
       },
@@ -128,7 +133,7 @@ module.exports = function (Bookshelf) {
       onFetchedCollection() {},
 
       onFetchingCollection: function onFetchingCollection(model, columns, options) {
-        if (options.forUpdate && options.transacting) {
+        if (options.forUpdate && options.transacting && !options.isEager) {
           options.query.forUpdate();
         }
       },

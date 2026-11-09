@@ -1,8 +1,14 @@
-import ExpressBrute from 'express-brute';
 import assert from 'node:assert/strict';
+import { RateLimiterMemory } from 'rate-limiter-flexible';
+import type { BackoffLimiter as Limiter } from '../../../../../../../core/server/web/shared/middleware/api/backoff-limiter';
 import configUtils from '../../../../../../utils/config-utils';
-// @ts-expect-error This module lacks type definitions.
-import * as spamPrevention from '../../../../../../../core/server/web/shared/middleware/api/spam-prevention';
+import type { SpamPrevention } from '../../../../../../../core/server/web/shared/middleware/api/spam-prevention';
+
+const spamPrevention: SpamPrevention = require('../../../../../../../core/server/web/shared/middleware/api/spam-prevention');
+// required, not imported, so it is the same module instance spam-prevention loads
+const {
+  BackoffLimiter,
+} = require('../../../../../../../core/server/web/shared/middleware/api/backoff-limiter');
 
 type FactoryName =
   | 'upgradeBlock'
@@ -23,8 +29,7 @@ type FactoryName =
   | 'privateBlog'
   | 'contentApiKey'
   | 'webmentionsBlock'
-  | 'emailPreviewBlock'
-  | 'supportRequestBlock';
+  | 'emailPreviewBlock';
 
 const factories: Array<{
   name: FactoryName;
@@ -64,8 +69,12 @@ const factories: Array<{
   },
   { name: 'webmentionsBlock', attachResetToRequest: false },
   { name: 'emailPreviewBlock', attachResetToRequest: false },
-  { name: 'supportRequestBlock', configKey: 'support_request_block', attachResetToRequest: false },
 ];
+
+const build = (name: FactoryName) => spamPrevention[name]();
+
+// the counter is private; tests read it to check which store a limiter uses
+const counter = (instance: Limiter) => (instance as unknown as { count: object }).count;
 
 const fakeSpamConfig = (seed: number) => ({
   freeRetries: seed,
@@ -81,27 +90,25 @@ describe('Spam Prevention', function () {
     spamPrevention.reset();
   });
 
-  it('creates and caches an express-brute limiter for every factory', function () {
-    const databaseStores = new Set<unknown>();
-
+  it('creates and caches a limiter for every factory', function () {
     for (const { name, isMemoryBacked } of factories) {
       const factory = spamPrevention[name];
       const instance = factory();
 
-      assert(instance instanceof ExpressBrute, `${name} returns ExpressBrute`);
+      assert(instance instanceof BackoffLimiter, `${name} returns a BackoffLimiter`);
       assert.strictEqual(factory(), instance, `${name} caches its limiter`);
-
-      // `store` is a property we test with, even though it's not on the types.
-      const { store } = instance as any;
-      if (isMemoryBacked) {
-        assert(store instanceof ExpressBrute.MemoryStore, `${name} uses MemoryStore`);
-      } else {
-        assert(!(store instanceof ExpressBrute.MemoryStore), `${name} does not use MemoryStore`);
-        databaseStores.add(store);
-      }
+      assert.equal(
+        counter(instance) instanceof RateLimiterMemory,
+        Boolean(isMemoryBacked),
+        `${name} store`,
+      );
     }
+  });
 
-    assert.equal(databaseStores.size, 1, 'all database-backed limiters share the same store');
+  it('gives every limiter its own name, as they share one table', function () {
+    const names = factories.map(({ name }) => build(name).name);
+
+    assert.equal(new Set(names).size, names.length);
   });
 
   it('configures each limiter correctly', function () {
@@ -110,12 +117,14 @@ describe('Spam Prevention', function () {
         .filter(({ configKey }) => configKey)
         .map(({ configKey }, index) => [configKey, fakeSpamConfig((index + 1) * 10)]),
     );
-    configUtils.set('spam', spam);
+    for (const [block, settings] of Object.entries(spam)) {
+      configUtils.set(`spam:${block}`, settings);
+    }
 
     spamPrevention.reset();
 
     for (const { name, configKey, attachResetToRequest } of factories) {
-      const instance = spamPrevention[name]();
+      const instance = build(name);
 
       assert.equal(
         instance.options.attachResetToRequest,
@@ -147,32 +156,31 @@ describe('Spam Prevention', function () {
   });
 
   it('keeps upgrade and invite budgets stable when limiter construction order changes', function () {
-    const firstRequestLimiter = spamPrevention.upgradeBlock();
-    const firstApiLimiter = spamPrevention.upgradeApiBlock();
-    const firstInviteLimiter = spamPrevention.staffInviteBlock();
+    const firstRequestLimiter = build('upgradeBlock');
+    const firstApiLimiter = build('upgradeApiBlock');
+    const firstInviteLimiter = build('staffInviteBlock');
 
     spamPrevention.reset();
     spamPrevention.globalBlock();
-    const secondInviteLimiter = spamPrevention.staffInviteBlock();
-    const secondApiLimiter = spamPrevention.upgradeApiBlock();
-    const secondRequestLimiter = spamPrevention.upgradeBlock();
+    const secondInviteLimiter = build('staffInviteBlock');
+    const secondApiLimiter = build('upgradeApiBlock');
+    const secondRequestLimiter = build('upgradeBlock');
 
     assert.equal(firstRequestLimiter.name, secondRequestLimiter.name);
     assert.equal(firstApiLimiter.name, secondApiLimiter.name);
     assert.notEqual(secondRequestLimiter.name, secondApiLimiter.name);
     assert.equal(firstInviteLimiter.name, secondInviteLimiter.name);
     assert.notEqual(secondInviteLimiter.name, secondRequestLimiter.name);
-    assert.equal(secondInviteLimiter.options.refreshTimeoutOnRequest, false);
   });
 
   it('reset clears cached limiters and reloads spam configuration', function () {
-    configUtils.set('spam', { content_api_key: fakeSpamConfig(10) });
+    configUtils.set('spam:content_api_key', fakeSpamConfig(10));
     spamPrevention.reset();
-    const first = spamPrevention.contentApiKey();
+    const first = build('contentApiKey');
 
-    configUtils.set('spam', { content_api_key: fakeSpamConfig(20) });
+    configUtils.set('spam:content_api_key', fakeSpamConfig(20));
     spamPrevention.reset();
-    const second = spamPrevention.contentApiKey();
+    const second = build('contentApiKey');
 
     assert.notStrictEqual(second, first);
     assert.equal(second.options.freeRetries, 20);

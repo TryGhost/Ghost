@@ -113,6 +113,10 @@ class NewsletterEmailEventStorage {
    * @returns {Promise<number>} Number of newly written recipient timestamps; queued updates return zero.
    */
   async handlePermanentFailed(event) {
+    // Save the failure record before setting failed_at. If this throws,
+    // replaying the event can still populate failed_at and trigger aggregation.
+    await this.saveFailure('permanent', event);
+
     let rowCount = 0;
     const useBatchProcessing = this.#config.get('emailAnalytics:batchProcessing');
 
@@ -139,7 +143,6 @@ class NewsletterEmailEventStorage {
           }),
       );
     }
-    await this.saveFailure('permanent', event);
     return rowCount;
   }
 
@@ -325,16 +328,19 @@ class NewsletterEmailEventStorage {
    * @returns {Promise<StoredEventCounts>}
    */
   async flushBatchedUpdates() {
-    const counts = {
-      storedDelivered: await this.#flushDeliveredUpdates(),
-      storedOpened: await this.#flushOpenedUpdates(),
-      storedPermanentFailed: await this.#flushFailedUpdates(),
-    };
-
-    this.#pendingUpdates.delivered.clear();
-    this.#pendingUpdates.opened.clear();
-    this.#pendingUpdates.failed.clear();
-    return counts;
+    try {
+      return {
+        storedDelivered: await this.#flushDeliveredUpdates(),
+        storedOpened: await this.#flushOpenedUpdates(),
+        storedPermanentFailed: await this.#flushFailedUpdates(),
+      };
+    } finally {
+      // Clear the queue even after a failed flush. Retrying the fetch queues
+      // these events again, keeping their stored counts with the retry.
+      this.#pendingUpdates.delivered.clear();
+      this.#pendingUpdates.opened.clear();
+      this.#pendingUpdates.failed.clear();
+    }
   }
 
   /**

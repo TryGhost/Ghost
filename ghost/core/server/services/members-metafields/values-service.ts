@@ -4,12 +4,11 @@ import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import {
+  accept,
   isRecordValue,
   matchField,
-  matchShape,
-  valueSchemaFor,
-  type FieldType,
-  type FieldValue,
+  shaped,
+  type AcceptedValue,
   type MetafieldChangeEventField,
   type TypedSettings,
 } from '@tryghost/metafield-types';
@@ -47,7 +46,13 @@ import {
 } from './queries';
 import { ADMIN, MemberAccessSchema, canWrite, type Audience } from './access';
 import { readStoredField } from './stored-fields';
-import { heldOptionTexts, storedValueAs, valueRowsToWrite, valuesFromRows } from './storage';
+import {
+  VALUE_COLUMNS,
+  heldOptionTexts,
+  storedValueAs,
+  valueRowsToWrite,
+  valuesFromRows,
+} from './storage';
 
 const VALUES_TABLE = 'members_metafield_values';
 
@@ -163,10 +168,10 @@ const STORED_VALUE_COLUMNS = {
 
 type AllowedField = z.output<typeof WritableField.asStored>;
 
-/** An absent `value` means clear the field. */
+/** An absent `accepted` means clear the field. */
 export interface PlannedWrite {
   field: AllowedField;
-  value?: FieldValue;
+  accepted?: AcceptedValue;
 }
 
 /** Checked writes and who is making them: everything needed to store them. */
@@ -183,19 +188,6 @@ const IMPORTED: Extract<WriteOrigin, { source: 'import' }> = {
   writtenBy: { type: 'import', id: null },
   source: 'import',
 };
-
-/**
- * Whether a write of `raw` clears the whole field. The caller handles `null`, which clears any
- * field; `''` clears a scalar, and a set picking no options clears it. For a record `''` names no
- * part, so it goes on to fail validation rather than being read as a delete.
- */
-function clearsWhole(type: FieldType, raw: unknown): boolean {
-  return matchShape(type, {
-    scalar: () => raw === '',
-    record: () => false,
-    set: () => Array.isArray(raw) && raw.length === 0,
-  });
-}
 
 /**
  * What a member holds for each defined field. Separate from the definitions service
@@ -487,7 +479,8 @@ export class MetafieldValuesService {
         continue;
       }
 
-      if (raw === null || clearsWhole(field.type, raw)) {
+      // `null` clears any field; any other value, `''` and `[]` included, must pass the field's rule.
+      if (raw === null) {
         writes.push({ field });
         continue;
       }
@@ -496,11 +489,11 @@ export class MetafieldValuesService {
       // `context` when `context` is empty and prepends it when it is not, so
       // anything added here reaches the client glued to the front of the reason.
       // Which field failed rides in `property`.
-      const value = valueSchemaFor(field).safeParse(raw);
-      if (!value.success) {
+      const acceptance = accept(shaped(field), raw);
+      if (!acceptance.success) {
         // Every issue, not the first: a value with parts fails once per part, and each
         // names the part it belongs to, which is what lets a client mark them all.
-        for (const issue of value.error.issues) {
+        for (const issue of acceptance.issues) {
           refusals.push({
             message: issue.message,
             property: [wireProperty(identity), ...issue.path].join(SEPARATOR),
@@ -508,7 +501,7 @@ export class MetafieldValuesService {
         }
         continue;
       }
-      writes.push({ field, value: value.data });
+      writes.push({ field, accepted: acceptance.accepted });
     }
 
     const [first, ...rest] = refusals;
@@ -522,9 +515,9 @@ export class MetafieldValuesService {
   /**
    * Apply a plan from `planWrite`.
    *
-   * A write touches the paths it names and nothing else, at every level: naming a path
-   * with an empty value clears that part, naming the field with `null` clears all of
-   * them, and saying nothing about a path leaves it alone, so a caller that does not know
+   * A write touches the paths it names and nothing else, at every level: naming a part
+   * as `null` clears that part, naming the field as `null` clears all of them, and saying
+   * nothing about a path leaves it alone, so a caller that does not know
    * about a field cannot erase it. A list is the one value replaced whole: the options a
    * write picks are all it holds afterwards.
    *
@@ -580,7 +573,15 @@ export class MetafieldValuesService {
     await this.store(memberId, writes, IMPORTED, executor);
   }
 
-  /** Stores a write and its activity feed entry, joining `executor`'s transaction if given. */
+  /**
+   * Stores a write and its activity feed entry, joining `executor`'s transaction if given.
+   *
+   * The member's existing values are read without a lock. On MySQL that read sees the database
+   * as it was when the transaction first read anything without a lock, so it can miss values
+   * another request saved to the same member since then. A caller that may save a member while
+   * another request saves the same member must lock the member before reading anything, as the
+   * member edit does. The second save then waits for the first, and reads the values it saved.
+   */
   private async store(
     memberId: string,
     writes: PlannedWrite[],
@@ -590,84 +591,51 @@ export class MetafieldValuesService {
     const apply = async (trx: Knex) => {
       // Built first, then sent as whole statements: a handful per member rather
       // than one per part, under one timestamp, because a write happened once
-      // however many rows record it.
+      // however many rows record it. Rows are removed one statement each, for
+      // the reasons given where they are.
       const now = new Date();
-      const clearedFields: FieldIdentity[] = [];
-      const clearedPaths: Array<{ field: FieldIdentity; paths: string[] }> = [];
-      const replaced: Array<{ field: FieldIdentity; kept: string[] }> = [];
+      // The fields this write deletes rows from, each with a check on a row's path that says
+      // whether to delete that row.
+      const removals: Array<{ field: FieldIdentity; removes: (path: string) => boolean }> = [];
       const rows: DbValueRow[] = [];
 
-      for (const { field, value } of writes) {
-        if (value === undefined) {
-          clearedFields.push(field);
+      for (const { field, accepted } of writes) {
+        if (accepted === undefined) {
+          removals.push({ field, removes: () => true });
           continue;
         }
 
-        const toWrite = valueRowsToWrite(field, value);
+        const toWrite = valueRowsToWrite(accepted);
         const { set } = toWrite;
         switch (toWrite.mode) {
-          case 'replace':
-            replaced.push({ field, kept: set.map((row) => row.path) });
+          // A set is replaced as a whole. Rows for options the new set no longer picks are
+          // deleted, while rows for options it still picks are kept, along with when they were
+          // first picked.
+          case 'replace': {
+            const kept = new Set(set.map((row) => row.path));
+            removals.push({ field, removes: (path) => !kept.has(path) });
             break;
+          }
           case 'merge':
             if (toWrite.cleared.length > 0) {
-              clearedPaths.push({ field, paths: toWrite.cleared });
+              const cleared = new Set(toWrite.cleared);
+              removals.push({ field, removes: (path) => cleared.has(path) });
             }
             break;
         }
 
         rows.push(
-          ...set.map((row): DbValueRow => ({
+          ...set.map(({ path, ...columns }): DbValueRow => ({
             ...fieldReference(field),
             member_id: memberId,
-            path: row.path,
-            value_text: row.value_text,
+            path,
+            ...columns,
             written_by_type: writtenBy.type,
             written_by_id: writtenBy.id,
             created_at: now,
             updated_at: now,
           })),
         );
-      }
-
-      // One statement with a group per field, rather than a statement per field.
-      if (clearedFields.length > 0) {
-        await trx(VALUES_TABLE)
-          .where('member_id', memberId)
-          .where((builder) => {
-            for (const field of clearedFields) {
-              builder.orWhere((rowsOf) => rowsOf.where(fieldReference(field)));
-            }
-          })
-          .del();
-      }
-
-      if (clearedPaths.length > 0) {
-        await trx(VALUES_TABLE)
-          .where('member_id', memberId)
-          .where((builder) => {
-            for (const { field, paths } of clearedPaths) {
-              builder.orWhere((rowsOf) =>
-                rowsOf.where(fieldReference(field)).whereIn('path', paths),
-              );
-            }
-          })
-          .del();
-      }
-
-      // A set is replaced as a whole: every row it no longer picks goes, and the ones it still
-      // picks stay, keeping when they were first picked.
-      if (replaced.length > 0) {
-        await trx(VALUES_TABLE)
-          .where('member_id', memberId)
-          .where((builder) => {
-            for (const { field, kept } of replaced) {
-              builder.orWhere((rowsOf) =>
-                rowsOf.where(fieldReference(field)).whereNotIn('path', kept),
-              );
-            }
-          })
-          .del();
       }
 
       for (let from = 0; from < rows.length; from += UPSERT_CHUNK) {
@@ -681,7 +649,47 @@ export class MetafieldValuesService {
           .onConflict(VALUE_KEY)
           // The writer is merged with the value, so a row names who wrote what
           // it currently holds rather than who wrote its first value.
-          .merge(['value_text', 'written_by_type', 'written_by_id', 'updated_at']);
+          .merge([...VALUE_COLUMNS, 'written_by_type', 'written_by_id', 'updated_at']);
+      }
+
+      // Rows are removed after the rows above are written, with one DELETE per row that names
+      // the row by its primary key. On MySQL, at its default isolation level:
+      //
+      // - A DELETE that searches also locks the stretch of the index it searched through, even
+      //   when it finds no rows. New members get IDs that sort next to each other, so two
+      //   members created at once would lock the same stretch, then each wait for the other's
+      //   lock to insert its own values there, until MySQL cancels one of the requests.
+      // - MySQL can run a DELETE that names many rows as a scan of the whole table, once those
+      //   rows are a large share of it, and the scan locks every row in the table.
+      // - A DELETE of one row locks that row, and can also lock the end of an index page next
+      //   to it. Deleting after the inserts means a write takes those locks after its last
+      //   insert into this table, so it doesn't wait for another write while it holds them,
+      //   unless its transaction writes values again.
+      //
+      // The rows written above are never ones removed here: a write sets and clears different
+      // parts of a field.
+      if (removals.length > 0) {
+        const held = await trx<DbValueRow>(VALUES_TABLE)
+          .select(VALUE_KEY)
+          .where('member_id', memberId)
+          .where((builder) => {
+            for (const { field } of removals) {
+              builder.orWhere((rowsOf) => rowsOf.where(fieldReference(field)));
+            }
+          });
+        const removed = held.filter((row) =>
+          removals.some(
+            ({ field, removes }) =>
+              row.metafield_namespace === field.namespace &&
+              row.metafield_key === field.key &&
+              removes(row.path),
+          ),
+        );
+        for (const row of removed) {
+          await trx(VALUES_TABLE)
+            .where(Object.fromEntries(VALUE_KEY.map((column) => [column, row[column]])))
+            .del();
+        }
       }
 
       const fields: MetafieldChangeEventField[] = writes.map(({ field }) => ({

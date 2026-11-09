@@ -112,7 +112,16 @@ describe('List custom fields', function () {
         'Give the list at least 2 options.',
         'settings.options',
       ],
-      [{ options: ['Dog', 'Dog '], multiple: true }, 'Give each option once.', 'settings.options'],
+      [
+        { options: ['Dog', 'Dog '], multiple: true },
+        'This option already exists.',
+        'settings.options.1',
+      ],
+      [
+        { options: ['Dog', 'dog'], multiple: true },
+        'This option already exists.',
+        'settings.options.1',
+      ],
       [
         { options: ['Dog', ''], multiple: true },
         'Enter text for each option.',
@@ -163,6 +172,13 @@ describe('List custom fields', function () {
       });
 
       assert.deepEqual(edited.settings, { options: ['Cat', 'Dog', 'Fish'], multiple: false });
+
+      // Read back in the order the edit gave, not the order the options were first saved in.
+      const { body } = await agent.get(`members/metafields/custom/${field.key}/`).expectStatus(200);
+      assert.deepEqual(body.members_metafields[0].settings, {
+        options: ['Cat', 'Dog', 'Fish'],
+        multiple: false,
+      });
     });
 
     it('refuses an edit whose settings are wrong, changing nothing it asked for', async function () {
@@ -304,17 +320,28 @@ describe('List custom fields', function () {
       });
     }
 
-    for (const cleared of [[], null]) {
-      it(`clears the field when a write picks ${JSON.stringify(cleared)}`, async function () {
-        const field = await createList(ANIMALS);
-        const memberId = await createMember();
-        await setValues(memberId, { [field.key]: ['Dog'] });
+    it('clears the field when a write gives null', async function () {
+      const field = await createList(ANIMALS);
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: ['Dog'] });
 
-        await setValues(memberId, { [field.key]: cleared });
+      await setValues(memberId, { [field.key]: null });
 
-        assert.deepEqual(await readValues(memberId), {});
-      });
-    }
+      assert.deepEqual(await readValues(memberId), {});
+    });
+
+    // A value is never empty, so a list picking nothing is refused rather than a second way to
+    // clear.
+    it('refuses a write that picks nothing', async function () {
+      const field = await createList(ANIMALS);
+      const memberId = await createMember();
+      await setValues(memberId, { [field.key]: ['Dog'] });
+
+      const error = await setValues(memberId, { [field.key]: [] }, 422);
+
+      assert.equal(error.context, 'Choose at least one option, or send null to clear it.');
+      assert.deepEqual(await readValues(memberId), { [field.key]: ['Dog'] });
+    });
   });
 
   describe('When the options change', function () {

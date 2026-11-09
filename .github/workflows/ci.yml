@@ -266,7 +266,7 @@ jobs:
         # test:unit's Nx cache is keyed on `node -v` (nx.json) so each leg runs.
         id: node_matrix
         run: |
-          echo "matrix=[\"${NODE_VERSION}\", \"24.20.0\"]" >> $GITHUB_OUTPUT
+          echo "matrix=[\"${NODE_VERSION}\", \"24.22.1\"]" >> $GITHUB_OUTPUT
 
       - name: Start Nx Cloud CI run
         run: pnpm nx start-ci-run
@@ -914,7 +914,7 @@ jobs:
           --health-timeout=5s
           --health-retries=60
       redis:
-        image: redis:7.4@sha256:b6b6e3dc0c0952737748e55d5d885272840c7e42ba41ab1d5489f693419882f5
+        image: redis:7.4@sha256:2e3eb11462c4e3759e6972678dd051d150ff54b1e60714b3c33b701260172a90
         ports:
           - 6379:6379
         options: >-

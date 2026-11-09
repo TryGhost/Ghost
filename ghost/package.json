@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.74.1-rc.0",
+  "version": "6.76.0-rc.0",
   "description": "The professional publishing platform",
   "keywords": [
     "blog",
@@ -81,7 +81,6 @@
     "@breejs/later": "catalog:",
     "@extractus/oembed-extractor": "catalog:",
     "@faker-js/faker": "catalog:",
-    "@isaacs/ttlcache": "1.4.1",
     "@sentry/node": "7.120.4",
     "@tryghost/adapter-base-cache": "workspace:*",
     "@tryghost/adapter-base-jobs": "workspace:*",
@@ -94,7 +93,6 @@
     "@tryghost/api-framework": "workspace:*",
     "@tryghost/app-contracts": "workspace:*",
     "@tryghost/bookshelf-plugins": "2.3.21",
-    "@tryghost/brute-knex": "catalog:",
     "@tryghost/checkout": "workspace:*",
     "@tryghost/color-utils": "catalog:",
     "@tryghost/config-url-helpers": "1.0.30",
@@ -145,6 +143,7 @@
     "@x402/evm": "catalog:",
     "@x402/hono": "catalog:",
     "archiver": "8.0.0",
+    "better-auth": "catalog:",
     "body-parser": "catalog:",
     "bookshelf": "1.2.0",
     "bookshelf-relations": "3.0.0",
@@ -169,7 +168,6 @@
     "downsize-cjs": "1.1.2",
     "entities": "4.5.0",
     "express": "catalog:",
-    "express-brute": "1.0.1",
     "express-hbs": "2.5.0",
     "express-jwt": "8.5.1",
     "express-lazy-router": "1.0.6",
@@ -196,9 +194,9 @@
     "jsdom": "catalog:",
     "jsonc-parser": "catalog:",
     "jsonrepair": "catalog:",
-    "jsonwebtoken": "8.5.1",
+    "jsonwebtoken": "catalog:",
     "juice": "catalog:",
-    "knex": "2.4.2",
+    "knex": "catalog:",
     "knex-migrator": "catalog:",
     "leaky-bucket": "2.2.0",
     "lodash": "catalog:",
@@ -221,6 +219,7 @@
     "path-match": "1.2.4",
     "probability-distributions": "0.9.1",
     "probe-image-size": "7.4.0",
+    "rate-limiter-flexible": "catalog:",
     "rss": "1.2.2",
     "sanitize-html": "2.18.1",
     "semver": "catalog:",
@@ -238,6 +237,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@better-auth/test-utils": "catalog:",
     "@eslint/js": "catalog:",
     "@internal/cfg-eslint": "workspace:*",
     "@internal/cfg-test-workers": "workspace:*",
@@ -248,7 +248,6 @@
     "@types/common-tags": "1.8.4",
     "@types/csso": "catalog:",
     "@types/express": "catalog:",
-    "@types/express-brute": "catalog:",
     "@types/fs-extra": "11.0.4",
     "@types/js-yaml": "catalog:",
     "@types/jsdom": "catalog:",
@@ -274,7 +273,7 @@
     "esbuild": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",
-    "globals": "17.7.0",
+    "globals": "17.14.0",
     "html-validate": "11.5.5",
     "lodash-es": "4.18.1",
     "nock": "catalog:",
@@ -300,7 +299,7 @@
   },
   "engines": {
     "cli": "^1.29.1",
-    "node": "^22.23.1 || ^24.20.0"
+    "node": "^22.23.4 || ^24.22.1"
   },
   "nx": {
     "tags": [

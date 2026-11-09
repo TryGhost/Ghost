@@ -88,6 +88,29 @@ their development/local environment restriction and use the same Core runner.
 The former `node index.js repl` and `node index.js timetravel` entrypoints report
 their gx replacements. The old `ghost/core/cli` framework has been removed.
 
+## Automation drain benchmark
+
+Run `pnpm gx benchmark automations-drain --numberOfRuns [n] --steps
+[wait,send_email,...]` to measure how long it takes to drain the automations
+queue.
+
+Example:
+
+```sh
+pnpm gx benchmark automations-drain --numberOfRuns 1000 --steps wait,send_email
+```
+
+Benchmark boots Ghost, creates one free member per run, one automation, and
+pending runs. Timer starts when runs become ready and ends after all steps
+finish.
+
+Wait steps use one millisecond per configured hour.
+
+Email steps use configured development mail transport.
+
+Automation and members remain in development database under `Drain benchmark
+<automation-id>` and member emails beginning `benchmark-<automation-id>-`.
+
 ## Recipient preparation benchmark
 
 Run `pnpm gx benchmark recipient-preparation [members] [concurrency]` to measure
