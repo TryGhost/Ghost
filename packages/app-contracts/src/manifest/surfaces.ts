@@ -18,10 +18,15 @@ export const CARD_FRAME_PERMISSIONS = ['fullscreen', 'autoplay', 'encrypted-medi
  * rules, and must be an origin alone: no path, query or fragment.
  */
 function originList(url: UrlField) {
-  const origin = url(true).refine(
-    (value) => URL.parse(value)?.origin === value.replace(/\/$/, ''),
-    'Expected an origin such as https://images.example.com, with no path',
-  );
+  const origin = url(true).refine((value) => {
+    const parsed = URL.parse(value);
+    // A literal host: `https://*` parses, but would allow every host as a CSP source.
+    return (
+      parsed !== null &&
+      parsed.origin === value.replace(/\/$/, '') &&
+      /^(?:[a-z0-9-]+\.)*[a-z0-9-]+$|^\[[0-9a-f:.]+\]$/i.test(parsed.hostname)
+    );
+  }, 'Expected an origin such as https://images.example.com, with no path or wildcard');
   return z
     .array(origin, 'Expected a list of origins')
     .max(CARD_ORIGINS_MAX, `Expected at most ${CARD_ORIGINS_MAX} origins`)

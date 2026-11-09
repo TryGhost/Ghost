@@ -53,7 +53,8 @@ export function cspSources(origins: string[]): string {
     const sources = new Set<string>();
     for (const value of origins) {
         const url = URL.parse(value);
-        if (url && (url.protocol === 'https:' || url.protocol === 'http:')) {
+        // A literal host only: `https://*` parses, but as a source it would allow every host.
+        if (url && (url.protocol === 'https:' || url.protocol === 'http:') && /^(?:[a-z0-9-]+\.)*[a-z0-9-]+$|^\[[0-9a-f:.]+\]$/i.test(url.hostname)) {
             sources.add(url.origin);
         }
     }

@@ -19,10 +19,14 @@ describe('servedFrom', function () {
     assert.equal(appPageUrl(manifest), 'https://podcast.example.com/admin');
   });
 
-  it('refuses a manifest without surfaces, which a valid one always has', function () {
-    assert.throws(() => servedFrom({ surfaces: [] } as unknown as AppManifest), {
-      message: 'The manifest has no surfaces',
-    });
+  it('is where the manifest is served from for an app with no Admin page', function () {
+    assert.equal(
+      servedFrom({
+        surfaces: [],
+        manifest_url: 'https://cards.example.com/ghost-app.json',
+      } as unknown as AppManifest),
+      'cards.example.com',
+    );
   });
 });
 

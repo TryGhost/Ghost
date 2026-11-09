@@ -61,6 +61,7 @@ describe('the root entry point', () => {
       'methodAllowsBody',
       'normaliseAppPath',
       'servedFrom',
+      'surfaceUrls',
       'toPlainText',
     ]);
   });

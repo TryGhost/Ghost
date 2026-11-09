@@ -8,8 +8,10 @@ import {
     AppNode,
     $createAppNode,
     $isAppNode,
+    cspSources,
     filterAppCardOrigins,
-    renderAppCardDocument
+    renderAppCardDocument,
+    sanitiseAppCardMarkup
 } from '../../src/index.js';
 
 const card = {
@@ -118,4 +120,20 @@ describe('app card document', function () {
         expect(markup).toContain('a.example');
         expect(markup).not.toContain('b.example');
     });
+
+    it('keeps SVG animation, SVG images and escaped CSS out of email', function () {
+        const document = dom.window.document;
+        const allowed = ['https://good.example'];
+        const animated = sanitiseAppCardMarkup(document, '<svg><a href="https://ok.example"><set attributeName="href" to="javascript:alert(1)"/><animate attributeName="href" values="javascript:alert(1)"/><text>x</text></a></svg>');
+        expect(animated).not.toContain('javascript:');
+        expect(animated).not.toMatch(/<set|<animate/i);
+        const filtered = filterAppCardOrigins(document, '<svg><image href="https://evil.example/t"/><image href="https://good.example/a.png"/></svg><p style="background:u\\72l(https://evil.example/t)">x</p>', allowed);
+        expect(filtered).not.toContain('evil.example');
+        expect(filtered).toContain('good.example');
+    });
+
+    it('never widens the CSP with a wildcard host', function () {
+        expect(cspSources(['https://*', 'https://*.example.com', 'https://ok.example'])).toBe('https://ok.example');
+    });
 });
+

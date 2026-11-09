@@ -31,8 +31,15 @@ const APP_ID = /^[a-z][a-z0-9-]*(?:\.[a-z0-9][a-z0-9-]*)+$/;
 const CARD_NAME = /^[a-z][a-z0-9-]{0,62}$/;
 const PROPERTY_NAME = /^[A-Za-z_][A-Za-z0-9_]{0,63}$/;
 
-// Snapshots are static: nothing that runs, frames, fetches or rebases.
-const BLOCKED_ELEMENTS = 'script,iframe,frame,frameset,object,embed,base,link,meta,template,style,form,noscript';
+// Snapshots are static: nothing that runs, frames, fetches or rebases. SVG's animation elements
+// go too, as they can rewrite an attribute after it was checked, and `use` can pull in other
+// documents. Selectors match SVG's camel-cased names exactly, so both spellings are listed.
+const BLOCKED_ELEMENTS = [
+    'script', 'iframe', 'frame', 'frameset', 'object', 'embed', 'base', 'link', 'meta', 'template',
+    'style', 'form', 'noscript', 'set', 'animate', 'animateTransform', 'animatetransform',
+    'animateMotion', 'animatemotion', 'discard', 'use', 'foreignObject', 'foreignobject', 'handler',
+    'listener'
+].join(',');
 const URL_ATTRIBUTES = ['href', 'xlink:href', 'action', 'formaction'];
 const SOURCE_ATTRIBUTES = ['src', 'poster', 'data'];
 
@@ -131,11 +138,15 @@ export function filterAppCardOrigins(document: Document, markup: string, origins
     const template = document.createElement('template');
     template.innerHTML = markup;
     template.content.querySelectorAll('*').forEach((element) => {
+        const isLink = element.tagName.toLowerCase() === 'a' || element.tagName.toLowerCase() === 'area';
         for (const attribute of [...element.attributes]) {
             const name = attribute.name.toLowerCase();
-            if (name === 'style' && /url\s*\(|image-set|@import/i.test(attribute.value)) {
+            // CSS can load resources in more spellings than a pattern can follow, escapes included,
+            // so any style that could name one goes.
+            if (name === 'style' && /url|image|@import|\\|src\s*\(/i.test(attribute.value)) {
                 element.removeAttribute(attribute.name);
-            } else if (SOURCE_ATTRIBUTES.includes(name) && !isAllowedSource(attribute.value, allowed, base)) {
+            } else if ((SOURCE_ATTRIBUTES.includes(name) || (!isLink && (name === 'href' || name === 'xlink:href')))
+                && !isAllowedSource(attribute.value, allowed, base)) {
                 element.removeAttribute(attribute.name);
             } else if (name === 'srcset' || name === 'imagesrcset') {
                 const sources = attribute.value.split(',').map(entry => entry.trim().split(/\s+/)[0]).filter(Boolean);
@@ -147,7 +158,7 @@ export function filterAppCardOrigins(document: Document, markup: string, origins
             }
         }
         // An image or media element with nothing left to load is dropped altogether.
-        if (['IMG', 'VIDEO', 'AUDIO', 'SOURCE', 'PICTURE'].includes(element.tagName)
+        if (['IMG', 'VIDEO', 'AUDIO', 'SOURCE', 'PICTURE'].includes(element.tagName.toUpperCase())
             && !element.getAttribute('src') && !element.getAttribute('srcset') && !element.querySelector('source[src],img[src]')) {
             element.remove();
         }

@@ -11,8 +11,8 @@ describe('surfaces', () => {
   });
 
   it('rejects surfaces Ghost does not support', () => {
-    expect(errorsOf(manifest({ surfaces: [{ type: 'card', url: '/card' }] }))).toEqual([
-      { path: 'surfaces[0].type', message: expect.stringContaining('admin_page') },
+    expect(errorsOf(manifest({ surfaces: [{ type: 'widget', url: '/widget' }] }))).toEqual([
+      { path: 'surfaces[0].type', message: expect.stringContaining('admin_page, card') },
     ]);
   });
 
