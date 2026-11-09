@@ -503,8 +503,7 @@ describe('signing', () => {
       const mismatched = { ...generateKey(), x: generateKey().x };
       await expect(
         signAppManifest(SOURCE, { manifestUrl: MANIFEST_URL, ...keys, [name]: mismatched }),
-        // Newer Node refuses the pair while importing it, so the reason varies.
-      ).rejects.toThrow(`${name} isn't a usable Ed25519 key`);
+      ).rejects.toThrow(`${name} isn't a usable Ed25519 key: its x doesn't match its d`);
     },
   );
 

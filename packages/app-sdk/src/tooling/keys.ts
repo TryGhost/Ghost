@@ -102,7 +102,7 @@ function readAnyKey(text: string, source: string): PrivateKeyJwk | PublicKeyJwk 
   }
   // A JWK carries both halves, so a hand-edited or pasted one could pair a private half with
   // someone else's public half, and sign for a key the manifest doesn't name.
-  if (publicHalfOf(value.x, d, source) !== value.x) {
+  if (publicHalfOf(d, source) !== value.x) {
     throw new Error(`${source} isn't a usable Ed25519 key: its x doesn't match its d`);
   }
   return { kty: 'OKP', crv: 'Ed25519', x: value.x, d } satisfies PrivateKeyJwk;
@@ -116,14 +116,25 @@ function isEd25519(value: unknown): value is { kty: 'OKP'; crv: 'Ed25519'; x: st
   return kty === 'OKP' && crv === 'Ed25519' && typeof x === 'string';
 }
 
-/** The public half Node derives from a private half, as `x`. */
-function publicHalfOf(x: string, d: string, source: string): string | undefined {
-  try {
-    const key = createPrivateKey({ key: { kty: 'OKP', crv: 'Ed25519', x, d }, format: 'jwk' });
-    return createPublicKey(key).export({ format: 'jwk' }).x;
-  } catch {
+// What PKCS#8 puts before an Ed25519 private key's 32 bytes.
+const ED25519_PKCS8_PREFIX = Buffer.from('302e020100300506032b657004220420', 'hex');
+
+/**
+ * The public half of a private half, as `x`. Derived from `d` alone, as Node 24.22 and later
+ * refuse a JWK whose halves don't match while earlier versions take its `x` as given, so a
+ * mismatch is reported the same way on any version.
+ */
+function publicHalfOf(d: string, source: string): string | undefined {
+  const bytes = Buffer.from(d, 'base64url');
+  if (bytes.length !== 32) {
     throw new Error(`${source} isn't a usable Ed25519 key`);
   }
+  const key = createPrivateKey({
+    key: Buffer.concat([ED25519_PKCS8_PREFIX, bytes]),
+    format: 'der',
+    type: 'pkcs8',
+  });
+  return createPublicKey(key).export({ format: 'jwk' }).x;
 }
 
 async function readKeyFile(root: string, mode: Mode, name: KeyName): Promise<PrivateKeyJwk> {
