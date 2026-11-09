@@ -36,6 +36,16 @@
       "source": "./src/identity/index.ts",
       "types": "./build/identity/index.d.ts",
       "default": "./build/identity/index.js"
+    },
+    "./cards": {
+      "source": "./src/cards/index.ts",
+      "types": "./build/cards/index.d.ts",
+      "default": "./build/cards/index.js"
+    },
+    "./live-frame": {
+      "source": "./src/live-frame/index.ts",
+      "types": "./build/live-frame/index.d.ts",
+      "default": "./build/live-frame/index.js"
     }
   },
   "scripts": {

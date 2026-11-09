@@ -29,9 +29,14 @@ export {
 } from './parse.ts';
 export {
   AppManifestSchema,
+  type AdminPageSurface,
   type AppManifest,
   type AppSurface,
   type AppSurfaceType,
+  type CardFramePermission,
+  type CardSurface,
 } from './schema.ts';
+export { surfaceUrls } from './surface-urls.ts';
+export { CARD_FRAME_PERMISSIONS } from './surfaces.ts';
 export { isLocalhost } from './localhost.ts';
 export { appPageUrl, movedBetween, servedFrom, type AppMove } from './served-from.ts';

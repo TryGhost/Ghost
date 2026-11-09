@@ -1,19 +1,18 @@
 import type { AppManifest } from './schema.ts';
 
+/**
+ * The app's page, or for an app without one, its manifest's address: every surface is on the
+ * manifest's origin (D94), so its host is where the app runs either way.
+ */
 function pageUrl(manifest: AppManifest): URL {
-  const page =
-    manifest.surfaces.find((surface) => surface.type === 'admin_page') ?? manifest.surfaces[0];
-  if (!page) {
-    // Parsing rejects manifests without surfaces, so this only happens on a bug.
-    // It's a plain Error because this entry point can't have dependencies.
-    // oxlint-disable-next-line ghost/ghost-custom/no-native-error
-    throw new Error('The manifest has no surfaces');
-  }
-  return new URL(page.url);
+  const page = manifest.surfaces.find((surface) => surface.type === 'admin_page');
+  return new URL(page?.url ?? manifest.manifest_url);
 }
 
-export function appPageUrl(manifest: AppManifest): string {
-  return pageUrl(manifest).href;
+/** The app's Admin page, or null for an app with none, such as one that only adds cards. */
+export function appPageUrl(manifest: AppManifest): string | null {
+  const page = manifest.surfaces.find((surface) => surface.type === 'admin_page');
+  return page ? page.url : null;
 }
 
 /**

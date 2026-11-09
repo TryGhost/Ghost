@@ -29,6 +29,7 @@ import * as quotenode from './nodes/ExtendedQuoteNode.js';
 import * as tk from './nodes/TKNode.js';
 import * as atLink from './nodes/at-link/index.js';
 import * as zwnj from './nodes/zwnj/ZWNJNode.js';
+import * as app from './nodes/app/AppNode.js';
 
 import linebreakSerializers from './serializers/linebreak.js';
 import paragraphSerializers from './serializers/paragraph.js';
@@ -36,6 +37,7 @@ import paragraphSerializers from './serializers/paragraph.js';
 // re-export everything for easier importing
 export * from './KoenigDecoratorNode.js';
 export * from './nodes/image/ImageNode.js';
+export * from './nodes/app/AppNode.js';
 export * from './nodes/codeblock/CodeBlockNode.js';
 export * from './nodes/markdown/MarkdownNode.js';
 export * from './nodes/video/VideoNode.js';
@@ -128,5 +130,6 @@ export const DEFAULT_NODES = [
     tk.TKNode,
     atLink.AtLinkNode,
     atLink.AtLinkSearchNode,
-    zwnj.ZWNJNode
+    zwnj.ZWNJNode,
+    app.AppNode
 ];

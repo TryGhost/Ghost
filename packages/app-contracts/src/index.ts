@@ -21,11 +21,15 @@ export { URL_MAX_LENGTH } from './manifest/limits.ts';
 export { isLocalhost } from './manifest/localhost.ts';
 export { isPlainText, toPlainText } from './plain-text.ts';
 export { appPageUrl, servedFrom } from './manifest/served-from.ts';
+export { surfaceUrls } from './manifest/surface-urls.ts';
 export type {
+  AdminPageSurface,
   AppIcon,
   AppManifest,
   AppSurface,
   AppSurfaceType,
+  CardFramePermission,
+  CardSurface,
   ManifestError,
   ParseManifestOptions,
   ParseManifestResult,

@@ -4,7 +4,8 @@ import { iconField } from './icon.ts';
 import { APP_ID_MAX_LENGTH, isValidAppId } from './id.ts';
 import { publicKeyField } from './keys.ts';
 import { isLocalhost } from './localhost.ts';
-import { surfacesField } from './surfaces.ts';
+import { surfaceUrls } from './surface-urls.ts';
+import { CARD_FRAME_PERMISSIONS, surfacesField } from './surfaces.ts';
 import { plainText, storedText } from './text.ts';
 import {
   absoluteUrl,
@@ -93,7 +94,7 @@ function manifestShape(url: UrlField, text: typeof plainText) {
           ![
             manifest.author.url,
             'url' in manifest.icon ? manifest.icon.url : undefined,
-            ...manifest.surfaces.map((surface) => surface.url),
+            ...manifest.surfaces.flatMap(surfaceUrls),
             manifest.manifest_url,
           ].some((address) => address !== undefined && isLocalhost(new URL(address).hostname)),
         {
@@ -127,3 +128,11 @@ export type AppManifest = z.output<typeof AppManifestSchema>;
 export type AppSurface = AppManifest['surfaces'][number];
 
 export type AppSurfaceType = AppSurface['type'];
+
+export type AdminPageSurface = Extract<AppSurface, { type: 'admin_page' }>;
+
+/** A card the app adds to the editor. Every URL in it is absolute, on the app's origin. */
+export type CardSurface = Extract<AppSurface, { type: 'card' }>;
+
+/** A browser feature a card's live frame may ask for. */
+export type CardFramePermission = (typeof CARD_FRAME_PERMISSIONS)[number];
