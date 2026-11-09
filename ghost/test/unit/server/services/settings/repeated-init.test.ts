@@ -138,6 +138,58 @@ describe('Settings repeated initialization', function () {
     sinon.assert.alwaysCalledWithExactly(getAdapter, 'cache:settings');
   });
 
+  it('benchmarks the real cache and calculated fields without boot-time writes', async function () {
+    const { createSettingsReload } = require('../../../../../bin/benchmark-settings-reload');
+    const enforceLimits = sandbox.spy(settings as any, 'enforcePublicSiteAccessLimit');
+    config.get.withArgs('hostSettings:limits:customIntegrations:disabled').returns(true);
+    rows = {
+      title: 'Stored title',
+      description: 'Stored description',
+      members_signup_access: 'invite',
+      transistor: true,
+    };
+    overrides = { description: 'Host description', transistor: true };
+    await settings.init();
+    const keys = ['title', 'description', 'transistor', 'allow_self_signup', 'members_invite_only'];
+    const expected = keys.map((key) => cache.get(key));
+    const reload = createSettingsReload();
+    const counts = new Map(
+      events.eventNames().map((name: string | symbol) => [name, events.listenerCount(name)]),
+    );
+
+    assert.equal((await reload()).status, 'ok');
+    assert.deepEqual(
+      keys.map((key) => cache.get(key)),
+      expected,
+    );
+    rows = { ...rows, title: 'New title', members_signup_access: 'all' };
+    const result = await reload();
+    assert.equal(result.status, 'ok');
+    assert.equal(result.rows, 4);
+    assert.ok(result.findAllMs >= 0);
+    assert.ok(result.rebuildMs >= 0);
+    assert.equal(cache.get('title'), 'New title');
+    assert.equal(cache.get('allow_self_signup'), true);
+    assert.equal(cache.get('description'), 'Host description');
+    assert.equal(cache.get('transistor'), false);
+    sinon.assert.calledOnce(populateDefaults);
+    sinon.assert.calledOnce(enforceLimits);
+    assert.deepEqual(
+      new Map(
+        events.eventNames().map((name: string | symbol) => [name, events.listenerCount(name)]),
+      ),
+      counts,
+    );
+
+    findAll.rejects(Object.assign(new Error('SQL contains secrets'), { code: 'ETIMEDOUT' }));
+    const failed = await reload();
+    assert.equal(failed.status, 'error');
+    assert.equal(failed.phase, 'findAll');
+    assert.equal(failed.errorCode, 'ETIMEDOUT');
+    assert.equal(cache.get('title'), 'New title');
+    assert.equal(JSON.stringify(failed).includes('secrets'), false);
+  });
+
   it('does not apply changed host overrides until the next init', async function () {
     rows = { title: 'Stored title' };
     overrides = { title: 'First host title' };
