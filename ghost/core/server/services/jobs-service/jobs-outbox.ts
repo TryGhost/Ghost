@@ -119,7 +119,7 @@ export class JobsOutbox {
     await this.#knex(TABLE).where('id', id).delete();
   }
 
-  async releaseSubmitted(): Promise<void> {
-    await this.#knex(TABLE).whereNotNull('submitted_at').update({ submitted_at: null });
+  async releaseSubmitted(): Promise<number> {
+    return this.#knex(TABLE).whereNotNull('submitted_at').update({ submitted_at: null });
   }
 }

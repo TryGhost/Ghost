@@ -65,12 +65,13 @@ function makeLogger() {
   return { logging, calls };
 }
 
-function makeOutbox() {
+function makeOutbox({ released = 0 } = {}) {
   const inserts: { id: string; envelope: DispatchEnvelope; transacting?: unknown }[] = [];
   const relayCalls: string[] = [];
   const store = {
-    async releaseSubmitted(): Promise<void> {
+    async releaseSubmitted(): Promise<number> {
       relayCalls.push('release');
+      return released;
     },
     async insert(
       entry: { id: string; envelope: DispatchEnvelope },
@@ -431,6 +432,27 @@ describe('JobsService', function () {
       await service.shutdown();
       assert.deepEqual(outbox.relayCalls, ['release', 'start', 'stop']);
       assert.equal(backend.shutdownCalls.length, 1);
+    });
+
+    it('logs at start how many submitted rows it released to hand over again', async function () {
+      await makeService({ outbox: makeOutbox({ released: 2 }) }).start();
+
+      const [event, message] = logger.calls.info[0] as [
+        { system: { event: string; count: number } },
+        string,
+      ];
+      assert.deepEqual(event, { system: { event: 'jobs_outbox.released', count: 2 } });
+      assert.equal(message, '[Jobs Outbox] Released 2 submitted rows to hand over again');
+    });
+
+    it('logs no release when there was nothing to release', async function () {
+      await makeService({ outbox: makeOutbox({ released: 0 }) }).start();
+
+      assert.ok(
+        !logger.calls.info.some(([event]) =>
+          JSON.stringify(event).includes('jobs_outbox.released'),
+        ),
+      );
     });
 
     it('logs at start which backend runs jobs and whether the outbox is on', async function () {

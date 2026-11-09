@@ -169,6 +169,24 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
     });
   });
 
+  describe('JobsOutbox.releaseSubmitted', function () {
+    it('clears submitted_at on every submitted row and returns how many', async function () {
+      await knex(TABLE).insert(
+        [new Date(), new Date(), null].map((submittedAt) => ({
+          id: newId(),
+          envelope: JSON.stringify(envelopeFor()),
+          created_at: new Date(),
+          available_at: new Date(),
+          submitted_at: submittedAt,
+        })),
+      );
+
+      assert.equal(await outbox.releaseSubmitted(), 2);
+      const [{ count }] = await knex(TABLE).whereNotNull('submitted_at').count({ count: '*' });
+      assert.equal(Number(count), 0);
+    });
+  });
+
   describe('JobsOutbox.remove', function () {
     it('deletes only the given row', async function () {
       const keep = newId();
