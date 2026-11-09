@@ -564,6 +564,31 @@ describe('useEditUserPreferences', () => {
       },
     );
 
+    editTest(
+      'sends nothing when the save would store what is already stored',
+      async ({ server, setup }) => {
+        const { mutation } = await setup();
+        const saves: string[] = [];
+        server.events.on('request:start', ({ request }) => {
+          if (request.method === 'PUT') {
+            saves.push(request.url);
+          }
+        });
+
+        await act(async () => {
+          // Queued behind the first, the second works out that nothing is left to change
+          await Promise.all([
+            mutation.current.mutateAsync(fixtures.singlePreference),
+            mutation.current.mutateAsync((current) =>
+              'setting' in current ? {} : fixtures.singlePreference,
+            ),
+          ]);
+        });
+
+        expect(saves).toHaveLength(1);
+      },
+    );
+
     editTest('throws error when user is not loaded', async ({ server, wrapper }) => {
       server.use(
         http.get(USERS_API_URL, () => {
