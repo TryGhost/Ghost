@@ -47,9 +47,9 @@ describe('rate_limits store', function () {
     });
     const limiter = spamPrevention.globalBlock();
 
-    assert.equal(await attempt(limiter.prevent), true);
-    assert.equal(await attempt(limiter.prevent), true);
-    assert.equal(await attempt(limiter.prevent), false);
+    assert.equal(await attempt(limiter.middleware), true);
+    assert.equal(await attempt(limiter.middleware), true);
+    assert.equal(await attempt(limiter.middleware), false);
 
     const rows = await db.knex('rate_limits').select();
     assert.deepEqual(rows.map((row: { key: string }) => row.key.split(':').slice(0, 2)).sort(), [
@@ -58,12 +58,10 @@ describe('rate_limits store', function () {
       ['globalBlock', 'wait'],
     ]);
 
-    await new Promise<void>((resolve) => {
-      limiter.reset('127.0.0.1', undefined, () => resolve());
-    });
+    await limiter.reset({ ip: '127.0.0.1' });
 
     assert.deepEqual(await db.knex('rate_limits').select(), []);
-    assert.equal(await attempt(limiter.prevent), true);
+    assert.equal(await attempt(limiter.middleware), true);
   });
 
   it('lets only freeRetries + 1 of a concurrent burst through', async function () {
@@ -75,7 +73,9 @@ describe('rate_limits store', function () {
     });
     const limiter = spamPrevention.globalBlock();
 
-    const outcomes = await Promise.all(Array.from({ length: 25 }, () => attempt(limiter.prevent)));
+    const outcomes = await Promise.all(
+      Array.from({ length: 25 }, () => attempt(limiter.middleware)),
+    );
 
     assert.equal(outcomes.filter(Boolean).length, 5);
   });

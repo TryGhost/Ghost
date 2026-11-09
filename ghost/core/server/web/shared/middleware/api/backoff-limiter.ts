@@ -1,34 +1,32 @@
 import { createHash } from 'node:crypto';
+import { isIPv6 } from 'node:net';
+import errors from '@tryghost/errors';
+import ipaddr from 'ipaddr.js';
 import type { NextFunction, Request, Response } from 'express';
 import { RateLimiterRes } from 'rate-limiter-flexible';
 import type { RateLimiterAbstract } from 'rate-limiter-flexible';
-
-export type FailCallback = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-  nextValidRequestDate: Date,
-) => void;
-
-/** What a store failure hands handleStoreError, as express-brute did. */
-export type StoreError = {
-  message: string;
-  req?: Request;
-  res?: Response;
-  next?: NextFunction;
-  parent?: unknown;
-};
 
 export interface BackoffOptions {
   freeRetries: number;
   minWait: number;
   maxWait: number;
-  /** Seconds. Defaults to express-brute's: long enough to reach maxWait. */
+  /** Seconds. Defaults to long enough to reach maxWait. */
   lifetime?: number;
-  attachResetToRequest?: boolean;
-  failCallback: FailCallback;
-  handleStoreError: (err: StoreError) => void;
+  /** What a request counts against, alongside its IP unless ignoreIP is set. */
+  key?: (req: Request) => string | undefined;
+  ignoreIP?: boolean;
+  /** The error a blocked request fails with. */
+  onBlocked: (retryAfterMs: number, res: Response) => Error;
 }
+
+/** What a request counts against: its IP and the limiter's key. */
+export interface LimiterKey {
+  ip?: string;
+  key?: string;
+}
+
+/** Whether a counted request may continue, and if not, for how long it is blocked. */
+export type ConsumeResult = { allowed: true } | { allowed: false; retryAfterMs: number };
 
 /** Builds one rate-limiter-flexible limiter over the shared store. */
 export type LimiterFactory = (options: {
@@ -37,20 +35,7 @@ export type LimiterFactory = (options: {
   duration: number;
 }) => RateLimiterAbstract;
 
-type KeyCallback = (key?: string) => void;
-
-export interface MiddlewareOptions {
-  key?: string | ((req: Request, res: Response, done: KeyCallback) => void);
-  ignoreIP?: boolean;
-  failCallback?: FailCallback;
-}
-
-type Reset = (callback?: (err?: unknown) => void) => void;
-
-/** Express request with the `req.brute.reset` express-brute attached, kept for callers. */
-export type BruteRequest = Request & { brute?: { reset: Reset } };
-
-/** express-brute's waits: minWait, minWait, then each the sum of the two before, capped. */
+/** Waits of minWait, minWait, then each the sum of the two before, capped at maxWait. */
 export function backoffDelays(minWait: number, maxWait: number): number[] {
   const delays = [minWait];
 
@@ -62,13 +47,27 @@ export function backoffDelays(minWait: number, maxWait: number): number[] {
   return delays;
 }
 
+/** Formats an IP as Better Auth does with `ipv6Subnet: 64`: IPv4-mapped IPv6 as IPv4, other IPv6 as its expanded /64. */
+export function normalizeIP(ip: string): string {
+  if (!isIPv6(ip)) {
+    return ip;
+  }
+
+  const address = ipaddr.process(ip);
+  if (!(address instanceof ipaddr.IPv6)) {
+    return address.toString();
+  }
+
+  return new ipaddr.IPv6([...address.parts.slice(0, 4), 0, 0, 0, 0]).toFixedLengthString();
+}
+
 const hashKey = (parts: (string | undefined)[]) =>
   createHash('sha256')
     .update(parts.map((part) => part ?? '').join('\0'))
     .digest('base64url');
 
 /**
- * express-brute's backoff on rate-limiter-flexible's atomic counters.
+ * Backoff rate limiting on rate-limiter-flexible's atomic counters.
  *
  * Each key gets `freeRetries` requests per `lifetime`. After that, every
  * request opens a wait - minWait, minWait, 2x, 3x, 5x... up to maxWait - and
@@ -81,12 +80,11 @@ const hashKey = (parts: (string | undefined)[]) =>
  *   requests never advance the backoff
  *
  * Both increment in one statement, so concurrent requests cannot both slip
- * under a limit, which express-brute's read-then-write store allowed.
+ * under a limit.
  */
 export class BackoffLimiter {
   readonly name: string;
-  readonly options: Required<Omit<BackoffOptions, 'lifetime'>> & { lifetime: number };
-  readonly prevent: (req: Request, res: Response, next: NextFunction) => void;
+  readonly options: BackoffOptions & { lifetime: number };
 
   private readonly delays: number[];
   private readonly count: RateLimiterAbstract;
@@ -105,7 +103,7 @@ export class BackoffLimiter {
 
     this.name = name;
     this.delays = delays;
-    this.options = { attachResetToRequest: true, ...options, minWait, maxWait, lifetime };
+    this.options = { ...options, minWait, maxWait, lifetime };
 
     this.count = factory({
       keyPrefix: `${name}:count`,
@@ -122,62 +120,47 @@ export class BackoffLimiter {
       points: 1,
       duration: lifetime,
     });
-
-    this.prevent = this.getMiddleware();
   }
 
-  getMiddleware({ key, ignoreIP = false, failCallback }: MiddlewareOptions = {}) {
-    const keyFunc =
-      typeof key === 'function'
-        ? key
-        : (_req: Request, _res: Response, done: KeyCallback) => done(key);
+  readonly middleware = (req: Request, res: Response, next: NextFunction) => {
+    this.consume(this.keyFor(req))
+      .then(
+        (result) => (result.allowed ? undefined : this.options.onBlocked(result.retryAfterMs, res)),
+        (err: unknown) =>
+          new errors.InternalServerError({
+            message: 'Unknown error',
+            err: err instanceof Error ? err : undefined,
+          }),
+      )
+      .then(next, next);
+  };
 
-    return (req: Request, res: Response, next: NextFunction) => {
-      keyFunc(req, res, (requestKey) => {
-        const limiterKey = hashKey([ignoreIP ? undefined : req.ip, requestKey]);
+  /**
+   * Counts one request outside Express, against the same counters `middleware`
+   * uses for that IP and key. `ip` is ignored when the limiter ignores IP.
+   */
+  async consume(limiterKey: LimiterKey): Promise<ConsumeResult> {
+    const retryAfterMs = await this.attempt(this.hash(limiterKey));
 
-        if (this.options.attachResetToRequest) {
-          this.attachReset(req, limiterKey);
-        }
-
-        this.attempt(limiterKey)
-          .then(
-            (blockedFor) => {
-              if (blockedFor === null) {
-                return next();
-              }
-
-              (failCallback ?? this.options.failCallback)(
-                req,
-                res,
-                next,
-                new Date(Date.now() + blockedFor),
-              );
-            },
-            (err: unknown) => {
-              this.options.handleStoreError({
-                message: 'Cannot increment request count',
-                req,
-                res,
-                next,
-                parent: err,
-              });
-            },
-          )
-          .catch((err: unknown) => next(err));
-      });
-    };
+    return retryAfterMs === null ? { allowed: true } : { allowed: false, retryAfterMs };
   }
 
-  /** Clears a key's count and wait. `ip` is ignored by limiters that ignore IP. */
-  reset(ip: string | undefined | null, key?: string, callback?: (err?: unknown) => void) {
-    this.clear(hashKey([ip ?? undefined, key])).then(
-      () => callback?.(),
-      (err: unknown) => {
-        this.options.handleStoreError({ message: 'Cannot reset request count', parent: err });
-        callback?.(err);
-      },
-    );
+  /** Clears the count and wait this request's key has built up. */
+  resetRequest(req: Request) {
+    return this.reset(this.keyFor(req));
+  }
+
+  /** Clears a key's count and wait. `ip` is ignored when the limiter ignores IP. */
+  reset(limiterKey: LimiterKey) {
+    return this.clear(this.hash(limiterKey));
+  }
+
+  private keyFor(req: Request): LimiterKey {
+    return { ip: req.ip, key: this.options.key?.(req) };
+  }
+
+  private hash({ ip, key }: LimiterKey) {
+    return hashKey([this.options.ignoreIP || !ip ? undefined : normalizeIP(ip), key]);
   }
 
   /** Milliseconds the request is blocked for, or null when it may continue. */
@@ -220,22 +203,5 @@ export class BackoffLimiter {
 
   private async clear(key: string) {
     await Promise.all([this.count.delete(key), this.wait.delete(key), this.step.delete(key)]);
-  }
-
-  /** Sets req.brute.reset, chained after any limiter that set it earlier. */
-  private attachReset(req: BruteRequest, key: string) {
-    const reset: Reset = (callback) => {
-      this.clear(key).then(
-        () => process.nextTick(() => callback?.()),
-        (err: unknown) => process.nextTick(() => callback?.(err)),
-      );
-    };
-    const previous = req.brute?.reset;
-
-    req.brute = {
-      reset: previous
-        ? (callback?: (err?: unknown) => void) => previous(() => reset(callback))
-        : reset,
-    };
   }
 }

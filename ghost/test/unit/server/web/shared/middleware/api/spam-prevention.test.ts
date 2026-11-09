@@ -34,41 +34,28 @@ type FactoryName =
 const factories: Array<{
   name: FactoryName;
   configKey?: string;
-  attachResetToRequest: boolean;
+  ignoreIP?: boolean;
   isMemoryBacked?: boolean;
 }> = [
-  { name: 'upgradeBlock', configKey: 'upgrade_block', attachResetToRequest: false },
-  { name: 'upgradeApiBlock', configKey: 'upgrade_api_block', attachResetToRequest: false },
-  { name: 'staffInviteBlock', configKey: 'staff_invite_block', attachResetToRequest: false },
-  { name: 'globalBlock', configKey: 'global_block', attachResetToRequest: false },
-  { name: 'globalReset', configKey: 'global_reset', attachResetToRequest: false },
-  { name: 'userLogin', configKey: 'user_login', attachResetToRequest: true },
-  { name: 'sendVerificationCode', configKey: 'send_verification_code', attachResetToRequest: true },
-  { name: 'userVerification', configKey: 'user_verification', attachResetToRequest: true },
-  { name: 'membersAuth', configKey: 'user_login', attachResetToRequest: true },
-  { name: 'membersAuthEnumeration', configKey: 'member_login', attachResetToRequest: true },
-  {
-    name: 'checkoutSessionGlobal',
-    configKey: 'checkout_session_global',
-    attachResetToRequest: true,
-  },
-  { name: 'checkoutSessionEmail', configKey: 'checkout_session_email', attachResetToRequest: true },
-  { name: 'otcVerification', configKey: 'otc_verification', attachResetToRequest: false },
-  {
-    name: 'otcVerificationEnumeration',
-    configKey: 'otc_verification_enumeration',
-    attachResetToRequest: false,
-  },
-  { name: 'userReset', configKey: 'user_reset', attachResetToRequest: true },
-  { name: 'privateBlog', configKey: 'private_block', attachResetToRequest: false },
-  {
-    name: 'contentApiKey',
-    configKey: 'content_api_key',
-    attachResetToRequest: true,
-    isMemoryBacked: true,
-  },
-  { name: 'webmentionsBlock', attachResetToRequest: false },
-  { name: 'emailPreviewBlock', attachResetToRequest: false },
+  { name: 'upgradeBlock', configKey: 'upgrade_block', ignoreIP: true },
+  { name: 'upgradeApiBlock', configKey: 'upgrade_api_block' },
+  { name: 'staffInviteBlock', configKey: 'staff_invite_block', ignoreIP: true },
+  { name: 'globalBlock', configKey: 'global_block' },
+  { name: 'globalReset', configKey: 'global_reset' },
+  { name: 'userLogin', configKey: 'user_login' },
+  { name: 'sendVerificationCode', configKey: 'send_verification_code' },
+  { name: 'userVerification', configKey: 'user_verification' },
+  { name: 'membersAuth', configKey: 'user_login' },
+  { name: 'membersAuthEnumeration', configKey: 'member_login' },
+  { name: 'checkoutSessionGlobal', configKey: 'checkout_session_global' },
+  { name: 'checkoutSessionEmail', configKey: 'checkout_session_email', ignoreIP: true },
+  { name: 'otcVerification', configKey: 'otc_verification', ignoreIP: true },
+  { name: 'otcVerificationEnumeration', configKey: 'otc_verification_enumeration' },
+  { name: 'userReset', configKey: 'user_reset' },
+  { name: 'privateBlog', configKey: 'private_block' },
+  { name: 'contentApiKey', configKey: 'content_api_key', isMemoryBacked: true },
+  { name: 'webmentionsBlock' },
+  { name: 'emailPreviewBlock', ignoreIP: true },
 ];
 
 const build = (name: FactoryName) => spamPrevention[name]();
@@ -123,14 +110,10 @@ describe('Spam Prevention', function () {
 
     spamPrevention.reset();
 
-    for (const { name, configKey, attachResetToRequest } of factories) {
+    for (const { name, configKey, ignoreIP } of factories) {
       const instance = build(name);
 
-      assert.equal(
-        instance.options.attachResetToRequest,
-        attachResetToRequest,
-        `${name} reset setting`,
-      );
+      assert.equal(Boolean(instance.options.ignoreIP), Boolean(ignoreIP), `${name} ignoreIP`);
 
       if (!configKey) {
         continue;
@@ -187,5 +170,25 @@ describe('Spam Prevention', function () {
     assert.equal(second.options.minWait, 21);
     assert.equal(second.options.maxWait, 22);
     assert.equal(second.options.lifetime, 23);
+  });
+
+  it('keys staff resets on IP alone', function () {
+    assert.equal(build('userReset').options.key, undefined);
+  });
+
+  it('keys member sign-ins and checkouts on a normalized email', function () {
+    const fields = [
+      ['membersAuth', 'email'],
+      ['checkoutSessionEmail', 'customerEmail'],
+    ] as const;
+
+    for (const [name, field] of fields) {
+      const key = (value: string) =>
+        build(name).options.key?.({ body: { [field]: value } } as never);
+
+      assert.equal(key(' Foo@Example.com '), 'foo@example.com', name);
+    }
+    assert.equal(spamPrevention.emailKey(' Foo@Example.com '), 'foo@example.com');
+    assert.equal(spamPrevention.emailKey(undefined), undefined);
   });
 });
