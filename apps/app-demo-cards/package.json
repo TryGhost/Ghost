@@ -1,0 +1,29 @@
+{
+  "name": "@tryghost/app-demo-cards",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Spike: a demo app with four editor cards, served on cards.localhost",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build:editor": "vite build -c vite.editor.config.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@remote-dom/core": "catalog:",
+    "@remote-dom/preact": "catalog:",
+    "@tryghost/app-sdk": "workspace:*",
+    "echarts": "catalog:",
+    "papaparse": "catalog:",
+    "preact": "catalog:",
+    "preact-render-to-string": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/papaparse": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -293,6 +293,15 @@ catalogs:
     '@radix-ui/react-tooltip':
       specifier: 1.2.11
       version: 1.2.11
+    '@remote-dom/core':
+      specifier: 1.11.1
+      version: 1.11.1
+    '@remote-dom/preact':
+      specifier: 1.3.0
+      version: 1.3.0
+    '@remote-dom/react':
+      specifier: 1.2.2
+      version: 1.2.2
     '@secretlint/secretlint-rule-pattern':
       specifier: 13.0.7
       version: 13.0.7
@@ -428,6 +437,9 @@ catalogs:
     '@types/nodemailer':
       specifier: 8.0.2
       version: 8.0.2
+    '@types/papaparse':
+      specifier: 5.5.2
+      version: 5.5.2
     '@types/picomatch':
       specifier: 4.0.3
       version: 4.0.3
@@ -548,6 +560,9 @@ catalogs:
     dotenv:
       specifier: 17.4.2
       version: 17.4.2
+    echarts:
+      specifier: 6.1.0
+      version: 6.1.0
     entities:
       specifier: 4.5.0
       version: 4.5.0
@@ -689,6 +704,9 @@ catalogs:
     oxlint:
       specifier: 1.86.0
       version: 1.86.0
+    papaparse:
+      specifier: 5.5.4
+      version: 5.5.4
     parse-email-address:
       specifier: 0.0.5
       version: 0.0.5
@@ -698,6 +716,9 @@ catalogs:
     preact:
       specifier: ^10.29.2
       version: 10.29.8
+    preact-render-to-string:
+      specifier: 6.7.0
+      version: 6.7.0
     prettier:
       specifier: 3.9.10
       version: 3.9.10
@@ -1082,6 +1103,9 @@ importers:
       '@radix-ui/react-focus-scope':
         specifier: 'catalog:'
         version: 1.1.11(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@remote-dom/core':
+        specifier: 'catalog:'
+        version: 1.11.1(@preact/signals-core@1.14.4)(preact@10.29.8)
       '@sentry/react':
         specifier: 'catalog:'
         version: 7.120.4(@types/react@18.3.31)(react@18.3.1)
@@ -1325,7 +1349,7 @@ importers:
     dependencies:
       preact:
         specifier: 'catalog:'
-        version: 10.29.8
+        version: 10.29.8(preact-render-to-string@6.7.0)
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
@@ -1474,7 +1498,7 @@ importers:
     dependencies:
       preact:
         specifier: 'catalog:'
-        version: 10.29.8
+        version: 10.29.8(preact-render-to-string@6.7.0)
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
@@ -1497,6 +1521,46 @@ importers:
       jsdom:
         specifier: 'catalog:'
         version: 30.0.1(@noble/hashes@1.8.0)
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+      vite:
+        specifier: 'catalog:'
+        version: 8.1.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0)
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.12(@opentelemetry/api@1.9.1)(@types/node@22.20.5)(@vitest/browser-playwright@4.1.12)(@vitest/coverage-v8@4.1.12)(@vitest/ui@4.1.12)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.5)(@typescript/typescript6@6.0.2))(vite@8.1.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
+
+  apps/app-demo-cards:
+    dependencies:
+      '@remote-dom/core':
+        specifier: 'catalog:'
+        version: 1.11.1(@preact/signals-core@1.14.4)(preact@10.29.8)
+      '@remote-dom/preact':
+        specifier: 'catalog:'
+        version: 1.3.0(@preact/signals-core@1.14.4)(@preact/signals@1.3.4(preact@10.29.8))(preact@10.29.8)
+      '@tryghost/app-sdk':
+        specifier: workspace:*
+        version: link:../../packages/app-sdk
+      echarts:
+        specifier: 'catalog:'
+        version: 6.1.0
+      papaparse:
+        specifier: 'catalog:'
+        version: 5.5.4
+      preact:
+        specifier: 'catalog:'
+        version: 10.29.8(preact-render-to-string@6.7.0)
+      preact-render-to-string:
+        specifier: 'catalog:'
+        version: 6.7.0(preact@10.29.8)
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.5
+      '@types/papaparse':
+        specifier: 'catalog:'
+        version: 5.5.2
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -1928,7 +1992,7 @@ importers:
         version: 2.3.20(supports-color@10.2.2)
       preact:
         specifier: 'catalog:'
-        version: 10.29.8
+        version: 10.29.8(preact-render-to-string@6.7.0)
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
@@ -1992,7 +2056,7 @@ importers:
         version: 0.8.212
       preact:
         specifier: 'catalog:'
-        version: 10.29.8
+        version: 10.29.8(preact-render-to-string@6.7.0)
     devDependencies:
       '@internal/cfg-eslint-react':
         specifier: workspace:*
@@ -2150,6 +2214,9 @@ importers:
       '@faker-js/faker':
         specifier: 'catalog:'
         version: 10.6.0
+      '@quilted/threads':
+        specifier: 'catalog:'
+        version: 4.1.0(@preact/signals-core@1.14.4)
       '@sentry/node':
         specifier: 7.120.4
         version: 7.120.4
@@ -3368,6 +3435,13 @@ importers:
         version: 4.1.12(@opentelemetry/api@1.9.1)(@types/node@22.20.5)(@vitest/browser-playwright@4.1.12)(@vitest/coverage-v8@4.1.12)(@vitest/ui@4.1.12)(jsdom@30.0.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.20.5)(@typescript/typescript6@6.0.2))(vite@8.1.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
 
   koenig/koenig-lexical:
+    dependencies:
+      '@remote-dom/core':
+        specifier: 'catalog:'
+        version: 1.11.1(@preact/signals-core@1.14.4)(preact@10.29.8)
+      '@remote-dom/react':
+        specifier: 'catalog:'
+        version: 1.2.2(@preact/signals-core@1.14.4)(preact@10.29.8)(react@18.3.1)
     devDependencies:
       '@codemirror/autocomplete':
         specifier: 'catalog:'
@@ -4054,6 +4128,9 @@ importers:
       '@quilted/threads':
         specifier: 'catalog:'
         version: 4.1.0(@preact/signals-core@1.14.4)
+      '@remote-dom/core':
+        specifier: 'catalog:'
+        version: 1.11.1(@preact/signals-core@1.14.4)(preact@10.29.8)
       commander:
         specifier: 'catalog:'
         version: 15.0.0
@@ -7336,6 +7413,11 @@ packages:
   '@preact/signals-core@1.14.4':
     resolution: {integrity: sha512-HNB6HYeYKhQbJ1aKl+YRjrS4+QWHLKX6qKoUsfS/m0vqzsVaEBiZiaKbG/e+NKk2ch5ALQr/ihWaMHxiCuuWHA==}
 
+  '@preact/signals@1.3.4':
+    resolution: {integrity: sha512-TPMkStdT0QpSc8FpB63aOwXoSiZyIrPsP9Uj347KopdS6olZdAYeeird/5FZv/M1Yc1ge5qstub2o8VDbvkT4g==}
+    peerDependencies:
+      preact: 10.x
+
   '@prettier/sync@0.6.1':
     resolution: {integrity: sha512-yF9G8vK/LYUTF3Cijd7VC9La3b20F20/J/fgoR4H0B8JGOWnZVZX6+I6+vODPosjmMcpdlUV+gUqJQZp3kLOcw==}
     peerDependencies:
@@ -7934,6 +8016,65 @@ packages:
 
   '@remirror/core-constants@3.0.0':
     resolution: {integrity: sha512-42aWfPrimMfDKDi4YegyS7x+/0tlzaqwPQCULLanv3DMIlu96KTJR0fM5isWX2UViOqlGnX6YFgqWepcX+XMNg==}
+
+  '@remote-dom/core@1.11.1':
+    resolution: {integrity: sha512-0v29Q7F/iunb2cJm3E7r780X6jcPEFEgetSGisgRssJuoP9217yC1MKLVFNdXRmJYKX+oaugQKqaD2m8XA9dTQ==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      '@preact/signals-core': ^1.3.0
+      preact: '*'
+    peerDependenciesMeta:
+      '@preact/signals-core':
+        optional: true
+      preact:
+        optional: true
+
+  '@remote-dom/core@1.12.1':
+    resolution: {integrity: sha512-gCQoxwVMFNIZfcm3RixYqmlSY08Yxn06zL3n+ZnrV139REswNmmNe/7VEjvT4ETZKw219YWZrO/1amI7dzgzNw==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      '@preact/signals-core': ^1.3.0
+      preact: '*'
+    peerDependenciesMeta:
+      '@preact/signals-core':
+        optional: true
+      preact:
+        optional: true
+
+  '@remote-dom/polyfill@1.7.0':
+    resolution: {integrity: sha512-Ei18AW6IFLp+eOIshrOBO+ZO6ttnOHnG7U0gghz4MdOqoSFu1kDc3iVMFUK2+vfkrgUiBxK7WED+q4C728zQxw==}
+    engines: {node: '>=14.0.0'}
+
+  '@remote-dom/preact@1.3.0':
+    resolution: {integrity: sha512-Esp4zYdSWL/AuSvgzi1Hnzt3lG/IURBj7OLOY/VQnMxycXMFMMhxaknkZkH7Q1PWg1iDUhkvF9cQ0cQYqyoibA==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      '@preact/signals': ^1.2.0
+      '@preact/signals-core': ^1.3.0
+      preact: ^10.0.0
+    peerDependenciesMeta:
+      '@preact/signals-core':
+        optional: true
+      preact:
+        optional: true
+
+  '@remote-dom/react@1.2.2':
+    resolution: {integrity: sha512-PkvioODONTr1M0StGDYsR4Ssf5M0Rd4+IlWVvVoK3Zrw8nr7+5mJkgNofaj/z7i8Aep78L28PCW8/WduUt4unA==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      react: ^17.0.0 || ^18.0.0
+    peerDependenciesMeta:
+      react:
+        optional: true
+
+  '@remote-dom/signals@2.1.2':
+    resolution: {integrity: sha512-Ju7CB1181hI8INhherHkJqyv1fadcnQzJIH8vnzBrzvHhvaNuImmi2KQqJhHgD6mgllI294WzNYTv1mgCO04QA==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      '@preact/signals-core': ^1.3.0
+    peerDependenciesMeta:
+      '@preact/signals-core':
+        optional: true
 
   '@rolldown/binding-android-arm64@1.1.5':
     resolution: {integrity: sha512-lZg8fqIv2v7FF237bwMgzGZEJvGL79/s5knJ/i6FmsGF4XXlzccZ4jb+TrFIxtSSxFtIpdsgrPZeMk1I9AFcyQ==}
@@ -11358,6 +11499,9 @@ packages:
   ecdsa-sig-formatter@1.0.11:
     resolution: {integrity: sha512-nagl3RYrbNv6kQkeJIpt6NJZy8twLB/2vtz6yN9Z4vRKHN4/QZJIEbqohALSgwKdnksuY3k5Addp5lg8sVoVcQ==}
 
+  echarts@6.1.0:
+    resolution: {integrity: sha512-q0yaFPggC9FUdsWH4blavRWFmxdrIodbkoKNAjJudAI6CA9gNPxHtV2RcZNEepZVlk4yvBYkOkbk6HIVpIyHZA==}
+
   editions@6.22.0:
     resolution: {integrity: sha512-UgGlf8IW75je7HZjNDpJdCv4cGJWIi6yumFdZ0R7A8/CIhQiWUjyGLCxdHpd8bmyD1gnkfUNK0oeOXqUS2cpfQ==}
     engines: {ecmascript: '>= es5', node: '>=4'}
@@ -12297,6 +12441,9 @@ packages:
   hpagent@1.2.0:
     resolution: {integrity: sha512-A91dYTeIB6NoXG+PxTQpCCDDnfHsW9kc06Lvpu1TEe9gnd6ZFeiBoRO9JvzEv6xK7EX97/dUE8g/vBMTqTS3CA==}
     engines: {node: '>=14'}
+
+  htm@3.1.1:
+    resolution: {integrity: sha512-983Vyg8NwUE7JkZ6NmOqpCZ+sh1bKv2iYTlUkzlWmA5JD2acKoxd4KVxbMmxX/85mtfdnDmTFoNKcg5DGAvxNQ==}
 
   html-encoding-sniffer@6.0.0:
     resolution: {integrity: sha512-CV9TW3Y3f8/wT0BRFc1/KAVQ3TUHiXmaAb6VW9vtiMFf7SLoMd1PdAc4W3KFOFETBJUb90KatHqlsZMWV+R9Gg==}
@@ -14915,6 +15062,11 @@ packages:
     resolution: {integrity: sha512-LJlKCCAUFKOuZxipUdYw1NzIITEsPcgyOG9LkvRJvuKj/bRzbuRY0ARXvL0pWGpsZvn8jku+LMep2eU0seHp8g==}
     engines: {node: ^10 || ^12 || >=14}
 
+  preact-render-to-string@6.7.0:
+    resolution: {integrity: sha512-Z4WR8fmLMRpdYqJ9i7vrlXSsSrxVJydwrkEXHapexfARbWfGb7vGcnvNQnIzN0cXciMVOlz/XLoiMCi9gUsy9Q==}
+    peerDependencies:
+      preact: '>=10 || >= 11.0.0-0'
+
   preact@10.29.8:
     resolution: {integrity: sha512-ej2aVZ+vZ8WO7tvlQWRM9N63A0KzF9q4mWJfDUHgYaIofWY9hu74QdnQrjoPMmZi2/nZ5gN0bJCQF49xQqx09Q==}
     peerDependencies:
@@ -16403,6 +16555,9 @@ packages:
     resolution: {integrity: sha512-NoZ4roiN7LnbKn9QqE1amc9DJfzvZXxF4xDavcOWt1BPkdx+m+0gJuPM+S0vCe7zTJMYUP0R8pO2XMr+Y8oLIg==}
     engines: {node: '>=6'}
 
+  tslib@2.3.0:
+    resolution: {integrity: sha512-N82ooyxVNm6h1riLCoyS9e3fuJ3AMG2zIZs2Gd1ATcSFjSA23Q0fzjjZeh0jbJvWVDZ0cJT8yaNNaaXHzueNjg==}
+
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
@@ -17239,6 +17394,9 @@ packages:
 
   zod@4.6.7:
     resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
+
+  zrender@6.1.0:
+    resolution: {integrity: sha512-oEGMDB6pOP2S6OwRR4PdVv610zrjnA3Bh+JnSG12fYJlBKjtNAoEb5fSUoCOOINlH96I2fU38/A2UpRKs67xYQ==}
 
   zustand@4.5.7:
     resolution: {integrity: sha512-CHOUy7mu3lbD6o6LJLfllpjkzhHXSBlX8B9+qPddUsIfeF5S/UZ5q0kmCsnRqT1UHFQZchNFDDzMbQsuesHWlw==}
@@ -19620,6 +19778,11 @@ snapshots:
 
   '@preact/signals-core@1.14.4': {}
 
+  '@preact/signals@1.3.4(preact@10.29.8)':
+    dependencies:
+      '@preact/signals-core': 1.14.4
+      preact: 10.29.8(preact-render-to-string@6.7.0)
+
   '@prettier/sync@0.6.1(prettier@3.9.10)':
     dependencies:
       make-synchronized: 0.8.0(prettier@3.9.10)
@@ -20238,6 +20401,53 @@ snapshots:
 
   '@remirror/core-constants@3.0.0': {}
 
+  '@remote-dom/core@1.11.1(@preact/signals-core@1.14.4)(preact@10.29.8)':
+    dependencies:
+      '@remote-dom/polyfill': 1.7.0
+      htm: 3.1.1
+    optionalDependencies:
+      '@preact/signals-core': 1.14.4
+      preact: 10.29.8(preact-render-to-string@6.7.0)
+
+  '@remote-dom/core@1.12.1(@preact/signals-core@1.14.4)(preact@10.29.8)':
+    dependencies:
+      '@remote-dom/polyfill': 1.7.0
+      htm: 3.1.1
+    optionalDependencies:
+      '@preact/signals-core': 1.14.4
+      preact: 10.29.8(preact-render-to-string@6.7.0)
+
+  '@remote-dom/polyfill@1.7.0': {}
+
+  '@remote-dom/preact@1.3.0(@preact/signals-core@1.14.4)(@preact/signals@1.3.4(preact@10.29.8))(preact@10.29.8)':
+    dependencies:
+      '@preact/signals': 1.3.4(preact@10.29.8)
+      '@remote-dom/core': 1.11.1(@preact/signals-core@1.14.4)(preact@10.29.8)
+      '@remote-dom/signals': 2.1.2(@preact/signals-core@1.14.4)(preact@10.29.8)
+      htm: 3.1.1
+    optionalDependencies:
+      '@preact/signals-core': 1.14.4
+      preact: 10.29.8(preact-render-to-string@6.7.0)
+
+  '@remote-dom/react@1.2.2(@preact/signals-core@1.14.4)(preact@10.29.8)(react@18.3.1)':
+    dependencies:
+      '@remote-dom/core': 1.11.1(@preact/signals-core@1.14.4)(preact@10.29.8)
+      '@types/react': 18.3.31
+      htm: 3.1.1
+    optionalDependencies:
+      react: 18.3.1
+    transitivePeerDependencies:
+      - '@preact/signals-core'
+      - preact
+
+  '@remote-dom/signals@2.1.2(@preact/signals-core@1.14.4)(preact@10.29.8)':
+    dependencies:
+      '@remote-dom/core': 1.12.1(@preact/signals-core@1.14.4)(preact@10.29.8)
+    optionalDependencies:
+      '@preact/signals-core': 1.14.4
+    transitivePeerDependencies:
+      - preact
+
   '@rolldown/binding-android-arm64@1.1.5':
     optional: true
 
@@ -20783,14 +20993,14 @@ snapshots:
     dependencies:
       '@storybook/builder-vite': 10.6.5(storybook@10.6.5(@types/react@18.3.31)(prettier@3.9.10)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@8.1.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0))
       '@storybook/preact': 10.6.5(preact@10.29.8)(storybook@10.6.5(@types/react@18.3.31)(prettier@3.9.10)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
-      preact: 10.29.8
+      preact: 10.29.8(preact-render-to-string@6.7.0)
       storybook: 10.6.5(@types/react@18.3.31)(prettier@3.9.10)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       vite: 8.1.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.15)(yaml@2.9.0)
 
   '@storybook/preact@10.6.5(preact@10.29.8)(storybook@10.6.5(@types/react@18.3.31)(prettier@3.9.10)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
     dependencies:
       '@storybook/global': 5.0.0
-      preact: 10.29.8
+      preact: 10.29.8(preact-render-to-string@6.7.0)
       storybook: 10.6.5(@types/react@18.3.31)(prettier@3.9.10)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       ts-dedent: 2.3.0
 
@@ -21049,7 +21259,7 @@ snapshots:
   '@testing-library/preact@3.2.6(preact@10.29.8)':
     dependencies:
       '@testing-library/dom': 10.4.2
-      preact: 10.29.8
+      preact: 10.29.8(preact-render-to-string@6.7.0)
 
   '@testing-library/react@12.1.5(@types/react@17.0.93)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
     dependencies:
@@ -23941,6 +24151,11 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
+  echarts@6.1.0:
+    dependencies:
+      tslib: 2.3.0
+      zrender: 6.1.0
+
   editions@6.22.0:
     dependencies:
       version-range: 4.15.0
@@ -25201,6 +25416,8 @@ snapshots:
       lru-cache: 11.5.3
 
   hpagent@1.2.0: {}
+
+  htm@3.1.1: {}
 
   html-encoding-sniffer@6.0.0(@noble/hashes@1.8.0):
     dependencies:
@@ -28131,7 +28348,13 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.2
 
-  preact@10.29.8: {}
+  preact-render-to-string@6.7.0(preact@10.29.8):
+    dependencies:
+      preact: 10.29.8(preact-render-to-string@6.7.0)
+
+  preact@10.29.8(preact-render-to-string@6.7.0):
+    optionalDependencies:
+      preact-render-to-string: 6.7.0(preact@10.29.8)
 
   prebuild-install@7.1.3:
     dependencies:
@@ -30030,6 +30253,8 @@ snapshots:
       minimist: 1.2.8
       strip-bom: 3.0.0
 
+  tslib@2.3.0: {}
+
   tslib@2.8.1: {}
 
   tsscmp@1.0.6: {}
@@ -30969,6 +31194,10 @@ snapshots:
       readable-stream: 4.7.0
 
   zod@4.6.7: {}
+
+  zrender@6.1.0:
+    dependencies:
+      tslib: 2.3.0
 
   zustand@4.5.7(@types/react@18.3.31)(react@18.3.1):
     dependencies:

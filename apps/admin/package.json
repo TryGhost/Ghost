@@ -33,6 +33,7 @@
     "@quilted/threads": "catalog:",
     "@radix-ui/react-focus-guards": "catalog:",
     "@radix-ui/react-focus-scope": "catalog:",
+    "@remote-dom/core": "catalog:",
     "@sentry/react": "catalog:",
     "@svg-maps/world": "2.0.0",
     "@tanstack/react-query": "catalog:",

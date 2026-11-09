@@ -52,6 +52,7 @@
   },
   "dependencies": {
     "@quilted/threads": "catalog:",
+    "@remote-dom/core": "catalog:",
     "commander": "catalog:",
     "jose": "catalog:",
     "zod": "catalog:"
