@@ -5,7 +5,6 @@ const {
   mockManager,
   matchers,
 } = require('../../utils/e2e-framework');
-const db = require('../../../core/server/data/db');
 const models = require('../../../core/server/models/index');
 const { anyContentVersion, anyEtag } = matchers;
 
@@ -305,10 +304,6 @@ describe('Tiers API', function () {
         .expectStatus(201);
       tierIds.push(body.tiers[0].id);
     }
-
-    // A freshly created test database has no index statistics, so MySQL
-    // wouldn't plan the queries the way it does on a real site
-    await db.knex.raw('ANALYZE TABLE products_benefits');
 
     const statuses = [];
     for (let round = 0; round < 10; round++) {
