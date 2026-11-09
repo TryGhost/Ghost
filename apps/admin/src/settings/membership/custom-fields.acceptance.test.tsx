@@ -2,6 +2,7 @@ import { describe, expect, it, onTestFinished } from 'vitest';
 import { type Locator, page, userEvent } from 'vitest/browser';
 
 import {
+  allowUnhandledRequests,
   configResponse,
   currentRoute,
   fakeAdminEndpoint,
@@ -1085,6 +1086,76 @@ describe('Custom fields', () => {
       });
     });
 
+    // The options as they are drawn, by their drag handles, top to bottom.
+    const optionOrder = (modal: Locator) =>
+      modal
+        .getByLabelText(/^Reorder /)
+        .elements()
+        .map((handle) => handle.getAttribute('aria-label')?.replace('Reorder ', ''));
+
+    // Rows are measured as a drag starts, so the drag waits for anything that would move them: a
+    // section of Settings still loading, or the modal still opening.
+    const dragOption = async (modal: Locator, name: string, onto: string) => {
+      await settleRequests();
+      await expect.element(modal).toBeVisible();
+      await expect.element(modal).not.toHaveClass('animate-modal-in');
+      await userEvent.dragAndDrop(
+        modal.getByLabelText(`Reorder ${name}`),
+        modal.getByLabelText(`Reorder ${onto}`),
+        { steps: 10 },
+      );
+      // dnd-kit swallows every click for 50ms after a drop, so the drop's own pointer-up can't
+      // click what is under it. Nothing on screen marks the end of that, so the drag outlasts it
+      // before the next step clicks anything.
+      await new Promise((resolve) => {
+        setTimeout(resolve, 100);
+      });
+    };
+
+    it('saves a new list’s options in the order they are dragged into', async () => {
+      fakeSettingsScreens();
+      fakeListedFields();
+      const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
+        members_metafields: [animalsField],
+      });
+      await renderAdminApp('/settings', flagOn);
+
+      const modal = await openNewListField();
+      await modal.getByLabelText('Name').fill('Favourite animals');
+      for (const option of ['Dog', 'Cat', 'Fish']) {
+        await modal.getByLabelText('New option').fill(option);
+        await userEvent.keyboard('{Enter}');
+      }
+      await dragOption(modal, 'Fish', 'Dog');
+      await expect.poll(() => optionOrder(modal)).toEqual(['Fish', 'Dog', 'Cat']);
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect(modal).toHaveCount(0);
+      expect(createApi.lastRequest?.body).toMatchObject({
+        members_metafields: [{ settings: { options: ['Fish', 'Dog', 'Cat'], multiple: false } }],
+      });
+    });
+
+    it('saves a list’s saved options in a new order', async () => {
+      fakeSettingsScreens();
+      fakeListedFields([animalsField]);
+      const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/favourite_animals/', {
+        members_metafields: [animalsField],
+      });
+      await renderAdminApp('/settings', flagOn);
+
+      await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+      const modal = settingsScreen.customFieldModal();
+      await dragOption(modal, 'Cat', 'Dog');
+      await expect.poll(() => optionOrder(modal)).toEqual(['Cat', 'Dog']);
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect(modal).toHaveCount(0);
+      expect(editApi.lastRequest?.body).toEqual({
+        members_metafields: [{ settings: { options: ['Cat', 'Dog'], multiple: true } }],
+      });
+    });
+
     it('renames a list without sending its options', async () => {
       fakeSettingsScreens();
       fakeListedFields([animalsField]);
@@ -1100,6 +1171,82 @@ describe('Custom fields', () => {
 
       await expect(modal).toHaveCount(0);
       expect(editApi.lastRequest?.body).toEqual({ members_metafields: [{ name: 'Pets' }] });
+    });
+
+    it('holds a list’s options still while an edit saves', async () => {
+      fakeSettingsScreens();
+      fakeListedFields([animalsField]);
+      let release = () => {};
+      const held = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      // Released however the test ends, as a save left in flight would fail the tests after it.
+      onTestFinished(() => release());
+      fakeAdminEndpoint('PUT', '/members/metafields/custom/favourite_animals/', async () => {
+        await held;
+        return { members_metafields: [animalsField] };
+      });
+      await renderAdminApp('/settings', flagOn);
+
+      await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
+      const modal = settingsScreen.customFieldModal();
+      await modal.getByLabelText('New option').fill('Fish');
+      await userEvent.keyboard('{Enter}');
+      await settleRequests();
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect.element(modal.getByLabelText('New option')).toBeDisabled();
+      await expect(modal.getByRole('button', { name: /^Remove / })).toHaveCount(0);
+      // Forced past the checks that would wait for the handle to be usable, so the pointer
+      // presses and moves as a hand would.
+      await userEvent.dragAndDrop(
+        modal.getByLabelText('Reorder Dog'),
+        modal.getByLabelText('Reorder Cat'),
+        { steps: 10, force: true },
+      );
+      await expect(modal.getByLabelText(/^Reorder /)).toHaveCount(3);
+      expect(
+        modal
+          .getByLabelText(/^Reorder /)
+          .elements()
+          .map((handle) => handle.getAttribute('aria-label')),
+      ).toEqual(['Reorder Dog', 'Reorder Cat', 'Reorder Fish']);
+
+      release();
+      await expect(modal).toHaveCount(0);
+    });
+
+    it('holds a new field’s type still while it saves', async () => {
+      fakeSettingsScreens();
+      fakeListedFields();
+      let release = () => {};
+      const held = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      // Released however the test ends, as a save left in flight would fail the tests after it.
+      onTestFinished(() => release());
+      fakeAdminEndpoint('POST', '/members/metafields/custom/', async () => {
+        await held;
+        return { members_metafields: [animalsField] };
+      });
+      await renderAdminApp('/settings', flagOn);
+
+      const modal = await openNewListField();
+      await modal.getByLabelText('Name').fill('Favourite animals');
+      for (const option of ['Dog', 'Cat']) {
+        await modal.getByLabelText('New option').fill(option);
+        await userEvent.keyboard('{Enter}');
+      }
+      await modal.getByRole('button', { name: 'Save' }).click();
+      await expect.element(modal.getByLabelText('Name')).toBeDisabled();
+
+      // Forced past the checks that would wait for the select to be usable, so the pointer
+      // presses as a hand would.
+      await userEvent.click(modal.getByLabelText('Type'), { force: true });
+      await expect(page.getByRole('option', { name: /Short text/ })).toHaveCount(0);
+
+      release();
+      await expect(modal).toHaveCount(0);
     });
 
     // Settings saved under an older rule are kept, so an edit that leaves them alone doesn't
@@ -1158,5 +1305,61 @@ describe('Custom fields', () => {
       await expect(modal.getByRole('button', { name: /^(Reorder|Remove) / })).toHaveCount(0);
       await expect(modal.getByLabelText('New option')).toHaveCount(0);
     });
+
+    it('keeps a new field’s type while it saves, even from a menu already open', async () => {
+      // The save shortcut also saves the Settings sections behind the modal, which this test
+      // doesn't look at.
+      allowUnhandledRequests();
+      fakeSettingsScreens();
+      fakeListedFields();
+      let release = () => {};
+      const held = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      // Released however the test ends, as a save left in flight would fail the tests after it.
+      onTestFinished(() => release());
+      fakeAdminEndpoint(
+        'POST',
+        '/members/metafields/custom/',
+        async () => {
+          await held;
+          return {
+            errors: [
+              {
+                type: 'ValidationError',
+                message: 'Validation error, cannot save members_metafield.',
+                context: 'A custom field with this name already exists.',
+                property: 'name',
+              },
+            ],
+          };
+        },
+        { status: 422 },
+      );
+      await renderAdminApp('/settings', flagOn);
+
+      const modal = await openNewListField();
+      await modal.getByLabelText('Name').fill('Favourite animals');
+      for (const option of ['Dog', 'Cat']) {
+        await modal.getByLabelText('New option').fill(option);
+        await userEvent.keyboard('{Enter}');
+      }
+      // The type menu is open as the save starts from the keyboard, and a type is chosen from it.
+      await modal.getByLabelText('Type').click();
+      const shortText = page.getByRole('option', { name: /Short text/ });
+      await expect.element(shortText).toBeVisible();
+      await userEvent.keyboard('{Control>}s{/Control}');
+      await expect.element(modal.getByLabelText('Name')).toBeDisabled();
+      await shortText.click();
+
+      // The save is refused, and the form still shows the list it sent.
+      release();
+      await expect
+        .element(modal.getByText('A custom field with this name already exists.'))
+        .toBeVisible();
+      await expect.element(modal.getByLabelText('Type')).toHaveTextContent('List');
+      await expect(modal.getByRole('button', { name: /^Remove / })).toHaveCount(2);
+    });
+
   });
 });
