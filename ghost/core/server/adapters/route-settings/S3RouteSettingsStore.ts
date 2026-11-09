@@ -204,21 +204,15 @@ export default class S3RouteSettingsStore extends RouteSettingsStoreBase {
   }
 
   private _requestError(err: unknown): Error {
-    // The only Ghost errors reaching here are this store's own, which are
-    // already safe to render — re-wrapping them would hide the reason.
+    // This store's own errors already say what went wrong; re-wrapping would hide it.
     if (err instanceof errors.InternalServerError) {
       return err;
     }
 
-    const requestError = new errors.InternalServerError({
+    return new errors.InternalServerError({
       message: tpl(messages.requestFailed),
+      err: err as Error,
     });
-
-    if (typeof (err as { stack?: string })?.stack === 'string') {
-      requestError.stack = `${requestError.stack}\n\nCaused by: ${(err as { stack: string }).stack}`;
-    }
-
-    return requestError;
   }
 
   private async readDefaultSettings(): Promise<string> {
