@@ -42,6 +42,13 @@ export function siteOrigins(): string[] {
   return [...origins];
 }
 
+/** Whether an origin is Ghost Admin's, when Admin is served from a domain of its own. */
+function isGhostAdminOrigin(origin: string): boolean {
+  const config = require('../../shared/config');
+  const admin = config.get('admin:url');
+  return typeof admin === 'string' && URL.parse(admin)?.origin === origin;
+}
+
 /** The installed apps' cards, or none when the `apps` flag is off or apps aren't set up. */
 export async function readInstalledCards(): Promise<InstalledCards> {
   const labs = require('../../shared/labs');
@@ -79,7 +86,9 @@ export async function emailAppCards() {
 function frameAttributes(found: InstalledCard): Record<string, string> | null {
   const frame = found.status === 'active' ? found.surface.frame : undefined;
   const url = frame ? URL.parse(frame) : null;
-  if (!url) {
+  // A live frame is same-origin with whatever it's served from, so never one on Ghost's own
+  // hosts: it would be able to read the reader's page and use their session.
+  if (!url || siteOrigins().includes(url.origin) || isGhostAdminOrigin(url.origin)) {
     return null;
   }
   return {
@@ -180,7 +189,8 @@ export function withoutAppCards(html: string): string {
  * database. What its HTML may contain is the renderer's job, as it sanitises on every render.
  */
 export function validateAppCards(lexical: unknown): void {
-  if (typeof lexical !== 'string' || !lexical.includes('"type":"app"')) {
+  // Always parsed and walked: no pattern over the raw text survives JSON's spacing and escapes.
+  if (typeof lexical !== 'string' || lexical === '') {
     return;
   }
   const { isValidAppCard } = require('@tryghost/kg-default-nodes');

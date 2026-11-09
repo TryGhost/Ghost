@@ -55,6 +55,7 @@ export const AppCardPlugin = () => {
     const appCards = cardConfig.appCards as AppCardsConfig | undefined;
     const updateRevision = React.useRef(0);
     const pending = React.useRef(new Map<string, PendingUpdate>());
+    const nextRevision = React.useRef(0);
 
     React.useEffect(() => {
         if (!editor.hasNodes([AppNode])) {
@@ -70,6 +71,11 @@ export const AppCardPlugin = () => {
             return;
         }
         const report = (error: unknown) => onError?.(error instanceof Error ? error : new Error(String(error)));
+        // The insert's first render only lands on a card nobody has configured yet: a proposal
+        // that finished first, or one still rendering, wins.
+        const isUntouchedPlaceholder = (node: unknown): node is AppNode => $isAppNode(node)
+            && !pending.current.has(node.getKey())
+            && Object.keys(node.properties).length === 0;
 
         return mergeRegister(
             editor.registerCommand(
@@ -90,14 +96,14 @@ export const AppCardPlugin = () => {
                         const options = updateRevision.current <= insertedAt + 1 ? {tag: 'history-merge'} : undefined;
                         editor.update(() => {
                             const node = $getNodeByKey(placeholderKey);
-                            if ($isAppNode(node)) {
+                            if (isUntouchedPlaceholder(node)) {
                                 applySnapshot(node, properties, snapshot);
                             }
                         }, options);
                     }).catch((error) => {
                         editor.update(() => {
                             const node = $getNodeByKey(placeholderKey);
-                            if ($isAppNode(node)) {
+                            if (isUntouchedPlaceholder(node)) {
                                 applySnapshot(node, properties, FAILED);
                             }
                         }, {tag: 'history-merge'});
@@ -119,7 +125,9 @@ export const AppCardPlugin = () => {
                     const previous = pending.current.get(nodeKey);
                     // Quick proposals build on each other, not on what's saved.
                     const properties = {...(previous?.properties ?? current), ...structuredClone(patch)};
-                    const revision = (previous?.revision ?? 0) + 1;
+                    // Never reused, so a slow render can't pass for a newer one.
+                    nextRevision.current += 1;
+                    const revision = nextRevision.current;
                     const request: PendingUpdate = {revision, properties, base: JSON.stringify(current)};
                     pending.current.set(nodeKey, request);
 

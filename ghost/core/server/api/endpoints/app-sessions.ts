@@ -13,13 +13,20 @@ const controller = {
   // the app or apply silent changes.
   start: {
     // The re-check can apply silent changes, suspend or resume the app, which changes how its
-    // cards render on the site.
-    headers: { cacheInvalidate: true },
+    // cards render on the site. Only then is the site's cache cleared, not on every session.
+    headers: { cacheInvalidate: false },
     options: ['id'],
     validation: { options: { id: { required: true } } },
     permissions: { docName: 'app_installations', method: 'read' },
-    query(frame: SessionFrame) {
-      return appInstallations.service.startSession(frame.options.id);
+    async query(frame: SessionFrame) {
+      const { service } = appInstallations;
+      const before = await service.read(frame.options.id).catch(() => undefined);
+      const session = await service.startSession(frame.options.id);
+      const after = session.installation;
+      if (!before || before.revision !== after.revision || before.status !== after.status) {
+        frame.setHeader('X-Cache-Invalidate', '/*');
+      }
+      return session;
     },
   },
 } satisfies Controller<{ start: SessionFrame }>;

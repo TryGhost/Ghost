@@ -122,7 +122,9 @@ export function defineCardSettings(panels: Record<string, CardSettingsRenderer>)
               headers: init.headers,
               body: init.body,
             });
-            return new Response(response.status === 204 ? null : response.body, {
+            // A Response for these statuses can't have a body, even an empty one.
+            const noBody = [101, 103, 204, 205, 304].includes(response.status);
+            return new Response(noBody ? null : response.body, {
               status: response.status,
               headers: response.headers,
             });

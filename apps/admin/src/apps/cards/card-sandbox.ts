@@ -148,6 +148,11 @@ export async function startCardSandbox(
           })
         : Promise.resolve();
 
+    // A sandbox can navigate itself, which CSP doesn't stop, and the document it loads is no
+    // longer Ghost's shim. Any later load ends the sandbox, so code that leaves loses the channel.
+    // The request that navigation makes still goes out: a known limit of the spike.
+    frame.addEventListener('load', dispose);
+
     target.postMessage({ type: CARD_INIT_MESSAGE_TYPE, source, mode }, '*', [channel.port2]);
     try {
       await withTimeout(started, CARD_TIMEOUT_MS, 'The card didn’t start in time');

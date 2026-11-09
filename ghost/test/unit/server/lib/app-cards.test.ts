@@ -127,5 +127,55 @@ describe('app cards', function () {
     assert.throws(() => validateAppCards(lexical({ ...valid, html: 'x'.repeat(1_000_001) })), {
       name: 'ValidationError',
     });
+    // However the JSON is spelled.
+    const spaced = JSON.stringify(
+      JSON.parse(lexical({ ...valid, appId: 'Not An Id' })),
+      null,
+      2,
+    ).replace('"type": "app"', '"type": "\\u0061pp"');
+    assert.throws(() => validateAppCards(spaced), { name: 'ValidationError' });
+  });
+
+  it('never stamps a live frame served from the site’s own host', function () {
+    const served = serveAppCards(storedCard(), installed('active'));
+    const config = require('../../../../core/shared/config');
+    const site = new URL(config.get('url')).origin;
+    const onSite = serveAppCards(
+      storedCard(),
+      installed('active', { frame: `${site}/frames/podcast.html` }),
+    );
+    assert.ok(served.includes('data-app-frame='));
+    assert.ok(!onSite.includes('data-app-frame='));
+  });
+
+  it('doesn’t cache a read of installed cards that started before they changed', async function () {
+    const {
+      CardSurfaces,
+    } = require('../../../../core/server/services/app-installations/card-surfaces');
+    let release!: (rows: unknown[]) => void;
+    let reads = 0;
+    const surfaces = new CardSurfaces(() => {
+      reads += 1;
+      return reads === 1
+        ? new Promise((resolve) => {
+            release = resolve;
+          })
+        : Promise.resolve([]);
+    });
+    const stale = surfaces.read();
+    surfaces.forget();
+    release([
+      {
+        app_id: 'org.ghost.cards',
+        status: 'active',
+        manifest: {
+          surfaces: [{ type: 'card', name: 'podcast', label: 'P', render: 'https://x/r.js' }],
+        },
+      },
+    ]);
+    await stale;
+    const fresh = await surfaces.read();
+    assert.equal(reads, 2);
+    assert.equal(fresh.find('org.ghost.cards', 'podcast'), undefined);
   });
 });

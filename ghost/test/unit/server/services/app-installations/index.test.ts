@@ -158,7 +158,10 @@ describe('App installations composition root', function () {
     const preview = sandbox.spy(AppInstallationsService.prototype, 'preview');
     const startSession = sandbox
       .stub(AppInstallationsService.prototype, 'startSession')
-      .resolves({ revision: 0 } as never);
+      .resolves({ installation: { revision: 0, status: 'active' } } as never);
+    sandbox
+      .stub(AppInstallationsService.prototype, 'read')
+      .resolves({ revision: 0, status: 'active' } as never);
     sandbox.stub(config, 'get').withArgs('env').returns('production');
     sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
 
@@ -171,9 +174,13 @@ describe('App installations composition root', function () {
     assert.equal(result.manifest.id, manifest.id);
     assert.equal(browse.firstCall.thisValue, root.service);
     assert.equal(preview.firstCall.thisValue, root.service);
-    assert.deepEqual(await sessions.start.query({ options: { id: 'installation-id' } }), {
-      revision: 0,
-    });
+    const setHeader = sinon.spy();
+    assert.deepEqual(
+      await sessions.start.query({ options: { id: 'installation-id' }, setHeader }),
+      { installation: { revision: 0, status: 'active' } },
+    );
+    // Nothing changed in the re-check, so the site's cache stays.
+    sinon.assert.notCalled(setHeader);
     sinon.assert.calledOnceWithExactly(startSession, 'installation-id');
     assert.equal(startSession.firstCall.thisValue, root.service);
   });

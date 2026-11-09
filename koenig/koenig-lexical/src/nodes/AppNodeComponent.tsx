@@ -8,7 +8,7 @@ import {EDIT_CARD_COMMAND} from '../plugins/KoenigBehaviourPlugin';
 import {SnippetActionToolbar} from '../components/ui/SnippetActionToolbar';
 import {ToolbarMenu, ToolbarMenuItem, ToolbarMenuSeparator} from '../components/ui/ToolbarMenu';
 import {UPDATE_APP_CARD_COMMAND} from './AppNode';
-import {normaliseAppCardHeight, renderAppCardDocument} from '@tryghost/kg-default-nodes';
+import {normaliseAppCardHeight, renderAppCardDocument, sanitiseAppCardMarkup} from '@tryghost/kg-default-nodes';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 import type {AppCardProperties, AppCardSettingsSession, AppCardsConfig} from '../utils/app-cards';
 
@@ -104,11 +104,24 @@ function AppCardSettings({nodeKey, appId, card, properties}: Omit<AppNodeCompone
 
 // A saved card whose app isn't installed any more, or no longer offers it. Its
 // data stays in the post, so reinstalling the app brings it back.
-function UnavailableCard() {
+/**
+ * A saved card the editor can't show. Without `appCards` at all, this staff user can't use apps,
+ * so nothing is said about whether the card shows on the site.
+ */
+function UnavailableCard({canUseApps}: {canUseApps: boolean}) {
     return (
         <div className="flex flex-col gap-1 rounded-lg border border-dashed border-grey-300 px-6 py-5 font-sans text-sm text-grey-700 dark:border-grey-800" data-testid="app-card-unavailable">
-            <strong className="font-semibold text-grey-900 dark:text-grey-200">This card’s app isn’t available</strong>
-            <span>It stays in the post, but won’t show on the site or in emails until the app is installed again.</span>
+            {canUseApps ? (
+                <>
+                    <strong className="font-semibold text-grey-900 dark:text-grey-200">This card’s app isn’t available</strong>
+                    <span>It stays in the post, but won’t show on the site or in emails until the app is installed again.</span>
+                </>
+            ) : (
+                <>
+                    <strong className="font-semibold text-grey-900 dark:text-grey-200">A card from an app</strong>
+                    <span>Only Administrators can preview and edit cards that come from apps.</span>
+                </>
+            )}
         </div>
     );
 }
@@ -147,8 +160,9 @@ export function AppNodeComponent({nodeKey, appId, card, properties, html, css, h
         if (!definition || !html) {
             return '';
         }
+        // The same sanitiser as the site, so the author sees what publishes.
         return renderAppCardDocument({
-            html,
+            html: sanitiseAppCardMarkup(document, html),
             css,
             title: definition.label,
             imageOrigins: definition.imageOrigins,
@@ -158,7 +172,7 @@ export function AppNodeComponent({nodeKey, appId, card, properties, html, css, h
     }, [css, definition, html]);
 
     if (!definition) {
-        return <UnavailableCard />;
+        return <UnavailableCard canUseApps={Boolean(appCards)} />;
     }
 
     const handleToolbarEdit = (event: React.MouseEvent) => {

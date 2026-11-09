@@ -106,9 +106,11 @@ export function createSettingsHost(
       if (byteLength(text) > CARD_BACKEND_BODY_MAX_BYTES) {
         throw new Error('The card’s backend answered with too much data');
       }
+      // Only what a card needs to read the body; the rest of the backend's headers stay here.
+      const contentType = response.headers.get('content-type');
       return {
         status: response.status,
-        headers: Object.fromEntries(response.headers.entries()),
+        headers: contentType ? { 'content-type': contentType } : {},
         body: text,
       };
     },

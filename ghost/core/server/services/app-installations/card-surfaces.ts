@@ -26,6 +26,8 @@ const MAX_AGE_MS = 60_000;
 export class CardSurfaces {
   private cached: { cards: InstalledCards; at: number } | undefined;
   private reading: Promise<InstalledCards> | undefined;
+  // Bumped by `forget()`, so a read that started before a change can't cache what it found.
+  private generation = 0;
   private browse: () => Promise<Installation[]>;
 
   constructor(browse: () => Promise<Installation[]>) {
@@ -36,20 +38,31 @@ export class CardSurfaces {
     if (this.cached && Date.now() - this.cached.at < MAX_AGE_MS) {
       return this.cached.cards;
     }
-    this.reading ??= this.browse()
-      .then((installations) => {
-        const cards = indexCards(installations);
-        this.cached = { cards, at: Date.now() };
-        return cards;
-      })
-      .finally(() => {
-        this.reading = undefined;
-      });
+    if (!this.reading) {
+      const generation = this.generation;
+      const reading = this.browse()
+        .then((installations) => {
+          const cards = indexCards(installations);
+          if (generation === this.generation) {
+            this.cached = { cards, at: Date.now() };
+          }
+          return cards;
+        })
+        .finally(() => {
+          if (this.reading === reading) {
+            this.reading = undefined;
+          }
+        });
+      this.reading = reading;
+    }
     return this.reading;
   }
 
   forget(): void {
+    this.generation += 1;
     this.cached = undefined;
+    // Later reads start afresh rather than joining one that may predate the change.
+    this.reading = undefined;
   }
 }
 
