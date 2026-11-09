@@ -226,7 +226,8 @@ export function solveEdgeChallenge(challenge: EdgeChallenge): Promise<void> {
 
 /**
  * fetch() for members API endpoints an edge may challenge. Solves a challenge and retries
- * once; throws EdgeChallengeError when the request is blocked or still challenged.
+ * once, or twice when a solve shared with another request didn't clear this one; throws
+ * EdgeChallengeError when the request is blocked or still challenged.
  */
 export async function fetchWithEdgeChallenge(url: string, options?: RequestInit) {
   const res = await fetch(url, options);
@@ -245,9 +246,19 @@ export async function fetchWithEdgeChallenge(url: string, options?: RequestInit)
     throw new EdgeChallengeError();
   }
 
+  const joinedSolve = pendingChallenges.has(challenge.key);
   await solveEdgeChallenge(challenge);
 
-  const retry = await fetch(url, options);
+  let retry = await fetch(url, options);
+  // The shared solve ran for another request's URL, which a different rule may cover, e.g. a
+  // JS challenge there and a managed challenge here, so this request may need its own
+  if (joinedSolve && !isEdgeBlockResponse(retry)) {
+    const ownChallenge = await challengeOf(retry, url);
+    if (ownChallenge) {
+      await solveEdgeChallenge(ownChallenge);
+      retry = await fetch(url, options);
+    }
+  }
   if (isEdgeBlockResponse(retry) || (await isEdgeChallengeResponse(retry, url))) {
     throw new EdgeChallengeError();
   }

@@ -230,7 +230,8 @@ describe('fetchWithEdgeChallenge with Cloudflare', () => {
   });
 
   test('requests challenged at the same time share one solve, whichever URL they were for', async () => {
-    vi.spyOn(window, 'fetch')
+    const fetchSpy = vi
+      .spyOn(window, 'fetch')
       .mockResolvedValueOnce(challengePage())
       .mockResolvedValueOnce(challengePage())
       .mockResolvedValue(jsonResponse({ ok: true }));
@@ -247,6 +248,44 @@ describe('fetchWithEdgeChallenge with Cloudflare', () => {
     await expect(signIn).resolves.toHaveProperty('status', 201);
     await expect(token).resolves.toHaveProperty('status', 201);
     expect(window.fetch).toHaveBeenCalledTimes(4);
+    expect(fetchSpy.mock.calls.slice(2)).toEqual(
+      expect.arrayContaining([
+        [magicLinkUrl, { method: 'POST' }],
+        [integrityTokenUrl, undefined],
+      ]),
+    );
+  });
+
+  test('a request still challenged after a shared solve solves its own challenge', async () => {
+    // e.g. a JS challenge on the magic link URL and a managed challenge on the token URL, so
+    // the magic link's solve clears only itself
+    let magicLinkCleared = false;
+    let tokenCleared = false;
+    vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+      const cleared = input === magicLinkUrl ? magicLinkCleared : tokenCleared;
+      return cleared ? jsonResponse({ ok: true }) : challengePage();
+    });
+    const signIn = fetchWithEdgeChallenge(magicLinkUrl, { method: 'POST' });
+    const sharedFrame = await waitForChallengeFrame();
+    const token = fetchWithEdgeChallenge(integrityTokenUrl);
+    await vi.waitFor(() => expect(window.fetch).toHaveBeenCalledTimes(2));
+    await vi.advanceTimersByTimeAsync(0);
+
+    loadChallengePage(sharedFrame);
+    magicLinkCleared = true;
+    loadGhostResponse(sharedFrame);
+    await expect(signIn).resolves.toHaveProperty('status', 201);
+
+    const ownFrame = await waitForChallengeFrame();
+    expect(ownFrame).not.toBe(sharedFrame);
+    expect(ownFrame.src).toBe(integrityTokenUrl);
+    loadChallengePage(ownFrame);
+    tokenCleared = true;
+    loadGhostResponse(ownFrame);
+
+    await expect(token).resolves.toHaveProperty('status', 201);
+    expect(window.fetch).toHaveBeenCalledTimes(5);
+    expect(challengeFrame()).toBeNull();
   });
 
   test('solves a Fastly challenge that arrives while a Cloudflare one is pending', async () => {
