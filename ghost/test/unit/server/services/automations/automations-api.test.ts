@@ -353,6 +353,23 @@ describe('automations API', function () {
       );
     });
 
+    it('rejects a send email action with a null Lexical child', async function () {
+      await assert.rejects(
+        automationsApi.edit(automationId, {
+          status: 'inactive' as const,
+          actions: [
+            buildSendEmailAction({
+              email_lexical: JSON.stringify({
+                root: { ...JSON.parse(NON_EMPTY_EMAIL_LEXICAL).root, children: [null] },
+              }),
+            }),
+          ],
+          edges: [],
+        }),
+        /well-formed Lexical document/,
+      );
+    });
+
     it('rejects a draft send email action with a malformed empty paragraph', async function () {
       await assert.rejects(
         automationsApi.edit(automationId, {
