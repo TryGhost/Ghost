@@ -9,3 +9,5 @@ export const lazyAutomationsScreen = () => import('./automations');
 export const lazyAutomationEditorScreen = () => import('./editor');
 // PROTOTYPE ONLY (NY-1750): every trigger card on one page. Don't merge.
 export const lazyTriggerPatternsScreen = () => import('./prototype/trigger-patterns');
+// PROTOTYPE ONLY (NY-1750): the bottom-right beaker menu, mounted from main.tsx. Don't merge.
+export const lazyPrototypeMenu = () => import('./prototype/mount-menu');

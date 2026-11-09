@@ -3,6 +3,7 @@ import { checkStripeEnabled, useBrowseSettings } from '@tryghost/admin-x-framewo
 import { useBrowseAutomations } from '@tryghost/admin-x-framework/api/automations';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import type { Config } from '@tryghost/admin-x-framework/api/config';
+import { useStripeConnectedWithPrototype } from '@/automations/prototype/settings';
 
 export const useVisibleAutomations = () => {
   const { data, error, isError, isLoading } = useBrowseAutomations({
@@ -21,9 +22,10 @@ export const useVisibleAutomations = () => {
     isFetching: isConfigFetching,
   } = useBrowseConfig();
 
-  const stripeEnabled = checkStripeEnabled(
-    settingsData?.settings || [],
-    (configData?.config || {}) as Config,
+  // PROTOTYPE ONLY (NY-1750): the prototype menu's "Stripe connected" switch can stand in for the
+  // site's setting, so a demo can show either kind of site. Don't merge.
+  const stripeEnabled = useStripeConnectedWithPrototype(
+    checkStripeEnabled(settingsData?.settings || [], (configData?.config || {}) as Config),
   );
   const automations = stripeEnabled
     ? data?.automations

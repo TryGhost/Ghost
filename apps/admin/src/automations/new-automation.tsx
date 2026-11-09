@@ -22,19 +22,18 @@ import type { LabelSelection } from './types';
 
 type PickedTrigger = AutomationTriggerRule['trigger_type'] | 'member_label_added';
 
-const TRIGGER_OPTIONS = [
-  [
-    'free_signup',
-    LucideIcon.UserPlus,
-    'Free member signed up',
-    'When someone signs up as a free member',
-  ],
-  [
-    'paid_subscription_started',
-    LucideIcon.CreditCard,
-    'Paid subscription started',
-    'When a new or free member starts a paid subscription',
-  ],
+const FREE_SIGNUP_OPTION = [
+  'free_signup',
+  LucideIcon.UserPlus,
+  'Free member signed up',
+  'When someone signs up as a free member',
+] as const;
+
+const PAID_SUBSCRIPTION_STARTED_OPTION = [
+  'paid_subscription_started',
+  LucideIcon.CreditCard,
+  'Paid subscription started',
+  'When a new or free member starts a paid subscription',
 ] as const;
 
 // Remains behind Labs while lifecycle enrollment and execution are being completed.
@@ -53,16 +52,36 @@ const LABEL_ADDED_OPTION = [
   'When a label is added to a member',
 ] as const;
 
+type TriggerOption =
+  | typeof FREE_SIGNUP_OPTION
+  | typeof PAID_SUBSCRIPTION_STARTED_OPTION
+  | typeof SUBSCRIPTION_CHANGED_OPTION
+  | typeof LABEL_ADDED_OPTION;
+
+// The triggers this site can use. Without Stripe there are no paid triggers, but a label can still
+// be added to a free member, so those sites get a choice too (NY-1750).
+const useTriggerOptions = (stripeEnabled: boolean): readonly TriggerOption[] => {
+  const lifecycleTriggers = useFeatureFlag('automationsLifecycleTriggers');
+  if (!stripeEnabled) {
+    return lifecycleTriggers ? [FREE_SIGNUP_OPTION, LABEL_ADDED_OPTION] : [FREE_SIGNUP_OPTION];
+  }
+  return lifecycleTriggers
+    ? [
+        FREE_SIGNUP_OPTION,
+        PAID_SUBSCRIPTION_STARTED_OPTION,
+        SUBSCRIPTION_CHANGED_OPTION,
+        LABEL_ADDED_OPTION,
+      ]
+    : [FREE_SIGNUP_OPTION, PAID_SUBSCRIPTION_STARTED_OPTION];
+};
+
 const TriggerPicker: React.FC<{
   automation: AutomationDetail;
+  options: readonly TriggerOption[];
   // `cardTop`: where the card sits, so the editor can open with the trigger in the same place.
   onPick: (trigger: PickedTrigger, cardTop: number) => void;
-}> = ({ automation, onPick }) => {
+}> = ({ automation, options, onPick }) => {
   const { dialogProps } = useUnsavedChangesGuard({ when: true });
-  const lifecycleTriggers = useFeatureFlag('automationsLifecycleTriggers');
-  const options = lifecycleTriggers
-    ? [...TRIGGER_OPTIONS, SUBSCRIPTION_CHANGED_OPTION, LABEL_ADDED_OPTION]
-    : TRIGGER_OPTIONS;
   const cardRef = React.useRef<HTMLDivElement>(null);
   return (
     <Stack className="fixed inset-0 z-50 bg-background" gap="none">
@@ -166,6 +185,9 @@ const NewAutomationSession: React.FC<
   const [triggerType, setTriggerType] =
     React.useState<AutomationTriggerRule['trigger_type']>('free_signup');
   const [labelSelection, setLabelSelection] = React.useState<LabelSelection>();
+  const triggerOptions = useTriggerOptions(stripeEnabled);
+  // With only one trigger to choose, the picker is skipped and the editor opens on it.
+  const hasTriggerChoice = triggerOptions.length > 1;
   if (!initialAutomation) {
     if (isStripeReady) {
       setInitialAutomation({
@@ -177,15 +199,16 @@ const NewAutomationSession: React.FC<
         updated_at: '',
         actions: [],
         edges: [],
-        trigger_rules: stripeEnabled ? [] : buildTriggerRules({ triggerType: 'free_signup' }),
+        trigger_rules: hasTriggerChoice ? [] : buildTriggerRules({ triggerType: 'free_signup' }),
       });
     }
     return <NewAutomationLoading />;
   }
-  if (stripeEnabled && triggerTop === null) {
+  if (hasTriggerChoice && triggerTop === null) {
     return (
       <TriggerPicker
         automation={initialAutomation}
+        options={triggerOptions}
         onPick={(trigger, cardTop) => {
           setTriggerTop(cardTop);
           if (trigger === 'member_label_added') {
