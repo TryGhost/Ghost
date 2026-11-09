@@ -16,7 +16,6 @@ const settingsCache = require('../../../core/shared/settings-cache');
 const settingsService = require('../../../core/server/services/settings');
 const DomainEvents = require('@tryghost/domain-events');
 const { anyErrorId, anyString } = matchers;
-const spamPrevention = require('../../../core/server/web/shared/middleware/api/spam-prevention');
 
 let integrityToken, membersAgent, membersService;
 
@@ -52,8 +51,8 @@ describe('sendMagicLink', function () {
 
     mockManager.mockMail();
 
-    // Reset spam prevention middleware
-    spamPrevention.reset();
+    // Reset spam prevention middleware and its counters
+    await resetRateLimits();
 
     // Reset settings
     settingsCache.set('members_signup_access', { value: 'all' });
@@ -565,7 +564,7 @@ describe('sendMagicLink', function () {
     let clock;
 
     beforeEach(async function () {
-      await dbUtils.truncate('brute');
+      await dbUtils.truncate('rate_limits');
       await resetRateLimits();
       clock = mockSystemTime(new Date());
     });
@@ -859,7 +858,7 @@ describe('sendMagicLink', function () {
 
     beforeEach(async function () {
       // ensure we don't hit rate limits whilst testing
-      await dbUtils.truncate('brute');
+      await dbUtils.truncate('rate_limits');
       await resetRateLimits();
     });
 
@@ -1084,7 +1083,7 @@ describe('sendMagicLink', function () {
       });
 
       beforeEach(async function () {
-        await dbUtils.truncate('brute');
+        await dbUtils.truncate('rate_limits');
         await resetRateLimits();
       });
 
