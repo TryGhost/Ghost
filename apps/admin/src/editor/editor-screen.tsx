@@ -74,6 +74,7 @@ import {
 } from './session/session-key';
 import { editorRead, useEditorSession } from './session/use-editor-session';
 import { usePostCardConfig } from './use-post-card-config';
+import { useAppCardsConfig } from '@/apps/cards/use-app-cards-config';
 import { usePostSnippets } from './use-post-snippets';
 import { useSettingsShortcut } from './use-editor-shortcuts';
 import { useSettingsOpen } from './use-settings-open';
@@ -404,13 +405,16 @@ function EditorContent({
   const leaveGuard = useEditorLeaveGuard(session, postType);
   const liveVisibility = session.settings.visibility;
   const liveShowTitleAndFeatureImage = session.settings.show_title_and_feature_image;
+  const appCards = useAppCardsConfig();
   const currentCardConfig = useMemo(
-    () =>
-      withLiveSettings(cardConfig, {
+    () => ({
+      ...withLiveSettings(cardConfig, {
         visibility: liveVisibility,
         showTitleAndFeatureImage: liveShowTitleAndFeatureImage,
       }),
-    [cardConfig, liveShowTitleAndFeatureImage, liveVisibility],
+      appCards,
+    }),
+    [appCards, cardConfig, liveShowTitleAndFeatureImage, liveVisibility],
   );
 
   const settingsToggle = (

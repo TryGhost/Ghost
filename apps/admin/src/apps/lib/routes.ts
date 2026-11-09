@@ -21,9 +21,20 @@ export function appReviewRoute(manifestUrl: string): string {
  * while it's suspended, as a suspended app doesn't load.
  */
 export function appOpenRoute(
-  installation: Pick<AppInstallation, 'id' | 'status' | 'manifest_url'>,
+  installation: Pick<AppInstallation, 'id' | 'status' | 'manifest_url'> & {
+    manifest?: Pick<AppInstallation['manifest'], 'surfaces'>;
+  },
 ): string {
-  return installation.status === 'suspended'
-    ? appReviewRoute(installation.manifest_url)
+  if (installation.status === 'suspended') {
+    return appReviewRoute(installation.manifest_url);
+  }
+  // An app with no page, such as one that only adds cards, opens on its details.
+  return installation.manifest?.surfaces && !hasAppPage(installation.manifest)
+    ? appDetailsRoute(installation.id)
     : appRoute(installation.id);
+}
+
+/** Whether an app has a page in Admin to open. */
+export function hasAppPage(manifest: Pick<AppInstallation['manifest'], 'surfaces'>): boolean {
+  return manifest.surfaces.some((surface) => surface.type === 'admin_page');
 }

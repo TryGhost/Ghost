@@ -9,6 +9,7 @@ import KoenigNestedComposer from './components/KoenigNestedComposer';
 
 /* Plugins */
 import AllDefaultPlugins from './plugins/AllDefaultPlugins';
+import AppCardPlugin from './plugins/AppCardPlugin';
 import AudioPlugin from './plugins/AudioPlugin';
 import BookmarkPlugin from './plugins/BookmarkPlugin';
 import ButtonPlugin from './plugins/ButtonPlugin';
@@ -55,6 +56,7 @@ import DEFAULT_NODES from './nodes/DefaultNodes';
 import EMAIL_EDITOR_NODES from './nodes/EmailEditorNodes';
 import EMAIL_NODES from './nodes/EmailNodes';
 import MINIMAL_NODES from './nodes/MinimalNodes';
+import {AppNode, INSERT_APP_CARD_COMMAND, UPDATE_APP_CARD_COMMAND} from './nodes/AppNode';
 
 /* Transformers */
 import {
@@ -81,6 +83,7 @@ export {
     KoenigCardWrapper,
 
     AllDefaultPlugins,
+    AppCardPlugin,
 
     AudioPlugin,
     BookmarkPlugin,
@@ -123,6 +126,9 @@ export {
     WordCountPlugin,
 
     DEFAULT_NODES,
+    AppNode,
+    INSERT_APP_CARD_COMMAND,
+    UPDATE_APP_CARD_COMMAND,
     BASIC_NODES,
     EMAIL_EDITOR_NODES,
     EMAIL_NODES,

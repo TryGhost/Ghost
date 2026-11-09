@@ -1,4 +1,5 @@
 import React from 'react';
+import type {AppCardsConfig} from '../utils/app-cards';
 import type {Doc} from 'yjs';
 
 export interface FileTypeConfig {
@@ -75,6 +76,8 @@ export interface CardConfigFeature {
 }
 
 export interface CardConfig {
+    // the host's installed apps' cards; app cards show as unavailable without it
+    appCards?: AppCardsConfig;
     createSnippet?: (snippet: Snippet) => void;
     deleteSnippet?: (snippet: {name: string}) => void;
     // directory serving the embed renderer on a separate origin; embeds preview in the editor's origin when unset

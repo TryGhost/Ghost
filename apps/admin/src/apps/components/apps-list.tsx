@@ -17,7 +17,7 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { Link } from '@tryghost/admin-x-framework';
 import type { AppInstallation } from '@tryghost/admin-x-framework/api/app-installations';
 import { AppIcon } from './app-icon';
-import { appDetailsRoute, appReviewRoute, appRoute } from '@/apps/lib/routes';
+import { appDetailsRoute, appOpenRoute, appReviewRoute, hasAppPage } from '@/apps/lib/routes';
 import { openRowLink, openRowLinkInNewTab } from '@/apps/lib/row-link';
 import type { AppPinsState } from '@/apps/lib/use-app-pins';
 
@@ -50,7 +50,7 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall, pins })
                   <AppIcon app={installation} size="lg" />
                   <span className="min-w-0">
                     <Inline gap="xs">
-                      <Link className="text-md font-semibold" to={appRoute(id)}>
+                      <Link className="text-md font-semibold" to={appOpenRoute(installation)}>
                         {manifest.name}
                       </Link>
                       {manifest.development && <Badge variant="secondary">Development</Badge>}
@@ -75,7 +75,9 @@ const AppsList: React.FC<AppsListProps> = ({ installations, onUninstall, pins })
                     </Button>
                   ) : (
                     <Button variant="outline" asChild>
-                      <Link to={appRoute(id)}>Open</Link>
+                      <Link to={appOpenRoute(installation)}>
+                        {hasAppPage(manifest) ? 'Open' : 'Details'}
+                      </Link>
                     </Button>
                   )}
                   <DropdownMenu>

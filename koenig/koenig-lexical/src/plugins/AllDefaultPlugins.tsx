@@ -1,3 +1,4 @@
+import AppCardPlugin from './AppCardPlugin';
 import AtLinkPlugin from './AtLinkPlugin.jsx';
 import CallToActionPlugin from '../plugins/CallToActionPlugin';
 import EmEnDashPlugin from '../plugins/EmEnDashPlugin';
@@ -42,6 +43,7 @@ export const AllDefaultPlugins = () => {
             <AtLinkPlugin />
 
             {/* Card Plugins */}
+            <AppCardPlugin />
             <AudioPlugin />
             <ImagePlugin />
             <GalleryPlugin />

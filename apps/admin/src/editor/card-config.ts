@@ -6,6 +6,7 @@ import {
 } from '@tryghost/admin-x-framework/api/settings';
 import { type SiteData, getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
+import type { AppCardsConfig } from '@/apps/cards/types';
 import type { AutocompleteLink } from '@/shared/autocomplete-links';
 import type { LinkSearchGroup } from './link-suggestions';
 
@@ -77,6 +78,8 @@ export interface PostCardConfig extends PostCardConfigPorts {
   post: CardConfigPost | undefined;
   snippets: CardConfigSnippet[];
   visibilitySettings: CardVisibilitySettings;
+  /** The installed apps' cards, behind the `apps` Labs flag. */
+  appCards?: AppCardsConfig;
 }
 
 // An unsaved post has no visibility until the first save applies the site

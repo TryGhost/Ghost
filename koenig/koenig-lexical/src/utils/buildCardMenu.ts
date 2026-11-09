@@ -1,6 +1,23 @@
+import AppCardIcon from '../assets/icons/kg-card-type-other.svg?react';
+import AudioCardIcon from '../assets/icons/kg-card-type-audio.svg?react';
+import CalloutCardIcon from '../assets/icons/kg-card-type-callout.svg?react';
+import GalleryCardIcon from '../assets/icons/kg-card-type-gallery.svg?react';
+import HeaderCardIcon from '../assets/icons/kg-card-type-header.svg?react';
 import SnippetCardIcon from '../assets/icons/kg-card-type-snippet.svg?react';
+import {INSERT_APP_CARD_COMMAND} from '../nodes/AppNode';
 import {INSERT_SNIPPET_COMMAND} from '../plugins/KoenigSnippetPlugin';
 import type React from 'react';
+import type {AppCardsConfig} from './app-cards';
+
+// The icons an app's card can name, from the ones the editor ships. Anything
+// else falls back to a generic card icon.
+const APP_CARD_ICONS: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
+    'audio-lines': AudioCardIcon,
+    podcast: AudioCardIcon,
+    'chart-column': GalleryCardIcon,
+    'calendar-days': CalloutCardIcon,
+    hash: HeaderCardIcon
+};
 
 export interface CardMenuItem {
     nodeType?: string;
@@ -69,6 +86,26 @@ export function buildCardMenu(nodes, {query, config} = {}) {
             addMenuItem({nodeType, ...node.kgMenu});
         }
     }
+
+    // An installed app's cards, from its manifest, in a section of their own.
+    (config?.appCards as AppCardsConfig | undefined)?.cards?.forEach((definition) => {
+        addMenuItem({
+            nodeType: 'app',
+            label: definition.label,
+            desc: definition.appName,
+            Icon: APP_CARD_ICONS[definition.icon ?? ''] ?? AppCardIcon,
+            section: 'Apps',
+            matches: [
+                definition.label.toLowerCase(),
+                definition.name,
+                definition.appName.toLowerCase(),
+                ...(definition.keywords ?? []).map(keyword => keyword.toLowerCase())
+            ],
+            shortcut: `/${definition.name}`,
+            insertCommand: INSERT_APP_CARD_COMMAND,
+            insertParams: {appId: definition.appId, card: definition.name}
+        });
+    });
 
     config?.snippets?.forEach((item) => {
         const snippetMenuItem = buildSnippetMenuItem(item, config);

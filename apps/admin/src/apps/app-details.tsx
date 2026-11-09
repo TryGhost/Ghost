@@ -34,7 +34,7 @@ import { UninstallDialog } from './components/uninstall-dialog';
 import { ACCOUNT_ACCESS } from './lib/access';
 import { historyTitle, installedBy } from './lib/history';
 import { isInstallationNotFound } from './lib/not-found';
-import { appReviewRoute, appRoute } from './lib/routes';
+import { appReviewRoute, appRoute, hasAppPage } from './lib/routes';
 import { useInstalledApps } from './lib/use-app-pins';
 import { AppAuthor, UnverifiedDeveloperBadge } from './components/app-author';
 
@@ -228,7 +228,7 @@ export const AppDetails: React.FC = () => {
                     <Button variant="outline" onClick={() => setUninstalling(true)}>
                       Uninstall
                     </Button>
-                    {installation.status === 'active' && (
+                    {installation.status === 'active' && hasAppPage(installation.manifest) && (
                       <Button asChild>
                         <Link to={appRoute(installation.id)}>Open</Link>
                       </Button>

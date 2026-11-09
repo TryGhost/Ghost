@@ -58,7 +58,7 @@ import {
   type SessionFailure,
 } from './lib/not-found';
 import { reportAppsError } from './lib/report-error';
-import { appRoute } from './lib/routes';
+import { appDetailsRoute, appRoute } from './lib/routes';
 import { appPageUrl, servedFrom } from './lib/served-from';
 
 const Centered: React.FC<{ children: React.ReactNode; testId?: string }> = ({
@@ -230,7 +230,8 @@ const AppFrame: React.FC<{
   const location = useLocation();
   const { ghostVersion } = useFramework();
   const { resolvedTheme } = useThemeContext();
-  const url = appPageUrl(installation.manifest);
+  // ActiveApp only frames an app that has a page.
+  const url = appPageUrl(installation.manifest)!;
   const surfaceOrigin = new URL(url).origin;
   const { id, manifest } = installation;
 
@@ -349,6 +350,23 @@ const AppFrame: React.FC<{
  * The page of an app that shouldn't be framed: it's on Ghost's own host, so it would be
  * Ghost, or be sent Ghost's cookies. Nothing of it loads.
  */
+/** An app with no page of its own, such as one that only adds cards to the editor. */
+const CardsOnly: React.FC<{ installation: AppInstallation }> = ({ installation }) => (
+  <Centered testId="app-cards-only">
+    <EmptyIndicator
+      actions={
+        <Button variant="outline" asChild>
+          <Link to={appDetailsRoute(installation.id)}>View details</Link>
+        </Button>
+      }
+      description="It adds cards to the editor. Insert them from the card menu in a post or page."
+      title={`${installation.manifest.name} has no page`}
+    >
+      <LucideIcon.LayoutGrid />
+    </EmptyIndicator>
+  </Centered>
+);
+
 const NotFramed: React.FC<{ installation: AppInstallation }> = ({ installation }) => (
   <Centered testId="app-not-framed">
     <EmptyIndicator
@@ -421,12 +439,16 @@ const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
       </Centered>
     );
   }
+  const pageUrl = appPageUrl(installation.manifest);
+  if (!pageUrl) {
+    return <CardsOnly installation={installation} />;
+  }
   const ghostUrls = [window.location.href, site.data.site.url];
-  if (isGhostHost(appPageUrl(installation.manifest), ghostUrls)) {
+  if (isGhostHost(pageUrl, ghostUrls)) {
     return <NotFramed installation={installation} />;
   }
   const { settings: values } = settings.data;
-  const surfaceOrigin = new URL(appPageUrl(installation.manifest)).origin;
+  const surfaceOrigin = new URL(pageUrl).origin;
   return (
     <AppFrame
       // The frame's session is created for one installation at one origin.

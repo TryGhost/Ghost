@@ -50,7 +50,16 @@ const UNLISTED = ['identity_key', 'backend_key'];
 
 const SURFACE_LABELS: Record<string, string> = {
   admin_page: 'Page in Admin',
+  card: 'Editor card',
 };
+
+/** A surface as a publisher reads it: its page's URL, or a card's name. */
+function surfaceValue(surface: AppManifest['surfaces'][number] | undefined): string | null {
+  if (!surface) {
+    return null;
+  }
+  return surface.type === 'admin_page' ? surface.url : `${surface.label} (${surface.name})`;
+}
 
 /** One field per surface position on either side, read as the surface's URL. */
 function surfaceFields(approved: AppManifest, reviewed: AppManifest): Field[] {
@@ -60,7 +69,7 @@ function surfaceFields(approved: AppManifest, reviewed: AppManifest): Field[] {
     return {
       field: `surfaces[${index}]`,
       label: (type && SURFACE_LABELS[type]) ?? 'Surface',
-      value: (m) => m.surfaces[index]?.url ?? null,
+      value: (m) => surfaceValue(m.surfaces[index]),
     };
   });
 }

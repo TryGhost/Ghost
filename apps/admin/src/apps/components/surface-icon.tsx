@@ -8,6 +8,7 @@ type SurfaceType = AppManifest['surfaces'][number]['type'];
 
 const SURFACE_COPY: Record<SurfaceType, string> = {
   admin_page: 'A dedicated page in Admin',
+  card: 'Cards in the editor',
 };
 
 /** Ghost's part of the drawing: the nav. */
@@ -26,6 +27,13 @@ const FRAMED: Record<SurfaceType, React.ReactNode> = {
     <>
       <Grey height={24} rx={0.9} width={8} x={3} y={3} />
       <App height={24} width={23.5} x={13.5} y={3} />
+    </>
+  ),
+  card: (
+    <>
+      <Grey height={3} width={34} x={3} y={4} />
+      <App height={12} width={34} x={3} y={9.5} />
+      <Grey height={3} width={26} x={3} y={24} />
     </>
   ),
 };
