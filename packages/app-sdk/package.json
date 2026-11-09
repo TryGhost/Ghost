@@ -39,6 +39,21 @@
       "source": "./src/vite/index.ts",
       "types": "./build/vite.d.ts",
       "default": "./build/vite.js"
+    },
+    "./cards": {
+      "source": "./src/cards/index.ts",
+      "types": "./build/cards.d.ts",
+      "default": "./build/cards.js"
+    },
+    "./cards/settings": {
+      "source": "./src/cards/settings/index.ts",
+      "types": "./build/cards-settings.d.ts",
+      "default": "./build/cards-settings.js"
+    },
+    "./live-frame": {
+      "source": "./src/live-frame/index.ts",
+      "types": "./build/live-frame.d.ts",
+      "default": "./build/live-frame.js"
     }
   },
   "scripts": {

@@ -65,6 +65,10 @@ const entryPoints = Object.entries(manifest.exports as Record<string, unknown>)
     return manifest.name + subpath.slice(1);
   });
 
+// Entry points that only run in a browser: a card's settings panel defines custom elements, which
+// Node has no HTMLElement for. They're type-checked, but not loaded in Node.
+const BROWSER_ONLY = new Set([`${manifest.name}/cards/settings`]);
+
 // How an app uses the root entry point, so its declarations are checked in use, not only
 // loaded. Type-checked, never run.
 const USAGE = `
@@ -222,9 +226,13 @@ describe('the packed package', () => {
   });
 
   // Each starts Node, which can be slow on a CPU-constrained CI runner.
-  it.each(entryPoints)('loads %s', { timeout: 60_000 }, async (specifier) => {
-    expect((await loadedExports(app, specifier)).length).toBeGreaterThan(0);
-  });
+  it.each(entryPoints.filter((specifier) => !BROWSER_ONLY.has(specifier)))(
+    'loads %s',
+    { timeout: 60_000 },
+    async (specifier) => {
+      expect((await loadedExports(app, specifier)).length).toBeGreaterThan(0);
+    },
+  );
 
   it(
     'ships the browser bundle, which exports what the package does',
@@ -263,6 +271,9 @@ describe('the packed package', () => {
       });
       const diagnostics = ts
         .getPreEmitDiagnostics(program)
+        // remote-dom's own declarations use extensionless relative imports, which node16
+        // resolution reports; that's remote-dom's, not something an app can act on.
+        .filter((diagnostic) => !diagnostic.file?.fileName.includes('/@remote-dom/'))
         .map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
       expect(diagnostics).toEqual([]);
     },
