@@ -1247,7 +1247,7 @@ services:
           - core/server/web/comments/routes.js
           - core/server/services/comments/comments-service.js
           - core/server/services/members-events/last-seen-at-updater.js
-          - core/shared/events/member-comment-event.js
+          - core/shared/events/member-comment-event.ts
         tests:
           - test/e2e-api/admin/comments.test.js
           - test/e2e-api/admin/member-commenting.test.js
