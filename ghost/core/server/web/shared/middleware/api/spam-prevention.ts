@@ -10,10 +10,6 @@ import { BackoffLimiter } from './backoff-limiter';
 import type { BackoffOptions, LimiterFactory } from './backoff-limiter';
 
 const messages = {
-  forgottenPasswordEmail: {
-    error: 'Only {rfa} forgotten password attempts per email every {rfp} seconds.',
-    context: 'Forgotten password reset attempt failed',
-  },
   forgottenPasswordIp: {
     error: 'Only {rfa} tries per IP address every {rfp} seconds.',
     context: 'Forgotten password reset attempt failed',
@@ -321,19 +317,18 @@ const userLogin = () =>
       }),
   });
 
-// Stop password reset requests when there are (freeRetries + 1) requests per lifetime per email
-// Defaults here are 5 attempts per hour for a user+IP pair
+// Stops password reset requests when there are (freeRetries + 1) requests per lifetime per IP
+// Defaults here are 5 attempts per hour per IP
 // The endpoint is then locked for an hour
 const userReset = () =>
   limiter('userReset', 'user_reset', {
-    key: (req) => emailKey(bodyField(req, 'username')),
     onBlocked(retryAfterMs) {
       const { attempts, period } = quotedLimits('user_reset');
 
       return new errors.TooManyRequestsError({
         message: `Too many password reset attempts try again in ${waitText(retryAfterMs)}`,
-        context: tpl(messages.forgottenPasswordEmail.error, { rfa: attempts, rfp: period }),
-        help: tpl(messages.forgottenPasswordEmail.context),
+        context: tpl(messages.forgottenPasswordIp.error, { rfa: attempts, rfp: period }),
+        help: tpl(messages.forgottenPasswordIp.context),
       });
     },
   });
