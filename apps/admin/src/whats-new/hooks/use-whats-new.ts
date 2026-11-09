@@ -26,12 +26,14 @@ export const useWhatsNew = (): WhatsNewData => {
   const lastSeenDate = preferences?.whatsNew?.lastSeenDate;
   const hasWhatsNewPreferences = !!lastSeenDate;
 
-  // Initialize default whatsNewPreferences if missing or invalid
+  // Initialize default whatsNewPreferences if missing or invalid. Every
+  // component reading What's New runs this at once, so each checks again when
+  // its edit runs: the first one saves, and the rest have nothing to save.
   useEffect(() => {
     if (!hasWhatsNewPreferences && isPreferencesLoaded) {
-      void updatePreferences({
-        whatsNew: getDefaultWhatsNewPreferences(),
-      });
+      void updatePreferences((current) =>
+        current.whatsNew?.lastSeenDate ? {} : { whatsNew: getDefaultWhatsNewPreferences() },
+      );
     }
   }, [hasWhatsNewPreferences, isPreferencesLoaded, updatePreferences]);
 
