@@ -62,31 +62,43 @@ describe('Post Model: edit row locking', function () {
     );
   }
 
-  it('only locks the post row when editing', async function () {
-    const post = await addCrossedPost('Captured', ownerId, admin);
-    const sqls: string[] = [];
-    const onQuery = (data: { sql: string }) => sqls.push(data.sql);
+  // Locking queries from the transaction that ran `anchor`. A Ghost booted by an
+  // earlier file in this fork keeps its jobs outbox relay polling with
+  // `for update skip locked`, so queries on other transactions are ignored
+  async function lockingQueries(anchor: RegExp, run: () => Promise<unknown>) {
+    const queries: { sql: string; __knexTxId?: string }[] = [];
+    const onQuery = (data: { sql: string; __knexTxId?: string }) => queries.push(data);
 
     db.knex.on('query', onQuery);
     try {
-      await models.Post.edit({ title: 'Captured edit' }, { ...owner, id: post.id });
+      await run();
     } finally {
       db.knex.removeListener('query', onQuery);
     }
 
-    const locked = sqls.filter((sql) => /for update/i.test(sql));
+    const txId = queries.find((query) => anchor.test(query.sql))?.__knexTxId;
+    assert.ok(txId, `expected a query matching ${anchor} inside a transaction`);
+    return queries
+      .filter((query) => query.__knexTxId === txId && /for update/i.test(query.sql))
+      .map((query) => query.sql);
+  }
+
+  it('only locks the post row when editing', async function () {
+    const post = await addCrossedPost('Captured', ownerId, admin);
+
+    const locked = await lockingQueries(/^update `posts`/, () =>
+      models.Post.edit({ title: 'Captured edit' }, { ...owner, id: post.id }),
+    );
+
     assert.equal(locked.length, 1, `expected one locking query, got:\n${locked.join('\n')}`);
     assert.match(locked[0], /from `posts`/);
   });
 
   it('only locks the post rows when fetching a collection for update', async function () {
     await addCrossedPost('Collection', ownerId, admin);
-    const sqls: string[] = [];
-    const onQuery = (data: { sql: string }) => sqls.push(data.sql);
 
-    db.knex.on('query', onQuery);
-    try {
-      await db.knex.transaction((transacting: unknown) =>
+    const locked = await lockingQueries(/from `posts`/, () =>
+      db.knex.transaction((transacting: unknown) =>
         models.Post.findAll({
           ...owner,
           filter: 'status:draft',
@@ -94,12 +106,9 @@ describe('Post Model: edit row locking', function () {
           transacting,
           forUpdate: true,
         }),
-      );
-    } finally {
-      db.knex.removeListener('query', onQuery);
-    }
+      ),
+    );
 
-    const locked = sqls.filter((sql) => /for update/i.test(sql));
     assert.equal(locked.length, 1, `expected one locking query, got:\n${locked.join('\n')}`);
     assert.match(locked[0], /from `posts`/);
   });
