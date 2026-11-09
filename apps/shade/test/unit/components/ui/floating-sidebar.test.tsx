@@ -83,6 +83,39 @@ describe('FloatingSidebar', () => {
     }
   });
 
+  it('closes once the pointer has left, though the route changed after it left', () => {
+    vi.useFakeTimers();
+    try {
+      const { rerender } = renderFloatingSidebar({ hotZone: false, resetKey: '/settings' });
+      const wrapper = screen.getByTestId('floating-sidebar');
+      fireEvent.mouseLeave(wrapper);
+      fireEvent.mouseEnter(wrapper);
+      expect(capsuleState()).toBe('open');
+
+      // e.g. Back to app clicked, then the pointer moves off before the new route renders
+      fireEvent.mouseLeave(wrapper);
+      fireEvent.pointerMove(document.body);
+      rerender(
+        <FloatingSidebar
+          data-testid="floating-sidebar"
+          header={<span>My site</span>}
+          hotZone={false}
+          icon={<span />}
+          label="My site"
+          pinned={false}
+          resetKey="/tags"
+          onPinnedChange={() => {}}
+        >
+          <a href="#/posts">Posts</a>
+        </FloatingSidebar>,
+      );
+      act(() => vi.advanceTimersByTime(1000));
+      expect(capsuleState()).toBe('closed');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('unpins with the pin button', () => {
     const onPinnedChange = vi.fn();
     renderFloatingSidebar({ pinned: true, onPinnedChange });
