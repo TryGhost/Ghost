@@ -38,6 +38,15 @@ send the admin session with every frontend request. Its `maxAge` is Better
 Auth's, in seconds, from `expiresIn`. The auth frame (`web/admin/app.js`)
 accepts either name.
 
+Better Auth reads the client IP, for session rows and its rate limiter, only
+from request headers. A client can set any header, so Ghost points
+`advanced.ipAddress.ipAddressHeaders` at its own `x-ghost-client-ip`, which
+`setClientIPHeader` (`client-ip.ts`) overwrites with Express's `req.ip` as
+`trust proxy` resolved it. Mount it before any route that hands request headers
+to Better Auth. `ipv6Subnet: 64` and `normalizeIP` in Ghost's `BackoffLimiter`
+format an address the same way, so both count a client against the same key.
+IPv6 counts per /64, the block a single subscriber usually holds.
+
 - `knex-adapter.ts`: a Better Auth database adapter over a Knex instance. It
   imports nothing from Ghost, so it can become a package later. Ghost
   migrations own the DDL, so there is no `createSchema`. It generates no ids:
