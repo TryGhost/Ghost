@@ -197,7 +197,7 @@ Settled in Phase 0 (plan §10):
 - Sessions last 180 days, absolute (`disableSessionRefresh`). Rolling sessions
   come later.
 - Email codes are 6 random digits, hashed in `verifications`, expiring after
-  5 minutes. Five wrong attempts delete the code; `express-brute` stays on top.
+  5 minutes. Five wrong attempts delete the code; Ghost's rate limiters stay on top.
 - Magic link, passkey, TOTP and SSO sign-ins count as verified.
   `require_email_mfa` applies to password sign-in only.
 - Scopes use the `object_type:action` permission keys, with finer scopes where
