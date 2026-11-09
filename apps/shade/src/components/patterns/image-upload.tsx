@@ -7,11 +7,12 @@ import { Dropzone, type DropzoneProps } from '@/components/ui/dropzone';
 import { cn } from '@/lib/utils';
 import { imageOverlayButton } from '@/components/ui/image-overlay-button';
 
+// Previews clip their images; the root leaves dropzone borders and focus rings visible.
 const ImageUpload = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('relative overflow-hidden rounded-md', className)}
+      className={cn('relative rounded-md', className)}
       data-slot="image-upload"
       {...props}
     />
@@ -23,7 +24,7 @@ const ImageUploadDropzone = React.forwardRef<HTMLDivElement, DropzoneProps>(
   ({ className, variant = 'filled', ...props }, ref) => (
     <Dropzone
       ref={ref}
-      className={cn('size-full text-foreground', className)}
+      className={cn('size-full', className)}
       data-slot="image-upload-dropzone"
       variant={variant}
       {...props}

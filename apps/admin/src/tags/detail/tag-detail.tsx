@@ -490,7 +490,12 @@ const TagDetail: React.FC = () => {
             )}
           </DetailPage.Header>
 
-          <DetailPage.Body className={cn(largeTitles && 'min-h-auto overflow-visible')}>
+          <DetailPage.Body
+            className={cn(
+              'in-data-[admin7-design=true]:-mx-3 in-data-[admin7-design=true]:px-3',
+              largeTitles && 'min-h-auto overflow-visible',
+            )}
+          >
             {loadError && (
               <div
                 className="flex flex-1 flex-col items-center justify-center gap-3"

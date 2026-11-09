@@ -11,11 +11,11 @@ const dropzoneBaseVariants = cva(
       variant: {
         default: cn(
           inputSurface('self'),
-          'border-2 border-dashed bg-transparent p-10 hover:border-border-strong',
+          'border-dashed bg-transparent p-10 text-muted-foreground hover:border-border-strong [&_svg.lucide]:stroke-[1.25px]',
         ),
         filled: cn(
           inputSurface('self'),
-          'border-transparent bg-muted p-3 hover:bg-interactive-hover',
+          'border-transparent bg-muted p-3 text-muted-foreground hover:bg-interactive-hover [&_svg.lucide]:stroke-[1.25px]',
         ),
         button: 'flex-row',
         buttonSecondary: 'flex-row',

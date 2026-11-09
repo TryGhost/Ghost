@@ -9,8 +9,8 @@ const meta = {
   args: {
     children: (
       <div className="pointer-events-none flex flex-col items-center">
-        <Upload className="mb-2 size-6 text-muted-foreground" />
-        <span className="text-sm text-secondary-foreground">Select or drop a CSV file</span>
+        <Upload className="mb-2 size-6" />
+        <span className="text-sm">Select or drop a CSV file</span>
       </div>
     ),
   },
@@ -30,7 +30,8 @@ export const Idle: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'The default idle state for a file dropzone.',
+        story:
+          'The default dropzone uses a one-pixel dashed border, matching muted icon and text, and a 1.25px icon stroke.',
       },
     },
   },
@@ -105,8 +106,8 @@ export const CustomContent: Story = {
     <Dropzone {...args}>
       {({ isDragActive, isDragReject }) => (
         <div className="pointer-events-none flex flex-col items-center">
-          <Upload className="mb-2 size-6 text-muted-foreground" />
-          <span className="text-sm text-secondary-foreground">
+          <Upload className="mb-2 size-6" />
+          <span className="text-sm">
             {isDragReject
               ? 'This file type is not supported'
               : isDragActive

@@ -6,6 +6,7 @@ import {
   configResponse,
   currentRoute,
   fakeAdminEndpoint,
+  fakeAdminStats,
   fakeEndpoint,
   fakeTags,
   renderAdminApp,
@@ -33,6 +34,41 @@ function fakeTagWorld(t: Tag) {
 }
 
 describe('Tag detail', () => {
+  it.each([false, true])(
+    'edits tag details and metadata with admin7Design=%s',
+    async (admin7Design) => {
+      if (admin7Design) {
+        fakeAdminStats.memberCount();
+        fakeAdminStats.mrr();
+      }
+      const t = tag({ name: 'News', slug: 'news' });
+      const saveApi = fakeTagWorld(t);
+      await renderAdminApp(`/tags/${t.slug}`, { labs: { admin7Design } });
+
+      await expect.element(tagDetailScreen.nameInput()).toHaveValue('News');
+      await tagDetailScreen.nameInput().fill('Latest news');
+      await tagDetailScreen.metaTitleInput().fill('News from our team');
+      await tagDetailScreen.metadataCard().getByRole('tab', { name: 'X card' }).click();
+      await tagDetailScreen.xTitleInput().fill('Follow our news');
+      await tagDetailScreen.saveButton().click();
+
+      await expect.element(tagDetailScreen.savedButton()).toBeVisible();
+      expect((saveApi.lastRequest?.body as { tags: Partial<Tag>[] }).tags[0]).toMatchObject({
+        name: 'Latest news',
+        meta_title: 'News from our team',
+        twitter_title: 'Follow our news',
+      });
+      await tagDetailScreen
+        .metadataCard()
+        .getByRole('tab', { name: 'Search', exact: true })
+        .click();
+      await expect.element(tagDetailScreen.metaTitleInput()).toHaveValue('News from our team');
+      await tagDetailScreen.codeInjectionTrigger().click();
+      await expect.element(tagDetailScreen.headerEditor()).toBeVisible();
+      await expect.element(tagDetailScreen.footerEditor()).toBeVisible();
+    },
+  );
+
   it('renders the seeded tag', async () => {
     const t = tag({ name: 'News', slug: 'news', description: 'All the news', count: { posts: 3 } });
     fakeTagWorld(t);
