@@ -857,6 +857,7 @@ module.exports = {
       cascadeDelete: true,
     },
     sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
+    '@@UNIQUE_CONSTRAINTS@@': [['product_id', 'benefit_id']],
   },
   members_products: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },

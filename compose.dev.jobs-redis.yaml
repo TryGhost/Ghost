@@ -3,7 +3,7 @@
 
 services:
   redis-jobs:
-    image: redis:7.4@sha256:44960b3100c48159a66d28c18b0588c193492e25f7551d60e51dd464fc3eca5b
+    image: redis:7.4@sha256:2e3eb11462c4e3759e6972678dd051d150ff54b1e60714b3c33b701260172a90
     container_name: ghost-dev-redis-jobs
     command:
       [
