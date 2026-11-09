@@ -7,8 +7,8 @@ import React, {
   useSyncExternalStore,
 } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Button, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
-import { Stack, Text } from '@tryghost/shade/primitives';
+import { Banner, Button, EmptyIndicator, LoadingIndicator } from '@tryghost/shade/components';
+import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import type { StartContext, Theme } from '@tryghost/app-contracts/bridge';
 import {
@@ -35,6 +35,7 @@ import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-time
 import { editorReturnState } from '@/editor/api';
 import { usePageTitle } from '@/hooks/use-document-title';
 import { useThemeContext } from '@/providers/theme-context';
+import { WithAppFooter } from './components/app-footer';
 import { AppsGate } from './components/apps-gate';
 import { InstallDialog, type InstallDone } from './components/install-dialog/install-dialog';
 import { createAppFrameSession } from './lib/app-frame-session';
@@ -47,6 +48,7 @@ import {
 } from './lib/app-path';
 import { createAdminApiFetch } from './lib/bridge-fetch';
 import { placeRoute } from './lib/bridge-places';
+import { supportUrl } from './lib/developer';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostHost } from './lib/frame';
 import { isInstallationNotFound, sessionFailureOf, type SessionFailure } from './lib/not-found';
 import { reportAppsError } from './lib/report-error';
@@ -62,6 +64,15 @@ const Centered: React.FC<{ children: React.ReactNode; testId?: string }> = ({
   </div>
 );
 
+/** How a publisher reaches the developer from a screen where the app couldn't open. */
+const ContactSupport: React.FC<{ manifest: AppInstallation['manifest'] }> = ({ manifest }) => (
+  <Button variant="outline" asChild>
+    <a href={supportUrl(manifest)} rel="noopener noreferrer" target="_blank">
+      Contact support
+    </a>
+  </Button>
+);
+
 const NotResponding: React.FC<{
   installation: AppInstallation;
   startedAt: Date;
@@ -72,9 +83,7 @@ const NotResponding: React.FC<{
       <EmptyIndicator
         actions={
           <>
-            <Button variant="outline" asChild>
-              <Link to="/apps">Back to Apps</Link>
-            </Button>
+            <ContactSupport manifest={installation.manifest} />
             <Button onClick={onRetry}>Try again</Button>
           </>
         }
@@ -115,9 +124,13 @@ const Unavailable: React.FC<{
       <EmptyIndicator
         actions={
           <>
-            <Button variant="outline" asChild>
-              <Link to="/apps">Back to Apps</Link>
-            </Button>
+            {installation ? (
+              <ContactSupport manifest={installation.manifest} />
+            ) : (
+              <Button variant="outline" asChild>
+                <Link to="/apps">Back to Apps</Link>
+              </Button>
+            )}
             <Button onClick={onRetry}>Try again</Button>
           </>
         }
@@ -140,6 +153,30 @@ const Unavailable: React.FC<{
     </Centered>
   );
 };
+
+/**
+ * Says a development app hasn't been reviewed. It sits above the frame, inset like page content,
+ * and only appears once the app can be used. Its sides line up with Shade's page templates inside
+ * the frame, and the space below it is the top of the app's own page.
+ */
+const DevelopmentBanner: React.FC<{ name: string }> = ({ name }) => (
+  <Banner
+    className="mx-4 mt-4 shrink-0 @min-[1024px]/app-page:mx-6 @min-[1024px]/app-page:mt-6"
+    data-testid="app-development-banner"
+    size="md"
+    variant="warning"
+  >
+    <Inline align="start" gap="sm">
+      <LucideIcon.TriangleAlert
+        aria-hidden="true"
+        className="mt-0.5 size-4 shrink-0 text-state-warning"
+      />
+      <Text as="p" className="min-w-0 break-words" size="sm">
+        {name} is a third party application and has not been reviewed by the Ghost team.
+      </Text>
+    </Inline>
+  </Banner>
+);
 
 /** Returns the number of the app navigation an Admin location was created for, if any. */
 function appMoveOf(state: unknown): number | undefined {
@@ -282,6 +319,13 @@ const AppFrame: React.FC<{
     setFrameSource({ attempt, src: appFrameUrl(url, path) });
   }
 
+  // A new document in the frame goes back to `loading` without a new attempt. The banner stays up
+  // through that, so a multi-page app doesn't resize on every page. A new attempt starts over.
+  const [readyAttempt, setReadyAttempt] = useState<number>();
+  if (status === 'ready' && readyAttempt !== attempt) {
+    setReadyAttempt(attempt);
+  }
+
   useAppTitle(manifest.name, title);
 
   // Runs for every location, keyed by `location.key`. React Router commits in a transition, so a
@@ -302,28 +346,35 @@ const AppFrame: React.FC<{
   }
 
   return (
-    <div className="relative size-full">
-      {status === 'loading' && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <LoadingIndicator size="lg" />
+    <WithAppFooter app={installation}>
+      <Stack className="size-full" gap="none">
+        {readyAttempt === attempt && manifest.development && (
+          <DevelopmentBanner name={manifest.name} />
+        )}
+        <div className="relative min-h-0 flex-1">
+          {status === 'loading' && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <LoadingIndicator size="lg" />
+            </div>
+          )}
+          <iframe
+            key={attempt}
+            ref={frameSession.attach}
+            allow={APP_FRAME_ALLOW}
+            aria-hidden={status !== 'ready'}
+            // Hidden, not transparent: a frame that's still loading mustn't take focus or clicks.
+            // A block, with no border: inline, the frame would sit on the text baseline and
+            // leave a gap under itself for the page to scroll.
+            className={cn('block size-full border-0', status !== 'ready' && 'invisible')}
+            data-testid="app-frame"
+            referrerPolicy="strict-origin-when-cross-origin"
+            sandbox={APP_FRAME_SANDBOX}
+            src={frameSource.src}
+            title={manifest.name}
+          />
         </div>
-      )}
-      <iframe
-        key={attempt}
-        ref={frameSession.attach}
-        allow={APP_FRAME_ALLOW}
-        aria-hidden={status !== 'ready'}
-        // Hidden, not transparent: a frame that's still loading mustn't take focus or clicks.
-        // A block, with no border: inline, the frame would sit on the text baseline and
-        // leave a gap under itself for the page to scroll.
-        className={cn('block size-full border-0', status !== 'ready' && 'invisible')}
-        data-testid="app-frame"
-        referrerPolicy="strict-origin-when-cross-origin"
-        sandbox={APP_FRAME_SANDBOX}
-        src={frameSource.src}
-        title={manifest.name}
-      />
-    </div>
+      </Stack>
+    </WithAppFooter>
   );
 };
 
@@ -389,23 +440,29 @@ const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
       };
     }
     return (
-      <Centered>
-        {failure ? (
-          <Stack align="center" gap="md">
-            <Text tone="secondary">{failure.message}</Text>
-            <Button variant="outline" onClick={() => void failure.retry()}>
-              Retry
-            </Button>
-          </Stack>
-        ) : (
-          <LoadingIndicator size="md" />
-        )}
-      </Centered>
+      <WithAppFooter app={installation}>
+        <Centered>
+          {failure ? (
+            <Stack align="center" gap="md">
+              <Text tone="secondary">{failure.message}</Text>
+              <Button variant="outline" onClick={() => void failure.retry()}>
+                Retry
+              </Button>
+            </Stack>
+          ) : (
+            <LoadingIndicator size="md" />
+          )}
+        </Centered>
+      </WithAppFooter>
     );
   }
   const ghostUrls = [window.location.href, site.data.site.url];
   if (isGhostHost(appPageUrl(installation.manifest), ghostUrls)) {
-    return <NotFramed installation={installation} />;
+    return (
+      <WithAppFooter app={installation}>
+        <NotFramed installation={installation} />
+      </WithAppFooter>
+    );
   }
   const { settings: values } = settings.data;
   const surfaceOrigin = new URL(appPageUrl(installation.manifest)).origin;
@@ -544,7 +601,11 @@ export const AppPage: React.FC = () => {
   } else if (session && installation?.status === 'active') {
     body = <ActiveApp session={session} onEnded={restart} />;
   } else if (installation?.status === 'suspended') {
-    body = <NeedsApproval installation={installation} onApproved={restart} />;
+    body = (
+      <WithAppFooter app={installation}>
+        <NeedsApproval installation={installation} onApproved={restart} />
+      </WithAppFooter>
+    );
   } else if (failure) {
     body = <Unavailable failure={failure} installationId={installationId} onRetry={restart} />;
   } else if (error && !notFound) {
@@ -563,11 +624,11 @@ export const AppPage: React.FC = () => {
     body = <NotInstalled />;
   }
 
-  // Ghost keeps only the nav; the rest is the app's, edge to edge. Like Admin's own screens,
-  // the app brings its page gutter (Shade's page templates do), so it can bleed a sticky
-  // header or a scrolling row to the edge.
+  // Ghost keeps the nav and the footer; the rest is the app's, edge to edge. Only the frame
+  // scrolls, so the footer stays in view. Like Admin's own screens, the app brings its page gutter
+  // (Shade's page templates do), so it can bleed a sticky header or a scrolling row to the edge.
   return (
-    <div className="size-full" data-testid="app-page">
+    <div className="@container/app-page size-full" data-testid="app-page">
       {body}
     </div>
   );
