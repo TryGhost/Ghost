@@ -1,11 +1,10 @@
-import ListFieldSettings from '@/shared/member-custom-fields/list-field-settings';
+import { type ReactNode } from 'react';
 import { CustomFieldTypeOption } from '@/shared/member-custom-fields/custom-field-type-option';
 import {
-  type CustomFieldDraft,
-  type CustomFieldDraftErrors,
-  defaultTypedSettings,
-  isSettingsProblem,
-} from '@/shared/member-custom-fields/custom-field-draft';
+  withList,
+  withType,
+  withoutListErrors,
+} from '@/shared/member-custom-fields/custom-field-values';
 import {
   Field,
   FieldContent,
@@ -22,53 +21,247 @@ import {
   Switch,
 } from '@tryghost/shade/components';
 import { formatNumber } from '@tryghost/shade/utils';
-import { matchField, type SetSettings } from '@tryghost/metafield-types/structure';
 import { useMemberCount } from '@tryghost/admin-x-framework/api/members';
-import type { ReactNode } from 'react';
+import {
+  type CustomFieldFormParts,
+  type CustomFieldFormState,
+  CustomFieldFormContext,
+  useCustomFieldForm,
+} from '@/shared/member-custom-fields/custom-field-form-context';
+import type { FieldType, SetSettings } from '@tryghost/metafield-types/structure';
 import type {
-  MemberCustomField,
+  MemberCustomFieldAccess,
   MemberCustomFieldUserType,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 /**
- * Whether members can see a field, with what that means for this field spelled out. Its own
- * component so the member count it reads is only asked for where the question is.
+ * How the form looks and behaves while a save is in flight: every control is disabled, so what the
+ * save is answered with still describes what is on screen. A disabled control still receives
+ * pointer events, and a select menu or a drag starts from those alone, so they are turned away
+ * too. An input group greys out with its input, as a plain input does.
  */
-function VisibilityField({
-  access,
-  field,
+const HELD_STILL =
+  'min-w-0 [&_:disabled]:pointer-events-none [&_[data-slot=input-group]:has([data-slot=input-group-control]:disabled)]:bg-field-disabled-surface';
+
+/**
+ * A custom field form: the questions placed inside it, held still while `state` is saving. Each
+ * place that makes or edits a field composes the questions it asks from the parts below.
+ */
+export function CustomFieldForm({
+  state,
   idPrefix,
-  saving,
+  listStart,
+  className,
+  children,
+}: {
+  state: CustomFieldFormState;
+  /** Prefixes the inputs' ids, so two forms on a page don't share them. */
+  idPrefix: string;
+  /** What a list starts from when List is chosen, such as the answers an import column holds. */
+  listStart?: SetSettings;
+  className?: string;
+  children: ReactNode;
+}) {
+  const { values, errors, saving } = state;
+  // The fieldset holds every control still while a save is in flight, but a select's menu opens
+  // outside it, so a choice made in a menu already open as the save starts would still arrive. The
+  // form ignores changes until the save is answered.
+  const update: CustomFieldFormState['update'] = (change) => {
+    if (!saving) {
+      state.update(change);
+    }
+  };
+  const setErrors: CustomFieldFormState['setErrors'] = (change) => {
+    if (!saving) {
+      state.setErrors(change);
+    }
+  };
+  const parts: CustomFieldFormParts = {
+    values,
+    errors,
+    idPrefix,
+    setName: (name) => {
+      setErrors((current) => ({ ...current, name: undefined }));
+      update((current) => ({ ...current, name }));
+    },
+    setType: (type) => {
+      setErrors(withoutListErrors);
+      update((current) => withType(current, type, listStart));
+    },
+    changeList: (change) => {
+      setErrors(withoutListErrors);
+      update((current) => withList(current, change));
+    },
+    setAccess: (access) => update((current) => ({ ...current, access })),
+  };
+  return (
+    <CustomFieldFormContext.Provider value={parts}>
+      <fieldset className={HELD_STILL} disabled={saving}>
+        <FieldGroup className={className}>{children}</FieldGroup>
+      </fieldset>
+    </CustomFieldFormContext.Provider>
+  );
+}
+
+export function NameField() {
+  const { values, errors, idPrefix, setName } = useCustomFieldForm();
+  return (
+    <Field data-invalid={Boolean(errors.name) || undefined}>
+      <FieldLabel htmlFor={`${idPrefix}-name`}>Name</FieldLabel>
+      <Input
+        aria-invalid={Boolean(errors.name) || undefined}
+        autoComplete="off"
+        id={`${idPrefix}-name`}
+        placeholder="Enter custom field name"
+        value={values.name}
+        autoFocus
+        onChange={(event) => setName(event.target.value)}
+      />
+      {errors.name && <FieldError>{errors.name}</FieldError>}
+    </Field>
+  );
+}
+
+function TypeSelect({
+  value,
+  types,
+  disabled,
+  invalid,
   onChange,
 }: {
-  access: CustomFieldDraft['access'];
-  field?: MemberCustomField;
-  idPrefix: string;
-  saving: boolean;
-  onChange: (access: CustomFieldDraft['access']) => void;
+  value: FieldType;
+  types: readonly MemberCustomFieldUserType[];
+  disabled: boolean;
+  invalid: boolean;
+  onChange?: (type: FieldType) => void;
 }) {
-  const memberCount = useMemberCount();
-  const isArchived = field?.status === 'archived';
+  return (
+    <Select
+      disabled={disabled}
+      value={value}
+      onValueChange={(chosen) => {
+        const type = types.find((userType) => userType.id === chosen);
+        if (type) {
+          onChange?.(type.id);
+        }
+      }}
+    >
+      <SelectTrigger
+        aria-invalid={invalid || undefined}
+        aria-label="Type"
+        data-testid="custom-field-type"
+      >
+        <SelectValue placeholder="Select type">
+          <CustomFieldTypeOption type={value} />
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        {types.map((userType) => (
+          <SelectItem key={userType.id} value={userType.id}>
+            <CustomFieldTypeOption type={userType.id} />
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
 
-  // The API keeps a third access level, `read`, that the switch doesn't offer. A field
-  // already set to it reads as open and is described as such; saving without touching
-  // the switch leaves it there, since the edit sends only what changed, and switching it
-  // off and on again returns it to the level it had rather than upgrading it.
-  const isOpenToMembers = access !== 'none';
-  const storedOpenLevel = field && field.access.member !== 'none' ? field.access.member : 'write';
-  // Opening a field that was closed discloses whatever staff have recorded in it so far.
-  const isOpeningClosedField =
-    field !== undefined && isOpenToMembers && field.access.member === 'none';
+/**
+ * The type a new field is made as, chosen from `types`. A place that offers one type pins it,
+ * still shown so what is being made is never a surprise.
+ */
+export function TypeField({
+  types,
+  problem,
+}: {
+  types: readonly MemberCustomFieldUserType[];
+  /** Why the chosen type can't be made here, such as a list from a column with too many answers. */
+  problem?: string;
+}) {
+  const { values, setType } = useCustomFieldForm();
+  const pinned = types.length === 1;
+  return (
+    <Field data-disabled={pinned || undefined} data-invalid={Boolean(problem) || undefined}>
+      <FieldLabel>Type</FieldLabel>
+      <TypeSelect
+        disabled={pinned}
+        invalid={Boolean(problem)}
+        types={types}
+        value={values.type}
+        onChange={setType}
+      />
+      {problem && <FieldError>{problem}</FieldError>}
+    </Field>
+  );
+}
+
+/** A saved field's type, shown but fixed: the values members already hold were made for it. */
+export function FixedTypeField({ type }: { type: MemberCustomFieldUserType }) {
+  return (
+    <Field data-disabled>
+      <FieldLabel>Type</FieldLabel>
+      <TypeSelect invalid={false} types={[type]} value={type.id} disabled />
+      <FieldDescription>Type can’t be changed after creation</FieldDescription>
+    </Field>
+  );
+}
+
+function VisibilitySwitch({
+  checked,
+  description,
+  disabled,
+  onChange,
+}: {
+  checked: boolean;
+  description: ReactNode;
+  disabled?: boolean;
+  onChange?: (open: boolean) => void;
+}) {
+  const { idPrefix } = useCustomFieldForm();
+  return (
+    <Field data-disabled={disabled || undefined} orientation="horizontal">
+      <FieldContent>
+        <FieldLabel htmlFor={`${idPrefix}-visible-to-members`}>Visible to members</FieldLabel>
+        <FieldDescription>{description}</FieldDescription>
+      </FieldContent>
+      <Switch
+        checked={checked}
+        data-testid="custom-field-access"
+        disabled={disabled}
+        id={`${idPrefix}-visible-to-members`}
+        onCheckedChange={onChange}
+      />
+    </Field>
+  );
+}
+
+/**
+ * Whether members can see a field, with what that means for this field spelled out. Its own
+ * component so the member count it reads is only asked for where the question is.
+ *
+ * Ghost keeps a third access level, `read`, that the switch doesn't offer. A field saved at it
+ * reads as open and is described as such. Switching it off and on again returns it to the level it
+ * was saved at rather than widening it, and an edit sends access only when it changes.
+ */
+export function VisibilityField({
+  saved,
+}: {
+  /** The access a saved field has, for a field being edited. A new field has none. */
+  saved?: MemberCustomFieldAccess;
+}) {
+  const { values, setAccess } = useCustomFieldForm();
+  const memberCount = useMemberCount();
+  const isOpen = values.access !== 'none';
+  const openLevel = saved && saved !== 'none' ? saved : 'write';
+  // Opening a saved field that was closed discloses whatever staff have recorded in it so far.
+  const isOpeningClosedField = saved === 'none' && isOpen;
 
   let description;
-  if (isArchived) {
-    description =
-      'Members never see an archived field. Reactivate it to choose whether they can see this one.';
-  } else if (isOpenToMembers) {
+  if (isOpen) {
     // The count is left out while it loads, as the newsletter modal does.
     const members = `Your ${memberCount === undefined ? '' : formatNumber(memberCount)} member${memberCount === 1 ? '' : 's'}`;
     description =
-      access === 'read'
+      values.access === 'read'
         ? `${members} can see this field in their Portal account settings, but not change it.`
         : `${members} can see and update this field in their Portal account settings.`;
   } else {
@@ -76,181 +269,30 @@ function VisibilityField({
   }
 
   return (
-    <Field data-disabled={isArchived || undefined} orientation="horizontal">
-      <FieldContent>
-        <FieldLabel htmlFor={`${idPrefix}-visible-to-members`}>Visible to members</FieldLabel>
-        <FieldDescription>
+    <VisibilitySwitch
+      checked={isOpen}
+      description={
+        <>
           {description}
           {isOpeningClosedField && <> Anything already recorded will become visible.</>}
-        </FieldDescription>
-      </FieldContent>
-      <Switch
-        checked={!isArchived && isOpenToMembers}
-        data-testid="custom-field-access"
-        disabled={isArchived || saving}
-        id={`${idPrefix}-visible-to-members`}
-        onCheckedChange={(checked) => onChange(checked ? storedOpenLevel : 'none')}
-      />
-    </Field>
+        </>
+      }
+      onChange={(open) => setAccess(open ? openLevel : 'none')}
+    />
   );
 }
 
-/** A list field's settings as saved, or undefined for a field that isn't a list. */
-const savedListSettings = (field: MemberCustomField): SetSettings | undefined =>
-  matchField<MemberCustomField, SetSettings | undefined>(field, {
-    scalar: () => undefined,
-    record: () => undefined,
-    set: ({ settings }) => settings,
-  });
-
 /**
- * The questions that make a custom field: its name, its type, what that type is set up with, and
- * whether members can see it. Shared by every place a field is created or edited, so each asks
- * them the same way; the place decides what surrounds the form and what saving does.
+ * Visibility for an archived field, which members never see, so there is nothing to choose until
+ * it is reactivated. Offering the switch would change something invisible, and the disclosure
+ * would arrive later, at reactivation, unannounced.
  */
-export function CustomFieldForm({
-  draft,
-  field,
-  errors = {},
-  idPrefix,
-  types,
-  withVisibility = false,
-  compact = false,
-  disabled = false,
-  saving = false,
-  onChange,
-  onClearErrors,
-}: {
-  draft: CustomFieldDraft;
-  /** The field being edited. Its type is fixed, and its access shapes what the switch says. */
-  field?: MemberCustomField;
-  /** Problems to show, each under the input its path names. */
-  errors?: CustomFieldDraftErrors;
-  /** Prefixes the inputs' ids, so two forms on a page don't share them. */
-  idPrefix: string;
-  /** The types this place offers. One pins the type. */
-  types: MemberCustomFieldUserType[];
-  /**
-   * Whether members' access is asked here. Off where a field is made in passing, since a new field
-   * starts staff-only and is opened to members later, in Settings.
-   */
-  withVisibility?: boolean;
-  /** Tighter spacing, for a popover. Settings' modal keeps its room. */
-  compact?: boolean;
-  /** Stops the settings changing, as an archived field's do. */
-  disabled?: boolean;
-  /**
-   * Stops anything changing while a save is in flight, so a refusal that comes back still describes
-   * what was sent.
-   */
-  saving?: boolean;
-  /** Each change is made to the draft as it stands when it applies, so two in one event both land. */
-  onChange: (update: (draft: CustomFieldDraft) => CustomFieldDraft) => void;
-  /** Asks for the problems under the name, or under the settings, to be cleared. */
-  onClearErrors: (which: 'name' | 'settings') => void;
-}) {
-  const isEdit = field !== undefined;
-  // Shown even when it can't change, so what is being made is never a surprise.
-  const typeFixed = isEdit || types.length === 1;
-  // The settings' problems, by where they are within them, for the type's own inputs to place:
-  // '' for the settings as a whole, `options.2` for a list's third option.
-  const settingsErrors = Object.fromEntries(
-    Object.entries(errors).flatMap(([property, message]) =>
-      message && isSettingsProblem(property) ? [[property.slice('settings.'.length), message]] : [],
-    ),
-  );
-
+export function ArchivedVisibilityField() {
   return (
-    <FieldGroup className={compact ? 'gap-5' : 'gap-8'}>
-      <Field data-invalid={Boolean(errors.name) || undefined}>
-        <FieldLabel htmlFor={`${idPrefix}-name`}>Name</FieldLabel>
-        <Input
-          aria-invalid={Boolean(errors.name) || undefined}
-          autoComplete="off"
-          disabled={saving}
-          id={`${idPrefix}-name`}
-          placeholder="Enter custom field name"
-          value={draft.name}
-          autoFocus
-          onChange={(e) => {
-            onClearErrors('name');
-            const name = e.target.value;
-            onChange((current) => ({ ...current, name }));
-          }}
-        />
-        {errors.name && <FieldError>{errors.name}</FieldError>}
-      </Field>
-      <Field
-        data-disabled={typeFixed || undefined}
-        data-invalid={Boolean(errors.type) || undefined}
-      >
-        <FieldLabel>Type</FieldLabel>
-        <Select
-          disabled={typeFixed || saving}
-          value={draft.type}
-          onValueChange={(value) => {
-            const chosen = types.find((userType) => userType.id === value);
-            if (chosen) {
-              // Settings belong to a type, so another type starts from its own defaults.
-              onClearErrors('settings');
-              onChange((current) => ({
-                name: current.name,
-                access: current.access,
-                ...defaultTypedSettings(chosen.id),
-              }));
-            }
-          }}
-        >
-          <SelectTrigger
-            aria-invalid={Boolean(errors.type) || undefined}
-            aria-label="Type"
-            data-testid="custom-field-type"
-          >
-            <SelectValue placeholder="Select type">
-              <CustomFieldTypeOption type={draft.type} />
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {types.map((userType) => (
-              <SelectItem key={userType.id} value={userType.id}>
-                <CustomFieldTypeOption type={userType.id} />
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {isEdit && <FieldDescription>Type can’t be changed after creation</FieldDescription>}
-        {errors.type && <FieldError>{errors.type}</FieldError>}
-      </Field>
-      {/* What the type is set up with, drawn by its shape, so a shape that takes settings can't
-          be added without a way to set them. */}
-      {matchField<CustomFieldDraft, ReactNode>(draft, {
-        scalar: () => null,
-        record: () => null,
-        set: (list) => (
-          <ListFieldSettings
-            // A new set of inputs for each type, since each starts from its own settings.
-            key={list.type}
-            disabled={disabled || saving}
-            errors={settingsErrors}
-            idPrefix={idPrefix}
-            initial={list.settings}
-            saved={field ? savedListSettings(field) : undefined}
-            onChange={(settings) => {
-              onClearErrors('settings');
-              onChange((current) => ({ ...current, type: list.type, settings }));
-            }}
-          />
-        ),
-      })}
-      {withVisibility && (
-        <VisibilityField
-          access={draft.access}
-          field={field}
-          idPrefix={idPrefix}
-          saving={saving}
-          onChange={(access) => onChange((current) => ({ ...current, access }))}
-        />
-      )}
-    </FieldGroup>
+    <VisibilitySwitch
+      checked={false}
+      description="Members never see an archived field. Reactivate it to choose whether they can see this one."
+      disabled
+    />
   );
 }

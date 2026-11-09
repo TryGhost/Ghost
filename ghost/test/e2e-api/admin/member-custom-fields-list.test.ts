@@ -172,6 +172,13 @@ describe('List custom fields', function () {
       });
 
       assert.deepEqual(edited.settings, { options: ['Cat', 'Dog', 'Fish'], multiple: false });
+
+      // Read back in the order the edit gave, not the order the options were first saved in.
+      const { body } = await agent.get(`members/metafields/custom/${field.key}/`).expectStatus(200);
+      assert.deepEqual(body.members_metafields[0].settings, {
+        options: ['Cat', 'Dog', 'Fish'],
+        multiple: false,
+      });
     });
 
     it('refuses an edit whose settings are wrong, changing nothing it asked for', async function () {
