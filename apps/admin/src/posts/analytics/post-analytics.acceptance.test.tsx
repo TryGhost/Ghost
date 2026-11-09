@@ -17,6 +17,7 @@ import {
   post,
   renderAdminApp,
   settingsResponse,
+  settleRequests,
   staffRole,
   webAnalyticsBootOverrides,
   type TinybirdPipeCapture,
@@ -623,6 +624,9 @@ describe('Post analytics overview', () => {
     });
 
     await expect.poll(() => failedStatusApi.requests.length).toBe(1);
+    // The fake has the request before the app has its error, and a focus while
+    // the query is still fetching doesn't refetch it
+    await settleRequests();
 
     const recoveredStatusApi = fakeAdminEndpoint('GET', `/emails/${EMAIL_ID}/status/`, {
       email_statuses: [
