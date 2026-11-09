@@ -26,6 +26,12 @@ Path: `ghost/core/server/services/email-service/CONTEXT.md`
 
 Newsletter Email Sending covers the preparation and submission of newsletter emails to the configured email provider.
 
+### Automations
+
+Path: `ghost/core/server/services/automations/CONTEXT.md`
+
+Automations covers how member events start runs and how those runs progress through their actions.
+
 ### App Contracts
 
 Path: `packages/app-contracts/CONTEXT.md`

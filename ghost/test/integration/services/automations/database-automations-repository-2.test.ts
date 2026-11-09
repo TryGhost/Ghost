@@ -61,6 +61,7 @@ describe('database automations repository', function () {
   const createRun = (automationId: string, memberId: string) => ({
     id: ObjectId().toHexString(),
     automation_id: automationId,
+    priority: 'low' as const,
     member_id: memberId,
     member_email: `${memberId}@example.com`,
     created_at: now,
@@ -70,6 +71,7 @@ describe('database automations repository', function () {
   const createRunStep = (runId: string, revisionId: string): RunStepToInsert => ({
     id: ObjectId().toHexString(),
     automation_run_id: runId,
+    priority: 'low',
     automation_action_revision_id: revisionId,
     created_at: createdAt,
     updated_at: updatedAt,
@@ -565,6 +567,37 @@ describe('database automations repository', function () {
     });
   });
 
+  alphabeticalDescribe('getActiveRunPriority', function () {
+    const getActiveRunPriority = async (status: string) => {
+      const repository = createDatabaseAutomationsRepository2({ knex });
+
+      const automation = { ...createAutomation(), status };
+      const member = createMember(ObjectId().toHexString());
+      const run = { ...createRun(automation.id, member.id), priority: 'high' as const };
+
+      const trx = await knex.transaction();
+      try {
+        await trx('automations').insert(automation);
+        await trx('members').insert(member);
+        await repository.insertRuns(trx, [run]);
+        return await repository.getActiveRunPriority(trx, run.id);
+      } finally {
+        await trx.rollback();
+      }
+    };
+
+    it('returns the run priority if the associated automation is active', async function () {
+      await expect(getActiveRunPriority('active')).resolves.toBe('high');
+    });
+
+    it.each(['inactive', 'archived'])(
+      'returns null if the associated automation is %s',
+      async function (status) {
+        await expect(getActiveRunPriority(status)).resolves.toBeNull();
+      },
+    );
+  });
+
   alphabeticalDescribe('getNumberOfAutomations', function () {
     it('returns the number of automations', async function () {
       const repository = createDatabaseAutomationsRepository2({ knex });
@@ -725,6 +758,7 @@ describe('database automations repository', function () {
         .select(
           'id',
           'automation_run_id',
+          'priority',
           'automation_action_revision_id',
           'created_at',
           'updated_at',
@@ -836,33 +870,6 @@ describe('database automations repository', function () {
       await repository.withConnection((connection) => repository.insertRuns(connection, []));
       await expect(findRuns()).resolves.toHaveLength(1);
     });
-  });
-
-  alphabeticalDescribe('isAutomationActiveForRun', function () {
-    const isAutomationActiveForRun = async (status: string) => {
-      const repository = createDatabaseAutomationsRepository2({ knex });
-
-      const automation = { ...createAutomation(), status };
-      const member = createMember(ObjectId().toHexString());
-      const run = createRun(automation.id, member.id);
-
-      await knex('automations').insert(automation);
-      await knex('members').insert(member);
-      await repository.insertRuns(knex, [run]);
-
-      return await repository.isAutomationActiveForRun(knex, run.id);
-    };
-
-    it('resolves with true if the associated automation is active', async function () {
-      await expect(isAutomationActiveForRun('active')).resolves.toBe(true);
-    });
-
-    it.each(['inactive', 'archived'])(
-      'resolves with false if the associated automation is %s',
-      async function (status) {
-        await expect(isAutomationActiveForRun(status)).resolves.toBe(false);
-      },
-    );
   });
 
   alphabeticalDescribe('isAutomationActiveForRunStep', function () {

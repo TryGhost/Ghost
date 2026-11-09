@@ -1,17 +1,23 @@
 import { buildTriggerRuleRows } from '../../../../core/server/services/automations/trigger-rules';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
+import { onTestFinished, vi } from 'vitest';
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 // @ts-expect-error Test utilities currently lack type definitions.
 import testUtils from '../../../utils';
+import { mockSystemTime } from '../../../utils/clock-utils';
 import { fromDatabaseDate, toDatabaseDate } from '../../../../core/server/lib/db-types/date';
 import { createDatabaseAutomationsRepository } from '../../../../core/server/services/automations/database-automations-repository';
 import { createDatabaseAutomationsRepository2 } from '../../../../core/server/services/automations/database-automations-repository-2';
 import { createAutomationsApi2 } from '../../../../core/server/services/automations/automations-api-2';
+import { MAX_STEPS_PER_BATCH } from '../../../../core/server/services/automations/constants';
+import { poll } from '../../../../core/server/services/automations/poll';
 import type { AutomationTriggerTierScope } from '../../../../core/server/services/automations/automations-repository-2';
 import { MEMBER_WELCOME_EMAIL_SLUGS } from '../../../../core/server/services/member-welcome-emails/constants';
 const dbUtils = require('../../../utils/db-utils');
+const { Member } = require('../../../../core/server/models');
+const MemberRepository = require('../../../../core/server/services/members/members-api/repositories/member-repository');
 
 describe('database automations repository', function () {
   const knex: Knex = testUtils.knex;
@@ -93,7 +99,7 @@ describe('database automations repository', function () {
     );
   });
 
-  async function insertMember(memberId: string): Promise<string> {
+  async function insertMember(memberId: string, status = 'free'): Promise<string> {
     const memberEmail = `${memberId}@example.com`;
     const now = toDatabaseDate(new Date());
     await knex('members').insert({
@@ -101,7 +107,8 @@ describe('database automations repository', function () {
       uuid: randomUUID(),
       transient_id: randomUUID(),
       email: memberEmail,
-      status: 'free',
+      status,
+      enable_updates_and_announcements: true,
       created_at: now,
       updated_at: now,
     });
@@ -159,6 +166,7 @@ describe('database automations repository', function () {
       const memberId = ObjectId().toHexString();
       await api.notify({
         eventName: 'membership_started',
+        priority: 'low',
         source: 'member' as const,
         memberId,
         memberEmail: await insertMember(memberId),
@@ -179,6 +187,7 @@ describe('database automations repository', function () {
       const memberId = ObjectId().toHexString();
       await api.notify({
         eventName: 'membership_started',
+        priority: 'low',
         source: 'member' as const,
         memberId,
         memberEmail: await insertMember(memberId),
@@ -227,6 +236,7 @@ describe('database automations repository', function () {
         const api = createApi();
         const event = {
           eventName: 'membership_started' as const,
+          priority: 'low' as const,
           source: 'member' as const,
           memberId,
           memberEmail,
@@ -258,7 +268,7 @@ describe('database automations repository', function () {
 
     it('enrolls different members concurrently without deadlocking', async function () {
       const memberIds = [ObjectId().toHexString(), ObjectId().toHexString()];
-      const memberEmails = await Promise.all(memberIds.map(insertMember));
+      const memberEmails = await Promise.all(memberIds.map((id) => insertMember(id)));
       const api = createApi();
 
       // Hold the referenced automation row so both notifications reach the run lookup
@@ -286,6 +296,7 @@ describe('database automations repository', function () {
       const notifications = memberIds.map((memberId, index) =>
         api.notify({
           eventName: 'membership_started',
+          priority: 'low',
           source: 'member' as const,
           memberId,
           memberEmail: memberEmails[index],
@@ -326,6 +337,7 @@ describe('database automations repository', function () {
       for (const memberId of [ObjectId().toHexString(), ObjectId().toHexString()]) {
         await api.notify({
           eventName: 'membership_started',
+          priority: 'low',
           source: 'member' as const,
           memberId,
           memberEmail: await insertMember(memberId),
@@ -361,6 +373,106 @@ describe('database automations repository', function () {
         second.steps[0].automation_trigger_rules.map((rule) => rule.product_id),
         [selectedTierIds[1]],
       );
+    });
+
+    it('sends a paid-start email in the next batch while older free-signup steps are still queued', async function () {
+      // Use a whole second so MySQL stores the immediate step as ready on this poll.
+      const clock = mockSystemTime(Math.floor(Date.now() / 1000) * 1000);
+      onTestFinished(() => clock.restore());
+      const members = new MemberRepository({ automationsApi: createApi() });
+      const repository = createDatabaseAutomationsRepository({
+        knex,
+        fakeWaitHoursMultiplier: null,
+      });
+      const freeAutomationId = await insertAutomation({ triggerTierScope: 'free' });
+      const paidAutomationId = await insertAutomation({ triggerTierScope: 'all_paid' });
+      const paidAction = await knex('automation_actions')
+        .where('automation_id', paidAutomationId)
+        .first();
+      await knex('automation_actions').where('id', paidAction.id).update({ type: 'send_email' });
+      await knex('automation_action_revisions').where('action_id', paidAction.id).update({
+        wait_hours: null,
+        email_subject: 'Welcome to paid membership',
+        email_lexical: '{}',
+      });
+
+      async function startMembership(memberStatus: 'free' | 'paid') {
+        const memberId = ObjectId().toHexString();
+        const email = await insertMember(memberId, memberStatus);
+        const member = await Member.findOne({ id: memberId });
+        assert(member);
+        await members.notifyMembershipStartedAutomation({
+          member,
+          memberStatus,
+          bookshelfOptions: {},
+        });
+        return email;
+      }
+
+      // Even after two full batches there must be free-signup work left.
+      const backlogSize = 2 * MAX_STEPS_PER_BATCH + 1;
+      for (let index = 0; index < backlogSize; index++) {
+        await startMembership('free');
+      }
+      const freeRunIds: string[] = await knex('automation_runs')
+        .where('automation_id', freeAutomationId)
+        .pluck('id');
+      assert.equal(freeRunIds.length, backlogSize);
+      const readyAt = toDatabaseDate(new Date('2000-01-01'));
+      await knex('automation_run_steps')
+        .whereIn('automation_run_id', freeRunIds)
+        .update({ ready_at: readyAt });
+
+      const batchClaimed = Promise.withResolvers<void>();
+      const releaseBatch = Promise.withResolvers<void>();
+      const fetchAndLockSteps = vi
+        .fn(repository.fetchAndLockSteps)
+        .mockImplementationOnce(async (limit) => {
+          const batch = await repository.fetchAndLockSteps(limit);
+          assert.equal(batch.steps.length, MAX_STEPS_PER_BATCH);
+          assert(batch.steps.every((step) => step.automation_id === freeAutomationId));
+          batchClaimed.resolve();
+          await releaseBatch.promise;
+          return batch;
+        });
+      const sendAutomationEmail = vi.fn(async () => undefined);
+      const pollOptions = {
+        automationsApi: { ...repository, fetchAndLockSteps },
+        enqueueAnotherPollAt: vi.fn(),
+        scheduleAutomationEmailAnalyticsJob: vi.fn(),
+        memberWelcomeEmailService: { sendAutomationEmail },
+      };
+      const firstPoll = poll(pollOptions);
+      let paidEmail: string;
+      try {
+        await Promise.race([batchClaimed.promise, firstPoll]);
+        paidEmail = await startMembership('paid');
+      } finally {
+        releaseBatch.resolve();
+        await firstPoll;
+      }
+
+      expect(sendAutomationEmail).not.toHaveBeenCalled();
+      const paidRun = await knex('automation_runs')
+        .where({ automation_id: paidAutomationId, member_email: paidEmail })
+        .first();
+      assert(paidRun, 'Expected the paid membership start to enroll');
+      await poll(pollOptions);
+      const paidStep = await knex('automation_run_steps')
+        .where('automation_run_id', paidRun.id)
+        .first();
+      assert.equal(
+        paidStep.status,
+        'finished',
+        'Expected the paid step to finish in the next batch',
+      );
+      expect(sendAutomationEmail).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({ member: expect.objectContaining({ email: paidEmail }) }),
+      );
+      const pendingFreeSteps = await knex('automation_run_steps')
+        .whereIn('automation_run_id', freeRunIds)
+        .where('status', 'pending');
+      assert.equal(pendingFreeSteps.length, backlogSize - 2 * MAX_STEPS_PER_BATCH + 1);
     });
   });
 });

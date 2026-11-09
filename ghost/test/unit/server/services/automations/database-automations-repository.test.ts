@@ -178,6 +178,7 @@ const createDatabase = async (): Promise<Knex> => {
   });
 
   await database.schema.createTable('automation_runs', (table) => {
+    table.string('priority', 4).notNullable().defaultTo('low');
     table.text('id').primary();
     table.text('created_at').notNullable();
     table.text('updated_at').notNullable();
@@ -187,6 +188,7 @@ const createDatabase = async (): Promise<Knex> => {
   });
 
   await database.schema.createTable('automation_run_steps', (table) => {
+    table.string('priority', 4).notNullable().defaultTo('low');
     table.text('id').primary();
     table.text('created_at').notNullable();
     table.text('updated_at').notNullable();

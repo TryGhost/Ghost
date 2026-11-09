@@ -2028,6 +2028,7 @@ describe('MemberRepository', function () {
       });
       sinon.assert.calledOnceWithExactly(automationsApi.notify, {
         eventName: 'membership_started',
+        priority: 'high',
         source: 'member',
         memberId: 'member_id_123',
         memberEmail: 'test@example.com',
@@ -2089,6 +2090,7 @@ describe('MemberRepository', function () {
         });
         sinon.assert.calledOnceWithExactly(automationsApi.notify, {
           eventName: 'paid_subscription_changed',
+          priority: 'low',
           source: 'member',
           previousMemberStatus: previousStatus,
           memberId: 'member',
@@ -2119,6 +2121,7 @@ describe('MemberRepository', function () {
         sinon.assert.calledOnceWithExactly(automationsApi.notify, {
           eventName: 'paid_subscription_changed',
           source,
+          priority: 'low',
           previousMemberStatus: previousStatus,
           memberId: 'member',
           memberEmail: 'member@example.com',
@@ -2145,6 +2148,7 @@ describe('MemberRepository', function () {
         await repo.create({ email: 'test@example.com' }, { context });
         sinon.assert.calledOnceWithExactly(automationsApi.notify, {
           eventName: 'membership_started',
+          priority: 'low',
           source,
           memberId: 'member_id_123',
           memberEmail: 'test@example.com',
@@ -2197,6 +2201,7 @@ describe('MemberRepository', function () {
 
         sinon.assert.calledOnceWithExactly(automationsApi.notify, {
           eventName: 'membership_started',
+          priority: 'low',
           source: 'member',
           memberId: 'member_id_123',
           memberEmail: 'test@example.com',
@@ -2519,6 +2524,7 @@ describe('MemberRepository', function () {
 
       sinon.assert.calledWithExactly(automationsApi.notify, {
         eventName: 'membership_started',
+        priority: 'high',
         source: 'member',
         memberId: 'member_id_123',
         memberEmail: 'test@example.com',
@@ -2545,6 +2551,7 @@ describe('MemberRepository', function () {
 
       sinon.assert.calledWithExactly(automationsApi.notify, {
         eventName: 'membership_started',
+        priority: 'high',
         source: 'admin',
         memberId: 'member_id_123',
         memberEmail: 'test@example.com',
@@ -2593,6 +2600,7 @@ describe('MemberRepository', function () {
       assert.deepEqual(Member.edit.firstCall.args[0].products, [{ id: 'gold' }]);
       sinon.assert.calledOnceWithExactly(automationsApi.notify, {
         eventName: 'paid_subscription_changed',
+        priority: 'low',
         source: 'member',
         memberId: 'member_id_123',
         memberEmail: 'test@example.com',
@@ -2696,6 +2704,7 @@ describe('MemberRepository', function () {
 
         sinon.assert.calledWithExactly(automationsApi.notify, {
           eventName: 'membership_started',
+          priority: 'high',
           source: 'member',
           memberId: 'member_id_123',
           memberEmail: 'test@example.com',

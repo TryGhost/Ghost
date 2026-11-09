@@ -221,6 +221,15 @@ export const createDatabaseAutomationsRepository2 = ({
       return rows.map((row) => nextActionRevisionRowSchema.parse(row));
     },
 
+    async getActiveRunPriority(connection, automationRunId) {
+      const run = await connection('automation_runs as run')
+        .first('run.priority')
+        .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
+        .where('run.id', automationRunId)
+        .where('automation.status', 'active');
+      return run?.priority ?? null;
+    },
+
     async getNumberOfAutomations(connection) {
       const result = await connection('automations').count({ count: '*' }).first();
       return Number(result?.count ?? 0);
@@ -274,15 +283,6 @@ export const createDatabaseAutomationsRepository2 = ({
       if (toInsert.length > 0) {
         await connection('automation_trigger_rules').insert(toInsert);
       }
-    },
-
-    async isAutomationActiveForRun(connection, automationRunId) {
-      const query = connection('automation_runs as run')
-        .select(connection.raw('1'))
-        .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
-        .where('run.id', automationRunId)
-        .where('automation.status', 'active');
-      return await selectExists(connection, query);
     },
 
     async isAutomationActiveForRunStep(connection, runStepId) {

@@ -3,6 +3,7 @@ import logging from '@tryghost/logging';
 import ObjectId from 'bson-objectid';
 import type { ReadonlyDeep } from 'type-fest';
 import type {
+  AutomationRunPriority,
   AutomationsRepository2,
   RunStepToInsert,
   RunToInsert,
@@ -49,6 +50,7 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
       event: ReadonlyDeep<
         {
           source: 'member' | 'admin' | 'api' | 'import' | 'system';
+          priority: AutomationRunPriority;
           memberEmail: string;
           memberId: string;
           memberStatus: MemberStatus;
@@ -66,6 +68,7 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
       const {
         eventName,
         source,
+        priority,
         memberEmail,
         memberId,
         memberStatus,
@@ -78,6 +81,10 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
       // anyway). This check is defense-in-depth.
       if (eventName !== 'membership_started' && eventName !== 'paid_subscription_changed') {
         throw new errors.IncorrectUsageError({ message: 'Unsupported automation event.' });
+      }
+
+      if (priority !== 'high' && priority !== 'low') {
+        throw new errors.IncorrectUsageError({ message: 'Unsupported automation run priority.' });
       }
 
       if (!labs.isSet('automations')) {
@@ -152,6 +159,7 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
 
             const run = {
               id: ObjectId().toHexString(),
+              priority,
               created_at: now,
               updated_at: now,
               automation_id: automationId,
@@ -162,6 +170,7 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
 
             const step = {
               id: ObjectId().toHexString(),
+              priority,
               automation_run_id: run.id,
               automation_action_revision_id: firstAction.automation_action_revision_id,
               created_at: now,

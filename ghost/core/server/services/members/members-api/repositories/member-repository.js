@@ -306,6 +306,7 @@ module.exports = class MemberRepository {
   }) {
     const payload = {
       eventName: /** @type {const} */ ('paid_subscription_changed'),
+      priority: /** @type {const} */ ('low'),
       source: this._resolveContextSource(options.context || {}),
       memberId: member.id,
       memberEmail: member.get('email'),
@@ -351,6 +352,7 @@ module.exports = class MemberRepository {
     await this.#notifyAutomations(
       {
         eventName: 'membership_started',
+        priority: memberStatus === 'paid' ? 'high' : 'low',
         source: this._resolveContextSource(bookshelfOptions.context || {}),
         memberId,
         memberEmail,

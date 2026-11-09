@@ -4,6 +4,7 @@ import type { z } from 'zod';
 import { addAutomationDataSchema } from './automations-schemas';
 
 export type AutomationTriggerTierScope = 'free' | 'all_paid' | 'selected_paid';
+export type AutomationRunPriority = 'high' | 'low';
 
 export type AddAutomationData = z.infer<typeof addAutomationDataSchema>;
 
@@ -22,6 +23,7 @@ export type EdgeRow = {
 
 export type RunStepToInsert = {
   id: string;
+  priority: AutomationRunPriority;
   created_at: Date;
   updated_at: Date;
   automation_run_id: string;
@@ -31,6 +33,7 @@ export type RunStepToInsert = {
 
 export type RunToInsert = {
   id: string;
+  priority: AutomationRunPriority;
   created_at: Date;
   updated_at: Date;
   automation_id: string;
@@ -92,6 +95,12 @@ export type AutomationsRepository2<Connection> = {
     >,
   ) => Promisable<NextActionRevisionRow[]>;
 
+  /** Get the run's priority while its automation is active. */
+  getActiveRunPriority: (
+    connection: Connection,
+    automationRunId: string,
+  ) => Promisable<AutomationRunPriority | null>;
+
   /** Get the count of all automations. */
   getNumberOfAutomations: (connection: Connection) => Promisable<number>;
 
@@ -125,12 +134,6 @@ export type AutomationsRepository2<Connection> = {
     connection: Connection,
     toInsert: ReadonlyArray<AutomationTriggerRule>,
   ) => Promisable<void>;
-
-  /** Is this run's automation active? */
-  isAutomationActiveForRun: (
-    connection: Connection,
-    automationRunId: string,
-  ) => Promisable<boolean>;
 
   /** Is this step's automation active? */
   isAutomationActiveForRunStep: (connection: Connection, runStepId: string) => Promisable<boolean>;

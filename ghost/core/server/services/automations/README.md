@@ -10,6 +10,8 @@ The database repository creates run(s) and queues their first step(s). Ghost's b
 
 Each check locks ready steps, then runs up to 100 at once. A `wait` action advances when its time arrives. A `send_email` action checks the member's current status and email preference before sending. Disabled automations and ineligible members stop.
 
+The member repository passes [run priority](CONTEXT.md#language) with each notification. Paid subscription starts use `high`. Free signups, subscription changes, and existing runs use `low`. Each poll claims ready high-priority steps first, then fills any remaining slots with ready low-priority steps. Within each priority, the earliest ready steps are picked first. The current batch finishes before the poller claims another batch.
+
 ## Where to look
 
 - [`automations-api.ts`](automations-api.ts) handles reads, edits, validation, and event notifications. Edits require one path with no branches or loops.

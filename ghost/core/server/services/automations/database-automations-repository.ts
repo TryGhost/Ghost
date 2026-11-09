@@ -37,7 +37,12 @@ import type {
   AutomationsRepository,
   Page,
 } from './automations-repository';
-import type { ActionToInsert, EdgeRow, AutomationsRepository2 } from './automations-repository-2';
+import type {
+  ActionToInsert,
+  AutomationRunPriority,
+  EdgeRow,
+  AutomationsRepository2,
+} from './automations-repository-2';
 import type { EditAutomationData } from './automations-schemas';
 import {
   DbDate,
@@ -987,16 +992,22 @@ async function fetchAndLockSteps(
   const staleLockCutoffString = toDatabaseDate(staleLockCutoff);
   const lockId = crypto.randomUUID();
 
-  // 1. Select up to `limit` candidate rows.
-  const candidates: ReadonlyArray<{ id: string }> = await trx('automation_run_steps')
-    .select('id')
-    .where('status', 'pending')
-    .where('ready_at', '<=', nowString)
-    .where((builder) => {
-      builder.whereNull('locked_by').orWhere('locked_at', '<', staleLockCutoffString);
-    })
-    .orderBy(['ready_at', 'created_at', 'id'])
-    .limit(limit);
+  // 1. Select ready high-priority steps, then fill the remaining capacity with low-priority steps.
+  const findCandidates = (priority: AutomationRunPriority, capacity: number) =>
+    trx('automation_run_steps')
+      .select<{ id: string }[]>('id')
+      .where({ status: 'pending', priority })
+      .where('ready_at', '<=', nowString)
+      .where((builder) => {
+        builder.whereNull('locked_by').orWhere('locked_at', '<', staleLockCutoffString);
+      })
+      .orderBy(['ready_at', 'created_at', 'id'])
+      .limit(capacity);
+
+  const candidates = await findCandidates('high', limit);
+  if (candidates.length < limit) {
+    candidates.push(...(await findCandidates('low', limit - candidates.length)));
+  }
   if (candidates.length === 0) {
     return {
       steps: [],
@@ -1052,7 +1063,7 @@ async function fetchAndLockSteps(
     .innerJoin('automation_actions as action', 'action.id', 'revision.action_id')
     .whereIn('step.id', candidateIds)
     .where('step.locked_by', lockId)
-    .orderBy(['step.ready_at', 'step.created_at', 'step.id']);
+    .orderBy(['step.priority', 'step.ready_at', 'step.created_at', 'step.id']);
 
   const rulesByAutomation = await getRulesByAutomation(trx, rows);
 
@@ -1154,7 +1165,8 @@ async function finishStepAndEnqueueNext(
     return null;
   }
 
-  if (!(await repository2.isAutomationActiveForRun(trx, step.automation_run_id))) {
+  const priority = await repository2.getActiveRunPriority(trx, step.automation_run_id);
+  if (priority === null) {
     return null;
   }
 
@@ -1170,6 +1182,7 @@ async function finishStepAndEnqueueNext(
   await repository2.insertRunSteps(trx, [
     {
       id: ObjectId().toHexString(),
+      priority,
       created_at: now,
       updated_at: now,
       automation_run_id: step.automation_run_id,

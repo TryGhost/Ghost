@@ -92,6 +92,7 @@ describe('automations API', function () {
       domainEvents = { dispatch: vi.fn<(event: unknown) => unknown>() };
       event = {
         eventName: 'membership_started',
+        priority: 'low',
         source: 'member',
         memberEmail: 'member@example.com',
         memberId: ObjectId().toHexString(),
@@ -293,6 +294,7 @@ describe('automations API', function () {
         firstActions.map((action) => ({
           id: expect.any(String),
           automation_id: action.automation_id,
+          priority: event.priority,
           member_id: event.memberId,
           member_email: event.memberEmail,
           created_at: now,
@@ -303,6 +305,7 @@ describe('automations API', function () {
         {
           id: expect.any(String),
           automation_run_id: runs[0].id,
+          priority: event.priority,
           automation_action_revision_id: wait.automation_action_revision_id,
           created_at: now,
           updated_at: now,
@@ -311,6 +314,7 @@ describe('automations API', function () {
         {
           id: expect.any(String),
           automation_run_id: runs[1].id,
+          priority: event.priority,
           automation_action_revision_id: email.automation_action_revision_id,
           created_at: now,
           updated_at: now,

@@ -82,6 +82,7 @@ describe('Automation run history from the execution', function () {
     };
     await automationsApi2.notify({
       eventName: 'membership_started',
+      priority: 'high',
       source: 'member' as const,
       memberId: member.id,
       memberEmail: member.email,
@@ -133,6 +134,8 @@ describe('Automation run history from the execution', function () {
     assert.equal(readyToSend.steps[1].action.type, 'send_email');
     assert.equal(readyToSend.steps[1].status, 'pending');
     assert.equal(readyToSend.steps[1].email_sent_at, null);
+    const nextStep = await db('automation_run_steps').where('id', readyToSend.steps[1].id).first();
+    assert.equal(nextStep.priority, 'high');
 
     await pollAt('2026-09-16T12:00:01Z');
     const sent = await readHistory();
