@@ -10,7 +10,7 @@ type DisconnectFrame = Frame;
 
 type ApiUser = {
   load: (relations: string[]) => Promise<unknown>;
-  related: (name: string) => { models: Array<{ get: (attr: string) => string }> };
+  hasRole: (roleName: string) => boolean;
 };
 
 /**
@@ -26,19 +26,16 @@ const controller = {
       cacheInvalidate: false,
     },
     async permissions(frame: DisconnectFrame) {
-      // Frame.user is typed as unknown by the API framework
       const user = frame.user as ApiUser;
       await user.load(['roles']);
-      const role = user.related('roles').models[0];
 
-      if (!role || role.get('name') !== 'Owner') {
+      if (!user.hasRole('Owner')) {
         throw new errors.NoPermissionError({
           message: tpl(messages.onlyOwner),
         });
       }
     },
     async query() {
-      // CJS service wrapper at the require() boundary
       const ActivityPubService = require('../../services/activitypub');
       await ActivityPubService.disconnect();
     },
@@ -47,5 +44,4 @@ const controller = {
   disconnect: DisconnectFrame;
 }>;
 
-// module.exports (not export): the API framework loads controllers via require().
 module.exports = controller;
