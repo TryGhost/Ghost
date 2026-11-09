@@ -11,6 +11,16 @@ describe('isInstallationNotFound', () => {
   it('treats a 404 with APP_NOT_INSTALLED as the app not being installed', () => {
     expect(isInstallationNotFound(apiError(404, 'APP_NOT_INSTALLED'))).toBe(true);
   });
+
+  it('treats a plain 404, or a 422 for a malformed id, as nothing to show', () => {
+    expect(isInstallationNotFound(apiError(404, null))).toBe(true);
+    expect(isInstallationNotFound(apiError(422, null))).toBe(true);
+  });
+
+  it('leaves other failures alone', () => {
+    expect(isInstallationNotFound(apiError(500, null))).toBe(false);
+    expect(isInstallationNotFound(new Error('offline'))).toBe(false);
+  });
 });
 
 describe('sessionFailureOf', () => {

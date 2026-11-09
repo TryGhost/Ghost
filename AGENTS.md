@@ -50,10 +50,11 @@ migration, private feature flag, Shade component, or internal package.
   independently, so feature-detect backend support and test the older-backend
   case.
   - Ghost Apps exception: while `apps` is in `PRIVATE_FEATURES`
-    (`ghost/core/shared/labs.js`), Apps code in Admin and `admin-x-framework`'s
-    app API hooks assume a matching Core, with no older-Core fallbacks or tests.
-    Origin, framing, identity and Allowlist checks still hold whichever Core
-    runs, and the exception ends once the flag leaves `PRIVATE_FEATURES`.
+    (`ghost/core/shared/labs.js`), Apps code in Admin (`apps/admin/src/apps/`
+    and its sidebar section) and `admin-x-framework`'s app API hooks assume a
+    matching Core, with no older-Core fallbacks or tests. Origin, framing,
+    identity and Allowlist checks still hold whichever Core runs, and the
+    exception ends once the flag leaves `PRIVATE_FEATURES`.
   - Shade docs: in this repo, `https://shade.ghost.org/docs/<page>.md` is the
     source `apps/shade/src/docs/<page>.mdx`, and `docs/components/<path>.md`
     is `apps/shade/src/components/<path>.mdx`. Read those files directly.
