@@ -473,7 +473,10 @@ describe('Email Service', function () {
       retryStatusLock.resolves(email);
       scheduleEmail.rejects(schedulingError);
 
-      await assert.rejects(() => service.retryEmail(email), schedulingError);
+      await assert.rejects(
+        () => service.retryEmail(email),
+        (thrown) => thrown === schedulingError,
+      );
 
       assert.equal(email.get('status'), 'failed');
       assert.equal(email.get('error'), 'Original send error');

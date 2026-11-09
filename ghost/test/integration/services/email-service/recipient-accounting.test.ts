@@ -334,7 +334,7 @@ describe('Recipient accounting through MySQL and Bookshelf', function () {
         }
         return refresh.call(this, options);
       });
-    await assert.rejects(retryService.retryEmail(failedEmail), readError);
+    await assert.rejects(retryService.retryEmail(failedEmail), (thrown) => thrown === readError);
     refreshStub.restore();
     assert.equal((await db.knex('emails').where({ id: email.id }).first()).status, 'failed');
     sinon.assert.notCalled(scheduleEmail);

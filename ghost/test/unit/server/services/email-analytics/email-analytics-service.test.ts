@@ -937,7 +937,7 @@ describe('EmailAnalyticsService', function () {
           fetchEvents: sinon.stub().rejects(error),
         });
 
-        await assert.rejects(service.fetchLatestOpenedEvents(), error);
+        await assert.rejects(service.fetchLatestOpenedEvents(), (thrown) => thrown === error);
       });
 
       it('rejects when fetching events throws a non-Error value', async function () {
