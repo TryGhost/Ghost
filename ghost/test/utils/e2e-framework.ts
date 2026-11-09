@@ -48,9 +48,12 @@ import adapterManager from '../../core/server/services/adapter-manager';
 // @ts-expect-error This module lacks type definitions.
 import DomainEvents from '@tryghost/domain-events';
 import * as hostLimits from './host-limits-utils';
-import { resetJobsBackend } from './jobs-backend-utils';
 // @ts-expect-error This module lacks type definitions.
 import urlUtils from './url-utils';
+
+// require, not import: when a test imports this file, an import here would
+// get vitest's own copy of the module, not the jobs service Ghost's boot set up
+const jobsService = require('../../core/server/services/jobs-service');
 
 const debug = debugFactory('test');
 const { any, stringMatching } = expressTest.snapshot;
@@ -67,7 +70,7 @@ let totalBoots = 0;
  * @returns {Promise<Express.Application>} ghost
  */
 const startGhost = async (options = {}) => {
-  await resetJobsBackend();
+  await jobsService.shutdown();
   await DomainEvents.allSettled();
 
   /**

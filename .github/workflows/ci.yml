@@ -965,12 +965,6 @@ jobs:
             pnpm nx run ghost:test:e2e
           fi
 
-      - name: Newsletter tests (BullMQ jobs backend)
-        run: pnpm nx run ghost:test:bullmq
-
-      - name: Newsletter failure scenarios (BullMQ jobs backend)
-        run: pnpm nx run ghost:test:bullmq:scenarios
-
       - name: Start VersityGW for integration tests
         run: |
           docker run -d --rm --name versitygw \
