@@ -92,7 +92,32 @@
             "maxWait": 3600000,
             "lifetime": 3600,
             "freeRetries": 4
-        }
+        },
+        "upgrade_api_block": {
+            "freeRetries": 599,
+            "minWait": 60000,
+            "maxWait": 60000,
+            "lifetime": 60
+        },
+        "upgrade_block": {
+            "freeRetries": 2,
+            "minWait": 60000,
+            "maxWait": 60000,
+            "lifetime": 60
+        },
+        "staff_invite_block": {
+            "freeRetries": 2,
+            "minWait": 60000,
+            "maxWait": 60000,
+            "lifetime": 60
+        },
+        "email_preview_block": {
+            "minWait": 360000,
+            "maxWait": 360000,
+            "lifetime": 3600,
+            "freeRetries": 10
+        },
+        "blocked_email_domains": []
     },
     "paths": {
         "contentPath": "content/",

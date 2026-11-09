@@ -556,7 +556,10 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                                     only — the create contract doesn't take values yet, and a
                                     value can't exist before its member does. */}
                   {member && (
+                    // key={member.id} so moving straight to another member, whose record
+                    // is already cached, starts it on the five-field preview again.
                     <MemberCustomFieldsField
+                      key={member.id}
                       disabled={activeMutation.isPending}
                       memberId={member.id}
                       metafields={member.metafields}

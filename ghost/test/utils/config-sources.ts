@@ -23,6 +23,7 @@ export function configSources(extra: Record<string, unknown> = {}): Record<strin
       url: 'http://localhost:2368',
       paths: { ...defaults.paths, ...overrides.paths },
       auth: defaults.auth,
+      spam: defaults.spam,
       database: { client: 'better-sqlite3', connection: { filename: '/tmp/ghost-test.db' } },
     },
     extra,
