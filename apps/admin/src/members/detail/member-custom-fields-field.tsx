@@ -15,7 +15,6 @@ import {
   DialogTitle,
   Input,
   Label,
-  LoadingIndicator,
   MultiSelectCombobox,
   Textarea,
   tokenFieldClasses,
@@ -470,15 +469,8 @@ const MemberCustomFieldEditModal: React.FC<{
           <Button disabled={editMutation.isPending} variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button className="min-w-16" disabled={editMutation.isPending} onClick={onSave}>
-            {editMutation.isPending ? (
-              <>
-                <LoadingIndicator size="sm" />
-                <span className="sr-only">Saving</span>
-              </>
-            ) : (
-              'Save'
-            )}
+          <Button loading={editMutation.isPending} onClick={onSave}>
+            Save
           </Button>
         </DialogFooter>
       </DialogContent>

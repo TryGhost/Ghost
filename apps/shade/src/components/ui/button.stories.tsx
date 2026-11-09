@@ -345,6 +345,21 @@ export const Disabled: Story = {
   },
 };
 
+export const Loading: Story = {
+  args: {
+    loading: true,
+    children: 'Delete member',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Use while an action is running. The spinner sits over the label, so the button keeps its width and nothing beside it moves.',
+      },
+    },
+  },
+};
+
 export const DisabledPrimaryComparison: Story = {
   render: function Render() {
     const { darkMode } = useShade();
