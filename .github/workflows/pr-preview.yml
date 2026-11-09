@@ -1,8 +1,7 @@
 name: PR Preview
 
-# Fork PRs never get preview images, so this needs no pull_request_target.
 on:
-  pull_request:
+  pull_request_target:
     types: [labeled, unlabeled, closed]
 
 permissions:
@@ -13,8 +12,7 @@ jobs:
     name: Deploy Preview
     # A profile label enables a preview on its own; a bare label uses the default.
     if: >-
-      github.event.pull_request.head.repo.full_name == github.repository
-      && github.event.action != 'closed'
+      github.event.action != 'closed'
       && (github.event.label.name == 'preview'
           || startsWith(github.event.label.name, 'preview:'))
       && (contains(github.event.pull_request.labels.*.name, 'preview')
@@ -117,15 +115,14 @@ jobs:
     name: Destroy Preview
     # Tear down only when the last preview label is removed or the PR closes.
     if: >-
-      github.event.pull_request.head.repo.full_name == github.repository
-      && ((github.event.action == 'unlabeled'
+      (github.event.action == 'unlabeled'
        && (github.event.label.name == 'preview'
            || startsWith(github.event.label.name, 'preview:'))
        && !contains(github.event.pull_request.labels.*.name, 'preview')
        && !contains(toJSON(github.event.pull_request.labels.*.name), '"preview:'))
       || (github.event.action == 'closed'
           && (contains(github.event.pull_request.labels.*.name, 'preview')
-              || contains(toJSON(github.event.pull_request.labels.*.name), '"preview:'))))
+              || contains(toJSON(github.event.pull_request.labels.*.name), '"preview:')))
     runs-on: ubuntu-latest
     permissions:
       contents: read
