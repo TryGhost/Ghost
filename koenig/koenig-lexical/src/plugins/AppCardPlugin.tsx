@@ -56,6 +56,8 @@ export const AppCardPlugin = () => {
     const updateRevision = React.useRef(0);
     const pending = React.useRef(new Map<string, PendingUpdate>());
     const nextRevision = React.useRef(0);
+    // Insert renders skipped because a proposal was rendering, by card.
+    const initial = React.useRef(new Map<string, AppCardSnapshot>());
 
     React.useEffect(() => {
         if (!editor.hasNodes([AppNode])) {
@@ -98,6 +100,9 @@ export const AppCardPlugin = () => {
                             const node = $getNodeByKey(placeholderKey);
                             if (isUntouchedPlaceholder(node)) {
                                 applySnapshot(node, properties, snapshot);
+                            } else if ($isAppNode(node) && pending.current.has(placeholderKey)) {
+                                // A proposal is rendering; if it fails, the card falls back to this.
+                                initial.current.set(placeholderKey, snapshot);
                             }
                         }, options);
                     }).catch((error) => {
@@ -145,11 +150,21 @@ export const AppCardPlugin = () => {
                             }
                             applySnapshot(target, properties, snapshot);
                             pending.current.delete(nodeKey);
+                            initial.current.delete(nodeKey);
                         });
                         resolve?.();
                     }).catch((error) => {
                         if (pending.current.get(nodeKey)?.revision === revision) {
                             pending.current.delete(nodeKey);
+                            // A card still showing its loading snapshot never keeps it: it gets the
+                            // insert's own render if that finished, or the failed state.
+                            editor.update(() => {
+                                const target = $getNodeByKey(nodeKey);
+                                if ($isAppNode(target) && target.html === LOADING.html) {
+                                    applySnapshot(target, {}, initial.current.get(nodeKey) ?? FAILED);
+                                }
+                                initial.current.delete(nodeKey);
+                            }, {tag: 'history-merge'});
                             report(error);
                             reject?.(error);
                         } else {

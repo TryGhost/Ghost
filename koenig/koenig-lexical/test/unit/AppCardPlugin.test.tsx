@@ -96,6 +96,37 @@ describe('AppCardPlugin', () => {
         expect(appCards.render).toHaveBeenCalledWith(definition.appId, definition.name, {});
     });
 
+    it('never leaves a card loading when a proposal made during the first render fails', async () => {
+        const first = deferred<AppCardRenderOutput>();
+        let failProposal!: (error: Error) => void;
+        const proposal = new Promise<AppCardRenderOutput>((_, reject) => {
+            failProposal = reject;
+        });
+        vi.mocked(appCards.render).mockReturnValueOnce(first.promise).mockReturnValueOnce(proposal);
+
+        await act(async () => {
+            editor.update(() => {
+                editor.dispatchCommand(INSERT_APP_CARD_COMMAND, {appId: definition.appId, card: definition.name});
+            }, {discrete: true});
+        });
+        const key = readCard()!.key;
+        await act(async () => {
+            editor.update(() => {
+                editor.dispatchCommand(UPDATE_APP_CARD_COMMAND, {nodeKey: key, patch: {number: '2'}, reject: () => {}});
+            }, {discrete: true});
+        });
+        await act(async () => {
+            first.resolve(output('73%'));
+            await first.promise;
+        });
+        expect(readCard()?.html).toContain('Loading card');
+        await act(async () => {
+            failProposal(new Error('render failed'));
+            await proposal.catch(() => {});
+        });
+        expect(readCard()).toMatchObject({html: '<p>73%</p>', properties: {}});
+    });
+
     it('refuses to insert a card no installed app offers', () => {
         let handled;
         editor.update(() => {
