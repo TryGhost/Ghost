@@ -1009,6 +1009,7 @@ describe('Publish flow', () => {
     await expect(page.getByRole('group', { name: 'Labels' })).toHaveCount(0);
     await userEvent.keyboard('{Enter}');
     await expect.element(page.getByRole('button', { name: 'Remove Legacy tier' })).toBeVisible();
+    await userEvent.keyboard('{Escape}');
 
     await publishScreen.continueButton().click();
     await publishScreen.confirmButton().click();
