@@ -15,6 +15,7 @@ export const APP_CARD_FRAME_SCRIPT = '(function(){'
     + 'var measure=function(){var h=Math.ceil(root.getBoundingClientRect().height);if(h!==last){last=h;post({type:"ghost-app-card:resize",height:h})}};'
     + 'if(typeof ResizeObserver!=="undefined"){new ResizeObserver(measure).observe(root)}'
     + 'window.addEventListener("load",measure);measure();'
+    + 'window.addEventListener("message",function(e){if(e.source===window.parent&&e.data&&e.data.type==="ghost-app-card:measure"){last=0;measure()}});'
     + 'document.addEventListener("click",function(e){'
     + 'var a=e.target instanceof Element?e.target.closest("a[href]"):null;'
     + 'if(!a||!e.isTrusted||e.button!==0){return}'
@@ -25,7 +26,7 @@ export const APP_CARD_FRAME_SCRIPT = '(function(){'
     + '})();';
 
 /** The CSP hash of `APP_CARD_FRAME_SCRIPT`. A unit test keeps it in step with the script. */
-export const APP_CARD_FRAME_SCRIPT_HASH = 'sha256-1pi1k+cY44FhthWubg6YHw66JZc2i/MF68BsnPfxiCU=';
+export const APP_CARD_FRAME_SCRIPT_HASH = 'sha256-xqEMJYsZBmub6ckVE80wqAA2BsSNOQdmPhQqCckLFug=';
 
 export interface AppCardDocumentOptions {
     html: string;

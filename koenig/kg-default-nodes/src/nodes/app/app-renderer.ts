@@ -38,7 +38,7 @@ const BLOCKED_ELEMENTS = [
     'script', 'iframe', 'frame', 'frameset', 'object', 'embed', 'base', 'link', 'meta', 'template',
     'style', 'form', 'noscript', 'set', 'animate', 'animateTransform', 'animatetransform',
     'animateMotion', 'animatemotion', 'discard', 'use', 'foreignObject', 'foreignobject', 'handler',
-    'listener'
+    'listener', 'plaintext', 'xmp', 'noembed', 'noframes', 'listing'
 ].join(',');
 const URL_ATTRIBUTES = ['href', 'xlink:href', 'action', 'formaction'];
 const SOURCE_ATTRIBUTES = ['src', 'poster', 'data'];

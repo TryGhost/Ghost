@@ -135,5 +135,10 @@ describe('app card document', function () {
     it('never widens the CSP with a wildcard host', function () {
         expect(cspSources(['https://*', 'https://*.example.com', 'https://ok.example'])).toBe('https://ok.example');
     });
-});
 
+    it('never lets a card swallow the post after it', function () {
+        const document = dom.window.document;
+        const markup = sanitiseAppCardMarkup(document, '<p>a</p><plaintext><xmp>x</xmp><noembed>y</noembed>');
+        expect(markup).toBe('<p>a</p>');
+    });
+});

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { plainText } from './text.ts';
+import type { plainText } from './text.ts';
 import type { UrlField } from './url.ts';
 
 const CARD_NAME = /^[a-z][a-z0-9-]{0,62}$/;
@@ -37,7 +37,7 @@ function originList(url: UrlField) {
  * What an app asks for: the places in Ghost it wants to appear. Each surface type is one
  * entry in a union, so a new one is added here and nowhere else.
  */
-export function surfacesField(url: UrlField) {
+export function surfacesField(url: UrlField, text: typeof plainText) {
   const adminPage = z.strictObject({
     type: z.literal('admin_page'),
     url: url(),
@@ -54,14 +54,14 @@ export function surfacesField(url: UrlField) {
     name: z
       .string('Expected a card name')
       .regex(CARD_NAME, 'Expected a lowercase card name such as before-after'),
-    label: plainText(CARD_LABEL_MAX_LENGTH),
+    label: text(CARD_LABEL_MAX_LENGTH),
     icon: z
       .string('Expected an icon name')
       .regex(ICON_NAME, 'Expected an icon name such as chart-column')
       .max(64)
       .optional(),
     keywords: z
-      .array(plainText(CARD_KEYWORD_MAX_LENGTH))
+      .array(text(CARD_KEYWORD_MAX_LENGTH))
       .max(CARD_KEYWORDS_MAX, `Expected at most ${CARD_KEYWORDS_MAX} keywords`)
       .optional(),
     render: url(),
@@ -70,7 +70,11 @@ export function surfacesField(url: UrlField) {
     backend_origins: originList(url),
     image_origins: originList(url),
     media_origins: originList(url),
-    frame_permissions: z.array(z.enum(CARD_FRAME_PERMISSIONS)).optional(),
+    frame_permissions: z
+      .array(z.enum(CARD_FRAME_PERMISSIONS))
+      .max(CARD_FRAME_PERMISSIONS.length)
+      .refine((list) => new Set(list).size === list.length, 'Expected each permission once')
+      .optional(),
   });
 
   const surfaceTypes = [adminPage, card] as const;

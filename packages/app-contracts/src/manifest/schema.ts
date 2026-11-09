@@ -69,7 +69,7 @@ function manifestShape(url: UrlField, text: typeof plainText) {
           .regex(HEX_COLOR, 'Expected a hex colour such as #ff5500')
           .toLowerCase(),
         icon: iconField(url),
-        surfaces: surfacesField(url),
+        surfaces: surfacesField(url, text),
         // Where the signed manifest is served from: the app's one origin, which every path
         // in it resolves against. Ghost fetches it server-side and never loads it as a page.
         manifest_url: url(true).refine((address) => !hasFragment(address), FRAGMENT_PROBLEM),
