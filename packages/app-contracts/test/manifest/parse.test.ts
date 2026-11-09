@@ -2,8 +2,21 @@ import assert from 'node:assert/strict';
 
 import { describe, expect, it } from 'vitest';
 
-import { AppManifestSchema, parseManifest, parseManifestUrl } from '../../src/manifest/index.ts';
-import { BACKEND_KEY, IDENTITY_KEY, errorsOf, manifest, manifestOf, options } from './helpers.ts';
+import {
+  AppManifestSchema,
+  parseManifest,
+  parseManifestUrl,
+  type ParseManifestOptions,
+} from '../../src/manifest/index.ts';
+import {
+  BACKEND_KEY,
+  IDENTITY_KEY,
+  devOptions,
+  errorsOf,
+  manifest,
+  manifestOf,
+  options,
+} from './helpers.ts';
 
 describe('parseManifest', () => {
   it('hands back the manifest it was given, normalised', () => {
@@ -111,14 +124,16 @@ describe('parseManifest', () => {
 });
 
 describe('parseManifestUrl', () => {
-  function manifestUrlOf(input: string, allowLocalhost?: boolean) {
-    const result = parseManifestUrl(input, allowLocalhost);
+  type UrlRules = Omit<ParseManifestOptions, 'manifestUrl'>;
+
+  function manifestUrlOf(input: string, rules: UrlRules = options) {
+    const result = parseManifestUrl(input, rules);
     assert(result.success, 'Expected the manifest URL to be accepted');
     return result.manifestUrl;
   }
 
-  function errorOf(input: string, allowLocalhost?: boolean) {
-    const result = parseManifestUrl(input, allowLocalhost);
+  function errorOf(input: string, rules: UrlRules = options) {
+    const result = parseManifestUrl(input, rules);
     assert(!result.success, 'Expected the manifest URL to be rejected');
     return result.error;
   }
@@ -161,9 +176,60 @@ describe('parseManifestUrl', () => {
     expect(errorOf('http://localhost:8787/app.json')).toContain('development');
   });
 
+  it('refuses localhost outside development, whatever trailing dots it’s written with', () => {
+    for (const input of [
+      'https://localhost.:8787/app.json',
+      'https://localhost..:8787/app.json',
+      'https://my-app.localhost../app.json',
+      'https://127.0.0.1../app.json',
+    ]) {
+      expect(errorOf(input)).toContain('development');
+    }
+  });
+
   it('accepts localhost, over HTTP too, when Ghost runs in development', () => {
-    expect(manifestUrlOf('http://localhost:8787/app.json', true)).toBe(
-      'http://localhost:8787/app.json',
-    );
+    for (const input of [
+      'http://my-app.localhost:8787/app.json',
+      'http://127.0.0.1:8787/app.json',
+    ]) {
+      expect(manifestUrlOf(input, devOptions)).toBe(input);
+    }
+  });
+
+  it('refuses an address on the site’s or Admin’s host, on any port or scheme', () => {
+    for (const input of [
+      'https://site.example.com/ghost-app.json',
+      'https://site.example.com:8443/ghost-app.json',
+      'https://Site.Example.com./ghost-app.json',
+      'https://admin.example.com:8443/ghost-app.json',
+    ]) {
+      expect(errorOf(input)).toBe(
+        'Expected the manifest on a host other than the one Ghost itself is served from, on any port, as browsers send Ghost’s cookies to every port on its host',
+      );
+    }
+  });
+
+  it('refuses Ghost’s own name for the machine in development, and says what to use instead', () => {
+    const suggestion =
+      /on any port, .*\. To run the app on this machine too, serve it from a name of its own under \.localhost, such as my-app\.localhost$/;
+    expect(errorOf('http://localhost:8787/app.json', devOptions)).toMatch(suggestion);
+    expect(
+      errorOf('http://127.0.0.1:8787/app.json', { ...devOptions, ghostUrls: ['http://127.0.0.1'] }),
+    ).toMatch(suggestion);
+    // A worktree's Ghost is on a name under .localhost itself.
+    expect(
+      errorOf('http://wt.ghost.localhost:8787/app.json', {
+        ...devOptions,
+        ghostUrls: ['http://wt.ghost.localhost:2400'],
+      }),
+    ).toMatch(suggestion);
+  });
+
+  it('refuses every address when it is not told where Ghost is served from', () => {
+    for (const ghostUrls of [[], ['https://site.example.com', 'admin'], ['http://./']]) {
+      expect(errorOf('https://podcast.example.com/app.json', { ghostUrls })).toBe(
+        'Expected the URLs Ghost itself is served from',
+      );
+    }
   });
 });

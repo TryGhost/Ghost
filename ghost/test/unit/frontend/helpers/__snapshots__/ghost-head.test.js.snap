@@ -5,6 +5,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -143,6 +144,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -229,6 +231,7 @@ exports[`{{ghost_head}} helper accent_color includes style tag in design preview
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -292,6 +295,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -365,6 +369,7 @@ exports[`{{ghost_head}} helper attribution scripts is included when tracking set
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -480,6 +485,7 @@ exports[`{{ghost_head}} helper attribution scripts is not included when tracking
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -595,6 +601,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -669,6 +676,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -743,6 +751,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -817,6 +826,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -891,6 +901,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -966,6 +977,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -1040,6 +1052,7 @@ exports[`{{ghost_head}} helper includes tinybird tracker script when config is s
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -1187,6 +1200,7 @@ exports[`{{ghost_head}} helper includes tinybird tracker script when config is s
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -1238,6 +1252,7 @@ exports[`{{ghost_head}} helper includes tinybird tracker script when config is s
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -1290,6 +1305,7 @@ exports[`{{ghost_head}} helper includes tinybird tracker script when config is s
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -1342,6 +1358,7 @@ exports[`{{ghost_head}} helper includes tinybird tracker script when config is s
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -1394,6 +1411,7 @@ exports[`{{ghost_head}} helper includes tinybird tracker script when config is s
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -1446,6 +1464,7 @@ exports[`{{ghost_head}} helper includes tinybird tracker script when config is s
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -1498,6 +1517,7 @@ exports[`{{ghost_head}} helper includes tinybird tracker script when config is s
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:2388/blog/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -1550,6 +1570,7 @@ exports[`{{ghost_head}} helper includes tinybird tracker script when config is s
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://127.0.0.1:2369/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -1620,6 +1641,7 @@ exports[`{{ghost_head}} helper includes tinybird tracker script when config is s
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -1672,6 +1694,7 @@ exports[`{{ghost_head}} helper includes tinybird tracker script when config is s
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -1724,6 +1747,7 @@ exports[`{{ghost_head}} helper includes tinybird tracker script when config is s
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -1776,6 +1800,7 @@ exports[`{{ghost_head}} helper members scripts includes portal when donations en
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -1890,6 +1915,7 @@ exports[`{{ghost_head}} helper members scripts includes portal when members enab
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -2005,6 +2031,7 @@ exports[`{{ghost_head}} helper members scripts includes portal when recommendati
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -2119,6 +2146,7 @@ exports[`{{ghost_head}} helper members scripts includes stripe when connected 1 
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -2234,6 +2262,7 @@ exports[`{{ghost_head}} helper members scripts skips portal and stripe when memb
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -2285,6 +2314,7 @@ exports[`{{ghost_head}} helper members scripts skips stripe if not set up 1 1`] 
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -2400,6 +2430,7 @@ exports[`{{ghost_head}} helper respects values from excludes:  can handle multip
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -2514,6 +2545,7 @@ exports[`{{ghost_head}} helper respects values from excludes:  does not load car
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -2565,6 +2597,7 @@ exports[`{{ghost_head}} helper respects values from excludes:  does not load cta
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -2664,6 +2697,7 @@ exports[`{{ghost_head}} helper respects values from excludes:  does not load og:
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <script type=\\"application/ld+json\\">
 {
@@ -2702,6 +2736,7 @@ exports[`{{ghost_head}} helper respects values from excludes:  does not load sch
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -2729,6 +2764,7 @@ exports[`{{ghost_head}} helper respects values from excludes:  does not load the
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -2780,6 +2816,7 @@ exports[`{{ghost_head}} helper respects values from excludes:  does not show the
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -2894,6 +2931,7 @@ exports[`{{ghost_head}} helper respects values from excludes:  loads card assets
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -2947,6 +2985,7 @@ exports[`{{ghost_head}} helper respects values from excludes:  shows the announc
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -3062,6 +3101,7 @@ exports[`{{ghost_head}} helper respects values from excludes:  when exclude cont
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -3177,6 +3217,7 @@ exports[`{{ghost_head}} helper respects values from excludes:  when exclude cont
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -3291,6 +3332,7 @@ exports[`{{ghost_head}} helper respects values from excludes:  when excludes is 
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -3406,6 +3448,7 @@ exports[`{{ghost_head}} helper search scripts includes locale in search 1 1`] = 
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -3457,6 +3500,7 @@ exports[`{{ghost_head}} helper search scripts includes search 1 1`] = `
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -3508,6 +3552,7 @@ exports[`{{ghost_head}} helper with /site subdirectory returns correct rss url w
 Object {
   "rendered": "<link rel=\\"icon\\" href=\\"/site/content/images/size/w256h256/favicon.png\\" type=\\"image/png\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/site/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/site/rss/\\">
@@ -3522,6 +3567,7 @@ exports[`{{ghost_head}} helper with Code Injection handles post codeinjection be
 Object {
   "rendered": "<link rel=\\"icon\\" href=\\"/content/images/size/w256h256/favicon.png\\" type=\\"image/png\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
@@ -3537,6 +3583,7 @@ exports[`{{ghost_head}} helper with Code Injection handles post codeinjection be
 Object {
   "rendered": "<link rel=\\"icon\\" href=\\"/content/images/size/w256h256/favicon.png\\" type=\\"image/png\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
@@ -3552,6 +3599,7 @@ exports[`{{ghost_head}} helper with Code Injection outputs post codeinjection as
 Object {
   "rendered": "<link rel=\\"icon\\" href=\\"/content/images/size/w256h256/favicon.png\\" type=\\"image/png\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
@@ -3564,10 +3612,27 @@ Object {
 }
 `;
 
+exports[`{{ghost_head}} helper with Code Injection returns an injected large image preview tag as well 1 1`] = `
+Object {
+  "rendered": "<link rel=\\"icon\\" href=\\"/content/images/size/w256h256/favicon.png\\" type=\\"image/png\\">
+    <link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
+    <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
+    <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
+    <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
+    
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://localhost:65530/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
+    
+    <link href=\\"http://localhost:65530/webmentions/receive/\\" rel=\\"webmention\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">",
+}
+`;
+
 exports[`{{ghost_head}} helper with Code Injection returns meta tag plus injected code 1 1`] = `
 Object {
   "rendered": "<link rel=\\"icon\\" href=\\"/content/images/size/w256h256/favicon.png\\" type=\\"image/png\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
@@ -3583,6 +3648,7 @@ exports[`{{ghost_head}} helper with changed origin in config file contains the c
 Object {
   "rendered": "<link rel=\\"icon\\" href=\\"/site/content/images/size/w256h256/favicon.png\\" type=\\"image/png\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/site/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"origin\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
@@ -3599,6 +3665,7 @@ Object {
     <link rel=\\"icon\\" href=\\"/content/images/size/w256h256/favicon.png\\" type=\\"image/png\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://localhost:65530/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
@@ -3638,6 +3705,7 @@ exports[`{{ghost_head}} helper without Code Injection does not inject count scri
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -3688,6 +3756,7 @@ Object {
 exports[`{{ghost_head}} helper without Code Injection does not return structured data on paginated author pages 1 1`] = `
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/author/authorname1/page/2/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
@@ -3701,6 +3770,7 @@ Object {
 exports[`{{ghost_head}} helper without Code Injection does not return structured data on paginated tag pages 1 1`] = `
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/tag/tagtitle/page/2/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
@@ -3715,6 +3785,7 @@ exports[`{{ghost_head}} helper without Code Injection implicit indexing settings
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost \\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
@@ -3729,6 +3800,7 @@ exports[`{{ghost_head}} helper without Code Injection injects comment count scri
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -3781,6 +3853,7 @@ exports[`{{ghost_head}} helper without Code Injection injects comment count scri
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -3832,6 +3905,7 @@ Object {
 exports[`{{ghost_head}} helper without Code Injection outputs structured data but not schema for custom collection 1 1`] = `
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/featured/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -3854,6 +3928,7 @@ Object {
 exports[`{{ghost_head}} helper without Code Injection returns canonical URL 1 1`] = `
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/about/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -3920,6 +3995,7 @@ exports[`{{ghost_head}} helper without Code Injection returns meta structured da
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site SEO description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -3970,6 +4046,7 @@ Object {
 exports[`{{ghost_head}} helper without Code Injection returns meta tag string even if safeVersion is invalid 1 1`] = `
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -3992,6 +4069,7 @@ Object {
 exports[`{{ghost_head}} helper without Code Injection returns meta tag string on paginated index page without structured data and schema 1 1`] = `
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/page/2/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
     <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
@@ -4005,6 +4083,7 @@ Object {
 exports[`{{ghost_head}} helper without Code Injection returns next & prev URL correctly for middle page 1 1`] = `
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/page/3/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <link rel=\\"prev\\" href=\\"http://localhost:65530/page/2/\\">
     <link rel=\\"next\\" href=\\"http://localhost:65530/page/4/\\">
@@ -4020,6 +4099,7 @@ Object {
 exports[`{{ghost_head}} helper without Code Injection returns next & prev URL correctly for second page 1 1`] = `
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/page/2/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     <link rel=\\"prev\\" href=\\"http://localhost:65530/\\">
     <link rel=\\"next\\" href=\\"http://localhost:65530/page/3/\\">
@@ -4036,6 +4116,7 @@ exports[`{{ghost_head}} helper without Code Injection returns structured data an
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"tag meta description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/tag/tagtitle/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4088,6 +4169,7 @@ exports[`{{ghost_head}} helper without Code Injection returns structured data an
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"Author bio\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/author/authorname/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4139,6 +4221,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site &quot;test&quot; description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://localhost:65530/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4219,6 +4302,7 @@ exports[`{{ghost_head}} helper without Code Injection returns structured data on
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4271,6 +4355,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://localhost:65530/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4352,6 +4437,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://localhost:65530/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4432,6 +4518,7 @@ exports[`{{ghost_head}} helper without Code Injection returns structured data on
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://localhost:65530/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4502,6 +4589,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://localhost:65530/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4574,6 +4662,7 @@ exports[`{{ghost_head}} helper without Code Injection returns structured data on
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/about/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4647,6 +4736,7 @@ exports[`{{ghost_head}} helper without Code Injection returns structured data on
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/about/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4721,6 +4811,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://localhost:65530/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4794,6 +4885,7 @@ exports[`{{ghost_head}} helper without Code Injection returns twitter and facebo
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://localhost:65530/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4861,6 +4953,7 @@ Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/post/\\">
     <link rel=\\"alternate\\" type=\\"text/markdown\\" href=\\"http://localhost:65530/post.md\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4938,6 +5031,7 @@ Object {
 exports[`{{ghost_head}} helper without Code Injection tag first page without meta and model description returns no description fields 1 1`] = `
 Object {
   "rendered": "<link rel=\\"canonical\\" href=\\"http://localhost:65530/tag/tagtitle/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">
@@ -4987,6 +5081,7 @@ exports[`{{ghost_head}} helper without Code Injection tag first page without met
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"tag description\\">
     <link rel=\\"canonical\\" href=\\"http://localhost:65530/tag/tagtitle/\\">
+    <meta name=\\"robots\\" content=\\"max-image-preview:large\\">
     <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
     
     <meta property=\\"og:site_name\\" content=\\"Ghost\\">

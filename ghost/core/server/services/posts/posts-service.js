@@ -307,14 +307,28 @@ class PostsService {
    * @returns {Promise<{successful: number, unsuccessful: number, editIds: string[]}>}
    */
   async #bulkAddTags(data, options) {
-    if (!options.transacting) {
-      return await this.models.Post.transaction(async (transacting) => {
-        return await this.#bulkAddTags(data, {
-          ...options,
-          transacting,
-        });
-      });
-    }
+    // The posts are found before the transaction and locked as its first statement, so the
+    // reads of their links that follow are current without being locking reads, whose gap
+    // locks would deadlock two bulk tag requests for different posts
+    const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
+    const run = (transacting) =>
+      this.#addTagsToPosts(
+        data,
+        postRows.map((post) => post.id),
+        { ...options, transacting },
+      );
+
+    return options.transacting
+      ? await run(options.transacting)
+      : await this.models.Post.transaction(run);
+  }
+
+  async #addTagsToPosts(data, selectedIds, options) {
+    // Adding tags changes the posts' relations, so lock them as an edit would
+    const lockedRows = await this.models.Post.lockForUpdate(selectedIds, {
+      transacting: options.transacting,
+    });
+    const postIds = lockedRows.map((post) => post.id);
 
     // The same tag can be passed more than once in a single request. Dedupe
     // before creating, otherwise a repeated name-only tag is created twice
@@ -362,9 +376,6 @@ class PostsService {
       tag.id = createdTag.id;
     }
 
-    const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
-    const postIds = postRows.map((post) => post.id);
-
     const tagIds = [...new Set(tags.map((tag) => tag.id))];
 
     // Posts in the selection may already carry the tag, filter those pairs out
@@ -406,15 +417,11 @@ class PostsService {
       await options.transacting('posts_tags').insert(postTags);
     }
 
-    await this.models.Post.addActions(
-      'edited',
-      postRows.map((p) => p.id),
-      options,
-    );
+    await this.models.Post.addActions('edited', postIds, options);
 
     return {
-      editIds: postRows.map((p) => p.id),
-      successful: postRows.length,
+      editIds: postIds,
+      successful: postIds.length,
       unsuccessful: 0,
     };
   }
@@ -434,12 +441,16 @@ class PostsService {
       });
     }
 
-    const postRows = await this.#getFilteredBulkPostQuery(options).select(
-      'posts.id',
-      'posts.status',
-    );
+    const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
     const deleteIds = postRows.map((row) => row.id);
-    const allDraft = postRows.length > 0 && postRows.every((row) => row.status === 'draft');
+
+    // The posts' relations are deleted before the posts, so lock them first.
+    // Statuses come from the locked rows, as a post can be published before the lock
+    const lockedRows = await this.models.Post.lockForUpdate(deleteIds, {
+      transacting: options.transacting,
+      columns: ['id', 'status'],
+    });
+    const allDraft = lockedRows.length > 0 && lockedRows.every((row) => row.status === 'draft');
 
     const postTablesToDelete = [
       'posts_authors',
@@ -512,6 +523,10 @@ class PostsService {
       tiers = data.tiers;
       delete data.tiers;
     }
+
+    // Before the update, which locks the posts in chunks of request order, so
+    // overlapping bulk updates can't lock them in different orders
+    await this.models.Post.lockForUpdate(editIds, { transacting: options.transacting });
 
     const result = await this.models.Post.bulkEdit(editIds, 'posts', {
       ...options,

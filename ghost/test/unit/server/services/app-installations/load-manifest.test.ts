@@ -126,6 +126,24 @@ describe('createManifestLoader', function () {
       }
       assert.equal(fetchFromApp.mock.calls.length, 0);
     });
+
+    it('refuses an address on one of Ghost’s own hosts, on any port, without fetching it', async function () {
+      const { loadManifest, fetchFromApp } = setup({
+        rules: { ...RULES, ghostUrls: ['https://site.example.com', 'https://admin.example.com/'] },
+      });
+
+      for (const manifestUrl of [
+        'https://site.example.com/content/files/ghost-app.json',
+        'https://site.example.com:8443/ghost-app.json',
+        'https://SITE.example.com./ghost-app.json',
+        'https://admin.example.com:8443/ghost-app.json',
+      ]) {
+        const err = await refusal(loadManifest(manifestUrl));
+        assert.equal(err.code, 'APP_MANIFEST_URL_INVALID', manifestUrl);
+        assert.match(err.context ?? '', /Ghost itself is served from, on any port/);
+      }
+      assert.equal(fetchFromApp.mock.calls.length, 0);
+    });
   });
 
   describe('fetching', function () {

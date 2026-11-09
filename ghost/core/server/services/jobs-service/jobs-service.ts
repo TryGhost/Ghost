@@ -216,6 +216,13 @@ export class JobsService {
         '[Jobs] services:jobs:outbox is enabled but the outbox is unavailable here (it needs MySQL); using the legacy direct-dispatch path.',
       );
     }
+
+    const backend = this.#backend.constructor.name;
+    const outboxEnabled = this.#outbox !== undefined;
+    this.#logging.info(
+      { system: { event: 'jobs.started', backend, outbox_enabled: outboxEnabled } },
+      `[Jobs] Started on ${backend} with the outbox ${outboxEnabled ? 'on' : 'off'}`,
+    );
   }
 
   async shutdown(options?: JobsShutdownOptions): Promise<void> {

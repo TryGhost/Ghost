@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
 import { isContainedPath } from '../bridge/rules.ts';
-import { isGhostOrigin } from './ghost-origin.ts';
 import { URL_MAX_LENGTH } from './limits.ts';
 import { isLocalhost } from './localhost.ts';
 
@@ -38,12 +37,10 @@ export function checkResolvedUrl(url: URL, allowLocalhost: boolean): string | nu
 }
 
 export interface UrlRules {
-  /** The URLs Ghost itself is served from, which no loaded URL may share an origin with. */
-  ghostUrls: string[];
   allowLocalhost: boolean;
   /**
-   * The address the manifest was fetched from, already checked, which the paths in it
-   * resolve against.
+   * The address the manifest was fetched from, already checked and so off Ghost's hosts,
+   * which the paths in it resolve against.
    */
   base: string;
 }
@@ -73,7 +70,7 @@ function isManifestItself(url: URL, base: string): boolean {
  * address the manifest was fetched from, so an app is one origin: the one Ghost fetches
  * the manifest from and challenges is the one every surface runs on. The manifest names
  * that address as its signed `manifest_url`, so the resolved URLs are as fixed as if they
- * were written out. A loaded URL never shares an origin with Ghost.
+ * were written out. `parseManifestUrl` keeps that origin off Ghost's hosts.
  *
  * `linkOnly` marks a URL that is only ever linked to, never loaded, which is absolute and
  * may be anywhere, the publisher's own site included.
@@ -84,7 +81,7 @@ function isManifestItself(url: URL, base: string): boolean {
  * names a host, and a `\` in the query or fragment is left as it is. Only the page is opened
  * as a route, but every URL Ghost loads is held to the one rule.
  */
-export function urlField({ ghostUrls, allowLocalhost, base }: UrlRules, linkOnly = false) {
+export function urlField({ allowLocalhost, base }: UrlRules, linkOnly = false) {
   if (linkOnly) {
     return z.string('Expected an absolute URL').transform((value, ctx) => {
       const url = URL.parse(value);
@@ -110,13 +107,6 @@ export function urlField({ ghostUrls, allowLocalhost, base }: UrlRules, linkOnly
     const problem = checkResolvedUrl(url, allowLocalhost);
     if (problem) {
       ctx.addIssue({ code: 'custom', message: problem });
-      return z.NEVER;
-    }
-    if (isGhostOrigin(url, ghostUrls)) {
-      ctx.addIssue({
-        code: 'custom',
-        message: 'Expected an address other than the one Ghost itself is served from',
-      });
       return z.NEVER;
     }
     if (!isContainedPath(`${url.pathname}${url.search}${url.hash}`)) {

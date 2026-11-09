@@ -248,7 +248,6 @@
         "ghost/core/server/services/staff/index.ts",
         "ghost/core/server/services/stats/index.ts",
         "ghost/core/server/services/stripe-checkout-config/index.ts",
-        "ghost/core/server/services/support-requests/index.ts",
         "ghost/core/server/services/tags-public/index.ts",
         "ghost/core/server/services/upgrades/index.ts",
         "ghost/core/server/services/users/index.ts",

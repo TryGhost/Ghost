@@ -1059,6 +1059,21 @@ describe('{{ghost_head}} helper', function () {
       );
     });
 
+    it('returns an injected large image preview tag as well', async function () {
+      getStub
+        .withArgs('codeinjection_head')
+        .returns('<meta name="robots" content="max-image-preview:large">');
+
+      await testGhostHead(
+        testUtils.createHbsResponse({
+          locals: {
+            context: ['paged', 'index'],
+            safeVersion: '0.3',
+          },
+        }),
+      );
+    });
+
     it('outputs post codeinjection as well', async function () {
       await testGhostHead(
         testUtils.createHbsResponse({

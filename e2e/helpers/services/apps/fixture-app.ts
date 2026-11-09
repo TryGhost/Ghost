@@ -145,8 +145,13 @@ export class FixtureApp extends FakeServer {
     };
   }
 
+  /**
+   * A name of its own under `.localhost`, as an app in development uses. Ghost refuses an app on
+   * its own host on any port, and Ghost is on `localhost`. The browser sends the name to this
+   * machine, and Ghost's container reaches it through the `host.docker.internal` alias.
+   */
   get origin(): string {
-    return `http://localhost:${this.port}`;
+    return `http://fixture-app.localhost:${this.port}`;
   }
 
   get manifestUrl(): string {

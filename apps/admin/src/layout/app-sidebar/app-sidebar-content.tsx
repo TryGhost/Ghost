@@ -12,29 +12,17 @@ import { useSidebarBannerState } from './hooks/use-sidebar-banner-state';
 import { ADMIN7_NAV_ICON_CLASS_NAME } from './nav-icon-class';
 
 interface AppSidebarContentProps {
-  /** Laid out for the floating sidebar: its own padding, banners in the flow. */
+  /** Laid out for the floating sidebar: its own padding, banners in the scrolling flow. */
   floating?: boolean;
 }
 
 function AppSidebarContent({ floating = false }: AppSidebarContentProps) {
-  const { banner, bannerType } = useSidebarBannerState();
+  const { banner } = useSidebarBannerState();
   // Admin 7 lists Ghost(Pro) with Settings, and moves Feedback and Help to
   // the account menu.
   const admin7Design = useFeatureFlag('admin7Design');
   // Eyebrows separate the groups with Apps on, so they sit closer together
   const groupGap = useFeatureFlag('apps') ? 'sidebar:gap-2' : 'sidebar:gap-4';
-  let bannerContainerClassName = '';
-
-  // Room for the banner floating over the sidebar's foot; an inline banner takes its own
-  if (floating) {
-    bannerContainerClassName = '';
-  } else if (bannerType === 'theme-errors') {
-    bannerContainerClassName = 'pb-[110px]';
-  } else if (bannerType === 'upgrade') {
-    bannerContainerClassName = 'pb-[254px]';
-  } else if (bannerType === 'whats-new') {
-    bannerContainerClassName = 'pb-[180px]';
-  }
 
   return (
     <SidebarContent
@@ -55,8 +43,9 @@ function AppSidebarContent({ floating = false }: AppSidebarContentProps) {
         <NavApps />
         {!admin7Design && <NavGhostPro />}
       </div>
-      <div className={cn('flex flex-col gap-2', groupGap, bannerContainerClassName)}>
-        <AppSidebarBanner banner={banner} inline={floating} />
+      <div className={cn('flex flex-col gap-2', groupGap)}>
+        {/* The full-height sidebar pins its banner above the footer instead */}
+        {floating && <AppSidebarBanner banner={banner} />}
         <NavSettings admin7Design={admin7Design} className="pb-0" />
       </div>
     </SidebarContent>

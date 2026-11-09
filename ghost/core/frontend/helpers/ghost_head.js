@@ -424,6 +424,7 @@ module.exports = async function ghost_head(options) {
           head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));
           head.push(writeMetaTag('referrer', 'same-origin', 'name'));
         } else {
+          head.push(writeMetaTag('robots', 'max-image-preview:large', 'name'));
           head.push(writeMetaTag('referrer', referrerPolicy, 'name'));
         }
       }

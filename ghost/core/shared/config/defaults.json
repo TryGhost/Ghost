@@ -9,6 +9,9 @@
     "redirects": true,
     "sessionMaxAgeMs": 15552000000
   },
+  "auth": {
+    "engine": "legacy"
+  },
   "externalRequest": {
     "keepAlive": true,
     "keepAliveMsecs": 60000,
@@ -203,12 +206,6 @@
     "email_preview_block": {
       "minWait": 360000,
       "maxWait": 360000,
-      "lifetime": 3600,
-      "freeRetries": 10
-    },
-    "support_request_block": {
-      "minWait": 3600000,
-      "maxWait": 3600000,
       "lifetime": 3600,
       "freeRetries": 10
     },

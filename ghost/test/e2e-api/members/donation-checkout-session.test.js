@@ -32,7 +32,6 @@ describe('Create Stripe Checkout Session for Donations', function () {
   });
 
   it('styles a donation checkout with the publisher design', async function () {
-    mockManager.mockLabsEnabled('stripeCheckoutDesign');
     await adminAgent
       .put('/stripe/checkout/config/')
       .body({

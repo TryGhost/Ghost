@@ -47,6 +47,8 @@ function addTableColumn(
     } else {
       column = tableBuilder[columnSpec.type](columnName, 191);
     }
+  } else if (columnSpec.type === 'dateTime' && Object.hasOwn(columnSpec, 'precision')) {
+    column = tableBuilder.dateTime(columnName, { precision: columnSpec.precision });
   } else {
     column = tableBuilder[columnSpec.type](columnName);
   }

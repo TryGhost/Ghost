@@ -9,6 +9,7 @@ import {
   member,
   renderAdminApp,
   settleAnimations,
+  settleRequests,
 } from '@test-utils/acceptance';
 import { importMembersScreen } from './import-members.screen';
 import { membersScreen } from './members.screen';
@@ -210,6 +211,29 @@ describe('Import members custom fields', () => {
         .not.toBeInTheDocument();
     });
 
+    it('refuses a list for a column whose answers differ only by case', async () => {
+      const createApi = fakeSiteCreatingLists();
+      await renderAdminApp('/members', FLAGS);
+      await openMappingStep(
+        'email,name,topics\nada@example.com,Ada,Film | Travel\ngrace@example.com,Grace,film\n',
+      );
+
+      await openCreateForm('topics');
+      const form = createForm();
+      await form.getByLabelText('Type').click();
+      await page.getByRole('option', { name: /List/ }).click();
+
+      // An answer has to match an option exactly, and a list can't offer both spellings, so the
+      // import would refuse the rows of whichever spelling the list left out.
+      const refusal = form.getByText(
+        'A list can’t offer both “Film” and “film”, and this column holds both.',
+      );
+      await expect.element(refusal).toBeVisible();
+      await form.getByRole('button', { name: 'Save' }).click();
+      await expect.element(refusal).toBeVisible();
+      expect(createApi.requests).toHaveLength(0);
+    });
+
     it('refuses a list for a column with more answers than a list can offer', async () => {
       const createApi = fakeSiteCreatingLists();
       await renderAdminApp('/members', FLAGS);
@@ -228,6 +252,26 @@ describe('Import members custom fields', () => {
       await expect.element(form.getByRole('button', { name: /^Remove / })).not.toBeInTheDocument();
       await form.getByRole('button', { name: 'Save' }).click();
       await expect.element(refusal).toBeVisible();
+      expect(createApi.requests).toHaveLength(0);
+    });
+
+    it('stays open when Enter confirms text an input method is composing in an option', async () => {
+      const createApi = fakeSiteCreatingLists();
+      await renderAdminApp('/members', FLAGS);
+      await openMappingStep(TOPICS_CSV);
+
+      await openCreateForm('topics');
+      const form = createForm();
+      const option = form.getByLabelText('Option 1');
+      await expect.element(option).toHaveValue('Film');
+      option
+        .element()
+        .dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'Enter', isComposing: true, bubbles: true }),
+        );
+
+      await settleRequests();
+      await expect.element(form).toBeVisible();
       expect(createApi.requests).toHaveLength(0);
     });
   });

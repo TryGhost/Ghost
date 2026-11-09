@@ -50,7 +50,7 @@ import {
 } from './lib/app-path';
 import { createAdminApiFetch } from './lib/bridge-fetch';
 import { placeRoute } from './lib/bridge-places';
-import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostOrigin } from './lib/frame';
+import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostHost } from './lib/frame';
 import {
   isInstallationNotFound,
   isSessionsRouteMissing,
@@ -346,8 +346,8 @@ const AppFrame: React.FC<{
 };
 
 /**
- * The page of an app that shouldn't be framed: it's on Ghost's own address, so it would
- * be Ghost, not the app. Nothing of it loads.
+ * The page of an app that shouldn't be framed: it's on Ghost's own host, so it would be
+ * Ghost, or be sent Ghost's cookies. Nothing of it loads.
  */
 const NotFramed: React.FC<{ installation: AppInstallation }> = ({ installation }) => (
   <Centered testId="app-not-framed">
@@ -357,7 +357,7 @@ const NotFramed: React.FC<{ installation: AppInstallation }> = ({ installation }
           <Link to="/apps">Back to Apps</Link>
         </Button>
       }
-      description="Its page is at the same address as Ghost, which Admin doesn’t show. Reinstall the app from its own address."
+      description="Its page is on the same host as Ghost, which Admin doesn’t show, even on another port. Reinstall the app from its own host."
       title={`${installation.manifest.name} can’t open here`}
     >
       <LucideIcon.ShieldOff />
@@ -367,11 +367,11 @@ const NotFramed: React.FC<{ installation: AppInstallation }> = ({ installation }
 
 /**
  * An active app loads in its frame, once its page is known to be somewhere other than
- * Ghost: Admin's own address, or the site's, which Admin may be served from too. Nothing
+ * Ghost: Admin's own host, or the site's, which Admin may be served from too. Nothing
  * is framed until the site's address is known, so the check can't be skipped by timing,
  * or by the site's address failing to load. Nothing is framed before the staff user is known
- * either, so the app never starts without knowing who is using it. The origin check applies
- * to the URL the frame starts from; `isGhostOrigin` describes what it doesn't cover.
+ * either, so the app never starts without knowing who is using it. The host check applies
+ * to the URL the frame starts from; `isGhostHost` describes what it doesn't cover.
  */
 const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
   session,
@@ -422,7 +422,7 @@ const ActiveApp: React.FC<{ session: AppSession; onEnded: () => void }> = ({
     );
   }
   const ghostUrls = [window.location.href, site.data.site.url];
-  if (isGhostOrigin(appPageUrl(installation.manifest), ghostUrls)) {
+  if (isGhostHost(appPageUrl(installation.manifest), ghostUrls)) {
     return <NotFramed installation={installation} />;
   }
   const { settings: values } = settings.data;

@@ -53,7 +53,6 @@ describe('Stripe Checkout Preview Admin API', function () {
 
   beforeEach(function () {
     mockManager.mockStripe();
-    mockManager.mockLabsEnabled('stripeCheckoutDesign');
   });
 
   afterEach(async function () {
@@ -211,19 +210,13 @@ describe('Stripe Checkout Preview Admin API', function () {
     assert.equal(stripeMocker.checkoutSessions.length, 0);
   });
 
-  it('is not found while its flag is off', async function () {
-    mockManager.mockLabsDisabled('stripeCheckoutDesign');
-
-    await preview({ tier_id: paidTierId, design: { customize: false } }, 404);
-  });
-
   describe('Permissions', function () {
     const body = () => ({ tier_id: paidTierId, design: { customize: false } });
 
     // Each sign-in counts towards the login attempt limit, so clear it before signing the
     // owner back in.
     afterEach(async function () {
-      await dbUtils.truncate('brute');
+      await dbUtils.truncate('rate_limits');
       await agent.loginAsOwner();
     });
 

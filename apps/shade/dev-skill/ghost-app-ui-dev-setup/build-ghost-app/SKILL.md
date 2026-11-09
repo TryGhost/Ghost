@@ -19,11 +19,17 @@ files up into this folder and remove the subfolder.
 1. **SDK.** `@tryghost/app-sdk` isn't on npm yet. Install it from the folder:
    `npm install ./vendor/tryghost-app-sdk.tgz`. It brings its one dependency,
    `@quilted/threads`.
-2. **Fixed port.** In `vite.config.ts`, set
+2. **Fixed port, own name.** In `vite.config.ts`, set
    `server: { port: 5190, strictPort: true }`. The install link depends on the
-   port.
+   port. Open the app as `my-app.localhost`, not `localhost`: Ghost is on
+   `localhost`, and refuses an app on its own host on any port, since browsers
+   send its cookies to every port. A name under `.localhost` counts as another
+   host, and browsers, Vite and Ghost all send it to this machine with no setup.
+   Only if Ghost runs in Docker on Linux, with `pnpm dev:docker`, its container
+   reaches the app through the Docker bridge, not loopback, so also set
+   `host: '0.0.0.0'`. That makes the dev server reachable from your network too.
 3. **Manifest.** Serve it as `public/ghost-app.json`, so it's at
-   `http://localhost:5190/ghost-app.json`:
+   `http://my-app.localhost:5190/ghost-app.json`:
 
    ```json
    {
@@ -60,7 +66,7 @@ files up into this folder and remove the subfolder.
    }
    ```
 
-   Opened directly at `http://localhost:5190/`, the page isn't framed, so it
+   Opened directly at `http://my-app.localhost:5190/`, the page isn't framed, so it
    shows only that message. That's expected.
 
 5. **Theme.** `ghost.theme.mode` is `'light'` or `'dark'`, and
@@ -70,7 +76,7 @@ files up into this folder and remove the subfolder.
    skill, at its "Light and dark theme" step.
 6. **Install link.** With `npm run dev` running, the publisher installs the app
    from:
-   `http://localhost:2368/ghost/#/apps/install?manifest=http%3A%2F%2Flocalhost%3A5190%2Fghost-app.json`
+   `http://localhost:2368/ghost/#/apps/install?manifest=http%3A%2F%2Fmy-app.localhost%3A5190%2Fghost-app.json`
 
 ## Hand over
 
