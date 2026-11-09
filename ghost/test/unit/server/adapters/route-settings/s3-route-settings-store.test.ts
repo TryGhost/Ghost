@@ -348,7 +348,7 @@ describe('S3RouteSettingsStore', function () {
             assert.equal(err.message, 'Something went wrong, please try again.');
             assert.doesNotThrow(() => errorUtils.prepareStackForUser(err as Error));
             // The S3 failure is still diagnosable from the logs.
-            assert.match(String(err.stack), /Caused by: AccessDenied: Access Denied/);
+            assert.match(String(err.stack), /^AccessDenied: Access Denied\n/);
             return true;
           },
         );
