@@ -113,7 +113,9 @@ describe('Spam Prevention', function () {
         .filter(({ configKey }) => configKey)
         .map(({ configKey }, index) => [configKey, fakeSpamConfig((index + 1) * 10)]),
     );
-    configUtils.set('spam', spam);
+    for (const [block, settings] of Object.entries(spam)) {
+      configUtils.set(`spam:${block}`, settings);
+    }
 
     spamPrevention.reset();
 
@@ -169,11 +171,11 @@ describe('Spam Prevention', function () {
   });
 
   it('reset clears cached limiters and reloads spam configuration', function () {
-    configUtils.set('spam', { content_api_key: fakeSpamConfig(10) });
+    configUtils.set('spam:content_api_key', fakeSpamConfig(10));
     spamPrevention.reset();
     const first = build('contentApiKey');
 
-    configUtils.set('spam', { content_api_key: fakeSpamConfig(20) });
+    configUtils.set('spam:content_api_key', fakeSpamConfig(20));
     spamPrevention.reset();
     const second = build('contentApiKey');
 

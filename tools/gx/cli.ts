@@ -148,6 +148,14 @@ cli.command({
   desc: 'Run development benchmarks.',
   setup(group) {
     group.command({
+      flags: 'automations-drain',
+      desc: 'Measure automation queue drain throughput.',
+      run() {
+        commandRun = true;
+        runGhostCommand('./benchmark-automations-drain.ts', args.slice(2), true);
+      },
+    });
+    group.command({
       flags: 'recipient-preparation',
       desc: 'Measure email recipient preparation with synthetic members.',
       run() {
