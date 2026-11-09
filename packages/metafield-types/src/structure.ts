@@ -201,6 +201,15 @@ export function optionText(option: string): string {
   return option.trim().normalize('NFC');
 }
 
+/**
+ * What two options are compared by to tell whether they are the same option: their text as
+ * `optionText` tidies it, without regard to case. A list offers each option once, so it can't
+ * offer both "Podcasts" and "podcasts".
+ */
+export function optionKey(option: string): string {
+  return optionText(option).toLowerCase();
+}
+
 /** The answers among `held` that a set field offers, in the order it offers them. */
 export function inOptionOrder(settings: SetSettings, held: readonly unknown[]): string[] {
   return settings.options.filter((option) => held.includes(option));

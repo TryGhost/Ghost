@@ -387,6 +387,34 @@ describe('metafield-types catalog', function () {
       assert.equal(refusedProperty(result.error?.issues[0]?.path ?? []), 'settings.options.1');
     });
 
+    // The option that repeats an earlier one is the one to change, so the refusal points at it
+    // rather than at the list as a whole.
+    it('refuses a repeated option on the option that repeats an earlier one, whatever its case', function () {
+      const result = TypedSettingsInputSchema.safeParse({
+        type: 'list',
+        settings: { options: ['Dog', 'Cat', ' dog'], multiple: true },
+      });
+      assert.deepEqual(
+        result.error?.issues.map((issue) => [refusedProperty(issue.path), issue.message]),
+        [['settings.options.2', 'This option already exists.']],
+      );
+    });
+
+    // An emptied option already asks for its text, so two emptied options aren't also repeats.
+    it('asks only for text when two options are empty', function () {
+      const result = TypedSettingsInputSchema.safeParse({
+        type: 'list',
+        settings: { options: ['', 'Dog', ' '], multiple: true },
+      });
+      assert.deepEqual(
+        result.error?.issues.map((issue) => [refusedProperty(issue.path), issue.message]),
+        [
+          ['settings.options.0', 'Enter text for each option.'],
+          ['settings.options.2', 'Enter text for each option.'],
+        ],
+      );
+    });
+
     const reasonFor = (
       type: FieldTypeOfShape<'scalar' | 'record'>,
       value: unknown,
