@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { customFieldAddressing } from './addressing';
 import { parseFilterToAst } from '@/shared/filters';
+import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 
 function ast(filter: string) {
   const node = parseFilterToAst(filter);
@@ -13,28 +14,31 @@ function ast(filter: string) {
 }
 
 describe('customFieldAddressing bound to a key', () => {
-  const bound = customFieldAddressing({ namespace: 'custom', key: 'shipping' });
+  const bound = customFieldAddressing({
+    namespace: CUSTOM_NAMESPACE,
+    key: KeySchema.parse('shipping'),
+  });
 
   it('claims a compound naming its own key', () => {
     expect(
-      bound.matchCompound?.(ast("(metafields.key:'custom.shipping'+metafields.value:~'x')")),
+      bound.matchCompound?.(ast("(metafields.identity:'custom.shipping'+metafields.value:~'x')")),
     ).not.toBeNull();
   });
 
   it('refuses a compound naming another field', () => {
     expect(
-      bound.matchCompound?.(ast("(metafields.key:'custom.billing'+metafields.value:~'x')")),
+      bound.matchCompound?.(ast("(metafields.identity:'custom.billing'+metafields.value:~'x')")),
     ).toBeNull();
   });
 
-  it('refuses a lone key clause naming another field', () => {
-    expect(bound.matchCompound?.(ast("metafields.key:'custom.billing'"))).toBeNull();
+  it('refuses a lone identity clause naming another field', () => {
+    expect(bound.matchCompound?.(ast("metafields.identity:'custom.billing'"))).toBeNull();
   });
 
   it('leaves other fields readable by the unbound template', () => {
     const template = customFieldAddressing();
     expect(
-      template.matchCompound?.(ast("(metafields.key:'custom.billing'+metafields.value:~'x')")),
+      template.matchCompound?.(ast("(metafields.identity:'custom.billing'+metafields.value:~'x')")),
     ).not.toBeNull();
   });
 });

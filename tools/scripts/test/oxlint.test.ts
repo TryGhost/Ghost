@@ -28,7 +28,7 @@ interface Diagnostic {
   labels: { span: { line: number; column: number } }[];
 }
 
-function lint(
+function runLint(
   code: string,
   filename: string,
   allOff = false,
@@ -52,7 +52,7 @@ function lint(
       path.join(cwd, '.dependency-cruiser.cjs'),
       boundarySource ?? readFileSync(path.join(root, '.dependency-cruiser.cjs')),
     );
-    const resolver = 'tools/scripts/lib/service-dependency-resolver.mjs';
+    const resolver = 'tools/scripts/ci/service-dependency-resolver.mjs';
     mkdirSync(path.dirname(path.join(cwd, resolver)), { recursive: true });
     cpSync(path.join(root, resolver), path.join(cwd, resolver));
     mkdirSync(path.join(cwd, 'node_modules'), { recursive: true });
@@ -84,18 +84,58 @@ function lint(
       },
     );
     assert.ifError(result.error);
-    assert.equal(result.stderr, '');
-    assert.ok(result.status === 0 || result.status === 1, result.stdout);
-    assert.ok(result.stdout.trimStart().startsWith('{'), result.stdout);
-    const output = JSON.parse(result.stdout) as {
-      diagnostics: Diagnostic[];
-      number_of_rules: number;
-    };
-    return { ...output, status: result.status };
+    return result;
   } finally {
     rmSync(cwd, { recursive: true, force: true });
   }
 }
+
+function lint(...args: Parameters<typeof runLint>) {
+  const result = runLint(...args);
+  assert.equal(result.stderr, '');
+  assert.ok(result.status === 0 || result.status === 1, result.stdout);
+  assert.ok(result.stdout.trimStart().startsWith('{'), result.stdout);
+  const output = JSON.parse(result.stdout) as {
+    diagnostics: Diagnostic[];
+    number_of_rules: number;
+  };
+  return { ...output, status: result.status };
+}
+
+test('explains missing or malformed service dependency policy', () => {
+  for (const policy of [
+    {},
+    { forbidden: {} },
+    { forbidden: [] },
+    { forbidden: [{ name: 'renamed-service-dependencies' }] },
+    { forbidden: [{ name: 'service-dependencies', to: { pathNot: [] } }] },
+    { forbidden: [{ name: 'service-dependencies', from: { path: 42 }, to: { pathNot: [] } }] },
+    { forbidden: [{ name: 'service-dependencies', from: { path: '^services/' } }] },
+    {
+      forbidden: [
+        { name: 'service-dependencies', from: { path: '^services/' }, to: { pathNot: '' } },
+      ],
+    },
+    {
+      forbidden: [
+        { name: 'service-dependencies', from: { path: '^services/' }, to: { pathNot: [42] } },
+      ],
+    },
+  ]) {
+    const result = runLint(
+      '',
+      'ghost/core/server/example.ts',
+      false,
+      undefined,
+      `module.exports = ${JSON.stringify(policy)};`,
+    );
+    assert.equal(result.status, 1);
+    assert.match(
+      result.stdout + result.stderr,
+      /ghost\/no-injected-service-libraries: \.dependency-cruiser\.cjs must define service-dependencies with a string from\.path and a string array to\.pathNot/,
+    );
+  }
+});
 
 test('all categories are off and custom rules report JS/TS violations', () => {
   assert.ok(Object.values(config.categories).every((value) => value === 'off'));
@@ -454,6 +494,21 @@ test('reports direct allowlisted bindings and members passed to local service co
   assert.ok(result.diagnostics.some((d) => d.message.includes('Import @tryghost/tpl directly')));
 });
 
+test('keeps security primitives directly imported rather than injected into services', () => {
+  const result = lint(
+    `
+    import Service from './service';
+    import security from '@tryghost/security';
+    new Service({encode: security.url.encodeBase64});
+    `,
+    serviceRoot,
+  );
+  assert.equal(result.status, 1);
+  assert.equal(result.diagnostics.length, 1);
+  assert.equal(result.diagnostics[0]?.code, injectionCode);
+  assert.ok(result.diagnostics[0]?.message.includes('Import @tryghost/security directly'));
+});
+
 test('allows local library use, computed values, injected application dependencies and shadowed bindings', () => {
   const result = lint(
     `
@@ -538,6 +593,44 @@ test('shares the dependency-cruiser allowlist, including exact local files and p
   assert.ok(result.diagnostics.some((d) => d.message.includes('node:os')));
 });
 
+test('recognizes exact JavaScript library paths without approving siblings', () => {
+  const allowances = [
+    String.raw`^ghost/core/server/lib/fixture-helper\.js$`,
+    String.raw`^fixture-library$|(^|/)node_modules/fixture-library/index\.js$`,
+  ];
+  const boundarySource = readFileSync(path.join(root, '.dependency-cruiser.cjs'), 'utf8').replace(
+    'const serviceDependencyAllowlist = [',
+    () =>
+      `const serviceDependencyAllowlist = [${allowances.map((pattern) => JSON.stringify(pattern)).join(',')},`,
+  );
+  const libraries = [
+    '../../lib/fixture-helper',
+    '../../lib/fixture-helper.js',
+    'fixture-library',
+    'fixture-library/index',
+    'fixture-library/index.js',
+  ];
+  const siblings = [
+    '../../lib/fixture-helper-extra',
+    'fixture-library/other',
+    'fixture-library-extra',
+  ];
+  const source = `
+    import Service from './service';
+    ${[...libraries, ...siblings].map((name, i) => `import dep${i} from '${name}';`).join('\n')}
+    new Service({${[...libraries, ...siblings].map((_, i) => `dep${i}`).join(',')}});
+  `;
+  const result = lint(source, serviceRoot, false, undefined, boundarySource);
+  assert.equal(result.status, 1);
+  assert.equal(result.diagnostics.length, libraries.length);
+  for (const library of libraries) {
+    assert.ok(
+      result.diagnostics.some((d) => d.message.includes(`Import ${library} directly`)),
+      library,
+    );
+  }
+});
+
 test('keeps the guard bounded to direct constructor wiring and supports explicit exceptions', () => {
   const result = lint(
     `
@@ -573,4 +666,96 @@ test('handles TypeScript require imports and literal dynamic imports', () => {
   assert.equal(result.status, 1);
   assert.equal(result.diagnostics.length, 3);
   assert.ok(result.diagnostics.every((d) => d.code === injectionCode));
+});
+
+const canonicalCode = 'ghost(prefer-canonical-types)';
+const canonicalFile = 'ghost/core/server/services/alpha/alpha-service';
+
+test('flags hand-written logger shapes whatever they are called', () => {
+  const source = [
+    'type Logging = {',
+    '  info(...args: unknown[]): void;',
+    '  error(...args: unknown[]): void;',
+    '};',
+    'interface Logger {',
+    '  warn(message: string): void;',
+    '}',
+    'type Reporter = { debug: (message: string) => void; fatal: Function };',
+    'type Deps = { logging: { trace(message: string): void } };',
+  ].join('\n');
+  const result = lint(source, `${canonicalFile}.ts`);
+  assert.equal(result.status, 1);
+  assert.ok(result.diagnostics.every((d) => d.code === canonicalCode && d.severity === 'error'));
+  assert.deepEqual(
+    result.diagnostics.map((d) => d.labels[0]?.span.line).sort((a, b) => a! - b!),
+    [1, 5, 8, 9],
+  );
+  assert.ok(
+    result.diagnostics.every((d) =>
+      d.message.includes("import type { GhostLogger } from '@tryghost/logging'"),
+    ),
+  );
+});
+
+test('allows the library logger type and shapes that are not loggers', () => {
+  const source = [
+    "import type { GhostLogger } from '@tryghost/logging';",
+    "type Deps = { logging: Pick<GhostLogger, 'info' | 'error'>; other: GhostLogger };",
+    'type Failure = { error: string; info: { code: number } };',
+    'type Store = { info(): void; get(key: string): unknown };',
+    'interface Extended extends Deps { warn(message: string): void }',
+    'type Empty = {};',
+  ].join('\n');
+  assert.deepEqual(lint(source, `${canonicalFile}.ts`).diagnostics, []);
+});
+
+test('flags JSDoc logger shapes in JavaScript but not library or data types', () => {
+  const source = [
+    '/**',
+    ' * @param {{info: (message: string) => unknown, warn: Function}} logging',
+    " * @param {Pick<import('@tryghost/logging').GhostLogger, 'info'>} other",
+    ' * @param {{id: string, error: {code: number; message: string} | null}} event',
+    ' * @param {{logging: {error(err: unknown): void}, name: string}} deps',
+    ' * @param {{',
+    ' *   info: Function,',
+    ' *   warn(message: string): void',
+    ' * }} multiline',
+    ' * @param {{',
+    ' *   warn(message: string):',
+    " *     import('./result').Result",
+    ' *   error: (message: string)',
+    ' *     => void',
+    ' * }} newlines',
+    ' * @param {{',
+    ' *   info(): void',
+    ' *   get(): string',
+    ' * }} mixed',
+    ' * @param {{',
+    ' *   warn(): void',
+    ' *   import(file: string): void',
+    ' * }} importer',
+    ' */',
+    'function example(logging, other, event, deps, multiline, newlines, mixed, importer) {}',
+  ].join('\n');
+  const result = lint(source, `${canonicalFile}.js`);
+  assert.equal(result.status, 1);
+  assert.deepEqual(
+    result.diagnostics.map((d) => [d.code, d.labels[0]?.span.line]),
+    [
+      [canonicalCode, 2],
+      [canonicalCode, 5],
+      [canonicalCode, 6],
+      [canonicalCode, 10],
+    ],
+  );
+  assert.ok(
+    result.diagnostics.every((d) => d.message.includes("import('@tryghost/logging').GhostLogger")),
+  );
+});
+
+test('limits canonical type checks to Ghost Core', () => {
+  const source = 'type Logging = { info(message: string): void };';
+  assert.equal(lint(source, `${canonicalFile}.ts`).status, 1);
+  assert.equal(lint(source, 'ghost/test/utils/example.ts').status, 0);
+  assert.equal(lint(source, 'apps/admin/src/example.ts').status, 0);
 });

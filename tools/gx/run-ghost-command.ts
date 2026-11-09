@@ -2,7 +2,12 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 // Run Core-dependent tools with the checkout's existing development environment.
-export function runGhostCommand(file: string, args: string[], source = false) {
+export function runGhostCommand(
+  file: string,
+  args: string[],
+  source = false,
+  nodeArgs: string[] = [],
+) {
   const ghostDir = fileURLToPath(new URL('../../ghost', import.meta.url));
   const runner = fileURLToPath(new URL('../scripts/with-ghost-dev-env.ts', import.meta.url));
   const command = fileURLToPath(new URL(file, import.meta.url));
@@ -12,6 +17,7 @@ export function runGhostCommand(file: string, args: string[], source = false) {
       runner,
       process.execPath,
       ...(source ? ['--conditions=source'] : []),
+      ...nodeArgs,
       '--import',
       import.meta.resolve('tsx'),
       command,

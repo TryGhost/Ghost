@@ -86,12 +86,5 @@ module.exports = function getConfigProperties() {
     };
   }
 
-  if (config.get('docsbot')) {
-    configProperties.docsbot = {
-      enabled: config.get('docsbot:enabled'),
-      id: config.get('docsbot:id'),
-    };
-  }
-
   return configProperties;
 };

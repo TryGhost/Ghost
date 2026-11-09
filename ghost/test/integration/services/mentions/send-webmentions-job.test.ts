@@ -53,8 +53,7 @@ describe('Job: Send webmentions', function () {
     await getJobsService().dispatch(
       new SendWebmentionsJob({
         sourceUrl: 'http://127.0.0.1:2369/source-post/',
-        html: `<a href="${targetUrl.href}">linked</a>`,
-        previousHtml: null,
+        links: [targetUrl.href],
       }),
     );
 
@@ -86,8 +85,7 @@ describe('Job: Send webmentions', function () {
     await getJobsService().dispatch(
       new SendWebmentionsJob({
         sourceUrl: 'http://127.0.0.1:2369/source-post/',
-        html: `<a href="${brokenUrl.href}">broken</a><a href="${targetUrl.href}">linked</a>`,
-        previousHtml: null,
+        links: [brokenUrl.href, targetUrl.href],
       }),
     );
 

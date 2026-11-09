@@ -3,6 +3,8 @@ import type { Knex } from 'knex';
 import MembersCSVImporter from '../../../../../../../core/server/services/members/import-export/import/importer';
 import MembersImportJob from '../../../../../../../core/server/services/members/jobs/members-import-job';
 import type { MemberImportRow } from '../../../../../../../core/server/services/members/import-export/import/row';
+import { createTracer } from '../../../../../../../core/server/lib/tracing/create-tracer';
+import { importExportTracking } from '../../../../../../../core/server/services/members/import-export/tracking';
 
 const errors = require('@tryghost/errors');
 
@@ -153,6 +155,9 @@ function harness(
     },
     getTimezone: () => 'Etc/UTC',
     getInlineThreshold: () => inlineThreshold,
+    tracking: importExportTracking(
+      createTracer({ transport: { metric: async () => null }, logging: { error() {} } }),
+    ),
   };
 
   const importer = new MembersCSVImporter(deps);

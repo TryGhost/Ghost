@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$(git rev-parse --show-toplevel)/tools/scripts/dev-session-end.ts\"",
+            "command": "node \"$(git rev-parse --show-toplevel)/tools/gx/dev-session-end.ts\"",
             "timeout": 3
           }
         ]

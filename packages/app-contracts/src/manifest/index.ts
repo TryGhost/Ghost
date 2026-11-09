@@ -5,21 +5,18 @@
  * Ghost core checks the address a manifest is read from with `parseManifestUrl` before
  * fetching it, validates every manifest it accepts with `parseManifest`, and reads one it
  * has kept back with `AppManifestSchema`. Admin parses none: it acts on what the Admin API
- * hands over, and re-checks only the rule the app's sandbox depends on, `isGhostOrigin`, as
- * the site's or Admin's URL can change after a manifest was accepted.
+ * hands over, and re-checks only the rule that keeps an app's page off Ghost's own hosts,
+ * `isGhostHost`, as the site's or Admin's URL can change after a manifest was accepted, and
+ * an older Ghost refused only their exact origins.
  *
  * The format is unversioned while only Ghost builds apps.
  */
 
-export {
-  compareManifests,
-  type ManifestChange,
-  type ManifestComparison,
-  type ManifestVersion,
-} from './compare.ts';
-export { isGhostOrigin } from './ghost-origin.ts';
+export { compareManifests, type ManifestChange, type ManifestComparison } from './compare.ts';
+export { isGhostHost } from './ghost-host.ts';
 export { APP_ID_MAX_LENGTH, isValidAppId } from './id.ts';
 export type { AppIcon } from './icon.ts';
+export type { PublicKeyJwk } from './keys.ts';
 export { URL_MAX_LENGTH } from './limits.ts';
 export {
   parseManifest,
@@ -36,11 +33,4 @@ export {
   type AppSurfaceType,
 } from './schema.ts';
 export { isLocalhost } from './localhost.ts';
-export {
-  appPageUrl,
-  isDevelopmentApp,
-  movedBetween,
-  servedFrom,
-  type AppMove,
-  type ServedManifest,
-} from './served-from.ts';
+export { appPageUrl, movedBetween, servedFrom, type AppMove } from './served-from.ts';

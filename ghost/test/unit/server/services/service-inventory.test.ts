@@ -27,10 +27,20 @@ const recordedContract = z
     tests: z.array(description),
   })
   .strict();
+const dependencyAssessment = z
+  .object({
+    complexity: z.enum(['straightforward', 'complex', 'not-applicable']),
+    reason: description,
+    preparation: z.array(description),
+    reviewedAt: z.string().regex(/^[0-9a-f]{40}$/),
+    sources: z.array(description).min(1),
+  })
+  .strict();
 const migration = z
   .object({
     complexity: z.enum(['straightforward', 'complex', 'not-applicable']),
     modelImpact: z.enum(['fits', 'may-change', 'not-applicable']),
+    dependencies: dependencyAssessment.optional(),
     reason: description,
     reviewedAt: z.string().regex(/^[0-9a-f]{40}$/),
     sources: z.array(description).min(1),
@@ -49,7 +59,8 @@ const extraSchema = z
 const entry = z
   .object({
     kind: z.enum(['directory', 'file']),
-    disposition: z.enum(['retain', 'relocate', 'review']),
+    disposition: z.enum(['migrate', 'relocate', 'split', 'review']),
+    futureHome: description.optional(),
     status: z.enum(['pending', 'auditing', 'audited']),
     migrated: z.literal(true).optional(),
     extras: z.record(description, extraSchema).optional(),
@@ -219,10 +230,31 @@ describe('service migration inventory', function () {
       }
       if (service.migrated) {
         assert.notEqual(
+          service.disposition,
+          'relocate',
+          'A migrated service cannot be marked for relocation',
+        );
+        assert.notEqual(
           service.migration.complexity,
           'not-applicable',
           'A migrated service cannot be classified as a non-service',
         );
+      }
+      const dependencies = service.migration.dependencies;
+      if (!service.migrated) {
+        assert.ok(dependencies, 'Unmigrated entries need a dependency assessment');
+      }
+      if (dependencies) {
+        if (dependencies.complexity === 'not-applicable') {
+          assert.equal(
+            service.migration.complexity,
+            'not-applicable',
+            'Only confirmed non-services can skip dependency migration assessment',
+          );
+        }
+        for (const source of dependencies.sources) {
+          assertFileWithin(coreRoot, source);
+        }
       }
       for (const extra of Object.values(service.extras ?? {})) {
         for (const caller of extra.callers) {

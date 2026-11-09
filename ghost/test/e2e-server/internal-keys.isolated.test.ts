@@ -10,16 +10,19 @@ const db = require('../../core/server/data/db');
 const { AdminAPITestAgent } = require('../utils/agents');
 const adapterManager = require('../../core/server/services/adapter-manager').default;
 // Retain the same root and frontend consumer that boot and authentication use.
-const internalKeys: InternalKeys = require('../../core/server/services/internal-keys').default;
+const internalKeysRoot = require('../../core/server/services/internal-keys')
+  .default as typeof import('../../core/server/services/internal-keys').default;
 const { getFrontendKey } = require('../../core/frontend/services/proxy');
 
 describe('Internal keys through cold boot and authentication reset', function () {
   let agents: Awaited<ReturnType<typeof agentProvider.getAgentsWithFrontend>> | undefined;
   const sandbox = sinon.createSandbox();
+  let internalKeys: InternalKeys;
 
   beforeAll(async function () {
     configUtils.set('sentry:disabled', true);
     agents = await agentProvider.getAgentsWithFrontend();
+    internalKeys = internalKeysRoot.service;
     await fixtureManager.init('users');
     await agents.adminAgent.loginAsOwner();
   });

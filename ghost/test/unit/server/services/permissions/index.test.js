@@ -1,64 +1,17 @@
 const assert = require('node:assert/strict');
-const { assertExists } = require('../../../../utils/assertions');
 const sinon = require('sinon');
-const testUtils = require('../../../../utils');
 const _ = require('lodash');
-const models = require('../../../../../core/server/models');
 const actionsMap = require('../../../../../core/server/services/permissions/actions-map-cache');
+const rolePermissions = require('../../../../../core/server/services/permissions/role-permissions');
+const {
+  permissions: permissionData,
+} = require('../../../../../core/server/services/permissions/permissions-data');
 const permissions = require('../../../../../core/server/services/permissions');
 
 describe('Permissions', function () {
-  let fakePermissions = [];
-
-  beforeEach(function () {
-    sinon.stub(models.Permission, 'findAll').callsFake(function () {
-      return Promise.resolve(models.Permissions.forge(fakePermissions));
-    });
-
-    sinon.stub(models.Post, 'findOne').callsFake(function () {
-      return Promise.resolve(models.Post.forge(testUtils.DataGenerator.Content.posts[0]));
-    });
-
-    sinon.stub(models.Tag, 'findOne').callsFake(function () {
-      return Promise.resolve({});
-    });
-  });
-
   afterEach(function () {
     sinon.restore();
   });
-
-  /**
-   * Default test actionMap looks like this:
-   * {
-   *   browse: [ 'post' ],
-   *   edit: [ 'post', 'tag', 'user', 'page' ],
-   *   add: [ 'post', 'user', 'page' ],
-   *   destroy: [ 'post', 'user' ]
-   * }
-   *
-   * @param {object} options
-   * @return {Array|*}
-   */
-  function loadFakePermissions(options) {
-    options = options || {};
-
-    const fixturePermissions = _.cloneDeep(testUtils.DataGenerator.Content.permissions);
-
-    const extraPerm = {
-      name: 'test',
-      action_type: 'edit',
-      object_type: 'post',
-    };
-
-    if (options.extra) {
-      fixturePermissions.push(extraPerm);
-    }
-
-    return _.map(fixturePermissions, function (testPerm) {
-      return testUtils.DataGenerator.forKnex.createPermission(testPerm);
-    });
-  }
 
   describe('No init (no action map)', function () {
     it('throws an error without actionMap', function () {
@@ -69,38 +22,43 @@ describe('Permissions', function () {
   });
 
   describe('Init (build actions map)', function () {
-    it('can load an actions map from existing permissions', async function () {
-      fakePermissions = loadFakePermissions();
-
+    it('builds the actions map from the permissions defined in code', async function () {
       const actions = await permissions.init();
-
-      assertExists(actions);
 
       assert.doesNotThrow(permissions.canThis);
 
-      assert.deepEqual(_.keys(actions), ['browse', 'edit', 'add', 'destroy']);
+      const expected = {};
+      for (const perm of rolePermissions.all()) {
+        expected[perm.action_type] = expected[perm.action_type] || [];
+        expected[perm.action_type].push(perm.object_type);
+      }
 
-      assert.deepEqual(actions.browse, ['post']);
-      assert.deepEqual(actions.edit, ['post', 'tag', 'user', 'page']);
-      assert.deepEqual(actions.add, ['post', 'user', 'page']);
-      assert.deepEqual(actions.destroy, ['post', 'user']);
+      assert.deepEqual(actions, expected);
+      assert.deepEqual(actionsMap.getAll(), expected);
     });
 
-    it('can load an actions map from existing permissions, and deduplicate', async function () {
-      fakePermissions = loadFakePermissions({ extra: true });
-
+    it('exposes every object type for each of its actions', async function () {
       const actions = await permissions.init();
 
-      assertExists(actions);
+      for (const [objectType, objectActions] of Object.entries(permissionData)) {
+        for (const action of objectActions) {
+          assert(actions[action].includes(objectType), `${action}:${objectType}`);
+        }
+      }
 
-      assert.doesNotThrow(permissions.canThis);
+      for (const objectTypes of Object.values(actions)) {
+        assert.equal(_.uniq(objectTypes).length, objectTypes.length);
+      }
+    });
 
-      assert.deepEqual(_.keys(actions), ['browse', 'edit', 'add', 'destroy']);
+    it('builds a canThis chain for permissions defined in code', async function () {
+      await permissions.init();
 
-      assert.deepEqual(actions.browse, ['post']);
-      assert.deepEqual(actions.edit, ['post', 'tag', 'user', 'page']);
-      assert.deepEqual(actions.add, ['post', 'user', 'page']);
-      assert.deepEqual(actions.destroy, ['post', 'user']);
+      const canThisResult = permissions.canThis({ internal: true });
+
+      assert.equal(typeof canThisResult.edit.post, 'function');
+      assert.equal(typeof canThisResult.browse.member, 'function');
+      assert.equal(typeof canThisResult.exportContent.db, 'function');
     });
   });
 });

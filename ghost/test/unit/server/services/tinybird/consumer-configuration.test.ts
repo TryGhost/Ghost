@@ -5,7 +5,9 @@ const config = require('../../../../../core/shared/config');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const logging = require('@tryghost/logging');
 const sentry = require('../../../../../core/shared/sentry');
-const StatsService = require('../../../../../core/server/services/stats/stats-service');
+const {
+  create: createTinybirdClient,
+} = require('../../../../../core/server/services/stats/utils/tinybird');
 
 const modulePaths = [
   '../../../../../core/server/services/tinybird',
@@ -16,7 +18,7 @@ const modulePaths = [
 describe('Tinybird consumers across configuration changes', function () {
   const sandbox = sinon.createSandbox();
   let previousModules: Map<string, NodeModule | undefined>;
-  let tinybird: { instance: object | null | undefined };
+  let tinybird: { init(): void; instance: object | null | undefined };
   let endpoint: { token: { query(): Promise<{ token: string; exp?: string } | null> } };
   let getConfig: sinon.SinonStub;
   let getSetting: sinon.SinonStub;
@@ -45,6 +47,18 @@ describe('Tinybird consumers across configuration changes', function () {
     }
   });
 
+  // Builds a query client the way the stats root does once web analytics is on.
+  function createStatsClient(request: { get: sinon.SinonStub }) {
+    tinybird.init();
+    return createTinybirdClient({
+      config,
+      request,
+      settingsCache,
+      logging,
+      tinybirdService: tinybird.instance,
+    });
+  }
+
   function configure(token: string | null, endpointUrl = 'https://stats.example') {
     const stats = token ? { token, endpoint: endpointUrl } : null;
     getConfig.withArgs('tinybird').returns(stats ? { stats } : null);
@@ -65,10 +79,8 @@ describe('Tinybird consumers across configuration changes', function () {
 
   it('preserves the token captured by an existing stats consumer while new consumers use new config', async function () {
     configure('token-a', 'https://stats-a.example');
-    getSetting.withArgs('web_analytics_enabled').returns(true);
     const request = { get: sandbox.stub().resolves({ body: { data: [{ visits: 3 }] } }) };
-    const stats = StatsService.create({ knex: {}, config, settingsCache, request });
-    const retained = stats.posts.tinybirdClient;
+    const retained = createStatsClient(request);
     const originalInstance = tinybird.instance;
     assert.ok(originalInstance);
     assert.deepEqual(await retained.fetch('api_kpis'), [{ visits: 3 }]);
@@ -89,8 +101,8 @@ describe('Tinybird consumers across configuration changes', function () {
     assert.equal(new URL(url).searchParams.get('site_uuid'), 'site-b');
     assert.equal(options.headers.Authorization, 'Bearer token-a');
 
-    const fresh = StatsService.create({ knex: {}, config, settingsCache, request });
-    assert.deepEqual(await fresh.posts.tinybirdClient.fetch('api_kpis'), [{ visits: 3 }]);
+    const fresh = createStatsClient(request);
+    assert.deepEqual(await fresh.fetch('api_kpis'), [{ visits: 3 }]);
     assert.equal(request.get.lastCall.args[1].headers.Authorization, 'Bearer token-b');
   });
 });

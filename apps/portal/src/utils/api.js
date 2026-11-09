@@ -277,10 +277,8 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
     },
 
     /**
-     * The custom fields the publisher has opened to members, in the publisher's order.
-     *
-     * Portal reaches older Ghost sites indefinitely, so a site without the endpoint — or
-     * a field that does not say what the member may do with it — reads as no fields.
+     * The custom fields the publisher has opened to members, in the publisher's order. A site
+     * without the endpoint reads as no fields.
      */
     customFields() {
       const url = endpointFor({ type: 'members', resource: 'member/metafields/custom' });
@@ -291,30 +289,9 @@ function setupGhostApi({ siteUrl = window.location.origin, apiUrl, apiKey }) {
         if (!res.ok) {
           return [];
         }
-        // Read defensively: Portal and the site it talks to are deployed apart, so this
-        // endpoint may be missing, or answered by a version that shapes it differently.
-        // Anything unrecognisable reads as no fields, which is what a site with none
-        // gives, rather than breaking the page these are drawn on.
         return res
           .json()
-          .then((data) => {
-            const fields = data?.members_metafields;
-            if (!Array.isArray(fields)) {
-              return [];
-            }
-            // Every part a field is drawn from, not just enough to recognise one: a name
-            // that is not text is rendered as a child and takes the page down with it,
-            // and a type nothing can draw is no more useful than a field that is absent.
-            return fields.filter(
-              (field) =>
-                field &&
-                typeof field.key === 'string' &&
-                field.key.length > 0 &&
-                typeof field.name === 'string' &&
-                typeof field.type === 'string' &&
-                ['read', 'write'].includes(field.access?.member),
-            );
-          })
+          .then((data) => data.members_metafields)
           .catch(() => []);
       });
     },

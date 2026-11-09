@@ -1,17 +1,8 @@
 import assert from 'assert/strict';
-import fs from 'fs/promises';
-import path from 'path';
 import {
   Recommendation,
   WellknownService,
 } from '../../../../../../core/server/services/recommendations/service';
-
-const dir = path.join(__dirname, 'data');
-
-async function getContent() {
-  const content = await fs.readFile(path.join(dir, '.well-known', 'recommendations.json'), 'utf8');
-  return JSON.parse(content);
-}
 
 describe('WellknownService', function () {
   const service = new WellknownService({
@@ -20,15 +11,9 @@ describe('WellknownService', function () {
         return 'https://example.com' + url;
       },
     },
-    dir,
   });
 
-  afterEach(async function () {
-    // Remove folder
-    await fs.rm(dir, { recursive: true, force: true });
-  });
-
-  it('Can save recommendations', async function () {
+  it('Can format recommendations', function () {
     const recommendations = [
       Recommendation.create({
         title: 'My Blog',
@@ -54,21 +39,19 @@ describe('WellknownService', function () {
       }),
     ];
 
-    await service.set(recommendations);
-
-    // Check that the file exists
-    assert.deepEqual(await getContent(), [
+    assert.deepEqual(service.format(recommendations), [
       {
         url: 'https://example.com/blog',
-        created_at: '2021-01-01T00:00:00.000Z',
         updated_at: '2021-02-01T00:00:00.000Z',
+        created_at: '2021-01-01T00:00:00.000Z',
       },
       {
         url: 'https://example.com/blog2',
-        created_at: '2021-01-01T00:00:00.000Z',
         updated_at: '2021-01-01T00:00:00.000Z',
+        created_at: '2021-01-01T00:00:00.000Z',
       },
     ]);
+    assert.deepEqual(service.format([]), []);
   });
 
   it('Can get URL', async function () {

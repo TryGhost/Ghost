@@ -118,6 +118,10 @@ export const BASE_GHOST_ENV = [
 
   // Disable browser-side Sentry reporting during tests
   'client_sentry__disabled=true',
+
+  // Ghost runs in a container, where localhost is the container itself, so it fetches localhost
+  // app manifests (the fixture app's) from the host, as compose.dev.yaml sets up.
+  'apps__localhostAlias=host.docker.internal',
 ] as const;
 
 /**
@@ -190,6 +194,7 @@ export const EGRESS_ALLOWLIST: readonly string[] = [
 
   // Ghost-owned
   'ghost.org', // static.ghost.org theme/admin assets + ghost.org changelog & update-check
+  'assets.ghost.io', // Ghost logo image on the Settings → About screen
 
   // Stripe — browser-side only (Stripe.js/Elements must load from Stripe's own CDN).
   // Listed per-subdomain so api.stripe.com (server-side) is NOT covered — see above.
@@ -205,4 +210,14 @@ export const EGRESS_ALLOWLIST: readonly string[] = [
   'bunny.net', // web fonts (fonts.bunny.net)
   'transistor.fm', // podcast embeds (partner.transistor.fm)
   'geojs.io', // member signup + staff sign-in geolocation (get.geojs.io)
+];
+
+/**
+ * URL prefixes the browser may request on hosts that are NOT allowlisted as a
+ * whole. Narrower than a host entry, so other files on the same host still fail.
+ */
+export const EGRESS_BROWSER_URL_ALLOWLIST: readonly string[] = [
+  // Bunny Fonts serves part of its catalogue from fontsource on jsDelivr: its
+  // stylesheets point some families (and multi-family requests) there.
+  'https://cdn.jsdelivr.net/fontsource/',
 ];

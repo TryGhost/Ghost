@@ -43,6 +43,24 @@ Run it with:
 pnpm dlx artillery run load-test.yml
 ```
 
+## Email recipient preparation
+
+Run the synthetic database benchmark from the repository root:
+
+```sh
+pnpm gx benchmark recipient-preparation 10000 2
+```
+
+The optional arguments are member count (default 500,000) and preparation
+concurrency (default 2). gx enables source loading and garbage collection.
+The benchmark connects to the configured MySQL server using the development
+environment runner, creates a separate database and drops it after the run.
+The MySQL user needs permission to create and drop databases.
+
+JSON output reports duration, memory, query counts and preparation counts for
+all recipients, rebuilding interrupted preparation and a labelled segment.
+Start with a small member count before running larger comparisons.
+
 ## Getting useful results
 
 Request pooling, keep-alive, timeouts, concurrency, cookies, and headers can all

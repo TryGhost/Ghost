@@ -1,5 +1,4 @@
 const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
 const SendWebmentionsJob = require('./send-webmentions-job').default;
 
 module.exports = class MentionSendingService {
@@ -10,10 +9,12 @@ module.exports = class MentionSendingService {
   #getPostUrl;
   #isEnabled;
   #jobsService;
+  #logging;
 
   /**
    * @param {object} deps
    * @param {import('../jobs-service/jobs-service').JobsService} deps.jobsService
+   * @param {import('@tryghost/logging').GhostLogger} deps.logging
    */
   constructor({
     discoveryService,
@@ -23,6 +24,7 @@ module.exports = class MentionSendingService {
     getPostUrl,
     isEnabled,
     jobsService,
+    logging,
   }) {
     this.#discoveryService = discoveryService;
     this.#externalRequest = externalRequest;
@@ -31,6 +33,7 @@ module.exports = class MentionSendingService {
     this.#getPostUrl = getPostUrl;
     this.#isEnabled = isEnabled;
     this.#jobsService = jobsService;
+    this.#logging = logging;
   }
 
   get siteUrl() {
@@ -80,24 +83,23 @@ module.exports = class MentionSendingService {
         // Post should be or should have been published
         return;
       }
-      // make sure we have something to parse before we create a job
       const html = post.get('status') === 'published' ? post.get('html') : null;
       const previousHtml = post.previous('status') === 'published' ? post.previous('html') : null;
-      if (html || previousHtml) {
+      const links = this.#getChangedLinks(html, previousHtml);
+      if (links.length) {
         // Capture the source URL now, from the event's data, rather than
         // deferring the model into the job.
         const url = new URL(await this.#resolvePostUrl(post));
         await this.#jobsService.dispatch(
           new SendWebmentionsJob({
             sourceUrl: url.href,
-            html: html,
-            previousHtml: previousHtml,
+            links,
           }),
         );
       }
     } catch (e) {
-      logging.error('Error in webmention sending service post update event handler:');
-      logging.error(e);
+      this.#logging.error('Error in webmention sending service post update event handler:');
+      this.#logging.error(e);
     }
   }
 
@@ -120,11 +122,26 @@ module.exports = class MentionSendingService {
   }
 
   /**
+   * @param {string|null} html
+   * @param {string|null} previousHtml
+   * @returns {string[]}
+   */
+  #getChangedLinks(html, previousHtml) {
+    const links = html ? this.getLinks(html) : new Set();
+    const previousLinks = previousHtml ? this.getLinks(previousHtml) : new Set();
+    // Only send for NEW or DELETED links (to avoid spamming when lots of small changes happen to a post)
+    return [
+      ...[...previousLinks].filter((link) => !links.has(link)),
+      ...[...links].filter((link) => !previousLinks.has(link)),
+    ];
+  }
+
+  /**
    * @param {{source: URL, target: URL, endpoint: URL}} options
    * @returns
    */
   async send({ source, target, endpoint }) {
-    logging.info(
+    this.#logging.info(
       '[Webmention] Sending webmention from ' +
         source.href +
         ' to ' +
@@ -167,50 +184,10 @@ module.exports = class MentionSendingService {
    * @param {import('./send-webmentions-job').default} job
    */
   async sendWebmentions(job) {
-    await this.sendForHTMLResource({
-      url: new URL(job.sourceUrl),
-      html: job.html,
-      previousHtml: job.previousHtml,
-    });
-  }
-
-  /**
-   * Send a webmention call for the links in a resource.
-   * @param {object} resource
-   * @param {URL} resource.url
-   * @param {string|null} resource.html
-   * @param {string|null} [resource.previousHtml]
-   */
-  async sendForHTMLResource(resource) {
-    let links = resource.html ? this.getLinks(resource.html) : [];
-    if (resource.previousHtml) {
-      // Only send for NEW or DELETED links (to avoid spamming when lots of small changes happen to a post)
-      const existingLinks = links;
-      links = [];
-      const oldLinks = this.getLinks(resource.previousHtml);
-
-      for (const link of oldLinks) {
-        if (!existingLinks.find((l) => l.href === link.href)) {
-          // Deleted link
-          links.push(link);
-        }
-      }
-
-      for (const link of existingLinks) {
-        if (!oldLinks.find((l) => l.href === link.href)) {
-          // New link
-          links.push(link);
-        }
-      }
-    }
-
-    if (links.length) {
-      logging.info('[Webmention] Sending all webmentions for ' + resource.url.href);
-    }
-
+    this.#logging.info('[Webmention] Sending all webmentions for ' + job.sourceUrl);
     await this.sendAll({
-      url: resource.url,
-      links,
+      url: new URL(job.sourceUrl),
+      links: job.links.map((link) => new URL(link)),
     });
   }
 
@@ -228,7 +205,9 @@ module.exports = class MentionSendingService {
         try {
           await this.send({ source: url, target, endpoint });
         } catch (e) {
-          logging.error('[Webmention] Failed sending via ' + endpoint.href + ': ' + e.message);
+          this.#logging.error(
+            '[Webmention] Failed sending via ' + endpoint.href + ': ' + e.message,
+          );
         }
       }
     }
@@ -239,12 +218,12 @@ module.exports = class MentionSendingService {
    * Get all external links in a HTML document.
    * Excludes the site's own domain.
    * @param {string} html
-   * @returns {URL[]}
+   * @returns {Set<string>}
    */
   getLinks(html) {
     const cheerio = require('cheerio/slim');
     const $ = cheerio.load(html);
-    const urls = [];
+    const links = new Set();
     const siteUrl = this.siteUrl;
 
     for (const el of $('a').toArray()) {
@@ -259,18 +238,14 @@ module.exports = class MentionSendingService {
             continue;
           }
 
-          if (
-            ['http:', 'https:'].includes(url.protocol) &&
-            !urls.find((u) => u.href === url.href)
-          ) {
-            // Ignore duplicate URLs
-            urls.push(url);
+          if (['http:', 'https:'].includes(url.protocol)) {
+            links.add(url.href);
           }
         } catch (e) {
           // Ignore invalid URLs
         }
       }
     }
-    return urls;
+    return links;
   }
 };

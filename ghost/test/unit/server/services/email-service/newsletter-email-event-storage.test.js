@@ -86,6 +86,23 @@ describe('Email Event Storage', function () {
     });
   }
 
+  for (const batched of [false, true]) {
+    it(`stores no failed_at when saving a permanent failure fails with batching ${batched}`, async function () {
+      const db = createDb();
+      db.update.resolves(1);
+      const raw = sinon.stub(db.knex, 'raw').resolves([{ affectedRows: 1 }]);
+      const storage = createEventStorage({ db, config: { get: () => batched } });
+      sinon.stub(storage, 'saveFailure').rejects(new Error('failure not saved'));
+      const event = { emailRecipientId: 'recipient-id', timestamp: new Date(0) };
+
+      await assert.rejects(storage.handlePermanentFailed(event), /failure not saved/);
+      await storage.flushBatchedUpdates();
+
+      sinon.assert.notCalled(db.update);
+      sinon.assert.notCalled(raw);
+    });
+  }
+
   it('flushes SQLite batches, counts only new timestamps, and clears pending updates', async function () {
     const knex = createKnex({
       client: 'better-sqlite3',
@@ -145,6 +162,29 @@ describe('Email Event Storage', function () {
     } finally {
       await knex.destroy();
     }
+  });
+
+  it('drops pending updates when a flush fails so a later flush does not store them', async function () {
+    const db = createDb();
+    const raw = sinon.stub(db.knex, 'raw');
+    raw.onFirstCall().resolves([{ affectedRows: 1 }]);
+    raw.onSecondCall().rejects(new Error('flush failed'));
+    const storage = createEventStorage({ db, config: { get: () => true } });
+    sinon.stub(storage, 'saveFailure').resolves();
+    const event = { emailRecipientId: 'recipient-id', timestamp: new Date(0) };
+    await storage.handleDelivered(event);
+    await storage.handleOpened(event);
+    await storage.handlePermanentFailed(event);
+
+    await assert.rejects(storage.flushBatchedUpdates(), /flush failed/);
+    raw.resetHistory();
+
+    assert.deepEqual(await storage.flushBatchedUpdates(), {
+      storedDelivered: 0,
+      storedOpened: 0,
+      storedPermanentFailed: 0,
+    });
+    sinon.assert.notCalled(raw);
   });
 
   describe('Constructor', function () {

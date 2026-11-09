@@ -87,11 +87,7 @@ ghostBookshelf.plugin(require('bookshelf-relations'), {
         };
 
         // CASE: disable after hook for specific relations
-        if (
-          ['permissions_roles', 'members_newsletters'].indexOf(
-            existing.relatedData.joinTableName,
-          ) !== -1
-        ) {
+        if (existing.relatedData.joinTableName === 'members_newsletters') {
           return Promise.resolve();
         }
 

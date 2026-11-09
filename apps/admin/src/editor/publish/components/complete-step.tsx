@@ -81,13 +81,13 @@ export function CompleteStep({
       <Text as="h2" className="text-5xl leading-tighter tracking-tight" weight="bold">
         {captured.isScheduled ? (
           <>
-            <span className="block text-state-success">All set!</span> Your{' '}
+            <span className="block text-publish-accent">All set!</span> Your{' '}
             {emailOnly ? 'email' : post.displayName} will be {deliveryVerb}{' '}
             {formatScheduledCompletion(publishedAt, timezone)}.
           </>
         ) : (
           <>
-            <span className="block text-state-success">Boom. It’s out there. </span>
+            <span className="block text-publish-accent">Boom. It’s out there. </span>
             {emailOnly ? (
               'Your email has been sent.'
             ) : post.displayName === 'post' && postCount ? (

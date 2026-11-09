@@ -125,7 +125,11 @@ export default defineConfig(({ command, mode }) => ({
   build: {
     sourcemap: 'hidden',
   },
-  define: sharedDefine,
+  define: {
+    ...sharedDefine,
+    // CI sets it on non-tag builds; About then shows it as the Admin version
+    'import.meta.env.GHOST_BUILD_VERSION': JSON.stringify(process.env.GHOST_BUILD_VERSION || ''),
+  },
   server: {
     // Containers on Linux reach the host through the Docker bridge, and a devcontainer's
     // published port reaches its network interface: those set GHOST_DEV_LISTEN=0.0.0.0

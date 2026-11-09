@@ -15,17 +15,20 @@ const urlUtils = require('../../../shared/url-utils').default;
 const urlService = require('../url');
 const labsService = require('../../../shared/labs');
 const offersService = require('../offers');
-const tiersService = require('../tiers');
-const newslettersService = require('../newsletters');
-const memberAttributionService = require('../member-attribution');
+const tiers = require('../tiers').default;
+const newsletters = require('../newsletters').default;
+const memberAttributionService = require('../member-attribution').default;
 const emailSuppressionList = require('../email-suppression-list');
-const commentsService = require('../comments');
+const commentsService = require('../comments').default;
 const emailAddressService = require('../email-address');
 const giftService = require('../gifts');
+const stripeCheckoutConfig = require('../stripe-checkout-config').default;
 const metafieldsService = require('../members-metafields');
 const signingKeys = require('../signing-keys').default;
-const { t } = require('../i18n');
+const { t } = require('../../../shared/i18n');
 const sentry = require('../../../shared/sentry');
+const { tracer } = require('../../lib/tracing');
+const { stripeTracking } = require('../stripe/tracking');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
@@ -260,10 +263,16 @@ function createApiInstance(config) {
       AutomatedEmailRecipient: models.AutomatedEmailRecipient,
     },
     stripeAPIService: stripeService.api,
-    tiersService: tiersService,
+    // The members API is built while tiers is still initializing, so its controllers read
+    // the tiers API when they use it.
+    tiersService: {
+      get api() {
+        return tiers.service.api;
+      },
+    },
     offersAPI: offersService.api,
     labsService: labsService,
-    newslettersService: newslettersService,
+    newslettersService: newsletters.service,
     memberAttributionService: memberAttributionService.service,
     emailSuppressionList,
     settingsCache,
@@ -278,6 +287,10 @@ function createApiInstance(config) {
     // two together in boot order. Metafields is initialised in initCore, the
     // members API is built in initServices, so this is always the live instance.
     metafieldValues: metafieldsService.values,
+    // Read here for the same reason: the Stripe Checkout config is also initialised in
+    // initCore, so its guarded service is ready when the members API is built.
+    checkouts: stripeCheckoutConfig.service.checkouts,
+    tracking: stripeTracking(tracer),
   });
 
   return membersApiInstance;

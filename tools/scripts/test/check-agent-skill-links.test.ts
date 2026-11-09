@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, test } from 'node:test';
 
-import { checkAgentSkillLinks } from '../check-agent-skill-links.ts';
+import { checkAgentSkillLinks } from '../ci/check-agent-skill-links.ts';
 
 const temporaryDirectories: string[] = [];
 
@@ -53,6 +53,50 @@ test('rejects a copied skill directory', async () => {
   assert.equal(
     (await checkAgentSkillLinks(rootDirectory))[0],
     'Claude skill entry is not a symlink: example',
+  );
+});
+
+test('accepts a skill linked into .agents/skills from elsewhere', async () => {
+  const rootDirectory = await createRepository();
+  await mkdir(path.join(rootDirectory, 'packages', 'ui', 'skills', 'shipped'), { recursive: true });
+  await writeFile(
+    path.join(rootDirectory, 'packages', 'ui', 'skills', 'shipped', 'SKILL.md'),
+    '---\nname: shipped\n---\n',
+  );
+  await symlink(
+    '../../packages/ui/skills/shipped',
+    path.join(rootDirectory, '.agents', 'skills', 'shipped'),
+  );
+  for (const name of ['example', 'shipped']) {
+    await symlink(
+      `../../.agents/skills/${name}`,
+      path.join(rootDirectory, '.claude', 'skills', name),
+    );
+  }
+
+  assert.deepEqual(await checkAgentSkillLinks(rootDirectory), []);
+});
+
+test('reports a skill link whose target is missing', async () => {
+  const rootDirectory = await createRepository();
+  await symlink('../../missing', path.join(rootDirectory, '.agents', 'skills', 'broken'));
+
+  assert.ok(
+    (await checkAgentSkillLinks(rootDirectory)).includes(
+      '.agents/skills/broken links to ../../missing, which is missing',
+    ),
+  );
+});
+
+test('reports a skill link that targets a file', async () => {
+  const rootDirectory = await createRepository();
+  await writeFile(path.join(rootDirectory, 'notes.md'), '');
+  await symlink('../../notes.md', path.join(rootDirectory, '.agents', 'skills', 'notes'));
+
+  assert.ok(
+    (await checkAgentSkillLinks(rootDirectory)).includes(
+      '.agents/skills/notes links to ../../notes.md, which is not a directory',
+    ),
   );
 });
 

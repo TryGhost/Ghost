@@ -1,61 +1,92 @@
 import { describe, expect, it } from 'vitest';
+import * as z from 'zod/mini';
 
-import { formatIdentity, parseIdentity } from '../src/identity.ts';
+import {
+  IdentitySchema,
+  IdentityTextSchema,
+  KeySchema,
+  NamespaceSchema,
+  PartSchema,
+} from '../src/identity.ts';
 
-describe('parseIdentity', () => {
+describe('an identity as text', () => {
   it('reads a field identity as namespace then key', () => {
-    expect(parseIdentity('custom.company')).toEqual({
+    expect(z.decode(IdentityTextSchema, 'custom.company')).toEqual({
       namespace: 'custom',
       key: 'company',
-      partPath: null,
+      parts: [],
     });
   });
 
-  it('reads everything after the key as the part path', () => {
-    expect(parseIdentity('custom.shipping_address.country')).toEqual({
+  it('reads everything after the key as parts', () => {
+    expect(z.decode(IdentityTextSchema, 'custom.shipping_address.country')).toEqual({
       namespace: 'custom',
       key: 'shipping_address',
-      partPath: 'country',
+      parts: ['country'],
     });
-    expect(parseIdentity('custom.a.b.c')).toEqual({
+    expect(z.decode(IdentityTextSchema, 'custom.a.b.c')).toEqual({
       namespace: 'custom',
       key: 'a',
-      partPath: 'b.c',
+      parts: ['b', 'c'],
     });
   });
 
-  it('parses any namespace: namespaces are data, not a registry', () => {
-    expect(parseIdentity('transistor.private_url')).toEqual({
+  it('reads any namespace: namespaces are data, not a registry', () => {
+    expect(z.decode(IdentityTextSchema, 'transistor.private_url')).toEqual({
       namespace: 'transistor',
       key: 'private_url',
-      partPath: null,
+      parts: [],
     });
   });
 
   it('refuses anything that is not namespace-dot-key', () => {
-    expect(parseIdentity('company')).toBeNull();
-    expect(parseIdentity('')).toBeNull();
-    expect(parseIdentity('custom.')).toBeNull();
-    expect(parseIdentity('.company')).toBeNull();
-    expect(parseIdentity('custom..company')).toBeNull();
-    expect(parseIdentity('Custom.company')).toBeNull();
-    expect(parseIdentity('custom.com pany')).toBeNull();
-    expect(parseIdentity('custom.com-pany')).toBeNull();
-  });
-});
-
-describe('formatIdentity', () => {
-  it('round-trips through parseIdentity', () => {
-    for (const identity of ['custom.company', 'custom.shipping_address.country', 'custom.a.b.c']) {
-      const parsed = parseIdentity(identity);
-      expect(parsed).not.toBeNull();
-      expect(formatIdentity(parsed!)).toBe(identity);
+    for (const text of [
+      'company',
+      '',
+      'custom.',
+      '.company',
+      'custom..company',
+      'Custom.company',
+      'custom.com pany',
+      'custom.com-pany',
+      'custom.shipping_address.Country',
+    ]) {
+      expect(z.safeDecode(IdentityTextSchema, text).success, text).toBe(false);
     }
   });
 
-  it('writes no trailing separator for a field with no part path', () => {
-    expect(formatIdentity({ namespace: 'custom', key: 'company', partPath: null })).toBe(
-      'custom.company',
-    );
+  it('writes an identity out as it was read', () => {
+    for (const text of ['custom.company', 'custom.shipping_address.country', 'custom.a.b.c']) {
+      expect(z.encode(IdentityTextSchema, z.decode(IdentityTextSchema, text))).toBe(text);
+    }
+  });
+});
+
+describe('an identity arriving as segments', () => {
+  it('names a whole field when it has no parts', () => {
+    expect(IdentitySchema.parse({ namespace: 'custom', key: 'company' })).toEqual({
+      namespace: 'custom',
+      key: 'company',
+      parts: [],
+    });
+  });
+
+  it('checks every segment it is given', () => {
+    expect(IdentitySchema.safeParse({ namespace: 'Custom', key: 'company' }).success).toBe(false);
+    expect(IdentitySchema.safeParse({ namespace: 'custom', key: 'com-pany' }).success).toBe(false);
+    expect(
+      IdentitySchema.safeParse({ namespace: 'custom', key: 'address', parts: ['Country'] }).success,
+    ).toBe(false);
+  });
+});
+
+describe('a segment', () => {
+  it('follows the same rule as a namespace, a key or a part', () => {
+    for (const segment of [NamespaceSchema, KeySchema, PartSchema]) {
+      expect(segment.safeParse('shipping_address_2').success).toBe(true);
+      for (const text of ['', 'Company', 'com-pany', 'com.pany', 'com pany']) {
+        expect(segment.safeParse(text).success, text).toBe(false);
+      }
+    }
   });
 });

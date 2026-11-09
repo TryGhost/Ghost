@@ -1,16 +1,11 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
-const getIntegrationsServiceInstance = require('../../services/integrations/integrations-service');
+const integrations = require('../../services/integrations').default;
 
 const messages = {
   resourceNotFound: '{resource} not found.',
 };
-
-const integrationsService = getIntegrationsServiceInstance({
-  IntegrationModel: models.Integration,
-  ApiKeyModel: models.ApiKey,
-});
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -81,7 +76,7 @@ const controller = {
       },
     },
     query({ data, options }) {
-      return integrationsService.edit(data, options);
+      return integrations.service.edit(data, options);
     },
   },
   add: {

@@ -53,7 +53,6 @@ describe('Stripe Checkout Preview Admin API', function () {
 
   beforeEach(function () {
     mockManager.mockStripe();
-    mockManager.mockLabsEnabled('stripeCheckoutDesign');
   });
 
   afterEach(async function () {
@@ -95,8 +94,22 @@ describe('Stripe Checkout Preview Admin API', function () {
   });
 
   describe('with unsaved shipping', function () {
-    beforeEach(function () {
+    beforeEach(async function () {
       mockManager.mockLabsEnabled('stripeCheckoutCollection');
+      mockManager.mockLabsEnabled('membersCustomFields');
+      for (const field of [
+        { name: 'Delivery address', type: 'address' },
+        { name: 'Recipient name', type: 'short_text' },
+      ]) {
+        await agent
+          .post('members/metafields/custom/')
+          .body({ members_metafields: [field] })
+          .expectStatus(201);
+      }
+    });
+
+    afterEach(async function () {
+      await models.Base.knex('members_metafields').del();
     });
 
     function previewShipping(shipping: Record<string, unknown>) {
@@ -104,26 +117,80 @@ describe('Stripe Checkout Preview Admin API', function () {
     }
 
     it('asks for an address in the countries being previewed', async function () {
-      await previewShipping({ collect: true, allowed_countries: ['GB', 'IE'] });
+      await previewShipping({
+        collect: true,
+        allowed_countries: ['GB', 'IE'],
+        address: { custom_field_key: 'delivery_address' },
+        name: { custom_field_key: 'recipient_name' },
+      });
 
       const session = stripeMocker.checkoutSessions.at(-1);
       assert.deepEqual(session.shipping_address_collection.allowed_countries, ['GB', 'IE']);
     });
+  });
 
-    it('asks for none when it is off or limited to other tiers', async function () {
-      await previewShipping({ collect: false });
-      assert.equal(stripeMocker.checkoutSessions.at(-1).shipping_address_collection, undefined);
-
-      await previewShipping({ collect: true, tier_ids: [freeTierId] });
-      assert.equal(stripeMocker.checkoutSessions.at(-1).shipping_address_collection, undefined);
+  // A preview has to show what it was asked to, so it never opens without part of it.
+  describe('when Stripe refuses part of it', function () {
+    beforeEach(function () {
+      mockManager.mockLabsEnabled('stripeCheckoutCollection');
+      mockManager.mockLabsDisabled('stripeAutomaticTax');
     });
 
-    it('asks for none while the shipping flag is off', async function () {
-      mockManager.mockLabsDisabled('stripeCheckoutCollection');
-      await previewShipping({ collect: true });
+    function previewTaxId() {
+      return preview(
+        { tier_id: paidTierId, design: { customize: false }, tax_number: { collect: true } },
+        422,
+      );
+    }
 
-      assert.equal(stripeMocker.checkoutSessions.at(-1).shipping_address_collection, undefined);
+    it('says which part Stripe refused, with Stripe’s reason', async function () {
+      stripeMocker.checkoutParamRefusal = {
+        param: 'tax_id_collection',
+        error: {
+          type: 'invalid_request_error',
+          param: 'tax_id_collection[enabled]',
+          message: 'Tax ID collection is not available.',
+        },
+      };
+
+      const { body } = await previewTaxId();
+      assert.equal(
+        body.errors[0].context,
+        'Stripe refused to ask for a tax ID. Tax ID collection is not available.',
+      );
+      assert.equal(body.errors[0].property, 'tax_number');
+      assert.equal(stripeMocker.checkoutSessions.length, 0);
     });
+
+    // Stripe also refuses sessions for reasons of the account's own, so without a named part the
+    // preview can't say the settings are why.
+    it('says Stripe refused the checkout when it names nothing, with Stripe’s reason', async function () {
+      stripeMocker.checkoutParamRefusal = {
+        param: 'tax_id_collection',
+        error: { type: 'invalid_request_error', message: 'Tax ID collection needs more.' },
+      };
+
+      const { body } = await previewTaxId();
+      assert.equal(
+        body.errors[0].context,
+        'Stripe refused to open this checkout. Tax ID collection needs more.',
+      );
+      assert.equal(body.errors[0].property, null);
+      assert.equal(stripeMocker.checkoutSessions.length, 0);
+    });
+  });
+
+  it('says Stripe refused it, with Stripe’s reason, when it has none of the settings', async function () {
+    stripeMocker.checkoutSessionError = {
+      type: 'invalid_request_error',
+      message: 'Your account cannot currently make live charges.',
+    };
+
+    const { body } = await preview({ tier_id: paidTierId, design: { customize: false } }, 422);
+    assert.equal(
+      body.errors[0].context,
+      'Stripe refused to open this checkout. Your account cannot currently make live charges.',
+    );
   });
 
   it('refuses a free tier, an unknown tier and a malformed tier id', async function () {
@@ -143,19 +210,13 @@ describe('Stripe Checkout Preview Admin API', function () {
     assert.equal(stripeMocker.checkoutSessions.length, 0);
   });
 
-  it('is not found while its flag is off', async function () {
-    mockManager.mockLabsDisabled('stripeCheckoutDesign');
-
-    await preview({ tier_id: paidTierId, design: { customize: false } }, 404);
-  });
-
   describe('Permissions', function () {
     const body = () => ({ tier_id: paidTierId, design: { customize: false } });
 
     // Each sign-in counts towards the login attempt limit, so clear it before signing the
     // owner back in.
     afterEach(async function () {
-      await dbUtils.truncate('brute');
+      await dbUtils.truncate('rate_limits');
       await agent.loginAsOwner();
     });
 

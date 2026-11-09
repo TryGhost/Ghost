@@ -95,7 +95,7 @@ describe('GiftService', function () {
   let memberRepository: {
     get: sinon.SinonStub;
     update: sinon.SinonStub;
-    triggerMemberSignupAutomation: sinon.SinonStub;
+    notifyMembershipStartedAutomation: sinon.SinonStub;
   };
   let staffServiceEmails: {
     notifyGiftPurchased: sinon.SinonStub;
@@ -190,7 +190,7 @@ describe('GiftService', function () {
         return Promise.resolve({ id: 'member_1', get: memberGet });
       }),
       update: sinon.stub().resolves(undefined),
-      triggerMemberSignupAutomation: sinon.stub().resolves(undefined),
+      notifyMembershipStartedAutomation: sinon.stub().resolves(undefined),
     };
     staffServiceEmails = {
       notifyGiftPurchased: sinon.stub(),
@@ -1763,6 +1763,7 @@ describe('GiftService', function () {
         { id: 'member_1' },
         { transacting, forUpdate: true },
       );
+      sinon.assert.callOrder(giftRepository.getByToken, memberRepository.get);
       sinon.assert.calledOnceWithExactly(
         memberRepository.update,
         {
@@ -1964,6 +1965,7 @@ describe('GiftService', function () {
     });
 
     it('throws NotFoundError when the member does not exist', async function () {
+      giftRepository.getByToken.resolves(buildGift());
       memberRepository.get.onFirstCall().resolves(null);
 
       const service = createService();
@@ -2021,7 +2023,7 @@ describe('GiftService', function () {
       sinon.assert.notCalled(staffServiceEmails.notifyGiftSubscriptionStarted);
     });
 
-    it('triggers the paid member signup automation for a new gift signup', async function () {
+    it('notifies the automations system about a new gift signup', async function () {
       const gift = buildGift();
       const memberGet = sinon.stub();
       memberGet.withArgs('status').returns('gift');
@@ -2034,15 +2036,14 @@ describe('GiftService', function () {
       const service = createService();
       await service.redeem({ token: 'gift-token', memberId: 'member_1', newMember: true });
 
-      sinon.assert.calledOnceWithExactly(
-        memberRepository.triggerMemberSignupAutomation,
-        await memberRepository.get.firstCall.returnValue,
-        'paid',
-        { transacting },
-      );
+      sinon.assert.calledOnceWithExactly(memberRepository.notifyMembershipStartedAutomation, {
+        member: await memberRepository.get.firstCall.returnValue,
+        memberStatus: 'paid',
+        bookshelfOptions: { transacting },
+      });
     });
 
-    it('triggers the paid member signup automation when an existing free member redeems a gift', async function () {
+    it('notifies the automations system when an existing free member redeems a gift', async function () {
       const gift = buildGift();
       const memberGet = sinon.stub();
       memberGet.withArgs('status').returns('free');
@@ -2055,15 +2056,14 @@ describe('GiftService', function () {
       const service = createService();
       await service.redeem({ token: 'gift-token', memberId: 'member_1' });
 
-      sinon.assert.calledOnceWithExactly(
-        memberRepository.triggerMemberSignupAutomation,
-        await memberRepository.get.firstCall.returnValue,
-        'paid',
-        { transacting },
-      );
+      sinon.assert.calledOnceWithExactly(memberRepository.notifyMembershipStartedAutomation, {
+        member: await memberRepository.get.firstCall.returnValue,
+        memberStatus: 'paid',
+        bookshelfOptions: { transacting },
+      });
     });
 
-    it('passes the external transaction through to the member signup automation trigger', async function () {
+    it('passes the external transaction through to the member signup automation notification', async function () {
       const gift = buildGift();
       const memberGet = sinon.stub();
       memberGet.withArgs('status').returns('free');
@@ -2077,12 +2077,11 @@ describe('GiftService', function () {
       const externalTrx = transactionWithExecutionPromise(Promise.resolve());
       await service.redeem({ token: 'gift-token', memberId: 'member_1', transacting: externalTrx });
 
-      sinon.assert.calledOnceWithExactly(
-        memberRepository.triggerMemberSignupAutomation,
-        await memberRepository.get.firstCall.returnValue,
-        'paid',
-        { transacting: externalTrx },
-      );
+      sinon.assert.calledOnceWithExactly(memberRepository.notifyMembershipStartedAutomation, {
+        member: await memberRepository.get.firstCall.returnValue,
+        memberStatus: 'paid',
+        bookshelfOptions: { transacting: externalTrx },
+      });
     });
   });
 
@@ -2160,6 +2159,7 @@ describe('GiftService', function () {
       const gift = buildGift();
 
       giftRepository.getByPaymentIntentId.resolves(gift);
+      giftRepository.getByToken.resolves(gift);
 
       const service = createService();
       const result = await service.handlePaymentRefund({ paymentIntentId: 'pi_456' });
@@ -2197,6 +2197,7 @@ describe('GiftService', function () {
       });
 
       giftRepository.getByPaymentIntentId.resolves(gift);
+      giftRepository.getByToken.resolves(gift);
       memberRepository.get.resolves({
         id: 'redeemer_1',
         get: sinon.stub().withArgs('status').returns('gift'),
@@ -2211,7 +2212,7 @@ describe('GiftService', function () {
       sinon.assert.calledOnceWithExactly(
         memberRepository.get,
         { id: 'redeemer_1' },
-        { transacting },
+        { transacting, forUpdate: true },
       );
       sinon.assert.calledOnceWithExactly(
         memberRepository.update,
@@ -2223,10 +2224,55 @@ describe('GiftService', function () {
       );
     });
 
+    it('locks the gift, then the redeemer, before saving the refund', async function () {
+      const gift = buildGift({
+        status: 'redeemed',
+        redeemerMemberId: 'redeemer_1',
+        redeemedAt: new Date('2026-02-01T00:00:00.000Z'),
+        consumesAt: new Date('2027-02-01T00:00:00.000Z'),
+      });
+
+      giftRepository.getByPaymentIntentId.resolves(gift);
+      giftRepository.getByToken.resolves(gift);
+      memberRepository.get.resolves({
+        id: 'redeemer_1',
+        get: sinon.stub().withArgs('status').returns('gift'),
+      });
+
+      const service = createService();
+      await service.handlePaymentRefund({ paymentIntentId: 'pi_456' });
+
+      sinon.assert.calledOnceWithExactly(giftRepository.getByToken, gift.token, {
+        transacting,
+        forUpdate: true,
+      });
+      sinon.assert.callOrder(
+        giftRepository.getByToken,
+        memberRepository.get,
+        giftRepository.update,
+        giftDeliveryService.cancelPendingForGift,
+      );
+    });
+
+    it('refunds the gift as it is once locked', async function () {
+      giftRepository.getByPaymentIntentId.resolves(buildGift());
+      giftRepository.getByToken.resolves(
+        buildGift({ status: 'refunded', refundedAt: new Date('2026-02-01T00:00:00.000Z') }),
+      );
+
+      const service = createService();
+      const result = await service.handlePaymentRefund({ paymentIntentId: 'pi_456' });
+
+      assert.equal(result, true);
+      sinon.assert.notCalled(giftRepository.update);
+      sinon.assert.notCalled(memberRepository.get);
+    });
+
     it('does not downgrade when the gift was not redeemed', async function () {
       const gift = buildGift();
 
       giftRepository.getByPaymentIntentId.resolves(gift);
+      giftRepository.getByToken.resolves(gift);
 
       const service = createService();
       await service.handlePaymentRefund({ paymentIntentId: 'pi_456' });
@@ -2244,6 +2290,7 @@ describe('GiftService', function () {
       });
 
       giftRepository.getByPaymentIntentId.resolves(gift);
+      giftRepository.getByToken.resolves(gift);
       memberRepository.get.resolves({
         id: 'redeemer_1',
         get: sinon.stub().withArgs('status').returns('paid'),
@@ -2266,6 +2313,7 @@ describe('GiftService', function () {
       });
 
       giftRepository.getByPaymentIntentId.resolves(gift);
+      giftRepository.getByToken.resolves(gift);
       memberRepository.get.resolves({
         id: 'redeemer_1',
         get: sinon.stub().withArgs('status').returns('gift'),
@@ -2287,6 +2335,7 @@ describe('GiftService', function () {
       });
 
       giftRepository.getByPaymentIntentId.resolves(gift);
+      giftRepository.getByToken.resolves(gift);
 
       const service = createService();
       const result = await service.handlePaymentRefund({ paymentIntentId: 'pi_456' });

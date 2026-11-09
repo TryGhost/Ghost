@@ -95,32 +95,38 @@ When you set `permissions: true`, the framework delegates to the default permiss
    permissions.canThis(context).edit.post(postId, unsafeAttrs)
    ```
 
-3. **Database Lookup**: The permissions service checks the `permissions` and `permissions_roles` tables:
+3. **Permission Lookup**: The permissions service checks the permissions defined in code, in `ghost/core/server/services/permissions/permissions-data.ts`:
    - Looks for a permission with `action_type` matching the method (e.g., `edit`)
    - And `object_type` matching the singular docName (e.g., `post`)
-   - Verifies the user's role has that permission assigned
+   - Verifies the user's role (or the API key's role) holds that permission
 
-#### Required Database Setup
+#### Required Permission Setup
 
-For the default handler to work, you must have:
+For the default handler to work, the permission must be defined in `permissions-data.ts`:
 
-1. **Permission records** in the `permissions` table:
+1. **The action** under its object type in `permissions`:
 
-   ```sql
-   INSERT INTO permissions (name, action_type, object_type) VALUES
-   ('Browse posts', 'browse', 'post'),
-   ('Read posts', 'read', 'post'),
-   ('Edit posts', 'edit', 'post'),
-   ('Add posts', 'add', 'post'),
-   ('Delete posts', 'destroy', 'post');
+   ```typescript
+   export const permissions = {
+     // ...
+     post: ['browse', 'read', 'edit', 'add', 'destroy', 'publish'],
+   };
    ```
 
-2. **Role-permission mappings** in `permissions_roles` linking permissions to roles like Administrator, Editor, etc.
+2. **The grant** for each role that should hold it in `rolePermissions`, either as a list of actions or `'all'`:
 
-These are typically added via:
+   ```typescript
+   export const rolePermissions = {
+     Administrator: {
+       post: 'all',
+     },
+     Contributor: {
+       post: ['browse', 'read', 'edit', 'add', 'destroy'],
+     },
+   };
+   ```
 
-- Initial fixtures in `ghost/core/server/data/schema/fixtures/fixtures.json`
-- Database migrations using `addPermissionWithRoles()` from `ghost/core/server/data/migrations/utils/permissions.js`
+No migration or fixture change is needed. The `permissions`, `permissions_roles` and `permissions_users` tables still exist, but nothing reads or seeds them until they are dropped. See [Adding Permissions](#adding-permissions).
 
 ---
 
@@ -621,68 +627,33 @@ const {
 
 ---
 
-## Adding Permissions via Migrations
+## Adding Permissions
 
-When creating a new API endpoint that uses the default permission handler (`permissions: true`), you need to add permissions to the database. Ghost provides utilities to make this easy.
-
-### Migration Utilities
-
-Import the permission utilities from `ghost/core/server/data/migrations/utils`:
-
-```javascript
-const {combineTransactionalMigrations, addPermissionWithRoles} = require('../../utils');
-```
+When creating a new API endpoint that uses the default permission handler (`permissions: true`), add its permissions to `ghost/core/server/services/permissions/permissions-data.ts`. Permissions live in code, so no migration is needed. Do not add permission migrations: the permissions tables still exist but are unused.
 
 ### Example: Adding CRUD Permissions for a New Resource
 
-```javascript
-// ghost/core/server/data/migrations/versions/X.X/YYYY-MM-DD-HH-MM-SS-add-myresource-permissions.js
+```typescript
+// ghost/core/server/services/permissions/permissions-data.ts
 
-const {combineTransactionalMigrations, addPermissionWithRoles} = require('../../utils');
+export const permissions = {
+  // ...
+  my_resource: ['browse', 'read', 'edit', 'add', 'destroy'], // Singular form of docName
+};
 
-module.exports = combineTransactionalMigrations(
-    addPermissionWithRoles({
-        name: 'Browse my resources',
-        action: 'browse',
-        object: 'my_resource'  // Singular form of docName
-    }, [
-        'Administrator',
-        'Admin Integration'
-    ]),
-    addPermissionWithRoles({
-        name: 'Read my resources',
-        action: 'read',
-        object: 'my_resource'
-    }, [
-        'Administrator',
-        'Admin Integration'
-    ]),
-    addPermissionWithRoles({
-        name: 'Edit my resources',
-        action: 'edit',
-        object: 'my_resource'
-    }, [
-        'Administrator',
-        'Admin Integration'
-    ]),
-    addPermissionWithRoles({
-        name: 'Add my resources',
-        action: 'add',
-        object: 'my_resource'
-    }, [
-        'Administrator',
-        'Admin Integration'
-    ]),
-    addPermissionWithRoles({
-        name: 'Delete my resources',
-        action: 'destroy',
-        object: 'my_resource'
-    }, [
-        'Administrator',
-        'Admin Integration'
-    ])
-);
+export const rolePermissions = {
+  Administrator: {
+    // ...
+    my_resource: 'all',
+  },
+  'Admin Integration': {
+    // ...
+    my_resource: 'all',
+  },
+};
 ```
+
+Then update the expected grants in `ghost/test/unit/server/services/permissions/role-grants.test.ts`, and the per-role permission counts in `ghost/test/e2e-api/admin/users.test.js` for any staff role you changed.
 
 ### Available Roles
 
@@ -693,11 +664,10 @@ Common roles you can assign permissions to:
 - **Editor** - Can manage all content
 - **Author** - Can manage own content
 - **Contributor** - Can create drafts only
-- **Owner** - Site owner (inherits all Administrator permissions)
+- **Owner** - Site owner (bypasses permission checks; not listed in `rolePermissions`)
 
 ### Permission Naming Conventions
 
-- **name**: Human-readable, e.g., `'Browse automated emails'`
 - **action**: The API method - `browse`, `read`, `edit`, `add`, `destroy`
 - **object**: Singular form of `docName` - `automated_email` (not `automated_emails`)
 
@@ -708,13 +678,13 @@ To make an endpoint accessible only to administrators (not editors, authors, etc
 - `Administrator`
 - `Admin Integration`
 
-```javascript
-addPermissionWithRoles({
-    name: 'Browse sensitive data',
-    action: 'browse',
-    object: 'sensitive_data'
-}, [
-    'Administrator',
-    'Admin Integration'
-])
+```typescript
+export const rolePermissions = {
+  Administrator: {
+    sensitive_data: ['browse'],
+  },
+  'Admin Integration': {
+    sensitive_data: ['browse'],
+  },
+};
 ```

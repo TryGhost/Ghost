@@ -9,8 +9,8 @@ const MemoryCache = require('../../../../core/server/adapters/cache/MemoryCache'
 
 function loadServices() {
   return {
-    tags: require('../../../../core/server/services/tags-public'),
-    posts: require('../../../../core/server/services/posts-public'),
+    tags: require('../../../../core/server/services/tags-public').default,
+    posts: require('../../../../core/server/services/posts-public').default,
   };
 }
 let services: ReturnType<typeof loadServices>;
@@ -39,9 +39,7 @@ describe('Public response caches', function () {
     const paths = [
       ...Object.values(endpointPaths),
       require.resolve('../../../../core/server/services/tags-public'),
-      require.resolve('../../../../core/server/services/tags-public/service'),
       require.resolve('../../../../core/server/services/posts-public'),
-      require.resolve('../../../../core/server/services/posts-public/service'),
     ];
     previousModules = new Map(paths.map((path) => [path, require.cache[path]]));
     for (const path of paths) {
@@ -77,6 +75,10 @@ describe('Public response caches', function () {
     getConfig.withArgs('hostSettings:postsPublicCache:enabled').returns(flags.posts);
   }
 
+  function cacheFor(resource: Resource) {
+    return services[resource].service.cache;
+  }
+
   for (const resource of resources) {
     const other: Resource = resource === 'tags' ? 'posts' : 'tags';
 
@@ -88,7 +90,7 @@ describe('Public response caches', function () {
 
         await services[resource].init();
 
-        assert.equal(services[resource].api.cache, caches[resource]);
+        assert.equal(cacheFor(resource), caches[resource]);
         sinon.assert.calledOnceWithExactly(getAdapter, `cache:${resource}Public`);
       });
 
@@ -97,7 +99,7 @@ describe('Public response caches', function () {
 
         await services[resource].init();
 
-        assert.equal(services[resource].api.cache, undefined);
+        assert.equal(cacheFor(resource), undefined);
         sinon.assert.notCalled(getAdapter);
         assert.equal(events.listenerCount('site.changed'), previousListeners.length);
       });
@@ -125,12 +127,12 @@ describe('Public response caches', function () {
         setFlags({ tags: true, posts: true });
 
         await services[resource].init();
-        const cache = services[resource].api.cache;
+        const cache = cacheFor(resource);
         cache.set('key', 'value');
 
         await services[resource].init();
 
-        assert.equal(services[resource].api.cache, cache);
+        assert.equal(cacheFor(resource), cache);
         assert.equal(cache.get('key'), 'value');
         sinon.assert.calledOnce(getAdapter);
         assert.equal(events.listenerCount('site.changed'), previousListeners.length + 1);
@@ -145,7 +147,7 @@ describe('Public response caches', function () {
         await services.tags.init();
         await services.posts.init();
 
-        // Endpoints read `service.api.cache` when they load, as they do after
+        // Endpoints capture their cache when they load, as they do after
         // boot has initialized the roots.
         for (const path of Object.values(endpointPaths)) {
           delete require.cache[path];

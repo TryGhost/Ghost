@@ -1,11 +1,10 @@
 import type { Member } from '@tryghost/admin-x-framework/api/members';
 
 /**
- * True when the member currently can't comment. Gated on `can_comment`
- * (Ember-parity — `templates/member.hbs:77` uses `not-eq member.canComment
- * false`), NOT on `commenting.disabled`. The distinction matters when a
- * temporary disable expires: `commenting.disabled` stays truthy, but the
- * server flips `can_comment` back to `true`, and Ember's UI trusts the latter.
+ * True when the member currently can't comment. Gated on `can_comment`, NOT on
+ * `commenting.disabled`. The distinction matters when a temporary disable
+ * expires: `commenting.disabled` stays truthy, but the server flips
+ * `can_comment` back to `true`.
  *
  * Missing / undefined `can_comment` (legacy members) → treat as enabled.
  */

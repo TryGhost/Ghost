@@ -6,7 +6,16 @@ const cliRules = {
 };
 
 export default [
-  ...nodeLibConfig({ srcGlobs: ['cli.ts', 'run-ghost-command.ts'], extraSrcRules: cliRules }),
+  ...nodeLibConfig({
+    srcGlobs: ['dev-*.ts', 'lib/**/*.ts'],
+    testGlobs: ['test/dev*.test.ts'],
+    extraSrcRules: { ...cliRules, 'no-console': 'off' },
+    extraTestRules: { ...cliRules, 'no-console': 'off' },
+  }),
+  ...nodeLibConfig({
+    srcGlobs: ['cli.ts', 'run-ghost-command.ts', 'services.ts'],
+    extraSrcRules: cliRules,
+  }),
   ...nodeLibConfig({
     srcGlobs: ['create-package.ts'],
     extraSrcRules: cliRules,
@@ -22,11 +31,12 @@ export default [
   }),
   ...nodeLibConfig({
     srcGlobs: [
-      'rebuild-in-development-tables.cts',
-      'generate-data.cts',
-      'multi-sub-scenarios.cts',
-      'repl.cts',
-      'shift-dates.cts',
+      'rebuild-in-development-tables.ts',
+      'generate-data.ts',
+      'multi-sub-scenarios.ts',
+      'repl.ts',
+      'shift-dates.ts',
+      'benchmark-recipient-preparation.ts',
     ],
     extraSrcRules: { ...cliRules, 'no-console': 'off' },
   }),

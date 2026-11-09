@@ -380,41 +380,6 @@ describe('Migration Fixture Utils', function () {
     });
 
     describe('Add Fixtures For Relation', function () {
-        it('should call attach for permissions-roles', async function () {
-            const fromItem = {
-                related: sinon.stub().returnsThis(),
-                find: sinon.stub().returns()
-            };
-
-            const toItem = [{get: sinon.stub()}];
-
-            const dataMethodStub = {
-                filter: sinon.stub().returns(toItem),
-                find: sinon.stub().returns(fromItem)
-            };
-
-            const baseUtilAttachStub = sinon.stub(baseUtils, 'attach').returns(Promise.resolve([{}]));
-            const permsAllStub = sinon.stub(models.Permission, 'findAll').returns(Promise.resolve(dataMethodStub));
-            const rolesAllStub = sinon.stub(models.Role, 'findAll').returns(Promise.resolve(dataMethodStub));
-
-            const result = await fixtureManager.addFixturesForRelation(fixtures.relations[0]);
-            const FIXTURE_COUNT = 150;
-            assertExists(result);
-            assert(_.isPlainObject(result));
-            assert.equal(result.expected, FIXTURE_COUNT);
-            assert.equal(result.done, FIXTURE_COUNT);
-
-            // Permissions & Roles
-            sinon.assert.calledOnce(permsAllStub);
-            sinon.assert.calledOnce(rolesAllStub);
-            sinon.assert.callCount(dataMethodStub.filter, FIXTURE_COUNT);
-            sinon.assert.callCount(dataMethodStub.find, 9);
-            sinon.assert.callCount(baseUtilAttachStub, FIXTURE_COUNT);
-
-            sinon.assert.callCount(fromItem.related, FIXTURE_COUNT);
-            sinon.assert.callCount(fromItem.find, FIXTURE_COUNT);
-        });
-
         it('should call attach for posts-tags', async function () {
             const fromItem = {
                 related: sinon.stub().returnsThis(),
@@ -432,7 +397,7 @@ describe('Migration Fixture Utils', function () {
             const postsAllStub = sinon.stub(models.Post, 'findAll').returns(Promise.resolve(dataMethodStub));
             const tagsAllStub = sinon.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
 
-            const result = await fixtureManager.addFixturesForRelation(fixtures.relations[1]);
+            const result = await fixtureManager.addFixturesForRelation(fixtures.relations[0]);
             assertExists(result);
             assert(_.isPlainObject(result));
             assert.equal(result.expected, 7);
@@ -466,7 +431,7 @@ describe('Migration Fixture Utils', function () {
             const postsAllStub = sinon.stub(models.Post, 'findAll').returns(Promise.resolve(dataMethodStub));
             const tagsAllStub = sinon.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
 
-            const result = await fixtureManager.addFixturesForRelation(fixtures.relations[1]);
+            const result = await fixtureManager.addFixturesForRelation(fixtures.relations[0]);
             assertExists(result);
             assert(_.isPlainObject(result));
             assert.equal(result.expected, 7);
@@ -502,29 +467,14 @@ describe('Migration Fixture Utils', function () {
 
     describe('findModelFixtures', function () {
         it('should fetch a fixture with multiple entries', function () {
-            const foundFixture = fixtureManager.findModelFixtures('Permission', {object_type: 'db'});
+            const foundFixture = fixtureManager.findModelFixtures('Integration', {type: 'internal'});
             assert(_.isPlainObject(foundFixture));
             assert(Array.isArray(foundFixture.entries));
-            assert.equal(foundFixture.entries.length, 4);
-            assert.deepEqual(foundFixture.entries[0], {
-                name: 'Export database',
-                action_type: 'exportContent',
-                object_type: 'db'
-            });
-            assert.deepEqual(foundFixture.entries[3], {
-                name: 'Backup database',
-                action_type: 'backupContent',
-                object_type: 'db'
-            });
-        });
-    });
-
-    describe('findPermissionRelationsForObject', function () {
-        it('should fetch a fixture with multiple entries', function () {
-            const foundFixture = fixtureManager.findPermissionRelationsForObject('db');
-            assert(_.isPlainObject(foundFixture));
-            assert(_.isPlainObject(foundFixture.entries));
-            assert.deepEqual(foundFixture.entries.Administrator, {db: 'all'});
+            assert.deepEqual(foundFixture.entries.map(entry => entry.slug), [
+                'ghost-backup',
+                'ghost-scheduler',
+                'ghost-internal-frontend'
+            ]);
         });
     });
 });

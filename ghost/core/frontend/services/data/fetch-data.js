@@ -3,6 +3,9 @@
  * Dynamically build and execute queries on the API
  */
 const _ = require('lodash');
+const logging = require('@tryghost/logging');
+const config = require('../../../shared/config');
+const { applyLimitCap } = require('../../../shared/max-limit-cap');
 const { resolveApiCall, resolveRouteData } = require('../routing/api-adapter');
 
 /**
@@ -25,6 +28,49 @@ const defaultPostQuery = {
   ...resolveApiCall({ type: 'browse', resource: 'posts' }),
   options: _.cloneDeep(defaultQueryOptions.options),
 };
+
+const loggedListingLimits = new Set();
+
+/**
+ * Get the limit for a listing page.
+ *
+ * Theme `posts_per_page` and routes.yaml `limit` aren't capped like the Content API
+ * and {{#get}}, so log once per process when one is over the max limit.
+ *
+ * @param {string|number} limit
+ * @param {Object} routerOptions
+ * @returns {string|number}
+ */
+function getListingLimit(limit, routerOptions) {
+  const cappedLimit = applyLimitCap(limit);
+
+  if (cappedLimit !== limit) {
+    const source = routerOptions.limit ? 'routes.yaml' : 'theme';
+    const key = `${source}:${limit}`;
+
+    if (!loggedListingLimits.has(key)) {
+      loggedListingLimits.add(key);
+      logging.info(
+        {
+          system: {
+            event: 'listing.limit_over_max',
+            source,
+            limit,
+            max_limit: cappedLimit,
+          },
+        },
+        `Listing page limit ${limit} from ${source} is over the max limit of ${cappedLimit}`,
+      );
+    }
+
+    // Opt-in, because capping by default would break themes that show every post
+    if (config.get('optimization:capListingLimit')) {
+      return cappedLimit;
+    }
+  }
+
+  return limit;
+}
 
 /**
  * Process query request.
@@ -80,7 +126,7 @@ async function fetchData(pathOptions, routerOptions, locals) {
   }
 
   if (Object.hasOwn(pathOptions, 'limit')) {
-    postQuery.options.limit = pathOptions.limit;
+    postQuery.options.limit = getListingLimit(pathOptions.limit, routerOptions);
   }
 
   // CASE: always fetch post entries

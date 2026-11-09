@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/metafield-types",
-  "version": "0.1.2",
+  "version": "0.3.0",
   "description": "Ghost member custom field types: which types exist, what each is made of, and how a value of each is validated",
   "license": "MIT",
   "author": "Ghost Foundation",
@@ -26,6 +26,11 @@
       "types": "./build/structure.d.ts",
       "default": "./build/structure.js"
     },
+    "./shapes": {
+      "source": "./src/shapes.ts",
+      "types": "./build/shapes.d.ts",
+      "default": "./build/shapes.js"
+    },
     "./identity": {
       "source": "./src/identity.ts",
       "types": "./build/identity.d.ts",
@@ -35,6 +40,39 @@
       "source": "./src/countries.ts",
       "types": "./build/countries.d.ts",
       "default": "./build/countries.js"
+    },
+    "./test/fixtures": {
+      "source": "./test/fixtures/fields.ts",
+      "types": "./test/fixtures/fields.ts"
+    }
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "source": "./src/index.ts",
+        "types": "./build/index.d.ts",
+        "default": "./build/index.js"
+      },
+      "./structure": {
+        "source": "./src/structure.ts",
+        "types": "./build/structure.d.ts",
+        "default": "./build/structure.js"
+      },
+      "./shapes": {
+        "source": "./src/shapes.ts",
+        "types": "./build/shapes.d.ts",
+        "default": "./build/shapes.js"
+      },
+      "./identity": {
+        "source": "./src/identity.ts",
+        "types": "./build/identity.d.ts",
+        "default": "./build/identity.js"
+      },
+      "./countries": {
+        "source": "./src/countries.ts",
+        "types": "./build/countries.d.ts",
+        "default": "./build/countries.js"
+      }
     }
   },
   "scripts": {

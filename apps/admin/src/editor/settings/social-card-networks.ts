@@ -9,19 +9,17 @@ import {
   settingsXPreviewImage,
   settingsXTitleInput,
 } from '@tryghost/test-data/selectors/editor';
-import type { BrandIconName } from '@/shared/brand-icon/brand-icon';
-import type { SettingsSectionId } from './sections';
+import type { MetaDataTab } from './sections';
 import type { SettingsTextFieldKey } from './use-settings-field';
 
 /** A line of the card preview. Each network stacks the three in its own order. */
 export type SocialPreviewRow = 'description' | 'domain' | 'title';
 
 export interface SocialCardNetwork {
-  /** The settings section the pane is opened under. */
-  id: Extract<SettingsSectionId, 'facebook-card' | 'x-card'>;
+  /** The Meta data tab the card is edited under. */
+  id: Extract<MetaDataTab, 'facebook-card' | 'x-card'>;
   /** The network's name. Every label in the pane reads `<name> …`. */
   name: string;
-  icon: BrandIconName;
   titleKey: SettingsTextFieldKey;
   descriptionKey: SettingsTextFieldKey;
   imageKey: 'og_image' | 'twitter_image';
@@ -40,7 +38,6 @@ export interface SocialCardNetwork {
 export const X_CARD_NETWORK: SocialCardNetwork = {
   id: 'x-card',
   name: 'X',
-  icon: 'twitter-x',
   titleKey: 'twitter_title',
   descriptionKey: 'twitter_description',
   imageKey: 'twitter_image',
@@ -57,7 +54,6 @@ export const X_CARD_NETWORK: SocialCardNetwork = {
 export const FACEBOOK_CARD_NETWORK: SocialCardNetwork = {
   id: 'facebook-card',
   name: 'Facebook',
-  icon: 'facebook',
   titleKey: 'og_title',
   descriptionKey: 'og_description',
   imageKey: 'og_image',

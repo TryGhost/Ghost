@@ -8,6 +8,7 @@ import {
 import { describe, expect, it, vi } from 'vitest';
 import { memberFields } from './member-fields';
 import { renderHook } from '@testing-library/react';
+import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 
 vi.mock('@tryghost/shade', () => ({
   LucideIcon: new Proxy(
@@ -263,12 +264,25 @@ describe('useMemberFilterFields', () => {
       useMemberFilterFields({
         customFields: [
           {
-            namespace: 'custom',
-            key: 'shipping_address',
+            namespace: CUSTOM_NAMESPACE,
+            key: KeySchema.parse('shipping_address'),
             name: 'Shipping address',
             type: 'address',
+            status: 'active',
+            access: { member: 'none' },
+            created_at: '2026-08-05T00:00:00.000Z',
+            updated_at: null,
           },
-          { namespace: 'custom', key: 'job_title', name: 'Job title', type: 'short_text' },
+          {
+            namespace: CUSTOM_NAMESPACE,
+            key: KeySchema.parse('job_title'),
+            name: 'Job title',
+            type: 'short_text',
+            status: 'active',
+            access: { member: 'none' },
+            created_at: '2026-08-05T00:00:00.000Z',
+            updated_at: null,
+          },
         ],
         siteTimezone: 'UTC',
       }),

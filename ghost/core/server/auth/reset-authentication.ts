@@ -34,7 +34,7 @@ export default async function resetAuthentication({
   userService,
   options,
   models = modelsDefault,
-  internalKeys = internalKeysDefault,
+  internalKeys = internalKeysDefault.service,
   deleteAllSessions = deleteAllSessionsDefault,
 }: ResetAuthenticationArgs): Promise<ResetAuthenticationResult> {
   const previousSchedulerKey = await internalKeys.get('ghost-scheduler');

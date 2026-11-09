@@ -98,9 +98,8 @@ const appRoutes: RouteObject[] = [
     lazy: lazyComponent(lazyAppDetailsScreen),
   },
   {
-    // An installed app's page, in a sandboxed frame.
-    // TODO(BER-3983): `*` is reserved for the app's own pages, e.g. /apps/<id>/week, which
-    // the bridge passes on. Nothing reads it yet.
+    // An installed app's page, in a sandboxed frame. `*` is the app's own route, e.g.
+    // /apps/<id>/week, which the bridge passes to the app along with the query.
     path: '/apps/:installationId/*',
     handle: { requiresAccess: canManageApps } satisfies AccessRouteHandle,
     lazy: lazyComponent(lazyAppPageScreen),
@@ -117,9 +116,8 @@ const appRoutes: RouteObject[] = [
     lazy: lazyComponent(lazyAutomationEditorScreen),
   },
   {
-    // Covers both edit (`:tagSlug`) and create (the sentinel `new`) —
-    // Ember's router declared `/tags/new` before `/tags/:tag_slug`, so a
-    // tag with the literal slug "new" was already unreachable.
+    // Covers both edit (`:tagSlug`) and create (the sentinel `new`), so a tag
+    // with the literal slug "new" is unreachable.
     path: '/tags/:tagSlug',
     handle: { requiresAccess: canManageTags } satisfies AccessRouteHandle,
     lazy: lazyComponent(lazyTagDetailScreen),
@@ -140,6 +138,7 @@ const appRoutes: RouteObject[] = [
   },
   {
     path: '/posts/analytics/:postId',
+    handle: { requiresAccess: hasAdminAccess } satisfies AccessRouteHandle,
     lazy: lazyPostAnalyticsRoot,
     children: postAnalyticsRouteChildren,
   },
@@ -156,6 +155,7 @@ const appRoutes: RouteObject[] = [
         </AnalyticsProvider>
       </OnboardingRedirect>
     ),
+    handle: { requiresAccess: hasAdminAccess } satisfies AccessRouteHandle,
     children: analyticsRouteChildren,
   },
   {

@@ -1,6 +1,5 @@
 /**
- * Ported from `apps/ember-admin/app/utils/public-preview-warning.js`. The
- * caller gates the result on the `paywallImprovements` flag, as Ember does.
+ * The caller gates the result on the `paywallImprovements` flag.
  */
 
 import { z } from 'zod';

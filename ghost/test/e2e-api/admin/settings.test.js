@@ -708,6 +708,7 @@ describe('Settings API', function () {
     });
 
     it('editing members_support_address triggers email verification flow', async function () {
+      configUtils.set('mail:from', '"Support Verification" <default@email.com>');
       const currentSetting = settingsCache.get('members_support_address');
       assert(
         currentSetting !== 'othersupport@example.com',
@@ -741,10 +742,13 @@ describe('Settings API', function () {
         });
 
       emailMockReceiver.assertSentEmailCount(1);
-      mockManager.assert.sentEmail({
+      const verificationEmail = mockManager.assert.sentEmail({
         subject: 'Verify email address',
         to: 'othersupport@example.com',
+        from: '"Support Verification" <default@email.com>',
+        replyTo: null,
       });
+      assert.equal(verificationEmail.headers.Sender, '"Support Verification" <default@email.com>');
     });
 
     it('editing members_support_address equaling default does not trigger verification flow', async function () {
@@ -776,6 +780,7 @@ describe('Settings API', function () {
     });
 
     it('editing members_support_address without matching domain triggers email verification flow', async function () {
+      configUtils.set('mail:from', '"Support Verification" <default@email.com>');
       const currentSetting = settingsCache.get('members_support_address');
       assert(
         currentSetting !== 'othersupport@example.com',
@@ -809,10 +814,13 @@ describe('Settings API', function () {
         });
 
       emailMockReceiver.assertSentEmailCount(1);
-      mockManager.assert.sentEmail({
+      const verificationEmail = mockManager.assert.sentEmail({
         subject: 'Verify email address',
         to: 'othersupport@example.com',
+        from: '"Support Verification" <default@email.com>',
+        replyTo: null,
       });
+      assert.equal(verificationEmail.headers.Sender, '"Support Verification" <default@email.com>');
     });
 
     it('editing members_support_address with matching domain does not trigger email verification flow', async function () {

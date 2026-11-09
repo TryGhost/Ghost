@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import type { FilterPredicate } from '@/shared/filters';
 import type { MemberActiveColumnOptions } from './member-query-params';
 import type { Member, MemberSubscription } from '@tryghost/admin-x-framework/api/members';
+import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 
 const sub = (overrides: Partial<MemberSubscription> = {}): MemberSubscription =>
   ({
@@ -176,10 +177,15 @@ describe('a subscription column reads the resolved current_subscription', () => 
 
 describe('custom field columns', () => {
   const customFields = [
-    { namespace: 'custom', key: 'job_title', name: 'Job title', type: 'short_text' as const },
     {
-      namespace: 'custom',
-      key: 'shipping_address',
+      namespace: CUSTOM_NAMESPACE,
+      key: KeySchema.parse('job_title'),
+      name: 'Job title',
+      type: 'short_text' as const,
+    },
+    {
+      namespace: CUSTOM_NAMESPACE,
+      key: KeySchema.parse('shipping_address'),
       name: 'Shipping address',
       type: 'address' as const,
     },

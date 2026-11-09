@@ -1,17 +1,20 @@
+import { hostOf, isGhostHost } from './ghost-host.ts';
+import { isLocalhost } from './localhost.ts';
 import { manifestSchema, type AppManifest } from './schema.ts';
-import { checkResolvedUrl } from './url.ts';
+import { checkResolvedUrl, FRAGMENT_PROBLEM, hasFragment } from './url.ts';
 
 export interface ParseManifestOptions {
   /**
-   * Where the manifest was fetched from, after any redirects. Relative URLs in it resolve
-   * against this, as they would in a browser.
+   * The address Ghost was asked to fetch the manifest from, before any redirects. The
+   * manifest must name exactly this as its `manifest_url`, and its paths resolve against it.
    */
   manifestUrl: string;
   /**
-   * The URLs Ghost itself is served from: the site and Admin. Nothing Ghost loads from a
-   * manifest may point at these origins. A surface there would share an origin with Admin,
-   * so its sandbox would not contain it, and an icon there would make Admin request a
-   * Ghost URL of the app's choosing with the staff user's session.
+   * The URLs Ghost itself is served from: the site and Admin. The manifest may not be on
+   * their hosts, on any port, and so neither may anything Ghost loads from it, as that is
+   * on the manifest's origin. A surface on Ghost's origin would share it with Admin, so its
+   * sandbox would not contain it. On another port, the app would be sent the staff user's
+   * session cookie, which browsers send to every port on a host.
    */
   ghostUrls: string[];
   /** Accept `localhost` addresses, over HTTP too. Only for Ghost in development. */
@@ -24,16 +27,22 @@ export interface ManifestError {
   message: string;
 }
 
+/**
+ * - `invalid`: the manifest breaks the format's rules.
+ * - `manifest_url_mismatch`: a valid manifest that names another address as its
+ *   `manifest_url`, so it was copied, moved without being signed again, or is for another
+ *   address on the same app.
+ */
 export type ParseManifestResult =
   | { success: true; manifest: AppManifest }
-  | { success: false; errors: ManifestError[] };
+  | { success: false; reason: 'invalid' | 'manifest_url_mismatch'; errors: ManifestError[] };
 
 export type ParseManifestUrlResult =
   | {
       success: true;
       /**
-       * The address to keep, as the URL parser reads it and without a fragment. The URL
-       * parser trims and normalises what it is given, so the string handed in may differ.
+       * The address to keep, as the URL parser reads it. The URL parser trims and
+       * normalises what it is given, so the string handed in may differ.
        */
       manifestUrl: string;
     }
@@ -48,67 +57,95 @@ function formatPath(path: PropertyKey[]): string {
   }, '');
 }
 
+const GHOST_URLS_PROBLEM = 'Expected the URLs Ghost itself is served from';
+const ON_GHOST_HOST =
+  'Expected the manifest on a host other than the one Ghost itself is served from, on any port, as browsers send Ghost’s cookies to every port on its host';
+
+const ON_GHOST_HOST_LOCALLY = `${ON_GHOST_HOST}. To run the app on this machine too, serve it from a name of its own under .localhost, such as my-app.localhost`;
+
+/**
+ * Why a manifest on one of Ghost's hosts is refused, with a hint for when that's most
+ * likely: an app run next to Ghost on the developer's machine. A name under `.localhost`
+ * is a host of its own, which browsers send to the machine itself, and so does Ghost in
+ * development, whatever the system's resolver knows.
+ */
+function onGhostHost(url: URL): string {
+  return isLocalhost(url.hostname) ? ON_GHOST_HOST_LOCALLY : ON_GHOST_HOST;
+}
+
 /**
  * Reads the address a manifest is to be read from, by the same rules as the URLs inside
- * it. Run it before fetching, so the first request never goes to an address Ghost would
- * refuse (plain HTTP, or one carrying credentials). It cannot judge where that address
- * redirects: `parseManifest` checks the address the manifest was finally read from.
+ * it, and checks it is on none of Ghost's hosts. Run it before fetching, so the first
+ * request never goes to an address Ghost would refuse (plain HTTP, one carrying
+ * credentials, or one on Ghost's host). It cannot judge where that address redirects,
+ * which is for whatever fetches it to limit.
  *
- * A fragment never reaches the server, so it is no part of the address and is left out
- * before the check, its length included. That goes for the address a redirect ends at
- * too, which can carry a fragment of any length; URLs in the manifest resolve against it
- * the same either way.
- *
- * The address it hands back, without a fragment, is the one to store and compare with a
- * later one. The URL parser settles most differences in spelling, but not a trailing dot
- * on the host or the case of a percent-encoding: an address spelled that way reads as a
+ * The address it hands back is the one to store, to compare with a later one, and that the
+ * manifest must name as its `manifest_url`. The URL parser settles most differences in
+ * spelling, but not a trailing dot on the host or the case of a percent-encoding: an address spelled that way reads as a
  * change of manifest URL, which needs the publisher's approval, the safe way to be wrong.
  */
-export function parseManifestUrl(input: string, allowLocalhost = false): ParseManifestUrlResult {
+export function parseManifestUrl(
+  input: string,
+  { ghostUrls, allowLocalhost = false }: Omit<ParseManifestOptions, 'manifestUrl'>,
+): ParseManifestUrlResult {
+  if (ghostUrls.length === 0 || !ghostUrls.every((ghostUrl) => hostOf(ghostUrl) !== null)) {
+    return { success: false, error: GHOST_URLS_PROBLEM };
+  }
   const url = URL.parse(input);
   if (!url) {
     return { success: false, error: 'Expected the manifest at a URL' };
   }
-  url.hash = '';
-  const problem = checkResolvedUrl(url, allowLocalhost);
+  const problem = hasFragment(input) ? FRAGMENT_PROBLEM : checkResolvedUrl(url, allowLocalhost);
   if (problem) {
     return { success: false, error: `${problem} for the manifest itself` };
+  }
+  if (isGhostHost(url, ghostUrls)) {
+    return { success: false, error: onGhostHost(url) };
   }
   return { success: true, manifestUrl: url.href };
 }
 
+function invalid(errors: ManifestError[]): ParseManifestResult {
+  return { success: false, reason: 'invalid', errors };
+}
+
 /**
- * Validates a manifest and resolves its URLs against where it was fetched from.
+ * Validates a manifest, and checks it names the address it was fetched from as its
+ * `manifest_url`. A copy served from anywhere else is refused, so the signature binds the
+ * manifest to its address as well as to every URL in it.
  *
- * Returns either the manifest with every URL absolute, or every problem found. It does
- * not fetch anything and it never throws. Without the URLs Ghost is served from it rejects
- * every manifest, since the rule that keeps apps off Ghost's origin could not be checked.
+ * Returns either the manifest, or every problem found. It does not fetch anything and it
+ * never throws. Without the URLs Ghost is served from it rejects every manifest, since the
+ * rule that keeps apps off Ghost's hosts could not be checked.
  */
 export function parseManifest(input: unknown, options: ParseManifestOptions): ParseManifestResult {
   const allowLocalhost = options.allowLocalhost ?? false;
-  const { ghostUrls } = options;
-  if (ghostUrls.length === 0 || !ghostUrls.every((url) => URL.canParse(url))) {
+  const address = parseManifestUrl(options.manifestUrl, options);
+  if (!address.success) {
+    return invalid([{ path: '', message: address.error }]);
+  }
+
+  const result = manifestSchema({ allowLocalhost, base: address.manifestUrl }).safeParse(input);
+  if (!result.success) {
+    return invalid(
+      result.error.issues.map((issue) => ({
+        path: formatPath(issue.path),
+        message: issue.message,
+      })),
+    );
+  }
+  if (result.data.manifest_url !== address.manifestUrl) {
     return {
       success: false,
-      errors: [{ path: '', message: 'Expected the URLs Ghost itself is served from' }],
+      reason: 'manifest_url_mismatch',
+      errors: [
+        {
+          path: 'manifest_url',
+          message: `Expected ${address.manifestUrl}, the address the manifest was read from`,
+        },
+      ],
     };
   }
-
-  const address = parseManifestUrl(options.manifestUrl, allowLocalhost);
-  if (!address.success) {
-    return { success: false, errors: [{ path: '', message: address.error }] };
-  }
-  const base = new URL(address.manifestUrl);
-
-  const result = manifestSchema({ base, ghostUrls, allowLocalhost }).safeParse(input);
-  if (result.success) {
-    return { success: true, manifest: result.data };
-  }
-  return {
-    success: false,
-    errors: result.error.issues.map((issue) => ({
-      path: formatPath(issue.path),
-      message: issue.message,
-    })),
-  };
+  return { success: true, manifest: result.data };
 }

@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 
 import {
@@ -31,6 +30,6 @@ describe('AlertDialog Components', () => {
 
     const footer = screen.getByTestId('alert-dialog-footer');
 
-    assert.doesNotMatch(footer.className, /\[&>button\]:min-w-20/);
+    expect(footer.className).not.toMatch(/\[&>button\]:min-w-20/);
   });
 });

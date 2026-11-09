@@ -117,7 +117,9 @@ describe('SigningKeyService (integration)', function () {
     assert.equal(service.isRotating(), true);
 
     const members = service.forPurpose('members');
-    assert.equal((await members.getSigningKey()).privateKey, oldKeys.privateKey);
+    const signing = await members.getSigningKey();
+    assert.equal(signing.privateKey, oldKeys.privateKey);
+    assert.equal(signing.legacy, true);
     assert.deepEqual(await publishedKids(service, 'members'), [
       await kid(oldKeys.privateKey),
       await kid(newKeys[0].privateKey),
@@ -163,6 +165,7 @@ describe('SigningKeyService (integration)', function () {
     const signing = await members.getSigningKey();
     assert.equal(signing.privateKey, newKeys[0].privateKey);
     assert.equal(signing.kid, await kid(newKeys[0].privateKey));
+    assert.equal(signing.legacy, false);
 
     // Settings mirror the active key so older versions keep working after a downgrade
     assert.equal(await setting('members_private_key'), newKeys[0].privateKey);
@@ -197,6 +200,7 @@ describe('SigningKeyService (integration)', function () {
 
     const token = jwt.sign({ sub: 'member@example.com' }, oldKeys.privateKey, {
       algorithm: 'RS512',
+      allowInsecureKeySizes: true,
       keyid: await kid(oldKeys.privateKey),
     });
     const tokenKid = jwt.decode(token, { complete: true })?.header.kid;

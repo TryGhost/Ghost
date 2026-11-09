@@ -1,7 +1,6 @@
 import type { ReadonlyDeep } from 'type-fest';
-import type { Knex } from 'knex';
-import type { AddAutomationData } from './automations-api';
-import type { AutomationTriggerTierScope } from './automations-repository-2';
+import type { AddAutomationData, EditAutomationData } from './automations-schemas';
+import type { AutomationTriggerRule, AutomationTriggerRuleDefinition } from './trigger-rules';
 
 export type Pagination = {
   page: number;
@@ -78,38 +77,22 @@ export type AutomationBrowseResult = AutomationSummary & {
   };
 };
 
+// This is deprecated and will be removed soon. See NY-1746.
+export type AutomationTriggerTierData =
+  | {
+      trigger_tier_scope: null | 'free' | 'all_paid';
+      trigger_tier_ids: null;
+    }
+  | {
+      trigger_tier_scope: 'selected_paid';
+      trigger_tier_ids: string[];
+    };
+
 export type Automation = AutomationSummary & {
   actions: AutomationAction[];
   edges: AutomationEdge[];
-} & (
-    | {
-        trigger_tier_scope: null | 'free' | 'all_paid';
-        trigger_tier_ids: null;
-      }
-    | {
-        trigger_tier_scope: 'selected_paid';
-        trigger_tier_ids: string[];
-      }
-  );
-
-export type EditAutomationData = {
-  name?: string;
-  description?: string;
-  status: AutomationStatus;
-} & (
-  | { actions: AutomationAction[]; edges: AutomationEdge[] }
-  | { actions?: never; edges?: never }
-) &
-  (
-    | {
-        trigger_tier_scope?: null | 'free' | 'all_paid';
-        trigger_tier_ids?: null;
-      }
-    | {
-        trigger_tier_scope: 'selected_paid';
-        trigger_tier_ids: string[];
-      }
-  );
+  trigger_rules: AutomationTriggerRuleDefinition[];
+};
 
 export type AutomatedEmailRecipientWithMailgunId = {
   id: string;
@@ -140,8 +123,7 @@ type AutomationStepBase = {
   locked_by: string;
   automation_run_id: string;
   automation_id: string;
-  automation_trigger_tier_scope: null | AutomationTriggerTierScope;
-  automation_trigger_tier_ids: string[];
+  automation_trigger_rules: AutomationTriggerRule[];
   automation_status: AutomationStatus;
   member_id: string | null;
   member_email: string;
@@ -172,6 +154,7 @@ export const AUTOMATION_STEP_TERMINAL_STATUSES = [
   'failed',
   'finished',
   'member changed status',
+  'member changed tier',
   'member unsubscribed',
 ] as const;
 
@@ -214,18 +197,8 @@ export type AutomationRunMember = {
   email: string;
 };
 
-export type BrowseOptions = Readonly<{
-  /**
-   * Should stats be included?
-   *
-   * In the future, we plan to remove this option and never return stats from the database repository.
-   */
-  includeStats: boolean;
-}>;
-
 export type AutomationsRepository = {
-  browse(options: BrowseOptions): Promise<Page<AutomationBrowseResult>>;
-  getNumberOfAutomations(): Promise<number>;
+  browse(): Promise<Page<AutomationSummary>>;
   exists(id: string): Promise<boolean>;
   getById(id: string): Promise<Automation | null>;
   getRunHistory(automationId: string, runId: string): Promise<AutomationRunHistory | null>;
@@ -299,20 +272,5 @@ export type AutomationsRepository = {
    */
   trackEmailDeliveredAndOpened(
     eventsByAutomatedEmailRecipientId: ReadonlyDeep<Map<string, AutomatedEmailEvents>>,
-  ): Promise<void>;
-  /**
-   * Record the first click timestamp for the automated email recipient identified by a run step.
-   *
-   */
-  trackEmailClicked(
-    options: {
-      automationActionRevisionId: string;
-      automationRunStepId: string;
-      memberId: string;
-      clickedAt: Readonly<Date>;
-    },
-    transactionOptions?: {
-      transacting?: Knex.Transaction;
-    },
   ): Promise<void>;
 };

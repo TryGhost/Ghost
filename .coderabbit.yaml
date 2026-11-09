@@ -19,7 +19,11 @@ reviews:
       - dependabot[bot]
   path_filters:
     - '!**/dist/**'
-    - '!**/build/**'
+    - '!apps/**/build/**'
+    - '!ghost/**/build/**'
+    - '!koenig/**/build/**'
+    - '!packages/**/build/**'
+    - '!e2e/build/**'
     - '!**/built/**'
     - '!**/umd/**'
     - '!**/coverage/**'
@@ -47,6 +51,49 @@ reviews:
           migration (ghost/core/server/data/migrations/), a tool/config file,
           under tools/scripts/ or docker/, or generated/vendored code.
           Modifying pre-existing JS files never fails this check.
+      - name: 'Tooling ownership'
+        mode: 'error'
+        instructions: |
+          Check that scripts, tools and shared configuration changed by this PR belong in
+          the right folder and work in their intended environment.
+
+          Check every changed path, including any folder named `scripts`, wherever it
+          appears—even inside hidden folders or newly added directories. Use
+          `tools/README.md` and the relevant folder README to decide placement:
+
+          - `tools/configs`: shared configuration and rules imported by development tools,
+            such as ESLint, TypeScript and Vite.
+          - `tools/scripts`: repository setup, checks, builds spanning multiple
+            workspaces, and releases. Use `ci/`, `build/` or `release/`; keep setup and
+            repair scripts at the root.
+          - `tools/gx`: contributor commands and their implementations, run
+            through `pnpm gx`.
+          - `ghost/scripts`: build and package the Ghost server, prepare release files, or
+            export Core policy from a source checkout.
+          - `ghost/bin`: commands shipped with Ghost that run against an installed
+            release.
+
+          Build, test and configuration helpers used only by one app or package can stay
+          beside it. Follow documented exceptions for tools that need a separate
+          installation environment. Creating a new `scripts` folder does not establish an
+          exception.
+
+          When a tool is needed through both gx and an installed release, keep both
+          entrypoints. Share the operation and option validation in Core; keep CLI output,
+          environment setup and cleanup in each entrypoint.
+
+          Check that moves preserve callers, relative paths, sparse checkouts, Docker/Nx
+          inputs and shipped paths. Bootstrap, repair and direct shutdown must work
+          without installed CLI dependencies. Installed commands must not depend on
+          private tooling workspaces or checkout-only loaders.
+
+          Preserve documented exceptions, including the shipped `ghost/scripts/prune.mts`
+          path, and keep tests and fixtures beside their owner.
+
+          Fail only when this PR introduces or worsens a concrete placement or execution
+          problem. Identify the file, its caller or runtime, and the required correction.
+          Otherwise pass. Do not request unrelated moves or repeat findings from automated
+          checks.
   path_instructions:
     - path: '**/*'
       instructions: |
@@ -189,6 +236,18 @@ knowledge_base:
   code_guidelines:
     enabled: true
     filePatterns:
+      - files: 'tools/README.md'
+        applyTo: '**/*'
+      - files: 'tools/configs/README.md'
+        applyTo: 'tools/configs/**,**/*config*'
+      - files: 'tools/scripts/README.md'
+        applyTo: 'tools/scripts/**,.github/**,docker/**,package.json,nx.json'
+      - files: 'tools/gx/README.md'
+        applyTo: 'tools/gx/**,package.json,.codex/hooks.json'
+      - files: 'ghost/scripts/README.md'
+        applyTo: 'ghost/scripts/**,ghost/package.json,docker/**'
+      - files: 'ghost/bin/README.md'
+        applyTo: 'ghost/bin/**,ghost/package.json,docker/**'
       - files: 'docs/practices/api-design.md'
         applyTo: 'ghost/core/server/api/**,packages/admin-api-schema/**'
       - files: 'docs/practices/database-migrations.md'

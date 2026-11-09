@@ -7,11 +7,25 @@ export const options: ParseManifestOptions = {
   ghostUrls: ['https://site.example.com', 'https://admin.example.com/ghost/'],
 };
 
+// Ghost on localhost, and the app on a name of its own under it, as Ghost refuses its own host
+// on any port.
 export const devOptions: ParseManifestOptions = {
-  manifestUrl: 'http://localhost:8787/ghost-app.json',
+  manifestUrl: 'http://my-app.localhost:8787/ghost-app.json',
   ghostUrls: ['http://localhost:2368'],
   allowLocalhost: true,
 };
+
+export const IDENTITY_KEY = {
+  kty: 'OKP',
+  crv: 'Ed25519',
+  x: 'xQcVt_FXHEk7Uv4dKhUL2nR5DwwsLVW4pu2il-5sX_s',
+} as const;
+
+export const BACKEND_KEY = {
+  kty: 'OKP',
+  crv: 'Ed25519',
+  x: 'H7aU67-okztSJD3-0znkVDiCU-izOI3I851CZX8XDyk',
+} as const;
 
 export function manifest(overrides: Record<string, unknown> = {}) {
   return {
@@ -22,8 +36,20 @@ export function manifest(overrides: Record<string, unknown> = {}) {
     accent_color: '#FF5500',
     icon: { url: '/icon.svg' },
     surfaces: [{ type: 'admin_page', url: '/admin' }],
+    manifest_url: 'https://podcast.example.com/ghost-app.json',
+    identity_key: IDENTITY_KEY,
+    backend_key: BACKEND_KEY,
+    development: false,
     ...overrides,
   };
+}
+
+export function devManifest(overrides: Record<string, unknown> = {}) {
+  return manifest({
+    manifest_url: 'http://my-app.localhost:8787/ghost-app.json',
+    development: true,
+    ...overrides,
+  });
 }
 
 export function errorsOf(input: unknown, parseOptions = options) {

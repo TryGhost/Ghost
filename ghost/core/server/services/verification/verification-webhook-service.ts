@@ -1,4 +1,9 @@
-import { buildSignedWebhookRequest, sanitizeWebhookUrl } from '../../lib/signed-webhook';
+import type { GhostLogger } from '@tryghost/logging';
+import {
+  buildSignedWebhookRequest,
+  describeWebhookError,
+  sanitizeWebhookUrl,
+} from '../../lib/signed-webhook';
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
 const config = require('../../../shared/config');
@@ -17,11 +22,7 @@ type VerificationWebhookServiceDependencies = {
   config: {
     get: (key: string) => unknown;
   };
-  logging: {
-    info: (message: string) => void;
-    warn: (message: string) => void;
-    error: (message: string) => void;
-  };
+  logging: Pick<GhostLogger, 'info' | 'warn' | 'error'>;
   request: (url: string, options: unknown) => Promise<unknown>;
 };
 
@@ -92,7 +93,7 @@ export class VerificationWebhookService {
       await this.#request(webhookUrl, requestOptions);
       return true;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
+      const message = describeWebhookError(error);
       this.#logging.error(
         `Failed to send verification webhook to "${sanitizedWebhookUrl}": ${message}`,
       );

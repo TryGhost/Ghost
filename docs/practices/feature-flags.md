@@ -96,10 +96,13 @@ Admin 7 milestones use ordinary private Labs flags with stable, descriptive
 Follow the same registration and lifecycle as any other private flag.
 
 Read the current milestone's flag with `useFeatureFlag` at the boundary that
-owns the change, keeping any availability checks beside it. For shared design
-changes, pass the result to ShadeApp's `isAdmin7` prop. Components read
-`useShade().isAdmin7`; reuse this switch as milestones progress instead of
-adding a Shade prop for each milestone.
+owns the change, keeping any availability checks beside it. When a milestone
+changes shared design, Shade gets a switch named exactly after its flag: Admin
+passes `useFeatureFlag('admin7Design')` to ShadeApp's `admin7Design` prop,
+components read `useShade().admin7Design`, and tokens are scoped by the
+`data-admin7-design` attribute that ShadeApp and Shade's portals carry. Delete
+the switch together with its flag. Don't reuse one generic switch across
+milestones: a switch that outlives its flag no longer says what it controls.
 
 Keep shared appearance in Shade and page-specific structure in the page. Build
 the enabled design as the intended default so retiring a flag means removing
@@ -128,12 +131,28 @@ site places, search and the site's numbers (Online, Members and MRR, for staff
 with admin access), so View site and search leave the sidebar. The frame closes
 around the editor and automation editor, and its sides retract on View site. Inside the frame, list pages show their title
 large above a sticky header that takes it over as the page scrolls: Admin's
-layout turns this on through Shade's `PageChromeProvider` rather than
-`isAdmin7`, which stays on for the generally available pill controls.
+layout turns this on through Shade's `PageChromeProvider`.
 Settings, the editor, the automation editor, mobile and pages without a
 `PageHeader.Title` keep the usual header. Settings shows its
 navigation inside the same sidebar, pinned without changing the stored mode. Mobile keeps the sidebar sheet, and the flag-off path
 preserves the docked sidebar and the separate Settings sidebar.
+
+The `admin7Design` milestone also sets column headers in a small uppercase label
+style. Section headings on member details, tag details and Settings share one
+style, and member stats and list text follow the prototype.
+
+The `admin7Design` milestone also gives text-entry fields 4px corners and 14px
+text. Checkboxes, radios, Filter bar items and Koenig keep their current look.
+
+The `admin7Design` milestone also makes colored banners a flat color with darker
+shades of it for text and no outline.
+
+The `admin7Design` milestone also gives cards 8px corners and makes large titles
+and the space above them follow the width of the page area.
+
+The `admin7Design` milestone also moves the member detail sidebar to the right with
+Engagement first, and sections sit under larger headings with a line across the
+top instead of a card.
 
 The `admin7CustomizeFromViewSite` experiment adds Customize to the frame's top
 bar on View site, opening the Design settings in a panel over a live, browsable
@@ -141,16 +160,20 @@ preview of the site, with its state in the URL (`/site?customize`). It needs
 `admin7Design` for the frame and is only for staff who can edit the design, on
 desktop. It has its own flag because it may ship apart from Admin 7.
 
-The `admin7EditorImprovements` milestone collects improvements to the post and
-page editor, independent of `admin7Design`. While the writer types in the title,
-excerpt or body, the editor's chrome fades out: the header, the settings toggle,
-the word count, email size warning and help link, and the empty feature image
-bar. An existing feature image stays. Moving the pointer more than a few pixels,
-scrolling with a wheel or trackpad, focusing anything outside the writing area
-or an unused Esc brings it back.
-Nothing hides while the settings panel is open or moving, while the status line
-reports a failed save or newsletter, or on touch and small screens. The chrome
-keeps its place, stays focusable and takes no pointer input while hidden.
+The editor improvements milestone is generally available in Admin. Core keeps
+`admin7EditorImprovements` in `GA_FEATURES` for older Admin builds. It improves
+the post and page editor, independent of `admin7Design`. While the writer types
+in the title, excerpt or body, the editor's chrome fades out: the header's status
+and actions, the settings toggle, the word count and email size warning, and the
+empty feature image bar. The back link and an existing feature image stay. Moving the pointer more than a few
+pixels, scrolling with a wheel or trackpad, focusing anything outside the
+writing area or an unused Esc brings it back. Nothing hides while the settings
+panel is open or moving, while the status line reports a failed save or
+newsletter, or on touch and small screens. The chrome keeps its place, stays
+focusable and takes no pointer input while hidden. The milestone also trims the
+chrome itself: the back link shows its arrow alone, the editor font and the
+guide to the editor leave the footer for the settings panel, and the meta data
+and social cards share one pane with a tab each.
 
 ## How values are resolved
 
@@ -193,6 +216,11 @@ session. A URL without `labs` reuses the stored list; a URL with `labs` replaces
 the whole list rather than adding to it. Visit a route with an empty value,
 such as `/ghost/#/posts?labs=`, to clear the overrides. Simply removing the
 parameter does not clear them.
+
+On an installed app's page (`/ghost/#/apps/<installation id>/…`), the query
+belongs to the app, so Admin doesn't read `labs` from it. Overrides that are
+already set stay in effect. Admin's own screens under `/apps/`, such as
+`/apps/install`, read `labs` as usual.
 
 These overrides only force flags on. `useFeatureFlag` honors them even when the
 server-computed value is `false`. There is no force-off syntax; clearing an

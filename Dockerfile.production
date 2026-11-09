@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1-labs@sha256:63e440b412b6acba117974e793b7e7f702e58ee65e044bdff1b8d388ee0d853b
+# syntax=docker/dockerfile:1-labs@sha256:ad43eec41369d9ef94412c0d1eb3203d12218d01da225afc92a3aeba3a0e7796
 
 # Production Dockerfile for Ghost
 # Targets:
@@ -25,7 +25,7 @@
 # duplicated node_modules (~600MB) and the admin build (~80MB) and inflated every
 # image pull.
 
-ARG NODE_VERSION=22.23.3
+ARG NODE_VERSION=22.23.4
 
 # Set by BuildKit per target platform; declared globally so the selfhost target
 # can pick its gosu stage by architecture.
@@ -61,9 +61,10 @@ COPY --exclude=ghost/core/built . .
 # prebuild-install fetches its prebuilt binary (permitted by allowBuilds in
 # pnpm-workspace.yaml). No build-essential/python3 is installed, so a node-gyp
 # source-compile fallback fails loudly instead of silently pulling a toolchain into
-# a discarded layer.
+# a discarded layer. --no-runtime skips downloading the devEngines.runtime Node
+# from nodejs.org: the base image already runs NODE_VERSION.
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
-    pnpm install --filter "ghost..." --frozen-lockfile --prefer-offline
+    pnpm install --filter "ghost..." --frozen-lockfile --prefer-offline --no-runtime
 
 # Build ghost's production workspace dependency closure (kg-*/adapters; @tryghost/i18n
 # has no build script and is skipped) plus ghost's own server output. Driven with

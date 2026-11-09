@@ -212,8 +212,8 @@ export interface PublishOptionsInputs {
   limits?: PublishLimitPorts;
   now?: () => Date;
   /**
-   * The newsletter remembered for a draft (admin7EditorImprovements), selected over
-   * the default while it is selectable. The post's own newsletter still comes first.
+   * The newsletter remembered for a draft, selected over the default while it is
+   * selectable. The post's own newsletter still comes first.
    */
   draftNewsletter?: string | null;
 }

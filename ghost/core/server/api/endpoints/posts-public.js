@@ -2,7 +2,7 @@ const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const pick = require('lodash/pick');
-const postsPublicService = require('../../services/posts-public');
+const postsPublicService = require('../../services/posts-public').default;
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const postsService = getPostServiceInstance();
 const { rejectPostsContentApiRestrictedFieldsTransformer } = require('./utils/api-filter-utils');
@@ -25,7 +25,7 @@ const controller = {
     headers: {
       cacheInvalidate: false,
     },
-    cache: postsPublicService.api?.cache,
+    cache: postsPublicService.service.cache,
     generateCacheKeyData(frame) {
       return {
         options: generateOptionsData(frame, [
@@ -81,7 +81,7 @@ const controller = {
     headers: {
       cacheInvalidate: false,
     },
-    cache: postsPublicService.api?.cache,
+    cache: postsPublicService.service.cache,
     async generateCacheKeyData(frame) {
       return {
         options: generateOptionsData(frame, ['include', 'fields', 'formats', 'absolute_urls']),

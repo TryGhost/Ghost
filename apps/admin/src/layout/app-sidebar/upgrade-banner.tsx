@@ -2,6 +2,7 @@ import { Fragment } from 'react';
 import { Banner, Button } from '@tryghost/shade/components';
 import { formatNumber } from '@tryghost/shade/utils';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 import ghostProLogo from '@/assets/images/ghost-pro-logo.png';
 import ghostProLogoDark from '@/assets/images/ghost-pro-logo-dark.png';
@@ -15,6 +16,8 @@ const DEFAULT_LOGO_ALT = 'Ghost Pro';
 
 function UpgradeBanner({ trialDaysRemaining }: { trialDaysRemaining: number }) {
   const { data: config } = useBrowseConfig();
+  // The floating sidebar holds its banners inside the capsule, so their glow stays within it
+  const admin7Design = useFeatureFlag('admin7Design');
   const bannerConfig = config?.config.hostSettings?.billing?.upgradeBanner;
 
   const messageParts = (bannerConfig?.message || DEFAULT_MESSAGE).split(DAYS_PLACEHOLDER);
@@ -26,7 +29,11 @@ function UpgradeBanner({ trialDaysRemaining }: { trialDaysRemaining: number }) {
     bannerConfig?.logoAlt ?? (bannerConfig?.logo || bannerConfig?.logoDark ? '' : DEFAULT_LOGO_ALT);
 
   return (
-    <Banner className="mx-2 flex flex-col items-stretch" size="lg" variant="gradient">
+    <Banner
+      className="mx-2 flex flex-col items-stretch"
+      size="lg"
+      variant={admin7Design ? 'gradient-inline' : 'gradient'}
+    >
       <div>
         <img alt={logoAlt} className="max-h-[33px] dark:hidden" src={logo} />
         <img alt={logoAlt} className="hidden max-h-[33px] dark:block" src={logoDark} />
@@ -47,7 +54,13 @@ function UpgradeBanner({ trialDaysRemaining }: { trialDaysRemaining: number }) {
         ))}
       </div>
       <Button asChild>
-        <a href={bannerConfig?.upgradeUrl || DEFAULT_UPGRADE_URL}>Upgrade now</a>
+        {/* The link stretches over the whole card, which looks and behaves as one clickable box */}
+        <a
+          className="after:absolute after:inset-0"
+          href={bannerConfig?.upgradeUrl || DEFAULT_UPGRADE_URL}
+        >
+          Upgrade now
+        </a>
       </Button>
     </Banner>
   );

@@ -1,71 +1,173 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 import {
-  FIELD_TYPES,
-  FIELD_TYPE_IDS,
+  FIELD_STRUCTURES,
+  editableAnswers,
   MAX_LONG_TEXT_BYTES,
   isMetafieldChangeSource,
-  partTypesOf,
-  subFieldsOf,
+  isFieldType,
+  isRecordValue,
+  matchField,
+  matchLeaf,
+  matchShape,
+  partsOf,
+  refusedProperty,
+  valueSchemaFor,
   type Address,
+  TypedSettingsInputSchema,
   type FieldType,
+  type FieldTypeOfShape,
+  type TypedSettings,
 } from '../src/index.ts';
 
 // This asserts only the catalog's *contract* — which field types exist, and which of
 // them have parts. The behavioural outcomes (per-type value validation, the composite
-// address round-tripping, sub-field 422s) are proven end-to-end through the member
+// address round-tripping, part 422s) are proven end-to-end through the member
 // metafields HTTP API integration tests, which exercise this catalog together with
 // the backend storage and the wire format.
 describe('metafield-types catalog', function () {
   // Integrations depend on a published version of this package and talk to sites on
-  // other Ghost versions, so a type that has shipped keeps its parts and their types
+  // other Ghost versions, so a type that has shipped keeps its parts and what each holds
   // for good: an integration with a newer package would otherwise send a part an older
   // site refuses. New structure is a new type. Add a type here once it has shipped.
   it('never changes a type once it has shipped', function () {
+    const line = { leaf: 'text', size: 'line' };
     const shipped = {
-      short_text: null,
-      long_text: null,
+      short_text: { shape: 'scalar', leaf: line },
+      long_text: { shape: 'scalar', leaf: { leaf: 'text', size: 'long' } },
       address: {
-        line1: 'short_text',
-        line2: 'short_text',
-        city: 'short_text',
-        state: 'short_text',
-        postal_code: 'postal_code',
-        country: 'country_code',
+        shape: 'record',
+        parts: {
+          line1: line,
+          line2: line,
+          city: line,
+          state: line,
+          postal_code: { leaf: 'text', size: 'code' },
+          country: { leaf: 'choice', from: 'countries' },
+        },
       },
     };
 
-    for (const [type, parts] of Object.entries(shipped)) {
-      assert.ok(FIELD_TYPE_IDS.includes(type as FieldType), `${type} still exists`);
-      assert.deepEqual(partTypesOf(type as FieldType), parts, `${type} keeps its parts`);
+    for (const [type, structure] of Object.entries(shipped)) {
+      assert.ok(isFieldType(type), `${type} still exists`);
+      assert.deepEqual(FIELD_STRUCTURES[type], structure, `${type} keeps its structure`);
     }
   });
 
+  it('answers for each type by the shape it declares', function () {
+    const layout = (type: FieldType) =>
+      matchShape(type, {
+        scalar: ({ leaf }) => `one ${leaf.leaf} value`,
+        record: ({ parts }) => `parts ${Object.keys(parts).join(', ')}`,
+        set: () => 'options picked from the field',
+      });
+
+    assert.equal(layout('long_text'), 'one text value');
+    assert.equal(layout('address'), 'parts line1, line2, city, state, postal_code, country');
+  });
+
+  it('answers for each leaf by the kind it declares', function () {
+    const holds = (part: 'line1' | 'country') =>
+      matchLeaf(FIELD_STRUCTURES.address.parts[part], {
+        text: ({ size }) => `${size} text`,
+        choice: ({ from }) => `a choice from ${from}`,
+      });
+
+    assert.equal(holds('line1'), 'line text');
+    assert.equal(holds('country'), 'a choice from countries');
+  });
+
+  it('knows its own types, and nothing else as one', function () {
+    assert.equal(isFieldType('address'), true);
+    for (const value of ['a_type_from_the_future', 'constructor', 'toString', 42, null]) {
+      assert.equal(isFieldType(value), false, String(value));
+    }
+  });
+
+  it('refuses to answer for a type it has never heard of, naming it', function () {
+    // A plain JavaScript caller can pass any string as a type, including a name every object has.
+    for (const type of ['a_type_from_the_future', 'constructor']) {
+      assert.throws(
+        // @ts-expect-error a type this build doesn't know
+        () => matchShape(type, { scalar: () => 1, record: () => 2, set: () => 3 }),
+        new RegExp(`Unknown field type: ${type}`),
+      );
+    }
+  });
+
+  it('refuses a rule for a type it has never heard of, naming it', function () {
+    for (const type of ['a_type_from_the_future', 'constructor']) {
+      assert.throws(
+        // @ts-expect-error a type this build doesn't know
+        () => valueSchemaFor({ type }),
+        new RegExp(`Unknown field type: ${type}`),
+      );
+    }
+  });
+
+  it('tells a record value by its layout, so a list or nothing is not one', function () {
+    assert.equal(isRecordValue({ city: 'London' }), true);
+    assert.equal(isRecordValue(['London']), false);
+    assert.equal(isRecordValue(null), false);
+    assert.equal(isRecordValue('London'), false);
+  });
+
+  it('names each part in declaration order, and none for a type without parts', function () {
+    assert.deepEqual(partsOf('address'), [
+      'line1',
+      'line2',
+      'city',
+      'state',
+      'postal_code',
+      'country',
+    ]);
+    assert.equal(partsOf('short_text'), null);
+  });
+
+  it('names no parts for a list, whose options are its field’s own', function () {
+    assert.equal(partsOf('list'), null);
+  });
+
+  it('refuses to answer for a field of a type it has never heard of, naming it', function () {
+    // A plain JavaScript caller can pass any string as a type.
+    const unknown = { type: 'a_type_from_the_future' };
+    const handlers = { scalar: () => 1, record: () => 2, set: () => 3 };
+    assert.throws(
+      // @ts-expect-error a type this build doesn't know
+      () => matchField(unknown, handlers),
+      /Unknown field type: a_type_from_the_future/,
+    );
+  });
+
   it('reads a type it has never heard of as having no parts', function () {
-    // Only reachable by lying about the type, which is what an admin build older than
-    // the server it talks to does: the type is a string off the wire, asserted not
-    // checked. Failing here would take the surface down over a field it merely cannot
-    // render, so it degrades and the server stays authoritative.
-    assert.equal(subFieldsOf('a_type_from_the_future' as FieldType), null);
+    // A plain JavaScript caller can pass any string as a type.
+    // @ts-expect-error a type this build doesn't know
+    assert.equal(partsOf('a_type_from_the_future'), null);
   });
 
   describe('text is trimmed, whatever type it belongs to', function () {
-    // Trimming decides whether a value is stored at all: a value that trims to
-    // nothing is a clear. Two text types disagreeing about that would mean the same
-    // keystrokes emptying one field and filling another.
+    // Trimming decides whether a value holds anything: one that trims to nothing is
+    // refused, since `null` is how a write clears. Two text types disagreeing about
+    // that would mean the same keystrokes saving in one field and refused in another.
     it('trims every text type alike', function () {
       for (const type of ['short_text', 'long_text'] as const) {
-        const padded = FIELD_TYPES[type].value.safeParse('  Ghosts  ');
+        const padded = valueSchemaFor({ type }).safeParse('  Ghosts  ');
         assert.equal(padded.success && padded.data, 'Ghosts', type);
 
-        const blank = FIELD_TYPES[type].value.safeParse('   ');
-        assert.equal(blank.success && blank.data, '', type);
+        const blank = valueSchemaFor({ type }).safeParse('   ');
+        assert.equal(blank.success, false, type);
       }
     });
 
     it('measures a bound against the value rather than its padding', function () {
-      assert.equal(FIELD_TYPES.short_text.value.safeParse(`  ${'x'.repeat(255)}  `).success, true);
-      assert.equal(FIELD_TYPES.short_text.value.safeParse('x'.repeat(256)).success, false);
+      assert.equal(
+        valueSchemaFor({ type: 'short_text' }).safeParse(`  ${'x'.repeat(255)}  `).success,
+        true,
+      );
+      assert.equal(
+        valueSchemaFor({ type: 'short_text' }).safeParse('x'.repeat(256)).success,
+        false,
+      );
     });
   });
 
@@ -74,7 +176,7 @@ describe('metafield-types catalog', function () {
   // to is sized in bytes. A character-based bound would accept a multibyte
   // value that the column can't hold.
   describe('long_text is bounded in bytes, not characters', function () {
-    const parse = (value: string) => FIELD_TYPES.long_text.value.safeParse(value).success;
+    const parse = (value: string) => valueSchemaFor({ type: 'long_text' }).safeParse(value).success;
 
     it('accepts a value of exactly the limit', function () {
       assert.equal(parse('a'.repeat(MAX_LONG_TEXT_BYTES)), true);
@@ -97,11 +199,11 @@ describe('metafield-types catalog', function () {
     });
   });
 
-  // The rule that replaced per-sub-field requiredness. An end-to-end test can't
-  // pin it: the CSV and admin paths both strip blank sub-fields before a value
+  // The rule that replaced per-part requiredness. An end-to-end test can't
+  // pin it: the CSV and admin paths both strip blank parts before a value
   // reaches the catalog, so neither ever presents the empty case this rejects.
   describe('an address must name at least one part', function () {
-    const parse = (value: unknown) => FIELD_TYPES.address.value.safeParse(value).success;
+    const parse = (value: unknown) => valueSchemaFor({ type: 'address' }).safeParse(value).success;
 
     it('accepts a partial address', function () {
       // There is no postal code in Hong Kong and no city in an Irish
@@ -141,35 +243,38 @@ describe('metafield-types catalog', function () {
       assert.equal(parse({ line1: undefined, country: undefined }), false);
     });
 
-    it('accepts an address that names parts as empty, which is how they are cleared', function () {
-      assert.equal(parse({ line1: '', city: '' }), true);
+    it('clears a part named as null, and refuses one named as empty', function () {
+      assert.equal(parse({ line1: null, city: null }), true);
+      assert.equal(parse({ line1: '', city: '' }), false);
     });
 
-    it('lets a sub-field whose rule is a format be emptied too', function () {
-      // Empty is a statement about the write, not about the sub-field, so every
-      // sub-field takes it alike. A bound admits the empty string on its own; a
-      // pattern does not, which would leave a country the one part of an address
-      // that could be set but never removed.
-      assert.equal(parse({ line1: '62 Ghost Lane', city: 'Dublin', country: '' }), true);
-      assert.equal(parse({ country: '' }), true);
+    it('lets a part whose rule is a format be cleared too', function () {
+      // Clearing is a statement about the write, not about the part, so every
+      // part takes it alike, a country's two-letter format included.
+      assert.equal(parse({ line1: '62 Ghost Lane', city: 'Dublin', country: null }), true);
+      assert.equal(parse({ country: null }), true);
 
-      // Emptying it is still the only thing that gets in for free.
+      // Clearing it is still the only thing that gets in for free.
       assert.equal(parse({ country: 'DEU' }), false);
     });
 
     it('normalises the case of a country code, so one country is one value', function () {
-      const parsed = FIELD_TYPES.address.value.safeParse({ country: 'gb' });
-      assert.equal(parsed.success && parsed.data.country, 'GB');
+      const countryOf = (written: string) => {
+        const parsed = valueSchemaFor({ type: 'address' }).safeParse({
+          country: written,
+        });
+        if (!parsed.success || !isRecordValue(parsed.data)) {
+          return undefined;
+        }
+        const { country } = parsed.data;
+        return country;
+      };
+      assert.equal(countryOf('gb'), 'GB');
 
       // Whichever way it arrives, it is stored the same way, so a filter for one
       // form cannot miss members holding another.
       for (const written of ['GB', 'gb', 'Gb', ' gB ']) {
-        const result = FIELD_TYPES.address.value.safeParse({ country: written });
-        assert.equal(
-          result.success && result.data.country,
-          'GB',
-          `expected ${JSON.stringify(written)} to normalise`,
-        );
+        assert.equal(countryOf(written), 'GB', `expected ${JSON.stringify(written)} to normalise`);
       }
     });
 
@@ -177,12 +282,17 @@ describe('metafield-types catalog', function () {
       // XK is not an ISO-assigned code, and it is what Kosovo is written as. Ghost
       // stores it rather than refusing a member's own country.
       for (const code of ['XK', 'TW', 'PS', 'EH']) {
-        assert.equal(FIELD_TYPES.address.value.safeParse({ country: code }).success, true, code);
+        assert.equal(
+          valueSchemaFor({ type: 'address' }).safeParse({ country: code }).success,
+          true,
+          code,
+        );
       }
     });
 
     it('takes two ASCII letters as a country code and nothing else', function () {
-      const parseCountry = (country: string) => FIELD_TYPES.address.value.safeParse({ country });
+      const parseCountry = (country: string) =>
+        valueSchemaFor({ type: 'address' }).safeParse({ country });
 
       // Uppercasing is not length-preserving, so a rule counting the characters of
       // the result is wrong both ways: one character can become two, and two can
@@ -196,8 +306,8 @@ describe('metafield-types catalog', function () {
       assert.equal(parseCountry('!!').success, false);
     });
 
-    it('trims a sub-field, so its bound measures the value and not the padding', function () {
-      const result = FIELD_TYPES.address.value.safeParse({
+    it('trims a part, so its bound measures the value and not the padding', function () {
+      const result = valueSchemaFor({ type: 'address' }).safeParse({
         line1: '  1 Main St  ',
         country: ' GB ',
       });
@@ -206,7 +316,9 @@ describe('metafield-types catalog', function () {
 
       // A value that reaches the limit exactly still fits once its padding is gone.
       assert.equal(
-        FIELD_TYPES.address.value.safeParse({ line1: `  ${'x'.repeat(255)}  ` }).success,
+        valueSchemaFor({ type: 'address' }).safeParse({
+          line1: `  ${'x'.repeat(255)}  `,
+        }).success,
         true,
       );
     });
@@ -229,18 +341,102 @@ describe('metafield-types catalog', function () {
       assert.equal(parse({ line1: 'x'.repeat(256) }), false);
     });
 
-    it('reads a part of nothing but whitespace as empty, so it clears', function () {
-      // Trimming happens per part above, so whitespace has already become the empty
-      // string by the time the rule runs — and empty is an instruction, not a value.
-      const result = FIELD_TYPES.address.value.safeParse({ line1: '   ', city: '\t' });
-      assert.equal(result.success, true);
-      assert.deepEqual(result.data, { line1: '', city: '' });
+    it('refuses a part of nothing but whitespace, which holds nothing', function () {
+      const result = valueSchemaFor({ type: 'address' }).safeParse({
+        line1: '   ',
+        city: '\t',
+      });
+      assert.equal(result.success, false);
+    });
+  });
+
+  describe('a list', function () {
+    it('refuses a write that picks nothing, which clears with null', function () {
+      const field: TypedSettings = { type: 'list', settings: { options: ['Dog'], multiple: true } };
+      const result = valueSchemaFor(field).safeParse([]);
+      assert.equal(result.success, false);
+      assert.equal(
+        result.error?.issues[0]?.message,
+        'Choose at least one option, or send null to clear it.',
+      );
+    });
+
+    it('edits only the answers its field offers, in its order', function () {
+      const settings = { options: ['Dog', 'Cat', 'Fish'], multiple: true };
+      assert.deepEqual(editableAnswers(settings, ['Fish', 'Dolphin', 'Dog']), ['Dog', 'Fish']);
+    });
+
+    it('edits no answer of a field taking one that holds several', function () {
+      const settings = { options: ['Dog', 'Cat'], multiple: false };
+      assert.deepEqual(editableAnswers(settings, ['Dog', 'Cat']), []);
+      // Still several, though only one is offered now: the one alone isn't their answer.
+      assert.deepEqual(editableAnswers(settings, ['Dog', 'Hamster']), []);
+      assert.deepEqual(editableAnswers(settings, ['Cat']), ['Cat']);
     });
   });
 
   describe('what a broken rule says', function () {
-    const reasonFor = (type: FieldType, value: unknown): string | null => {
-      const result = FIELD_TYPES[type].value.safeParse(value);
+    // Ghost names a refusal's property this way, and a form files what it finds under the same
+    // key, so a problem with one option lands beside that option.
+    it('names where a refusal points, down to the option', function () {
+      const result = TypedSettingsInputSchema.safeParse({
+        type: 'list',
+        settings: { options: ['Dog', 'Cat | Mouse'], multiple: true },
+      });
+      assert.equal(result.success, false);
+      assert.equal(refusedProperty(result.error?.issues[0]?.path ?? []), 'settings.options.1');
+    });
+
+    // The option that repeats an earlier one is the one to change, so the refusal points at it
+    // rather than at the list as a whole.
+    it('refuses a repeated option on the option that repeats an earlier one, whatever its case', function () {
+      const result = TypedSettingsInputSchema.safeParse({
+        type: 'list',
+        settings: { options: ['Dog', 'Cat', ' dog'], multiple: true },
+      });
+      assert.deepEqual(
+        result.error?.issues.map((issue) => [refusedProperty(issue.path), issue.message]),
+        [['settings.options.2', 'This option already exists.']],
+      );
+    });
+
+    it('refuses a repeat whose case differs in letters one change of case keeps apart', function () {
+      for (const options of [
+        ['Straße', 'STRASSE'],
+        ['ẞ', 'ß'],
+        ['ΟΣ', 'οσ'],
+      ]) {
+        const result = TypedSettingsInputSchema.safeParse({
+          type: 'list',
+          settings: { options, multiple: true },
+        });
+        assert.deepEqual(
+          result.error?.issues.map((issue) => [refusedProperty(issue.path), issue.message]),
+          [['settings.options.1', 'This option already exists.']],
+        );
+      }
+    });
+
+    // An emptied option already asks for its text, so two emptied options aren't also repeats.
+    it('asks only for text when two options are empty', function () {
+      const result = TypedSettingsInputSchema.safeParse({
+        type: 'list',
+        settings: { options: ['', 'Dog', ' '], multiple: true },
+      });
+      assert.deepEqual(
+        result.error?.issues.map((issue) => [refusedProperty(issue.path), issue.message]),
+        [
+          ['settings.options.0', 'Enter text for each option.'],
+          ['settings.options.2', 'Enter text for each option.'],
+        ],
+      );
+    });
+
+    const reasonFor = (
+      type: FieldTypeOfShape<'scalar' | 'record'>,
+      value: unknown,
+    ): string | null => {
+      const result = valueSchemaFor({ type }).safeParse(value);
       return result.success ? null : (result.error.issues[0]?.message ?? null);
     };
 
@@ -276,27 +472,59 @@ describe('metafield-types catalog', function () {
 
     it('holds a sentence for every rule a value can break', function () {
       // Notices a rule added without wording, which falls back to zod's phrasing.
-      const brokenValues: Array<[FieldType, unknown]> = [
+      const brokenValues: Array<[FieldTypeOfShape<'scalar' | 'record'>, unknown]> = [
         ['short_text', 'x'.repeat(256)],
         ['short_text', 42],
         ['long_text', 'x'.repeat(MAX_LONG_TEXT_BYTES + 1)],
         ['address', {}],
         ['address', { city: 42 }],
-        ...subFieldsOf('address')!.map(
-          (part) => ['address', { [part]: 'x'.repeat(256) }] as [FieldType, unknown],
+        ...Object.keys(FIELD_STRUCTURES.address.parts).map(
+          (part): [FieldTypeOfShape<'record'>, unknown] => ['address', { [part]: 'x'.repeat(256) }],
         ),
       ];
+      const list: TypedSettings = {
+        type: 'list',
+        settings: { options: ['Dog', 'Cat'], multiple: false },
+      };
+      const brokenLists: unknown[] = ['Dog', [42], ['Dolphin'], ['Dog', 'Cat']];
+      const brokenSettings: Array<[FieldType, unknown]> = [
+        ['list', undefined],
+        ['list', { options: ['Dog', 'Cat'] }],
+        ['list', { options: ['Dog'], multiple: true }],
+        ['list', { options: ['Dog', 'Dog'], multiple: true }],
+        ['list', { options: ['Dog', '  '], multiple: true }],
+        ['list', { options: ['Dog', 'Cat | Mouse'], multiple: true }],
+        ['list', { options: ['Dog', 'x'.repeat(256)], multiple: true }],
+        ['list', { options: Array.from({ length: 101 }, (_, n) => `${n}`), multiple: true }],
+        ['short_text', { options: ['Dog', 'Cat'], multiple: true }],
+      ];
 
-      for (const [type, value] of brokenValues) {
-        const reason = reasonFor(type, value);
-        assert.ok(reason, `${type} ${JSON.stringify(value)} should be rejected`);
-        assert.doesNotMatch(
-          reason,
-          /Too big|Too small|Invalid input|expected /,
+      const reasons: Array<[string, string | null]> = [
+        ...brokenValues.map(([type, value]): [string, string | null] => [
           `${type} ${JSON.stringify(value)}`,
-        );
+          reasonFor(type, value),
+        ]),
+        ...brokenLists.map((value): [string, string | null] => {
+          const result = valueSchemaFor(list).safeParse(value);
+          return [
+            `list ${JSON.stringify(value)}`,
+            result.success ? null : (result.error.issues[0]?.message ?? null),
+          ];
+        }),
+        ...brokenSettings.map(([type, settings]): [string, string | null] => {
+          const result = TypedSettingsInputSchema.safeParse({ type, settings });
+          return [
+            `${type} settings ${JSON.stringify(settings)}`,
+            result.success ? null : (result.error.issues[0]?.message ?? null),
+          ];
+        }),
+      ];
+
+      for (const [what, reason] of reasons) {
+        assert.ok(reason, `${what} should be rejected`);
+        assert.doesNotMatch(reason, /Too big|Too small|Invalid input|expected /, what);
         // A whole sentence: a screen shows it unedited.
-        assert.match(reason, /^[A-Z].*\.$/, `${type} ${JSON.stringify(value)}`);
+        assert.match(reason, /^[A-Z].*\.$/, what);
       }
     });
   });

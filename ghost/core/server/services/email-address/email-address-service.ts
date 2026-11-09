@@ -1,7 +1,6 @@
 import logging from '@tryghost/logging';
-import * as emailAddressParser from './email-address-parser';
-
-type EmailAddress = emailAddressParser.EmailAddress;
+import { parseMailbox } from '@tryghost/parse-email-address/mailbox';
+import type { Mailbox as EmailAddress } from '@tryghost/parse-email-address/mailbox';
 
 export type EmailAddresses = {
   from: EmailAddress;
@@ -48,7 +47,7 @@ export class EmailAddressService {
       if (!fallbackAddress) {
         return null;
       }
-      return emailAddressParser.parse(fallbackAddress);
+      return parseMailbox(fallbackAddress);
     };
     this.#isValidEmailAddress = dependencies.isValidEmailAddress;
   }
@@ -83,9 +82,9 @@ export class EmailAddressService {
     return transformed.from.address;
   }
 
-  getAddressFromString(from: string, replyTo?: string): EmailAddresses {
-    const parsedFrom = emailAddressParser.parse(from);
-    const parsedReplyTo = replyTo ? emailAddressParser.parse(replyTo) : undefined;
+  getAddressFromString(from?: string, replyTo?: string): EmailAddresses {
+    const parsedFrom = from ? parseMailbox(from) : null;
+    const parsedReplyTo = replyTo ? parseMailbox(replyTo) : undefined;
 
     return this.getAddress({
       from: parsedFrom ?? this.defaultFromEmail,

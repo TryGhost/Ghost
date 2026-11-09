@@ -101,7 +101,7 @@ test.describe('Ghost Admin - Custom field filter columns', () => {
     // operator has to be named before there is anywhere to type one.
     await membersPage.addCustomFieldFilter({
       field: fieldName,
-      subfield: 'City',
+      part: 'City',
       operator: 'is',
       value: 'Berlin',
     });

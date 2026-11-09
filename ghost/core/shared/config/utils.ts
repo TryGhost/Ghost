@@ -11,45 +11,48 @@ function isObject(value: unknown): value is Tree {
 
 const packageRoot = path.join(__dirname, '../../..');
 
-/**
- * Resolve every relative path in `paths` against the package root, in place.
- *
- * A value counts as a path if it contains a / or \ or is ".".
- */
-function makePathsAbsolute(paths: unknown): void {
-  if (!isObject(paths)) {
-    return;
-  }
-
-  for (const [key, value] of Object.entries(paths)) {
-    if (isObject(value)) {
-      makePathsAbsolute(value);
-    } else if (
-      typeof value === 'string' &&
-      (value.match(/\/+|\\+/) || value === '.') &&
-      !path.isAbsolute(value)
-    ) {
-      paths[key] = path.normalize(path.join(packageRoot, value));
-    }
-  }
+/** Resolve a relative path against the package root. An absolute one is returned as is. */
+function makePathAbsolute(value: string): string {
+  return path.isAbsolute(value) ? value : path.normalize(path.join(packageRoot, value));
 }
 
 /**
  * Resolve a relative sqlite filename in one of Ghost's bundled config files
  * against the package root, in place. Filenames from user config, env or argv
  * stay relative and resolve against the working directory, as they always have.
+ *
+ * Done per store, before they're merged, because the schema only sees the merged
+ * tree and can't tell which source a filename came from. Resolving them all
+ * against the package root broke Docker installs - see TryGhost/Ghost#31976.
  */
 function makeBundledDatabasePathsAbsolute(store: unknown): void {
-  if (isObject(store) && isObject(store.database)) {
-    makePathsAbsolute(store.database.connection);
+  const connection = isObject(store) && isObject(store.database) ? store.database.connection : null;
+  if (isObject(connection) && typeof connection.filename === 'string') {
+    connection.filename = makePathAbsolute(connection.filename);
   }
 }
 
 /**
- * Unlike checkUrlProtocol, this is not duplicated by the schema: it touches the
- * filesystem, so it stays whatever happens to the strictness flag.
+ * A copy of `paths` with every relative path resolved against the package root.
+ *
+ * A value counts as a path if it contains a / or \ or is ".".
  */
-function doesContentPathExist(contentPath: unknown): void {
+function makePathsAbsolute<T extends Record<string, unknown>>(paths: T): T {
+  return Object.fromEntries(
+    Object.entries(paths).map(([key, value]) => [
+      key,
+      typeof value === 'string' && (/[/\\]/.test(value) || value === '.')
+        ? makePathAbsolute(value)
+        : value,
+    ]),
+  ) as T;
+}
+
+/**
+ * Not in the schema: it touches the filesystem. Runs after createConfig, once
+ * the schema has made contentPath absolute.
+ */
+function assertContentPathExists(contentPath: unknown): void {
   if (typeof contentPath !== 'string' || !fs.existsSync(contentPath)) {
     // new Error is allowed here, as we do not want config to depend on @tryghost/error
     // @TODO: revisit this decision when @tryghost/error is no longer dependent on all of ghost-ignition
@@ -57,57 +60,6 @@ function doesContentPathExist(contentPath: unknown): void {
     throw new Error(
       'Your content path does not exist! Please double check `paths.contentPath` in your custom config file e.g. config.production.json.',
     );
-  }
-}
-
-/**
- * Check if the URL in config has a protocol and sanitise it if not including a warning that it should be changed
- *
- * @TODO: remove once GHOST_CONFIG_SCHEMA_STRICT is gone. This duplicates the
- * `url` rule in ./schema.ts, and has to stay while the flag exists at all,
- * since a deploy can still set it false - see isStrict() in ./validated.ts.
- */
-function checkUrlProtocol(url: unknown): void {
-  if (typeof url !== 'string' || !url.match(/^https?:\/\//i)) {
-    // new Error is allowed here, as we do not want config to depend on @tryghost/error
-    // @TODO: revisit this decision when @tryghost/error is no longer dependent on all of ghost-ignition
-    // oxlint-disable-next-line ghost/ghost-custom/no-native-error
-    throw new Error('URL in config must be provided with protocol, eg. "http://my-ghost-blog.com"');
-  }
-}
-
-/**
- * Normalize the client name and drop connection keys merged in from the other
- * client, e.g. a sqlite default overridden with mysql. Edits in place.
- *
- * A relative sqlite `filename` from user config is deliberately left relative,
- * see makeBundledDatabasePathsAbsolute.
- */
-function sanitizeDatabaseProperties(database: unknown): void {
-  if (!isObject(database)) {
-    return;
-  }
-
-  if (database.client === 'mysql') {
-    database.client = 'mysql2';
-  }
-
-  if (database.client === 'sqlite3') {
-    database.client = 'better-sqlite3';
-  }
-
-  const connection = database.connection;
-  if (!isObject(connection)) {
-    return;
-  }
-
-  if (database.client === 'mysql2') {
-    delete connection.filename;
-  } else {
-    delete connection.host;
-    delete connection.user;
-    delete connection.password;
-    delete connection.database;
   }
 }
 
@@ -182,11 +134,10 @@ const jsoncFormat: IFormat = {
 };
 
 export {
+  makePathAbsolute,
   makePathsAbsolute,
   makeBundledDatabasePathsAbsolute,
-  doesContentPathExist,
-  checkUrlProtocol,
-  sanitizeDatabaseProperties,
+  assertContentPathExists,
   mergeStores,
   getNodeEnv,
   jsoncFormat,

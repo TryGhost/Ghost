@@ -9,46 +9,30 @@ import NavApps from './nav-apps';
 import NavGhostPro from './nav-ghost-pro';
 import NavSettings from './nav-settings';
 import { useSidebarBannerState } from './hooks/use-sidebar-banner-state';
-
-// Inactive items' icons sit a step lighter than their labels; hover restores the full colour
-const ADMIN7_NAV_ICON_CLASS_NAME = [
-  '[&_[data-sidebar=menu-button][data-active=false]:not(:hover)>svg]:text-gray-900',
-  'dark:[&_[data-sidebar=menu-button][data-active=false]:not(:hover)>svg]:text-gray-600',
-].join(' ');
+import { ADMIN7_NAV_ICON_CLASS_NAME } from './nav-icon-class';
 
 interface AppSidebarContentProps {
-  /** Laid out for the floating sidebar: its own padding, banners in the flow. */
+  /** Laid out for the floating sidebar: its own padding, banners in the scrolling flow. */
   floating?: boolean;
 }
 
 function AppSidebarContent({ floating = false }: AppSidebarContentProps) {
-  const { banner, bannerType } = useSidebarBannerState();
+  const { banner } = useSidebarBannerState();
   // Admin 7 lists Ghost(Pro) with Settings, and moves Feedback and Help to
   // the account menu.
   const admin7Design = useFeatureFlag('admin7Design');
   // Eyebrows separate the groups with Apps on, so they sit closer together
   const groupGap = useFeatureFlag('apps') ? 'sidebar:gap-2' : 'sidebar:gap-4';
-  let bannerContainerClassName = '';
-
-  // Room for the banner floating over the sidebar's foot; an inline banner takes its own
-  if (floating) {
-    bannerContainerClassName = '';
-  } else if (bannerType === 'theme-errors') {
-    bannerContainerClassName = 'pb-[110px]';
-  } else if (bannerType === 'upgrade') {
-    bannerContainerClassName = 'pb-[254px]';
-  } else if (bannerType === 'whats-new') {
-    bannerContainerClassName = 'pb-[180px]';
-  }
 
   return (
     <SidebarContent
       className={cn(
         'justify-between',
         // Menu rows line up with the capsule's site icon (its body has the side
-        // padding), the first close under its header row
+        // padding), the first close under its header row. It scrolls out to the
+        // capsule's edges, as scrolling clips it there and a banner's glow needs the room.
         floating
-          ? 'px-0 pt-0 pb-1 [&_[data-sidebar=group]]:px-0 [&>div:first-child>[data-sidebar=group]:first-child]:pt-0'
+          ? '-mx-5 px-5 pt-0 pb-1 [&_[data-sidebar=group]]:px-0 [&>div:first-child>[data-sidebar=group]:first-child]:pt-0'
           : 'px-3 pt-4 pb-1',
         admin7Design && ADMIN7_NAV_ICON_CLASS_NAME,
       )}
@@ -59,8 +43,9 @@ function AppSidebarContent({ floating = false }: AppSidebarContentProps) {
         <NavApps />
         {!admin7Design && <NavGhostPro />}
       </div>
-      <div className={cn('flex flex-col gap-2', groupGap, bannerContainerClassName)}>
-        <AppSidebarBanner banner={banner} inline={floating} />
+      <div className={cn('flex flex-col gap-2', groupGap)}>
+        {/* The full-height sidebar pins its banner above the footer instead */}
+        {floating && <AppSidebarBanner banner={banner} />}
         <NavSettings admin7Design={admin7Design} className="pb-0" />
       </div>
     </SidebarContent>

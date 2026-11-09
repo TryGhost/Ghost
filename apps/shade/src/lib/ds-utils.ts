@@ -1,5 +1,4 @@
 import { clsx, type ClassValue } from 'clsx';
-import moment from 'moment-timezone';
 import { twMerge } from 'tailwind-merge';
 
 /* Generic helper functions
@@ -66,91 +65,6 @@ export const kebabToPascalCase = (str: string): string => {
   const processed = str.replace(/[-_]([a-z0-9])/gi, (_, char) => char.toUpperCase());
   return processed.charAt(0).toUpperCase() + processed.slice(1);
 };
-
-// Format date for UI, result is in the format of `12 Jun 2025`
-// When timezone is provided, the date will be converted to that timezone before formatting
-export const formatDisplayDate = (dateString: string, timezone?: string): string => {
-  // If the date is a Date object, convert it to a string
-  // @ts-expect-error This should error if dateString is not a string, but for some reason Typescript isn't catching this
-  if (dateString instanceof Date) {
-    dateString = dateString.toISOString();
-  }
-  // Fallback to empty string if dateString is an unexpected type. Better to fallback to empty string than to crash the app
-  if (!dateString || dateString.length === 0 || typeof dateString !== 'string') {
-    return '';
-  }
-
-  // Check if this is a datetime string (contains time) or just a date
-  const hasTime = dateString.includes(':');
-  const isISOFormat = dateString.includes('T') || dateString.includes('Z');
-
-  let day, month, year, isToday, isCurrentYear;
-
-  // If timezone is provided and this is an ISO format date, use moment-timezone to convert
-  if (timezone && isISOFormat) {
-    const dateMoment = moment.tz(dateString, timezone);
-    const todayMoment = moment.tz(timezone);
-
-    day = dateMoment.date();
-    month = dateMoment.month();
-    year = dateMoment.year();
-    isToday = dateMoment.isSame(todayMoment, 'day');
-    isCurrentYear = year === todayMoment.year();
-  } else {
-    const date = new Date(dateString);
-    const today = new Date();
-
-    if (hasTime && !isISOFormat) {
-      // This is a localized datetime string like "2025-07-29 19:00:00"
-      // Use local date methods to avoid timezone conversion
-      day = date.getDate();
-      month = date.getMonth();
-      year = date.getFullYear();
-      isToday = date.toDateString() === today.toDateString();
-      isCurrentYear = year === today.getFullYear();
-    } else {
-      // This is either a date-only string or an ISO format with timezone (without explicit timezone param)
-      // Use UTC methods as before
-      day = date.getUTCDate();
-      month = date.getUTCMonth();
-      year = date.getUTCFullYear();
-      isToday = date.toISOString().slice(0, 10) === today.toISOString().slice(0, 10);
-      isCurrentYear = year === today.getUTCFullYear();
-    }
-  }
-
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  const monthName = months[month];
-
-  if (isToday) {
-    return `${day} ${monthName}`;
-  }
-
-  return isCurrentYear ? `${day} ${monthName}` : `${day} ${monthName} ${year}`;
-};
-
-/**
- * Format a plain time in a given time zone.
- *
- * @example
- * formatDisplayTime('2020-04-20T18:09:12.345Z', 'Africa/Lagos')
- * // 7:09pm
- */
-export const formatDisplayTime = (dateString: string, timezone: string): string =>
-  moment(dateString).tz(timezone).format('h:mma');
 
 // Helper function to format timestamp
 export const formatTimestamp = (timestamp: string) => {
@@ -292,42 +206,38 @@ export function getCountryFlag(countryCode: string) {
     .replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
 }
 
-export const stringToHslColor = (str: string, saturation: string, lightness: string) => {
+const stringHash = (str: string) => {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
   }
+  return hash;
+};
 
-  const h = hash % 360;
+export const stringToHslColor = (str: string, saturation: string, lightness: string) => {
+  const h = stringHash(str) % 360;
   return 'hsl(' + h + ', ' + saturation + '%, ' + lightness + '%)';
 };
 
+// Tonal pairings (Shapeshifter style): a palette family's 200 behind its 800,
+// reversed in dark mode.
+// Written out in full so Tailwind generates every class.
+const TONAL_AVATAR_CLASSES = [
+  'bg-red-200 text-red-800 dark:bg-red-800 dark:text-red-200',
+  'bg-orange-200 text-orange-800 dark:bg-orange-800 dark:text-orange-200',
+  'bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-200',
+  'bg-green-200 text-green-800 dark:bg-green-800 dark:text-green-200',
+  'bg-blue-200 text-blue-800 dark:bg-blue-800 dark:text-blue-200',
+  'bg-purple-200 text-purple-800 dark:bg-purple-800 dark:text-purple-200',
+  'bg-pink-200 text-pink-800 dark:bg-pink-800 dark:text-pink-200',
+];
+
+/** The admin7Design initials avatar colours: one palette family picked by the string's hash. */
+export const stringToTonalAvatarClasses = (str: string) =>
+  TONAL_AVATAR_CLASSES[Math.abs(stringHash(str)) % TONAL_AVATAR_CLASSES.length];
+
 /* Chart formatters
 /* -------------------------------------------------------------------------- */
-
-/**
- * Formats a date based on the range
- * - For ranges above 365 days: shows month and year (e.g. "Apr 2025")
- * - For ranges above 91 days: shows "Week of [date]"
- * - For other ranges: uses the default formatDisplayDate
- */
-export const formatDisplayDateWithRange = (
-  date: string,
-  range: number,
-  showHours: boolean = false,
-  hoursOnly: boolean = false,
-): string => {
-  if (range === 1 && hoursOnly) {
-    return moment(date).format('h:mma');
-  } else if (range === 1 && showHours) {
-    return moment(date).format('MMM D, h:mma');
-  } else if (range > 365) {
-    return moment(date).format('MMM YYYY');
-  } else if (range >= 91) {
-    return `Week of ${formatDisplayDate(date)}`;
-  }
-  return formatDisplayDate(date);
-};
 
 export const getYRange = (data: { value: number }[]): { min: number; max: number } => {
   if (!data.length) {

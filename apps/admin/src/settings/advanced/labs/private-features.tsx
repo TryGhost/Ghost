@@ -20,9 +20,9 @@ const features: Feature[] = [
     flag: 'automations',
   },
   {
-    title: 'Automations lifecycle triggers',
-    description: 'Triggers for upgrades and downgrades.',
-    flag: 'automationsLifecycleTriggers',
+    title: 'Automations lead magnets',
+    description: '"Label added" automation trigger.',
+    flag: 'automationsLeadMagnets',
   },
   {
     title: 'Stripe Automatic Tax (private beta)',
@@ -49,12 +49,6 @@ const features: Feature[] = [
     description:
       'Customize the site design from View site, with a live preview. Needs Admin 7 · Design.',
     flag: 'admin7CustomizeFromViewSite',
-  },
-  {
-    title: 'Admin 7 · Editor improvements',
-    description:
-      'Hide the editor’s controls while you write; move the mouse or scroll to bring them back.',
-    flag: 'admin7EditorImprovements',
   },
   {
     title: 'Email Unique ID',
@@ -92,12 +86,6 @@ const features: Feature[] = [
     flag: 'stripeCheckoutCollection',
   },
   {
-    title: 'Stripe checkout design',
-    description:
-      'Let admins style the Stripe checkout page with their own button color, background color, corners and font',
-    flag: 'stripeCheckoutDesign',
-  },
-  {
     title: 'Paywall improvements',
     description: 'Enables paywall usability, discoverability and email customization improvements',
     flag: 'paywallImprovements',
@@ -113,6 +101,12 @@ const features: Feature[] = [
     description:
       'Install and manage third-party apps that run on their own servers. Early and incomplete.',
     flag: 'apps',
+  },
+  {
+    title: 'In-app support',
+    description:
+      'Open Help in a sidebar inside Admin instead of a new tab. Needs a host script that provides the support app.',
+    flag: 'inAppSupport',
   },
 ];
 

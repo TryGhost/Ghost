@@ -144,6 +144,7 @@ export default class ImportArchive {
     } catch (error) {
       await fs.remove(tmpDir).catch(() => {});
       const message = messageOf(error);
+      const lowerMessage = message.toLowerCase();
 
       if (message.startsWith('ENAMETOOLONG:')) {
         throw new errors.UnsupportedMediaTypeError({
@@ -155,8 +156,8 @@ export default class ImportArchive {
       }
 
       if (
-        message.includes('end of central directory record signature not found') ||
-        message.includes('invalid comment length')
+        lowerMessage.includes('end of central directory record signature not found') ||
+        lowerMessage.includes('invalid comment length')
       ) {
         throw new errors.UnsupportedMediaTypeError({
           message: tpl(messages.invalidZipFileNameEncoding),

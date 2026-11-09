@@ -7,7 +7,7 @@ import {
   render,
   type Report,
   type Stats,
-} from '../compare-image-report.ts';
+} from '../ci/compare-image-report.ts';
 
 const report = (packages: Record<string, Stats>): Report => ({
   profile: 'image',

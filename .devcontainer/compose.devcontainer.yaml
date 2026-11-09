@@ -25,7 +25,7 @@ services:
   # The container VS Code attaches to. `pnpm dev` runs Ghost and its dev
   # servers in here, as it would on a laptop.
   devcontainer:
-    image: node:22.23.3-bookworm
+    image: node:22.23.4-bookworm
     command: ['sleep', 'infinity']
     working_dir: /workspaces/Ghost
     # Codespaces forwards ports from the host, not from inside this container

@@ -28,7 +28,6 @@ import {
   serpDescription,
   serpTitle,
 } from './meta-data-fields';
-import { SettingsSubview } from './settings-subview';
 import { useSettingsField } from './use-settings-field';
 
 function Countdown({ id, value, recommended }: { id: string; value: string; recommended: number }) {
@@ -38,7 +37,10 @@ function Countdown({ id, value, recommended }: { id: string; value: string; reco
     <Text id={id} size="sm" tone="secondary">
       Recommended: <b>{formatNumber(recommended)}</b> characters. You&apos;ve used{' '}
       <span
-        className={cn('font-bold', used > recommended ? 'text-destructive' : 'text-state-success')}
+        className={cn(
+          'font-bold',
+          used > recommended ? 'text-destructive' : 'text-character-count',
+        )}
       >
         {formatNumber(used)}
       </span>
@@ -84,7 +86,7 @@ function SearchPreview({
   );
 }
 
-export interface MetaDataSectionProps {
+export interface MetaDataFieldsProps {
   session: EditorSettingsPort;
   siteUrl: string;
 }
@@ -93,7 +95,7 @@ export interface MetaDataSectionProps {
  * The post's search-engine metadata: a meta title and description that stand in
  * for the post's own, and the result they produce.
  */
-export function MetaDataSection({ session, siteUrl }: MetaDataSectionProps) {
+export function MetaDataFields({ session, siteUrl }: MetaDataFieldsProps) {
   const titleHintId = useId();
   const descriptionHintId = useId();
 
@@ -113,13 +115,7 @@ export function MetaDataSection({ session, siteUrl }: MetaDataSectionProps) {
   });
 
   return (
-    <SettingsSubview
-      closeLabel="Close meta data panel"
-      icon={<LucideIcon.Search />}
-      id="meta-data"
-      label="Meta data"
-      title="Meta data"
-    >
+    <>
       <Field>
         <FieldLabel htmlFor={title.fieldProps.id}>Meta title</FieldLabel>
         <Input
@@ -165,6 +161,6 @@ export function MetaDataSection({ session, siteUrl }: MetaDataSectionProps) {
         </Text>
         <SearchPreview description={previewDescription} title={previewTitle} url={previewUrl} />
       </Stack>
-    </SettingsSubview>
+    </>
   );
 }

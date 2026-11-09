@@ -179,7 +179,12 @@ function KeyedUpdateFlowModal({
     >
       <Box className="relative min-h-full">
         <Inline className="absolute inset-x-0 top-0 p-4" justify="between">
-          <Text aria-hidden="true" as="h2" className="text-lg tracking-tight" weight="semibold">
+          <Text
+            aria-hidden="true"
+            as="h2"
+            className="text-lg tracking-tight in-data-[admin7-design=true]:font-title"
+            weight="semibold"
+          >
             {heading}
           </Text>
           <PageHeader.ActionGroup>
@@ -197,7 +202,7 @@ function KeyedUpdateFlowModal({
             weight="bold"
           >
             This {post.displayName} {isSent ? 'was' : 'has been'}{' '}
-            <span className="text-state-success">
+            <span className="text-publish-accent">
               {post.status}
               {isSent ? ' by email' : ''}
             </span>

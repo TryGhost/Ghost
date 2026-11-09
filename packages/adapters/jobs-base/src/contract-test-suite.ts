@@ -49,17 +49,39 @@ export function runJobsBackendContractTests(
   describe('jobs backend contract', function () {
     it('delivers an enqueued envelope to the processor', async function () {
       const received: JobEnvelope[] = [];
+      const delivered = deferred();
       const backend = makeBackend();
       await backend.start({
         processor: async (env) => {
           received.push(env);
+          delivered.resolve();
         },
       });
 
       await backend.enqueue('dispatch-1', envelope);
+      await delivered.promise;
       await backend.shutdown({ timeoutMs: 1000 });
 
       assert.deepEqual(received, [job]);
+    });
+
+    it('reports a completed job under the id it was enqueued with', async function () {
+      const settled = deferred();
+      const settlements: Array<{ id: string; status: string }> = [];
+      const backend = makeBackend();
+      await backend.start({
+        processor: async () => {},
+        onSettled: async (id, settlement) => {
+          settlements.push({ id, status: settlement.status });
+          settled.resolve();
+        },
+      });
+
+      await backend.enqueue('dispatch-1', envelope);
+      await settled.promise;
+      await backend.shutdown({ timeoutMs: 1000 });
+
+      assert.deepEqual(settlements, [{ id: 'dispatch-1', status: 'completed' }]);
     });
 
     it('resolves enqueue on acceptance, not on completion', async function () {
@@ -88,15 +110,18 @@ export function runJobsBackendContractTests(
 
     it('drains in-flight work on shutdown', async function () {
       let completed = false;
+      const started = deferred();
       const backend = makeBackend();
       await backend.start({
         processor: async () => {
+          started.resolve();
           await delay(30);
           completed = true;
         },
       });
 
       await backend.enqueue('dispatch-1', envelope);
+      await started.promise;
       await backend.shutdown({ timeoutMs: 1000 });
 
       assert.equal(completed, true);
@@ -128,15 +153,18 @@ export function runJobsBackendContractTests(
     // routing must never lose work.
     it('delivers an envelope enqueued with queue routing', async function () {
       const received: JobEnvelope[] = [];
+      const delivered = deferred();
       const backend = makeBackend();
       await backend.start({
         processor: async (env) => {
           received.push(env);
+          delivered.resolve();
         },
         queues: { isolated: { concurrency: 1 } },
       });
 
       await backend.enqueue('dispatch-1', routed('isolated'));
+      await delivered.promise;
       await backend.shutdown({ timeoutMs: 1000 });
 
       assert.deepEqual(received, [job]);
@@ -144,14 +172,17 @@ export function runJobsBackendContractTests(
 
     it('delivers an envelope routed to a queue no handler declared', async function () {
       const received: JobEnvelope[] = [];
+      const delivered = deferred();
       const backend = makeBackend();
       await backend.start({
         processor: async (env) => {
           received.push(env);
+          delivered.resolve();
         },
       });
 
       await backend.enqueue('dispatch-1', routed('undeclared'));
+      await delivered.promise;
       await backend.shutdown({ timeoutMs: 1000 });
 
       assert.deepEqual(received, [job]);
@@ -164,12 +195,15 @@ export function runJobsBackendContractTests(
       await backend.start({ processor: async () => {} });
       await backend.shutdown({ timeoutMs: 1000 });
 
+      const delivered = deferred();
       await backend.start({
         processor: async (env) => {
           received.push(env);
+          delivered.resolve();
         },
       });
       await backend.enqueue('dispatch-1', envelope);
+      await delivered.promise;
       await backend.shutdown({ timeoutMs: 1000 });
 
       assert.deepEqual(received, [job]);

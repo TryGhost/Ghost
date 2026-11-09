@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { X, ChevronDown } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Combobox, ComboboxTrigger, ComboboxValue } from '@/components/ui/combobox';
 import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Stack } from '@/components/primitives/stack';
 import { tokenFieldClasses } from '@/components/ui/token-field';
 import { cn } from '@/lib/utils';
@@ -61,7 +63,7 @@ export const Wrapping: Story = {
   },
   render: () => (
     <div className={cn(tokenFieldClasses.field, 'w-72 pr-8')}>
-      {['Weekly Roundup', 'News', 'Announcements'].map((label) => (
+      {['Weekly Roundup', 'News', 'Announcements from the editorial team'].map((label) => (
         <Badge key={label} className={tokenFieldClasses.chip} variant="secondary" asChild>
           <button aria-label={`Remove ${label}`} type="button">
             {label}
@@ -72,5 +74,38 @@ export const Wrapping: Story = {
       <input aria-label="Search tokens" className={tokenFieldClasses.input} />
       <ChevronDown className={tokenFieldClasses.chevron} />
     </div>
+  ),
+};
+export const ChevronAlignment: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story: 'Select, Combobox and token field chevrons sit on the same pixels when stacked.',
+      },
+    },
+  },
+  render: () => (
+    <Stack className="w-72" gap="sm">
+      <Select>
+        <SelectTrigger aria-label="Select">
+          <SelectValue placeholder="Public" />
+        </SelectTrigger>
+      </Select>
+      <Combobox>
+        <ComboboxTrigger aria-label="Combobox">
+          <ComboboxValue>English</ComboboxValue>
+        </ComboboxTrigger>
+      </Combobox>
+      <div className={cn(tokenFieldClasses.field, 'pr-8')}>
+        <Badge className={tokenFieldClasses.chip} variant="secondary" asChild>
+          <button aria-label="Remove News" type="button">
+            News
+            <X className="size-3" />
+          </button>
+        </Badge>
+        <input aria-label="Token field" className={tokenFieldClasses.input} />
+        <ChevronDown className={tokenFieldClasses.chevron} />
+      </div>
+    </Stack>
   ),
 };

@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { buildMatrix, cdnPathsFor } from '../build-publish-matrix.ts';
+import { buildMatrix, cdnPathsFor } from '../release/build-publish-matrix.ts';
 import { CDN_PACKAGES, CONTINUOUS_PACKAGES, normalizeManifest } from '../lib/publish-manifest.ts';
 
 const DEFAULTS: Record<string, Record<string, string>> = JSON.parse(
@@ -43,6 +43,21 @@ describe('buildMatrix', () => {
     assert.strictEqual(portal?.versioning, 'patch');
     assert.strictEqual(portal?.dist_tag, 'latest');
     assert.strictEqual(portal?.install_args, '');
+  });
+
+  it('publishes Shade and the app SDK prereleases under latest', () => {
+    // A plain `npm install` must get the newest alpha the docs describe; the
+    // other prerelease packages keep their own tag.
+    const tags = Object.fromEntries(
+      buildMatrix(allPackageNames)
+        .filter((entry) => entry.versioning === 'prerelease')
+        .map((entry) => [entry.package_name, entry.dist_tag]),
+    );
+    assert.deepStrictEqual(tags, {
+      '@tryghost/shade': 'latest',
+      '@tryghost/adapter-base-upgrade': 'alpha',
+      '@tryghost/app-sdk': 'latest',
+    });
   });
 
   it('flattens cdn_paths to a newline-delimited string for the purge step', () => {
@@ -137,9 +152,15 @@ describe('normalizeManifest', () => {
   it('requires a prerelease package to name its dist-tag', () => {
     const shade = { name: '@tryghost/shade', path: 'apps/shade', versioning: 'prerelease' };
     assert.throws(() => normalizeManifest([shade]), /must name a distTag/);
-    assert.throws(() => normalizeManifest([{ ...shade, distTag: 'latest' }]), /other than latest/);
     assert.deepStrictEqual(normalizeManifest([{ ...shade, distTag: 'alpha' }]), [
       { ...shade, distTag: 'alpha' },
+    ]);
+  });
+
+  it('lets a prerelease package opt into latest by naming it', () => {
+    const shade = { name: '@tryghost/shade', path: 'apps/shade', versioning: 'prerelease' };
+    assert.deepStrictEqual(normalizeManifest([{ ...shade, distTag: 'latest' }]), [
+      { ...shade, distTag: 'latest' },
     ]);
   });
 

@@ -85,7 +85,6 @@ describe('getMemberReferrerSource', () => {
   });
 
   it('hides the "Created manually" placeholder source', () => {
-    // Mirrors the Ember gh-member-details referrerSource getter.
     expect(getMemberReferrerSource({ referrer_source: 'Created manually' })).toBeNull();
   });
 });

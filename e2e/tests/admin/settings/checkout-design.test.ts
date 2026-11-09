@@ -75,7 +75,7 @@ function latestCheckoutDesign(stripe: StripeTestService) {
 }
 
 test.describe('Ghost Admin - Checkout design', () => {
-  test.use({ stripeEnabled: true, labs: { stripeCheckoutDesign: true } });
+  test.use({ stripeEnabled: true });
 
   test('customized design - a member signing up for a paid tier checks out in it', async ({
     page,
@@ -278,7 +278,7 @@ test.describe('Ghost Admin - Checkout design', () => {
 });
 
 test.describe('Ghost Admin - Checkout design preview in Stripe', () => {
-  test.use({ stripeEnabled: true, labs: { stripeCheckoutDesign: true } });
+  test.use({ stripeEnabled: true });
 
   test('unsaved design - the preview shows it, and nothing is saved', async ({ page, stripe }) => {
     const tierName = await paidTier(page, stripe!);
@@ -350,7 +350,6 @@ test.describe('Ghost Admin - Checkout design preview in Stripe', () => {
 test.describe('Ghost Admin - Checkout design on a small screen', () => {
   test.use({
     stripeEnabled: true,
-    labs: { stripeCheckoutDesign: true },
     viewport: { width: 390, height: 844 },
   });
 
@@ -370,26 +369,7 @@ test.describe('Ghost Admin - Checkout design on a small screen', () => {
   });
 });
 
-test.describe('Ghost Admin - Checkout design without its labs flag', () => {
-  test.use({ stripeEnabled: true });
-
-  test('labs flag off - checkout settings cannot be opened', async ({ page }) => {
-    const settingsPage = new SettingsPage(page);
-    await settingsPage.goto();
-    const checkout = new CheckoutSettingsModal(page);
-
-    await expect(page.getByRole('button', { name: 'Connected to Stripe' })).toBeVisible();
-    await expect(checkout.openButton).toHaveCount(0);
-
-    await page.goto('/ghost/#/settings/tiers/checkout');
-    await expect(page).toHaveURL(/#\/settings\/tiers$/);
-    await expect(checkout.modal).toHaveCount(0);
-  });
-});
-
 test.describe('Ghost Admin - Checkout design without Stripe', () => {
-  test.use({ labs: { stripeCheckoutDesign: true } });
-
   test('Stripe not connected - checkout settings are not offered', async ({ page }) => {
     const settingsPage = new SettingsPage(page);
     await settingsPage.goto();

@@ -42,7 +42,8 @@ const Papa = require('papaparse');
 const models = require('../../../core/server/models');
 const { knex } = require('../../../core/server/data/db');
 const membersService = require('../../../core/server/services/members');
-const memberAttributionService = require('../../../core/server/services/member-attribution');
+const memberAttributionService =
+  require('../../../core/server/services/member-attribution').default;
 const urlServiceUtils = require('../../utils/url-service-utils');
 const urlUtils = require('../../../core/shared/url-utils').default;
 const settingsCache = require('../../../core/shared/settings-cache');
@@ -369,7 +370,7 @@ describe('Members API - member attribution', function () {
       const created = await membersService.api.members.create(
         {
           email: 'member-attributed-in-transaction@test.com',
-          attribution: memberAttributionService.attributionBuilder.build({
+          attribution: memberAttributionService.service.attributionBuilder.build({
             id,
             url: '/out-of-date/',
             type: 'post',
@@ -429,7 +430,7 @@ describe('Members API - member attribution', function () {
     // Set the attribution for this member manually
     const member = await membersService.api.members.create({
       email: 'member-attributed-to-post@test.com',
-      attribution: memberAttributionService.attributionBuilder.build({
+      attribution: memberAttributionService.service.attributionBuilder.build({
         id,
         url: '/out-of-date/',
         type: 'post',
@@ -472,7 +473,7 @@ describe('Members API - member attribution', function () {
     // Set the attribution for this member manually
     const member = await membersService.api.members.create({
       email: 'member-attributed-to-page@test.com',
-      attribution: memberAttributionService.attributionBuilder.build({
+      attribution: memberAttributionService.service.attributionBuilder.build({
         id,
         url: '/out-of-date/',
         type: 'page',
@@ -515,7 +516,7 @@ describe('Members API - member attribution', function () {
     // Set the attribution for this member manually
     const member = await membersService.api.members.create({
       email: 'member-attributed-to-tag@test.com',
-      attribution: memberAttributionService.attributionBuilder.build({
+      attribution: memberAttributionService.service.attributionBuilder.build({
         id,
         url: '/out-of-date/',
         type: 'tag',
@@ -558,7 +559,7 @@ describe('Members API - member attribution', function () {
     // Set the attribution for this member manually
     const member = await membersService.api.members.create({
       email: 'member-attributed-to-author@test.com',
-      attribution: memberAttributionService.attributionBuilder.build({
+      attribution: memberAttributionService.service.attributionBuilder.build({
         id,
         url: '/out-of-date/',
         type: 'author',
@@ -598,7 +599,7 @@ describe('Members API - member attribution', function () {
     // Set the attribution for this member manually
     const member = await membersService.api.members.create({
       email: 'member-attributed-to-url@test.com',
-      attribution: memberAttributionService.attributionBuilder.build({
+      attribution: memberAttributionService.service.attributionBuilder.build({
         id: null,
         url: '/a-static-page/',
         type: 'url',

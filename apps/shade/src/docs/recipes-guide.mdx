@@ -40,7 +40,7 @@ export function recipe(mode: 'a' | 'b' = 'a') {
 
 Function for the easy path, atoms (the `as const` object) for unusual cases where consumers need to compose a subset. Tokens everywhere underneath.
 
-Full rules: [Layers](?path=/docs/overview-layers--docs).
+Full rules: [Layers](https://github.com/TryGhost/Ghost/blob/main/apps/shade/CONTRIBUTING.md#layers), in Contributing to Shade.
 
 ## Example
 
@@ -68,6 +68,8 @@ this recipe while retaining their own selection and keyboard behavior. Compose
 `field`, `input`, `chip` and optional `chevron`; add right padding when using the
 chevron so wrapped chips cannot overlap it. Empty and single-row fields match the
 standard input height; the field grows only when tokens wrap onto another row.
+Chips wrap a long name rather than truncating it, and the chevron sits where
+`Select` and `Combobox` place theirs.
 See **Recipes / Token Field**.
 
 </div>

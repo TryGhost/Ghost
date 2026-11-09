@@ -37,3 +37,19 @@ export const Default: Story = {
     ],
   },
 };
+
+export const Ruled: Story = {
+  args: {
+    className: 'w-[350px]',
+    variant: 'ruled',
+    children: <CardContent>Card contents</CardContent>,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A rule across the top, with no outline or side padding. Use it for a section that sits under its own heading.',
+      },
+    },
+  },
+};

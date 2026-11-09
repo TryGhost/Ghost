@@ -2,7 +2,10 @@ const _ = require('lodash');
 const { ValidationError } = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const tpl = require('@tryghost/tpl');
-const AnnouncementBarSettings = require('../../../../../services/announcement-bar-service/announcement-bar-settings');
+const {
+  ANNOUNCEMENT_BACKGROUND_VALUES,
+  ANNOUNCEMENT_VISIBILITY_VALUES,
+} = require('../../../../../data/schema/default-settings/announcement.values');
 
 const messages = {
   invalidEmailReceived: 'Please send a valid email',
@@ -199,15 +202,9 @@ module.exports = {
         // NOTE: safe to parse because of array validation up top
         const visibilityValues = JSON.parse(setting.value);
 
-        const validVisibilityValues = [
-          AnnouncementBarSettings.VisibilityValues.VISITORS,
-          AnnouncementBarSettings.VisibilityValues.FREE_MEMBERS,
-          AnnouncementBarSettings.VisibilityValues.PAID_MEMBERS,
-        ];
-
         if (visibilityValues.length) {
           visibilityValues.forEach((visibilityValue) => {
-            if (!validVisibilityValues.includes(visibilityValue)) {
+            if (!ANNOUNCEMENT_VISIBILITY_VALUES.includes(visibilityValue)) {
               const visibilityError = new ValidationError({
                 message: tpl(messages.invalidAnnouncementVisibilityValueReceived),
                 property: setting.key,
@@ -221,7 +218,7 @@ module.exports = {
       if (setting.key === 'announcement_background') {
         const announcementBackgroundValue = setting.value;
 
-        if (!['accent', 'dark', 'light'].includes(announcementBackgroundValue)) {
+        if (!ANNOUNCEMENT_BACKGROUND_VALUES.includes(announcementBackgroundValue)) {
           const visibilityError = new ValidationError({
             message: tpl(messages.invalidAnnouncementBackgroundValueReceived),
             property: setting.key,

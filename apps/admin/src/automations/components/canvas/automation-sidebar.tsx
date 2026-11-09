@@ -1,11 +1,12 @@
+import { getTriggerTierIds } from '@/automations/utils/trigger-rules';
 import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
 import { useAutomationPerformanceStats } from '@/automations/hooks/use-automation-performance-stats';
 import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
 import React, { useId, useState } from 'react';
 import type {
   AutomationPerformanceStats,
+  AutomationTriggerRule,
   AutomationRunStatusFilter,
-  AutomationTrigger,
 } from '@tryghost/admin-x-framework/api/automations';
 import { formatQueryDate, getRangeDates } from '@/shared/analytics/chart-helpers';
 import { mapAutomationEntryStats } from '@/automations/utils/automation-entry-stats';
@@ -16,8 +17,6 @@ import {
   Field,
   FieldLabel,
   FieldDescription,
-  FieldError,
-  Input,
   Textarea,
   Tabs,
   TabsList,
@@ -198,16 +197,62 @@ const PerformanceContent: React.FC<{
   );
 };
 
+function getStopConditionDescription({
+  triggerRules,
+  tiers,
+}: {
+  triggerRules: readonly AutomationTriggerRule[];
+  tiers: readonly Tier[];
+}): string {
+  // paid_subscription_changed runs stay eligible while the member matches a destination tier.
+  const eligibilityRules =
+    triggerRules[0]?.trigger_type === 'paid_subscription_changed'
+      ? triggerRules.filter((rule) => rule.direction === 'to')
+      : triggerRules;
+  if (eligibilityRules.length === 0) {
+    // No destination has been selected yet (or a signup's tier selection was cleared).
+    return 'Members stop early if they unsubscribe or leave the selected tiers.';
+  }
+  const eligibilityScope = eligibilityRules[0].scope;
+  const eligibleTierIds = getTriggerTierIds(eligibilityRules);
+  switch (eligibilityScope) {
+    case 'free':
+      return 'Members stop early if they unsubscribe or start a paid subscription.';
+    case null:
+      return 'Members stop early if they unsubscribe.';
+    case 'any_paid_tier':
+      return 'Members stop early if they unsubscribe or leave any paid tier.';
+    case 'specific_paid_tier': {
+      const triggerNamesById = new Map(tiers.map((tier) => [tier.id, tier.name]));
+      const tierNames = eligibleTierIds
+        .map((id) => triggerNamesById.get(id))
+        .filter((tierName): tierName is string => tierName !== undefined);
+      let tierDescription = 'selected tiers';
+      if (tierNames.length === 1 && tierNames.length === eligibleTierIds.length) {
+        tierDescription = `${tierNames[0]} tier`;
+      } else if (tierNames.length > 1 && tierNames.length === eligibleTierIds.length) {
+        const tierList = new Intl.ListFormat('en', { style: 'long', type: 'disjunction' }).format(
+          tierNames,
+        );
+        tierDescription = `${tierList} tiers`;
+      }
+      return `Members stop early if they unsubscribe or leave the ${tierDescription}.`;
+    }
+    default: {
+      const _exhaustive: never = eligibilityScope;
+      throw new Error(`Unknown automation stop condition: ${String(_exhaustive)}`);
+    }
+  }
+}
+
 export const AutomationSidebar: React.FC<{
   automationId: string;
-  name: string;
   description: string;
-  triggerTierScope: AutomationTrigger['trigger_tier_scope'];
-  triggerTierIds: readonly string[];
+  triggerRules: readonly AutomationTriggerRule[];
   tiers: readonly Tier[];
   performanceEnabled: boolean;
   metadata: AutomationMetadata;
-  onDetailsChange: (details: { name: string; description: string }) => void;
+  onDescriptionChange: (description: string) => void;
   selectedTab: AutomationSidebarTab;
   onTabChange: (tab: AutomationSidebarTab) => void;
   isOpen: boolean;
@@ -215,16 +260,15 @@ export const AutomationSidebar: React.FC<{
   selectedRunId: string | null;
   onSelectRun: (id: string, memberName: string) => void;
   isRunSelectionDisabled: boolean;
+  isToggleHidden?: boolean;
 }> = ({
   automationId,
-  name,
   description,
-  triggerTierScope,
-  triggerTierIds,
+  triggerRules,
   tiers,
   performanceEnabled,
   metadata,
-  onDetailsChange,
+  onDescriptionChange,
   isOpen,
   selectedTab,
   onTabChange,
@@ -232,6 +276,7 @@ export const AutomationSidebar: React.FC<{
   selectedRunId,
   onSelectRun,
   isRunSelectionDisabled,
+  isToggleHidden = false,
 }) => {
   let activeTab: AutomationSidebarTab;
   switch (metadata) {
@@ -247,10 +292,7 @@ export const AutomationSidebar: React.FC<{
       throw new Error(`Unknown automation metadata mode: ${String(_exhaustive)}`);
     }
   }
-  const nameId = useId();
   const descriptionId = useId();
-  const nameErrorId = useId();
-  const isNameValid = name.trim().length > 0;
   const [searchOpen, setSearchOpen] = useState(false);
   const [input, setInput] = useState('');
   const [search, setSearch] = useState('');
@@ -271,37 +313,10 @@ export const AutomationSidebar: React.FC<{
     setHasOpened(true);
   }
 
-  let stopConditionDescription: string;
-  switch (triggerTierScope) {
-    case 'free':
-    case null:
-      stopConditionDescription = 'Members stop early if they unsubscribe.';
-      break;
-    case 'all_paid':
-      stopConditionDescription = 'Members stop early if they unsubscribe or leave any paid tier.';
-      break;
-    case 'selected_paid': {
-      const triggerNamesById = new Map(tiers.map((tier) => [tier.id, tier.name]));
-      const tierNames = triggerTierIds
-        .map((id) => triggerNamesById.get(id))
-        .filter((tierName): tierName is string => tierName !== undefined);
-      let tierDescription = 'selected tiers';
-      if (tierNames.length === 1 && tierNames.length === triggerTierIds.length) {
-        tierDescription = `${tierNames[0]} tier`;
-      } else if (tierNames.length > 1 && tierNames.length === triggerTierIds.length) {
-        const tierList = new Intl.ListFormat('en', { style: 'long', type: 'disjunction' }).format(
-          tierNames,
-        );
-        tierDescription = `${tierList} tiers`;
-      }
-      stopConditionDescription = `Members stop early if they unsubscribe or leave the ${tierDescription}.`;
-      break;
-    }
-    default: {
-      const _exhaustive: never = triggerTierScope;
-      throw new Error(`Unknown automation trigger scope: ${String(_exhaustive)}`);
-    }
-  }
+  const stopConditionDescription = getStopConditionDescription({
+    triggerRules,
+    tiers,
+  });
 
   return (
     <>
@@ -309,7 +324,10 @@ export const AutomationSidebar: React.FC<{
         aria-controls={panelId}
         aria-expanded={isOpen}
         aria-label={isOpen ? 'Hide automation sidebar' : 'Show automation sidebar'}
-        className="absolute top-4 left-4 z-20"
+        className={cn(
+          'absolute top-4 left-4 z-20 transition-transform duration-200 ease-in-out motion-reduce:transition-none',
+          isToggleHidden && 'translate-x-[calc(-100%-2rem)]',
+        )}
         size="icon"
         type="button"
         variant="ghost"
@@ -424,23 +442,6 @@ export const AutomationSidebar: React.FC<{
             {metadata !== 'hidden' && (
               <TabsContent className="mt-6" value="settings">
                 <Stack gap="xl">
-                  <Field data-invalid={!isNameValid || undefined}>
-                    <FieldLabel htmlFor={nameId}>Name</FieldLabel>
-                    <Input
-                      aria-describedby={!isNameValid ? nameErrorId : undefined}
-                      aria-invalid={!isNameValid || undefined}
-                      disabled={metadata === 'readonly'}
-                      id={nameId}
-                      maxLength={191}
-                      value={name}
-                      onChange={(event) =>
-                        onDetailsChange({ name: event.target.value, description })
-                      }
-                    />
-                    {!isNameValid && (
-                      <FieldError id={nameErrorId}>Add an automation name.</FieldError>
-                    )}
-                  </Field>
                   <Field>
                     <FieldLabel htmlFor={descriptionId}>Description</FieldLabel>
                     <Textarea
@@ -449,9 +450,7 @@ export const AutomationSidebar: React.FC<{
                       maxLength={2000}
                       rows={4}
                       value={description}
-                      onChange={(event) =>
-                        onDetailsChange({ name, description: event.target.value })
-                      }
+                      onChange={(event) => onDescriptionChange(event.target.value)}
                     />
                   </Field>
                   <Field>

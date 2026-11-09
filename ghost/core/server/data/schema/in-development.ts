@@ -23,9 +23,10 @@ import schema from './schema';
  * are not created.
  */
 export const IN_DEVELOPMENT_TABLES: string[] = [
-  'app_installations',
-  'app_installation_manifests',
-  'jobs_outbox',
+  'user_accounts',
+  'user_sessions',
+  'verifications',
+  'user_two_factors',
 ];
 
 export function isInDevelopmentTable(tableName: string): boolean {

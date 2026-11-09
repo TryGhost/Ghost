@@ -90,6 +90,13 @@ package name instead of copying configuration into each project.
 The [shared ESLint README](../../tools/configs/eslint/README.md) explains the Node and
 React factories, standalone exceptions, and plugin dependency rules.
 
+## Tooling ownership
+
+The [tooling guide](../../tools/README.md) defines where shared configuration,
+repository automation, contributor commands, Ghost build scripts and installed
+Ghost tools belong. Read it before adding or moving a script. The nearby READMEs
+list the current tools and execution contracts.
+
 ## Workspace dependencies
 
 Workspace packages declare local dependencies with `workspace:` versions. pnpm

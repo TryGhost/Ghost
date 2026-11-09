@@ -49,6 +49,9 @@ migration, private feature flag, Shade component, or internal package.
   use `admin-x-framework` for APIs, and use Shade for UI. Admin and Core deploy
   independently, so feature-detect backend support and test the older-backend
   case.
+  - Shade docs: in this repo, `https://shade.ghost.org/docs/<page>.md` is the
+    source `apps/shade/src/docs/<page>.mdx`, and `docs/components/<path>.md`
+    is `apps/shade/src/components/<path>.mdx`. Read those files directly.
 - **Embedded Admin CSS:** do not import `@tryghost/shade/styles.css` from an
   embedded app. Admin owns the single Tailwind and Shade CSS lane.
 - **Translations:** follow the
@@ -65,6 +68,10 @@ migration, private feature flag, Shade component, or internal package.
   use TypeScript; keep CommonJS only
   at existing `require()` boundaries. Boot owns service initialization; do not
   initialize on the first request.
+  Before writing a record's relations or link tables outside `Model.edit`,
+  read [row locking](docs/codebase/database.md#row-locking).
+- **Repository tooling:** read the [tooling ownership guide](tools/README.md)
+  and the owning folder README before adding or relocating scripts.
 - **ESLint:** use the shared factories and dependency rules in the
   [ESLint configuration README](tools/configs/eslint/README.md). A hand-written config
   must declare every plugin it imports locally.

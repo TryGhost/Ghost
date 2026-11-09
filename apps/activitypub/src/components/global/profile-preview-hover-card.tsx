@@ -14,10 +14,11 @@ import {
   Skeleton,
 } from '@tryghost/shade/components';
 import { H3 } from '@tryghost/shade/primitives';
-import { LucideIcon, abbreviateNumber } from '@tryghost/shade/utils';
+import { LucideIcon, abbreviateNumber, cn } from '@tryghost/shade/utils';
 import { openLinksInNewTab, sanitizeHtml, stripHtml } from '../../utils/content-formatters';
 import { useAccountForUser } from '../../hooks/use-activity-pub-queries';
 import { useNavigateWithBasePath } from '@src/hooks/use-navigate-with-base-path';
+import { useShade } from '@tryghost/shade/app';
 
 type ProfilePreviewHoverCardProps = {
   actor?: ActorProperties | Account | null;
@@ -40,6 +41,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
   align = 'start',
   isCurrentUser = false,
 }) => {
+  const { admin7Design } = useShade();
   const [shouldFetch, setShouldFetch] = useState(false);
   const navigate = useNavigateWithBasePath();
 
@@ -192,7 +194,10 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
           ) : !hasLoadingError && bio ? (
             <div
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(bio) }}
-              className="leading-tight dark:text-gray-300 [&_.invisible]:hidden [&_a]:text-[#00a4eb] [&_a:hover]:underline"
+              className={cn(
+                'leading-tight dark:text-gray-300 [&_.invisible]:hidden [&_a]:text-blue-600 [&_a:hover]:underline',
+                admin7Design && 'dark:[&_a]:text-blue-400',
+              )}
             />
           ) : null}
         </div>

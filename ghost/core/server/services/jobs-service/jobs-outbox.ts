@@ -1,11 +1,12 @@
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import type { DispatchEnvelope } from '@tryghost/adapter-base-jobs';
+import { DbDate } from '../../lib/db-types/date';
 import { DbJson } from '../../lib/db-types/json';
 
 const TABLE = 'jobs_outbox';
-// knex's generated name for the schema's ['available_at'] index on this table.
-const AVAILABLE_AT_INDEX = 'jobs_outbox_available_at_index';
+// knex's generated name for the schema's ['submitted_at', 'available_at'] index on this table.
+const CLAIM_INDEX = 'jobs_outbox_submitted_at_available_at_index';
 
 export const OutboxEnvelope = DbJson(
   z.object({
@@ -31,11 +32,11 @@ export interface InsertOptions {
 
 export type ProcessOutcome =
   | { status: 'idle' }
-  | { status: 'delivered'; id: string }
+  | { status: 'delivered'; id: string; type: string; createdAt: Date }
   | { status: 'failed'; id: string; error: unknown };
 
 // The row as the claim query returns it, validated before anything trusts it.
-const ClaimedRow = z.object({ id: z.string(), envelope: z.string() });
+const ClaimedRow = z.object({ id: z.string(), envelope: z.string(), created_at: DbDate });
 
 // MySQL rounds a fractional DATETIME on insert, which can round available_at up
 // and leave a freshly inserted row briefly ineligible.
@@ -72,10 +73,12 @@ export class JobsOutbox {
       // after a truncate) gets a table scan plus filesort, which reads and
       // locks every eligible row before the LIMIT applies, so one relay
       // holding a row starves the others and blocks inserts. Forcing the
-      // available_at index makes the scan stop at the first unlocked row.
+      // claim index makes the scan stop at the first unlocked row, and
+      // start past the rows already handed over.
       const raw = await trx
-        .select('id', 'envelope')
-        .from(trx.raw('?? force index (??)', [TABLE, AVAILABLE_AT_INDEX]))
+        .select('id', 'envelope', 'created_at')
+        .from(trx.raw('?? force index (??)', [TABLE, CLAIM_INDEX]))
+        .whereNull('submitted_at')
         .where('available_at', '<=', new Date())
         .orderBy([{ column: 'available_at' }, { column: 'id' }])
         .forUpdate()
@@ -89,13 +92,15 @@ export class JobsOutbox {
       // A row that does not match the schema means drift that will hit every
       // row, so it throws out of the claim rather than taking the per-row
       // retry path, which needs a trusted id.
-      const { id, envelope: stored } = ClaimedRow.parse(raw);
+      const { id, envelope: stored, created_at: createdAt } = ClaimedRow.parse(raw);
 
       // Decoding is inside the try so a row that cannot be read takes the same
       // retry path as a rejected submission, instead of throwing out of the
       // transaction and being re-claimed first on every poll.
+      let type: string;
       try {
         const envelope: DispatchEnvelope = z.decode(OutboxEnvelope, stored);
+        type = envelope.payload.job.type;
         await submit(id, envelope);
       } catch (error) {
         await trx(TABLE)
@@ -105,7 +110,7 @@ export class JobsOutbox {
       }
 
       await trx(TABLE).where('id', id).delete();
-      return { status: 'delivered', id };
+      return { status: 'delivered', id, type, createdAt };
     });
   }
 }

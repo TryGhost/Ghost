@@ -1,6 +1,5 @@
 const Feedback = require('./feedback');
 const errors = require('@tryghost/errors');
-const permissions = require('../../services/permissions');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
@@ -23,15 +22,19 @@ class AudienceFeedbackController {
   #repository;
   /** @type {import('./audience-feedback-service')} */
   #audienceFeedbackService;
+  /** @type {typeof import('../permissions')} */
+  #permissions;
 
   /**
    * @param {object} deps
    * @param {IFeedbackRepository} deps.repository
    * @param {import('./audience-feedback-service')} deps.audienceFeedbackService
+   * @param {typeof import('../permissions')} deps.permissions
    */
   constructor(deps) {
     this.#repository = deps.repository;
     this.#audienceFeedbackService = deps.audienceFeedbackService;
+    this.#permissions = deps.permissions;
   }
 
   /**
@@ -129,7 +132,7 @@ class AudienceFeedbackController {
     }
 
     try {
-      await permissions.canThis(frame.options.context).browse.member();
+      await this.#permissions.canThis(frame.options.context).browse.member();
       options.withMember = true;
     } catch {
       // permissions throws; we want to return data but without member info

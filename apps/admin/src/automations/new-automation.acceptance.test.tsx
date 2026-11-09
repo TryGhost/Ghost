@@ -14,7 +14,7 @@ import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automatio
 import { detail } from './run-history.test-utils';
 import { performanceBoot } from './run-list.test-utils';
 
-const labs = { automations: true, automationsPerTier: true };
+const labs = { automations: true };
 const button = (name: string) => page.getByRole('button', { name, exact: true });
 const addWait = async () => {
   await button('Add step').click();
@@ -31,6 +31,8 @@ const serveCreation = () =>
     ],
   }));
 
+const nameField = () => page.getByRole('textbox', { name: 'Automation name', exact: true });
+
 describe('New automation', () => {
   it('creates a free draft locally, warns before leaving, then adds and edits without remounting', async () => {
     fakeAutomations([
@@ -45,8 +47,8 @@ describe('New automation', () => {
     }));
     await renderAdminApp('/automations', { labs });
     await button('New automation').click();
-    await expect.element(page.getByText('New Automation (2)', { exact: true })).toBeVisible();
-    await expect.element(button('Save')).toBeDisabled();
+    await expect.element(nameField()).toHaveValue('New Automation (2)');
+    await expect.element(button('Save')).toBeEnabled();
     await expect
       .element(page.getByText('Select a trigger', { exact: true }))
       .not.toBeInTheDocument();
@@ -70,7 +72,9 @@ describe('New automation', () => {
       automations: [
         {
           name: 'New Automation (2)',
-          trigger_tier_scope: 'free',
+          trigger_rules: [
+            { trigger_type: 'free_signup', scope: null, product_id: null, direction: null },
+          ],
           status: 'inactive',
           actions: [{ type: 'wait' }],
         },
@@ -82,7 +86,26 @@ describe('New automation', () => {
     expect(create.requests).toHaveLength(1);
   });
 
-  it('starts a fresh creation session when navigating from the saved route to new', async () => {
+  it('saves a new automation without actions while keeping publish disabled', async () => {
+    fakeAutomations([]);
+    const create = serveCreation();
+    await renderAdminApp('/automations/new', { labs });
+
+    await expect.element(button('Save')).toBeEnabled();
+    await expect.element(button('Publish')).toBeDisabled();
+
+    await button('Save').click();
+
+    await expect.poll(currentRoute).toBe('/automations/created');
+    await expect.element(button('Save')).toBeDisabled();
+    await expect.element(button('Publish')).toBeDisabled();
+    expect(create.requests).toHaveLength(1);
+    expect(create.requests[0].body).toMatchObject({
+      automations: [{ status: 'inactive', actions: [], edges: [] }],
+    });
+  });
+
+  it('starts a fresh creation session after returning to the automations list', async () => {
     fakeAutomations([]);
     const create = serveCreation();
     const edit = fakeAdminEndpoint('PUT', '/automations/created/', {
@@ -97,7 +120,8 @@ describe('New automation', () => {
     await expect.element(button('Save')).toBeDisabled();
     await expect.poll(unsavedChangesGuarded).toBe(false);
 
-    window.location.hash = '#/automations/new';
+    await page.getByRole('link', { name: 'Back to automations' }).click();
+    await button('New automation').click();
     await expect
       .element(page.getByRole('textbox', { name: 'Wait for', exact: true }))
       .not.toBeInTheDocument();
@@ -127,9 +151,9 @@ describe('New automation', () => {
     await expect.poll(unsavedChangesGuarded).toBe(false);
 
     window.location.hash = '#/automations/other';
-    await expect.element(page.getByText('Other automation', { exact: true })).toBeVisible();
+    await expect.element(nameField()).toHaveValue('Other automation');
     window.history.back();
-    await expect.element(page.getByText('Saved automation', { exact: true })).toBeVisible();
+    await expect.element(nameField()).toHaveValue('Saved automation');
     expect(read.requests).toHaveLength(1);
     await expect.poll(unsavedChangesGuarded).toBe(false);
   });
@@ -192,7 +216,19 @@ describe('New automation', () => {
     await button('Save').click();
     await expect.poll(() => create.requests.length).toBe(1);
     expect(create.requests[0].body).toMatchObject({
-      automations: [{ trigger_tier_scope: 'all_paid', actions: [{ data: { wait_hours: 72 } }] }],
+      automations: [
+        {
+          trigger_rules: [
+            {
+              trigger_type: 'paid_subscription_started',
+              scope: 'any_paid_tier',
+              product_id: null,
+              direction: null,
+            },
+          ],
+          actions: [{ data: { wait_hours: 72 } }],
+        },
+      ],
     });
   });
 
@@ -263,16 +299,13 @@ describe('New automation', () => {
       .click();
     await button('Edit email content').click();
     const dialog = page.getByRole('dialog', { name: 'Edit email', exact: true });
-    await expect.element(dialog.getByRole('tab', { name: 'Preview' })).toBeDisabled();
-    await expect
-      .element(dialog.getByRole('tab', { name: 'Preview' }))
-      .toHaveAttribute('title', 'Save automation to preview or send a test');
-    await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+    await expect.element(dialog.getByRole('radio', { name: 'Preview' })).toBeDisabled();
+    await dialog.getByRole('button', { name: 'Minimize editor' }).click();
     await expect.element(dialog).not.toBeInTheDocument();
     await button('Save').click();
     await expect.poll(currentRoute).toBe('/automations/created');
     await button('Edit email content').click();
-    await expect.element(dialog.getByRole('tab', { name: 'Preview' })).toBeEnabled();
+    await expect.element(dialog.getByRole('radio', { name: 'Preview' })).toBeEnabled();
   });
 
   it('plays the header entrance once, not again after a trigger is picked', async () => {
@@ -382,19 +415,22 @@ describe('New automation', () => {
     expect(runs.requests).toHaveLength(0);
   });
 
-  it('does not offer creation when its flag is off', async () => {
-    fakeAutomations([]);
-    await renderAdminApp('/automations/new', { labs: { automations: true } });
-    await expect.poll(currentRoute).toBe('/automations');
-    await expect.element(page.getByRole('heading', { name: /^Automations/ })).toBeVisible();
-    await expect.element(button('New automation')).not.toBeInTheDocument();
-  });
-
-  for (const [title, scope] of [
-    ['Free member signed up', 'free'],
-    ['Paid subscription started', 'all_paid'],
+  for (const { title, rule } of [
+    {
+      title: 'Free member signed up',
+      rule: { trigger_type: 'free_signup', scope: null, product_id: null, direction: null },
+    },
+    {
+      title: 'Paid subscription started',
+      rule: {
+        trigger_type: 'paid_subscription_started',
+        scope: 'any_paid_tier',
+        product_id: null,
+        direction: null,
+      },
+    },
   ] as const) {
-    it(`selects ${scope} with Stripe connected`, async () => {
+    it(`selects ${title} with Stripe connected`, async () => {
       fakeAutomations([]);
       fakeAdminEndpoint('GET', /\/tiers\/\?/, { tiers: [] });
       const create = serveCreation();
@@ -411,7 +447,7 @@ describe('New automation', () => {
       await expect.element(page.getByText('Select a trigger', { exact: true })).toBeVisible();
       await expect.element(button('Hide automation sidebar')).not.toBeInTheDocument();
       await page.getByRole('button', { name: new RegExp(`^${title}`) }).click();
-      if (scope === 'all_paid') {
+      if (rule.trigger_type === 'paid_subscription_started') {
         await expect
           .element(page.getByText('Triggered when a new or free member starts:', { exact: true }))
           .toBeVisible();
@@ -421,17 +457,41 @@ describe('New automation', () => {
       await expect
         .element(page.getByRole('tab', { name: 'Settings' }))
         .toHaveAttribute('data-state', 'active');
-      await expect.element(page.getByRole('textbox', { name: 'Name', exact: true })).toBeVisible();
+      await expect
+        .element(page.getByRole('textbox', { name: 'Automation name', exact: true }))
+        .toBeVisible();
       await button('Hide automation sidebar').click();
-      await expect.element(button('Save')).toBeDisabled();
+      await expect.element(button('Save')).toBeEnabled();
       expect(create.requests).toHaveLength(0);
       await addWait();
       await button('Save').click();
       await expect.poll(() => create.requests.length).toBe(1);
       await expect.element(button('Show automation sidebar')).toBeVisible();
       expect(create.requests[0].body).toMatchObject({
-        automations: [{ trigger_tier_scope: scope, trigger_tier_ids: null }],
+        automations: [
+          {
+            trigger_rules: [rule],
+          },
+        ],
       });
     });
   }
+
+  it('shows trigger chooser when lead magnets is enabled, even if Stripe is not', async () => {
+    fakeAutomations([]);
+    await renderAdminApp('/automations/new', {
+      labs: { ...labs, automationsLeadMagnets: true, automationsLifecycleTriggers: true },
+    });
+
+    await expect.element(page.getByText('Select a trigger', { exact: true })).toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: /^Free member signed up/ }))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: /^Paid subscription started/ }))
+      .not.toBeInTheDocument();
+    await expect
+      .element(page.getByRole('button', { name: /^Paid subscription changed/ }))
+      .not.toBeInTheDocument();
+  });
 });

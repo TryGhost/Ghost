@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import { execSync } from 'node:child_process';
 import semver from 'semver';
 
-import { resolveBaseTag } from '../lib/resolve-base-tag.ts';
+import { resolveBaseTag } from '../release/resolve-base-tag.ts';
 
 /**
  * Create a temporary git repo with semver tags for testing.

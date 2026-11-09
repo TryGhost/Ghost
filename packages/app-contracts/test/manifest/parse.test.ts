@@ -2,11 +2,24 @@ import assert from 'node:assert/strict';
 
 import { describe, expect, it } from 'vitest';
 
-import { parseManifest, parseManifestUrl } from '../../src/manifest/index.ts';
-import { devOptions, errorsOf, manifest, manifestOf, options } from './helpers.ts';
+import {
+  AppManifestSchema,
+  parseManifest,
+  parseManifestUrl,
+  type ParseManifestOptions,
+} from '../../src/manifest/index.ts';
+import {
+  BACKEND_KEY,
+  IDENTITY_KEY,
+  devOptions,
+  errorsOf,
+  manifest,
+  manifestOf,
+  options,
+} from './helpers.ts';
 
 describe('parseManifest', () => {
-  it('resolves relative URLs against where the manifest was fetched from', () => {
+  it('hands back the manifest it was given, normalised', () => {
     expect(manifestOf(manifest())).toEqual({
       id: 'com.example.podcast',
       name: 'Podcast',
@@ -15,29 +28,18 @@ describe('parseManifest', () => {
       accent_color: '#ff5500',
       icon: { url: 'https://podcast.example.com/icon.svg' },
       surfaces: [{ type: 'admin_page', url: 'https://podcast.example.com/admin' }],
+      manifest_url: 'https://podcast.example.com/ghost-app.json',
+      identity_key: IDENTITY_KEY,
+      backend_key: BACKEND_KEY,
+      development: false,
     });
   });
 
-  it('gives the same manifest a different home when it is served from elsewhere', () => {
-    expect(manifestOf(manifest(), devOptions).surfaces).toEqual([
-      { type: 'admin_page', url: 'http://localhost:8787/admin' },
-    ]);
-  });
-
-  it('accepts a manifest it has already parsed, unchanged', () => {
+  // What's stored holds the resolved URLs, so it's read back with the stored manifest's
+  // schema, not parsed again.
+  it('hands back a manifest the stored manifest’s schema reads unchanged', () => {
     const parsed = manifestOf(manifest({ name: ' Podcast ' }));
-    expect(manifestOf(parsed)).toEqual(parsed);
-  });
-
-  it('accepts absolute URLs on another host', () => {
-    const parsed = manifestOf(
-      manifest({
-        icon: { url: 'https://cdn.example.net/icon.svg' },
-        surfaces: [{ type: 'admin_page', url: 'https://app.example.net/ghost' }],
-      }),
-    );
-    expect(parsed.icon).toEqual({ url: 'https://cdn.example.net/icon.svg' });
-    expect(parsed.surfaces[0]?.url).toBe('https://app.example.net/ghost');
+    expect(AppManifestSchema.parse(parsed)).toEqual(parsed);
   });
 
   it('trims the name and description', () => {
@@ -70,11 +72,37 @@ describe('parseManifest', () => {
       ]);
     });
 
-    it('leaves a fragment out of its length, as a redirect may end in one', () => {
-      const manifestUrl = `https://podcast.example.com/app.json#${'a'.repeat(2000)}`;
-      expect(manifestOf(manifest(), { ...options, manifestUrl }).surfaces).toEqual([
-        { type: 'admin_page', url: 'https://podcast.example.com/admin' },
-      ]);
+    it('is what the manifest names as its manifest_url', () => {
+      const result = parseManifest(manifest(), {
+        ...options,
+        manifestUrl: 'https://copies.example.net/ghost-app.json',
+      });
+      expect(result).toEqual({
+        success: false,
+        reason: 'manifest_url_mismatch',
+        errors: [
+          {
+            path: 'manifest_url',
+            message:
+              'Expected https://copies.example.net/ghost-app.json, the address the manifest was read from',
+          },
+        ],
+      });
+    });
+
+    it('is compared as the URL parser reads it', () => {
+      const manifestUrl = 'https://Podcast.Example.com/ghost-app.json';
+      expect(manifestOf(manifest(), { ...options, manifestUrl }).manifest_url).toBe(
+        'https://podcast.example.com/ghost-app.json',
+      );
+    });
+
+    it('is only compared once the manifest is valid, so every problem is reported first', () => {
+      const result = parseManifest(manifest({ name: '' }), {
+        ...options,
+        manifestUrl: 'https://copies.example.net/ghost-app.json',
+      });
+      expect(result).toMatchObject({ success: false, reason: 'invalid' });
     });
   });
 
@@ -96,14 +124,16 @@ describe('parseManifest', () => {
 });
 
 describe('parseManifestUrl', () => {
-  function manifestUrlOf(input: string, allowLocalhost?: boolean) {
-    const result = parseManifestUrl(input, allowLocalhost);
+  type UrlRules = Omit<ParseManifestOptions, 'manifestUrl'>;
+
+  function manifestUrlOf(input: string, rules: UrlRules = options) {
+    const result = parseManifestUrl(input, rules);
     assert(result.success, 'Expected the manifest URL to be accepted');
     return result.manifestUrl;
   }
 
-  function errorOf(input: string, allowLocalhost?: boolean) {
-    const result = parseManifestUrl(input, allowLocalhost);
+  function errorOf(input: string, rules: UrlRules = options) {
+    const result = parseManifestUrl(input, rules);
     assert(!result.success, 'Expected the manifest URL to be rejected');
     return result.error;
   }
@@ -120,15 +150,10 @@ describe('parseManifestUrl', () => {
     );
   });
 
-  it('leaves the fragment out of the address', () => {
-    expect(manifestUrlOf('https://podcast.example.com/ghost-app.json?v=2#install')).toBe(
-      'https://podcast.example.com/ghost-app.json?v=2',
+  it.each(['#install', '#'])('refuses a fragment, even an empty one: %s', (fragment) => {
+    expect(errorOf(`https://podcast.example.com/ghost-app.json${fragment}`)).toBe(
+      'Expected a URL without a fragment for the manifest itself',
     );
-  });
-
-  it('does not count the fragment against the length of the address', () => {
-    const address = `https://podcast.example.com/${'a'.repeat(1900)}`;
-    expect(manifestUrlOf(`${address}#${'b'.repeat(200)}`)).toBe(address);
   });
 
   it('must be a URL', () => {
@@ -151,9 +176,60 @@ describe('parseManifestUrl', () => {
     expect(errorOf('http://localhost:8787/app.json')).toContain('development');
   });
 
+  it('refuses localhost outside development, whatever trailing dots it’s written with', () => {
+    for (const input of [
+      'https://localhost.:8787/app.json',
+      'https://localhost..:8787/app.json',
+      'https://my-app.localhost../app.json',
+      'https://127.0.0.1../app.json',
+    ]) {
+      expect(errorOf(input)).toContain('development');
+    }
+  });
+
   it('accepts localhost, over HTTP too, when Ghost runs in development', () => {
-    expect(manifestUrlOf('http://localhost:8787/app.json', true)).toBe(
-      'http://localhost:8787/app.json',
-    );
+    for (const input of [
+      'http://my-app.localhost:8787/app.json',
+      'http://127.0.0.1:8787/app.json',
+    ]) {
+      expect(manifestUrlOf(input, devOptions)).toBe(input);
+    }
+  });
+
+  it('refuses an address on the site’s or Admin’s host, on any port or scheme', () => {
+    for (const input of [
+      'https://site.example.com/ghost-app.json',
+      'https://site.example.com:8443/ghost-app.json',
+      'https://Site.Example.com./ghost-app.json',
+      'https://admin.example.com:8443/ghost-app.json',
+    ]) {
+      expect(errorOf(input)).toBe(
+        'Expected the manifest on a host other than the one Ghost itself is served from, on any port, as browsers send Ghost’s cookies to every port on its host',
+      );
+    }
+  });
+
+  it('refuses Ghost’s own name for the machine in development, and says what to use instead', () => {
+    const suggestion =
+      /on any port, .*\. To run the app on this machine too, serve it from a name of its own under \.localhost, such as my-app\.localhost$/;
+    expect(errorOf('http://localhost:8787/app.json', devOptions)).toMatch(suggestion);
+    expect(
+      errorOf('http://127.0.0.1:8787/app.json', { ...devOptions, ghostUrls: ['http://127.0.0.1'] }),
+    ).toMatch(suggestion);
+    // A worktree's Ghost is on a name under .localhost itself.
+    expect(
+      errorOf('http://wt.ghost.localhost:8787/app.json', {
+        ...devOptions,
+        ghostUrls: ['http://wt.ghost.localhost:2400'],
+      }),
+    ).toMatch(suggestion);
+  });
+
+  it('refuses every address when it is not told where Ghost is served from', () => {
+    for (const ghostUrls of [[], ['https://site.example.com', 'admin'], ['http://./']]) {
+      expect(errorOf('https://podcast.example.com/app.json', { ghostUrls })).toBe(
+        'Expected the URLs Ghost itself is served from',
+      );
+    }
   });
 });

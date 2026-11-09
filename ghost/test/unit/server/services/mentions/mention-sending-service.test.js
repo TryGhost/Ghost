@@ -4,20 +4,21 @@ const nock = require('nock');
 // non-standard to use externalRequest here, but this is required for the overrides in the libary, which we want to test for security reasons in combination with the package
 const externalRequest = require('../../../../../core/server/lib/request-external.js');
 const sinon = require('sinon');
-const logging = require('@tryghost/logging');
+const { createLoggingFake } = require('../../../../utils/logging-utils');
 const dnsPromises = require('node:dns').promises;
 const { createModel } = require('./utils/index.js');
 
 const SendWebmentionsJob =
   require('../../../../../core/server/services/mentions/send-webmentions-job').default;
 
+const linkHtml = '<a href="https://example.com/">link</a>';
+
 describe('MentionSendingService', function () {
-  let errorLogStub;
+  let logging;
 
   beforeEach(function () {
     nock.disableNetConnect();
-    sinon.stub(logging, 'info');
-    errorLogStub = sinon.stub(logging, 'error');
+    logging = createLoggingFake();
   });
 
   afterEach(function () {
@@ -32,7 +33,7 @@ describe('MentionSendingService', function () {
 
   describe('listen', function () {
     it('Called on all events we listen to', async function () {
-      const service = new MentionSendingService({});
+      const service = new MentionSendingService({ logging });
       const stub = sinon.stub(service, 'sendForPost').resolves();
       let callback;
       const events = {
@@ -51,6 +52,7 @@ describe('MentionSendingService', function () {
     it('Ignores if disabled', async function () {
       const jobsService = { dispatch: sinon.stub().resolves() };
       const service = new MentionSendingService({
+        logging,
         isEnabled: () => false,
         getPostData: () => ({}),
         getPostUrl: () => 'https://site.com/post/',
@@ -59,7 +61,7 @@ describe('MentionSendingService', function () {
       await service.sendForPost(
         createModel({
           status: 'published',
-          html: 'same',
+          html: linkHtml,
           previous: {
             status: 'draft',
             html: 'same',
@@ -67,12 +69,13 @@ describe('MentionSendingService', function () {
         }),
       );
       sinon.assert.notCalled(jobsService.dispatch);
-      sinon.assert.notCalled(errorLogStub);
+      sinon.assert.notCalled(logging.error);
     });
 
     it('Ignores if importing data', async function () {
       const jobsService = { dispatch: sinon.stub().resolves() };
       const service = new MentionSendingService({
+        logging,
         isEnabled: () => true,
         getPostData: () => ({}),
         getPostUrl: () => 'https://site.com/post/',
@@ -81,7 +84,7 @@ describe('MentionSendingService', function () {
       await service.sendForPost(
         createModel({
           status: 'published',
-          html: 'same',
+          html: linkHtml,
           previous: {
             status: 'draft',
             html: 'same',
@@ -90,12 +93,13 @@ describe('MentionSendingService', function () {
         { importing: true },
       );
       sinon.assert.notCalled(jobsService.dispatch);
-      sinon.assert.notCalled(errorLogStub);
+      sinon.assert.notCalled(logging.error);
     });
 
     it('Ignores if internal context', async function () {
       const jobsService = { dispatch: sinon.stub().resolves() };
       const service = new MentionSendingService({
+        logging,
         isEnabled: () => true,
         getPostData: () => ({}),
         getPostUrl: () => 'https://site.com/post/',
@@ -104,7 +108,7 @@ describe('MentionSendingService', function () {
       await service.sendForPost(
         createModel({
           status: 'published',
-          html: 'same',
+          html: linkHtml,
           previous: {
             status: 'draft',
             html: 'same',
@@ -113,12 +117,13 @@ describe('MentionSendingService', function () {
         { context: { internal: true } },
       );
       sinon.assert.notCalled(jobsService.dispatch);
-      sinon.assert.notCalled(errorLogStub);
+      sinon.assert.notCalled(logging.error);
     });
 
     it('Ignores draft posts', async function () {
       const jobsService = { dispatch: sinon.stub().resolves() };
       const service = new MentionSendingService({
+        logging,
         isEnabled: () => true,
         getPostData: () => ({}),
         getPostUrl: () => 'https://site.com/post/',
@@ -127,7 +132,7 @@ describe('MentionSendingService', function () {
       await service.sendForPost(
         createModel({
           status: 'draft',
-          html: 'changed',
+          html: linkHtml,
           previous: {
             status: 'draft',
             html: '',
@@ -135,12 +140,13 @@ describe('MentionSendingService', function () {
         }),
       );
       sinon.assert.notCalled(jobsService.dispatch);
-      sinon.assert.notCalled(errorLogStub);
+      sinon.assert.notCalled(logging.error);
     });
 
     it('Ignores if html was not changed', async function () {
       const jobsService = { dispatch: sinon.stub().resolves() };
       const service = new MentionSendingService({
+        logging,
         isEnabled: () => true,
         getPostData: () => ({}),
         getPostUrl: () => 'https://site.com/post/',
@@ -149,20 +155,46 @@ describe('MentionSendingService', function () {
       await service.sendForPost(
         createModel({
           status: 'published',
-          html: 'same',
+          html: linkHtml,
           previous: {
             status: 'published',
-            html: 'same',
+            html: linkHtml,
           },
         }),
       );
       sinon.assert.notCalled(jobsService.dispatch);
-      sinon.assert.notCalled(errorLogStub);
+      sinon.assert.notCalled(logging.error);
+    });
+
+    it('Ignores if html changed but its links did not', async function () {
+      const jobsService = { dispatch: sinon.stub().resolves() };
+      const getPostData = sinon.stub().resolves({});
+      const service = new MentionSendingService({
+        logging,
+        isEnabled: () => true,
+        getPostData,
+        getPostUrl: () => 'https://site.com/post/',
+        jobsService,
+      });
+      await service.sendForPost(
+        createModel({
+          status: 'published',
+          html: linkHtml + '<p>More content</p>',
+          previous: {
+            status: 'published',
+            html: linkHtml,
+          },
+        }),
+      );
+      sinon.assert.notCalled(jobsService.dispatch);
+      sinon.assert.notCalled(getPostData);
+      sinon.assert.notCalled(logging.error);
     });
 
     it('Ignores email only posts', async function () {
       const jobsService = { dispatch: sinon.stub().resolves() };
       const service = new MentionSendingService({
+        logging,
         isEnabled: () => true,
         getPostData: () => ({}),
         getPostUrl: () => 'https://site.com/post/',
@@ -171,7 +203,7 @@ describe('MentionSendingService', function () {
       await service.sendForPost(
         createModel({
           status: 'send',
-          html: 'changed',
+          html: linkHtml,
           previous: {
             status: 'draft',
             html: 'same',
@@ -179,12 +211,13 @@ describe('MentionSendingService', function () {
         }),
       );
       sinon.assert.notCalled(jobsService.dispatch);
-      sinon.assert.notCalled(errorLogStub);
+      sinon.assert.notCalled(logging.error);
     });
 
     it('Sends on publish', async function () {
       const jobsService = { dispatch: sinon.stub().resolves() };
       const service = new MentionSendingService({
+        logging,
         isEnabled: () => true,
         getPostData: () => ({}),
         getPostUrl: () => 'https://site.com/post/',
@@ -193,10 +226,10 @@ describe('MentionSendingService', function () {
       await service.sendForPost(
         createModel({
           status: 'published',
-          html: 'same',
+          html: linkHtml,
           previous: {
             status: 'draft',
-            html: 'same',
+            html: linkHtml,
           },
         }),
       );
@@ -204,13 +237,13 @@ describe('MentionSendingService', function () {
       const job = jobsService.dispatch.getCall(0).args[0];
       assert.ok(job instanceof SendWebmentionsJob);
       assert.equal(job.sourceUrl, 'https://site.com/post/');
-      assert.equal(job.html, 'same');
-      assert.equal(job.previousHtml, null);
+      assert.deepEqual(job.links, ['https://example.com/']);
     });
 
     it('Sends on unpublish', async function () {
       const jobsService = { dispatch: sinon.stub().resolves() };
       const service = new MentionSendingService({
+        logging,
         isEnabled: () => true,
         getPostData: () => ({}),
         getPostUrl: () => 'https://site.com/post/',
@@ -219,10 +252,10 @@ describe('MentionSendingService', function () {
       await service.sendForPost(
         createModel({
           status: 'draft',
-          html: 'same',
+          html: linkHtml,
           previous: {
             status: 'published',
-            html: 'same',
+            html: linkHtml,
           },
         }),
       );
@@ -230,8 +263,7 @@ describe('MentionSendingService', function () {
       const job = jobsService.dispatch.getCall(0).args[0];
       assert.ok(job instanceof SendWebmentionsJob);
       assert.equal(job.sourceUrl, 'https://site.com/post/');
-      assert.equal(job.html, null);
-      assert.equal(job.previousHtml, 'same');
+      assert.deepEqual(job.links, ['https://example.com/']);
     });
 
     it('Resolves the url from previous data when the post was destroyed', async function () {
@@ -241,6 +273,7 @@ describe('MentionSendingService', function () {
       const getPostUrl = sinon.stub().returns('https://site.com/gone/');
       const jobsService = { dispatch: sinon.stub().resolves() };
       const service = new MentionSendingService({
+        logging,
         isEnabled: () => true,
         getPostData,
         getPostUrl,
@@ -250,7 +283,7 @@ describe('MentionSendingService', function () {
       const previous = {
         id: 'post-id',
         status: 'published',
-        html: 'linky',
+        html: linkHtml,
         slug: 'gone',
         type: 'post',
       };
@@ -273,9 +306,10 @@ describe('MentionSendingService', function () {
       assert.equal(getPostUrl.getCall(0).args[1].slug, 'gone');
     });
 
-    it('Sends on html change', async function () {
+    it('Sends on html change to removed and added links', async function () {
       const jobsService = { dispatch: sinon.stub().resolves() };
       const service = new MentionSendingService({
+        logging,
         isEnabled: () => true,
         getPostData: () => ({}),
         getPostUrl: () => 'https://site.com/post/',
@@ -284,10 +318,10 @@ describe('MentionSendingService', function () {
       await service.sendForPost(
         createModel({
           status: 'published',
-          html: 'updated',
+          html: '<a href="https://kept.com/">kept</a><a href="https://added.com/">added</a>',
           previous: {
             status: 'published',
-            html: 'same',
+            html: '<a href="https://kept.com/">kept</a><a href="https://removed.com/">removed</a>',
           },
         }),
       );
@@ -295,8 +329,33 @@ describe('MentionSendingService', function () {
       const job = jobsService.dispatch.getCall(0).args[0];
       assert.ok(job instanceof SendWebmentionsJob);
       assert.equal(job.sourceUrl, 'https://site.com/post/');
-      assert.equal(job.html, 'updated');
-      assert.equal(job.previousHtml, 'same');
+      assert.deepEqual(job.links, ['https://removed.com/', 'https://added.com/']);
+    });
+
+    it('Queues the same payload however much html surrounds the links', async function () {
+      const jobsService = { dispatch: sinon.stub().resolves() };
+      const service = new MentionSendingService({
+        logging,
+        isEnabled: () => true,
+        getPostData: () => ({}),
+        getPostUrl: () => 'https://site.com/post/',
+        jobsService,
+      });
+      for (const filler of ['<p>short</p>', `<p>${'a'.repeat(1000)}</p>`]) {
+        await service.sendForPost(
+          createModel({
+            status: 'published',
+            html: linkHtml + filler,
+            previous: {
+              status: 'published',
+              html: filler,
+            },
+          }),
+        );
+      }
+      sinon.assert.calledTwice(jobsService.dispatch);
+      const [shortPost, longPost] = jobsService.dispatch.args.map(([job]) => JSON.stringify(job));
+      assert.equal(longPost, shortPost);
     });
 
     it('Catches and logs errors', async function () {
@@ -304,6 +363,7 @@ describe('MentionSendingService', function () {
         dispatch: sinon.stub().rejects(new Error('Internal error test')),
       };
       const service = new MentionSendingService({
+        logging,
         isEnabled: () => true,
         getPostData: () => ({}),
         getPostUrl: () => 'https://site.com/post/',
@@ -312,24 +372,26 @@ describe('MentionSendingService', function () {
       await service.sendForPost(
         createModel({
           status: 'published',
-          html: 'same',
+          html: linkHtml,
           previous: {
             status: 'draft',
             html: 'same',
           },
         }),
       );
-      sinon.assert.calledTwice(errorLogStub);
+      sinon.assert.calledTwice(logging.error);
     });
 
     it('Sends no mentions for posts without html and previous html', async function () {
       const jobsService = { dispatch: sinon.stub().resolves() };
       const service = new MentionSendingService({
+        logging,
         isEnabled: () => true,
         getPostData: () => ({}),
         getPostUrl: () => 'https://site.com/post/',
         jobsService,
       });
+      const linksStub = sinon.stub(service, 'getLinks');
       await service.sendForPost(
         createModel({
           status: 'published',
@@ -341,31 +403,27 @@ describe('MentionSendingService', function () {
         }),
       );
       sinon.assert.notCalled(jobsService.dispatch);
+      sinon.assert.notCalled(linksStub);
     });
   });
 
   describe('sendWebmentions', function () {
-    it('rehydrates the source url and forwards the html fields', async function () {
-      const service = new MentionSendingService({});
-      const stub = sinon.stub(service, 'sendForHTMLResource').resolves();
+    it('rehydrates the source url and links', async function () {
+      const service = new MentionSendingService({ logging });
+      const stub = sinon.stub(service, 'sendAll').resolves();
       const job = new SendWebmentionsJob({
         sourceUrl: 'https://site.com/post/',
-        html: '<a href="https://example.com/">link</a>',
-        previousHtml: null,
+        links: ['https://example.com/'],
       });
 
       await service.sendWebmentions(job);
 
       sinon.assert.calledOnce(stub);
-      const resource = stub.firstCall.args[0];
-      assert.ok(resource.url instanceof URL, 'the source url is rehydrated into a URL');
-      assert.equal(resource.url.href, 'https://site.com/post/');
-      assert.equal(resource.html, job.html);
-      assert.equal(resource.previousHtml, null);
+      const { url, links } = stub.firstCall.args[0];
+      assert.deepEqual(url, new URL('https://site.com/post/'));
+      assert.deepEqual(links, [new URL('https://example.com/')]);
     });
-  });
 
-  describe('sendForHTMLResource', function () {
     it('Sends to all links', { retry: 1 }, async function () {
       let counter = 0;
       const scope = nock('https://example.org')
@@ -377,25 +435,19 @@ describe('MentionSendingService', function () {
         });
 
       const service = new MentionSendingService({
+        logging,
         externalRequest,
         getSiteUrl: () => new URL('https://site.com'),
         discoveryService: {
           getEndpoint: async () => new URL('https://example.org/webmentions-test'),
         },
       });
-      await service.sendForHTMLResource({
-        url: new URL('https://site.com'),
-        html: `
-                    <html>
-                        <body>
-                            <a href="https://example.com">Example</a>
-                            <a href="https://example.com">Example repeated</a>
-                            <a href="https://example.org#fragment">Example</a>
-                            <a href="http://example2.org">Example 2</a>
-                        </body>
-                    </html>
-            `,
-      });
+      await service.sendWebmentions(
+        new SendWebmentionsJob({
+          sourceUrl: 'https://site.com/',
+          links: ['https://example.com/', 'https://example.org/#fragment', 'http://example2.org/'],
+        }),
+      );
       assert.equal(scope.isDone(), true);
       assert.equal(counter, 3);
     });
@@ -414,70 +466,29 @@ describe('MentionSendingService', function () {
         });
 
       const service = new MentionSendingService({
+        logging,
         externalRequest,
         getSiteUrl: () => new URL('https://site.com'),
         discoveryService: {
           getEndpoint: async () => new URL('https://example.org/webmentions-test'),
         },
       });
-      await service.sendForHTMLResource({
-        url: new URL('https://site.com'),
-        html: `
-                    <html>
-                        <body>
-                            <a href="https://example.com">Example</a>
-                            <a href="https://example.com">Example repeated</a>
-                            <a href="https://example.org#fragment">Example</a>
-                            <a href="http://example2.org">Example 2</a>
-                        </body>
-                    </html>
-            `,
-      });
+      await service.sendWebmentions(
+        new SendWebmentionsJob({
+          sourceUrl: 'https://site.com/',
+          links: ['https://example.com/', 'https://example.org/#fragment', 'http://example2.org/'],
+        }),
+      );
       assert.equal(scope.isDone(), true);
       assert.equal(counter, 3);
-      sinon.assert.calledOnce(errorLogStub);
-    });
-
-    it('Sends to deleted links', { retry: 1 }, async function () {
-      let counter = 0;
-      const scope = nock('https://example.org')
-        .persist()
-        .post('/webmentions-test')
-        .reply(() => {
-          counter += 1;
-          return [202];
-        });
-
-      const service = new MentionSendingService({
-        externalRequest,
-        getSiteUrl: () => new URL('https://site.com'),
-        discoveryService: {
-          getEndpoint: async () => new URL('https://example.org/webmentions-test'),
-        },
-      });
-      await service.sendForHTMLResource({
-        url: new URL('https://site.com'),
-        html: `<a href="https://example.com">Example</a>`,
-        previousHtml: `<a href="https://typo.com">Example</a>`,
-      });
-      assert.equal(scope.isDone(), true);
-      assert.equal(counter, 2);
-    });
-
-    // cheerio must be served a string
-    it('Does not evaluate links for an empty post', async function () {
-      const service = new MentionSendingService({
-        isEnabled: () => true,
-      });
-      const linksStub = sinon.stub(service, 'getLinks');
-      await service.sendForHTMLResource({ html: ``, previousHtml: `` });
-      sinon.assert.notCalled(linksStub);
+      sinon.assert.calledOnce(logging.error);
     });
   });
 
   describe('getLinks', function () {
     it('Returns all unique links in a HTML-document', async function () {
       const service = new MentionSendingService({
+        logging,
         getSiteUrl: () => new URL('https://site.com'),
       });
       const links = service.getLinks(`
@@ -490,51 +501,55 @@ describe('MentionSendingService', function () {
                     </body>
                 </html>
             `);
-      assert.deepEqual(links, [
-        new URL('https://example.com'),
-        new URL('https://example.org#fragment'),
-        new URL('http://example2.org'),
-      ]);
+      assert.deepEqual(
+        [...links],
+        ['https://example.com/', 'https://example.org/#fragment', 'http://example2.org/'],
+      );
     });
 
     it('Does not include invalid or local URLs', async function () {
       const service = new MentionSendingService({
+        logging,
         getSiteUrl: () => new URL('https://site.com'),
       });
       const links = service.getLinks(`<a href="/">Example</a>`);
-      assert.deepEqual(links, []);
+      assert.deepEqual([...links], []);
     });
 
     it('Does not include non-http protocols', async function () {
       const service = new MentionSendingService({
+        logging,
         getSiteUrl: () => new URL('https://site.com'),
       });
       const links = service.getLinks(`<a href="ftp://invalid.com">Example</a>`);
-      assert.deepEqual(links, []);
+      assert.deepEqual([...links], []);
     });
 
     it('Does not include invalid urls', async function () {
       const service = new MentionSendingService({
+        logging,
         getSiteUrl: () => new URL('https://site.com'),
       });
       const links = service.getLinks(`<a href="()">Example</a>`);
-      assert.deepEqual(links, []);
+      assert.deepEqual([...links], []);
     });
 
     it('Does not include urls from site domain', async function () {
       const service = new MentionSendingService({
+        logging,
         getSiteUrl: () => new URL('https://site.com'),
       });
       const links = service.getLinks(`<a href="http://site.com/test?123">Example</a>`);
-      assert.deepEqual(links, []);
+      assert.deepEqual([...links], []);
     });
 
     it('Ignores invalid site urls', async function () {
       const service = new MentionSendingService({
+        logging,
         getSiteUrl: () => new URL('invalid()'),
       });
       const links = service.getLinks(`<a href="http://site.com/test?123">Example</a>`);
-      assert.deepEqual(links, [new URL('http://site.com/test?123')]);
+      assert.deepEqual([...links], ['http://site.com/test?123']);
     });
   });
 
@@ -551,7 +566,7 @@ describe('MentionSendingService', function () {
         )
         .reply(202);
 
-      const service = new MentionSendingService({ externalRequest });
+      const service = new MentionSendingService({ externalRequest, logging });
       await service.send({
         source: source,
         target: target,
@@ -572,7 +587,7 @@ describe('MentionSendingService', function () {
         )
         .reply(201);
 
-      const service = new MentionSendingService({ externalRequest });
+      const service = new MentionSendingService({ externalRequest, logging });
       await service.send({
         source: source,
         target: target,
@@ -584,7 +599,7 @@ describe('MentionSendingService', function () {
     it('Can handle 400 responses', { retry: 1 }, async function () {
       const scope = nock('https://example.org').persist().post('/webmentions-test').reply(400);
 
-      const service = new MentionSendingService({ externalRequest });
+      const service = new MentionSendingService({ externalRequest, logging });
       await assert.rejects(
         service.send({
           source: new URL('https://example.com/source'),
@@ -599,7 +614,7 @@ describe('MentionSendingService', function () {
     it('Can handle 500 responses', { retry: 1 }, async function () {
       const scope = nock('https://example.org').persist().post('/webmentions-test').reply(500);
 
-      const service = new MentionSendingService({ externalRequest });
+      const service = new MentionSendingService({ externalRequest, logging });
       await assert.rejects(
         service.send({
           source: new URL('https://example.com/source'),
@@ -617,7 +632,7 @@ describe('MentionSendingService', function () {
       });
       const scope2 = nock('https://example.org').persist().post('/webmentions-test-2').reply(201);
 
-      const service = new MentionSendingService({ externalRequest });
+      const service = new MentionSendingService({ externalRequest, logging });
       await service.send({
         source: new URL('https://example.com'),
         target: new URL('https://example.com'),
@@ -633,7 +648,7 @@ describe('MentionSendingService', function () {
         .post('/webmentions-test')
         .replyWithError('network error');
 
-      const service = new MentionSendingService({ externalRequest });
+      const service = new MentionSendingService({ externalRequest, logging });
       await assert.rejects(
         service.send({
           source: new URL('https://example.com/source'),
@@ -653,7 +668,7 @@ describe('MentionSendingService', function () {
       });
 
       try {
-        const service = new MentionSendingService({ externalRequest });
+        const service = new MentionSendingService({ externalRequest, logging });
         await assert.rejects(
           service.send({
             source: new URL('https://example.com/source'),

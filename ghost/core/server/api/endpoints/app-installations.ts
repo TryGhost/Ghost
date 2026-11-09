@@ -58,7 +58,7 @@ const controller = {
     headers: noCacheInvalidation,
     permissions: true,
     async query() {
-      return { data: await appInstallations.service.browse() };
+      return appInstallations.service.browse();
     },
   },
 

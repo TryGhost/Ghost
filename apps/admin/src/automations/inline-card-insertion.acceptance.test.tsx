@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { page } from 'vitest/browser';
 import { fakeAdminEndpoint, renderAdminApp } from '@test-utils/acceptance';
 import { detail, flags, setup, editingCanvas } from './run-history.test-utils';
+import { editEmailSubject, fakeEmailEditorData } from './email-editor.test-utils';
 
 describe('Inline card insertion', () => {
   // Keep the add-step picker visible below the email card and its stats.
@@ -36,11 +37,6 @@ describe('Inline card insertion', () => {
         await renderAdminApp('/automations/first', {
           labs: flags.labs,
         });
-        // Starting with performance open checks that insertion dismisses it.
-        await page.getByRole('button', { name: 'View email analytics' }).click();
-        await expect
-          .element(page.getByRole('complementary', { name: 'Email performance' }))
-          .toBeVisible();
         await page
           .getByRole('button', {
             name: position === 'append' ? 'Add step' : 'Insert step here',
@@ -55,20 +51,22 @@ describe('Inline card insertion', () => {
         await expect
           .element(page.getByRole('complementary', { name: 'Step details' }))
           .not.toBeInTheDocument();
-        await expect
-          .element(page.getByRole('complementary', { name: 'Email performance' }))
-          .not.toBeInTheDocument();
         const cards = editingCanvas().getByRole('article', {
           name: type === 'Email' ? /^Send email/ : /^Wait:/,
         });
         await expect(cards).toHaveCount(2);
         const card = position === 'append' ? cards.last() : cards.first();
-        const input = card.getByRole('textbox', {
-          name: type === 'Email' ? 'Subject line' : 'Wait for',
-          exact: true,
-        });
-        await input.fill(type === 'Email' ? 'New email draft' : '2');
-        await expect.element(input).toHaveValue(type === 'Email' ? 'New email draft' : '2');
+        if (type === 'Email') {
+          fakeEmailEditorData();
+          await editEmailSubject(card, 'New email draft');
+          await expect
+            .element(card.getByRole('button', { name: 'Edit email content' }))
+            .toHaveTextContent('New email draft');
+        } else {
+          const input = card.getByRole('textbox', { name: 'Wait for', exact: true });
+          await input.fill('2');
+          await expect.element(input).toHaveValue('2');
+        }
         expect(save.requests).toHaveLength(0);
       });
     }
@@ -86,7 +84,9 @@ describe('Inline card insertion', () => {
         .last();
       await expect
         .element(
-          card.getByRole('textbox', { name: type === 'Email' ? 'Subject line' : 'Wait for' }),
+          type === 'Email'
+            ? card.getByRole('button', { name: 'Edit email content' })
+            : card.getByRole('textbox', { name: 'Wait for' }),
         )
         .toBeVisible();
     });

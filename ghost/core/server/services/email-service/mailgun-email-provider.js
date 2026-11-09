@@ -130,6 +130,8 @@ class MailgunEmailProvider {
         id: emailId,
         track_opens: !!options.openTrackingEnabled,
         track_clicks: !!options.clickTrackingEnabled,
+        // only newsletters opt in; automation and gift emails rely on the id Mailgun returns
+        perRecipientMessageId: true,
       };
 
       const mailgunTagFromConfig = this.#config.get('bulkEmail:mailgun:tag');
@@ -139,11 +141,6 @@ class MailgunEmailProvider {
 
       if (options.deliveryTime && options.deliveryTime instanceof Date) {
         messageData.deliveryTime = options.deliveryTime;
-      }
-
-      // only newsletters opt in; automation and gift emails rely on the id Mailgun returns
-      if (this.#config.get('bulkEmail:perRecipientMessageId') === true) {
-        messageData.perRecipientMessageId = true;
       }
 
       // create recipient data for Mailgun using replacement definitions

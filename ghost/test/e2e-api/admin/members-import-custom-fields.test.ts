@@ -4,10 +4,12 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
 const supertest = require('supertest');
+const DatabaseInfo = require('@tryghost/database-info');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
+const { knex } = require('../../../core/server/data/db');
 const models = require('../../../core/server/models');
-const { mockManager } = require('../../utils/e2e-framework');
+const { mockManager, hostLimits } = require('../../utils/e2e-framework');
 
 // The importer reading custom field values back out of a members CSV, exercised at the
 // API boundary. Its sibling members-exporter-custom-fields covers the write direction;
@@ -16,18 +18,24 @@ const { mockManager } = require('../../utils/e2e-framework');
 // two behaviours proven here; the end-to-end export -> import loop lives in
 // members-export-import.
 describe('Members import — custom fields', function () {
-  let request: { post: (_url: string) => any; get: (_url: string) => any };
+  let request: {
+    post: (_url: string) => any;
+    get: (_url: string) => any;
+    put: (_url: string) => any;
+  };
 
   // The key is minted server-side from the name, so callers read it off the result.
-  async function createField(name: string, type: string): Promise<string> {
+  async function createField(name: string, type: string, settings?: unknown): Promise<string> {
     const res = await (
       request.post(localUtils.API.getApiQuery('members/metafields/custom/')) as any
     )
       .set('Origin', config.get('url'))
-      .send({ members_metafields: [{ name, type }] })
+      .send({ members_metafields: [{ name, type, settings }] })
       .expect(201);
     return res.body.members_metafields[0].key;
   }
+
+  const TOPICS = { options: ['Film, TV', 'Cooking', 'Travel'], multiple: true };
 
   // Upload a CSV built inline. `mapping` is the header -> target map the mapping step
   // sends; omitted, the importer reads each column under its own name (which is how an
@@ -67,7 +75,7 @@ describe('Members import — custom fields', function () {
 
   // The rows behind a member's values, which is the only place the storage model is
   // visible: the API hands back an assembled value either way.
-  const storedLeaves = async (
+  const storedRows = async (
     email: string,
   ): Promise<Array<{ path: string; value_text: string }>> => {
     const member = await findMember(email);
@@ -163,7 +171,7 @@ describe('Members import — custom fields', function () {
 
     const member = await findMember(email);
     assert.equal(member.metafields?.custom?.[key], undefined);
-    assert.deepEqual(await storedLeaves(email), [], 'nothing was written for the emptied column');
+    assert.deepEqual(await storedRows(email), [], 'nothing was written for the emptied column');
   });
 
   // The same column mapped and then emptied, so the emptying is what changes the outcome
@@ -197,7 +205,7 @@ describe('Members import — custom fields', function () {
     );
   });
 
-  it('reads an address from its sub-field columns', async function () {
+  it('reads an address from its part columns', async function () {
     const key = await createField('Shipping Address', 'address');
     const email = 'cf-address@example.com';
 
@@ -220,9 +228,9 @@ describe('Members import — custom fields', function () {
     });
   });
 
-  // No sub-field is required, so a spreadsheet carrying only part of an address
+  // No part is required, so a spreadsheet carrying only part of an address
   // imports the part it has instead of failing the row.
-  it('imports a row whose address fills only some sub-fields', async function () {
+  it('imports a row whose address fills only some parts', async function () {
     const key = await createField('Shipping Address', 'address');
     const email = 'cf-partial-address@example.com';
 
@@ -234,8 +242,8 @@ describe('Members import — custom fields', function () {
     assert.deepEqual(member.metafields?.custom?.[key], { city: 'London' });
   });
 
-  // The sub-field equivalent of the blank-cell rule above: a sub-field is a field, so a
-  // row writes the ones it fills and leaves the rest alone. Without this a file naming
+  // The blank-cell rule above, for parts: each part is read like a field of its own, so a
+  // row writes the parts it fills and leaves the rest alone. Without this a file naming
   // one column would replace the whole address, clearing five it never mentioned.
   it('leaves the rest of a stored address alone when a file names only some of its columns', async function () {
     const key = await createField('Shipping Address', 'address');
@@ -264,10 +272,10 @@ describe('Members import — custom fields', function () {
   });
 
   // The case worth pinning, because it surprises people: emptying a cell does not clear
-  // the stored sub-field. A sub-field is a field, and a blank cell reads as "no data for
+  // the stored part. A part is read like a field of its own, and a blank cell reads as "no data for
   // this row" there exactly as it does for a blank `name` column. No field, core or
   // custom, can be cleared through an import.
-  it('keeps a stored sub-field when its column is present but blank', async function () {
+  it('keeps a stored part when its column is present but blank', async function () {
     const key = await createField('Shipping Address', 'address');
     const email = 'cf-address-blank-cell@example.com';
     const columns = ['line1', 'city', 'postal_code', 'country']
@@ -324,13 +332,13 @@ describe('Members import — custom fields', function () {
   // two cases look identical.
   it('writes one row per part, and touches only the parts a file names', async function () {
     const key = await createField('Shipping Address', 'address');
-    const email = 'cf-leaf-rows@example.com';
+    const email = 'cf-value-rows@example.com';
     const columns = ['line1', 'city', 'country']
       .map((sub) => `metafields.custom.${key}.${sub}`)
       .join(',');
 
     await importCSV(`email,${columns}\n${email},1 High Street,London,GB\n`);
-    assert.deepEqual(await storedLeaves(email), [
+    assert.deepEqual(await storedRows(email), [
       { path: 'city', value_text: 'London' },
       { path: 'country', value_text: 'GB' },
       { path: 'line1', value_text: '1 High Street' },
@@ -338,7 +346,7 @@ describe('Members import — custom fields', function () {
 
     await importCSV(`email,metafields.custom.${key}.city\n${email},Bristol\n`);
     assert.deepEqual(
-      await storedLeaves(email),
+      await storedRows(email),
       [
         { path: 'city', value_text: 'Bristol' },
         { path: 'country', value_text: 'GB' },
@@ -349,7 +357,7 @@ describe('Members import — custom fields', function () {
   });
 
   // A composite can still be invalid, and when it is the whole row fails like any other.
-  it('fails a row whose address has a malformed sub-field', async function () {
+  it('fails a row whose address has a malformed part', async function () {
     const key = await createField('Shipping Address', 'address');
     const email = 'cf-bad-address@example.com';
 
@@ -357,7 +365,7 @@ describe('Members import — custom fields', function () {
     assert.equal(res.status, 201);
     assert.equal(res.body.meta.stats.imported, 0);
     assert.equal(res.body.meta.stats.invalid.length, 1);
-    // Read next to a spreadsheet, so it names the column down to the sub-field.
+    // Read next to a spreadsheet, so it names the column down to the part.
     assert.equal(
       res.body.meta.stats.invalid[0].error,
       `metafields.custom.${key}.country: Enter a 2-letter country code, like US.`,
@@ -396,6 +404,170 @@ describe('Members import — custom fields', function () {
     assert.equal(await findMember(email), undefined);
   });
 
+  describe('list fields', function () {
+    it("reads a list's options from one cell, split where the export separates them", async function () {
+      const key = await createField('Topics', 'list', TOPICS);
+
+      const res = await importCSV(
+        [
+          `email,metafields.custom.${key}`,
+          'cf-list-spaced@example.com,"Film, TV | Travel"',
+          'cf-list-typed@example.com,Cooking|Travel',
+        ].join('\n'),
+      );
+      assert.equal(res.body.meta.stats.imported, 2);
+
+      assert.deepEqual((await findMember('cf-list-spaced@example.com')).metafields.custom[key], [
+        'Film, TV',
+        'Travel',
+      ]);
+      assert.deepEqual((await findMember('cf-list-typed@example.com')).metafields.custom[key], [
+        'Cooking',
+        'Travel',
+      ]);
+    });
+
+    it('replaces the options a member held with the ones the file names', async function () {
+      const key = await createField('Topics', 'list', TOPICS);
+      const email = 'cf-list-replaced@example.com';
+      await importCSV(`email,metafields.custom.${key}\n${email},Cooking | Travel\n`);
+
+      const res = await importCSV(`email,metafields.custom.${key}\n${email},Travel\n`);
+      assert.equal(res.body.meta.stats.invalid.length, 0);
+
+      assert.deepEqual((await findMember(email)).metafields.custom[key], ['Travel']);
+    });
+
+    it('fails a row naming an option the field does not offer', async function () {
+      const key = await createField('Topics', 'list', TOPICS);
+      const email = 'cf-list-unknown@example.com';
+
+      const res = await importCSV(`email,metafields.custom.${key}\n${email},Cooking | Gardening\n`);
+      assert.equal(res.body.meta.stats.imported, 0);
+      assert.equal(
+        res.body.meta.stats.invalid[0].error,
+        `metafields.custom.${key}: Choose from the options this field offers.`,
+      );
+      assert.equal(await findMember(email), undefined);
+    });
+
+    it('fails a row naming several options for a field that takes one', async function () {
+      const key = await createField('Topics', 'list', { ...TOPICS, multiple: false });
+      const email = 'cf-list-several@example.com';
+
+      const res = await importCSV(`email,metafields.custom.${key}\n${email},Cooking | Travel\n`);
+      assert.equal(
+        res.body.meta.stats.invalid[0].error,
+        `metafields.custom.${key}: Choose one option.`,
+      );
+    });
+  });
+
+  // These run on MySQL only, as SQLite only runs one write at a time.
+  describe.runIf(DatabaseInfo.isMySQL(knex))('alongside other writes', function () {
+    // How many transactions are waiting for a lock on the table.
+    async function transactionsWaitingOn(table: string): Promise<number> {
+      const [rows] = await models.Base.knex.raw(
+        `
+        SELECT COUNT(DISTINCT waits.REQUESTING_ENGINE_TRANSACTION_ID) AS waiting
+        FROM performance_schema.data_lock_waits AS waits
+        JOIN performance_schema.data_locks AS requested
+          ON requested.ENGINE_LOCK_ID = waits.REQUESTING_ENGINE_LOCK_ID
+        WHERE requested.OBJECT_SCHEMA = DATABASE()
+          AND requested.OBJECT_NAME = ?
+      `,
+        [table],
+      );
+      return Number(rows[0].waiting);
+    }
+
+    // An import row has to see the custom field values an Admin edit to the same member saved
+    // just before it. Otherwise the row replaces only the values it saw, and leaves behind any
+    // the edit added.
+    describe('while an Admin edit saves', function () {
+      it('replaces the options the edit saved', async function () {
+        const key = await createField('Topics', 'list', TOPICS);
+        const email = 'cf-list-edit-race@example.com';
+        await importCSV(`email,metafields.custom.${key}\n${email},Travel\n`);
+        const member = await findMember(email);
+
+        // A locking read of every row of the activity feed blocks every insert into it. The edit
+        // writes its values and then its feed entry, so it stops there, still holding the member.
+        const gate = await models.Base.knex.transaction();
+        let edit: Promise<any> | undefined;
+        let imported: Promise<any> | undefined;
+        try {
+          await gate('members_metafield_change_events').forUpdate();
+          edit = (request.put(localUtils.API.getApiQuery(`members/${member.id}/`)) as any)
+            .set('Origin', config.get('url'))
+            .send({ members: [{ metafields: { custom: { [key]: ['Travel', 'Cooking'] } } }] })
+            .then((response: any) => response);
+          await vi.waitFor(
+            async () =>
+              assert.equal(await transactionsWaitingOn('members_metafield_change_events'), 1),
+            { timeout: 5000 },
+          );
+
+          imported = importCSV(`email,metafields.custom.${key}\n${email},"Film, TV"\n`);
+          await vi.waitFor(async () => assert.equal(await transactionsWaitingOn('members'), 1), {
+            timeout: 5000,
+          });
+          await gate.commit();
+          assert.equal((await edit).status, 200);
+          assert.equal((await imported).body.meta.stats.imported, 1);
+        } finally {
+          if (!gate.isCompleted()) {
+            await gate.rollback();
+          }
+          // Waited for however the test ends, so neither request is still writing when the next
+          // test starts.
+          await Promise.allSettled([edit, imported]);
+        }
+
+        assert.deepEqual((await findMember(email)).metafields.custom[key], ['Film, TV']);
+      });
+    });
+
+    // Each row locks the member that has its email before it reads anything, but a new email has
+    // no member to lock. Two imports adding members at once must not hold each other up.
+    describe('while another import adds members', function () {
+      it('imports the members of both', async function () {
+        // Both emails sort after every other member's, so nothing sits between them in the
+        // index of emails.
+        const emails = ['zz-import-race-a@example.com', 'zz-import-race-b@example.com'];
+
+        // A locking read of every member blocks every insert of a new one, so each import stops
+        // just before it adds its member, once it has looked for one with its email.
+        const gate = await models.Base.knex.transaction();
+        let imports: Array<Promise<any>> = [];
+        try {
+          await gate('members').forUpdate();
+          imports = emails.map((email) => importCSV(`email\n${email}\n`));
+          await vi.waitFor(async () => assert.equal(await transactionsWaitingOn('members'), 2), {
+            timeout: 5000,
+          });
+          await gate.commit();
+          for (const res of await Promise.all(imports)) {
+            assert.equal(
+              res.body.meta.stats.imported,
+              1,
+              JSON.stringify(res.body.meta.stats.invalid),
+            );
+          }
+        } finally {
+          if (!gate.isCompleted()) {
+            await gate.rollback();
+          }
+          await Promise.allSettled(imports);
+        }
+
+        for (const email of emails) {
+          assert.notEqual(await findMember(email), undefined);
+        }
+      });
+    });
+  });
+
   // An unrecognised column is dropped, not an error, so the member still imports.
   it('drops a namespaced column that names no active field', async function () {
     await createField('Nickname', 'short_text');
@@ -407,6 +579,29 @@ describe('Members import — custom fields', function () {
     assert.equal(res.body.meta.stats.invalid.length, 0);
 
     assert.notEqual(await findMember(email), undefined);
+  });
+
+  // While the host switches custom fields off, every field reads as archived, so a file
+  // naming one imports its members and drops the column, the way it does for an archived field.
+  describe('while the host switches custom fields off', function () {
+    afterEach(async function () {
+      await hostLimits.restoreHostLimits();
+    });
+
+    it('imports the members and writes nothing into any field', async function () {
+      const key = await createField('Nickname', 'short_text');
+      const email = 'cf-switched-off@example.com';
+      await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+
+      const res = await importCSV(`email,metafields.custom.${key}\n${email},Bex\n`);
+      assert.equal(res.status, 201);
+      assert.equal(res.body.meta.stats.imported, 1);
+      assert.equal(res.body.meta.stats.invalid.length, 0);
+
+      await hostLimits.restoreHostLimits();
+      const member = await findMember(email);
+      assert.equal(member.metafields?.custom?.[key], undefined);
+    });
   });
 
   it('ignores custom field columns on a site that defines none', async function () {

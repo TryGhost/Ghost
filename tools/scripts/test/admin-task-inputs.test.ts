@@ -124,8 +124,10 @@ describe('Admin task inputs', () => {
     for (const target of ['test:unit', 'test:acceptance']) {
       const { files, runtime, environment } = await inputs(target);
       assert.ok(files.includes('ghost/core/frontend/src/cards/js/video.js'));
-      assert.ok(files.includes('tools/scripts/hash-vite-env.ts'));
-      assert.ok(runtime.includes('node tools/scripts/hash-vite-env.ts --directory=apps/admin'));
+      assert.ok(files.includes('tools/scripts/build/hash-vite-env.ts'));
+      assert.ok(
+        runtime.includes('node tools/scripts/build/hash-vite-env.ts --directory=apps/admin'),
+      );
       assert.ok(runtime.includes('node -v'));
       assert.ok(runtime.some((command) => command.includes('process.platform')));
       assert.ok(runtime.some((command) => command.includes('timeZone')));

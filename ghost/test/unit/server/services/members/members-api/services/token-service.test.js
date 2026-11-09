@@ -109,6 +109,8 @@ describe('TokenService', function () {
       // token signed with the same key - must not act as a member.
       const token = jwt.sign({ sub: 'member@example.com' }, privateKey, {
         algorithm: 'RS512',
+        // The fixture key is a legacy 1024-bit key
+        allowInsecureKeySizes: true,
         audience: issuer,
         issuer,
       });

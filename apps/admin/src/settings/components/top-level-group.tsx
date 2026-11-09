@@ -149,12 +149,12 @@ const TopLevelGroup: React.FC<TopLevelGroupProps> = ({
   );
 
   const wrappedChildren = hasImageChild ? (
-    <div className="-mx-5 -mb-5 overflow-hidden rounded-b-xl bg-muted md:-mx-7 md:-mb-7">
+    <div className="-mx-5 -mb-5 overflow-hidden rounded-b-card bg-muted md:-mx-7 md:-mb-7">
       {React.Children.map(children, (child) =>
         React.isValidElement<React.ImgHTMLAttributes<HTMLImageElement>>(child) &&
         child.type === 'img'
           ? React.cloneElement(child, {
-              className: `${child.props.className || ''} h-full w-full rounded-b-xl`.trim(),
+              className: `${child.props.className || ''} h-full w-full rounded-b-card`.trim(),
             })
           : child,
       )}

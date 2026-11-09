@@ -4,15 +4,21 @@ import { assertExists } from '../../../utils/assertions';
 import type { InternalKeys } from '../../../../core/server/services/internal-keys';
 
 const localRequire = createRequire(__filename);
-const internalKeys: InternalKeys = localRequire(
-  '../../../../core/server/services/internal-keys',
-).default;
+const internalKeysRoot = localRequire('../../../../core/server/services/internal-keys')
+  .default as typeof import('../../../../core/server/services/internal-keys').default;
 
 // Stuff we are testing
 // @ts-expect-error This module lacks type definitions.
 import content_api_key from '../../../../core/frontend/helpers/content_api_key';
 
 describe('{{content_api_key}} helper', function () {
+  let internalKeys: InternalKeys;
+
+  beforeAll(async function () {
+    await internalKeysRoot.init();
+    internalKeys = internalKeysRoot.service;
+  });
+
   beforeEach(function () {
     internalKeys.clear();
     internalKeys.set('ghost-internal-frontend', Promise.resolve({ id: 'k', secret: 'xyz' }));

@@ -2386,6 +2386,114 @@ describe('Email renderer', function () {
       ]);
     });
 
+    it('keeps replacement strings in link paths intact if click tracking is disabled', async function () {
+      const post = createModel(basePost);
+      const newsletter = createModel({
+        header_image: null,
+        name: 'Test Newsletter',
+        show_badge: false,
+        feedback_enabled: false,
+        show_post_title_section: true,
+      });
+      const segment = null;
+      const options = {
+        clickTrackingEnabled: false,
+      };
+
+      renderedPost =
+        '<p><a href="https://partner.transistor.fm/ghost/%%{uuid}%%">Listen to your podcasts</a></p>';
+
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
+
+      const $ = cheerio.load(response.html);
+      const hrefs = $('a')
+        .toArray()
+        .map((link) => $(link).attr('href'));
+      assert(new Set(hrefs).has('https://partner.transistor.fm/ghost/%%{uuid}%%'));
+      assert(response.replacements.some((replacement) => replacement.id === 'uuid'));
+    });
+
+    it('keeps replacement strings with fallbacks in link paths intact if click tracking is disabled', async function () {
+      const post = createModel(basePost);
+      const newsletter = createModel({
+        header_image: null,
+        name: 'Test Newsletter',
+        show_badge: false,
+        feedback_enabled: false,
+        show_post_title_section: true,
+      });
+      const segment = null;
+      const options = {
+        clickTrackingEnabled: false,
+      };
+
+      renderedPost =
+        '<p><a href="https://example.com/hello/%%{first_name, &quot;friend&quot;}%%">Say hello</a><a href="https://example.com/after">After</a></p>';
+
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
+
+      const $ = cheerio.load(response.html);
+      const hrefs = $('a')
+        .toArray()
+        .map((link) => $(link).attr('href'));
+      assert(new Set(hrefs).has('https://example.com/hello/%%{first_name, "friend"}%%'));
+      assert(new Set(hrefs).has('https://example.com/after'));
+      assert(response.replacements.some((replacement) => replacement.id.startsWith('first_name')));
+    });
+
+    it('keeps entity-like fallback text in link paths literal if click tracking is disabled', async function () {
+      const post = createModel(basePost);
+      const newsletter = createModel({
+        header_image: null,
+        name: 'Test Newsletter',
+        show_badge: false,
+        feedback_enabled: false,
+        show_post_title_section: true,
+      });
+      const segment = null;
+      const options = {
+        clickTrackingEnabled: false,
+      };
+
+      renderedPost =
+        '<p><a href="https://example.com/hello/%%{first_name, &quot;Tom &amp;amp; Jerry&quot;}%%">Say hello</a></p>';
+
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
+
+      const $ = cheerio.load(response.html);
+      const hrefs = $('a')
+        .toArray()
+        .map((link) => $(link).attr('href'));
+      assert(new Set(hrefs).has('https://example.com/hello/%%{first_name, "Tom &amp; Jerry"}%%'));
+    });
+
+    it('leaves malformed replacement strings in link paths encoded if click tracking is disabled', async function () {
+      const post = createModel(basePost);
+      const newsletter = createModel({
+        header_image: null,
+        name: 'Test Newsletter',
+        show_badge: false,
+        feedback_enabled: false,
+        show_post_title_section: true,
+      });
+      const segment = null;
+      const options = {
+        clickTrackingEnabled: false,
+      };
+
+      renderedPost =
+        '<p><a href="https://example.com/broken/%%{first_name%zz}%%">Broken</a><a href="#relative-test">Relative</a></p>';
+
+      const response = await emailRenderer.renderBody(post, newsletter, segment, options);
+
+      const $ = cheerio.load(response.html);
+      const hrefs = $('a')
+        .toArray()
+        .map((link) => $(link).attr('href'));
+      assert(new Set(hrefs).has('https://example.com/broken/%%%7Bfirst_name%zz%7D%%'));
+      assert(new Set(hrefs).has('http://example.com/#relative-test'));
+    });
+
     it('handles encoded links', async function () {
       const post = createModel(basePost);
       const newsletter = createModel({

@@ -9,5 +9,5 @@ const urlUtils = require('../../../shared/url-utils').default;
 export default new PostScheduling({
   apiUrl: urlUtils.urlFor('api', { type: 'admin' }, true),
   adapter: withErrorCapture(adapterManager.getAdapter('scheduling')),
-  internalKeys,
+  internalKeys: internalKeys.service,
 });

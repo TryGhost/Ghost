@@ -1,4 +1,4 @@
-import logging from '@tryghost/logging';
+import type { GhostLogger } from '@tryghost/logging';
 import { z } from 'zod';
 
 export interface Actor {
@@ -45,10 +45,12 @@ export type RecordCheckoutConfigAction = (input: {
  */
 export async function recordCheckoutConfigAction({
   Action,
+  logging,
   context,
   subject,
 }: {
   Action: ActionRecorder;
+  logging: GhostLogger;
   context: RequestContext;
   subject: string;
 }): Promise<void> {

@@ -1,4 +1,3 @@
-const errors = require('@tryghost/errors');
 const express = require('../../../../../shared/express');
 const api = require('../../../../api').endpoints;
 const { http } = require('@tryghost/api-framework');
@@ -6,8 +5,6 @@ const auth = require('../../../../auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
 const labs = require('../../../../../shared/labs');
-const limits = require('../../../../services/limits');
-const appInstallations = require('../../../../services/app-installations').default;
 
 const shared = require('../../../shared');
 
@@ -153,30 +150,10 @@ module.exports = function apiRoutes() {
   router.put('/tiers/:id', mw.authAdminApi, http(api.tiers.edit));
 
   // ## Stripe Checkout
-  router.get(
-    '/stripe/checkout/config',
-    mw.authAdminApi,
-    labs.enabledMiddleware('stripeCheckoutDesign'),
-    http(api.stripeCheckoutConfig.read),
-  );
-  router.put(
-    '/stripe/checkout/config',
-    mw.authAdminApi,
-    labs.enabledMiddleware('stripeCheckoutDesign'),
-    http(api.stripeCheckoutConfig.edit),
-  );
-  router.post(
-    '/stripe/checkout/preview',
-    mw.authAdminApi,
-    labs.enabledMiddleware('stripeCheckoutDesign'),
-    http(api.stripeCheckoutPreview.add),
-  );
-  router.get(
-    '/stripe/checkout/branding',
-    mw.authAdminApi,
-    labs.enabledMiddleware('stripeCheckoutDesign'),
-    http(api.stripeCheckoutBranding.read),
-  );
+  router.get('/stripe/checkout/config', mw.authAdminApi, http(api.stripeCheckoutConfig.read));
+  router.put('/stripe/checkout/config', mw.authAdminApi, http(api.stripeCheckoutConfig.edit));
+  router.post('/stripe/checkout/preview', mw.authAdminApi, http(api.stripeCheckoutPreview.add));
+  router.get('/stripe/checkout/branding', mw.authAdminApi, http(api.stripeCheckoutBranding.read));
 
   // ## Members
   router.get('/members', mw.authAdminApi, http(api.members.browse));
@@ -206,12 +183,12 @@ module.exports = function apiRoutes() {
   router.get('/members/stripe_connect', mw.authAdminApi, http(api.membersStripeConnect.auth));
 
   // Custom field definitions. Mounted rather than listed so every route under it is
-  // reached the same way, and so the guards are stated once each instead of on every
-  // route that needs them.
+  // reached the same way, and so the guard is stated once instead of on every route that
+  // needs it.
   //
   // Order carries the rule here, the way Express reads it: a request walks this stack
-  // from the top, so the reads below are answered before the guards are reached, and
-  // everything registered after them passes through both. A route added at the end is
+  // from the top, so the reads below are answered before the guard is reached, and
+  // everything registered after it passes through it. A route added at the end is
   // guarded by being there, which is the safer way round to forget.
   //
   // Mounted before /members/:id so the literal path is not captured as an id.
@@ -223,18 +200,17 @@ module.exports = function apiRoutes() {
   router.all(['/members/metafields', '/members/metafields/*'], mw.authAdminApi);
   router.use('/members/metafields', metafieldsRouter);
 
-  // Reading is deliberately open: Admin asks every site for its definitions to draw
-  // screens it renders either way, and a site that has none simply answers with an empty
-  // list rather than a 404.
+  // Reading is deliberately open: Admin asks every site for its definitions, and for the values
+  // members hold of a list field it filters by, to draw screens it renders either way, and a site
+  // that has none simply answers with an empty list rather than a 404.
   metafieldsRouter.get('/:namespace', http(api.membersMetafields.browse));
   metafieldsRouter.get('/:namespace/:key', http(api.membersMetafields.read));
+  metafieldsRouter.get('/:namespace/:key/values', http(api.membersMetafields.browseValues));
 
-  // Changing one needs the feature to exist in this build and the site's plan to include
-  // it. Two separate questions, asked once each: a 404 says the feature is not here, a 403
-  // says the plan does not cover it, and only the second is something a publisher can act
-  // on.
+  // Changing one needs the feature to exist in this build, and a 404 says it doesn't. Who may
+  // change a namespace's fields, and whether its limits let them, is the namespace's own
+  // policy, which the endpoints and the service apply.
   metafieldsRouter.use(labs.enabledMiddleware('membersCustomFields'));
-  metafieldsRouter.use(limits.requireFeature('limitCustomFields'));
 
   metafieldsRouter.post('/:namespace', http(api.membersMetafields.add));
   metafieldsRouter.put('/:namespace', http(api.membersMetafields.reorder));
@@ -243,9 +219,7 @@ module.exports = function apiRoutes() {
 
   // ## Apps
   // Everything about apps sits behind the private `apps` flag, asked once here so a route
-  // added below is guarded by being there. The table is still in development, so it only
-  // exists in development and testing databases: anywhere else the routes answer as if
-  // the flag were off, whatever the flag says.
+  // added below is guarded by being there.
   //
   // Authenticated as a route here rather than inside the mount, for the same reason as
   // the members metafields router above.
@@ -253,10 +227,6 @@ module.exports = function apiRoutes() {
   router.all(['/apps', '/apps/*'], mw.authAdminApi);
   router.use('/apps', appsRouter);
   appsRouter.use(labs.enabledMiddleware('apps'));
-  // Answers as if apps did not exist wherever the table does not.
-  appsRouter.use((req, res, next) => {
-    next(appInstallations.extras.isAvailable() ? undefined : new errors.NotFoundError());
-  });
 
   appsRouter.post('/installations/preview', http(api.appInstallationPreviews.add));
   appsRouter.get('/installations', http(api.appInstallations.browse));
@@ -349,7 +319,7 @@ module.exports = function apiRoutes() {
   );
   router.post(
     '/automations/:id/email_test',
-    shared.middleware.brute.previewEmailLimiter,
+    shared.middleware.rateLimiting.previewEmailLimiter,
     mw.authAdminApi,
     http(api.automationEmailPreviews.sendTestEmail),
   );
@@ -373,7 +343,7 @@ module.exports = function apiRoutes() {
   router.post('/automated_emails/:id/preview', mw.authAdminApi, http(api.automatedEmails.preview));
   router.post(
     '/automated_emails/:id/test',
-    shared.middleware.brute.previewEmailLimiter,
+    shared.middleware.rateLimiting.previewEmailLimiter,
     mw.authAdminApi,
     http(api.automatedEmails.sendTestEmail),
   );
@@ -446,17 +416,21 @@ module.exports = function apiRoutes() {
   // We don't need auth when creating a new session (logging in)
   router.post(
     '/session',
-    shared.middleware.brute.globalBlock,
-    shared.middleware.brute.userLogin,
+    shared.middleware.rateLimiting.globalBlock,
+    shared.middleware.rateLimiting.userLogin,
     http(api.session.add),
   );
   router.delete('/session', mw.authAdminApi, http(api.session.delete));
   router.post(
     '/session/verify',
-    shared.middleware.brute.sendVerificationCode,
+    shared.middleware.rateLimiting.sendVerificationCode,
     http(api.session.sendVerification),
   );
-  router.put('/session/verify', shared.middleware.brute.userVerification, http(api.session.verify));
+  router.put(
+    '/session/verify',
+    shared.middleware.rateLimiting.userVerification,
+    http(api.session.verify),
+  );
 
   // ## Identity
   router.get('/identities', mw.authAdminApi, http(api.identities.read));
@@ -464,13 +438,13 @@ module.exports = function apiRoutes() {
   // ## Authentication
   router.post(
     '/authentication/password_reset',
-    shared.middleware.brute.globalReset,
-    shared.middleware.brute.userReset,
+    shared.middleware.rateLimiting.globalReset,
+    shared.middleware.rateLimiting.userReset,
     http(api.authentication.generateResetToken),
   );
   router.put(
     '/authentication/password_reset',
-    shared.middleware.brute.globalBlock,
+    shared.middleware.rateLimiting.globalBlock,
     auth.session.initSession,
     http(api.authentication.resetPassword),
   );
@@ -518,7 +492,12 @@ module.exports = function apiRoutes() {
   // ## Invites
   router.get('/invites', mw.authAdminApi, http(api.invites.browse));
   router.get('/invites/:id', mw.authAdminApi, http(api.invites.read));
-  router.post('/invites', mw.authAdminApi, http(api.invites.add));
+  router.post(
+    '/invites',
+    mw.authAdminApi,
+    shared.middleware.rateLimiting.staffInviteLimiter,
+    http(api.invites.add),
+  );
   router.delete('/invites/:id', mw.authAdminApi, http(api.invites.destroy));
 
   // ## Redirects
@@ -529,6 +508,27 @@ module.exports = function apiRoutes() {
     apiMw.upload.single('redirects'),
     apiMw.upload.validation({ type: 'redirects' }),
     http(api.redirects.upload),
+  );
+
+  // ## Host-managed upgrades
+  router.get(
+    '/upgrades/',
+    shared.middleware.rateLimiting.upgradeApiLimiter,
+    mw.authAdminApi,
+    http(api.upgrades.browse),
+  );
+  router.post(
+    '/upgrades/',
+    shared.middleware.rateLimiting.upgradeApiLimiter,
+    mw.authAdminApi,
+    shared.middleware.rateLimiting.upgradeLimiter,
+    http(api.upgrades.add),
+  );
+  router.get(
+    '/upgrades/:id/',
+    shared.middleware.rateLimiting.upgradeApiLimiter,
+    mw.authAdminApi,
+    http(api.upgrades.read),
   );
 
   // ## Webhooks (RESTHooks)
@@ -547,7 +547,7 @@ module.exports = function apiRoutes() {
   // preview sending have an additional rate limiter to prevent abuse
   router.post(
     '/email_previews/posts/:id',
-    shared.middleware.brute.previewEmailLimiter,
+    shared.middleware.rateLimiting.previewEmailLimiter,
     mw.authAdminApi,
     http(api.email_previews.sendTestEmail),
   );

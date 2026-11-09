@@ -10,12 +10,12 @@ import {
 } from '@tryghost/shade/components';
 import { LucideIcon } from '@tryghost/shade/utils';
 import { toast } from 'sonner';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import {
   useEditMemberSubscription,
   useMembersFetching,
 } from '@tryghost/admin-x-framework/api/members';
 import type { MemberSubscription } from '@tryghost/admin-x-framework/api/members';
-import { useShade } from '@tryghost/shade/app';
 
 interface MemberSubscriptionActionsProps {
   memberId: string;
@@ -30,14 +30,14 @@ interface MemberSubscriptionActionsProps {
  * — server-side the invalidation on that hook refreshes the member so the row
  * copy updates automatically once the change lands.
  *
- * Gift subs are omitted from the menu by the caller (Ember parity); comp subs
+ * Gift subs are omitted from the menu by the caller; comp subs
  * get their own menu in Phase 6.
  */
 const MemberSubscriptionActions: React.FC<MemberSubscriptionActionsProps> = ({
   memberId,
   subscription,
 }) => {
-  const { isAdmin7 } = useShade();
+  const admin7Design = useFeatureFlag('admin7Design');
   const editSubscription = useEditMemberSubscription();
   // Keep the trigger disabled until the invalidated members refetch lands so a
   // user can't fire the same action twice in the window between the mutation
@@ -68,8 +68,8 @@ const MemberSubscriptionActions: React.FC<MemberSubscriptionActionsProps> = ({
           aria-label="Subscription menu"
           data-testid="subscription-actions"
           disabled={busy}
-          size={isAdmin7 ? 'icon' : 'sm'}
-          variant="subtle"
+          size="icon"
+          variant={admin7Design ? 'outline' : 'subtle'}
         >
           {busy ? <LoadingIndicator size="sm" /> : <LucideIcon.MoreHorizontal />}
         </Button>

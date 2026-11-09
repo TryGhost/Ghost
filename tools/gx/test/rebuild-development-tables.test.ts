@@ -13,7 +13,8 @@ for (const fails of [false, true]) {
       await mkdir(join(root, 'tools/gx'), { recursive: true });
       await mkdir(join(root, 'tools/scripts/lib'), { recursive: true });
       await mkdir(join(root, 'ghost/core/server/data/schema'), { recursive: true });
-      for (const file of ['cli.ts', 'run-ghost-command.ts', 'rebuild-in-development-tables.cts']) {
+      await mkdir(join(root, 'ghost/core/server/data/db'), { recursive: true });
+      for (const file of ['cli.ts', 'run-ghost-command.ts', 'rebuild-in-development-tables.ts']) {
         await cp(new URL(`../${file}`, import.meta.url), join(root, 'tools/gx', file));
       }
       await symlink(
@@ -49,13 +50,13 @@ export const resolveGhostDevEnv = async () => ({
         "process.stdout.write('overrides\\n');",
       );
       await writeFile(
-        join(root, 'ghost/core/server/data/db.js'),
+        join(root, 'ghost/core/server/data/db/index.js'),
         `
 exports.knex = { destroy: async () => process.stdout.write('destroy\\n') };
 `,
       );
       await writeFile(
-        join(root, 'ghost/core/server/data/schema/in-development.js'),
+        join(root, 'ghost/core/server/data/schema/in-development.ts'),
         `
 exports.rebuildInDevelopmentTables = async () => {
   process.stdout.write(JSON.stringify({ cwd: process.cwd(), env: process.env.NODE_ENV,

@@ -18,6 +18,7 @@ describe('historyTitle', () => {
     expect(historyTitle(entry('installed'))).toBe('Installed');
     expect(historyTitle(entry('updated'))).toBe('Updated');
     expect(historyTitle(entry('suspended'))).toBe('Updated, needs approval');
+    expect(historyTitle(entry('resumed'))).toBe('Resumed, changes withdrawn');
     expect(historyTitle(entry('changes_approved'))).toBe('Changes approved');
     expect(historyTitle(entry('uninstalled'))).toBe('Uninstalled');
   });

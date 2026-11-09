@@ -169,8 +169,8 @@ describe('Batch sending tests', function () {
     await fixtureManager.init('newsletters', 'members:newsletters');
     await agent.loginAsOwner();
 
-    linkRedirectService = require('../../../../core/server/services/link-redirection');
-    linkRedirectRepository = linkRedirectService.linkRedirectRepository;
+    linkRedirectService = require('../../../../core/server/services/link-redirection').default;
+    linkRedirectRepository = linkRedirectService.extras.linkRedirectRepository();
 
     linkTrackingService = require('../../../../core/server/services/link-tracking');
     linkClickRepository = linkTrackingService.linkClickRepository;
@@ -763,8 +763,7 @@ describe('Batch sending tests', function () {
   });
 
   describe('Per-recipient Message-Id', function () {
-    it('sends a Message-Id header and a unique message_id variable per recipient when enabled', async function () {
-      configUtils.set('bulkEmail:perRecipientMessageId', true);
+    it('sends a Message-Id header and a unique message_id variable per recipient', async function () {
       const { emailModel } = await sendEmail(agent);
 
       // batchSize is 100 (see beforeEach), so all recipients go out in a single Mailgun call
@@ -788,22 +787,7 @@ describe('Batch sending tests', function () {
       }
     });
 
-    it('does not send a Message-Id header or message_id variable by default', async function () {
-      await sendEmail(agent);
-
-      sinon.assert.callCount(stubbedSend, 1);
-      const [, messageData] = stubbedSend.firstCall.args;
-      assert.equal('h:Message-Id' in messageData, false);
-
-      const recipientVariables = JSON.parse(messageData['recipient-variables']);
-      assert.equal(Object.keys(recipientVariables).length, 4);
-      for (const variables of Object.values(recipientVariables)) {
-        assert.equal('message_id' in variables, false);
-      }
-    });
-
     it('stores no provider id when Mailgun echoes the header template', async function () {
-      configUtils.set('bulkEmail:perRecipientMessageId', true);
       // Mailgun returns the Message-Id it was given, so the batch has no single provider id
       stubbedSend = sinon.fake.resolves({ id: '<%recipient.message_id%>' });
 

@@ -7,6 +7,7 @@ export { POST_VIEW_PARAMS } from './list/post-view-params';
 export { getPostListReturnUrl, getStickyPostFilterUrl } from './list/posts-sticky-filters';
 export type { PostResource } from './list/post-resource';
 export { PublishPhaseIcon } from './email-sending-status/publish-phase-icon';
+export { POST_METRIC_ICONS } from './list/post-metric-icons';
 
 // Lazy route entries keep the posts and pages list chunks out of the shell
 // while still exposing them through the domain boundary.

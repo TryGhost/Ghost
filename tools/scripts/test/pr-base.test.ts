@@ -5,7 +5,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { resolveBaseCommit, rootAtMergeBase } from '../lib/pr-base.ts';
+import { resolveBaseCommit, rootAtMergeBase } from '../ci/pr-base.ts';
 
 // A throwaway repository rather than the live one: CI checkouts don't reliably
 // carry `refs/remotes/origin/*` (a pull_request checkout fetches only the merge

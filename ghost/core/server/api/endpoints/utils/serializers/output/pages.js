@@ -1,6 +1,6 @@
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:pages');
 const mappers = require('./mappers');
-const tiersService = require('../../../../../services/tiers');
+const tiersService = require('../../../../../services/tiers').default;
 
 module.exports = {
   // 204 No Content — see posts.js destroy
@@ -19,7 +19,7 @@ module.exports = {
     }
     const pages = [];
 
-    const tiersPage = await tiersService.api.browse({});
+    const tiersPage = await tiersService.service.api.browse({});
     const tiers =
       tiersPage.data?.map((model) => {
         const json = model.toJSON();

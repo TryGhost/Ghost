@@ -25,7 +25,7 @@ import { useBrowseSettings } from '@tryghost/admin-x-framework/api/settings';
 import { getErrorMessage } from '@tryghost/admin-x-framework/errors';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { NotFound } from '@/shared/not-found';
-import { AccessIndicator } from './components/access-indicator';
+import { AccessIndicator, OPENED_APP_ACCESS_INTRO } from './components/access-indicator';
 import { AppIcon } from './components/app-icon';
 import { AppPinButton } from './components/app-pin-button';
 import { AppsGate } from './components/apps-gate';
@@ -36,7 +36,7 @@ import { historyTitle, installedBy } from './lib/history';
 import { isInstallationNotFound } from './lib/not-found';
 import { appReviewRoute, appRoute } from './lib/routes';
 import { useInstalledApps } from './lib/use-app-pins';
-import { isDevelopmentApp } from './lib/served-from';
+import { AppAuthor, UnverifiedDeveloperBadge } from './components/app-author';
 
 const Fact: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div className="grid grid-cols-[8rem_1fr] gap-4 py-3" data-testid="app-fact">
@@ -88,13 +88,13 @@ const Details: React.FC<{ installation: AppInstallation; timezone: string }> = (
     <Stack className="lg:flex-row lg:items-start lg:gap-12" gap="2xl">
       <Stack className="w-full shrink-0 lg:w-80" gap="xl">
         <Stack gap="md">
-          <AppIcon manifest={manifest} size="xl" />
+          <AppIcon app={installation} size="xl" />
           <Stack gap="xs">
             <Inline gap="xs" wrap>
               <Text as="h1" size="xl" weight="semibold">
                 {manifest.name}
               </Text>
-              {isDevelopmentApp(manifest) && <Badge variant="secondary">Development</Badge>}
+              {manifest.development && <Badge variant="secondary">Development</Badge>}
               {status === 'suspended' && <Badge variant="warning">Needs approval</Badge>}
               {status === 'uninstalled' && <Badge variant="secondary">Uninstalled</Badge>}
             </Inline>
@@ -106,14 +106,10 @@ const Details: React.FC<{ installation: AppInstallation; timezone: string }> = (
 
         <div className="divide-y border-y">
           <Fact label="Made by">
-            <a
-              className="hover:underline"
-              href={manifest.author.url}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              {manifest.author.name}
-            </a>
+            <Inline gap="xs" wrap>
+              <AppAuthor manifest={manifest} />
+              <UnverifiedDeveloperBadge manifest={manifest} />
+            </Inline>
           </Fact>
           <Fact label="Installed">
             {formatDisplayDate(installation.created_at, timezone)}
@@ -143,10 +139,7 @@ const Details: React.FC<{ installation: AppInstallation; timezone: string }> = (
         )}
 
         {status !== 'uninstalled' && (
-          <AccessIndicator
-            intro="Apps use the account of whoever opens them, so this app can do everything they can."
-            items={ACCOUNT_ACCESS}
-          />
+          <AccessIndicator intro={OPENED_APP_ACCESS_INTRO} items={ACCOUNT_ACCESS} />
         )}
 
         <Stack gap="sm">

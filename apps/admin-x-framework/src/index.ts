@@ -24,7 +24,6 @@ export { useKoenigFileUpload, koenigFileUploadTypes } from './hooks/use-koenig-f
 export { useKoenigFetchEmbed } from './hooks/use-koenig-fetch-embed';
 export { useKoenigLinkSuggestions } from './hooks/use-koenig-link-suggestions';
 export { useFeaturebase } from './hooks/use-featurebase';
-export { useDocsBot } from './hooks/use-docsbot';
 
 // API status
 export { onUpgradeStatus } from './utils/api/upgrade-status';
@@ -93,6 +92,7 @@ export {
   Link,
   RouterProvider,
   useNavigate,
+  useRouterDestination,
   ViewTransitionControllerProvider,
   useRouteHasParams,
   resetScrollPosition,
@@ -100,6 +100,7 @@ export {
   Navigate,
 } from './providers/router-provider';
 export { useNavigationStack } from './providers/navigation-stack-provider';
+export { isAppPagePath } from './utils/feature-flag-overrides';
 export {
   NavigationType,
   Outlet,

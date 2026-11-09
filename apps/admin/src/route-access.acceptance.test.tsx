@@ -9,8 +9,10 @@ import {
   fakeAdminEndpoint,
   fakePosts,
   fakePostsListScreen,
+  fakeTinybirdToken,
   renderAdminApp,
   staffRole,
+  webAnalyticsBootOverrides,
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import type { StaffRoleName } from '@tryghost/test-data';
@@ -76,6 +78,21 @@ describe('Route access', () => {
       expect(events.requests).toHaveLength(0);
     },
   );
+
+  describe.each(['/analytics', '/posts/analytics/abcdef123456abcdef123456'])('%s', (path) => {
+    it.each(['Super Editor', 'Editor', 'Author', 'Contributor'] as const)(
+      'denies %s access before requesting a Tinybird token',
+      async (role) => {
+        const token = fakeTinybirdToken();
+        await renderAdminApp(path, {
+          boot: { ...webAnalyticsBootOverrides(), ...asRole(role).boot },
+        });
+
+        await expect.poll(currentRoute).toBe(landingRoute(role));
+        expect(token.requests).toHaveLength(0);
+      },
+    );
+  });
 
   it.each(['Super Editor', 'Editor', 'Author', 'Contributor'] as const)(
     'redirects %s away from migrate',

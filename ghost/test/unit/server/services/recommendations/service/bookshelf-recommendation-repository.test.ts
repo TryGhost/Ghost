@@ -4,8 +4,15 @@ import {
   Recommendation,
 } from '../../../../../../core/server/services/recommendations/service';
 import sinon from 'sinon';
+import { createLoggingFake } from '../../../../../utils/logging-utils';
 
 describe('BookshelfRecommendationRepository', function () {
+  let logging: ReturnType<typeof createLoggingFake>;
+
+  beforeEach(function () {
+    logging = createLoggingFake();
+  });
+
   afterEach(function () {
     sinon.restore();
   });
@@ -13,6 +20,7 @@ describe('BookshelfRecommendationRepository', function () {
   it('toPrimitive', async function () {
     const repository = new BookshelfRecommendationRepository({} as any, {
       sentry: undefined,
+      logging,
     });
     assert.deepEqual(
       repository.toPrimitive(
@@ -47,6 +55,7 @@ describe('BookshelfRecommendationRepository', function () {
   it('modelToEntity', async function () {
     const repository = new BookshelfRecommendationRepository({} as any, {
       sentry: undefined,
+      logging,
     });
     const entity = repository.modelToEntity({
       id: 'id',
@@ -88,6 +97,7 @@ describe('BookshelfRecommendationRepository', function () {
       sentry: {
         captureException,
       },
+      logging,
     });
 
     sinon.stub(Recommendation, 'create').throws(new Error('test'));
@@ -100,11 +110,13 @@ describe('BookshelfRecommendationRepository', function () {
 
     assert.deepEqual(entity, null);
     sinon.assert.calledOnce(captureException);
+    sinon.assert.calledOnce(logging.error);
   });
 
   it('getByUrl returns null if not found', async function () {
     const repository = new BookshelfRecommendationRepository({} as any, {
       sentry: undefined,
+      logging,
     });
     const stub = sinon.stub(repository, 'getAll').returns(Promise.resolve([]));
     const entity = await repository.getByUrl(new URL('https://example.com'));
@@ -116,6 +128,7 @@ describe('BookshelfRecommendationRepository', function () {
   it('getByUrl returns null if not matching path', async function () {
     const repository = new BookshelfRecommendationRepository({} as any, {
       sentry: undefined,
+      logging,
     });
     const recommendation = Recommendation.create({
       id: 'id',
@@ -139,6 +152,7 @@ describe('BookshelfRecommendationRepository', function () {
   it('getByUrl returns if matching hostname and pathname', async function () {
     const repository = new BookshelfRecommendationRepository({} as any, {
       sentry: undefined,
+      logging,
     });
     const recommendation = Recommendation.create({
       id: 'id',
@@ -162,6 +176,7 @@ describe('BookshelfRecommendationRepository', function () {
   it('getByUrl returns if matching hostname and pathname, but not query params', async function () {
     const repository = new BookshelfRecommendationRepository({} as any, {
       sentry: undefined,
+      logging,
     });
     const recommendation = Recommendation.create({
       id: 'id',
@@ -185,6 +200,7 @@ describe('BookshelfRecommendationRepository', function () {
   it('getByUrl returns if matching hostname and pathname, but not hash fragments', async function () {
     const repository = new BookshelfRecommendationRepository({} as any, {
       sentry: undefined,
+      logging,
     });
     const recommendation = Recommendation.create({
       id: 'id',
@@ -211,6 +227,7 @@ describe('BookshelfRecommendationRepository', function () {
       sentry: {
         captureException,
       },
+      logging,
     });
 
     assert.ok(repository.getFieldToColumnMap());
@@ -222,6 +239,7 @@ describe('BookshelfRecommendationRepository', function () {
       sentry: {
         captureException,
       },
+      logging,
     });
 
     const builder = {

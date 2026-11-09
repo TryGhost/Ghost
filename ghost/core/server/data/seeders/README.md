@@ -1,9 +1,21 @@
 # Data Generator
 
-The development data generator populates related Ghost tables in dependency
-order. Its CLI entry point is `pnpm gx data generate`; contributors
-normally use the root `reset:data` scripts described in the
-[test-data guide](../../../../../docs/contributing/test-data.md).
+The data generator populates related Ghost tables in dependency order.
+Contributors use `pnpm gx data generate` or the root `reset:data` scripts in the
+[test-data guide](../../../../../docs/contributing/test-data.md). Installed trees
+use [bin/generate-data.js](../../../../bin/README.md#data-generation).
+
+Both entrypoints use [schema.ts](schema.ts) to validate parsed CLI values and
+normalize generator options. Quantity overrides must be non-negative safe integers
+written as digits; explicit zero values are preserved. Invalid quantities and
+seeds fail before loading the database. CLI help, environment setup, logging and
+connection cleanup belong to each entrypoint.
+
+Empty lists mean no overrides, whether omitted or passed as an empty string.
+Empty comma-separated entries are ignored during normalization. Each non-empty
+entry is validated in full; an explicit colon must be followed by a count.
+Seed values must be finite numbers; whitespace-only values are invalid. Existing
+numeric seeds, including signed and fractional values, remain supported.
 
 ## How It Works
 
@@ -12,7 +24,7 @@ default quantity and any dependencies that are not represented by schema
 foreign keys. The generator adds schema and declared dependencies, sorts the
 tables, generates their records, and calls each importer's `finalise()` method.
 
-A numeric seed resets Faker for every table. This keeps Faker-generated values
+A non-zero seed resets Faker for every table. This keeps Faker-generated values
 stable when another table is added or omitted. Time-dependent fields may still
 vary between runs. Use the provided Faker instances and random-data helpers
 rather than `Math.random()` so seeded values remain repeatable.

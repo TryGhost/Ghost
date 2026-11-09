@@ -1,4 +1,3 @@
-import * as assert from 'assert/strict';
 import {
   blueskyHandleToUrl,
   blueskyUrlToHandle,
@@ -697,44 +696,44 @@ FIXTURES.forEach(
   }) => {
     describe(`${platform} URLs`, () => {
       it('returns an empty string for empty input', () => {
-        assert.equal(validate(''), '');
+        expect(validate('')).toBe('');
       });
 
       it('throws for an empty handle', () => {
-        assert.throws(() => handleToUrl(''));
+        expect(() => handleToUrl('')).toThrow();
       });
 
       it('returns null for an empty or non-URL input to urlToHandle', () => {
-        assert.equal(urlToHandle(''), null);
+        expect(urlToHandle('')).toBeNull();
       });
 
       it('normalises valid input to a canonical URL', () => {
         for (const [input, expected] of valid) {
-          assert.equal(validate(input), expected, `input: ${JSON.stringify(input)}`);
+          expect(validate(input), `input: ${JSON.stringify(input)}`).toBe(expected);
         }
       });
 
       it('rejects invalid input', () => {
         for (const [input, error] of invalid) {
-          assert.throws(() => validate(input), error, `input: ${JSON.stringify(input)}`);
+          expect(() => validate(input), `input: ${JSON.stringify(input)}`).toThrow(error);
         }
       });
 
       it('converts stored handles to canonical URLs', () => {
         for (const [handle, expected] of handles) {
-          assert.equal(handleToUrl(handle), expected, `handle: ${JSON.stringify(handle)}`);
+          expect(handleToUrl(handle), `handle: ${JSON.stringify(handle)}`).toBe(expected);
         }
       });
 
       it('rejects invalid handles', () => {
         for (const [handle, error] of invalidHandles) {
-          assert.throws(() => handleToUrl(handle), error, `handle: ${JSON.stringify(handle)}`);
+          expect(() => handleToUrl(handle), `handle: ${JSON.stringify(handle)}`).toThrow(error);
         }
       });
 
       it('extracts stored handles from URLs', () => {
         for (const [url, expected] of urlHandles) {
-          assert.equal(urlToHandle(url), expected, `url: ${JSON.stringify(url)}`);
+          expect(urlToHandle(url), `url: ${JSON.stringify(url)}`).toBe(expected);
         }
       });
 
@@ -744,14 +743,14 @@ FIXTURES.forEach(
       it('validate is idempotent on its own output', () => {
         for (const [input] of valid) {
           const canonical = validate(input);
-          assert.equal(validate(canonical), canonical, `input: ${JSON.stringify(input)}`);
+          expect(validate(canonical), `input: ${JSON.stringify(input)}`).toBe(canonical);
         }
       });
 
       it('every canonical URL yields a stored handle', () => {
         for (const [input] of valid) {
           const canonical = validate(input);
-          assert.notEqual(urlToHandle(canonical), null, `input: ${JSON.stringify(input)}`);
+          expect(urlToHandle(canonical), `input: ${JSON.stringify(input)}`).not.toBeNull();
         }
       });
 
@@ -760,8 +759,8 @@ FIXTURES.forEach(
           const canonical = validate(input);
           const handle = urlToHandle(canonical) as string;
           const rebuilt = handleToUrl(handle);
-          assert.equal(validate(rebuilt), rebuilt, `input: ${JSON.stringify(input)}`);
-          assert.equal(urlToHandle(rebuilt), handle, `input: ${JSON.stringify(input)}`);
+          expect(validate(rebuilt), `input: ${JSON.stringify(input)}`).toBe(rebuilt);
+          expect(urlToHandle(rebuilt), `input: ${JSON.stringify(input)}`).toBe(handle);
         }
       });
     });
@@ -770,12 +769,10 @@ FIXTURES.forEach(
 
 describe('sanitiseMastodonUrl', () => {
   it('strips the protocol', () => {
-    assert.equal(
-      sanitiseMastodonUrl('https://mastodon.xyz/@Flipboard@flipboard.social'),
+    expect(sanitiseMastodonUrl('https://mastodon.xyz/@Flipboard@flipboard.social')).toBe(
       'mastodon.xyz/@Flipboard@flipboard.social',
     );
-    assert.equal(
-      sanitiseMastodonUrl('https://mastodon.social/@user@other.instance'),
+    expect(sanitiseMastodonUrl('https://mastodon.social/@user@other.instance')).toBe(
       'mastodon.social/@user@other.instance',
     );
   });

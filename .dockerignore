@@ -8,7 +8,12 @@ node_modules
 
 **/*.log
 
-build
+# Workspace outputs; tools/scripts/build contains source.
+apps/**/build
+ghost/**/build
+koenig/**/build
+packages/**/build
+e2e/build
 dist
 
 coverage

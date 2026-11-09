@@ -12,6 +12,8 @@ export function historyTitle(entry: AppInstallationHistoryEntry): string {
       return 'Updated';
     case 'suspended':
       return 'Updated, needs approval';
+    case 'resumed':
+      return 'Resumed, changes withdrawn';
     case 'changes_approved':
       return entry.moved_to ? `Moved to ${entry.moved_to}` : 'Changes approved';
     case 'uninstalled':

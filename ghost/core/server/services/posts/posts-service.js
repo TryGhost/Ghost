@@ -21,6 +21,39 @@ const messages = {
   postNotFound: 'Post not found.',
 };
 
+const COPIED_POSTS_FIELDS = [
+  'title',
+  'mobiledoc',
+  'lexical',
+  'html',
+  'plaintext',
+  'feature_image',
+  'featured',
+  'show_title_and_feature_image',
+  'type',
+  'locale',
+  'visibility',
+  'email_recipient_filter',
+  'custom_excerpt',
+  'codeinjection_head',
+  'codeinjection_foot',
+  'custom_template',
+];
+
+const COPIED_POSTS_META_FIELDS = [
+  'og_image',
+  'og_title',
+  'og_description',
+  'twitter_image',
+  'twitter_title',
+  'twitter_description',
+  'meta_title',
+  'meta_description',
+  'frontmatter',
+  'feature_image_alt',
+  'feature_image_caption',
+];
+
 class PostsService {
   constructor({ urlUtils, models, isSet, stats, emailService, postsExporter }) {
     this.urlUtils = urlUtils;
@@ -274,14 +307,28 @@ class PostsService {
    * @returns {Promise<{successful: number, unsuccessful: number, editIds: string[]}>}
    */
   async #bulkAddTags(data, options) {
-    if (!options.transacting) {
-      return await this.models.Post.transaction(async (transacting) => {
-        return await this.#bulkAddTags(data, {
-          ...options,
-          transacting,
-        });
-      });
-    }
+    // The posts are found before the transaction and locked as its first statement, so the
+    // reads of their links that follow are current without being locking reads, whose gap
+    // locks would deadlock two bulk tag requests for different posts
+    const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
+    const run = (transacting) =>
+      this.#addTagsToPosts(
+        data,
+        postRows.map((post) => post.id),
+        { ...options, transacting },
+      );
+
+    return options.transacting
+      ? await run(options.transacting)
+      : await this.models.Post.transaction(run);
+  }
+
+  async #addTagsToPosts(data, selectedIds, options) {
+    // Adding tags changes the posts' relations, so lock them as an edit would
+    const lockedRows = await this.models.Post.lockForUpdate(selectedIds, {
+      transacting: options.transacting,
+    });
+    const postIds = lockedRows.map((post) => post.id);
 
     // The same tag can be passed more than once in a single request. Dedupe
     // before creating, otherwise a repeated name-only tag is created twice
@@ -329,9 +376,6 @@ class PostsService {
       tag.id = createdTag.id;
     }
 
-    const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
-    const postIds = postRows.map((post) => post.id);
-
     const tagIds = [...new Set(tags.map((tag) => tag.id))];
 
     // Posts in the selection may already carry the tag, filter those pairs out
@@ -339,11 +383,16 @@ class PostsService {
       tagIds.length && postIds.length
         ? await options
             .transacting('posts_tags')
-            .whereIn('tag_id', tagIds)
             .whereIn('post_id', postIds)
-            .select('post_id', 'tag_id')
+            .select('post_id', 'tag_id', 'sort_order')
         : [];
     const existing = new Set(existingRows.map((row) => `${row.post_id}:${row.tag_id}`));
+
+    const nextSortOrders = new Map();
+    for (const row of existingRows) {
+      const next = Math.max(nextSortOrders.get(row.post_id) ?? 0, row.sort_order + 1);
+      nextSortOrders.set(row.post_id, next);
+    }
 
     const postTags = [];
     for (const tagId of tagIds) {
@@ -352,11 +401,14 @@ class PostsService {
           continue;
         }
 
+        const sortOrder = nextSortOrders.get(postId) ?? 0;
+        nextSortOrders.set(postId, sortOrder + 1);
+
         postTags.push({
           id: new ObjectId().toHexString(),
           post_id: postId,
           tag_id: tagId,
-          sort_order: 0,
+          sort_order: sortOrder,
         });
       }
     }
@@ -365,15 +417,11 @@ class PostsService {
       await options.transacting('posts_tags').insert(postTags);
     }
 
-    await this.models.Post.addActions(
-      'edited',
-      postRows.map((p) => p.id),
-      options,
-    );
+    await this.models.Post.addActions('edited', postIds, options);
 
     return {
-      editIds: postRows.map((p) => p.id),
-      successful: postRows.length,
+      editIds: postIds,
+      successful: postIds.length,
       unsuccessful: 0,
     };
   }
@@ -393,12 +441,16 @@ class PostsService {
       });
     }
 
-    const postRows = await this.#getFilteredBulkPostQuery(options).select(
-      'posts.id',
-      'posts.status',
-    );
+    const postRows = await this.#getFilteredBulkPostQuery(options).select('posts.id');
     const deleteIds = postRows.map((row) => row.id);
-    const allDraft = postRows.length > 0 && postRows.every((row) => row.status === 'draft');
+
+    // The posts' relations are deleted before the posts, so lock them first.
+    // Statuses come from the locked rows, as a post can be published before the lock
+    const lockedRows = await this.models.Post.lockForUpdate(deleteIds, {
+      transacting: options.transacting,
+      columns: ['id', 'status'],
+    });
+    const allDraft = lockedRows.length > 0 && lockedRows.every((row) => row.status === 'draft');
 
     const postTablesToDelete = [
       'posts_authors',
@@ -471,6 +523,10 @@ class PostsService {
       tiers = data.tiers;
       delete data.tiers;
     }
+
+    // Before the update, which locks the posts in chunks of request order, so
+    // overlapping bulk updates can't lock them in different orders
+    await this.models.Post.lockForUpdate(editIds, { transacting: options.transacting });
 
     const result = await this.models.Post.bulkEdit(editIds, 'posts', {
       ...options,
@@ -576,23 +632,7 @@ class PostsService {
       frame.options,
     );
 
-    const newPostData = pick(existingPost.attributes, [
-      'title',
-      'mobiledoc',
-      'lexical',
-      'html',
-      'plaintext',
-      'feature_image',
-      'featured',
-      'type',
-      'locale',
-      'visibility',
-      'email_recipient_filter',
-      'custom_excerpt',
-      'codeinjection_head',
-      'codeinjection_foot',
-      'custom_template',
-    ]);
+    const newPostData = pick(existingPost.attributes, COPIED_POSTS_FIELDS);
 
     newPostData.title = `${existingPost.attributes.title} (Copy)`;
     newPostData.status = 'draft';
@@ -604,20 +644,7 @@ class PostsService {
     const existingPostMeta = existingPost.related('posts_meta');
 
     if (existingPostMeta.isNew() === false) {
-      newPostData.posts_meta = pick(existingPostMeta.attributes, [
-        'og_image',
-        'og_title',
-        'og_description',
-        'twitter_image',
-        'twitter_title',
-        'twitter_description',
-        'meta_title',
-        'meta_description',
-        'frontmatter',
-        'feature_image_alt',
-        'feature_image_caption',
-        'hide_title_and_feature_image',
-      ]);
+      newPostData.posts_meta = pick(existingPostMeta.attributes, COPIED_POSTS_META_FIELDS);
     }
 
     const existingPostTiers = existingPost.related('tiers');
@@ -644,3 +671,5 @@ class PostsService {
 }
 
 module.exports = PostsService;
+module.exports.COPIED_POSTS_FIELDS = COPIED_POSTS_FIELDS;
+module.exports.COPIED_POSTS_META_FIELDS = COPIED_POSTS_META_FIELDS;

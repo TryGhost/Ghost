@@ -9,6 +9,9 @@
     "redirects": true,
     "sessionMaxAgeMs": 15552000000
   },
+  "auth": {
+    "engine": "legacy"
+  },
   "externalRequest": {
     "keepAlive": true,
     "keepAliveMsecs": 60000,
@@ -60,6 +63,9 @@
       "active": "FileStore",
       "FileStore": {},
       "S3RouteSettingsStore": {}
+    },
+    "upgrade": {
+      "active": "NoopUpgradeAdapter"
     },
     "jobs": {
       "active": "InMemoryJobsBackend",
@@ -179,6 +185,24 @@
       "lifetime": 1000,
       "freeRetries": 100
     },
+    "upgrade_api_block": {
+      "freeRetries": 599,
+      "minWait": 60000,
+      "maxWait": 60000,
+      "lifetime": 60
+    },
+    "upgrade_block": {
+      "freeRetries": 2,
+      "minWait": 60000,
+      "maxWait": 60000,
+      "lifetime": 60
+    },
+    "staff_invite_block": {
+      "freeRetries": 2,
+      "minWait": 60000,
+      "maxWait": 60000,
+      "lifetime": 60
+    },
     "email_preview_block": {
       "minWait": 360000,
       "maxWait": 360000,
@@ -255,6 +279,7 @@
   "optimization": {
     "maxLimit": 100,
     "allowLimitAll": false,
+    "capListingLimit": false,
     "getHelper": {
       "timeout": {
         "threshold": 5000,
@@ -369,8 +394,7 @@
   "bulkEmail": {
     "batchSize": 1000,
     "batchCreationConcurrency": 2,
-    "captureLinkClickBadMemberUuid": false,
-    "perRecipientMessageId": false
+    "captureLinkClickBadMemberUuid": false
   },
   "disableJSBackups": false,
   "disableMigrationBackups": false,

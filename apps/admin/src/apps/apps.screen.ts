@@ -13,13 +13,14 @@ export const appsScreen = {
   notAllowedDialog: () => page.getByTestId(sel.appInstallNotAllowedDialog),
   developmentBadge: () =>
     page.getByTestId(sel.appInstallDialog).getByTestId(sel.appDevelopmentBadge),
+  unverifiedDeveloperBadge: () => page.getByTestId(sel.appUnverifiedDeveloperBadge),
   accessIndicator: () => page.getByTestId(sel.accessIndicator),
   accessItems: () => page.getByTestId(sel.accessItem),
   capabilities: () => page.getByTestId(sel.appCapability),
   notice: () => page.getByTestId(sel.appInstallNotice),
-  moveWarning: () => page.getByTestId(sel.appInstallMoveWarning),
   problems: () => page.getByTestId(sel.appInstallProblems),
   unreachable: () => page.getByTestId(sel.appInstallUnreachable),
+  unconfirmed: () => page.getByTestId(sel.appInstallUnconfirmed),
   changes: () => page.getByTestId(sel.appManifestChange),
 
   sidebarLink: () =>
@@ -38,6 +39,7 @@ export const appsScreen = {
   appPage: () => page.getByTestId(sel.appPage),
   frame: () => page.getByTestId(sel.appFrame),
   notResponding: () => page.getByTestId(sel.appNotResponding),
+  unavailable: () => page.getByTestId(sel.appUnavailable),
   notInstalled: () => page.getByTestId(sel.appNotInstalled),
   notFramed: () => page.getByTestId(sel.appNotFramed),
   needsApproval: () => page.getByTestId(sel.appNeedsApproval),

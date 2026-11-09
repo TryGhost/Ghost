@@ -166,6 +166,10 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       const id = newId();
       const envelope = envelopeFor('greet', { name: 'Ada' });
       await outbox.insert({ id, envelope });
+      const { created_at: storedCreatedAt } = await knex(TABLE)
+        .select('created_at')
+        .where('id', id)
+        .first();
 
       const seen: BackendCall[] = [];
       const outcome = await outbox.processNext(
@@ -176,6 +180,12 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       );
 
       assert.equal(outcome.status, 'delivered');
+      assert.equal(outcome.type, 'greet');
+      assert.equal(
+        outcome.createdAt.getTime(),
+        storedCreatedAt.getTime(),
+        'the outcome carries when the row was written',
+      );
       assert.equal(seen.length, 1);
       assert.equal(seen[0].id, id);
       assert.deepEqual(seen[0].envelope, envelope);
@@ -206,6 +216,22 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       );
       assert.ok(after.getTime() > Date.now(), 'the bumped row is no longer eligible');
       assert.equal(await countRows(), 1, 'a rejected row is retained, never discarded');
+    });
+
+    it('does not claim a row that was already submitted', async function () {
+      await knex(TABLE).insert({
+        id: newId(),
+        envelope: JSON.stringify(envelopeFor()),
+        created_at: new Date(),
+        available_at: new Date(),
+        submitted_at: new Date(),
+      });
+
+      const outcome = await outbox.processNext(async () => {}, {
+        retryDelayMs: TIMINGS.retryDelayMs,
+      });
+
+      assert.equal(outcome.status, 'idle');
     });
 
     it('reports idle when no row is eligible', async function () {
@@ -406,6 +432,31 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       assert.ok(
         await waitFor(async () => (await countRows()) === 0),
         'the delivered row is removed',
+      );
+    });
+
+    it('logs each hand-off with its dispatch id, job type and time spent in the outbox', async function () {
+      const id = newId();
+      await outbox.insert({ id, envelope: envelopeFor('greet') });
+
+      const info: unknown[][] = [];
+      const logging = { ...silentLogger, info: (...args: unknown[]) => info.push(args) };
+      makeRelay(makeBackend(), { logging }).start();
+
+      assert.ok(await waitFor(() => info.length === 1), 'the hand-off is logged');
+      const [event, message] = info[0] as [
+        {
+          system: { event: string; dispatch_id: string; job_type: string; outbox_lag_ms: number };
+        },
+        string,
+      ];
+      assert.equal(event.system.event, 'jobs_outbox.handed_off');
+      assert.equal(event.system.dispatch_id, id);
+      assert.equal(event.system.job_type, 'greet');
+      assert.ok(event.system.outbox_lag_ms >= 0);
+      assert.equal(
+        message,
+        `[Jobs Outbox] Handed off greet (dispatch ${id}) after ${event.system.outbox_lag_ms}ms`,
       );
     });
 

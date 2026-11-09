@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterEach, test } from 'node:test';
 
-import { checkInternalPackages } from '../check-internal-packages.ts';
+import { checkInternalPackages } from '../ci/check-internal-packages.ts';
 
 interface TestManifest {
   name: string;

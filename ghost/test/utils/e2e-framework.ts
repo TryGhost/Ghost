@@ -24,7 +24,6 @@ import assert from 'node:assert/strict';
 import fixtureUtils from './fixture-utils';
 import { cacheRules } from './fixtures/cache-rules';
 import * as redirectsUtils from './redirects';
-// @ts-expect-error This module lacks type definitions.
 import configUtils from './config-utils';
 import * as urlServiceUtils from './url-service-utils';
 // @ts-expect-error This module lacks type definitions.
@@ -49,6 +48,7 @@ import adapterManager from '../../core/server/services/adapter-manager';
 // @ts-expect-error This module lacks type definitions.
 import DomainEvents from '@tryghost/domain-events';
 import * as hostLimits from './host-limits-utils';
+import { resetJobsBackend } from './jobs-backend-utils';
 // @ts-expect-error This module lacks type definitions.
 import urlUtils from './url-utils';
 
@@ -67,7 +67,7 @@ let totalBoots = 0;
  * @returns {Promise<Express.Application>} ghost
  */
 const startGhost = async (options = {}) => {
-  await require('../../core/server/services/jobs-service').shutdown();
+  await resetJobsBackend();
   await DomainEvents.allSettled();
 
   /**
@@ -194,12 +194,13 @@ const getFixture = (type: string, index = 0) => {
 };
 
 /**
- * Reset rate limit instances (not the brute table)
+ * Reset rate limit instances and clear their counters. Limiter names are stable,
+ * so rebuilding the instances alone keeps the old counts.
  */
-const resetRateLimits = () => {
-  // Reset rate limiting instances
+const resetRateLimits = async () => {
   const { spamPrevention } = require('../../core/server/web/shared/middleware/api');
   spamPrevention.reset();
+  await db.truncate('rate_limits');
 };
 
 /**
@@ -229,7 +230,7 @@ const resetData = async () => {
   await db.reset({ truncate: true });
 
   // Reset rate limiting instances (resetting the table is not enough!)
-  resetRateLimits();
+  await resetRateLimits();
 
   resetImageSizeCache();
 };

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import {
-  settingsFacebookCardBackButton,
-  settingsFacebookCardRow,
+  settingsMetaDataBackButton,
+  settingsMetaDataRow,
 } from '@tryghost/test-data/selectors/editor';
 
 import {
@@ -72,12 +72,14 @@ function fakeSavablePost(overrides: Partial<SavedPost> = {}) {
   });
 }
 
+/** Opens the Meta data pane on its Facebook card tab. */
 async function openFacebookCard() {
   await editorScreen.settingsToggle().click();
   await expect.element(editorScreen.settingsSidebar()).toBeVisible();
   await settleTransitions();
-  await editorScreen.settingsSubviewRow(settingsFacebookCardRow).click();
+  await editorScreen.settingsSubviewRow(settingsMetaDataRow).click();
   await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+  await editorScreen.settingsMetaDataTab('Facebook card').click();
 }
 
 /**
@@ -112,10 +114,11 @@ describe('Post settings Facebook card', () => {
         );
         await expect.poll(() => uploadApi.requests.length, POLL).toBe(1);
         await expect.element(editorScreen.settingsFacebookImageInput()).toBeDisabled();
-        await editorScreen.settingsSubviewBack(settingsFacebookCardBackButton).click();
+        await editorScreen.settingsSubviewBack(settingsMetaDataBackButton).click();
         await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
-        await editorScreen.settingsSubviewRow(settingsFacebookCardRow).click();
+        await editorScreen.settingsSubviewRow(settingsMetaDataRow).click();
         await expect.element(editorScreen.settingsSubviewPane()).toBeVisible();
+        await editorScreen.settingsMetaDataTab('Facebook card').click();
         await expect.element(editorScreen.settingsFacebookImageInput()).toBeDisabled();
         await expect.element(editorScreen.settingsFacebookImageUnsplashButton()).toBeDisabled();
         expect(saveApi.requests).toHaveLength(0);
@@ -133,7 +136,7 @@ describe('Post settings Facebook card', () => {
     },
   );
 
-  it('opens the pane over the section list and comes back from it', async () => {
+  it('opens under the Meta data pane over the section list and comes back from it', async () => {
     fakeSavablePost();
     await renderAdminApp(`/editor/post/${POST_ID}`, withoutAutosave());
     await openFacebookCard();
@@ -143,13 +146,13 @@ describe('Post settings Facebook card', () => {
     await expect.element(editorScreen.settingsFacebookTitle()).toBeVisible();
     await expect
       .element(editorScreen.settingsSidebar())
-      .toHaveAttribute('aria-label', settingsFacebookCardRow);
+      .toHaveAttribute('aria-label', settingsMetaDataRow);
 
-    await editorScreen.settingsSubviewBack(settingsFacebookCardBackButton).click();
+    await editorScreen.settingsSubviewBack(settingsMetaDataBackButton).click();
 
     await expect(editorScreen.settingsSubviewPane()).toHaveCount(0);
     await expect.element(editorScreen.settingsExcerpt()).toBeVisible();
-    await expect.element(editorScreen.settingsSubviewRow(settingsFacebookCardRow)).toBeVisible();
+    await expect.element(editorScreen.settingsSubviewRow(settingsMetaDataRow)).toBeVisible();
   });
 
   it('saves an uploaded Facebook image as soon as it lands', async () => {

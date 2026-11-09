@@ -27,6 +27,34 @@ export const SettingsNavigationRow = forwardRef<
   );
 });
 
+/**
+ * A row in the section list that shows its content inline beneath it rather
+ * than in a pane. Its chevron turns down while the content is shown.
+ */
+export const SettingsDisclosureRow = forwardRef<
+  HTMLButtonElement,
+  Omit<ComponentProps<'button'>, 'aria-expanded'> & { icon: ReactNode; expanded: boolean }
+>(function SettingsDisclosureRow({ icon, expanded, children, className, ...props }, ref) {
+  return (
+    <button
+      ref={ref}
+      aria-expanded={expanded}
+      className={cn(rowClassName, className)}
+      type="button"
+      {...props}
+    >
+      {icon}
+      <RowLabel>{children}</RowLabel>
+      <LucideIcon.ChevronRight
+        className={cn(
+          'size-4 shrink-0 text-text-tertiary transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
+          expanded && 'rotate-90',
+        )}
+      />
+    </button>
+  );
+});
+
 /** A row in the section list that leaves the editor for a page in a new tab. */
 export function SettingsLinkRow({
   icon,

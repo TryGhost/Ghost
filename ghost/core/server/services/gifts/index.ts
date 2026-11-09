@@ -1,5 +1,6 @@
 import type { SchedulerAdapter } from '@tryghost/adapter-base-scheduling';
 import type { InternalKeys } from '../internal-keys';
+import type { CheckoutService } from '../stripe-checkout-config';
 import { GiftBookshelfRepository } from './gift-bookshelf-repository';
 import { GiftDeliveryBookshelfRepository } from './gift-delivery-bookshelf-repository';
 import { GiftDeliveryService } from './gift-delivery-service';
@@ -13,6 +14,8 @@ export interface GiftServiceInitOptions {
   apiUrl: string;
   schedulerAdapter: SchedulerAdapter & { rescheduleOnBoot?: boolean };
   internalKeys: InternalKeys;
+  /** Decides the checkout a gift opens. */
+  checkouts: Pick<CheckoutService, 'read'>;
 }
 
 // Constructed by init() at boot, once the database and scheduling adapter are ready.
@@ -41,8 +44,14 @@ export function init(options: GiftServiceInitOptions): void {
   } = require('../../models');
   const GiftCheckoutAdapter = require('./gift-checkout-adapter');
   const membersService = require('../members');
-  const tiersService = require('../tiers');
-  const staffService = require('../staff');
+  const tiers = require('../tiers').default;
+  // Boot builds gifts before tiers initializes, so gifts read the tiers API when they use it.
+  const tiersService = {
+    get api() {
+      return tiers.service.api;
+    },
+  };
+  const staffService = require('../staff').default;
   const DomainEvents = require('@tryghost/domain-events');
   const logging = require('@tryghost/logging');
   const { SubscriptionActivatedEvent } = require('../../../shared/events');
@@ -56,9 +65,9 @@ export function init(options: GiftServiceInitOptions): void {
   const settingsCache = require('../../../shared/settings-cache');
   const urlUtils = require('../../../shared/url-utils').default;
   const settingsHelpers = require('../settings-helpers');
-  const emailAddressParser = require('../email-address/email-address-parser');
+  const { formatAddressForDelivery } = require('../../lib/mail/format-address-for-delivery');
   const { blogIcon } = require('../../../server/lib/image');
-  const { t } = require('../i18n');
+  const { t } = require('../../../shared/i18n');
 
   const repository = new GiftBookshelfRepository({
     GiftModel,
@@ -71,6 +80,7 @@ export function init(options: GiftServiceInitOptions): void {
   const checkoutAdapter = new GiftCheckoutAdapter({
     StripeCustomerModel,
     getStripeApi: () => require('../stripe').api,
+    checkouts: options.checkouts,
   });
 
   const giftEmailService = new GiftEmailService({
@@ -79,7 +89,7 @@ export function init(options: GiftServiceInitOptions): void {
     bulkMailer: new MailgunClient({ config, settings: settingsCache }),
     settingsCache,
     urlUtils,
-    getFromAddress: () => emailAddressParser.stringify(settingsHelpers.getDefaultEmail()),
+    getFromAddress: () => formatAddressForDelivery(settingsHelpers.getDefaultEmail()),
     getReplyToAddress: () => settingsHelpers.getMembersSupportAddress(),
     blogIcon,
     t,
@@ -129,7 +139,7 @@ export function init(options: GiftServiceInitOptions): void {
     tiersService,
     giftEmailService,
     get staffServiceEmails() {
-      return staffService.api.emails;
+      return staffService.service.emails;
     },
     giftReminderScheduler,
     checkoutAdapter,

@@ -14,7 +14,7 @@ const ACCESS_PATH =
 const CONTROLLER_PATH = require.resolve('../../../../../core/server/api/endpoints/gift-links');
 const MODULE_PATHS = [ROOT_PATH, ACCESS_PATH, CONTROLLER_PATH];
 
-type Root = typeof import('../../../../../core/server/services/gift-links');
+type Root = (typeof import('../../../../../core/server/services/gift-links'))['default'];
 type Access = typeof import('../../../../../core/server/api/endpoints/utils/gift-link-access');
 type GiftAccessFrame = Parameters<Access['generateGiftKeyData']>[0];
 type LinkRow = { post_id: string; token: string; created_at: Date };
@@ -42,7 +42,7 @@ describe('gift-links root with its API consumers', function () {
   let addAction: sinon.SinonStub;
 
   beforeEach(function () {
-    originalModules = new Map(MODULE_PATHS.map((path) => [path, require.cache[path]]));
+    originalModules = new Map(Object.entries(require.cache));
     for (const path of MODULE_PATHS) {
       delete require.cache[path];
     }
@@ -56,33 +56,34 @@ describe('gift-links root with its API consumers', function () {
 
   afterEach(function () {
     sandbox.restore();
-    // Other loaded endpoints may retain the originals. Restore complete entries
-    // so later requires reach those same roots and consumers again.
-    for (const [path, original] of originalModules) {
-      if (original) {
-        require.cache[path] = original;
-      } else {
+    // Restore newly loaded dependencies too: they may retain the fresh root even
+    // when they are outside MODULE_PATHS.
+    for (const path of Object.keys(require.cache)) {
+      if (!originalModules.has(path)) {
         delete require.cache[path];
       }
+    }
+    for (const [path, original] of originalModules) {
+      require.cache[path] = original;
     }
   });
 
   it('defers database binding until init and retains that binding and service on repeated init', async function () {
-    const root: Root = require(ROOT_PATH);
-    assert.equal(root.service, undefined);
+    const root: Root = require(ROOT_PATH).default;
+    assert.throws(() => root.service, /Gift Links used before init/);
     sinon.assert.notCalled(getKnex);
     sinon.assert.notCalled(knex);
     sinon.assert.notCalled(addAction);
 
     const readyKnex = sandbox.stub<[string], typeof query>().returns(query);
     currentKnex = readyKnex;
-    assert.equal(root.init(), undefined);
-    const service = (require(ROOT_PATH) as Root).service;
+    assert.equal(await root.init(), undefined);
+    const service = (require(ROOT_PATH).default as Root).service;
     assert.ok(service);
     sinon.assert.notCalled(readyKnex);
 
     currentKnex = knex;
-    assert.equal(root.init(), undefined);
+    assert.equal(await root.init(), undefined);
     assert.equal(root.service, service);
     assert.equal(await service.getPostByToken('missing-token'), null);
     sinon.assert.calledOnce(getKnex);
@@ -93,9 +94,9 @@ describe('gift-links root with its API consumers', function () {
 
   it('lets the earlier public access consumer resolve a token through the initialized service', async function () {
     const access: Access = require(ACCESS_PATH);
-    const root: Root = require(ROOT_PATH);
-    assert.equal(root.service, undefined);
-    root.init();
+    const root: Root = require(ROOT_PATH).default;
+    assert.throws(() => root.service, /Gift Links used before init/);
+    await root.init();
     query.first.resolves({
       post_id: 'post-id',
       token: 'live-token',
@@ -119,8 +120,8 @@ describe('gift-links root with its API consumers', function () {
 
   it('passes the original query failure through the earlier public access consumer', async function () {
     const access: Access = require(ACCESS_PATH);
-    const root: Root = require(ROOT_PATH);
-    root.init();
+    const root: Root = require(ROOT_PATH).default;
+    await root.init();
     const failure = new Error('Cannot look up gift link');
     query.first.rejects(failure);
     const frame = giftFrame('live-token');
@@ -134,9 +135,9 @@ describe('gift-links root with its API consumers', function () {
 
   it('lets the earlier Admin controller remove links and record the action through the wired model', async function () {
     const controller = require(CONTROLLER_PATH);
-    const root: Root = require(ROOT_PATH);
-    assert.equal(root.service, undefined);
-    root.init();
+    const root: Root = require(ROOT_PATH).default;
+    assert.throws(() => root.service, /Gift Links used before init/);
+    await root.init();
 
     const result = await controller.removeAll.query({ options: { context: { user: 'actor-id' } } });
 

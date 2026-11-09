@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import sinon from 'sinon';
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+import type { Invites } from '../../../../../core/server/services/invites/invites';
 
 const rootPath = require.resolve('../../../../../core/server/services/invites');
 const settingsCache = require('../../../../../core/shared/settings-cache');
@@ -12,25 +13,19 @@ const urlUtils = require('../../../../../core/shared/url-utils').default;
 describe('Invites service root', function () {
   const sandbox = sinon.createSandbox();
   let previousModule: NodeJS.Module | undefined;
-  let invitesService: { add(request: typeof input): Promise<typeof edited> };
+  let invitesService: Invites;
   let InviteModel: { findOne: sinon.SinonStub; add: sinon.SinonStub; edit: sinon.SinonStub };
   let api: { mail: { send: sinon.SinonStub } };
-  let input: {
-    api: typeof api;
-    InviteModel: typeof InviteModel;
-    invites: Array<{ email: string; role_id: string }>;
-    options: { context: { user: string } };
-    user: { name?: string; email?: string };
-  };
-  let created: { id: string; get(key: string): string };
-  let edited: { id: string; status: string };
+  let input: Parameters<Invites['add']>[0];
+  let created: Awaited<ReturnType<Invites['add']>>;
+  let edited: Awaited<ReturnType<Invites['add']>> & { status: string };
   let render: sinon.SinonStub;
   let getTitle: sinon.SinonStub;
   let getDomain: sinon.SinonStub;
   let getAdminUrl: sinon.SinonStub;
   let warn: sinon.SinonStub;
 
-  beforeEach(function () {
+  beforeEach(async function () {
     previousModule = require.cache[rootPath];
     delete require.cache[rootPath];
     const values: Record<string, string> = {
@@ -38,7 +33,7 @@ describe('Invites service root', function () {
       email: 'recipient@example.com',
     };
     created = { id: 'invite-id', get: (key) => values[key] };
-    edited = { id: 'invite-id', status: 'sent' };
+    edited = { ...created, status: 'sent' };
     InviteModel = {
       findOne: sandbox.stub().resolves(null),
       add: sandbox.stub().resolves(created),
@@ -57,7 +52,9 @@ describe('Invites service root', function () {
       .withArgs('admin', true)
       .returns('https://example.com/blog/ghost/');
     warn = sandbox.stub(logging, 'warn');
-    invitesService = require(rootPath);
+    const invites = require(rootPath).default;
+    await invites.init();
+    invitesService = invites.service;
     input = {
       api,
       InviteModel,
@@ -75,8 +72,8 @@ describe('Invites service root', function () {
     }
   });
 
-  it('imports one instance without rendering or sending an invitation', function () {
-    assert.equal(require(rootPath), invitesService);
+  it('retains one initialized instance without rendering or sending an invitation', function () {
+    assert.equal(require(rootPath).default.service, invitesService);
     sinon.assert.notCalled(render);
     sinon.assert.notCalled(api.mail.send);
   });
@@ -206,7 +203,7 @@ describe('Invites service root', function () {
       api.mail.send.lastCall.args[0].mail[0].message.subject,
       'You have been invited to join Renamed publication',
     );
-    assert.equal(require(rootPath), invitesService);
+    assert.equal(require(rootPath).default.service, invitesService);
   });
 
   it('adds actionable mail context to the original delivery error without marking the invitation sent', async function () {

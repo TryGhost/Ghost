@@ -5,7 +5,7 @@ import {
   checkVersioningIgnore,
   loadManifests,
   type NamedManifest,
-} from '../check-versioning-ignore.ts';
+} from '../ci/check-versioning-ignore.ts';
 import { getWorkspace as loadWorkspace, type WorkspaceManifest } from '../lib/pnpm.ts';
 
 async function getWorkspace(): Promise<WorkspaceManifest> {

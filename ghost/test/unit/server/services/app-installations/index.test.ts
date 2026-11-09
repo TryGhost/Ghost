@@ -19,16 +19,59 @@ const urlUtils = require('../../../../../core/shared/url-utils').default;
 const { AppInstallationsService } =
   require('../../../../../core/server/services/app-installations/service') as typeof import('../../../../../core/server/services/app-installations/service');
 type Root = typeof import('../../../../../core/server/services/app-installations').default;
+const { generateTestAppKeys, signTestManifest, answerTestChallenge } =
+  require('../../../../utils/app-identity') as typeof import('../../../../utils/app-identity');
+type TestAppKeys = import('../../../../utils/app-identity').TestAppKeys;
 
-const manifest = {
-  id: 'com.example.podcast',
-  name: 'Podcast',
-  description: 'Publish episodes.',
-  author: { name: 'Example Audio', url: 'https://example.com' },
-  accent_color: '#ff5500',
-  icon: { name: 'audio-lines' },
-  surfaces: [{ type: 'admin_page', url: '/admin' }],
-};
+const MANIFEST_URL = 'https://podcast.example/manifest.json';
+
+let keys: TestAppKeys;
+
+function manifestFor(manifestUrl: string) {
+  return {
+    id: 'com.example.podcast',
+    name: 'Podcast',
+    description: 'Publish episodes.',
+    author: { name: 'Example Audio', url: 'https://example.com' },
+    accent_color: '#ff5500',
+    icon: { name: 'audio-lines' },
+    surfaces: [{ type: 'admin_page', url: '/admin' }],
+    manifest_url: manifestUrl,
+    identity_key: keys.identity.publicJwk,
+    backend_key: keys.backend.publicJwk,
+    development: new URL(manifestUrl).hostname === 'localhost',
+  };
+}
+
+const manifest = { id: 'com.example.podcast' };
+
+/** A fake HTTP response: status 200 with `body` as the body. */
+const answering = (body: string | Promise<string>, type = 'application/json') =>
+  Object.assign(Promise.resolve({ statusCode: 200, headers: { 'content-type': type } }), {
+    on: () => {},
+    buffer: async () => Buffer.from(await body),
+  });
+
+/**
+ * Serves the app at whatever address it's asked for: its signed manifest, with `overrides`,
+ * and answers to challenges, as its backend.
+ */
+const servingApp =
+  (overrides: Record<string, unknown> = {}) =>
+  (url: URL, options: { body?: string; headers: { host?: string } }) => {
+    // As the browser would see it, without the localhost alias.
+    const asked = new URL(url.href);
+    if (options.headers.host) {
+      asked.host = options.headers.host;
+    }
+    return answering(
+      options.body
+        ? answerTestChallenge(options.body, keys.backend, asked.href)
+        : signTestManifest({ ...manifestFor(asked.href), ...overrides }, keys.identity).then(
+            (signed) => JSON.stringify(signed),
+          ),
+    );
+  };
 
 describe('App installations composition root', function () {
   const sandbox = sinon.createSandbox();
@@ -37,6 +80,10 @@ describe('App installations composition root', function () {
   let readKnex: sinon.SinonStub;
   let query: sinon.SinonStub;
   let request: sinon.SinonStub;
+
+  beforeAll(async function () {
+    keys = await generateTestAppKeys();
+  });
 
   beforeEach(function () {
     previousModules = new Map(
@@ -48,17 +95,22 @@ describe('App installations composition root', function () {
     const builder = {
       join: sandbox.stub().returnsThis(),
       where: sandbox.stub().returnsThis(),
+      whereRaw: sandbox.stub().returnsThis(),
+      orderBy: sandbox.stub().returnsThis(),
+      limit: sandbox.stub().returnsThis(),
+      select: sandbox.stub().returnsThis(),
+      whereNot: sandbox.stub().returnsThis(),
       first: sandbox.stub().resolves(undefined),
+      distinct: sandbox.stub().resolves([]),
     };
     query = sandbox.stub().returns(builder);
     readKnex = sandbox.stub().returns(query as unknown as Knex);
     sandbox.stub(db, 'knex').get(readKnex);
-    // Substitute only the outbound transport; keep the real fetcher and manifest validation.
+    // Substitute only the outbound transport; keep the real fetcher, manifest validation and
+    // identity check. It serves the signed manifest, and answers challenges as the app's
+    // backend.
     require(requestPath);
-    request = sandbox.stub().callsFake(() => ({
-      on: () => {},
-      text: async () => JSON.stringify(manifest),
-    }));
+    request = sandbox.stub().callsFake(servingApp());
     sandbox.replace(require.cache[requestPath]!, 'exports', request);
     root = require(rootPath).default;
   });
@@ -110,10 +162,10 @@ describe('App installations composition root', function () {
     sandbox.stub(config, 'get').withArgs('env').returns('production');
     sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
 
-    assert.deepEqual(await installations.browse.query(), { data: [] });
+    assert.deepEqual(await installations.browse.query(), []);
     const result = await previews.add.query({
       data: {
-        app_installation_previews: [{ manifest_url: 'https://podcast.example/manifest.json' }],
+        app_installation_previews: [{ manifest_url: MANIFEST_URL }],
       },
     });
     assert.equal(result.manifest.id, manifest.id);
@@ -129,7 +181,7 @@ describe('App installations composition root', function () {
   it('wires logging through the manifest loader and fetcher', async function () {
     const failure = new Error('Transport failed');
     const warn = sandbox.stub(logging, 'warn');
-    request.returns({ on: () => {}, text: sandbox.stub().rejects(failure) });
+    request.returns({ on: () => {}, buffer: sandbox.stub().rejects(failure) });
     sandbox.stub(config, 'get').withArgs('env').returns('production');
     sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
     await root.init();
@@ -147,6 +199,25 @@ describe('App installations composition root', function () {
       `Could not load the app manifest at ${manifestUrl}`,
     );
     sinon.assert.calledWithExactly(warn.secondCall, failure);
+  });
+
+  it('wires the icon loader to keep a copy of the app’s icon as a data URL', async function () {
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg"><path d="M0 0h1v1H0z"/></svg>';
+    const app = servingApp({ icon: { url: '/icon.svg' } });
+    request.callsFake((url: URL, options: { body?: string; headers: { host?: string } }) =>
+      url.pathname === '/icon.svg' ? answering(svg, 'image/svg+xml') : app(url, options),
+    );
+    sandbox.stub(config, 'get').withArgs('env').returns('production');
+    sandbox.stub(urlUtils, 'urlFor').returns('https://publication.example/');
+    await root.init();
+
+    const preview = await root.service.preview('https://podcast.example/manifest.json');
+
+    assert.equal(request.lastCall.args[0].href, 'https://podcast.example/icon.svg');
+    assert.equal(
+      preview.icon_data_url,
+      `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`,
+    );
   });
 
   it('logs action recording failures without failing the installation', async function () {
@@ -177,6 +248,47 @@ describe('App installations composition root', function () {
     sinon.assert.calledOnceWithExactly(error, failure);
   });
 
+  // Found at boot, rather than failing every app.
+  it('refuses to start with trusted origins that aren’t origins', async function () {
+    const getConfig = sandbox.stub(config, 'get').callThrough();
+    getConfig.withArgs('apps').returns({ trustedOrigins: ['https://app.example.net/ghost'] });
+
+    await assert.rejects(root.init(), {
+      errorType: 'InternalServerError',
+      code: 'APP_CONFIG_INVALID',
+    });
+  });
+
+  it('names a refused trusted origin without its credentials', async function () {
+    // Put together here, as written out it would read as a real credential.
+    const withCredentials = new URL('https://app.example.net');
+    withCredentials.username = 'user';
+    withCredentials.password = 'secret';
+    const getConfig = sandbox.stub(config, 'get').callThrough();
+    getConfig.withArgs('apps').returns({ trustedOrigins: [withCredentials.href] });
+
+    await assert.rejects(root.init(), (error: { context: string }) => {
+      assert.match(error.context, /not "https:\/\/app\.example\.net\/"/);
+      assert.doesNotMatch(error.context, /user|secret/);
+      return true;
+    });
+  });
+
+  it('names a trusted origin that isn’t a URL without its credentials', async function () {
+    // Put together here, as written out it would read as a real credential.
+    const credentials = ['user', 'secret'].join(':');
+    const getConfig = sandbox.stub(config, 'get').callThrough();
+    getConfig.withArgs('apps').returns({
+      trustedOrigins: [`https://${credentials}@app example.net`],
+    });
+
+    await assert.rejects(root.init(), (error: { context: string }) => {
+      assert.match(error.context, /not "https:\/\/app example\.net"/);
+      assert.doesNotMatch(error.context, /user|secret/);
+      return true;
+    });
+  });
+
   it('reads manifest rules and the development localhost alias per operation', async function () {
     const getConfig = sandbox.stub(config, 'get').callThrough();
     getConfig.withArgs('env').returns('development');
@@ -198,19 +310,21 @@ describe('App installations composition root', function () {
       errorType: 'ValidationError',
     });
     sinon.assert.calledTwice(request);
+    // A manifest URL on one of Ghost's hosts is refused before either the manifest or the
+    // challenge is fetched. The Admin URL is a separate rule from the site URL.
     urlFor.withArgs('home', true).returns('https://podcast.example/');
-    await assert.rejects(service.preview('https://podcast.example/manifest.json'), {
-      errorType: 'ValidationError',
-    });
-    sinon.assert.calledThrice(request);
-    assert.equal(request.lastCall.args[0].hostname, 'podcast.example');
-    // The Admin URL is a separate rule from the site URL.
     urlFor.withArgs('admin', true).returns('https://admin.example/ghost/');
-    await assert.rejects(service.preview('https://admin.example/manifest.json'), {
-      errorType: 'ValidationError',
-    });
-    sinon.assert.callCount(request, 4);
-    assert.equal(request.lastCall.args[0].hostname, 'admin.example');
+    for (const manifestUrl of [
+      'https://podcast.example/manifest.json',
+      'https://admin.example/manifest.json',
+      'https://admin.example:8443/manifest.json',
+    ]) {
+      await assert.rejects(service.preview(manifestUrl), {
+        errorType: 'ValidationError',
+        code: 'APP_MANIFEST_URL_INVALID',
+      });
+    }
+    sinon.assert.calledTwice(request);
     assert.equal(root.service, service);
   });
 });

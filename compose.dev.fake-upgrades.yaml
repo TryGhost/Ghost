@@ -1,0 +1,33 @@
+services:
+  fake-upgrades:
+    build:
+      context: ./
+      dockerfile: docker/fake-upgrades/Dockerfile
+    init: true
+    ports:
+      - '127.0.0.1:4011:4011'
+    # Unset variables keep the fake's defaults.
+    environment:
+      - FAKE_UPGRADES_FROM
+      - FAKE_UPGRADES_TO
+      - FAKE_UPGRADES_OUTCOME
+      - FAKE_UPGRADES_AVAILABILITY
+      - FAKE_UPGRADES_STAGE_MS
+      - FAKE_UPGRADES_BACKUP
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://localhost:4011/v1').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 1s
+      timeout: 5s
+      retries: 30
+
+  ghost-dev:
+    environment:
+      adapters__upgrade__active: HttpUpgradeAdapter
+      adapters__upgrade__HttpUpgradeAdapter__url: http://fake-upgrades:4011
+    depends_on:
+      fake-upgrades:
+        condition: service_healthy

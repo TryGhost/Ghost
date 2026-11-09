@@ -5,6 +5,7 @@ const SettingsBreadService = require('../../../../../core/server/services/settin
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const { mockManager } = require('../../../../utils/e2e-framework');
 const emailAddress = require('../../../../../core/server/services/email-address');
+const configUtils = require('../../../../utils/config-utils');
 const logging = require('@tryghost/logging');
 
 describe('Settings BREAD Service', function () {
@@ -184,6 +185,10 @@ describe('Settings BREAD Service', function () {
     });
 
     it('setting members_support_address triggers email verification', async function () {
+      configUtils.set('hostSettings:managedEmail:enabled', true);
+      configUtils.set('hostSettings:managedEmail:sendingDomain', null);
+      configUtils.set('mail:from', 'noreply@example.com');
+
       const defaultSettingsManager = new SettingsBreadService({
         SettingsModel: {
           async edit(changes) {
@@ -210,17 +215,7 @@ describe('Settings BREAD Service', function () {
             return false;
           },
         },
-        emailAddressService: {
-          service: {
-            validate() {
-              return {
-                allowed: true,
-                verificationEmailRequired: true,
-              };
-            },
-            defaultFromAddress: 'noreply@example.com',
-          },
-        },
+        emailAddressService: emailAddress,
       });
 
       const settings = await defaultSettingsManager.edit(
@@ -237,6 +232,7 @@ describe('Settings BREAD Service', function () {
       assert.equal(settings.length, 0);
       assert.deepEqual(settings.meta.sent_email_verification, ['members_support_address']);
 
+      emailMockReceiver.assertSentEmailCount(1);
       emailMockReceiver.matchHTMLSnapshot();
       emailMockReceiver.matchPlaintextSnapshot();
       emailMockReceiver.matchMetadataSnapshot();

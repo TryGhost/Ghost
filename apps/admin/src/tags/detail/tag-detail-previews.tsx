@@ -4,8 +4,8 @@ import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 import { truncateText } from './tag-detail-edit';
 
 /**
- * Static mock previews for the metadata sections, porting the Ember tag form's
- * search/X/Facebook cards including their placeholder copy and decoration.
+ * Static mock previews for the metadata sections: the search/X/Facebook cards
+ * including their placeholder copy and decoration.
  */
 
 const SEO_DESCRIPTION_FALLBACK =

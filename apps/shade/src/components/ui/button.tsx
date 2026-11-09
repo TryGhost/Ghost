@@ -8,15 +8,13 @@ import { cn } from '@/lib/utils';
 import { useShade } from '@/providers/shade-context';
 
 export interface ButtonProps
-  extends
-    React.ButtonHTMLAttributes<HTMLButtonElement>,
-    Omit<VariantProps<typeof buttonVariants>, 'isAdmin7'> {
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   asChild?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, shape, asChild = false, children, ...props }, ref) => {
-    const { controlShape, isAdmin7 } = useShade();
+    const { controlShape } = useShade();
     const Comp = asChild ? Slot : 'button';
     const resolvedShape = variant === 'link' ? 'rounded' : (shape ?? controlShape);
     const content =
@@ -35,7 +33,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <Comp
         ref={ref}
-        className={cn(buttonVariants({ variant, size, isAdmin7, shape: resolvedShape, className }))}
+        className={cn(buttonVariants({ variant, size, shape: resolvedShape, className }))}
         {...props}
         data-control-shape={resolvedShape}
       >

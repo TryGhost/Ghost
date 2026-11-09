@@ -9,7 +9,6 @@ import React, {
 } from 'react';
 import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import {
-  Button,
   FieldError,
   Tooltip,
   TooltipContent,
@@ -39,7 +38,6 @@ import { useOnscreenKeyboard } from './use-onscreen-keyboard';
 import type { FeatureImageBinding } from './session/feature-image-binding';
 import type { WritingFocus } from './writing-focus';
 import type { EditorFont } from './editor-font';
-import { EDITOR_HELP_URL } from './editor-help';
 
 export interface PostEditorProps {
   postType: PostType;
@@ -78,8 +76,6 @@ export interface PostEditorProps {
   writingFocus?: WritingFocus;
   /** The font the writer reads the post in, set on the canvas as `data-editor-font`. */
   font?: EditorFont;
-  /** Takes the help link's place in the footer (admin7EditorImprovements). */
-  fontPicker?: React.ReactNode;
 }
 
 export interface PostEditorHandle {
@@ -173,7 +169,7 @@ function TkIndicator({
   return (
     <button
       className={cn(
-        'absolute rounded-sm bg-state-warning px-1.5 py-0.5 text-2xs font-bold text-foreground',
+        'absolute rounded-sm bg-state-warning-fill px-1.5 py-0.5 text-2xs font-bold text-foreground',
         className,
       )}
       data-testid={testId}
@@ -212,9 +208,8 @@ export function PostEditor({
   settingsMoving = false,
   writingFocus,
   font,
-  fontPicker,
 }: PostEditorProps) {
-  const { darkMode, isAdmin7 } = useFocusContext();
+  const { darkMode } = useFocusContext();
   const isKeyboardOpen = useOnscreenKeyboard();
   const scrollPaneRef = useRef<HTMLDivElement>(null);
   const writingAreaRef = useRef<HTMLDivElement>(null);
@@ -225,6 +220,7 @@ export function PostEditor({
   const editorApiRef = useRef<KoenigInstance | null>(null);
   const skipFocusEditorRef = useRef(false);
   const [wordCount, setWordCount] = useState(0);
+  const [selectionWordCount, setSelectionWordCount] = useState<number | null>(null);
   const chromeEntrance = useScreenEntrance();
   const [bodyTkCount, setBodyTkCount] = useState(0);
   const [featureImageTkCount, setFeatureImageTkCount] = useState(0);
@@ -448,7 +444,7 @@ export function PostEditor({
         <Stack
           ref={writingAreaRef}
           className={cn(
-            'min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] [--kg-breakout-adjustment:var(--editor-breakout-inset,0px)] lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))] lg:[--kg-breakout-adjustment:calc(var(--editor-breakout-inset,0px)+(var(--editor-settings-width,0px)+var(--spacing)*3)*var(--editor-settings-progress,0))]',
+            'min-h-full px-6 pt-[calc(var(--spacing)*12+var(--editor-overlap,0px))] pb-24 editor-settings-motion-[margin-right] [--kg-breakout-adjustment:var(--editor-breakout-inset,0px)] max-[500px]:px-8 lg:mr-[calc(var(--spacing)*3*var(--editor-settings-progress,0))] lg:[--kg-breakout-adjustment:calc(var(--editor-breakout-inset,0px)+(var(--editor-settings-width,0px)+var(--spacing)*3)*var(--editor-settings-progress,0))]',
             chromeEntrance && 'screen-enter-rise',
           )}
           gap="none"
@@ -576,14 +572,15 @@ export function PostEditor({
             onChange={onLexicalChange}
             onSecondaryChange={onSecondaryChange}
             onSecondaryError={onSecondaryError}
+            onSelectionWordCountChange={setSelectionWordCount}
             onTkCountChange={setBodyTkCount}
             onWordCountChange={setWordCount}
           />
         </Stack>
       </div>
       {/* Below the small breakpoint the footer spans the screen: the word count at
-          the left, the header's actions at the right, and no help link. Only its
-          controls take pointer input, so the document between them stays reachable.
+          the left and the header's actions at the right. Only its controls take
+          pointer input, so the document between them stays reachable.
           Actions that wrap grow upward, leaving the word count in the corner. The
           footer moves with the settings panel and its contents fade while the
           writer types, each on a transition of its own. */}
@@ -605,9 +602,8 @@ export function PostEditor({
               as="span"
               className={buttonVariants({
                 variant: null,
-                size: isAdmin7 ? 'default' : 'sm',
+                size: 'default',
                 shape: 'pill',
-                isAdmin7,
                 className:
                   'bg-background/80 px-3 text-(length:--text-control) text-text-secondary backdrop-blur-sm',
               })}
@@ -615,6 +611,7 @@ export function PostEditor({
               tone="secondary"
               weight="medium"
             >
+              {selectionWordCount === null ? null : `${formatNumber(selectionWordCount)} of `}
               {formatNumber(wordCount)} {wordCount === 1 ? 'word' : 'words'}
             </Text>
           )}
@@ -625,27 +622,6 @@ export function PostEditor({
             className={cn('ml-auto min-w-0 sm:hidden', isKeyboardOpen && 'hidden')}
             justify="end"
           />
-          {fontPicker ?? (
-            <Button
-              className={cn(
-                'bg-background/80 text-text-secondary backdrop-blur-sm hover:text-foreground max-sm:hidden',
-                isAdmin7 && '[&_svg]:stroke-2!',
-              )}
-              shape="pill"
-              size={isAdmin7 ? 'icon' : 'icon-sm'}
-              variant="ghost"
-              asChild
-            >
-              <a
-                aria-label="Editor help"
-                href={EDITOR_HELP_URL}
-                rel="noopener noreferrer"
-                target="_blank"
-              >
-                <LucideIcon.CircleHelp />
-              </a>
-            </Button>
-          )}
         </Inline>
       </Inline>
     </div>

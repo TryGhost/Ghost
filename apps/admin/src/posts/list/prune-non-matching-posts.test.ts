@@ -3,13 +3,10 @@ import { pruneNonMatchingPosts } from './prune-non-matching-posts';
 import type { PostListItem } from './hooks/use-posts-list';
 
 /**
- * After a bulk edit, Ember re-runs NQL *in the browser* against the list's own
+ * After a bulk edit, NQL re-runs *in the browser* against the list's own
  * filter and drops the rows that no longer match — that is why unfeaturing a
  * post while viewing `?type=featured` makes it disappear immediately, without a
  * refetch and without losing scroll position.
- *
- * Ported from `updateFilteredPosts` in
- * `apps/ember-admin/app/components/posts-list/context-menu.js`.
  */
 
 const post = (overrides: Partial<PostListItem> = {}): PostListItem => ({

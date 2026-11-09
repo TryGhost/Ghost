@@ -1,19 +1,26 @@
 import ObjectID from 'bson-objectid';
 import logging from '@tryghost/logging';
 import type { Knex } from 'knex';
+import { z } from 'zod';
 import type { FieldType } from '@tryghost/metafield-types';
+import { IdentityTextSchema, type Key, type Namespace } from '@tryghost/metafield-types/identity';
 import { INTERNAL } from './access';
+import {
+  FIELDS_TABLE,
+  fieldReference,
+  onField,
+  type FieldIdentity,
+  type FieldSource,
+} from './queries';
 import { DbBoundField, FIELD_STATUS, type WriteOrigin } from './schema';
 import type { MetafieldPlan, MetafieldValuesService } from './values-service';
 
-const FIELDS_TABLE = 'members_metafields';
-
-const { CUSTOM_NAMESPACE } = require('@tryghost/metafield-types/identity');
 const BINDINGS_TABLE = 'members_metafield_bindings';
 
 export interface BoundField {
   bindingId: string;
-  key: string;
+  namespace: Namespace;
+  key: Key;
   type: FieldType;
 }
 
@@ -38,16 +45,26 @@ export interface RoutedPlans {
  */
 export class MetafieldBindingsService {
   private knex: Knex;
+  private fields: FieldSource;
   private values: Pick<MetafieldValuesService, 'planWrite'>;
 
-  constructor({ knex, values }: { knex: Knex; values: Pick<MetafieldValuesService, 'planWrite'> }) {
+  constructor({
+    knex,
+    fields,
+    values,
+  }: {
+    knex: Knex;
+    fields: FieldSource;
+    values: Pick<MetafieldValuesService, 'planWrite'>;
+  }) {
     this.knex = knex;
+    this.fields = fields;
     this.values = values;
   }
 
-  async bind(db: Knex, port: string, metafieldKey: string, now: Date): Promise<string> {
+  async bind(db: Knex, port: string, field: FieldIdentity, now: Date): Promise<string> {
     const existing = await db(BINDINGS_TABLE).where({ port }).first();
-    if (existing?.metafield_key === metafieldKey) {
+    if (existing?.metafield_namespace === field.namespace && existing.metafield_key === field.key) {
       await db(BINDINGS_TABLE).where('id', existing.id).update({ updated_at: now });
       return existing.id;
     }
@@ -59,7 +76,7 @@ export class MetafieldBindingsService {
     await db(BINDINGS_TABLE).insert({
       id: bindingId,
       port,
-      metafield_key: metafieldKey,
+      ...fieldReference(field),
       created_at: now,
       updated_at: now,
     });
@@ -134,7 +151,13 @@ export class MetafieldBindingsService {
         // looking. A port exists because a publisher pointed it at a field, and that
         // decision is what admits the value, whoever supplied it.
         const writes = await this.values.planWrite(
-          { [`${CUSTOM_NAMESPACE}.${destination.key}`]: value },
+          {
+            [z.encode(IdentityTextSchema, {
+              namespace: destination.namespace,
+              key: destination.key,
+              parts: [],
+            })]: value,
+          },
           INTERNAL,
         );
         plans.push({ writes, origin: attribute(destination) });
@@ -148,12 +171,17 @@ export class MetafieldBindingsService {
 
   private async resolve(port: string): Promise<BoundField | null> {
     const row = await this.knex(BINDINGS_TABLE)
-      .join(FIELDS_TABLE, `${BINDINGS_TABLE}.metafield_key`, `${FIELDS_TABLE}.key`)
+      .join(this.fields.table(this.knex), onField(FIELDS_TABLE, BINDINGS_TABLE))
       .where(`${BINDINGS_TABLE}.port`, port)
       // An archived destination is still where this goes, and still not somewhere a value
       // can land, so the write drops rather than waiting.
       .where(`${FIELDS_TABLE}.status`, FIELD_STATUS.active)
-      .select(`${BINDINGS_TABLE}.id as binding_id`, `${FIELDS_TABLE}.key`, `${FIELDS_TABLE}.type`)
+      .select(
+        `${BINDINGS_TABLE}.id as binding_id`,
+        `${FIELDS_TABLE}.namespace`,
+        `${FIELDS_TABLE}.key`,
+        `${FIELDS_TABLE}.type`,
+      )
       .first();
 
     if (!row) {
@@ -177,6 +205,11 @@ export class MetafieldBindingsService {
       return null;
     }
 
-    return { bindingId: bound.data.binding_id, key: bound.data.key, type: bound.data.type };
+    return {
+      bindingId: bound.data.binding_id,
+      namespace: bound.data.namespace,
+      key: bound.data.key,
+      type: bound.data.type,
+    };
   }
 }

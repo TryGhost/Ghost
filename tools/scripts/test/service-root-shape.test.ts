@@ -43,7 +43,7 @@ function lint(code: string, filename = 'ghost/core/server/services/app-installat
     // The injection guard loads the shared service policy from the repository root.
     for (const file of [
       '.dependency-cruiser.cjs',
-      'tools/scripts/lib/service-dependency-resolver.mjs',
+      'tools/scripts/ci/service-dependency-resolver.mjs',
       'ghost/core/server/services/service-inventory.yaml',
     ]) {
       mkdirSync(path.dirname(path.join(cwd, file)), { recursive: true });

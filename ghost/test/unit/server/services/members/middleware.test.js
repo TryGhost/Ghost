@@ -6,7 +6,7 @@ const sinon = require('sinon');
 
 const urlUtils = require('../../../../../core/shared/url-utils').default;
 const config = require('../../../../../core/shared/config');
-const tiersService = require('../../../../../core/server/services/tiers/service');
+const tiersService = require('../../../../../core/server/services/tiers').default;
 const membersService = require('../../../../../core/server/services/members');
 const membersMiddleware = require('../../../../../core/server/services/members/middleware');
 const models = require('../../../../../core/server/models');
@@ -31,7 +31,7 @@ describe('Members Service Middleware', function () {
       };
 
       sinon.stub(urlUtils, 'getSubdir').returns('/blah');
-      sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah');
+      sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah/');
 
       app = express();
       app.use(membersMiddleware.createSessionFromMagicLink);
@@ -209,6 +209,40 @@ describe('Members Service Middleware', function () {
         .expect(302)
         .expect('Location', '/blah/?action=signin&success=true');
     });
+
+    const offSiteReferrers = [
+      ['lookalike hostname', 'https://site.com.external.com/blah/'],
+      ['userinfo before external host', 'https://site.com@external.com/blah/'],
+      ['userinfo before site host', 'https://user@site.com/blah/'],
+      ['different scheme', 'http://site.com/blah/'],
+      ['different port', 'https://site.com:8080/blah/'],
+      ['path outside subdirectory', 'https://site.com/other/'],
+      ['sibling path sharing subdirectory prefix', 'https://site.com/blah-other/'],
+      ['encoded dot segments', 'https://site.com/blah/%2e%2e/other/'],
+      ['malformed', 'not a url'],
+    ];
+
+    for (const [description, referrer] of offSiteReferrers) {
+      it(`does not redirect to referrer param on success: ${description}`, async function () {
+        membersService.ssr.exchangeTokenForSession.resolves({});
+
+        await request(app)
+          .get('/members')
+          .query({ token: 'test', action: 'signin', r: referrer })
+          .expect(302)
+          .expect('Location', '/blah/?action=signin&success=true');
+      });
+
+      it(`does not redirect to referrer param on failure: ${description}`, async function () {
+        membersService.ssr.exchangeTokenForSession.rejects();
+
+        await request(app)
+          .get('/members')
+          .query({ token: 'test', action: 'signin', r: referrer })
+          .expect(302)
+          .expect('Location', '/blah/?action=signin&success=false');
+      });
+    }
   });
 
   describe('updateMemberNewsletters', function () {
@@ -325,8 +359,6 @@ describe('Members Service Middleware', function () {
     const hmacSecret = crypto.randomBytes(64).toString('base64');
     const freeTierId = '000000000000000000000001';
 
-    let originalTiersApi;
-
     beforeEach(function () {
       req = { headers: {}, member: null };
       res = {
@@ -339,13 +371,14 @@ describe('Members Service Middleware', function () {
       };
       next = sinon.stub();
 
-      // tiersService.api is null until init() runs; assign a mock directly
-      originalTiersApi = tiersService.api;
-      tiersService.api = /** @type {any} */ ({
-        browse: sinon.stub().resolves({
-          data: [{ id: freeTierId, type: 'free' }],
-        }),
-      });
+      // tiersService.service throws until init() runs; stub it directly
+      sinon.stub(tiersService, 'service').get(() => ({
+        api: {
+          browse: sinon.stub().resolves({
+            data: [{ id: freeTierId, type: 'free' }],
+          }),
+        },
+      }));
 
       sinon
         .stub(config, 'get')
@@ -356,7 +389,6 @@ describe('Members Service Middleware', function () {
     });
 
     afterEach(function () {
-      tiersService.api = originalTiersApi;
       sinon.restore();
     });
 

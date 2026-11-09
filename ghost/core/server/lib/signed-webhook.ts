@@ -34,6 +34,32 @@ export function sanitizeWebhookUrl(webhookUrl: string): string {
 }
 
 /**
+ * Describes a failed delivery for logs without using the error's message,
+ * which the HTTP client fills with the full request URL.
+ */
+export function describeWebhookError(error: unknown): string {
+  if (typeof error !== 'object' || error === null) {
+    return 'unknown error';
+  }
+
+  const response = 'response' in error ? error.response : undefined;
+  if (
+    typeof response === 'object' &&
+    response !== null &&
+    'statusCode' in response &&
+    typeof response.statusCode === 'number'
+  ) {
+    return `HTTP ${response.statusCode}`;
+  }
+
+  if ('code' in error && typeof error.code === 'string') {
+    return error.code;
+  }
+
+  return 'unknown error';
+}
+
+/**
  * Builds the request options for a signed host webhook delivery. When no
  * secret is configured the payload is sent unsigned (the receiver decides
  * whether to accept that).

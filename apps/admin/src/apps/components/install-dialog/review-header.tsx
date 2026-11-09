@@ -10,28 +10,21 @@ import {
 import { Inline, Text } from '@tryghost/shade/primitives';
 import type { AppInstallationPreview } from '@tryghost/admin-x-framework/api/app-installations';
 import { AppBanner, AppIcon } from '@/apps/components/app-icon';
-import { isDevelopmentApp } from '@/apps/lib/served-from';
+import { AppAuthor, UnverifiedDeveloperBadge } from '@/apps/components/app-author';
 
 /**
- * Who made the app: the same for installing and approving. Where it runs is listed with
- * what it can access, as a place it sends data to.
+ * Who made the app: the same for installing and approving, with a badge while Ghost hasn’t
+ * verified them. Where it runs is listed with what it can access, as a place it sends data to.
  */
 const AppIdentity: React.FC<{ preview: AppInstallationPreview }> = ({ preview }) => {
   const { manifest } = preview;
   return (
-    <Inline gap="xs">
+    <Inline gap="xs" wrap>
       <Text as="span" size="sm" tone="secondary">
-        By{' '}
-        <a
-          className="text-foreground hover:underline"
-          href={manifest.author.url}
-          rel="noopener noreferrer"
-          target="_blank"
-        >
-          {manifest.author.name}
-        </a>
+        By <AppAuthor manifest={manifest} emphasised />
       </Text>
-      {isDevelopmentApp(manifest) && (
+      <UnverifiedDeveloperBadge manifest={manifest} />
+      {manifest.development && (
         <Badge data-testid="app-development-badge" variant="secondary">
           Development
         </Badge>
@@ -56,7 +49,7 @@ export const ReviewHeader: React.FC<{
       {/* -mt-14 pulls the 64px icon up past the dialog's 24px gap, so half of it
           overlaps the band; its ring matches the dialog to cut out the band. */}
       <DialogHeader className="-mt-14 items-start">
-        <AppIcon className="ring-4 ring-surface-elevated-2" manifest={manifest} size="xl" />
+        <AppIcon app={preview} className="ring-4 ring-surface-elevated-2" size="xl" />
         <DialogTitle className="mt-3">{title}</DialogTitle>
         <AppIdentity preview={preview} />
         <DialogDescription className="mt-2">{description}</DialogDescription>

@@ -73,6 +73,8 @@ module.exports = function MembersAPI({
   emailAddressService,
   giftService,
   metafieldValues,
+  checkouts,
+  tracking,
 }) {
   const tokenService = new TokenService({
     signingKeys,
@@ -182,6 +184,7 @@ module.exports = function MembersAPI({
     offersAPI,
     stripeAPIService,
     settingsCache,
+    checkouts,
   });
 
   const memberController = new MemberController({
@@ -214,6 +217,8 @@ module.exports = function MembersAPI({
     urlUtils,
     emailAddressService,
     giftService,
+    checkouts,
+    tracking,
   });
 
   const wellKnownController = new WellKnownController({

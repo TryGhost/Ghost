@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import React from 'react';
-import { ArrowUpDown, Ellipsis, Plus, Save, Search } from 'lucide-react';
+import { ArrowUpDown, Ellipsis, Eye, Plus, Save, Search } from 'lucide-react';
 import { PageHeader } from '@/components/patterns/page-header';
 import { Filters, type Filter } from '@/components/patterns/filters';
 import {
@@ -12,7 +12,6 @@ import {
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
 import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Stack } from '@/components/primitives';
-import ShadeApp from '@/shade-app';
 import { useShade } from '@/providers/shade-context';
 import { formatNumber } from '@/utils';
 import { FilterBar } from '@/components/patterns/filter-bar';
@@ -164,7 +163,7 @@ function MembersHeader({
               </PageHeader.ActionGroup.MobileMenu>
             )}
             <PageHeader.ActionGroup.Primary>
-              <PageHeader.Action fallbackVariant="default" label="New member">
+              <PageHeader.Action label="New member">
                 <Plus />
                 <span className="hidden sm:inline">New member</span>
               </PageHeader.Action>
@@ -312,6 +311,36 @@ export const DetailPage: Story = {
     </PageHeader>
   ),
 };
+export const ShortcutTooltips: Story = {
+  name: 'Shortcut tooltips',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A labelled action with a shortcut shows only its keys, since its text already names it. An icon-only action names itself before its keys.',
+      },
+    },
+  },
+  render: () => (
+    <PageHeader>
+      <PageHeader.Left>
+        <PageHeader.Title>Editor</PageHeader.Title>
+      </PageHeader.Left>
+      <PageHeader.Actions>
+        <PageHeader.ActionGroup>
+          <PageHeader.Action label="Search" shortcut="/" iconOnly>
+            <Search />
+          </PageHeader.Action>
+          <PageHeader.Action label="Preview" shortcut="⌘P">
+            <Eye />
+            Preview
+          </PageHeader.Action>
+        </PageHeader.ActionGroup>
+      </PageHeader.Actions>
+    </PageHeader>
+  ),
+};
+
 export const DisabledActions: Story = {
   parameters: {
     docs: {
@@ -337,31 +366,5 @@ export const DisabledActions: Story = {
         </PageHeader.Action>
       </PageHeader.ActionGroup.Primary>
     </PageHeader.ActionGroup>
-  ),
-};
-export const Admin7Disabled: Story = {
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'The provider with Admin 7 disabled preserves the old control appearance and disables new header tooltips. Existing pages retain their historical action order locally.',
-      },
-    },
-  },
-  render: () => (
-    <ShadeApp darkMode={false} isAdmin7={false}>
-      <PageHeader.ActionGroup>
-        <PageHeader.Action label="Sort" tooltip>
-          <ArrowUpDown />
-          Newest first
-        </PageHeader.Action>
-        <PageHeader.ActionGroup.Primary>
-          <PageHeader.Action fallbackVariant="default" label="New post">
-            <Plus />
-            New post
-          </PageHeader.Action>
-        </PageHeader.ActionGroup.Primary>
-      </PageHeader.ActionGroup>
-    </ShadeApp>
   ),
 };

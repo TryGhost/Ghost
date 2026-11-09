@@ -9,7 +9,7 @@ const { formatNewsletterResponse } = require('./utils');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const onHeaders = require('on-headers');
-const tiersService = require('../tiers/service');
+const tiers = require('../tiers').default;
 const config = require('../../../shared/config');
 const settingsHelpers = require('../settings-helpers');
 const { timingSafeStringEqual } = require('../../../shared/timing-safe-string-equal');
@@ -24,7 +24,7 @@ const messages = {
 };
 
 const getFreeTier = async function getFreeTier() {
-  const response = await tiersService.api.browse();
+  const response = await tiers.service.api.browse();
   const freeTier = response.data.find((tier) => tier.type === 'free');
   return freeTier;
 };
@@ -101,6 +101,31 @@ const loadMemberSession = async function loadMemberSession(req, res, next) {
     Object.assign(req, { member: null });
     next();
   }
+};
+
+/**
+ * Whether a referrer URL points at this site, compared on the parsed URL rather
+ * than the raw string so lookalike hosts and userinfo can't pass as the site.
+ */
+const isSiteUrl = function isSiteUrl(referrer) {
+  if (!referrer) {
+    return false;
+  }
+
+  let referrerUrl;
+  try {
+    referrerUrl = new URL(referrer);
+  } catch {
+    return false;
+  }
+
+  const siteUrl = new URL(urlUtils.getSiteUrl());
+  return (
+    referrerUrl.origin === siteUrl.origin &&
+    !referrerUrl.username &&
+    !referrerUrl.password &&
+    referrerUrl.pathname.startsWith(siteUrl.pathname)
+  );
 };
 
 const getRedirectUrl = function getRedirectUrl({ action, referrer, searchParams, success }) {
@@ -428,7 +453,10 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
 
   try {
     const member = await membersService.ssr.exchangeTokenForSession(req, res);
-    spamPrevention.membersAuth().reset(req.ip, `${member.email}login`);
+    spamPrevention
+      .membersAuth()
+      .reset({ ip: req.ip, key: spamPrevention.emailKey(member.email) })
+      .catch((err) => logging.error(err));
     // Note: don't reset 'member_login', or that would give an easy way around user enumeration by logging in to a manually created account
     const subscriptions = (member && member.subscriptions) || [];
 
@@ -484,8 +512,7 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
     }
 
     const referrer = req.query.r;
-    const siteUrl = urlUtils.getSiteUrl();
-    if (referrer && referrer.startsWith(siteUrl)) {
+    if (isSiteUrl(referrer)) {
       const redirectUrl = getRedirectUrl({ action, referrer, searchParams, success: true });
       return res.redirect(redirectUrl);
     }
@@ -501,8 +528,7 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
     }
 
     const referrer = req.query.r;
-    const siteUrl = urlUtils.getSiteUrl();
-    if (referrer && referrer.startsWith(siteUrl)) {
+    if (isSiteUrl(referrer)) {
       const redirectUrl = getRedirectUrl({
         action: req.query.action,
         referrer,

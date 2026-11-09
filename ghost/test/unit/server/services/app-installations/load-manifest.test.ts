@@ -1,12 +1,23 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import got from 'got';
-import nock from 'nock';
-import sinon from 'sinon';
+import { thumbprintOf } from '@tryghost/app-contracts/identity';
+import { vi } from 'vitest';
+import type {
+  AppFetchFailure,
+  AppFetchResult,
+  FetchFromApp,
+} from '../../../../../core/server/services/app-installations/fetch-from-app';
 import {
   createManifestLoader,
   type ManifestRules,
 } from '../../../../../core/server/services/app-installations/load-manifest';
+import {
+  generateTestAppKeys,
+  generateTestKey,
+  signTestManifest,
+  type TestAppKeys,
+} from '../../../../utils/app-identity';
+import { createLoggingFake } from '../../../../utils/logging-utils';
 
 const MANIFEST_URL = 'https://podcast.example.com/ghost-app.json';
 
@@ -15,7 +26,11 @@ const RULES: ManifestRules = {
   allowLocalhost: false,
 };
 
-const DEV_RULES: ManifestRules = { ghostUrls: ['http://localhost:2368'], allowLocalhost: true };
+let keys: TestAppKeys;
+
+beforeAll(async function () {
+  keys = await generateTestAppKeys();
+});
 
 function manifest(overrides: Record<string, unknown> = {}) {
   return {
@@ -25,7 +40,11 @@ function manifest(overrides: Record<string, unknown> = {}) {
     author: { name: 'Example Audio', url: 'https://example.com' },
     accent_color: '#ff5500',
     icon: { name: 'audio-lines' },
-    surfaces: [{ type: 'admin_page', url: 'admin' }],
+    surfaces: [{ type: 'admin_page', url: '/admin' }],
+    manifest_url: MANIFEST_URL,
+    identity_key: keys.identity.publicJwk,
+    backend_key: keys.backend.publicJwk,
+    development: false,
     ...overrides,
   };
 }
@@ -41,430 +60,300 @@ async function refusal(loading: Promise<unknown>): Promise<Refusal> {
   assert.fail('Expected the manifest to be refused');
 }
 
+/** What the app fetcher reports for the URL it is asked to read. */
+type App = (url: string) => AppFetchResult | Promise<AppFetchResult>;
+
+/** Serves `body` as it is, from the URL asked for or, as if redirects ended there, `finalUrl`. */
+const servingText =
+  (body: unknown, finalUrl?: string): App =>
+  (url) => ({
+    success: true,
+    url: finalUrl ?? url,
+    body: Buffer.from(typeof body === 'string' ? body : JSON.stringify(body)),
+    contentType: 'application/json',
+  });
+
+/** Serves a manifest signed with the app's identity key, or with `identity`. */
+const serving =
+  (
+    body: unknown,
+    { finalUrl, identity }: { finalUrl?: string; identity?: TestAppKeys['identity'] } = {},
+  ): App =>
+  async (url) =>
+    servingText(await signTestManifest(body, identity ?? keys.identity), finalUrl)(url);
+
+const failing =
+  (failure: AppFetchFailure): App =>
+  () => ({ success: false, failure });
+
+function setup({ app, rules = RULES }: { app?: App; rules?: ManifestRules } = {}) {
+  app ??= serving(manifest());
+  const fetchFromApp = vi.fn<FetchFromApp>(async (url) => app!(url));
+  const logging = createLoggingFake();
+  const loadManifest = createManifestLoader({
+    fetchFromApp,
+    logging,
+    getManifestRules: () => rules,
+  });
+  return { loadManifest, fetchFromApp, warn: logging.warn };
+}
+
 describe('createManifestLoader', function () {
-  beforeAll(function () {
-    nock.disableNetConnect();
-  });
-
-  afterEach(function () {
-    nock.cleanAll();
-  });
-
-  afterAll(function () {
-    nock.enableNetConnect();
-  });
-
-  const loader = ({
-    alias = null,
-    rules = RULES,
-    logging = { warn: sinon.stub() },
-  }: {
-    alias?: string | null;
-    rules?: ManifestRules;
-    logging?: { warn(value: unknown): void };
-  } = {}) =>
-    createManifestLoader({
-      request: got,
-      logging,
-      getManifestRules: () => rules,
-      getLocalhostAlias: () => alias,
-    });
-
   describe('the manifest URL', function () {
-    it('keeps the address as the URL parser reads it, not as it was given', async function () {
-      nock('https://podcast.example.com').get('/ghost-app.json').reply(200, manifest());
+    it('fetches and keeps the address as the URL parser reads it, not as it was given', async function () {
+      const { loadManifest, fetchFromApp } = setup();
 
-      const loaded = await loader()(' https://Podcast.Example.com/ghost-app.json\n');
+      const loaded = await loadManifest(' https://Podcast.Example.com/ghost-app.json\n');
 
+      assert.equal(fetchFromApp.mock.calls[0][0], MANIFEST_URL);
       assert.equal(loaded.manifestUrl, MANIFEST_URL);
     });
 
-    it('keeps the address without its fragment, which no fetch ever sends', async function () {
-      nock('https://podcast.example.com').get('/ghost-app.json').reply(200, manifest());
+    it('refuses an address it would not load, without fetching it', async function () {
+      const { loadManifest, fetchFromApp } = setup();
 
-      const loaded = await loader()(`${MANIFEST_URL}#v2`);
-
-      assert.equal(loaded.manifestUrl, MANIFEST_URL);
-    });
-
-    it('refuses an address it would not load, before any request', async function () {
       for (const manifestUrl of [
         'podcast.example.com/ghost-app.json',
         'http://podcast.example.com/ghost-app.json',
         Object.assign(new URL(MANIFEST_URL), { username: 'user', password: 'example' }).href,
         `https://podcast.example.com/${'a'.repeat(2000)}`,
         'http://localhost:8787/ghost-app.json',
+        `${MANIFEST_URL}#v2`,
+        `${MANIFEST_URL}#`,
       ]) {
-        // Nothing is served for these, so a fetch would fail as unreachable instead.
-        const err = await refusal(loader()(manifestUrl));
+        const err = await refusal(loadManifest(manifestUrl));
         assert.equal(err.code, 'APP_MANIFEST_URL_INVALID', manifestUrl);
       }
+      assert.equal(fetchFromApp.mock.calls.length, 0);
+    });
+
+    it('refuses an address on one of Ghost’s own hosts, on any port, without fetching it', async function () {
+      const { loadManifest, fetchFromApp } = setup({
+        rules: { ...RULES, ghostUrls: ['https://site.example.com', 'https://admin.example.com/'] },
+      });
+
+      for (const manifestUrl of [
+        'https://site.example.com/content/files/ghost-app.json',
+        'https://site.example.com:8443/ghost-app.json',
+        'https://SITE.example.com./ghost-app.json',
+        'https://admin.example.com:8443/ghost-app.json',
+      ]) {
+        const err = await refusal(loadManifest(manifestUrl));
+        assert.equal(err.code, 'APP_MANIFEST_URL_INVALID', manifestUrl);
+        assert.match(err.context ?? '', /Ghost itself is served from, on any port/);
+      }
+      assert.equal(fetchFromApp.mock.calls.length, 0);
     });
   });
 
   describe('fetching', function () {
-    it('loads a manifest, with its URLs resolved against where it was read from', async function () {
-      nock('https://podcast.example.com').get('/ghost-app.json').reply(200, manifest());
+    // The signed manifest carries the manifest in base64url, a third larger.
+    it('asks the app for JSON that fits a manifest as large as it can store, signed', async function () {
+      const { loadManifest, fetchFromApp } = setup();
 
-      const loaded = await loader()(MANIFEST_URL);
+      await loadManifest(MANIFEST_URL);
+
+      assert.deepEqual(fetchFromApp.mock.calls, [
+        [
+          MANIFEST_URL,
+          {
+            maxBytes: Math.ceil((64 * 1024 * 4) / 3) + 1024,
+            headers: { accept: 'application/json' },
+          },
+        ],
+      ]);
+    });
+
+    it('loads a signed manifest, with the thumbprints of its keys', async function () {
+      const { loadManifest } = setup();
+
+      const loaded = await loadManifest(MANIFEST_URL);
 
       assert.equal(loaded.manifestUrl, MANIFEST_URL);
       assert.deepEqual(loaded.manifest.surfaces, [
         { type: 'admin_page', url: 'https://podcast.example.com/admin' },
       ]);
       assert.deepEqual(JSON.parse(loaded.serialised), loaded.manifest);
+      assert.equal(loaded.identityKeyThumbprint, await thumbprintOf(keys.identity.publicJwk));
+      assert.equal(loaded.backendKeyThumbprint, await thumbprintOf(keys.backend.publicJwk));
     });
 
-    it('resolves URLs from where a redirect ends, but keeps the address it started from', async function () {
-      nock('https://podcast.example.com')
-        .get('/ghost-app.json')
-        .reply(302, '', { location: '/v2/ghost-app.json' })
-        .get('/v2/ghost-app.json')
-        .reply(200, manifest());
+    // Ghost compares the address it was asked for, which is the one it stores and fetches
+    // again later.
+    it('follows redirects on the same host, but checks the manifest names the address it started from', async function () {
+      const { loadManifest } = setup({
+        app: serving(manifest(), { finalUrl: 'https://podcast.example.com/v2/ghost-app.json' }),
+      });
 
-      const loaded = await loader()(MANIFEST_URL);
+      const loaded = await loadManifest(MANIFEST_URL);
 
       assert.equal(loaded.manifestUrl, MANIFEST_URL);
-      assert.equal(loaded.manifest.surfaces[0].url, 'https://podcast.example.com/v2/admin');
     });
 
-    it('follows a redirect that carries credentials, and resolves URLs from there without them', async function () {
-      const location = Object.assign(new URL('https://podcast.example.com/v2/ghost-app.json'), {
-        username: 'user',
-        password: 'example',
-      }).href;
-      nock('https://podcast.example.com')
-        .get('/ghost-app.json')
-        .reply(302, '', { location })
-        .get('/v2/ghost-app.json')
-        .reply(200, manifest({ icon: { url: 'icon.svg' } }));
+    it('accepts a signed manifest, or the manifest in it, that starts with a byte order mark', async function () {
+      const bom = String.fromCharCode(0xfeff);
+      const signed = await signTestManifest(manifest(), keys.identity);
+      const signedText = await signTestManifest(bom + JSON.stringify(manifest()), keys.identity);
 
-      const loaded = await loader()(MANIFEST_URL);
-
-      assert.equal(loaded.manifestUrl, MANIFEST_URL);
-      assert.equal(loaded.manifest.surfaces[0].url, 'https://podcast.example.com/v2/admin');
-      assert.deepEqual(loaded.manifest.icon, { url: 'https://podcast.example.com/v2/icon.svg' });
-    });
-
-    it('does not count a fragment in a redirect against the length of where it ends', async function () {
-      nock('https://podcast.example.com')
-        .get('/ghost-app.json')
-        .reply(302, '', { location: `/v2/ghost-app.json#${'a'.repeat(2000)}` })
-        .get('/v2/ghost-app.json')
-        .reply(200, manifest());
-
-      const loaded = await loader()(MANIFEST_URL);
-
-      assert.equal(loaded.manifestUrl, MANIFEST_URL);
-      assert.equal(loaded.manifest.surfaces[0].url, 'https://podcast.example.com/v2/admin');
-    });
-
-    it('reads a localhost manifest through the alias, keeping its own address', async function () {
-      nock('http://host.docker.internal:8787', { reqheaders: { host: 'localhost:8787' } })
-        .get('/ghost-app.json')
-        .reply(200, manifest());
-
-      const loaded = await loader({ alias: 'host.docker.internal', rules: DEV_RULES })(
-        'http://localhost:8787/ghost-app.json',
-      );
-
-      assert.equal(loaded.manifestUrl, 'http://localhost:8787/ghost-app.json');
-      assert.equal(loaded.manifest.surfaces[0].url, 'http://localhost:8787/admin');
-    });
-
-    it('treats any localhost name the manifest rules accept as localhost', async function () {
-      nock('http://host.docker.internal:8787', { reqheaders: { host: 'podcast.localhost:8787' } })
-        .get('/ghost-app.json')
-        .reply(200, manifest());
-
-      const loaded = await loader({ alias: 'host.docker.internal', rules: DEV_RULES })(
-        'http://podcast.localhost:8787/ghost-app.json',
-      );
-
-      assert.equal(loaded.manifest.surfaces[0].url, 'http://podcast.localhost:8787/admin');
-    });
-
-    it('follows a redirect on localhost through the alias too, with the original host', async function () {
-      nock('http://host.docker.internal:8787', { reqheaders: { host: 'localhost:8787' } })
-        .get('/ghost-app.json')
-        .reply(302, '', { location: 'http://localhost:8787/v2/ghost-app.json' })
-        .get('/v2/ghost-app.json')
-        .reply(200, manifest());
-
-      const loaded = await loader({ alias: 'host.docker.internal', rules: DEV_RULES })(
-        'http://localhost:8787/ghost-app.json',
-      );
-
-      assert.equal(loaded.manifestUrl, 'http://localhost:8787/ghost-app.json');
-      assert.equal(loaded.manifest.surfaces[0].url, 'http://localhost:8787/v2/admin');
-    });
-
-    // A relative redirect resolves against the aliased address Ghost actually requested, so
-    // it lands on the alias host and must be read as the localhost it stands for.
-    it('follows a relative redirect through the alias as a redirect on localhost', async function () {
-      nock('http://host.docker.internal:8787', { reqheaders: { host: 'localhost:8787' } })
-        .get('/ghost-app.json')
-        .reply(302, '', { location: '/v2/ghost-app.json' })
-        .get('/v2/ghost-app.json')
-        .reply(200, manifest());
-
-      const loaded = await loader({ alias: 'host.docker.internal', rules: DEV_RULES })(
-        'http://localhost:8787/ghost-app.json',
-      );
-
-      assert.equal(loaded.manifest.surfaces[0].url, 'http://localhost:8787/v2/admin');
-    });
-
-    it('leaves addresses other than localhost alone', async function () {
-      nock('https://podcast.example.com').get('/ghost-app.json').reply(200, manifest());
-
-      const loaded = await loader({ alias: 'host.docker.internal' })(MANIFEST_URL);
-
-      assert.equal(loaded.manifest.surfaces[0].url, 'https://podcast.example.com/admin');
-    });
-
-    it('allows a redirect from HTTP to HTTPS on the same host', async function () {
-      nock('http://podcast.localhost')
-        .get('/ghost-app.json')
-        .reply(301, '', { location: 'https://podcast.localhost/ghost-app.json' });
-      nock('https://podcast.localhost').get('/ghost-app.json').reply(200, manifest());
-
-      const loaded = await loader({ rules: DEV_RULES })('http://podcast.localhost/ghost-app.json');
-
-      assert.equal(loaded.manifestUrl, 'http://podcast.localhost/ghost-app.json');
-      assert.equal(loaded.manifest.surfaces[0].url, 'https://podcast.localhost/admin');
-    });
-
-    it('judges each redirect against the one before it, not the first address', async function () {
-      nock('http://podcast.localhost')
-        .get('/ghost-app.json')
-        .reply(301, '', { location: 'https://podcast.localhost/ghost-app.json' });
-      nock('https://podcast.localhost')
-        .get('/ghost-app.json')
-        .reply(302, '', { location: 'http://podcast.localhost/v2/ghost-app.json' });
-
-      const err = await refusal(
-        loader({ rules: DEV_RULES })('http://podcast.localhost/ghost-app.json'),
-      );
-      assert.equal(err.code, 'APP_MANIFEST_REDIRECTED');
-    });
-
-    it('refuses a redirect to another host', async function () {
-      nock('https://podcast.example.com')
-        .get('/ghost-app.json')
-        .reply(302, '', { location: 'https://elsewhere.example.net/ghost-app.json' });
-
-      const err = await refusal(loader()(MANIFEST_URL));
-      assert.equal(err.code, 'APP_MANIFEST_REDIRECTED');
-      assert.equal(err.context, `${MANIFEST_URL} redirects to elsewhere.example.net`);
-    });
-
-    // Whichever statuses got follows, a Location to another host is never followed.
-    it.each([300, 301, 302, 303, 304, 305, 306, 307, 308, 399])(
-      'never follows a Location to another host on HTTP %i',
-      async function (status) {
-        nock('https://podcast.example.com')
-          .get('/ghost-app.json')
-          .reply(status, '', { location: 'https://elsewhere.example.net/ghost-app.json' });
-        const elsewhere = nock('https://elsewhere.example.net')
-          .get('/ghost-app.json')
-          .reply(200, manifest());
-
-        const err = await refusal(loader()(MANIFEST_URL));
-        assert.equal(err.code, 'APP_MANIFEST_REDIRECTED');
-        assert.equal(elsewhere.isDone(), false);
-      },
-    );
-
-    it('reports a redirect to a Location that is not a URL as unreachable, with its status', async function () {
-      const warn = sinon.stub();
-      nock('https://podcast.example.com')
-        .get('/ghost-app.json')
-        .reply(302, '', { location: 'http://[bad' });
-
-      const err = await refusal(loader({ logging: { warn } })(MANIFEST_URL));
-      assert.equal(err.code, 'APP_MANIFEST_UNREACHABLE');
-      assert.equal(
-        err.context,
-        `${MANIFEST_URL} answered with HTTP 302 and a Location that is not a URL`,
-      );
-      // Logged like every other unreachable manifest, so an operator can tell why.
-      sinon.assert.calledWith(warn, `Could not load the app manifest at ${MANIFEST_URL}`);
-      sinon.assert.calledWith(warn, err.context);
-    });
-
-    it('follows three redirects', async function () {
-      const scope = nock('https://podcast.example.com');
-      for (const hop of [1, 2, 3]) {
-        scope
-          .get(hop === 1 ? '/ghost-app.json' : `/${hop - 1}.json`)
-          .reply(302, '', { location: `/${hop}.json` });
+      for (const app of [servingText(bom + JSON.stringify(signed)), servingText(signedText)]) {
+        const loaded = await setup({ app }).loadManifest(MANIFEST_URL);
+        assert.equal(loaded.manifest.id, 'com.example.podcast');
       }
-      scope.get('/3.json').reply(200, manifest());
-
-      const loaded = await loader()(MANIFEST_URL);
-
-      assert.equal(loaded.manifestUrl, MANIFEST_URL);
-      assert.equal(scope.isDone(), true);
     });
 
-    it('follows at most three redirects', async function () {
-      const scope = nock('https://podcast.example.com');
-      for (const hop of [1, 2, 3, 4]) {
-        scope
-          .get(hop === 1 ? '/ghost-app.json' : `/${hop - 1}.json`)
-          .reply(302, '', { location: `/${hop}.json` });
-      }
-      const end = nock('https://podcast.example.com').get('/4.json').reply(200, manifest());
+    it('refuses a manifest that is not JSON', async function () {
+      const { loadManifest } = setup({ app: serving('<html></html>') });
 
-      const err = await refusal(loader()(MANIFEST_URL));
-      assert.equal(err.code, 'APP_MANIFEST_UNREACHABLE');
-      assert.equal(end.isDone(), false);
+      await assert.rejects(loadManifest(MANIFEST_URL), {
+        code: 'APP_MANIFEST_NOT_JSON',
+        context: MANIFEST_URL,
+      });
     });
+  });
 
-    it('refuses a redirect to another port on the same host', async function () {
-      nock('http://localhost:8787')
-        .get('/ghost-app.json')
-        .reply(302, '', { location: 'http://localhost:9999/ghost-app.json' });
+  describe('when the app can’t be read', function () {
+    it('reports an app it can’t reach as unreachable, logging why without saying it', async function () {
+      const cause = new Error('Connection failed at a private upstream address');
+      const { loadManifest, warn } = setup({ app: failing({ reason: 'unreachable', cause }) });
 
-      const err = await refusal(
-        loader({ rules: DEV_RULES })('http://localhost:8787/ghost-app.json'),
-      );
-      assert.equal(err.code, 'APP_MANIFEST_REDIRECTED');
-    });
-
-    it('follows a redirect to a path with characters outside ASCII, and resolves URLs from there', async function () {
-      // On the wire the location is UTF-8 bytes, which Node hands over as latin1.
-      nock('https://podcast.example.com')
-        .get('/ghost-app.json')
-        .reply(302, '', {
-          location: Buffer.from('/épisodes/ghost-app.json', 'utf8').toString('latin1'),
-        })
-        .get('/%C3%A9pisodes/ghost-app.json')
-        .reply(200, manifest());
-
-      const loaded = await loader()(MANIFEST_URL);
-
-      assert.equal(
-        loaded.manifest.surfaces[0].url,
-        'https://podcast.example.com/%C3%A9pisodes/admin',
-      );
-    });
-
-    // got asks whether to follow on every response, so a Location header on one it does not
-    // follow must not be read as a redirect.
-    it('resolves URLs from where it was read when a manifest carries a Location header', async function () {
-      nock('https://podcast.example.com')
-        .get('/ghost-app.json')
-        .reply(200, manifest(), { location: '/v2/ghost-app.json' });
-
-      const loaded = await loader()(MANIFEST_URL);
-
-      assert.equal(loaded.manifest.surfaces[0].url, 'https://podcast.example.com/admin');
-    });
-
-    it('does not refuse a manifest that carries a Location header on another host', async function () {
-      nock('https://podcast.example.com')
-        .get('/ghost-app.json')
-        .reply(200, manifest(), { location: 'https://elsewhere.example.net/ghost-app.json' });
-
-      const loaded = await loader()(MANIFEST_URL);
-
-      assert.equal(loaded.manifest.surfaces[0].url, 'https://podcast.example.com/admin');
-    });
-
-    it('reports an error page with a Location header on another host as unreachable', async function () {
-      nock('https://podcast.example.com')
-        .get('/ghost-app.json')
-        .reply(404, '', { location: 'https://elsewhere.example.net/ghost-app.json' });
-
-      const err = await refusal(loader()(MANIFEST_URL));
-      assert.equal(err.code, 'APP_MANIFEST_UNREACHABLE');
-      assert.equal(err.context, `${MANIFEST_URL} answered with HTTP 404`);
-    });
-
-    it('resolves URLs from where a redirect through the alias ends, whatever Location the manifest carries', async function () {
-      nock('http://host.docker.internal:8787', { reqheaders: { host: 'localhost:8787' } })
-        .get('/ghost-app.json')
-        .reply(302, '', { location: '/v2/ghost-app.json' })
-        .get('/v2/ghost-app.json')
-        .reply(200, manifest(), { location: '/v3/ghost-app.json' });
-
-      const loaded = await loader({ alias: 'host.docker.internal', rules: DEV_RULES })(
-        'http://localhost:8787/ghost-app.json',
-      );
-
-      assert.equal(loaded.manifestUrl, 'http://localhost:8787/ghost-app.json');
-      assert.equal(loaded.manifest.surfaces[0].url, 'http://localhost:8787/v2/admin');
-    });
-
-    it('logs transport details through the supplied logger without exposing them to the caller', async function () {
-      const warn = sinon.stub();
-      nock('https://podcast.example.com')
-        .get('/ghost-app.json')
-        .replyWithError('Connection failed at a private upstream address');
-
-      await assert.rejects(loader({ logging: { warn } })(MANIFEST_URL), {
+      await assert.rejects(loadManifest(MANIFEST_URL), {
         errorType: 'ValidationError',
         code: 'APP_MANIFEST_UNREACHABLE',
         message: 'Could not load the app’s manifest.',
         context: MANIFEST_URL,
       });
-
-      sinon.assert.calledTwice(warn);
-      sinon.assert.calledWithExactly(
-        warn.firstCall,
-        `Could not load the app manifest at ${MANIFEST_URL}`,
-      );
-      const failure = warn.secondCall.args[0];
-      assert.ok(failure instanceof Error);
-      assert.equal(failure.message, 'Connection failed at a private upstream address');
+      assert.deepEqual(warn.args, [
+        [`Could not load the app manifest at ${MANIFEST_URL}`],
+        [cause],
+      ]);
     });
 
-    it('reports a large error page as unreachable, with its status', async function () {
-      nock('https://podcast.example.com')
-        .get('/ghost-app.json')
-        .reply(404, 'x'.repeat(100 * 1024));
+    it('reports an error status as unreachable, saying only the status', async function () {
+      const cause = new Error('Response code 404 (Not Found)');
+      const { loadManifest, warn } = setup({
+        app: failing({ reason: 'unreachable', status: 404, cause }),
+      });
 
-      const err = await refusal(loader()(MANIFEST_URL));
-      assert.equal(err.code, 'APP_MANIFEST_UNREACHABLE');
-      assert.equal(err.context, `${MANIFEST_URL} answered with HTTP 404`);
+      await assert.rejects(loadManifest(MANIFEST_URL), {
+        code: 'APP_MANIFEST_UNREACHABLE',
+        context: `${MANIFEST_URL} answered with HTTP 404`,
+      });
+      assert.deepEqual(warn.args, [
+        [`Could not load the app manifest at ${MANIFEST_URL}`],
+        [cause],
+      ]);
+    });
+
+    it('reports a redirect to a Location that is not a URL as unreachable, with its status', async function () {
+      const { loadManifest, warn } = setup({
+        app: failing({ reason: 'location_not_url', status: 302 }),
+      });
+      const context = `${MANIFEST_URL} answered with HTTP 302 and a Location that is not a URL`;
+
+      await assert.rejects(loadManifest(MANIFEST_URL), {
+        code: 'APP_MANIFEST_UNREACHABLE',
+        context,
+      });
+      // Logged like every other unreachable manifest, so an operator can tell why.
+      assert.deepEqual(warn.args, [
+        [`Could not load the app manifest at ${MANIFEST_URL}`],
+        [context],
+      ]);
+    });
+
+    it('reports a refused redirect as unreachable, with its status', async function () {
+      const { loadManifest, warn } = setup({
+        app: failing({ reason: 'redirect_refused', status: 302 }),
+      });
+      const context = `${MANIFEST_URL} answered with HTTP 302`;
+
+      await assert.rejects(loadManifest(MANIFEST_URL), {
+        code: 'APP_MANIFEST_UNREACHABLE',
+        context,
+      });
+      assert.deepEqual(warn.args, [
+        [`Could not load the app manifest at ${MANIFEST_URL}`],
+        [context],
+      ]);
+    });
+
+    it('refuses a manifest that redirects to another host', async function () {
+      const { loadManifest } = setup({
+        app: failing({ reason: 'redirected', host: 'elsewhere.example.net' }),
+      });
+
+      await assert.rejects(loadManifest(MANIFEST_URL), {
+        code: 'APP_MANIFEST_REDIRECTED',
+        message: 'The app’s manifest redirects to another host.',
+        context: `${MANIFEST_URL} redirects to elsewhere.example.net`,
+      });
     });
 
     it('refuses a manifest larger than it can store', async function () {
-      nock('https://podcast.example.com')
-        .get('/ghost-app.json')
-        .reply(200, JSON.stringify({ ...manifest(), pad: 'x'.repeat(100 * 1024) }));
+      const { loadManifest } = setup({ app: failing({ reason: 'too_large' }) });
 
-      const err = await refusal(loader()(MANIFEST_URL));
-      assert.equal(err.code, 'APP_MANIFEST_TOO_LARGE');
+      await assert.rejects(loadManifest(MANIFEST_URL), {
+        code: 'APP_MANIFEST_TOO_LARGE',
+        message: 'The app’s manifest is larger than 64 KB.',
+        context: MANIFEST_URL,
+      });
+    });
+  });
+
+  describe('the signature', function () {
+    it('refuses a manifest that is not signed, saying what was expected', async function () {
+      const { loadManifest } = setup({ app: servingText(manifest()) });
+
+      await assert.rejects(loadManifest(MANIFEST_URL), {
+        errorType: 'ValidationError',
+        code: 'APP_MANIFEST_UNSIGNED',
+        context:
+          'Expected a signed manifest: flattened JWS JSON with protected, payload and signature',
+      });
     });
 
-    it('accepts a manifest that starts with a byte order mark', async function () {
-      nock('https://podcast.example.com')
-        .get('/ghost-app.json')
-        .reply(200, String.fromCharCode(0xfeff) + JSON.stringify(manifest()));
+    it('refuses a signed manifest whose payload is not JSON', async function () {
+      const { loadManifest } = setup({ app: serving('<html></html>') });
 
-      const loaded = await loader()(MANIFEST_URL);
-
-      assert.equal(loaded.manifest.id, 'com.example.podcast');
+      await assert.rejects(loadManifest(MANIFEST_URL), { code: 'APP_MANIFEST_NOT_JSON' });
     });
 
-    it('refuses a manifest that is not JSON', async function () {
-      nock('https://podcast.example.com').get('/ghost-app.json').reply(200, '<html></html>');
+    it('refuses a manifest signed with a key other than the one it names', async function () {
+      const other = await generateTestKey();
+      const { loadManifest } = setup({ app: serving(manifest(), { identity: other }) });
 
-      const err = await refusal(loader()(MANIFEST_URL));
-      assert.equal(err.code, 'APP_MANIFEST_NOT_JSON');
+      await assert.rejects(loadManifest(MANIFEST_URL), {
+        errorType: 'ValidationError',
+        code: 'APP_MANIFEST_SIGNATURE_INVALID',
+        context: 'The signature was not made with identity_key',
+      });
+    });
+
+    // Copied bytes still verify, so the address they name is what gives a copy away.
+    it('refuses a manifest that names another address, however well signed', async function () {
+      const { loadManifest } = setup();
+
+      await assert.rejects(loadManifest('https://copies.example.net/ghost-app.json'), {
+        errorType: 'ValidationError',
+        code: 'APP_MANIFEST_URL_MISMATCH',
+        context:
+          'manifest_url: Expected https://copies.example.net/ghost-app.json, the address the manifest was read from',
+      });
+    });
+
+    it('lists what is wrong with a manifest before checking its signature', async function () {
+      const other = await generateTestKey();
+      const { loadManifest } = setup({ app: serving(manifest({ name: '' }), { identity: other }) });
+
+      await assert.rejects(loadManifest(MANIFEST_URL), { code: 'APP_MANIFEST_INVALID' });
     });
   });
 
   describe('validating', function () {
     it('lists what is wrong with a manifest that is not valid', async function () {
-      nock('https://podcast.example.com')
-        .get('/ghost-app.json')
-        .reply(200, manifest({ id: 'Podcast', name: '' }));
+      const { loadManifest } = setup({ app: serving(manifest({ id: 'Podcast', name: '' })) });
 
-      const err = await refusal(loader()(MANIFEST_URL));
+      const err = await refusal(loadManifest(MANIFEST_URL));
       assert.equal(err.code, 'APP_MANIFEST_INVALID');
       assert.match(err.context!, /^id: .+; name: /);
       assert.deepEqual(
@@ -474,16 +363,15 @@ describe('createManifestLoader', function () {
     });
 
     it('refuses an app served from the site itself', async function () {
-      nock('https://podcast.example.com')
-        .get('/ghost-app.json')
-        .reply(
-          200,
+      const { loadManifest } = setup({
+        app: serving(
           manifest({
             surfaces: [{ type: 'admin_page', url: 'https://site.example.com/content/app.html' }],
           }),
-        );
+        ),
+      });
 
-      const err = await refusal(loader()(MANIFEST_URL));
+      const err = await refusal(loadManifest(MANIFEST_URL));
       assert.equal(err.code, 'APP_MANIFEST_INVALID');
       assert.deepEqual(
         err.errorDetails!.map(({ path }) => path),
@@ -493,47 +381,24 @@ describe('createManifestLoader', function () {
   });
 
   describe('the digest', function () {
-    // Every URL absolute, so any address serves the very same manifest.
-    const absolute = manifest({
-      icon: { url: 'https://cdn.example.net/icon.svg' },
-      surfaces: [{ type: 'admin_page', url: 'https://app.example.net/ghost' }],
-    });
+    it('covers the manifest, which names its own address', async function () {
+      const { loadManifest } = setup();
 
-    it('covers the manifest together with the address it is read from', async function () {
-      nock('https://podcast.example.com').get('/ghost-app.json').reply(200, absolute);
+      const loaded = await loadManifest(MANIFEST_URL);
 
-      const loaded = await loader()(MANIFEST_URL);
-
-      assert.equal(
-        loaded.digest,
-        createHash('sha256').update(`${loaded.manifestUrl}\n${loaded.serialised}`).digest('hex'),
-      );
-      // So the newline between them cannot be mistaken for part of either.
-      assert.ok(!loaded.manifestUrl.includes('\n'));
-      assert.ok(!loaded.serialised.includes('\n'));
-    });
-
-    it('differs for two addresses that serve the same manifest', async function () {
-      nock('https://podcast.example.com').get('/ghost-app.json').reply(200, absolute);
-      nock('https://audio.example.org').get('/ghost-app.json').reply(200, absolute);
-
-      const here = await loader()(MANIFEST_URL);
-      const elsewhere = await loader()('https://audio.example.org/ghost-app.json');
-
-      assert.equal(here.serialised, elsewhere.serialised);
-      assert.notEqual(here.digest, elsewhere.digest);
+      assert.equal(loaded.digest, createHash('sha256').update(loaded.serialised).digest('hex'));
+      assert.equal(JSON.parse(loaded.serialised).manifest_url, MANIFEST_URL);
     });
 
     it('stays the same however the app spells the same manifest', async function () {
-      const reordered = Object.fromEntries(Object.entries(absolute).reverse());
-      nock('https://podcast.example.com')
-        .get('/ghost-app.json')
-        .reply(200, JSON.stringify(absolute))
-        .get('/ghost-app.json')
-        .reply(200, JSON.stringify(reordered, null, 2));
+      const reordered = Object.fromEntries(Object.entries(manifest()).reverse());
 
-      const first = await loader()(MANIFEST_URL);
-      const second = await loader()(MANIFEST_URL);
+      const first = await setup({ app: serving(JSON.stringify(manifest())) }).loadManifest(
+        MANIFEST_URL,
+      );
+      const second = await setup({
+        app: serving(JSON.stringify(reordered, null, 2)),
+      }).loadManifest(MANIFEST_URL);
 
       assert.equal(second.serialised, first.serialised);
       assert.equal(second.digest, first.digest);

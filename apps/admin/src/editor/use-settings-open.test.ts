@@ -37,7 +37,7 @@ describe('useSettingsOpen', () => {
   it('opens in place with the editor when the writer left the panel open', () => {
     setupScreen(1280);
     localStorage.setItem(SETTINGS_OPEN_KEY, 'open');
-    const { result } = renderHook(() => useSettingsOpen(true));
+    const { result } = renderHook(() => useSettingsOpen());
 
     expect(result.current.openAtStart).toBe(true);
     expect(result.current.restored).toBe(true);
@@ -46,7 +46,7 @@ describe('useSettingsOpen', () => {
   it('remembers each toggle, and the first ends the restored panel', () => {
     setupScreen(1280);
     localStorage.setItem(SETTINGS_OPEN_KEY, 'open');
-    const { result } = renderHook(() => useSettingsOpen(true));
+    const { result } = renderHook(() => useSettingsOpen());
 
     act(() => result.current.toggled(false));
     expect(stored()).toBe('closed');
@@ -60,7 +60,7 @@ describe('useSettingsOpen', () => {
   it('starts closed and forgets toggles where the panel covers the editor', () => {
     const { resize } = setupScreen(900);
     localStorage.setItem(SETTINGS_OPEN_KEY, 'open');
-    const { result } = renderHook(() => useSettingsOpen(true));
+    const { result } = renderHook(() => useSettingsOpen());
 
     expect(result.current.openAtStart).toBe(false);
     act(() => result.current.toggled(false));
@@ -77,27 +77,12 @@ describe('useSettingsOpen', () => {
   it('decides the start once, as the editor opens', () => {
     const { resize } = setupScreen(900);
     localStorage.setItem(SETTINGS_OPEN_KEY, 'open');
-    const { result, rerender } = renderHook(({ enabled }) => useSettingsOpen(enabled), {
-      initialProps: { enabled: false },
-    });
+    const { result, rerender } = renderHook(() => useSettingsOpen());
 
     resize(1280);
-    rerender({ enabled: true });
+    rerender();
 
     expect(result.current.openAtStart).toBe(false);
     expect(result.current.restored).toBe(false);
-  });
-
-  it('reads and writes nothing with the flag off', () => {
-    setupScreen(1280);
-    localStorage.setItem(SETTINGS_OPEN_KEY, 'open');
-    const getItem = vi.spyOn(Storage.prototype, 'getItem');
-    const { result } = renderHook(() => useSettingsOpen(false));
-
-    expect(result.current.openAtStart).toBe(false);
-    act(() => result.current.toggled(false));
-
-    expect(getItem).not.toHaveBeenCalled();
-    expect(stored()).toBe('open');
   });
 });

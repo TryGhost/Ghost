@@ -6,7 +6,9 @@ const PostAnalyticsContent = forwardRef<HTMLElement, React.HTMLAttributes<HTMLEl
     return (
       <section
         ref={ref}
-        className={cn('flex size-full grow flex-col gap-6 py-8', className)}
+        // Isolated, so its raised layers (chart hover cards) stay under the
+        // sticky header above it
+        className={cn('isolate flex size-full grow flex-col gap-6 py-8', className)}
         {...props}
       >
         {children}

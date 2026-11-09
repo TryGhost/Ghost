@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import os from 'os';
+import { testWorkerCount } from '@internal/cfg-test-workers';
 dotenv.config({ quiet: true });
 
 /*
@@ -10,10 +10,7 @@ dotenv.config({ quiet: true });
  * It's possible to use more workers, but then the total test time and flakiness
  * goes up dramatically.
  */
-const getWorkerCount = () => {
-  const cpuCount = os.cpus().length;
-  return Math.floor(cpuCount / 3) || 1;
-};
+const getWorkerCount = () => testWorkerCount({ memoryPerWorkerGB: 2, cpusPerWorker: 3 });
 
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
@@ -25,13 +22,13 @@ const config = {
   },
   retries: 0, // Retries open the door to flaky tests. If the test needs retries, it's not a good test or the app is broken.
   maxFailures: process.argv.includes('--ui') ? 0 : 1,
-  workers: parseInt(process.env.TEST_WORKERS_COUNT, 10) || getWorkerCount(),
+  workers: getWorkerCount(),
   fullyParallel: false,
   reporter: process.env.CI
     ? [
         ['list', { printSteps: true }],
         ['blob'],
-        // Per-file durations for CI shard balancing (tools/scripts/e2e-shards.ts).
+        // Per-file durations for CI shard balancing (tools/scripts/ci/e2e-shards.ts).
         ['json', { outputFile: 'json-report/report.json' }],
       ]
     : [
@@ -65,6 +62,8 @@ const config = {
         '**/*.teardown.ts',
         'analytics/**/*.test.ts',
         'stripe-fixtures/**/*.test.ts',
+        'fake-services/**/*.test.ts',
+        'frontend-apps/**/*.test.ts',
       ],
       testDir: './tests',
       use: {
@@ -75,7 +74,11 @@ const config = {
     {
       name: 'fixtures',
       testDir: './tests',
-      testMatch: ['stripe-fixtures/**/*.test.ts'],
+      testMatch: [
+        'stripe-fixtures/**/*.test.ts',
+        'fake-services/**/*.test.ts',
+        'frontend-apps/**/*.test.ts',
+      ],
     },
     {
       name: 'analytics',

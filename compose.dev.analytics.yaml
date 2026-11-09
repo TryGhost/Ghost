@@ -5,7 +5,7 @@
 
 services:
   analytics:
-    image: ghost/traffic-analytics:1.0.439@sha256:1b597033cec3662f361e826d5ccccdbe3d90dc40c3e0450649650b20fae1b2b8
+    image: ghost/traffic-analytics:1.0.440@sha256:045a958d001b8d8543a410aa414fbd50bdba5ee50b80beb22d8b10275cee1613
     container_name: ghost-dev-analytics
     platform: linux/amd64
     command: ['node', '--enable-source-maps', 'dist/server.js']
@@ -39,10 +39,16 @@ services:
         condition: service_completed_successfully
 
   tinybird-local:
-    image: tinybirdco/tinybird-local:latest@sha256:b2ce4910a5e92c97e0dbe77e08d3507c04837b8af88dd215715890dac54bff97
+    image: tinybirdco/tinybird-local:latest@sha256:17bf5d10c191e246dfe7daad775b83bae04a36113336a02761ba9f1cd57a9752
     container_name: ghost-dev-tinybird
     platform: linux/amd64
     stop_grace_period: 2s
+    environment:
+      - TB_LOCAL_CSV_WORKERS=1
+      # Ghost uses neither the MCP server nor Kafka connectors; skipping them
+      # saves ~350MB of idle memory.
+      - TB_LOCAL_MCP=false
+      - TB_LOCAL_KAFKA=false
     ports:
       - '7181:7181'
     volumes:
