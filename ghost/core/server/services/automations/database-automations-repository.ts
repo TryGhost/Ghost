@@ -37,12 +37,7 @@ import type {
   AutomationsRepository,
   Page,
 } from './automations-repository';
-import type {
-  ActionToInsert,
-  AutomationRunPriority,
-  EdgeRow,
-  AutomationsRepository2,
-} from './automations-repository-2';
+import type { ActionToInsert, EdgeRow, AutomationsRepository2 } from './automations-repository-2';
 import type { EditAutomationData } from './automations-schemas';
 import {
   DbDate,
@@ -992,22 +987,18 @@ async function fetchAndLockSteps(
   const staleLockCutoffString = toDatabaseDate(staleLockCutoff);
   const lockId = crypto.randomUUID();
 
-  // 1. Select ready high-priority steps, then fill the remaining capacity with low-priority steps.
-  const findCandidates = (priority: AutomationRunPriority, capacity: number) =>
-    trx('automation_run_steps')
-      .select<{ id: string }[]>('id')
-      .where({ status: 'pending', priority })
-      .where('ready_at', '<=', nowString)
-      .where((builder) => {
-        builder.whereNull('locked_by').orWhere('locked_at', '<', staleLockCutoffString);
-      })
-      .orderBy(['ready_at', 'created_at', 'id'])
-      .limit(capacity);
-
-  const candidates = await findCandidates('high', limit);
-  if (candidates.length < limit) {
-    candidates.push(...(await findCandidates('low', limit - candidates.length)));
-  }
+  // 1. Select up to `limit` ready candidates, with high priority first.
+  // The explicit IN lets MySQL bound the ready_at index range for each priority.
+  const candidates = await trx('automation_run_steps')
+    .select<{ id: string }[]>('id')
+    .where('status', 'pending')
+    .whereIn('priority', ['high', 'low'])
+    .where('ready_at', '<=', nowString)
+    .where((builder) => {
+      builder.whereNull('locked_by').orWhere('locked_at', '<', staleLockCutoffString);
+    })
+    .orderBy(['priority', 'ready_at', 'created_at', 'id'])
+    .limit(limit);
   if (candidates.length === 0) {
     return {
       steps: [],
