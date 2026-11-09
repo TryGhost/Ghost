@@ -10,19 +10,6 @@ export function isInstallationNotFound(error: unknown): boolean {
   return error instanceof APIError && [404, 422].includes(error.response?.status ?? 0);
 }
 
-/**
- * Whether starting a session failed because Ghost has no route for it. Ghost versions from before
- * app sessions return a plain 404. Versions with the route return a 404 with their own code when an
- * app isn't installed.
- */
-export function isSessionsRouteMissing(error: unknown): boolean {
-  return (
-    error instanceof APIError &&
-    error.response?.status === 404 &&
-    apiErrorOf(error)?.code !== 'APP_NOT_INSTALLED'
-  );
-}
-
 /** Why starting a session failed, when Ghost couldn't use the app's manifest. */
 export interface SessionFailure {
   /** The failure's own code, which the screen shows so the publisher can pass it on. */
