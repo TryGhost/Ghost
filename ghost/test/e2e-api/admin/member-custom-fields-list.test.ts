@@ -112,7 +112,16 @@ describe('List custom fields', function () {
         'Give the list at least 2 options.',
         'settings.options',
       ],
-      [{ options: ['Dog', 'Dog '], multiple: true }, 'Give each option once.', 'settings.options'],
+      [
+        { options: ['Dog', 'Dog '], multiple: true },
+        'This option already exists.',
+        'settings.options.1',
+      ],
+      [
+        { options: ['Dog', 'dog'], multiple: true },
+        'This option already exists.',
+        'settings.options.1',
+      ],
       [
         { options: ['Dog', ''], multiple: true },
         'Enter text for each option.',

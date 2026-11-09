@@ -210,6 +210,29 @@ describe('Import members custom fields', () => {
         .not.toBeInTheDocument();
     });
 
+    it('refuses a list for a column whose answers differ only by case', async () => {
+      const createApi = fakeSiteCreatingLists();
+      await renderAdminApp('/members', FLAGS);
+      await openMappingStep(
+        'email,name,topics\nada@example.com,Ada,Film | Travel\ngrace@example.com,Grace,film\n',
+      );
+
+      await openCreateForm('topics');
+      const form = createForm();
+      await form.getByLabelText('Type').click();
+      await page.getByRole('option', { name: /List/ }).click();
+
+      // An answer has to match an option exactly, and a list can't offer both spellings, so the
+      // import would refuse the rows of whichever spelling the list left out.
+      const refusal = form.getByText(
+        'A list can’t offer both “Film” and “film”, and this column holds both.',
+      );
+      await expect.element(refusal).toBeVisible();
+      await form.getByRole('button', { name: 'Save' }).click();
+      await expect.element(refusal).toBeVisible();
+      expect(createApi.requests).toHaveLength(0);
+    });
+
     it('refuses a list for a column with more answers than a list can offer', async () => {
       const createApi = fakeSiteCreatingLists();
       await renderAdminApp('/members', FLAGS);

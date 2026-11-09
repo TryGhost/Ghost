@@ -6,6 +6,7 @@ import {
   MAX_OPTIONS,
   MIN_OPTIONS,
   OPTION_SEPARATOR,
+  optionKey,
   optionText,
   type FieldType,
   type FieldTypeOfShape,
@@ -226,16 +227,21 @@ function optionProblem(option: string): string | null {
 
 /**
  * What a set field is set up with: its shape, with each option's text tidied and the rules a write
- * must meet on top. Options are a set as well, so the same text can't be offered twice; they are
- * listed in the order they are shown.
+ * must meet on top. Options are a set as well, so the same option, compared by `optionKey`, can't
+ * be offered twice: the option that repeats an earlier one is refused, so a form shows the problem
+ * beside the option to change. They are listed in the order they are shown.
  */
 export const SetSettingsSchema = SetSettingsShape.transform(({ options, multiple }) => ({
   options: options.map(optionText),
   multiple,
 })).check((ctx) => {
   const { options } = ctx.value;
+  const offered = new Set<string>();
   options.forEach((option, index) => {
-    const problem = optionProblem(option);
+    const key = optionKey(option);
+    const problem =
+      optionProblem(option) ?? (offered.has(key) ? 'This option already exists.' : null);
+    offered.add(key);
     if (problem) {
       ctx.issues.push({
         code: 'custom',
@@ -250,9 +256,7 @@ export const SetSettingsSchema = SetSettingsShape.transform(({ options, multiple
       ? `Give the list at least ${MIN_OPTIONS} options.`
       : options.length > MAX_OPTIONS
         ? `Give the list ${MAX_OPTIONS} options or fewer.`
-        : new Set(options).size !== options.length
-          ? 'Give each option once.'
-          : null;
+        : null;
   if (listProblem) {
     ctx.issues.push({ code: 'custom', message: listProblem, input: options, path: ['options'] });
   }
