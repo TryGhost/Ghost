@@ -267,7 +267,8 @@ Each entry also has a source-based `migration` assessment:
   Non-services use `not-applicable` for both dimensions.
 - `reason` explains the decision; `sources` points to existing source or test files
   relative to `ghost`. `reviewedAt` records the full source commit inspected for
-  this assessment, independently of the contract audit's `auditedAt`.
+  this assessment, independently of the contract audit's `auditedAt`. Use a commit
+  on main, because a branch commit disappears on squash merge.
 
 These are migration estimates, not proof that the kernel must change or permission
 to redesign a service. Recheck the evidence before implementation. An assessment
