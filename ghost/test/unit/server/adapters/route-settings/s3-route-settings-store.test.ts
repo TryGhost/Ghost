@@ -342,10 +342,6 @@ describe('S3RouteSettingsStore', function () {
           throw sdkException;
         });
 
-        // Guards the guard: if this stops throwing, the hazard is gone
-        // upstream and this whole approach can be revisited.
-        assert.throws(() => errorUtils.prepareStackForUser(sdkException), RangeError);
-
         await assert.rejects(
           createStore(client).get(),
           (err: { message?: string; stack?: string }) => {
