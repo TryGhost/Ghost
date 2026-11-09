@@ -490,6 +490,104 @@ describe('Member detail custom fields', () => {
     });
   });
 
+  it('shows long text with its line breaks, up to four lines of it', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    const about = 'First line\n\nThird line\nFourth line\nFifth line';
+    fakeMemberDetailWorld(m, { job_title: 'Editor', company: about });
+    await renderAdminApp(`/members/${m.id}`);
+
+    const row = memberDetailScreen.editFieldButton('Company');
+    await expect.element(row).toBeVisible();
+    const spans = [...row.element().querySelectorAll('span')];
+    const value = spans.find((span) => span.textContent === about);
+    if (!value) {
+      throw new Error('the long text value is not shown as it is held');
+    }
+    const style = getComputedStyle(value);
+    expect(style.whiteSpace).toBe('pre-line');
+    // Five lines held, four shown: the row opens the editor, which shows all of them.
+    expect(value.getBoundingClientRect().height).toBeCloseTo(4 * parseFloat(style.lineHeight), 0);
+
+    // Short text stays on the line it's written on.
+    const short = [
+      ...memberDetailScreen.editFieldButton('Job title').element().querySelectorAll('span'),
+    ].find((span) => span.textContent === 'Editor');
+    expect(short && getComputedStyle(short).whiteSpace).toBe('normal');
+  });
+
+  it('shows the first five fields, and the rest when asked', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    const more = ['Nickname', 'Team', 'Pronouns'].map((name): MemberCustomField => ({
+      ...FIELDS[0],
+      key: KeySchema.parse(name.toLowerCase()),
+      name,
+    }));
+    fakeMemberDetailWorld(m, {}, [...FIELDS, ...more]);
+    await renderAdminApp(`/members/${m.id}`);
+
+    const section = memberDetailScreen.customFieldsSection();
+    await expect.element(section.getByRole('button', { name: 'Show all' })).toBeVisible();
+    await expect(section.getByRole('button', { name: /^Edit / })).toHaveCount(5);
+    await expect(section.getByRole('button', { name: 'Edit Pronouns' })).toHaveCount(0);
+
+    await section.getByRole('button', { name: 'Show all' }).click();
+
+    await expect(section.getByRole('button', { name: /^Edit / })).toHaveCount(6);
+    await expect(section.getByRole('button', { name: 'Show all' })).toHaveCount(0);
+    // The button is gone, so focus moves to the first field it revealed.
+    await expect.element(section.getByRole('button', { name: 'Edit Pronouns' })).toHaveFocus();
+  });
+
+  it('starts the next member on the first five fields', async () => {
+    const ada = member({ name: 'Ada Lovelace' });
+    const grace = member({ name: 'Grace Hopper' });
+    const more = ['Nickname', 'Team', 'Pronouns'].map((name): MemberCustomField => ({
+      ...FIELDS[0],
+      key: KeySchema.parse(name.toLowerCase()),
+      name,
+    }));
+    fakeMembers([ada, grace]);
+    for (const m of [ada, grace]) {
+      fakeAdminEndpoint('GET', new RegExp(`^/members/${m.id}/`), {
+        members: [{ ...m, metafields: { custom: {} } }],
+      });
+    }
+    fakeMemberCustomFields([...FIELDS, ...more]);
+    fakeAdminEndpoint('GET', new RegExp('^/members/events/'), {
+      events: [],
+      meta: { pagination: { page: 1, limit: 5, pages: 1, total: 0, next: null, prev: null } },
+    });
+    // Grace's record is cached, so moving back to her keeps the section on screen.
+    await renderAdminApp(`/members/${grace.id}`);
+    const section = memberDetailScreen.customFieldsSection();
+    await expect.element(section.getByRole('button', { name: 'Show all' })).toBeVisible();
+    window.location.hash = `/members/${ada.id}`;
+    await expect.element(page.getByRole('heading', { name: 'Ada Lovelace' })).toBeVisible();
+    await section.getByRole('button', { name: 'Show all' }).click();
+    await expect(section.getByRole('button', { name: /^Edit / })).toHaveCount(6);
+
+    window.location.hash = `/members/${grace.id}`;
+
+    await expect.element(page.getByRole('heading', { name: 'Grace Hopper' })).toBeVisible();
+    await expect(section.getByRole('button', { name: /^Edit / })).toHaveCount(5);
+    await expect.element(section.getByRole('button', { name: 'Show all' })).toBeVisible();
+  });
+
+  it('shows five fields without asking', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    const more = ['Nickname', 'Team'].map((name): MemberCustomField => ({
+      ...FIELDS[0],
+      key: KeySchema.parse(name.toLowerCase()),
+      name,
+    }));
+    fakeMemberDetailWorld(m, {}, [...FIELDS, ...more]);
+    await renderAdminApp(`/members/${m.id}`);
+
+    const section = memberDetailScreen.customFieldsSection();
+    await expect(section.getByRole('button', { name: /^Edit / })).toHaveCount(5);
+    await expect(section.getByRole('button', { name: 'Show all' })).toHaveCount(0);
+  });
+
   it('hides the section when the site has no custom fields defined', async () => {
     const m = member({ name: 'Ada Lovelace' });
     fakeMembers([m]);
