@@ -172,10 +172,13 @@ describe('Spam Prevention', function () {
     assert.equal(second.options.lifetime, 23);
   });
 
-  it('keys member sign-ins and staff resets on a normalized email', function () {
+  it('keys staff resets on IP alone', function () {
+    assert.equal(build('userReset').options.key, undefined);
+  });
+
+  it('keys member sign-ins and checkouts on a normalized email', function () {
     const fields = [
       ['membersAuth', 'email'],
-      ['userReset', 'username'],
       ['checkoutSessionEmail', 'customerEmail'],
     ] as const;
 

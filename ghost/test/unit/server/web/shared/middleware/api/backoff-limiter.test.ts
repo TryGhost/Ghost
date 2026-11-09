@@ -5,6 +5,7 @@ import { RateLimiterMemory } from 'rate-limiter-flexible';
 import {
   BackoffLimiter,
   backoffDelays,
+  normalizeIP,
 } from '../../../../../../../core/server/web/shared/middleware/api/backoff-limiter';
 import type {
   BackoffOptions,
@@ -233,6 +234,75 @@ describe('BackoffLimiter', function () {
     await limiter.resetRequest({ ip: '127.0.0.1', body: { key: 'key' } } as Request);
 
     assert.equal((await request(limiter)).allowed, true);
+  });
+
+  it('consume({ip, key}) allows freeRetries + 1 requests, then reports the wait', async function () {
+    vi.useFakeTimers({ now: 0 });
+    const limiter = build();
+    const outcomes = [];
+
+    for (let i = 0; i < 4; i++) {
+      outcomes.push(await limiter.consume({ ip: '127.0.0.1', key: 'key' }));
+    }
+
+    assert.deepEqual(outcomes, [
+      { allowed: true },
+      { allowed: true },
+      { allowed: true },
+      { allowed: false, retryAfterMs: 1000 },
+    ]);
+  });
+
+  it('consume shares counters with middleware for the same IP and key', async function () {
+    const limiter = build({ freeRetries: 1 });
+
+    assert.deepEqual(await run(limiter, 2), [true, true]);
+    assert.equal((await limiter.consume({ ip: '127.0.0.1', key: 'key' })).allowed, false);
+
+    const other = build({ freeRetries: 1 });
+    await other.consume({ ip: '127.0.0.1', key: 'key' });
+    await other.consume({ ip: '127.0.0.1', key: 'key' });
+    assert.equal((await request(other)).allowed, false);
+  });
+
+  it('consume ignores ip on a limiter that ignores IP', async function () {
+    const limiter = build({ freeRetries: 0, ignoreIP: true });
+
+    assert.equal((await limiter.consume({ ip: '10.0.0.1', key: 'key' })).allowed, true);
+    assert.equal((await limiter.consume({ ip: '10.0.0.2', key: 'key' })).allowed, false);
+  });
+
+  it('counts every spelling of an IP against one key', async function () {
+    const limiter = build({ freeRetries: 1 });
+
+    await request(limiter, { ip: '2001:DB8::1' });
+    await limiter.consume({ ip: '2001:0db8:0000:0000:0000:0000:0000:0001', key: 'key' });
+    assert.equal((await request(limiter, { ip: '2001:db8:0:0:0:0:0:1' })).allowed, false);
+
+    await request(limiter, { ip: '::ffff:10.0.0.1' });
+    await limiter.consume({ ip: '10.0.0.1', key: 'key' });
+    assert.equal((await request(limiter, { ip: '::ffff:a00:1' })).allowed, false);
+  });
+
+  it('counts an IPv6 /64 as one client', async function () {
+    const limiter = build({ freeRetries: 0 });
+
+    assert.equal((await request(limiter, { ip: '2001:db8:1:2::1' })).allowed, true);
+    assert.equal((await request(limiter, { ip: '2001:db8:1:2:ffff::9' })).allowed, false);
+    assert.equal((await request(limiter, { ip: '2001:db8:1:3::1' })).allowed, true);
+  });
+
+  it('normalizes IPs the way Better Auth does with a /64 IPv6 subnet', function () {
+    assert.equal(normalizeIP('203.0.113.7'), '203.0.113.7');
+    assert.equal(normalizeIP('2001:DB8::1'), '2001:0db8:0000:0000:0000:0000:0000:0000');
+    assert.equal(normalizeIP('::1'), '0000:0000:0000:0000:0000:0000:0000:0000');
+    assert.equal(normalizeIP('::'), '0000:0000:0000:0000:0000:0000:0000:0000');
+    assert.equal(normalizeIP('2001:db8:1:2:3:4:5:6'), '2001:0db8:0001:0002:0000:0000:0000:0000');
+    assert.equal(normalizeIP('::ffff:203.0.113.7'), '203.0.113.7');
+    assert.equal(normalizeIP('0:0:0:0:0:ffff:203.0.113.7'), '203.0.113.7');
+    assert.equal(normalizeIP('::ffff:cb00:7107'), '203.0.113.7');
+    assert.equal(normalizeIP('64:ff9b::203.0.113.7'), '0064:ff9b:0000:0000:0000:0000:0000:0000');
+    assert.equal(normalizeIP('not an ip'), 'not an ip');
   });
 
   it('fails the request with an InternalServerError when the store fails', async function () {

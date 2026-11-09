@@ -1,5 +1,7 @@
 import { createHash } from 'node:crypto';
+import { isIPv6 } from 'node:net';
 import errors from '@tryghost/errors';
+import ipaddr from 'ipaddr.js';
 import type { NextFunction, Request, Response } from 'express';
 import { RateLimiterRes } from 'rate-limiter-flexible';
 import type { RateLimiterAbstract } from 'rate-limiter-flexible';
@@ -16,6 +18,15 @@ export interface BackoffOptions {
   /** The error a blocked request fails with. */
   onBlocked: (retryAfterMs: number, res: Response) => Error;
 }
+
+/** What a request counts against: its IP and the limiter's key. */
+export interface LimiterKey {
+  ip?: string;
+  key?: string;
+}
+
+/** Whether a counted request may continue, and if not, for how long it is blocked. */
+export type ConsumeResult = { allowed: true } | { allowed: false; retryAfterMs: number };
 
 /** Builds one rate-limiter-flexible limiter over the shared store. */
 export type LimiterFactory = (options: {
@@ -34,6 +45,20 @@ export function backoffDelays(minWait: number, maxWait: number): number[] {
   delays[delays.length - 1] = maxWait;
 
   return delays;
+}
+
+/** Formats an IP as Better Auth does with `ipv6Subnet: 64`: IPv4-mapped IPv6 as IPv4, other IPv6 as its expanded /64. */
+export function normalizeIP(ip: string): string {
+  if (!isIPv6(ip)) {
+    return ip;
+  }
+
+  const address = ipaddr.process(ip);
+  if (!(address instanceof ipaddr.IPv6)) {
+    return address.toString();
+  }
+
+  return new ipaddr.IPv6([...address.parts.slice(0, 4), 0, 0, 0, 0]).toFixedLengthString();
 }
 
 const hashKey = (parts: (string | undefined)[]) =>
@@ -98,9 +123,9 @@ export class BackoffLimiter {
   }
 
   readonly middleware = (req: Request, res: Response, next: NextFunction) => {
-    this.attempt(this.keyFor(req))
+    this.consume(this.keyFor(req))
       .then(
-        (blockedFor) => (blockedFor === null ? undefined : this.options.onBlocked(blockedFor, res)),
+        (result) => (result.allowed ? undefined : this.options.onBlocked(result.retryAfterMs, res)),
         (err: unknown) =>
           new errors.InternalServerError({
             message: 'Unknown error',
@@ -110,18 +135,32 @@ export class BackoffLimiter {
       .then(next, next);
   };
 
+  /**
+   * Counts one request outside Express, against the same counters `middleware`
+   * uses for that IP and key. `ip` is ignored when the limiter ignores IP.
+   */
+  async consume(limiterKey: LimiterKey): Promise<ConsumeResult> {
+    const retryAfterMs = await this.attempt(this.hash(limiterKey));
+
+    return retryAfterMs === null ? { allowed: true } : { allowed: false, retryAfterMs };
+  }
+
   /** Clears the count and wait this request's key has built up. */
   resetRequest(req: Request) {
-    return this.clear(this.keyFor(req));
+    return this.reset(this.keyFor(req));
   }
 
   /** Clears a key's count and wait. `ip` is ignored when the limiter ignores IP. */
-  reset({ ip, key }: { ip?: string; key?: string }) {
-    return this.clear(hashKey([this.options.ignoreIP ? undefined : ip, key]));
+  reset(limiterKey: LimiterKey) {
+    return this.clear(this.hash(limiterKey));
   }
 
-  private keyFor(req: Request) {
-    return hashKey([this.options.ignoreIP ? undefined : req.ip, this.options.key?.(req)]);
+  private keyFor(req: Request): LimiterKey {
+    return { ip: req.ip, key: this.options.key?.(req) };
+  }
+
+  private hash({ ip, key }: LimiterKey) {
+    return hashKey([this.options.ignoreIP || !ip ? undefined : normalizeIP(ip), key]);
   }
 
   /** Milliseconds the request is blocked for, or null when it may continue. */
