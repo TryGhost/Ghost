@@ -171,15 +171,6 @@ type ActionRevisionRow = {
   email_design_setting_id: string | null;
 };
 
-type StepToInsert = {
-  id: string;
-  created_at: DatabaseDate;
-  updated_at: DatabaseDate;
-  automation_run_id: string;
-  automation_action_revision_id: string;
-  ready_at: DatabaseDate;
-};
-
 type NextActionRevisionRow = {
   automation_id: string;
   action_id: string;
@@ -972,41 +963,6 @@ async function ensureWelcomeEmailAction(
   ]);
 }
 
-async function insertRunStep(
-  trx: Knex.Transaction,
-  options: ReadonlyDeep<{
-    automationRunId: string;
-    automationActionRevisionId: string;
-    now: Date;
-    readyAt: Date;
-  }>,
-): Promise<void> {
-  await trx('automation_run_steps').insert(createRunStep(options));
-}
-
-function createRunStep({
-  automationRunId,
-  automationActionRevisionId,
-  now,
-  readyAt,
-}: ReadonlyDeep<{
-  automationRunId: string;
-  automationActionRevisionId: string;
-  now: Date;
-  readyAt: Date;
-}>): StepToInsert {
-  const nowString = toDatabaseDate(now);
-
-  return {
-    id: ObjectId().toHexString(),
-    created_at: nowString,
-    updated_at: nowString,
-    automation_run_id: automationRunId,
-    automation_action_revision_id: automationActionRevisionId,
-    ready_at: toDatabaseDate(readyAt),
-  };
-}
-
 async function fetchAndLockSteps(
   trx: Knex.Transaction,
   limit: number,
@@ -1211,12 +1167,16 @@ async function finishStepAndEnqueueNext(
   const now = new Date();
   const nextReadyAt = getReadyAtForAction(next, now, fakeWaitHoursMultiplier);
 
-  await insertRunStep(trx, {
-    automationRunId: step.automation_run_id,
-    automationActionRevisionId: next.automation_action_revision_id,
-    now,
-    readyAt: nextReadyAt,
-  });
+  await repository2.insertRunSteps(trx, [
+    {
+      id: ObjectId().toHexString(),
+      created_at: now,
+      updated_at: now,
+      automation_run_id: step.automation_run_id,
+      automation_action_revision_id: next.automation_action_revision_id,
+      ready_at: nextReadyAt,
+    },
+  ]);
 
   return nextReadyAt;
 }
