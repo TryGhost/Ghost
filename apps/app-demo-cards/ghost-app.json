@@ -1,0 +1,52 @@
+{
+  "id": "org.ghost.cards",
+  "name": "Demo cards",
+  "description": "Four editor cards: a big number, an event, a podcast player and an interactive chart.",
+  "author": { "name": "Ghost", "url": "https://ghost.org" },
+  "accent_color": "#c8402b",
+  "icon": { "name": "layout-grid" },
+  "surfaces": [
+    {
+      "type": "card",
+      "name": "big-number",
+      "label": "Big number",
+      "icon": "hash",
+      "keywords": ["number", "figure", "stat"],
+      "render": "/editor/render.js",
+      "settings": "/editor/settings.js"
+    },
+    {
+      "type": "card",
+      "name": "event",
+      "label": "Event",
+      "icon": "calendar-days",
+      "keywords": ["event", "date", "reading"],
+      "render": "/editor/render.js",
+      "settings": "/editor/settings.js"
+    },
+    {
+      "type": "card",
+      "name": "podcast",
+      "label": "Podcast player",
+      "icon": "podcast",
+      "keywords": ["podcast", "audio", "episode"],
+      "render": "/editor/render.js",
+      "settings": "/editor/settings.js",
+      "frame": "/frames/podcast.html",
+      "backend_origins": ["http://cards.localhost:5181"],
+      "image_origins": ["https://npr.brightspotcdn.com", "https://media.npr.org"],
+      "frame_permissions": ["autoplay"]
+    },
+    {
+      "type": "card",
+      "name": "chart",
+      "label": "Chart",
+      "icon": "chart-column",
+      "keywords": ["chart", "graph", "data", "csv"],
+      "render": "/editor/render.js",
+      "settings": "/editor/settings.js",
+      "frame": "/frames/chart.html",
+      "frame_permissions": ["fullscreen"]
+    }
+  ]
+}

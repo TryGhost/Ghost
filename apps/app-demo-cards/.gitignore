@@ -1,0 +1,4 @@
+.ghost-app/
+.dev.vars*
+public/editor/
+dist/
