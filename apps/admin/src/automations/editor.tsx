@@ -231,7 +231,7 @@ const AutomationEditorContent: React.FC<{
     );
     setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
   }, []);
-  // The publish confirmation names the trigger's label and asks about members who already have it.
+  // The publish confirmation names the trigger's label and how many members already have it.
   const { data: labelData } = useBrowseLabelsInfinite({
     searchParams: { limit: 'all' },
     enabled: Boolean(labelSelection),
