@@ -1,10 +1,18 @@
-const sinon = require('sinon');
-const supertest = require('supertest');
+import sinon from 'sinon';
+import supertest from 'supertest';
+// This suite runs under vitest; beforeAll/afterAll aren't in the mocha globals
+// that tsc resolves project-wide, so import them explicitly for type-checking.
+import { afterAll, beforeAll } from 'vitest';
+
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
 
+// supertest's types only accept string header values; these cases deliberately
+// pass a number to cover callers that don't stringify first.
+const numericHeader = (value: number) => value as unknown as string;
+
 describe('Site id middleware execution', function () {
-  let request;
+  let request: supertest.Agent;
 
   describe('Using site-id middleware', function () {
     beforeAll(async function () {
@@ -29,11 +37,11 @@ describe('Site id middleware execution', function () {
     });
 
     it('should allow requests with numeric site id header', function () {
-      return request.get('/').set('x-site-id', 123123).expect(200);
+      return request.get('/').set('x-site-id', numericHeader(123123)).expect(200);
     });
 
     it('should prevent requests with incorrect numeric site id header', function () {
-      return request.get('/').set('x-site-id', 1231230).expect(500);
+      return request.get('/').set('x-site-id', numericHeader(1231230)).expect(500);
     });
 
     it('should allow static asset requests with the correct site id header', function () {
