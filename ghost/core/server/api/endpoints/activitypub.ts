@@ -36,7 +36,6 @@ const controller = {
       }
     },
     async query() {
-      // CJS service wrapper at the require() boundary
       const ActivityPubService = require('../../services/activitypub');
       await ActivityPubService.disconnect();
     },
@@ -45,5 +44,4 @@ const controller = {
   disconnect: DisconnectFrame;
 }>;
 
-// module.exports (not export): the API framework loads controllers via require().
 module.exports = controller;
