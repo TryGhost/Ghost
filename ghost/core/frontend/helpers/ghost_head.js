@@ -527,6 +527,18 @@ module.exports = async function ghost_head(options) {
       }
     }
 
+    // Apps' cards need Ghost's small script to size their frames and load live ones.
+    const entries = [
+      dataRoot.post,
+      dataRoot.page,
+      ...(Array.isArray(dataRoot.posts) ? dataRoot.posts : []),
+    ];
+    if (
+      entries.some((entry) => typeof entry?.html === 'string' && entry.html.includes('kg-app-card'))
+    ) {
+      head.push(`<script defer src="${getAssetUrl('public/app-cards.min.js')}"></script>`);
+    }
+
     if (!excludeList.has('comment_counts') && settingsCache.get('comments_enabled') !== 'off') {
       head.push(
         `<script defer src="${getAssetUrl('public/comment-counts.min.js')}" data-ghost-comments-counts-api="${urlUtils.getSiteUrl(true)}members/api/comments/counts/"></script>`,

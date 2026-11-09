@@ -50,6 +50,9 @@ function reviewedChange(frame: WriteFrame) {
 }
 
 const noCacheInvalidation = { cacheInvalidate: false };
+// Installed apps' cards render on the site, so a change to an installation clears the site's
+// cached pages.
+const invalidatesCache = { cacheInvalidate: true };
 
 const controller = {
   docName: 'app_installations',
@@ -76,7 +79,7 @@ const controller = {
 
   add: {
     statusCode: 201,
-    headers: noCacheInvalidation,
+    headers: invalidatesCache,
     permissions: true,
     query(frame: WriteFrame) {
       return appInstallations.service.create(
@@ -89,7 +92,7 @@ const controller = {
   // Approves changes to an installation, including the app moving somewhere new. Approving
   // is a decision of the same weight as installing, so it takes the same permission.
   edit: {
-    headers: noCacheInvalidation,
+    headers: invalidatesCache,
     options: ['id'],
     validation: { options: { id: { required: true } } },
     permissions: { method: 'add' },
@@ -104,7 +107,7 @@ const controller = {
 
   destroy: {
     statusCode: 204,
-    headers: noCacheInvalidation,
+    headers: invalidatesCache,
     options: ['id'],
     validation: { options: { id: { required: true } } },
     permissions: true,

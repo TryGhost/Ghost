@@ -1,3 +1,4 @@
+import { CardSurfaces, type InstalledCards } from './card-surfaces';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
@@ -137,6 +138,7 @@ function iconCopyKeptBy(
 
 export class AppInstallationsService {
   private repository: AppInstallationsRepository;
+  private cards: CardSurfaces;
   private recordAction: RecordAppInstallationAction;
   private loadManifest: LoadManifest;
   private identity: IdentityChecker;
@@ -158,10 +160,21 @@ export class AppInstallationsService {
     fetchIcon: FetchIcon;
   }) {
     this.repository = new AppInstallationsRepository(knex);
+    this.cards = new CardSurfaces(() => this.repository.list());
     this.recordAction = recordAction;
     this.loadManifest = loadManifest;
     this.identity = identity;
     this.fetchIcon = fetchIcon;
+  }
+
+  /** The cards installed apps declare, for rendering posts. Cached until `forgetCards`. */
+  installedCards(): Promise<InstalledCards> {
+    return this.cards.read();
+  }
+
+  /** Forgets the cached cards, after an installation changed. */
+  forgetCards(): void {
+    this.cards.forget();
   }
 
   /** Lists installed apps, suspended ones included. Uninstalled apps aren't listed. */

@@ -101,6 +101,17 @@ module.exports = {
   },
 
   async render(lexical, userOptions = {}) {
+    // Apps' cards go into an email only while their app is installed and declares them, with
+    // images from the origins the app declares now. Read when the email is rendered.
+    const source = typeof lexical === 'string' ? lexical : JSON.stringify(lexical ?? '');
+    if (
+      userOptions.target === 'email' &&
+      !userOptions.appCards &&
+      source.includes('"type":"app"')
+    ) {
+      const { emailAppCards } = require('./app-cards');
+      userOptions = { ...userOptions, appCards: await emailAppCards() };
+    }
     const options = buildRenderOptions(userOptions);
     return await this.lexicalHtmlRenderer.render(lexical, options);
   },

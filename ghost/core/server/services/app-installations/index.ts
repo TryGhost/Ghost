@@ -19,6 +19,7 @@ export type { RequestContext } from './actions';
 export type { Installation, InstallationWithHistory } from './codec';
 export type { AppInstallation } from './serializers';
 export type { AppInstallationPreview, AppSession } from './service';
+export type { InstalledCard, InstalledCards } from './card-surfaces';
 
 /**
  * The apps slice of config, parsed here as the config guide asks of a feature's keys.
@@ -114,7 +115,7 @@ export default defineService(
       allowLocalhost: isDevelopment(),
     });
 
-    return new AppInstallationsService({
+    const service = new AppInstallationsService({
       knex,
       recordAction,
       loadManifest: createManifestLoader({ fetchFromApp, logging, getManifestRules }),
@@ -130,6 +131,10 @@ export default defineService(
       }),
       fetchIcon: createIconFetcher({ fetchFromApp, logging }),
     });
+    // Every change to an installation clears the site's cache, which emits this.
+    const events = require('../../lib/common/events');
+    events.on('site.changed', () => service.forgetCards());
+    return service;
   },
   extras,
 );

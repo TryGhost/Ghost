@@ -11,6 +11,7 @@ const extraAttrs = require('../utils/extra-attrs');
 const gating = require('../utils/post-gating');
 const previewRendering = require('../utils/preview-rendering');
 const url = require('../utils/url');
+const appCards = require('../../../../../../lib/app-cards');
 
 const utils = require('../../../index');
 
@@ -129,6 +130,9 @@ module.exports = async (model, frame, options = {}) => {
       jsonModel.html = await memberAttribution.service.outboundLinkTagger.addToHtml(jsonModel.html);
     }
   }
+
+  // Apps' cards render from what the post stored, checked against the apps installed now.
+  await appCards.forPost(jsonModel);
 
   // Transforms post/page metadata to flat structure
   const metaAttrs = _.keys(_.omit(postsMetaSchema, ['id', 'post_id']));

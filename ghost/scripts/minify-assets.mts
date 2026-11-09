@@ -56,6 +56,15 @@ const filesToMinify: Array<{
     },
   },
   {
+    src: 'core/frontend/src/app-cards/app-cards.js',
+    dest: 'core/frontend/public/app-cards.min.js',
+    options: {
+      bundle: true,
+      format: 'iife',
+      target: ['es2020'],
+    },
+  },
+  {
     src: 'core/frontend/src/admin-auth/message-handler.js',
     dest: 'core/frontend/public/admin-auth/admin-auth.min.js',
     options: {

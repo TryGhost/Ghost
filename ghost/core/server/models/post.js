@@ -780,6 +780,8 @@ Post = ghostBookshelf.Model.extend(
           options.force_rerender ||
           (!this.get('html') && (options.migrating || options.importing)))
       ) {
+        // Apps' cards are refused before they reach the database if they break the limits.
+        require('../lib/app-cards').validateAppCards(this.get('lexical'));
         try {
           this.set(
             'html',
@@ -801,7 +803,11 @@ Post = ghostBookshelf.Model.extend(
         if (this.get('html') === null) {
           plaintext = null;
         } else {
-          plaintext = htmlToPlaintext.excerpt(this.get('html'));
+          // Apps' cards hold their email version and snapshot as hidden templates, which
+          // aren't the post's text.
+          plaintext = htmlToPlaintext.excerpt(
+            require('../lib/app-cards').withoutAppCards(this.get('html')),
+          );
         }
 
         // CASE: html is e.g. <p></p>

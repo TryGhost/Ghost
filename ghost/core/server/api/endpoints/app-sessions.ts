@@ -12,7 +12,9 @@ const controller = {
   // request and needs `add`. Anyone with `read` can trigger a re-check, which can suspend
   // the app or apply silent changes.
   start: {
-    headers: { cacheInvalidate: false },
+    // The re-check can apply silent changes, suspend or resume the app, which changes how its
+    // cards render on the site.
+    headers: { cacheInvalidate: true },
     options: ['id'],
     validation: { options: { id: { required: true } } },
     permissions: { docName: 'app_installations', method: 'read' },

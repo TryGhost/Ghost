@@ -230,3 +230,6 @@ yalc.lock
 .github/instructions/nx.instructions.md
 
 .nx/migrate-runs
+
+# Spike: built public script for app cards
+/ghost/core/frontend/public/app-cards.min.js

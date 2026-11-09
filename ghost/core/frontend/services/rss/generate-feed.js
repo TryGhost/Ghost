@@ -2,6 +2,7 @@ const downsize = require('downsize-cjs');
 const RSS = require('rss');
 const urlUtils = require('../../../shared/url-utils').default;
 const { routerManager } = require('../routing');
+const { cardsForFeed } = require('./app-cards-feed');
 
 const generateTags = function generateTags(data) {
   if (data.tags) {
@@ -28,7 +29,9 @@ const generateItem = function generateItem(post) {
     { status: 'published', ...post, type: 'posts' },
     { absolute: true },
   );
-  const htmlContent = cheerio.load(post.html || '');
+  // Apps' cards become their email version, or a link to the post: the page served them in
+  // frames, which feed readers can't show.
+  const htmlContent = cheerio.load(cardsForFeed(post.html || '', itemUrl));
 
   // Tidy up cards for RSS readers (no Ghost CSS/JS available). This runs
   // before the item is built so the excerpt fallback below sees clean
