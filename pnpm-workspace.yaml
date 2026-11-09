@@ -103,7 +103,7 @@ catalog:
   '@tryghost/errors': 3.4.6
   '@tryghost/helpers': 1.1.109
   '@tryghost/logging': 6.0.3
-  '@tryghost/mg-clean-html': 0.12.6
+  '@tryghost/mg-clean-html': 0.12.7
   '@tryghost/metrics': 3.7.3
   '@tryghost/mongo-knex': 0.11.2
   '@tryghost/nql': 0.13.4
