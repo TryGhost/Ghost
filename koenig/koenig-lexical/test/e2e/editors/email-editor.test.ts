@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename);
 
 const visibleEmailMenuItems = [
     'Image',
+    'File',
     'Unsplash',
     'GIF',
     'Bookmark',
@@ -25,7 +26,6 @@ const unavailableEmailMenuItems = [
     'Audio',
     'Gallery',
     'Video',
-    'File',
     'Markdown',
     'Header',
     'Public preview',
