@@ -431,6 +431,10 @@ module.exports = function apiRoutes() {
   // ## Identity
   router.get('/identities', mw.authAdminApi, http(api.identities.read));
 
+  // ## ActivityPub / Social Web
+  // Soft-disconnect without changing the Network (`social_web`) setting
+  router.delete('/activitypub', mw.authAdminApi, http(api.activitypub.disconnect));
+
   // ## Authentication
   router.post(
     '/authentication/password_reset',

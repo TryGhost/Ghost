@@ -52,4 +52,18 @@ module.exports = class ActivityPubServiceWrapper {
 
     configureActivityPub();
   }
+
+  /**
+   * Soft-disconnect Social Web without changing the `social_web` setting.
+   * Clears Ghost webhooks and disables the ActivityPub site registration so
+   * Remove account can send the owner to Get Started while Network stays on.
+   */
+  static async disconnect() {
+    if (!ActivityPubServiceWrapper.instance) {
+      return;
+    }
+
+    await ActivityPubServiceWrapper.instance.disable();
+    ActivityPubServiceWrapper.initialised = false;
+  }
 };
