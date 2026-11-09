@@ -19,11 +19,13 @@ export function cloudflareChallenge(url: string): EdgeChallenge {
   let revealTimer: number | undefined;
 
   return {
+    // cf_clearance covers the whole site, whichever URL was challenged
+    key: 'cloudflare',
     frameUrl: url,
     onFrameLoad(frameDocument, controls) {
       clearTimeout(revealTimer);
-      const frameWindow = frameDocument.defaultView as (Window & Record<string, unknown>) | null;
-      if (frameWindow?.[CHALLENGE_PAGE_GLOBAL] === undefined) {
+      const frameWindow = frameDocument.defaultView;
+      if (!frameWindow || !(CHALLENGE_PAGE_GLOBAL in frameWindow)) {
         controls.complete();
         return;
       }

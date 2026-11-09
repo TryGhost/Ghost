@@ -54,6 +54,7 @@ export function fastlyChallenge(
   let observer: MutationObserver | null = null;
 
   return {
+    key: 'fastly',
     frameUrl: scriptUrl,
     onFrameLoad(frameDocument, controls) {
       // challenge.js never navigates the frame

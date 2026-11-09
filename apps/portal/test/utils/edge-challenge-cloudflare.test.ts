@@ -8,6 +8,7 @@ import {
 
 const siteUrl = window.location.origin;
 const magicLinkUrl = `${siteUrl}/members/api/send-magic-link/`;
+const integrityTokenUrl = `${siteUrl}/members/api/integrity-token/`;
 
 // Cloudflare serves every challenge type as a 403 HTML page with cf-mitigated
 function challengePage() {
@@ -28,7 +29,14 @@ function blockPage(status = 403) {
   });
 }
 
-function jsonResponse(body, status = 201) {
+function fastlyChallengePage() {
+  return new Response(
+    '<html><head><script src="/_fs-ch-1T1wmsGaOgGaSxcX/script.js"></script></head></html>',
+    { status: 403, headers: { 'Content-Type': 'text/html; charset=utf-8' } },
+  );
+}
+
+function jsonResponse(body: unknown, status = 201) {
   return new Response(JSON.stringify(body), {
     status,
     headers: { 'Content-Type': 'application/json', 'cf-ray': 'a4ae8176e9d9b825-VIE' },
@@ -41,28 +49,57 @@ function challengeFrame() {
 
 function waitForChallengeFrame() {
   return vi.waitFor(() => {
-    expect(challengeFrame()).toBeTruthy();
-    return challengeFrame();
+    const frame = challengeFrame();
+    if (!frame) {
+      throw new Error('No challenge frame yet');
+    }
+    return frame;
   });
 }
 
-// jsdom doesn't load frames, so write the challenge page into the frame instead
-function loadChallengePage(frame) {
+function frameDocumentOf(frame: HTMLIFrameElement) {
   const doc = frame.contentDocument;
+  if (!doc) {
+    throw new Error('Challenge frame has no document');
+  }
+  return doc;
+}
+
+function closeButtonOf(frame: HTMLIFrameElement) {
+  const button = frameDocumentOf(frame).querySelector('button');
+  if (!button) {
+    throw new Error('Challenge frame has no close button');
+  }
+  return button;
+}
+
+function writeFrame(frame: HTMLIFrameElement, html: string) {
+  const doc = frameDocumentOf(frame);
   doc.open();
-  doc.write('<html><body><h1>Performing security verification</h1></body></html>');
+  doc.write(html);
   doc.close();
-  frame.contentWindow._cf_chl_opt = { cType: 'managed' };
+}
+
+// jsdom doesn't load frames, so write the challenge page into the frame instead
+function loadChallengePage(frame: HTMLIFrameElement) {
+  writeFrame(frame, '<html><body><h1>Performing security verification</h1></body></html>');
+  Reflect.set(frame.contentWindow ?? {}, '_cf_chl_opt', { cType: 'managed' });
   frame.dispatchEvent(new Event('load'));
 }
 
-function loadGhostResponse(frame) {
-  delete frame.contentWindow._cf_chl_opt;
-  const doc = frame.contentDocument;
-  doc.open();
-  doc.write('<html><body><pre>{"errors":[]}</pre></body></html>');
-  doc.close();
+function loadGhostResponse(frame: HTMLIFrameElement) {
+  Reflect.deleteProperty(frame.contentWindow ?? {}, '_cf_chl_opt');
+  writeFrame(frame, '<html><body><pre>{"errors":[]}</pre></body></html>');
   frame.dispatchEvent(new Event('load'));
+}
+
+// Stands in for the browser loading challenge.js and the script reporting it passed
+function completeFastlyChallenge(frame: HTMLIFrameElement) {
+  writeFrame(frame, '<html><head></head><body><pre></pre></body></html>');
+  frame.dispatchEvent(new Event('load'));
+  frameDocumentOf(frame)
+    .querySelector('.fastly-challenge')
+    ?.setAttribute('data-challenge-status', 'complete');
 }
 
 describe('Cloudflare challenge detection', () => {
@@ -131,7 +168,7 @@ describe('fetchWithEdgeChallenge with Cloudflare', () => {
     expect(frame.style.width).toBe('100%');
     expect(frame.hasAttribute('aria-hidden')).toBe(false);
     expect(frame.title).toBe('Security verification');
-    expect(frame.contentDocument.querySelector('button').getAttribute('aria-label')).toBe('Close');
+    expect(closeButtonOf(frame).getAttribute('aria-label')).toBe('Close');
 
     loadGhostResponse(frame);
     await expect(pending).resolves.toHaveProperty('status', 201);
@@ -147,7 +184,7 @@ describe('fetchWithEdgeChallenge with Cloudflare', () => {
     // e.g. a failed attempt, which reloads into a fresh challenge page
     loadChallengePage(frame);
 
-    frame.contentDocument.querySelector('button').click();
+    closeButtonOf(frame).click();
 
     expect(await pending).toBeInstanceOf(EdgeChallengeError);
     expect(window.fetch).toHaveBeenCalledTimes(1);
@@ -189,6 +226,54 @@ describe('fetchWithEdgeChallenge with Cloudflare', () => {
       EdgeChallengeError,
     );
     expect(window.fetch).toHaveBeenCalledTimes(1);
+    expect(challengeFrame()).toBeNull();
+  });
+
+  test('requests challenged at the same time share one solve, whichever URL they were for', async () => {
+    vi.spyOn(window, 'fetch')
+      .mockResolvedValueOnce(challengePage())
+      .mockResolvedValueOnce(challengePage())
+      .mockResolvedValue(jsonResponse({ ok: true }));
+    const signIn = fetchWithEdgeChallenge(magicLinkUrl, { method: 'POST' });
+    const frame = await waitForChallengeFrame();
+    const token = fetchWithEdgeChallenge(integrityTokenUrl);
+    await vi.waitFor(() => expect(window.fetch).toHaveBeenCalledTimes(2));
+    await vi.advanceTimersByTimeAsync(0);
+    expect(document.querySelectorAll('iframe')).toHaveLength(1);
+
+    loadChallengePage(frame);
+    loadGhostResponse(frame);
+
+    await expect(signIn).resolves.toHaveProperty('status', 201);
+    await expect(token).resolves.toHaveProperty('status', 201);
+    expect(window.fetch).toHaveBeenCalledTimes(4);
+  });
+
+  test('solves a Fastly challenge that arrives while a Cloudflare one is pending', async () => {
+    vi.spyOn(window, 'fetch')
+      .mockResolvedValueOnce(challengePage())
+      .mockResolvedValueOnce(fastlyChallengePage())
+      .mockResolvedValue(jsonResponse({ ok: true }));
+    const signIn = fetchWithEdgeChallenge(magicLinkUrl, { method: 'POST' });
+    const cloudflareFrame = await waitForChallengeFrame();
+    const token = fetchWithEdgeChallenge(integrityTokenUrl);
+    const fastlyFrame = await vi.waitFor(() => {
+      const frame = [...document.querySelectorAll('iframe')].find((f) => f !== cloudflareFrame);
+      if (!frame) {
+        throw new Error('No Fastly challenge frame yet');
+      }
+      return frame;
+    });
+    expect(fastlyFrame.src).toBe(`${siteUrl}/_fs-ch-1T1wmsGaOgGaSxcX/challenge.js`);
+
+    completeFastlyChallenge(fastlyFrame);
+    await expect(token).resolves.toHaveProperty('status', 201);
+    expect(cloudflareFrame.isConnected).toBe(true);
+
+    loadChallengePage(cloudflareFrame);
+    loadGhostResponse(cloudflareFrame);
+    await expect(signIn).resolves.toHaveProperty('status', 201);
+    expect(window.fetch).toHaveBeenCalledTimes(4);
     expect(challengeFrame()).toBeNull();
   });
 });

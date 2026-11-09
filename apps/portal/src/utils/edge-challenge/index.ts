@@ -29,6 +29,8 @@ export interface ChallengeControls {
 }
 
 export interface EdgeChallenge {
+  // Challenges with the same key clear each other, so concurrent requests share one solve
+  key: string;
   // Challenge scripts resolve URLs against the frame's location, so it can't be about:blank
   frameUrl: string;
   // Runs for every document the frame loads, until the challenge finishes
@@ -102,18 +104,19 @@ const CLOSE_BUTTON_STYLE = {
   cursor: 'pointer',
 };
 
-let pendingChallenge: Promise<void> | null = null;
+const pendingChallenges = new Map<string, Promise<void>>();
 
 /**
  * Solves an edge challenge in its own same-origin frame, which shares the site's cookies.
  * Rejects with EdgeChallengeError if it fails, times out or the visitor closes it.
  */
 export function solveEdgeChallenge(challenge: EdgeChallenge): Promise<void> {
-  if (pendingChallenge) {
-    return pendingChallenge;
+  const pending = pendingChallenges.get(challenge.key);
+  if (pending) {
+    return pending;
   }
 
-  pendingChallenge = new Promise<void>((resolve, reject) => {
+  const solve = new Promise<void>((resolve, reject) => {
     const frame = document.createElement('iframe');
     frame.setAttribute('aria-hidden', 'true');
     frame.setAttribute('tabindex', '-1');
@@ -138,7 +141,7 @@ export function solveEdgeChallenge(challenge: EdgeChallenge): Promise<void> {
       clearTimeout(timer);
       document.removeEventListener('keydown', cancelOnEscape);
       frame.remove();
-      pendingChallenge = null;
+      pendingChallenges.delete(challenge.key);
       if (error) {
         reject(error);
       } else {
@@ -217,7 +220,8 @@ export function solveEdgeChallenge(challenge: EdgeChallenge): Promise<void> {
     document.body.appendChild(frame);
   });
 
-  return pendingChallenge;
+  pendingChallenges.set(challenge.key, solve);
+  return solve;
 }
 
 /**
