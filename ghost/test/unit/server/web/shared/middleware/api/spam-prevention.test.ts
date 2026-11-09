@@ -17,8 +17,10 @@ type FactoryName =
   | 'globalBlock'
   | 'globalReset'
   | 'userLogin'
+  | 'verificationEmail'
   | 'sendVerificationCode'
   | 'userVerification'
+  | 'userVerificationChallenge'
   | 'membersAuth'
   | 'membersAuthEnumeration'
   | 'checkoutSessionGlobal'
@@ -43,8 +45,10 @@ const factories: Array<{
   { name: 'globalBlock', configKey: 'global_block' },
   { name: 'globalReset', configKey: 'global_reset' },
   { name: 'userLogin', configKey: 'user_login' },
+  { name: 'verificationEmail', configKey: 'send_verification_code_user', ignoreIP: true },
   { name: 'sendVerificationCode', configKey: 'send_verification_code' },
   { name: 'userVerification', configKey: 'user_verification' },
+  { name: 'userVerificationChallenge', configKey: 'user_verification_challenge', ignoreIP: true },
   { name: 'membersAuth', configKey: 'user_login' },
   { name: 'membersAuthEnumeration', configKey: 'member_login' },
   { name: 'checkoutSessionGlobal', configKey: 'checkout_session_global' },

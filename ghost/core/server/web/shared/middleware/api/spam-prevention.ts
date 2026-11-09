@@ -369,9 +369,30 @@ const userVerification = () =>
     onBlocked: () => new errors.TooManyRequestsError({ message: tpl(messages.tooManyAttempts) }),
   });
 
+const userVerificationChallenge = () =>
+  limiter('userVerificationChallenge', 'user_verification_challenge', {
+    ignoreIP: true,
+    onBlocked: () =>
+      new errors.TooManyRequestsError({
+        message: 'Too many verification attempts. Please request a new code.',
+        code: 'STAFF_VERIFICATION_ATTEMPTS_RATE_LIMITED',
+      }),
+  });
+
 const sendVerificationCode = () =>
   limiter('sendVerificationCode', 'send_verification_code', {
     onBlocked: () => new errors.TooManyRequestsError({ message: tpl(messages.tooManyAttempts) }),
+  });
+
+// One verification-email budget per user, independent of IP or session.
+const verificationEmail = () =>
+  limiter('verificationEmail', 'send_verification_code_user', {
+    ignoreIP: true,
+    onBlocked: (retryAfterMs) =>
+      new errors.TooManyRequestsError({
+        message: `Too many verification emails requested, try again in ${waitText(retryAfterMs)}`,
+        context: tpl(messages.tooManyAttempts),
+      }),
   });
 
 // This protects a private blog from spam attacks. The defaults here allow 10 attempts per IP per hour
@@ -432,7 +453,9 @@ const spamPrevention = {
   globalReset,
   userLogin,
   sendVerificationCode,
+  verificationEmail,
   userVerification,
+  userVerificationChallenge,
   membersAuth,
   membersAuthEnumeration,
   checkoutSessionGlobal,
