@@ -26,7 +26,7 @@ export interface OutboxStore {
     entry: { id: string; envelope: DispatchEnvelope },
     options?: { transacting?: Knex.Transaction },
   ): Promise<void>;
-  releaseSubmitted(): Promise<void>;
+  releaseSubmitted(): Promise<{ id: string; type: string | null }[]>;
 }
 
 export interface OutboxRelayLike {
@@ -221,7 +221,13 @@ export class JobsService {
       // Rows submitted before this start belong to a process that has gone,
       // so their jobs may be lost. That holds while a site never runs two
       // processes at once; more than one would need to know who owns a row.
-      await this.#outbox.store.releaseSubmitted();
+      const released = await this.#outbox.store.releaseSubmitted();
+      if (released.length > 0) {
+        this.#logging.info(
+          { system: { event: 'jobs_outbox.released', count: released.length, rows: released } },
+          `[Jobs Outbox] Released ${released.length} submitted rows to hand over again`,
+        );
+      }
       this.#outbox.relay.start();
     } else if (this.#logOutboxUnavailable) {
       this.#logging.warn(

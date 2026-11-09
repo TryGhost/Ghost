@@ -30,6 +30,11 @@ export interface InsertOptions {
   transacting?: Knex.Transaction;
 }
 
+export interface ReleasedRow {
+  id: string;
+  type: string | null;
+}
+
 export type ProcessOutcome =
   | { status: 'idle' }
   | { status: 'delivered'; id: string; type: string; createdAt: Date }
@@ -37,6 +42,15 @@ export type ProcessOutcome =
 
 // The row as the claim query returns it, validated before anything trusts it.
 const ClaimedRow = z.object({ id: z.string(), envelope: z.string(), created_at: DbDate });
+
+const SubmittedRow = z.object({ id: z.string(), envelope: z.string() });
+
+// Only for logging which jobs a boot hands over again; a row whose envelope
+// cannot be read takes the relay's retry path once it is claimed.
+function typeOf(stored: string): string | null {
+  const result = z.safeDecode(OutboxEnvelope, stored);
+  return result.success ? result.data.payload.job.type : null;
+}
 
 // MySQL rounds a fractional DATETIME on insert, which can round available_at up
 // and leave a freshly inserted row briefly ineligible.
@@ -119,7 +133,19 @@ export class JobsOutbox {
     await this.#knex(TABLE).where('id', id).delete();
   }
 
-  async releaseSubmitted(): Promise<void> {
-    await this.#knex(TABLE).whereNotNull('submitted_at').update({ submitted_at: null });
+  async releaseSubmitted(): Promise<ReleasedRow[]> {
+    const rows = z
+      .array(SubmittedRow)
+      .parse(await this.#knex(TABLE).select('id', 'envelope').whereNotNull('submitted_at'));
+    if (rows.length === 0) {
+      return [];
+    }
+    await this.#knex(TABLE)
+      .whereIn(
+        'id',
+        rows.map(({ id }) => id),
+      )
+      .update({ submitted_at: null });
+    return rows.map(({ id, envelope }) => ({ id, type: typeOf(envelope) }));
   }
 }
