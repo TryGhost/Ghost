@@ -276,9 +276,23 @@
       }
     },
     {
-      "files": ["ghost/core/**/*.{js,ts}"],
+      "files": ["ghost/core/**/*.{js,ts}", "ghost/test/**/*.{js,ts}"],
       "rules": {
         "ghost/prefer-canonical-types": "error"
+      }
+    },
+    {
+      "files": ["ghost/core/server/services/**/*.ts"],
+      "rules": {
+        "ghost/no-any-in-exported-types": "error"
+      }
+    },
+    {
+      "files": ["ghost/test/**/*.{js,ts}"],
+      "rules": {
+        "ghost/no-assert-error-instance": "error",
+        "ghost/no-real-logger-injection": "error",
+        "ghost/stop-frontend-agents": "error"
       }
     }
   ],

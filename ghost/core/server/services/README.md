@@ -184,9 +184,12 @@ has got. Keep each dependency's existing timing:
 Type injected logging as `GhostLogger`, or a `Pick<GhostLogger, ...>` of the
 methods used, with `import type { GhostLogger } from '@tryghost/logging'`. In
 JSDoc, use `import('@tryghost/logging').GhostLogger`. Do not hand-write a logger
-shape; `ghost/prefer-canonical-types` rejects one in Ghost Core whatever it is
-named. Class tests pass `createLoggingFake()` from `ghost/test/utils/logging-utils`
-and assert on its stubs instead of stubbing the global logger.
+shape; `ghost/prefer-canonical-types` rejects one in Ghost Core and its tests
+whatever it is named, and rejects `object` or `any` on an injected logger. Class
+tests pass `createLoggingFake()` from `ghost/test/utils/logging-utils` and assert
+on its stubs instead of stubbing the global logger;
+`ghost/no-real-logger-injection` rejects passing the real one. Exported service
+types may not contain `any`.
 
 Where JavaScript has a matching TypeScript sibling, the audit and boundary
 checks inspect the TypeScript source and resolve imports back to it. This keeps
