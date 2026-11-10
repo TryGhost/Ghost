@@ -106,6 +106,13 @@ export function parseManifestUrl(
   return { success: true, manifestUrl: url.href };
 }
 
+/** A manifest's problems as `path: message`, joined by `separator`, as Ghost reports them. */
+export function formatManifestErrors(errors: readonly ManifestError[], separator: string): string {
+  return errors
+    .map(({ path, message }) => (path ? `${path}: ${message}` : message))
+    .join(separator);
+}
+
 function invalid(errors: ManifestError[]): ParseManifestResult {
   return { success: false, reason: 'invalid', errors };
 }

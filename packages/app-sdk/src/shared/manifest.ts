@@ -24,8 +24,3 @@ export interface ManifestError {
  * applies them.
  */
 export const UNKNOWN_GHOST_URL = 'https://ghost.invalid/';
-
-/** A manifest's problems, one per line, as `path: message`. */
-export function formatErrors(errors: readonly ManifestError[]): string {
-  return errors.map(({ path, message }) => (path ? `${path}: ${message}` : message)).join('\n');
-}

@@ -7,8 +7,8 @@ import { SOURCE } from './helpers.ts';
 // The manifest's own field limits keep it far below the 64 KB Ghost stores, so the limit is
 // lowered to one this manifest fits as written, but not once its paths are resolved.
 const { LIMIT } = vi.hoisted(() => ({ LIMIT: 480 }));
-vi.mock('../src/tooling/limits.ts', async (original) => ({
-  ...(await original<typeof import('../src/tooling/limits.ts')>()),
+vi.mock('@tryghost/app-contracts/identity', async (original) => ({
+  ...(await original<typeof import('@tryghost/app-contracts/identity')>()),
   MANIFEST_MAX_BYTES: LIMIT,
 }));
 

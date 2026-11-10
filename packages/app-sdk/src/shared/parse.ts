@@ -22,8 +22,3 @@ export function parseOrigin(entry: string): string | undefined {
   }
   return origin;
 }
-
-/** JSON text as Ghost reads it: a byte order mark is valid at its start, but JSON.parse refuses it. */
-export function parseJsonText(text: string): unknown {
-  return JSON.parse(text.charCodeAt(0) === 0xfeff ? text.slice(1) : text);
-}
