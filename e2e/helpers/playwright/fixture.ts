@@ -92,6 +92,9 @@ export interface User {
 }
 
 export interface GhostConfig {
+  mail__options__host?: string;
+  mail__options__port?: string;
+  mail__options__connectionTimeout?: string;
   // Any hostSettings path, spelled the way the environment does: double underscores for
   // nesting, so `hostSettings__limits__staff__max`. Open rather than enumerated, because a
   // limit is just configuration and a test wanting a new one should not also need a new

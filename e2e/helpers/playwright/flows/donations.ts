@@ -13,7 +13,7 @@ export async function completeDonationViaFakeCheckout(
   page: Page,
   stripe: StripeTestService,
   opts: CompleteDonationOptions = {},
-): Promise<void> {
+): Promise<string> {
   const checkoutPage = new FakeStripeCheckoutPage(page);
   await checkoutPage.waitUntilPaymentReady();
 
@@ -44,4 +44,5 @@ export async function completeDonationViaFakeCheckout(
   }
 
   await page.goto(successUrl);
+  return email;
 }

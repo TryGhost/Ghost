@@ -105,7 +105,9 @@ describe('Create Stripe Checkout Session for Donations', function () {
       type: 'checkout.session.completed',
       data: {
         object: {
+          id: stripeMocker.checkoutSessions[0].id,
           mode: 'payment',
+          payment_status: 'paid',
           amount_total: 1200,
           currency: 'usd',
           customer: stripeMocker.checkoutSessions[0].customer,
@@ -212,6 +214,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
         object: {
           id: checkoutSession.id,
           mode: 'payment',
+          payment_status: 'paid',
           amount_total: 100,
           currency: 'usd',
           customer: checkoutSession.customer,
@@ -296,7 +299,9 @@ describe('Create Stripe Checkout Session for Donations', function () {
       type: 'checkout.session.completed',
       data: {
         object: {
+          id: stripeMocker.checkoutSessions[0].id,
           mode: 'payment',
+          payment_status: 'paid',
           amount_total: 1220,
           currency: 'eur',
           customer: stripeMocker.checkoutSessions[0].customer,
@@ -395,7 +400,9 @@ describe('Create Stripe Checkout Session for Donations', function () {
       type: 'checkout.session.completed',
       data: {
         object: {
+          id: stripeMocker.checkoutSessions[0].id,
           mode: 'payment',
+          payment_status: 'paid',
           amount_total: 1200,
           currency: 'usd',
           customer: stripeMocker.checkoutSessions[0].customer,
@@ -549,7 +556,9 @@ describe('Create Stripe Checkout Session for Donations', function () {
       type: 'checkout.session.completed',
       data: {
         object: {
+          id: checkoutSession.id,
           mode: 'payment',
+          payment_status: 'paid',
           amount_total: 2500,
           currency: 'usd',
           customer: checkoutSession.customer,
