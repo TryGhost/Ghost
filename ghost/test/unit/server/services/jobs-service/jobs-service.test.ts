@@ -65,10 +65,14 @@ function makeLogger() {
   return { logging, calls };
 }
 
-function makeOutbox() {
+function makeOutbox({ released = 0 } = {}) {
   const inserts: { id: string; envelope: DispatchEnvelope; transacting?: unknown }[] = [];
   const relayCalls: string[] = [];
   const store = {
+    async releaseSubmitted(): Promise<number> {
+      relayCalls.push('release');
+      return released;
+    },
     async insert(
       entry: { id: string; envelope: DispatchEnvelope },
       options?: { transacting?: unknown },
@@ -84,7 +88,8 @@ function makeOutbox() {
       relayCalls.push('stop');
     },
   };
-  return { inserts, relayCalls, store, relay };
+  const tracker = { onSettled: async (): Promise<void> => {} };
+  return { inserts, relayCalls, store, relay, tracker };
 }
 
 // Lets an after-commit hand-off registered on the transaction run.
@@ -132,7 +137,11 @@ describe('JobsService', function () {
       logging: logger.logging,
       sentry: overrides.sentry,
       outbox: overrides.outbox
-        ? { store: overrides.outbox.store, relay: overrides.outbox.relay }
+        ? {
+            store: overrides.outbox.store,
+            relay: overrides.outbox.relay,
+            tracker: overrides.outbox.tracker,
+          }
         : undefined,
       logOutboxUnavailable: overrides.logOutboxUnavailable,
     });
@@ -396,16 +405,54 @@ describe('JobsService', function () {
       assert.equal(logger.calls.error.length, 0, 'the caller gets the error, nothing is logged');
     });
 
+    it('active: has the backend report settlements to the outbox tracker', async function () {
+      const outbox = makeOutbox();
+      const service = makeService({ outbox });
+
+      await service.start();
+
+      assert.equal(backend.startOptions?.onSettled, outbox.tracker.onSettled);
+    });
+
+    it('inactive: asks the backend for no settlements', async function () {
+      const service = makeService();
+
+      await service.start();
+
+      assert.equal(backend.startOptions?.onSettled, undefined);
+    });
+
     it('active: starts the relay after the backend and stops it before the backend', async function () {
       const outbox = makeOutbox();
       const service = makeService({ outbox });
 
       await service.start();
-      assert.deepEqual(outbox.relayCalls, ['start']);
+      assert.deepEqual(outbox.relayCalls, ['release', 'start']);
 
       await service.shutdown();
-      assert.deepEqual(outbox.relayCalls, ['start', 'stop']);
+      assert.deepEqual(outbox.relayCalls, ['release', 'start', 'stop']);
       assert.equal(backend.shutdownCalls.length, 1);
+    });
+
+    it('logs at start how many submitted rows it released to hand over again', async function () {
+      await makeService({ outbox: makeOutbox({ released: 2 }) }).start();
+
+      const [event, message] = logger.calls.info[0] as [
+        { system: { event: string; count: number } },
+        string,
+      ];
+      assert.deepEqual(event, { system: { event: 'jobs_outbox.released', count: 2 } });
+      assert.equal(message, '[Jobs Outbox] Released 2 submitted rows to hand over again');
+    });
+
+    it('logs no release when there was nothing to release', async function () {
+      await makeService({ outbox: makeOutbox({ released: 0 }) }).start();
+
+      assert.ok(
+        !logger.calls.info.some(([event]) =>
+          JSON.stringify(event).includes('jobs_outbox.released'),
+        ),
+      );
     });
 
     it('logs at start which backend runs jobs and whether the outbox is on', async function () {
