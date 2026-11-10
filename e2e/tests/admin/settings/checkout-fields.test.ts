@@ -74,7 +74,8 @@ function latestTaxIdRequest(stripe: StripeTestService) {
 test.describe('Ghost Admin - Checkout fields', () => {
   test.use({
     stripeEnabled: true,
-    labs: { stripeCheckoutCollection: true },
+    // Phone fields on, as checkout saves the phone number only into one.
+    labs: { stripeCheckoutCollection: true, customFieldTypePhone: true },
   });
 
   test('shipping address - a member gives one at checkout, and it lands on their record', async ({

@@ -912,9 +912,11 @@ describe('Create Stripe Checkout Session', function () {
     beforeEach(async function () {
       mockManager.mockStripe();
       mockManager.mockLabsEnabled('stripeCheckoutCollection');
+      // The phone number saves only into a phone field.
+      mockManager.mockLabsEnabled('customFieldTypePhone');
       await adminAgent
         .post('/members/metafields/custom/')
-        .body({ members_metafields: [{ name: 'Contact phone', type: 'short_text' }] })
+        .body({ members_metafields: [{ name: 'Contact phone', type: 'phone' }] })
         .expectStatus(201);
       const {
         body: { tiers },

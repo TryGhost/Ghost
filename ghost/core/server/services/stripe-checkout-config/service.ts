@@ -166,7 +166,7 @@ const PARTS: {
         port: CHECKOUT_PORT.phone,
         customFieldKey: (phone) => phone.customFieldKey,
         property: 'phone.custom_field_key',
-        wrongType: 'Choose a short text custom field for the phone number.',
+        wrongType: 'Choose a phone custom field for the phone number.',
         holds: 'the phone number',
       },
     },

@@ -31,12 +31,12 @@ function stripeSettings() {
   });
 }
 
-// A short text field, typed as one, so a copy can be given another plain type.
+// A phone field, typed as one, so a copy can be given another plain type.
 const phoneField = {
   namespace: CUSTOM_NAMESPACE,
   key: KeySchema.parse('contact_phone'),
   name: 'Contact phone',
-  type: 'short_text',
+  type: 'phone',
   status: 'active',
   access: { member: 'none' },
   created_at: '2026-10-19T00:00:00.000Z',
@@ -63,8 +63,10 @@ async function openCheckoutFields(
   const saveApi = fakeAdminEndpoint('PUT', '/stripe/checkout/config/', {
     checkout_config: [config],
   });
+  // Phone fields on, as the phone number saves only into one.
   const allLabs = {
     stripeCheckoutCollection: true,
+    customFieldTypePhone: true,
     ...labs,
   };
   const siteConfig = configResponse({ labs: allLabs });
@@ -188,6 +190,33 @@ describe('Checkout settings', () => {
           },
         ],
       });
+  });
+
+  // A phone field keeps every number in one form, so it's the only kind the number goes into,
+  // as a shipping address goes only into an address field.
+  it('offers only phone fields for the phone number, and makes a new field there a phone field', async () => {
+    const notesField = {
+      ...phoneField,
+      key: KeySchema.parse('notes'),
+      name: 'Notes',
+      type: 'short_text',
+    } satisfies MemberCustomField;
+    const { modal } = await openCheckoutFields(
+      { design: { customize: false }, shipping: { collect: false }, phone: { collect: false } },
+      [phoneField, notesField],
+    );
+
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    await modal.getByRole('combobox', { name: 'Save phone as' }).click();
+    await expect.element(page.getByRole('option', { name: 'Contact phone' })).toBeVisible();
+    await expect.element(page.getByRole('option', { name: 'Notes' })).not.toBeInTheDocument();
+
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    const type = page.getByRole('dialog', { name: 'New custom field' }).getByRole('combobox', {
+      name: 'Type',
+    });
+    await expect.element(type).toHaveTextContent('Phone');
+    await expect.element(type).toBeDisabled();
   });
 
   // A site keeps its Stripe connection when the host switches its custom fields off, so it

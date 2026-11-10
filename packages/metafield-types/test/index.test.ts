@@ -14,6 +14,7 @@ import {
   matchLeaf,
   matchShape,
   partsOf,
+  phoneNumberIn,
   refusedProperty,
   valueSchemaFor,
   type Address,
@@ -246,6 +247,17 @@ describe('metafield-types catalog', function () {
       const invalid = 'Enter a valid phone number, like +44 20 7946 0000.';
       assert.equal(rule.safeParse('+44 20 7946 0000 (home)').error?.issues[0]?.message, invalid);
       assert.equal(rule.safeParse('Mobile: +44 20 7946 0000').error?.issues[0]?.message, invalid);
+    });
+
+    // For a number that comes with a country rather than a code, as a wallet's can at checkout.
+    it('is read as it is dialled in a country, unless it gives its own code', function () {
+      assert.equal(phoneNumberIn('020 7946 0000', 'GB'), '+442079460000');
+      assert.equal(phoneNumberIn('+33 6 12 34 56 78', 'GB'), '+33612345678');
+      assert.equal(phoneNumberIn('020 7946 000', 'GB'), undefined);
+      assert.equal(phoneNumberIn('+1 415 555 0100 ext. 12', 'US'), undefined);
+      assert.equal(phoneNumberIn('020 7946 0000', 'AQ'), undefined);
+      assert.equal(phoneNumberIn('020 7946 0000', undefined), undefined);
+      assert.equal(phoneNumberIn('+44 20 7946 0000', undefined), '+442079460000');
     });
 
     it('is refused with an extension rather than losing it', function () {
