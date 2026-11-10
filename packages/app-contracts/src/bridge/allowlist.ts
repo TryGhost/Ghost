@@ -18,6 +18,8 @@ import type { FetchMethod } from './rules.ts';
  *   are left out.
  * - The search index of posts, pages and tags, and slug generation, which Admin's own editor
  *   uses to pick a slug before saving.
+ * - The site's public details: its title, description, logo, icon, cover image and accent
+ *   colour, for showing the site's branding.
  *
  * Writes of posts, pages and tags are checked further, so an app can't ask Ghost to email a post,
  * set code injection or write mobiledoc: a write may carry only the query parameters its scope
@@ -120,6 +122,11 @@ export const ADMIN_API_ALLOWLIST: readonly AdminApiScope[] = [
     name: 'newsletters:read',
     description: 'List newsletters.',
     routes: ['GET /newsletters'],
+  },
+  {
+    name: 'site:read',
+    description: 'Read the public details of the site, such as its logo, icon and accent colour.',
+    routes: ['GET /site'],
   },
   {
     name: 'slugs:read',

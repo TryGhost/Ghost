@@ -740,13 +740,8 @@ class EmailRenderer {
     html = $.html();
 
     // Juice HTML (inline CSS)
-    const juice = require('juice');
-    // resolveCSSVariables crashes on nameless declarations in user-authored style attributes
-    html = juice(html, {
-      inlinePseudoElements: true,
-      removeStyleTags: true,
-      resolveCSSVariables: false,
-    });
+    const { inlineCss } = require('../../lib/email-rendering/inline-css');
+    html = inlineCss(html);
 
     // happens after inlining of CSS so we can change element types without worrying about styling
     $ = cheerioLoad(html);

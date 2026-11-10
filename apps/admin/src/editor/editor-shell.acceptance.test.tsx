@@ -297,7 +297,8 @@ function expectSmallScreenLayout(buttons: number) {
 function successColour() {
   const probe = document.createElement('span');
   probe.className = 'text-state-success';
-  document.body.append(probe);
+  // Inside the app's Shade scope, so it resolves the palette the app uses.
+  (document.querySelector('[data-admin7-design]') ?? document.body).append(probe);
   const colour = getComputedStyle(probe).color;
   probe.remove();
   return colour;
@@ -461,7 +462,7 @@ describe('Floating editor shell', () => {
       // Publish is the bar's primary button, the size of the controls around it.
       const publish = editorScreen.publishButton().element();
       await expect.element(editorScreen.publishButton()).toHaveClass('bg-primary');
-      await expect.element(editorScreen.publishButton()).not.toHaveClass('text-state-success');
+      await expect.element(editorScreen.publishButton()).not.toHaveClass('text-publish-accent');
       expect(publish.getBoundingClientRect().height).toBe(
         editorScreen.backLink('post').element().getBoundingClientRect().height,
       );
@@ -562,7 +563,7 @@ describe('Floating editor shell', () => {
       const actions = editorScreen.headerActions().getByRole('button').elements();
       expect(actions.at(-1)).toBe(editorScreen.updateButton().element());
       await expect.element(editorScreen.updateButton()).toHaveClass('bg-primary');
-      await expect.element(editorScreen.updateButton()).not.toHaveClass('text-state-success');
+      await expect.element(editorScreen.updateButton()).not.toHaveClass('text-publish-accent');
       await expect.element(editorScreen.updateButton()).toBeDisabled();
       const secondary =
         status === 'scheduled' ? editorScreen.unscheduleButton() : editorScreen.unpublishButton();

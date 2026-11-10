@@ -174,6 +174,95 @@ describe('Mail: Ghostmailer', function () {
     assert.equal(typeof mailer.transport.sendMail, 'function');
   });
 
+  describe('SMTP connection timeout', function () {
+    it('defaults to 10 seconds when not configured', function () {
+      configUtils.set({ mail: SMTP });
+      mailer = new mail.GhostMailer();
+
+      assert.equal(mailer.transport.transporter.options.connectionTimeout, 10000);
+    });
+
+    it('keeps a configured value', function () {
+      configUtils.set({
+        mail: { ...SMTP, options: { ...SMTP.options, connectionTimeout: 30000 } },
+      });
+      mailer = new mail.GhostMailer();
+
+      assert.equal(mailer.transport.transporter.options.connectionTimeout, 30000);
+    });
+
+    it('keeps an explicitly empty value', function () {
+      configUtils.set({
+        mail: { ...SMTP, options: { ...SMTP.options, connectionTimeout: 0 } },
+      });
+      mailer = new mail.GhostMailer();
+
+      assert.equal(mailer.transport.transporter.options.connectionTimeout, 0);
+    });
+
+    it('leaves connection URL options untouched', function () {
+      configUtils.set({
+        mail: { transport: 'SMTP', options: 'smtps://user:pass@example.com:465' },
+      });
+      mailer = new mail.GhostMailer();
+
+      assert.equal(mailer.transport.transporter.options.host, 'example.com');
+      assert.equal('connectionTimeout' in mailer.transport.transporter.options, false);
+    });
+
+    for (const mailConfig of [
+      { transport: 'mailgun', options: { auth: { api_key: 'key', domain: 'domain.com' } } },
+      { transport: 'direct' },
+    ]) {
+      it(`is not added for the ${mailConfig.transport} transport`, function () {
+        configUtils.set({ mail: mailConfig });
+        mailer = new mail.GhostMailer();
+
+        assert.equal('connectionTimeout' in mailer.transport.transporter.options, false);
+      });
+    }
+  });
+
+  describe('SMTP send deadline', function () {
+    it('fails a stalled send after 45 seconds', async function () {
+      const clock = sandbox.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      configUtils.set({ mail: SMTP });
+      mailer = new mail.GhostMailer();
+      sandbox.stub(mailer.transport, 'sendMail').returns(new Promise(() => {}));
+
+      const sending = assert.rejects(mailer.sendMail(mailDataNoServer), {
+        name: 'EmailError',
+        message: 'Failed to send email. Reason: Timed out waiting for the mail server.',
+      });
+      await clock.tickAsync(45000);
+      await sending;
+    });
+
+    it('clears the deadline when the send settles', async function () {
+      const clock = sandbox.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      configUtils.set({ mail: SMTP });
+      mailer = new mail.GhostMailer();
+      sandbox.stub(mailer.transport, 'sendMail').resolves({});
+
+      await mailer.sendMail(mailDataNoServer);
+
+      assert.equal(clock.countTimers(), 0);
+    });
+
+    it('does not apply to other transports', async function () {
+      const clock = sandbox.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      configUtils.set({
+        mail: { transport: 'mailgun', options: { auth: { api_key: 'key', domain: 'domain.com' } } },
+      });
+      mailer = new mail.GhostMailer();
+      sandbox.stub(mailer.transport, 'sendMail').returns(new Promise(() => {}));
+
+      mailer.sendMail(mailDataNoServer);
+
+      assert.equal(clock.countTimers(), 0);
+    });
+  });
+
   it('should fallback to direct if config is empty', function () {
     configUtils.set({ mail: {} });
 

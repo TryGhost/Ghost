@@ -6,10 +6,12 @@ const {
 } = require('../../utils/e2e-framework');
 const { mockMail, restore } = require('../../utils/e2e-framework-mock-manager');
 const models = require('../../../core/server/models');
+const mailService = require('../../../core/server/lib/mail');
 const security = require('@tryghost/security');
 const settingsCache = require('../../../core/shared/settings-cache');
 const moment = require('moment');
 const assert = require('node:assert/strict');
+const sinon = require('sinon');
 const { anyErrorId } = matchers;
 
 describe('Authentication API', function () {
@@ -22,6 +24,10 @@ describe('Authentication API', function () {
   });
 
   describe('generateResetToken', function () {
+    afterEach(function () {
+      restore();
+    });
+
     it('Cannot generate reset token without required info', async function () {
       await agent
         .post('authentication/password_reset')
@@ -67,6 +73,24 @@ describe('Authentication API', function () {
           { id: suspendedUser.id, context: { internal: true } },
         );
       }
+    });
+
+    it('Returns the mail error when the reset email cannot be sent', async function () {
+      const owner = fixtureManager.get('users', 0);
+      const transport = Object.getPrototypeOf(new mailService.GhostMailer().transport);
+      sinon.stub(transport, 'sendMail').rejects(new Error('connect ECONNREFUSED 127.0.0.1:587'));
+
+      await agent
+        .post('authentication/password_reset')
+        .body({ password_reset: [{ email: owner.email }] })
+        .expectStatus(500)
+        .matchBodySnapshot({
+          errors: [
+            {
+              id: anyErrorId,
+            },
+          ],
+        });
     });
   });
 

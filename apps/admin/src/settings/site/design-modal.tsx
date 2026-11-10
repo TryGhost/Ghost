@@ -1,5 +1,5 @@
 import DesignSidebar from './design-and-branding/design-sidebar';
-import React, { useState } from 'react';
+import React from 'react';
 import ThemePreview from './design-and-branding/theme-preview';
 import useQueryParams from '@/settings/hooks/use-query-params';
 import { Laptop, Smartphone } from 'lucide-react';
@@ -13,7 +13,7 @@ import {
 } from '@tryghost/shade/components';
 import { PreviewModalContent } from '@/settings/components/preview-modal';
 import { getHomepageUrl } from '@tryghost/admin-x-framework/api/site';
-import { useNavigate } from '@tryghost/admin-x-framework';
+import { useLocation, useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
 import { useBrowsePosts } from '@tryghost/admin-x-framework/api/posts';
 import { useDesignForm } from './design-and-branding/use-design-form';
 import { useGlobalData } from '@/settings/providers/global-data-context';
@@ -29,8 +29,12 @@ const DesignModal: React.FC = () => {
       fields: 'id,url',
     },
   });
-  const [selectedPreviewTab, setSelectedPreviewTab] = useState('homepage');
-  const [previewDevice, setPreviewDevice] = useState<'desktop' | 'mobile'>('desktop');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+  const routeState: unknown = location.state;
+  const selectedPreviewTab =
+    searchParams.get('preview') === 'post' && latestPost ? 'post' : 'homepage';
+  const previewDevice = searchParams.get('device') === 'mobile' ? 'mobile' : 'desktop';
   const { updateRoute } = useSettingsNavigation();
   const navigate = useNavigate();
 
@@ -48,17 +52,9 @@ const DesignModal: React.FC = () => {
   } = useDesignForm();
 
   const onSelectURL = (id: string) => {
-    if (latestPost) {
-      setSelectedPreviewTab(id);
-    }
-  };
-
-  const onTabChange = (id: string) => {
-    if (id === 'post' && latestPost) {
-      setSelectedPreviewTab('post');
-    } else {
-      setSelectedPreviewTab('homepage');
-    }
+    const params = new URLSearchParams(searchParams);
+    params.set('preview', id);
+    setSearchParams(params, { replace: true, state: routeState });
   };
 
   // One preview per tab, all mounted up front, so switching needs no refetch.
@@ -104,7 +100,13 @@ const DesignModal: React.FC = () => {
       value={previewDevice}
       onValueChange={(value) => {
         if (value === 'desktop' || value === 'mobile') {
-          setPreviewDevice(value);
+          const params = new URLSearchParams(searchParams);
+          if (value === 'mobile') {
+            params.set('device', 'mobile');
+          } else {
+            params.delete('device');
+          }
+          setSearchParams(params, { replace: true, state: routeState });
         }
       }}
     >
@@ -122,7 +124,6 @@ const DesignModal: React.FC = () => {
       themeSettingSections={themeSettingSections}
       updateGlobalSetting={updateGlobalSetting}
       updateThemeSetting={updateThemeSetting}
-      onTabChange={onTabChange}
     />
   );
 

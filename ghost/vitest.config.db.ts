@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { availableParallelism } from 'node:os';
+import { testWorkerCount } from '@internal/cfg-test-workers';
 import { defineConfig } from 'vitest/config';
 import { coverageEnv } from './test/utils/strict-mode';
 
@@ -54,7 +54,7 @@ const sharedSsrConfig = {
  * one purely on worker count. `legacy` runs on the threads pool, so the
  * "forks 2 hangs" wedge below is not in play here.
  */
-const getWorkerCount = () => Math.max(2, availableParallelism() - 1);
+const getWorkerCount = () => testWorkerCount({ memoryPerWorkerGB: 1, min: 2 });
 
 // Shared by every DB-backed project — the execution model is identical for all
 // of them; only the include globs and per-suite timeouts differ.

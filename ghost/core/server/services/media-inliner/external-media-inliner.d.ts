@@ -1,9 +1,15 @@
-import type { ExternalMediaImportResult } from './types';
+import type { OriginSchemes } from './origin-schemes';
+import type { ExternalMediaImportResult, ExternalMediaInlinerDependencies } from './types';
 
 declare class ExternalMediaInliner {
-  constructor(deps: object);
+  constructor(deps: ExternalMediaInlinerDependencies);
 
-  importUrl(sourceUrl: string): Promise<ExternalMediaImportResult>;
+  getMediaStorage: ExternalMediaInlinerDependencies['getMediaStorage'];
+
+  importUrl(
+    sourceUrl: string,
+    options?: { originSchemes?: OriginSchemes },
+  ): Promise<ExternalMediaImportResult>;
   inline(domains: string[]): Promise<void>;
 }
 

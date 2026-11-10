@@ -3,8 +3,6 @@ import type { UserRoleType } from '@tryghost/admin-x-framework/api/roles';
 import { describe, expect, it } from 'vitest';
 
 /**
- * Ported from Ember's `utils/gift-link.js`.
- *
  * A gift link shares a *gated* post with someone who isn't a member, so the
  * two halves of the rule are: a user senior enough to hand out access, and a
  * post that actually withholds it.

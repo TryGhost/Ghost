@@ -23,7 +23,6 @@ const MANIFESTS = 'app_installation_manifests';
 
 const HistoryManifestRow = DbAppInstallationManifest.pick({
   id: true,
-  manifest_url: true,
   source: true,
   requires_approval: true,
   created_at: true,
@@ -31,7 +30,9 @@ const HistoryManifestRow = DbAppInstallationManifest.pick({
 
 const ManifestContentRow = DbAppInstallationManifest.pick({ id: true, manifest: true });
 
-const ManifestDigestRow = DbAppInstallationManifest.pick({ digest: true });
+const DigestAndIconRow = DbAppInstallationManifest.pick({ digest: true, icon_data_url: true });
+
+const BackendKeyRow = DbAppInstallationManifest.pick({ backend_key_thumbprint: true });
 
 const HistoryActionRow = z
   .object({
@@ -71,9 +72,12 @@ function isUniqueViolation(err: unknown): boolean {
   );
 }
 
-interface AddedManifest {
+/** A manifest row to add for an installation. */
+export interface AddedRow {
+  loaded: LoadedManifest;
   source: z.infer<typeof AppInstallationManifestSource>;
   requiresApproval: boolean;
+  iconDataUrl: string | null;
 }
 
 /** Every write to an installation moves its revision on, which ends its app sessions. */
@@ -95,10 +99,7 @@ class LockedInstallation {
   }
 
   /** Adds a manifest row for the installation, and returns its ID. */
-  async addManifest(
-    loaded: LoadedManifest,
-    { source, requiresApproval }: AddedManifest,
-  ): Promise<string> {
+  async addManifest({ loaded, source, requiresApproval, iconDataUrl }: AddedRow): Promise<string> {
     const id = new ObjectId().toHexString();
     await this.trx(MANIFESTS).insert({
       id,
@@ -106,6 +107,8 @@ class LockedInstallation {
       manifest_url: loaded.manifestUrl,
       manifest: loaded.serialised,
       digest: loaded.digest,
+      backend_key_thumbprint: loaded.backendKeyThumbprint,
+      icon_data_url: iconDataUrl,
       source,
       requires_approval: requiresApproval,
       created_at: toDatabaseDate(new Date()),
@@ -143,6 +146,14 @@ class LockedInstallation {
  * The installations and their manifest rows. Manifest rows are only ever added, never
  * changed, and every write to an installation moves its revision on.
  */
+/** The app has a current installation, so it can't be installed again. */
+export function alreadyInstalled(appId: string) {
+  return new errors.ConflictError({
+    message: `The app ${appId} is already installed.`,
+    code: 'APP_ALREADY_INSTALLED',
+  });
+}
+
 export class AppInstallationsRepository {
   private knex: Knex;
 
@@ -176,15 +187,56 @@ export class AppInstallationsRepository {
     return row ? z.decode(InstallationRow, row) : undefined;
   }
 
+  /** Whether the app has a current installation. Reads no manifest, so nothing can fail to decode. */
+  async isInstalled(appId: string): Promise<boolean> {
+    return Boolean(await this.knex(INSTALLATIONS).where('current_app_id', appId).first('id'));
+  }
+
   /**
-   * A manifest row's digest, by ID. The manifest itself isn't read, so a row stored under an
-   * older contract, which may no longer decode, can still be compared against.
+   * Reads only the digest and icon copy, skipping the manifest: a row stored under an older
+   * contract may no longer decode, but we still compare against it.
    */
-  async findDigest(id: string): Promise<string | undefined> {
+  async findDigestAndIcon(id: string): Promise<z.output<typeof DigestAndIconRow> | undefined> {
     const row = await this.knex(MANIFESTS)
       .where({ id })
-      .first<z.input<typeof ManifestDigestRow> | undefined>('digest');
-    return row ? z.decode(ManifestDigestRow, row).digest : undefined;
+      .first<z.input<typeof DigestAndIconRow> | undefined>('digest', 'icon_data_url');
+    return row ? z.decode(DigestAndIconRow, row) : undefined;
+  }
+
+  /**
+   * The backend keys replaced for an app signed with this identity key: every key named by
+   * a manifest row of any of its installations, ended ones included, other than the current
+   * key. Rows are only added for verified manifests, pending ones included, so a key is
+   * retired as soon as a verified manifest names a newer one, and uninstalling and
+   * installing again doesn't bring it back.
+   *
+   * The current key is the one the newest installation's pending manifest names, or else its
+   * approved manifest's. Every added row becomes one of those straight away, so rows aren't
+   * ordered by `created_at`, which comes from each instance's clock and is only to the
+   * second. Only installations are, and those are an uninstall and an install apart.
+   */
+  async retiredBackendKeysOf(appId: string, identityKeyThumbprint: string): Promise<Set<string>> {
+    const rows = () =>
+      this.knex(`${MANIFESTS} as manifest`)
+        .join(`${INSTALLATIONS} as installation`, 'installation.id', 'manifest.installation_id')
+        .where({
+          'installation.app_id': appId,
+          'installation.identity_key_thumbprint': identityKeyThumbprint,
+        });
+    const current = rows()
+      .whereRaw('?? = coalesce(??, ??)', [
+        'manifest.id',
+        'installation.pending_manifest_id',
+        'installation.manifest_id',
+      ])
+      .orderBy('installation.created_at', 'desc')
+      .orderBy('installation.id', 'desc')
+      .limit(1)
+      .select('manifest.backend_key_thumbprint');
+    const retired = await rows()
+      .whereNot('manifest.backend_key_thumbprint', current)
+      .distinct<z.input<typeof BackendKeyRow>[]>('manifest.backend_key_thumbprint');
+    return new Set(retired.map((row) => z.decode(BackendKeyRow, row).backend_key_thumbprint));
   }
 
   /** An installation's manifest rows and staff actions, oldest first. */
@@ -197,7 +249,6 @@ export class AppInstallationsRepository {
       .orderBy('id', 'asc')
       .select<z.input<typeof HistoryManifestRow>[]>(
         'id',
-        'manifest_url',
         'source',
         'requires_approval',
         'created_at',
@@ -250,7 +301,7 @@ export class AppInstallationsRepository {
    * second installation of the same app, so when two installs race, one succeeds and the
    * other gets `APP_ALREADY_INSTALLED`.
    */
-  async insert(loaded: LoadedManifest): Promise<Installation> {
+  async insert(loaded: LoadedManifest, iconDataUrl: string | null): Promise<Installation> {
     const { manifest } = loaded;
     const id = new ObjectId().toHexString();
     const manifestId = new ObjectId().toHexString();
@@ -260,12 +311,14 @@ export class AppInstallationsRepository {
     const written: z.input<typeof InstallationRow> = {
       id,
       app_id: manifest.id,
+      identity_key_thumbprint: loaded.identityKeyThumbprint,
       status: 'active',
       manifest_id: manifestId,
       pending_manifest_id: null,
       revision: 0,
       manifest_url: loaded.manifestUrl,
       manifest: loaded.serialised,
+      icon_data_url: iconDataUrl,
       created_at: now,
       updated_at: now,
     };
@@ -276,6 +329,7 @@ export class AppInstallationsRepository {
             id,
             app_id: written.app_id,
             current_app_id: written.app_id,
+            identity_key_thumbprint: written.identity_key_thumbprint,
             status: written.status,
             manifest_id: written.manifest_id,
             created_at: now,
@@ -287,6 +341,8 @@ export class AppInstallationsRepository {
             manifest_url: written.manifest_url,
             manifest: loaded.serialised,
             digest: loaded.digest,
+            backend_key_thumbprint: loaded.backendKeyThumbprint,
+            icon_data_url: iconDataUrl,
             source: 'install',
             requires_approval: false,
             created_at: now,
@@ -301,10 +357,7 @@ export class AppInstallationsRepository {
           continue;
         }
         if (isUniqueViolation(err)) {
-          throw new errors.ConflictError({
-            message: `The app ${manifest.id} is already installed.`,
-            code: 'APP_ALREADY_INSTALLED',
-          });
+          throw alreadyInstalled(manifest.id);
         }
         throw err;
       }

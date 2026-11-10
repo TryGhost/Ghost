@@ -21,6 +21,7 @@ const EmailAnalyticsAutomationFetchLatestJob =
 const EmailAnalyticsGiftFetchLatestJob =
   require('../../../../core/server/services/email-analytics/jobs/email-analytics-gift-fetch-latest-job').default;
 const models = require('../../../../core/server/models');
+const NewsletterEmailEventStorage = require('../../../../core/server/services/email-service/newsletter-email-event-storage');
 
 type MailgunEvent = {
   id: string;
@@ -29,6 +30,8 @@ type MailgunEvent = {
   tags: string[];
   timestamp: number;
   message: { headers: { 'message-id': string } };
+  severity?: string;
+  'delivery-status'?: { code: number; message: string };
   'user-variables'?: { 'email-id': string };
 };
 
@@ -185,7 +188,6 @@ describe('email analytics JobsService delivery', function () {
       name: 'Analytics job',
       slug: `analytics-${automationId}`,
       status: 'inactive',
-      trigger_type: 'membership_started',
       created_at: now,
       updated_at: now,
     });
@@ -283,5 +285,82 @@ describe('email analytics JobsService delivery', function () {
       await knex('gift_deliveries').where('id', delivery.id).del();
       await knex('gifts').where('id', gift.id).del();
     }
+  });
+
+  describe('newsletter aggregation recovery', function () {
+    const openedAt = [eventDate, new Date(eventDate.getTime() + 60 * 1000)];
+    let recipients: Array<{ id: string; member_id: string; member_email: string }>;
+    let emailId: string;
+
+    beforeEach(function () {
+      const batch = fixtureManager.get('email_batches', 0);
+      emailId = batch.email_id;
+      recipients = [0, 1].map((index) => fixtureManager.get('email_recipients', index));
+    });
+
+    async function prepareOpenedRecipients() {
+      const batch = fixtureManager.get('email_batches', 0);
+      await knex('email_recipients')
+        .whereIn(
+          'id',
+          recipients.map((recipient) => recipient.id),
+        )
+        .update({ opened_at: null });
+      await knex('members')
+        .whereIn(
+          'id',
+          recipients.map((recipient) => recipient.member_id),
+        )
+        .update({ email_opened_count: 0 });
+      await knex('emails').where('id', emailId).update({ opened_count: 0 });
+      events = recipients.map((recipient, index) => ({
+        ...mailgunEvent('opened', batch.mailgun_message_id, recipient.member_email, 'bulk-email'),
+        timestamp: openedAt[index].getTime() / 1000,
+        'user-variables': { 'email-id': emailId },
+      }));
+    }
+
+    it('aggregates a permanent failure whose record failed to save in the missing sweep', async function () {
+      const batch = fixtureManager.get('email_batches', 0);
+      const [recipient] = recipients;
+      await knex('email_recipients').where('id', recipient.id).update({ failed_at: null });
+      await knex('emails').where('id', emailId).update({ failed_count: 0 });
+      events = [
+        {
+          ...mailgunEvent('failed', batch.mailgun_message_id, recipient.member_email, 'bulk-email'),
+          severity: 'permanent',
+          'delivery-status': { code: 550, message: 'Mailbox does not exist' },
+          'user-variables': { 'email-id': emailId },
+        },
+      ];
+      const saveFailure = sinon.stub(NewsletterEmailEventStorage.prototype, 'saveFailure');
+      saveFailure.callThrough();
+      saveFailure.onFirstCall().rejects(new Error('failure not saved'));
+      const newsletters = emailAnalytics.getNewsletters();
+
+      await assert.rejects(newsletters.fetchMissing(), /failure not saved/);
+      await newsletters.fetchMissing();
+
+      const [{ count }] = await knex('email_recipients')
+        .count('id as count')
+        .where('email_id', emailId)
+        .whereNotNull('failed_at');
+      const email = await knex('emails').where('id', emailId).first();
+      assert.ok(Number(count) > 0);
+      assert.equal(email.failed_count, Number(count));
+    });
+
+    it('updates the email open count for opens recovered by the missing sweep', async function () {
+      await prepareOpenedRecipients();
+      await emailAnalytics.getNewsletters().fetchMissing();
+
+      const [{ count }] = await knex('email_recipients')
+        .count('id as count')
+        .where('email_id', emailId)
+        .whereNotNull('opened_at');
+      const email = await knex('emails').where('id', emailId).first();
+      assert.ok(Number(count) >= recipients.length);
+      assert.equal(email.opened_count, Number(count));
+    });
   });
 });

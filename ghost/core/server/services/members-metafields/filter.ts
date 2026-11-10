@@ -10,13 +10,17 @@
 //
 // The values table holds one row per stored value: `metafield_namespace`,
 // `metafield_key`, `path` (empty for a plain field, the part's name for one part of a
-// composite) and `value_text`. A filter addresses those columns directly, so each one
-// becomes a single $elemMatch over them: positive asserts a matching row exists, and $not
-// asserts none does, with no lookup against the field definitions.
+// composite) and the value, in the column its kind of value is kept in. A comparison against one
+// value is made in the column of that value's kind, as NQL types it, so a field matches only a
+// value of its own kind; a comparison against a list of values is made in the text column. A
+// filter addresses those columns directly, so each one
+// becomes an $elemMatch over them: positive asserts a matching row exists, and $not
+// asserts none does, with no lookup against the field definitions. Which path holds a
+// field's whole value is the storage layouts' to say, for every type at once.
 import errors from '@tryghost/errors';
 import { z } from 'zod';
 import { IdentityTextSchema, type Key, type Namespace } from '@tryghost/metafield-types/identity';
-import { ROOT_PATH, pathOf } from './storage';
+import { ROOT_PATH, pathOf, pathsHolding, valueColumnFor } from './storage';
 
 const RELATION = 'metafields';
 const PREFIX = `${RELATION}.`;
@@ -83,21 +87,78 @@ function targetOf(raw: unknown): Target {
   return { namespace, key, path: parts.length > 0 ? pathOf(parts) : ANY_PATH };
 }
 
+const Texts = z.array(z.string());
+
+// The texts a list names, as NQL compiles it: any of them (`value:['a','b']`) for `$in`, every one
+// of them (`value:['a'+'b']`) for `$all`, or none of them (`value:-['a','b']`) for `$nin`. Null
+// for anything else.
+function listed(value: unknown, operator: '$in' | '$all' | '$nin'): string[] | null {
+  if (!isPlainObject(value)) {
+    return null;
+  }
+  const texts = Texts.safeParse(value[operator]);
+  return texts.success ? texts.data : null;
+}
+
+// One value, or any of several, as a match on one column takes them.
+const oneOf = (values: readonly string[]): unknown =>
+  values.length === 1 ? values[0] : { $in: values };
+
 export function createMetafieldsFilterTransformer() {
-  // One (maybe-negated) $elemMatch over the value row columns: positive is "a row pinned
-  // by these matches", `$not` is "no row does".
-  function buildElemMatch(target: Target, value: unknown, negate: boolean): QueryNode {
+  function rowsOf(target: Target): QueryNode {
     const match: QueryNode = { metafield_namespace: target.namespace, metafield_key: target.key };
-    if (value !== undefined) {
-      match.path = target.path ?? ROOT_PATH;
-      match.value_text = value;
-    } else if (target.path !== ANY_PATH) {
+    if (target.path !== ANY_PATH) {
       match.path = target.path;
     }
-    if (negate) {
-      return { [RELATION]: { $not: { $elemMatch: match } } };
+    return match;
+  }
+
+  // The rows that hold one of `texts` as the target's value: at its part, or wherever a field's
+  // whole value can be kept.
+  function rowsHolding(target: Target, texts: readonly string[]): QueryNode {
+    return {
+      ...rowsOf(target),
+      path: oneOf(target.path === ANY_PATH ? pathsHolding(texts) : [target.path]),
+      value_text: oneOf(texts),
+    };
+  }
+
+  const some = (match: QueryNode): QueryNode => ({ [RELATION]: { $elemMatch: match } });
+  const none = (match: QueryNode): QueryNode => ({ [RELATION]: { $not: { $elemMatch: match } } });
+
+  function buildElemMatch(target: Target, value: unknown, negate: boolean): QueryNode {
+    if (value === undefined) {
+      return negate ? none(rowsOf(target)) : some(rowsOf(target));
     }
-    return { [RELATION]: { $elemMatch: match } };
+
+    // A list is looked for wherever a value can be kept, so a set, which keeps a row per option,
+    // is filtered by the options it holds. A list field is always filtered with a list.
+    const anyOf = listed(value, '$in');
+    if (anyOf) {
+      return some(rowsHolding(target, anyOf));
+    }
+
+    // "All of" asks for a row holding each text in turn, since each row holds a single option.
+    const allOf = listed(value, '$all');
+    if (allOf) {
+      return { $and: allOf.map((text) => some(rowsHolding(target, [text]))) };
+    }
+
+    // "None of" is asked of a value that is there: the target holds something, and none of what
+    // it holds is one of these. A member holding nothing has no value to compare.
+    const noneOf = listed(value, '$nin');
+    if (noneOf) {
+      return { $and: [some(rowsOf(target)), none(rowsHolding(target, noneOf))] };
+    }
+
+    // Any other comparison, such as one value or a match on part of the text, is made against one
+    // row: the target's part, or the root a single-row value is kept at, in the column the compared
+    // value's kind is kept in.
+    return some({
+      ...rowsOf(target),
+      path: target.path ?? ROOT_PATH,
+      [valueColumnFor(value)]: value,
+    });
   }
 
   function toElemMatch(clauses: QueryNode[]): QueryNode {

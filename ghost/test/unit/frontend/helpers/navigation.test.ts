@@ -4,7 +4,6 @@ import sinon from 'sinon';
 import type { SinonStub } from 'sinon';
 // @ts-expect-error This module lacks type definitions.
 import handlebarsService from '../../../../core/frontend/services/handlebars';
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../utils/config-utils';
 import path from 'path';
 import { promisify } from 'node:util';

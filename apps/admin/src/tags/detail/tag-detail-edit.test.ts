@@ -119,7 +119,7 @@ describe('validateTagField', () => {
     );
   });
 
-  it('caps name, slug, description and meta fields at their Ember limits', () => {
+  it('caps name, slug, description and meta fields at their maximum lengths', () => {
     expect(validateTagField('name', draft({ name: 'a'.repeat(192) }))).toBe(
       'Tag names cannot be longer than 191 characters.',
     );
@@ -202,7 +202,7 @@ describe('buildTagSavePayload', () => {
     expect(payload.meta_title).toBe(' Meta title ');
   });
 
-  it('derives visibility when the name changed, like Ember updateVisibility on save', () => {
+  it('derives visibility when the name changed', () => {
     expect(buildTagSavePayload(draft({ name: '#internal' }), 'News').visibility).toBe('internal');
     expect(buildTagSavePayload(draft({ name: 'Renamed' }), 'News').visibility).toBe('public');
   });
@@ -269,12 +269,12 @@ describe('SEO derivations', () => {
 });
 
 describe('charLength and truncateText', () => {
-  it('counts unicode code points like the Ember countdown helper', () => {
+  it('counts unicode code points', () => {
     expect(charLength('abc')).toBe(3);
     expect(charLength('😀😀')).toBe(2);
   });
 
-  it('truncates with the ellipsis inside the limit, like ember-cli-string-helpers', () => {
+  it('truncates with the ellipsis inside the limit', () => {
     expect(truncateText('short')).toBe('short');
     expect(truncateText('a'.repeat(140))).toBe(`${'a'.repeat(137)}...`);
     expect(truncateText('a'.repeat(150), 149)).toBe(`${'a'.repeat(146)}...`);

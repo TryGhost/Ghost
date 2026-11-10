@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { describe, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 
 import {
@@ -22,10 +21,10 @@ describe('CopyField Components', () => {
 
     const label = screen.getByTestId('copy-field-label');
 
-    assert.match(label.className, /text-control!/);
-    assert.match(label.className, /font-medium/);
-    assert.match(label.className, /leading-snug/);
-    assert.doesNotMatch(label.className, /font-semibold/);
+    expect(label.className).toMatch(/text-control!/);
+    expect(label.className).toMatch(/font-medium/);
+    expect(label.className).toMatch(/leading-snug/);
+    expect(label.className).not.toMatch(/font-semibold/);
   });
 
   it('associates its read-only value with its label', () => {
@@ -40,9 +39,9 @@ describe('CopyField Components', () => {
 
     const value = screen.getByRole('textbox', { name: 'Shareable link' });
 
-    assert.equal(value.textContent, 'https://example.com');
-    assert.equal(value.getAttribute('aria-readonly'), 'true');
-    assert.equal(value.getAttribute('tabindex'), '0');
+    expect(value.textContent).toBe('https://example.com');
+    expect(value.getAttribute('aria-readonly')).toBe('true');
+    expect(value.getAttribute('tabindex')).toBe('0');
   });
 
   it('copies the value and shows clipboard feedback', async () => {
@@ -66,9 +65,9 @@ describe('CopyField Components', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Copy' }));
 
     await waitFor(() => {
-      assert.equal(writeText.mock.calls.length, 1);
-      assert.equal(writeText.mock.calls[0]?.[0], 'https://example.com');
-      assert.ok(screen.getByRole('button', { name: 'Copied' }));
+      expect(writeText.mock.calls.length).toBe(1);
+      expect(writeText.mock.calls[0]?.[0]).toBe('https://example.com');
+      expect(screen.getByRole('button', { name: 'Copied' })).toBeTruthy();
     });
   });
 
@@ -84,6 +83,6 @@ describe('CopyField Components', () => {
       </CopyField>,
     );
 
-    assert.ok(screen.getByRole('button', { name: 'Copy' }).hasAttribute('disabled'));
+    expect(screen.getByRole('button', { name: 'Copy' }).hasAttribute('disabled')).toBeTruthy();
   });
 });

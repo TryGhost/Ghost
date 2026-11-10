@@ -19,7 +19,7 @@
 }
 
 /* One caps label style everywhere (type.ts): the metric labels Planned sets
-   in 12px mono (Shade's admin7DesignLabel, on metric cards and KPI tabs)
+   in 12px mono (Shade's analyticsProtoLabel, on metric cards and KPI tabs)
    are 14px sans regular here instead */
 [data-shaping-family~='exploration-1'] .admin7-design\:font-mono {
   font-family: var(--font-sans);

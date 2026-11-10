@@ -25,7 +25,6 @@ module.exports = {
       'security',
       'exploreTestimonialsUrl',
       'featurebase',
-      'docsbot',
     ];
 
     frame.response = {

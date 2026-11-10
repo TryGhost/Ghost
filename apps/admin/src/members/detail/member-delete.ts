@@ -1,17 +1,17 @@
 import type { Member, MemberSubscription } from '@tryghost/admin-x-framework/api/members';
 
-// Same allow-list Ember uses in `delete-member.js:22-27` and the comp flow
-// (`member-add-comp-modal.tsx:14`). Kept as a Set for O(1) status lookups.
+// Same allow-list as the comp flow (`member-add-comp-modal.tsx:14`). Kept as a
+// Set for O(1) status lookups.
 const CANCELABLE_STATUSES = new Set(['active', 'trialing', 'unpaid', 'past_due']);
 
 /**
- * True when the member has at least one subscription whose status Ember treats
- * as still needing a Stripe-side cancel — i.e. worth showing the "Also cancel
- * subscription in Stripe" checkbox in the delete confirmation.
+ * True when the member has at least one subscription whose status still needs
+ * a Stripe-side cancel — i.e. worth showing the "Also cancel subscription in
+ * Stripe" checkbox in the delete confirmation.
  *
- * Note: mirrors Ember exactly and does NOT filter by classification (paid vs
- * comp vs gift). Comp/gift subs have an empty `sub.id` so the server-side
- * cancel call is a no-op, but we don't gate the checkbox on it here.
+ * Note: does NOT filter by classification (paid vs comp vs gift). Comp/gift subs
+ * have an empty `sub.id` so the server-side cancel call is a no-op, but we don't
+ * gate the checkbox on it here.
  */
 export function hasCancelableStripeSubscription(member: Pick<Member, 'subscriptions'>): boolean {
   const subscriptions: MemberSubscription[] = member.subscriptions ?? [];
@@ -19,9 +19,8 @@ export function hasCancelableStripeSubscription(member: Pick<Member, 'subscripti
 }
 
 /**
- * The confirm button label toggles based on the checkbox state — Ember calls
- * this out visually so the admin sees they're about to trigger *two* server
- * operations, not one. Strings ported verbatim from Ember's `delete-member.hbs`.
+ * The confirm button label toggles based on the checkbox state so the admin
+ * sees they're about to trigger *two* server operations, not one.
  */
 export function getDeleteMemberButtonLabel(cancelStripeSubscription: boolean): string {
   return cancelStripeSubscription ? 'Delete member + Cancel subscription' : 'Delete member';

@@ -1,8 +1,7 @@
 import { formatNumber } from '@tryghost/shade/utils';
 
 /**
- * Headings for the post-publish celebration, ported from the `<h1>` in
- * `apps/ember-admin/app/components/modal-post-success.hbs`.
+ * Headings for the post-publish celebration.
  *
  * A scheduled post gets one line; everything else gets two, and which second
  * line you get depends on the resource, whether it was email-only, and whether

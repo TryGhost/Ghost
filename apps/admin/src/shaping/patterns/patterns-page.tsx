@@ -195,9 +195,12 @@ const PatternsPage: React.FC = () => {
                 <NewsletterKPIs
                   avgsData={newsletterSends}
                   isAvgsLoading={false}
+                  isClicksLoading={false}
                   isLoading={false}
                   subscribersData={subscribers}
                   totals={newsletterTotals}
+                  onRetryClickStats={() => {}}
+                  onRetryPeriodStats={() => {}}
                 />
               </CardContent>
             </Card>

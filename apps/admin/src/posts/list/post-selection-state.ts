@@ -1,13 +1,11 @@
 import { computeShiftRange } from '@/posts/list/compute-shift-range';
 
 /**
- * Selection state for the posts list, ported from `SelectionList` in
- * `apps/ember-admin/app/components/posts-list/selection-list.js`.
+ * Selection state for the posts list.
  *
  * A plain reducer rather than a hook so the semantics can be tested as data.
- * The freeze/unfreeze machinery Ember uses to hold a selection open while its
- * context menu is up is not here — that is a Phase 7 concern, and Radix keeps
- * the menu's own state, so it becomes a single "transient" flag instead.
+ * Radix keeps the context menu's own state, so holding a selection open while
+ * it is up is a single "transient" flag.
  */
 
 export interface PostSelectionState {
@@ -27,9 +25,7 @@ export interface PostSelectionState {
   lastShiftGroup: Set<string>;
   /**
    * Set when the selection exists only because a row was right-clicked, and
-   * should be dropped again when the menu closes. Ember achieves this with a
-   * freeze/unfreeze pair plus a `clearOnNextUnfreeze` flag; Radix owns the
-   * menu's open state here, so one boolean is enough.
+   * should be dropped again when the menu closes.
    */
   transient: boolean;
 }
@@ -73,7 +69,7 @@ export function getPostSelectionCount(state: PostSelectionState, total: number):
     return state.selectedIds.size;
   }
 
-  // Floored at 1, as Ember does: `total` lags behind while pages load, so the
+  // Floored at 1: `total` lags behind while pages load, so the
   // subtraction can otherwise go negative and read "-3 posts selected".
   return Math.max(total - state.selectedIds.size, 1);
 }
@@ -181,9 +177,8 @@ export function postSelectionReducer(
         transient: true,
       };
     case 'keepOnly': {
-      // Ember's `clearUnavailableItems`: after a bulk edit, ids that have
-      // left the list are dropped while the rows still on screen stay
-      // selected, so a second action can follow the first.
+      // After a bulk edit, ids that have left the list are dropped while the
+      // rows still on screen stay selected, so a second action can follow.
       //
       // Inverted selections hold *exclusions*, which are not list rows, so
       // there is nothing to prune.

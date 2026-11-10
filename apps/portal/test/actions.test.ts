@@ -115,6 +115,37 @@ describe('updateProfile action', () => {
     expect(result.fieldErrors).toEqual({ 'custom:nickname': 'Keep it under 255 characters.' });
   });
 
+  test('marks the list field the site refused', async () => {
+    const animals = {
+      key: 'favourite_animals',
+      name: 'Favourite animals',
+      type: 'list',
+      settings: { options: ['Dog', 'Cat', 'Fish'], multiple: true },
+    };
+    const refusal = new HumanReadableError('Pick no more than two.', {
+      property: 'metafields.custom.favourite_animals',
+    });
+    const mockApi = { member: { update: vi.fn(() => Promise.reject(refusal)) } };
+    const state = {
+      member: { name: 'Jamie', email: 'jamie@example.com' },
+      customFields: [animals],
+    };
+
+    const result = await ActionHandler({
+      action: 'updateProfile',
+      data: {
+        name: 'Jamie',
+        email: 'jamie@example.com',
+        metafields: { custom: { favourite_animals: ['Dog', 'Cat', 'Fish'] } },
+      },
+      state,
+      api: mockApi,
+    });
+
+    expect(result.action).toBe('updateProfile:failed');
+    expect(result.fieldErrors).toEqual({ 'custom:favourite_animals': 'Pick no more than two.' });
+  });
+
   // An address is drawn as several inputs under one name, so a refusal that named only
   // the field would leave a member looking at six boxes with no idea which one to fix.
   // The refusal is keyed by the input so the box itself carries it.

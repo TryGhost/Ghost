@@ -115,6 +115,17 @@ describe('Portal settings', () => {
     await expect(modal.getByTestId('free-tier-checkbox')).toHaveCount(0);
   });
 
+  it('explains why Portal is disabled when subscription access is set to nobody', async () => {
+    fakeSettingsScreens();
+    const settings = settingsResponse({ settings: { members_signup_access: 'none' } });
+    await renderAdminApp('/settings', { boot: { browseSettings: { response: settings } } });
+
+    const portal = settingsScreen.portal();
+    await expect.element(portal.getByRole('button', { name: 'Customize' })).toBeDisabled();
+    await expect.element(portal.getByText(/is set to ‘Nobody’/)).toBeVisible();
+    await expect.element(portal.getByRole('button', { name: 'Subscription access' })).toBeVisible();
+  });
+
   it('saves Look & Feel settings', async () => {
     fakeSettingsScreens();
     const settingsApi = fakeEditSettings();

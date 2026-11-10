@@ -1,13 +1,22 @@
+import { isDeepStrictEqual } from 'node:util';
 import ObjectID from 'bson-objectid';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import { Metafield } from './models';
-import { FieldTypeSchema, type FieldType } from '@tryghost/metafield-types';
-import { metafieldCodec } from './codec';
+import {
+  FieldTypeSchema,
+  TypedSettingsInputSchema,
+  WRITTEN_SETTINGS,
+  refusedProperty,
+  withTypedSettings,
+  type TypedSettings,
+} from '@tryghost/metafield-types';
+import { metafieldCodec, metafieldCodecWithDefaults } from './codec';
+import { readStoredField } from './stored-fields';
 import { type Key, KeySchema, type Namespace } from '@tryghost/metafield-types/identity';
-import { assertDefinable } from './namespaces';
-import { FIELD_STATUS, FieldStatusSchema } from './schema';
+import type { Namespaces } from './namespaces';
+import { DbTypedSettings, FIELD_STATUS, FieldStatusSchema } from './schema';
 import {
   ADMIN,
   MEMBER_ACCESS,
@@ -18,24 +27,23 @@ import {
 import {
   ACTIVE_ONLY,
   ANY_STATUS,
-  definitions,
+  FIELDS_TABLE,
   inFieldOrder,
-  knexify,
   nql,
   type DefinitionQuery,
   type FieldIdentity,
+  type FieldSource,
 } from './queries';
 import { mintableKey } from './key';
 import { parseRequest } from '../../lib/parse-request';
 import { type RecordMetafieldAction, type RequestContext } from './actions';
-
-const TABLE = 'members_metafields';
+import type { MetafieldsTracking } from './tracking';
 
 // Column limits come from the canonical schema — the same source the migration and
 // Bookshelf models read — so the service can never drift from the database. The
 // name cap turns an over-long input into a clean 422 (not a DB error), and the key
 // base is capped so even the longest collision suffix stays within the column.
-const columns = require('../../data/schema').tables[TABLE];
+const columns = require('../../data/schema').tables[FIELDS_TABLE];
 const MAX_NAME_LENGTH: number = columns.name.maxlength;
 const MAX_KEY_LENGTH: number = columns.key.maxlength;
 const MAX_KEY_ITERATIONS = 1000;
@@ -64,13 +72,12 @@ const FieldName = z
 
 const FieldAccess = z.object({ member: MemberAccessSchema });
 
-// No key: the backend mints it from the name.
+// No key: the backend mints it from the name. The type is checked with the settings it takes.
 
-const AddFieldInput = z.object({
-  name: FieldName,
-  type: FieldTypeSchema,
-  access: FieldAccess.optional(),
-});
+const AddFieldInput = withTypedSettings(
+  { name: FieldName, access: FieldAccess.optional() },
+  WRITTEN_SETTINGS,
+);
 
 // A bound on the work one request can ask for, separate from how many definitions
 // a site may hold in total. Every definition in a batch costs several queries
@@ -101,10 +108,12 @@ const ReorderInput = z
   )
   .min(1, { message: 'The order must name every custom field.' });
 
-// Name, status and access are mutable. `key` and `type` are accepted so the
-// immutability rules can reject a change loudly; they are never persisted.
+// Name, settings, status and access are mutable. `key` and `type` are accepted so the
+// immutability rules can reject a change loudly; they are never persisted. Settings are checked
+// against the field's type once the field is read.
 const EditFieldInput = z.object({
   name: FieldName.optional(),
+  settings: z.unknown().optional(),
   status: FieldStatusSchema.optional(),
   access: FieldAccess.optional(),
   key: z.optional(KeySchema),
@@ -113,26 +122,29 @@ const EditFieldInput = z.object({
 
 export class MetafieldDefinitionsService {
   private knex: Knex;
+  private fields: FieldSource;
   private recordAction: RecordMetafieldAction;
-  private getMaxDefinitions: () => number;
+  private namespaces: Namespaces;
+  private tracking: MetafieldsTracking;
 
   constructor({
     knex,
+    fields,
     recordAction,
-    getMaxDefinitions,
+    namespaces,
+    tracking,
   }: {
     knex: Knex;
+    fields: FieldSource;
     recordAction: RecordMetafieldAction;
-    getMaxDefinitions: () => number;
+    namespaces: Namespaces;
+    tracking: MetafieldsTracking;
   }) {
     this.knex = knex;
+    this.fields = fields;
     this.recordAction = recordAction;
-    // A getter, not a value: the ceiling can be raised or lowered at any time,
-    // and a Ghost container holds no state across requests, so the limit that
-    // applies is whatever it resolves to when the request lands. Asking on
-    // every create means a change takes effect on the next one, with no
-    // restart. Where the number comes from is the caller's business.
-    this.getMaxDefinitions = getMaxDefinitions;
+    this.namespaces = namespaces;
+    this.tracking = tracking;
   }
 
   async browse(
@@ -149,25 +161,40 @@ export class MetafieldDefinitionsService {
       // scope as an unfiltered read.
       const parsed = parseFilter(filter);
       return this.list(
-        definitions(this.knex, {
+        this.fields.definitions(this.knex, {
           audience,
           status: filterReferencesStatus(parsed) ? ANY_STATUS : ACTIVE_ONLY,
           namespace,
-          filter: (query) => knexify(query, parsed, { tableName: TABLE }),
+          filter: parsed,
         }),
       );
     }
-    return this.list(definitions(this.knex, { audience, status: ACTIVE_ONLY, namespace }));
+    return this.list(
+      this.fields.definitions(this.knex, { audience, status: ACTIVE_ONLY, namespace }),
+    );
   }
 
   private async list(query: DefinitionQuery): Promise<Metafield[]> {
-    const rows = await inFieldOrder(query).select('*');
-    return rows.map((row) => z.decode(metafieldCodec, row));
+    const rows = await inFieldOrder(query.read).select('*');
+    return rows.flatMap((row) => this.readField(row) ?? []);
+  }
+
+  /** A stored definition, or null for one that can't be read even with its type's defaults. */
+  private readField(row: Readonly<Record<string, unknown>>): Metafield | null {
+    return readStoredField(
+      row,
+      { asStored: metafieldCodec, withDefaults: metafieldCodecWithDefaults },
+      { reader: 'definitions', tracking: this.tracking },
+    );
   }
 
   async read(namespace: Namespace, key: Key, audience: Audience): Promise<Metafield> {
     const [field] = await this.list(
-      definitions(this.knex, { audience, status: ANY_STATUS, field: { namespace, key } }),
+      this.fields.definitions(this.knex, {
+        audience,
+        status: ANY_STATUS,
+        field: { namespace, key },
+      }),
     );
     if (!field) {
       throw new errors.NotFoundError({ message: 'Custom field not found.' });
@@ -186,77 +213,80 @@ export class MetafieldDefinitionsService {
    * key get distinct ones, exactly as if they had arrived as separate requests.
    */
   async add(context: RequestContext, namespace: Namespace, input: unknown): Promise<Metafield[]> {
-    assertDefinable(namespace);
-    const requestedCount = Array.isArray(input) ? input.length : 0;
+    return this.tracking.definition('create', async (attempt) => {
+      await this.namespaces.assertChangeable(namespace);
+      const requestedCount = Array.isArray(input) ? input.length : 0;
 
-    const parsed = AddFieldsInput.safeParse(input);
-    if (!parsed.success) {
-      const issue = parsed.error.issues[0];
-      throw new errors.ValidationError({
-        message: issue.message,
-        property: propertyOf(issue.path),
-        context: batchContext(issue.path[0], requestedCount),
-      });
-    }
-    const fields = parsed.data;
-
-    // Mint before opening the transaction: it needs no database access, and
-    // an unusable name is a payload problem worth reporting on its own terms.
-    const bases = fields.map((field, index) => {
-      const base = mintableKey(field.name);
-      if (!base) {
+      const parsed = AddFieldsInput.safeParse(input);
+      if (!parsed.success) {
+        const issue = parsed.error.issues[0];
         throw new errors.ValidationError({
-          message: 'Custom field name must contain at least one usable character.',
-          property: 'name',
-          context: batchContext(index, requestedCount),
+          message: issue.message,
+          property: propertyOf(issue.path),
+          context: batchContext(issue.path[0], requestedCount),
         });
       }
-      return base;
-    });
+      const fields = parsed.data;
+      attempt.fields(fields);
 
-    let created: Metafield[];
-    try {
-      created = await this.knex.transaction(async (trx) => {
-        await this.assertWithinLimit(trx, fields.length);
-
-        // Read once, before the loop: a batch appends as consecutive ranks, so
-        // the five fields of one request land in the order the request gave
-        // them rather than all sharing the end of the list.
-        const firstSortOrder = await this.nextSortOrder(trx, namespace);
-
-        const keys: Key[] = [];
-        for (const [index, field] of fields.entries()) {
-          await this.assertNameAvailable(trx, namespace, field.name);
-          const key = await this.mintKey(trx, namespace, bases[index]);
-          await this.insertField(trx, {
-            namespace,
-            key,
-            name: field.name,
-            type: field.type,
-            memberAccess: field.access?.member ?? MEMBER_ACCESS.none,
-            sortOrder: firstSortOrder + index,
+      // Mint before opening the transaction: it needs no database access, and
+      // an unusable name is a payload problem worth reporting on its own terms.
+      const bases = fields.map((field, index) => {
+        const base = mintableKey(field.name);
+        if (!base) {
+          throw new errors.ValidationError({
+            message: 'Custom field name must contain at least one usable character.',
+            property: 'name',
+            context: batchContext(index, requestedCount),
           });
-          keys.push(key);
         }
-        return this.readMany(trx, namespace, keys);
+        return base;
       });
-    } catch (err) {
-      // mintKey already picked a free key, so a unique violation here only
-      // means a concurrent create claimed the same key in between. The index
-      // is the final arbiter; surface a retryable conflict rather than a 500.
-      if (isUniqueConstraintViolation(err)) {
-        throw new errors.ConflictError({
-          message: 'Could not create the custom field, please try again.',
-        });
-      }
-      throw err;
-    }
 
-    // Logged after the commit: the action log is a separate Bookshelf write
-    // outside this transaction, so recording inside it would leave orphaned
-    // "added" entries for fields a rollback never created.
-    await this.recordCreated(context, created);
-    return created;
+      let created: Metafield[];
+      try {
+        created = await this.knex.transaction(async (trx) => {
+          await this.assertRoom(trx, namespace, fields.length);
+
+          // Read once, before the loop: a batch appends as consecutive ranks, so
+          // the five fields of one request land in the order the request gave
+          // them rather than all sharing the end of the list.
+          const firstSortOrder = await this.nextSortOrder(trx, namespace);
+
+          const keys: Key[] = [];
+          for (const [index, field] of fields.entries()) {
+            await this.assertNameAvailable(trx, namespace, field.name);
+            const key = await this.mintKey(trx, namespace, bases[index]);
+            await this.insertField(trx, {
+              namespace,
+              key,
+              name: field.name,
+              typed: field,
+              memberAccess: field.access?.member ?? MEMBER_ACCESS.none,
+              sortOrder: firstSortOrder + index,
+            });
+            keys.push(key);
+          }
+          return this.readMany(trx, namespace, keys);
+        });
+      } catch (err) {
+        // mintKey already picked a free key, so a unique violation here only
+        // means a concurrent create claimed the same key in between. The index
+        // is the final arbiter; surface a retryable conflict rather than a 500.
+        if (isUniqueConstraintViolation(err)) {
+          throw new errors.ConflictError({
+            message: 'Could not create the custom field, please try again.',
+          });
+        }
+        throw err;
+      }
+
+      // Logged after the commit: the action log is a separate Bookshelf write
+      // outside this transaction, so recording inside it would leave orphaned
+      // "added" entries for fields a rollback never created.
+      await this.recordCreated(context, created);
+      return created;
+    });
   }
 
   /**
@@ -273,17 +303,17 @@ export class MetafieldDefinitionsService {
     wanted: {
       key: string;
       name: string;
-      type: FieldType;
       access: z.infer<typeof FieldAccess>;
-    },
+    } & TypedSettings,
     { executor = this.knex }: { executor?: Knex } = {},
   ): Promise<Metafield> {
+    await this.namespaces.assertChangeable(namespace);
     // Before any database access, the way `add` mints before opening its transaction:
     // an unusable key is a payload problem worth reporting on its own terms.
     const key = usableKey(wanted.key);
 
     const write = async (db: Knex) => {
-      await this.assertWithinLimit(db, 1);
+      await this.assertRoom(db, namespace, 1);
       await this.assertKeyAvailable(db, { namespace, key });
       await this.assertNameAvailable(db, namespace, wanted.name);
 
@@ -291,7 +321,7 @@ export class MetafieldDefinitionsService {
         namespace,
         key,
         name: wanted.name,
-        type: wanted.type,
+        typed: wanted,
         memberAccess: wanted.access.member,
         sortOrder: await this.nextSortOrder(db, namespace),
       });
@@ -308,7 +338,9 @@ export class MetafieldDefinitionsService {
    * where the unique index would read as a 500.
    */
   private async assertKeyAvailable(db: Knex, field: FieldIdentity): Promise<void> {
-    const taken = await db(TABLE).where({ namespace: field.namespace, key: field.key }).first();
+    const taken = await db(FIELDS_TABLE)
+      .where({ namespace: field.namespace, key: field.key })
+      .first();
     if (taken) {
       throw new errors.ValidationError({
         message: 'A custom field with this key already exists.',
@@ -323,30 +355,36 @@ export class MetafieldDefinitionsService {
       namespace: Namespace;
       key: Key;
       name: string;
-      type: FieldType;
+      typed: TypedSettings;
       memberAccess: MemberAccess;
       sortOrder: number;
     },
   ): Promise<void> {
-    await db(TABLE).insert({
+    await db(FIELDS_TABLE).insert({
       id: new ObjectID().toHexString(),
       namespace: field.namespace,
       key: field.key,
       name: field.name,
-      type: field.type,
+      ...z.encode(DbTypedSettings, field.typed),
       member_access: field.memberAccess,
       sort_order: field.sortOrder,
       created_at: new Date(),
     });
   }
 
-  /** `read` for a caller that is deciding rather than serving: absent is an answer. */
+  /**
+   * The field as stored, whatever the reader, for a caller deciding about the stored row rather
+   * than serving it: absent is an answer. Whether a field can take a value is asked through the
+   * field source instead.
+   */
   async find(
     field: FieldIdentity,
     { executor = this.knex }: { executor?: Knex } = {},
   ): Promise<Metafield | null> {
-    const row = await executor(TABLE).where({ namespace: field.namespace, key: field.key }).first();
-    return row ? z.decode(metafieldCodec, row) : null;
+    const row = await executor(FIELDS_TABLE)
+      .where({ namespace: field.namespace, key: field.key })
+      .first();
+    return row ? this.readField(row) : null;
   }
 
   /** The same entry `add` writes. Only the caller knows its transaction committed. */
@@ -362,48 +400,16 @@ export class MetafieldDefinitionsService {
   }
 
   /**
-   * The operational ceiling on how many definitions a site can hold. This is a
-   * safeguard against the database load unbounded definitions would create, not
-   * a pricing or packaging limit, so it applies wherever the feature is available
-   * and is deliberately not routed through the entitlement-driven limit service.
+   * Refuses adding `adding` fields to a namespace its limits leave no room in, counting every
+   * field it holds, archived ones included.
    *
-   * Both active and archived definitions count: an archived field still occupies
-   * a row and still carries its members' values, so archiving alone frees no
-   * space. Deleting an archived field is what releases a slot.
-   *
-   * The count is a consistent read, not a locking one, so two creates landing at
-   * the same instant can both pass and take a site one over. That is deliberate:
-   * this is a ceiling on database load, and holding a table lock across every
-   * create to make it exact would cost more than the overshoot it prevents.
-   *
+   * The count is a consistent read, not a locking one, so two creates landing at the same
+   * instant can both pass and take a namespace one over. That is deliberate: holding a table
+   * lock across every create to make it exact would cost more than the overshoot it prevents.
    */
-  private async assertWithinLimit(db: Knex, addedCount: number): Promise<void> {
-    const max = this.getMaxDefinitions();
-
-    const row = await db(TABLE).count({ count: '*' }).first();
-    const total = Number(row?.count ?? 0);
-    if (total + addedCount <= max) {
-      return;
-    }
-
-    // Two different situations reach here and they need different advice. At or
-    // over the ceiling there is nothing to do but free a slot. With slots still
-    // free the request was simply too big, and telling that operator to delete
-    // something is wrong: they have room, just not this much.
-    const remaining = max - total;
-    const advice =
-      remaining > 0
-        ? `You can add ${remaining} more.`
-        : 'Delete a field you no longer need to make room.';
-
-    throw new errors.HostLimitError({
-      message: `Custom fields are limited to ${max} per site. ${advice}`,
-      code: 'CUSTOM_FIELDS_LIMIT_REACHED',
-      // `requested` is carried alongside the limit-service shape so a batch
-      // rejection is self-describing: without it a client sees free slots and
-      // a refusal, and has to re-derive its own payload size to explain why.
-      errorDetails: { limit: max, total, requested: addedCount },
-    });
+  private async assertRoom(db: Knex, namespace: Namespace, adding: number): Promise<void> {
+    const row = await db(FIELDS_TABLE).where({ namespace }).count({ count: '*' }).first();
+    await this.namespaces.assertRoom(namespace, Number(row?.count ?? 0), adding);
   }
 
   /**
@@ -416,42 +422,46 @@ export class MetafieldDefinitionsService {
     namespace: Namespace,
     input: unknown,
   ): Promise<Metafield[]> {
-    assertDefinable(namespace);
-    const parsed = ReorderInput.safeParse(input);
-    if (!parsed.success) {
-      const issue = parsed.error.issues[0];
-      throw new errors.ValidationError({
-        message: issue.message,
-        property: propertyOf(issue.path),
-      });
-    }
-    const keys = parsed.data.map((item) => item.key);
-
-    const ordered = await this.knex.transaction(async (trx) => {
-      await this.assertNamesEveryField(trx, namespace, keys);
-
-      // Ranks come from the request's order; the statements go out in key order, so
-      // two concurrent reorders take their row locks in the same sequence and
-      // cannot deadlock. `updated_at` is left alone — the definitions did not
-      // change, the list around them did.
-      const ranks = new Map(keys.map((key, rank) => [key, rank]));
-      for (const key of [...keys].sort()) {
-        await trx(TABLE)
-          .where({ namespace, key })
-          .update({ sort_order: ranks.get(key)! });
+    return this.tracking.definition('reorder', async () => {
+      await this.namespaces.assertChangeable(namespace);
+      const parsed = ReorderInput.safeParse(input);
+      if (!parsed.success) {
+        const issue = parsed.error.issues[0];
+        throw new errors.ValidationError({
+          message: issue.message,
+          property: propertyOf(issue.path),
+        });
       }
+      const keys = parsed.data.map((item) => item.key);
 
-      // An order covers the whole list, archived definitions included.
-      return this.list(definitions(trx, { audience: ADMIN, status: ANY_STATUS, namespace }));
-    });
+      const ordered = await this.knex.transaction(async (trx) => {
+        await this.assertNamesEveryField(trx, namespace, keys);
 
-    await this.recordAction({
-      context,
-      verb: 'reorder',
-      subject: null,
-      details: { action_name: 'reordered', count: ordered.length },
+        // Ranks come from the request's order; the statements go out in key order, so
+        // two concurrent reorders take their row locks in the same sequence and
+        // cannot deadlock. `updated_at` is left alone — the definitions did not
+        // change, the list around them did.
+        const ranked = keys
+          .map((key, rank) => ({ key, rank }))
+          .sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
+        for (const { key, rank } of ranked) {
+          await trx(FIELDS_TABLE).where({ namespace, key }).update({ sort_order: rank });
+        }
+
+        // An order covers the whole list, archived definitions included.
+        return this.list(
+          this.fields.definitions(trx, { audience: ADMIN, status: ANY_STATUS, namespace }),
+        );
+      });
+
+      await this.recordAction({
+        context,
+        verb: 'reorder',
+        subject: null,
+        details: { action_name: 'reordered', count: ordered.length },
+      });
+      return ordered;
     });
-    return ordered;
   }
 
   /**
@@ -461,7 +471,9 @@ export class MetafieldDefinitionsService {
    */
   private async assertNamesEveryField(db: Knex, namespace: Namespace, keys: Key[]): Promise<void> {
     const named = new Set(keys);
-    const existing = new Set(await db(TABLE).where('namespace', namespace).pluck<string[]>('key'));
+    const existing = new Set(
+      await db(FIELDS_TABLE).where('namespace', namespace).pluck<string[]>('key'),
+    );
 
     const matches =
       named.size === keys.length &&
@@ -478,7 +490,7 @@ export class MetafieldDefinitionsService {
 
   /** A new field is appended. Archived fields hold ranks too, so it lands past them. */
   private async nextSortOrder(db: Knex, namespace: Namespace): Promise<number> {
-    const row = await db(TABLE)
+    const row = await db(FIELDS_TABLE)
       .where('namespace', namespace)
       .max({ highest: 'sort_order' })
       .first();
@@ -492,9 +504,21 @@ export class MetafieldDefinitionsService {
 
   /** Read back a batch in the order its keys were created, not the table's order. */
   private async readMany(db: Knex, namespace: Namespace, keys: Key[]): Promise<Metafield[]> {
-    const rows = await db(TABLE).where('namespace', namespace).whereIn('key', keys).select('*');
+    const rows = await db(FIELDS_TABLE)
+      .where('namespace', namespace)
+      .whereIn('key', keys)
+      .select('*');
     const byKey = new Map(rows.map((row) => [row.key, row]));
-    return keys.map((key) => z.decode(metafieldCodec, byKey.get(key)!));
+    return keys.map((key) => {
+      const row = byKey.get(key);
+      const field = row ? this.readField(row) : null;
+      if (!field) {
+        throw new errors.InternalServerError({
+          message: 'A custom field could not be read back after it was written.',
+        });
+      }
+      return field;
+    });
   }
 
   /**
@@ -509,7 +533,7 @@ export class MetafieldDefinitionsService {
     const safeBase = base.slice(0, MAX_KEY_BASE_LENGTH).replace(/_+$/, '');
     const taken = new Set([
       ...RESERVED_KEYS,
-      ...(await db(TABLE)
+      ...(await db(FIELDS_TABLE)
         .where('namespace', namespace)
         .where('key', 'like', `${safeBase}%`)
         .pluck('key')),
@@ -547,7 +571,7 @@ export class MetafieldDefinitionsService {
     name: string,
     exceptKey?: Key,
   ): Promise<void> {
-    const query = db(TABLE)
+    const query = db(FIELDS_TABLE)
       .where('namespace', namespace)
       .whereRaw('LOWER(name) = ?', [name.toLowerCase()]);
     if (exceptKey) {
@@ -568,90 +592,128 @@ export class MetafieldDefinitionsService {
     key: Key,
     input: unknown,
   ): Promise<Metafield> {
-    const parsed = EditFieldInput.safeParse(input);
-    if (!parsed.success) {
-      throw new errors.ValidationError({
-        message: parsed.error.issues[0].message,
-        property: parsed.error.issues[0].path[0]?.toString(),
-      });
-    }
-    const patch = parsed.data;
-
-    const existing = await this.read(namespace, key, ADMIN);
-
-    // Key and type are immutable after creation: values are addressed by namespace and key
-    // and interpreted by type, so changing either would silently orphan or
-    // corrupt stored values. Reject a differing value rather than ignore it.
-    if (patch.key !== undefined && patch.key !== existing.key) {
-      throw new errors.ValidationError({
-        message: 'Custom field keys cannot be changed once created.',
-        property: 'key',
-      });
-    }
-    if (patch.type !== undefined && patch.type !== existing.type) {
-      throw new errors.ValidationError({
-        message: 'Custom field types cannot be changed once created.',
-        property: 'type',
-      });
-    }
-
-    // Only write (and log a rename) when the name actually changes, so
-    // re-saving an unchanged field is a no-op rather than a spurious edit.
-    if (patch.name !== undefined && patch.name !== existing.name) {
-      await this.assertNameAvailable(this.knex, namespace, patch.name, key);
-      try {
-        await this.knex(TABLE)
-          .where({ namespace, key })
-          .update({ name: patch.name, updated_at: new Date() });
-      } catch (err) {
-        if (isUniqueConstraintViolation(err)) {
-          throw new errors.ConflictError({
-            message: 'Could not rename the custom field, please try again.',
-          });
-        }
-        throw err;
+    return this.tracking.definition('edit', async (attempt) => {
+      await this.namespaces.assertChangeable(namespace);
+      const parsed = EditFieldInput.safeParse(input);
+      if (!parsed.success) {
+        throw new errors.ValidationError({
+          message: parsed.error.issues[0].message,
+          property: propertyOf(parsed.error.issues[0].path),
+        });
       }
-      await this.recordAction({
-        context,
-        verb: 'rename',
-        subject: existing.id,
-        details: { primary_name: patch.name, key, previous_name: existing.name },
-      });
-    }
+      const patch = parsed.data;
 
-    if (patch.access !== undefined && patch.access.member !== existing.access.member) {
-      await this.knex(TABLE)
-        .where({ namespace, key })
-        .update({ member_access: patch.access.member, updated_at: new Date() });
-      await this.recordAction({
-        context,
-        verb: 'changeAccess',
-        subject: existing.id,
-        details: {
-          primary_name: patch.name ?? existing.name,
-          key,
-          member_access: patch.access.member,
-          previous_member_access: existing.access.member,
-        },
-      });
-    }
+      // As stored rather than through the field source, since the patch is compared with what
+      // the write would change.
+      const existing = await this.find({ namespace, key });
+      if (!existing) {
+        throw new errors.NotFoundError({ message: 'Custom field not found.' });
+      }
+      attempt.fields([existing]);
 
-    // A status change is the archive/restore transition. Only write (and log)
-    // when it actually flips, so re-sending the current status is a no-op.
-    if (patch.status !== undefined && patch.status !== existing.status) {
-      await this.knex(TABLE)
-        .where({ namespace, key })
-        .update({ status: patch.status, updated_at: new Date() });
-      const verb = patch.status === FIELD_STATUS.archived ? 'archive' : 'restore';
-      await this.recordAction({
-        context,
-        verb,
-        subject: existing.id,
-        details: { primary_name: patch.name ?? existing.name, key },
-      });
-    }
+      // Key and type are immutable after creation: values are addressed by namespace and key
+      // and interpreted by type, so changing either would silently orphan or
+      // corrupt stored values. Reject a differing value rather than ignore it.
+      if (patch.key !== undefined && patch.key !== existing.key) {
+        throw new errors.ValidationError({
+          message: 'Custom field keys cannot be changed once created.',
+          property: 'key',
+        });
+      }
+      if (patch.type !== undefined && patch.type !== existing.type) {
+        throw new errors.ValidationError({
+          message: 'Custom field types cannot be changed once created.',
+          property: 'type',
+        });
+      }
 
-    return this.read(namespace, key, ADMIN);
+      // Checked before anything is written, so an edit refused for its settings changes nothing.
+      const settings =
+        patch.settings === undefined
+          ? undefined
+          : TypedSettingsInputSchema.safeParse({ type: existing.type, settings: patch.settings });
+      if (settings && !settings.success) {
+        throw new errors.ValidationError({
+          message: settings.error.issues[0].message,
+          property: propertyOf(settings.error.issues[0].path),
+        });
+      }
+
+      // Only write (and log a rename) when the name actually changes, so
+      // re-saving an unchanged field is a no-op rather than a spurious edit.
+      if (patch.name !== undefined && patch.name !== existing.name) {
+        attempt.changing('rename');
+        await this.assertNameAvailable(this.knex, namespace, patch.name, key);
+        try {
+          await this.knex(FIELDS_TABLE)
+            .where({ namespace, key })
+            .update({ name: patch.name, updated_at: new Date() });
+        } catch (err) {
+          if (isUniqueConstraintViolation(err)) {
+            throw new errors.ConflictError({
+              message: 'Could not rename the custom field, please try again.',
+            });
+          }
+          throw err;
+        }
+        await this.recordAction({
+          context,
+          verb: 'rename',
+          subject: existing.id,
+          details: { primary_name: patch.name, key, previous_name: existing.name },
+        });
+      }
+
+      // Only a change is written and logged, so re-saving the same options is a no-op.
+      if (settings && !isDeepStrictEqual(settings.data.settings, existing.settings)) {
+        attempt.changing('changeSettings');
+        await this.knex(FIELDS_TABLE)
+          .where({ namespace, key })
+          .update({ ...z.encode(DbTypedSettings, settings.data), updated_at: new Date() });
+        await this.recordAction({
+          context,
+          verb: 'changeSettings',
+          subject: existing.id,
+          details: { primary_name: patch.name ?? existing.name, key },
+        });
+      }
+
+      if (patch.access !== undefined && patch.access.member !== existing.access.member) {
+        attempt.changing('changeAccess');
+        await this.knex(FIELDS_TABLE)
+          .where({ namespace, key })
+          .update({ member_access: patch.access.member, updated_at: new Date() });
+        await this.recordAction({
+          context,
+          verb: 'changeAccess',
+          subject: existing.id,
+          details: {
+            primary_name: patch.name ?? existing.name,
+            key,
+            member_access: patch.access.member,
+            previous_member_access: existing.access.member,
+          },
+        });
+      }
+
+      // A status change is the archive/restore transition. Only write (and log)
+      // when it actually flips, so re-sending the current status is a no-op.
+      if (patch.status !== undefined && patch.status !== existing.status) {
+        const verb = patch.status === FIELD_STATUS.archived ? 'archive' : 'restore';
+        attempt.changing(verb);
+        await this.knex(FIELDS_TABLE)
+          .where({ namespace, key })
+          .update({ status: patch.status, updated_at: new Date() });
+        await this.recordAction({
+          context,
+          verb,
+          subject: existing.id,
+          details: { primary_name: patch.name ?? existing.name, key },
+        });
+      }
+
+      return this.read(namespace, key, ADMIN);
+    });
   }
 
   /**
@@ -662,21 +724,25 @@ export class MetafieldDefinitionsService {
    * reversible soft state (see `edit` with a status change).
    */
   async destroy(context: RequestContext, namespace: Namespace, key: Key): Promise<void> {
-    const field = await this.knex(TABLE).where({ namespace, key }).first();
-    if (!field) {
-      throw new errors.NotFoundError({ message: 'Custom field not found.' });
-    }
-    if (field.status !== FIELD_STATUS.archived) {
-      throw new errors.ValidationError({
-        message: 'Only archived custom fields can be deleted. Archive the field first.',
+    return this.tracking.definition('delete', async (attempt) => {
+      await this.namespaces.assertChangeable(namespace);
+      const field = await this.knex(FIELDS_TABLE).where({ namespace, key }).first();
+      if (!field) {
+        throw new errors.NotFoundError({ message: 'Custom field not found.' });
+      }
+      attempt.fields([field]);
+      if (field.status !== FIELD_STATUS.archived) {
+        throw new errors.ValidationError({
+          message: 'Only archived custom fields can be deleted. Archive the field first.',
+        });
+      }
+      await this.knex(FIELDS_TABLE).where({ namespace, key }).del();
+      await this.recordAction({
+        context,
+        verb: 'delete',
+        subject: field.id,
+        details: { primary_name: field.name, key },
       });
-    }
-    await this.knex(TABLE).where({ namespace, key }).del();
-    await this.recordAction({
-      context,
-      verb: 'delete',
-      subject: field.id,
-      details: { primary_name: field.name, key },
     });
   }
 }
@@ -707,13 +773,14 @@ function usableKey(stated: string): Key {
   return key;
 }
 
-// The field a zod issue points at. Create validates an array, so an issue's path
-// is prefixed with the item's index (`[0, 'name']`); `property` names the field
-// that is wrong, so the numeric prefix is dropped. Which item it was is reported
-// separately by batchContext, keeping `property` the bare field name a client can
-// map straight onto its form input.
+// What a zod issue points at within one field, by its path, such as `name` or
+// `settings.options.2`, so a client can show it beside the input that set the value.
+// Create validates an array, so an issue's path is prefixed with the item's index
+// (`[0, 'name']`), which is dropped: which item it was is reported separately by
+// batchContext. An issue with the batch as a whole points at nothing.
 function propertyOf(path: PropertyKey[]): string | undefined {
-  return path.find((segment) => typeof segment === 'string');
+  const withinField = typeof path[0] === 'number' ? path.slice(1) : path;
+  return withinField.length > 0 ? refusedProperty(withinField) : undefined;
 }
 
 // Which definition of a batch an error belongs to. Only set when the request
@@ -726,10 +793,14 @@ function batchContext(index: PropertyKey | undefined, requestedCount: number): s
   return `Custom field ${index + 1} of ${requestedCount}.`;
 }
 
+const DriverError = z.object({ code: z.string() });
+
 function isUniqueConstraintViolation(error: unknown): boolean {
-  const code = (error as { code?: string })?.code;
+  const code = DriverError.safeParse(error).data?.code;
   return code === 'ER_DUP_ENTRY' || code === 'SQLITE_CONSTRAINT';
 }
+
+const MongoQuery = z.record(z.string(), z.unknown());
 
 // Parse a caller-supplied NQL filter, without applying it. A malformed filter is a
 // client error (400), not a 500. Whether the result widens the statuses is decided by
@@ -738,12 +809,12 @@ function isUniqueConstraintViolation(error: unknown): boolean {
 function parseFilter(filter: string): Record<string, unknown> {
   let mongoQuery: Record<string, unknown>;
   try {
-    mongoQuery = nql(filter).toJSON() as Record<string, unknown>;
+    mongoQuery = MongoQuery.parse(nql(filter).toJSON());
   } catch (err) {
     throw new errors.BadRequestError({
       message: 'Could not parse the filter parameter.',
       property: 'filter',
-      err: err as Error,
+      err: err instanceof Error ? err : undefined,
     });
   }
   return mongoQuery;
@@ -762,9 +833,10 @@ function filterReferencesAttribute(query: Record<string, unknown>, attribute: st
       return true;
     }
     if ((key === '$and' || key === '$or' || key === '$nor') && Array.isArray(value)) {
-      return value.some((sub) =>
-        filterReferencesAttribute(sub as Record<string, unknown>, attribute),
-      );
+      return value.some((sub) => {
+        const clause = MongoQuery.safeParse(sub);
+        return clause.success && filterReferencesAttribute(clause.data, attribute);
+      });
     }
     return false;
   });

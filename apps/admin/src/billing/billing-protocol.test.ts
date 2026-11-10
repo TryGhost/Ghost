@@ -32,7 +32,7 @@ describe('billing routes', () => {
     expect(billingAdminPath('/update-card')).toBe('/pro/update-card');
   });
 
-  it('loads the route Ember would load for each Admin URL', () => {
+  it('maps each Admin URL to the billing route the iframe loads first', () => {
     expect(initialBillingSubRoute('/tags')).toBeNull();
     expect(initialBillingSubRoute('/pro')).toBe('/');
     expect(initialBillingSubRoute('/pro/plans')).toBe('/plans');

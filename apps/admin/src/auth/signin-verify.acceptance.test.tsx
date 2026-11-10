@@ -23,7 +23,7 @@ beforeEach(() => {
 it('shows the new-device copy when opened directly', async () => {
   await renderAdminApp('/signin/verify', signedOut());
 
-  await expect.element(authScreen.heading("Verify it's really you")).toBeVisible();
+  await expect.element(authScreen.heading('Verify it’s really you')).toBeVisible();
   await expect.element(authScreen.text(/signing in from a new device/)).toBeVisible();
 });
 

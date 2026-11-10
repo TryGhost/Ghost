@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { screen } from '@testing-library/react';
 
 import { FieldContent } from '../../../../src/components/ui/field';
@@ -11,8 +10,8 @@ describe('Field Components', () => {
 
     const content = screen.getByTestId('field-content');
 
-    assert.match(content.className, /gap-0\.5/);
-    assert.doesNotMatch(content.className, /gap-1(?:\s|$)/);
-    assert.doesNotMatch(content.className, /gap-1\.5/);
+    expect(content.className).toMatch(/gap-0\.5/);
+    expect(content.className).not.toMatch(/gap-1(?:\s|$)/);
+    expect(content.className).not.toMatch(/gap-1\.5/);
   });
 });

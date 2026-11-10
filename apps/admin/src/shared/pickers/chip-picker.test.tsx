@@ -77,25 +77,48 @@ describe('ChipPicker Escape', () => {
   });
 });
 
-function Chips({ onReorder }: { onReorder?: (next: Option[]) => void }) {
+function Chips({
+  onReorder,
+  onRemove = vi.fn(),
+  disabled,
+}: {
+  onReorder?: (next: Option[]) => void;
+  onRemove?: (key: string) => void;
+  disabled?: boolean;
+}) {
   return (
     <ChipPicker<Option, Option>
+      disabled={disabled}
       emptyMessage="No options found"
       getKey={(option) => option.id}
       getLabel={(option) => option.name}
       inputLabel="Options"
-      options={[]}
+      options={[{ id: 'gamma', name: 'Gamma' }]}
       placeholder="Select options..."
       selected={[
         { id: 'alpha', name: 'Alpha' },
         { id: 'beta', name: 'Beta' },
       ]}
       onAdd={vi.fn()}
-      onRemove={vi.fn()}
+      onRemove={onRemove}
       onReorder={onReorder}
     />
   );
 }
+
+// A form holds its fields still while it saves, so a change can't slip in after what was sent.
+describe('ChipPicker disabled', () => {
+  it('opens no list and removes no chip', () => {
+    const onRemove = vi.fn();
+    render(<Chips disabled onRemove={onRemove} />);
+
+    fireEvent.click(screen.getByRole('combobox', { name: 'Options' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Remove Alpha' }));
+
+    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(onRemove).not.toHaveBeenCalled();
+  });
+});
 
 describe('ChipPicker reorder', () => {
   it('leaves the chips plain buttons without a reorder handler', () => {

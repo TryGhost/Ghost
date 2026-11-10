@@ -21,8 +21,8 @@ import { useState } from 'react';
 import type { PostResource } from '@/posts/list/post-resource';
 
 /**
- * Ported from `gh-psm-visibility-input.js`. "Specific tier(s)" is appended to
- * the fixed three, and picking it reveals the tier picker below.
+ * "Specific tier(s)" is appended to the fixed three, and picking it reveals the
+ * tier picker below.
  */
 const VISIBILITIES = [
   { value: 'public', label: 'Public' },
@@ -45,13 +45,11 @@ interface ChangeAccessModalProps {
 }
 
 /**
- * Bulk "Change access", ported from
- * `apps/ember-admin/app/components/posts-list/modals/edit-posts-access.hbs`.
+ * Bulk "Change access".
  *
  * With one post selected it opens on that post's current access; with several
  * it opens on the site default, because there is no single current value to
- * show. Ember does the same, via a throwaway post model it uses only to borrow
- * the validations.
+ * show.
  */
 export function ChangeAccessModal({
   resource,
@@ -70,7 +68,7 @@ export function ChangeAccessModal({
   const [visibility, setVisibility] = useState(
     isSingle && currentVisibility ? currentVisibility : defaultVisibility,
   );
-  // Ember seeds these from the post as well as the visibility, so opening the
+  // Seeded from the post as well as the visibility, so opening the
   // modal on a tiers-gated post shows the tiers it already has rather than an
   // empty list with a permanently disabled Save.
   const [tierIds, setTierIds] = useState<string[]>(
@@ -80,7 +78,7 @@ export function ChangeAccessModal({
   const { data: tiersData } = useBrowseTiers();
   const paidTiers = (tiersData?.tiers ?? []).filter((tier) => tier.type === 'paid' && tier.active);
 
-  // Ember refuses to save "specific tiers" with none chosen.
+  // "Specific tiers" can't be saved with none chosen.
   const canSave = visibility !== 'tiers' || tierIds.length > 0;
 
   return (

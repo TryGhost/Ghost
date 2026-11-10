@@ -85,7 +85,6 @@ function CommentsSection({
   isCommentsEnabled,
   enableCommentNotifications,
 }) {
-  const { doAction } = useContext(AppContext);
   const isChecked = !!enableCommentNotifications;
   // Ref-based guard so rapid synchronous clicks see the in-flight state
   // immediately — state updates wouldn't be visible until the next render.
@@ -104,10 +103,6 @@ function CommentsSection({
     isUpdatingRef.current = true;
     try {
       await updateCommentNotifications(!isChecked);
-      doAction('showPopupNotification', {
-        action: 'updated:success',
-        message: t('Comment preferences updated.'),
-      });
     } finally {
       isUpdatingRef.current = false;
     }
@@ -154,7 +149,7 @@ function UpdatesAndAnnouncementsSection({
   canChangeUpdatesAndAnnouncements,
   enableUpdatesAndAnnouncements,
 }) {
-  const { doAction, site } = useContext(AppContext);
+  const { site } = useContext(AppContext);
   // Ref-based guard so rapid synchronous clicks see the in-flight state
   // immediately — state updates wouldn't be visible until the next render.
   const isUpdatingRef = useRef(false);
@@ -172,10 +167,6 @@ function UpdatesAndAnnouncementsSection({
     isUpdatingRef.current = true;
     try {
       await updateUpdatesAndAnnouncements(!enableUpdatesAndAnnouncements);
-      doAction('showPopupNotification', {
-        action: 'updated:success',
-        message: t('Email preferences updated.'),
-      });
     } finally {
       isUpdatingRef.current = false;
     }

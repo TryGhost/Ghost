@@ -257,11 +257,13 @@ describe('NewslettersService', function () {
     });
 
     it('rejects if called with no data', async function () {
-      await assert.rejects(newsletterService.add(), { name: 'TypeError' });
+      await assert.rejects(newsletterService.edit(undefined, { id: 'test' }), {
+        name: 'TypeError',
+      });
       sinon.assert.notCalled(editStub);
     });
 
-    it('will attempt to add empty object without verification', async function () {
+    it('will attempt to edit empty object without verification', async function () {
       const result = await newsletterService.edit({}, { id: 'test' });
 
       assert.equal(result.meta, undefined); // meta property has not been added

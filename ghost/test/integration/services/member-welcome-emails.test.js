@@ -12,7 +12,7 @@ const {
   MEMBER_WELCOME_EMAIL_SLUGS,
   MESSAGES,
 } = require('../../../core/server/services/member-welcome-emails/constants');
-const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
+const memberWelcomeEmails = require('../../../core/server/services/member-welcome-emails').default;
 
 function parseDatabaseDate(date) {
   if (date instanceof Date) {
@@ -83,7 +83,6 @@ describe('Member Welcome Emails Integration', function () {
       name: 'Free Member Welcome Email',
       description: 'Welcome new free members after they sign up.',
       slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
-      trigger_type: 'membership_started',
       created_at: new Date(),
     });
     await db.knex('welcome_email_automated_emails').insert({
@@ -103,7 +102,6 @@ describe('Member Welcome Emails Integration', function () {
       name: 'Paid Member Welcome Email',
       description: 'Welcome new paid members after they start their subscription.',
       slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
-      trigger_type: 'membership_started',
       created_at: new Date(),
     });
     await db.knex('welcome_email_automated_emails').insert({
@@ -221,10 +219,8 @@ describe('Member Welcome Emails Integration', function () {
       },
       memberStatus = 'free',
     } = {}) {
-      memberWelcomeEmailService.api = null;
-      memberWelcomeEmailService.init();
-      await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
-      await memberWelcomeEmailService.api.send({
+      await memberWelcomeEmails.service.loadMemberWelcomeEmails();
+      await memberWelcomeEmails.service.send({
         member,
         memberStatus,
       });
@@ -232,11 +228,11 @@ describe('Member Welcome Emails Integration', function () {
 
     async function sendAutomationEmail({ trackOpens, reuseService = false } = {}) {
       if (!reuseService) {
-        memberWelcomeEmailService.api = null;
-        memberWelcomeEmailService.init();
+        // The boot-owned instance is retained, so reload to drop the cached sender options.
+        await memberWelcomeEmails.service.loadMemberWelcomeEmails();
       }
 
-      return await memberWelcomeEmailService.api.sendAutomationEmail({
+      return await memberWelcomeEmails.service.sendAutomationEmail({
         email: {
           designSettingId: defaultEmailDesignSettingId,
           lexical: JSON.stringify({
@@ -519,7 +515,7 @@ describe('Member Welcome Emails Integration', function () {
         sender_reply_to: 'first-reply@example.com',
       });
       await sendAutomationEmail();
-      const retainedApi = memberWelcomeEmailService.api;
+      const retainedApi = memberWelcomeEmails.service;
 
       await db.knex('newsletters').where('id', defaultNewsletter.id).update({
         sender_name: 'Second Sender',
@@ -537,7 +533,7 @@ describe('Member Welcome Emails Integration', function () {
       await retainedApi.loadMemberWelcomeEmails();
       await sendAutomationEmail({ reuseService: true });
 
-      assert.equal(memberWelcomeEmailService.api, retainedApi);
+      assert.equal(memberWelcomeEmails.service, retainedApi);
       assert.equal(MailgunClient.prototype.send.callCount, 3);
       assert.equal(
         MailgunClient.prototype.send.thirdCall.args[0].from,
@@ -706,10 +702,7 @@ describe('Member Welcome Emails Integration', function () {
         },
       });
 
-      memberWelcomeEmailService.api = null;
-      memberWelcomeEmailService.init();
-
-      await memberWelcomeEmailService.api.sendTestEmail({
+      await memberWelcomeEmails.service.sendTestEmail({
         email: 'test-member@example.com',
         subject: 'Welcome test',
         lexical,
@@ -724,8 +717,6 @@ describe('Member Welcome Emails Integration', function () {
     });
 
     it('uses email design sender details for test welcome emails', async function () {
-      memberWelcomeEmailService.init();
-
       await db.knex('email_design_settings').where('id', defaultEmailDesignSettingId).update({
         sender_name: 'Design Sender',
         sender_email: 'design@example.com',
@@ -746,7 +737,7 @@ describe('Member Welcome Emails Integration', function () {
           sender_reply_to: 'welcome-reply@example.com',
         });
 
-      await memberWelcomeEmailService.api.sendTestEmail({
+      await memberWelcomeEmails.service.sendTestEmail({
         email: 'test-member@example.com',
         subject: 'Welcome test',
         lexical: JSON.stringify({
@@ -774,8 +765,6 @@ describe('Member Welcome Emails Integration', function () {
     });
 
     it('uses newsletter sender details for test welcome emails when email design sender details are empty', async function () {
-      memberWelcomeEmailService.init();
-
       const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
 
       await db.knex('newsletters').where('id', defaultNewsletter.id).update({
@@ -804,7 +793,7 @@ describe('Member Welcome Emails Integration', function () {
           sender_reply_to: 'welcome-reply@example.com',
         });
 
-      await memberWelcomeEmailService.api.sendTestEmail({
+      await memberWelcomeEmails.service.sendTestEmail({
         email: 'test-member@example.com',
         subject: 'Welcome test',
         lexical: JSON.stringify({
@@ -834,21 +823,19 @@ describe('Member Welcome Emails Integration', function () {
 
   describe('design settings', function () {
     beforeEach(function () {
-      memberWelcomeEmailService.api = null;
-      memberWelcomeEmailService.init();
       sinon.stub(MailgunClient.prototype, 'send').resolves({ id: '<bulk-mailgun-message-id>' });
       sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
     });
 
     it('uses cached design settings after welcome emails are loaded', async function () {
-      await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
+      await memberWelcomeEmails.service.loadMemberWelcomeEmails();
 
       await db.knex('email_design_settings').where('id', defaultEmailDesignSettingId).update({
         footer_content: '<p>Fresh footer content</p>',
         show_badge: false,
       });
 
-      await memberWelcomeEmailService.api.send({
+      await memberWelcomeEmails.service.send({
         member: {
           email: 'fresh-design@example.com',
           name: 'Fresh Design',

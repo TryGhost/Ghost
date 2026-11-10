@@ -5,7 +5,6 @@ import type { SinonFakeTimers, SinonStub } from 'sinon';
 import { endpoints as api } from '../../../../core/server/api';
 // @ts-expect-error This module lacks type definitions.
 import handlebarsService from '../../../../core/frontend/services/handlebars';
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../utils/config-utils';
 import { html } from 'common-tags';
 import loggingLib from '@tryghost/logging';

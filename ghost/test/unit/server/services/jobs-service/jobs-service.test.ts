@@ -408,6 +408,29 @@ describe('JobsService', function () {
       assert.equal(backend.shutdownCalls.length, 1);
     });
 
+    it('logs at start which backend runs jobs and whether the outbox is on', async function () {
+      await makeService({ outbox: makeOutbox() }).start();
+      await makeService().start();
+
+      const started = logger.calls.info.map(
+        ([event, message]) =>
+          [event, message] as [
+            { system: { event: string; backend: string; outbox_enabled: boolean } },
+            string,
+          ],
+      );
+      assert.deepEqual(started, [
+        [
+          { system: { event: 'jobs.started', backend: 'FakeBackend', outbox_enabled: true } },
+          '[Jobs] Started on FakeBackend with the outbox on',
+        ],
+        [
+          { system: { event: 'jobs.started', backend: 'FakeBackend', outbox_enabled: false } },
+          '[Jobs] Started on FakeBackend with the outbox off',
+        ],
+      ]);
+    });
+
     it('warns at start when the outbox is enabled on an unsupported database', async function () {
       const service = makeService({ logOutboxUnavailable: true });
 
@@ -499,14 +522,13 @@ describe('JobsService', function () {
       );
     });
 
-    it('logs and drops delivery for an unknown job type', async function () {
+    it('rejects delivery for an unknown job type without logging, so the backend logs the failure once', async function () {
       const service = makeService();
       await service.start();
       await service.dispatch(new GreetJob({ name: 'Ada' }));
-      await backend.deliver();
+      await assert.rejects(() => backend.deliver(), /No handler registered for job type "greet"/);
 
-      assert.equal(logger.calls.error.length, 1);
-      assert.match(String(logger.calls.error[0]![0]), /No handler registered for job type "greet"/);
+      assert.equal(logger.calls.error.length, 0);
     });
   });
 
@@ -515,9 +537,11 @@ describe('JobsService', function () {
       const service = makeService();
       service.handle(GreetJob, async () => {});
       await service.start();
+      const startLines = logger.calls.info.length;
 
       await service.dispatch(new GreetJob({ name: 'Ada' }));
       await backend.deliver();
+      logger.calls.info.splice(0, startLines);
 
       assert.equal(logger.calls.info.length, 2);
       assert.equal(logger.calls.info[0]![0], '[Background Job] greet started');
@@ -538,9 +562,11 @@ describe('JobsService', function () {
         throw new Error('handler exploded');
       });
       await service.start();
+      const startLines = logger.calls.info.length;
 
       await service.dispatch(new GreetJob({ name: 'Ada' }));
       await assert.rejects(() => backend.deliver(), /handler exploded/);
+      logger.calls.info.splice(0, startLines);
 
       assert.equal(logger.calls.info.length, 1, 'only the started line is logged');
       assert.equal(logger.calls.error.length, 1);

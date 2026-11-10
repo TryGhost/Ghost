@@ -15,12 +15,11 @@ export function isCompExpiryDuration(value: string): value is CompExpiryDuration
 }
 
 /**
- * Turn the admin's picked duration into an ISO expiry_at, matching
- * `ghost/admin/app/components/modal-member-tier.js:addTier` exactly:
+ * Turn the admin's picked duration into an ISO expiry_at:
  *   - forever          → null (no expiry, permanent comp)
  *   - week/month/…/year → +N from now, UTC start-of-day
- *   - custom + date    → end of the picked LOCAL day, with the timezone-offset
- *                        adjustment Ember uses to keep it on the same calendar day
+ *   - custom + date    → end of the picked LOCAL day, with a timezone-offset
+ *                        adjustment that keeps it on the same calendar day
  * The custom date is a `YYYY-MM-DD` string (native `<input type="date">` value)
  * parsed as LOCAL midnight — `new Date('YYYY-MM-DD')` would misparse it as UTC
  * midnight, snapping the picked day back by one for admins west of UTC.

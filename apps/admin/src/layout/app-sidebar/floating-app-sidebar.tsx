@@ -11,11 +11,19 @@ import { SidebarSiteIcon, SidebarSiteIdentity } from './sidebar-site-identity';
 
 interface FloatingAppSidebarProps extends Omit<
   React.ComponentProps<typeof FloatingSidebar>,
-  'children' | 'header' | 'icon' | 'label' | 'onPinnedChange' | 'pinLocked' | 'pinned' | 'resetKey'
+  | 'children'
+  | 'header'
+  | 'headerHidden'
+  | 'icon'
+  | 'label'
+  | 'onPinnedChange'
+  | 'pinLocked'
+  | 'pinned'
+  | 'resetKey'
 > {
   /**
    * Shows the Settings navigation in the body in place of the main navigation
-   * (the sidebar is pinned for it, without its pin button).
+   * (the sidebar is pinned for it, without its header row or pin button).
    */
   settingsNavigation?: boolean;
   /** Receives the element the Settings navigation renders into. */
@@ -59,6 +67,7 @@ const FloatingAppSidebar = React.forwardRef<HTMLDivElement, FloatingAppSidebarPr
         ref={ref}
         data-testid="admin-sidebar"
         header={header}
+        headerHidden={settingsNavigation}
         icon={icon}
         label={title || 'Site navigation'}
         pinLocked={settingsNavigation}

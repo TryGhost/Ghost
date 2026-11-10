@@ -13,8 +13,6 @@ const onTimezoneEdited = function (settingModel, options) {
 
   const newTimezone = settingModel.attributes.value;
   const previousTimezone = settingModel._previousAttributes.value;
-  const timezoneOffsetDiff =
-    moment.tz(previousTimezone).utcOffset() - moment.tz(newTimezone).utcOffset();
 
   // CASE: TZ was updated, but did not change
   if (previousTimezone === newTimezone) {
@@ -42,10 +40,9 @@ const onTimezoneEdited = function (settingModel, options) {
       }
 
       for (const post of results) {
-        const newPublishedAtMoment = moment(post.get('published_at')).add(
-          timezoneOffsetDiff,
-          'minutes',
-        );
+        const newPublishedAtMoment = moment(post.get('published_at'))
+          .tz(previousTimezone)
+          .tz(newTimezone, true);
 
         /**
          * CASE:

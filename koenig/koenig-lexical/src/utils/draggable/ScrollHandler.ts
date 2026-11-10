@@ -1,9 +1,6 @@
 // adapted from draggable.js Scrollable plugin (MIT)
 // https://github.com/Shopify/draggable/blob/master/src/Draggable/Plugins/Scrollable/Scrollable.js
-import {
-    getDocumentScrollingElement,
-    getParentScrollableElement
-} from './draggable-utils';
+import {getParentScrollableElement} from './draggable-utils';
 
 export const defaultOptions = {
     speed: 8,
@@ -60,16 +57,7 @@ export class ScrollHandler {
     }
 
     getScrollableElement(target) {
-        let scrollableElement = getParentScrollableElement(target);
-
-        // workaround for our particular scrolling setup
-        // TODO: find a way to make this configurable
-        if (scrollableElement === getDocumentScrollingElement()) {
-            // TODO: will only work inside Admin
-            scrollableElement = document.querySelector('.gh-koenig-editor');
-        }
-
-        return scrollableElement;
+        return getParentScrollableElement(target);
     }
 
     _scroll() {

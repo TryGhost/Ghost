@@ -5,7 +5,7 @@ const TierPriceChangeEvent = require('../../../tiers/tier-price-change-event');
 const TierNameChangeEvent = require('../../../tiers/tier-name-change-event');
 const OfferCreatedEvent = require('../../../offers/domain/events/offer-created-event');
 const { BadRequestError } = require('@tryghost/errors');
-const { t } = require('../../../i18n');
+const { t } = require('../../../../../shared/i18n');
 
 /** @import { CheckoutDefinition, CheckoutService } from '../../../stripe-checkout-config' */
 /** @import Tier from '../../../tiers/tier' */

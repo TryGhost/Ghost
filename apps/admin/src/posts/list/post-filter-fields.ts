@@ -1,8 +1,7 @@
 import type { PostResource } from './post-resource';
 
 /**
- * The values each filter and the sort can take, ported verbatim from
- * `apps/ember-admin/app/controllers/posts.js` and `controllers/pages.js`.
+ * The values each filter and the sort can take.
  *
  * Data only - the Shade field config that renders these (icons, async value
  * sources for author and tag) is built on top in the filters UI.
@@ -28,8 +27,8 @@ const PAGE_TYPE_OPTIONS: PostFilterOption[] = [
 ];
 
 /**
- * `[paid,tiers]` is an opaque option value, not structure - Ember interpolates
- * it straight into the filter string.
+ * `[paid,tiers]` is an opaque option value, not structure - it is interpolated
+ * straight into the filter string.
  */
 export const VISIBILITY_OPTIONS: PostFilterOption[] = [
   { value: 'public', label: 'Public' },

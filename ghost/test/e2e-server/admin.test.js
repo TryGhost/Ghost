@@ -68,6 +68,22 @@ describe('Admin Routing', function () {
         .set('Cookie', ['ghost-admin-api-session=abc; Path=/; HttpOnly; Secure; SameSite=Strict'])
         .expect(200);
     });
+
+    it('Renders static file with the Better Auth session cookie', async function () {
+      await request
+        .get('/ghost/auth-frame/')
+        .set('Origin', config.get('url'))
+        .set('Cookie', ['theme=dark; __Secure-ghost-admin-api-session=abc'])
+        .expect(200);
+    });
+
+    it('Renders 204 for a cookie that only contains the session cookie name', async function () {
+      await request
+        .get('/ghost/auth-frame/')
+        .set('Origin', config.get('url'))
+        .set('Cookie', ['not-ghost-admin-api-session=abc'])
+        .expect(204);
+    });
   });
 
   describe('Admin Redirects', function () {

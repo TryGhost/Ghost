@@ -1,7 +1,9 @@
 import type { Knex } from 'knex';
 import type { CsvField } from '@tryghost/metafield-csv';
-import { CUSTOM_NAMESPACE, type Namespace } from '@tryghost/metafield-types/identity';
-import { INTERNAL, type Audience, type WriteOrigin } from '../../members-metafields';
+import { CUSTOM_NAMESPACE } from '@tryghost/metafield-types/identity';
+import { INTERNAL } from '../../members-metafields';
+import type { MetafieldDefinitionsService } from '../../members-metafields/definitions-service';
+import type { MetafieldValuesService, PlannedWrite } from '../../members-metafields/values-service';
 import MembersCSVImporter, {
   type MembersRepository,
   type GiftService,
@@ -13,10 +15,9 @@ import MembersCSVImporter, {
 import readMemberRows from './import/reader';
 import { createRowSpool } from './import/spool';
 import type MembersImportJob from '../jobs/members-import-job';
-import MembersCSVExporter, {
-  type ExportOptions,
-  type MetafieldDefinition,
-} from './export/exporter';
+import { tracer } from '../../../lib/tracing';
+import { importExportTracking } from './tracking';
+import MembersCSVExporter, { type ExportOptions } from './export/exporter';
 
 const MembersCSVImporterStripeUtils = require('./import/stripe-utils');
 const db = require('../../../data/db');
@@ -48,31 +49,15 @@ interface ImporterServices {
   productRepository: unknown;
   // The metafields services the members service hands the import composition root.
   metafields: {
-    definitions: {
-      browse(options: { namespace: Namespace }, audience: Audience): Promise<CsvField[]>;
-    };
-    values: {
-      planWrite(values: Record<string, unknown>, audience: Audience): Promise<unknown[]>;
-      applyWrite(
-        memberId: string,
-        plan: unknown[],
-        options: WriteOrigin & { executor?: Knex },
-      ): Promise<void>;
-    };
+    definitions: Pick<MetafieldDefinitionsService, 'browse'>;
+    values: Pick<MetafieldValuesService, 'planWrite' | 'applyImportedWrite'>;
   };
 }
 
 // The metafields services the members service hands the export composition root.
 interface MetafieldsServices {
-  definitions: {
-    browse(options: { namespace: Namespace }, audience: Audience): Promise<MetafieldDefinition[]>;
-  };
-  values: {
-    getValuesForMembers(
-      memberIds: string[],
-      audience: Audience,
-    ): Promise<Map<string, Record<string, unknown>>>;
-  };
+  definitions: Pick<MetafieldDefinitionsService, 'browse'>;
+  values: Pick<MetafieldValuesService, 'getValuesForMembers'>;
 }
 
 // Build the members CSV importer. This is the composition root: today's models and
@@ -124,20 +109,14 @@ export function makeImporter(deps: ImporterServices) {
       }),
   };
 
-  const metafields: MetafieldsImport = {
+  const metafields: MetafieldsImport<PlannedWrite> = {
     // Only the publisher's own fields: a file exported and imported again must not rewrite
     // the values another namespace's owner keeps.
     activeFields: async () =>
       deps.metafields.definitions.browse({ namespace: CUSTOM_NAMESPACE }, INTERNAL),
     planWrite: (values) => deps.metafields.values.planWrite(values, INTERNAL),
-    // Every value the import writes came out of the file, whichever column carried it.
-    // An import has no id to give until runs are tracked, so it names its kind only.
     applyWrite: (memberId, plan, executor) =>
-      deps.metafields.values.applyWrite(memberId, plan, {
-        writtenBy: { type: 'import', id: null },
-        source: 'import',
-        executor,
-      }),
+      deps.metafields.values.applyImportedWrite(memberId, plan, executor),
   };
 
   // The import job never rejects, so the jobs service never sees its failures, and the
@@ -175,6 +154,7 @@ export function makeImporter(deps: ImporterServices) {
     dispatchJob: deps.dispatchJob,
     getTimezone: deps.getTimezone,
     getInlineThreshold: deps.getInlineThreshold,
+    tracking: importExportTracking(tracer),
   });
 }
 
@@ -206,10 +186,12 @@ export function makeExporter({
       // Boot builds the definitions and values services before this one, so they
       // are always present -- no not-initialised state to guard.
       // The same fields the import reads back.
-      activeDefinitions: async (): Promise<MetafieldDefinition[]> =>
+      activeDefinitions: async (): Promise<CsvField[]> =>
         definitions.browse({ namespace: CUSTOM_NAMESPACE }, INTERNAL),
       valuesForMembers: (memberIds) => values.getValuesForMembers(memberIds, INTERNAL),
     },
+
+    tracking: importExportTracking(tracer),
   });
 
   return (options = {}) => exporter.export(options);

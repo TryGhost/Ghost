@@ -521,6 +521,41 @@ describe('Posts Content API', function () {
     assert.equal(paidPostData.tiers.length, 1);
   });
 
+  it('Hides paid text when requesting html and plaintext with a leading paywall', async function () {
+    const secret = 'Secret body behind the leading paywall';
+    const lexical = JSON.parse(testUtils.DataGenerator.markdownToLexical(secret));
+    lexical.root.children.unshift({ type: 'paywall', version: 1 });
+
+    const post = await models.Post.add(
+      {
+        title: 'Leading paywall',
+        slug: 'content-api-leading-paywall',
+        status: 'published',
+        visibility: 'paid',
+        custom_excerpt: null,
+        lexical: JSON.stringify(lexical),
+      },
+      { context: { internal: true } },
+    );
+
+    try {
+      assert.ok(post.get('html').startsWith('<!--members-only-->'));
+      assert.match(post.get('plaintext'), /Secret body behind the leading paywall/);
+
+      const { body } = await agent
+        .get(`posts/slug/${post.get('slug')}/?formats=html,plaintext`)
+        .expectStatus(200);
+
+      assert.equal(body.posts.length, 1);
+      assert.equal(body.posts[0].access, false);
+      assert.equal(body.posts[0].html, '');
+      assert.equal(body.posts[0].plaintext, '');
+      assert.equal(body.posts[0].excerpt, '');
+    } finally {
+      await models.Post.destroy({ id: post.id }, { context: { internal: true } });
+    }
+  });
+
   it('ignores Payment Authorization on gated Content API reads', async function () {
     const paidPost = testUtils.DataGenerator.forKnex.createPost({
       slug: 'mp-content-api-paid',

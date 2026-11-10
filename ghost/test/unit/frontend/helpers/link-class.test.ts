@@ -6,7 +6,6 @@ import link_class from '../../../../core/frontend/helpers/link_class';
 // @ts-expect-error This module lacks type definitions.
 import { handlebars } from '../../../../core/frontend/services/theme-engine/engine';
 
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../utils/config-utils';
 
 let defaultGlobals: Record<string, unknown>;

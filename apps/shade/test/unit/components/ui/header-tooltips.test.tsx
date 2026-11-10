@@ -1,15 +1,9 @@
 import { Children, type PropsWithChildren } from 'react';
-import ShadeProvider from '../../../../src/providers/shade-provider';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { PageHeader } from '../../../../src/components/patterns/page-header';
 import { NavbarActions } from '../../../../src/components/ui/navbar';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from '../../../../src/components/ui/tooltip';
+import { TooltipProvider } from '../../../../src/components/ui/tooltip';
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -117,35 +111,4 @@ it.each([
   expect(screen.queryByRole('tooltip')).toBeNull();
   advance(1);
   expect(screen.getByRole('tooltip').textContent).toBe('Search');
-});
-
-it('preserves inherited timing and focus behavior with Admin 7 off', () => {
-  render(
-    <ShadeProvider darkMode={false} isAdmin7={false}>
-      <TooltipProvider delayDuration={0}>
-        <NavbarActions>
-          <PageHeader.Actions>
-            <PageHeader.ActionGroup>
-              <Tooltip>
-                <TooltipTrigger>Existing action</TooltipTrigger>
-                <TooltipContent>Existing tooltip</TooltipContent>
-              </Tooltip>
-            </PageHeader.ActionGroup>
-          </PageHeader.Actions>
-        </NavbarActions>
-      </TooltipProvider>
-    </ShadeProvider>,
-  );
-  const trigger = screen.getByRole('button', { name: 'Existing action' });
-  fireEvent.pointerMove(trigger);
-  advance(0);
-  expect(screen.getByRole('tooltip').textContent).toBe('Existing tooltip');
-  fireEvent.blur(window);
-  expect(screen.getByRole('tooltip').textContent).toBe('Existing tooltip');
-  fireEvent.pointerLeave(trigger);
-  fireEvent.pointerMove(document.body, { clientX: 1000, clientY: 1000 });
-  fireEvent.blur(window);
-  fireEvent.focus(window);
-  fireEvent.focus(trigger);
-  expect(screen.getByRole('tooltip').textContent).toBe('Existing tooltip');
 });

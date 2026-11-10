@@ -1,18 +1,14 @@
 import type { ReactNode } from 'react';
+import { cn } from '@tryghost/shade/utils';
 
 import { useSidebarBannerState } from './hooks/use-sidebar-banner-state';
 
 interface AppSidebarBannerProps {
   banner?: ReactNode;
-  /**
-   * In the content flow rather than floating over the sidebar's foot. The
-   * floating sidebar's glass is a containing block for fixed descendants and
-   * clips them, so it needs this.
-   */
-  inline?: boolean;
+  className?: string;
 }
 
-function AppSidebarBanner({ banner, inline = false }: AppSidebarBannerProps) {
+function AppSidebarBanner({ banner, className }: AppSidebarBannerProps) {
   const sidebarBannerState = useSidebarBannerState();
   const resolvedBanner = banner ?? sidebarBannerState.banner;
 
@@ -20,15 +16,7 @@ function AppSidebarBanner({ banner, inline = false }: AppSidebarBannerProps) {
     return null;
   }
 
-  if (inline) {
-    return <div className="relative">{resolvedBanner}</div>;
-  }
-
-  return (
-    <div className="fixed bottom-[92px] left-[calc(var(--sidebar-width)/2)] z-50 w-[276px] -translate-x-1/2">
-      {resolvedBanner}
-    </div>
-  );
+  return <div className={cn('relative', className)}>{resolvedBanner}</div>;
 }
 
 export default AppSidebarBanner;

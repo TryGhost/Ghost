@@ -41,16 +41,6 @@ export function assembleAdminAssets(root: string): void {
     );
   }
 
-  // The hybrid assembler copied these into Admin's dist; a fresh Vite build clears them.
-  const hybridBundles = ['koenig-lexical', 'activitypub']
-    .map((bundle) => join(reactDist, 'assets', bundle))
-    .filter((path) => existsSync(path));
-  if (hybridBundles.length > 0) {
-    throw new Error(
-      `Admin build output still holds hybrid assets (${hybridBundles.join(', ')}). Rebuild Admin first.`,
-    );
-  }
-
   mkdirSync(built, { recursive: true });
   const staging = mkdtempSync(join(built, '.admin-assets-'));
   try {

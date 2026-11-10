@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 
-const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
+const {
+  agentProvider,
+  fixtureManager,
+  mockManager,
+  hostLimits,
+} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 
 // Filtering members by their custom field values over the real browse endpoint. Values are
@@ -15,7 +20,7 @@ describe('Members filtering by custom fields', function () {
     loginAsOwner: () => Promise<void>;
   };
 
-  async function createField(field: { name: string; type?: string }) {
+  async function createField(field: { name: string; type?: string; settings?: unknown }) {
     const { body } = await agent
       .post('members/metafields/custom/')
       .body({ members_metafields: [{ type: 'short_text', ...field }] })
@@ -61,10 +66,6 @@ describe('Members filtering by custom fields', function () {
     await agent.loginAsOwner();
   });
 
-  beforeEach(function () {
-    mockManager.mockLabsEnabled('membersCustomFields');
-  });
-
   afterEach(async function () {
     mockManager.restore();
     await models.Base.knex('members_metafield_values').del();
@@ -84,6 +85,20 @@ describe('Members filtering by custom fields', function () {
         "(metafields.identity:'custom.company'+metafields.value:'Ghost')",
       );
       assert.deepEqual(matched, [ghost.email]);
+    });
+
+    // A list of texts is looked for wherever a type keeps a whole value, and a text field keeps its
+    // value in one row.
+    it('filters a short text value by any of a list (is any of)', async function () {
+      await createField({ name: 'Company' });
+      const ghost = await createMember({ company: 'Ghost' });
+      const acme = await createMember({ company: 'Acme' });
+      await createMember({ company: 'Other' });
+
+      const matched = await browse(
+        "(metafields.identity:'custom.company'+metafields.value:['Acme','Ghost'])",
+      );
+      assert.deepEqual(matched.sort(), [acme.email, ghost.email].sort());
     });
 
     it('filters by a contains match on a short text value', async function () {
@@ -132,6 +147,111 @@ describe('Members filtering by custom fields', function () {
 
       const matched = await browse("metafields.identity:-'custom.company'");
       assert.deepEqual(matched, [noCompany.email]);
+    });
+
+    // While the host switches custom fields off, every field reads as archived, so a saved
+    // view that names one keeps working the way it does for an archived field.
+    describe('while the host switches custom fields off', function () {
+      afterEach(async function () {
+        await hostLimits.restoreHostLimits();
+      });
+
+      it('still filters on the values members hold', async function () {
+        await createField({ name: 'Company' });
+        const ghost = await createMember({ company: 'Ghost' });
+        await createMember({ company: 'Acme' });
+        await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+
+        const matched = await browse(
+          "(metafields.identity:'custom.company'+metafields.value:'Ghost')",
+        );
+        assert.deepEqual(matched, [ghost.email]);
+      });
+    });
+  });
+
+  describe('list fields', function () {
+    // Options picked, in the order each member picked them, one member to a row.
+    async function animalLovers(...picks: string[][]) {
+      await createField({
+        name: 'Favourite animals',
+        type: 'list',
+        settings: { options: ['Dog', 'Cat', 'Film & TV'], multiple: true },
+      });
+      return Promise.all(picks.map((favourite_animals) => createMember({ favourite_animals })));
+    }
+
+    it('finds members holding an option, named by its text in a list (is any of)', async function () {
+      const [dogs, both] = await animalLovers(['Dog'], ['Cat', 'Dog'], ['Cat']);
+      await createMember();
+
+      const matched = await browse(
+        "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dog'])",
+      );
+      assert.deepEqual(matched.sort(), [dogs.email, both.email].sort());
+    });
+
+    it('finds members holding any of several options', async function () {
+      const [dogs, , film] = await animalLovers(['Dog'], ['Cat'], ['Film & TV']);
+
+      const matched = await browse(
+        "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dog','Film & TV'])",
+      );
+      assert.deepEqual(matched.sort(), [dogs.email, film.email].sort());
+    });
+
+    it('finds members holding every one of several options (is all of)', async function () {
+      const [, both] = await animalLovers(['Dog'], ['Cat', 'Dog'], ['Cat']);
+
+      const matched = await browse(
+        "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dog'+'Cat'])",
+      );
+      assert.deepEqual(matched, [both.email]);
+    });
+
+    it('finds members holding every one of several options, one filter for each', async function () {
+      const [, both] = await animalLovers(['Dog'], ['Cat', 'Dog'], ['Cat']);
+
+      const matched = await browse(
+        "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dog'])+(metafields.identity:'custom.favourite_animals'+metafields.value:['Cat'])",
+      );
+      assert.deepEqual(matched, [both.email]);
+    });
+
+    it('finds members who answered with none of the options named (is none of)', async function () {
+      const [, , cats] = await animalLovers(['Dog'], ['Cat', 'Dog'], ['Cat']);
+      await createMember();
+
+      const matched = await browse(
+        "(metafields.identity:'custom.favourite_animals'+metafields.value:-['Dog'])",
+      );
+      assert.deepEqual(matched, [cats.email]);
+    });
+
+    it('finds members who answered, and those who did not', async function () {
+      const [dogs, cats] = await animalLovers(['Dog'], ['Cat']);
+      const unanswered = await createMember();
+
+      assert.deepEqual(
+        (await browse("metafields.identity:'custom.favourite_animals'")).sort(),
+        [dogs.email, cats.email].sort(),
+      );
+      assert.deepEqual(await browse("metafields.identity:-'custom.favourite_animals'"), [
+        unanswered.email,
+      ]);
+    });
+
+    it('still finds members holding an option the field no longer offers', async function () {
+      const [dogs] = await animalLovers(['Dog'], ['Cat']);
+      await agent
+        .put('members/metafields/custom/favourite_animals/')
+        .body({ members_metafields: [{ settings: { options: ['Cat', 'Fish'], multiple: true } }] })
+        .expectStatus(200);
+
+      const matched = await browse(
+        "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dog'])",
+      );
+      assert.deepEqual(matched, [dogs.email]);
     });
   });
 

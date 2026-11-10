@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const DomainEvents = require('@tryghost/domain-events');
 const RedirectEvent = require('./redirect-event');
 const { LinkRedirect } = require('./link-redirect');
 
@@ -26,6 +25,8 @@ const isUniqueConstraintError = (err) =>
 class LinkRedirectsService {
   /** @type ILinkRedirectRepository */
   #linkRedirectRepository;
+  /** @type {{dispatch: (event: object) => void}} */
+  #DomainEvents;
   /** @type URL */
   #baseURL;
 
@@ -35,11 +36,13 @@ class LinkRedirectsService {
   /**
    * @param {object} deps
    * @param {ILinkRedirectRepository} deps.linkRedirectRepository
+   * @param {{dispatch: (event: object) => void}} deps.DomainEvents
    * @param {object} deps.config
    * @param {URL} deps.config.baseURL
    */
   constructor(deps) {
     this.#linkRedirectRepository = deps.linkRedirectRepository;
+    this.#DomainEvents = deps.DomainEvents;
     if (!deps.config.baseURL.pathname.endsWith('/')) {
       this.#baseURL = new URL(deps.config.baseURL);
       this.#baseURL.pathname += '/';
@@ -160,7 +163,7 @@ class LinkRedirectsService {
           link,
         });
 
-        DomainEvents.dispatch(event);
+        this.#DomainEvents.dispatch(event);
       }
 
       // Substitute %%{uuid}%% placeholder if present in the destination URL

@@ -3,6 +3,12 @@ const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 
 const RouterController = require('../../../../../../../core/server/services/members/members-api/controllers/router-controller');
+const { createTracer } = require('../../../../../../../core/server/lib/tracing/create-tracer');
+const { stripeTracking } = require('../../../../../../../core/server/services/stripe/tracking');
+
+const tracking = stripeTracking(
+  createTracer({ transport: { metric: async () => null }, logging: { error() {} } }),
+);
 
 describe('RouterController', function () {
   let offersAPI;
@@ -103,6 +109,7 @@ describe('RouterController', function () {
   describe('createCheckoutSession', function () {
     it('passes offer metadata to payment link method', async function () {
       const routerController = new RouterController({
+        tracking,
         tiersService,
         paymentsService,
         offersAPI,
@@ -116,6 +123,7 @@ describe('RouterController', function () {
 
       await routerController.createCheckoutSession(
         {
+          get: sinon.stub(),
           body: {
             offerId: 'offer_123',
           },
@@ -146,6 +154,7 @@ describe('RouterController', function () {
         { id: 'def456', name: 'Newsletter 2', status: 'active' },
       ]);
       const routerController = new RouterController({
+        tracking,
         tiersService,
         paymentsService,
         offersAPI,
@@ -163,6 +172,7 @@ describe('RouterController', function () {
       ];
       const newslettersString = JSON.stringify(newsletters);
       const req = {
+        get: sinon.stub(),
         body: {
           tierId: 'tier_123',
           cadence: 'month',
@@ -193,6 +203,7 @@ describe('RouterController', function () {
 
     it('keeps an explicit empty newsletter list in the checkout metadata', async function () {
       const routerController = new RouterController({
+        tracking,
         tiersService,
         paymentsService,
         offersAPI,
@@ -205,6 +216,7 @@ describe('RouterController', function () {
         emailAddressService,
       });
       const req = {
+        get: sinon.stub(),
         body: {
           tierId: 'tier_123',
           cadence: 'month',
@@ -240,6 +252,7 @@ describe('RouterController', function () {
         get: sinon.stub().resolves(null),
       };
       const routerController = new RouterController({
+        tracking,
         tiersService,
         paymentsService,
         offersAPI,
@@ -254,6 +267,7 @@ describe('RouterController', function () {
 
       await routerController.createCheckoutSession(
         {
+          get: sinon.stub(),
           body: {
             tierId: 'tier_123',
             cadence: 'month',
@@ -292,6 +306,7 @@ describe('RouterController', function () {
         get: sinon.stub().resolves(member),
       };
       const routerController = new RouterController({
+        tracking,
         tiersService,
         paymentsService,
         offersAPI,
@@ -306,6 +321,7 @@ describe('RouterController', function () {
 
       await routerController.createCheckoutSession(
         {
+          get: sinon.stub(),
           body: {
             tierId: 'tier_123',
             cadence: 'month',
@@ -350,6 +366,7 @@ describe('RouterController', function () {
               email: 'member@example.com',
               isAuthenticated,
               metadata: {},
+              referrer: 'https://example.com/some-post/',
             }),
             { code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION' },
           );
@@ -361,10 +378,58 @@ describe('RouterController', function () {
             sinon.assert.calledOnceWithExactly(sendEmailWithMagicLink, {
               email: 'member@example.com',
               requestedType: 'signin',
+              referrer: 'https://example.com/some-post/',
             });
           }
         },
       );
+
+      it('passes the request referer to the sign-in email for a logged-out paid member', async function () {
+        const sendEmailWithMagicLink = sinon.stub().resolves();
+        const routerController = new RouterController({
+          tracking,
+          tiersService,
+          paymentsService,
+          offersAPI,
+          stripeAPIService,
+          labsService,
+          settingsCache,
+          settingsHelpers,
+          urlUtils,
+          sendEmailWithMagicLink,
+          memberRepository: {
+            get: sinon.stub().resolves({
+              get: (key) => (key === 'status' ? 'paid' : undefined),
+            }),
+          },
+        });
+
+        await assert.rejects(
+          routerController.createCheckoutSession(
+            {
+              get: (header) =>
+                header === 'referer' ? 'https://example.com/some-post/' : undefined,
+              body: {
+                tierId: 'tier_123',
+                cadence: 'month',
+                customerEmail: 'member@example.com',
+                metadata: {},
+              },
+            },
+            {
+              writeHead: () => {},
+              end: () => {},
+            },
+          ),
+          { code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION' },
+        );
+
+        sinon.assert.calledOnceWithExactly(sendEmailWithMagicLink, {
+          email: 'member@example.com',
+          requestedType: 'signin',
+          referrer: 'https://example.com/some-post/',
+        });
+      });
 
       it.each([
         ['free', true],
@@ -399,6 +464,7 @@ describe('RouterController', function () {
 
     it('sets ghostSignupContext to needs_magic_link_email when there is no member context or customer email', async function () {
       const routerController = new RouterController({
+        tracking,
         tiersService,
         paymentsService,
         offersAPI,
@@ -411,6 +477,7 @@ describe('RouterController', function () {
 
       await routerController.createCheckoutSession(
         {
+          get: sinon.stub(),
           body: {
             tierId: 'tier_123',
             cadence: 'month',
@@ -628,10 +695,11 @@ describe('RouterController', function () {
         }
       });
 
-      it('returns a BadRequestError if fetching tier by tierId throws', async function () {
+      it('lets a failed tier read through, instead of answering that the tier does not exist', async function () {
+        const failure = new Error('Fail to fetch tier');
         tiersService = {
           api: {
-            read: sinon.stub().rejects(new Error('Fail to fetch tier')),
+            read: sinon.stub().rejects(failure),
           },
         };
 
@@ -645,25 +713,19 @@ describe('RouterController', function () {
           settingsHelpers,
         });
 
-        try {
-          await routerController._getSubscriptionCheckoutData({
-            tierId: 'invalid',
+        await assert.rejects(
+          routerController._getSubscriptionCheckoutData({
+            tierId: '0123456789abcdef01234567',
             cadence: 'year',
-          });
-
-          assert.fail('Expected function to throw BadRequestError');
-        } catch (error) {
-          assert(
-            error instanceof errors.BadRequestError,
-            'Error should be an instance of BadRequestError',
-          );
-          assert.equal(error.context, 'Tier with id "invalid" not found');
-        }
+          }),
+          (error) => error === failure,
+        );
       });
     });
     describe('_createDonationCheckoutSession', function () {
       it('accepts requests with a personalNote included', async function () {
         const routerController = new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -719,6 +781,7 @@ describe('RouterController', function () {
       });
       it('accepts requests without a personalNote included', async function () {
         const routerController = new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -773,6 +836,7 @@ describe('RouterController', function () {
       });
       it('truncates too-long personal notes', async function () {
         const routerController = new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -827,6 +891,7 @@ describe('RouterController', function () {
       });
       it('bounds a personal note far past the limit', async function () {
         const routerController = new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -881,6 +946,7 @@ describe('RouterController', function () {
       });
       it('truncates personal notes that grow past the limit when sanitised', async function () {
         const routerController = new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -935,6 +1001,7 @@ describe('RouterController', function () {
       });
       it('silently discards invalid personal notes', async function () {
         const routerController = new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -989,6 +1056,7 @@ describe('RouterController', function () {
       });
       it('strips any html from the personal note', async function () {
         const routerController = new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -1044,6 +1112,7 @@ describe('RouterController', function () {
 
       it('throws DisabledFeatureError when donations are not enabled', async function () {
         const routerController = new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -1086,6 +1155,7 @@ describe('RouterController', function () {
     describe('gift checkout', function () {
       function createGiftController(overrides = {}) {
         return new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -1342,6 +1412,7 @@ describe('RouterController', function () {
 
       function createSubscriptionController(overrides = {}) {
         return new RouterController({
+          tracking,
           tiersService,
           paymentsService,
           offersAPI,
@@ -1357,6 +1428,7 @@ describe('RouterController', function () {
 
       function createGiftReturnController(overrides = {}) {
         return new RouterController({
+          tracking,
           tiersService: {
             api: {
               read: sinon.stub().resolves({
@@ -1386,6 +1458,7 @@ describe('RouterController', function () {
 
           await controller.createCheckoutSession(
             {
+              get: sinon.stub(),
               body: {
                 tierId: 'tier_123',
                 cadence: 'month',
@@ -1411,6 +1484,7 @@ describe('RouterController', function () {
 
           await controller.createCheckoutSession(
             {
+              get: sinon.stub(),
               body: {
                 tierId: 'tier_123',
                 cadence: 'month',
@@ -1436,6 +1510,7 @@ describe('RouterController', function () {
 
           await controller.createCheckoutSession(
             {
+              get: sinon.stub(),
               body: {
                 tierId: 'tier_123',
                 cadence: 'month',
@@ -1461,6 +1536,7 @@ describe('RouterController', function () {
 
           await controller.createCheckoutSession(
             {
+              get: sinon.stub(),
               body: {
                 tierId: 'tier_123',
                 cadence: 'month',
@@ -1487,6 +1563,7 @@ describe('RouterController', function () {
 
           await controller.createCheckoutSession(
             {
+              get: sinon.stub(),
               body: {
                 tierId: 'tier_123',
                 cadence: 'month',
@@ -1512,6 +1589,7 @@ describe('RouterController', function () {
 
           await controller.createCheckoutSession(
             {
+              get: sinon.stub(),
               body: {
                 tierId: 'tier_123',
                 cadence: 'month',
@@ -1538,6 +1616,7 @@ describe('RouterController', function () {
 
           await controller.createCheckoutSession(
             {
+              get: sinon.stub(),
               body: {
                 tierId: 'tier_123',
                 cadence: 'month',
@@ -1568,6 +1647,7 @@ describe('RouterController', function () {
 
           await controller.createCheckoutSession(
             {
+              get: sinon.stub(),
               body: {
                 tierId: 'tier_123',
                 cadence: 'month',
@@ -1698,6 +1778,7 @@ describe('RouterController', function () {
 
     it('adds welcomePageUrl to response for authenticated members when tier has welcomePageURL', async function () {
       const routerController = new RouterController({
+        tracking,
         tiersService: {
           api: {
             read: sinon.stub().resolves({
@@ -1733,6 +1814,7 @@ describe('RouterController', function () {
       });
 
       const req = {
+        get: sinon.stub(),
         body: {
           tierId: 'tier_123',
           cadence: 'month',
@@ -1757,6 +1839,7 @@ describe('RouterController', function () {
 
     it('does not add welcomePageUrl to response when tier has no welcomePageURL', async function () {
       const routerController = new RouterController({
+        tracking,
         tiersService: {
           api: {
             read: sinon.stub().resolves({
@@ -1791,6 +1874,7 @@ describe('RouterController', function () {
       });
 
       const req = {
+        get: sinon.stub(),
         body: {
           tierId: 'tier_123',
           cadence: 'month',
@@ -1991,6 +2075,234 @@ describe('RouterController', function () {
           returnUrl: undefined,
         }),
       );
+    });
+  });
+
+  describe('customer selection for members with multiple Stripe customers', function () {
+    let stripeService;
+    let mockRes;
+
+    function subscription(attrs) {
+      return { get: (key) => attrs[key] };
+    }
+
+    const canceledSubscription = subscription({
+      subscription_id: 'sub_old',
+      customer_id: 'cus_first',
+      status: 'canceled',
+      plan_currency: 'eur',
+      created_at: new Date('2025-01-01'),
+    });
+    const olderActiveSubscription = subscription({
+      subscription_id: 'sub_older_active',
+      customer_id: 'cus_older_active',
+      status: 'past_due',
+      plan_currency: 'gbp',
+      created_at: new Date('2025-06-01'),
+    });
+    const activeSubscription = subscription({
+      subscription_id: 'sub_new',
+      customer_id: 'cus_active',
+      status: 'active',
+      plan_currency: 'usd',
+      created_at: new Date('2026-01-01'),
+    });
+
+    function createController(subscriptions) {
+      const related = sinon.stub();
+      related.withArgs('stripeSubscriptions').returns({
+        fetch: sinon.stub().resolves({ models: subscriptions }),
+      });
+      stripeService = {
+        createBillingPortalSession: sinon.stub().resolves({ url: 'https://billing.stripe.com/' }),
+        createCheckoutSetupSession: sinon.stub().resolves({ id: 'cs_test_setup' }),
+        getCustomerForMemberCheckoutSession: sinon.stub().resolves({ id: 'cus_first' }),
+        getCustomer: sinon.stub().callsFake(async (id) => ({ id })),
+        getPublicKey: sinon.stub().returns('pk_test'),
+      };
+      return new RouterController({
+        stripeAPIService: stripeService,
+        tokenService: { decodeToken: sinon.stub().resolves({ sub: 'member@example.com' }) },
+        memberRepository: { get: sinon.stub().resolves({ related }) },
+        settingsCache: { get: sinon.stub().returns(null) },
+        checkouts: { read: async () => null },
+        urlUtils,
+      });
+    }
+
+    const multipleCustomers = [canceledSubscription, activeSubscription];
+
+    const req = { body: { identity: 'valid-token' } };
+
+    beforeEach(function () {
+      mockRes = { writeHead: sinon.stub(), end: sinon.stub() };
+    });
+
+    it('opens the billing portal for the customer behind the active subscription', async function () {
+      const controller = createController(multipleCustomers);
+
+      await controller.createBillingPortalSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createBillingPortalSession,
+        sinon.match({ id: 'cus_active' }),
+      );
+      sinon.assert.notCalled(stripeService.getCustomerForMemberCheckoutSession);
+    });
+
+    it('creates the card update session for the customer and currency of the active subscription', async function () {
+      const controller = createController(multipleCustomers);
+
+      await controller.createCheckoutSetupSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createCheckoutSetupSession,
+        sinon.match({ id: 'cus_active' }),
+        sinon.match({ currency: 'usd' }),
+      );
+      sinon.assert.notCalled(stripeService.getCustomerForMemberCheckoutSession);
+    });
+
+    it('picks the newest active subscription when there are several', async function () {
+      const controller = createController([
+        olderActiveSubscription,
+        activeSubscription,
+        canceledSubscription,
+      ]);
+
+      await controller.createCheckoutSetupSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createCheckoutSetupSession,
+        sinon.match({ id: 'cus_active' }),
+        sinon.match({ currency: 'usd' }),
+      );
+    });
+
+    it('breaks created_at ties by id', async function () {
+      const createdAt = new Date('2026-01-01');
+      const controller = createController([
+        subscription({
+          id: 'id_b',
+          subscription_id: 'sub_b',
+          customer_id: 'cus_b',
+          status: 'active',
+          created_at: createdAt,
+        }),
+        subscription({
+          id: 'id_a',
+          subscription_id: 'sub_a',
+          customer_id: 'cus_a',
+          status: 'active',
+          created_at: createdAt,
+        }),
+      ]);
+
+      await controller.createBillingPortalSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createBillingPortalSession,
+        sinon.match({ id: 'cus_a' }),
+      );
+    });
+
+    for (const status of ['trialing', 'unpaid', 'past_due']) {
+      it(`treats a ${status} subscription as active`, async function () {
+        const controller = createController([
+          canceledSubscription,
+          subscription({
+            subscription_id: `sub_${status}`,
+            customer_id: `cus_${status}`,
+            status,
+            created_at: new Date('2024-01-01'),
+          }),
+        ]);
+
+        await controller.createBillingPortalSession(req, mockRes);
+
+        sinon.assert.calledWith(
+          stripeService.createBillingPortalSession,
+          sinon.match({ id: `cus_${status}` }),
+        );
+      });
+    }
+
+    it('falls back to the first customer when no subscription is active', async function () {
+      const controller = createController([canceledSubscription]);
+
+      await controller.createBillingPortalSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createBillingPortalSession,
+        sinon.match({ id: 'cus_first' }),
+      );
+      sinon.assert.notCalled(stripeService.getCustomer);
+    });
+
+    it('falls back to the first customer when there are no subscriptions', async function () {
+      const controller = createController([]);
+
+      await controller.createCheckoutSetupSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createCheckoutSetupSession,
+        sinon.match({ id: 'cus_first' }),
+        sinon.match({ currency: undefined }),
+      );
+      sinon.assert.notCalled(stripeService.getCustomer);
+    });
+
+    it('falls back to the first customer when the active subscription customer is deleted', async function () {
+      const controller = createController(multipleCustomers);
+      stripeService.getCustomer.resolves({ id: 'cus_active', deleted: true });
+
+      await controller.createBillingPortalSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createBillingPortalSession,
+        sinon.match({ id: 'cus_first' }),
+      );
+    });
+
+    it('does not send the active subscription currency for a fallback customer', async function () {
+      const controller = createController(multipleCustomers);
+      stripeService.getCustomer.resolves({ id: 'cus_active', deleted: true });
+
+      await controller.createCheckoutSetupSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createCheckoutSetupSession,
+        sinon.match({ id: 'cus_first' }),
+        sinon.match({ currency: undefined }),
+      );
+    });
+
+    it('falls back to the first customer when the active subscription customer is missing from Stripe', async function () {
+      const controller = createController(multipleCustomers);
+      stripeService.getCustomer.rejects(
+        Object.assign(new Error('No such customer'), { code: 'resource_missing' }),
+      );
+
+      await controller.createBillingPortalSession(req, mockRes);
+
+      sinon.assert.calledWith(
+        stripeService.createBillingPortalSession,
+        sinon.match({ id: 'cus_first' }),
+      );
+    });
+
+    it('does not fall back when Stripe fails to fetch the active subscription customer', async function () {
+      const controller = createController(multipleCustomers);
+      stripeService.getCustomer.rejects(
+        Object.assign(new Error('Too many requests'), { code: 'rate_limit' }),
+      );
+
+      await assert.rejects(controller.createBillingPortalSession(req, mockRes), {
+        message: 'Too many requests',
+      });
+
+      sinon.assert.notCalled(stripeService.getCustomerForMemberCheckoutSession);
+      sinon.assert.notCalled(stripeService.createBillingPortalSession);
     });
   });
 

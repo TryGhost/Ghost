@@ -151,6 +151,7 @@ export const updateFlowPreviousEmail = 'update-flow-previous-email';
 export const postsBackLink = 'Posts';
 export const pagesBackLink = 'Pages';
 export const analyticsBackLink = 'Analytics';
+export const appBackLink = 'Back';
 export const webPreviewTab = 'Web';
 export const emailPreviewTab = 'Email';
 export const desktopPreviewToggle = 'Desktop';

@@ -172,15 +172,17 @@ test.describe('Video card', async () => {
         const emptyThumbnail = await page.getByTestId('media-upload-placeholder');
         await expect(emptyThumbnail).toBeVisible();
 
-        // Upload thumbnail
+        // Upload thumbnail, from the thumbnail picker
         const imagePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png');
+        await emptyThumbnail.click();
         const fileChooserPromise = page.waitForEvent('filechooser');
-        emptyThumbnail.click();
+        await page.getByRole('dialog').getByRole('button', {name: 'Upload image'}).click();
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles([imagePath]);
 
-        // Thumbnail should be visible
+        // Thumbnail should be visible, and the picker closed
         await expect(await page.getByTestId('media-upload-filled')).toBeVisible();
+        await expect(page.getByRole('dialog')).toBeHidden();
 
         // Can remove thumbnail
         const replaceButton = page.getByTestId('media-upload-remove');
@@ -201,15 +203,184 @@ test.describe('Video card', async () => {
         // Custom thumbnail should be visible
         const emptyThumbnail = await page.getByTestId('media-upload-placeholder');
 
-        // Upload thumbnail
+        // Upload thumbnail, from the thumbnail picker
         const imagePath = path.relative(process.cwd(), __dirname + '/../fixtures/large-image-fail.jpeg');
+        await emptyThumbnail.click();
         const fileChooserPromise = page.waitForEvent('filechooser');
-        emptyThumbnail.click();
+        await page.getByRole('dialog').getByRole('button', {name: 'Upload image'}).click();
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles([imagePath]);
 
         // Errors should be visible
         await expect(await page.getByTestId('media-upload-errors')).toBeVisible();
+    });
+
+    test('can pick a frame from the video as the custom thumbnail', async function () {
+        await focusEditor(page);
+        await uploadVideo(page);
+
+        await page.getByTestId('media-upload-placeholder').click();
+        const picker = page.getByRole('dialog');
+        await expect(picker.getByRole('heading', {name: 'Select thumbnail'})).toBeVisible();
+
+        // A strip of frames from across the video
+        await expect(picker.getByTestId('thumbnail-filmstrip').locator('img')).toHaveCount(8);
+
+        await picker.getByRole('button', {name: 'Select'}).click();
+
+        // The frame becomes the custom thumbnail, shown over the video's own
+        await expect(picker).toBeHidden();
+        await expect(page.getByTestId('media-upload-filled')).toBeVisible();
+        await expect(page.getByAltText('Video custom thumbnail')).toBeVisible();
+    });
+
+    test('moves the preview to the frame the scrubber is on', async function () {
+        await focusEditor(page);
+        await uploadVideo(page);
+
+        await page.getByTestId('media-upload-placeholder').click();
+        const picker = page.getByRole('dialog');
+        const scrubber = picker.getByRole('slider', {name: 'Thumbnail frame'});
+        await expect(scrubber).toBeVisible();
+
+        await scrubber.focus();
+        await page.keyboard.press('End');
+
+        const preview = picker.getByTestId('thumbnail-preview');
+        await expect.poll(async () => {
+            const [time, max] = await Promise.all([
+                preview.evaluate(video => (video as HTMLVideoElement).currentTime),
+                scrubber.getAttribute('max')
+            ]);
+            return Math.abs(time - Number(max)) < 0.2;
+        }).toBe(true);
+        await expect(scrubber).toHaveAttribute('aria-valuetext', /^0:0[34] of 0:04$/);
+    });
+
+    test('keeps focus in the thumbnail picker while the picked frame is saved', async function () {
+        await focusEditor(page);
+        await uploadVideo(page);
+        // Saving slowed down, so the picker is still open while it saves; the page isn't reloaded between tests
+        const restoreToBlob = await page.evaluateHandle(() => {
+            const toBlob = HTMLCanvasElement.prototype.toBlob;
+            HTMLCanvasElement.prototype.toBlob = function (...args) {
+                setTimeout(() => toBlob.apply(this, args), 2000);
+            };
+            return () => {
+                HTMLCanvasElement.prototype.toBlob = toBlob;
+            };
+        });
+
+        try {
+            await page.getByTestId('media-upload-placeholder').click();
+            const picker = page.getByRole('dialog', {name: 'Select thumbnail'});
+            const select = picker.getByRole('button', {name: 'Select'});
+            await expect(select).toBeEnabled();
+            await select.focus();
+            await page.keyboard.press('Enter');
+
+            // Disabling a focused button drops focus to the page
+            await expect(select).toHaveAttribute('aria-disabled', 'true');
+            await expect(select).toBeFocused();
+
+            await page.keyboard.press('Escape');
+            await expect(picker).toBeHidden();
+        } finally {
+            await restoreToBlob.evaluate(restore => restore());
+        }
+    });
+
+    test('can close the thumbnail picker without changing the thumbnail', async function () {
+        await focusEditor(page);
+        await uploadVideo(page);
+
+        await page.getByTestId('media-upload-placeholder').click();
+        const picker = page.getByRole('dialog');
+        await picker.getByRole('button', {name: 'Cancel'}).click();
+
+        await expect(picker).toBeHidden();
+        await expect(page.getByTestId('media-upload-placeholder')).toBeVisible();
+    });
+
+    test('keeps keyboard focus in the thumbnail picker, and gives it back to the tile on close', async function () {
+        await focusEditor(page);
+        await uploadVideo(page);
+
+        // Opened from the keyboard
+        await page.getByTestId('media-upload-placeholder').getByRole('button').focus();
+        await page.keyboard.press('Enter');
+        const picker = page.getByRole('dialog', {name: 'Select thumbnail'});
+        await expect(picker).toBeVisible();
+
+        const focusIsInPicker = () => page.evaluate(() => Boolean(document.activeElement?.closest('[role="dialog"]')));
+        expect(await focusIsInPicker()).toBe(true);
+        for (let i = 0; i < 8; i++) {
+            await page.keyboard.press('Tab');
+            expect(await focusIsInPicker()).toBe(true);
+        }
+        await page.keyboard.press('Shift+Tab');
+        expect(await focusIsInPicker()).toBe(true);
+
+        await page.keyboard.press('Escape');
+        await expect(picker).toBeHidden();
+        expect(await page.evaluate(() => Boolean(document.activeElement?.closest('[data-testid="media-upload-placeholder"]')))).toBe(true);
+    });
+
+    test('closes the thumbnail picker on Escape after a click in it, and from its close button by keyboard', async function () {
+        await focusEditor(page);
+        await uploadVideo(page);
+
+        await page.getByTestId('media-upload-placeholder').click();
+        let picker = page.getByRole('dialog', {name: 'Select thumbnail'});
+        await picker.getByRole('heading', {name: 'Select thumbnail'}).click();
+        await page.keyboard.press('Escape');
+        await expect(picker).toBeHidden();
+
+        await page.getByTestId('media-upload-placeholder').click();
+        picker = page.getByRole('dialog', {name: 'Select thumbnail'});
+        await picker.getByRole('button', {name: 'Close dialog'}).focus();
+        await page.keyboard.press('Enter');
+        await expect(picker).toBeHidden();
+    });
+
+    test('shows the current thumbnail and offers an image when frames can\'t be read from the video', async function () {
+        // Not a video at all: as unreadable as a video on another domain that doesn't allow it
+        const contentParam = encodeURIComponent(JSON.stringify({
+            root: {
+                children: [{
+                    type: 'video',
+                    src: '/content/images/2022/11/koenig-lexical.jpg',
+                    width: 100,
+                    height: 100,
+                    duration: 60,
+                    thumbnailSrc: '/content/images/2022/12/koenig-lexical.png'
+                }],
+                direction: null,
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
+        }));
+        await initialize({page, uri: `/#/?content=${contentParam}`});
+
+        await page.locator('[data-kg-card="video"]').click();
+        await page.getByTestId('edit-video-card').click();
+        await page.getByTestId('media-upload-placeholder').click();
+
+        // No frames to scrub through: the thumbnail as it is, and an image to replace it with
+        const picker = page.getByRole('dialog');
+        await expect(picker.getByRole('img', {name: 'Current thumbnail'})).toHaveAttribute('src', '/content/images/2022/12/koenig-lexical.png');
+        await expect(picker.getByRole('slider', {name: 'Thumbnail frame'})).toBeHidden();
+        await expect(picker.getByRole('button', {name: 'Select', exact: true})).toBeHidden();
+
+        const fileChooserPromise = page.waitForEvent('filechooser');
+        await picker.getByRole('button', {name: 'Upload image'}).click();
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles([path.relative(process.cwd(), __dirname + '/../fixtures/large-image.png')]);
+
+        await expect(picker).toBeHidden();
+        await expect(page.getByTestId('media-upload-filled')).toBeVisible();
     });
 
     test('can upload dropped video', async function () {

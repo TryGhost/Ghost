@@ -1,5 +1,4 @@
 import {
-  Button,
   Table,
   TableBody,
   TableCell,
@@ -12,8 +11,7 @@ import {
   useInfiniteVirtualScroll,
   useVirtualListWindow,
 } from '@/shared/virtual-list';
-import { useShade } from '@tryghost/shade/app';
-import { cn, formatNumber, LucideIcon } from '@tryghost/shade/utils';
+import { cn, formatNumber } from '@tryghost/shade/utils';
 import type { Tag } from '@tryghost/admin-x-framework/api/tags';
 import { forwardRef, useRef } from 'react';
 import { AdminLink } from '@/shared/admin-link';
@@ -53,7 +51,6 @@ function TagsList({
   isFetchingNextPage?: boolean;
   fetchNextPage: () => void;
 }) {
-  const { isAdmin7 } = useShade();
   const parentRef = useRef<HTMLDivElement>(null);
   const { visibleItemCount, canLoadMore, loadMore } = useVirtualListWindow(totalItems);
   const { visibleItems, spaceBefore, spaceAfter } = useInfiniteVirtualScroll({
@@ -73,7 +70,6 @@ function TagsList({
             <TableHead className="w-auto px-4">Tag</TableHead>
             <TableHead className="w-1/5 px-4">Slug</TableHead>
             <TableHead className="w-1/5 px-4">No. of posts</TableHead>
-            {!isAdmin7 && <TableHead className="w-20 px-4"></TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody className="flex flex-col lg:table-row-group">
@@ -91,9 +87,7 @@ function TagsList({
                 {...props}
                 className={cn(
                   'group grid w-full items-center gap-x-4 p-2 lg:table-row lg:p-0',
-                  isAdmin7
-                    ? 'grid-cols-1 md:grid-cols-[1fr_auto]'
-                    : 'grid-cols-[1fr_5rem] md:grid-cols-[1fr_auto_5rem]',
+                  'grid-cols-1 md:grid-cols-[1fr_auto]',
                 )}
                 data-testid="tag-list-row"
               >
@@ -123,19 +117,6 @@ function TagsList({
                     <span className="text-muted-foreground">0 posts</span>
                   )}
                 </TableCell>
-                {!isAdmin7 && (
-                  <TableCell className="col-start-2 col-end-2 row-start-1 row-end-3 p-0 md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
-                    <Button
-                      aria-hidden="true"
-                      className="opacity-0 transition-all group-hover:opacity-100"
-                      size="icon"
-                      tabIndex={-1}
-                      variant="outline"
-                    >
-                      <LucideIcon.Pencil />
-                    </Button>
-                  </TableCell>
-                )}
               </TableRow>
             );
           })}

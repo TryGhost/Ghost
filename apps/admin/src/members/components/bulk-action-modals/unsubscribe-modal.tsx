@@ -150,7 +150,7 @@ export function UnsubscribeModal({
                   Newsletters
                 </label>
                 <div
-                  className="flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border bg-background px-3 py-1 text-sm"
+                  className="flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-field border border-field-border bg-field-surface px-3 py-1 text-sm"
                   onClick={() => {
                     inputRef.current?.focus();
                     setListOpen(true);

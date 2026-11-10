@@ -21,8 +21,7 @@ interface PostMetricsCellsProps {
   /**
    * Visitor and member counts, keyed by post uuid and id respectively. These
    * arrive from separate batched requests and fill in after the row has
-   * rendered — as they do in Ember, where the loads are deliberately not
-   * awaited so a slow analytics service can't hold up the list.
+   * rendered, so a slow analytics service can't hold up the list.
    */
   visitorCounts?: Record<string, number>;
   memberCounts?: Record<string, { free: number; paid: number }>;
@@ -59,11 +58,11 @@ function metricValue(
 
 /**
  * The right-hand metric columns. Which appear is decided by `post-metrics.ts`;
- * each links into the matching analytics tab, as Ember's do.
+ * each links into the matching analytics tab.
  *
  * The columns are grouped before rendering because the hover panel belongs to
- * the *group*, not the column: Ember hangs one "Newsletter performance" tooltip
- * off the wrapper around Opens, Clicks and Sent. One trigger per column would
+ * the *group*, not the column: one "Newsletter performance" tooltip covers
+ * Opens, Clicks and Sent. One trigger per column would
  * flash the identical panel closed and open again as the pointer crossed from
  * Opens to Clicks.
  */
@@ -104,10 +103,8 @@ export function PostMetricsCells({
   });
 
   return (
-    // Hidden below 1200px, as Ember hides `.gh-post-list-metrics-container`
-    // at the same width: on a narrow window there is no room for both the
-    // title and four columns, and Ember's answer is to drop the columns
-    // rather than let them crowd the title.
+    // Hidden below 1200px: on a narrow window there is no room for both the
+    // title and four columns, so the columns drop rather than crowd the title.
     //
     // The literal 1200 rather than a named breakpoint: Shade's nearest is
     // `sidebarlg` at 1240px, which exists to describe the sidebar and would
@@ -132,11 +129,9 @@ export function PostMetricsCells({
                 const content = (
                   <Inline align="center" gap="xs" justify="end">
                     <Icon className="size-4 shrink-0 text-muted-foreground" strokeWidth={1.5} />
-                    {/* Small and unbolded, as Ember's
-                                          are — its `.gh-post-list-analytics-metric`
-                                          is midgrey at normal weight. The
-                                          figures are secondary to the
-                                          title, not competing with it. */}
+                    {/* Small and unbolded: the figures are
+                                          secondary to the title, not competing
+                                          with it. */}
                     <Text className="font-mono" size="sm">
                       {value}
                     </Text>
@@ -164,8 +159,7 @@ export function PostMetricsCells({
                     // column no longer says what it is: the
                     // icon replaced the text label, and an
                     // unlabelled icon beside a bare number
-                    // is "0%" with no subject. Ember titles
-                    // its icons for the same reason.
+                    // is "0%" with no subject.
                     aria-label={`${column.label}: ${value}`}
                     // A fixed floor on the width so the
                     // figures line up in columns down the

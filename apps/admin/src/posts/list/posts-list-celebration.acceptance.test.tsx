@@ -68,9 +68,9 @@ describe('Posts list publish celebration', () => {
   );
 
   /**
-   * Ember browses whichever resource the editor named — `store.query(post.type, …)`
-   * where type is 'post' or 'page'. Reading a page back off the posts
-   * endpoint 404s, so publishing a page would never celebrate at all.
+   * Browses whichever resource the editor named, 'post' or 'page'. Reading a
+   * page back off the posts endpoint 404s, so publishing a page would never
+   * celebrate at all.
    */
   it('celebrates a page the editor just published', async () => {
     const page = post({ title: 'A published page', status: 'published' });

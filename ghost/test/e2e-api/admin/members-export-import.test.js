@@ -223,8 +223,6 @@ describe('Members export -> import round-trip', function () {
   });
 
   it('exports a custom field and re-imports its value onto a fresh member', async function () {
-    mockManager.mockLabsEnabled('membersCustomFields');
-
     const fieldRes = await request
       .post(localUtils.API.getApiQuery('members/metafields/custom/'))
       .set('Origin', config.get('url'))
@@ -328,8 +326,6 @@ describe('Members export -> import round-trip', function () {
   // background job as JSON first. This case proves the custom-field columns survive that
   // spool, which the inline path never exercises.
   it('round-trips an address custom field and leaves a value-less member untouched', async function () {
-    mockManager.mockLabsEnabled('membersCustomFields');
-
     await models.Label.add({ name: 'Round-Trip Address' });
     const addressLabel = (await models.Label.findAll()).models.find(
       (l) => l.get('name') === 'Round-Trip Address',

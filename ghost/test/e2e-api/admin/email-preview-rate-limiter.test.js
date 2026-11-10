@@ -6,7 +6,6 @@ const {
   mockManager,
   configUtils,
   resetRateLimits,
-  dbUtils,
 } = require('../../utils/e2e-framework');
 const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
@@ -25,9 +24,7 @@ describe('Rate limiter', function () {
 
   beforeEach(async function () {
     mockManager.mockMailgun();
-    // Reset both the brute table and rate limiter instances between tests
-    await dbUtils.truncate('brute');
-    resetRateLimits();
+    await resetRateLimits();
   });
 
   beforeAll(async function () {

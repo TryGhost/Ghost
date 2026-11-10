@@ -1,5 +1,5 @@
 import type { Knex } from 'knex';
-import { DefaultMap } from '../../../../shared/default-map';
+import { AutoFillingMap } from '../../../lib/auto-filling-map';
 import { TableImporter } from './table-importer';
 
 type AutomationAction = {
@@ -29,7 +29,7 @@ export class AutomationActionEdgesImporter extends TableImporter<AutomationActio
       .orderBy('created_at')
       .orderBy('id');
 
-    const actionsByAutomation = new DefaultMap<string, AutomationAction[]>(() => []);
+    const actionsByAutomation = new AutoFillingMap<string, AutomationAction[]>(() => []);
     for (const action of actions) {
       actionsByAutomation.get(action.automation_id).push(action);
     }

@@ -6,6 +6,10 @@ import {
 } from '@tryghost/admin-x-framework/errors';
 import { installFailureOf } from './install-failure';
 
+/**
+ * An error as Ghost answers a preview, install or approval with: its error handler replaces
+ * the server's message with a generic one, and puts it at the start of `context`.
+ */
 const apiError = (code: string, context: string, details: unknown = null) => {
   const data = {
     errors: [
@@ -31,13 +35,14 @@ describe('installFailureOf', () => {
     const failure = installFailureOf(
       apiError(
         'APP_MANIFEST_UNREACHABLE',
-        'https://podcast.example.com/ghost-app.json answered with HTTP 503',
+        'Could not load the app’s manifest. https://podcast.example.com/ghost-app.json answered with HTTP 503',
       ),
     );
 
     expect(failure).toEqual({
       kind: 'unreachable',
-      detail: 'https://podcast.example.com/ghost-app.json answered with HTTP 503',
+      detail:
+        'Could not load the app’s manifest. https://podcast.example.com/ghost-app.json answered with HTTP 503',
     });
   });
 
@@ -59,11 +64,18 @@ describe('installFailureOf', () => {
   });
 
   it('falls back to the summary when an invalid manifest comes without details', () => {
-    const failure = installFailureOf(apiError('APP_MANIFEST_INVALID', 'id: Expected an ID'));
+    const failure = installFailureOf(
+      apiError('APP_MANIFEST_INVALID', 'The app manifest is not valid. id: Expected an ID'),
+    );
 
     expect(failure).toEqual({
       kind: 'problems',
-      problems: [{ title: 'The app’s details aren’t valid', detail: 'id: Expected an ID' }],
+      problems: [
+        {
+          title: 'The app’s details aren’t valid',
+          detail: 'The app manifest is not valid. id: Expected an ID',
+        },
+      ],
     });
   });
 
@@ -84,6 +96,49 @@ describe('installFailureOf', () => {
     expect(installFailureOf(new ServerUnreachableError())).toEqual({
       kind: 'error',
       message: 'Something went wrong. Please try again.',
+    });
+  });
+
+  it('refuses another developer’s app without saying more', () => {
+    expect(installFailureOf(apiError('APP_IDENTITY_MISMATCH', 'Anything'))).toEqual({
+      kind: 'another-developer',
+    });
+  });
+
+  it.each(['APP_MANIFEST_SIGNATURE_INVALID', 'APP_BACKEND_KEY_RETIRED', 'APP_CHALLENGE_FAILED'])(
+    'says Ghost couldn’t confirm where the app comes from on %s, with the app’s answer',
+    (code) => {
+      const context =
+        'Ghost couldn’t confirm the app comes from its developer. https://podcast.example.com: The signature was not made with backend_key';
+      expect(installFailureOf(apiError(code, context))).toEqual({
+        kind: 'unconfirmed',
+        detail: context,
+      });
+    },
+  );
+
+  it('lets the publisher try again when the app’s backend does not answer', () => {
+    expect(
+      installFailureOf(
+        apiError(
+          'APP_CHALLENGE_UNREACHABLE',
+          'Could not reach the app to confirm it comes from its developer. https://podcast.example.com',
+        ),
+      ),
+    ).toEqual({
+      kind: 'unreachable',
+      detail:
+        'Could not reach the app to confirm it comes from its developer. https://podcast.example.com',
+    });
+  });
+
+  it.each([
+    ['APP_MANIFEST_UNSIGNED', 'The app’s details aren’t signed'],
+    ['APP_MANIFEST_URL_MISMATCH', 'The app’s details are for another install link'],
+  ])('lists %s for the app’s developer', (code, title) => {
+    expect(installFailureOf(apiError(code, 'What Ghost found'))).toEqual({
+      kind: 'problems',
+      problems: [{ title, detail: 'What Ghost found' }],
     });
   });
 });

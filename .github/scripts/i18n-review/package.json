@@ -11,13 +11,13 @@
     "test": "node --test"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "0.110.0",
+    "@anthropic-ai/sdk": "0.137.0",
     "@octokit/rest": "21.1.1"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",
     "eslint": "9.39.5",
-    "globals": "17.7.0"
+    "globals": "17.14.0"
   },
   "engines": {
     "node": ">=22"

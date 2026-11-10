@@ -1,8 +1,7 @@
 import type { PostResource } from '@/posts/list/post-resource';
 
 /**
- * Wording for the three confirmation modals, ported from
- * `apps/ember-admin/app/components/posts-list/modals/{delete,unpublish,unschedule}-posts.hbs`.
+ * Wording for the three confirmation modals.
  */
 
 export type BulkConfirmKey = 'delete' | 'unpublish' | 'unschedule';
@@ -14,10 +13,10 @@ interface CopyInputs {
   /** The single post's title, used only when exactly one is selected. */
   title?: string;
   /**
-   * Ember's `isSingle`: one id selected *and not inverted*. Cmd+A on a
-   * one-post view is an inverted selection of one, and Ember still says
-   * "these posts" — so this is not derivable from the count. Defaults to
-   * count === 1 for callers with no inverted selection to worry about.
+   * One id selected *and not inverted*. Cmd+A on a one-post view is an
+   * inverted selection of one, which still says "these posts" — so this is
+   * not derivable from the count. Defaults to count === 1 for callers with no
+   * inverted selection to worry about.
    */
   isSingle?: boolean;
 }
@@ -53,9 +52,9 @@ export function getBulkConfirmCopy(
 }
 
 /**
- * The Change access modal's heading, ported from `edit-posts-access.hbs`. The
- * count is appended only when the selection is not single — same `isSingle`
- * rule as the confirmations above, so an inverted selection of one still counts.
+ * The Change access modal's heading. The count is appended only when the
+ * selection is not single — same `isSingle` rule as the confirmations above, so
+ * an inverted selection of one still counts.
  */
 export function getAccessModalTitle({
   count,

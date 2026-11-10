@@ -19,7 +19,7 @@ const postsMetaSchema = require('../../../../../../data/schema').tables.posts_me
 const getPostServiceInstance = require('../../../../../../services/posts/posts-service-instance');
 const postsService = getPostServiceInstance();
 
-const commentsService = require('../../../../../../services/comments');
+const commentsService = require('../../../../../../services/comments').default;
 const memberAttribution = require('../../../../../../services/member-attribution').default;
 
 module.exports = async (model, frame, options = {}) => {
@@ -102,7 +102,7 @@ module.exports = async (model, frame, options = {}) => {
     previewRendering.forPost(jsonModel, frame);
 
     if (jsonModel.access) {
-      if (commentsService?.api?.enabled !== 'off') {
+      if (commentsService.service.api.enabled !== 'off') {
         jsonModel.comments = true;
       } else {
         jsonModel.comments = false;

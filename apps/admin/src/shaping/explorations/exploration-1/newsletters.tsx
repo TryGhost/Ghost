@@ -184,9 +184,12 @@ const Newsletters: React.FC = () => {
                 avgsData={avgsData}
                 initialTab={initialTab}
                 isAvgsLoading={false}
+                isClicksLoading={false}
                 isLoading={isKPIsLoading}
                 subscribersData={subscribersData}
                 totals={totals}
+                onRetryClickStats={() => {}}
+                onRetryPeriodStats={() => {}}
               />
             </CardContent>
           </Card>

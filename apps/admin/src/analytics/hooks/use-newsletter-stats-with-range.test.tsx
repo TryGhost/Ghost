@@ -1,4 +1,5 @@
 import moment from 'moment';
+import { STATS_RANGES } from '@/shared/analytics/constants';
 import { TestWrapper } from '@test-utils/fixtures/query-client';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getExpectedDateRange, setupDateMocking } from '@test-utils/analytics/date-testing-utils';
@@ -368,6 +369,7 @@ describe('Newsletter Stats Hooks', () => {
         searchParams: {
           date_from: expectedDateRange.expectedDateFrom,
           date_to: expectedDateRange.expectedDateTo,
+          timezone: 'UTC',
           order: 'date desc',
         },
         enabled: true,
@@ -387,6 +389,7 @@ describe('Newsletter Stats Hooks', () => {
         searchParams: {
           date_from: expectedDateRange.expectedDateFrom,
           date_to: expectedDateRange.expectedDateTo,
+          timezone: 'UTC',
           order: 'open_rate desc',
         },
         enabled: true,
@@ -407,6 +410,7 @@ describe('Newsletter Stats Hooks', () => {
         searchParams: {
           date_from: expectedDateRange.expectedDateFrom,
           date_to: expectedDateRange.expectedDateTo,
+          timezone: 'UTC',
           order: 'date desc',
           newsletter_id: 'newsletter-456',
         },
@@ -543,6 +547,15 @@ describe('Newsletter Stats Hooks', () => {
   });
 
   describe('useNewsletterStatsWithRangeSplit', () => {
+    it('omits the start date for All time', () => {
+      renderHook(() => useNewsletterStatsWithRangeSplit(STATS_RANGES.allTime.value), {
+        wrapper: TestWrapper,
+      });
+      expect(mockUseNewsletterBasicStats.mock.lastCall?.[0]?.searchParams).not.toHaveProperty(
+        'date_from',
+      );
+    });
+
     it('combines basic stats and click stats', () => {
       const wrapper = TestWrapper;
 
@@ -794,6 +807,7 @@ describe('Newsletter Stats Hooks', () => {
         searchParams: {
           date_from: expectedDateRange.expectedDateFrom,
           date_to: expectedDateRange.expectedDateTo,
+          timezone: 'UTC',
           order: 'click_rate desc',
           newsletter_id: 'newsletter-456',
         },

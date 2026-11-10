@@ -3,11 +3,8 @@ const errors = require('@tryghost/errors');
 const models = require('../../models');
 const permissionsService = require('../../services/permissions');
 const auth = require('../../auth');
-const apiMail = require('./index').mail;
-const apiSettings = require('./index').settings;
 const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
-const UsersService = require('../../services/users');
-const userService = new UsersService({ models, auth, apiMail, apiSettings });
+const usersService = require('../../services/users').default;
 const ALLOWED_INCLUDES = ['count.posts', 'permissions', 'roles', 'roles.permissions'];
 const UNSAFE_ATTRS = ['status', 'roles'];
 
@@ -201,7 +198,7 @@ const controller = {
     permissions: true,
     async query(frame) {
       try {
-        return userService.destroyUser(frame.options);
+        return usersService.service.destroyUser(frame.options);
       } catch (err) {
         throw new errors.NoPermissionError({
           err: err,

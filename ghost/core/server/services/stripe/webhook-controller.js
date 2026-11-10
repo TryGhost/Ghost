@@ -85,7 +85,7 @@ module.exports = class WebhookController {
     try {
       event = this.webhookManager.parseWebhook(req.body, req.headers['stripe-signature']);
     } catch (err) {
-      logging.error(err);
+      logging.error({ event: { name: 'stripe.webhook.signature_invalid' }, err });
       res.writeHead(401);
       return res.end();
     }
@@ -95,28 +95,51 @@ module.exports = class WebhookController {
     // may not be where Ghost reads them.
     if (event.api_version !== StripeAPI.API_VERSION) {
       logging.error(
-        `Webhook ${event.type} was rendered at Stripe API version ${event.api_version}, Ghost expects ${StripeAPI.API_VERSION}`,
+        {
+          event: { name: 'stripe.webhook.api_version_mismatch' },
+          stripe_event_type: event.type,
+          api_version: event.api_version,
+          expected_api_version: StripeAPI.API_VERSION,
+        },
+        'Stripe sent a webhook rendered at a different API version than Ghost expects',
       );
     }
 
     const customerId = this.getEventCustomerId(event);
     if (this.shouldIgnoreEvent(event, customerId)) {
       logging.info(
-        `Ignoring webhook ${event.type} for customer ${customerId} based on stripeWebhookCustomerIgnoreList config.`,
+        {
+          event: { name: 'stripe.webhook.ignored' },
+          stripe_event_type: event.type,
+          customer_id: customerId,
+        },
+        'Ignored a Stripe webhook for a customer on stripeWebhookCustomerIgnoreList',
       );
 
       res.writeHead(200);
       return res.end();
     }
 
-    logging.info(`Handling webhook ${event.type}`);
+    logging.info(
+      {
+        event: { name: 'stripe.webhook.received' },
+        stripe_event_type: event.type,
+        stripe_event_id: event.id,
+      },
+      'Handling a Stripe webhook',
+    );
 
     try {
       await this.handleEvent(event);
       res.writeHead(200);
       res.end();
     } catch (err) {
-      logging.error(`Error handling webhook ${event.type}`, err);
+      logging.error({
+        event: { name: 'stripe.webhook.handle_failed' },
+        err,
+        stripe_event_type: event.type,
+        stripe_event_id: event.id,
+      });
       res.writeHead(err.statusCode || 500);
       res.end();
     }

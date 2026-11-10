@@ -10,6 +10,9 @@ const bridge = require('../../../bridge');
 
 const serveStatic = express.serveStatic;
 
+// The legacy session cookie, or Better Auth's `__Secure-` prefixed one on HTTPS
+const ADMIN_SESSION_COOKIE = /(?:^|;\s*)(?:__Secure-)?ghost-admin-api-session=/;
+
 /**
  *
  * @returns {import('express').Application}
@@ -45,7 +48,7 @@ module.exports = function setupAdminApp() {
       // only render content when we have an Admin session cookie,
       // otherwise return a 204 to avoid JS and API requests being made unnecessarily
       try {
-        if (req.headers.cookie?.includes('ghost-admin-api-session')) {
+        if (ADMIN_SESSION_COOKIE.test(req.headers.cookie ?? '')) {
           next();
         } else {
           res.setHeader('Cache-Control', 'public, max-age=0');

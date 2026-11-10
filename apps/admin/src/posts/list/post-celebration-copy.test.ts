@@ -2,8 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { getCelebrationCopy } from './post-celebration-copy';
 
 /**
- * The celebration's headings, ported from the `<h1>` in
- * `apps/ember-admin/app/components/modal-post-success.hbs`.
+ * The celebration's headings.
  *
  * Two lines: a primary and a secondary. Which pair you get depends on whether
  * the post was scheduled or published, whether it is a page, whether it was
@@ -59,7 +58,7 @@ describe('getCelebrationCopy', () => {
   });
 
   // A scheduled page is still just "All set!" — the scheduled branch comes
-  // first in Ember's template and swallows every other distinction.
+  // first and swallows every other distinction.
   it('ignores everything else when scheduled', () => {
     expect(
       getCelebrationCopy({ wasPublished: false, type: 'page', emailOnly: true, postCount: 9 }),

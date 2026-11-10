@@ -148,7 +148,6 @@ describe('Automation email analytics', function () {
     const automation = await insert('automations', {
       id: ObjectId().toHexString(),
       status: 'active',
-      trigger_type: 'membership_started',
       name: `Automation ${uniqueSuffix}`,
       slug: `automation-${uniqueSuffix}`,
       created_at: now,

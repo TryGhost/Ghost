@@ -1,14 +1,13 @@
 import { useSyncExternalStore } from 'react';
 
-// ANALYTICS PROTOTYPE: whether a milestone's root attribute is on, e.g.
-// `useRootFlag('admin7-design')` reads `data-admin7-design` on <html>.
-// Admin sets the attribute in one place from the admin7Design flag; shared
-// components read it here, and scoped CSS can use the same attribute.
-// Re-renders live when the attribute changes.
+// ANALYTICS PROTOTYPE: whether a root attribute is on, e.g.
+// `useRootFlag('analytics-proto')` reads `data-analytics-proto` on <html>.
+// The shaping menu sets it for every view but Today, so the prototype's
+// analytics pieces can be compared with main's. Re-renders live when the
+// attribute changes.
 //
-// Open question for the real PR: Admin 7 milestones normally reach Shade
-// through ShadeApp's `isAdmin7`, but that switch now stays on for the
-// generally available pill controls, so it can't gate a new milestone.
+// Real (release-shaped) work reads main's switch instead:
+// `useShade().admin7Design`, from the admin7Design Labs flag.
 
 const attributeName = (name: string) => `data-${name}`;
 

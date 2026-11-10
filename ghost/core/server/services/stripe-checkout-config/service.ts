@@ -5,6 +5,7 @@ import { z } from 'zod';
 import type { Knex } from 'knex';
 import { PORT_FIELD, STRIPE_PORT, STRIPE_PORTS, type StripePort } from '@tryghost/checkout';
 import type { FieldStatus } from '../members-metafields/schema';
+import type { FieldSource } from '../members-metafields';
 import {
   CUSTOM_NAMESPACE,
   type Identity,
@@ -33,7 +34,6 @@ import { CheckoutConfigInput } from './serializers';
 // A `custom_field_key` is a key in the publisher's `custom` namespace, so the config reads and
 // checks only the bindings and fields there.
 const BINDINGS_TABLE = 'members_metafield_bindings';
-const FIELDS_TABLE = 'members_metafields';
 /** A custom field that can take a value: not archived. */
 const ACTIVE: FieldStatus = 'active';
 
@@ -248,27 +248,34 @@ export interface PortBinder {
   remove(db: Knex, port: string): Promise<void>;
 }
 
+/** The custom fields as the metafields domain reads them for this site. */
+type FieldReads = Pick<FieldSource, 'table' | 'locked'>;
+
 /** Reads and saves the site-wide Stripe Checkout config. */
 export class StripeCheckoutConfigService {
   private knex: Knex;
   private recordAction: RecordCheckoutConfigAction;
   private bindings: PortBinder;
+  private fields: FieldReads;
   private configRow: ConfigRowSchema;
 
   constructor({
     knex,
     recordAction,
     bindings,
+    fields,
     logging,
   }: {
     knex: Knex;
     recordAction: RecordCheckoutConfigAction;
     bindings: PortBinder;
+    fields: FieldReads;
     logging: GhostLogger;
   }) {
     this.knex = knex;
     this.recordAction = recordAction;
     this.bindings = bindings;
+    this.fields = fields;
     this.configRow = configRow(logging);
   }
 
@@ -296,7 +303,7 @@ export class StripeCheckoutConfigService {
     // Checked in the same transaction as the read, so both see the same tiers and fields.
     const { named, saved } = changes.length
       ? await this.knex.transaction(async (trx) => ({
-          named: await assertTargets(trx, changes),
+          named: await assertTargets(trx, changes, this.fields),
           saved: await this.readSaved(trx),
         }))
       : { named: new Map<StripePort, Bound>(), saved: await this.readSaved() };
@@ -344,7 +351,7 @@ export class StripeCheckoutConfigService {
             .onIn('binding.port', COLLECTED_PORTS)
             .andOnVal('binding.metafield_namespace', '=', CUSTOM_NAMESPACE),
         )
-        .leftJoin(`${FIELDS_TABLE} as field`, (join) =>
+        .leftJoin(this.fields.table(db, 'field'), (join) =>
           join
             .on('field.namespace', '=', 'binding.metafield_namespace')
             .andOn('field.key', '=', 'binding.metafield_key')
@@ -398,7 +405,7 @@ export class StripeCheckoutConfigService {
     const now = toDatabaseDate(at);
 
     await this.knex.transaction(async (trx) => {
-      await assertTargets(trx, changes);
+      await assertTargets(trx, changes, this.fields);
 
       await trx(CONFIG_TABLE)
         .insert({
@@ -539,6 +546,7 @@ function collectableFrom(section: CollectedSection, bound: Map<StripePort, Bound
 async function assertTargets(
   trx: Knex.Transaction,
   changes: Change[],
+  fieldReads: FieldReads,
 ): Promise<Map<StripePort, Bound>> {
   const switchedOn = changes.flatMap(({ section, targets }) =>
     targets ? [{ section, ...targets }] : [],
@@ -568,14 +576,13 @@ async function assertTargets(
 
   const destinations = switchedOn.flatMap((part) => part.destinations);
   const fields = z.array(LockedField).parse(
-    await trx(FIELDS_TABLE)
-      .where('namespace', CUSTOM_NAMESPACE)
-      .whereIn(
-        'key',
+    await fieldReads
+      .locked(
+        trx,
+        CUSTOM_NAMESPACE,
         destinations.map((destination) => destination.customFieldKey),
       )
-      .select('key', 'type', 'status')
-      .forShare(),
+      .select('key', 'type', 'status'),
   );
   const bindings = z
     .array(LockedBinding)

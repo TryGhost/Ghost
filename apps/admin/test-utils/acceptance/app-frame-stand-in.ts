@@ -59,6 +59,8 @@ export interface AppFrameState {
 
 export interface AppFrameHooks {
   state(): AppFrameState;
+  /** `navigator.canShare` for a link, which is false where the frame's policy refuses Web Share. */
+  canShare(): boolean;
   /** `Ghost.fetch`, returning the `Response` converted back into plain data. */
   fetch(request: FetchRequest): Promise<AppFrameResult<FetchResponse>>;
   /** Sets the page's own title, which the SDK reports to Admin. */
@@ -119,6 +121,7 @@ window.__app = {
     theme: ghost?.theme,
     received,
   }),
+  canShare: () => navigator.canShare({ url: location.href }),
   fetch: ({ path, method, headers, body }) =>
     settle(async (app) => {
       const response = await app.fetch(path, { method, headers, body });

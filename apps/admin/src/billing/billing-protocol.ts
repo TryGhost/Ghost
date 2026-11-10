@@ -55,9 +55,9 @@ export function billingAdminPath(subRoute: string): string {
 }
 
 /**
- * The billing app route the iframe loads for an Admin URL, as Ember's pro
- * routes queue it before the iframe exists: a child route loads without its
- * query, and non-billing pages load the root.
+ * The billing app route the iframe loads for an Admin URL, queued before the
+ * iframe exists: a child route loads without its query, and non-billing pages
+ * load the root.
  */
 export function initialBillingSubRoute(pathname: string): string | null {
   if (!isBillingPath(pathname)) {

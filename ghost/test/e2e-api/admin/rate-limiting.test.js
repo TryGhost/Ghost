@@ -15,7 +15,7 @@ describe('Sessions API', function () {
   });
 
   it('Is rate limited to protect against brute forcing a users password', async function () {
-    await dbUtils.truncate('brute');
+    await dbUtils.truncate('rate_limits');
     // +1 because this is a retry count, so we have one request + the retries, then blocked
     const userLoginRateLimit = configUtils.config.get('spam').user_login.freeRetries + 1;
 
@@ -42,7 +42,7 @@ describe('Sessions API', function () {
   });
 
   it('Is rate limited to protect against brute forcing whether a user exists', async function () {
-    await dbUtils.truncate('brute');
+    await dbUtils.truncate('rate_limits');
     // +1 because this is a retry count, so we have one request + the retries, then blocked
     const userLoginRateLimit = configUtils.config.get('spam').user_login.freeRetries + 1;
 

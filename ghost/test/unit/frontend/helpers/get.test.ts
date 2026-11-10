@@ -3,7 +3,6 @@ import sinon from 'sinon';
 import type { SinonSpy, SinonStub } from 'sinon';
 // @ts-expect-error This module lacks type definitions.
 import { SafeString } from '../../../../core/frontend/services/handlebars';
-// @ts-expect-error This module lacks type definitions.
 import configUtils from '../../../utils/config-utils';
 import loggingLib from '@tryghost/logging';
 

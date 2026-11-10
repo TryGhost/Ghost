@@ -1,35 +1,8 @@
+import { isEmptyLexical } from '@/utils/is-empty-lexical';
+
 export type WelcomeEmailDraft = {
   subject: string;
   lexical: string;
-};
-
-const isEmptyLexical = (lexical: string | null | undefined): boolean => {
-  if (!lexical) {
-    return true;
-  }
-
-  try {
-    const parsed = JSON.parse(lexical) as {
-      root?: { children?: Array<{ type?: string; children?: unknown[] }> };
-    } | null;
-    const children = parsed?.root?.children;
-
-    // Empty if no children or only an empty paragraph
-    if (!children || children.length === 0) {
-      return true;
-    }
-    if (
-      children.length === 1 &&
-      children[0].type === 'paragraph' &&
-      (!children[0].children || children[0].children.length === 0)
-    ) {
-      return true;
-    }
-
-    return false;
-  } catch {
-    return true;
-  }
 };
 
 export const getWelcomeEmailValidationErrors = (

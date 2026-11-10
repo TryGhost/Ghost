@@ -11,14 +11,15 @@ export const appInstallDialog = 'app-install-dialog';
 export const appInstallNotAllowedDialog = 'app-install-not-allowed-dialog';
 export const appInstallNotice = 'app-install-notice';
 export const appCapability = 'app-capability';
-export const appInstallMoveWarning = 'app-install-move-warning';
 export const appInstallProblems = 'app-install-problems';
 export const appInstallUnreachable = 'app-install-unreachable';
+export const appInstallUnconfirmed = 'app-install-unconfirmed';
 export const appManifestChange = 'app-manifest-change';
 export const appDevelopmentBadge = 'app-development-badge';
 export const accessIndicator = 'access-indicator';
 export const accessItem = 'access-item';
 export const appDetails = 'app-details';
+export const appUnverifiedDeveloperBadge = 'app-unverified-developer-badge';
 export const appPage = 'app-page';
 export const appFrame = 'app-frame';
 export const appNotResponding = 'app-not-responding';
@@ -44,6 +45,8 @@ export const uninstallButton = 'Uninstall';
 export const reviewChangesLink = 'Review changes';
 export const openLink = 'Open';
 export const detailsMenuItem = 'Details';
+// Admin's shared not-found page, which Apps routes show while the Labs flag is off.
+export const notFoundHeading = 'Page not found';
 
 // text fragments
 export const emptyStateText = 'No apps yet';

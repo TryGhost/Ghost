@@ -1,6 +1,7 @@
 import { getListReturnNavigationState } from '@/shared/virtual-list';
 import {
   type CSSProperties,
+  type MouseEvent,
   type ReactNode,
   useCallback,
   useEffect,
@@ -45,12 +46,13 @@ import {
   withLiveSettings,
 } from './card-config';
 import { EditorHeaderActions, type OpenFlow } from './editor-header-actions';
-import { readEditorReturn } from './editor-return';
+import { type EditorReturn, readEditorReturn } from './editor-return';
 import { EditorLoading } from './editor-loading';
 import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
 import { useScreenEntrance } from '@/layout/screen-transition';
 import { EditorStatus } from './editor-status';
 import { EmailSizeWarning } from './email-size-warning';
+import { RefusedEntryContext, useRefusedEntry } from './refused-entry';
 import { useEditorFont } from './use-editor-font';
 import { PostEditor, type PostEditorHandle } from './post-editor';
 import type { EditorStatusRecord } from './post-status';
@@ -91,17 +93,22 @@ function EditorLoadError({ message, onRetry }: { message: string; onRetry: () =>
 
 function EditorHeader({
   postType,
-  analyticsReturn,
+  editorReturn,
   children,
+  onBack,
 }: {
   postType: PostType;
-  analyticsReturn?: string;
+  editorReturn?: EditorReturn;
   children?: ReactNode;
+  onBack?: (event: MouseEvent<HTMLAnchorElement>) => void;
 }) {
   const listLabel = postType === 'page' ? 'Pages' : 'Posts';
   const resource = postType === 'page' ? 'pages' : 'posts';
   const listUrl = getPostListReturnUrl(resource);
-  const backLabel = analyticsReturn ? 'Analytics' : listLabel;
+  let backLabel = listLabel;
+  if (editorReturn) {
+    backLabel = editorReturn.kind === 'analytics' ? 'Analytics' : 'Back';
+  }
 
   return (
     <Grid
@@ -112,19 +119,17 @@ function EditorHeader({
       {/* The back link shows its arrow alone, its destination named only to assistive tech. */}
       <PageHeader.Action
         className="bg-background/80 backdrop-blur-sm max-[500px]:aspect-square max-[500px]:gap-0 max-[500px]:px-0"
-        fallbackSize="icon-sm"
-        fallbackVariant="ghost"
         label={backLabel}
         tooltip={false}
         asChild
         iconOnly
       >
-        {analyticsReturn ? (
-          <AdminLink to={analyticsReturn}>
+        {editorReturn ? (
+          <AdminLink to={editorReturn.to} onClick={onBack}>
             <LucideIcon.ArrowLeft />
           </AdminLink>
         ) : (
-          <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl}>
+          <AdminLink state={getListReturnNavigationState(listUrl)} to={listUrl} onClick={onBack}>
             <LucideIcon.ArrowLeft />
           </AdminLink>
         )}
@@ -189,8 +194,27 @@ function EditorContent({
   const [tkCount, setTkCount] = useState(0);
   const chromeEntrance = useScreenEntrance();
   const [openFlow, setOpenFlow] = useState<OpenFlow>('none');
-  const openPublishFlow = useCallback(() => setOpenFlow('publish'), []);
-  const openUpdateFlow = useCallback(() => setOpenFlow('update'), []);
+  // A publish date or time the panel refused keeps the writer on it: no flow
+  // opens, the panel does not close, and the back link does not leave past it.
+  const refusedEntry = useRefusedEntry();
+  const changeOpenFlow = useCallback(
+    (flow: OpenFlow) => {
+      if (flow === 'none' || !refusedEntry.hold()) {
+        setOpenFlow(flow);
+      }
+    },
+    [refusedEntry],
+  );
+  const openPublishFlow = useCallback(() => changeOpenFlow('publish'), [changeOpenFlow]);
+  const openUpdateFlow = useCallback(() => changeOpenFlow('update'), [changeOpenFlow]);
+  const holdBack = useCallback(
+    (event: MouseEvent<HTMLAnchorElement>) => {
+      if (refusedEntry.hold()) {
+        event.preventDefault();
+      }
+    },
+    [refusedEntry],
+  );
   // Only reads what the sidebar's tier picker loaded, which names a tier picked before its save lands.
   const { data: tiersData } = useBrowseTiers({
     defaultErrorHandler: false,
@@ -217,7 +241,7 @@ function EditorContent({
   // The update flow is mounted with the publish controls, which Contributors never get.
   const canPublish = !!currentUser && !isContributorUser(currentUser);
   const location = useLocation();
-  const analyticsReturn = record ? readEditorReturn(location.state) : undefined;
+  const editorReturn = record ? readEditorReturn(location.state) : undefined;
   const statusRecord = statusRecordOf(session.loadedRecord ?? record, createdId);
   const didEmailFail =
     postType === 'post' &&
@@ -309,6 +333,9 @@ function EditorContent({
   }, []);
   const { toggled: settingsToggled } = settingsMemory;
   const flipSettings = useCallback(() => {
+    if (settingsOpen && refusedEntry.hold()) {
+      return;
+    }
     // A manual toggle ends the reveal, so reopening starts on the section list.
     setSettingsReveal(null);
     setSettingsMoving(true);
@@ -316,7 +343,7 @@ function EditorContent({
     // Only the writer's own toggle is remembered, never a reveal's open.
     settingsToggled(!settingsOpen);
     setSettingsOpen((open) => !open);
-  }, [settingsOpen, settingsToggled]);
+  }, [refusedEntry, settingsOpen, settingsToggled]);
   const toggleSettings = useCallback(() => {
     settingsToggleRef.current?.focus();
     flipSettings();
@@ -396,8 +423,6 @@ function EditorContent({
           : 'bg-background/80 backdrop-blur-sm'
       }
       data-testid={settingsMenuToggle}
-      fallbackSize="sm"
-      fallbackVariant="ghost"
       label="Settings"
       tooltip={false}
       iconOnly
@@ -454,8 +479,10 @@ function EditorContent({
             )}
           >
             {/* The back link stays while the writer types, so the way out is always in view. */}
-            <EditorHeader analyticsReturn={analyticsReturn} postType={postType}>
-              {!analyticsReturn || didEmailFail || session.state.kind === 'error' ? (
+            <EditorHeader editorReturn={editorReturn} postType={postType} onBack={holdBack}>
+              {editorReturn?.kind !== 'analytics' ||
+              didEmailFail ||
+              session.state.kind === 'error' ? (
                 <Box className="min-w-0" data-writing-focus={writingFocus}>
                   <EditorStatus
                     isDirty={session.isDirty()}
@@ -481,7 +508,7 @@ function EditorContent({
                     session={session}
                     siteUrl={cardConfig.siteUrl}
                     tkCount={tkCount}
-                    onOpenFlow={setOpenFlow}
+                    onOpenFlow={changeOpenFlow}
                   />
                   <Box
                     aria-hidden="true"
@@ -530,19 +557,21 @@ function EditorContent({
           {settingsToggle}
         </Box>
         {settingsPresent ? (
-          <PostSettingsSidebar
-            cardConfig={currentCardConfig}
-            currentUser={currentUser}
-            editorFont={editorFont}
-            featureImage={featureImage.featureImage}
-            frameRef={settingsFrameRef}
-            hasInlineExcerpt={showExcerpt}
-            opensInPlace={settingsMemory.restored}
-            postType={postType}
-            reveal={settingsReveal}
-            session={session}
-            siteUrl={cardConfig.siteUrl}
-          />
+          <RefusedEntryContext.Provider value={refusedEntry.report}>
+            <PostSettingsSidebar
+              cardConfig={currentCardConfig}
+              currentUser={currentUser}
+              editorFont={editorFont}
+              featureImage={featureImage.featureImage}
+              frameRef={settingsFrameRef}
+              hasInlineExcerpt={showExcerpt}
+              opensInPlace={settingsMemory.restored}
+              postType={postType}
+              reveal={settingsReveal}
+              session={session}
+              siteUrl={cardConfig.siteUrl}
+            />
+          </RefusedEntryContext.Provider>
         ) : null}
         {snippetDialog}
         <DirtyConfirmDialog testId={editorLeaveDialog} {...leaveGuard.dialogProps} />

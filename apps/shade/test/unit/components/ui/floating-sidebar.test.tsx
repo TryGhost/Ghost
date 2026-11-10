@@ -1,5 +1,4 @@
-import assert from 'assert/strict';
-import { describe, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, screen } from '@testing-library/react';
 import { FloatingSidebar } from '../../../../src/components/ui/floating-sidebar';
 import {
@@ -37,15 +36,15 @@ describe('FloatingSidebar', () => {
   it('opens from the closed circle on click and closes with Escape', () => {
     renderFloatingSidebar();
 
-    assert.equal(capsuleState(), 'closed');
-    assert.equal(trigger().getAttribute('aria-expanded'), 'false');
+    expect(capsuleState()).toBe('closed');
+    expect(trigger().getAttribute('aria-expanded')).toBe('false');
 
     fireEvent.click(trigger());
-    assert.equal(capsuleState(), 'open');
-    assert.equal(trigger().getAttribute('aria-expanded'), 'true');
+    expect(capsuleState()).toBe('open');
+    expect(trigger().getAttribute('aria-expanded')).toBe('true');
 
     fireEvent.keyDown(document, { key: 'Escape' });
-    assert.equal(capsuleState(), 'closed');
+    expect(capsuleState()).toBe('closed');
   });
 
   it('only opens on hover once the pointer has been outside it', () => {
@@ -54,11 +53,11 @@ describe('FloatingSidebar', () => {
 
     // Appearing under a resting pointer doesn't open it
     fireEvent.mouseEnter(wrapper);
-    assert.equal(capsuleState(), 'closed');
+    expect(capsuleState()).toBe('closed');
 
     fireEvent.mouseLeave(wrapper);
     fireEvent.mouseEnter(wrapper);
-    assert.equal(capsuleState(), 'open');
+    expect(capsuleState()).toBe('open');
   });
 
   it('stays open while the pointer moves over it, though its mouseleave misfired', () => {
@@ -68,17 +67,17 @@ describe('FloatingSidebar', () => {
       const wrapper = screen.getByTestId('floating-sidebar');
       fireEvent.mouseLeave(wrapper);
       fireEvent.mouseEnter(wrapper);
-      assert.equal(capsuleState(), 'open');
+      expect(capsuleState()).toBe('open');
 
       // e.g. as it morphed under the pointer
       fireEvent.mouseLeave(wrapper);
       fireEvent.pointerMove(screen.getByRole('link', { name: 'Posts' }));
       act(() => vi.advanceTimersByTime(1000));
-      assert.equal(capsuleState(), 'open');
+      expect(capsuleState()).toBe('open');
 
       fireEvent.pointerMove(document.body);
       act(() => vi.advanceTimersByTime(1000));
-      assert.equal(capsuleState(), 'closed');
+      expect(capsuleState()).toBe('closed');
     } finally {
       vi.useRealTimers();
     }
@@ -88,9 +87,9 @@ describe('FloatingSidebar', () => {
     const onPinnedChange = vi.fn();
     renderFloatingSidebar({ pinned: true, onPinnedChange });
 
-    assert.equal(capsuleState(), 'pinned');
+    expect(capsuleState()).toBe('pinned');
     fireEvent.click(screen.getByRole('button', { name: 'Unpin sidebar' }));
-    assert.deepEqual(onPinnedChange.mock.calls, [[false]]);
+    expect(onPinnedChange.mock.calls).toStrictEqual([[false]]);
   });
 
   it('pins the open panel with the pin button', () => {
@@ -99,23 +98,22 @@ describe('FloatingSidebar', () => {
 
     fireEvent.click(trigger());
     fireEvent.click(screen.getByRole('button', { name: 'Pin sidebar' }));
-    assert.deepEqual(onPinnedChange.mock.calls, [[true]]);
+    expect(onPinnedChange.mock.calls).toStrictEqual([[true]]);
   });
 
   it('hides the pin button while pinning is locked', () => {
     renderFloatingSidebar({ pinned: true, pinLocked: true });
 
-    assert.equal(
+    expect(
       document.querySelector('[data-slot=floating-sidebar-pin]')?.getAttribute('aria-hidden'),
-      'true',
-    );
+    ).toBe('true');
   });
 
   it('reports the end of the morph a pin change starts', () => {
     const onPinnedMorphEnd = vi.fn();
     // Without transitions the morph ends at once
     const { rerender } = renderFloatingSidebar({ animate: false, onPinnedMorphEnd });
-    assert.equal(onPinnedMorphEnd.mock.calls.length, 0);
+    expect(onPinnedMorphEnd.mock.calls.length).toBe(0);
 
     rerender(
       <FloatingSidebar
@@ -129,49 +127,49 @@ describe('FloatingSidebar', () => {
         <a href="#/posts">Posts</a>
       </FloatingSidebar>,
     );
-    assert.deepEqual(onPinnedMorphEnd.mock.calls, [[true]]);
+    expect(onPinnedMorphEnd.mock.calls).toStrictEqual([[true]]);
   });
 
   it('keeps the body out of reach while closed', () => {
     renderFloatingSidebar();
     const body = () => document.querySelector<HTMLElement>('[data-slot=floating-sidebar-body]')!;
 
-    assert.equal(body().inert, true);
+    expect(body().inert).toBe(true);
     fireEvent.click(trigger());
-    assert.equal(body().inert, false);
+    expect(body().inert).toBe(false);
   });
 
   it('offsets the content by its gap only while pinned', () => {
     const gapWidth = () => document.querySelector<HTMLElement>('[data-sidebar=gap]')?.style.width;
     const { rerender } = renderFloatingSidebar({ pinned: true });
-    assert.equal(gapWidth(), `${getFloatingSidebarGapWidth(true)}px`);
+    expect(gapWidth()).toBe(`${getFloatingSidebarGapWidth(true)}px`);
 
     rerender(
       <FloatingSidebar header={<span>My site</span>} icon={<span />} label="My site" pinned={false}>
         <a href="#/posts">Posts</a>
       </FloatingSidebar>,
     );
-    assert.equal(gapWidth(), '0px');
+    expect(gapWidth()).toBe('0px');
   });
 });
 
 describe('FloatingSidebar metrics', () => {
   it('sizes the gap from the open width and the inset either side', () => {
-    assert.equal(getFloatingSidebarGapWidth(true), 322);
-    assert.equal(getFloatingSidebarGapWidth(true, 300), 332);
-    assert.equal(getFloatingSidebarGapWidth(false), 0);
-    assert.equal(FLOATING_SIDEBAR_CLOSED_FOOTPRINT, 82);
+    expect(getFloatingSidebarGapWidth(true)).toBe(322);
+    expect(getFloatingSidebarGapWidth(true, 300)).toBe(332);
+    expect(getFloatingSidebarGapWidth(false)).toBe(0);
+    expect(FLOATING_SIDEBAR_CLOSED_FOOTPRINT).toBe(82);
   });
 
   it('times each morph style', () => {
-    assert.deepEqual(
-      [getFloatingSidebarTiming('bump').duration, getFloatingSidebarTiming('bump').easing],
-      [FLOATING_SIDEBAR_DURATION, FLOATING_SIDEBAR_SPRING],
-    );
-    assert.deepEqual(getFloatingSidebarTiming(), getFloatingSidebarTiming('bump'));
-    assert.deepEqual(
-      [getFloatingSidebarTiming('ease').duration, getFloatingSidebarTiming('ease').easing],
-      [FLOATING_SIDEBAR_EASE_DURATION, FLOATING_SIDEBAR_EASE],
-    );
+    expect([
+      getFloatingSidebarTiming('bump').duration,
+      getFloatingSidebarTiming('bump').easing,
+    ]).toStrictEqual([FLOATING_SIDEBAR_DURATION, FLOATING_SIDEBAR_SPRING]);
+    expect(getFloatingSidebarTiming()).toStrictEqual(getFloatingSidebarTiming('bump'));
+    expect([
+      getFloatingSidebarTiming('ease').duration,
+      getFloatingSidebarTiming('ease').easing,
+    ]).toStrictEqual([FLOATING_SIDEBAR_EASE_DURATION, FLOATING_SIDEBAR_EASE]);
   });
 });

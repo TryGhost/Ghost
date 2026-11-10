@@ -205,7 +205,7 @@ export function usePublishInputs(): PublishInputs {
     isFetchingNextNewsletterPage,
     newslettersError,
   ]);
-  // Site-wide total, the way Ember's publish options read it.
+  // Site-wide total.
   const {
     count: memberCount,
     isLoading: memberCountLoading,

@@ -11,9 +11,6 @@ import {
 } from './models';
 import type { RequestedParts, StripeCheckoutConfigService } from './service';
 
-/** The private flag the config is behind. The collected parts are behind their own flag too. */
-const DESIGN_FLAG = 'stripeCheckoutDesign';
-
 /** Every collected part asking for nothing. */
 export const NOTHING_COLLECTED = Object.freeze({
   shipping: null,
@@ -62,8 +59,8 @@ export interface CheckoutServiceDeps {
 
 /**
  * Decides the Stripe Checkout pages Ghost opens from the site's config: the checkout a buyer
- * gets, and previews of settings not saved yet. Nothing from the config applies while its
- * flags are off, and a checkout Ghost has no settings for is null, so Stripe uses the
+ * gets, and previews of settings not saved yet. The collected parts don't apply while their
+ * flag is off, and a checkout Ghost has no settings for is null, so Stripe uses the
  * merchant's own.
  */
 export class CheckoutService {
@@ -102,13 +99,9 @@ export class CheckoutService {
 
   /**
    * The config as checkouts use it, without the collected parts while their flag is off. Null
-   * while the design flag is off or the config can't be read.
+   * when the config can't be read.
    */
   private async readConfig(): Promise<CheckoutSessionConfig | null> {
-    // The collected parts only release after the design, so nothing is read while it's off.
-    if (!this.deps.labs.isSet(DESIGN_FLAG)) {
-      return null;
-    }
     const config = await this.readSaved();
     if (!config) {
       return null;

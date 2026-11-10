@@ -51,7 +51,7 @@ interface TagDetailFormProps {
 }
 
 const errorId = (field: TagFieldName) => `tag-${field}-error`;
-/** Ember's `gh-count-down-characters`: the used count, red once past the limit. */
+/** The used character count, red once past the limit. */
 const UsedCharacters: React.FC<{
   value: string;
   limit: number;
@@ -62,7 +62,7 @@ const UsedCharacters: React.FC<{
     <p className="text-sm text-muted-foreground">
       {prefix}: {formatNumber(limit)} characters. You’ve used{' '}
       <span
-        className={cn('font-semibold', used > limit ? 'text-destructive' : 'text-state-success')}
+        className={cn('font-semibold', used > limit ? 'text-destructive' : 'text-character-count')}
       >
         {formatNumber(used)}
       </span>
@@ -224,8 +224,8 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({
       <Card className="overflow-hidden" data-testid="tag-metadata-card">
         <CardContent className="p-6">
           <Stack gap="lg">
-            <Stack gap="none">
-              <span className="text-[14px] font-semibold">Meta data</span>
+            <Stack className="in-data-[admin7-design=true]:gap-1" gap="none">
+              <h3 className="section-heading text-[14px] font-semibold">Meta data</h3>
               <span className="text-[13px] leading-[16px] font-normal tracking-normal text-muted-foreground">
                 Extra content for search engines and social accounts.
               </span>
@@ -430,9 +430,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({
                     gap="sm"
                   >
                     <Label>Facebook preview</Label>
-                    {/* The description chain deliberately skips ogDescription: Ember read a
-                                        nonexistent `facebookDescription` attribute, so ogDescription never
-                                        fed this preview (`tag-form.js` `facebookDescription`). */}
+                    {/* The description chain deliberately skips ogDescription. */}
                     <FacebookCardPreview
                       description={seoDescription || siteMetaDescription || ''}
                       domain={blogDomain}

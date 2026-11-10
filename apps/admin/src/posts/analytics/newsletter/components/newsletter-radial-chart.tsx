@@ -4,7 +4,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@tryghost/shade/components';
-import { Recharts, cn, formatPercentage, useRootFlag } from '@tryghost/shade/utils';
+import { Recharts, cn, formatPercentage } from '@tryghost/shade/utils';
+import { useShade } from '@tryghost/shade/app';
 
 export type NewsletterRadialChartData = {
   datatype: string;
@@ -32,9 +33,8 @@ export const NewsletterRadialChart: React.FC<NewsletterRadialChartProps> = ({
   tooltip = true,
   size = 'responsive',
 }) => {
-  // ANALYTICS PROTOTYPE: Admin 7 design style draws each ring in its solid
-  // `color` rather than the gradient callers pass as `fill`
-  const admin7Design = useRootFlag('admin7-design');
+  // admin7Design charts are flat: solid fills, no gradients.
+  const { admin7Design } = useShade();
   const normalizePercentageValue = (value: unknown): number => {
     if (typeof value === 'number') {
       return value;
@@ -110,20 +110,28 @@ export const NewsletterRadialChart: React.FC<NewsletterRadialChartProps> = ({
         <defs>
           {/* Define gradients for each data type */}
           <radialGradient cx="30%" cy="30%" id="gradientPurple" r="70%">
-            <stop offset="0%" stopColor="var(--chart-purple)" stopOpacity={0.5} />
-            <stop offset="100%" stopColor="var(--chart-purple)" stopOpacity={1} />
+            <stop
+              offset="0%"
+              stopColor="var(--chart-purple)"
+              stopOpacity={admin7Design ? 1 : 0.5}
+            />
+            <stop
+              offset="100%"
+              stopColor="var(--chart-purple)"
+              stopOpacity={admin7Design ? 1 : 1}
+            />
           </radialGradient>
           <radialGradient cx="30%" cy="30%" id="gradientBlue" r="70%">
-            <stop offset="0%" stopColor="var(--chart-blue)" stopOpacity={0.5} />
-            <stop offset="100%" stopColor="var(--chart-blue)" stopOpacity={1} />
+            <stop offset="0%" stopColor="var(--chart-blue)" stopOpacity={admin7Design ? 1 : 0.5} />
+            <stop offset="100%" stopColor="var(--chart-blue)" stopOpacity={admin7Design ? 1 : 1} />
           </radialGradient>
           <radialGradient cx="30%" cy="30%" id="gradientTeal" r="70%">
-            <stop offset="0%" stopColor="var(--chart-teal)" stopOpacity={0.5} />
-            <stop offset="100%" stopColor="var(--chart-teal)" stopOpacity={1} />
+            <stop offset="0%" stopColor="var(--chart-teal)" stopOpacity={admin7Design ? 1 : 0.5} />
+            <stop offset="100%" stopColor="var(--chart-teal)" stopOpacity={admin7Design ? 1 : 1} />
           </radialGradient>
           <radialGradient cx="30%" cy="30%" id="gradientGray" r="70%">
-            <stop offset="0%" stopColor="var(--chart-gray)" stopOpacity={0.5} />
-            <stop offset="100%" stopColor="var(--chart-gray)" stopOpacity={1} />
+            <stop offset="0%" stopColor="var(--chart-gray)" stopOpacity={admin7Design ? 1 : 0.5} />
+            <stop offset="100%" stopColor="var(--chart-gray)" stopOpacity={admin7Design ? 1 : 1} />
           </radialGradient>
         </defs>
         <Recharts.PolarAngleAxis angleAxisId={0} domain={[0, 1]} tick={false} type="number" />

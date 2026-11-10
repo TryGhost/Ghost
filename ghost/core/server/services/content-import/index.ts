@@ -36,7 +36,7 @@ function makeImporter(): ContentCSVImporter {
   const settingsCache = require('../../../shared/settings-cache');
   const urlService = require('../url');
   const urlUtils = require('../../../shared/url-utils').default;
-  const mediaInlinerService = require('../media-inliner');
+  const mediaInlinerService = require('../media-inliner').default;
   const config = require('../../../shared/config');
   const ObjectID = require('bson-objectid').default;
   const { GhostMailer } = require('../../lib/mail');
@@ -71,7 +71,7 @@ function makeImporter(): ContentCSVImporter {
     getCleanHTML: () => require('@tryghost/mg-clean-html').cleanHTML,
     createMediaInliner: () =>
       new PostMediaInliner({
-        media: mediaInlinerService.getInstance(),
+        media: mediaInlinerService.service,
         isLocalMediaUrl: (sourceUrl) =>
           isLocalMediaUrl(sourceUrl, {
             siteUrl: config.getSiteUrl(),

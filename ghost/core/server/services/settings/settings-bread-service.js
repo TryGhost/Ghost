@@ -480,7 +480,6 @@ class SettingsBREADService {
    * @private
    */
   async sendEmailVerificationMagicLink({ email, key }) {
-    const fromEmail = this.emailAddressService.service.defaultFromAddress;
     const { ghostMailer } = this;
 
     this.magicLinkService.transporter = {
@@ -490,7 +489,6 @@ class SettingsBREADService {
         }
         const msg = Object.assign(
           {
-            from: fromEmail,
             subject: 'Verify email address',
             forceTextContent: true,
           },

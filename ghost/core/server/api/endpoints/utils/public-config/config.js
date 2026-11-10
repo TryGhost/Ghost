@@ -14,11 +14,7 @@ const sanitizeHostSettings = (hostSettings) => {
     return hostSettings;
   }
 
-  return omit(hostSettings, [
-    'export.webhookSecret',
-    'emailVerification.webhookSecret',
-    'supportRequest.webhookSecret',
-  ]);
+  return omit(hostSettings, ['export.webhookSecret', 'emailVerification.webhookSecret']);
 };
 
 const copyPayloadProperties = (target, source, properties) => {
@@ -87,13 +83,6 @@ module.exports = function getConfigProperties() {
     configProperties.featurebase = {
       enabled: config.get('featurebase:enabled'),
       organization: config.get('featurebase:organization'),
-    };
-  }
-
-  if (config.get('docsbot')) {
-    configProperties.docsbot = {
-      enabled: config.get('docsbot:enabled'),
-      id: config.get('docsbot:id'),
     };
   }
 

@@ -38,28 +38,32 @@ The one swap point is the `analytics` route in `routes.tsx`, which renders
 `PatternsSwap` (`patterns/patterns-swap.tsx`) where it used to render
 `<Outlet />`.
 
-### The flag stand-in
+### Two switches
 
-Every view but Today sets `data-admin7-design` on `<html>`, standing in
-for the `admin7Design` Labs flag: Admin 7's single bucket flag for
-everything queued for the next public release (see the Admin 7.0 Design
-project in Linear). Outside the prototype, Admin's layout sets the same
-attribute from the real flag. Planned pieces read that one attribute, so
-each change is built the way its PR will be:
+**Main's real switch.** The `admin7Design` Labs flag is Admin 7's single
+bucket flag for everything queued for the next public release (see the
+Admin 7.0 Design project in Linear). Admin passes it to `ShadeApp`, which
+writes `data-admin7-design="true"` or `"false"` on the app root and on
+portals. Components read it with `useShade().admin7Design`, and CSS selects
+`[data-admin7-design='true']`. Keep the flag **on** in Labs while
+prototyping, so the frame, palette, typography and members pages show the
+real Admin 7 look in every view.
 
-- Shared Shade components read it with `useRootFlag('admin7-design')`
-  (`apps/shade/src/hooks/use-root-flag.ts`), and scoped CSS can select it.
+**The prototype's switch.** Every view but Today sets
+`data-analytics-proto` on `<html>`, so our analytics changes can be compared
+with main's analytics (Today). The prototype's pieces read it:
+
+- Shared Shade components read it with `useRootFlag('analytics-proto')`
+  (`apps/shade/src/hooks/use-root-flag.ts`), and with the `analytics-proto:`
+  Tailwind variant.
 - Style-only changes switch values (fill, curve, gridlines), never structure.
   Structural changes get a whole new component beside the old one, switched
   in one place.
-- Lines marked `ANALYTICS PROTOTYPE` are the ones a PR carries over, with
-  Admin setting the attribute from `useFeatureFlag('admin7Design')`
-  (`layout/admin-layout.tsx`). When a slice is ready to release, it moves
-  to its own private `admin7[feature-name]` flag to dogfood, then graduates.
-
-Open question for the PR: Admin 7 milestones normally reach Shade through
-ShadeApp's `isAdmin7`, but that now stays on for the shipped pill controls,
-so it can't gate this milestone.
+- Lines marked `ANALYTICS PROTOTYPE` are the ones a PR carries over. In a
+  PR, `useRootFlag('analytics-proto')` becomes `useShade().admin7Design` and
+  `analytics-proto:` becomes a `[data-admin7-design='true']` selector. When a
+  slice is ready to release, it moves to its own private
+  `admin7[feature-name]` flag to dogfood, then graduates.
 
 ## Explorations
 

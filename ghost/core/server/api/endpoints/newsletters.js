@@ -1,6 +1,6 @@
 const allowedIncludes = ['count.posts', 'count.members', 'count.active_members'];
 
-const newslettersService = require('../../services/newsletters');
+const newsletters = require('../../services/newsletters').default;
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -20,7 +20,7 @@ const controller = {
     },
     permissions: true,
     query(frame) {
-      return newslettersService.browse(frame.options);
+      return newsletters.service.browse(frame.options);
     },
   },
 
@@ -46,7 +46,7 @@ const controller = {
     },
     permissions: true,
     async query(frame) {
-      return newslettersService.read(frame.data, frame.options);
+      return newsletters.service.read(frame.data, frame.options);
     },
   },
 
@@ -65,7 +65,7 @@ const controller = {
     },
     permissions: true,
     async query(frame) {
-      return newslettersService.add(frame.data.newsletters[0], frame.options);
+      return newsletters.service.add(frame.data.newsletters[0], frame.options);
     },
   },
 
@@ -86,7 +86,7 @@ const controller = {
     },
     permissions: true,
     async query(frame) {
-      return newslettersService.edit(frame.data.newsletters[0], frame.options);
+      return newsletters.service.edit(frame.data.newsletters[0], frame.options);
     },
   },
 
@@ -99,7 +99,7 @@ const controller = {
     },
     data: ['token'],
     async query(frame) {
-      return newslettersService.verifyPropertyUpdate(frame.data.token);
+      return newsletters.service.verifyPropertyUpdate(frame.data.token);
     },
   },
 };

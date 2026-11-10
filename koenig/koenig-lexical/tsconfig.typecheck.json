@@ -15,6 +15,7 @@
     },
     "include": [
         "src/context/KoenigComposerContext.tsx",
-        "src/components/ui/cards/PaywallCard.tsx"
+        "src/components/ui/cards/PaywallCard.tsx",
+        "src/utils/videoFrames.ts"
     ]
 }

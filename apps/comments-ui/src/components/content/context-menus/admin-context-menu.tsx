@@ -1,3 +1,4 @@
+import CopyLinkButton from './copy-link-button';
 import ExternalLinkIcon from '../../../images/icons/external-link.svg?react';
 import EyeIcon from '../../../images/icons/eye.svg?react';
 import EyeOffIcon from '../../../images/icons/eye-off.svg?react';
@@ -49,6 +50,15 @@ const AdminContextMenu: React.FC<Props> = ({
 
   return (
     <div className="flex w-full flex-col gap-0.5">
+      {/* Hidden comments aren't visible to readers, so a link would lead nowhere */}
+      {!isHidden && (
+        <CopyLinkButton
+          className={itemClassName}
+          close={close}
+          comment={comment}
+          iconClassName={iconClassName}
+        />
+      )}
       {adminCommentUrl && (
         <a
           className={itemClassName}

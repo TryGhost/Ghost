@@ -160,7 +160,10 @@ export function decodeBridgeError<Code extends BridgeErrorCode>(
 
 const THEME_MODES = ['light', 'dark'] as const;
 
-/** The theme Admin is showing, so the page can match it. `mode` is resolved, never `system`. */
+/**
+ * The theme Admin is showing, so the page can match it. `mode` is `light` or `dark`, never
+ * `system`.
+ */
 export type Theme = {
   mode: (typeof THEME_MODES)[number];
   accent_color: string;
@@ -269,14 +272,16 @@ const APP_PATH_BASE = 'https://app.invalid';
 
 /**
  * Returns an app path in the URL parser's normalised form, the one form Admin and the SDK
- * store it in. `.` and `..` are resolved within the app, so a path can never climb out of it.
+ * store it in. `.` and `..` are resolved within the app, so `..` can never climb above its root.
  * Characters that need escaping are escaped once, so a path the app reported compares equal to
  * the same path read back from Admin's URL. `/search?q=a b` becomes `/search?q=a%20b`, and
  * `/x/../episodes/1` becomes `/episodes/1`.
  *
  * Expects a path that `isContainedPath` accepts; anything else may not be a path within the
- * app at all. `AppPathSchema` already returns this form, so Admin never calls this directly.
- * The SDK, which doesn't load zod, does.
+ * app at all. Even then, the result may not be: resolving `.` and `..` can leave `//` at the
+ * start, so `/.//host` becomes `//host`, which resolves to another site. Check the result with
+ * `isContainedPath` before resolving it against anything. `AppPathSchema` does both and returns
+ * this form.
  */
 export function normaliseAppPath(path: string): string {
   const url = new URL(path, APP_PATH_BASE);

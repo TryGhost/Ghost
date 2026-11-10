@@ -4,7 +4,14 @@ import {
   MembersListPage,
   SettingsPage,
 } from '@/admin-pages';
-import { createPaidPortalTier, expect, startPaidSignupViaPortal, test } from '@/helpers/playwright';
+import {
+  completePaidUpgradeViaPortal,
+  createPaidPortalTier,
+  expect,
+  startPaidSignupViaPortal,
+  test,
+} from '@/helpers/playwright';
+import { createMemberFactory } from '@/data-factory';
 import type { Page } from '@playwright/test';
 import type { StripeTestService } from '@/helpers/services/stripe';
 
@@ -50,7 +57,7 @@ function latestTaxIdRequest(stripe: StripeTestService) {
 test.describe('Ghost Admin - Checkout fields', () => {
   test.use({
     stripeEnabled: true,
-    labs: { stripeCheckoutDesign: true, stripeCheckoutCollection: true, membersCustomFields: true },
+    labs: { stripeCheckoutCollection: true },
   });
 
   test('shipping address - a member gives one at checkout, and it lands on their record', async ({
@@ -241,6 +248,56 @@ test.describe('Ghost Admin - Checkout fields', () => {
     await expect(membersPage.getMemberLinkByName(name)).toBeVisible();
   });
 
+  // A free member upgrading already has a Stripe customer, and Stripe asks more before it
+  // takes a tax ID from an existing customer than from a new buyer.
+  test('tax ID and shipping address - a free member who upgrades gives both, and the address lands on their record', async ({
+    page,
+    stripe,
+  }) => {
+    const tierName = await paidTier(page, stripe!, 'Business Print');
+    const name = `Free Member ${Date.now()}`;
+    const member = await createMemberFactory(page.request).create({
+      email: `upgrade-${Date.now()}@example.com`,
+      name,
+      status: 'free',
+    });
+
+    const checkout = await openCheckoutFields(page);
+    await checkout.collectShipping({
+      addressField: { create: 'Delivery address' },
+      nameField: { create: 'Recipient' },
+    });
+    await checkout.collectTaxId();
+    await checkout.save();
+    await checkout.close();
+
+    await completePaidUpgradeViaPortal(page, stripe!, member, {
+      cadence: 'monthly',
+      tierName,
+      collected: {
+        taxId: 'GB123456789',
+        shipping: {
+          name: 'Ada Lovelace',
+          line1: '12 Ada Street',
+          city: 'London',
+          postal_code: 'N1 9GU',
+          country: 'GB',
+        },
+      },
+    });
+    expect(latestTaxIdRequest(stripe!)).toEqual({ enabled: true });
+    // The case that matters: Stripe asks more of a checkout for an existing customer.
+    expect(stripe!.getCheckoutSessions().at(-1)?.response.customer).toBeTruthy();
+
+    const membersPage = new MembersListPage(page);
+    await membersPage.goto();
+    await membersPage.getMemberLinkByName(name).click();
+    const memberPage = new MemberDetailsPage(page);
+    await expect(memberPage.customFieldRow('Delivery address')).toHaveAccessibleName(
+      /12 Ada Street, London, N1 9GU/,
+    );
+  });
+
   test('tax ID on specific tiers - only their checkouts offer it, previewed before saving', async ({
     page,
     stripe,
@@ -284,7 +341,7 @@ test.describe('Ghost Admin - Checkout fields', () => {
 });
 
 test.describe('Ghost Admin - Checkout fields without the collection flag', () => {
-  test.use({ stripeEnabled: true, labs: { stripeCheckoutDesign: true } });
+  test.use({ stripeEnabled: true });
 
   test('labs flag off - only the design is offered, without tabs', async ({ page }) => {
     const settingsPage = new SettingsPage(page);

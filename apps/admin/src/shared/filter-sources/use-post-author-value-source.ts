@@ -13,10 +13,9 @@ import { keepPreviousData } from '@tanstack/react-query';
  * Staff users for the posts/pages author filter.
  *
  * Value is the **slug**, matching the `?author=` URL param and saved views.
- * Falls back to the email for staff who were invited but never set a name, as
- * Ember's `post-author-names` helper does.
+ * Falls back to the email for staff who were invited but never set a name.
  *
- * Search matches Ember's `name:~<term>` (`controllers/posts.js:146`).
+ * Search matches `name:~<term>`.
  */
 const AUTHOR_PAGE_LIMIT = '100';
 
@@ -41,7 +40,7 @@ const usePostAuthorBrowseValueSource = createGhostBrowseValueSource<User, UsersR
     order: 'name asc',
   }),
   // See the tag source: without this the chip reads "Select…" and the value
-  // disappears from the UI. Ember shows "Unknown author".
+  // disappears from the UI.
   getMissingSelectedOption: (value) => ({
     value,
     label: 'Unknown author',

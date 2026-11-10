@@ -17,12 +17,11 @@ export {
   formatNumber,
   formatDuration,
   formatPercentage,
-  formatDisplayDate,
-  formatDisplayTime,
-  formatDisplayDateWithRange,
   getCountryFlag,
   stringToHslColor,
+  stringToTonalAvatarClasses,
   abbreviateNumber,
   getYRange,
   calculateYAxisWidth,
 } from './lib/ds-utils';
+export { formatDisplayDate, formatDisplayTime, formatDisplayDateWithRange } from './lib/date-utils';

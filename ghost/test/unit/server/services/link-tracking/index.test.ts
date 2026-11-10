@@ -5,24 +5,23 @@ import ObjectID from 'bson-objectid';
 const DomainEvents = require('@tryghost/domain-events');
 
 const models = require('../../../../../core/server/models');
-const linkRedirection = require('../../../../../core/server/services/link-redirection');
+const linkRedirection = require('../../../../../core/server/services/link-redirection').default;
 const linkTracking = require('../../../../../core/server/services/link-tracking');
 const LinkClickTrackingService = require('../../../../../core/server/services/link-tracking/link-click-tracking-service');
 const RedirectEvent = require('../../../../../core/server/services/link-redirection/redirect-event');
 
 describe('LinkTrackingServiceWrapper', function () {
-  const originalLinkRedirectionService = linkRedirection.service;
-  const originalLinkRedirectRepository = linkRedirection.linkRedirectRepository;
-
   afterEach(function () {
     sinon.restore();
-    linkRedirection.service = originalLinkRedirectionService;
-    linkRedirection.linkRedirectRepository = originalLinkRedirectRepository;
   });
 
+  function stubLinkRedirection() {
+    sinon.stub(linkRedirection, 'service').get(() => ({}));
+    sinon.stub(linkRedirection.extras, 'linkRedirectRepository').returns({});
+  }
+
   it('waits for the same initialization when called concurrently', async function () {
-    linkRedirection.service = {};
-    linkRedirection.linkRedirectRepository = {};
+    stubLinkRedirection();
 
     let finishInitialization!: () => void;
     const initialization = new Promise<void>((resolve) => {
@@ -59,8 +58,7 @@ describe('LinkTrackingServiceWrapper', function () {
   });
 
   it('allows initialization to be retried after a failure', async function () {
-    linkRedirection.service = {};
-    linkRedirection.linkRedirectRepository = {};
+    stubLinkRedirection();
 
     const init = sinon.stub(LinkClickTrackingService.prototype, 'init');
     init.onFirstCall().rejects(new Error('Initialization failed'));
@@ -75,8 +73,7 @@ describe('LinkTrackingServiceWrapper', function () {
   });
 
   it('wires automation click persistence and analytics to the same transaction', async function () {
-    linkRedirection.service = {};
-    linkRedirection.linkRedirectRepository = {};
+    stubLinkRedirection();
 
     const subscribe = sinon.stub(DomainEvents, 'subscribe');
     const member = {

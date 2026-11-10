@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const moment = require('moment-timezone');
-const _ = require('lodash');
 const events = require('../../../../core/server/lib/common/events');
 const models = require('../../../../core/server/models');
 const listeners = require('../../../../core/server/models/base/listeners');
@@ -9,13 +8,16 @@ const testUtils = require('../../../utils');
 
 describe('Models: listeners', function () {
   const eventsToRemember = {};
-  const now = moment();
 
   const scope = {
     posts: [],
-    publishedAtFutureMoment1: moment().add(2, 'days').startOf('hour'),
-    publishedAtFutureMoment2: moment().add(2, 'hours').startOf('hour'),
-    publishedAtFutureMoment3: moment().add(10, 'hours').startOf('hour'),
+  };
+
+  const assertPreservedLocalTime = (post, scheduledAt, oldTimezone, newTimezone) => {
+    const format = 'YYYY-MM-DD HH:mm:ss';
+    const expectedTime = scheduledAt.clone().tz(oldTimezone).format(format);
+    const actualTime = moment(post.get('published_at')).tz(newTimezone).format(format);
+    assert.equal(actualTime, expectedTime, `local time for post ${post.get('title')}`);
   };
 
   beforeAll(testUtils.teardownDb);
@@ -42,6 +44,14 @@ describe('Models: listeners', function () {
 
     describe('db has scheduled posts', function () {
       beforeEach(async function () {
+        sinon.useFakeTimers({
+          now: new Date('2027-03-12T12:30:00.000Z'),
+          toFake: ['Date'],
+        });
+        scope.publishedAtFutureMoment1 = moment.utc().add(2, 'days').startOf('hour');
+        scope.publishedAtFutureMoment2 = moment.utc().add(2, 'hours').startOf('hour');
+        scope.publishedAtFutureMoment3 = moment.utc().add(10, 'hours').startOf('hour');
+
         scope.posts.push(
           testUtils.DataGenerator.forKnex.createPost({
             published_at: scope.publishedAtFutureMoment1.toDate(),
@@ -78,14 +88,32 @@ describe('Models: listeners', function () {
         assert.equal(posts.length, 3);
       });
 
-      it('timezone changes from London to Los Angeles', async function () {
-        let timeout;
+      const assertPostStates = async function (statuses) {
+        const results = await models.Post.findAll({ context: { internal: true } });
+        assert.equal(results.models.length, posts.length);
 
+        for (const [index, status] of statuses.entries()) {
+          const title = String(index + 1);
+          const post = results.models.find((model) => model.get('title') === title);
+          assert.ok(post, `post ${title} exists`);
+          assert.equal(post.get('status'), status, `status for post ${title}`);
+          if (status === 'scheduled') {
+            assertPreservedLocalTime(
+              post,
+              scope[`publishedAtFutureMoment${title}`],
+              scope.oldTimezone,
+              scope.newTimezone,
+            );
+          }
+        }
+      };
+
+      it('timezone changes from London to Los Angeles', async function () {
         /**
          * From London +1
          * To Los Angeles -7
          *
-         * We expect +420 minutes if DST. (otherwise +480)
+         * The scheduled wall time must remain unchanged in Los Angeles.
          *
          * Image it's 11AM London time. 10AM UTC.
          * Imagine the post is scheduled for 8PM London time.
@@ -97,10 +125,6 @@ describe('Models: listeners', function () {
          * So the database UTC string must be 2017-04-19 03:00:00. (-7 hours === 8 o'clock in Los Angeles)
          */
 
-        // calculate the offset dynamically, because of DST
-        scope.timezoneOffset =
-          moment.tz.zone('America/Los_Angeles').utcOffset(now) -
-          moment.tz.zone('Europe/London').utcOffset(now);
         scope.newTimezone = 'America/Los_Angeles';
         scope.oldTimezone = 'Europe/London';
 
@@ -109,56 +133,15 @@ describe('Models: listeners', function () {
           _previousAttributes: { value: scope.oldTimezone },
         });
 
-        await new Promise(function (resolve, reject) {
-          (function retry() {
-            models.Post.findAll({ context: { internal: true } })
-              .then(function (results) {
-                const post1 = _.find(results.models, function (post) {
-                  return post.get('title') === '1';
-                });
-
-                const post2 = _.find(results.models, function (post) {
-                  return post.get('title') === '2';
-                });
-
-                const post3 = _.find(results.models, function (post) {
-                  return post.get('title') === '3';
-                });
-
-                if (
-                  results.models.length === posts.length &&
-                  post1.get('status') === 'scheduled' &&
-                  post2.get('status') === 'scheduled' &&
-                  post3.get('status') === 'scheduled' &&
-                  moment(post1.get('published_at')).diff(
-                    scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes'),
-                  ) === 0 &&
-                  moment(post2.get('published_at')).diff(
-                    scope.publishedAtFutureMoment2.clone().add(scope.timezoneOffset, 'minutes'),
-                  ) === 0 &&
-                  moment(post3.get('published_at')).diff(
-                    scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes'),
-                  ) === 0
-                ) {
-                  return resolve();
-                }
-
-                clearTimeout(timeout);
-                timeout = setTimeout(retry, 500);
-              })
-              .catch(reject);
-          })();
-        });
+        await assertPostStates(['scheduled', 'scheduled', 'scheduled']);
       });
 
       it('timezone changes from Baghdad to UTC', async function () {
-        let timeout;
-
         /**
          * From Baghdad +3
          * To UTC +/-0
          *
-         * We expect +180 minutes.
+         * The scheduled wall time must remain unchanged in UTC.
          *
          * Image it's 11AM Baghdad time.
          * Imagine the post is scheduled for 8PM Baghdad time.
@@ -169,8 +152,6 @@ describe('Models: listeners', function () {
          * The post should be still scheduled for 8PM UTC time.
          * So the database UTC string must be 2017-04-19 20:00:00.
          */
-        scope.timezoneOffset =
-          moment.tz.zone('Etc/UTC').utcOffset(now) - moment.tz.zone('Asia/Baghdad').utcOffset(now);
         scope.oldTimezone = 'Asia/Baghdad';
         scope.newTimezone = 'Etc/UTC';
 
@@ -179,56 +160,15 @@ describe('Models: listeners', function () {
           _previousAttributes: { value: scope.oldTimezone },
         });
 
-        await new Promise(function (resolve, reject) {
-          (function retry() {
-            models.Post.findAll({ context: { internal: true } })
-              .then(function (results) {
-                const post1 = _.find(results.models, function (post) {
-                  return post.get('title') === '1';
-                });
-
-                const post2 = _.find(results.models, function (post) {
-                  return post.get('title') === '2';
-                });
-
-                const post3 = _.find(results.models, function (post) {
-                  return post.get('title') === '3';
-                });
-
-                if (
-                  results.models.length === posts.length &&
-                  post1.get('status') === 'scheduled' &&
-                  post2.get('status') === 'scheduled' &&
-                  post3.get('status') === 'scheduled' &&
-                  moment(post1.get('published_at')).diff(
-                    scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes'),
-                  ) === 0 &&
-                  moment(post2.get('published_at')).diff(
-                    scope.publishedAtFutureMoment2.clone().add(scope.timezoneOffset, 'minutes'),
-                  ) === 0 &&
-                  moment(post3.get('published_at')).diff(
-                    scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes'),
-                  ) === 0
-                ) {
-                  return resolve();
-                }
-
-                clearTimeout(timeout);
-                timeout = setTimeout(retry, 500);
-              })
-              .catch(reject);
-          })();
-        });
+        await assertPostStates(['scheduled', 'scheduled', 'scheduled']);
       });
 
       it('timezone changes from Amsterdam to Seoul', async function () {
-        let timeout;
-
         /**
          * From Amsterdam +2
          * To Seoul +9
          *
-         * We expect -420 minutes.
+         * The scheduled wall time must remain unchanged in Seoul.
          *
          * Image it's 11AM Amsterdam time. 9AM UTC.
          * Imagine the post is scheduled for 8PM Amsterdam time.
@@ -239,9 +179,6 @@ describe('Models: listeners', function () {
          * The post should be still scheduled for 8PM UTC time.
          * So the database UTC string must be 2017-04-18 11:00:00.
          */
-        scope.timezoneOffset =
-          moment.tz.zone('Asia/Seoul').utcOffset(now) -
-          moment.tz.zone('Europe/Amsterdam').utcOffset(now);
         scope.oldTimezone = 'Europe/Amsterdam';
         scope.newTimezone = 'Asia/Seoul';
 
@@ -250,51 +187,15 @@ describe('Models: listeners', function () {
           _previousAttributes: { value: scope.oldTimezone },
         });
 
-        await new Promise(function (resolve, reject) {
-          (function retry() {
-            models.Post.findAll({ context: { internal: true } })
-              .then(function (results) {
-                const post1 = _.find(results.models, function (post) {
-                  return post.get('title') === '1';
-                });
-
-                const post2 = _.find(results.models, function (post) {
-                  return post.get('title') === '2';
-                });
-
-                const post3 = _.find(results.models, function (post) {
-                  return post.get('title') === '3';
-                });
-
-                if (
-                  results.models.length === posts.length &&
-                  post1.get('status') === 'scheduled' &&
-                  post2.get('status') === 'draft' &&
-                  post3.get('status') === 'scheduled' &&
-                  moment(post1.get('published_at')).diff(
-                    scope.publishedAtFutureMoment1.clone().add(scope.timezoneOffset, 'minutes'),
-                  ) === 0 &&
-                  moment(post3.get('published_at')).diff(
-                    scope.publishedAtFutureMoment3.clone().add(scope.timezoneOffset, 'minutes'),
-                  ) === 0
-                ) {
-                  return resolve();
-                }
-
-                clearTimeout(timeout);
-                timeout = setTimeout(retry, 500);
-              })
-              .catch(reject);
-          })();
-        });
+        await assertPostStates(['scheduled', 'draft', 'scheduled']);
       });
     });
 
     describe('db has no scheduled posts', function () {
       it('no scheduled posts', async function () {
         await eventsToRemember['settings.timezone.edited']({
-          attributes: { value: scope.newTimezone },
-          _previousAttributes: { value: scope.oldTimezone },
+          attributes: { value: 'America/Los_Angeles' },
+          _previousAttributes: { value: 'Europe/London' },
         });
 
         const results = await models.Post.findAll({ context: { internal: true } });

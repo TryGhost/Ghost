@@ -6,7 +6,6 @@ import type { AppInstallationManifestSource } from './schema';
 
 export interface HistoryManifest {
   id: string;
-  manifest_url: string;
   source: z.infer<typeof AppInstallationManifestSource>;
   requires_approval: boolean;
   created_at: Date;
@@ -44,11 +43,10 @@ export function buildHistory(
   manifestContents: Map<string, AppManifest>,
 ): AppInstallationHistoryEntry[] {
   const approvals = approvalsIn(actions);
-  const urls = new Map(manifests.map((manifest) => [manifest.id, manifest.manifest_url]));
   return newestFirst([
     ...installOf(manifests, actions),
     ...updatesSuspensionsAndResumesOf(manifests),
-    ...approvals.map((approval) => approvalEntry(approval, urls, manifestContents)),
+    ...approvals.map((approval) => approvalEntry(approval, manifestContents)),
     ...uninstallsIn(actions),
   ]);
 }
@@ -95,13 +93,9 @@ function updatesSuspensionsAndResumesOf(manifests: HistoryManifest[]): Entry[] {
     }));
 }
 
-function approvalEntry(
-  { action, from, to }: Approval,
-  urls: Map<string, string>,
-  contents: Map<string, AppManifest>,
-): Entry {
-  const before = servedManifest(from, urls, contents);
-  const after = servedManifest(to, urls, contents);
+function approvalEntry({ action, from, to }: Approval, contents: Map<string, AppManifest>): Entry {
+  const before = contents.get(from);
+  const after = contents.get(to);
   const move = before && after ? movedBetween(before, after) : null;
   return {
     id: action.id,
@@ -110,12 +104,6 @@ function approvalEntry(
     created_at: action.created_at,
     ...(move ? { moved_to: move.to } : {}),
   };
-}
-
-function servedManifest(id: string, urls: Map<string, string>, contents: Map<string, AppManifest>) {
-  const manifestUrl = urls.get(id);
-  const manifest = contents.get(id);
-  return manifestUrl && manifest ? { manifestUrl, manifest } : undefined;
 }
 
 function uninstallsIn(actions: HistoryAction[]): Entry[] {

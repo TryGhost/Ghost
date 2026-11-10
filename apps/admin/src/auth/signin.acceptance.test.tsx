@@ -170,7 +170,7 @@ it('asks for a refresh when Ghost has been upgraded', async () => {
 
 it.each([
   ['2FA_TOKEN_REQUIRED', '2FA confirmation'],
-  ['2FA_NEW_DEVICE_DETECTED', "Verify it's really you"],
+  ['2FA_NEW_DEVICE_DETECTED', 'Verify it’s really you'],
 ])('asks for the emailed code when Core answers %s', async (code, heading) => {
   fakeSetupStatus();
   fakeAdminEndpoint(

@@ -1,5 +1,5 @@
 import path from 'path';
-import {assertHTML, createDataTransfer, createSnippet, focusEditor, html, initialize, insertCard, isMac} from '../../utils/e2e';
+import {assertHTML, createDataTransfer, createSnippet, focusEditor, getEditorStateJSON, html, initialize, insertCard, isMac} from '../../utils/e2e';
 import {expect, test} from '@playwright/test';
 import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
@@ -54,7 +54,7 @@ test.describe('Product card', async () => {
                     <div>
                         <div>
                             <img
-                                alt="Product thumbnail"
+                                alt=""
                                 src="/content/images/2022/11/koenig-lexical.jpg" />
                         </div>
                         <div>
@@ -190,6 +190,91 @@ test.describe('Product card', async () => {
 
         // Errors should be visible
         await expect(await page.getByTestId('media-placeholder-errors')).toBeVisible();
+    });
+
+    test('can set image alt text', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'product'});
+        await uploadImg(page);
+        await expect(page.getByTestId('product-card-image')).toBeVisible();
+
+        // Keep the default viewport: the settings panel must not block the Alt toggle.
+        // The input stays hidden until toggled.
+        const altToggle = page.getByTestId('product-image-alt-toggle');
+        const altInput = page.getByTestId('product-image-alt-input');
+        await expect(altToggle).toBeVisible();
+        await expect(altInput).toBeHidden();
+
+        await altToggle.click();
+        await expect(altInput).toBeVisible();
+        await altInput.fill('A camera on a wooden table');
+
+        // preview image and serialized node both carry the alt text
+        await expect(page.getByTestId('product-card-image')).toHaveAttribute('alt', 'A camera on a wooden table');
+        const editorState = JSON.parse(await getEditorStateJSON(page));
+        expect(editorState.root.children[0].productImageAlt).toEqual('A camera on a wooden table');
+
+        // toggling again hides the input but keeps the value
+        await altToggle.click();
+        await expect(altInput).toBeHidden();
+        await expect(page.getByTestId('product-card-image')).toHaveAttribute('alt', 'A camera on a wooden table');
+    });
+
+    test('hides alt input when leaving edit mode', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'product'});
+        await uploadImg(page);
+        await expect(page.getByTestId('product-card-image')).toBeVisible();
+
+        await page.getByTestId('product-image-alt-toggle').click();
+        await page.getByTestId('product-image-alt-input').fill('A camera on a wooden table');
+
+        await page.keyboard.press('Escape');
+        await expect(page.locator('[data-kg-card="product"]')).toHaveAttribute('data-kg-card-editing', 'false');
+        await expect(page.getByTestId('product-image-alt-input')).toBeHidden();
+        await expect(page.getByTestId('product-image-alt-toggle')).toBeHidden();
+
+        // re-entering edit mode shows the toggle but not the input
+        await page.getByTestId('edit-product-card').click();
+        await expect(page.getByTestId('product-image-alt-toggle')).toBeVisible();
+        await expect(page.getByTestId('product-image-alt-input')).toBeHidden();
+    });
+
+    test('clears alt text when image is removed', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'product'});
+        await uploadImg(page);
+        await expect(page.getByTestId('product-card-image')).toBeVisible();
+
+        await page.getByTestId('product-image-alt-toggle').click();
+        await page.getByTestId('product-image-alt-input').fill('A camera on a wooden table');
+
+        await page.getByTestId('replace-product-image').click();
+        await expect(page.getByTestId('media-placeholder')).toBeVisible();
+        await expect(page.getByTestId('product-image-alt-input')).toBeHidden();
+
+        const editorState = JSON.parse(await getEditorStateJSON(page));
+        expect(editorState.root.children[0].productImageSrc).toEqual('');
+        expect(editorState.root.children[0].productImageAlt).toEqual('');
+    });
+
+    test('keeps the caret position while editing alt text', async function () {
+        await focusEditor(page);
+        await insertCard(page, {cardName: 'product'});
+        await uploadImg(page);
+        await expect(page.getByTestId('product-card-image')).toBeVisible();
+
+        await page.getByTestId('product-image-alt-toggle').click();
+        const altInput = page.getByTestId('product-image-alt-input');
+        await altInput.fill('camera on a table');
+
+        // move the caret to the start and type: each character must land at the caret
+        await page.keyboard.press('Home');
+        await page.keyboard.type('A ');
+
+        await expect(altInput).toHaveValue('A camera on a table');
+        const editorState = JSON.parse(await getEditorStateJSON(page));
+        expect(editorState.root.children[0].productImageAlt).toEqual('A camera on a table');
     });
 
     test('can show/hide rating starts if rating enabled/disabled', async function () {
@@ -445,7 +530,7 @@ test.describe('Product card', async () => {
                     <div>
                         <div>
                             <img
-                                alt="Product thumbnail"
+                                alt=""
                                 src="/content/images/2022/11/koenig-lexical.jpg" />
                         </div>
                         <div>
@@ -538,7 +623,7 @@ test.describe('Product card', async () => {
                     <div>
                         <div>
                             <img
-                                alt="Product thumbnail"
+                                alt=""
                                 src="/content/images/2022/11/koenig-lexical.jpg" />
                         </div>
                         <div>

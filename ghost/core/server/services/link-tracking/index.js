@@ -1,6 +1,5 @@
 const LinkClickRepository = require('./link-click-repository');
 const PostLinkRepository = require('./post-link-repository');
-const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils').default;
 
 class LinkTrackingServiceWrapper {
@@ -33,12 +32,8 @@ class LinkTrackingServiceWrapper {
   }
 
   async #initialise() {
-    const linkRedirection = require('../link-redirection');
-    if (!linkRedirection.service) {
-      throw new errors.InternalServerError({
-        message: 'LinkRedirectionService should be initialised before LinkTrackingService',
-      });
-    }
+    // Reading the root before boot has initialized it throws its readiness error
+    const linkRedirection = require('../link-redirection').default;
 
     // Wire up all the dependencies
     const models = require('../../models');
@@ -49,7 +44,7 @@ class LinkTrackingServiceWrapper {
 
     const postLinkRepository = new PostLinkRepository({
       LinkRedirect: models.Redirect,
-      linkRedirectRepository: linkRedirection.linkRedirectRepository,
+      linkRedirectRepository: linkRedirection.extras.linkRedirectRepository(),
     });
 
     const linkClickRepository = new LinkClickRepository({

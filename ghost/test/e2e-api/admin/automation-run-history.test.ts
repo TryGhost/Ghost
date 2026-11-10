@@ -319,6 +319,7 @@ describe('Automation run history API', function () {
     ['failed', 'exited_early', true],
     ['automation disabled', 'exited_early', false],
     ['member changed status', 'exited_early', false],
+    ['member changed tier', 'exited_early', false],
     ['member unsubscribed', 'exited_early', false],
   ])(
     'classifies %s history and preserves raw step states',
@@ -390,8 +391,10 @@ describe('Automation run history API', function () {
 
   it('returns a database error instead of a successful empty history', async function () {
     const run = await addRun();
-    const transaction = sinon.stub(db, 'transaction').rejects(new Error('History read failed'));
+    await addStep(run);
+    await readRun(run);
+
+    sinon.stub(db, 'transaction').rejects(new Error('History read failed'));
     await expectReadError(run, 500, 'InternalServerError');
-    assert.ok(transaction.calledOnce);
   });
 });

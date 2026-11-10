@@ -9,6 +9,7 @@ const { createFindResource } = require('../../core/server/services/url/lazy-find
 const inputSerializer = require('../../core/server/api/endpoints/utils/serializers/input/posts');
 const postsMapper = require('../../core/server/api/endpoints/utils/serializers/output/mappers/posts');
 const memberAttribution = require('../../core/server/services/member-attribution').default;
+const commentsService = require('../../core/server/services/comments').default;
 const db = require('../../core/server/data/db');
 
 // Drives the real Content API pipeline — input serializer, model fetch, output
@@ -48,6 +49,7 @@ describe('Integration: Content API URL serialization (primary_tag permalinks)', 
 
   const EMPTY_LEXICAL = testUtils.DataGenerator.markdownToLexical('url serialization fixture');
   let attributionStub;
+  let commentsStub;
   let publicFirst;
 
   beforeAll(async function () {
@@ -100,11 +102,15 @@ describe('Integration: Content API URL serialization (primary_tag permalinks)', 
     attributionStub = sinon.stub(memberAttribution, 'service').get(() => ({
       outboundLinkTagger: { addToHtml: async (html) => html },
     }));
+    // The Content API mapper reads the comments setting from the Comments
+    // root, which is also only initialized at boot.
+    commentsStub = sinon.stub(commentsService, 'service').get(() => ({ api: { enabled: 'all' } }));
   });
 
   afterAll(function () {
     urlService.reset();
     attributionStub.restore();
+    commentsStub.restore();
   });
   afterAll(testUtils.teardownDb);
 

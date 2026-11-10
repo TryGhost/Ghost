@@ -8,6 +8,12 @@ import {
 import { isLocalMediaUrl } from '../../../../../../core/server/services/content-import/import/local-media-url';
 import type { PostData } from '../../../../../../core/server/services/content-import/import/post-data';
 import type { ExternalMediaImportResult } from '../../../../../../core/server/services/media-inliner/types';
+import type { OriginSchemes } from '../../../../../../core/server/services/media-inliner/origin-schemes';
+
+// Every download in a run carries that run's record of origin schemes
+const runOptions = sinon.match({
+  originSchemes: sinon.match.has('get').and(sinon.match.has('set')),
+});
 
 const postData = (overrides: Partial<PostData> = {}): PostData => ({
   title: 'Media post',
@@ -25,7 +31,7 @@ function harness({
   localUrl?: sinon.SinonStub<[string], boolean>;
 } = {}) {
   const importUrl = sinon
-    .stub<[string], Promise<ExternalMediaImportResult>>()
+    .stub<[string, { originSchemes?: OriginSchemes }?], Promise<ExternalMediaImportResult>>()
     .callsFake(async (sourceUrl: string) => {
       const fileName = new URL(sourceUrl.replace(/^\/\//, 'https://')).pathname.split('/').at(-1);
       return {
@@ -83,6 +89,7 @@ describe('PostMediaInliner', function () {
           {
             type: 'product',
             productImageSrc: 'https://assets.test/product.jpg',
+            productImageAlt: 'Product photo',
             productUrl: 'https://example.com/product',
           },
           {
@@ -156,6 +163,7 @@ describe('PostMediaInliner', function () {
     assert.equal(children[4].src, '__GHOST_URL__/content/files/guide.pdf');
     assert.equal(children[5].productImageSrc, '__GHOST_URL__/content/files/product.jpg');
     assert.equal(children[5].productUrl, 'https://example.com/product');
+    assert.equal(children[5].productImageAlt, 'Product photo');
     assert.equal(children[6].backgroundImageSrc, '__GHOST_URL__/content/files/header.jpg');
     assert.equal(children[6].buttonUrl, 'https://example.com/header-button');
     assert.equal(children[7].backgroundImageSrc, '__GHOST_URL__/content/files/signup.jpg');
@@ -413,7 +421,7 @@ describe('PostMediaInliner', function () {
     assert.equal(first.feature_image, sourceUrl);
     assert.equal(second.feature_image, '__GHOST_URL__/content/files/existing.jpg');
     sinon.assert.calledTwice(localUrl);
-    sinon.assert.calledOnceWithExactly(h.importUrl, sourceUrl);
+    sinon.assert.calledOnceWithExactly(h.importUrl, sourceUrl, runOptions);
   });
 
   it('processes protocol-relative media URLs', async function () {
@@ -423,7 +431,7 @@ describe('PostMediaInliner', function () {
     await h.inliner.inline(data);
 
     assert.equal(data.feature_image, '__GHOST_URL__/content/files/protocol-relative.jpg');
-    sinon.assert.calledWithExactly(h.importUrl, '//assets.test/protocol-relative.jpg');
+    sinon.assert.calledWithExactly(h.importUrl, '//assets.test/protocol-relative.jpg', runOptions);
   });
 
   it('reuses the same URL across fields in one row', async function () {
@@ -439,7 +447,7 @@ describe('PostMediaInliner', function () {
 
     await h.inliner.inline(data);
 
-    sinon.assert.calledOnceWithExactly(h.importUrl, sourceUrl);
+    sinon.assert.calledOnceWithExactly(h.importUrl, sourceUrl, runOptions);
     assert.equal(data.feature_image, '__GHOST_URL__/content/files/shared.jpg');
     assert.equal(data.posts_meta?.og_image, '__GHOST_URL__/content/files/shared.jpg');
     assert.equal(data.posts_meta?.twitter_image, '__GHOST_URL__/content/files/shared.jpg');
@@ -458,7 +466,7 @@ describe('PostMediaInliner', function () {
     await h.inliner.inline(first);
     await h.inliner.inline(second);
 
-    sinon.assert.calledOnceWithExactly(h.importUrl, sourceUrl);
+    sinon.assert.calledOnceWithExactly(h.importUrl, sourceUrl, runOptions);
     assert.equal(first.feature_image, '__GHOST_URL__/content/files/cross-row.jpg');
     assert.equal(second.feature_image, '__GHOST_URL__/content/files/cross-row.jpg');
   });
@@ -477,7 +485,7 @@ describe('PostMediaInliner', function () {
     const firstInlining = h.inliner.inline(first);
     const secondInlining = h.inliner.inline(second);
 
-    sinon.assert.calledOnceWithExactly(h.importUrl, sourceUrl);
+    sinon.assert.calledOnceWithExactly(h.importUrl, sourceUrl, runOptions);
     resolveImport({
       status: 'stored',
       sourceUrl,
@@ -511,7 +519,7 @@ describe('PostMediaInliner', function () {
       );
     }
 
-    sinon.assert.calledOnceWithExactly(h.importUrl, sourceUrl);
+    sinon.assert.calledOnceWithExactly(h.importUrl, sourceUrl, runOptions);
   });
 
   it('keeps successful cached media when another URL makes the row fail', async function () {
@@ -578,6 +586,23 @@ describe('PostMediaInliner', function () {
     await nextImportInliner.inline(postData({ feature_image: sourceUrl }));
 
     sinon.assert.calledTwice(h.importUrl);
+    assert.notEqual(
+      h.importUrl.firstCall.args[1]?.originSchemes,
+      h.importUrl.secondCall.args[1]?.originSchemes,
+      'each import learns origin schemes afresh',
+    );
+  });
+
+  it('shares one record of origin schemes across every URL in an import', async function () {
+    const h = harness();
+
+    await h.inliner.inline(postData({ feature_image: 'https://assets.test/one.jpg' }));
+    await h.inliner.inline(postData({ posts_meta: { og_image: 'http://assets.test/two.jpg' } }));
+
+    sinon.assert.calledTwice(h.importUrl);
+    const [first, second] = h.importUrl.getCalls().map((call) => call.args[1]?.originSchemes);
+    assert.ok(first);
+    assert.equal(first, second);
   });
 
   it('collects every unique expected download, extraction, and storage failure', async function () {

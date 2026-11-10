@@ -1,4 +1,3 @@
-import assert from 'assert/strict';
 import { ModalPage } from '@/components/page-templates/modal-page';
 import { render, screen } from '../../utils/test-utils';
 
@@ -11,12 +10,11 @@ describe('ModalPage', () => {
       </ModalPage>,
     );
 
-    assert.equal(screen.getByTestId('modal-page').getAttribute('data-modal-page'), 'root');
-    assert.equal(
-      screen.getByRole('heading', { name: 'Themes' }).getAttribute('data-modal-page'),
+    expect(screen.getByTestId('modal-page').getAttribute('data-modal-page')).toBe('root');
+    expect(screen.getByRole('heading', { name: 'Themes' }).getAttribute('data-modal-page')).toBe(
       'title',
     );
-    assert.ok(screen.getByText('Theme content'));
+    expect(screen.getByText('Theme content')).toBeTruthy();
   });
 
   it('forwards custom classes to each slot', () => {
@@ -26,7 +24,7 @@ describe('ModalPage', () => {
       </ModalPage>,
     );
 
-    assert.ok(screen.getByTestId('modal-page').className.includes('max-w-3xl'));
-    assert.ok(screen.getByRole('heading', { name: 'Links' }).className.includes('mb-4'));
+    expect(screen.getByTestId('modal-page').className).toContain('max-w-3xl');
+    expect(screen.getByRole('heading', { name: 'Links' }).className).toContain('mb-4');
   });
 });

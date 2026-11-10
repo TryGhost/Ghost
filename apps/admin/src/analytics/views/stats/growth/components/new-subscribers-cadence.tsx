@@ -16,10 +16,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tryghost/shade/components';
-import { LucideIcon, Recharts, formatNumber, useRootFlag } from '@tryghost/shade/utils';
+import { LucideIcon, Recharts, formatNumber } from '@tryghost/shade/utils';
 import { formatQueryDate, getPeriodText, getRangeDates } from '@/shared/analytics/chart-helpers';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { useSubscriptionStats } from '@tryghost/admin-x-framework/api/stats';
+import { useShade } from '@tryghost/shade/app';
 
 type NewSubscribersCadenceProps = {
   isLoading: boolean;
@@ -63,11 +64,11 @@ const CustomTooltip = ({
 };
 
 const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({ isLoading, range }) => {
+  // admin7Design charts are flat: solid fills, no gradients.
+  const { admin7Design } = useShade();
   const { data: subscriptionStatsResponse } = useSubscriptionStats();
   const { data: { tiers: tierObjects = [] } = {} } = useBrowseTiers();
   const [breakdownType, setBreakdownType] = useState<BreakdownType>('billing-period');
-  // ANALYTICS PROTOTYPE: Admin 7 design style draws flat slices
-  const admin7Design = useRootFlag('admin7-design');
 
   // Calculate date range for filtering
   const { startDate, endDate } = useMemo(() => getRangeDates(range), [range]);
@@ -292,44 +293,124 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({ isLoading
               <Recharts.PieChart>
                 <defs>
                   <linearGradient id="gradientPurple" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="var(--chart-purple)" stopOpacity={0.8} />
-                    <stop offset="100%" stopColor="var(--chart-purple)" stopOpacity={0.6} />
+                    <stop
+                      offset="0%"
+                      stopColor="var(--chart-purple)"
+                      stopOpacity={admin7Design ? 1 : 0.8}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="var(--chart-purple)"
+                      stopOpacity={admin7Design ? 1 : 0.6}
+                    />
                   </linearGradient>
                   <linearGradient id="gradientTeal" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="var(--chart-teal)" stopOpacity={0.8} />
-                    <stop offset="100%" stopColor="var(--chart-teal)" stopOpacity={0.6} />
+                    <stop
+                      offset="0%"
+                      stopColor="var(--chart-teal)"
+                      stopOpacity={admin7Design ? 1 : 0.8}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="var(--chart-teal)"
+                      stopOpacity={admin7Design ? 1 : 0.6}
+                    />
                   </linearGradient>
                   <linearGradient id="gradientRose" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="var(--chart-rose)" stopOpacity={0.8} />
-                    <stop offset="100%" stopColor="var(--chart-rose)" stopOpacity={0.6} />
+                    <stop
+                      offset="0%"
+                      stopColor="var(--chart-rose)"
+                      stopOpacity={admin7Design ? 1 : 0.8}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="var(--chart-rose)"
+                      stopOpacity={admin7Design ? 1 : 0.6}
+                    />
                   </linearGradient>
                   <linearGradient id="gradientBlue" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="var(--chart-blue)" stopOpacity={0.8} />
-                    <stop offset="100%" stopColor="var(--chart-blue)" stopOpacity={0.6} />
+                    <stop
+                      offset="0%"
+                      stopColor="var(--chart-blue)"
+                      stopOpacity={admin7Design ? 1 : 0.8}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="var(--chart-blue)"
+                      stopOpacity={admin7Design ? 1 : 0.6}
+                    />
                   </linearGradient>
                   <linearGradient id="gradientOrange" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="var(--chart-orange)" stopOpacity={0.8} />
-                    <stop offset="100%" stopColor="var(--chart-orange)" stopOpacity={0.6} />
+                    <stop
+                      offset="0%"
+                      stopColor="var(--chart-orange)"
+                      stopOpacity={admin7Design ? 1 : 0.8}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="var(--chart-orange)"
+                      stopOpacity={admin7Design ? 1 : 0.6}
+                    />
                   </linearGradient>
                   <linearGradient id="gradientGreen" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="var(--chart-green)" stopOpacity={0.8} />
-                    <stop offset="100%" stopColor="var(--chart-green)" stopOpacity={0.6} />
+                    <stop
+                      offset="0%"
+                      stopColor="var(--chart-green)"
+                      stopOpacity={admin7Design ? 1 : 0.8}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="var(--chart-green)"
+                      stopOpacity={admin7Design ? 1 : 0.6}
+                    />
                   </linearGradient>
                   <linearGradient id="gradientAmber" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="var(--chart-amber)" stopOpacity={0.8} />
-                    <stop offset="100%" stopColor="var(--chart-amber)" stopOpacity={0.6} />
+                    <stop
+                      offset="0%"
+                      stopColor="var(--chart-amber)"
+                      stopOpacity={admin7Design ? 1 : 0.8}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="var(--chart-amber)"
+                      stopOpacity={admin7Design ? 1 : 0.6}
+                    />
                   </linearGradient>
                   <linearGradient id="gradientYellow" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="var(--chart-yellow)" stopOpacity={0.8} />
-                    <stop offset="100%" stopColor="var(--chart-yellow)" stopOpacity={0.6} />
+                    <stop
+                      offset="0%"
+                      stopColor="var(--chart-yellow)"
+                      stopOpacity={admin7Design ? 1 : 0.8}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="var(--chart-yellow)"
+                      stopOpacity={admin7Design ? 1 : 0.6}
+                    />
                   </linearGradient>
                   <linearGradient id="gradientDarkblue" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="var(--chart-darkblue)" stopOpacity={0.8} />
-                    <stop offset="100%" stopColor="var(--chart-darkblue)" stopOpacity={0.6} />
+                    <stop
+                      offset="0%"
+                      stopColor="var(--chart-darkblue)"
+                      stopOpacity={admin7Design ? 1 : 0.8}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="var(--chart-darkblue)"
+                      stopOpacity={admin7Design ? 1 : 0.6}
+                    />
                   </linearGradient>
                   <linearGradient id="gradientGray" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="var(--chart-darkgray)" stopOpacity={0.8} />
-                    <stop offset="100%" stopColor="var(--chart-darkgray)" stopOpacity={0.6} />
+                    <stop
+                      offset="0%"
+                      stopColor="var(--chart-darkgray)"
+                      stopOpacity={admin7Design ? 1 : 0.8}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor="var(--chart-darkgray)"
+                      stopOpacity={admin7Design ? 1 : 0.6}
+                    />
                   </linearGradient>
                 </defs>
                 <ChartTooltip content={<CustomTooltip />} cursor={false} />

@@ -295,9 +295,10 @@ describe('Ghost updates', () => {
     await renderAdminApp('/settings/about');
 
     await expect.poll(() => lookups.requests.length).toBeGreaterThan(0);
+    // The request is recorded before its response is handled; wait for the done job to clear storage.
+    await expect.poll(() => window.localStorage.getItem('ghost-admin:upgrade-job')).toBeNull();
     await expect.element(screen.panel()).toBeVisible();
     await expect.element(screen.job()).not.toBeInTheDocument();
-    expect(window.localStorage.getItem('ghost-admin:upgrade-job')).toBeNull();
   });
 
   it('settles when status still names a job that has already finished', async () => {

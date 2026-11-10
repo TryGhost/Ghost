@@ -2,44 +2,56 @@
 export interface AccessItem {
   title: string;
   description: string;
+  /** The bridge's scopes this entry stands for, by name, such as `posts:write`. */
+  scopes: string[];
 }
 
 /**
- * What an app can do with the account of whoever installs it. Apps act with the staff
- * user's own session until Permissions and auth gives them scopes, and only the Owner and
- * Administrators can install them, so this is everything an Administrator can do, minus
- * what the bridge blocks (D68: staff tokens, integrations and keys, invites, webhooks,
- * exports, and installing or approving apps). Keep it in step with both. Where the app
- * sends what it reads is a capability, listed with where it appears.
+ * What an app can do with the account of whoever opens it. Apps act with the staff user's own
+ * session until Permissions and auth gives them a token, and the bridge only lets them reach
+ * the routes in `ADMIN_API_ALLOWLIST`, so this lists its scopes, each once, in words a
+ * publisher reads. A test holds the two together.
+ *
+ * The allowlist leaves out members, settings, integrations and everything else that hands out
+ * lasting access, but that isn't a line an app can't cross: it can write script into a post or
+ * page, which runs as whoever views it on the site, and as Admin where the site and Admin share
+ * an origin. Each entry stays one short line all the same: editing posts covers what's in them
+ * (scripts, authors, who can read them) and publishing covers sending, so those aren't spelled
+ * out.
+ *
+ * Reading takes Core's includes too, so a scope covers more than its routes' plain answers: how
+ * posts did by email and in signups comes with `posts:read`, and is listed with newsletters, where
+ * a publisher looks for it.
  */
 export const ACCOUNT_ACCESS: AccessItem[] = [
   {
     title: 'Posts and pages',
-    description:
-      'View, create, edit, publish and delete all posts and pages, including drafts and scheduled ones',
-  },
-  { title: 'Tags', description: 'View, create, edit and delete tags' },
-  {
-    title: 'Members',
-    description:
-      'View, create, edit and delete members, including their email addresses, labels and subscriptions',
+    description: 'View, create, edit, publish and delete posts and pages.',
+    scopes: ['posts:read', 'posts:write', 'pages:read', 'pages:write', 'slugs:read'],
   },
   {
-    title: 'Tiers and offers',
-    description: 'View, create and edit tiers, prices, discounts and free trials',
+    title: 'Tags',
+    description: 'View, create, edit and delete tags.',
+    scopes: ['tags:read', 'tags:write'],
   },
   {
-    title: 'Newsletters',
-    description: 'View, create and edit newsletters, and send posts to your members by email',
-  },
-  { title: 'Comments', description: 'View, moderate and delete comments' },
-  {
-    title: 'Analytics',
-    description: 'View your site’s traffic, member growth and email performance',
+    title: 'Staff',
+    description: 'View staff users and their email addresses.',
+    scopes: ['users:read'],
   },
   {
-    title: 'Site settings',
-    description: 'View and edit your site’s settings, like its title, navigation and design',
+    title: 'Tiers',
+    description: 'View your tiers and prices.',
+    scopes: ['tiers:read'],
   },
-  { title: 'Staff', description: 'View staff users and change their roles' },
+  {
+    title: 'Newsletters and post performance',
+    description: 'View your newsletters and how your posts performed.',
+    scopes: ['newsletters:read'],
+  },
+  {
+    title: 'Site details',
+    description: 'View your site’s title, logo, language and timezone.',
+    scopes: ['site:read'],
+  },
 ];

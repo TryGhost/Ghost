@@ -1,7 +1,7 @@
-const moment = require('moment');
+const { moment } = require('../../../kernel/clock');
 
 // Import centralized date utilities
-const { getDateBoundaries, applyDateFilter } = require('./utils/date-utils');
+const { getDateBoundaries, applyDateFilter, startOfUtcDayAgo } = require('./utils/date-utils');
 
 // Source normalization mapping - consolidated from frontend apps
 const SOURCE_NORMALIZATION_MAP = new Map([
@@ -177,12 +177,7 @@ class ReferrersStatsService {
    **/
   async fetchAllPaidConversionSources() {
     const knex = this.knex;
-    const ninetyDaysAgo = moment
-      .utc()
-      .subtract(90, 'days')
-      .startOf('day')
-      .utc()
-      .format('YYYY-MM-DD HH:mm:ss');
+    const ninetyDaysAgo = startOfUtcDayAgo(90);
     const rows = await knex('members_subscription_created_events')
       .select(knex.raw(`DATE(created_at) as date`))
       .select(knex.raw(`COUNT(*) as paid_conversions`))
@@ -199,12 +194,7 @@ class ReferrersStatsService {
    **/
   async fetchAllSignupSources() {
     const knex = this.knex;
-    const ninetyDaysAgo = moment
-      .utc()
-      .subtract(90, 'days')
-      .startOf('day')
-      .utc()
-      .format('YYYY-MM-DD HH:mm:ss');
+    const ninetyDaysAgo = startOfUtcDayAgo(90);
     const rows = await knex('members_created_events')
       .select(knex.raw(`DATE(created_at) as date`))
       .select(knex.raw(`COUNT(*) as signups`))

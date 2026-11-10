@@ -9,6 +9,7 @@ import React from 'react';
 import { AlignedAxisTick, ChartConfig, ChartContainer, ChartTooltip } from '@/components/ui/chart';
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { TrendingDown, TrendingUp } from 'lucide-react';
+import { useShade } from '@/providers/shade-context';
 import { useRootFlag } from '@/hooks/use-root-flag';
 
 // A Ghost specific charts for analytics re-using ShadCN/UI and Recharts components
@@ -125,10 +126,11 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
   showHours = false,
   tooltipContent,
 }) => {
-  // ANALYTICS PROTOTYPE: the Admin 7 analytics chart style. No gridlines, a
-  // smooth line over a flat fill, dates in capitals. Off is today's chart.
-  const admin7Design = useRootFlag('admin7-design');
-  const gridLines = showHorizontalLines && !admin7Design;
+  const { admin7Design } = useShade();
+  // ANALYTICS PROTOTYPE: the prototype's analytics chart style. No gridlines,
+  // a smooth line over a flat fill, dates in capitals. Off is main's chart.
+  const proto = useRootFlag('analytics-proto');
+  const gridLines = showHorizontalLines && !proto;
 
   const yRange = yAxisRange || [getYRange(data).min, getYRange(data).max];
   const chartConfig = {
@@ -181,7 +183,7 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
                   showHours,
                   xTickHoursOnly,
                 );
-                return admin7Design ? label.toUpperCase() : label;
+                return proto ? label.toUpperCase() : label;
               }}
               textAnchor={xTicks.length === 1 ? 'middle' : undefined}
             />
@@ -213,23 +215,22 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
           isAnimationActive={false}
           position={{ y: 10 }}
         />
-        {!admin7Design && (
-          <defs>
-            <linearGradient id={`fillChart-${id}`} x1="0" x2="0" y1="0" y2="1">
-              <stop offset="5%" stopColor={color} stopOpacity={0.8} />
-              <stop offset="95%" stopColor={color} stopOpacity={0.1} />
-            </linearGradient>
-          </defs>
-        )}
+        <defs>
+          <linearGradient id={`fillChart-${id}`} x1="0" x2="0" y1="0" y2="1">
+            {/* admin7Design charts are flat: an even tint under the line. */}
+            <stop offset="5%" stopColor={color} stopOpacity={admin7Design ? 0.5 : 0.8} />
+            <stop offset="95%" stopColor={color} stopOpacity={admin7Design ? 0.5 : 0.1} />
+          </linearGradient>
+        </defs>
         <Area
           baseValue={baseValue}
           dataKey="value"
-          fill={admin7Design ? color : `url(#fillChart-${id})`}
-          fillOpacity={admin7Design ? 0.1 : 0.2}
+          fill={proto ? color : `url(#fillChart-${id})`}
+          fillOpacity={proto ? 0.1 : 0.2}
           isAnimationActive={false}
           stroke={color}
           strokeWidth={1.5}
-          type={admin7Design ? 'monotone' : 'linear'}
+          type={proto ? 'monotone' : 'linear'}
         />
       </AreaChart>
     </ChartContainer>

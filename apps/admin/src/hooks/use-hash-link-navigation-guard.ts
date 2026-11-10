@@ -7,10 +7,9 @@ import React from 'react';
  * which `useBlocker` cannot intercept — so without this, a dirty screen is
  * silently abandoned.
  *
- * Ports Ember's proven approach 1:1 (`ghost/admin/app/initializers/trailing-hash.js`):
- * a capture-phase document click listener that, while `when` is true,
- * intercepts unmodified left-clicks on hash anchors and hands the target href
- * back to the caller to confirm. A click the caller does not `claim`, because
+ * While `when` is true, a capture-phase document click listener intercepts
+ * unmodified left-clicks on hash anchors and hands the target href back to the
+ * caller to confirm. A click the caller does not `claim`, because
  * it already holds another exit, is dropped. Links rendered by react-router
  * (marked with `data-discover`) are left alone — the router's own blocker
  * guards those.
@@ -28,8 +27,7 @@ export function useHashLinkNavigationGuard(when: boolean, claim: () => boolean) 
       if (!whenRef.current || event.defaultPrevented) {
         return;
       }
-      // Preserve new-tab/new-window behavior for modified clicks,
-      // matching the Ember handler.
+      // Preserve new-tab/new-window behavior for modified clicks.
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) {
         return;
       }

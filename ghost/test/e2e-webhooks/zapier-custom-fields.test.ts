@@ -79,7 +79,6 @@ describe('Zapier and member custom fields', function () {
   });
 
   beforeEach(async function () {
-    mockManager.mockLabsEnabled('membersCustomFields');
     await dbUtils.truncate('webhooks');
     webhookMockReceiver = mockManager.mockWebhookRequests();
   });

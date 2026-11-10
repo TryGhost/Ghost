@@ -2,6 +2,7 @@ import assert from 'assert/strict';
 import sinon from 'sinon';
 import fs from 'fs';
 import path from 'path';
+import zlib from 'node:zlib';
 import { Readable, Writable } from 'stream';
 import { pipeline } from 'node:stream/promises';
 import {
@@ -260,6 +261,149 @@ describe('S3Storage', function () {
     sinon.assert.calledOnce(sendStub);
     const command = sendStub.firstCall.args[0] as PutObjectCommand;
     assert.equal(command.input.Key, 'configurable/prefix/content/files/thumbnails/raw-image.jpg');
+  });
+
+  describe('stored content type', function () {
+    const imageFixture = (name: string) =>
+      fs.readFileSync(path.join(__dirname, '../../../../utils/fixtures/images', name));
+
+    // Returns the ContentType the upload was stored with
+    // Buffer<ArrayBuffer> to match what fs.promises.readFile resolves
+    const savedType = async (contents: Buffer<ArrayBuffer>, name: string, uploadedType: string) => {
+      const { storage, sendStub } = createStorage();
+
+      sinon.stub(storage, 'exists').resolves(false);
+      sinon.stub(fs.promises, 'stat').resolves({ size: contents.length } as fs.Stats);
+      sinon.stub(fs.promises, 'readFile').resolves(contents);
+
+      await storage.save({ path: `/tmp/${name}`, name, type: uploadedType }, '2024/06');
+
+      return (sendStub.firstCall.args[0] as PutObjectCommand).input.ContentType;
+    };
+
+    const savedRawType = async (contents: Buffer, targetPath: string) => {
+      const { storage, sendStub } = createStorage();
+
+      await storage.saveRaw(contents, targetPath);
+
+      return (sendStub.firstCall.args[0] as PutObjectCommand).input.ContentType;
+    };
+
+    it('takes the type from the contents, not the uploaded content type', async function () {
+      // The uploaded type is never checked against what arrives
+      assert.equal(
+        await savedType(imageFixture('ghosticon.jpg'), 'photo.jpg', 'text/html'),
+        'image/jpeg',
+      );
+    });
+
+    it('keeps the uploaded type when the contents do not identify themselves', async function () {
+      // An SVG reads as XML, so there is nothing better to go on
+      assert.equal(
+        await savedType(imageFixture('ghost-logo.svg'), 'logo.svg', 'image/svg+xml'),
+        'image/svg+xml',
+      );
+    });
+
+    it('keeps an uploaded favicon an image rather than a download', async function () {
+      assert.equal(
+        await savedType(imageFixture('favicon.ico'), 'favicon.ico', 'image/x-icon'),
+        'image/x-icon',
+      );
+    });
+
+    it('keeps the uploaded type for a compressed SVG', async function () {
+      // Detecting the gzip wrapper would store it as a download
+      const svgz = zlib.gzipSync(imageFixture('ghost-logo.svg'));
+
+      assert.equal(await savedType(svgz, 'logo.svgz', 'image/svg+xml'), 'image/svg+xml');
+    });
+
+    it('sets a type on raw writes, which carried none', async function () {
+      assert.equal(
+        await savedRawType(imageFixture('ghost-logo.png'), '2024/06/bookmark.png'),
+        'image/png',
+      );
+    });
+
+    it('ignores the name a raw write is stored under', async function () {
+      // ExternalMediaInliner and oembed build the path themselves
+      assert.equal(
+        await savedRawType(imageFixture('ghost-logo.png'), '2024/06/not-really.html'),
+        'image/png',
+      );
+    });
+
+    it('leaves a raw write untyped when the contents do not identify themselves', async function () {
+      assert.equal(
+        await savedRawType(Buffer.from('{"rows":[]}'), 'exports/members.json'),
+        undefined,
+      );
+    });
+
+    it('takes a multipart upload type from the contents too', async function () {
+      // The large-file path reads the head of the file rather than the body
+      const { storage, sendStub } = createStorage({
+        multipartUploadThresholdBytes: 1,
+        multipartChunkSizeBytes: MIN_MULTIPART_CHUNK_SIZE,
+      });
+      const jpegPath = path.join(__dirname, '../../../../utils/fixtures/images/ghosticon.jpg');
+
+      sinon.stub(storage, 'exists').resolves(false);
+      sinon
+        .stub(fs.promises, 'stat')
+        .resolves({ size: fs.readFileSync(jpegPath).length } as fs.Stats);
+      sendStub.callsFake(async (command: unknown) => {
+        if (command instanceof CreateMultipartUploadCommand) {
+          return { UploadId: 'test-upload-id' };
+        }
+        if (command instanceof UploadPartCommand) {
+          return { ETag: '"etag-part-1"' };
+        }
+        return {};
+      });
+
+      await storage.save({ path: jpegPath, name: 'photo.png', type: 'text/html' }, '2024/06');
+
+      const createCommand = sendStub.getCall(0).args[0] as CreateMultipartUploadCommand;
+      assert.ok(createCommand instanceof CreateMultipartUploadCommand);
+      assert.equal(createCommand.input.ContentType, 'image/jpeg');
+    });
+
+    describe('security', function () {
+      it('an uploaded type claiming HTML does not survive on image contents', async function () {
+        // S3 serves what it was stored with
+        assert.equal(
+          await savedType(imageFixture('ghosticon.jpg'), 'photo.png', 'text/html'),
+          'image/jpeg',
+        );
+      });
+
+      it('an image with a script appended is stored as that image', async function () {
+        const polyglot = Buffer.concat([
+          imageFixture('loadingcat.gif'),
+          Buffer.from('<script>alert(document.domain)</script>'),
+        ]);
+
+        assert.equal(await savedType(polyglot, 'cat.gif', 'text/html'), 'image/gif');
+      });
+
+      it('a raw write of markup is stored without a type, never as HTML', async function () {
+        const markup = Buffer.from('<!DOCTYPE html><script>alert(1)</script>');
+
+        assert.equal(await savedRawType(markup, '2024/06/x.png'), undefined);
+      });
+
+      it('KNOWN LIMIT: an uploaded type still decides undetectable contents', async function () {
+        // Nothing can be read from markup, so the uploaded type is kept, as
+        // before. Upload validation is what keeps markup out of the image
+        // store; the storage layer alone does not.
+        assert.equal(
+          await savedType(Buffer.from('<!DOCTYPE html><h1>hi</h1>'), 'page.html', 'text/html'),
+          'text/html',
+        );
+      });
+    });
   });
 
   it('converts CDN urls back to relative paths (strips prefix and storagePath)', function () {

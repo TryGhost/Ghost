@@ -638,7 +638,7 @@ describe('Generators', function () {
       });
     });
 
-    describe('fn: getXml', function () {
+    describe('fn: getXml url entries', function () {
       it('add', function () {
         generator.addUrl('http://my-ghost-blog.com/home/', {
           id: 'identifier1',

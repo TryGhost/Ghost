@@ -45,7 +45,6 @@ export type EditorSettingsPatch = Partial<
 
 export const TIERS_REQUIRED = 'Please select at least one tier.';
 
-/** Ember's post validator refuses an empty author list (validators/post.js). */
 export const AUTHORS_REQUIRED = 'At least one author is required.';
 
 /**
@@ -117,7 +116,6 @@ export function tiersIncomplete(
   return fields.visibility === 'tiers' && fields.tiers.length === 0;
 }
 
-/** Ember's post validator refuses the same publish time (validators/post.js). */
 export const PUBLISHED_AT_MUST_BE_PAST = 'Please choose a past date and time.';
 
 /** A draft's or published post's publish time may not be now or later. */
@@ -194,8 +192,7 @@ export function settingsFieldErrorFor(
   if (key === 'tiers') {
     return tiersIncomplete(fields) ? TIERS_REQUIRED : null;
   }
-  // Ember's post validator (validators/post.js): unless blank, it starts with `/` or a
-  // scheme and holds no whitespace.
+  // Unless blank, it starts with `/` or a scheme and holds no whitespace.
   if (key === 'canonical_url') {
     const url = fields.canonical_url ?? '';
     if (!/\S/.test(url)) {
@@ -220,9 +217,8 @@ export interface InvalidField {
 }
 
 /**
- * The first settings field that breaks its rule, in the post validator's order.
- * A post the server has not created yet is not held to the tier rule
- * (validators/post.js `isNew`); its write leaves the pair out instead.
+ * The first settings field that breaks its rule. A post the server has not
+ * created yet is not held to the tier rule; its write leaves the pair out instead.
  */
 function invalidSettingsField(
   fields: ValidatedSettingsFields,

@@ -9,6 +9,7 @@ workspace and compose the shared factories or presets.
 | [eslint/](eslint/README.md) | Node/library rule factories and shared rule atoms | `@internal/cfg-eslint`                                      |
 | `eslint-react/`             | React workspace rule factories                    | `@internal/cfg-eslint-react`                                |
 | `oxlint/`                   | Custom lint rules and plugin entrypoints          | Root Oxlint configuration; `@internal/cfg-oxlint` typecheck |
+| `test-workers/`             | Worker count for expensive test suites            | `@internal/cfg-test-workers`                                |
 | `typescript/`               | Strict ESM and browser compiler presets           | `@internal/cfg-typescript` JSON presets                     |
 | `vite-public-app/`          | Shared public-app build setup and declarations    | `@internal/cfg-vite-public-app`                             |
 | `vitest/`                   | Shared test configuration                         | `@internal/cfg-vitest`                                      |

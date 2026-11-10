@@ -8,8 +8,6 @@ import { showDatabaseWarning } from '@/settings/utils/show-database-warning';
 import { useGlobalData } from '@/settings/providers/global-data-context';
 import { useUpgradeStatus } from '@/settings/providers/settings-app-context';
 
-const adminBuildVersion = import.meta.env.GHOST_BUILD_VERSION;
-
 function VersionLink({ label, version }: { label: string; version: string }) {
   const link = linkToGitHubReleases(version);
   return (
@@ -31,6 +29,7 @@ function AboutModal() {
   const globalData = useGlobalData();
   const config = globalData.config;
   const upgradeStatus = useUpgradeStatus();
+  const adminBuildVersion = import.meta.env.GHOST_BUILD_VERSION;
 
   function copyrightYear(): number {
     const date = new Date();

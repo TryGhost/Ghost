@@ -153,7 +153,7 @@ const LatestPostBox: React.FC<LatestPostBoxProps> = ({ latestPostStats, isLoadin
   const opensEditor = destination.startsWith('/editor/');
   const openPost = (tab = '') =>
     navigate(opensEditor ? destination : `${destination}${tab}`, {
-      state: opensEditor ? editorReturnState(location) : undefined,
+      state: opensEditor ? editorReturnState(`${location.pathname}${location.search}`) : undefined,
     });
 
   return (
@@ -220,7 +220,7 @@ const LatestPostBox: React.FC<LatestPostBoxProps> = ({ latestPostStats, isLoadin
                 label="Edit post"
                 onClick={() =>
                   navigate(`/editor/post/${latestPostStats.id}`, {
-                    state: editorReturnState(location),
+                    state: editorReturnState(`${location.pathname}${location.search}`),
                   })
                 }
               >

@@ -1,10 +1,10 @@
 import React from 'react';
 import moment from 'moment-timezone';
 import { Button, Card, CardContent, EmptyIndicator, Skeleton } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
-import { useShade } from '@tryghost/shade/app';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { isSafeHref } from './is-safe-href';
 import { parseMemberEvent } from './member-event';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { useMemberActivityFeed } from '@tryghost/admin-x-framework/api/members';
 import { activityQueryOptions } from '@/members/activity/activity-filters';
 import { useActivitySettings } from '@/members/activity/use-activity-settings';
@@ -13,9 +13,7 @@ import type { ParsedMemberEvent } from './member-event';
 
 interface MemberActivityFeedProps {
   // Optional so the create screen (/members/new) can render just the empty
-  // state without a member yet — matches Ember's `activity-feed.hbs:2`,
-  // which short-circuits to `Member::ActivityFeedEmpty` when `@member.isNew`
-  // (there's no member id to fetch events for).
+  // state without a member yet (there's no member id to fetch events for).
   memberId?: string;
   hasMultipleNewsletters: boolean;
   hasMultipleTiers: boolean;
@@ -23,7 +21,7 @@ interface MemberActivityFeedProps {
 }
 
 /**
- * Renders a Lucide substitute for Ember's custom SVG icon names
+ * Renders a Lucide icon for each event icon name
  * (`event-signed-up`, `event-comment`, …). Intentional visual approximation
  * — the full table lives behind the "View all member activity" link.
  * Anything unmapped falls back to the generic
@@ -79,40 +77,61 @@ export const EventIcon: React.FC<{ iconName: string }> = ({ iconName }) => {
   }
 };
 
-/** "View all member activity →" link to the member's full activity feed. */
-const ViewAllLink: React.FC<{ memberId: string }> = ({ memberId }) => {
-  const { isAdmin7 } = useShade();
-  const link = (
-    <a
-      className={isAdmin7 ? undefined : 'block pt-3 font-medium text-primary hover:underline'}
-      data-testid="member-activity-view-all"
-      href={`#/members-activity?member=${memberId}`}
-    >
-      View all member activity →
-    </a>
-  );
+// admin7Design: each kind of event gets a color pair from Shade's event tokens.
+// Written out in full so Tailwind can see the classes. Anything not listed, like
+// profile changes and logins, stays neutral.
+const EMAIL_TONE =
+  'in-data-[admin7-design=true]:bg-event-email-surface in-data-[admin7-design=true]:[&_svg]:text-event-email-icon';
+const GAIN_TONE =
+  'in-data-[admin7-design=true]:bg-event-gain-surface in-data-[admin7-design=true]:[&_svg]:text-event-gain-icon';
+const LOSS_TONE =
+  'in-data-[admin7-design=true]:bg-event-loss-surface in-data-[admin7-design=true]:[&_svg]:text-event-loss-icon';
+const WARNING_TONE =
+  'in-data-[admin7-design=true]:bg-event-warning-surface in-data-[admin7-design=true]:[&_svg]:text-event-warning-icon';
+const ENGAGEMENT_TONE =
+  'in-data-[admin7-design=true]:bg-event-engagement-surface in-data-[admin7-design=true]:[&_svg]:text-event-engagement-icon';
+const GIFT_TONE =
+  'in-data-[admin7-design=true]:bg-event-gift-surface in-data-[admin7-design=true]:[&_svg]:text-event-gift-icon';
 
-  if (isAdmin7) {
-    return (
-      <Button className="mt-3" variant="ghost" asChild>
-        {link}
-      </Button>
-    );
-  }
-
-  return link;
+const EVENT_TONES: Record<string, string> = {
+  'event-received-email': EMAIL_TONE,
+  'event-opened-email': EMAIL_TONE,
+  'event-sent-email': EMAIL_TONE,
+  'event-signed-up': GAIN_TONE,
+  'event-subscribed-to-email': GAIN_TONE,
+  'event-subscriptions': GAIN_TONE,
+  'event-unsubscribed-from-email': LOSS_TONE,
+  'event-canceled-subscription': LOSS_TONE,
+  'event-email-delivery-failed': LOSS_TONE,
+  'event-email-delivery-spam': WARNING_TONE,
+  'event-comment': ENGAGEMENT_TONE,
+  'event-click': ENGAGEMENT_TONE,
+  'event-more-like-this': ENGAGEMENT_TONE,
+  'event-less-like-this': ENGAGEMENT_TONE,
+  'event-gift': GIFT_TONE,
 };
 
-// Copy ported verbatim from Ember's `activity-feed-empty.hbs`.
+/** "View all member activity →" link to the member's full activity feed. */
+const ViewAllLink: React.FC<{ memberId: string; className?: string }> = ({
+  memberId,
+  className = 'mt-3',
+}) => {
+  return (
+    <Button className={className} variant="ghost" asChild>
+      <a data-testid="member-activity-view-all" href={`#/members-activity?member=${memberId}`}>
+        View all member activity →
+      </a>
+    </Button>
+  );
+};
+
 const NEW_MEMBER_ACTIVITY_COPY = 'All events related to this member will be shown here.';
 
 const capitalize = (s?: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '');
 
 /**
- * Ember's activity-feed row renders an `EmailPreviewLink` when `event.email`
- * is set on delivery/open/sent rows. We don't have that component in the
- * inline feed — surface a plain "Email" label so the admin can at least see
- * the row carries an email object; the full activity page provides the preview.
+ * Delivery/open/sent rows with `event.email` get a plain subject or "Email" label
+ * in the inline feed; the full activity page provides the preview.
  */
 function getEmailLabel(email: unknown): string | undefined {
   if (email && typeof email === 'object') {
@@ -142,12 +161,20 @@ const ActivityRow: React.FC<{ event: ParsedMemberEvent }> = ({ event }) => {
       '—';
 
   return (
-    <div className="flex items-start gap-3 py-3" data-testid="member-activity-event">
-      <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted">
+    <div
+      className="flex items-start gap-3 py-3 in-data-[admin7-design=true]:items-center in-data-[admin7-design=true]:py-4 in-data-[admin7-design=true]:first:pt-0"
+      data-testid="member-activity-event"
+    >
+      <div
+        className={cn(
+          'flex size-8 shrink-0 items-center justify-center rounded-full bg-muted',
+          EVENT_TONES[event.icon],
+        )}
+      >
         <EventIcon iconName={event.icon} />
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <div className="text-sm leading-snug">
+        <div className="text-sm leading-snug in-data-[admin7-design=true]:text-md">
           <span data-testid="member-activity-action">{capitalize(event.action)}</span>
           {event.info && <span className="ml-1 text-muted-foreground">({event.info})</span>}
           {hasObjectLink && (
@@ -174,8 +201,7 @@ const ActivityRow: React.FC<{ event: ParsedMemberEvent }> = ({ event }) => {
             </>
           )}
           {hasEmailFallback && (
-            // Ember shows the email preview link here; we show a
-            // plain subject label as the closest text-only parity.
+            // A plain subject label in place of an email preview link.
             <>
               <span className="mx-1 text-muted-foreground">{event.join}</span>
               <span className="text-muted-foreground">{emailLabel}</span>
@@ -183,9 +209,13 @@ const ActivityRow: React.FC<{ event: ParsedMemberEvent }> = ({ event }) => {
           )}
         </div>
         {event.description && (
-          <div className="truncate text-xs text-muted-foreground">{event.description}</div>
+          <div className="truncate text-xs text-muted-foreground in-data-[admin7-design=true]:text-base">
+            {event.description}
+          </div>
         )}
-        <div className="text-xs text-muted-foreground">{relativeTime}</div>
+        <div className="text-xs text-muted-foreground in-data-[admin7-design=true]:text-base">
+          {relativeTime}
+        </div>
       </div>
     </div>
   );
@@ -197,8 +227,8 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
   hasMultipleTiers,
   paidMembersEnabled,
 }) => {
-  // Cap the inline feed to the same 5 events Ember shows in the sidebar
-  // section (`activity-feed.hbs:9` — pageSize=5). Anything beyond that lives
+  const admin7Design = useFeatureFlag('admin7Design');
+  // Cap the inline feed to 5 events. Anything beyond that lives
   // behind the "View all" link. On the create screen there's no memberId
   // to query against, so disable the fetch entirely — an unsaved member has
   // no events by definition.
@@ -234,20 +264,18 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
   const seen = new Set<string>();
 
   // Create mode (`/members/new`) — no member id, no fetch, no "View all"
-  // link. Ember renders `Member::ActivityFeedEmpty` in this state
-  // (`activity-feed.hbs:2-7`); we render the same copy via Shade's
-  // `EmptyIndicator` so the parity assertion for that string holds.
+  // link; only the empty-state copy via Shade's `EmptyIndicator`.
   if (!memberId) {
     return (
       <section aria-labelledby="member-activity-heading" className="flex flex-col gap-3">
-        <h3 className="text-base font-semibold" id="member-activity-heading">
+        <h3 className="section-heading text-base font-semibold" id="member-activity-heading">
           Activity
         </h3>
-        <Card>
+        <Card variant={admin7Design ? 'ruled' : 'outline'}>
           {/* Same wrapper padding as the Subscriptions empty state
                         (`member-subscriptions-section.tsx`) so both cards line
                         up visually when they render side-by-side. */}
-          <CardContent className="pt-6">
+          <CardContent className={admin7Design ? undefined : 'pt-6'}>
             <div className="flex flex-col items-center gap-3 py-4">
               <EmptyIndicator description={NEW_MEMBER_ACTIVITY_COPY} title="Activity">
                 <LucideIcon.Activity />
@@ -259,12 +287,17 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
     );
   }
 
+  const showViewAll = !isLoading && events.length > 0;
+
   return (
     <section aria-labelledby="member-activity-heading" className="flex flex-col gap-3">
-      <h3 className="text-base font-semibold" id="member-activity-heading">
-        Activity
-      </h3>
-      <Card>
+      <div className="flex flex-wrap items-center justify-between gap-x-4">
+        <h3 className="section-heading text-base font-semibold" id="member-activity-heading">
+          Activity
+        </h3>
+        {admin7Design && showViewAll && <ViewAllLink className="-mr-3" memberId={memberId} />}
+      </div>
+      <Card variant={admin7Design ? 'ruled' : 'outline'}>
         <CardContent className="pt-3">
           {isLoading ? (
             // Held back like the loading spinners, so a quick feed never flashes skeletons
@@ -303,7 +336,7 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({
           )}
           {/* Only meaningful once there is activity to view — an empty
                         feed has nothing for the link to lead to. */}
-          {!isLoading && events.length > 0 && <ViewAllLink memberId={memberId} />}
+          {!admin7Design && showViewAll && <ViewAllLink memberId={memberId} />}
         </CardContent>
       </Card>
     </section>

@@ -36,7 +36,7 @@ describe('reportBillingLoadFailure', () => {
     expect(Sentry.captureException).not.toHaveBeenCalled();
   });
 
-  it("reports the failure in the shape Ember's billing monitor sends", () => {
+  it('reports the failure with a stable message, fingerprint and tags', () => {
     vi.mocked(Sentry.getClient).mockReturnValue({} as ReturnType<typeof Sentry.getClient>);
 
     reportBillingLoadFailure(REPORT);

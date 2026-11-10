@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 
 const Papa = require('papaparse');
-const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
+const {
+  agentProvider,
+  fixtureManager,
+  mockManager,
+  hostLimits,
+} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 
 const CORE_COLUMNS = [
@@ -57,10 +62,10 @@ describe('Members API — exportCSV with custom fields', function () {
   };
 
   // The key is minted server-side from the name, so callers read it off the result.
-  async function createField(name: string, type: string) {
+  async function createField(name: string, type: string, settings?: unknown) {
     const { body } = await agent
       .post('members/metafields/custom/')
-      .body({ members_metafields: [{ name, type }] })
+      .body({ members_metafields: [{ name, type, settings }] })
       .expectStatus(201);
     return body.members_metafields[0];
   }
@@ -105,10 +110,6 @@ describe('Members API — exportCSV with custom fields', function () {
     agent = await agentProvider.getAdminAPIAgent();
     await fixtureManager.init('users');
     await agent.loginAsOwner();
-  });
-
-  beforeEach(function () {
-    mockManager.mockLabsEnabled('membersCustomFields');
   });
 
   afterEach(async function () {
@@ -180,6 +181,22 @@ describe('Members API — exportCSV with custom fields', function () {
         FULL_ADDRESS[part as keyof typeof FULL_ADDRESS],
       );
     }
+  });
+
+  // One column for the field, never one per option, holding the options' names as they read.
+  it("writes a list's options in one column, separated so they split back apart", async function () {
+    const topics = await createField('Topics', 'list', {
+      options: ['Film, TV', 'Cooking', 'Travel'],
+      multiple: true,
+    });
+    const member = await createMember({ [topics.key]: ['Travel', 'Film, TV'] });
+    const unanswered = await createMember();
+
+    const { columns, rowFor } = await exportCSV();
+
+    assert.deepEqual(columns, [...CORE_COLUMNS, columnFor(topics.key)]);
+    assert.equal(rowFor(member.id)[columnFor(topics.key)], 'Film, TV | Travel');
+    assert.equal(rowFor(unanswered.id)[columnFor(topics.key)], '');
   });
 
   it('leaves cells empty for fields a member has not filled in', async function () {
@@ -339,6 +356,27 @@ describe('Members API — exportCSV with custom fields', function () {
 
     assert.deepEqual(columns, [...CORE_COLUMNS, columnFor(kept.key)]);
     assert.equal(rowFor(member.id)[columnFor(kept.key)], 'Bex');
+  });
+
+  // While the host switches custom fields off, every field reads as archived, so the export
+  // has none of them, and has them all again once the host switches them back on.
+  describe('while the host switches custom fields off', function () {
+    afterEach(async function () {
+      await hostLimits.restoreHostLimits();
+    });
+
+    it('excludes every field, and includes them again once they are back on', async function () {
+      const field = await createField('Nickname', 'short_text');
+      const member = await createMember({ [field.key]: 'Bex' });
+
+      await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
+      const { columns } = await exportCSV();
+      assert.deepEqual(columns, CORE_COLUMNS);
+
+      await hostLimits.restoreHostLimits();
+      const { rowFor } = await exportCSV();
+      assert.equal(rowFor(member.id)[columnFor(field.key)], 'Bex');
+    });
   });
 
   it('omits custom field columns on a site that defines none', async function () {

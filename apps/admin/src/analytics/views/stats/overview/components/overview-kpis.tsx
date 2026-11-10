@@ -17,7 +17,8 @@ import {
   KpiCardHeaderLabel,
   KpiCardHeaderValue,
 } from '@tryghost/shade/patterns';
-import { LucideIcon, formatNumber, useRootFlag } from '@tryghost/shade/utils';
+import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
+import { useRootFlag } from '@tryghost/shade/utils';
 import { STATS_RANGES } from '@/shared/analytics/constants';
 import { getPeriodText, centsToDollars } from '@/shared/analytics/chart-helpers';
 import {
@@ -26,7 +27,6 @@ import {
 } from '@tryghost/admin-x-framework/api/settings';
 import { useAnalytics } from '@/analytics/providers/analytics-context';
 import { useAnalyticsData } from '@/shared/analytics/use-analytics-data';
-import { useShade } from '@tryghost/shade/app';
 import { upgradeRoute } from '@tryghost/admin-x-framework/api/config';
 import { useHostLimits } from '@tryghost/admin-x-framework/hooks';
 import { useNavigate } from '@tryghost/admin-x-framework';
@@ -116,7 +116,6 @@ const ClassicOverviewKPICard: React.FC<OverviewKPICardProps> = ({
 }) => {
   // const navigate = useNavigate();
   const { range } = useAnalytics();
-  const { isAdmin7 } = useShade();
   const IconComponent = iconName && (LucideIcon[iconName] as LucideIcon.LucideIcon);
   const diffTooltip = useDiffTooltip({
     diffDirection,
@@ -157,7 +156,7 @@ const ClassicOverviewKPICard: React.FC<OverviewKPICardProps> = ({
             variant="subtle"
             onClick={onClick}
           >
-            {isAdmin7 ? 'View more →' : 'View more'}
+            View more →
           </Button>
         )}
       </KpiCardHeader>
@@ -220,7 +219,7 @@ const Admin7OverviewKPICard: React.FC<OverviewKPICardProps> = ({
 // ANALYTICS PROTOTYPE: the one switch between today's stat card and the
 // Admin 7 one; the cards below don't know which they get
 const OverviewKPICard: React.FC<OverviewKPICardProps> = (props) =>
-  useRootFlag('admin7-design') ? (
+  useRootFlag('analytics-proto') ? (
     <Admin7OverviewKPICard {...props} />
   ) : (
     <ClassicOverviewKPICard {...props} />
@@ -288,7 +287,7 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
     cols = 'lg:grid-cols-1';
   }
   // ANALYTICS PROTOTYPE: open columns need more room between them than cards
-  const containerClass = `flex flex-col lg:grid ${cols} gap-6 admin7-design:gap-10`;
+  const containerClass = `flex flex-col lg:grid ${cols} gap-6 analytics-proto:gap-10`;
 
   return (
     // SHAPING PROTOTYPE ONLY: data-overview-kpis is a hook for explorations' CSS

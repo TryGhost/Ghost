@@ -8,11 +8,14 @@ import { EXPLORATIONS } from './explorations';
 // - Planned: the release-shaped work, the slices in the release plan
 // - Exploration 1, 2…: Planned with some screens swapped (see explorations/)
 // - Patterns: every building block on one page, under any /analytics screen
-// - Today: as it ships now (the admin7Design flag off)
+// - Today: analytics as it is on main
 //
-// Every view but Today sets `data-admin7-design` on <html>, standing in
-// for the admin7Design Labs flag; the restyled pieces read it (Shade's `useRootFlag` and
-// the `admin7-design:` variant). Remembered in this browser, applied live.
+// Every view but Today sets `data-analytics-proto` on <html>; the
+// prototype's analytics pieces read it (Shade's `useRootFlag('analytics-proto')`
+// and the `analytics-proto:` variant). Remembered in this browser, applied
+// live. It is separate from main's real admin7Design switch: keep that Labs
+// flag on, so the rest of Admin (frame, palette, members) shows Admin 7 in
+// every view.
 
 export interface ViewOption {
   id: string;
@@ -33,7 +36,7 @@ export const VIEWS: ViewOption[] = [
 
 const DEFAULT_VIEW = 'planned';
 const VIEW_KEY = 'shaping.analytics.view';
-const ATTRIBUTE = 'data-admin7-design';
+const ATTRIBUTE = 'data-analytics-proto';
 const VIEW_ATTRIBUTE = 'data-shaping-view';
 const FAMILY_ATTRIBUTE = 'data-shaping-family';
 const CHANGE_EVENT = 'shaping:view-change';

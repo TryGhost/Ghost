@@ -1,6 +1,6 @@
 /**
  * Public surface of the settings domain, consumed by the admin shell
- * (apps/admin/src/routes.tsx). Everything else in this domain is internal.
+ * and other admin domains. Everything else in this domain is internal.
  */
 export { settingsRouteChildren } from './routes';
 export { canAccessSettingsRoute } from './settings-access';
@@ -16,3 +16,7 @@ export type { DesignPanelProps } from './site/design-panel';
 // A small eager route that loads the rest of Settings itself, so navigating to
 // Settings commits at once instead of waiting on its code.
 export { default as SettingsRoute } from './settings-route';
+
+// Shared email helpers used by Automations and membership email settings.
+export { WELCOME_EMAIL_SLUGS } from './membership/member-emails/default-welcome-email-values';
+export { resolveWelcomeEmailSenderDetails } from './utils/welcome-email-sender-details';

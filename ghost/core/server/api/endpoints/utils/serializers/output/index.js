@@ -4,6 +4,10 @@
 // but that's not the problem the index.js max - line eslint "proxy" rule is there to solve.
 
 module.exports = {
+  get automations() {
+    return require('./automations');
+  },
+
   get all() {
     return require('./all');
   },

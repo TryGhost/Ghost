@@ -129,7 +129,6 @@ describe('Stripe Checkout collected parts', function () {
   beforeEach(async function () {
     mockManager.mockStripe();
     mockManager.mockLabsEnabled('stripeCheckoutCollection');
-    mockManager.mockLabsEnabled('membersCustomFields');
     // Automatic tax asks for a tax ID on every checkout by itself.
     mockManager.mockLabsDisabled('stripeAutomaticTax');
     for (const field of FIELDS) {

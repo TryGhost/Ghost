@@ -281,7 +281,7 @@ const Connected: React.FC<{ onClose?: () => void }> = ({ onClose }) => {
           Read next
         </Text>
         <a
-          className="mt-5 flex w-100 flex-col items-stretch justify-between overflow-hidden rounded-md border border-gray-200 transition-all hover:border-gray-400 md:flex-row dark:border-gray-900"
+          className="mt-5 flex w-full flex-col items-stretch justify-between overflow-hidden rounded-md border border-gray-200 transition-all hover:border-gray-400 md:flex-row dark:border-gray-900"
           href="https://ghost.org/resources/managing-your-stripe-account/?ref=admin"
           rel="noopener noreferrer"
           target="_blank"

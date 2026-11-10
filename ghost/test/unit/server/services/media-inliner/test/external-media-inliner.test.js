@@ -4,13 +4,30 @@ const fs = require('fs');
 const sinon = require('sinon');
 const nock = require('nock');
 const path = require('path');
-const loggingLib = require('@tryghost/logging');
+const { createLoggingFake } = require('../../../../../utils/logging-utils');
 const configUtils = require('../../../../../utils/config-utils');
 const urlUtilsHelper = require('../../../../../utils/url-utils');
+const request = require('../../../../../../core/server/lib/request-external');
+const urlUtils = require('../../../../../../core/shared/url-utils').default;
 const ExternalMediaInliner = require('../../../../../../core/server/services/media-inliner/external-media-inliner');
+const {
+  createOriginSchemes,
+} = require('../../../../../../core/server/services/media-inliner/origin-schemes');
+
+let logging;
+
+// The root supplies these collaborators in production; the tests keep the real ones.
+const createInliner = (deps = {}) =>
+  new ExternalMediaInliner({
+    logging,
+    request,
+    urlUtils,
+    loadFileType: () => import('file-type'),
+    loadHeicConvert: () => require('heic-convert'),
+    ...deps,
+  });
 
 describe('ExternalMediaInliner', function () {
-  let logging;
   let ghostLogoPng;
   let exeFile;
   let heicFile;
@@ -28,11 +45,7 @@ describe('ExternalMediaInliner', function () {
     heicFile = fs.readFileSync(path.join(__dirname, 'fixtures', 'image.heic'));
     heifFile = fs.readFileSync(path.join(__dirname, 'fixtures', 'image.heif'));
     GIF1x1 = Buffer.from('R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'base64');
-    logging = {
-      info: sinon.stub(loggingLib, 'info'),
-      error: sinon.stub(loggingLib, 'error'),
-      warn: sinon.stub(loggingLib, 'warn'),
-    };
+    logging = createLoggingFake();
 
     postModelStub = {
       findAll: sinon.stub().resolves([]),
@@ -64,14 +77,14 @@ describe('ExternalMediaInliner', function () {
   });
 
   it('Creates an External Media Inliner instance', function () {
-    assert.ok(new ExternalMediaInliner({}));
+    assert.ok(createInliner({}));
   });
 
   describe('importUrl', function () {
     function harness() {
       const response = { body: Buffer.from('media') };
       const media = { fileBuffer: response.body, filename: 'media.jpg', extension: '.jpg' };
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const getRemoteMedia = sinon.stub(inliner, 'getRemoteMedia').resolves(response);
       const extractFileDataFromResponse = sinon
         .stub(inliner, 'extractFileDataFromResponse')
@@ -101,7 +114,7 @@ describe('ExternalMediaInliner', function () {
         sourceUrl,
         storedUrl: '__GHOST_URL__/content/images/media.jpg',
       });
-      sinon.assert.calledWithExactly(h.getRemoteMedia, sourceUrl);
+      sinon.assert.calledWithExactly(h.getRemoteMedia, sourceUrl, { originSchemes: undefined });
       sinon.assert.calledWithExactly(h.extractFileDataFromResponse, sourceUrl, h.response);
       sinon.assert.calledWithExactly(h.storeMediaLocally, h.media);
     });
@@ -186,7 +199,7 @@ describe('ExternalMediaInliner', function () {
     });
 
     it('preserves legacy processing errors at the existing catch boundary', async function () {
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const error = new Error('could not inspect media');
       sinon.stub(inliner, 'importUrl').resolves({
         status: 'failed',
@@ -203,7 +216,7 @@ describe('ExternalMediaInliner', function () {
     });
 
     it('preserves legacy falsy thrown values at the existing catch boundary', async function () {
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       sinon.stub(inliner, 'importUrl').resolves({
         status: 'failed',
         sourceUrl: 'https://example.com/media.jpg',
@@ -247,7 +260,7 @@ describe('ExternalMediaInliner', function () {
         .stub(path, 'relative')
         .withArgs('/content/images', '/content/images/unique-image.jpg')
         .returns('unique-image.jpg');
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -312,7 +325,7 @@ describe('ExternalMediaInliner', function () {
         .stub(path, 'relative')
         .withArgs('/content/images', '/content/images/unique-image.jpg')
         .returns('unique-image.jpg');
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -371,7 +384,7 @@ describe('ExternalMediaInliner', function () {
         .stub(path, 'relative')
         .withArgs('/content/images', '/content/images/unique-image.jpg')
         .returns('unique-image.jpg');
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -433,7 +446,7 @@ describe('ExternalMediaInliner', function () {
         .stub(path, 'relative')
         .withArgs('/content/images', '/content/images/unique-image.jpg')
         .returns('unique-image.jpg');
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -494,7 +507,7 @@ describe('ExternalMediaInliner', function () {
         .stub(path, 'relative')
         .withArgs('/content/images', '/content/images/unique-image.jpg')
         .returns('unique-image.jpg');
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -556,7 +569,7 @@ describe('ExternalMediaInliner', function () {
         .stub(path, 'relative')
         .withArgs('/content/images', '/content/images/unique-image.jpg')
         .returns('unique-image.jpg');
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -607,7 +620,7 @@ describe('ExternalMediaInliner', function () {
         findAll: sinon.stub().returns([postModelInstanceStub]),
       };
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -639,7 +652,7 @@ describe('ExternalMediaInliner', function () {
         }),
       };
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -672,7 +685,7 @@ describe('ExternalMediaInliner', function () {
         findAll: sinon.stub().returns([postModelInstanceStub]),
         edit: sinon.stub().resolves(),
       };
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -712,7 +725,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/unique-image.jpg')
         .returns('unique-image.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -758,7 +771,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/unique-image.jpg')
         .returns('unique-image.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -799,7 +812,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/unique-feature-image.jpg')
         .returns('unique-feature-image.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelMock,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -854,7 +867,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/unique-feature-image.jpg')
         .returns('unique-feature-image.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -906,7 +919,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/unique-tag-twitter-image.jpg')
         .returns('unique-tag-twitter-image.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -958,7 +971,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/user-cover-image.jpg')
         .returns('user-cover-image.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -996,7 +1009,7 @@ describe('ExternalMediaInliner', function () {
         .get(encodeURI('/image.heic'))
         .reply(200, heicFile);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1011,7 +1024,7 @@ describe('ExternalMediaInliner', function () {
         .get(encodeURI('/image.heif'))
         .reply(200, heifFile);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1028,7 +1041,7 @@ describe('ExternalMediaInliner', function () {
         .get(encodeURI('/files/f/ghost-logo’s-cool.png'))
         .reply(200, ghostLogoPng);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1043,7 +1056,7 @@ describe('ExternalMediaInliner', function () {
         .get(encodeURI('/files/f/ghost logo with spaces.png'))
         .reply(200, ghostLogoPng);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1058,7 +1071,7 @@ describe('ExternalMediaInliner', function () {
         .get('/files/f/ghost-logo')
         .reply(200, ghostLogoPng);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1073,7 +1086,7 @@ describe('ExternalMediaInliner', function () {
         .get(encodeURI('/files/f/你好.png'))
         .reply(200, ghostLogoPng);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1082,13 +1095,68 @@ describe('ExternalMediaInliner', function () {
       assert.equal(fileData.extension, '.png');
     });
 
-    it('Handles URLs with no scheme', async function () {
+    it('Handles URLs with percent-encoded spaces', async function () {
+      const imageURL = 'https://img.stockfresh.com/files/f/cover%20image.png';
+      const requestMock = nock('https://img.stockfresh.com')
+        .get('/files/f/cover%20image.png')
+        .reply(200, ghostLogoPng);
+
+      const inliner = createInliner({});
+      const response = await inliner.getRemoteMedia(imageURL);
+
+      assert.ok(requestMock.isDone());
+      assert.ok(response);
+    });
+
+    it('Handles URLs with percent-encoded unicode characters', async function () {
+      const imageURL = 'https://img.stockfresh.com/files/f/caf%C3%A9.png';
+      const requestMock = nock('https://img.stockfresh.com')
+        .get('/files/f/caf%C3%A9.png')
+        .reply(200, ghostLogoPng);
+
+      const inliner = createInliner({});
+      const response = await inliner.getRemoteMedia(imageURL);
+
+      assert.ok(requestMock.isDone());
+      assert.ok(response);
+    });
+
+    it('Handles URLs with a percent-encoded URL in the path', async function () {
+      const imageURL =
+        'https://substackcdn.com/image/fetch/w_1456,c_limit/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fcover.png';
+      const requestMock = nock('https://substackcdn.com')
+        .get(
+          '/image/fetch/w_1456,c_limit/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Fcover.png',
+        )
+        .reply(200, ghostLogoPng);
+
+      const inliner = createInliner({});
+      const response = await inliner.getRemoteMedia(imageURL);
+
+      assert.ok(requestMock.isDone());
+      assert.ok(response);
+    });
+
+    it('Handles URLs with spaces and a literal percent sign', async function () {
+      const imageURL = 'https://img.stockfresh.com/files/f/ghost logo 100%.png';
+      const requestMock = nock('https://img.stockfresh.com')
+        .get('/files/f/ghost%20logo%20100%25.png')
+        .reply(200, ghostLogoPng);
+
+      const inliner = createInliner({});
+      const response = await inliner.getRemoteMedia(imageURL);
+
+      assert.ok(requestMock.isDone());
+      assert.ok(response);
+    });
+
+    it('Handles URLs with no scheme by fetching over https', async function () {
       const imageURL = '//img.stockfresh.com/files/f/ghost-logo.png';
-      const requestMock = nock('http://img.stockfresh.com')
+      const requestMock = nock('https://img.stockfresh.com')
         .get('/files/f/ghost-logo.png')
         .reply(200, ghostLogoPng);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1103,7 +1171,7 @@ describe('ExternalMediaInliner', function () {
         .get('/files/f/ghost-logo.png?version=1&size=large')
         .reply(200, ghostLogoPng);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1118,7 +1186,7 @@ describe('ExternalMediaInliner', function () {
         .get('/files/f/ghost---logo.png')
         .reply(200, ghostLogoPng);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1136,7 +1204,7 @@ describe('ExternalMediaInliner', function () {
         .get('/files/f/photo.gif?v=1&s=2')
         .reply(200);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
@@ -1151,13 +1219,469 @@ describe('ExternalMediaInliner', function () {
         .get('/files/f/photo.gif?v=1&s=2')
         .reply(200);
 
-      const inliner = new ExternalMediaInliner({});
+      const inliner = createInliner({});
       const response = await inliner.getRemoteMedia(imageURL);
       const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
 
       assert.ok(requestMock.isDone());
       assert.equal(fileData.filename, 'photo-v-1-s-2.gif');
       assert.equal(fileData.extension, '.gif');
+    });
+  });
+
+  describe('https upgrade', function () {
+    const httpsURL = (file) => `https://img.stockfresh.com/files/f/${file}`;
+    const httpURL = (file) => `http://img.stockfresh.com/files/f/${file}`;
+
+    function connectionError(code, extra = {}) {
+      return Object.assign(new Error(code), { code }, extra);
+    }
+
+    function httpError(statusCode) {
+      return Object.assign(new Error(`Response code ${statusCode}`), {
+        response: { statusCode },
+      });
+    }
+
+    // Answers each URL with the given result: an Error rejects, anything else resolves
+    function requestStub(results) {
+      return sinon.stub().callsFake(async (url) => {
+        if (!(url in results)) {
+          throw new Error(`Unexpected request: ${url}`);
+        }
+        const result = results[url];
+        if (result instanceof Error) {
+          throw result;
+        }
+        return result;
+      });
+    }
+
+    const requestedURLs = (stub) => stub.args.map(([url]) => url);
+
+    it('returns the same candidate shape for every URL', function () {
+      const candidates = (url) => ExternalMediaInliner.getRequestCandidates(url);
+
+      assert.deepEqual(candidates('https://img.stockfresh.com:443/a.png'), {
+        url: 'https://img.stockfresh.com:443/a.png',
+        fallbackURL: null,
+        origin: 'img.stockfresh.com',
+      });
+      assert.deepEqual(candidates('ftp://img.stockfresh.com/a.png'), {
+        url: 'ftp://img.stockfresh.com/a.png',
+        fallbackURL: null,
+        origin: null,
+      });
+      assert.deepEqual(candidates('http://img.stockfresh.com:80/a.png'), {
+        url: 'https://img.stockfresh.com/a.png',
+        fallbackURL: 'http://img.stockfresh.com:80/a.png',
+        origin: 'img.stockfresh.com',
+      });
+      assert.deepEqual(candidates('//img.stockfresh.com:8080/a.png'), {
+        url: 'https://img.stockfresh.com:8080/a.png',
+        fallbackURL: 'http://img.stockfresh.com:8080/a.png',
+        origin: 'img.stockfresh.com:8080',
+      });
+    });
+
+    it('fetches an http URL over https', async function () {
+      const imageURL = httpURL('ghost-logo.png');
+      const requestMock = nock('https://img.stockfresh.com')
+        .get('/files/f/ghost-logo.png')
+        .reply(200, ghostLogoPng);
+
+      const inliner = createInliner({});
+      const response = await inliner.getRemoteMedia(imageURL);
+      const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
+
+      assert.ok(requestMock.isDone());
+      assert.equal(fileData.filename, 'ghost-logo.png');
+    });
+
+    it('falls back to http for a scheme-less URL when https is unreachable', async function () {
+      const imageURL = '//img.stockfresh.com/files/f/ghost-logo.png';
+      const httpsMock = nock('https://img.stockfresh.com')
+        .get('/files/f/ghost-logo.png')
+        .replyWithError('connection refused');
+      const httpMock = nock('http://img.stockfresh.com')
+        .get('/files/f/ghost-logo.png')
+        .reply(200, ghostLogoPng);
+
+      const inliner = createInliner({});
+      const response = await inliner.getRemoteMedia(imageURL);
+      const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
+
+      assert.ok(httpsMock.isDone(), 'https should be attempted first');
+      assert.ok(httpMock.isDone(), 'http should be used as a fallback');
+      assert.equal(fileData.filename, 'ghost-logo.png');
+    });
+
+    it('falls back to the http URL when https returns an HTTP error', async function () {
+      const httpsMock = nock('https://img.stockfresh.com')
+        .get('/files/f/ghost-logo.png')
+        .reply(404);
+      const httpMock = nock('http://img.stockfresh.com')
+        .get('/files/f/ghost-logo.png')
+        .reply(200, ghostLogoPng);
+
+      const inliner = createInliner({});
+      const response = await inliner.getRemoteMedia(httpURL('ghost-logo.png'));
+
+      assert.ok(httpsMock.isDone(), 'https should be attempted');
+      assert.ok(httpMock.isDone(), 'http should be attempted');
+      assert.ok(response);
+    });
+
+    it('does not fall back for an https URL that returns an HTTP error', async function () {
+      const fakeRequest = requestStub({
+        [httpsURL('missing.png')]: httpError(404),
+      });
+
+      const inliner = createInliner({ request: fakeRequest });
+      const response = await inliner.getRemoteMedia(httpsURL('missing.png'));
+
+      assert.equal(response, null);
+      assert.deepEqual(requestedURLs(fakeRequest), [httpsURL('missing.png')]);
+    });
+
+    it('keeps existing percent escapes in both attempts', async function () {
+      const fakeRequest = requestStub({
+        [httpsURL('cover%20image.png')]: connectionError('ECONNREFUSED'),
+        [httpURL('cover%20image.png')]: { body: ghostLogoPng },
+      });
+
+      const inliner = createInliner({ request: fakeRequest });
+      await inliner.getRemoteMedia(httpURL('cover%20image.png'));
+
+      assert.deepEqual(requestedURLs(fakeRequest), [
+        httpsURL('cover%20image.png'),
+        httpURL('cover%20image.png'),
+      ]);
+    });
+
+    it('drops an explicit :80 from the https attempt but keeps other ports', async function () {
+      const fakeRequest = requestStub({
+        'https://img.stockfresh.com/a.png': connectionError('ECONNREFUSED'),
+        'http://img.stockfresh.com:80/a.png': { body: ghostLogoPng },
+        'https://img.stockfresh.com:8080/b.png': { body: ghostLogoPng },
+      });
+
+      const inliner = createInliner({ request: fakeRequest });
+      await inliner.getRemoteMedia('http://img.stockfresh.com:80/a.png');
+      await inliner.getRemoteMedia('http://img.stockfresh.com:8080/b.png');
+
+      assert.deepEqual(requestedURLs(fakeRequest), [
+        'https://img.stockfresh.com/a.png',
+        'http://img.stockfresh.com:80/a.png',
+        'https://img.stockfresh.com:8080/b.png',
+      ]);
+    });
+
+    it('bounds the https attempt but not the http fallback or https URLs', async function () {
+      const fakeRequest = requestStub({
+        [httpsURL('a.png')]: connectionError('ECONNREFUSED'),
+        [httpURL('a.png')]: { body: ghostLogoPng },
+        'https://other.example.com/b.png': { body: ghostLogoPng },
+      });
+
+      const inliner = createInliner({ request: fakeRequest });
+      await inliner.getRemoteMedia(httpURL('a.png'));
+      await inliner.getRemoteMedia('https://other.example.com/b.png');
+
+      const [httpsOptions, httpOptions, plainHttpsOptions] = fakeRequest.args.map(
+        ([, options]) => options,
+      );
+      assert.deepEqual(httpsOptions.timeout, { connect: 3000, secureConnect: 3000 });
+      assert.ok(!httpsOptions.retry.errorCodes.includes('ECONNREFUSED'));
+      assert.ok(!httpsOptions.retry.errorCodes.includes('ETIMEDOUT'));
+      assert.deepEqual(httpOptions, { followRedirect: true, responseType: 'buffer' });
+      assert.deepEqual(plainHttpsOptions, { followRedirect: true, responseType: 'buffer' });
+    });
+
+    describe('within one import run', function () {
+      it('skips https for an origin where it was unreachable', async function () {
+        const fakeRequest = requestStub({
+          [httpsURL('a.png')]: connectionError('ECONNREFUSED'),
+          [httpURL('a.png')]: { body: ghostLogoPng },
+          [httpURL('b.png')]: { body: ghostLogoPng },
+        });
+
+        const inliner = createInliner({ request: fakeRequest });
+        const originSchemes = createOriginSchemes();
+        await inliner.getRemoteMedia(httpURL('a.png'), { originSchemes });
+        const response = await inliner.getRemoteMedia(httpURL('b.png'), { originSchemes });
+
+        assert.ok(response);
+        assert.deepEqual(requestedURLs(fakeRequest), [
+          httpsURL('a.png'),
+          httpURL('a.png'),
+          httpURL('b.png'),
+        ]);
+      });
+
+      it('does not blame the origin when a redirect target is unreachable', async function () {
+        const fakeRequest = requestStub({
+          [httpsURL('a.png')]: connectionError('ECONNREFUSED', {
+            options: { url: new URL('https://cdn.example.com/a.png') },
+          }),
+          [httpURL('a.png')]: { body: ghostLogoPng },
+          [httpsURL('b.png')]: { body: ghostLogoPng },
+        });
+
+        const inliner = createInliner({ request: fakeRequest });
+        const originSchemes = createOriginSchemes();
+        const first = await inliner.getRemoteMedia(httpURL('a.png'), { originSchemes });
+        await inliner.getRemoteMedia(httpURL('b.png'), { originSchemes });
+
+        assert.ok(first, 'the file is still fetched over http');
+        assert.deepEqual(requestedURLs(fakeRequest), [
+          httpsURL('a.png'),
+          httpURL('a.png'),
+          httpsURL('b.png'),
+        ]);
+      });
+
+      it('remembers an unreachable origin when got reports the failing hop', async function () {
+        const fakeRequest = requestStub({
+          [httpsURL('a.png')]: connectionError('ECONNREFUSED', {
+            options: { url: new URL(httpsURL('a.png')) },
+          }),
+          [httpURL('a.png')]: { body: ghostLogoPng },
+        });
+
+        const inliner = createInliner({ request: fakeRequest });
+        const originSchemes = createOriginSchemes();
+        await inliner.getRemoteMedia(httpURL('a.png'), { originSchemes });
+
+        assert.equal(originSchemes.get('img.stockfresh.com'), 'http');
+      });
+
+      it('remembers a connect timeout but not a slow download', async function () {
+        const fakeRequest = sinon.stub().callsFake(async (url) => {
+          if (url.startsWith('http://')) {
+            return { body: ghostLogoPng };
+          }
+          throw connectionError('ETIMEDOUT', {
+            event: url.includes('slow-connect') ? 'connect' : 'request',
+          });
+        });
+
+        const inliner = createInliner({ request: fakeRequest });
+        const originSchemes = createOriginSchemes();
+        await inliner.getRemoteMedia('http://slow-connect.example.com/a.png', { originSchemes });
+        await inliner.getRemoteMedia('http://slow-download.example.com/a.png', { originSchemes });
+
+        assert.equal(originSchemes.get('slow-connect.example.com'), 'http');
+        assert.equal(originSchemes.get('slow-download.example.com'), undefined);
+      });
+
+      it('falls back on a certificate error without remembering it', async function () {
+        const fakeRequest = requestStub({
+          [httpsURL('a.png')]: connectionError('CERT_HAS_EXPIRED'),
+          [httpURL('a.png')]: { body: ghostLogoPng },
+          [httpsURL('b.png')]: { body: ghostLogoPng },
+        });
+
+        const inliner = createInliner({ request: fakeRequest });
+        const originSchemes = createOriginSchemes();
+        const first = await inliner.getRemoteMedia(httpURL('a.png'), { originSchemes });
+        await inliner.getRemoteMedia(httpURL('b.png'), { originSchemes });
+
+        assert.ok(first, 'the file is still fetched over http');
+        assert.deepEqual(requestedURLs(fakeRequest), [
+          httpsURL('a.png'),
+          httpURL('a.png'),
+          httpsURL('b.png'),
+        ]);
+      });
+
+      it('never downgrades an origin once https has answered', async function () {
+        const fakeRequest = requestStub({
+          [httpsURL('a.png')]: { body: ghostLogoPng },
+          [httpsURL('b.png')]: connectionError('ECONNREFUSED'),
+          [httpURL('b.png')]: { body: ghostLogoPng },
+        });
+
+        const inliner = createInliner({ request: fakeRequest });
+        const originSchemes = createOriginSchemes();
+        await inliner.getRemoteMedia(httpURL('a.png'), { originSchemes });
+        const response = await inliner.getRemoteMedia(httpURL('b.png'), { originSchemes });
+
+        assert.equal(response, null);
+        assert.deepEqual(requestedURLs(fakeRequest), [httpsURL('a.png'), httpsURL('b.png')]);
+        // The pinned attempt is a normal request, with the usual timeout and retries
+        assert.deepEqual(fakeRequest.args[1][1], { followRedirect: true, responseType: 'buffer' });
+      });
+
+      it('never downgrades an origin after an https URL from it downloaded', async function () {
+        const fakeRequest = requestStub({
+          [httpsURL('a.png')]: { body: ghostLogoPng },
+          [httpsURL('b.png')]: connectionError('ECONNREFUSED'),
+          [httpURL('b.png')]: { body: ghostLogoPng },
+        });
+
+        const inliner = createInliner({ request: fakeRequest });
+        const originSchemes = createOriginSchemes();
+        await inliner.getRemoteMedia(httpsURL('a.png'), { originSchemes });
+        const response = await inliner.getRemoteMedia(httpURL('b.png'), { originSchemes });
+
+        assert.equal(response, null);
+        assert.deepEqual(requestedURLs(fakeRequest), [httpsURL('a.png'), httpsURL('b.png')]);
+      });
+
+      it('never downgrades an origin after an https URL from it answered with an error', async function () {
+        const fakeRequest = requestStub({
+          [httpsURL('missing.png')]: httpError(404),
+          [httpsURL('b.png')]: connectionError('ECONNREFUSED'),
+          [httpURL('b.png')]: { body: ghostLogoPng },
+        });
+
+        const inliner = createInliner({ request: fakeRequest });
+        const originSchemes = createOriginSchemes();
+        await inliner.getRemoteMedia(httpsURL('missing.png'), { originSchemes });
+        await inliner.getRemoteMedia(httpURL('b.png'), { originSchemes });
+
+        assert.deepEqual(requestedURLs(fakeRequest), [httpsURL('missing.png'), httpsURL('b.png')]);
+      });
+
+      it('replaces an unreachable record once an https URL from the origin downloads', async function () {
+        const fakeRequest = requestStub({
+          [httpsURL('a.png')]: connectionError('ECONNREFUSED'),
+          [httpURL('a.png')]: { body: ghostLogoPng },
+          [httpsURL('b.png')]: { body: ghostLogoPng },
+          [httpsURL('c.png')]: connectionError('ECONNREFUSED'),
+        });
+
+        const inliner = createInliner({ request: fakeRequest });
+        const originSchemes = createOriginSchemes();
+        await inliner.getRemoteMedia(httpURL('a.png'), { originSchemes });
+        assert.equal(originSchemes.get('img.stockfresh.com'), 'http');
+
+        await inliner.getRemoteMedia(httpsURL('b.png'), { originSchemes });
+        assert.equal(originSchemes.get('img.stockfresh.com'), 'https');
+
+        const response = await inliner.getRemoteMedia(httpURL('c.png'), { originSchemes });
+        assert.equal(response, null);
+        assert.deepEqual(requestedURLs(fakeRequest).slice(2), [
+          httpsURL('b.png'),
+          httpsURL('c.png'),
+        ]);
+      });
+
+      it('records nothing when an https URL fails to connect', async function () {
+        const fakeRequest = requestStub({
+          [httpsURL('a.png')]: connectionError('ECONNREFUSED'),
+        });
+
+        const inliner = createInliner({ request: fakeRequest });
+        const originSchemes = createOriginSchemes();
+        await inliner.getRemoteMedia(httpsURL('a.png'), { originSchemes });
+
+        assert.equal(originSchemes.size, 0);
+      });
+
+      it('counts an HTTP error response as https answering', async function () {
+        const fakeRequest = requestStub({
+          [httpsURL('missing.png')]: httpError(404),
+          [httpURL('missing.png')]: httpError(404),
+          [httpsURL('b.png')]: connectionError('ECONNREFUSED'),
+        });
+
+        const inliner = createInliner({ request: fakeRequest });
+        const originSchemes = createOriginSchemes();
+        await inliner.getRemoteMedia(httpURL('missing.png'), { originSchemes });
+        await inliner.getRemoteMedia(httpURL('b.png'), { originSchemes });
+
+        assert.equal(originSchemes.get('img.stockfresh.com'), 'https');
+        assert.deepEqual(requestedURLs(fakeRequest), [
+          httpsURL('missing.png'),
+          httpURL('missing.png'),
+          httpsURL('b.png'),
+        ]);
+      });
+
+      it('still falls back on an HTTP error once https has answered', async function () {
+        const fakeRequest = requestStub({
+          [httpsURL('a.png')]: { body: ghostLogoPng },
+          [httpsURL('b.png')]: httpError(403),
+          [httpURL('b.png')]: { body: ghostLogoPng },
+        });
+
+        const inliner = createInliner({ request: fakeRequest });
+        const originSchemes = createOriginSchemes();
+        await inliner.getRemoteMedia(httpURL('a.png'), { originSchemes });
+        const response = await inliner.getRemoteMedia(httpURL('b.png'), { originSchemes });
+
+        assert.ok(response);
+        assert.equal(originSchemes.get('img.stockfresh.com'), 'https');
+        assert.deepEqual(requestedURLs(fakeRequest), [
+          httpsURL('a.png'),
+          httpsURL('b.png'),
+          httpURL('b.png'),
+        ]);
+      });
+
+      it('shares what it learns across posts in inline()', async function () {
+        const fakeRequest = requestStub({
+          [httpsURL('a.jpg')]: connectionError('ECONNREFUSED'),
+          [httpURL('a.jpg')]: { body: GIF1x1, headers: { 'content-type': 'image/gif' } },
+          [httpURL('b.jpg')]: { body: GIF1x1, headers: { 'content-type': 'image/gif' } },
+        });
+
+        const post = (id, file) => {
+          const get = sinon.stub();
+          get.withArgs('mobiledoc').returns(null);
+          get.withArgs('lexical').returns(`{"src":"${httpURL(file)}"}`);
+          return { id, get };
+        };
+        postModelStub.findAll = sinon.stub().resolves([post('one', 'a.jpg'), post('two', 'b.jpg')]);
+
+        const inliner = createInliner({
+          request: fakeRequest,
+          PostModel: postModelStub,
+          PostMetaModel: postMetaModelStub,
+          TagModel: tagModelStub,
+          UserModel: userModelStub,
+          getMediaStorage: sinon.stub().returns(null),
+        });
+        await inliner.inline(['http://img.stockfresh.com']);
+
+        assert.deepEqual(requestedURLs(fakeRequest), [
+          httpsURL('a.jpg'),
+          httpURL('a.jpg'),
+          httpURL('b.jpg'),
+        ]);
+      });
+
+      it('starts each inline() run without what an earlier run learned', async function () {
+        const fakeRequest = requestStub({
+          [httpsURL('a.jpg')]: connectionError('ECONNREFUSED'),
+          [httpURL('a.jpg')]: { body: GIF1x1, headers: { 'content-type': 'image/gif' } },
+        });
+
+        const get = sinon.stub();
+        get.withArgs('mobiledoc').returns(null);
+        get.withArgs('lexical').returns(`{"src":"${httpURL('a.jpg')}"}`);
+        postModelStub.findAll = sinon.stub().resolves([{ id: 'one', get }]);
+
+        const inliner = createInliner({
+          request: fakeRequest,
+          PostModel: postModelStub,
+          PostMetaModel: postMetaModelStub,
+          TagModel: tagModelStub,
+          UserModel: userModelStub,
+          getMediaStorage: sinon.stub().returns(null),
+        });
+        await inliner.inline(['http://img.stockfresh.com']);
+        await inliner.inline(['http://img.stockfresh.com']);
+
+        assert.deepEqual(requestedURLs(fakeRequest), [
+          httpsURL('a.jpg'),
+          httpURL('a.jpg'),
+          httpsURL('a.jpg'),
+          httpURL('a.jpg'),
+        ]);
+      });
     });
   });
 
@@ -1175,7 +1699,7 @@ describe('ExternalMediaInliner', function () {
     it('passes the file contents when picking the storage', async function () {
       const storage = createStorage();
       const getMediaStorage = sinon.stub().resolves(storage);
-      const inliner = new ExternalMediaInliner({ getMediaStorage });
+      const inliner = createInliner({ getMediaStorage });
 
       await inliner.storeMediaLocally({
         fileBuffer: GIF1x1,
@@ -1190,7 +1714,7 @@ describe('ExternalMediaInliner', function () {
     it('sanitizes SVGs before storing them', async function () {
       const storage = createStorage();
       const getMediaStorage = sinon.stub().resolves(storage);
-      const inliner = new ExternalMediaInliner({ getMediaStorage });
+      const inliner = createInliner({ getMediaStorage });
 
       await inliner.storeMediaLocally({
         fileBuffer: imageFixture('svg-with-unsafe-script.svg'),
@@ -1206,7 +1730,7 @@ describe('ExternalMediaInliner', function () {
 
     it('does not store SVGs that cannot be sanitized', async function () {
       const getMediaStorage = sinon.stub();
-      const inliner = new ExternalMediaInliner({ getMediaStorage });
+      const inliner = createInliner({ getMediaStorage });
 
       const result = await inliner.storeMediaLocally({
         fileBuffer: imageFixture('svg-malformed.svg'),
@@ -1221,7 +1745,7 @@ describe('ExternalMediaInliner', function () {
 
     it('does not store files when picking the storage fails', async function () {
       const getMediaStorage = sinon.stub().rejects(new Error('Detection failed'));
-      const inliner = new ExternalMediaInliner({ getMediaStorage });
+      const inliner = createInliner({ getMediaStorage });
 
       const result = await inliner.storeMediaLocally({
         fileBuffer: GIF1x1,
@@ -1360,7 +1884,7 @@ describe('ExternalMediaInliner', function () {
         })),
       );
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -1426,7 +1950,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/unique-photo.jpg')
         .returns('unique-photo.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -1461,7 +1985,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/unique-photo.jpg')
         .returns('unique-photo.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         PostModel: postModelStub,
         PostMetaModel: postMetaModelStub,
         TagModel: tagModelStub,
@@ -1497,7 +2021,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/unique-feature.jpg')
         .returns('unique-feature.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         getMediaStorage: sinon
           .stub()
           .withArgs('.gif')
@@ -1532,7 +2056,7 @@ describe('ExternalMediaInliner', function () {
         .withArgs('/content/images', '/content/images/unique-feature.jpg')
         .returns('unique-feature.jpg');
 
-      const inliner = new ExternalMediaInliner({
+      const inliner = createInliner({
         getMediaStorage: sinon
           .stub()
           .withArgs('.gif')
@@ -1570,7 +2094,7 @@ describe('ExternalMediaInliner', function () {
       });
 
       try {
-        const inliner = new ExternalMediaInliner({});
+        const inliner = createInliner({});
         const result = await inliner.getRemoteMedia('https://malicious-site.com/image.jpg');
 
         assert.equal(result, null);

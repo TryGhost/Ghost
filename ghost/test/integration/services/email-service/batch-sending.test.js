@@ -169,8 +169,8 @@ describe('Batch sending tests', function () {
     await fixtureManager.init('newsletters', 'members:newsletters');
     await agent.loginAsOwner();
 
-    linkRedirectService = require('../../../../core/server/services/link-redirection');
-    linkRedirectRepository = linkRedirectService.linkRedirectRepository;
+    linkRedirectService = require('../../../../core/server/services/link-redirection').default;
+    linkRedirectRepository = linkRedirectService.extras.linkRedirectRepository();
 
     linkTrackingService = require('../../../../core/server/services/link-tracking');
     linkClickRepository = linkTrackingService.linkClickRepository;

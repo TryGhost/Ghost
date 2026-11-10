@@ -104,11 +104,43 @@ and arrays. It reads the same allowlist and service scope as the boundary rule.
 Factories, forwarding callbacks, indirect aliases and separately assembled
 options objects still need review; this is not general data-flow analysis.
 
-Logging, settings, models, event buses and other service instances belong in the
-root wiring. Nested `index.ts` files are implementation files, not extra wiring
-roots. The rule covers static imports, `require()`, literal dynamic imports and
-re-exports. All implementation source inside a service is checked, including
+Logging, config, settings, models, event buses and other service instances
+belong in the root wiring. Nested `index.ts` files are implementation files, not
+extra wiring roots. The rule covers static imports, `require()`, literal dynamic
+imports and re-exports. All implementation source inside a service is checked, including
 nested folders named `test` or `fixtures`.
+
+Some dependencies look like libraries but are treated as instances:
+
+- `@tryghost/domain-events` is a process-wide event bus. Roots inject it, and
+  the event classes they publish, as [comments](comments/index.ts) and
+  [users](users/index.ts) do.
+- Implementations don't import `fs`. A root that needs files passes a loader
+  limited to those files, like `readTemplate` in the comments root.
+- Lodash is allowed only as individual functions, such as `lodash/isEmpty`.
+  Plain JavaScript is often simpler.
+
+Require models, the database and other services inside the `create` callback
+rather than at module scope, so importing a root doesn't depend on how far boot
+has got. Keep each dependency's existing timing:
+
+- When a dependency is set up later in boot, pass a function that looks it up
+  on use and say why in a comment.
+  [Stripe Checkout config](stripe-checkout-config/index.ts) reaches Stripe,
+  tiers and members this way.
+- When a setting or config value is read on each use today, pass a function
+  rather than the value, as [member attribution](member-attribution/index.ts)
+  does for `outbound_link_tagging`. Capturing it in `create` changes when edits
+  take effect.
+- A dependency loaded with `require()` in a TypeScript root has no type. Keep
+  its type with `typeof import()`, as the users root does for post revisions.
+
+Type injected logging as `GhostLogger`, or a `Pick<GhostLogger, ...>` of the
+methods used, with `import type { GhostLogger } from '@tryghost/logging'`. In
+JSDoc, use `import('@tryghost/logging').GhostLogger`. Do not hand-write a logger
+shape; `ghost/prefer-canonical-types` rejects one in Ghost Core whatever it is
+named. Class tests pass `createLoggingFake()` from `ghost/test/utils/logging-utils`
+and assert on its stubs instead of stubbing the global logger.
 
 Where JavaScript has a matching TypeScript sibling, the audit and boundary
 checks inspect the TypeScript source and resolve imports back to it. This keeps
@@ -124,6 +156,11 @@ changes to that marker as part of the migration.
 The allowlist names individual packages or files, with a reason for each.
 Review additions individually; do not allow whole shared directories or all
 `@tryghost/*` packages.
+
+When several services make the same call to a library, move that call into one
+shared file and allow the file rather than the library.
+[`inline-css.ts`](../lib/email-rendering/inline-css.ts) wraps `juice` with the
+options all three email renderers used.
 
 ### Migration reports
 
@@ -188,20 +225,31 @@ Do not store report totals in the inventory or infer kernel requirements from
 violation counts. Shared primitives need a demonstrated application-independent
 contract; feature-specific helpers stay with their owners.
 
-`disposition` records the intended home of the current directory entry:
-`retain` keeps it here, `relocate` plans a move or split between other owners,
-and `review` leaves ownership undecided. It does not record completed work.
-A relocated capability can still be a configured runtime service; relocation
-does not make its initialization assessment `not-applicable`. Keep the entry
-until the directory actually leaves, and preserve its dependency, readiness
-and lifetime contracts at the destination. Use `notes` to describe the intended
-split and distinguish it from an earlier in-place migration assessment.
+`disposition` records what this migration does with the entry:
 
-Base disposition on the capability's responsibilities and intended owner. Per-call
+- `migrate` adopts the boot-owned initializer in place.
+- `relocate` moves code that clearly is not a service and cannot be migrated
+  out of this directory. The entry is removed once it moves.
+- `split` separates parts with different owners. Its notes name each part's
+  owner, which part remains a service, and whether the split must come before
+  the initializer migration.
+- `review` leaves the decision open.
+
+It does not record completed work. Every root is expected to move into a domain
+eventually; that is separate from this migration. A migrated service keeps its
+dependency, readiness and lifetime contracts wherever it later moves.
+
+Base disposition on the capability's runtime responsibilities. Per-call
 construction, no initializer, a single consumer, or use of another service does
-not by itself justify relocation. A feature-owned target list or an extractable
-helper also does not settle ownership of the whole root. If the owner is
-undecided, use `review` and keep initialization and dependency work applicable.
+not by itself make a root supporting code. An uncertain long-term home is not a
+reason to relocate: code that needs lifecycle management and has no other owner
+yet is a `migrate`. If the decision is still open, use `review` and keep
+initialization and dependency work applicable.
+
+`futureHome` optionally suggests where an entry might live after this
+migration, relative to `ghost`, when its current or planned home is
+questionable. Any disposition can have one. It is a suggestion, not a planned
+move, and does not block the migration, relocation or split.
 
 Each entry records its intended ownership and audit status. `pending` means
 the contract audit has not started; `auditing` means evidence is incomplete;
@@ -321,14 +369,46 @@ ready instance. Boot awaits the root's `init()`; consumers then read `.service`.
 The kernel guide describes the full contract, including concurrent calls and
 explicit retries after failure.
 
+### What `create` returns
+
+Return one ready instance. When a service is a set of objects built together,
+such as an API and its controller, return them as one object with a declared
+type, as [Stripe Checkout config](stripe-checkout-config/index.ts) does with
+`StripeCheckoutServices`.
+
+`.service` returns that same object for the life of the process, and consumers
+may hold on to it. Don't replace it or its members after `init()`.
+
+Keep the service's state on the instance. An extra that needs the ready
+instance reads it through the root's `service` getter, as
+[signing keys](signing-keys/index.ts) does, rather than keeping a second
+module variable with its own guard.
+
+### Startup work and boot order
+
+Await any work callers rely on before returning, such as loading data
+(`repository.init()` in [tiers](tiers/index.ts)) or applying a due key rotation
+(`check()` in signing keys).
+
+Initialize a root after everything its `create` callback reads. Say what it
+needs in a comment above `defineService` and keep that order in `boot.js`. For
+example, recommendations reads the Mentions root during `create`, so boot
+initializes Mentions first. Roots that don't depend on each other can start
+together.
+
+### Failed startup
+
 If startup fails partway through, the `create` callback must release resources
 it already acquired before passing the error back. The helper cannot remove the
 callback's listeners or close its connections. A retry runs the callback again,
 so resources left by the failed attempt could remain active alongside any new
 instance.
 
-For example, the [IndexNow callback](indexnow-ping/index.ts) removes any partially
-registered listeners before rethrowing a subscription error:
+The simplest approach is to acquire resources last, so nothing after them can
+fail. [Mentions](mentions/index.ts) starts listening for events as its final
+step. When that isn't possible, undo the partial work before rethrowing. The
+[IndexNow callback](indexnow-ping/index.ts) removes any partially registered
+listeners before rethrowing a subscription error:
 
 ```ts
 try {

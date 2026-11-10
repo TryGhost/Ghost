@@ -16,7 +16,7 @@ const assessment = {
 function entry(overrides = {}) {
   return {
     kind: 'directory',
-    disposition: 'retain',
+    disposition: 'migrate',
     migration: {
       ...assessment,
       dependencies: {
@@ -40,9 +40,10 @@ function finding(from: string, to: string, rule = 'service-dependencies', extra 
   return { from: `${services}/${from}`, to, rule: { name: rule }, ...extra };
 }
 
-test('classifies ownership before migration difficulty and combines both assessments', () => {
+test('reports ownership independently of migration status and combines both assessments', () => {
   const entries = {
     migrated: entry({ migrated: true, migration: assessment }),
+    migratedSplit: entry({ migrated: true, disposition: 'split' }),
     relocate: entry({ disposition: 'relocate' }),
     review: entry({ disposition: 'review' }),
     lifecycle: entry({
@@ -57,14 +58,21 @@ test('classifies ownership before migration difficulty and combines both assessm
     straight: entry(),
   };
   const rows = buildServiceReport({ services: entries }, audit(Object.keys(entries)));
-  assert.deepEqual(Object.fromEntries(rows.map(({ name, category }) => [name, category])), {
-    dependencies: 'Needs preparation',
-    lifecycle: 'Needs preparation',
-    migrated: 'Migrated',
-    relocate: 'Move or split planned',
-    review: 'Ownership undecided',
-    straight: 'Straightforward',
-  });
+  assert.deepEqual(
+    Object.fromEntries(rows.map(({ name, migrationStatus }) => [name, migrationStatus])),
+    {
+      dependencies: 'Needs preparation',
+      lifecycle: 'Needs preparation',
+      migrated: 'Migrated',
+      migratedSplit: 'Migrated',
+      relocate: 'Straightforward',
+      review: 'Straightforward',
+      straight: 'Straightforward',
+    },
+  );
+  assert.equal(rows.find(({ name }) => name === 'migratedSplit')?.ownership, 'Split');
+  assert.equal(rows.find(({ name }) => name === 'relocate')?.ownership, 'Relocate');
+  assert.equal(rows.find(({ name }) => name === 'review')?.ownership, 'Undecided');
   assert.deepEqual(rows.find(({ name }) => name === 'straight')?.dependencies, []);
 });
 
@@ -135,7 +143,8 @@ test('distinguishes unanalysed entries from zero violations and exposes unlisted
   assert.equal(absent.ownRoot, null);
   assert.equal(result.find(({ name }) => name === 'clean')?.analyzed, true);
   assert.deepEqual(result.find(({ name }) => name === 'clean')?.dependencies, []);
-  assert.equal(result.find(({ name }) => name === 'unknown')?.category, 'Not inventoried');
+  assert.equal(result.find(({ name }) => name === 'unknown')?.ownership, 'Not inventoried');
+  assert.equal(result.find(({ name }) => name === 'unknown')?.migrationStatus, 'Not inventoried');
 });
 
 test('rejects incomplete assessments and invalid audit data instead of reporting a clean result', () => {
@@ -143,6 +152,11 @@ test('rejects incomplete assessments and invalid audit data instead of reporting
     {},
     { services: { alpha: entry({ disposition: 'unknown' }) } },
     { services: { alpha: entry({ migration: assessment }) } },
+    {
+      services: {
+        alpha: entry({ migration: { ...entry().migration, modelImpact: 'not-applicable' } }),
+      },
+    },
   ]) {
     assert.throws(() => buildServiceReport(invalid, audit(['alpha'])));
   }
@@ -197,18 +211,19 @@ test('CLI reports classifications, per-service evidence and distinct dependency 
   assert.equal(summary.status, 0, summary.stderr);
   assert.deepEqual(JSON.parse(summary.stdout), {
     'Catalogued entries': 1,
-    'Staying in services/': 1,
+    Migrate: 1,
     Migrated: 0,
     'Unmigrated entries': 1,
-    'Unmigrated — staying in services/': 1,
-    'Move or split planned': 0,
-    'Ownership undecided': 0,
+    'Left to migrate': 1,
+    Relocate: 0,
+    Split: 0,
+    Undecided: 0,
     'Needs preparation': 0,
     'Straightforward migrations': 1,
     'Straightforward — dependency violations': 1,
     'Straightforward — no dependency violations': 0,
     'Unmigrated entries with dependency violations': 1,
-    'Unmigrated — staying in services/ with dependency violations': 1,
+    'Left to migrate with dependency violations': 1,
     'Migrated services with dependency violations': 0,
     'Not analyzed': 0,
     'Not inventoried': 0,
@@ -269,11 +284,11 @@ test('CLI reports classifications, per-service evidence and distinct dependency 
   assert.match(unknown.stderr, /Unknown service: nonexistent/);
 });
 
-test('planned moves retain runtime-service notes ahead of older migration assessments', async (t) => {
+test('planned splits show runtime-service notes ahead of older migration assessments', async (t) => {
   const f = await fixture(t);
   const notes =
     '\n  This is a configured runtime service. Split its parser out before moving the service.  \n';
-  const planned = entry({ disposition: 'relocate', notes });
+  const planned = entry({ disposition: 'split', notes });
   await f.write(
     `${services}/service-inventory.yaml`,
     JSON.stringify({ services: { alpha: planned } }),
@@ -282,16 +297,17 @@ test('planned moves retain runtime-service notes ahead of older migration assess
   assert.equal(summary.status, 0, summary.stderr);
   const counts = JSON.parse(summary.stdout);
   assert.equal(counts['Unmigrated entries'], 1);
-  assert.equal(counts['Move or split planned'], 1);
+  assert.equal(counts.Split, 1);
   assert.equal(counts.Migrated, 0);
   assert.equal(counts['Straightforward migrations'], 0);
 
-  const listing = f.run(['list', '--group', 'relocation', '--json']);
+  const listing = f.run(['list', '--group', 'split', '--json']);
   assert.equal(listing.status, 0, listing.stderr);
   const rows = JSON.parse(listing.stdout);
   assert.equal(rows.length, 1);
   assert.equal(rows[0].name, 'alpha');
-  assert.equal(rows[0].category, 'Move or split planned');
+  assert.equal(rows[0].ownership, 'Split');
+  assert.equal(rows[0].migrationStatus, 'Straightforward');
   assert.equal(rows[0].entry.notes, notes);
   assert.equal(rows[0].entry.migration.complexity, 'straightforward');
   const jsonDetails = f.run(['report', 'alpha', '--json']);
@@ -313,6 +329,25 @@ test('planned moves retain runtime-service notes ahead of older migration assess
   assert.doesNotMatch(blank.stdout, /Inventory notes:/);
 });
 
+test('suggested future homes are shown without changing the disposition', async (t) => {
+  const f = await fixture(t);
+  const futureHome = 'core/server/auth/alpha';
+  await f.write(
+    `${services}/service-inventory.yaml`,
+    JSON.stringify({ services: { alpha: entry({ migrated: true, futureHome }) } }),
+  );
+  const listing = f.run(['list', '--group', 'migrated', '--json']);
+  assert.equal(listing.status, 0, listing.stderr);
+  const rows = JSON.parse(listing.stdout);
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].ownership, 'Migrate');
+  assert.equal(rows[0].entry.futureHome, futureHome);
+
+  const details = f.run(['report', 'alpha']);
+  assert.equal(details.status, 0, details.stderr);
+  assert.ok(details.stdout.includes(`Suggested future home (after this migration): ${futureHome}`));
+});
+
 test('list filters match every report group, including unknown analysis and every violation type', async (t) => {
   const f = await fixture(t);
   const entries = {
@@ -321,6 +356,11 @@ test('list filters match every report group, including unknown analysis and ever
     clean: entry(),
     done: entry({ migrated: true }),
     drift: entry({ migrated: true }),
+    moved: entry({ migrated: true, disposition: 'split' }),
+    reviewRefactor: entry({
+      disposition: 'review',
+      migration: { ...entry().migration, complexity: 'complex', modelImpact: 'may-change' },
+    }),
     own: entry(),
     prepare: entry({ migration: { ...entry().migration, complexity: 'complex' } }),
     relocate: entry({ disposition: 'relocate' }),
@@ -352,23 +392,30 @@ test('list filters match every report group, including unknown analysis and ever
   const groups: [string, string, string[]][] = [
     ['catalogued', 'Catalogued entries', Object.keys(entries)],
     [
-      'retained',
-      'Staying in services/',
+      'migrate',
+      'Migrate',
       ['absent', 'alpha', 'clean', 'done', 'drift', 'own', 'prepare', 'unresolved'],
     ],
-    ['migrated', 'Migrated', ['done', 'drift']],
+    ['migrated', 'Migrated', ['done', 'drift', 'moved']],
     [
       'unmigrated',
       'Unmigrated entries',
-      ['absent', 'alpha', 'clean', 'own', 'prepare', 'relocate', 'review', 'unresolved'],
+      [
+        'absent',
+        'alpha',
+        'clean',
+        'reviewRefactor',
+        'own',
+        'prepare',
+        'relocate',
+        'review',
+        'unresolved',
+      ],
     ],
-    [
-      'unmigrated-retained',
-      'Unmigrated — staying in services/',
-      ['absent', 'alpha', 'clean', 'own', 'prepare', 'unresolved'],
-    ],
-    ['relocation', 'Move or split planned', ['relocate']],
-    ['ownership-undecided', 'Ownership undecided', ['review']],
+    ['to-migrate', 'Left to migrate', ['absent', 'alpha', 'clean', 'own', 'prepare', 'unresolved']],
+    ['relocate', 'Relocate', ['relocate']],
+    ['split', 'Split', ['moved']],
+    ['undecided', 'Undecided', ['review', 'reviewRefactor']],
     ['needs-preparation', 'Needs preparation', ['prepare']],
     [
       'straightforward',
@@ -387,8 +434,8 @@ test('list filters match every report group, including unknown analysis and ever
       ['alpha', 'own', 'relocate', 'unresolved'],
     ],
     [
-      'unmigrated-retained-with-violations',
-      'Unmigrated — staying in services/ with dependency violations',
+      'to-migrate-with-violations',
+      'Left to migrate with dependency violations',
       ['alpha', 'own', 'unresolved'],
     ],
     ['migrated-with-violations', 'Migrated services with dependency violations', ['drift']],
@@ -397,11 +444,29 @@ test('list filters match every report group, including unknown analysis and ever
   ];
   const report = f.run(['report']);
   assert.equal(report.status, 0, report.stderr);
-  assert.match(report.stdout.split('\n')[0] ?? '', /MIGRATION\s+COUNT\s+GROUP/);
+  const [reportTable, ...footer] = report.stdout.trimEnd().split('\n\n');
+  const [header, ...reportRows] = reportTable!.split('\n');
+  assert.match(header!, /^MIGRATION\s+COUNT\s+GROUP$/);
+  assert.equal(reportRows.length, groups.length - 2);
+  assert.doesNotMatch(report.stdout, /Not analyzed|Not inventoried/);
+  assert.match(report.stdout, /\s+relocate\nSplit\s+1\s+split\n/);
+  assert.deepEqual(footer, ['List a group: pnpm gx services list --group <group>']);
   const summary = f.run(['report', '--json']);
   assert.equal(summary.status, 0, summary.stderr);
   const counts = JSON.parse(summary.stdout);
   assert.equal(Object.keys(counts).length, groups.length);
+  assert.equal(
+    counts['Catalogued entries'],
+    counts.Migrate + counts.Relocate + counts.Split + counts.Undecided,
+  );
+  assert.equal(counts['Catalogued entries'], counts.Migrated + counts['Unmigrated entries']);
+  assert.equal(
+    counts['Left to migrate'],
+    counts['Needs preparation'] + counts['Straightforward migrations'],
+  );
+  const reviewDetails = f.run(['report', 'reviewRefactor']);
+  assert.equal(reviewDetails.status, 0, reviewDetails.stderr);
+  assert.match(reviewDetails.stdout, /Undecided\s+Needs preparation/);
   for (const [group, label, names] of groups) {
     const result = f.run(['list', '--group', group, '--json']);
     assert.equal(result.status, 0, `${group}: ${result.stderr}`);
@@ -411,18 +476,20 @@ test('list filters match every report group, including unknown analysis and ever
       group,
     );
     assert.equal(counts[label], names.length, group);
-    assert.ok(
-      report.stdout.split('\n').some((line) => {
-        const [reportedLabel, count, reportedGroup] = line.split(/ {2,}/);
-        return reportedLabel === label && count === String(names.length) && reportedGroup === group;
-      }),
-      `${group} is discoverable next to its report count`,
-    );
+    const line = reportRows.find((row) => row.endsWith(`  ${group}`));
+    if (['not-analyzed', 'not-inventoried'].includes(group)) {
+      assert.equal(line, undefined);
+      continue;
+    }
+    assert.ok(line, `${group} is discoverable next to its report count`);
+    assert.deepEqual(line.split(/ {2,}/), [label, String(names.length), group]);
+    assert.equal(line.indexOf(String(names.length), label.length), header!.indexOf('COUNT'));
+    assert.equal(line.lastIndexOf(group), header!.indexOf('GROUP'));
   }
   const clean = f.run(['list', '--group=straightforward-clear']);
   assert.equal(clean.status, 0, clean.stderr);
-  assert.match(clean.stdout, /^SERVICE\s+CATEGORY/m);
-  assert.match(clean.stdout, /^clean\s+Straightforward\s+0\s+0\s+0$/m);
+  assert.match(clean.stdout, /^SERVICE\s+OWNERSHIP\s+MIGRATION/m);
+  assert.match(clean.stdout, /^clean\s+Migrate\s+Straightforward\s+0\s+0\s+0$/m);
   assert.doesNotMatch(clean.stdout, /^(?:absent|alpha|own|unresolved)\s+/m);
 });
 
@@ -430,7 +497,10 @@ test('empty groups preserve list headers and return an empty JSON array', async 
   const f = await fixture(t);
   const empty = f.run(['list', '--group', 'migrated']);
   assert.equal(empty.status, 0, empty.stderr);
-  assert.match(empty.stdout, /^SERVICE\s+CATEGORY\s+DISALLOWED DEPS\s+UNRESOLVED\s+OWN ROOT/m);
+  assert.match(
+    empty.stdout,
+    /^SERVICE\s+OWNERSHIP\s+MIGRATION\s+DISALLOWED DEPS\s+UNRESOLVED\s+OWN ROOT/m,
+  );
   assert.doesNotMatch(empty.stdout, /^alpha\s+/m);
   const json = f.run(['list', '--group', 'migrated', '--json']);
   assert.equal(json.status, 0, json.stderr);
@@ -459,18 +529,19 @@ test('list help describes groups and invalid filters fail before the audit runs'
   assert.match(help.stdout, /--group/);
   for (const group of [
     'catalogued',
-    'retained',
+    'migrate',
     'migrated',
     'unmigrated',
-    'unmigrated-retained',
-    'relocation',
-    'ownership-undecided',
+    'to-migrate',
+    'relocate',
+    'split',
+    'undecided',
     'needs-preparation',
     'straightforward',
     'straightforward-with-violations',
     'straightforward-clear',
     'unmigrated-with-violations',
-    'unmigrated-retained-with-violations',
+    'to-migrate-with-violations',
     'migrated-with-violations',
     'not-analyzed',
     'not-inventoried',

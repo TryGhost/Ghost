@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
+  currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
   fakeEditorChrome,
@@ -93,23 +94,10 @@ async function openPublishDate() {
   await expect.element(editorScreen.settingsPublishDate()).toBeVisible();
 }
 
-async function leaveTimeField() {
-  // Native time controls tab through their hour/minute (and locale-specific period)
-  // segments before leaving the input. A save commits when the whole field blurs.
-  for (
-    let segment = 0;
-    segment < 4 && document.activeElement === editorScreen.settingsPublishTime().element();
-    segment++
-  ) {
-    await userEvent.tab();
-  }
-  expect(document.activeElement).not.toBe(editorScreen.settingsPublishTime().element());
-}
-
 async function setTime(value: string) {
   await editorScreen.settingsPublishTime().fill(value);
   // The field commits on blur, as the publish flow's does.
-  await leaveTimeField();
+  await userEvent.tab();
 }
 
 async function typeDate(value: string) {
@@ -192,7 +180,7 @@ describe('Post settings publish date', () => {
 
     // Tabbing through the field, or retyping the minute it shows, leaves the stored timestamp alone.
     await editorScreen.settingsPublishTime().click();
-    await leaveTimeField();
+    await userEvent.tab();
     await setTime('21:00');
     await expect.element(editorScreen.updateButton()).toBeDisabled();
     expect(unsavedChangesGuarded()).toBe(false);
@@ -218,6 +206,94 @@ describe('Post settings publish date', () => {
       published_at: moment.tz('2025-12-01 08:15', SYDNEY).toISOString(),
     });
     await expect.element(editorScreen.updateButton()).toBeDisabled();
+  });
+
+  it('takes a whole time typed over the field', async () => {
+    const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
+
+    await editorScreen.settingsPublishTime().tripleClick();
+    await userEvent.keyboard('0815');
+    await userEvent.tab();
+
+    await expect.poll(() => saveApi.requests.length, POLL).toBe(1);
+    expect(submittedPost(saveApi).published_at).toBe(
+      moment.tz('2025-12-01 08:15', SYDNEY).toISOString(),
+    );
+    await expect.element(editorScreen.settingsPublishTime()).toHaveValue('08:15');
+  });
+
+  it('keeps a time it cannot read with an error, saving nothing', async () => {
+    const saveApi = fakeSavablePost({ status: 'published', published_at: PUBLISHED_AT });
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
+
+    // A published post's title waits for an explicit save, which Cmd-S would send.
+    await editorScreen.titleInput().fill('Changed title');
+    await editorScreen.settingsPublishTime().tripleClick();
+    await userEvent.keyboard('8:15 PM');
+    await userEvent.keyboard('{Meta>}s{/Meta}');
+
+    await expect
+      .element(editorScreen.settingsPublishTime())
+      .toHaveAccessibleDescription('Must be in format: "15:00"');
+    await userEvent.tab();
+    await expect.element(editorScreen.settingsPublishTime()).toHaveValue('8:15 PM');
+    await expect
+      .element(editorScreen.settingsPublishTime())
+      .toHaveAttribute('aria-invalid', 'true');
+    // The title edit is still unsaved, so Cmd-S sent nothing.
+    await expect.element(editorScreen.updateButton()).toBeEnabled();
+    expect(saveApi.requests).toHaveLength(0);
+
+    // An emptied field returns to the time already held.
+    await editorScreen.settingsPublishTime().fill('');
+    await userEvent.tab();
+
+    await expect.element(editorScreen.settingsPublishTime()).toHaveValue('21:00');
+    await expect.element(editorScreen.settingsPublishTime()).not.toHaveAccessibleDescription();
+    expect(saveApi.requests).toHaveLength(0);
+  });
+
+  it.each([
+    {
+      field: 'time',
+      input: () => editorScreen.settingsPublishTime(),
+      typed: '2754',
+      error: 'Must be in format: "15:00"',
+    },
+    {
+      field: 'date',
+      input: () => editorScreen.settingsPublishDate(),
+      typed: '2025-02-30',
+      error: 'Invalid date',
+    },
+  ])('keeps the writer on a $field it cannot read', async ({ input, typed, error }) => {
+    const saveApi = fakeSavablePost();
+    await renderAdminApp(`/editor/post/${POST_ID}`, withTimezone(SYDNEY));
+    await openPublishDate();
+
+    // Each click leaves the field, refusing the entry, and is then held back by it.
+    await input().fill(typed);
+    await editorScreen.settingsToggle().click();
+    await expect.element(input()).toHaveFocus();
+    await expect.element(input()).toHaveAccessibleDescription(error);
+    await expect.element(editorScreen.settingsSidebar()).toBeVisible();
+
+    await editorScreen.publishButton().click();
+    await expect.element(input()).toHaveFocus();
+    await expect(publishScreen.root()).toHaveCount(0);
+
+    await editorScreen.backLink('post').click();
+    await expect.element(input()).toHaveFocus();
+    expect(currentRoute()).toBe(`/editor/post/${POST_ID}`);
+    expect(saveApi.requests).toHaveLength(0);
+
+    // Once the field is emptied, it puts back the value held and nothing is held up.
+    await input().fill('');
+    await editorScreen.settingsToggle().click();
+    await expect(editorScreen.settingsSidebar()).toHaveCount(0);
   });
 
   it('refuses a published post a publish time that has not passed', async () => {

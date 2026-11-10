@@ -12,7 +12,9 @@
 //               prerelease counter, so a merge publishes the next X.Y.Z-<tag>.N.
 //   distTag     npm dist-tag to publish under. Defaults to "latest" for patch
 //               entries; a prerelease entry must name one, since OIDC trusted
-//               publishing can't retag after the fact.
+//               publishing can't retag after the fact. A prerelease entry may
+//               name "latest" so a plain install gets the newest prerelease
+//               (Shade and the app SDK, which have no stable release yet).
 //   cdn         (patch only) the ghost/core defaults.json key whose URLs Ghost
 //               serves from jsDelivr. Those URLs pin `~major.minor`, so the
 //               package.json line and the defaults.json version must match
@@ -47,18 +49,18 @@ const Entry = z
     name: z.string().min(1),
     path: z.string().min(1),
     versioning: VersioningPolicySchema,
-    distTag: z.string().min(1).default('latest'),
+    distTag: z.string().min(1).optional(),
     cdn: z.string().min(1).optional(),
     installArgs: z.string().min(1).optional(),
   })
   .superRefine((entry, ctx) => {
-    // OIDC trusted publishing can't retag after the fact, so a prerelease
-    // under `latest` would be stuck there until the first stable release.
-    if (entry.versioning === 'prerelease' && entry.distTag === 'latest') {
+    // OIDC trusted publishing can't retag after the fact, so a prerelease only
+    // lands on `latest` when its entry says so — never through the default.
+    if (entry.versioning === 'prerelease' && !entry.distTag) {
       ctx.addIssue({
         code: 'custom',
         path: ['distTag'],
-        message: `${entry.name} is a prerelease package and must name a distTag other than latest`,
+        message: `${entry.name} is a prerelease package and must name a distTag`,
       });
     }
     if (entry.cdn && entry.versioning !== 'patch') {
@@ -68,7 +70,8 @@ const Entry = z
         message: `${entry.name} has a cdn key, which only patch-versioned packages support`,
       });
     }
-  });
+  })
+  .transform((entry) => ({ ...entry, distTag: entry.distTag ?? 'latest' }));
 
 const Manifest = z.array(Entry).superRefine((entries, ctx) => {
   const seen = new Set<string>();

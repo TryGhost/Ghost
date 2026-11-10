@@ -7,8 +7,7 @@ import { useBrowsePosts } from '@tryghost/admin-x-framework/api/posts';
 import { useEffect, useRef, useState } from 'react';
 
 /**
- * The post-publish celebration, ported from `checkPublishFlowModal` in
- * `apps/ember-admin/app/components/posts-list/list.js`.
+ * The post-publish celebration.
  *
  * The editor writes a localStorage key and navigates here; the list reads it
  * on mount.
@@ -44,8 +43,7 @@ export function usePostPublishCelebration() {
 
   /**
    * Browsed by id rather than read as a single post, and keyed on the type
-   * the *editor* recorded — Ember does `store.query(post.type, {filter:
-   * \`id:${post.id}\`})`, where the type is 'post' or 'page'.
+   * the *editor* recorded, 'post' or 'page'.
    *
    * Reading it back off the posts endpoint regardless would 404 for a page,
    * so publishing a page would never celebrate at all. `include` matters too:
@@ -71,9 +69,9 @@ export function usePostPublishCelebration() {
   /**
    * The total published count, for "That's 47 posts published."
    *
-   * Deliberately not blocking the modal: Ember awaits it, which delays the
-   * celebration behind a second request. The copy falls back to "Spread the
-   * word!" until it lands, which is a wording Ember also uses.
+   * Deliberately not blocking the modal, which would delay the celebration
+   * behind a second request. The copy falls back to "Spread the word!" until
+   * it lands.
    */
   const { data: countData } = useBrowsePosts({
     searchParams: { filter: 'status:published', limit: '1' },

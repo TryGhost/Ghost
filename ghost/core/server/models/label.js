@@ -1,6 +1,7 @@
 const ghostBookshelf = require('./base');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const DatabaseInfo = require('@tryghost/database-info');
 
 const messages = {
   labelNotFound: 'Label not found.',
@@ -108,30 +109,69 @@ const Label = ghostBookshelf.Model.extend(
       };
     },
 
+    /**
+     * Reads the labels that may match the given names case-insensitively, as plain
+     * `{id, name}` rows. The result can include non-matches, so callers compare the
+     * names themselves.
+     *
+     * Member saves run this once per member, and imports save members row by row,
+     * so reading every label here made each row cost grow with the site's label
+     * count. MySQL compares `labels.name` with a case-insensitive collation, so an
+     * indexed lookup narrows the read to the named labels. The names are passed as
+     * given rather than lower-cased, so a database with a case-sensitive collation
+     * still finds exact matches. SQLite compares names case-sensitively and its
+     * LOWER() folds only ASCII, so there every label is read, without hydrating
+     * models.
+     *
+     * @param {string[]} names
+     * @param {object} [unfilteredOptions]
+     * @returns {import('knex').Knex.QueryBuilder}
+     */
+    findCandidatesByName(names, unfilteredOptions = {}) {
+      const query = ghostBookshelf.knex('labels').select('id', 'name');
+
+      if (DatabaseInfo.isMySQL(ghostBookshelf.knex)) {
+        query.whereIn('name', names);
+      }
+
+      if (unfilteredOptions.transacting) {
+        query.transacting(unfilteredOptions.transacting);
+      }
+
+      return query;
+    },
+
     destroy: function destroy(unfilteredOptions) {
       const options = this.filterOptions(unfilteredOptions, 'destroy', {
         extraAllowedProperties: ['id'],
       });
       options.withRelated = ['members'];
 
-      return this.forge({ id: options.id })
-        .fetch(options)
-        .then(function destroyLabelsAndMember(label) {
-          if (!label) {
-            return Promise.reject(
-              new errors.NotFoundError({
-                message: tpl(messages.labelNotFound),
-              }),
-            );
-          }
+      const destroyLabel = async (transacting) => {
+        // Detaching changes the relations of the members, so lock them as an edit would
+        await ghostBookshelf
+          .model('Member')
+          .lockLinkedForUpdate(
+            'members_labels',
+            'member_id',
+            { label_id: options.id },
+            { transacting },
+          );
 
-          return label
-            .related('members')
-            .detach(null, options)
-            .then(function destroyLabels() {
-              return label.destroy(options);
-            });
-        });
+        const label = await this.forge({ id: options.id }).fetch({ ...options, transacting });
+        if (!label) {
+          throw new errors.NotFoundError({
+            message: tpl(messages.labelNotFound),
+          });
+        }
+
+        await label.related('members').detach(null, { ...options, transacting });
+        return label.destroy({ ...options, transacting });
+      };
+
+      return options.transacting
+        ? destroyLabel(options.transacting)
+        : this.transactionLockingLinked(destroyLabel);
     },
   },
 );

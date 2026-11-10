@@ -9,7 +9,6 @@ import {
   DialogTitle,
   Input,
   Label,
-  LoadingIndicator,
 } from '@tryghost/shade/components';
 import { useMemberSigninUrl } from '@tryghost/admin-x-framework/api/members';
 import { toast } from 'sonner';
@@ -23,11 +22,10 @@ interface MemberImpersonateModalProps {
 
 /**
  * Modal that fetches a 24-hour signin/impersonation URL for the given member and
- * lets the admin copy it. Matches Ember `modal-impersonate-member`:
+ * lets the admin copy it:
  *   - Fetches lazily (only when the modal opens) so the URL isn't minted on every
  *     page render.
- *   - Copy button flashes "Copied" for 1s (Ember's `copySigninUrl` task uses the
- *     same 1s window).
+ *   - Copy button flashes "Copied" for 1s.
  */
 const MemberImpersonateModal: React.FC<MemberImpersonateModalProps> = ({
   open,
@@ -36,8 +34,7 @@ const MemberImpersonateModal: React.FC<MemberImpersonateModalProps> = ({
 }) => {
   const queryClient = useQueryClient();
   // On every modal open, drop the cached signin URL so we don't serve a stale
-  // (potentially expired 24-hour) link from a previous open. Ember's original
-  // modal fetches fresh in didInsertElement — this reproduces that guarantee.
+  // (potentially expired 24-hour) link from a previous open.
   React.useEffect(() => {
     if (open) {
       queryClient.removeQueries({ queryKey: ['MemberSigninUrlResponseType'] });
@@ -103,7 +100,7 @@ const MemberImpersonateModal: React.FC<MemberImpersonateModalProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5 in-data-[admin7-design=true]:gap-2">
           <Label htmlFor="member-signin-url">Signin link</Label>
           <Input
             data-testid="member-signin-url"
@@ -117,17 +114,12 @@ const MemberImpersonateModal: React.FC<MemberImpersonateModalProps> = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close
           </Button>
-          <Button disabled={isFetching || hasError || !signinUrl} onClick={() => void onCopy()}>
-            {isFetching ? (
-              <>
-                <LoadingIndicator size="sm" />
-                <span className="sr-only">Generating link</span>
-              </>
-            ) : justCopied ? (
-              'Copied'
-            ) : (
-              'Copy link'
-            )}
+          <Button
+            disabled={hasError || !signinUrl}
+            loading={isFetching}
+            onClick={() => void onCopy()}
+          >
+            {justCopied ? 'Copied' : 'Copy link'}
           </Button>
         </DialogFooter>
       </DialogContent>

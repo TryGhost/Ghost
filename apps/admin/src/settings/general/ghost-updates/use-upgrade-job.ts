@@ -95,10 +95,11 @@ export function useUpgradeJob({
       // A 429 is Ghost answering, so it never counts towards the reconnect limit.
       const retryAfter = retryAfterMs(current.state.error);
       const lastContact = Math.max(contactAt, current.state.dataUpdatedAt);
+      // Same clock as `stalled` below: stopping on Date.now() could stop short of a stall.
       if (
         current.state.status === 'error' &&
         retryAfter === null &&
-        Date.now() - lastContact > RECONNECT_LIMIT_MS
+        current.state.errorUpdatedAt - lastContact > RECONNECT_LIMIT_MS
       ) {
         return false;
       }

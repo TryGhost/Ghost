@@ -9,7 +9,7 @@ const roots: string[] = [];
 afterEach(async () => {
   await Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true })));
 });
-async function fixture() {
+async function fixture({ now = '2026-10-26T12:00:00Z', baseline = '2026-10-21T12:00:00Z' } = {}) {
   const root = await mkdtemp(join(import.meta.dirname, '../.gx-interactive-'));
   roots.push(root);
   for (const directory of [
@@ -59,7 +59,9 @@ exports.tables = {posts: {title: {type: 'string'}, created_at: {type: 'dateTime'
     join(root, 'ghost/core/server/data/db/index.js'),
     `
 process.stdout.write('DB_LOADED\\n');
-const knex = Object.assign(() => ({max: () => ({first: async () => ({created_at: process.env.NO_BASELINE ? null : new Date(Date.now() - 5 * 86400000)})})}), {
+// Each command runs in its own child process, so the clock cannot leak between tests.
+require('node:test').mock.timers.enable({apis: ['Date'], now: ${Date.parse(now)}});
+const knex = Object.assign(() => ({max: () => ({first: async () => ({created_at: process.env.NO_BASELINE ? null : new Date(${JSON.stringify(baseline)})})})}), {
   fixtureEnv: {cwd: process.cwd(), database: process.env.database__connection__database, source: process.execArgv.includes('--conditions=source')},
   destroy: async () => process.stdout.write('DESTROYED\\n'),
   transaction: async (callback) => {
@@ -83,7 +85,7 @@ function run(root: string, args: string[], input = '', env: Record<string, strin
     input,
     encoding: 'utf8',
     timeout: 10000,
-    env: { NODE_REPL_HISTORY: '', NO_COLOR: '1', ...env },
+    env: { NODE_REPL_HISTORY: '', NO_COLOR: '1', TZ: 'UTC', ...env },
   });
 }
 
@@ -158,11 +160,55 @@ test('shift-dates preserves confirmation cancellation without changing any rows'
   assert.match(result.stdout, /DESTROYED/);
 });
 
-test('shift-dates derives its default offset from logins and handles an empty baseline', async () => {
+for (const { name, zone, now, baseline, offset } of [
+  {
+    name: 'UTC',
+    zone: 'UTC',
+    now: '2026-10-26T12:00:00Z',
+    baseline: '2026-10-21T12:00:00Z',
+    offset: 5,
+  },
+  {
+    name: 'UK clocks going back',
+    zone: 'Europe/London',
+    now: '2026-10-26T12:00:00Z',
+    baseline: '2026-10-21T12:00:00Z',
+    offset: 5,
+  },
+  {
+    name: 'US clocks going back',
+    zone: 'America/New_York',
+    now: '2026-11-02T12:00:00Z',
+    baseline: '2026-10-28T12:00:00Z',
+    offset: 5,
+  },
+  {
+    name: 'UK clocks going forward',
+    zone: 'Europe/London',
+    now: '2026-03-30T12:00:00Z',
+    baseline: '2026-03-25T12:00:00Z',
+    offset: 5,
+  },
+  {
+    name: 'partial day across UK clocks going forward',
+    zone: 'Europe/London',
+    now: '2026-03-30T12:00:00Z',
+    baseline: '2026-03-25T12:30:00Z',
+    offset: 4,
+  },
+]) {
+  test(`shift-dates derives its default offset in whole UTC days (${name})`, async () => {
+    const root = await fixture({ now, baseline });
+    const result = run(root, ['data', 'shift-dates', '--force'], '', { TZ: zone });
+    assert.equal(result.status, 0, result.stdout + result.stderr);
+    assert.match(result.stdout, new RegExp(`interval ${offset} day`));
+    assert.match(result.stdout, /COMMIT/);
+    assert.match(result.stdout, /DESTROYED/);
+  });
+}
+
+test('shift-dates handles an empty baseline without changing any rows', async () => {
   const root = await fixture();
-  const result = run(root, ['data', 'shift-dates', '--force']);
-  assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.match(result.stdout, /interval 5 day/);
   const empty = run(root, ['data', 'shift-dates', '--force'], '', { NO_BASELINE: '1' });
   assert.equal(empty.status, 0, empty.stdout + empty.stderr);
   assert.match(empty.stdout, /No data to use as baseline/);

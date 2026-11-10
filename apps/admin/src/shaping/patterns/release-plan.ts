@@ -30,13 +30,12 @@ export const SLICES: ReleaseSlice[] = [
     title: 'Analytics flag',
     status: 'built',
     summary:
-      'The existing admin7Design Labs flag, which Admin turns into one attribute on the page root (data-admin7-design).',
+      'The existing admin7Design Labs flag. Main passes it to ShadeApp, which writes data-admin7-design="true" on the app root.',
     reach: 'Nothing visible on its own; every slice below reads it.',
     notes: [
-      'Shade reads it with useRootFlag and the admin7-design: style variant.',
-      'Admin’s layout sets the attribute from useFeatureFlag(admin7Design), in one place.',
-      'Prototype: the menu’s View list stands in for the flag (off in Today, on in every other view).',
-      'PR: no new Labs flag; agree useRootFlag with Zimo, since isAdmin7 now stays on for the shipped pill controls. A slice gets its own admin7[feature-name] flag only when it’s released.',
+      "Main’s Shade reads it with useShade().admin7Design, and CSS with [data-admin7-design='true'] (DES-1602, #32402).",
+      "Prototype: the menu’s View list sets data-analytics-proto instead (off in Today, on in every other view), read with useRootFlag('analytics-proto') and the analytics-proto: variant. The Labs flag stays on.",
+      'PR: no new Labs flag; swap the prototype switch for useShade().admin7Design. A slice gets its own admin7[feature-name] flag only when it’s released.',
     ],
     commits: ['98af0d1c1f', 'fd5a516ff6'],
   },

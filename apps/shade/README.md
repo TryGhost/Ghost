@@ -1,25 +1,16 @@
 # Shade
 
-Ghost Design System that can be used by micro-frontends.
+Shade is Ghost's design system for React apps: the tokens, layout primitives,
+components, patterns and page templates that Ghost Admin is built with.
 
-## Usage in embedded Ghost Admin apps
+## Install in an app
 
-Ghost Admin provides Shade's CSS and application wrapper centrally. Embedded
-Admin surfaces, including `apps/admin` and `apps/activitypub`, must not import
-`@tryghost/shade/styles.css` or add another `ShadeApp` wrapper. Import
-components from their layer-specific subpaths:
+These steps are for a standalone surface: an app that owns its page, rather
+than one bundled into Ghost Admin.
 
-Example:
-
-```tsx
-import {Button} from '@tryghost/shade/components';
-
-export function Example() {
-    return <Button>Continue</Button>;
-}
-```
-
-## Usage in standalone surfaces
+Building a Ghost app, which runs framed inside Admin? Follow
+[Using Shade in a Ghost app](https://github.com/TryGhost/Ghost/blob/main/apps/shade/src/docs/ghost-apps.mdx)
+instead: it also covers fonts, Admin's theme and the page frame.
 
 Shade requires React 18 and Tailwind CSS 4.1+. The app compiles Shade's
 `styles.css` together with its own styles using Tailwind's Vite or PostCSS
@@ -85,59 +76,34 @@ createRoot(document.getElementById('root')!).render(
 `.dark` to `document.documentElement` and pass the same state to `ShadeApp` so
 portalled menus and dialogs receive the theme too.
 
-This setup is for a standalone app that owns its document. Shade includes
-document-level theme variables and base styles. Embedded Admin apps inherit
-Admin's stylesheet and application wrapper instead.
+Import from the layer subpaths, such as `@tryghost/shade/components` and
+`@tryghost/shade/primitives`, never the root `@tryghost/shade`.
 
-## Develop
+## Inside Ghost Admin
 
-This is a monorepo package.
+Shade is already set up. Ghost Admin provides Shade's CSS and the `ShadeApp`
+wrapper centrally, so embedded Admin apps, including `apps/admin` and
+`apps/activitypub`, must not import `@tryghost/shade/styles.css` or add another
+`ShadeApp`. They only import components:
 
-For a fresh clone or worktree, follow the setup instructions from the repository
-root:
+```tsx
+import {Button} from '@tryghost/shade/components';
 
-```bash
-corepack enable pnpm
-pnpm bootstrap
+export function Example() {
+    return <Button>Continue</Button>;
+}
 ```
 
-After setup, run the package commands below from `apps/shade` or with
-`pnpm --filter @tryghost/shade <command>`.
+## Docs
 
-Local docs with Storybook:
+Shade's docs are its Storybook: how to use tokens, primitives, components,
+patterns and page templates, with live examples. Browse it at
+[shade.ghost.org](https://shade.ghost.org), read the sources in
+[`src/docs/`](https://github.com/TryGhost/Ghost/tree/main/apps/shade/src/docs)
+on GitHub, or run it from a Ghost checkout with `pnpm storybook` in
+`apps/shade`.
 
-- `pnpm storybook` — run Storybook and view docs under `src/docs/`
-- `pnpm build-storybook` — build a static export
-- `pnpm build` — build the JavaScript and type declarations
+## Working on Shade?
 
-### Source exports
-
-Admin’s Vite development, production and test configurations select the `source`
-export condition to load this package directly from `src/`. Changes reach Vite
-without waiting for the library build. Consumers without that condition keep
-using the compiled exports; TypeScript continues using the generated declarations.
-The library build remains required for those consumers. Published exports only
-refer to compiled modules and declarations; the workspace-only `source`
-conditions are removed when packing.
-
-## Test
-
-- `pnpm test` — type-checks and runs Vitest with coverage
-- `pnpm test:unit` — runs Vitest
-- `pnpm test:types` — TypeScript only
-- `pnpm lint` — ESLint for `src/` and `test/`
-
-## Publishing
-
-Shade is on the continuous publish lane as a `prerelease` entry in
-[`tools/scripts/release/publish-manifest.json`](../../tools/scripts/release/publish-manifest.json).
-When a merge to `main` changes what Shade ships, CI publishes the next
-`0.1.0-alpha.N` under npm's `alpha` tag. The committed version selects the alpha
-series and npm holds the counter, so no release commits or Git tags are created.
-See [Shipping](../../docs/contributing/shipping.md#continuous-lane) for the
-release gates and the unchanged-package check.
-
-## Notes
-
-- Utilities live at `@/lib/utils` (not `@/utils`). Use `cn(...)` to merge class names and prefer CVA for variants.
-- Docs live alongside the code and are rendered via Storybook (`src/docs/*`).
+See [CONTRIBUTING.md](https://github.com/TryGhost/Ghost/blob/main/apps/shade/CONTRIBUTING.md)
+for development, layers, conventions, tests and publishing.

@@ -15,9 +15,27 @@ export const centsToDollars = (value: number) => {
   return Math.round(value / 100);
 };
 
+// The site's configured timezone, pushed in by SiteTimezoneSync once settings
+// load. Lives in module state because these helpers are plain functions with
+// no access to the settings cache; it is only read when the browser reports
+// no timezone at all.
+let siteTimezoneFallback: string | undefined;
+
+export const setSiteTimezoneFallback = (timezone: string | undefined) => {
+  siteTimezoneFallback = timezone;
+};
+
+// Chrome on Windows reports no IANA zone (undefined) when the OS time zone
+// has no ICU mapping — e.g. the time zones added in the Windows October 2026
+// update — and moment().tz() with a falsy zone acts as a getter and returns
+// undefined, crashing the caller. Fall back to the site's configured timezone,
+// and to UTC before SiteTimezoneSync has pushed it in.
+const getCurrentTimezone = () =>
+  Intl.DateTimeFormat().resolvedOptions().timeZone || siteTimezoneFallback || 'Etc/UTC';
+
 // Return today and startdate for charts
 export const getRangeDates = (range: number) => {
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timezone = getCurrentTimezone();
   const endDate = moment().tz(timezone).endOf('day');
   let startDate;
 
@@ -37,7 +55,7 @@ export const getRangeDates = (range: number) => {
 
 // Get range for date
 export const getRangeForStartDate = (startDate: string) => {
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timezone = getCurrentTimezone();
   const publishedDate = moment(startDate).tz(timezone).startOf('day');
   const today = moment().tz(timezone).startOf('day');
   const diffInDays = today.diff(publishedDate, 'days') + 1;

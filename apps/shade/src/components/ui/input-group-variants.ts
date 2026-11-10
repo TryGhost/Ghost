@@ -9,7 +9,7 @@ const inputGroupVariants = cva(
     inputSurfaceClasses.invalidWithin,
 
     // Wrapper layout + group context (input-group specific).
-    'group/input-group relative flex w-full items-center outline-hidden data-[disabled=true]:bg-control-disabled-surface [&>[data-slot=input-group-control]]:bg-transparent',
+    'group/input-group relative flex w-full items-center outline-hidden data-[disabled=true]:bg-field-disabled-surface [&>[data-slot=input-group-control]]:bg-transparent',
     'h-(--control-height) has-[>textarea]:h-auto',
 
     // Variants based on alignment.
@@ -22,18 +22,21 @@ const inputGroupVariants = cva(
     // focusing an InputGroupButton inside the group does NOT trigger the surface
     // focus ring. This is why we don't use inputSurface('within') here.
     'has-[[data-slot=input-group-control]:focus-visible]:border-focus-ring has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-focus-ring/25 has-[[data-slot=input-group-control]:focus-visible]:outline-hidden',
+    'in-data-[admin7-design=true]:has-[[data-slot=input-group-control]:focus-visible]:bg-control-surface',
   ),
   {
     variants: {
       variant: {
         default: '',
-        ghost: 'border-transparent bg-transparent shadow-none hover:bg-button-hover',
+        // Ghost and secondary groups read as buttons until used, so they keep a button's corners.
+        ghost:
+          'border-transparent bg-transparent shadow-none [--radius-field:var(--radius-control)] [--text-field:var(--text-control)] hover:bg-button-hover',
         secondary:
-          'border-transparent bg-tab-active text-secondary-foreground shadow-none hover:bg-secondary has-[[data-slot=input-group-control]:focus-visible]:bg-control-surface has-[[data-slot=input-group-control]:focus-visible]:hover:bg-control-surface has-[[data-slot=input-group-control]:not(:placeholder-shown)]:border-control-border has-[[data-slot=input-group-control]:not(:placeholder-shown)]:bg-control-surface has-[[data-slot=input-group-control]:not(:placeholder-shown)]:hover:bg-control-surface',
+          'border-transparent bg-tab-active text-secondary-foreground shadow-none [--radius-field:var(--radius-control)] [--text-field:var(--text-control)] hover:bg-secondary has-[[data-slot=input-group-control]:focus-visible]:bg-field-surface has-[[data-slot=input-group-control]:focus-visible]:hover:bg-field-surface has-[[data-slot=input-group-control]:not(:placeholder-shown)]:border-field-border has-[[data-slot=input-group-control]:not(:placeholder-shown)]:bg-field-surface has-[[data-slot=input-group-control]:not(:placeholder-shown)]:hover:bg-field-surface',
       },
       shape: {
-        rounded: 'rounded-control',
-        pill: 'rounded-full has-[>[data-align=block-end]]:rounded-control has-[>[data-align=block-start]]:rounded-control has-[>textarea]:rounded-control',
+        rounded: 'rounded-field',
+        pill: 'rounded-full has-[>[data-align=block-end]]:rounded-field has-[>[data-align=block-start]]:rounded-field has-[>textarea]:rounded-field',
       },
     },
     defaultVariants: {

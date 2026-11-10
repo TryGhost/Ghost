@@ -18,7 +18,7 @@ module.exports = class TokenService {
   }
 
   async encodeIdentityToken({ sub }) {
-    const { privateKey, kid } = await this._signingKeys.getSigningKey();
+    const { privateKey, kid, legacy } = await this._signingKeys.getSigningKey();
     return jwt.sign(
       {
         sub,
@@ -29,6 +29,7 @@ module.exports = class TokenService {
       {
         keyid: kid,
         algorithm: 'RS512',
+        allowInsecureKeySizes: legacy,
         audience: this._issuer,
         expiresIn: '10m',
         issuer: this._issuer,
@@ -37,7 +38,7 @@ module.exports = class TokenService {
   }
 
   async encodeEntitlementToken({ sub, memberUuid, paid, activeTierIds = [] }) {
-    const { privateKey, kid } = await this._signingKeys.getSigningKey();
+    const { privateKey, kid, legacy } = await this._signingKeys.getSigningKey();
 
     return jwt.sign(
       {
@@ -53,6 +54,7 @@ module.exports = class TokenService {
       {
         keyid: kid,
         algorithm: 'RS512',
+        allowInsecureKeySizes: legacy,
         audience: this._issuer,
         expiresIn: '5m',
         issuer: this._issuer,

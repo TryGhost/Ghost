@@ -50,7 +50,7 @@ export default defineService(
     const labs = require('../../../shared/labs');
 
     // Boot sets up the custom fields services first, as shipping saves into custom fields.
-    if (!metafields.bindings) {
+    if (!metafields.bindings || !metafields.fields) {
       throw new errors.IncorrectUsageError({
         message: 'The custom fields services must be set up before the Stripe Checkout config.',
       });
@@ -62,6 +62,7 @@ export default defineService(
       knex,
       recordAction,
       bindings: metafields.bindings,
+      fields: metafields.fields,
       logging,
     });
     const checkouts = new CheckoutService({ config, labs, logging });
@@ -72,7 +73,7 @@ export default defineService(
       // Looked up on each use: Stripe, tiers and members are set up later in boot.
       previews: new CheckoutPreviewService({
         stripeConnected: () => require('../stripe').api.configured,
-        readTier: (id) => require('../tiers').api.read(id),
+        readTier: (id) => require('../tiers').default.service.api.read(id),
         checkouts,
         createPreviewLink: (params) =>
           require('../members').api.paymentsService.getPreviewLink(params),

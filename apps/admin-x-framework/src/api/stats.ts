@@ -330,8 +330,7 @@ export interface PostMemberCounts {
  * Visitor counts for a batch of posts, keyed by post uuid.
  *
  * The uuid list is part of the query key, so changing the filter starts a new
- * query rather than writing a stale response over the new one — which is what
- * the Ember service's manual generation counter existed to prevent.
+ * query rather than writing a stale response over the new one.
  */
 export const usePostVisitorCounts = (postUuids: string[], { enabled = true } = {}) => {
   const fetchApi = useFetchApi();

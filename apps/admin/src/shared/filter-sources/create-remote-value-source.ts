@@ -4,12 +4,23 @@ import {
   type ValueSourceParams,
   type ValueSourceState,
 } from '@tryghost/shade/patterns';
+import type { RequestOptions } from '@tryghost/admin-x-framework/hooks';
 import { mergeFilterOptions } from './utils';
 import { useDebounce } from 'use-debounce';
 import { useMemo } from 'react';
 
+/**
+ * Options for the source's own requests. The editor turns off the global error
+ * handler and the session-expiry redirect, since it handles both itself.
+ */
+export type ValueSourceQueryOptions = {
+  defaultErrorHandler?: boolean;
+  requestOptions?: Pick<RequestOptions, 'sessionExpiryRedirect'>;
+};
+
 export type ValueSourceHookOptions = {
   enabled?: boolean;
+  queryOptions?: ValueSourceQueryOptions;
 };
 
 export type ValueSourceHook<T = string> = (options?: ValueSourceHookOptions) => ValueSource<T>;
@@ -84,10 +95,10 @@ export function createRemoteValueSource<Item, T = string>(
   config: RemoteValueSourceConfig<Item, T>,
 ): RemoteValueSourceHook<T, Item> {
   return function useRemoteValueSource(options = {}): RemoteValueSource<T, Item> {
-    const { enabled = true } = options;
+    const { enabled = true, queryOptions } = options;
 
     const useInitialBrowse = (): RemoteProbeState<Item, T> => {
-      const browse = config.useBrowse('', { enabled: true });
+      const browse = config.useBrowse('', { enabled: true, queryOptions });
       const initialOptions = useMemo(() => {
         return (browse.data || []).map(config.toOption);
       }, [browse.data]);
@@ -102,8 +113,8 @@ export function createRemoteValueSource<Item, T = string>(
 
     const useOptions = ({ query, selectedValues }: ValueSourceParams<T>): ValueSourceState<T> => {
       const [debouncedQuery] = useDebounce(query, config.debounceMs ?? 200);
-      const browse = config.useBrowse(debouncedQuery, { enabled });
-      const hydrated = config.useHydrate?.(selectedValues, { enabled });
+      const browse = config.useBrowse(debouncedQuery, { enabled, queryOptions });
+      const hydrated = config.useHydrate?.(selectedValues, { enabled, queryOptions });
 
       const visibleOptions = useMemo(() => {
         return (browse.data || []).map(config.toOption);

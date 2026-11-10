@@ -4,12 +4,8 @@ import {
   type MetafieldChangeSource,
 } from '@tryghost/metafield-types';
 
-// Port of Ember `app/helpers/parse-member-event.js`.
-// The Ember helper is a Glimmer helper with injected services; we take the
-// tiny slice of settings-derived context it actually reads (`hasMultipleTiers`,
-// `paidMembersEnabled`, `hasMultipleNewsletters`) as an explicit argument so
-// the transform stays pure and testable in vitest — no react context/hooks
-// hidden inside.
+// Settings-derived context is passed in explicitly so the transform stays pure
+// and testable, with no React context or hooks hidden inside.
 
 export interface MemberEventContext {
   hasMultipleNewsletters: boolean;
@@ -42,7 +38,7 @@ export interface RawMemberEvent {
       avatar_image?: string | null;
     } | null;
     name?: string;
-    // The Ember helper reads many arbitrary event-specific fields — the
+    // Events carry many arbitrary event-specific fields — the
     // rest come through as `unknown` so we don't over-model this at the
     // seam. Union-ing all shapes here would be a maintenance treadmill.
     [k: string]: unknown;
@@ -72,11 +68,8 @@ export interface ParsedMemberEvent {
 }
 
 /**
- * Ember uses `getNonDecimal(amount, currency)` from `ghost-admin/utils/currency`
- * to divide the minor-units integer by the correct denominator per currency
- * (e.g. 100 for USD/EUR, 1 for JPY). We port a minimal version here so the
- * gift-purchase row can display the amount without pulling in the whole utils
- * module. Zero-decimal currencies match the Stripe list.
+ * Divides the minor-units integer by the currency's denominator (e.g. 100 for
+ * USD/EUR, 1 for JPY). Zero-decimal currencies match the Stripe list.
  */
 const ZERO_DECIMAL_CURRENCIES = new Set([
   'bif',
@@ -332,8 +325,8 @@ function getAction(event: RawMemberEvent, hasMultipleNewsletters: boolean): stri
     return 'Made a one-time payment';
   }
   if (event.type === 'gift_purchase_event') {
-    // Matches Ember `parse-member-event.js:277-285` — the amount, tier,
-    // and duration are the row's whole story, so drop none of them.
+    // The amount, tier, and duration are the row's whole story, so drop none
+    // of them.
     const amount = event.data.amount as number | undefined;
     const currency = event.data.currency as string | undefined;
     const tierName = event.data.tier_name as string | undefined;
@@ -423,18 +416,16 @@ function getInfo(event: RawMemberEvent, ctx: MemberEventContext): string | null 
   if (event.type === 'gift_redemption_event') {
     return (event.data.tier_name as string | undefined) ?? undefined;
   }
-  // Ember additionally renders MRR deltas for subscription_event and money
-  // amounts for donation_event using currency utils. We defer that: those
-  // rows still parse and render an action, just without the info suffix.
+  // subscription_event MRR deltas and donation_event amounts get no info
+  // suffix; those rows still parse and render an action.
   return undefined;
 }
 
 function getDescription(event: RawMemberEvent): string | undefined {
   if (event.type === 'click_event') {
     const link = event.data.link as { to?: string } | undefined;
-    // Ember runs `cleanTrackedUrl` here to strip tracking params. We don't
-    // have that util in this app yet — return the raw URL as a graceful
-    // fallback rather than dropping the description entirely.
+    // Tracking params are not stripped; the raw URL beats dropping the
+    // description entirely.
     return link?.to;
   }
   return undefined;
@@ -505,7 +496,7 @@ export function parseMemberEvent(
     subject,
     action: getAction(event, ctx.hasMultipleNewsletters),
     actionTitle: getActionTitle(event, ctx.hasMultipleNewsletters),
-    // The dash separator Ember uses between action and object in inline layouts.
+    // The dash separator between action and object in inline layouts.
     join: '–',
     object: getObject(event),
     source: getSource(event),
@@ -513,8 +504,7 @@ export function parseMemberEvent(
     description: getDescription(event),
     url: getUrl(event),
     route: getRoute(event),
-    // Keep as ISO string — consumers format for display (`moment.fromNow`
-    // in Ember; `date-fns` or similar in React). Not tied to a specific lib.
+    // Keep as ISO string — consumers format for display. Not tied to a specific lib.
     timestamp: event.data.created_at,
   };
 }

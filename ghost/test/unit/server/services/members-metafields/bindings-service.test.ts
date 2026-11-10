@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 import { MetafieldBindingsService } from '../../../../../core/server/services/members-metafields/bindings-service';
+import {
+  FIELDS_TABLE,
+  type FieldSource,
+} from '../../../../../core/server/services/members-metafields/queries';
 
 // What a port resolves to. Every port here resolves to the same field, because where a
 // value lands is not what any of these are about.
@@ -43,8 +47,22 @@ const values = {
   },
 } as never;
 
+/**
+ * The fields as stored, so these don't depend on how the field source builds its reads, which
+ * is covered over the API.
+ */
+const fields: FieldSource = {
+  table: () => FIELDS_TABLE,
+  definitions: () => {
+    throw new Error('Not read by the bindings service.');
+  },
+  locked: () => {
+    throw new Error('Not read by the bindings service.');
+  },
+};
+
 const serviceResolving = (row: unknown = BOUND_ROW) =>
-  new MetafieldBindingsService({ knex: knexReturning(row), values });
+  new MetafieldBindingsService({ knex: knexReturning(row), fields, values });
 
 const ADDRESS = { port: 'shipping_address', value: '1 High Street' };
 
@@ -92,7 +110,11 @@ describe('MetafieldBindingsService', function () {
           return BOUND_ROW;
         },
       };
-      const service = new MetafieldBindingsService({ knex: (() => chain) as never, values });
+      const service = new MetafieldBindingsService({
+        knex: (() => chain) as never,
+        values,
+        fields,
+      });
 
       // Finding where a value goes is a database query, and it can fail the way checking
       // one can. Neither is a reason to give up on the values either side of it.

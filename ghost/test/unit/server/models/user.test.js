@@ -192,6 +192,57 @@ describe('Unit: models/user', function () {
       assert.equal(add.firstCall.args[0].accessibility, undefined);
     });
 
+    describe('owner role', function () {
+      const ownerRoleId = '5951f5fca366002ebd5dbef7';
+
+      function stubRoles() {
+        const ownerRole = {
+          id: ownerRoleId,
+          get: (key) => (key === 'name' ? 'Owner' : undefined),
+        };
+
+        return sinon.stub(models.Role, 'findOne').callsFake(async (data) => {
+          if (data.name === 'Owner' || data.id === ownerRoleId) {
+            return ownerRole;
+          }
+          return null;
+        });
+      }
+
+      const ownerRoleInputs = {
+        'by name': 'Owner',
+        'by id': ownerRoleId,
+        'by object with id': { id: ownerRoleId },
+        'by object with name': { name: 'Owner' },
+      };
+
+      for (const [description, role] of Object.entries(ownerRoleInputs)) {
+        it(`refuses the Owner role given ${description}`, async function () {
+          stubRoles();
+          const add = sinon.stub(ghostBookshelf.Model, 'add').resolves({ id: 'user-id' });
+
+          await assert.rejects(
+            models.User.add(
+              {
+                name: 'Second Owner',
+                email: 'owner2@example.com',
+                roles: [role],
+              },
+              { context: { internal: true } },
+            ),
+            (err) => {
+              assert.equal(err instanceof errors.ValidationError, true);
+              assert.equal(err.message, 'This method does not support assigning the owner role');
+              return true;
+            },
+          );
+
+          // The guard runs before the user is inserted
+          assert.equal(add.called, false);
+        });
+      }
+    });
+
     it('preserves an explicit accessibility preference for new users', async function () {
       const add = stubParentAdd();
 

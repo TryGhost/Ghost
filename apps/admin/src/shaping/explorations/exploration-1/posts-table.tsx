@@ -57,7 +57,9 @@ const PostsTable: React.FC<PostsTableProps> = ({ topPostsData, isLoading, classN
       analytics: { webAnalytics, membersTrackSources },
     });
     const opensEditor = destination.startsWith('/editor/');
-    navigate(destination, { state: opensEditor ? editorReturnState(location) : undefined });
+    navigate(destination, {
+      state: opensEditor ? editorReturnState(`${location.pathname}${location.search}`) : undefined,
+    });
   };
 
   return (

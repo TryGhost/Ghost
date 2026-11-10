@@ -75,8 +75,8 @@ function isTinybirdRunning() {
 // run`. That would re-run the tb-cli entrypoint (a full datafile deploy), and,
 // worse, compose would recreate any dependency whose config differs from the
 // compose files listed here — silently replacing a tinybird-local started from
-// an override (see e2e/compose.e2e.tinybird-slim.yaml). `docker cp` reads the
-// same file straight from the exited container and cannot diverge.
+// a different config. `docker cp` reads the same file straight from the exited
+// container and cannot diverge.
 function fetchConfigFromTbCli() {
   const container = findContainer('tb-cli', ['-a']);
 

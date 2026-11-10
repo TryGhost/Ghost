@@ -15,6 +15,7 @@ export function ProductNodeComponent({
     nodeKey,
     buttonText,
     buttonUrl,
+    imgAlt,
     imgHeight,
     imgSrc,
     imgWidth,
@@ -76,6 +77,14 @@ export function ProductNodeComponent({
         editor.update(() => {
             const node = $getNodeByKey(nodeKey);
             node.productImageSrc = '';
+            node.productImageAlt = '';
+        });
+    };
+
+    const handleImgAltChange = (value) => {
+        editor.update(() => {
+            const node = $getNodeByKey(nodeKey);
+            node.productImageAlt = value;
         });
     };
 
@@ -132,6 +141,7 @@ export function ProductNodeComponent({
                 description={description}
                 descriptionEditor={descriptionEditor}
                 descriptionEditorInitialState={descriptionEditorInitialState}
+                imgAlt={imgAlt}
                 imgDragHandler={imgDragHandler}
                 imgHeight={imgHeight}
                 imgMimeTypes={imgMimeTypes}
@@ -150,6 +160,7 @@ export function ProductNodeComponent({
                 onButtonTextChange={handleButtonTextChange}
                 onButtonToggle={handleButtonToggle}
                 onButtonUrlChange={handleButtonUrlChange}
+                onImgAltChange={handleImgAltChange}
                 onImgChange={handleImgChange}
                 onRatingChange={handleRatingChange}
                 onRatingToggle={handleRatingToggle}

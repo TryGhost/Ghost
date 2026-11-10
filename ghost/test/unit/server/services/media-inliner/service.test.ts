@@ -6,7 +6,7 @@ import sinon from 'sinon';
 // Required rather than imported so the stub lands on the same module instance
 // the service requires
 const adapterManager = require('../../../../../core/server/services/adapter-manager').default;
-const mediaInlinerService = require('../../../../../core/server/services/media-inliner');
+const mediaInlinerService = require('../../../../../core/server/services/media-inliner').default;
 
 const readFixture = (fixture: string) =>
   fs.readFileSync(path.join(__dirname, '../../../../utils/fixtures/images', fixture));
@@ -27,7 +27,7 @@ describe('media-inliner service', function () {
     sinon.stub(adapterManager, 'getAdapter').callsFake((name) => storages[name as string]);
 
     await mediaInlinerService.init();
-    getMediaStorage = mediaInlinerService.getInstance().getMediaStorage;
+    getMediaStorage = mediaInlinerService.service.getMediaStorage;
   });
 
   afterEach(function () {

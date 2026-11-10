@@ -31,8 +31,15 @@ export interface QueueDeclaration {
 
 export type JobProcessor = (envelope: JobEnvelope) => Promise<void>;
 
+// What finally happened to an enqueued job: it completed, or the backend gave
+// up on it and will not run it again.
+export type JobSettlement = { status: 'completed' } | { status: 'dead'; error: unknown };
+
 export interface JobsStartOptions {
   processor: JobProcessor;
+  // Called once per enqueued job when it settles, with the id it was enqueued
+  // with. Never called for recurring ticks, which were never enqueued.
+  onSettled?: (id: string, settlement: JobSettlement) => Promise<void> | void;
   // Queues declared by registered handlers. A backend that cannot satisfy a
   // declared queue's constraints - whatever that means for its implementation -
   // must fail loudly here rather than silently dropping the declaration.

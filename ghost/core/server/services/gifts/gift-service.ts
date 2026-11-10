@@ -66,11 +66,11 @@ interface MemberRepository {
     options?: Record<string, unknown>,
   ): Promise<MemberModel | null>;
   update(data: Record<string, unknown>, options?: Record<string, unknown>): Promise<unknown>;
-  triggerMemberSignupAutomation(
-    member: MemberModel,
-    memberStatus: 'free' | 'paid',
-    options?: Record<string, unknown>,
-  ): Promise<unknown>;
+  notifyMembershipStartedAutomation(options: {
+    member: MemberModel;
+    memberStatus: 'free' | 'paid';
+    bookshelfOptions: Record<string, unknown>;
+  }): Promise<unknown>;
 }
 
 type Tier = Omit<GiftCheckoutTier, 'currency'> & {
@@ -373,13 +373,7 @@ export class GiftService {
 
     const resolvedDuration: ResolvedGiftDuration = resolveGiftDuration(input);
 
-    let tier: Tier | null;
-    try {
-      tier = await this.deps.tiersService.api.read(input.tierId);
-    } catch (err) {
-      logging.error(err);
-      tier = null;
-    }
+    const tier: Tier | null = await this.deps.tiersService.api.read(input.tierId);
 
     if (!tier) {
       throw new errors.BadRequestError({
@@ -903,20 +897,21 @@ export class GiftService {
     options: { transacting: Knex.Transaction; newMember?: boolean },
   ): Promise<{ redeemed: Gift; member: MemberModel }> {
     const { transacting } = options;
-    const member = await this.deps.memberRepository.get(
-      { id: memberId },
-      { transacting, forUpdate: true },
-    );
-    if (!member) {
-      throw new errors.NotFoundError({ message: `Member not found: ${memberId}` });
-    }
-
+    // Gift before member, the lock order every gift flow uses
     const gift = await this.deps.giftRepository.getByToken(token, { transacting, forUpdate: true });
     if (!gift) {
       throw new errors.NotFoundError({
         message: tpl(errorMessages.giftNotFound),
         code: 'GIFT_NOT_FOUND',
       });
+    }
+
+    const member = await this.deps.memberRepository.get(
+      { id: memberId },
+      { transacting, forUpdate: true },
+    );
+    if (!member) {
+      throw new errors.NotFoundError({ message: `Member not found: ${memberId}` });
     }
 
     if (options.newMember) {
@@ -944,7 +939,11 @@ export class GiftService {
     await this.deps.giftDeliveryService.cancelPendingForGift(redeemed.token, { transacting });
 
     // Gift members receive the paid welcome email, as they receive access to paid content
-    await this.deps.memberRepository.triggerMemberSignupAutomation(member, 'paid', { transacting });
+    await this.deps.memberRepository.notifyMembershipStartedAutomation({
+      member,
+      memberStatus: 'paid',
+      bookshelfOptions: { transacting },
+    });
 
     return { redeemed, member };
   }
@@ -1155,31 +1154,36 @@ export class GiftService {
       return false;
     }
 
-    const refunded = gift.refund();
-
-    if (!refunded) {
-      return true;
-    }
-
     await this.deps.giftRepository.transaction(async (transacting) => {
+      const locked = await this.deps.giftRepository.getByToken(gift.token, {
+        transacting,
+        forUpdate: true,
+      });
+      const refunded = locked?.refund();
+
+      if (!refunded) {
+        return;
+      }
+
+      const { redeemerMemberId } = refunded;
+      const member = redeemerMemberId
+        ? await this.deps.memberRepository.get(
+            { id: redeemerMemberId },
+            { transacting, forUpdate: true },
+          )
+        : null;
+
       await this.deps.giftRepository.update(refunded, { transacting });
       await this.deps.giftDeliveryService.cancelPendingForGift(refunded.token, { transacting });
 
-      if (gift.redeemerMemberId) {
-        const member = await this.deps.memberRepository.get(
-          { id: gift.redeemerMemberId },
-          { transacting },
+      if (redeemerMemberId && member?.get('status') === 'gift') {
+        await this.deps.memberRepository.update(
+          {
+            products: [],
+            status: 'free',
+          },
+          { id: redeemerMemberId, transacting },
         );
-
-        if (member?.get('status') === 'gift') {
-          await this.deps.memberRepository.update(
-            {
-              products: [],
-              status: 'free',
-            },
-            { id: gift.redeemerMemberId, transacting },
-          );
-        }
       }
     });
 

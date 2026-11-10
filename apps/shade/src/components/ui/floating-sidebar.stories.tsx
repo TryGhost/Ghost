@@ -36,7 +36,13 @@ const items = [
   { icon: Settings, label: 'Settings' },
 ];
 
-function Example({ defaultPinned }: { defaultPinned: boolean }) {
+function Example({
+  defaultPinned,
+  headerHidden,
+}: {
+  defaultPinned: boolean;
+  headerHidden?: boolean;
+}) {
   const [pinned, setPinned] = useState(defaultPinned);
 
   return (
@@ -44,8 +50,10 @@ function Example({ defaultPinned }: { defaultPinned: boolean }) {
       {/* Pinned, its gap pushes the content aside */}
       <FloatingSidebar
         header={<span className="truncate text-lg font-medium">My site</span>}
+        headerHidden={headerHidden}
         icon={<span className="block bg-foreground" />}
         label="My site"
+        pinLocked={headerHidden}
         pinned={pinned}
         onPinnedChange={setPinned}
       >
@@ -86,6 +94,17 @@ export const Pinned: Story = {
       description: {
         story:
           'Docked beside the content, which it offsets. Hover it for the button that unpins it.',
+      },
+    },
+  },
+};
+
+export const HeaderHidden: Story = {
+  render: () => <Example defaultPinned headerHidden />,
+  parameters: {
+    docs: {
+      description: {
+        story: 'Without the header row, for a screen whose navigation has its own top row.',
       },
     },
   },

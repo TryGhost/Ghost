@@ -13,8 +13,8 @@ import { cn } from '@tryghost/shade/utils';
 export type AdminFrameMode = 'full' | 'site' | 'hidden' | 'off';
 
 const ADMIN_FRAME_TOP_BAR_HEIGHT = 44;
-const BEZEL = 10;
-const CARD_RADIUS = 10;
+const BEZEL = 8;
+const CARD_RADIUS = 12;
 
 /** The frame's timing, for motion choreographed with it. */
 const ADMIN_FRAME_TRANSITION = {
@@ -44,6 +44,8 @@ interface AdminFrameProps {
   topBar: React.ReactNode;
   /** Dims the top bar and takes it out of reach (e.g. while the page is locked). */
   locked?: boolean;
+  /** Shown beside the card, below the top bar (the side panel). */
+  aside?: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -53,7 +55,7 @@ interface AdminFrameProps {
  * corners, the top bar's slide and the floating sidebar's offset all read
  * them, and move in step.
  */
-export function AdminFrame({ mode, topBar, locked = false, children }: AdminFrameProps) {
+export function AdminFrame({ mode, topBar, locked = false, aside, children }: AdminFrameProps) {
   const { top, side, radius } = frameInsets(mode);
   const topBarRef = React.useRef<HTMLDivElement>(null);
 
@@ -102,15 +104,18 @@ export function AdminFrame({ mode, topBar, locked = false, children }: AdminFram
           {topBar}
         </div>
       )}
-      <div
-        className={cn(
-          'relative min-h-0 flex-1 overflow-hidden bg-background',
-          // On a dark page the card's edge would melt into the frame
-          mode === 'full' && 'dark:ring-1 dark:ring-border-glass',
-        )}
-        style={{ borderRadius: 'var(--admin-frame-radius)' }}
-      >
-        {children}
+      <div className="flex min-h-0 flex-1">
+        <div
+          className={cn(
+            'relative min-w-0 flex-1 overflow-hidden bg-background',
+            // On a dark page the card's edge would melt into the frame
+            mode === 'full' && 'dark:ring-1 dark:ring-border-glass',
+          )}
+          style={{ borderRadius: 'var(--admin-frame-radius)' }}
+        >
+          {children}
+        </div>
+        {aside}
       </div>
     </div>
   );

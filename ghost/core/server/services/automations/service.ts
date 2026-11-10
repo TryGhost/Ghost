@@ -16,8 +16,7 @@ import logging from '@tryghost/logging';
 import emailAnalyticsJobs from '../email-analytics/jobs';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 import { welcomeEmailAutomationPoll } from './welcome-email-automation-poll';
-// @ts-expect-error This module currently lacks type definitions.
-import memberWelcomeEmailService from '../member-welcome-emails/service';
+import memberWelcomeEmails from '../member-welcome-emails';
 
 type AutomationsServiceOptions = {
   apiUrl: string;
@@ -103,7 +102,7 @@ export class AutomationsService {
       oneAtATime(() =>
         poll({
           automationsApi,
-          memberWelcomeEmailService,
+          memberWelcomeEmailService: memberWelcomeEmails.service,
           scheduleAutomationEmailAnalyticsJob,
           enqueueAnotherPollAt: enqueuePollAt,
         }),
@@ -114,7 +113,7 @@ export class AutomationsService {
       StartAutomationsPollEvent,
       oneAtATime(() =>
         welcomeEmailAutomationPoll({
-          memberWelcomeEmailService,
+          memberWelcomeEmailService: memberWelcomeEmails.service,
           enqueueAnotherPollAt: enqueuePollAt,
         }),
       ),

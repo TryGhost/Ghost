@@ -1,4 +1,3 @@
-import * as assert from 'assert/strict';
 import {
   SOCIAL_PLATFORM_CONFIG_BY_KEY,
   normalizeSocialInput,
@@ -7,8 +6,8 @@ import {
 describe('normalizeSocialInput', () => {
   it('returns empty display and null stored for empty input', () => {
     const result = normalizeSocialInput('linkedin', '');
-    assert.equal(result.displayValue, '');
-    assert.equal(result.storedValue, null);
+    expect(result.displayValue).toBe('');
+    expect(result.storedValue).toBeNull();
   });
 
   it('produces a displayValue that round-trips through storage', () => {
@@ -27,10 +26,8 @@ describe('normalizeSocialInput', () => {
     for (const { key, input } of cases) {
       const { displayValue, storedValue } = normalizeSocialInput(key, input);
       const expected = SOCIAL_PLATFORM_CONFIG_BY_KEY[key].toDisplayValue(storedValue);
-      assert.equal(
-        displayValue,
+      expect(displayValue, `displayValue should round-trip for ${key} input "${input}"`).toBe(
         expected,
-        `displayValue should round-trip for ${key} input "${input}"`,
       );
     }
   });
@@ -40,8 +37,8 @@ describe('normalizeSocialInput', () => {
     // platform rules entirely). Display must never crash the settings UI —
     // the raw value is shown and validation flags it when the user edits.
     const { toDisplayValue } = SOCIAL_PLATFORM_CONFIG_BY_KEY.twitter;
-    assert.equal(toDisplayValue('not a valid handle!!'), 'not a valid handle!!');
-    assert.equal(toDisplayValue('@ghost'), 'https://x.com/ghost');
+    expect(toDisplayValue('not a valid handle!!')).toBe('not a valid handle!!');
+    expect(toDisplayValue('@ghost')).toBe('https://x.com/ghost');
   });
 
   it('strips the regional subdomain from LinkedIn display because it is not in storage', () => {
@@ -52,7 +49,7 @@ describe('normalizeSocialInput', () => {
       'linkedin',
       'https://uk.linkedin.com/in/ghost-team',
     );
-    assert.equal(storedValue, 'ghost-team');
-    assert.equal(displayValue, 'https://www.linkedin.com/in/ghost-team');
+    expect(storedValue).toBe('ghost-team');
+    expect(displayValue).toBe('https://www.linkedin.com/in/ghost-team');
   });
 });
