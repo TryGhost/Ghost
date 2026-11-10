@@ -214,6 +214,11 @@ describe('metafield-types catalog', function () {
         success: true,
         data: '+14155550100',
       });
+      // After the 00 most countries dial abroad with, as after a +.
+      assert.deepEqual(rule.safeParse('0044 20 7946 0000'), {
+        success: true,
+        data: '+442079460000',
+      });
     });
 
     // The 0 is dialled only from inside the country, so after the country code it is dropped.
@@ -233,13 +238,14 @@ describe('metafield-types catalog', function () {
       const countryCode =
         'Enter the phone number with its country code, starting with +, like +44 20 7946 0000.';
       assert.equal(rule.safeParse('020 7946 0000').error?.issues[0]?.message, countryCode);
-      assert.equal(rule.safeParse('0044 20 7946 0000').error?.issues[0]?.message, countryCode);
     });
 
     it('is refused when the country it names has no number like it', function () {
       const invalid = 'Enter a valid phone number, like +44 20 7946 0000.';
       assert.equal(rule.safeParse('+44 20 7946 000').error?.issues[0]?.message, invalid);
       assert.equal(rule.safeParse('+999 1234567').error?.issues[0]?.message, invalid);
+      // The right length for France, in a range France hasn't given out.
+      assert.equal(rule.safeParse('+33 7 01 23 45 67').error?.issues[0]?.message, invalid);
     });
 
     // Not told to add the country code it already has.
@@ -258,6 +264,11 @@ describe('metafield-types catalog', function () {
       assert.equal(phoneNumberIn('020 7946 0000', 'AQ'), undefined);
       assert.equal(phoneNumberIn('020 7946 0000', undefined), undefined);
       assert.equal(phoneNumberIn('+44 20 7946 0000', undefined), '+442079460000');
+    });
+
+    it('reads 00 as the way abroad when its country dials abroad otherwise', function () {
+      assert.equal(phoneNumberIn('0044 20 7946 0000', 'US'), '+442079460000');
+      assert.equal(phoneNumberIn('011 44 20 7946 0000', 'US'), '+442079460000');
     });
 
     it('is refused with an extension rather than losing it', function () {
