@@ -89,6 +89,7 @@
     "Could not sign in. Login link expired.": "로그인할 수 없어요. 로그인 링크가 만료되었어요.",
     "Could not update email! Invalid link.": "이메일을 업데이트할 수 없어요! 잘못된 링크이에요.",
     "Country": "",
+    "Country code": "",
     "Create a new contact": "새 연락처 만들기",
     "Current plan": "현재 요금제",
     "Delete account": "계정 삭제",

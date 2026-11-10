@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   FIELD_STRUCTURES,
   editableAnswers,
@@ -15,6 +15,17 @@ import {
   type TextFormat,
 } from '@tryghost/metafield-types/structure';
 import type { ShapeText } from '@tryghost/metafield-types/shapes';
+import {
+  CALLING_CODES,
+  flagOf,
+  holdNumber,
+  phoneCountryOptions,
+  pickCountry,
+  shownCountry,
+  startPhoneEntry,
+  typeNumber,
+  type PhoneEntry,
+} from '@tryghost/metafield-types/phone';
 
 import InputForm from './input-form';
 import ListPicker from './list-picker';
@@ -41,6 +52,30 @@ export const MemberCustomFieldsStyles = `
         list-style: none;
         margin: 6px 0 0;
         padding: 0;
+    }
+
+    /* A phone number's country and number, side by side as one input. */
+    .gh-portal-phone-input {
+        display: flex;
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* The country, shown as its flag and calling code, takes only the room those need. */
+    .gh-portal-input-group-row .gh-portal-input-section.gh-portal-phone-country {
+        flex: 0 0 auto;
+    }
+
+    .gh-portal-phone-country .gh-portal-listpicker-trigger {
+        flex: 0 0 auto;
+        min-width: 0;
+    }
+
+    /* Lifted while in use, above the number even when the number is focused or refused, which
+       lifts it too, so the country's border shows whole against the number's. */
+    .gh-portal-phone-country .gh-portal-listpicker-field:focus-within,
+    .gh-portal-phone-country .gh-portal-listpicker.is-open .gh-portal-listpicker-field {
+        z-index: 2;
     }
 
     .gh-portal-custom-field-errors li {
@@ -70,22 +105,33 @@ const LIST_OPTIONS: {
 };
 
 /**
- * The input each text format is typed into. A phone number gets a phone input, so phones show a
- * number keypad, and asks to be filled in with the member's own number.
+ * The input each text format is typed into: an input of that type, or for a phone number a phone
+ * input beside a choice of the country it is from, so a member can write it as they would at home.
  */
 const TEXT_INPUT: { [F in TextFormat]: TextInput } = {
   line: { type: 'text' },
   code: { type: 'text' },
   long: { type: 'textarea' },
-  phone: { type: 'tel', autoComplete: 'tel' },
+  phone: { type: 'phone' },
 };
 
 interface TextInput {
-  type: 'text' | 'textarea' | 'tel';
-  autoComplete?: string;
+  type: 'text' | 'textarea' | 'phone';
 }
 
 type LeafInput = TextInput | { type: 'select'; options: { value: string; label: string }[] };
+
+/** A leaf's input as a field draws it: what it holds, what it's called, and how it reads out. */
+type DrawnLeaf = LeafInput & {
+  value: string;
+  label: string;
+  name: string;
+  hideLabel?: boolean;
+  placeholder?: string;
+  invalid?: boolean;
+  describedBy?: string | undefined;
+  readOnly?: boolean;
+};
 
 const leafInput = (
   leaf: Leaf,
@@ -150,29 +196,146 @@ function FieldErrors({ id, messages }: { id: string; messages: string[] }) {
   );
 }
 
-/** A field that holds one value: one input. */
+/**
+ * A phone number, written beside the country it is from, as Stripe Checkout asks for one: the
+ * country as its flag and code, picked from a list of every country that can be searched by name or
+ * by code, and the number. The list opens across the whole input. A member writes the number as
+ * they would at home and the country's code goes in front, or writes it with its code, and the
+ * country shown follows. The site keeps it in one international form.
+ */
+function PhoneInput({
+  value,
+  readOnly,
+  onChange,
+  onKeyDown,
+  ...input
+}: Omit<DrawnLeaf, 'type'> & {
+  onChange: (text: string) => void;
+  onKeyDown?: ((event: React.KeyboardEvent) => void) | undefined;
+}) {
+  const disabled = hasMode(['preview']) || isCookiesDisabled();
+  const options = useMemo(() => phoneCountryOptions(countryOptions()), []);
+  const phoneRef = useRef<HTMLDivElement>(null);
+  const [entry, setEntry] = useState(() => startPhoneEntry(value, navigator.languages ?? []));
+  // What this input last sent. A value that differs came from the site, such as the number it
+  // kept after a save, and replaces what was typed.
+  const sent = useRef(value);
+  useEffect(() => {
+    if (value !== sent.current) {
+      sent.current = value;
+      setEntry((current) => holdNumber(current, value));
+    }
+  }, [value]);
+
+  const country = shownCountry(entry.typed, entry.picked);
+  const send = (next: { entry: PhoneEntry; number: string }) => {
+    setEntry(next.entry);
+    sent.current = next.number;
+    onChange(next.number);
+  };
+
+  return (
+    <div ref={phoneRef} className="gh-portal-phone-input">
+      <div className="gh-portal-input-section gh-portal-phone-country">
+        <ListPicker
+          alignTo={phoneRef}
+          answerText={(code) => `${flagOf(code)} +${CALLING_CODES[code]}`}
+          clearable={false}
+          // A number is refused as a whole, and its country is often what puts it right.
+          describedBy={input.describedBy}
+          disabled={disabled}
+          id={`input-${input.name}-country`}
+          invalid={Boolean(input.invalid)}
+          label={t('Country code')}
+          multiple={false}
+          options={options}
+          placeholder="+"
+          readOnly={readOnly ?? false}
+          value={country ? [country] : []}
+          // The country shown, picked again, changes nothing, as a select's own option doesn't.
+          onChange={([to]) => {
+            if (to && to !== country) {
+              send(pickCountry(entry, to));
+            }
+          }}
+        />
+      </div>
+      <InputForm
+        fields={[{ ...input, type: 'tel', autoComplete: 'tel', value: entry.typed, readOnly }]}
+        onChange={(event: { target: { value: string } }) =>
+          send(typeNumber(entry, event.target.value))
+        }
+        onKeyDown={onKeyDown}
+      />
+    </div>
+  );
+}
+
+/**
+ * A leaf's input, beside any others of its row: a phone number as its country and its number, and
+ * anything else as one input. Declared here rather than inside a field: a component made afresh on
+ * every render is a new type each time, so React would replace the inputs on every keystroke and
+ * take the member's focus with them.
+ */
+function LeafInputs({
+  leaf,
+  onChange,
+  onKeyDown,
+}: {
+  leaf: DrawnLeaf;
+  onChange: (text: string) => void;
+  onKeyDown?: ((event: React.KeyboardEvent) => void) | undefined;
+}) {
+  if (leaf.type === 'phone') {
+    return <PhoneInput {...leaf} onChange={onChange} onKeyDown={onKeyDown} />;
+  }
+  return (
+    <InputForm
+      fields={[leaf]}
+      onChange={(event: { target: { value: string } }) => onChange(event.target.value)}
+      onKeyDown={onKeyDown}
+    />
+  );
+}
+
+/** A field that holds one value: one input, or a phone number's country and number. */
 function ScalarField({ field, value, errors, onChange, onKeyDown }: FieldProps<'scalar'>) {
   const name = `custom:${field.key}`;
   const held = scalarValue(value);
   const error = errors[name];
   const errorsId = `custom-${field.key}-errors`;
+  const leaf: DrawnLeaf = {
+    ...leafInput(FIELD_STRUCTURES[field.type].leaf, held || undefined),
+    value: held,
+    label: field.name,
+    name,
+    invalid: Boolean(error),
+    describedBy: error ? errorsId : undefined,
+    readOnly: field.readOnly,
+  };
   return (
     <>
-      <InputForm
-        fields={[
-          {
-            ...leafInput(FIELD_STRUCTURES[field.type].leaf, held || undefined),
-            value: held,
-            label: field.name,
-            name,
-            invalid: Boolean(error),
-            describedBy: error ? errorsId : undefined,
-            readOnly: field.readOnly,
-          },
-        ]}
-        onChange={(event: { target: { value: string } }) => onChange(event.target.value)}
-        onKeyDown={onKeyDown}
-      />
+      {leaf.type === 'phone' ? (
+        // A phone number's country and number are one input to the eye, under the field's label.
+        <section className="gh-portal-input-section">
+          <div className="gh-portal-input-labelcontainer">
+            <label className="gh-portal-input-label" htmlFor={`input-${name}`}>
+              {field.name}
+            </label>
+          </div>
+          <div className="gh-portal-input-group">
+            <div className="gh-portal-input-group-row">
+              <LeafInputs
+                leaf={{ ...leaf, hideLabel: true }}
+                onChange={onChange}
+                onKeyDown={onKeyDown}
+              />
+            </div>
+          </div>
+        </section>
+      ) : (
+        <LeafInputs leaf={leaf} onChange={onChange} onKeyDown={onKeyDown} />
+      )}
       <FieldErrors id={errorsId} messages={error ? [error] : []} />
     </>
   );
@@ -180,8 +343,8 @@ function ScalarField({ field, value, errors, onChange, onKeyDown }: FieldProps<'
 
 interface RecordRowProps {
   parts: readonly string[];
-  input: (part: string) => Record<string, unknown>;
-  onChange: (part: string | null, value: string) => void;
+  input: (part: string) => DrawnLeaf;
+  onChange: (part: string, value: string) => void;
   onKeyDown?: ((event: React.KeyboardEvent) => void) | undefined;
 }
 
@@ -193,13 +356,14 @@ interface RecordRowProps {
 function RecordRow({ parts, input, onChange, onKeyDown }: RecordRowProps) {
   return (
     <div className="gh-portal-input-group-row">
-      <InputForm
-        fields={parts.map(input)}
-        onChange={(event: { target: { value: string } }, changed: { part?: string }) =>
-          onChange(changed.part ?? null, event.target.value)
-        }
-        onKeyDown={onKeyDown}
-      />
+      {parts.map((part) => (
+        <LeafInputs
+          key={part}
+          leaf={input(part)}
+          onChange={(text) => onChange(part, text)}
+          onKeyDown={onKeyDown}
+        />
+      ))}
     </div>
   );
 }
@@ -230,24 +394,26 @@ function RecordField({ field, value, errors, onChange, onKeyDown }: FieldProps<'
   const labelId = `custom-${field.key}-label`;
   const errorsId = `custom-${field.key}-errors`;
   const nameOf = (part: string) => `custom:${field.key}:${part}`;
+  // Every part a type declares has a label; a part this build has none for goes by its name.
+  const labelOf = (part: string) => labels[part] ?? part;
 
-  const input = (part: string) => {
+  const input = (part: string): DrawnLeaf => {
     const leaf = leaves[part];
+    const label = labelOf(part);
     return {
       ...(leaf ? leafInput(leaf, held[part], field.countries) : { type: 'text' }),
       value: held[part] ?? '',
       // The part's label is read by assistive tech and shown as the placeholder; the
       // field's own name labels the group.
-      label: labels[part],
+      label,
       hideLabel: true,
-      placeholder: labels[part],
+      placeholder: label,
       name: nameOf(part),
       invalid: Boolean(errors[nameOf(part)]),
       // A refused part is read out with the reasons listed under the field, since its own
       // reason is not printed beside it.
       describedBy: errors[nameOf(part)] ? errorsId : undefined,
       readOnly,
-      part,
     };
   };
 
@@ -267,16 +433,14 @@ function RecordField({ field, value, errors, onChange, onKeyDown }: FieldProps<'
             key={parts.join(':')}
             input={input}
             parts={parts}
-            onChange={(part, changed) =>
-              part !== null && onChange({ ...compositeValue(value), [part]: changed })
-            }
+            onChange={(part, changed) => onChange({ ...compositeValue(value), [part]: changed })}
             onKeyDown={onKeyDown}
           />
         ))}
       </div>
       <FieldErrors
         id={errorsId}
-        messages={refused.map(({ part, message }) => `${labels[part]}: ${message}`)}
+        messages={refused.map(({ part, message }) => `${labelOf(part)}: ${message}`)}
       />
     </section>
   );

@@ -13,12 +13,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  Flag,
   Input,
   Label,
   MultiSelectCombobox,
+  PopoverAnchor,
   Textarea,
   tokenFieldClasses,
 } from '@tryghost/shade/components';
+import { Inline } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import {
   buildCustomFieldSavePayload,
@@ -33,6 +36,18 @@ import {
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { IdentityTextSchema } from '@tryghost/metafield-types/identity';
+import {
+  CALLING_CODES,
+  holdNumber,
+  isPhoneCountry,
+  phoneCountryOptions,
+  pickCountry,
+  shownCountry,
+  startPhoneEntry,
+  typeNumber,
+  type PhoneEntry,
+} from '@tryghost/metafield-types/phone';
+import { countryOptions } from '@tryghost/admin-x-framework/utils/countries';
 import {
   FIELD_STRUCTURES,
   inOptionOrder,
@@ -187,15 +202,110 @@ const ListInput: React.FC<{
 };
 
 /**
- * What each text format is typed into: an input of that type, or a textarea for text with line
- * breaks. A phone number gets a phone input, without autofill: staff type a member's number, not
- * their own.
+ * What each text format is typed into: an input, a textarea for text with line breaks, or for a
+ * phone number a phone input beside the country it is from.
  */
-const TEXT_CONTROL: { [F in TextFormat]: 'text' | 'tel' | 'textarea' } = {
+const TEXT_CONTROL: { [F in TextFormat]: 'text' | 'textarea' | 'phone' } = {
   line: 'text',
   code: 'text',
   long: 'textarea',
-  phone: 'tel',
+  phone: 'phone',
+};
+
+/**
+ * A phone number, written beside the country it is from, as Portal and Stripe Checkout ask for one.
+ * Staff write it as it is dialled at home and the country's code goes in front, or write it with a
+ * +, and the country shown follows the code they wrote. The site keeps it in one international form.
+ */
+const PhoneInput: React.FC<{
+  id: string;
+  label: string;
+  value: string;
+  invalid?: boolean;
+  disabled?: boolean;
+  onChange: (value: string) => void;
+}> = ({ id, label, value, invalid, disabled, onChange }) => {
+  const [open, setOpen] = React.useState(false);
+  // Each with its flag, drawn as Admin draws a country's flag elsewhere, the same in every browser.
+  const options = React.useMemo(
+    () =>
+      phoneCountryOptions(countryOptions()).map((option) => ({
+        ...option,
+        icon: <Flag className="shrink-0" countryCode={option.value} />,
+      })),
+    [],
+  );
+  const [entry, setEntry] = React.useState(() => startPhoneEntry(value, navigator.languages));
+  // What this input last sent. A value that differs came from elsewhere, such as the number the
+  // site kept, and replaces what was typed.
+  const sent = React.useRef(value);
+  React.useEffect(() => {
+    if (value !== sent.current) {
+      sent.current = value;
+      setEntry((current) => holdNumber(current, value));
+    }
+  }, [value]);
+
+  const country = shownCountry(entry.typed, entry.picked);
+  const send = (next: { entry: PhoneEntry; number: string }) => {
+    setEntry(next.entry);
+    sent.current = next.number;
+    onChange(next.number);
+  };
+
+  return (
+    <Combobox open={open} modal onOpenChange={setOpen}>
+      {/* The list opens under the whole input, from the flag, as wide as the country and the
+          number together, so a country's name fits, as a phone input's list of countries does. */}
+      <PopoverAnchor asChild>
+        <Inline align="stretch" gap="none">
+          <ComboboxTrigger
+            aria-label="Country code"
+            className="w-auto shrink-0 rounded-r-none"
+            disabled={disabled}
+          >
+            <ComboboxValue placeholder={!country}>
+              {country ? (
+                <Inline as="span" gap="sm">
+                  <Flag countryCode={country} />+{CALLING_CODES[country]}
+                </Inline>
+              ) : (
+                '+'
+              )}
+            </ComboboxValue>
+          </ComboboxTrigger>
+          <Input
+            aria-invalid={invalid || undefined}
+            aria-label={label}
+            // Off: staff type a member's details, and a browser offering their own, such as their
+            // phone number, would save the wrong person's.
+            autoComplete="off"
+            className="-ml-px rounded-l-none"
+            disabled={disabled}
+            id={id}
+            type="tel"
+            value={entry.typed}
+            onChange={(e) => send(typeNumber(entry, e.target.value))}
+          />
+        </Inline>
+      </PopoverAnchor>
+      <ComboboxContent>
+        <MultiSelectCombobox
+          i18n={{ searchPlaceholder: 'Search countries...' }}
+          isMultiSelect={false}
+          options={options}
+          values={country ? [country] : []}
+          autoCloseOnSelect
+          onChange={([to]) => {
+            if (to && isPhoneCountry(to)) {
+              send(pickCountry(entry, to));
+            }
+          }}
+          onClose={() => setOpen(false)}
+        />
+      </ComboboxContent>
+    </Combobox>
+  );
 };
 
 const LeafInput: React.FC<{
@@ -210,6 +320,18 @@ const LeafInput: React.FC<{
   matchLeaf(leaf, {
     text: ({ format }) => {
       const control = TEXT_CONTROL[format];
+      if (control === 'phone') {
+        return (
+          <PhoneInput
+            disabled={disabled}
+            id={id}
+            invalid={invalid}
+            label={label}
+            value={value}
+            onChange={onChange}
+          />
+        );
+      }
       return control === 'textarea' ? (
         // max-w-full: Admin's element styles cap textareas at 500px.
         <Textarea

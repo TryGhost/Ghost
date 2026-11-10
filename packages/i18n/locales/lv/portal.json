@@ -91,6 +91,7 @@
     "Could not sign in. Login link expired.": "Nevarēja pierakstīties. Pieteikšanās saites derīguma termiņš ir beidzies.",
     "Could not update email! Invalid link.": "Nevarēja atjaunināt e-pastu! Nederīga saite.",
     "Country": "",
+    "Country code": "",
     "Create a new contact": "Izveidojiet jaunu kontaktu",
     "Current plan": "Pašreizējais plāns",
     "Delete account": "Dzēst kontu",

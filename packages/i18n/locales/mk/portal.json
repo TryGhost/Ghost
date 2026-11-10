@@ -90,6 +90,7 @@
     "Could not sign in. Login link expired.": "Не можете да се најавите. Линкот за најава истече.",
     "Could not update email! Invalid link.": "Не може да се промени email адресата! Линкот е невалиден.",
     "Country": "",
+    "Country code": "",
     "Create a new contact": "Создајте нов контакт",
     "Current plan": "Моментален пакет",
     "Delete account": "Избришете сметка",
