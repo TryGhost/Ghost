@@ -588,8 +588,8 @@ catalogs:
       specifier: 11.4.1
       version: 11.4.1
     glob:
-      specifier: 14.0.2
-      version: 14.0.2
+      specifier: 14.0.4
+      version: 14.0.4
     globals:
       specifier: 17.14.0
       version: 17.14.0
@@ -1443,7 +1443,7 @@ importers:
         version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
       glob:
         specifier: 'catalog:'
-        version: 14.0.2
+        version: 14.0.4
       jsdom:
         specifier: 'catalog:'
         version: 30.0.1(@noble/hashes@1.8.0)
@@ -1876,7 +1876,7 @@ importers:
         version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
       glob:
         specifier: 'catalog:'
-        version: 14.0.2
+        version: 14.0.4
       jsdom:
         specifier: 'catalog:'
         version: 30.0.1(@noble/hashes@1.8.0)
@@ -2436,7 +2436,7 @@ importers:
         version: link:../packages/adapters/storage-base
       glob:
         specifier: 'catalog:'
-        version: 14.0.2
+        version: 14.0.4
       got:
         specifier: 'catalog:'
         version: 16.0.0
@@ -4163,7 +4163,7 @@ importers:
         version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
       glob:
         specifier: 'catalog:'
-        version: 14.0.2
+        version: 14.0.4
       i18next-parser:
         specifier: 9.4.0
         version: 9.4.0(supports-color@10.2.2)
@@ -12158,8 +12158,8 @@ packages:
     resolution: {integrity: sha512-Wjlyrolmm8uDpm/ogGyXZXb1Z+Ca2B8NbJwqBVg0axK9GbBeoS7yGV6vjXnYdGm6X53iehEuxxbyiKp8QmN4Vw==}
     engines: {node: 18 || 20 || >=22}
 
-  glob@14.0.2:
-    resolution: {integrity: sha512-vfMgTR2djMHPUchsJMLpZlYQvtjVL+mHpEr5wPpoCbQs2vr/FBNK+3Gnl9Ara1DSs4Aeg4eG9HiADb5/rkY/ZA==}
+  glob@14.0.4:
+    resolution: {integrity: sha512-mMiwNKoJZ4HAIRVJxotO6LsNRReA30gQwP9E2/p94tfLv+jygCNpKDjhhSL6OLY6LE371EZm5EAf7RpYuUqlsw==}
     engines: {node: 18 || 20 || >=22}
 
   glob@6.0.4:
@@ -25042,7 +25042,7 @@ snapshots:
       minipass: 7.1.3
       path-scurry: 2.0.2
 
-  glob@14.0.2:
+  glob@14.0.4:
     dependencies:
       minimatch: 11.0.5
       minipass: 7.1.3
