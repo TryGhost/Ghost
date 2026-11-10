@@ -14,6 +14,12 @@ type Feature = {
 
 const features: Feature[] = [
   {
+    title: 'Phone custom fields',
+    description:
+      'Offers Phone as a type of custom field while it is being built. A field made while this is on keeps working if it is turned off.',
+    flag: 'customFieldTypePhone',
+  },
+  {
     title: 'Automations',
     description:
       'Toggle the automations beta. Unexpected problems can occur if you turn this off after previously turning it on.',

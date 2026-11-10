@@ -185,6 +185,7 @@ catalog:
   juice: 11.1.1
   knex: 3.3.0
   knex-migrator: 6.2.1
+  libphonenumber-js: 1.13.15
   lodash: 4.18.1
   lru-cache: 11.5.3
   luxon: 3.7.2

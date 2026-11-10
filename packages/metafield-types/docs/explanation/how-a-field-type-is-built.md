@@ -6,9 +6,9 @@ Every type is composed from a few building blocks in
 [`src/structure.ts`](../../src/structure.ts):
 
 - A **leaf** is one value, stored as one string: text of a format (`text('line')`,
-  `text('code')`, `text('long')`), or a choice from a list (`choice('countries')`).
+  `text('code')`, `text('long')`, `text('phone')`), or a choice from a list (`choice('countries')`).
   `country` is that choice, named so a type can reuse it.
-- A **scalar** type is one leaf. Short text is `text('line')`.
+- A **scalar** type is one leaf. Short text is `text('line')`, and phone is `text('phone')`.
 - A **record** type is a set of named leaves, its parts. An address is six parts, five of
   them text and one a `country`.
 - A **set** type is some of the options its field offers, each named by its text. A list

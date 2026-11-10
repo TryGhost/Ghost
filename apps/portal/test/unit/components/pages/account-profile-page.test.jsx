@@ -101,6 +101,28 @@ describe('Account Profile Page', () => {
       expect(getByLabelText('Postal code')).toHaveAttribute('placeholder', 'Postal code');
     });
 
+    test('offers a phone field as a phone number, so phones show a keypad and can fill it in', () => {
+      const mobile = { key: 'mobile', name: 'Mobile', type: 'phone', access: { member: 'write' } };
+      const { getByLabelText, saveBtn, mockDoActionFn } = setup({
+        site,
+        member: { ...member, metafields: { custom: { mobile: '+442079460000' } } },
+        customFields: [mobile],
+      });
+
+      const input = getByLabelText('Mobile');
+      expect(input).toHaveAttribute('type', 'tel');
+      expect(input).toHaveAttribute('autocomplete', 'tel');
+      expect(input).toHaveValue('+442079460000');
+
+      fireEvent.change(input, { target: { value: '+44 20 7946 0001' } });
+      fireEvent.click(saveBtn);
+      expect(mockDoActionFn).toHaveBeenCalledWith('updateProfile', {
+        email: member.email,
+        name: member.name,
+        metafields: { custom: { mobile: '+44 20 7946 0001' } },
+      });
+    });
+
     test('saves only the writable fields the member changed', () => {
       const customFields = [nickname, address];
       const { getByLabelText, saveBtn, mockDoActionFn } = setup({ site, member, customFields });

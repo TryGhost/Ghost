@@ -186,10 +186,16 @@ const ListInput: React.FC<{
   );
 };
 
-const TEXT_CONTROL: { [F in TextFormat]: 'input' | 'textarea' } = {
-  line: 'input',
-  code: 'input',
+/**
+ * What each text format is typed into: an input of that type, or a textarea for text with line
+ * breaks. A phone number gets a phone input, without autofill: staff type a member's number, not
+ * their own.
+ */
+const TEXT_CONTROL: { [F in TextFormat]: 'text' | 'tel' | 'textarea' } = {
+  line: 'text',
+  code: 'text',
   long: 'textarea',
+  phone: 'tel',
 };
 
 const LeafInput: React.FC<{
@@ -202,8 +208,9 @@ const LeafInput: React.FC<{
   onChange: (value: string) => void;
 }> = ({ leaf, id, label, value, invalid, disabled, onChange }) =>
   matchLeaf(leaf, {
-    text: ({ format }) =>
-      TEXT_CONTROL[format] === 'textarea' ? (
+    text: ({ format }) => {
+      const control = TEXT_CONTROL[format];
+      return control === 'textarea' ? (
         // max-w-full: Admin's element styles cap textareas at 500px.
         <Textarea
           aria-invalid={invalid || undefined}
@@ -216,12 +223,17 @@ const LeafInput: React.FC<{
       ) : (
         <Input
           aria-invalid={invalid || undefined}
+          // Off for every input: staff type a member's details, and a browser offering their own,
+          // such as their phone number, would save the wrong person's.
+          autoComplete="off"
           disabled={disabled}
           id={id}
+          type={control}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
-      ),
+      );
+    },
     choice: ({ from }) => (
       <ChoiceInput
         disabled={disabled}

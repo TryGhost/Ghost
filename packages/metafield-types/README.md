@@ -25,9 +25,10 @@ npm install @tryghost/metafield-types
   browser app can check identities without paying for the rest.
 - `@tryghost/metafield-types`: the structure above, plus `valueSchemaFor(field)`,
   the rule a value of a field must satisfy given its type and settings. The rules are built on
-  [zod](https://zod.dev), and only this entry point loads all of it, so an
-  integration that only draws inputs can use `./structure` and `./countries`
-  without loading zod at all.
+  [zod](https://zod.dev), and a phone number's on
+  [libphonenumber-js](https://gitlab.com/catamphetamine/libphonenumber-js). Only this
+  entry point loads all of zod or any of libphonenumber-js, so an integration that only
+  draws inputs can use `./structure` and `./countries` without loading either.
 
 ## Compatibility
 
