@@ -98,6 +98,7 @@ describe('Unit: models/user', function () {
 
   describe('validation', function () {
     beforeEach(function () {
+      sinon.stub(ghostBookshelf, 'transaction').callsFake((callback) => callback({ fake: true }));
       sinon
         .stub(security.password, 'hash')
         .resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
@@ -149,6 +150,10 @@ describe('Unit: models/user', function () {
   });
 
   describe('add', function () {
+    beforeEach(function () {
+      sinon.stub(ghostBookshelf, 'transaction').callsFake((callback) => callback({ fake: true }));
+    });
+
     // Stub the parent Bookshelf add so we can inspect the filtered data
     // without hitting the database; the rest of the add chain is skipped.
     function stubParentAdd() {
