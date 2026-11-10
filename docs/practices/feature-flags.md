@@ -227,9 +227,9 @@ or parse failure keeps the last known good overrides.
 ## Admin session overrides
 
 To preview a flagged Admin feature, add `labs` to the query string inside the
-Admin hash route, for example `/ghost/#/members?labs=membersCustomFields`. Use
-comma-separated names (`?labs=membersCustomFields,apps`) or repeated
-parameters (`?labs=membersCustomFields&labs=apps`) to enable multiple flags.
+Admin hash route, for example `/ghost/#/members?labs=importMemberTier`. Use
+comma-separated names (`?labs=importMemberTier,apps`) or repeated
+parameters (`?labs=importMemberTier&labs=apps`) to enable multiple flags.
 
 Admin stores the list in `sessionStorage` under `ghost-admin:labs-overrides`.
 It persists across navigation and reloads in the same tab for that browser

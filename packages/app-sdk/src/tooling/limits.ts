@@ -1,26 +1,6 @@
+import { MANIFEST_MAX_BYTES, SIGNED_MANIFEST_MAX_BYTES } from '@tryghost/app-contracts/identity';
 import { AppManifestSchema, type AppManifest } from '@tryghost/app-contracts/manifest';
 import { z } from 'zod';
-
-// The limits Ghost reads an app with, from App Installations in Ghost core, which doesn't
-// export them to apps.
-
-/** How long Ghost waits for each read from an app, redirects and body included. */
-export const TIMEOUT_MS = 5000;
-
-/** How many redirects on the same host Ghost follows for a manifest. */
-export const MAX_REDIRECTS = 3;
-
-/** The largest manifest Ghost stores, which it keeps in a TEXT column. */
-export const MANIFEST_MAX_BYTES = 64 * 1024;
-
-/**
- * The largest signed manifest Ghost reads: the manifest in base64url is a third larger, and the
- * header and signature are well under a kilobyte.
- */
-export const SIGNED_MANIFEST_MAX_BYTES = Math.ceil((MANIFEST_MAX_BYTES * 4) / 3) + 1024;
-
-/** The largest answer to a challenge Ghost reads. */
-export const ANSWER_MAX_BYTES = 4 * 1024;
 
 /**
  * A manifest's size as Ghost stores it: with its paths resolved, so it can be larger than what

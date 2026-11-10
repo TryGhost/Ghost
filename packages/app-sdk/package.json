@@ -9,6 +9,9 @@
     "url": "git+https://github.com/TryGhost/Ghost.git",
     "directory": "packages/app-sdk"
   },
+  "bin": {
+    "ghost-app": "build/bin.js"
+  },
   "files": [
     "build",
     "dist"
@@ -31,6 +34,11 @@
       "source": "./src/tooling/index.ts",
       "types": "./build/tooling.d.ts",
       "default": "./build/tooling.js"
+    },
+    "./vite": {
+      "source": "./src/vite/index.ts",
+      "types": "./build/vite.d.ts",
+      "default": "./build/vite.js"
     }
   },
   "scripts": {
@@ -44,6 +52,7 @@
   },
   "dependencies": {
     "@quilted/threads": "catalog:",
+    "commander": "catalog:",
     "jose": "catalog:",
     "zod": "catalog:"
   },
@@ -62,8 +71,16 @@
     "vite": "catalog:",
     "vitest": "catalog:"
   },
+  "peerDependencies": {
+    "vite": ">=6"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
+  },
   "engines": {
-    "node": ">=22.1"
+    "node": ">=22.12"
   },
   "nx": {
     "targets": {

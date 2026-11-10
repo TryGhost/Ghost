@@ -21,15 +21,19 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 
 // The app takes the SDK's dependencies from the workspace's own install, at the versions its
 // lockfile pins, so installing needs no registry and runs no newly resolved code.
-const dependencies = Object.fromEntries(
-  Object.keys(manifest.dependencies).map((name) => {
-    const path = realpathSync(join(root, 'node_modules', name));
-    const { version } = JSON.parse(readFileSync(join(path, 'package.json'), 'utf8')) as {
-      version: string;
-    };
-    return [name, { path, version }];
-  }),
-);
+const linked = (names: string[]) =>
+  Object.fromEntries(
+    names.map((name) => {
+      const path = realpathSync(join(root, 'node_modules', name));
+      const { version } = JSON.parse(readFileSync(join(path, 'package.json'), 'utf8')) as {
+        version: string;
+      };
+      return [name, { path, version }];
+    }),
+  );
+const dependencies = linked(Object.keys(manifest.dependencies));
+// An app that uses the Vite plugin has Vite, the optional peer dependency, and Node's types.
+const appDependencies = { ...dependencies, ...linked(['vite', '@types/node']) };
 const execFileAsync = promisify(execFile);
 
 /** Runs a command, and on failure reports what it printed. */
@@ -66,7 +70,9 @@ const entryPoints = Object.entries(manifest.exports as Record<string, unknown>)
 const USAGE = `
 import { connect, GhostAppError, type Ghost, type GhostAppErrorCode } from '@tryghost/app-sdk';
 import { CHALLENGE_PATH, handleChallenge, withGhostApp } from '@tryghost/app-sdk/backend';
-import { checkApp, signProject } from '@tryghost/app-sdk/tooling';
+import { signProject } from '@tryghost/app-sdk/tooling';
+import { ghostApp } from '@tryghost/app-sdk/vite';
+import { defineConfig } from 'vite';
 
 declare const env: { GHOST_APP_BACKEND_KEY: string };
 export const worker = withGhostApp({
@@ -76,10 +82,11 @@ export const worker = withGhostApp({
 export const answer = (request: Request) =>
   handleChallenge(request, { backendKey: env.GHOST_APP_BACKEND_KEY });
 
+export const config = defineConfig({ plugins: [ghostApp({ tunnelUrl: 'https://tunnel.example' })] });
+
 export async function tooling() {
   const signed = await signProject({ root: '.', mode: 'production', manifestUrl: 'https://app.example/ghost-app.json' });
-  const checked = await checkApp('https://app.example/ghost-app.json');
-  return signed.success && checked.success ? checked.manifest.id : undefined;
+  return signed.success ? signed.manifest.id : undefined;
 }
 
 try {
@@ -163,7 +170,11 @@ describe('the packed package', () => {
         name: 'app',
         private: true,
         type: 'module',
-        dependencies: { [manifest.name]: `file:${packed.filename}` },
+        dependencies: {
+          [manifest.name]: `file:${packed.filename}`,
+          vite: appDependencies.vite!.version,
+          '@types/node': appDependencies['@types/node']!.version,
+        },
       }),
     );
     await writeFile(
@@ -174,7 +185,7 @@ describe('the packed package', () => {
     await writeFile(join(app, 'backend-usage.ts'), BACKEND_USAGE);
     await writeFile(
       join(app, 'pnpm-workspace.yaml'),
-      `overrides:\n${Object.entries(dependencies)
+      `overrides:\n${Object.entries(appDependencies)
         .map(([name, { path }]) => `  ${JSON.stringify(name)}: ${JSON.stringify(`link:${path}`)}\n`)
         .join('')}`,
     );
@@ -201,6 +212,12 @@ describe('the packed package', () => {
       Object.fromEntries(
         Object.entries(dependencies).map(([name, { version }]) => [name, version]),
       ),
+    );
+  });
+
+  it('runs the ghost-app CLI from its bin', { timeout: 60_000 }, async () => {
+    expect(await run(join(app, 'node_modules/.bin/ghost-app'), ['--help'], app)).toContain(
+      'Usage: ghost-app',
     );
   });
 
@@ -240,7 +257,8 @@ describe('the packed package', () => {
         // Checks the package's declarations themselves, not only what the app uses of them.
         skipLibCheck: false,
         target: ts.ScriptTarget.ES2022,
-        types: [],
+        // Node's, for the Vite plugin and Vite itself.
+        types: ['node'],
         lib: ['lib.es2022.d.ts', 'lib.dom.d.ts'],
       });
       const diagnostics = ts

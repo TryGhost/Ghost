@@ -27,6 +27,39 @@ describe('Button Component', () => {
     expect(button.className, 'Should override the base control typography').toContain('text-sm!');
   });
 
+  it('keeps its label and disables itself while loading', () => {
+    const handleClick = vi.fn();
+    render(
+      <Button loading onClick={handleClick}>
+        Delete
+      </Button>,
+    );
+
+    const button = screen.getByRole<HTMLButtonElement>('button', { name: 'Delete' });
+    fireEvent.click(button);
+
+    expect(button.disabled, 'Should be disabled').toBe(true);
+    expect(button.getAttribute('aria-busy'), 'Should be marked busy').toBe('true');
+    expect(button.querySelector('.animate-spin'), 'Should show a spinner').toBeTruthy();
+    expect(screen.getByText('Delete').className, 'Label should hold the width').toContain(
+      'opacity-0',
+    );
+    expect(handleClick.mock.calls.length, 'Should not fire clicks').toBe(0);
+  });
+
+  it('ignores loading when rendering as a child element', () => {
+    render(
+      <Button asChild loading>
+        <a href="https://example.com">Link</a>
+      </Button>,
+    );
+
+    const link = screen.getByRole('link', { name: 'Link' });
+
+    expect(link.hasAttribute('aria-busy'), 'Should not be marked busy').toBe(false);
+    expect(link.querySelector('.animate-spin'), 'Should not show a spinner').toBeNull();
+  });
+
   it('handles click events', () => {
     const handleClick = vi.fn();
     render(<Button onClick={handleClick}>Click me</Button>);

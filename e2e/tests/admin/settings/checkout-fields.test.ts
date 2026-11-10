@@ -57,7 +57,7 @@ function latestTaxIdRequest(stripe: StripeTestService) {
 test.describe('Ghost Admin - Checkout fields', () => {
   test.use({
     stripeEnabled: true,
-    labs: { stripeCheckoutCollection: true, membersCustomFields: true },
+    labs: { stripeCheckoutCollection: true },
   });
 
   test('shipping address - a member gives one at checkout, and it lands on their record', async ({

@@ -21,7 +21,7 @@ export const KEYS_DIRECTORY = '.ghost-app';
  */
 export type KeyName = 'identity' | 'backend';
 
-const KEY_NAMES: readonly KeyName[] = ['identity', 'backend'];
+export const KEY_NAMES: readonly KeyName[] = ['identity', 'backend'];
 
 /** A private Ed25519 key as a JWK. */
 export interface PrivateKeyJwk {

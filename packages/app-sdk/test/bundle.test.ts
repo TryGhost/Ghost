@@ -106,15 +106,29 @@ describe('the package', () => {
     expect(loaded).not.toMatch(/jose|zod|node:/);
   });
 
-  it.each([['tooling', ['jose', 'zod']]])(
-    '%s.js loads only Node builtins and %j',
-    (entry, packages) => {
-      const loaded = [...reachableImports(code(entry))].filter(
-        (specifier) => !specifier.startsWith('node:'),
-      );
-      expect(new Set(loaded)).toEqual(new Set(packages));
-    },
-  );
+  it.each([
+    ['tooling', ['jose', 'zod']],
+    ['bin', ['jose', 'zod', 'commander']],
+    ['vite', ['jose', 'zod', 'vite']],
+  ])('%s.js loads only Node builtins and %j', (entry, packages) => {
+    const loaded = [...reachableImports(code(entry))].filter(
+      (specifier) => !specifier.startsWith('node:'),
+    );
+    expect(new Set(loaded)).toEqual(new Set(packages));
+  });
+
+  // Vite is an optional peer dependency, so the plugin imports it only when Vite runs it, and
+  // the entry point loads without it.
+  it('imports Vite from the plugin only when Vite runs it', () => {
+    const imports = [...nodes(parseAst(readFileSync(code('vite'), 'utf8')))]
+      .filter((node) => node.type === 'ImportDeclaration')
+      .map((node) => String((node as { source?: { value?: unknown } }).source?.value));
+    expect(imports).not.toContain('vite');
+  });
+
+  it('runs the CLI with Node', () => {
+    expect(readFileSync(code('bin'), 'utf8').split('\n')[0]).toBe('#!/usr/bin/env node');
+  });
 
   it.each([
     ['index', ['GhostAppError', 'connect']],
@@ -122,6 +136,7 @@ describe('the package', () => {
       'backend',
       ['CHALLENGE_PATH', 'MANIFEST_PATH', 'handleChallenge', 'serveManifest', 'withGhostApp'],
     ],
+    ['vite', ['ghostApp']],
   ])('%s.js exports %j', (entry, names) => {
     expect(exportsOf(code(entry))).toEqual(names);
   });
@@ -130,6 +145,7 @@ describe('the package', () => {
     ['index', []],
     ['backend', []],
     ['tooling', []],
+    ['vite', ['"vite"']],
   ])(
     '%s.d.ts declares its types without importing or referring to any other package but %j',
     (entry, expected) => {

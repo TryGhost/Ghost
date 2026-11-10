@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   AppManifestSchema,
+  formatManifestErrors,
   parseManifest,
   parseManifestUrl,
   type ParseManifestOptions,
@@ -231,5 +232,17 @@ describe('parseManifestUrl', () => {
         'Expected the URLs Ghost itself is served from',
       );
     }
+  });
+});
+
+describe('formatManifestErrors', () => {
+  it('lists each problem as `path: message`, and one for the whole without a path', () => {
+    const errors = [
+      { path: 'accent_color', message: 'Expected a hex colour' },
+      { path: '', message: 'Expected a JSON object' },
+    ];
+    expect(formatManifestErrors(errors, '; ')).toBe(
+      'accent_color: Expected a hex colour; Expected a JSON object',
+    );
   });
 });

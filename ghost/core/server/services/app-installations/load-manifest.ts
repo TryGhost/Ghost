@@ -3,23 +3,20 @@ import errors from '@tryghost/errors';
 import type { GhostLogger } from '@tryghost/logging';
 import { z } from 'zod';
 import {
+  MANIFEST_MAX_BYTES,
   readSignedManifest,
   thumbprintOf,
   verifySignedManifest,
 } from '@tryghost/app-contracts/identity';
 import {
+  formatManifestErrors,
   parseManifest,
   parseManifestUrl,
   type AppManifest,
   type ParseManifestOptions,
 } from '@tryghost/app-contracts/manifest';
 import type { FetchFromApp } from './fetch-from-app';
-import {
-  MANIFEST_MAX_BYTES,
-  createManifestFetcher,
-  manifestTooLarge,
-  parseJson,
-} from './fetch-manifest';
+import { createManifestFetcher, manifestTooLarge, parseJson } from './fetch-manifest';
 import { StoredManifest } from './schema';
 
 /** The rules a manifest is checked against: the site's URL and the environment. */
@@ -106,9 +103,7 @@ export function createManifestLoader({
     }
     const parsed = parseManifest(parseJson(signed.payload, manifestUrl), { ...rules, manifestUrl });
     if (!parsed.success) {
-      const context = parsed.errors
-        .map(({ path, message }) => (path ? `${path}: ${message}` : message))
-        .join('; ');
+      const context = formatManifestErrors(parsed.errors, '; ');
       if (parsed.reason === 'manifest_url_mismatch') {
         throw new errors.ValidationError({
           message: 'The app’s manifest is for another address.',
