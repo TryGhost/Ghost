@@ -31,7 +31,7 @@ type StubbedFunction<TFunction extends (..._args: never[]) => unknown> = sinon.S
 
 type AutomationsApiStubs = {
   [Method in keyof PollOptions['automationsApi']]: StubbedFunction<
-    PollOptions['automationsApi'][Method]
+    NonNullable<PollOptions['automationsApi'][Method]>
   >;
 };
 

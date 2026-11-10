@@ -250,6 +250,7 @@ export type AutomationsRepository = {
    * Record a sent email and increment its action revision's sent count.
    */
   recordEmailSent(options: RecordEmailSentOptions): Promise<void>;
+  recordEmailsSent(records: readonly RecordEmailSentOptions[]): Promise<void>;
   /**
    * Fetch sent emails by their Mailgun IDs.
    */

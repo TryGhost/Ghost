@@ -521,6 +521,12 @@ export async function recordEmailSent(
   return await repository.recordEmailSent(...args);
 }
 
+export async function recordEmailsSent(
+  records: Parameters<AutomationsRepository['recordEmailsSent']>[0],
+) {
+  await repository.recordEmailsSent(records);
+}
+
 export async function getAutomatedEmailRecipientsByMailgunIds(
   ...args: Parameters<AutomationsRepository['getAutomatedEmailRecipientsByMailgunIds']>
 ) {

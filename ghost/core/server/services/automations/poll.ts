@@ -1,5 +1,9 @@
 import type { AutomationTriggerRuleDefinition } from './trigger-rules';
-import type { AutomationStepToRun, AutomationsRepository } from './automations-repository';
+import type {
+  AutomationStepToRun,
+  AutomationsRepository,
+  RecordEmailSentOptions,
+} from './automations-repository';
 import { getMailgunMessageId } from '../../lib/mailgun/mailgun-message-id';
 import { getMailgunError } from '../../lib/mailgun/mailgun-error';
 import logging from '@tryghost/logging';
@@ -53,7 +57,8 @@ type PollOptions = {
     | 'markStepTerminal'
     | 'recordEmailSent'
     | 'retryStep'
-  >;
+  > &
+    Partial<Pick<AutomationsRepository, 'recordEmailsSent'>>;
   enqueueAnotherPollAt: (date: Readonly<Date>) => unknown;
   scheduleAutomationEmailAnalyticsJob: () => Promise<void>;
   memberWelcomeEmailService: MemberWelcomeEmailService;
@@ -190,20 +195,17 @@ const handleStepExecutionFailure = async ({
   return null;
 };
 
-type PreparedStep = {
-  email?: AutomationEmail;
-  complete: (sendResult?: unknown) => Promise<Date | null>;
-};
+type PreparedStep =
+  | { email?: undefined }
+  | { email: AutomationEmail; deliveryRecord: (result: unknown) => RecordEmailSentOptions };
 
 const prepareStep = async ({
   automationsApi,
-  scheduleAutomationEmailAnalyticsJob,
   step,
-}: Readonly<
-  Pick<PollOptions, 'automationsApi' | 'scheduleAutomationEmailAnalyticsJob'> & {
-    step: AutomationStepToRun;
-  }
->): Promise<PreparedStep | null> => {
+}: Readonly<{
+  automationsApi: PollOptions['automationsApi'];
+  step: AutomationStepToRun;
+}>): Promise<PreparedStep | null> => {
   if (step.automation_status !== 'active') {
     await automationsApi.markStepTerminal(step, 'automation disabled');
     return null;
@@ -275,7 +277,7 @@ const prepareStep = async ({
   }
 
   if (step.type === 'wait') {
-    return { complete: () => automationsApi.finishStepAndEnqueueNext(step) };
+    return {};
   }
   if (!hasUpdatesAndAnnouncementsEnabled(member)) {
     await automationsApi.markStepTerminal(step, 'member unsubscribed');
@@ -305,56 +307,64 @@ const prepareStep = async ({
 
   return {
     email,
-    complete: async (sendResult) => {
-      const mailgunMessageId = getMailgunMessageId(sendResult);
-      // Only Mailgun sends can produce open events for automation emails
-      const trackOpensForRecipient = trackOpens && Boolean(mailgunMessageId);
-      try {
-        await automationsApi.recordEmailSent({
-          automationActionRevisionId: step.automation_action_revision_id,
-          automationRunStepId: step.id,
-          ...(mailgunMessageId ? { mailgunMessageId } : {}),
-          memberEmail: member.get('email'),
-          memberId,
-          memberName: member.get('name'),
-          memberUuid: member.get('uuid'),
-          trackClicks,
-          trackOpens: trackOpensForRecipient,
-        });
-      } catch (err) {
-        logging.error(
-          {
-            err,
-            system: {
-              event: 'automations.poll.recipient_persistence_failed',
-              member_id: step.member_id,
-              step_id: step.id,
-            },
-          },
-          `[AUTOMATIONS] Failed to record automated email recipient for step ${step.id}`,
-        );
-      }
-      if (mailgunMessageId) {
-        try {
-          await scheduleAutomationEmailAnalyticsJob();
-        } catch (err) {
-          logging.error(
-            {
-              err,
-              system: {
-                event: 'automations.poll.analytics_scheduling_failed',
-                member_id: step.member_id,
-                step_id: step.id,
-              },
-            },
-            `[AUTOMATIONS] Failed to schedule email analytics job for step ${step.id}`,
-          );
-        }
-      }
-      return await automationsApi.finishStepAndEnqueueNext(step);
+    deliveryRecord: (result) => {
+      const mailgunMessageId = getMailgunMessageId(result);
+      return {
+        automationActionRevisionId: email.automationActionRevisionId,
+        automationRunStepId: step.id,
+        ...(mailgunMessageId ? { mailgunMessageId } : {}),
+        memberEmail: email.member.email,
+        memberId,
+        memberName: email.member.name,
+        memberUuid: email.member.uuid,
+        trackClicks,
+        trackOpens: trackOpens && Boolean(mailgunMessageId),
+      };
     },
   };
 };
+
+async function recordSingleEmail(
+  automationsApi: PollOptions['automationsApi'],
+  record: RecordEmailSentOptions,
+) {
+  try {
+    await automationsApi.recordEmailSent(record);
+  } catch (err) {
+    logging.error(
+      {
+        err,
+        system: {
+          event: 'automations.poll.recipient_persistence_failed',
+          member_id: record.memberId,
+          step_id: record.automationRunStepId,
+        },
+      },
+      `[AUTOMATIONS] Failed to record automated email recipient for step ${record.automationRunStepId}`,
+    );
+  }
+}
+
+async function scheduleEmailAnalytics(
+  schedule: PollOptions['scheduleAutomationEmailAnalyticsJob'],
+  record: RecordEmailSentOptions,
+) {
+  try {
+    await schedule();
+  } catch (err) {
+    logging.error(
+      {
+        err,
+        system: {
+          event: 'automations.poll.analytics_scheduling_failed',
+          member_id: record.memberId,
+          step_id: record.automationRunStepId,
+        },
+      },
+      `[AUTOMATIONS] Failed to schedule email analytics job for step ${record.automationRunStepId}`,
+    );
+  }
+}
 
 const dateMin = (a: Date | null, b: Date | null): Date | null => {
   if (!a) {
@@ -425,11 +435,7 @@ export const poll = async ({
       steps.map(async (step) => {
         let prepared;
         try {
-          prepared = await prepareStep({
-            automationsApi,
-            scheduleAutomationEmailAnalyticsJob,
-            step,
-          });
+          prepared = await prepareStep({ automationsApi, step });
         } catch (err) {
           logging.error(
             { err, system: { event: 'automations.poll.step_failed', step_id: step.id } },
@@ -440,16 +446,20 @@ export const poll = async ({
         if (!prepared) {
           return null;
         }
-        const { email, complete } = prepared;
-        if (email && step.step_attempts === 1 && sendBatch) {
-          return { step, email, complete };
+        if (prepared.email && step.step_attempts === 1 && sendBatch) {
+          return { ...prepared, step };
         }
         individualWork.push(
           runStep(step, async () => {
-            const result = email
-              ? await memberWelcomeEmailService.sendAutomationEmail(email)
-              : undefined;
-            nextPollAt = dateMin(nextPollAt, await complete(result));
+            if (prepared.email) {
+              const result = await memberWelcomeEmailService.sendAutomationEmail(prepared.email);
+              const record = prepared.deliveryRecord(result);
+              await recordSingleEmail(automationsApi, record);
+              if (record.mailgunMessageId) {
+                await scheduleEmailAnalytics(scheduleAutomationEmailAnalyticsJob, record);
+              }
+            }
+            nextPollAt = dateMin(nextPollAt, await automationsApi.finishStepAndEnqueueNext(step));
           }),
         );
         return null;
@@ -461,14 +471,40 @@ export const poll = async ({
     const results = await sendBatch(readyEmails.map(({ email }) => email)).catch(
       (reason: unknown) => readyEmails.map(() => ({ status: 'rejected' as const, reason })),
     );
-    await Promise.all(
-      readyEmails.map(({ step, complete }, index) =>
-        runStep(step, async () => {
-          const result = results[index]!;
-          if (result.status === 'rejected') {
+    const sent: { step: AutomationStepToRun; record: RecordEmailSentOptions }[] = [];
+    for (const [index, { step, deliveryRecord }] of readyEmails.entries()) {
+      const result = results[index]!;
+      if (result.status === 'rejected') {
+        individualWork.push(
+          runStep(step, async () => {
             throw result.reason;
-          }
-          nextPollAt = dateMin(nextPollAt, await complete(result.value));
+          }),
+        );
+      } else {
+        sent.push({ step, record: deliveryRecord(result.value) });
+      }
+    }
+
+    if (sent.length > 1 && automationsApi.recordEmailsSent) {
+      try {
+        await automationsApi.recordEmailsSent(sent.map(({ record }) => record));
+      } catch (err) {
+        logging.error(
+          { err, system: { event: 'automations.poll.recipient_persistence_failed' } },
+          '[AUTOMATIONS] Failed to record sent automation emails',
+        );
+      }
+    } else {
+      await Promise.all(sent.map(({ record }) => recordSingleEmail(automationsApi, record)));
+    }
+    const tracked = sent.find(({ record }) => record.mailgunMessageId);
+    if (tracked) {
+      await scheduleEmailAnalytics(scheduleAutomationEmailAnalyticsJob, tracked.record);
+    }
+    await Promise.all(
+      sent.map(({ step }) =>
+        runStep(step, async () => {
+          nextPollAt = dateMin(nextPollAt, await automationsApi.finishStepAndEnqueueNext(step));
         }),
       ),
     );
