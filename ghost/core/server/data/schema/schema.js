@@ -1776,6 +1776,7 @@ module.exports = {
       ['email_id', 'delivered_at'],
       ['email_id', 'opened_at'],
       ['email_id', 'failed_at'],
+      ['member_id', 'opened_at', 'email_id'],
     ],
   },
   email_recipient_failures: {
