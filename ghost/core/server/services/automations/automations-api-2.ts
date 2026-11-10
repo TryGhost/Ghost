@@ -96,6 +96,7 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
           }
           findFirstActionOptions = {
             eventName,
+            memberId,
             memberStatus: memberStatus === 'gift' ? 'paid' : memberStatus,
             memberTierIds,
           };
@@ -113,6 +114,7 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
           }
           findFirstActionOptions = {
             eventName,
+            memberId,
             memberStatus: memberStatus === 'gift' ? 'paid' : memberStatus,
             memberTierIds,
             previousMemberTierIds: event.previousMemberTierIds,

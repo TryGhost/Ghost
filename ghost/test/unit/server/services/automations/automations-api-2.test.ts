@@ -220,6 +220,7 @@ describe('automations API', function () {
 
       expect(findFirstActionRevisions).toHaveBeenCalledExactlyOnceWith(expect.anything(), {
         eventName: 'membership_started',
+        memberId: event.memberId,
         memberStatus: 'paid',
         memberTierIds: ['tier'],
       });
@@ -236,6 +237,7 @@ describe('automations API', function () {
       });
       expect(findFirstActionRevisions).toHaveBeenLastCalledWith(expect.anything(), {
         eventName: 'membership_started',
+        memberId: event.memberId,
         memberStatus: 'paid',
         memberTierIds: [],
       });
@@ -249,6 +251,7 @@ describe('automations API', function () {
       });
       expect(findFirstActionRevisions).toHaveBeenLastCalledWith(expect.anything(), {
         eventName: 'paid_subscription_changed',
+        memberId: event.memberId,
         memberStatus: 'paid',
         previousMemberTierIds: ['basic'],
         memberTierIds: ['premium'],
@@ -337,6 +340,7 @@ describe('automations API', function () {
 
         expect(findFirstActionRevisions).toHaveBeenCalledExactlyOnceWith(expect.anything(), {
           eventName: 'membership_started',
+          memberId: event.memberId,
           memberStatus,
           memberTierIds,
         });
@@ -388,6 +392,7 @@ describe('automations API', function () {
       await api.notify(changed);
       expect(findFirstActionRevisions).toHaveBeenLastCalledWith(expect.anything(), {
         eventName: changed.eventName,
+        memberId: changed.memberId,
         memberStatus: changed.memberStatus,
         memberTierIds: changed.memberTierIds,
         previousMemberTierIds: changed.previousMemberTierIds,

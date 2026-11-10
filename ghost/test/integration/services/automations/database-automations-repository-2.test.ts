@@ -237,6 +237,53 @@ describe('database automations repository', function () {
     let automationIds: string[];
     let actionIds: string[];
     let tierIds: string[];
+    let labelIds: string[];
+    let memberIds: string[];
+    let memberId: string;
+
+    const insertLabel = async () => {
+      const id = ObjectId().toHexString();
+      labelIds.push(id);
+      await knex('labels').insert({ id, name: `Test label ${id}`, slug: id, created_at: now });
+      return id;
+    };
+
+    const insertMemberWithLabels = async (memberLabelIds: string[]) => {
+      const member = createMember(ObjectId().toHexString());
+      memberIds.push(member.id);
+      await knex('members').insert(member);
+      if (memberLabelIds.length > 0) {
+        await knex('members_labels').insert(
+          memberLabelIds.map((labelId, index) => ({
+            id: ObjectId().toHexString(),
+            member_id: member.id,
+            label_id: labelId,
+            sort_order: index,
+          })),
+        );
+      }
+      return member.id;
+    };
+
+    const insertLabelFilters = async (
+      automationId: string,
+      filters: Array<['has_any' | 'has_all' | 'has_none', string]>,
+      triggerType = 'free_signup',
+    ) => {
+      await knex('automation_trigger_rules').insert(
+        filters.map(([operator, labelId]) => ({
+          id: ObjectId().toHexString(),
+          automation_id: automationId,
+          created_at: now,
+          trigger_type: triggerType,
+          scope: 'specific_label',
+          product_id: null,
+          direction: null,
+          operator,
+          label_id: labelId,
+        })),
+      );
+    };
 
     const insertAction = async (
       automationId: string,
@@ -306,6 +353,7 @@ describe('database automations repository', function () {
       repository.withConnection((connection) =>
         repository.findFirstActionRevisions(connection, {
           eventName: 'membership_started',
+          memberId,
           memberStatus,
           memberTierIds,
         }),
@@ -332,6 +380,7 @@ describe('database automations repository', function () {
         repository.withConnection((connection) =>
           repository.findFirstActionRevisions(connection, {
             eventName: 'paid_subscription_changed',
+            memberId,
             memberStatus: status,
             memberTierIds: after,
             previousMemberTierIds: before,
@@ -371,6 +420,7 @@ describe('database automations repository', function () {
         repository.withConnection((connection) =>
           repository.findFirstActionRevisions(connection, {
             eventName: 'paid_subscription_changed',
+            memberId,
             memberStatus: 'paid',
             memberTierIds: after,
             previousMemberTierIds: before,
@@ -389,6 +439,9 @@ describe('database automations repository', function () {
       automationIds = [];
       actionIds = [];
       tierIds = [];
+      labelIds = [];
+      memberIds = [];
+      memberId = ObjectId().toHexString();
     });
 
     afterEach(async function () {
@@ -397,6 +450,99 @@ describe('database automations repository', function () {
       await knex('automation_actions').whereIn('id', actionIds).delete();
       await knex('automations').whereIn('id', automationIds).delete();
       await knex('products').whereIn('id', tierIds).delete();
+      await knex('members').whereIn('id', memberIds).delete();
+      await knex('labels').whereIn('id', labelIds).delete();
+    });
+
+    it('only returns automations whose label filters the member passes', async function () {
+      const magnet = await insertLabel();
+      const other = await insertLabel();
+      const unfiltered = await insertAutomation();
+      const hasMagnet = await insertAutomation();
+      await insertLabelFilters(hasMagnet.automation_id, [['has_any', magnet]]);
+      const lacksMagnet = await insertAutomation();
+      await insertLabelFilters(lacksMagnet.automation_id, [['has_none', magnet]]);
+      const hasEither = await insertAutomation();
+      await insertLabelFilters(hasEither.automation_id, [
+        ['has_any', magnet],
+        ['has_any', other],
+      ]);
+      const hasMagnetLacksOther = await insertAutomation();
+      await insertLabelFilters(hasMagnetLacksOther.automation_id, [
+        ['has_any', magnet],
+        ['has_none', other],
+      ]);
+      const lacksBoth = await insertAutomation();
+      await insertLabelFilters(lacksBoth.automation_id, [
+        ['has_none', magnet],
+        ['has_none', other],
+      ]);
+      const hasBoth = await insertAutomation();
+      await insertLabelFilters(hasBoth.automation_id, [
+        ['has_all', magnet],
+        ['has_all', other],
+      ]);
+
+      memberId = await insertMemberWithLabels([]);
+      await expect(findFirstActionRevisions('free', [])).resolves.toEqual([
+        unfiltered,
+        lacksMagnet,
+        lacksBoth,
+      ]);
+
+      memberId = await insertMemberWithLabels([magnet]);
+      await expect(findFirstActionRevisions('free', [])).resolves.toEqual([
+        unfiltered,
+        hasMagnet,
+        hasEither,
+        hasMagnetLacksOther,
+      ]);
+
+      memberId = await insertMemberWithLabels([other]);
+      await expect(findFirstActionRevisions('free', [])).resolves.toEqual([
+        unfiltered,
+        lacksMagnet,
+        hasEither,
+      ]);
+
+      memberId = await insertMemberWithLabels([magnet, other]);
+      await expect(findFirstActionRevisions('free', [])).resolves.toEqual([
+        unfiltered,
+        hasMagnet,
+        hasEither,
+        hasBoth,
+      ]);
+    });
+
+    it('applies label filters to paid triggers alongside tier rules', async function () {
+      const magnet = await insertLabel();
+      const tierId = await insertTier();
+      const selected = await insertAutomation({ triggerScope: 'selected_paid' });
+      await insertAutomationTriggerTiers(selected.automation_id, [tierId]);
+      await insertLabelFilters(
+        selected.automation_id,
+        [['has_any', magnet]],
+        'paid_subscription_started',
+      );
+
+      memberId = await insertMemberWithLabels([]);
+      await expect(findFirstActionRevisions('paid', [tierId])).resolves.toEqual([]);
+
+      memberId = await insertMemberWithLabels([magnet]);
+      await expect(findFirstActionRevisions('paid', [tierId])).resolves.toEqual([selected]);
+      await expect(findFirstActionRevisions('paid', [])).resolves.toEqual([]);
+    });
+
+    it('does not treat a label filter as a free signup trigger', async function () {
+      const magnet = await insertLabel();
+      const filterOnly = await insertAutomation();
+      await knex('automation_trigger_rules')
+        .where({ automation_id: filterOnly.automation_id })
+        .delete();
+      await insertLabelFilters(filterOnly.automation_id, [['has_any', magnet]]);
+
+      memberId = await insertMemberWithLabels([magnet]);
+      await expect(findFirstActionRevisions('free', [])).resolves.toEqual([]);
     });
 
     it('uses current trigger rules for matching', async function () {

@@ -51,7 +51,7 @@ const applyMembershipStartedFilters = (
       .where((builder) => {
         switch (memberStatus) {
           case 'free':
-            builder.where('rule.trigger_type', 'free_signup');
+            builder.where('rule.trigger_type', 'free_signup').whereNull('rule.operator');
             break;
           case 'paid':
             builder.where('rule.trigger_type', 'paid_subscription_started').where((paid) => {
@@ -74,6 +74,29 @@ const applyMembershipStartedFilters = (
         }
       }),
   );
+};
+
+const applyLabelFilters = (
+  query: Knex.QueryBuilder,
+  connection: Connection,
+  memberId: string,
+): void => {
+  const labelFilters = (operator: 'has_any' | 'has_all' | 'has_none') =>
+    connection('automation_trigger_rules as label_filter')
+      .select('label_filter.id')
+      .where('label_filter.automation_id', connection.ref('automation.id'))
+      .where('label_filter.operator', operator);
+  const memberLabelIds = connection('members_labels')
+    .select('members_labels.label_id')
+    .where('members_labels.member_id', memberId);
+
+  query.where((anyOf) => {
+    anyOf
+      .whereNotExists(labelFilters('has_any'))
+      .orWhereExists(labelFilters('has_any').whereIn('label_filter.label_id', memberLabelIds));
+  });
+  query.whereNotExists(labelFilters('has_all').whereNotIn('label_filter.label_id', memberLabelIds));
+  query.whereNotExists(labelFilters('has_none').whereIn('label_filter.label_id', memberLabelIds));
 };
 
 const applyPaidSubscriptionChangedFilters = (
@@ -198,6 +221,7 @@ export const createDatabaseAutomationsRepository2 = ({
             }
           }
         })
+        .modify((query) => applyLabelFilters(query, connection, options.memberId))
         .where('automation.status', 'active')
         .whereNull('actions.deleted_at')
         .whereNotExists(

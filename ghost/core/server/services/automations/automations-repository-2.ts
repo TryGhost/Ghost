@@ -78,17 +78,19 @@ export type AutomationsRepository2<Connection> = {
   findFirstActionRevisions: (
     connection: Connection,
     options: ReadonlyDeep<
-      | {
-          eventName: 'membership_started';
-          memberStatus: 'free' | 'paid';
-          memberTierIds: string[];
-        }
-      | {
-          eventName: 'paid_subscription_changed';
-          memberStatus: 'free' | 'paid';
-          memberTierIds: string[];
-          previousMemberTierIds: string[];
-        }
+      { memberId: string } & (
+        | {
+            eventName: 'membership_started';
+            memberStatus: 'free' | 'paid';
+            memberTierIds: string[];
+          }
+        | {
+            eventName: 'paid_subscription_changed';
+            memberStatus: 'free' | 'paid';
+            memberTierIds: string[];
+            previousMemberTierIds: string[];
+          }
+      )
     >,
   ) => Promisable<NextActionRevisionRow[]>;
 
