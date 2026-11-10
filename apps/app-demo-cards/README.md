@@ -35,9 +35,9 @@ dev server prints:
 ## Trying the cards
 
 - **Podcast player:** paste an NPR episode page or feed, such as
-  `https://feeds.npr.org/510289/podcast.xml` (the newest episode of Planet Money). The manifest
-  only lets snapshots load artwork from NPR's image hosts, so other podcasts' artwork won't show
-  until their host is added to `image_origins`.
+  `https://feeds.npr.org/510289/podcast.xml` (the newest episode of Planet Money). The panel copies
+  the episode's cover onto the site, so snapshots and emails show it whichever host the podcast
+  uses. Covers over 700 KB aren't copied, and the card shows without one.
 - **Chart:** import `demo-data.csv`, a year of made-up membership numbers. A new chart shows a
   small sample table until a CSV is imported.
 

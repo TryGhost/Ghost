@@ -15,6 +15,47 @@ const RESOLVED_FIELDS = [
   'duration',
 ];
 
+/** Covers are stored at most this wide or tall, which is plenty for a 142px player. */
+const COVER_SIZE = 600;
+
+/**
+ * Copies the episode's cover onto the site: the app's backend downloads it, the panel shrinks it,
+ * and Ghost stores it. The card then never loads pictures from the podcast's own host.
+ */
+async function copyCover(panel: CardSettingsPanel, artworkUrl: string): Promise<string> {
+  const response = await panel.fetch(`${APP_ORIGIN}/api/artwork`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ url: artworkUrl }),
+  });
+  const body = (await response.json()) as { type?: string; data?: string; error?: string };
+  if (!response.ok || !body.type || !body.data) {
+    throw new Error(body.error ?? 'The cover could not be loaded');
+  }
+  const source = Uint8Array.from(atob(body.data), (character) => character.charCodeAt(0));
+  const bitmap = await createImageBitmap(new Blob([source], { type: body.type }));
+  const scale = Math.min(1, COVER_SIZE / Math.max(bitmap.width, bitmap.height));
+  const canvas = new OffscreenCanvas(
+    Math.max(1, Math.round(bitmap.width * scale)),
+    Math.max(1, Math.round(bitmap.height * scale)),
+  );
+  const context = canvas.getContext('2d');
+  if (!context) {
+    throw new Error('The cover could not be resized');
+  }
+  context.fillStyle = '#fff';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  const jpeg = await canvas.convertToBlob({ type: 'image/jpeg', quality: 0.85 });
+  const { url } = await panel.uploadImage({
+    name: 'podcast-cover.jpg',
+    type: 'image/jpeg',
+    bytes: new Uint8Array(await jpeg.arrayBuffer()),
+  });
+  return url;
+}
+
 function Settings({ panel }: { panel: CardSettingsPanel }) {
   const [properties, setProperties] = useState(() => panel.properties);
   const [status, setStatus] = useState<{ tone: 'info' | 'error'; text: string }>({
@@ -55,8 +96,22 @@ function Settings({ panel }: { panel: CardSettingsPanel }) {
       if (current !== revision.current) {
         return;
       }
-      await propose(body.episode);
-      setStatus({ tone: 'info', text: 'Episode found. Paste the link again to refresh it.' });
+      const episode = body.episode;
+      let artworkUrl = '';
+      let found = 'Episode found. Paste the link again to refresh it.';
+      if (typeof episode.artworkUrl === 'string' && episode.artworkUrl) {
+        setStatus({ tone: 'info', text: 'Copying the cover to your site…' });
+        try {
+          artworkUrl = await copyCover(panel, episode.artworkUrl);
+        } catch (error) {
+          found = `Episode found, without its cover: ${error instanceof Error ? error.message : 'it could not be copied'}.`;
+        }
+        if (current !== revision.current) {
+          return;
+        }
+      }
+      await propose({ ...episode, artworkUrl });
+      setStatus({ tone: 'info', text: found });
     } catch (error) {
       if (current === revision.current) {
         setStatus({

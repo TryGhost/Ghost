@@ -205,24 +205,23 @@ async function cancelBody(body: ResponseBody): Promise<void> {
   destroyable.destroy?.();
 }
 
-async function readBoundedText(
+async function readBoundedBytes(
   body: ResponseBody,
   maxBytes: number,
   label: string,
-): Promise<string> {
+): Promise<Uint8Array> {
   if (!body) {
-    return '';
+    return new Uint8Array();
   }
-  const decoder = new TextDecoder();
   let streamReader: ReadableStreamDefaultReader<Uint8Array> | undefined;
   let bytes = 0;
-  let text = '';
+  const chunks: Uint8Array[] = [];
   const append = (chunk: Uint8Array) => {
     bytes += chunk.byteLength;
     if (bytes > maxBytes) {
       throw new Error(`${label} is too large`);
     }
-    text += decoder.decode(chunk, { stream: true });
+    chunks.push(chunk);
   };
 
   try {
@@ -240,7 +239,7 @@ async function readBoundedText(
         append(chunk);
       }
     }
-    return text + decoder.decode();
+    return Buffer.concat(chunks);
   } catch (error) {
     if (streamReader) {
       await streamReader.cancel().catch(() => undefined);
@@ -249,6 +248,14 @@ async function readBoundedText(
     }
     throw error;
   }
+}
+
+async function readBoundedText(
+  body: ResponseBody,
+  maxBytes: number,
+  label: string,
+): Promise<string> {
+  return new TextDecoder().decode(await readBoundedBytes(body, maxBytes, label));
 }
 
 function decodeHtml(value: string): string {
@@ -485,7 +492,7 @@ async function loadDocument(value: string, fetchPage: FetchPage, expectedFeed = 
   };
 }
 
-export async function resolveEpisode(
+async function findEpisode(
   submittedValue: string,
   fetchPage: FetchPage = fetchPublicPage,
 ): Promise<ResolvedEpisode> {
@@ -525,4 +532,212 @@ export async function resolveEpisode(
   const canonicalUrl = optionalHttpsUrl(linkHref(html, 'canonical'), finalUrl) || finalUrl;
   const feed = await loadDocument(discoveredFeedUrl, fetchPage, true);
   return parseFeedEpisode(feed.text, feed.finalUrl, submittedUrl, canonicalUrl);
+}
+
+/**
+ * Looks up an episode from a page or feed. When neither gives its length, the audio's own header
+ * does, so the card can show it before anyone presses play.
+ */
+export async function resolveEpisode(
+  submittedValue: string,
+  fetchPage: FetchPage = fetchPublicPage,
+): Promise<ResolvedEpisode> {
+  const episode = await findEpisode(submittedValue, fetchPage);
+  if (!episode.duration) {
+    const seconds = await probeAudioDuration(episode.audioUrl, fetchPage).catch(() => null);
+    if (seconds) {
+      episode.duration = formatDuration(String(seconds));
+    }
+  }
+  return episode;
+}
+
+/** Fetches a public URL, following its redirects, and returns the final response. */
+async function follow(
+  value: string,
+  headers: Record<string, string>,
+  fetchPage: FetchPage,
+  label: string,
+): Promise<PageResponse> {
+  let currentUrl = publicHttpsUrl(value);
+  for (let redirects = 0; ; redirects += 1) {
+    const response = await fetchPage(currentUrl, {
+      headers,
+      redirect: 'manual',
+      signal: AbortSignal.timeout(8000),
+    });
+    if (response.status < 300 || response.status >= 400) {
+      return response;
+    }
+    const location = response.headers.get('location');
+    await cancelBody(response.body);
+    // Podcast audio often passes through several analytics hosts before the file.
+    if (!location || redirects === 8) {
+      throw new Error(`${label} redirected too many times`);
+    }
+    currentUrl = publicHttpsUrl(location, currentUrl);
+  }
+}
+
+/** Reads up to `maxBytes` of a body and lets the rest go. */
+async function readPrefix(body: ResponseBody, maxBytes: number): Promise<Uint8Array> {
+  if (!body) {
+    return new Uint8Array();
+  }
+  const chunks: Uint8Array[] = [];
+  let bytes = 0;
+  const iterator =
+    body instanceof ReadableStream
+      ? (body as unknown as AsyncIterable<Uint8Array>)
+      : (body as AsyncIterable<Uint8Array>);
+  try {
+    for await (const chunk of iterator) {
+      chunks.push(chunk);
+      bytes += chunk.byteLength;
+      if (bytes >= maxBytes) {
+        break;
+      }
+    }
+  } finally {
+    await cancelBody(body).catch(() => undefined);
+  }
+  return Buffer.concat(chunks).subarray(0, maxBytes);
+}
+
+const MP3_SAMPLE_RATES: Record<number, number[]> = {
+  3: [44100, 48000, 32000],
+  2: [22050, 24000, 16000],
+  0: [11025, 12000, 8000],
+};
+const MP3_BITRATES_MPEG1 = [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320];
+const MP3_BITRATES_MPEG2 = [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160];
+
+const ascii = (bytes: Uint8Array, at: number) => String.fromCharCode(...bytes.subarray(at, at + 4));
+const uint32 = (bytes: Uint8Array, at: number) =>
+  ((bytes[at]! << 24) | (bytes[at + 1]! << 16) | (bytes[at + 2]! << 8) | bytes[at + 3]!) >>> 0;
+
+/** Where an MP3's audio starts, after its ID3 tag. */
+export function mp3AudioStart(head: Uint8Array): number {
+  if (ascii(head, 0).slice(0, 3) !== 'ID3' || head.length < 10) {
+    return 0;
+  }
+  const size =
+    ((head[6]! & 0x7f) << 21) |
+    ((head[7]! & 0x7f) << 14) |
+    ((head[8]! & 0x7f) << 7) |
+    (head[9]! & 0x7f);
+  return 10 + size + (head[5]! & 0x10 ? 10 : 0);
+}
+
+/**
+ * An MP3's length in seconds, from the first Layer III frame at or after `start`: exact when the
+ * encoder wrote a Xing, Info or VBRI frame count, and from the bitrate otherwise.
+ */
+export function mp3Duration(bytes: Uint8Array, start: number, audioBytes: number): number | null {
+  for (let offset = start; offset + 4 <= bytes.length; offset += 1) {
+    if (bytes[offset] !== 0xff || (bytes[offset + 1]! & 0xe0) !== 0xe0) {
+      continue;
+    }
+    const version = (bytes[offset + 1]! >> 3) & 3;
+    const layer = (bytes[offset + 1]! >> 1) & 3;
+    const bitrateIndex = bytes[offset + 2]! >> 4;
+    const rateIndex = (bytes[offset + 2]! >> 2) & 3;
+    if (
+      version === 1 ||
+      layer !== 1 ||
+      bitrateIndex === 0 ||
+      bitrateIndex === 15 ||
+      rateIndex === 3
+    ) {
+      continue;
+    }
+    const mpeg1 = version === 3;
+    const sampleRate = MP3_SAMPLE_RATES[version]![rateIndex]!;
+    const samplesPerFrame = mpeg1 ? 1152 : 576;
+    const mono = bytes[offset + 3]! >> 6 === 3;
+    const xing = offset + 4 + (mpeg1 ? (mono ? 17 : 32) : mono ? 9 : 17);
+    if (['Xing', 'Info'].includes(ascii(bytes, xing)) && bytes[xing + 7]! & 1) {
+      const frames = uint32(bytes, xing + 8);
+      if (frames > 0) {
+        return (frames * samplesPerFrame) / sampleRate;
+      }
+    }
+    if (ascii(bytes, offset + 36) === 'VBRI') {
+      const frames = uint32(bytes, offset + 50);
+      if (frames > 0) {
+        return (frames * samplesPerFrame) / sampleRate;
+      }
+    }
+    const bitrate = (mpeg1 ? MP3_BITRATES_MPEG1 : MP3_BITRATES_MPEG2)[bitrateIndex]! * 1000;
+    return audioBytes > 0 ? (audioBytes * 8) / bitrate : null;
+  }
+  return null;
+}
+
+const PROBE_BYTES = 16_384;
+
+/** Reads `length` bytes of the audio at `start`, with the file's total size if the host says. */
+async function audioRange(url: string, start: number, fetchPage: FetchPage) {
+  const response = await follow(
+    url,
+    { accept: 'audio/*', range: `bytes=${start}-${start + PROBE_BYTES - 1}` },
+    fetchPage,
+    'The audio',
+  );
+  if (!response.ok) {
+    await cancelBody(response.body);
+    throw new Error(`The audio returned ${response.status}`);
+  }
+  const range = /\/(\d+)\s*$/.exec(response.headers.get('content-range') || '');
+  const total = range ? Number(range[1]) : Number(response.headers.get('content-length') || 0);
+  // A host that ignores the range sends the file from its start.
+  const offset = response.status === 206 ? start : 0;
+  return { bytes: await readPrefix(response.body, PROBE_BYTES + start - offset), offset, total };
+}
+
+/** An MP3 episode's length, read from the start of its file. */
+async function probeAudioDuration(audioUrl: string, fetchPage: FetchPage): Promise<number | null> {
+  const first = await audioRange(audioUrl, 0, fetchPage);
+  const start = mp3AudioStart(first.bytes);
+  const frames =
+    start + 64 <= first.bytes.length
+      ? { bytes: first.bytes, at: start }
+      : await audioRange(audioUrl, start, fetchPage).then((next) => ({
+          bytes: next.bytes,
+          at: start - next.offset,
+        }));
+  return mp3Duration(frames.bytes, frames.at, first.total - start);
+}
+
+/**
+ * The largest cover the backend hands the settings panel. It travels as base64 in JSON, which
+ * must stay under the 1 MB Ghost allows a card's backend response.
+ */
+export const MAX_ARTWORK_BYTES = 700_000;
+
+export type FetchedArtwork = { type: string; data: string };
+
+/**
+ * Downloads an episode's cover for the settings panel, which copies it onto the site. Snapshots
+ * and emails then show the site's copy, so the card works with any podcast host.
+ */
+export async function fetchArtwork(
+  value: string,
+  fetchPage: FetchPage = fetchPublicPage,
+): Promise<FetchedArtwork> {
+  const response = await follow(value, { accept: 'image/*' }, fetchPage, 'The cover');
+  const type = (response.headers.get('content-type') || '').split(';')[0]!.trim().toLowerCase();
+  const failure = !response.ok
+    ? `The cover returned ${response.status}`
+    : !type.startsWith('image/') || type === 'image/svg+xml'
+      ? 'The cover is not a picture'
+      : Number(response.headers.get('content-length') || 0) > MAX_ARTWORK_BYTES
+        ? 'The cover is too large'
+        : '';
+  if (failure) {
+    await cancelBody(response.body);
+    throw new Error(failure);
+  }
+  const bytes = await readBoundedBytes(response.body, MAX_ARTWORK_BYTES, 'The cover');
+  return { type, data: Buffer.from(bytes).toString('base64') };
 }

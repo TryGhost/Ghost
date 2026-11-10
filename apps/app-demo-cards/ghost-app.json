@@ -34,7 +34,6 @@
       "settings": "/editor/settings.js",
       "frame": "/frames/podcast.html",
       "backend_origins": ["http://cards.localhost:5181"],
-      "image_origins": ["https://npr.brightspotcdn.com", "https://media.npr.org"],
       "frame_permissions": ["autoplay"]
     },
     {

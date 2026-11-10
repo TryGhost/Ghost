@@ -1,6 +1,9 @@
 import {
   createPublicLookup,
+  fetchArtwork,
   isPublicIpAddress,
+  mp3AudioStart,
+  mp3Duration,
   resolveEpisode,
   resolvePublicAddress,
 } from '../src/podcast/resolve-episode.ts';
@@ -218,5 +221,65 @@ describe('resolveEpisode', function () {
       { address: '104.20.42.7', family: 4 },
       { address: '2606:4700:10::6814:2a07', family: 6 },
     ]);
+  });
+});
+
+describe('mp3Duration', function () {
+  // An MPEG-1 Layer III frame header: 128 kbps, 44.1 kHz, stereo.
+  const frame = [0xff, 0xfb, 0x90, 0x00];
+
+  it('reads the frame count from an Info header', function () {
+    const bytes = new Uint8Array(200);
+    bytes.set(frame, 0);
+    bytes.set(
+      [...'Info'].map((c) => c.charCodeAt(0)),
+      36,
+    );
+    bytes.set([0, 0, 0, 1], 40);
+    bytes.set([0, 0, 0x8c, 0xa0], 44); // 36000 frames
+    expect(mp3Duration(bytes, 0, 0)).toBeCloseTo((36000 * 1152) / 44100);
+  });
+
+  it('works out a constant bitrate file from its size, after the ID3 tag', function () {
+    const bytes = new Uint8Array(300);
+    bytes.set(
+      [...'ID3'].map((c) => c.charCodeAt(0)),
+      0,
+    );
+    bytes.set([0, 0, 0, 0x64], 6); // a 100 byte tag
+    const start = mp3AudioStart(bytes);
+    expect(start).toBe(110);
+    bytes.set(frame, start);
+    expect(mp3Duration(bytes, start, 16_000_000)).toBe(1000);
+  });
+
+  it('gives up without a Layer III frame', function () {
+    expect(mp3Duration(new Uint8Array(64), 0, 1000)).toBeNull();
+  });
+});
+
+describe('fetchArtwork', function () {
+  it('follows redirects and hands back the picture as base64', async function () {
+    const fetchPage = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(null, { status: 302, headers: { location: 'https://cdn.example/cover.png' } }),
+      )
+      .mockResolvedValueOnce(
+        new Response(new Uint8Array([1, 2, 3]), { headers: { 'content-type': 'image/png' } }),
+      );
+    await expect(fetchArtwork('https://example.com/cover', fetchPage)).resolves.toEqual({
+      type: 'image/png',
+      data: 'AQID',
+    });
+  });
+
+  it('refuses what is not a picture', async function () {
+    const fetchPage = vi
+      .fn()
+      .mockResolvedValue(new Response('<svg/>', { headers: { 'content-type': 'image/svg+xml' } }));
+    await expect(fetchArtwork('https://example.com/cover', fetchPage)).rejects.toThrow(
+      'not a picture',
+    );
   });
 });
