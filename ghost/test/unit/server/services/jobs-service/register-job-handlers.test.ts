@@ -355,9 +355,7 @@ describe('register-job-handlers', function () {
 
     assert.ok(jobClasses.length > 0, 'the glob finds job classes');
     for (const JobClass of jobClasses) {
-      const registrations = jobsService.handle
-        .getCalls()
-        .filter((c) => c.args[0].type === JobClass.type);
+      const registrations = jobsService.handle.getCalls().filter((c) => c.args[0] === JobClass);
       assert.equal(registrations.length, 1, `${JobClass.type} has exactly one handler`);
     }
   });
