@@ -41,7 +41,8 @@ export interface OutboxTrackerLike {
 export interface JobsOutboxWiring {
   store: OutboxStore;
   relay: OutboxRelayLike;
-  tracker: OutboxTrackerLike;
+  // Only when the store keeps rows until their job settles
+  tracker?: OutboxTrackerLike;
 }
 
 export interface DispatchOptions {
@@ -215,7 +216,7 @@ export class JobsService {
     await this.#backend.start({
       processor: (envelope) => this.#process(envelope),
       queues: Object.fromEntries(this.#queues),
-      onSettled: this.#outbox?.tracker.onSettled,
+      onSettled: this.#outbox?.tracker?.onSettled,
     });
     if (this.#outbox) {
       // Rows submitted before this start belong to a process that has gone,

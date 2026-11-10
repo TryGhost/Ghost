@@ -60,9 +60,11 @@ function floorToSecond(date: Date): Date {
 
 export class JobsOutbox {
   readonly #knex: Knex;
+  readonly #keepUntilSettled: boolean;
 
-  constructor({ knex }: { knex: Knex }) {
+  constructor({ knex, keepUntilSettled }: { knex: Knex; keepUntilSettled: boolean }) {
     this.#knex = knex;
+    this.#keepUntilSettled = keepUntilSettled;
   }
 
   async insert({ id, envelope }: OutboxEntry, { transacting }: InsertOptions = {}): Promise<void> {
@@ -123,8 +125,13 @@ export class JobsOutbox {
         return { status: 'failed', id, error };
       }
 
-      // The row stays, marked submitted, until its job settles
-      await trx(TABLE).where('id', id).update({ submitted_at: new Date() });
+      // If the process dies before this commits, the claim rolls back and the
+      // row is handed over again, so the job can run twice either way.
+      const handedOff = trx(TABLE).where('id', id);
+      // A kept row stays, marked submitted, until its job settles
+      await (this.#keepUntilSettled
+        ? handedOff.update({ submitted_at: new Date() })
+        : handedOff.delete());
       return { status: 'delivered', id, type, createdAt };
     });
   }

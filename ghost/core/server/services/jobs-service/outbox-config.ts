@@ -2,6 +2,9 @@ import { z } from 'zod';
 
 const schema = z.object({
   enabled: z.boolean().default(false),
+  // Keeps each row until its job settles, so a job cut short by a restart is
+  // handed over again at the next boot. Off, the row goes at hand-off.
+  keepUntilSettled: z.boolean().default(false),
   pollIntervalMs: z.number().int().positive().default(1000),
   submissionTimeoutMs: z.number().int().positive().default(10000),
   retryDelayMs: z.number().int().positive().default(30000),

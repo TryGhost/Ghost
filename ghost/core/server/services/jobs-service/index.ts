@@ -38,7 +38,7 @@ export function init({ knex, config }: JobsServiceInitOptions): JobsService {
 
   let outbox: JobsOutboxWiring | undefined;
   if (active) {
-    const store = new JobsOutbox({ knex });
+    const store = new JobsOutbox({ knex, keepUntilSettled: outboxConfig.keepUntilSettled });
     const relay = new OutboxRelay({
       outbox: store,
       backend,
@@ -48,7 +48,10 @@ export function init({ knex, config }: JobsServiceInitOptions): JobsService {
       submissionTimeoutMs: outboxConfig.submissionTimeoutMs,
       retryDelayMs: outboxConfig.retryDelayMs,
     });
-    const tracker = new OutboxTracker({ store, logging });
+    // With rows deleted at hand-off, there is nothing left for a settlement to remove
+    const tracker = outboxConfig.keepUntilSettled
+      ? new OutboxTracker({ store, logging })
+      : undefined;
     outbox = { store, relay, tracker };
   }
 
