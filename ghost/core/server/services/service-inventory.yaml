@@ -5693,8 +5693,8 @@ services:
         complexity: complex
         reason: >-
           Queue/backend, logging, reporting and outbox dependencies are mostly injected, but
-          register-job-handlers imports job classes across services and directly reaches Content
-          Import, Update Check and Signing Keys. It is application composition inside the queue
+          register-job-handlers imports job classes across services and receives every handler's
+          service from boot. It is application composition inside the queue
           implementation, and registration must occur after its service dependencies exist.
         preparation:
           - >-
@@ -12732,10 +12732,9 @@ services:
         summary: >-
           Boot initializes the root and later supplies the jobs instance. Identity tokens and
           the staff JWKS app retain staff providers; members API construction retains a
-          members provider for signing, verification and public keys. The check-signing-keys
-          job handler instead reads the root service getter for each run. Handler tests register
-          before root initialization, then verify deferred access, awaiting the check and propagation
-          of its original rejection. Existing HTTP tests cover
+          members provider for signing, verification and public keys. Boot passes the ready
+          service to the check-signing-keys job handler, which a boot unit asserts. Handler tests use a stub service to
+          verify the check runs and its rejection propagates. Existing HTTP tests cover
           both JWKS responses and staff-token verification, not live rotation through those
           retained HTTP consumers.
         sources:
@@ -12749,6 +12748,7 @@ services:
           - test/e2e-server/well-known.test.ts
           - test/e2e-api/members/well-known.test.js
           - test/legacy/api/admin/identities.test.js
+          - test/unit/boot/init-services.test.ts
           - test/unit/server/services/jobs-service/register-job-handlers.test.ts
       startup:
         summary: >-

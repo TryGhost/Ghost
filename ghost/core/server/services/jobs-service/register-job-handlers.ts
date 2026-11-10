@@ -23,7 +23,7 @@ import SendWebmentionsJob from '../mentions/send-webmentions-job';
 import type EmailService from '../email-service/email-service';
 import SendEmailJob from '../email-service/jobs/send-email-job';
 import CheckSigningKeysJob from '../signing-keys/check-signing-keys-job';
-import signingKeys from '../signing-keys';
+import type { SigningKeyService } from '../signing-keys/signing-key-service';
 
 // Webmention processing fetches external pages and is triggered by
 // unauthenticated requests, so webmention jobs run in their own lane where a
@@ -65,6 +65,7 @@ interface RegisterJobHandlersDependencies {
     handleJob(job: ContentCSVImportJob): Promise<void>;
   };
   updateCheck: (options: { rethrowErrors: boolean }) => Promise<void>;
+  signingKeys: Pick<SigningKeyService, 'check'>;
 }
 
 export default function registerJobHandlers({
@@ -83,6 +84,7 @@ export default function registerJobHandlers({
   tinybirdSync,
   contentImport,
   updateCheck,
+  signingKeys,
 }: RegisterJobHandlersDependencies): void {
   // Each email analytics pipeline fetches on its own five-minute tick and the
   // wrapper skips a tick while its previous fetch is still running. The second
@@ -136,7 +138,7 @@ export default function registerJobHandlers({
   });
 
   jobsService.handle(CheckSigningKeysJob, async () => {
-    await signingKeys.service.check();
+    await signingKeys.check();
   });
 
   jobsService.handle(
