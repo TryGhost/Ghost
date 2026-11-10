@@ -60,6 +60,9 @@ const AUTH_CODE_CHALLENGE_BYTES = 16;
  * @param {import('../../../shared/i18n').t} deps.t
  * @param {import('../../../shared/url-utils').default} deps.urlUtils
  * @param {() => boolean} deps.isStaffDeviceVerificationDisabled
+ * @param {(userId: string) => Promise<void>} deps.limitVerificationEmailForUser
+ * @param {(userId: string) => Promise<void>} deps.resetVerificationEmailForUser
+ * @param {(challenge: string) => Promise<void>} deps.consumeAuthCodeAttempt
  * @returns {SessionService}
  */
 
@@ -72,8 +75,20 @@ module.exports = function createSessionService({
   mailer,
   urlUtils,
   isStaffDeviceVerificationDisabled,
+  limitVerificationEmailForUser,
+  resetVerificationEmailForUser,
+  consumeAuthCodeAttempt,
   t,
 }) {
+  // Await the reset so the next sign-in starts with a fresh email budget.
+  // Store failures must not prevent a successfully verified user from signing in.
+  async function clearVerificationEmailLimit(userId) {
+    try {
+      await resetVerificationEmailForUser(userId);
+    } catch (err) {
+      // best-effort. Don't block sign-in on a limiter reset failure
+    }
+  }
   function createAuthCodeChallenge() {
     return crypto.randomBytes(AUTH_CODE_CHALLENGE_BYTES).toString('hex');
   }
@@ -103,11 +118,14 @@ module.exports = function createSessionService({
     return Date.now() - session.auth_code_generated_at <= AUTH_CODE_VALIDITY_MS;
   }
 
-  function verifyAuthCode(session, token, secret) {
+  async function verifyAuthCode(session, token, secret) {
     if (!token || !session.user_id || !hasValidAuthCodeChallenge(session)) {
       return false;
     }
 
+    // The challenge survives session regeneration. Its shared, atomic budget also
+    // covers concurrent requests and requests from different IP addresses.
+    await consumeAuthCodeAttempt(session.auth_code_challenge);
     const verified = totp.verify(session.user_id, token, secret, session.auth_code_challenge);
 
     if (verified) {
@@ -190,12 +208,13 @@ module.exports = function createSessionService({
     // If a verification token was provided with the login request, verify it
     if (verificationToken) {
       const secret = getSettingsCache('admin_session_secret');
-      const isAuthCodeVerified = verifyAuthCode(session, verificationToken, secret);
+      const isAuthCodeVerified = await verifyAuthCode(session, verificationToken, secret);
 
       if (isAuthCodeVerified) {
         session.verified = true;
         session.verified_user_id = user.id;
         invalidateAuthCodeChallenge(session);
+        await clearVerificationEmailLimit(user.id);
       }
     }
 
@@ -428,6 +447,11 @@ module.exports = function createSessionService({
       });
     }
 
+    // Rate-limit verification emails per user (independent of IP/session) so a
+    // caller with valid credentials can't flood a user's inbox by repeating
+    // sign-in. Throws a TooManyRequestsError once the limit is exceeded.
+    await limitVerificationEmailForUser(session.user_id);
+
     rotateAuthCodeChallenge(session);
     const token = await generateAuthCodeForUser(req, res);
 
@@ -486,6 +510,7 @@ module.exports = function createSessionService({
     session.verified = true;
     session.verified_user_id = session.user_id;
     invalidateAuthCodeChallenge(session);
+    await clearVerificationEmailLimit(session.user_id);
   }
 
   /**

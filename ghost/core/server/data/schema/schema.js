@@ -521,6 +521,12 @@ module.exports = {
     lifetime: { type: 'bigInteger' },
     count: { type: 'integer' },
   },
+  rate_limits: {
+    key: { type: 'string', maxlength: 191, nullable: false, primary: true },
+    points: { type: 'integer', nullable: false, defaultTo: 0 },
+    expire: { type: 'bigInteger', nullable: true },
+    '@@INDEXES@@': [['expire']],
+  },
   sessions: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     session_id: { type: 'string', maxlength: 32, nullable: false, unique: true },

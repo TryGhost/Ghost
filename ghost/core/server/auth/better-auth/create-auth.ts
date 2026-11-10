@@ -3,6 +3,7 @@
 import { betterAuth } from 'better-auth/minimal';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
+import { CLIENT_IP_HEADER } from './client-ip';
 import { createKnexAdapter } from './knex-adapter';
 import {
   generateGhostId,
@@ -123,7 +124,7 @@ export function createAuth(deps: CreateAuthDeps) {
         verify: ({ hash, password }) => deps.password.compare(password, hash),
       },
     },
-    // express-brute wraps the native routes when they are mounted
+    // Ghost's spam-prevention limiters wrap the native routes when they are mounted
     rateLimit: { enabled: false },
     disabledPaths: [
       '/sign-up/email',
@@ -138,6 +139,8 @@ export function createAuth(deps: CreateAuthDeps) {
     },
     advanced: {
       database: { generateId: generateGhostId },
+      // Express's req.ip, set by setClientIPHeader; IPv6 counts per /64, as Ghost's limiters key it
+      ipAddress: { ipAddressHeaders: [CLIENT_IP_HEADER], ipv6Subnet: 64 },
       // Sets `Secure` and the `__Secure-` name prefix together, on an HTTPS admin URL only
       useSecureCookies: ssl,
       cookies: {

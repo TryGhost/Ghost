@@ -675,6 +675,17 @@ describe('Revue Importer', function () {
 
         assert.deepEqual(result, '<p>Hello World!</p><p>Goodbye World!</p>');
       });
+
+      it('wraps each of several blockquotes independently', function () {
+        const result = JSONToHTML.cleanCsvHTML(
+          '<blockquote>one</blockquote> mid <blockquote class="x">two</blockquote>',
+        );
+
+        assert.deepEqual(
+          result,
+          '<blockquote><p>one</p></blockquote> mid <blockquote><p>two</p></blockquote>',
+        );
+      });
     });
   });
 });

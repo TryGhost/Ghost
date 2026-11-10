@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { execFile } from 'node:child_process';
-import { existsSync, readFileSync, realpathSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -65,6 +65,22 @@ const entryPoints = Object.entries(manifest.exports as Record<string, unknown>)
 // loaded. Type-checked, never run.
 const USAGE = `
 import { connect, GhostAppError, type Ghost, type GhostAppErrorCode } from '@tryghost/app-sdk';
+import { CHALLENGE_PATH, handleChallenge, withGhostApp } from '@tryghost/app-sdk/backend';
+import { checkApp, signProject } from '@tryghost/app-sdk/tooling';
+
+declare const env: { GHOST_APP_BACKEND_KEY: string };
+export const worker = withGhostApp({
+  backendKey: env.GHOST_APP_BACKEND_KEY,
+  fetch: (request) => new Response(new URL(request.url).pathname === CHALLENGE_PATH ? '' : 'page'),
+});
+export const answer = (request: Request) =>
+  handleChallenge(request, { backendKey: env.GHOST_APP_BACKEND_KEY });
+
+export async function tooling() {
+  const signed = await signProject({ root: '.', mode: 'production', manifestUrl: 'https://app.example/ghost-app.json' });
+  const checked = await checkApp('https://app.example/ghost-app.json');
+  return signed.success && checked.success ? checked.manifest.id : undefined;
+}
 
 try {
   const ghost: Ghost = await connect({ timeout: 5000 });
@@ -84,6 +100,30 @@ try {
 }
 `;
 
+// A backend on Node, typed against Node's globals without the DOM library, and handed a key
+// typed as WebCrypto's own JWK.
+const BACKEND_USAGE = `
+import { webcrypto } from 'node:crypto';
+import { handleChallenge, withGhostApp, type BackendKey } from '@tryghost/app-sdk/backend';
+
+export async function answer(request: Request, jwk: webcrypto.JsonWebKey, json: string) {
+  const keys: BackendKey[] = [jwk, json];
+  return handleChallenge(request, { backendKey: keys[0]! });
+}
+
+// A Worker that reads its env from the module, as cloudflare:workers exports it. Its fetch takes
+// the Worker's arguments too, and the handler withGhostApp returns is typed from them.
+type Ctx = { waitUntil(promise: Promise<unknown>): void };
+declare const env: { GHOST_APP_BACKEND_KEY: string };
+export default withGhostApp({
+  backendKey: env.GHOST_APP_BACKEND_KEY,
+  fetch: (request: Request, _env: unknown, ctx: Ctx) => {
+    ctx.waitUntil(Promise.resolve());
+    return new Response(request.url);
+  },
+}) satisfies { fetch: (request: Request, env: unknown, ctx: Ctx) => Promise<Response> };
+`;
+
 const resolutions = {
   node: { module: ts.ModuleKind.NodeNext, moduleResolution: ts.ModuleResolutionKind.NodeNext },
   bundler: { module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler },
@@ -96,11 +136,14 @@ describe('the packed package', () => {
 
   // Packing takes a few seconds, more on a CPU-constrained CI runner.
   beforeAll(async () => {
+    // Every file the package build makes, so an entry point added later is checked too. Not the
+    // source maps, which name the directory they were built into.
     for (const [file, fresh] of [
-      ['build/index.js', join(built.package, 'index.js')],
-      ['build/index.d.ts', join(built.package, 'index.d.ts')],
-      ['dist/app-sdk.js', join(built.bundle, 'app-sdk.js')],
-    ] as const) {
+      ...readdirSync(built.package, { recursive: true, encoding: 'utf8' })
+        .filter((name) => !name.endsWith('.map') && statSync(join(built.package, name)).isFile())
+        .map((name) => [join('build', name), join(built.package, name)] as const),
+      ['dist/app-sdk.js', join(built.bundle, 'app-sdk.js')] as const,
+    ]) {
       const path = join(root, file);
       if (!existsSync(path) || readFileSync(path, 'utf8') !== readFileSync(fresh, 'utf8')) {
         throw new Error(`${file} isn't what the source builds to now: run pnpm build first`);
@@ -128,6 +171,7 @@ describe('the packed package', () => {
       entryPoints.map((specifier, i) => `export * as entry${i} from '${specifier}';\n`).join(''),
     );
     await writeFile(join(app, 'usage.ts'), USAGE);
+    await writeFile(join(app, 'backend-usage.ts'), BACKEND_USAGE);
     await writeFile(
       join(app, 'pnpm-workspace.yaml'),
       `overrides:\n${Object.entries(dependencies)
@@ -198,6 +242,28 @@ describe('the packed package', () => {
         target: ts.ScriptTarget.ES2022,
         types: [],
         lib: ['lib.es2022.d.ts', 'lib.dom.d.ts'],
+      });
+      const diagnostics = ts
+        .getPreEmitDiagnostics(program)
+        .map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
+      expect(diagnostics).toEqual([]);
+    },
+  );
+
+  it.each(Object.entries(resolutions))(
+    'type-checks a Node backend against /backend without the DOM library, with %s resolution',
+    { timeout: 60_000 },
+    (_name, resolution) => {
+      const program = ts.createProgram([join(app, 'backend-usage.ts')], {
+        ...resolution,
+        strict: true,
+        noEmit: true,
+        skipLibCheck: false,
+        target: ts.ScriptTarget.ES2022,
+        // Node's own types, from the workspace, as the app installs none.
+        typeRoots: [join(root, 'node_modules', '@types')],
+        types: ['node'],
+        lib: ['lib.es2022.d.ts'],
       });
       const diagnostics = ts
         .getPreEmitDiagnostics(program)

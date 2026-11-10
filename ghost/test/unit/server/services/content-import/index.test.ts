@@ -203,7 +203,11 @@ describe('Content import composition root', function () {
     root.init();
     await root.handleJob(delivered);
     await root.allSettled();
-    sinon.assert.calledOnceWithExactly(importUrl, 'https://images.example/post.png');
+    sinon.assert.calledOnceWithExactly(
+      importUrl,
+      'https://images.example/post.png',
+      sinon.match({ originSchemes: sinon.match.has('get').and(sinon.match.has('set')) }),
+    );
     sinon.assert.calledOnce(write);
     assert.equal(write.firstCall.args[0].feature_image, '/content/images/local.png');
     sinon.assert.calledOnce(send);

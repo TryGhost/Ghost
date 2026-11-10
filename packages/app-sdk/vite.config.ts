@@ -25,31 +25,11 @@ const tidyRegionComments: Plugin = {
   },
 };
 
-// Vite replaces a Node builtin, such as `node:crypto`, with an empty stub for the browser and
-// only logs a warning. A bundle that needs one would build, import nothing, and break the page
-// that called it. Everything the SDK or the contracts' root entry point imports must run in a
-// page, so a builtin fails the build instead. That covers a builtin imported as `node:…`, and
-// one Vite stubbed, which is how a builtin imported without the prefix shows up. How Vite
-// names its stub is an internal detail, so the prefix is checked first.
-const refuseNodeBuiltins: Plugin = {
-  name: 'refuse-node-builtins',
-  enforce: 'pre',
-  async resolveId(source, importer, options) {
-    if (source.startsWith('node:')) {
-      this.error(`${importer} imports ${source}, a Node builtin no page can load`);
-    }
-    const resolved = await this.resolve(source, importer, { ...options, skipSelf: true });
-    if (resolved?.id.startsWith('__vite-browser-external')) {
-      this.error(`${importer} imports ${source}, a Node builtin no page can load`);
-    }
-    return resolved;
-  },
-};
-
-// Writes the package's type declarations to one file next to its code, with the contract types
-// the SDK uses inlined, so an app needs nothing from @tryghost/app-contracts. Only the types the
-// entry point exports are exported. TypeScript 7 emits the declarations. The plugin looks for it
-// as `typescript`, which is the TypeScript 6 shim here, so it is pointed at `@typescript/native`.
+// Writes the package's type declarations next to its code, a file for each entry point, with the
+// contract types the SDK uses inlined, so an app needs nothing from @tryghost/app-contracts. Only
+// the types each entry point exports are exported. TypeScript 7 emits the declarations. The
+// plugin looks for it as `typescript`, which is the TypeScript 6 shim here, so it is pointed at
+// `@typescript/native`.
 async function bundleDeclarations(): Promise<Plugin[]> {
   const typescript = createRequire(import.meta.url).resolve('@typescript/native/package.json');
   const { default: getExePath } = (await import(
@@ -102,12 +82,13 @@ const shared = {
   emptyOutDir: true,
 } as const;
 
-// The build a bundler imports, in `build/`, built with `--mode package`: one ES module with
-// the parts of @tryghost/app-contracts the SDK uses inlined, so the package depends only on
-// @quilted/threads. A function, so only this build sets up the declaration plugin.
+// The build a bundler or Node imports, in `build/`, built with `--mode package`: an ES module
+// for each entry point, sharing chunks, with the parts of @tryghost/app-contracts the SDK uses
+// inlined, so the package depends only on what it lists in `dependencies`. A function, so only
+// this build sets up the declaration plugin.
 const packageBuild = (): UserConfig => ({
   define: sdkVersion,
-  plugins: [refuseNodeBuiltins, tidyRegionComments, bundleDeclarations()],
+  plugins: [tidyRegionComments, bundleDeclarations()],
   // Vite would compile the generated declarations to JavaScript, which drops every type. This
   // replaces Vite's own exclusions, so JavaScript stays excluded too.
   oxc: { exclude: [/\.js$/, /\.d\.[cm]?ts$/] },
@@ -116,10 +97,32 @@ const packageBuild = (): UserConfig => ({
     outDir: 'build',
     // Named after the entry, as the declarations are the same entry named `index.d`, and the
     // declaration plugin turns `index.d.js` into `index.d.ts`.
-    lib: { entry: 'src/index.ts', formats: ['es'], fileName: (_format, name) => `${name}.js` },
+    lib: {
+      entry: {
+        // The page's SDK.
+        index: 'src/index.ts',
+        // An app's backend, on any platform.
+        backend: 'src/backend/index.ts',
+        // An app's tooling, in Node.
+        tooling: 'src/tooling/index.ts',
+      },
+      formats: ['es'],
+      fileName: (_format, name) => `${name}.js`,
+    },
     rolldownOptions: {
-      external: [/^@quilted\/threads(?:\/|$)/],
-      output: { sourcemapPathTransform: fromNodeModules },
+      // Node builtins stay imports, for the entry points that run in Node. The bundle tests fail
+      // if the page or the backend reaches one, and lint requires the `node:` prefix, as Vite
+      // stubs a builtin imported without it.
+      external: [/^node:/, /^(?:@quilted\/threads|jose|zod)(?:\/|$)/],
+      output: {
+        sourcemapPathTransform: fromNodeModules,
+        chunkFileNames: 'chunks/[name]-[hash].js',
+      },
+      // Declarations and the contracts have no side effects, so an entry point never imports a
+      // chunk, or a package, only because another entry point uses it.
+      treeshake: {
+        moduleSideEffects: (id) => !/\.d\.[cm]?ts$/.test(id) && !/\/app-contracts\//.test(id),
+      },
       // Generating the declarations runs TypeScript, which is expected to be slow.
       checks: { pluginTimings: false },
     },
@@ -131,7 +134,7 @@ const packageBuild = (): UserConfig => ({
 // Admin's acceptance specs build it from this config to run the SDK in a frame.
 const browserBundle: UserConfig = {
   define: sdkVersion,
-  plugins: [refuseNodeBuiltins, tidyRegionComments],
+  plugins: [tidyRegionComments],
   build: {
     ...shared,
     outDir: 'dist',

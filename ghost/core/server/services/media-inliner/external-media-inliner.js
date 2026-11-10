@@ -5,6 +5,76 @@ const path = require('path');
 const { isSvgExtension } = require('../../lib/image/image-content');
 const { sanitizeSvgBuffer } = require('../../lib/image/svg-sanitizer');
 const vm = require('node:vm');
+const { createOriginSchemes } = require('./origin-schemes');
+
+// Plaintext media URLs are first tried over https. That attempt connects with a
+// short timeout and doesn't retry connection failures, so an origin without
+// https costs one short wait before the http fallback instead of the full
+// timeout and retries for every file.
+const HTTPS_UPGRADE_REQUEST_OPTIONS = {
+  timeout: {
+    connect: 3000,
+    secureConnect: 3000,
+  },
+  retry: {
+    // got's defaults minus the codes that mean https isn't being served
+    errorCodes: ['ECONNRESET', 'EADDRINUSE', 'EPIPE', 'EAI_AGAIN'],
+  },
+};
+
+// Failures that mean nothing answers https on the origin, which an import run
+// remembers so later files skip straight to http. TLS and certificate failures
+// still fall back for that one file but aren't remembered, as they are the
+// cheapest failure for someone on the network path to cause.
+const HTTPS_UNREACHABLE_CODES = new Set(['ECONNREFUSED', 'EHOSTUNREACH', 'ENETUNREACH']);
+
+/**
+ * @param {unknown} error
+ * @param {string} origin - host and port of the https URL that was requested
+ * @returns {boolean}
+ */
+function isHttpsUnreachable(error, origin) {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+  const { code, event, options } =
+    /** @type {{code?: string, event?: string, options?: {url?: unknown}}} */ (error);
+  // got points options.url at the hop that failed; a failed redirect target
+  // says nothing about whether the origin serves https
+  if (options?.url && !isHttpsURLOnOrigin(String(options.url), origin)) {
+    return false;
+  }
+  if (code === 'ETIMEDOUT') {
+    // got reports every timeout as ETIMEDOUT; only a TCP connect timeout
+    // means the port isn't served
+    return event === 'connect';
+  }
+  return HTTPS_UNREACHABLE_CODES.has(code ?? '');
+}
+
+/**
+ * @param {string} url
+ * @param {string} origin
+ * @returns {boolean}
+ */
+function isHttpsURLOnOrigin(url, origin) {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:' && parsed.host === origin;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Encode raw characters but keep existing %XX escapes intact
+ *
+ * @param {string} url
+ * @returns {string}
+ */
+function encodeRequestURL(url) {
+  return encodeURI(url).replace(/%25([0-9a-f]{2})/gi, '%$1');
+}
 
 // Domains are regular expression patterns (migration tooling sends wildcards
 // such as `https?://i[0-9]{1}.wp.com`), so they cannot be escaped. Matching
@@ -96,37 +166,131 @@ class ExternalMediaInliner {
   }
 
   /**
+   * Splits a media URL into the URLs to try. Protocol-relative and plaintext
+   * http URLs get an https upgrade with the http URL as its fallback. An
+   * explicit :80 is dropped from the upgrade, as https isn't served there.
+   * Other URLs are tried as given, with no fallback.
    *
    * @param {string} requestURL - url of remote media
+   * @returns {{url: string, fallbackURL: string | null, origin: string | null}}
+   *   `origin` is the host and port of `url` when it is an https URL, or null
+   *   for any other scheme or a URL that can't be parsed
+   */
+  static getRequestCandidates(requestURL) {
+    let rest;
+    if (requestURL.startsWith('//')) {
+      rest = requestURL.slice(2);
+    } else if (/^http:\/\//i.test(requestURL)) {
+      rest = requestURL.slice('http://'.length);
+    } else {
+      return {
+        url: requestURL,
+        fallbackURL: null,
+        origin: ExternalMediaInliner.#httpsOrigin(requestURL),
+      };
+    }
+
+    const url = `https://${rest.replace(/^([^/?#]*):80(?=[/?#]|$)/, '$1')}`;
+    return { url, fallbackURL: `http://${rest}`, origin: ExternalMediaInliner.#httpsOrigin(url) };
+  }
+
+  /**
+   * @param {string} url
+   * @returns {string | null} host and port of an https URL, otherwise null
+   */
+  static #httpsOrigin(url) {
+    if (!/^https:\/\//i.test(url)) {
+      return null;
+    }
+    try {
+      return new URL(url).host;
+    } catch {
+      // Unparseable URLs are still attempted, just not remembered
+      return null;
+    }
+  }
+
+  /**
+   *
+   * @param {string} requestURL - url of remote media
+   * @param {Object} [options]
+   * @param {import('./origin-schemes').OriginSchemes} [options.originSchemes] - schemes learned earlier in this import run
    * @returns {Promise<Object>}
    */
-  async getRemoteMedia(requestURL) {
+  async getRemoteMedia(requestURL, { originSchemes } = {}) {
     // @NOTE: this is the most expensive operation in the whole inlining process
     //        we should consider caching the results to improve performance
 
-    // Enforce http - http > https redirects are commonplace
-    requestURL = requestURL.replace(/^\/\//g, 'http://');
+    const { url, fallbackURL, origin } = ExternalMediaInliner.getRequestCandidates(requestURL);
+    const known = origin ? originSchemes?.get(origin) : undefined;
 
-    // Encode raw characters but keep existing %XX escapes intact
-    requestURL = encodeURI(requestURL).replace(/%25([0-9a-f]{2})/gi, '%$1');
-    try {
-      const response = await this.#request(requestURL, {
-        followRedirect: true,
-        responseType: 'buffer',
-      });
+    // `secure` marks a request to the https origin, whose answer is recorded
+    // so later files from the origin are never downgraded on a connection
+    // failure, the failure someone on the network path can cause
+    const secure = origin !== null;
 
-      return response;
-    } catch (error) {
-      // NOTE: add special case for 404s
-      this.#logging.error(`Error downloading remote media: ${requestURL}`);
-      this.#logging.error(
-        new errors.DataImportError({
-          err: error,
-        }),
-      );
-
-      return null;
+    // `fallback` says which failures move on to the next attempt: 'any' while
+    // it is unknown whether the origin serves https, 'response' once it has
+    // answered. An https error response is the server's own answer, so the
+    // file is still tried at the http URL the author wrote (e.g. an https
+    // vhost serving a different site).
+    /** @type {{url: string, secure?: boolean, upgrade?: boolean, fallback?: 'any' | 'response'}[]} */
+    let attempts;
+    if (!fallbackURL) {
+      attempts = [{ url, secure }];
+    } else if (known === 'https') {
+      attempts = [{ url, secure, fallback: 'response' }, { url: fallbackURL }];
+    } else if (known === 'http') {
+      attempts = [{ url: fallbackURL }];
+    } else {
+      attempts = [{ url, secure, upgrade: true, fallback: 'any' }, { url: fallbackURL }];
     }
+
+    const remember = (/** @type {'https' | 'http'} */ scheme) => {
+      if (origin) {
+        originSchemes?.set(origin, scheme);
+      }
+    };
+
+    let lastError;
+    for (const attempt of attempts) {
+      try {
+        const response = await this.#request(encodeRequestURL(attempt.url), {
+          followRedirect: true,
+          responseType: 'buffer',
+          ...(attempt.upgrade ? HTTPS_UPGRADE_REQUEST_OPTIONS : {}),
+        });
+
+        if (attempt.secure) {
+          remember('https');
+        }
+        return response;
+      } catch (error) {
+        lastError = error;
+
+        // An HTTP response (e.g. a 404) means https answered
+        const answered = Boolean(error && error.response);
+        if (attempt.secure && answered) {
+          remember('https');
+        }
+        if (!attempt.fallback || (attempt.fallback === 'response' && !answered)) {
+          break;
+        }
+        if (!answered && origin && isHttpsUnreachable(error, origin)) {
+          remember('http');
+        }
+      }
+    }
+
+    // NOTE: add special case for 404s
+    this.#logging.error(`Error downloading remote media: ${requestURL}`);
+    this.#logging.error(
+      new errors.DataImportError({
+        err: lastError,
+      }),
+    );
+
+    return null;
   }
 
   /**
@@ -254,12 +418,14 @@ class ExternalMediaInliner {
    * or where its replacement belongs. Callers own discovery and replacement.
    *
    * @param {string} sourceUrl
+   * @param {Object} [options]
+   * @param {import('./origin-schemes').OriginSchemes} [options.originSchemes] - schemes learned earlier in this import run
    * @returns {Promise<import('./types').ExternalMediaImportResult>}
    */
-  async importUrl(sourceUrl) {
+  async importUrl(sourceUrl, { originSchemes } = {}) {
     let response;
     try {
-      response = await this.getRemoteMedia(sourceUrl);
+      response = await this.getRemoteMedia(sourceUrl, { originSchemes });
     } catch (error) {
       return {
         status: 'failed',
@@ -382,9 +548,15 @@ class ExternalMediaInliner {
    * @param {string} content - stringified JSON of post Lexical or Mobiledoc content
    * @param {String[]} domains - domains to inline media from
    * @param {Set<string>} [timedOutDomains] - patterns to skip; timed out patterns are added
+   * @param {import('./origin-schemes').OriginSchemes} [originSchemes] - schemes learned earlier in this import run
    * @returns {Promise<string>} - updated stringified JSON of post content
    */
-  async inlineContent(content, domains, timedOutDomains = new Set()) {
+  async inlineContent(
+    content,
+    domains,
+    timedOutDomains = new Set(),
+    originSchemes = createOriginSchemes(),
+  ) {
     for (const domain of domains) {
       if (timedOutDomains.has(domain)) {
         continue;
@@ -404,7 +576,7 @@ class ExternalMediaInliner {
       }
 
       for (const src of matches) {
-        const result = await this.importUrl(src);
+        const result = await this.importUrl(src, { originSchemes });
         const replacementUrl = this.#replacementUrlFromImportResult(result);
 
         if (replacementUrl) {
@@ -424,9 +596,10 @@ class ExternalMediaInliner {
    * @param {Object} resourceModel - one of PostModel, TagModel, UserModel instances
    * @param {String[]} fields - fields to inline
    * @param {String[]} domains - domains to inline media from
+   * @param {import('./origin-schemes').OriginSchemes} [originSchemes] - schemes learned earlier in this import run
    * @returns Promise<Object> - updated fields map with local media paths
    */
-  async inlineFields(resourceModel, fields, domains) {
+  async inlineFields(resourceModel, fields, domains, originSchemes = createOriginSchemes()) {
     const updatedFields = {};
 
     for (const field of fields) {
@@ -434,7 +607,7 @@ class ExternalMediaInliner {
         const src = resourceModel.get(field);
 
         if (src && src.startsWith(domain)) {
-          const result = await this.importUrl(src);
+          const result = await this.importUrl(src, { originSchemes });
           const replacementUrl = this.#replacementUrlFromImportResult(result);
 
           if (replacementUrl) {
@@ -454,15 +627,22 @@ class ExternalMediaInliner {
    * @param {Object} model - resource model
    * @param {string[]} fields - fields to inline
    * @param {string[]} domains - domains to inline media from
+   * @param {import('./origin-schemes').OriginSchemes} [originSchemes] - schemes learned earlier in this import run
    */
-  async inlineSimpleFields(resources, model, fields, domains) {
+  async inlineSimpleFields(
+    resources,
+    model,
+    fields,
+    domains,
+    originSchemes = createOriginSchemes(),
+  ) {
     this.#logging.info(
       `Starting inlining external media for ${resources?.length} resources and with ${fields.join(', ')} fields`,
     );
 
     for (const resource of resources) {
       try {
-        const updatedFields = await this.inlineFields(resource, fields, domains);
+        const updatedFields = await this.inlineFields(resource, fields, domains, originSchemes);
 
         if (Object.keys(updatedFields).length > 0) {
           await model.edit(updatedFields, {
@@ -496,19 +676,27 @@ class ExternalMediaInliner {
     // A pattern that timed out once is likely to time out again, so stop
     // applying it rather than spending the timeout on every remaining post.
     const timedOutDomains = new Set();
+    // Which scheme each origin serves, shared by every file in this run
+    const originSchemes = createOriginSchemes();
 
     for (const post of posts) {
       try {
         const mobiledocContent = post.get('mobiledoc');
         const lexicalContent = post.get('lexical');
 
-        const updatedFields = await this.inlineFields(post, postsInilingFields, domains);
+        const updatedFields = await this.inlineFields(
+          post,
+          postsInilingFields,
+          domains,
+          originSchemes,
+        );
 
         if (mobiledocContent) {
           const inlinedContent = await this.inlineContent(
             mobiledocContent,
             domains,
             timedOutDomains,
+            originSchemes,
           );
 
           // If content has changed, update the post
@@ -518,7 +706,12 @@ class ExternalMediaInliner {
         }
 
         if (lexicalContent) {
-          const inlinedContent = await this.inlineContent(lexicalContent, domains, timedOutDomains);
+          const inlinedContent = await this.inlineContent(
+            lexicalContent,
+            domains,
+            timedOutDomains,
+            originSchemes,
+          );
 
           // If content has changed, update the post
           if (inlinedContent !== lexicalContent) {
@@ -549,21 +742,33 @@ class ExternalMediaInliner {
     });
     const postsMetaInilingFields = ['og_image', 'twitter_image'];
 
-    await this.inlineSimpleFields(postsMetas, this.#PostMetaModel, postsMetaInilingFields, domains);
+    await this.inlineSimpleFields(
+      postsMetas,
+      this.#PostMetaModel,
+      postsMetaInilingFields,
+      domains,
+      originSchemes,
+    );
 
     const { data: tags } = await this.#TagModel.findPage({
       limit: 'all',
     });
     const tagInliningFields = ['feature_image', 'og_image', 'twitter_image'];
 
-    await this.inlineSimpleFields(tags, this.#TagModel, tagInliningFields, domains);
+    await this.inlineSimpleFields(tags, this.#TagModel, tagInliningFields, domains, originSchemes);
 
     const { data: users } = await this.#UserModel.findPage({
       limit: 'all',
     });
     const userInliningFields = ['profile_image', 'cover_image'];
 
-    await this.inlineSimpleFields(users, this.#UserModel, userInliningFields, domains);
+    await this.inlineSimpleFields(
+      users,
+      this.#UserModel,
+      userInliningFields,
+      domains,
+      originSchemes,
+    );
 
     this.#logging.info('Finished inlining external media for posts, tags, and users');
   }

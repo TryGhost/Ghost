@@ -1,4 +1,5 @@
 import type { GhostLogger } from '@tryghost/logging';
+import type { OriginSchemes } from './origin-schemes';
 
 export type ExternalMediaFailureStage = 'download' | 'extract' | 'unsupported' | 'storage';
 
@@ -19,7 +20,11 @@ export interface ExternalMediaFailed {
 export type ExternalMediaImportResult = ExternalMediaStored | ExternalMediaFailed;
 
 export interface ExternalMediaImporter {
-  importUrl(sourceUrl: string): Promise<ExternalMediaImportResult>;
+  /** Pass the same `originSchemes` for every URL in one import run. */
+  importUrl(
+    sourceUrl: string,
+    options?: { originSchemes?: OriginSchemes },
+  ): Promise<ExternalMediaImportResult>;
 }
 
 export interface ExternalMediaInlinerDependencies {
@@ -33,7 +38,12 @@ export interface ExternalMediaInlinerDependencies {
   /** External HTTP client with SSRF protection; see lib/request-external. */
   request: (
     url: string,
-    options: { followRedirect: boolean; responseType: 'buffer' },
+    options: {
+      followRedirect: boolean;
+      responseType: 'buffer';
+      timeout?: { connect?: number; secureConnect?: number };
+      retry?: { errorCodes?: string[] };
+    },
   ) => Promise<{ body: Buffer; headers: Record<string, string | string[] | undefined> }>;
   urlUtils: { toTransformReady(url: string): string };
   /** Loads file-type on first use; a rejection falls back to Content-Type and the URL. */

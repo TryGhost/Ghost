@@ -357,17 +357,21 @@ const pipeline = <T extends Controller>(
 
       const cacheKey = JSON.stringify(cacheKeyData, sortKeysReplacer);
 
+      // A shared response cache must never bypass request authorization. Keep
+      // input preparation before permissions, but outside the cache loader so
+      // it runs once per request, including cache hits.
+      await STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame);
+      await STAGES.serialisation.input(apiUtils, apiConfig, apiImpl, frame);
+      await STAGES.permissions(apiUtils, apiConfig, apiImpl, frame);
+
       if (apiImpl.cache) {
         const response = await apiImpl.cache.get(cacheKey, getResponse);
         if (response) {
-          return Promise.resolve(response);
+          return response;
         }
       }
 
       async function getResponse() {
-        await STAGES.validation.input(apiUtils, apiConfig, apiImpl, frame);
-        await STAGES.serialisation.input(apiUtils, apiConfig, apiImpl, frame);
-        await STAGES.permissions(apiUtils, apiConfig, apiImpl, frame);
         const response = await STAGES.query(apiUtils, apiConfig, apiImpl, frame);
         await STAGES.serialisation.output(response, apiUtils, apiConfig, apiImpl, frame);
         return frame.response;
