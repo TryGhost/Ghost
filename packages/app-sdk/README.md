@@ -351,7 +351,10 @@ on any port. It prints the install link too, for `GHOST_URL` or
 `http://localhost:2368`.
 
 The dev server is for development only. The plugin adds `.ghost-app/`,
-`.dev.vars*`, `.env` and `.env.*` to Vite's `server.fs.deny`. Like Vite's own
+`.dev.vars*`, `.env` and `.env.*` to Vite's `server.fs.deny`, and refuses to
+start with `server.fs.strict` off, which would make Vite skip that list. In dev
+and in a build, it refuses an `envPrefix` that the key variables start with, such as
+`GHOST_APP_`, which would put the keys in the page's bundle. Like Vite's own
 `.env` protection, the list matches files by name: a link or alias you make to
 the keys elsewhere in the project is served like any other file. Keep the keys
 out of `publicDir`, which Vite serves and copies into the build as it is.
@@ -359,10 +362,11 @@ out of `publicDir`, which Vite serves and copies into the build as it is.
 In a Cloudflare Workers project (one with a `wrangler.json`, `wrangler.jsonc`
 or `wrangler.toml`), it adds `GHOST_APP_BACKEND_KEY` to `.dev.vars` with the
 development backend key, so the Worker answers challenges in development as it
-does in production. It leaves a `.dev.vars` that already names the variable as
-it is. Wrangler reads `.env` only when there's no `.dev.vars`, so in a project
-with a `.env` and no `.dev.vars`, it asks you to add the key to `.env` instead.
-Git must ignore whichever file holds it.
+does in production. It never changes a value that's already there, and says so
+when it isn't the development key. Wrangler reads `.env` and `.env.local` only
+when there's no `.dev.vars`, so in a project with either and no `.dev.vars`, it
+asks you to add the key to `.env.local` instead. Git must ignore whichever file
+holds it.
 
 In `vite build`, it signs `ghost-app.json` for `GHOST_APP_URL`, the app's public
 address (the manifest is at `<GHOST_APP_URL>/ghost-app.json`), with the

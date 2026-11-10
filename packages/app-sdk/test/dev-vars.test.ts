@@ -48,22 +48,36 @@ describe('provideDevBackendKey', () => {
     expect(await readFile(devVars(), 'utf8')).toBe(`OTHER=1\n${line}`);
   });
 
-  it('leaves a value that is there as it is', async () => {
+  it('leaves another key that is there as it is, and says so', async () => {
     await writeFile(devVars(), 'GHOST_APP_BACKEND_KEY=mine\n');
-    expect(await provideDevBackendKey(root)).toBeUndefined();
+    expect(await provideDevBackendKey(root)).toMatchObject({
+      level: 'warn',
+      message: expect.stringContaining(
+        ".dev.vars has a GHOST_APP_BACKEND_KEY that isn't the key in .ghost-app/development/backend.json",
+      ),
+    });
     expect(await readFile(devVars(), 'utf8')).toBe('GHOST_APP_BACKEND_KEY=mine\n');
   });
 
-  it('asks for the key in .env, which Wrangler reads only without .dev.vars', async () => {
-    await writeFile(join(root, '.env'), 'OTHER=1\n');
-    expect(await provideDevBackendKey(root)).toMatchObject({
-      level: 'warn',
-      message: expect.stringContaining("Wrangler reads .env when there's no .dev.vars"),
-    });
-    expect(existsSync(devVars())).toBe(false);
+  it.each(['.env', '.env.local'])(
+    'asks for the key in .env.local when there is a %s, which Wrangler reads only without .dev.vars',
+    async (file) => {
+      await writeFile(join(root, file), 'OTHER=1\n');
+      expect(await provideDevBackendKey(root)).toMatchObject({
+        level: 'warn',
+        message: expect.stringContaining(`Wrangler reads ${file} when there's no .dev.vars`),
+      });
+      expect(existsSync(devVars())).toBe(false);
 
-    await writeFile(join(root, '.env'), 'GHOST_APP_BACKEND_KEY=mine\n');
+      await writeFile(join(root, file), line);
+      expect(await provideDevBackendKey(root)).toBeUndefined();
+      expect(existsSync(devVars())).toBe(false);
+    },
+  );
+
+  it('goes by .env.local over .env, as Wrangler does', async () => {
+    await writeFile(join(root, '.env'), 'GHOST_APP_BACKEND_KEY=another\n');
+    await writeFile(join(root, '.env.local'), line);
     expect(await provideDevBackendKey(root)).toBeUndefined();
-    expect(existsSync(devVars())).toBe(false);
   });
 });

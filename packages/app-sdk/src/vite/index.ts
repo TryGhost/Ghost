@@ -15,7 +15,13 @@ import { resolve } from 'node:path';
 import { isLocalhost, isValidAppId } from '@tryghost/app-contracts';
 import type { Plugin, ResolvedConfig } from 'vite';
 
-import { createKeys, signingKeySource } from '../tooling/keys.ts';
+import {
+  BACKEND_KEY_VARIABLE,
+  IDENTITY_KEY_VARIABLE,
+  KEYS_DIRECTORY,
+  createKeys,
+  signingKeySource,
+} from '../tooling/keys.ts';
 import { MANIFEST_PATH, formatErrors } from '../shared/manifest.ts';
 import { parseJsonText, parseOrigin } from '../shared/parse.ts';
 import { MANIFEST_FILE, serialiseSigned, signProject } from '../tooling/sign.ts';
@@ -86,6 +92,8 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
   let ghostUrl: string | undefined;
   let config: ResolvedConfig;
   let pending: { level: 'info' | 'warn'; message: string } | undefined;
+  // Whether this is `vite dev`, not a build, `vite preview` or Vitest loading the config.
+  let dev = false;
 
   /** The manifest URL to sign for a request's Host, or `undefined` if it isn't one of ours. */
   function manifestUrlFor(host: string | undefined): string | undefined {
@@ -111,7 +119,12 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
       const env =
         userConfig.envDir === false
           ? process.env
-          : loadEnv(mode, resolve(root, userConfig.envDir ?? ''), 'GHOST_');
+          : // By name, as every `GHOST_` variable would include the private keys CI signs with.
+            loadEnv(mode, resolve(root, userConfig.envDir ?? ''), [
+              'GHOST_APP_URL',
+              'GHOST_APP_TUNNEL_URL',
+              'GHOST_URL',
+            ]);
       appUrl = env.GHOST_APP_URL?.trim() || undefined;
       ghostUrl = env.GHOST_URL?.trim() || undefined;
       if (command !== 'serve' || isPreview) {
@@ -119,7 +132,8 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
       }
       tunnels = readTunnels(options.tunnelUrl ?? env.GHOST_APP_TUNNEL_URL);
       // Vitest loads the project's Vite config as a dev server, which shouldn't create keys.
-      if (!process.env.VITEST && mode !== 'test') {
+      dev = !process.env.VITEST && mode !== 'test';
+      if (dev) {
         await createKeys({ root, mode: 'development' });
         pending = await provideDevBackendKey(root);
       }
@@ -136,6 +150,23 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
 
     configResolved(resolved) {
       config = resolved;
+      // Vite gives client code every variable that starts with an env prefix.
+      const exposed = [resolved.envPrefix ?? 'VITE_']
+        .flat()
+        .find((prefix) =>
+          [IDENTITY_KEY_VARIABLE, BACKEND_KEY_VARIABLE].some((name) => name.startsWith(prefix)),
+        );
+      if (exposed !== undefined) {
+        throw new Error(
+          `ghost-app: envPrefix ${JSON.stringify(exposed)} would expose ${IDENTITY_KEY_VARIABLE} and ${BACKEND_KEY_VARIABLE}, the app's private keys, to the client bundle. Use a prefix they don't start with, such as VITE_.`,
+        );
+      }
+      // Vite checks `server.fs.deny` only with `fs.strict` on.
+      if (dev && !resolved.server.fs.strict) {
+        throw new Error(
+          `ghost-app: server.fs.strict is false, so the dev server would serve ${KEYS_DIRECTORY}/ and .dev.vars, the private keys, to anyone who can reach it. Leave it on, and name other directories in server.fs.allow.`,
+        );
+      }
       if (pending) {
         config.logger[pending.level](`ghost-app: ${pending.message}`);
       }
@@ -155,7 +186,7 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
           res.statusCode = 421;
           res.setHeader('content-type', 'text/plain; charset=utf-8');
           res.end(
-            `The dev server signs ghost-app.json only for ${allowed.join(', ')}, not ${host}. Name a tunnel's address with GHOST_APP_TUNNEL_URL.\n`,
+            `The dev server signs ghost-app.json only for ${allowed.join(', ')}, not ${host ?? 'a request without a Host'}. Name a tunnel's address with GHOST_APP_TUNNEL_URL.\n`,
           );
           return;
         }
@@ -205,7 +236,7 @@ export function ghostApp(options: GhostAppOptions = {}): Plugin {
       }
       const base = URL.parse(appUrl.endsWith('/') ? appUrl : `${appUrl}/`);
       // A query or fragment would swallow the manifest's path.
-      if (!base || /[?#]/.test(appUrl)) {
+      if (!base || !/^https?:$/.test(base.protocol) || /[?#]/.test(appUrl)) {
         this.error(
           `ghost-app: GHOST_APP_URL must be the app's public address, such as https://app.example.com, not ${appUrl}`,
         );

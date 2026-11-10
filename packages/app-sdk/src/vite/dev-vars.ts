@@ -2,13 +2,11 @@ import { existsSync } from 'node:fs';
 import { appendFile, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { BACKEND_KEY_VARIABLE, readBackendKey } from '../tooling/keys.ts';
+import { BACKEND_KEY_VARIABLE, keyFile, readBackendKey } from '../tooling/keys.ts';
 
 const WRANGLER_CONFIGS = ['wrangler.json', 'wrangler.jsonc', 'wrangler.toml'];
 
-/** A file's text, or `undefined` if there's none. */
-const readIfThere = (file: string) =>
-  existsSync(file) ? readFile(file, 'utf8') : Promise.resolve(undefined);
+const DEV_VARS = '.dev.vars';
 
 /**
  * Gives a Cloudflare Workers project's backend the development backend key in `vite dev`, as
@@ -18,34 +16,40 @@ const readIfThere = (file: string) =>
 export async function provideDevBackendKey(
   root: string,
 ): Promise<{ level: 'info' | 'warn'; message: string } | undefined> {
-  if (!WRANGLER_CONFIGS.some((file) => existsSync(join(root, file)))) {
+  const there = (file: string) => existsSync(join(root, file));
+  if (!WRANGLER_CONFIGS.some(there)) {
     return undefined;
-  }
-  const file = join(root, '.dev.vars');
-  const existing = await readIfThere(file);
-  if (existing?.includes(BACKEND_KEY_VARIABLE)) {
-    return undefined;
-  }
-  if (existing === undefined) {
-    // Wrangler reads `.env` only when there's no `.dev.vars`, so creating one would hide it.
-    const env = await readIfThere(join(root, '.env'));
-    if (env?.includes(BACKEND_KEY_VARIABLE)) {
-      return undefined;
-    }
-    if (env !== undefined) {
-      return {
-        level: 'warn',
-        message: `Wrangler reads .env when there's no .dev.vars, so add ${BACKEND_KEY_VARIABLE} to .env, set to the output of \`ghost-app backend-key\`, so the Worker can answer Ghost's challenge.`,
-      };
-    }
   }
   const key = await readBackendKey({ root, mode: 'development' });
+  // Wrangler reads `.env` and `.env.local` only when there's no `.dev.vars`, so creating one
+  // would hide what they set.
+  const read = there(DEV_VARS) ? [DEV_VARS] : ['.env.local', '.env'].filter(there);
+  let last = '';
+  for (const file of read) {
+    last = await readFile(join(root, file), 'utf8');
+    if (last.includes(BACKEND_KEY_VARIABLE)) {
+      // The public half is enough to tell one key from another.
+      return last.includes(key.x)
+        ? undefined
+        : {
+            level: 'warn',
+            message: `${file} has a ${BACKEND_KEY_VARIABLE} that isn't the key in ${keyFile('development', 'backend')}, so the Worker's answers to Ghost's challenge won't match the manifest the dev server signs. Remove that line from ${file} and restart.`,
+          };
+    }
+  }
+  if (read.length > 0 && read[0] !== DEV_VARS) {
+    return {
+      level: 'warn',
+      message: `Wrangler reads ${read.join(' and ')} when there's no ${DEV_VARS}, so add ${BACKEND_KEY_VARIABLE} to .env.local, set to the output of \`ghost-app backend-key\`, so the Worker can answer Ghost's challenge.`,
+    };
+  }
   // Single quotes keep the JSON as it is.
   const line = `${BACKEND_KEY_VARIABLE}='${JSON.stringify(key)}'\n`;
-  const separator = existing && !existing.endsWith('\n') ? '\n' : '';
-  await appendFile(file, `${separator}${line}`, { mode: 0o600 });
+  await appendFile(join(root, DEV_VARS), `${last && !last.endsWith('\n') ? '\n' : ''}${line}`, {
+    mode: 0o600,
+  });
   return {
     level: 'info',
-    message: `Added ${BACKEND_KEY_VARIABLE} to .dev.vars, with the development backend key`,
+    message: `Added ${BACKEND_KEY_VARIABLE} to ${DEV_VARS}, with the development backend key`,
   };
 }

@@ -236,6 +236,12 @@ describe('vite dev', () => {
     }
   });
 
+  it('refuses to start with server.fs.strict off, which would serve every file', async () => {
+    await expect(startDevServer(undefined, { fs: { strict: false } })).rejects.toThrow(
+      'server.fs.strict is false',
+    );
+  });
+
   it("keeps Vite's own refusals, and the project's", async () => {
     for (const file of ['.npmrc', '.env', 'secret.txt']) {
       await writeFile(join(root, file), 'SECRET=1\n');
@@ -372,7 +378,7 @@ describe('vite build', () => {
 
   it('fails for a GHOST_APP_URL that is not one, or a manifest that cannot be signed', async () => {
     await createKeys({ root, mode: 'production' });
-    for (const appUrl of ['hello', 'https://hello.example.com?v=1']) {
+    for (const appUrl of ['hello', 'hello.example.com:443', 'https://hello.example.com?v=1']) {
       vi.stubEnv('GHOST_APP_URL', appUrl);
       await expect(buildApp(), appUrl).rejects.toThrow(
         "GHOST_APP_URL must be the app's public address",
@@ -384,6 +390,19 @@ describe('vite build', () => {
     await expect(buildApp()).rejects.toThrow(
       "ghost-app.json can't be signed for http://hello.example.com/ghost-app.json",
     );
+  });
+
+  it('refuses an envPrefix that would put the private keys in the bundle', async () => {
+    await expect(
+      build({
+        root,
+        configFile: false,
+        envPrefix: ['VITE_', 'GHOST_APP_'],
+        customLogger: recordingLogger(),
+        plugins: [ghostApp()],
+        build: { outDir: outDir() },
+      }),
+    ).rejects.toThrow("the app's private keys, to the client bundle");
   });
 
   it('fails without the production keys, saying how to create them, and creates none', async () => {
