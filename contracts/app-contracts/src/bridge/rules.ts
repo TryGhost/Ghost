@@ -33,8 +33,9 @@ export const START_TIMEOUT_MS = 10_000;
 export const OVERLAY_FRAME_NAME = 'ghost-app-overlay';
 
 /**
- * How dark Admin's tint is while the overlay shows: a dialog's, or a sheet's, which is lighter,
- * the same as Shade's own overlays for each.
+ * What the overlay shows, which sets Admin's tint and where the overlay frame sits: a dialog,
+ * centred on the window, or a sheet, against its right edge with a lighter tint, as Shade's own
+ * dialogs and sheets are.
  */
 export const OVERLAY_TINTS = ['dialog', 'sheet'] as const;
 
@@ -96,7 +97,7 @@ export const ARGUMENT_MESSAGES = {
   pathMove: 'Expected a move of push or replace',
   place:
     'Expected a place such as { post: { id } }, { page: { id } }, { member: { id } } or { apps: true }',
-  overlayOptions: `Expected overlay options such as { tint: 'dialog' }, with a tint of: ${OVERLAY_TINTS.join(', ')}`,
+  overlayOptions: `Expected overlay options such as { tint: 'dialog', width: 512 }, with a tint of: ${OVERLAY_TINTS.join(', ')}, and a width in whole pixels`,
 } as const;
 
 /**
