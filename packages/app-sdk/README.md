@@ -7,13 +7,13 @@ An app's page runs in a frame inside Ghost Admin. The SDK connects it to Admin,
 gives it the site, the user and the theme, and lets it call the Admin API, keep
 its route in sync with Admin's URL, and send the publisher elsewhere in Admin.
 
-| Entry point                 | Runs in                    | What it's for                                                                 |
-| --------------------------- | -------------------------- | ----------------------------------------------------------------------------- |
-| `@tryghost/app-sdk`         | The app's page             | Talking to Admin (below)                                                      |
-| `@tryghost/app-sdk/backend` | Any platform with web APIs | [Answering Ghost's challenge and serving the manifest](#the-backend)          |
-| `@tryghost/app-sdk/tooling` | Node 22.12 or later        | [Creating keys, and signing and checking the manifest](#signing-the-manifest) |
-| `@tryghost/app-sdk/vite`    | Vite 6 or later            | [Signing the manifest in `vite dev` and `vite build`](#the-vite-plugin)       |
-| `ghost-app`                 | Node 22.12 or later        | [The same tooling on the command line](#the-ghost-app-cli)                    |
+| Entry point                 | Runs in                    | What it's for                                                           |
+| --------------------------- | -------------------------- | ----------------------------------------------------------------------- |
+| `@tryghost/app-sdk`         | The app's page             | Talking to Admin (below)                                                |
+| `@tryghost/app-sdk/backend` | Any platform with web APIs | [Answering Ghost's challenge and serving the manifest](#the-backend)    |
+| `@tryghost/app-sdk/tooling` | Node 22.12 or later        | [Creating keys, and signing the manifest](#signing-the-manifest)        |
+| `@tryghost/app-sdk/vite`    | Vite 6 or later            | [Signing the manifest in `vite dev` and `vite build`](#the-vite-plugin) |
+| `ghost-app`                 | Node 22.12 or later        | [The same tooling on the command line](#the-ghost-app-cli)              |
 
 The page's entry point loads none of the others' code.
 
@@ -291,7 +291,9 @@ Signing adds `manifest_url` (the address it's signed for), `identity_key` and
 any of them. It checks the manifest with the rules Ghost applies first, so a
 manifest Ghost would refuse is never signed: the error lists every problem by
 field. Ghost also refuses a manifest on the site's or Admin's host, on any port,
-which only Ghost knows.
+which only Ghost knows. To check a signed app end to end, install it on a Ghost
+site, which fetches and verifies the manifest, challenges the backend, and says
+why if it refuses.
 
 ### Keys
 
@@ -393,14 +395,11 @@ than `ghost-app.json`.
 ```sh
 ghost-app keys [--production]
 ghost-app sign --url <manifest URL> [--production] [--out <file>] [--manifest <file>]
-ghost-app check <manifest URL>
 ghost-app backend-key [--production] [--public | --check]
 ```
 
 - `keys` creates the mode's keys, keeping any that exist.
 - `sign` prints the signed manifest, or writes it to `--out`.
-- `check` checks an app as Ghost does before installing it, with `checkApp`
-  (below), and prints Ghost's own code and what exactly was wrong.
 - `backend-key` prints the mode's private backend key, for a host's secret
   store. It's the only command that prints a private key. `--public` prints
   only its public half, for CI. `--check` prints nothing, and exits with 0
@@ -415,27 +414,19 @@ ghost-app backend-key [--production] [--public | --check]
 
 ### From code
 
-`@tryghost/app-sdk/tooling` is what the CLI is built on, to sign and check from code:
+`@tryghost/app-sdk/tooling` is what the CLI is built on, to sign from code:
 
-| Export                                                                           | What it does                                                                                                         |
-| -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `createKeys({ root, mode })`                                                     | Creates the mode's missing keys. Resolves with `{ created, kept }`.                                                  |
-| `readSigningKeys({ root, mode, env? })`                                          | The identity key and the backend key's public half, from the files or, in production, `env`.                         |
-| `readBackendKey({ root, mode })`                                                 | The mode's private backend key.                                                                                      |
-| `signProject({ root, mode, manifestUrl, manifestFile? })`                        | Signs the project's `ghost-app.json` with the mode's keys.                                                           |
-| `signAppManifest(source, { manifestUrl, identityKey, backendKey, development })` | Signs a manifest with the keys given.                                                                                |
-| `checkApp(manifestUrl, { fetch? })`                                              | Checks an app as Ghost does before installing it. Resolves with the parsed manifest, or a failure with Ghost's code. |
-| `generateKey()`, `publicKeyOf(key)`                                              | A new private key, and a key's public half.                                                                          |
+| Export                                                                           | What it does                                                                                 |
+| -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `createKeys({ root, mode })`                                                     | Creates the mode's missing keys. Resolves with `{ created, kept }`.                          |
+| `readSigningKeys({ root, mode, env? })`                                          | The identity key and the backend key's public half, from the files or, in production, `env`. |
+| `readBackendKey({ root, mode })`                                                 | The mode's private backend key.                                                              |
+| `signProject({ root, mode, manifestUrl, manifestFile? })`                        | Signs the project's `ghost-app.json` with the mode's keys.                                   |
+| `signAppManifest(source, { manifestUrl, identityKey, backendKey, development })` | Signs a manifest with the keys given.                                                        |
+| `generateKey()`, `publicKeyOf(key)`                                              | A new private key, and a key's public half.                                                  |
 
 Signing resolves with `{ success: true, signed, manifest }`, or
 `{ success: false, code, errors }`.
-
-`checkApp` fetches the signed manifest, verifies it, and challenges the app's
-origin, even on `localhost`, which Ghost in development doesn't. A failure
-carries Ghost's own code, such as `APP_MANIFEST_URL_MISMATCH`,
-`APP_MANIFEST_SIGNATURE_INVALID` or `APP_CHALLENGE_FAILED`, and what exactly was
-wrong. It can't check what only a site knows: the key it installed the app
-with, and backend keys a newer manifest replaced.
 
 ## The backend
 

@@ -1,9 +1,7 @@
 // @vitest-environment node
-import { signManifest } from '@tryghost/app-contracts/identity';
 import { describe, expect, it, vi } from 'vitest';
 
-import { CHALLENGE_PATH, handleChallenge } from '../src/backend/index.ts';
-import { checkApp, generateKey, publicKeyOf, signAppManifest } from '../src/tooling/index.ts';
+import { generateKey, publicKeyOf, signAppManifest } from '../src/tooling/index.ts';
 import { SOURCE } from './helpers.ts';
 
 // The manifest's own field limits keep it far below the 64 KB Ghost stores, so the limit is
@@ -32,19 +30,6 @@ describe("Ghost's limit on the manifest it stores", () => {
       identityKey,
       backendKey,
       development: true,
-    });
-    expect(result).toMatchObject({ success: false, code: 'APP_MANIFEST_TOO_LARGE' });
-  });
-
-  it('fails the check of one, as Ghost would', async () => {
-    const signed = await signManifest(manifest, identityKey);
-    const result = await checkApp(MANIFEST_URL, {
-      fetch: async (input, init) => {
-        const request = new Request(input, init);
-        return new URL(request.url).pathname === CHALLENGE_PATH
-          ? handleChallenge(request, { backendKey })
-          : Response.json(signed);
-      },
     });
     expect(result).toMatchObject({ success: false, code: 'APP_MANIFEST_TOO_LARGE' });
   });

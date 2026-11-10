@@ -1,5 +1,5 @@
 /**
- * The SDK's tooling, for Node: creating an app's keys, and signing and checking its manifest.
+ * The SDK's tooling, for Node: creating an app's keys, and signing its manifest.
  * The `ghost-app` CLI and the Vite plugin are built on it.
  *
  * ```ts
@@ -14,7 +14,6 @@
  * ```
  */
 
-export { checkApp, type CheckCode, type CheckOptions, type CheckResult } from './check.ts';
 export {
   BACKEND_KEY_VARIABLE,
   IDENTITY_KEY_VARIABLE,
