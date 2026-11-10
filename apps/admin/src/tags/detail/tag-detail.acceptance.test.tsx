@@ -35,6 +35,34 @@ function fakeTagWorld(t: Tag) {
 
 describe('Tag detail', () => {
   it.each([false, true])(
+    'scrolls to code injection when expanded with admin7Design=%s',
+    async (admin7Design) => {
+      if (admin7Design) {
+        fakeAdminStats.memberCount();
+        fakeAdminStats.mrr();
+      }
+      const t = tag({
+        name: 'News',
+        slug: 'news',
+        codeinjection_head: null,
+        codeinjection_foot: null,
+      });
+      fakeTagWorld(t);
+      await renderAdminApp(`/tags/${t.slug}`, { labs: { admin7Design } });
+      const trigger = tagDetailScreen.codeInjectionTrigger();
+      await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
+      trigger.element().scrollIntoView({ block: 'end', behavior: 'instant' });
+      const section = tagDetailScreen.codeInjectionCard().element();
+      const before = section.getBoundingClientRect().top;
+
+      await trigger.click();
+      await expect.element(tagDetailScreen.footerEditor()).toBeVisible();
+      await expect.poll(() => section.getBoundingClientRect().top).toBeLessThan(before - 80);
+      expect(section.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
+    },
+  );
+
+  it.each([false, true])(
     'edits tag details and metadata with admin7Design=%s',
     async (admin7Design) => {
       if (admin7Design) {

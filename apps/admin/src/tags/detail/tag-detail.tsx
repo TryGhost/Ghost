@@ -51,8 +51,7 @@ type SaveStatus = 'idle' | 'pending' | 'success' | 'error';
 
 const TagDetail: React.FC = () => {
   // Where list pages show their titles large (admin7Design), the tag's name
-  // shows large under the breadcrumb, and the header sticks as the page
-  // scrolls, like post analytics'.
+  // shows large under the breadcrumb.
   const { largeTitles } = usePageChrome();
   const { tagSlug = '' } = useParams<{ tagSlug: string }>();
   const navigate = useNavigate();
@@ -387,7 +386,7 @@ const TagDetail: React.FC = () => {
           <DetailPage.Header
             className={cn(
               largeTitles &&
-                'sticky top-[calc(24px-var(--large-title-space))] z-40 -mx-(--page-gutter) gap-1 bg-background px-(--page-gutter) pt-(--large-title-space)! pb-8',
+                '-mx-(--page-gutter) gap-1 bg-background px-(--page-gutter) pt-(--large-title-space)! pb-8',
             )}
           >
             <PageHeader blurredBackground={false} sticky={false}>
