@@ -384,11 +384,12 @@ const getGhostAPIAgent = async () => {
 
 /**
  *
- * @returns {Promise<{adminAgent: InstanceType<AdminAPITestAgent>, membersAgent: InstanceType<MembersAPITestAgent>}>} agents
+ * @returns {Promise<{adminAgent: InstanceType<AdminAPITestAgent>, membersAgent: InstanceType<MembersAPITestAgent>, contentAPIAgent: InstanceType<ContentAPITestAgent>}>} agents
  */
 const getAgentsForMembers = async () => {
   let membersAgent;
   let adminAgent;
+  let contentAPIAgent;
 
   const bootOptions = {
     frontend: true,
@@ -406,6 +407,10 @@ const getAgentsForMembers = async () => {
       apiURL: '/ghost/api/admin/',
       originURL,
     });
+    contentAPIAgent = new ContentAPITestAgent(app, {
+      apiURL: '/ghost/api/content/',
+      originURL,
+    });
   } catch (error) {
     if (error instanceof Error) {
       error.message = `Unable to create test agent. ${error.message}`;
@@ -416,6 +421,7 @@ const getAgentsForMembers = async () => {
   return {
     adminAgent,
     membersAgent,
+    contentAPIAgent,
   };
 };
 

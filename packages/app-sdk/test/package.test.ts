@@ -70,7 +70,7 @@ const entryPoints = Object.entries(manifest.exports as Record<string, unknown>)
 const USAGE = `
 import { connect, GhostAppError, type Ghost, type GhostAppErrorCode } from '@tryghost/app-sdk';
 import { CHALLENGE_PATH, handleChallenge, withGhostApp } from '@tryghost/app-sdk/backend';
-import { checkApp, signProject } from '@tryghost/app-sdk/tooling';
+import { signProject } from '@tryghost/app-sdk/tooling';
 import { ghostApp } from '@tryghost/app-sdk/vite';
 import { defineConfig } from 'vite';
 
@@ -86,8 +86,7 @@ export const config = defineConfig({ plugins: [ghostApp({ tunnelUrl: 'https://tu
 
 export async function tooling() {
   const signed = await signProject({ root: '.', mode: 'production', manifestUrl: 'https://app.example/ghost-app.json' });
-  const checked = await checkApp('https://app.example/ghost-app.json');
-  return signed.success && checked.success ? checked.manifest.id : undefined;
+  return signed.success ? signed.manifest.id : undefined;
 }
 
 try {

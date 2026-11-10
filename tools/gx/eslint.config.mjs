@@ -17,7 +17,7 @@ export default [
     extraSrcRules: cliRules,
   }),
   ...nodeLibConfig({
-    srcGlobs: ['create-package.ts'],
+    srcGlobs: ['create-package.ts', 'create-service.ts'],
     extraSrcRules: cliRules,
   }),
   ...nodeLibConfig({

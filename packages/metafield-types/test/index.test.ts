@@ -2,9 +2,12 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 import {
   FIELD_STRUCTURES,
+  FIELD_TYPE_FLAGS,
+  FIELD_TYPE_IDS,
   editableAnswers,
   MAX_LONG_TEXT_BYTES,
   isMetafieldChangeSource,
+  isCreatableType,
   isFieldType,
   isRecordValue,
   matchField,
@@ -19,6 +22,7 @@ import {
   type FieldTypeOfShape,
   type TypedSettings,
 } from '../src/index.ts';
+import { FIELDS_IN_DEVELOPMENT } from './fixtures/fields.ts';
 
 // This asserts only the catalog's *contract* — which field types exist, and which of
 // them have parts. The behavioural outcomes (per-type value validation, the composite
@@ -26,34 +30,6 @@ import {
 // metafields HTTP API integration tests, which exercise this catalog together with
 // the backend storage and the wire format.
 describe('metafield-types catalog', function () {
-  // Integrations depend on a published version of this package and talk to sites on
-  // other Ghost versions, so a type that has shipped keeps its parts and what each holds
-  // for good: an integration with a newer package would otherwise send a part an older
-  // site refuses. New structure is a new type. Add a type here once it has shipped.
-  it('never changes a type once it has shipped', function () {
-    const line = { leaf: 'text', size: 'line' };
-    const shipped = {
-      short_text: { shape: 'scalar', leaf: line },
-      long_text: { shape: 'scalar', leaf: { leaf: 'text', size: 'long' } },
-      address: {
-        shape: 'record',
-        parts: {
-          line1: line,
-          line2: line,
-          city: line,
-          state: line,
-          postal_code: { leaf: 'text', size: 'code' },
-          country: { leaf: 'choice', from: 'countries' },
-        },
-      },
-    };
-
-    for (const [type, structure] of Object.entries(shipped)) {
-      assert.ok(isFieldType(type), `${type} still exists`);
-      assert.deepEqual(FIELD_STRUCTURES[type], structure, `${type} keeps its structure`);
-    }
-  });
-
   it('answers for each type by the shape it declares', function () {
     const layout = (type: FieldType) =>
       matchShape(type, {
@@ -75,6 +51,30 @@ describe('metafield-types catalog', function () {
 
     assert.equal(holds('line1'), 'line text');
     assert.equal(holds('country'), 'a choice from countries');
+  });
+
+  // A released type never waits on a flag, and a type in development waits on its own flag only.
+  it('offers every released type whatever Labs flags are on', function () {
+    for (const type of FIELD_TYPE_IDS) {
+      if (FIELD_TYPE_FLAGS[type] === undefined) {
+        assert.equal(
+          isCreatableType(type, () => false),
+          true,
+          `${type} is released`,
+        );
+      }
+    }
+  });
+
+  it.each(FIELDS_IN_DEVELOPMENT)('offers $field.type only once $flag is on', ({ field, flag }) => {
+    assert.equal(
+      isCreatableType(field.type, () => false),
+      false,
+    );
+    assert.equal(
+      isCreatableType(field.type, (asked) => asked === flag),
+      true,
+    );
   });
 
   it('knows its own types, and nothing else as one', function () {

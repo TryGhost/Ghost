@@ -3,11 +3,17 @@ import assert from 'node:assert/strict';
 import { getMailgunError } from '../../../../../core/server/lib/mailgun/mailgun-error';
 
 describe('getMailgunError', function () {
-  it('returns the original error from a Mailgun rejection', function () {
-    const error = new Error('Mailgun request timed out');
+  it('adds Mailgun context and preserves the original stack without the email payload', function () {
+    const error = new Error('Forbidden');
     const rejection = { error, messageData: { to: 'member@example.com' } };
 
-    assert.equal(getMailgunError(rejection), error);
+    const result = getMailgunError(rejection) as Error;
+
+    assert.equal(result.message, 'Mailgun error: Forbidden');
+    for (const frame of error.stack!.split('\n').slice(1)) {
+      assert.ok(result.stack?.includes(frame));
+    }
+    assert.equal('messageData' in result, false);
   });
 
   it('returns native errors unchanged', function () {

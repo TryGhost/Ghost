@@ -14,7 +14,7 @@ and lets a durable backend replace the in-memory one with no call-site change.
 A backend extends `JobsBackendBase` and implements four methods:
 
 - `start({processor, queues})` - wire the single delivery callback and begin accepting work. `queues` is the desired state declared by registered handlers (`{name: {concurrency}}`).
-- `enqueue(id, envelope)` - accept a `DispatchEnvelope` for delivery. `id` is the stable dispatch ID: a retry resubmits the same `id` and envelope, so a durable backend can dedupe on it. Resolves on **acceptance**, not completion.
+- `enqueue(id, envelope)` - accept a `DispatchEnvelope` for delivery. `id` is the stable dispatch ID: a retry resubmits the same `id` and envelope, so a durable backend can dedupe on it. Deduping must not swallow the settlement: enqueueing an `id` that has already settled reports it to `onSettled` again, after `enqueue` resolves. Resolves on **acceptance**, not completion.
 - `scheduleRecurring(envelope, {cron})` - register the recurring schedule for the envelope's job type (`payload.job.type`). The first registration per type wins; a later call for an already-scheduled type is ignored. Each tick delivers `payload.job` with the envelope's routing.
 - `shutdown({timeoutMs})` - stop accepting work and drain in-flight work within a bounded time.
 

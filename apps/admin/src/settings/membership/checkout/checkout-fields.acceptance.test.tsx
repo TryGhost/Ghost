@@ -228,6 +228,40 @@ describe('Checkout settings', () => {
     await expect.element(form.getByRole('button', { name: 'Save' })).toBeDisabled();
   });
 
+  // As in the CSV import: a fault's own wording is for whoever investigates it, not for the form.
+  it('says something clear when the site fails to save a new field for a reason it did not expect', async () => {
+    fakeAdminEndpoint(
+      'POST',
+      '/members/metafields/custom/',
+      {
+        errors: [
+          {
+            message: 'ER_LOCK_DEADLOCK: Deadlock found when trying to get lock',
+            type: 'InternalServerError',
+          },
+        ],
+      },
+      { status: 500 },
+    );
+    const { modal } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+    });
+
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    await modal.getByRole('combobox', { name: 'Save phone as' }).click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    const form = page.getByRole('dialog', { name: 'New custom field' });
+    await userEvent.fill(form.getByLabelText('Name'), 'Contact phone');
+    await form.getByRole('button', { name: 'Save' }).click();
+
+    await expect
+      .element(form.getByRole('alert'))
+      .toHaveTextContent('An unexpected error occurred, please try again.');
+    expect(form.getByText(/ER_LOCK_DEADLOCK/).all()).toHaveLength(0);
+  });
+
   // Each save gets its own answer: the last attempt's refusal goes as the next save starts, rather
   // than sitting under "Saving" or beside the new answer.
   it('shows only the latest refusal when a new field is saved again', async () => {
@@ -326,6 +360,63 @@ describe('Checkout settings', () => {
 
     finishSaving();
     await expect.element(picker).toHaveTextContent('Work phone');
+  });
+
+  // Enter saves the form only from where a name is typed. On a button it does what the button
+  // does, so a publisher who changed their mind and tabbed to Cancel makes no field.
+  it("cancels a new field's form with Enter on Cancel, making no field", async () => {
+    const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
+      members_metafields: [phoneField],
+    });
+    const { modal } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+    });
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    const picker = modal.getByRole('combobox', { name: 'Save phone as' });
+
+    await picker.click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    const form = page.getByRole('dialog', { name: 'New custom field' });
+    await userEvent.fill(form.getByLabelText('Name'), 'Work phone');
+    form.getByRole('button', { name: 'Cancel' }).element().focus();
+    await userEvent.keyboard('{Enter}');
+
+    await expect.element(form).not.toBeInTheDocument();
+    await expect.element(picker).toHaveTextContent('Select...');
+    expect(createApi.requests).toHaveLength(0);
+  });
+
+  // Back on the control it hangs from, wherever the form is left from, so the keyboard carries
+  // on from the picker rather than from nowhere.
+  it("hands focus back to the picker once a new field's form is left", async () => {
+    const { modal } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+    });
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    const picker = modal.getByRole('combobox', { name: 'Save phone as' });
+    const form = page.getByRole('dialog', { name: 'New custom field' });
+
+    await picker.click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    await expect.element(form.getByLabelText('Name')).toHaveFocus();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(form).not.toBeInTheDocument();
+    await expect.element(picker).toHaveFocus();
+
+    await picker.click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    await userEvent.fill(form.getByLabelText('Name'), 'Work phone');
+    await form.getByRole('button', { name: 'Cancel' }).click();
+    await expect.element(form).not.toBeInTheDocument();
+    await expect.element(picker).toHaveFocus();
+
+    // And it opens again from the keyboard, with its search ready for typing.
+    await userEvent.keyboard('{Enter}');
+    await expect.element(page.getByPlaceholder('Search fields...')).toHaveFocus();
   });
 
   it('previews on paid tiers only, as a free tier has no checkout', async () => {
@@ -512,29 +603,92 @@ describe('Checkout settings', () => {
       });
   });
 
-  it('shows a tax ID offered on every checkout while automatic tax is on', async () => {
-    const { modal } = await openCheckoutFields(
-      {
-        design: { customize: false },
-        shipping: { collect: false },
-        phone: { collect: false },
-        tax_number: { collect: false },
-      },
-      [phoneField],
-      { stripeAutomaticTax: true },
-    );
+  it('says what offering a tax ID does, and points to where Stripe says which buyers it asks', async () => {
+    const { modal } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+      tax_number: { collect: false },
+    });
 
+    const description =
+      'Business buyers can add a tax ID to their invoices, in countries Stripe supports.';
+    await expect.element(modal.getByText(description)).toBeVisible();
     await expect
-      .element(
-        modal
-          .getByRole('figure', { name: 'Checkout preview' })
-          .getByText("I'm purchasing as a business"),
-      )
-      .toBeVisible();
+      .element(modal.getByRole('switch', { name: 'Tax ID or VAT' }))
+      .toHaveAccessibleDescription(description);
+    const learnMore = modal
+      .getByRole('group', { name: 'Tax ID or VAT' })
+      .getByRole('link', { name: 'Learn more' });
+    await expect.element(learnMore).toBeVisible();
     await expect
-      .element(modal.getByText('Stripe Automatic Tax already asks for it on every checkout'))
-      .toBeVisible();
+      .element(learnMore)
+      .toHaveAttribute('href', 'https://docs.stripe.com/tax/checkout/tax-ids');
+    // In a new tab, so the settings being edited stay open.
+    await expect.element(learnMore).toHaveAttribute('target', '_blank');
   });
+
+  it.each<{ saved: string; taxNumber: StripeCheckoutConfig['tax_number'] }>([
+    { saved: 'off', taxNumber: { collect: false } },
+    { saved: 'on for one tier', taxNumber: { collect: true, tier_ids: [paidTier.id] } },
+  ])(
+    'shows a tax ID on and fixed while automatic tax asks for it on every checkout, keeping it saved $saved',
+    async ({ taxNumber }) => {
+      const { modal, saveApi } = await openCheckoutFields(
+        {
+          design: { customize: false },
+          shipping: { collect: false },
+          phone: { collect: false },
+          tax_number: taxNumber,
+        },
+        [phoneField],
+        { stripeAutomaticTax: true },
+      );
+
+      await expect
+        .element(
+          modal
+            .getByRole('figure', { name: 'Checkout preview' })
+            .getByText("I'm purchasing as a business"),
+        )
+        .toBeVisible();
+      const taxId = modal.getByRole('group', { name: 'Tax ID or VAT' });
+      const taxSwitch = taxId.getByRole('switch', { name: 'Tax ID or VAT' });
+      await expect.element(taxSwitch).toBeChecked();
+      await expect.element(taxSwitch).toBeDisabled();
+      // Every paid tier asks, so there are no tiers to choose.
+      await expect(taxId.getByRole('combobox', { name: 'Collect for' })).toHaveCount(0);
+      const description =
+        'Stripe Automatic Tax already asks for it on all paid tiers, in countries Stripe supports.';
+      await expect.element(modal.getByText(description)).toBeVisible();
+      await expect.element(taxSwitch).toHaveAccessibleDescription(description);
+      await expect.element(taxId.getByRole('link', { name: 'Learn more' })).toBeVisible();
+
+      await modal.getByRole('tab', { name: 'Design' }).click();
+      await modal.getByRole('switch', { name: 'Customize checkout design' }).click();
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      // Kept as it was, so turning automatic tax off brings it back.
+      await expect
+        .poll(() => saveApi.lastRequest?.body)
+        .toEqual({
+          checkout_config: [
+            {
+              design: {
+                customize: true,
+                button_color: '#0074d4',
+                background_color: '#ffffff',
+                border_style: 'rounded',
+                font_family: 'default',
+              },
+              shipping: { collect: false },
+              phone: { collect: false },
+              tax_number: taxNumber,
+            },
+          ],
+        });
+    },
+  );
 
   it('saves no tax ID setting that no tier offers', async () => {
     const { modal, saveApi } = await openCheckoutFields({

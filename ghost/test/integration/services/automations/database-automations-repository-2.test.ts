@@ -1,4 +1,3 @@
-import { buildTriggerRuleRows } from '../../../../core/server/services/automations/trigger-rules';
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
 import { randomUUID } from 'node:crypto';
@@ -266,12 +265,20 @@ describe('database automations repository', function () {
       const automation = { ...createAutomation(), ...automationOverrides };
       automationIds.push(automation.id);
       await knex('automations').insert(automation);
-      const rules = buildTriggerRuleRows({
-        automationId: automation.id,
-        scope: triggerScope,
-        tierIds: [],
-        createdAt: now,
-      });
+      const rules =
+        triggerScope === 'selected_paid'
+          ? []
+          : [
+              {
+                id: ObjectId().toHexString(),
+                automation_id: automation.id,
+                created_at: now,
+                trigger_type: triggerScope === 'free' ? 'free_signup' : 'paid_subscription_started',
+                scope: triggerScope === 'free' ? null : 'any_paid_tier',
+                product_id: null,
+                direction: null,
+              },
+            ];
       if (rules.length > 0) {
         await knex('automation_trigger_rules').insert(rules);
       }
@@ -293,12 +300,15 @@ describe('database automations repository', function () {
 
     const insertAutomationTriggerTiers = async (automationId: string, productIds: string[]) => {
       await knex('automation_trigger_rules').insert(
-        buildTriggerRuleRows({
-          automationId,
-          scope: 'selected_paid',
-          tierIds: productIds,
-          createdAt: now,
-        }),
+        productIds.map((product_id) => ({
+          id: ObjectId().toHexString(),
+          automation_id: automationId,
+          created_at: now,
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_paid_tier',
+          product_id,
+          direction: null,
+        })),
       );
     };
 

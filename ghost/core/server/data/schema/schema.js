@@ -865,6 +865,45 @@ module.exports = {
     sort_order: { type: 'integer', nullable: false, unsigned: true, defaultTo: 0 },
     '@@UNIQUE_CONSTRAINTS@@': [['product_id', 'benefit_id']],
   },
+  // What a tier's members must give, by name, such as `shipping`: on every paid tier, including
+  // tiers added later, or only on the tiers listed for it. The name is fixed in code, not a
+  // reference to a row, and the custom field each of its answers is kept in is the binding of the
+  // port it's collected under. Stored as a choice rather than read off an empty list, so a
+  // requirement limited to some tiers never quietly widens to all of them. `countries` limits
+  // shipping's address to these countries, as a JSON list of ISO codes, or is null for anywhere,
+  // and only shipping keeps any.
+  tier_requirements: {
+    requirement: { type: 'string', maxlength: 50, nullable: false, primary: true },
+    tier_scope: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      validations: { isIn: [['all_paid', 'selected_paid']] },
+    },
+    countries: { type: 'text', maxlength: 65535, nullable: true },
+    created_at: { type: 'dateTime', nullable: false },
+    updated_at: { type: 'dateTime', nullable: true },
+  },
+  // The tiers a requirement is limited to, when it is limited to some rather than every paid
+  // tier. Deleting a tier takes it out of every list, so a requirement never stops a tier being
+  // deleted. One whose last tier is deleted requires nothing, rather than widening to every tier.
+  tier_requirement_tiers: {
+    requirement: {
+      type: 'string',
+      maxlength: 50,
+      nullable: false,
+      references: 'tier_requirements.requirement',
+      cascadeDelete: true,
+    },
+    product_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'products.id',
+      cascadeDelete: true,
+    },
+    '@@PRIMARY_KEY@@': ['requirement', 'product_id'],
+  },
   members_products: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     member_id: {
@@ -1643,28 +1682,29 @@ module.exports = {
     updated_at: { type: 'dateTime', nullable: true },
   },
   // The site-wide Stripe Checkout config. It is a single row found by its slug, so the first
-  // save inserts it and later saves update it. Each part of the config has its own JSON
-  // column, which is null until that part is set.
+  // save inserts it and later saves update it. Each part with settings of Stripe's own has its
+  // own JSON column, which is null until that part is set. Which tiers ask for a part that saves
+  // into custom fields, and the countries a shipping address must be in, are its tier requirement.
   stripe_checkout_config: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     slug: { type: 'string', maxlength: 191, nullable: false, unique: true },
     design: { type: 'text', maxlength: 65535, nullable: true },
-    shipping: { type: 'text', maxlength: 65535, nullable: true },
-    phone: { type: 'text', maxlength: 65535, nullable: true },
     tax_number: { type: 'text', maxlength: 65535, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
   },
   // The tiers a section of `stripe_checkout_config` is limited to, when it is limited to some
-  // rather than every paid tier. Deleting a tier takes it out of every list, so the config never
-  // stops a tier being deleted and never names one that is gone. A section whose last tier is
-  // deleted reads as switched off, rather than widening to every tier.
+  // rather than every paid tier. Only a section that saves into no custom field keeps its tiers
+  // here: the others' tiers are their tier requirements. Deleting a tier takes it out of every
+  // list, so the config never stops a tier being deleted and never names one that is gone. A
+  // section whose last tier is deleted reads as switched off, rather than widening to every
+  // tier.
   stripe_checkout_config_tiers: {
     section: {
       type: 'string',
       maxlength: 50,
       nullable: false,
-      validations: { isIn: [['shipping', 'phone', 'tax_number']] },
+      validations: { isIn: [['tax_number']] },
     },
     product_id: {
       type: 'string',
@@ -1776,6 +1816,7 @@ module.exports = {
       ['email_id', 'delivered_at'],
       ['email_id', 'opened_at'],
       ['email_id', 'failed_at'],
+      ['member_id', 'opened_at', 'email_id'],
     ],
   },
   email_recipient_failures: {
