@@ -25,34 +25,69 @@ export type ConditionData = {
   onLabelsChange: (labelIds: string[]) => void;
 };
 
-const OPERATORS: ReadonlyArray<{ value: LabelFilterOperator; label: string; effect: string }> = [
-  {
-    value: 'has_any',
-    label: 'Only members with any of these labels',
-    effect:
-      'A member enters only if they have at least one of these labels. They stop early if they later lose all of them.',
+export type ConditionPlacement = 'entry' | 'step';
+
+type OperatorCopy = { value: LabelFilterOperator; label: string; effect: string };
+
+// An entry condition decides who gets into the automation. A step condition decides who
+// carries on past the point where it sits.
+const COPY: Record<ConditionPlacement, { question: string; operators: readonly OperatorCopy[] }> = {
+  entry: {
+    question: 'Who can enter this automation',
+    operators: [
+      {
+        value: 'has_any',
+        label: 'Only members with any of these labels',
+        effect:
+          'A member enters only if they have at least one of these labels. They stop early if they later lose all of them.',
+      },
+      {
+        value: 'has_all',
+        label: 'Only members with all of these labels',
+        effect:
+          'A member enters only if they have every one of these labels. They stop early if they later lose any of them.',
+      },
+      {
+        value: 'has_none',
+        label: 'Skip members with any of these labels',
+        effect:
+          'A member with any of these labels does not enter. A member already in the automation stops early if they later get one.',
+      },
+    ],
   },
-  {
-    value: 'has_all',
-    label: 'Only members with all of these labels',
-    effect:
-      'A member enters only if they have every one of these labels. They stop early if they later lose any of them.',
+  step: {
+    question: 'Who continues past this step',
+    operators: [
+      {
+        value: 'has_any',
+        label: 'Only members with any of these labels',
+        effect:
+          'A member continues only if they have at least one of these labels when they reach this step. Otherwise they leave the automation here.',
+      },
+      {
+        value: 'has_all',
+        label: 'Only members with all of these labels',
+        effect:
+          'A member continues only if they have every one of these labels when they reach this step. Otherwise they leave the automation here.',
+      },
+      {
+        value: 'has_none',
+        label: 'Stop members with any of these labels',
+        effect:
+          'A member with any of these labels when they reach this step leaves the automation here. Everyone else continues.',
+      },
+    ],
   },
-  {
-    value: 'has_none',
-    label: 'Skip members with any of these labels',
-    effect:
-      'A member with any of these labels does not enter. A member already in the automation stops early if they later get one.',
-  },
-];
+};
 
 export const ConditionCard: React.FC<
   React.PropsWithChildren<{
     condition: ConditionData;
+    placement?: ConditionPlacement;
     errorMessage?: string;
     menuItems: NodeContextMenuEntry[];
   }>
-> = ({ condition, errorMessage, menuItems, children }) => {
+> = ({ condition, placement = 'entry', errorMessage, menuItems, children }) => {
   const id = useId();
   const { labelQuery, operator, labelIds, onOperatorChange, onLabelsChange } = condition;
   const { labels, isLoading, isError, hasMore, loadMore, refetch } = labelQuery;
@@ -84,7 +119,8 @@ export const ConditionCard: React.FC<
     (labelId) =>
       labels.find((option) => option.id === labelId) ?? { id: labelId, name: missingLabelName },
   );
-  const selectedOperator = OPERATORS.find((option) => option.value === operator);
+  const { question, operators } = COPY[placement];
+  const selectedOperator = operators.find((option) => option.value === operator);
 
   return (
     <AutomationCard
@@ -118,17 +154,17 @@ export const ConditionCard: React.FC<
               document.getElementById(`${id}-operator`)?.focus();
             }}
           >
-            Who can enter this automation:
+            {question}:
           </Label>
           <Select
             value={operator ?? ''}
             onValueChange={(next) => onOperatorChange(next as LabelFilterOperator)}
           >
-            <SelectTrigger aria-label="Who can enter this automation" id={`${id}-operator`}>
+            <SelectTrigger aria-label={question} id={`${id}-operator`}>
               <SelectValue placeholder="Choose a rule..." />
             </SelectTrigger>
             <SelectContent className="nodrag nopan nowheel">
-              {OPERATORS.map((option) => (
+              {operators.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>

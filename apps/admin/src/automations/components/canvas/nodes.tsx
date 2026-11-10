@@ -48,6 +48,7 @@ export type NodeContextMenuEntry = NodeContextMenuItem | NodeContextMenuSeparato
 type StepNodeData = {
   email?: EditableEmailData;
   wait?: EditableWaitData;
+  condition?: ConditionData;
   errorMessage?: string;
   analytics?: EmailCardAnalyticsData;
   contextMenuItems: NodeContextMenuEntry[];
@@ -195,6 +196,19 @@ const StepNode = React.memo<NodeProps<StepFlowNode>>(({ data }) => {
         <HiddenHandle position={Position.Top} type="target" />
         <HiddenHandle position={Position.Bottom} type="source" />
       </EditableWaitCard>
+    );
+  }
+  if (data.condition) {
+    return (
+      <ConditionCard
+        condition={data.condition}
+        errorMessage={data.errorMessage}
+        menuItems={data.contextMenuItems}
+        placement="step"
+      >
+        <HiddenHandle position={Position.Top} type="target" />
+        <HiddenHandle position={Position.Bottom} type="source" />
+      </ConditionCard>
     );
   }
   return null;

@@ -1,14 +1,18 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ConditionCard } from './condition-card';
-import type { ConditionData } from './condition-card';
+import type { ConditionData, ConditionPlacement } from './condition-card';
 
 const labels = [
   { id: 'magnet', name: 'November lead magnet' },
   { id: 'staff', name: 'Staff' },
 ];
 
-const renderCard = (overrides: Partial<ConditionData> = {}, errorMessage?: string) => {
+const renderCard = (
+  overrides: Partial<ConditionData> = {},
+  errorMessage?: string,
+  placement?: ConditionPlacement,
+) => {
   const condition: ConditionData = {
     labelQuery: {
       labels,
@@ -24,7 +28,14 @@ const renderCard = (overrides: Partial<ConditionData> = {}, errorMessage?: strin
     onLabelsChange: vi.fn<ConditionData['onLabelsChange']>(),
     ...overrides,
   };
-  render(<ConditionCard condition={condition} errorMessage={errorMessage} menuItems={[]} />);
+  render(
+    <ConditionCard
+      condition={condition}
+      errorMessage={errorMessage}
+      menuItems={[]}
+      placement={placement}
+    />,
+  );
   return condition;
 };
 
@@ -63,6 +74,17 @@ describe('ConditionCard', () => {
     renderCard({ operator });
 
     expect(screen.getByRole('combobox', { name: 'Labels' })).toBeVisible();
+    expect(screen.getByText(effect)).toBeVisible();
+  });
+
+  it.each([
+    { operator: 'has_any', effect: /continues only if they have at least one of these labels/ },
+    { operator: 'has_all', effect: /continues only if they have every one of these labels/ },
+    { operator: 'has_none', effect: /leaves the automation here\. Everyone else continues/ },
+  ] as const)('explains $operator differently on a step', ({ operator, effect }) => {
+    renderCard({ operator }, undefined, 'step');
+
+    expect(screen.getByRole('combobox', { name: 'Who continues past this step' })).toBeVisible();
     expect(screen.getByText(effect)).toBeVisible();
   });
 

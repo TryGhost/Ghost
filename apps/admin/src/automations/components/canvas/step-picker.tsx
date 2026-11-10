@@ -1,7 +1,7 @@
 import React from 'react';
 import { LucideIcon } from '@tryghost/shade/utils';
 
-export type StepPickerType = 'wait' | 'send_email';
+export type StepPickerType = 'wait' | 'send_email' | 'condition';
 
 interface StepPickerProps {
   onPick: (type: StepPickerType) => void;
@@ -43,6 +43,12 @@ const StepPicker: React.FC<StepPickerProps> = ({ onPick }) => (
       icon={LucideIcon.Clock}
       label="Wait"
       onClick={() => onPick('wait')}
+    />
+    <PickerOption
+      description="Continue only if the member's labels match"
+      icon={LucideIcon.ListFilter}
+      label="Condition"
+      onClick={() => onPick('condition')}
     />
   </div>
 );

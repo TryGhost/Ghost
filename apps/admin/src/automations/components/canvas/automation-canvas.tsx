@@ -16,14 +16,17 @@ import {
 } from '@tryghost/shade/components';
 import {
   MAX_AUTOMATION_ACTIONS,
+  insertConditionAction,
   insertSendEmailAction,
   insertWaitAction,
+  updateConditionAction,
   removeAction,
   updateSendEmailAction,
   updateWaitAction,
 } from '@tryghost/admin-x-framework/api/automations';
 import type {
   AutomationAction,
+  AutomationConditionAction,
   AutomationDetail,
   AutomationSendEmailAction,
 } from '@tryghost/admin-x-framework/api/automations';
@@ -58,7 +61,7 @@ import { isEmptyEmailLexical } from '@/automations/utils';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useLocation, useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
 import type { EmailModalMode } from '@/automations/components/types';
-import type { LabelFilterOperator, PendingCondition } from '@/automations/types';
+import type { LabelFilterOperator, LabelQuery, PendingCondition } from '@/automations/types';
 import {
   buildLabelFilterRules,
   conditionFromRules,
@@ -78,6 +81,7 @@ const NODE_VISUAL_GAP_Y = 112;
 const EDITABLE_NODE_WIDTH = 400;
 const EDITABLE_EMAIL_NODE_HEIGHT = 350;
 const EDITABLE_WAIT_NODE_HEIGHT = 144;
+const EDITABLE_CONDITION_NODE_HEIGHT = 190;
 const FIXED_TRIGGER_NODE_HEIGHT = 156;
 const EXIT_NODE_HEIGHT = 55;
 const INITIAL_VIEWPORT_Y = 40;
@@ -196,7 +200,9 @@ type BuildGraphParams = {
   triggerType: TriggerData['triggerType'];
   tierQuery: TriggerData['tierQuery'];
   condition: ConditionNodeData | null;
+  labelQuery: LabelQuery;
   onAddCondition: () => void;
+  onUpdateCondition: (stepId: string, data: Partial<AutomationConditionAction['data']>) => void;
   onChange: (next: AutomationDetail) => void;
   nodeSizes: Record<string, { width: number; height: number }>;
   newEmailWithoutWarningsId: string | null;
@@ -219,7 +225,9 @@ const buildGraph = ({
   triggerType,
   tierQuery,
   condition,
+  labelQuery,
   onAddCondition,
+  onUpdateCondition,
   onChange,
   nodeSizes,
   newEmailWithoutWarningsId,
@@ -328,6 +336,19 @@ const buildGraph = ({
               },
             }
           : {}),
+        ...(action.type === 'condition'
+          ? {
+              condition: {
+                labelQuery,
+                operator: action.data.condition_operator,
+                labelIds: action.data.condition_label_ids,
+                onOperatorChange: (operator: LabelFilterOperator) =>
+                  onUpdateCondition(action.id, { condition_operator: operator }),
+                onLabelsChange: (labelIds: string[]) =>
+                  onUpdateCondition(action.id, { condition_label_ids: labelIds }),
+              },
+            }
+          : {}),
         ...(editableWait
           ? {
               wait: {
@@ -351,7 +372,11 @@ const buildGraph = ({
       },
       ...nodeProps(action.id),
     });
-    const estimatedHeight = editableEmail ? EDITABLE_EMAIL_NODE_HEIGHT : EDITABLE_WAIT_NODE_HEIGHT;
+    const estimatedHeight = {
+      send_email: EDITABLE_EMAIL_NODE_HEIGHT,
+      wait: EDITABLE_WAIT_NODE_HEIGHT,
+      condition: EDITABLE_CONDITION_NODE_HEIGHT,
+    }[action.type];
     cursorY += (nodeSizes[action.id]?.height ?? estimatedHeight) + NODE_VISUAL_GAP_Y;
   });
 
@@ -466,6 +491,7 @@ type AutomationCanvasProps = {
 const insertActionByType = {
   wait: insertWaitAction,
   send_email: insertSendEmailAction,
+  condition: insertConditionAction,
 };
 
 const hasAutomationEmailModalState = (state: unknown): state is { automationEmailModal: boolean } =>
@@ -726,6 +752,16 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     [automation, onChange],
   );
 
+  const handleUpdateCondition = useCallback(
+    (actionId: string, data: Partial<AutomationConditionAction['data']>) => {
+      if (!automation) {
+        return;
+      }
+      onChange(updateConditionAction({ detail: automation, actionId, data }));
+    },
+    [automation, onChange],
+  );
+
   const handleEditEmail = useCallback(
     (actionId: string, mode: EmailModalMode = 'edit') => {
       setEmailModalMode(mode);
@@ -842,7 +878,9 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       triggerType,
       tierQuery,
       condition: conditionNode,
+      labelQuery,
       onAddCondition: handleAddCondition,
+      onUpdateCondition: handleUpdateCondition,
       onChange,
       nodeSizes,
       newEmailWithoutWarningsId,
@@ -863,7 +901,9 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     triggerType,
     tierQuery,
     conditionNode,
+    labelQuery,
     handleAddCondition,
+    handleUpdateCondition,
     onChange,
     automation,
     nodeSizes,

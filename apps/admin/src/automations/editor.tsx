@@ -51,6 +51,7 @@ const AUTOMATION_LIMITS = ['limitAutomations'] as const;
 const SUBJECT_REQUIRED_MESSAGE = 'Add a subject line.';
 const BODY_REQUIRED_MESSAGE = 'Add an email body.';
 const SUBJECT_AND_BODY_REQUIRED_MESSAGE = 'Add a subject line and email body.';
+const CONDITION_REQUIRED_MESSAGE = 'Choose a rule and at least one label.';
 
 const editableSlice = (automation: AutomationDetail) => ({
   name: automation.name,
@@ -89,6 +90,13 @@ const getActionErrors = (automation: AutomationDetail): Record<string, string> =
   const errors: Record<string, string> = {};
 
   for (const action of automation.actions) {
+    if (action.type === 'condition') {
+      if (!action.data.condition_operator || action.data.condition_label_ids.length === 0) {
+        errors[action.id] = CONDITION_REQUIRED_MESSAGE;
+      }
+      continue;
+    }
+
     if (action.type !== 'send_email') {
       continue;
     }
