@@ -13,6 +13,7 @@ export type PreparedAutomationEmail = {
   tags: string[];
   trackOpens?: boolean;
   listUnsubscribe?: string;
+  batchBody?: { html: string; text: string; variables: RecipientVariables };
 };
 
 type RecipientVariables = Record<string, string>;
@@ -26,15 +27,15 @@ function makeBatchEntry({
   email: AutomationEmailIdentity;
   index: number;
 }) {
-  const { to, html, text, listUnsubscribe, trackOpens, ...shared } = message;
+  const { to, html, text, listUnsubscribe, trackOpens, batchBody, ...shared } = message;
   // Do not introduce variables into content that already uses provider syntax.
   if ([shared.subject, html, text].some((value) => value.includes('%recipient.'))) {
     return null;
   }
 
-  const variables: RecipientVariables = {};
-  let templateHtml = html;
-  let templateText = text;
+  const variables: RecipientVariables = { ...batchBody?.variables };
+  let templateHtml = batchBody?.html ?? html;
+  let templateText = batchBody?.text ?? text;
   if (listUnsubscribe) {
     const escapedUrl = listUnsubscribe.replaceAll('&', '&amp;');
     const htmlUrl = templateHtml.includes(escapedUrl) ? escapedUrl : listUnsubscribe;
