@@ -1,442 +1,160 @@
 # @tryghost/app-sdk
 
-The SDK apps use to talk to Ghost: from their page inside Admin, from their
-backend, and from their tooling.
+The SDK a Ghost app uses to work with Ghost.
 
-An app's page runs in a frame inside Ghost Admin. The SDK connects it to Admin,
-gives it the site, the user and the theme, and lets it call the Admin API, keep
-its route in sync with Admin's URL, and send the publisher elsewhere in Admin.
+A Ghost app is a web page you host, which Ghost Admin shows in a frame, and a
+backend that proves the app is yours. The SDK connects the page to Admin, signs
+the app's manifest, and answers the challenge Ghost sends the backend.
 
-| Entry point                 | Runs in                    | What it's for                                                           |
-| --------------------------- | -------------------------- | ----------------------------------------------------------------------- |
-| `@tryghost/app-sdk`         | The app's page             | Talking to Admin (below)                                                |
-| `@tryghost/app-sdk/backend` | Any platform with web APIs | [Answering Ghost's challenge and serving the manifest](#the-backend)    |
-| `@tryghost/app-sdk/tooling` | Node 22.12 or later        | [Creating keys, and signing the manifest](#signing-the-manifest)        |
-| `@tryghost/app-sdk/vite`    | Vite 6 or later            | [Signing the manifest in `vite dev` and `vite build`](#the-vite-plugin) |
-| `ghost-app`                 | Node 22.12 or later        | [The same tooling on the command line](#the-ghost-app-cli)              |
+It is not a framework or a host. You build and serve the page and the backend
+yourself. It gives the app no API token either: the page calls the Admin API
+through Admin, as the signed-in staff user.
 
-The page's entry point loads none of the others' code.
+> **Pre-alpha.** Anything here can change without notice, and no version
+> promises compatibility with another. CI publishes each change on `main` to npm
+> as the next `0.1.0-alpha.N`, under `latest`.
 
-> **Alpha.** CI publishes each change to npm as the next `0.1.0-alpha.N` under
-> the `latest` tag. Alphas make no compatibility promise.
-
-## Quick start
-
-Without a bundler, load the bundle (`dist/app-sdk.js` in the package), a single
-ES module with everything inlined:
-
-```html
-<script type="module">
-  import { connect } from './app-sdk.js';
-
-  const ghost = await connect();
-  document.body.dataset.theme = ghost.theme.mode;
-  ghost.onThemeChange((theme) => (document.body.dataset.theme = theme.mode));
-
-  const response = await ghost.fetch('/posts/?limit=5');
-  const { posts } = await response.json();
-  document.title = `${posts.length} posts`; // Admin shows the title as its own
-</script>
-```
-
-With a bundler, install the package. It includes the types and code it uses
-from Ghost's contracts. The page needs only `@quilted/threads`, and the backend
-adds `jose` and `zod`:
+| Entry point                 | Runs in                    | What it's for                                                       |
+| --------------------------- | -------------------------- | ------------------------------------------------------------------- |
+| `@tryghost/app-sdk`         | The app's page             | [Talking to Admin](#the-page)                                       |
+| `@tryghost/app-sdk/backend` | Any platform with web APIs | [Answering Ghost's challenge](#the-backend)                         |
+| `@tryghost/app-sdk/vite`    | Vite 6 or later            | [Signing the manifest in `vite dev` and `vite build`](#vite-plugin) |
+| `ghost-app`                 | Node 22.12 or later        | [Creating keys and signing from the command line](#cli)             |
+| `@tryghost/app-sdk/tooling` | Node 22.12 or later        | [The same from code](#tooling)                                      |
 
 ```sh
 pnpm add @tryghost/app-sdk
 ```
+
+The guides for building an app are in the
+[app developer docs](https://tryghost.github.io/Apps/).
+
+## The page
 
 ```ts
 import { connect, GhostAppError } from '@tryghost/app-sdk';
 
 try {
   const ghost = await connect();
-  history.pushState(null, '', '/episodes/12'); // or your router's navigate(); Admin's URL follows
+  document.body.dataset.theme = ghost.theme.mode;
+
+  const response = await ghost.fetch('/posts/?limit=5');
+  const { posts } = await response.json();
 } catch (error) {
   if (error instanceof GhostAppError && error.code === 'not_framed') {
-    // Opened outside Admin: show a link to the site's Admin instead.
+    // The page was opened outside Ghost Admin.
   }
 }
 ```
 
-## API
+A page without a bundler can import `connect` from `dist/app-sdk.js` in the
+package, a single ES module with no imports.
 
-`connect(options?)` resolves with a `Ghost` once Admin has started the app. Call
-it as soon as the page loads. Every call shares one connection. Load the SDK
-only once per page: if a second copy calls `connect()`, it rejects with
-`duplicate_sdk`. `options.timeout` is how long to wait, in milliseconds (10
-seconds by default).
+`connect(options?)` resolves with a `Ghost` once Admin has started the app.
+`options.timeout` is how long to wait, in milliseconds (10 seconds by default).
+Every call shares one connection, so load only one copy of the SDK in a page.
 
-Admin connects each document in the frame only once. After Admin has replied,
-that connection is the only one the page gets. If it fails or its session ends,
-every `connect()` rejects with the error it ended with, until the page reloads.
-A failure before Admin replied, such as `not_framed` or a timeout with no reply,
-can be retried.
+| `Ghost`                            | What it is                                                                                                |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `site`                             | `{ url, title, timezone, locale }`                                                                        |
+| `user`                             | `{ id, role }` of the staff user. For more, call `fetch('/users/?filter=id:' + user.id)`.                 |
+| `theme`, `onThemeChange(cb)`       | `{ mode, accent_color }`, where `mode` is `light` or `dark`, and a callback for when it changes.          |
+| `session`                          | `{ revision }`: the installation's revision when the session started.                                     |
+| `path.current`, `onPathChange(cb)` | The app's route, and a callback for when Admin moves the app, such as on back or forward.                 |
+| `fetch(path, init?)`               | Calls the Admin API as the staff user. Resolves with a `Response`, whatever its status.                   |
+| `open(place)`                      | Sends the staff user to `{ post: { id } }`, `{ page: { id } }`, `{ member: { id } }` or `{ apps: true }`. |
+| `connected`, `onSessionEnd(cb)`    | `false` once the session has ended, and a callback for when it ends, called with the error.               |
 
-| `Ghost`                   | What it is                                                                                                                                                                           |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `site`                    | `{ url, title, timezone, locale }`                                                                                                                                                   |
-| `user`                    | `{ id, role }` of the staff user. No name or email. To read those, use `fetch('/users/?filter=id:' + user.id)` (`/users/:id/` isn't allowed), where app scopes will apply.           |
-| `theme`                   | `{ mode, accent_color }` that Admin currently uses. `mode` is `light` or `dark`, never `system`.                                                                                     |
-| `onThemeChange(callback)` | Called with the new theme when the publisher switches. Returns a function that unsubscribes.                                                                                         |
-| `session`                 | `{ revision }`: the installation's revision when the session started.                                                                                                                |
-| `path.current`            | The app's route: the path, query and fragment of the page's URL, such as `/episodes/12`, normalised the way Admin stores it (`..` resolved, escaped once).                           |
-| `onPathChange(callback)`  | Called when Admin moves the app: back or forward in Admin, or one of Admin's links. The page's URL is already there and `popstate` has fired; a multi-page app loads it (see below). |
-| `fetch(path, init?)`      | Calls the Admin API as the staff user. `path` is relative to the API root (`/posts/?limit=5`), never a URL. Resolves with a real `Response`.                                         |
-| `open(place)`             | Sends the publisher to `{ post: { id } }`, `{ page: { id } }`, `{ member: { id } }` or `{ apps: true }`. Rejects with `rejected` if they're already leaving the app.                 |
-| `connected`               | `false` once the session has ended.                                                                                                                                                  |
-| `onSessionEnd(callback)`  | Called once, with the `session_ended` error, when this document leaves the app session (a reload, form post or link) or the session ends.                                            |
+Each `on…` method returns a function that unsubscribes. The
+[SDK reference](https://tryghost.github.io/Apps/sdk-reference/) has every type.
 
-`site`, `user`, `session` and `theme` are frozen, so no part of the page can
-change what the rest of it reads.
+### Calling the Admin API
 
-`fetch` takes `method` (any case), `headers` (anything `Headers` accepts) and
-`body`, which is always JSON. Text is sent unchanged and must be JSON; an object
-or array is sent as JSON. Admin labels it as JSON itself. A body on `GET`, a
-binary body and the headers only Admin sets are refused: `cookie`,
-`authorization`, `content-type`, `content-encoding`, `x-ghost-*`, `origin` and
-similar. Any
-status comes back as a `Response`. `fetch` rejects only when Admin refuses to
-make the request.
+`fetch` takes a path under the Admin API root, such as `/posts/?limit=5`, never
+a URL. Admin API paths end in `/`. `init` takes `method`, `headers` and `body`.
+A body is always JSON: pass an object, an array, or JSON text. Headers that
+Admin sets itself, such as `authorization`, `cookie` and `content-type`, can't
+be set.
 
-### Admin API access
+Admin allows only some requests: reading and writing posts, pages and tags,
+listing staff users, tiers and newsletters, and a few other reads such as
+`GET /site/`. It refuses the rest as `blocked`, with a message that names what
+was refused. A write can't set `codeinjection_head` or
+`codeinjection_foot`, even to `null`, so to edit a post send its `updated_at`
+and only the fields you change, not the object you read.
 
-`fetch` reaches only these routes, grouped by the scope that will allow them once
-apps have their own token. Anything else is refused as `blocked`. `:id` is an
-object ID, 24 lowercase hexadecimal characters; a slug is one path segment.
+### Routes and the title
 
-| Scope              | Routes                                                                                 |
-| ------------------ | -------------------------------------------------------------------------------------- |
-| `posts:read`       | `GET /posts/`, `GET /posts/:id/`, `GET /posts/slug/:slug/`, `GET /search-index/posts/` |
-| `posts:write`      | `POST /posts/`, `PUT /posts/:id/`, `DELETE /posts/:id/`                                |
-| `pages:read`       | `GET /pages/`, `GET /pages/:id/`, `GET /pages/slug/:slug/`, `GET /search-index/pages/` |
-| `pages:write`      | `POST /pages/`, `PUT /pages/:id/`, `DELETE /pages/:id/`                                |
-| `tags:read`        | `GET /tags/`, `GET /tags/:id/`, `GET /tags/slug/:slug/`, `GET /search-index/tags/`     |
-| `tags:write`       | `POST /tags/`, `PUT /tags/:id/`, `DELETE /tags/:id/`                                   |
-| `users:read`       | `GET /users/`                                                                          |
-| `tiers:read`       | `GET /tiers/`                                                                          |
-| `newsletters:read` | `GET /newsletters/`                                                                    |
-| `site:read`        | `GET /site/`                                                                           |
-| `slugs:read`       | `GET /slugs/:type/:name/`, `GET /slugs/:type/:name/:id/`                               |
+Route as you would anywhere, with `history.pushState`, `history.replaceState`
+and links to the app's own origin. The SDK reports each move to Admin, which
+shows the route in its own URL and keeps the history. Changes to
+`location.hash` and moves through the Navigation API are not reported.
 
-An app can't ask Ghost to email a post, set a post's code injection or write
-mobiledoc. The one exception: publishing a post that a staff member already
-scheduled with a newsletter sends its email, as it would have at the scheduled
-time.
+When Admin moves the app, the SDK sets the page's URL and dispatches `popstate`,
+which a router follows. A page without a router loads the route itself, with
+`ghost.onPathChange((path) => location.replace(path))`. Admin opens the page at
+its route, so every route must load directly. The SDK also reports
+`document.title` to Admin each time it changes.
 
-- A write may carry only the query parameters its scope lists: `include`,
-  `formats` and `save_revision` for posts and pages, and `include` for tags.
-  Any other name is refused, `newsletter`, `email_segment` and `source`
-  included, however it's written.
-- `codeinjection_head` and `codeinjection_foot` are refused with any value, even
-  `null`, on posts, pages and tags: leave them out of the body.
-- `mobiledoc` must be `null` or left out: it's deprecated and Ghost 7.0 removes
-  it. Write `lexical` instead.
-- The SDK and Admin set the body's content type themselves; an app can't set
-  `content-type` or `content-encoding`.
+### Errors
 
-To edit a post, send `updated_at` and only the fields you change, never the
-object you read: it comes back with `codeinjection_head` and
-`codeinjection_foot` as `null`, which are refused even as `null`.
-
-```ts
-const { posts } = await (await ghost.fetch(`/posts/${id}/`)).json();
-await ghost.fetch(`/posts/${id}/`, {
-  method: 'PUT',
-  body: { posts: [{ updated_at: posts[0].updated_at, title: 'New title' }] },
-});
-```
-
-The tags you send replace the post's tags. The tags you read come back with
-`codeinjection_head` and `codeinjection_foot` too, so send each as `{ id }`, or
-`{ name }` for a new one:
-
-```ts
-const tags = posts[0].tags.map(({ id }) => ({ id }));
-await ghost.fetch(`/posts/${id}/`, {
-  method: 'PUT',
-  body: { posts: [{ updated_at: posts[0].updated_at, tags: [...tags, { name: 'Featured' }] }] },
-});
-```
-
-These checks are a stopgap for the private beta. They're reviewed again before
-anyone outside the team gets access, and app scopes replace them.
-
-The refusal names the method and path, or what in the request was refused, as
-in `blocked: Apps can't send codeinjection_head to PUT /posts/…/`.
-
-### Routes and history
-
-Admin keeps the history, and the app routes as it would anywhere: with
-`history.pushState` and `history.replaceState`, which any router uses, and with
-links. The SDK turns each into a single entry in Admin's history:
-
-- `pushState` and a click on a link to the app's own origin add an entry in
-  Admin; `replaceState` replaces Admin's current one. The frame itself keeps a
-  single entry, so back and forward are always Admin's.
-- A link loads its page in place of the frame's entry, after Admin has recorded
-  the move. A link with a `target`, a `download` or a modifier key is left alone,
-  and so is one a router has already handled.
-- When the publisher goes back or forward, or Admin moves the app itself, the
-  SDK puts the page's URL there, with the state the app last gave that route,
-  and dispatches `popstate`, so a router shows it. A multi-page app, with no
-  router, loads it: `ghost.onPathChange((path) => location.replace(path))`.
-- Admin opens the app's page at its route, so each route must load directly, as
-  with any app that uses browser history. If the page ends up elsewhere, through
-  a redirect from its server or a form's result, Admin follows the page.
-
-Not intercepted, so each still adds an entry of the frame's own, which back
-steps through without Admin: a form that posts, a change to `location.hash`,
-and the Navigation API. Route with the History API rather than the hash.
-
-### The frame
-
-The frame is sandboxed. The page runs scripts and posts forms on its own origin,
-with that origin's storage and cookies, and can open popups and download files.
-It can't navigate Admin's tab, and `alert`, `confirm` and `prompt` return at
-once (`confirm` with `false`), so an app brings its own dialogs. Browser features
-such as the camera, geolocation and fullscreen are off.
-
-A popup is sandboxed the same way: it can load any page and `postMessage` back
-to the app, but it can't navigate other windows, Admin's included, or show
-`alert` or `confirm`. To send the publisher somewhere in Admin, use `open`.
-
-The SDK reports the page's title automatically. It watches `<title>`, and Admin
-shows the title, up to 200 characters, while the page is open. Characters that
-reorder or hide text, such as direction marks, are removed.
-
-## Errors
-
-Every rejection is a `GhostAppError`, whose `code` gives the reason:
-
-| `code`             | Means                                                                                                                                                      |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `not_framed`       | The page is not inside a frame, so there is no Admin to talk to.                                                                                           |
-| `not_connected`    | Admin did not start the app before the timeout.                                                                                                            |
-| `duplicate_sdk`    | Another copy of the SDK in the page called `connect()` first, because the page loads the SDK more than once. Load a single copy for the whole page.        |
-| `invalid_context`  | Admin started the app with a context this SDK cannot read. Updating the SDK usually fixes it.                                                              |
-| `session_ended`    | The channel to Admin has closed, usually because Admin is reloading the app or the page navigated away from the document. Every call fails after that.     |
-| `invalid_argument` | The app passed something that cannot be sent, such as a body on a `GET`.                                                                                   |
-| `invalid_path`     | `fetch` was given a URL, a path that leaves the Admin API, or a path the Admin API only redirects, such as `/posts` without its trailing `/`.              |
-| `unsupported`      | This site's Ghost version predates the call. The message names the call.                                                                                   |
-| `blocked`          | A request the allowlist doesn't allow, such as `GET /db/`, or a write that could send email, set code injection or carry mobiledoc (see Admin API access). |
-| `network_error`    | Admin could not reach its own API.                                                                                                                         |
-| `rejected`         | Admin refused for another reason; the message says why.                                                                                                    |
-
-## How it connects
-
-The SDK posts `{ type: 'ghost-app:hello', sdk: <version>, document: <id> }` to
-`window.parent` every 250 ms until Admin replies with `ghost-app:connect`, a
-`MessagePort` and the names of the calls Admin exports. `document` is a random
-ID the SDK makes when it loads. It stays the same for the life of the
-document, so Admin can tell whether a hello comes from a page it has already
-connected or from a new page. The SDK accepts only the first reply, and only
-from the parent window. Over the port, it uses
-[`@quilted/threads`](https://github.com/lemonmade/quilt/tree/main/packages/threads)
-for the calls `@tryghost/app-contracts/bridge` defines, and Admin then calls
-`start`. The SDK refuses a call that the connect message didn't list with
-`unsupported`, without sending it. Admin only ever adds calls, so an older Admin
-lacks the newer ones.
-
-Only an error's message survives the channel, so Admin puts the code at the
-start of the message, as in `blocked: Apps can't use GET /db/`. The SDK splits it
-back into `code` and `message`. A message without a known code arrives as
-`rejected`. The SDK refuses Admin's calls the same way: `invalid_context: …` for
-a start context it can't read or a call before the start, and
-`invalid_argument: …` for a theme or path it can't read. The codes and their
-format are defined once, in `@tryghost/app-contracts`.
-
-The session ends when the port closes (in browsers that report it, such as
-Chromium), when a message on it can't be read, or when Admin refuses a call with
-`session_ended`. Admin does that to every pending call when it releases the app.
-In other browsers, a page Admin has released is removed along with its frame.
-
-When a reload, a form post or a link within the app loads a new document in the
-frame, Admin starts it in place. Admin hides the frame until the new document's
-SDK has connected, then starts it with Admin's current route, so the page shows
-what the form or link loaded, and Admin follows the new document's address. The
-old document's session ends with it. A new document must
-connect within the same 10 seconds, or Admin reloads the app's page. A page that
-keeps reloading or navigating away is shown as not responding: more than five
-documents in a row, each replaced within three seconds of starting. A publisher
-clicking quickly through more than five pages of a multi-page app would trip it
-too.
+Every call on the page rejects with a `GhostAppError`. Its `code` says why, such
+as `not_framed` when the page isn't in a frame, `not_connected` when Admin
+didn't start the app in time, `blocked` when Admin doesn't allow a request, and
+`session_ended` once the page has left its session. The
+[SDK reference](https://tryghost.github.io/Apps/sdk-reference/#ghostapperrorcode)
+lists every code.
 
 ## Signing the manifest
 
 Ghost installs an app from its manifest URL, where the app serves a signed
-manifest: its `ghost-app.json`, with the fields below added, signed with the
-app's identity key. Ghost pins that key when a site installs the app, and
-challenges the app's origin to prove it holds the backend key the manifest
-names. The manifest format is in
-[`@tryghost/app-contracts`](../app-contracts/README.md#the-manifest).
+manifest. You write the manifest as `ghost-app.json`, by the rules in
+[`@tryghost/app-contracts`](../app-contracts/README.md#the-manifest). Signing
+adds `manifest_url`, `identity_key`, `backend_key` and `development`, so leave
+those out of the file. Ghost accepts a signed manifest only at the manifest URL
+it was signed for.
 
-`ghost-app.json` is the readable part, which the project keeps:
+Signing checks the manifest by the rules Ghost applies. To check the whole app,
+install it on a Ghost site, which says why if it refuses.
 
-```json
-{
-  "id": "com.example.hello",
-  "name": "Hello",
-  "description": "Says hello.",
-  "author": { "name": "Example", "url": "https://example.com" },
-  "accent_color": "#ff5500",
-  "icon": { "name": "hand" },
-  "surfaces": [{ "type": "admin_page", "url": "/" }]
-}
-```
+The app has two keys. The manifest names the public half of each.
 
-Signing adds `manifest_url` (the address it's signed for), `identity_key` and
-`backend_key` (the public keys) and `development`, and refuses a file that sets
-any of them. It checks the manifest with the rules Ghost applies first, so a
-manifest Ghost would refuse is never signed: the error lists every problem by
-field. Ghost also refuses a manifest on the site's or Admin's host, on any port,
-which only Ghost knows. To check a signed app end to end, install it on a Ghost
-site, which fetches and verifies the manifest, challenges the backend, and says
-why if it refuses.
+- The **identity key** signs the manifest. It stays with you, or with CI. It
+  never goes to the backend or the page.
+- The **backend key** signs the backend's answer to Ghost's challenge. The
+  backend holds it as a secret. It never goes to the page.
 
-### Keys
+The keys are files in the project, `.ghost-app/<mode>/identity.json` and
+`.ghost-app/<mode>/backend.json`, where the mode is `development` or
+`production`.
 
-Each mode has its own identity key and backend key, as two pairs of private
-Ed25519 JWKs, in files only their owner can read:
+- **Git must ignore `.ghost-app/`**, and any file you copy a key into, such as
+  `.dev.vars`. In a git repository, the SDK refuses to create keys unless git
+  ignores `.ghost-app/`.
+- **Back up the production identity key.** A site keeps the identity key it
+  installed the app with, and treats a manifest signed with another key as
+  another app. So the app on your machine and the deployed app are two apps to
+  a site. The SDK never replaces an existing key.
+- On Windows, a key file gets its folder's permissions, so keep the project in a
+  folder only you can read. Elsewhere, only the file's owner can read it.
 
-- `.ghost-app/development/identity.json` and `backend.json`, for `vite dev`
-  and apps on this machine, such as on `my-app.localhost`, which `ghost-app keys`
-  or the Vite plugin's first run creates;
-- `.ghost-app/production/identity.json` and `backend.json`, which only
-  `ghost-app keys --production` creates.
-
-Only the owner can read a key on macOS and Linux. On Windows, a key gets the
-permissions of the folder it's in, so keep the project in a folder only you can
-read.
-
-Keys are created only when git ignores `.ghost-app/` (in a repository), and an
-existing key is never replaced. Keep a copy of the production identity key
-somewhere safe: sites keep the identity key they installed an app with, and a
-manifest signed with another one is another app. A development installation
-and a production one are different apps for the same reason, so going from your
-computer to a host means installing the app again.
-
-The identity key stays with the developer, or CI. It never reaches the backend
-or a build: only the signed manifest is served or emitted. The backend key goes
-to the backend, which answers challenges with it. Developers who share a
-development identity key must share its backend key too: a new backend key
-retires the old one on every site that reads the new manifest.
-
-In CI, set `GHOST_APP_IDENTITY_KEY` to the production identity key and
-`GHOST_APP_BACKEND_KEY` to the backend key's public half, which
-`ghost-app backend-key --production --public` prints, in place of the files. CI
-only signs, so it never needs the backend's private key.
-
-### The Vite plugin
-
-```ts
-import { cloudflare } from '@cloudflare/vite-plugin';
-import { ghostApp } from '@tryghost/app-sdk/vite';
-import { defineConfig } from 'vite';
-
-export default defineConfig({ plugins: [ghostApp(), cloudflare()] });
-```
-
-In `vite dev`, the plugin creates the development keys if there are none, and
-serves `/ghost-app.json` signed for the address it's requested at: a name for
-this machine, such as `localhost`, `127.0.0.1` or any `.localhost` name, or a
-tunnel named by the `tunnelUrl` option or `GHOST_APP_TUNNEL_URL`
-(comma-separated). It refuses any other host with a 421, so the dev server never
-signs a manifest for someone else's address. Ghost in Docker reaches the machine
-through `host.docker.internal` with the original Host, which counts as the
-machine. It prints the app at a name of its own under `.localhost`, from the
-last part of its ID, such as
-`http://hello-world.localhost:<port>/ghost-app.json` for
-`org.ghost.hello-world`, as Ghost on `localhost` refuses an app on its own host
-on any port. It prints the install link too, for `GHOST_URL` or
-`http://localhost:2368`.
-
-The dev server is for development only. The plugin adds `.ghost-app/`,
-`.dev.vars*`, `.env` and `.env.*` to Vite's `server.fs.deny`, and refuses to
-start with `server.fs.strict` off, which would make Vite skip that list. In dev
-and in a build, it refuses an `envPrefix` that the key variables start with, such as
-`GHOST_APP_`, which would put the keys in the page's bundle. Like Vite's own
-`.env` protection, the list matches files by name: a link or alias you make to
-the keys elsewhere in the project is served like any other file. Keep the keys
-out of `publicDir`, which Vite serves and copies into the build as it is.
-
-In a Cloudflare Workers project (one with a `wrangler.json`, `wrangler.jsonc`
-or `wrangler.toml`), it adds `GHOST_APP_BACKEND_KEY` to `.dev.vars` with the
-development backend key, so the Worker answers challenges in development as it
-does in production. It never changes a value that's already there, and says so
-when it isn't the development key. Wrangler reads `.env` and `.env.local` only
-when there's no `.dev.vars`, so in a project with either and no `.dev.vars`, it
-asks you to add the key to `.env.local` instead. Git must ignore whichever file
-holds it.
-
-In `vite build`, it signs `ghost-app.json` for `GHOST_APP_URL`, the app's public
-address (the manifest is at `<GHOST_APP_URL>/ghost-app.json`), with the
-production keys, and emits it with the client build. A missing key fails the
-build with how to create one; the plugin never creates a production key.
-Without `GHOST_APP_URL`, the build emits no manifest and warns, and deploying
-it takes the app down wherever it's installed.
-
-The plugin reads `GHOST_APP_URL`, `GHOST_APP_TUNNEL_URL` and `GHOST_URL` from
-the environment, or from the mode's `.env` files as Vite reads them; the
-environment wins. `.env.development` is the easy way to name a tunnel or your
-Ghost in development, on Windows too. Commit the app's address in `.env.production` once it has
-one, so no deploy can forget it:
-
-```sh
-GHOST_APP_URL=https://hello.example.com
-```
-
-List the plugin before `cloudflare()`. `options.manifest` names another file
-than `ghost-app.json`.
-
-### The ghost-app CLI
-
-```sh
-ghost-app keys [--production]
-ghost-app sign --url <manifest URL> [--production] [--out <file>] [--manifest <file>]
-ghost-app backend-key [--production] [--public | --check]
-```
-
-- `keys` creates the mode's keys, keeping any that exist.
-- `sign` prints the signed manifest, or writes it to `--out`.
-- `backend-key` prints the mode's private backend key, for a host's secret
-  store. It's the only command that prints a private key. `--public` prints
-  only its public half, for CI. `--check` prints nothing, and exits with 0
-  only if the key is there and usable, with the reason on stderr otherwise,
-  so a script can stop before piping nothing into a secret store, in any shell:
-
-  ```sh
-  ghost-app backend-key --production --check && ghost-app backend-key --production | wrangler secret put GHOST_APP_BACKEND_KEY
-  ```
-
-`--dir` points any of them at another project directory.
-
-### From code
-
-`@tryghost/app-sdk/tooling` is what the CLI is built on, to sign from code:
-
-| Export                                                                           | What it does                                                                                 |
-| -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `createKeys({ root, mode })`                                                     | Creates the mode's missing keys. Resolves with `{ created, kept }`.                          |
-| `readSigningKeys({ root, mode, env? })`                                          | The identity key and the backend key's public half, from the files or, in production, `env`. |
-| `readBackendKey({ root, mode })`                                                 | The mode's private backend key.                                                              |
-| `signProject({ root, mode, manifestUrl, manifestFile? })`                        | Signs the project's `ghost-app.json` with the mode's keys.                                   |
-| `signAppManifest(source, { manifestUrl, identityKey, backendKey, development })` | Signs a manifest with the keys given.                                                        |
-| `generateKey()`, `publicKeyOf(key)`                                              | A new private key, and a key's public half.                                                  |
-
-Signing resolves with `{ success: true, signed, manifest }`, or
-`{ success: false, code, errors }`.
+To sign for production without the key files, as in CI, set
+`GHOST_APP_IDENTITY_KEY` to the production identity key and
+`GHOST_APP_BACKEND_KEY` to the production backend key. Its public half is
+enough, which `ghost-app backend-key --production --public` prints.
+[App identity](https://tryghost.github.io/Apps/app-identity/) in the docs says
+what to do when a key leaks or is lost.
 
 ## The backend
 
-`@tryghost/app-sdk/backend` uses only `Request`, `Response`, `fetch` and
-WebCrypto, so the same code runs on Cloudflare Workers, Node, Bun and Deno, and
-in frameworks such as Hono. Configuration is passed in.
+Ghost posts a challenge to `/.well-known/ghost-app/challenge` on the app's
+origin, and the backend answers by signing it with the backend key.
+`@tryghost/app-sdk/backend` uses only `Request`, `Response` and WebCrypto, so it
+runs on Cloudflare Workers, Node, Bun and Deno.
 
-`withGhostApp` is the app's backend. It answers Ghost's challenge itself and
-passes every other request to `fetch`. It returns `{ fetch }`, so a Worker
-exports it as it is, reading its configuration from `cloudflare:workers`:
+`withGhostApp` wraps a fetch handler. It answers the challenge and passes every
+other request to your `fetch`, which still serves the page and the manifest. It
+returns `{ fetch }`, which a Cloudflare Worker can export as it is:
 
 ```ts
 import { env } from 'cloudflare:workers';
@@ -448,86 +166,124 @@ export default withGhostApp({
 });
 ```
 
-It takes `handleChallenge`'s options and `fetch`, which gets whatever else the
-platform passes too, such as a Worker's `env` and `ctx`. Frameworks that route
-requests themselves, such as Hono, use `handleChallenge` directly.
+With a router of your own, route `CHALLENGE_PATH` to
+`handleChallenge(request, { backendKey })` instead.
 
-| Export                                              | What it does                                                                                                                                                                                                                                                                                                   |
-| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `withGhostApp({ backendKey, fetch })`               | The app's backend, as `{ fetch }`: answers the challenge at `CHALLENGE_PATH` with `handleChallenge`, and passes every other request to `fetch`.                                                                                                                                                                |
-| `handleChallenge(request, { backendKey, origin? })` | Answers Ghost's challenge, posted to `CHALLENGE_PATH`, with the backend key: a private JWK, or its JSON as a secret holds it. `405` for any method but `POST`, `413` past 4 KB, `400` for anything that isn't a challenge for `origin` when it's given, or else `request.url`'s origin, `200` with the answer. |
-| `serveManifest(signed)`                             | A response for the signed manifest, for a backend that doesn't serve it as a file. Caches must revalidate it, so a new manifest reaches Ghost the next time it reads it.                                                                                                                                       |
+- `backendKey` is the private backend key, as a JWK object or its JSON text. A
+  value that isn't one throws a `TypeError`.
+- `handleChallenge` answers only a challenge for the origin in `request.url`. If
+  the backend doesn't see its public origin there, as Node behind a proxy that
+  terminates TLS doesn't, pass it as `origin`, such as
+  `https://app.example.com`. Take it from your configuration, never from a
+  request header such as `X-Forwarded-Host`.
+- `serveManifest(signed)` returns a `Response` for a signed manifest, from its
+  text or its object, for a backend that doesn't serve it as a file.
 
-`handleChallenge` refuses a challenge for any origin but the one the platform
-reports in `request.url`, so pass the request as the platform hands it over,
-never one rebuilt from `X-Forwarded-Host`. A server that doesn't see the public
-scheme and host, such as Node behind a proxy that terminates TLS, passes the
-app's public origin as `origin` (`https://app.example.com`), from its own
-configuration, never from a request's headers. Workers don't need it.
+## Vite plugin
 
-## Who can frame the page
+```ts
+import { ghostApp } from '@tryghost/app-sdk/vite';
+import { defineConfig } from 'vite';
 
-The SDK talks to whichever window frames the page, and can't yet tell whether
-it's Ghost Admin. A site that frames the page can send it a start context of
-its choosing and answer every `fetch` itself. No Ghost credential is ever in the
-page, but whatever the publisher types into the page reaches that site, and the
-app acts on the responses it gets. Ghost will close this by vouching for the
-site and the staff user to the app's backend.
+export default defineConfig({ plugins: [ghostApp()] });
+```
 
-## Serve only the app from its origin
+List it before `cloudflare()` in a Cloudflare Workers project. In `vite dev`,
+the plugin:
 
-Admin replies to any page on the app's origin that sends a hello from the app's
-frame, and can't tell the app's own pages apart from anything else served there.
-Any such page gets the whole bridge, including `fetch` as the staff user with
-their session. So the origin must serve only the app. Keep user-generated
-content and third-party pages or widgets on another origin (a separate subdomain
-counts). An open redirect is a risk too: a link through it puts another site's
-page in the frame, inside Admin.
+- creates the development keys if they are missing;
+- serves `/ghost-app.json`, signed for the address it is requested at: this
+  machine, such as a name under `.localhost`, or a tunnel named in
+  `GHOST_APP_TUNNEL_URL`. Any other host gets a `421`;
+- prints the manifest URL, at a `.localhost` name taken from the app's ID, and
+  an install link for the Ghost site in `GHOST_URL`, or `http://localhost:2368`;
+- in a project with a Wrangler config, adds `GHOST_APP_BACKEND_KEY` to
+  `.dev.vars` with the development backend key, or says where to add it, unless
+  it is already set;
+- stops Vite from serving `.ghost-app/`, `.dev.vars*`, `.env` and `.env.*`
+  files, and refuses to start with `server.fs.strict` off.
 
-Serve the app from a host of its own, too. Ghost refuses an app on the site's
-or Admin's host, whatever the port, because browsers send a host's cookies to
-every port on it, Ghost's session cookie included. On your own machine, serve
-the app from a name of its own under `.localhost`, such as `my-app.localhost`.
-Browsers treat it as another host and send it to the machine itself, Vite
-accepts it with no setup, and Ghost in development reaches it even where the
-system's resolver doesn't know it. Open Admin on the name Ghost is configured
-with, as Admin refuses an app on the host it's opened from too.
+In `vite build`, it signs `ghost-app.json` for `GHOST_APP_URL`, the app's public
+address such as `https://hello.example.com`, with the production keys, and emits
+it with the client build. A missing key fails the build. Without
+`GHOST_APP_URL`, the build warns and emits no manifest.
+
+The plugin reads `GHOST_APP_URL`, `GHOST_APP_TUNNEL_URL` (comma-separated) and
+`GHOST_URL` from the environment, or from the mode's `.env` files as Vite reads
+them. It refuses an `envPrefix` that would expose the key variables to the page,
+such as `GHOST_APP_`. Its options are `manifest`, another file than
+`ghost-app.json`, and `tunnelUrl`, in place of `GHOST_APP_TUNNEL_URL`.
+
+## CLI
+
+```sh
+ghost-app keys [--production]
+ghost-app sign --url <manifest URL> [--production] [--out <file>] [--manifest <file>]
+ghost-app backend-key [--production] [--public | --check]
+```
+
+Run it as `pnpm exec ghost-app` in a project with the SDK installed. Commands
+use the development keys unless you pass `--production`.
+
+- `keys` creates the mode's keys, and keeps any that exist.
+- `sign` prints the signed manifest, or writes it to `--out`. `--manifest` names
+  another file than `ghost-app.json`.
+- `backend-key` prints the private backend key, to pipe into a host's secret
+  store. `--public` prints only its public half. `--check` prints nothing, and
+  succeeds only if the key is there and usable, so a script can check before
+  it pipes.
+
+`ghost-app --dir <directory> <command>` runs a command for another project
+directory. A command exits with `0` when it succeeds, `1` when it fails, with
+the reason on stderr, and `2` when the command line was wrong.
+
+## Tooling
+
+`@tryghost/app-sdk/tooling` is what the CLI and the Vite plugin are built on:
+
+```ts
+import { createKeys, formatErrors, signProject } from '@tryghost/app-sdk/tooling';
+
+await createKeys({ root: '.', mode: 'development' });
+
+const manifestUrl = 'http://hello.localhost:5173/ghost-app.json';
+const result = await signProject({ root: '.', mode: 'development', manifestUrl });
+if (!result.success) {
+  throw new Error(formatErrors(result.errors));
+}
+// result.signed is the signed manifest to serve at manifestUrl.
+```
+
+It also exports `signAppManifest`,
+which signs with keys you pass in, `readSigningKeys`, `readBackendKey`,
+`readManifestSource`, `generateKey`, `publicKeyOf` and `keyFile`. Signing throws
+for a missing or unusable key.
+
+## Known limits
+
+- **The SDK can't tell who frames the page.** It connects to whichever window
+  frames the page, and has no way yet to confirm that window is Ghost Admin. A
+  site that frames the page can supply `site`, `user` and `theme`, and answer
+  every `fetch` itself. No Ghost credential is in the page, but what the page
+  shows and sends follows what that site tells it.
+- **Serve only the app from its origin.** Admin connects any page on the app's
+  origin that loads in the app's frame, and such a page can call `fetch` as the
+  staff user. Keep user content and third-party pages on another origin.
+- **Give the app a host of its own.** Ghost refuses an app on the site's or
+  Admin's host, whatever the port. `vite dev` prints a `.localhost` name to use.
 
 ## Develop
 
 This is a workspace package in the Ghost monorepo. From the package directory:
 
-```bash
+```sh
 pnpm build   # the package to build/ and the browser bundle to dist/, with Vite
-pnpm test    # type-check + unit tests (jsdom for the page, with a fake Admin on a real
-             # MessageChannel; Node for the backend, tooling, CLI and plugin), which build both
-             # afresh to check what they import, and pack build/ and dist/ to use them from an
-             # app outside the workspace (after pnpm build; Nx runs it)
+pnpm test    # type-check and unit tests, which need a build first (Nx runs it)
 pnpm lint    # lint source and tests
 ```
 
 It follows the [internal package golden path](../README.md), except where it
-ships to apps. Its `build` bundles with Vite instead of compiling with `tsc`,
-and also writes `dist/`, which is in `files` and in the Nx build outputs.
-
-It uses `@tryghost/app-contracts` for the bridge's message types, limits and
-shape checks, so the SDK and Admin apply the same rules to paths, themes and
-start contexts, and for signing and checking manifests and challenges, so the
-tooling and the backend apply Ghost's own rules. The build inlines what it uses
-into the SDK, so the contracts are a dev dependency. `build/` has an ES module
-per entry point, which share chunks:
-
-- `index.js` loads only `@quilted/threads`, never `jose`, `zod` or a Node
-  builtin;
-- `backend.js` loads only `jose` and `zod`, and no Node builtin;
-- `tooling.js`, `vite.js` and `bin.js` load Node builtins, `jose` and `zod`, and
-  `bin.js` `commander` too; `vite.js` imports Vite only when Vite runs the
-  plugin, not when it loads, as Vite is an optional peer dependency;
-- each entry point's declarations, emitted by TypeScript 7 and bundled by
-  `rolldown-plugin-dts`, import nothing, but Vite's types for `vite.d.ts`;
-- `dist/` imports nothing at all.
-
-`test/bundle.test.ts` checks this on a fresh build. The build keeps `node:`
-imports as imports, so a builtin the page or the backend reaches shows up there.
-Lint requires the `node:` prefix, as Vite replaces a builtin imported without it
-with an empty stub.
+ships to apps: `build` bundles with Vite instead of compiling with `tsc`, and
+inlines the parts of `@tryghost/app-contracts` the SDK uses, so the contracts
+are a dev dependency. `test/bundle.test.ts` checks what each entry point
+imports.
