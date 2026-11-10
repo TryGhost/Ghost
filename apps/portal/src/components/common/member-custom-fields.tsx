@@ -26,9 +26,20 @@ import { compositeValue, listValue, scalarValue } from '../../utils/custom-field
 import type { CustomFieldValue, FieldInput, PartsByName } from '../../utils/custom-fields';
 
 export const MemberCustomFieldsStyles = `
+    /* A field's reasons sit right under its inputs, which give up their own gap to the next
+       field so the gap comes after the reasons instead. */
+    .gh-portal-custom-field {
+        margin-bottom: 16px;
+    }
+
+    .gh-portal-custom-field .gh-portal-input,
+    .gh-portal-custom-field .gh-portal-input-group {
+        margin-bottom: 0;
+    }
+
     .gh-portal-custom-field-errors {
         list-style: none;
-        margin: 4px 0 0;
+        margin: 6px 0 0;
         padding: 0;
     }
 
@@ -121,25 +132,49 @@ interface FieldProps<S extends FieldShape> {
   onKeyDown?: ((event: React.KeyboardEvent) => void) | undefined;
 }
 
-/** A field that holds one value: one input, carrying its own reason. */
+/**
+ * Why the site refused what a field's inputs hold, under the inputs. Beside the label, where Portal
+ * puts a short reason such as a missing name, a reason long enough to say how to put it right has
+ * no room.
+ */
+function FieldErrors({ id, messages }: { id: string; messages: string[] }) {
+  if (messages.length === 0) {
+    return null;
+  }
+  return (
+    <ul className="gh-portal-custom-field-errors" id={id}>
+      {messages.map((message) => (
+        <li key={message}>{message}</li>
+      ))}
+    </ul>
+  );
+}
+
+/** A field that holds one value: one input. */
 function ScalarField({ field, value, errors, onChange, onKeyDown }: FieldProps<'scalar'>) {
   const name = `custom:${field.key}`;
   const held = scalarValue(value);
+  const error = errors[name];
+  const errorsId = `custom-${field.key}-errors`;
   return (
-    <InputForm
-      fields={[
-        {
-          ...leafInput(FIELD_STRUCTURES[field.type].leaf, held || undefined),
-          value: held,
-          label: field.name,
-          name,
-          errorMessage: errors[name] ?? '',
-          readOnly: field.readOnly,
-        },
-      ]}
-      onChange={(event: { target: { value: string } }) => onChange(event.target.value)}
-      onKeyDown={onKeyDown}
-    />
+    <>
+      <InputForm
+        fields={[
+          {
+            ...leafInput(FIELD_STRUCTURES[field.type].leaf, held || undefined),
+            value: held,
+            label: field.name,
+            name,
+            invalid: Boolean(error),
+            describedBy: error ? errorsId : undefined,
+            readOnly: field.readOnly,
+          },
+        ]}
+        onChange={(event: { target: { value: string } }) => onChange(event.target.value)}
+        onKeyDown={onKeyDown}
+      />
+      <FieldErrors id={errorsId} messages={error ? [error] : []} />
+    </>
   );
 }
 
@@ -239,13 +274,10 @@ function RecordField({ field, value, errors, onChange, onKeyDown }: FieldProps<'
           />
         ))}
       </div>
-      {refused.length > 0 && (
-        <ul className="gh-portal-custom-field-errors" id={errorsId}>
-          {refused.map(({ part, message }) => (
-            <li key={part}>{`${labels[part]}: ${message}`}</li>
-          ))}
-        </ul>
-      )}
+      <FieldErrors
+        id={errorsId}
+        messages={refused.map(({ part, message }) => `${labels[part]}: ${message}`)}
+      />
     </section>
   );
 }
@@ -265,7 +297,7 @@ function ListField({ field, value, errors, onChange }: FieldProps<'set'>) {
   const error = errors[name];
   const id = `input-${name}`;
   const labelId = `${id}-label`;
-  const errorId = `${id}-error`;
+  const errorsId = `custom-${field.key}-errors`;
   return (
     <section className="gh-portal-input-section">
       <div className="gh-portal-input-labelcontainer">
@@ -278,10 +310,9 @@ function ListField({ field, value, errors, onChange }: FieldProps<'set'>) {
             {field.name}
           </label>
         )}
-        {error && <p id={errorId}>{error}</p>}
       </div>
       <ListPicker
-        describedBy={error ? errorId : undefined}
+        describedBy={error ? errorsId : undefined}
         disabled={hasMode(['preview']) || isCookiesDisabled()}
         id={id}
         invalid={Boolean(error)}
@@ -294,6 +325,7 @@ function ListField({ field, value, errors, onChange }: FieldProps<'set'>) {
         value={picked}
         onChange={onChange}
       />
+      <FieldErrors id={errorsId} messages={error ? [error] : []} />
     </section>
   );
 }
@@ -312,19 +344,23 @@ interface DrawnFieldProps {
   onKeyDown?: ((event: React.KeyboardEvent) => void) | undefined;
 }
 
-/** A field drawn from the blocks its type is composed of. */
+/** A field drawn from the blocks its type is composed of, its reasons under its inputs. */
 function DrawnField({ field, onChange, ...drawn }: DrawnFieldProps) {
-  return matchField<FieldInput, React.ReactElement>(field, {
-    scalar: (scalar) => (
-      <ScalarField {...drawn} field={scalar} onChange={(value) => onChange(scalar, value)} />
-    ),
-    record: (record) => (
-      <RecordField {...drawn} field={record} onChange={(value) => onChange(record, value)} />
-    ),
-    set: (list) => (
-      <ListField {...drawn} field={list} onChange={(value) => onChange(list, value)} />
-    ),
-  });
+  return (
+    <div className="gh-portal-custom-field">
+      {matchField<FieldInput, React.ReactElement>(field, {
+        scalar: (scalar) => (
+          <ScalarField {...drawn} field={scalar} onChange={(value) => onChange(scalar, value)} />
+        ),
+        record: (record) => (
+          <RecordField {...drawn} field={record} onChange={(value) => onChange(record, value)} />
+        ),
+        set: (list) => (
+          <ListField {...drawn} field={list} onChange={(value) => onChange(list, value)} />
+        ),
+      })}
+    </div>
+  );
 }
 
 interface MemberCustomFieldsProps {
