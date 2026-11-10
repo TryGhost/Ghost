@@ -8,6 +8,10 @@ pnpm gx generate package email-utils --description "Email utilities for Ghost."
 pnpm gx generate package parser --dir packages/email/parser
 ```
 
+Run a command group without a subcommand, such as `pnpm gx generate`, to see
+that group's help. `--help` and `-h` show the same menu. Unknown commands still
+exit with an error and show help for the relevant group.
+
 Package generation uses `packages/_template` and the shared helpers in
 `tools/scripts/lib/`. `pnpm create-package` remains a forwarding alias.
 Run `pnpm install` after generating a package; custom destinations must be covered
