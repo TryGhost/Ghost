@@ -817,13 +817,24 @@ describe('automations', function () {
       return body.labels[0];
     }
 
-    async function createAutomation(filters: ReturnType<typeof labelFilter>[]) {
+    type Condition = { operator: Operator | null; labels: Label[] };
+    const conditionData = ({ operator, labels }: Condition) => ({
+      condition_operator: operator,
+      condition_label_ids: labels.map((label) => label.id).sort(),
+    });
+
+    // Wait an hour, optionally check a condition, then send an email.
+    async function createAutomation(
+      filters: ReturnType<typeof labelFilter>[],
+      condition?: Condition,
+    ) {
       const emailTemplate = (await getFreeMemberSignupAutomation()).actions.find(
         (action) => action.type === 'send_email',
       );
       assert(emailTemplate, 'Expected the fixture automation to send an email');
       const waitId = ObjectId().toHexString();
       const emailId = ObjectId().toHexString();
+      const conditionId = ObjectId().toHexString();
       const { body } = await agent
         .post('automations')
         .body({
@@ -835,9 +846,17 @@ describe('automations', function () {
               trigger_rules: [freeRule, ...filters],
               actions: [
                 { id: waitId, type: 'wait', data: { wait_hours: 1 } },
+                ...(condition
+                  ? [{ id: conditionId, type: 'condition', data: conditionData(condition) }]
+                  : []),
                 { ...serializeEditableAction(emailTemplate), id: emailId },
               ],
-              edges: [{ source_action_id: waitId, target_action_id: emailId }],
+              edges: condition
+                ? [
+                    { source_action_id: waitId, target_action_id: conditionId },
+                    { source_action_id: conditionId, target_action_id: emailId },
+                  ]
+                : [{ source_action_id: waitId, target_action_id: emailId }],
             },
           ],
         })
@@ -876,13 +895,26 @@ describe('automations', function () {
         .orderBy(['step.created_at', 'step.id'])
         .pluck('step.status');
 
-    // Polls once per action, after the automation's one-hour wait has passed.
+    // Each finished step requests the next poll itself, a moment later. Give those time to land.
+    const settlePolls = async () => {
+      await new Promise((resolve) => {
+        setTimeout(resolve, 25);
+      });
+      await DomainEvents.allSettled();
+    };
+
+    // Runs every step that is due once the automation's one-hour wait has passed. The clock
+    // is frozen on a whole second, because the database stores when a step is due in seconds
+    // and would round a later step past a clock frozen mid-second.
     const runPastTheWait = async () => {
-      const clock = mockSystemTime(new Date());
+      await settlePolls();
+      const afterTheWait = Math.ceil((Date.now() + 2 * HOUR_MS) / 1000) * 1000;
+      const clock = mockSystemTime(new Date(afterTheWait));
       try {
-        clock.setSystemTime(new Date(Date.now() + 2 * HOUR_MS));
-        await runSchedulerPoll();
-        await runSchedulerPoll();
+        for (let poll = 0; poll < 4; poll += 1) {
+          await runSchedulerPoll();
+          await settlePolls();
+        }
       } finally {
         clock.restore();
       }
@@ -1018,6 +1050,158 @@ describe('automations', function () {
         })
         .expectStatus(200);
       await agent.delete(`labels/${magnet.id}`).expectStatus(204);
+    });
+
+    describe('condition steps', function () {
+      const updateActions = (
+        automation: Automation,
+        actions: unknown[],
+        status = automation.status,
+      ) =>
+        agent.put(`automations/${automation.id}`).body({
+          automations: [
+            { status, actions, edges: automation.edges, trigger_rules: automation.trigger_rules },
+          ],
+        });
+      const conditionOf = (automation: Automation) => {
+        const condition = automation.actions.find((action) => action.type === 'condition');
+        assert(condition?.type === 'condition', 'Expected the automation to have a condition');
+        return condition;
+      };
+      const withCondition = (automation: Automation, condition: Condition) =>
+        automation.actions.map((action) =>
+          action.type === 'condition'
+            ? { ...action, data: conditionData(condition) }
+            : serializeEditableAction(action),
+        );
+      const revisionCount = async (actionId: string) =>
+        (await db.knex('automation_action_revisions').where('action_id', actionId)).length;
+
+      it('lets a member who meets the condition continue', async function () {
+        const magnet = await createLabel('Lead magnet');
+        const automation = await createAutomation([], { operator: 'has_any', labels: [magnet] });
+        const memberId = await signUp([magnet]);
+        await assertEntered(memberId, [automation]);
+
+        await runPastTheWait();
+
+        assert.deepEqual(await stepStatuses(automation, memberId), [
+          'finished',
+          'finished',
+          'finished',
+        ]);
+      });
+
+      it('ends the run at the condition for a member who does not meet it', async function () {
+        const magnet = await createLabel('Lead magnet');
+        const automation = await createAutomation([], { operator: 'has_any', labels: [magnet] });
+        const memberId = await signUp([]);
+        await assertEntered(memberId, [automation]);
+
+        await runPastTheWait();
+
+        assert.deepEqual(await stepStatuses(automation, memberId), [
+          'finished',
+          'condition not met',
+        ]);
+      });
+
+      it('checks the trigger label filter before the condition', async function () {
+        const magnet = await createLabel('Lead magnet');
+        const course = await createLabel('Course');
+        const automation = await createAutomation([labelFilter('has_any', magnet)], {
+          operator: 'has_none',
+          labels: [course],
+        });
+        const stays = await signUp([magnet]);
+        const buysCourse = await signUp([magnet]);
+        const losesMagnet = await signUp([magnet]);
+        await assertEntered(losesMagnet, [automation]);
+
+        await db.knex('members_labels').insert({
+          id: ObjectId().toHexString(),
+          member_id: buysCourse,
+          label_id: course.id,
+          sort_order: 1,
+        });
+        await db
+          .knex('members_labels')
+          .where({ member_id: losesMagnet, label_id: magnet.id })
+          .del();
+        await runPastTheWait();
+
+        assert.deepEqual(await stepStatuses(automation, stays), [
+          'finished',
+          'finished',
+          'finished',
+        ]);
+        assert.deepEqual(await stepStatuses(automation, buysCourse), [
+          'finished',
+          'condition not met',
+        ]);
+        assert.deepEqual(await stepStatuses(automation, losesMagnet), ['member changed label']);
+      });
+
+      it('returns saved conditions and only writes a revision when one changes', async function () {
+        const magnet = await createLabel('Lead magnet');
+        const course = await createLabel('Course');
+        const created = await createAutomation([], { operator: 'has_any', labels: [magnet] });
+        const condition = conditionOf(created);
+        assert.deepEqual(condition.data, conditionData({ operator: 'has_any', labels: [magnet] }));
+        assert.equal(await revisionCount(condition.id), 1);
+
+        await updateActions(created, created.actions.map(serializeEditableAction)).expectStatus(
+          200,
+        );
+        assert.equal(await revisionCount(condition.id), 1);
+
+        const changed: Condition = { operator: 'has_all', labels: [magnet, course] };
+        const { body } = await updateActions(created, withCondition(created, changed)).expectStatus(
+          200,
+        );
+        assert.deepEqual(conditionOf(body.automations[0]).data, conditionData(changed));
+        assert.equal(await revisionCount(condition.id), 2);
+      });
+
+      it('allows an unfinished condition in a draft but not in an active automation', async function () {
+        const magnet = await createLabel('Lead magnet');
+        const created = await createAutomation([], { operator: 'has_any', labels: [magnet] });
+        const unfinished = withCondition(created, { operator: null, labels: [] });
+
+        await updateActions(created, unfinished).expectStatus(422);
+        await updateActions(created, unfinished, 'inactive').expectStatus(200);
+      }, 20000);
+
+      it('rejects a condition label that does not exist', async function () {
+        const magnet = await createLabel('Lead magnet');
+        const created = await createAutomation([], { operator: 'has_any', labels: [magnet] });
+        const missing = { id: ObjectId().toHexString(), name: '' };
+
+        await updateActions(
+          created,
+          withCondition(created, { operator: 'has_any', labels: [missing] }),
+        ).expectStatus(422);
+      });
+
+      it('blocks deleting a label only while a current condition uses it', async function () {
+        const magnet = await createLabel('Lead magnet');
+        const course = await createLabel('Course');
+        const created = await createAutomation([], { operator: 'has_any', labels: [magnet] });
+
+        await agent.delete(`labels/${magnet.id}`).expectStatus(422);
+
+        await updateActions(
+          created,
+          withCondition(created, { operator: 'has_any', labels: [course] }),
+        ).expectStatus(200);
+        await agent.delete(`labels/${magnet.id}`).expectStatus(204);
+
+        const { body } = await agent.get(`automations/${created.id}`).expectStatus(200);
+        assert.deepEqual(
+          conditionOf(body.automations[0]).data,
+          conditionData({ operator: 'has_any', labels: [course] }),
+        );
+      });
     });
   });
 });

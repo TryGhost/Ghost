@@ -1,6 +1,6 @@
 # Automations
 
-Automations run a series of actions for a member after signup. Each automation is currently one ordered path of `wait` and `send_email` actions. It can be active or inactive.
+Automations run a series of actions for a member after signup. Each automation is currently one ordered path of `wait`, `send_email` and `condition` actions. It can be active or inactive.
 
 ## How a run moves forward
 
@@ -26,6 +26,22 @@ All three lists must pass. Enrolment checks them in the same query that matches
 the trigger, so a member who fails gets no run. Each step re-checks them, and a
 member who no longer passes stops with the step status `member changed label`.
 A label cannot be deleted while a filter uses it.
+
+## Condition steps
+
+A `condition` action checks the member's labels at the point where it sits in the
+path. It uses the same three operators as label filters. A member who meets it
+moves to the next action; one who does not stops with the step status
+`condition not met`. Trigger rules, including label filters, are still checked
+first on every step.
+
+The rule is stored on the action's revision as `condition_operator`, and its
+labels in `automation_condition_labels`, one row per label. Editing either
+writes a new revision, so run history shows what was checked at the time. A
+draft may hold an unfinished condition; an active automation may not.
+
+Old revisions are kept, so deleting a label only clears it from them. Deleting
+is blocked while the current revision of a live condition uses the label.
 
 ## Where to look
 
@@ -67,8 +83,8 @@ from those same rows. The cards sum to the total entries count.
 - **In progress:** any pending step, provided every step has a known status.
 - **Completed:** all recorded steps finished.
 - **Exited early:** no pending steps, and at least one failed, automation-disabled,
-  member-label-changed, member-status-changed, member-tier-changed, or
-  member-unsubscribed step.
+  condition-not-met, member-label-changed, member-status-changed,
+  member-tier-changed, or member-unsubscribed step.
 
 Runs with no recorded steps are excluded from both chart and cards. An unexpected
 step status fails the request, including when another step is pending. There is no
