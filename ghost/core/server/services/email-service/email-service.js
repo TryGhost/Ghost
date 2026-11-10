@@ -459,8 +459,11 @@ class EmailService {
   /**
    * @param {import('./jobs/send-email-job').default} job
    */
+  /**
+   * @returns {Promise<void | 'interrupted'>} 'interrupted' when shutdown stopped the send
+   */
   async handleSendEmailJob(job) {
-    await this.#batchSendingService.emailJob({ emailId: job.emailId });
+    return this.#batchSendingService.emailJob({ emailId: job.emailId });
   }
 
   /**
