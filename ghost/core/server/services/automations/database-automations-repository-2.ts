@@ -138,6 +138,25 @@ const applyPaidSubscriptionChangedFilters = (
   );
 };
 
+const applyLabelAddedFilters = (
+  query: Knex.QueryBuilder,
+  connection: Connection,
+  {
+    labelId,
+  }: Extract<
+    Parameters<AutomationsRepository2<Connection>['findFirstActionRevisions']>[1],
+    { eventName: 'label_added' }
+  >,
+): void => {
+  query.whereExists(
+    connection('automation_trigger_rules as rule')
+      .select(1)
+      .where('rule.automation_id', connection.ref('automation.id'))
+      .where('rule.trigger_type', 'label_added')
+      .where('rule.label_id', labelId),
+  );
+};
+
 /**
  * Create a database-backed automations repository. See `AutomationsRepository2`
  * for details on what should (and should not) be in here.
@@ -189,6 +208,9 @@ export const createDatabaseAutomationsRepository2 = ({
               break;
             case 'paid_subscription_changed':
               applyPaidSubscriptionChangedFilters(query, connection, options);
+              break;
+            case 'label_added':
+              applyLabelAddedFilters(query, connection, options);
               break;
             default: {
               const _exhaustive: never = options;
