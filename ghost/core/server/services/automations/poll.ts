@@ -58,7 +58,7 @@ type PollOptions = {
     | 'recordEmailSent'
     | 'retryStep'
   > &
-    Partial<Pick<AutomationsRepository, 'recordEmailsSent'>>;
+    Partial<Pick<AutomationsRepository, 'recordEmailsSent' | 'finishStepsAndEnqueueNext'>>;
   enqueueAnotherPollAt: (date: Readonly<Date>) => unknown;
   scheduleAutomationEmailAnalyticsJob: () => Promise<void>;
   memberWelcomeEmailService: MemberWelcomeEmailService;
@@ -406,6 +406,9 @@ export const poll = async ({
     nextPollAt = dateMin(nextPollAt, new Date());
   }
 
+  const noteNextPollAt = (date: Date | null) => {
+    nextPollAt = dateMin(nextPollAt, date);
+  };
   const runStep = async <T>(
     step: AutomationStepToRun,
     run: () => Promise<T>,
@@ -414,10 +417,7 @@ export const poll = async ({
       return await run();
     } catch (err) {
       try {
-        nextPollAt = dateMin(
-          nextPollAt,
-          await handleStepExecutionFailure({ automationsApi, err, step }),
-        );
+        noteNextPollAt(await handleStepExecutionFailure({ automationsApi, err, step }));
       } catch (retryError) {
         logging.error(
           { err: retryError, system: { event: 'automations.poll.step_failed', step_id: step.id } },
@@ -459,7 +459,7 @@ export const poll = async ({
                 await scheduleEmailAnalytics(scheduleAutomationEmailAnalyticsJob, record);
               }
             }
-            nextPollAt = dateMin(nextPollAt, await automationsApi.finishStepAndEnqueueNext(step));
+            noteNextPollAt(await automationsApi.finishStepAndEnqueueNext(step));
           }),
         );
         return null;
@@ -501,10 +501,24 @@ export const poll = async ({
     if (tracked) {
       await scheduleEmailAnalytics(scheduleAutomationEmailAnalyticsJob, tracked.record);
     }
+    const sentSteps = sent.map(({ step }) => step);
+    if (sentSteps.length > 1 && automationsApi.finishStepsAndEnqueueNext) {
+      try {
+        noteNextPollAt(await automationsApi.finishStepsAndEnqueueNext(sentSteps));
+        sentSteps.length = 0;
+      } catch (err) {
+        logging.error(
+          { err, system: { event: 'automations.poll.grouped_completion_failed' } },
+          '[AUTOMATIONS] Failed to complete sent automation steps together',
+        );
+      }
+    }
+    // A failed grouped transaction only falls back to completing the steps.
+    // Delivery and recipient recording already ran.
     await Promise.all(
-      sent.map(({ step }) =>
+      sentSteps.map((step) =>
         runStep(step, async () => {
-          nextPollAt = dateMin(nextPollAt, await automationsApi.finishStepAndEnqueueNext(step));
+          noteNextPollAt(await automationsApi.finishStepAndEnqueueNext(step));
         }),
       ),
     );

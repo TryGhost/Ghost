@@ -186,6 +186,11 @@ export type AutomationRunMember = {
   email: string;
 };
 
+export type StepToFinish = Pick<
+  AutomationStepToRun,
+  'id' | 'locked_by' | 'action_id' | 'automation_run_id'
+>;
+
 export type AutomationsRepository = {
   browse(): Promise<Page<AutomationSummary>>;
   exists(id: string): Promise<boolean>;
@@ -224,9 +229,8 @@ export type AutomationsRepository = {
    *
    * Returns the next step's ready time, or null if no next step was created.
    */
-  finishStepAndEnqueueNext(
-    step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>,
-  ): Promise<Date | null>;
+  finishStepAndEnqueueNext(step: StepToFinish): Promise<Date | null>;
+  finishStepsAndEnqueueNext(steps: readonly StepToFinish[]): Promise<Date | null>;
   /**
    * Stop a locked step without continuing the automation, preserving the
    * reason it ended.

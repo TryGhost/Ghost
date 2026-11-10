@@ -405,6 +405,84 @@ describe('database automations repository', function () {
     });
   });
 
+  describe('finishStepsAndEnqueueNext', function () {
+    it('advances only the current claims and does not enqueue a successor twice', async function () {
+      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const actions = [1, 2].map((wait_hours) => ({
+        id: ObjectId().toHexString(),
+        type: 'wait' as const,
+        data: { wait_hours },
+      }));
+      const automation = await repo.add({
+        status: 'active',
+        name: 'Grouped completion',
+        description: '',
+        actions,
+        edges: [{ source_action_id: actions[0].id, target_action_id: actions[1].id }],
+        trigger_rules: [
+          { trigger_type: 'free_signup', scope: null, product_id: null, direction: null },
+        ],
+      });
+      const [first, next] = await Promise.all(
+        actions.map(({ id }) =>
+          knex('automation_action_revisions').where('action_id', id).first('id'),
+        ),
+      );
+      const now = toDatabaseDate(new Date());
+      for (let i = 0; i < 3; i++) {
+        const memberId = ObjectId().toHexString();
+        const memberEmail = await insertMember(memberId);
+        const runId = ObjectId().toHexString();
+        await knex('automation_runs').insert({
+          id: runId,
+          automation_id: automation.id,
+          member_id: memberId,
+          member_email: memberEmail,
+          created_at: now,
+          updated_at: now,
+        });
+        await knex('automation_run_steps').insert({
+          id: ObjectId().toHexString(),
+          automation_run_id: runId,
+          automation_action_revision_id: first.id,
+          created_at: now,
+          updated_at: now,
+          ready_at: toDatabaseDate(new Date('2000-01-01')),
+        });
+      }
+      const { steps } = await repo.fetchAndLockSteps(3);
+      assert.equal(steps.length, 3);
+      assert(steps.every((step) => step.automation_id === automation.id));
+      await knex('automation_run_steps')
+        .where('id', steps[1].id)
+        .update({ locked_by: 'new-claim' });
+
+      const readyAt = await repo.finishStepsAndEnqueueNext(steps);
+      assert(readyAt);
+      assert.equal(await repo.finishStepsAndEnqueueNext(steps), null);
+      const successors = await knex('automation_run_steps').where(
+        'automation_action_revision_id',
+        next.id,
+      );
+      assert.deepEqual(
+        successors.map((step) => step.automation_run_id).sort(),
+        [steps[0].automation_run_id, steps[2].automation_run_id].sort(),
+      );
+      for (const step of successors) {
+        const storedReadyAt = fromDatabaseDate(step.ready_at);
+        // MySQL's DATETIME column only stores whole seconds.
+        assert(
+          Math.abs(storedReadyAt.getTime() - readyAt.getTime()) < 1000,
+          `${storedReadyAt.toISOString()} vs ${readyAt.toISOString()}`,
+        );
+      }
+      const reclaimed = await knex('automation_run_steps')
+        .where('id', steps[1].id)
+        .first('status', 'locked_by');
+      assert.deepEqual(reclaimed, { status: 'pending', locked_by: 'new-claim' });
+    });
+  });
+
   describe('fetchAndLockSteps', function () {
     it("returns each step once with the automation's current selected tiers", async function () {
       const selectedAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });

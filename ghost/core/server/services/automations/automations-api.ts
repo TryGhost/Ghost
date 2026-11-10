@@ -505,6 +505,12 @@ export async function finishStepAndEnqueueNext(
   return await repository.finishStepAndEnqueueNext(...args);
 }
 
+export async function finishStepsAndEnqueueNext(
+  steps: Parameters<AutomationsRepository['finishStepsAndEnqueueNext']>[0],
+) {
+  return await repository.finishStepsAndEnqueueNext(steps);
+}
+
 export async function markStepTerminal(
   ...args: Parameters<AutomationsRepository['markStepTerminal']>
 ) {

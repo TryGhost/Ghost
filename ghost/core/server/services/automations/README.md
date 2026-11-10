@@ -12,8 +12,9 @@ Each check locks ready steps, then runs up to 100 at once. A `wait` action advan
 
 Within a poll, first-attempt emails from the same action revision can share one
 Mailgun request when their rendered content matches after substituting the
-recipient's unsubscribe link. Each recipient has a distinct Message-Id, and
-each run is recorded and advanced separately. Retries are sent individually.
+recipient's unsubscribe link. Each recipient has a distinct Message-Id. The
+worker records successful recipients by action revision and advances their
+locked steps together. Retries are sent individually.
 
 ## Where to look
 
