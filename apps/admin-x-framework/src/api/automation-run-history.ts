@@ -48,6 +48,7 @@ export const AutomationRunHistorySchema = z.object({
           'finished',
           'failed',
           'automation disabled',
+          'member changed label',
           'member changed status',
           'member changed tier',
           'member unsubscribed',

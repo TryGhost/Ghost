@@ -1,4 +1,4 @@
-import { getTriggerTierIds } from '@/automations/utils/trigger-rules';
+import { getTriggerTierIds, splitTriggerRules } from '@/automations/utils/trigger-rules';
 import type { PerformanceDateRange } from '@/automations/utils/performance-date-range';
 import { useAutomationPerformanceStats } from '@/automations/hooks/use-automation-performance-stats';
 import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
@@ -27,7 +27,7 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
 import { TotalEntries } from './total-entries';
 import { StatusCounts } from './status-counts';
-import type { RunSortDirection } from '@/automations/types';
+import type { AutomationEventRule, RunSortDirection } from '@/automations/types';
 import { RunList } from './run-list';
 import { MemberSearch } from './member-search';
 import { PerformanceDateFilter } from './performance-date-filter';
@@ -202,6 +202,20 @@ function getStopConditionDescription({
   tiers,
 }: {
   triggerRules: readonly AutomationTriggerRule[];
+  tiers: readonly Tier[];
+}): string {
+  const { eventRules, labelFilters } = splitTriggerRules(triggerRules);
+  const description = getEventStopConditionDescription({ triggerRules: eventRules, tiers });
+  return labelFilters.length > 0
+    ? `${description} They also stop if their labels no longer match the trigger.`
+    : description;
+}
+
+function getEventStopConditionDescription({
+  triggerRules,
+  tiers,
+}: {
+  triggerRules: readonly AutomationEventRule[];
   tiers: readonly Tier[];
 }): string {
   // paid_subscription_changed runs stay eligible while the member matches a destination tier.

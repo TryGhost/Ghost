@@ -1,5 +1,51 @@
-import type { TierSelection } from '@/automations/types';
-import type { AutomationTriggerRule } from '@tryghost/admin-x-framework/api/automations';
+import type { AutomationEventRule, LabelFilterOperator, TierSelection } from '@/automations/types';
+import type {
+  AutomationLabelFilterRule,
+  AutomationTriggerRule,
+} from '@tryghost/admin-x-framework/api/automations';
+
+const isLabelFilterRule = (rule: AutomationTriggerRule): rule is AutomationLabelFilterRule =>
+  'operator' in rule;
+
+export const splitTriggerRules = (rules: readonly AutomationTriggerRule[]) => ({
+  eventRules: rules.filter((rule): rule is AutomationEventRule => !isLabelFilterRule(rule)),
+  labelFilters: rules.filter(isLabelFilterRule),
+});
+
+const LABEL_FILTER_OPERATORS = ['has_any', 'has_all', 'has_none'] as const;
+
+// The canvas shows one condition card, so it reads the first operator that has labels.
+export const conditionFromRules = (
+  rules: readonly AutomationTriggerRule[],
+): { operator: LabelFilterOperator; labelIds: string[] } | null => {
+  const { labelFilters } = splitTriggerRules(rules);
+  const operator = LABEL_FILTER_OPERATORS.find((candidate) =>
+    labelFilters.some((rule) => rule.operator === candidate),
+  );
+  if (!operator) {
+    return null;
+  }
+  return {
+    operator,
+    labelIds: labelFilters
+      .filter((rule) => rule.operator === operator)
+      .map((rule) => rule.label_id),
+  };
+};
+
+export const buildLabelFilterRules = (
+  triggerType: AutomationTriggerRule['trigger_type'],
+  operator: LabelFilterOperator,
+  labelIds: readonly string[],
+): AutomationLabelFilterRule[] =>
+  labelIds.map((labelId) => ({
+    trigger_type: triggerType,
+    scope: 'specific_label',
+    product_id: null,
+    direction: null,
+    operator,
+    label_id: labelId,
+  }));
 
 type TriggerRuleOptions =
   | {
@@ -62,11 +108,15 @@ export const comparableTriggerRules = (rules: readonly AutomationTriggerRule[]) 
       scope: rule.scope,
       product_id: rule.product_id,
       direction: rule.direction,
+      operator: isLabelFilterRule(rule) ? rule.operator : null,
+      label_id: isLabelFilterRule(rule) ? rule.label_id : null,
     }))
     .sort(
       (a, b) =>
         (a.product_id ?? '').localeCompare(b.product_id ?? '') ||
-        (a.direction ?? '').localeCompare(b.direction ?? ''),
+        (a.direction ?? '').localeCompare(b.direction ?? '') ||
+        (a.operator ?? '').localeCompare(b.operator ?? '') ||
+        (a.label_id ?? '').localeCompare(b.label_id ?? ''),
     );
 
 function subscriptionChangedRulesFromSelection(selection: TierSelection): AutomationTriggerRule[] {

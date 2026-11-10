@@ -1,6 +1,7 @@
 import {
   buildTriggerRules,
   getTriggerTierIds,
+  splitTriggerRules,
   subscriptionChangedSelectionFromRules,
 } from '@/automations/utils/trigger-rules';
 import React, { useId } from 'react';
@@ -289,7 +290,15 @@ export const TriggerCard: React.FC<
     onInteract?: () => void;
   }>
 > = ({ trigger, errorMessage, onInteract, children }) => {
-  const { title, Icon, content } = getTriggerPresentation(trigger, errorMessage);
+  // The tier pickers rebuild the event rules; the condition card owns the label filters.
+  const { eventRules, labelFilters } = splitTriggerRules(trigger.rules);
+  const eventTrigger: TriggerData = {
+    ...trigger,
+    rules: eventRules,
+    onUpdate: ({ trigger_rules: nextEventRules }) =>
+      trigger.onUpdate({ trigger_rules: [...nextEventRules, ...labelFilters] }),
+  };
+  const { title, Icon, content } = getTriggerPresentation(eventTrigger, errorMessage);
   return (
     <AutomationCard
       aria-label={title}

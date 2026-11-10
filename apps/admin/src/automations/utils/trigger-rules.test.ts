@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildLabelFilterRules,
   comparableTriggerRules,
   buildTriggerRules,
   getTriggerTierIds,
+  conditionFromRules,
+  splitTriggerRules,
   subscriptionChangedSelectionFromRules,
 } from './trigger-rules';
 
@@ -140,5 +143,60 @@ describe('paid_subscription_changed rule dirty comparison', () => {
     expect(comparableTriggerRules([from])).not.toEqual(
       comparableTriggerRules([{ ...from, direction: 'to' }]),
     );
+  });
+});
+
+describe('label filter rules', () => {
+  const freeRule = {
+    trigger_type: 'free_signup',
+    scope: null,
+    product_id: null,
+    direction: null,
+  } as const;
+  const labelFilter = (operator: 'has_any' | 'has_all' | 'has_none', labelId: string) =>
+    ({
+      trigger_type: 'free_signup',
+      scope: 'specific_label',
+      product_id: null,
+      direction: null,
+      operator,
+      label_id: labelId,
+    }) as const;
+  const filters = [labelFilter('has_none', 'magnet'), labelFilter('has_none', 'guide')];
+
+  it('builds one rule per label for the trigger type and operator', () => {
+    expect(buildLabelFilterRules('free_signup', 'has_none', ['magnet', 'guide'])).toEqual(filters);
+    expect(buildLabelFilterRules('paid_subscription_started', 'has_any', [])).toEqual([]);
+  });
+
+  it('reads the condition back and splits it from the event rules', () => {
+    const rules = [filters[0], freeRule, filters[1]];
+    expect(conditionFromRules(rules)).toEqual({
+      operator: 'has_none',
+      labelIds: ['magnet', 'guide'],
+    });
+    expect(conditionFromRules([freeRule])).toBeNull();
+    expect(splitTriggerRules(rules)).toEqual({ eventRules: [freeRule], labelFilters: filters });
+  });
+
+  it('shows the first operator that has labels when rules mix operators', () => {
+    expect(
+      conditionFromRules([
+        freeRule,
+        labelFilter('has_none', 'staff'),
+        labelFilter('has_all', 'vip'),
+      ]),
+    ).toEqual({ operator: 'has_all', labelIds: ['vip'] });
+  });
+
+  it('detects a changed label or operator in the dirty comparison, ignoring order', () => {
+    const saved = comparableTriggerRules([freeRule, ...filters]);
+    expect(comparableTriggerRules([...[...filters].reverse(), freeRule])).toEqual(saved);
+    expect(
+      comparableTriggerRules([freeRule, filters[0], labelFilter('has_none', 'other')]),
+    ).not.toEqual(saved);
+    expect(
+      comparableTriggerRules([freeRule, filters[0], labelFilter('has_any', 'guide')]),
+    ).not.toEqual(saved);
   });
 });

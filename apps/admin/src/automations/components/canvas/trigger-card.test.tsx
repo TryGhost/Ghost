@@ -5,7 +5,7 @@ import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
 import { TriggerCard } from './trigger-card';
 import type { TriggerData } from './trigger-card';
 import type { TierSelection } from '@/automations/types';
-import { buildTriggerRules } from '@/automations/utils/trigger-rules';
+import { buildLabelFilterRules, buildTriggerRules } from '@/automations/utils/trigger-rules';
 
 const tier = (id: string, active: boolean, type = 'paid'): Tier => ({
   id,
@@ -29,10 +29,16 @@ const tiers = [
   tier('Free', true, 'free'),
 ];
 
-function Picker({ initial }: { initial: TierSelection }) {
-  const [rules, setRules] = useState<TriggerData['rules']>(() =>
-    buildTriggerRules({ triggerType: 'paid_subscription_changed', selection: initial }),
-  );
+function Card({
+  triggerType,
+  initialRules,
+  onRules,
+}: {
+  triggerType: TriggerData['triggerType'];
+  initialRules: TriggerData['rules'];
+  onRules?: (rules: TriggerData['rules']) => void;
+}) {
+  const [rules, setRules] = useState(initialRules);
   return (
     <TriggerCard
       trigger={{
@@ -42,14 +48,27 @@ function Picker({ initial }: { initial: TierSelection }) {
           isError: false,
           refetch: vi.fn<TriggerData['tierQuery']['refetch']>(),
         },
-        triggerType: 'paid_subscription_changed',
+        triggerType,
         rules,
         savedTierIds: [],
-        onUpdate: (trigger) => setRules(trigger.trigger_rules),
+        onUpdate: (trigger) => {
+          setRules(trigger.trigger_rules);
+          onRules?.(trigger.trigger_rules);
+        },
       }}
     />
   );
 }
+
+const Picker = ({ initial }: { initial: TierSelection }) => (
+  <Card
+    initialRules={buildTriggerRules({
+      triggerType: 'paid_subscription_changed',
+      selection: initial,
+    })}
+    triggerType="paid_subscription_changed"
+  />
+);
 
 const open = (name: string) => fireEvent.click(screen.getByRole('combobox', { name }));
 const options = () => screen.getAllByRole('option').map((row) => row.textContent);
@@ -121,5 +140,49 @@ describe('Paid subscription changed tier choices', () => {
     );
     open('To');
     expect(options()).toEqual(['Free', 'Gold']);
+  });
+});
+
+describe('Label filters', () => {
+  it('shows no label controls on the trigger card', () => {
+    render(
+      <Card
+        initialRules={[
+          ...buildTriggerRules({ triggerType: 'free_signup' }),
+          ...buildLabelFilterRules('free_signup', 'has_any', ['magnet']),
+        ]}
+        triggerType="free_signup"
+      />,
+    );
+
+    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+  });
+
+  it('keeps label filters when the tier selection changes', () => {
+    const onRules = vi.fn<(rules: TriggerData['rules']) => void>();
+    const filters = buildLabelFilterRules('paid_subscription_changed', 'has_none', ['staff']);
+    render(
+      <Card
+        initialRules={[
+          ...buildTriggerRules({
+            triggerType: 'paid_subscription_changed',
+            selection: { from: 'any_paid', to: [] },
+          }),
+          ...filters,
+        ]}
+        triggerType="paid_subscription_changed"
+        onRules={onRules}
+      />,
+    );
+
+    open('To');
+    fireEvent.click(screen.getByRole('option', { name: 'Gold' }));
+    expect(onRules).toHaveBeenLastCalledWith([
+      ...buildTriggerRules({
+        triggerType: 'paid_subscription_changed',
+        selection: { from: 'any_paid', to: ['Gold'] },
+      }),
+      ...filters,
+    ]);
   });
 });

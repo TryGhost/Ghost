@@ -30,6 +30,7 @@ const stepStates = {
   finished: { state: 'occurred', label: 'Completed' },
   failed: { state: 'exited', label: 'Step failed' },
   'automation disabled': { state: 'exited', label: 'Automation turned off' },
+  'member changed label': { state: 'exited', label: 'Member labels changed' },
   'member changed status': { state: 'exited', label: 'Member changed subscription status' },
   'member changed tier': { state: 'exited', label: 'Member changed subscription tier' },
   // The server also uses this status for a missing member.

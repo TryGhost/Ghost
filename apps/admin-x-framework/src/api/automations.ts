@@ -68,7 +68,17 @@ export type AutomationEdge = {
   target_action_id: string;
 };
 
+export type AutomationLabelFilterRule = {
+  trigger_type: 'free_signup' | 'paid_subscription_started' | 'paid_subscription_changed';
+  scope: 'specific_label';
+  product_id: null;
+  direction: null;
+  operator: 'has_any' | 'has_all' | 'has_none';
+  label_id: string;
+};
+
 export type AutomationTriggerRule =
+  | AutomationLabelFilterRule
   | { trigger_type: 'free_signup'; scope: null; product_id: null; direction: null }
   | {
       trigger_type: 'paid_subscription_started';
