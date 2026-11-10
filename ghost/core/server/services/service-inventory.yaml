@@ -2674,7 +2674,7 @@ services:
           Wrappers expose service plus startFetch and individual count-returning fetch methods;
           service exposes mutable status references, scheduling/cancellation and detailed fetch
           results. The CommonJS jobs entry exports three receiver-independent async scheduling
-          functions, all no-ops in test environments. Root units substitute wrapper constructors
+          functions, all no-ops under the testing configs. Root units substitute wrapper constructors
           and assert pre-init guards, distinct identities, constructor arguments and repeated
           init retention. Admin HTTP snapshots assert initial newsletter status, not scheduling
           or cancellation completion. Exact return/receiver behavior is otherwise source-only.
