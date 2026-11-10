@@ -159,14 +159,16 @@ Meta data and Code injection, with wider spacing between sections and columns.
 Meta data has no helper description under its heading. At desktop widths, the metadata
 column is 400px wide to accommodate previews, with the same 80px gap as member
 details. The columns stack below the sidebarlg breakpoint, with 32px between them.
-Metadata navigation uses pill-shaped button tabs. Each tab's fields and preview
-share one gray inset surface. The flag-off design keeps its underline tabs and
+Metadata navigation uses pill-shaped button tabs. Button and button-small tabs
+use a primary selected fill with contrasting text, and muted inactive fills with
+foreground text. Metadata fields and previews sit directly on the page without
+an inset background or padding. The flag-off design keeps its underline tabs and
 outlined cards; tag editing, uploads, previews and saving use the same behavior
 in both designs.
 
 Empty tag image slots use Shade's default dashed Dropzone style. Metadata image
 slots use the same field surface as their inputs, giving them a white background
-inside the gray panel in light mode.
+in light mode.
 
 The `admin7CustomizeFromViewSite` experiment adds Customize to the frame's top
 bar on View site, opening the Design settings in a panel over a live, browsable

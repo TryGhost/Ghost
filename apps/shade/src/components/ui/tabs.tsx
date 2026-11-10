@@ -103,12 +103,22 @@ const tabsTriggerVariants = cva(
         rounded: '',
         pill: '',
       },
+      admin7Design: {
+        true: '',
+        false: '',
+      },
     },
     compoundVariants: [
       {
         variant: ['button', 'button-sm'],
         controlShape: 'pill',
         className: 'rounded-full',
+      },
+      {
+        variant: ['button', 'button-sm'],
+        admin7Design: true,
+        className:
+          'bg-muted text-foreground hover:bg-secondary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:hover:bg-primary',
       },
     ],
     defaultVariants: {
@@ -123,10 +133,11 @@ const TabsTrigger = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
 >(({ className, onMouseDownCapture, ...props }, ref) => {
   const { variant, controlShape } = React.useContext(TabsContext);
+  const { admin7Design } = useShade();
   return (
     <TabsPrimitive.Trigger
       ref={ref}
-      className={cn(tabsTriggerVariants({ variant, controlShape, className }))}
+      className={cn(tabsTriggerVariants({ variant, controlShape, admin7Design, className }))}
       onMouseDownCapture={(event) => {
         const activeElement = document.activeElement;
         if (
@@ -208,6 +219,7 @@ interface TabsDropdownTriggerProps extends Omit<
 const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTriggerProps>(
   ({ children, className, ...props }, ref) => {
     const { variant, controlShape } = React.useContext(TabsContext);
+    const { admin7Design } = useShade();
     return (
       <div
         className={cn(
@@ -219,7 +231,7 @@ const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTrig
       >
         <TabsPrimitive.Trigger
           ref={ref}
-          className={cn(tabsTriggerVariants({ variant, controlShape, className }))}
+          className={cn(tabsTriggerVariants({ variant, controlShape, admin7Design, className }))}
           {...props}
         >
           <div className="flex items-center gap-2">{children}</div>

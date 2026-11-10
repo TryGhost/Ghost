@@ -49,7 +49,7 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          'Button tabs follow the shared control shape: pill with Admin 7 enabled, rounded otherwise.',
+          'Admin 7 button tabs use a primary selected fill with contrasting text and muted inactive fills with dark text. Shape follows the shared control shape.',
       },
     },
   },
@@ -107,7 +107,7 @@ export const AppLevelPillButtonSmall: Story = {
     docs: {
       description: {
         story:
-          'Button-small tabs inherit the app-level pill shape while keeping their existing interaction states.',
+          'Button-small tabs share the Admin 7 selected and inactive colors, including hover, focus and disabled states.',
       },
     },
   },

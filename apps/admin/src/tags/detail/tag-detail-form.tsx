@@ -100,7 +100,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({
   const socialSiteHeader = siteMetaTitle || siteTitle;
   const blogDomain = getBlogDomain(blogUrl);
   const metadataContentClassName = admin7Design
-    ? 'mt-5 rounded-card bg-muted p-5 [--field-surface:var(--background)]'
+    ? 'mt-5 [--field-surface:var(--background)]'
     : 'pt-5';
   const metadataHeading = (
     <h3 className="section-heading text-[14px] font-semibold" id="tag-metadata-heading">
