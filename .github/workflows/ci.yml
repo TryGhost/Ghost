@@ -56,6 +56,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
+      # Nx cache credentials are trusted to same-repository PRs, never fork PRs.
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
       IS_TAG: ${{ startsWith(github.ref, 'refs/tags/v') }}
       IS_DEVELOPMENT: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/6.x' }}
@@ -269,6 +271,7 @@ jobs:
           echo "matrix=[\"${NODE_VERSION}\", \"24.22.1\"]" >> $GITHUB_OUTPUT
 
       - name: Start Nx Cloud CI run
+        if: github.repository == 'TryGhost/Ghost'
         run: pnpm nx start-ci-run
 
       - name: Determine Affected Projects
@@ -485,6 +488,8 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     name: Lint
+    env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -609,6 +614,8 @@ jobs:
     needs: [job_setup]
     if: (needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true') || needs.job_setup.outputs.has_perf_tests_label == 'true'
     name: Performance tests
+    env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -757,6 +764,7 @@ jobs:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
       # Only the primary Node leg is instrumented, as in the acceptance job —
       # the other leg covers the same code, and would collide on the
       # unit-coverage artifact name.
@@ -868,6 +876,8 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.typecheck_projects_str != ''
     name: Typecheck
+    env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -927,6 +937,7 @@ jobs:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
       # Only the primary Node leg is instrumented — the others cover the same
       # code, and a second leg would collide on the e2e-coverage artifact name.
       COVERAGE_ENABLED: ${{ needs.job_setup.outputs.coverage_enabled == 'true' && matrix.node == needs.job_setup.outputs.node_version }}
@@ -1042,6 +1053,8 @@ jobs:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     name: Legacy tests (Node ${{ matrix.node }}, mysql8)
+    env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -1098,6 +1111,7 @@ jobs:
       matrix:
         include: ${{ fromJSON(needs.job_setup.outputs.affected_playwright_matrix) }}
     env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
       CI: true
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -1351,6 +1365,8 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     name: Stripe fixture checks
+    env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - uses: ./.github/actions/setup-node-pnpm
@@ -1378,6 +1394,7 @@ jobs:
     if: needs.job_setup.outputs.run_e2e == 'true'
     runs-on: ubuntu-latest
     env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
       IS_SHIPPING: ${{ github.repository == 'TryGhost/Ghost' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag') && 'true' || '' }}
     steps:
       - name: Checkout repository
@@ -2171,6 +2188,8 @@ jobs:
     # publish-packages.yml) hold the privileged path.
     if: needs.job_setup.outputs.run_e2e == 'true'
     runs-on: ubuntu-latest
+    env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -2666,6 +2685,8 @@ jobs:
     strategy:
       matrix:
         include: ${{ fromJSON(needs.job_setup.outputs.publish_matrix) }}
+    env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

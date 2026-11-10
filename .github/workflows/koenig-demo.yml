@@ -29,6 +29,7 @@ jobs:
     permissions:
       contents: read
     env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
       VITE_KLIPY_API_KEY: ${{ secrets.KLIPY_API_KEY }}
     steps:
       - name: Checkout repo
