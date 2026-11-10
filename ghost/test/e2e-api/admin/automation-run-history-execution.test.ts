@@ -85,7 +85,6 @@ describe('Automation run history from the execution', function () {
       eventName: 'membership_started',
       source: 'member' as const,
       memberId: member.id,
-      memberEmail: member.email,
       memberStatus: 'free',
       previousMemberStatus: null,
       memberTierIds: [],

@@ -177,6 +177,30 @@ export const createDatabaseAutomationsRepository2 = ({
       await connection('automation_trigger_rules').where('automation_id', automationId).delete();
     },
 
+    async fetchAndLockMembers(connection, memberIds) {
+      const ids = [...new Set(memberIds)];
+      if (ids.length === 0) {
+        return [];
+      }
+      const rows = await connection('members')
+        .select('id', 'email')
+        .whereIn('id', ids)
+        .orderBy('id')
+        .forUpdate();
+      return z.array(z.object({ id: z.string(), email: z.string() })).parse(rows);
+    },
+
+    async findAutomationMemberEnrollments(connection, automationIds, memberIds) {
+      if (automationIds.length === 0 || memberIds.length === 0) {
+        return [];
+      }
+      const rows = await connection('automation_runs')
+        .distinct('automation_id', 'member_id')
+        .whereIn('automation_id', automationIds)
+        .whereIn('member_id', memberIds);
+      return z.array(z.object({ automation_id: z.string(), member_id: z.string() })).parse(rows);
+    },
+
     async findEmailRecipientForClick(
       connection,
       { automationActionRevisionId, automationRunStepId, memberId },
@@ -250,13 +274,6 @@ export const createDatabaseAutomationsRepository2 = ({
     async getNumberOfAutomations(connection) {
       const result = await connection('automations').count({ count: '*' }).first();
       return Number(result?.count ?? 0);
-    },
-
-    async hasMemberEnteredAutomation(connection, automationId, memberId) {
-      const query = connection('automation_runs')
-        .select(connection.raw('1'))
-        .where({ automation_id: automationId, member_id: memberId });
-      return await selectExists(connection, query);
     },
 
     async incrementEmailClickedCount(connection, revisionId) {
@@ -347,10 +364,6 @@ export const createDatabaseAutomationsRepository2 = ({
         .whereIn('id', ids)
         .orderBy('id')
         .forUpdate();
-    },
-
-    async lockMember(connection, memberId) {
-      await connection('members').where('id', memberId).forUpdate().first('id');
     },
 
     async lockNotYetOpenedEmailRecipients(connection, automatedEmailRecipientIds) {

@@ -205,6 +205,137 @@ describe('database automations repository', function () {
     });
   });
 
+  alphabeticalDescribe('fetchAndLockMembers', function () {
+    let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
+    let automationId: string;
+    let otherAutomationId: string;
+    let memberId: string;
+    let otherMemberId: string;
+
+    beforeEach(async function () {
+      repository = createDatabaseAutomationsRepository2({ knex });
+      automationId = ObjectId().toHexString();
+      otherAutomationId = ObjectId().toHexString();
+      memberId = ObjectId().toHexString();
+      otherMemberId = ObjectId().toHexString();
+      await knex('automations').insert(createAutomation(automationId));
+      await knex('members').insert(createMember(memberId));
+    });
+
+    afterEach(async function () {
+      await knex('automation_runs')
+        .whereIn('automation_id', [automationId, otherAutomationId])
+        .delete();
+      await knex('automations').whereIn('id', [automationId, otherAutomationId]).delete();
+      await knex('members').whereIn('id', [memberId, otherMemberId]).delete();
+    });
+
+    it('returns each existing member once with current emails', async function () {
+      await knex('members').insert(createMember(otherMemberId));
+      await knex('members').where('id', memberId).update({ email: 'changed@example.com' });
+      const members = await repository.withTransaction((trx) =>
+        repository.fetchAndLockMembers(trx, [otherMemberId, memberId, memberId, 'missing']),
+      );
+      expect(members).toHaveLength(2);
+      expect(members).toEqual(
+        expect.arrayContaining([
+          { id: memberId, email: 'changed@example.com' },
+          { id: otherMemberId, email: `${otherMemberId}@example.com` },
+        ]),
+      );
+      expect(await repository.fetchAndLockMembers(knex, [])).toEqual([]);
+      expect(await repository.fetchAndLockMembers(knex, ['missing'])).toEqual([]);
+    });
+
+    it('locks members until the transaction ends', async function () {
+      await knex('members').insert(createMember(otherMemberId));
+
+      const trx = await knex.transaction();
+      onTestFinished(async () => {
+        await trx.rollback();
+      });
+
+      await repository.fetchAndLockMembers(trx, [otherMemberId, memberId]);
+
+      for (const id of [memberId, otherMemberId]) {
+        // Use `NOWAIT` to immediately fail if another transaction holds this row's lock.
+        await repository.withTransaction(async (otherTrx) => {
+          await expect(
+            otherTrx('members').where({ id }).forUpdate().noWait().first(),
+          ).rejects.toMatchObject({ code: 'ER_LOCK_NOWAIT' });
+        });
+      }
+
+      await trx.commit();
+
+      await repository.withTransaction(async (otherTrx) => {
+        await expect(
+          otherTrx('members').where('id', memberId).forUpdate().noWait().first(),
+        ).resolves.toBeDefined();
+      });
+    });
+  });
+
+  alphabeticalDescribe('findAutomationMemberEnrollments', function () {
+    let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
+    let automationId: string;
+    let otherAutomationId: string;
+    let memberId: string;
+    let otherMemberId: string;
+
+    beforeEach(async function () {
+      repository = createDatabaseAutomationsRepository2({ knex });
+      automationId = ObjectId().toHexString();
+      otherAutomationId = ObjectId().toHexString();
+      memberId = ObjectId().toHexString();
+      otherMemberId = ObjectId().toHexString();
+      await knex('automations').insert(createAutomation(automationId));
+      await knex('members').insert(createMember(memberId));
+    });
+
+    afterEach(async function () {
+      await knex('automation_runs')
+        .whereIn('automation_id', [automationId, otherAutomationId])
+        .delete();
+      await knex('automations').whereIn('id', [automationId, otherAutomationId]).delete();
+      await knex('members').whereIn('id', [memberId, otherMemberId]).delete();
+    });
+
+    it('returns prior automation enrollments', async function () {
+      await knex('members').insert(createMember(otherMemberId));
+      await knex('automations').insert(createAutomation(otherAutomationId));
+      await knex('automation_runs').insert([
+        createRun(automationId, memberId),
+        createRun(automationId, memberId),
+        createRun(otherAutomationId, otherMemberId),
+      ]);
+
+      const result = await repository.findAutomationMemberEnrollments(
+        knex,
+        [automationId, otherAutomationId],
+        [memberId, otherMemberId],
+      );
+      expect(result).toHaveLength(2);
+      expect(result).toEqual(
+        expect.arrayContaining([
+          { automation_id: automationId, member_id: memberId },
+          { automation_id: otherAutomationId, member_id: otherMemberId },
+        ]),
+      );
+
+      expect(
+        await repository.findAutomationMemberEnrollments(knex, [automationId], [otherMemberId]),
+      ).toEqual([]);
+    });
+
+    it('returns no pairs for empty inputs', async function () {
+      expect(await repository.findAutomationMemberEnrollments(knex, [], [memberId])).toEqual([]);
+      expect(await repository.findAutomationMemberEnrollments(knex, [automationId], [])).toEqual(
+        [],
+      );
+    });
+  });
+
   alphabeticalDescribe('findEmailRecipientForClick', function () {
     const fixture = useEmailClickFixture();
     const { repository, findEmailRecipientForClick } = fixture;
@@ -676,58 +807,6 @@ describe('database automations repository', function () {
     });
   });
 
-  alphabeticalDescribe('hasMemberEnteredAutomation', function () {
-    let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
-    let automationId: string;
-    let otherAutomationId: string;
-    let memberId: string;
-    let otherMemberId: string;
-
-    const hasMemberEnteredAutomation = () =>
-      repository.withConnection((connection) =>
-        repository.hasMemberEnteredAutomation(connection, automationId, memberId),
-      );
-
-    beforeEach(async function () {
-      repository = createDatabaseAutomationsRepository2({ knex });
-      automationId = ObjectId().toHexString();
-      otherAutomationId = ObjectId().toHexString();
-      memberId = ObjectId().toHexString();
-      otherMemberId = ObjectId().toHexString();
-      await knex('automations').insert(createAutomation(automationId));
-      await knex('members').insert(createMember(memberId));
-    });
-
-    afterEach(async function () {
-      await knex('automation_runs')
-        .whereIn('automation_id', [automationId, otherAutomationId])
-        .delete();
-      await knex('automations').whereIn('id', [automationId, otherAutomationId]).delete();
-      await knex('members').whereIn('id', [memberId, otherMemberId]).delete();
-    });
-
-    it('returns false when the member has not entered any automation', async function () {
-      await expect(hasMemberEnteredAutomation()).resolves.toBe(false);
-    });
-
-    it('returns true when the member has entered the automation', async function () {
-      await knex('automation_runs').insert(createRun(automationId, memberId));
-      await expect(hasMemberEnteredAutomation()).resolves.toBe(true);
-    });
-
-    it('returns false when only another member has entered the automation', async function () {
-      await knex('members').insert(createMember(otherMemberId));
-      await knex('automation_runs').insert(createRun(automationId, otherMemberId));
-      await expect(hasMemberEnteredAutomation()).resolves.toBe(false);
-    });
-
-    it('returns false when the member has only entered another automation', async function () {
-      await knex('automations').insert(createAutomation(otherAutomationId));
-      await knex('automation_runs').insert(createRun(otherAutomationId, memberId));
-      await expect(hasMemberEnteredAutomation()).resolves.toBe(false);
-    });
-  });
-
   alphabeticalDescribe('incrementEmailClickedCount', function () {
     const fixture = useEmailClickFixture();
     const { repository } = fixture;
@@ -1092,45 +1171,6 @@ describe('database automations repository', function () {
       } finally {
         await trx.rollback();
       }
-    });
-  });
-
-  alphabeticalDescribe('lockMember', function () {
-    let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
-    let memberId: string;
-
-    beforeEach(async function () {
-      repository = createDatabaseAutomationsRepository2({ knex });
-      memberId = ObjectId().toHexString();
-      await knex('members').insert(createMember(memberId));
-    });
-
-    afterEach(async function () {
-      await knex('members').where('id', memberId).delete();
-    });
-
-    it('locks the member until the transaction ends', async function () {
-      const trx = await knex.transaction();
-      onTestFinished(async () => {
-        await trx.rollback();
-      });
-
-      await repository.lockMember(trx, memberId);
-
-      // Use `NOWAIT` to immediately fail if another transaction holds this row's lock.
-      await repository.withTransaction(async (otherTrx) => {
-        await expect(
-          otherTrx('members').where('id', memberId).forUpdate().noWait().first(),
-        ).rejects.toMatchObject({ code: 'ER_LOCK_NOWAIT' });
-      });
-
-      await trx.commit();
-
-      await repository.withTransaction(async (otherTrx) => {
-        await expect(
-          otherTrx('members').where('id', memberId).forUpdate().noWait().first(),
-        ).resolves.not.toThrow();
-      });
     });
   });
 

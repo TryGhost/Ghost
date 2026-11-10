@@ -72,6 +72,19 @@ export type AutomationsRepository2<Connection> = {
   /** Delete all trigger rules for an automation. */
   deleteTriggerRules: (connection: Connection, automationId: string) => Promisable<void>;
 
+  /** Fetch some member data and lock them for the rest of the connection. */
+  fetchAndLockMembers: (
+    connection: Connection,
+    memberIds: Iterable<string>,
+  ) => Promisable<Array<{ id: string; email: string }>>;
+
+  /** Find enrollments for some members in some automations. */
+  findAutomationMemberEnrollments: (
+    connection: Connection,
+    automationIds: ReadonlyArray<string>,
+    memberIds: ReadonlyArray<string>,
+  ) => Promisable<Array<{ automation_id: string; member_id: string }>>;
+
   /** Find (and lock) a recipient with click tracking enabled. */
   findEmailRecipientForClick: (
     connection: Connection,
@@ -102,13 +115,6 @@ export type AutomationsRepository2<Connection> = {
 
   /** Get the count of all automations. */
   getNumberOfAutomations: (connection: Connection) => Promisable<number>;
-
-  /** Has this member ever entered this automation? */
-  hasMemberEnteredAutomation: (
-    connection: Connection,
-    automationId: string,
-    memberId: string,
-  ) => Promisable<boolean>;
 
   /** Increment the number of recipients that clicked this revision. */
   incrementEmailClickedCount: (connection: Connection, revisionId: string) => Promisable<void>;
@@ -152,12 +158,6 @@ export type AutomationsRepository2<Connection> = {
    * foreign-key lock deadlocks.
    */
   lockActionRevisions: (connection: Connection, revisionIds: Iterable<string>) => Promisable<void>;
-
-  /**
-   * Lock a member for the lifetime of this transaction. Useful to make sure a
-   * member doesn't change during an operation.
-   */
-  lockMember: (connection: Connection, memberId: string) => Promisable<void>;
 
   /** Lock recipients whose first open has not yet been recorded. */
   lockNotYetOpenedEmailRecipients: (

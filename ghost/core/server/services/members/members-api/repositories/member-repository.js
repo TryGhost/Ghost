@@ -308,7 +308,6 @@ module.exports = class MemberRepository {
       eventName: /** @type {const} */ ('paid_subscription_changed'),
       source: this._resolveContextSource(options.context || {}),
       memberId: member.id,
-      memberEmail: member.get('email'),
       memberStatus: member.get('status'),
       previousMemberStatus: previousStatus,
       memberTierIds: tierIds,
@@ -345,7 +344,6 @@ module.exports = class MemberRepository {
     bookshelfOptions,
   }) {
     const memberId = member.id;
-    const memberEmail = member.get('email');
     const memberTierIds = await getMemberTierIds(member, memberStatus, bookshelfOptions);
 
     await this.#notifyAutomations(
@@ -353,7 +351,6 @@ module.exports = class MemberRepository {
         eventName: 'membership_started',
         source: this._resolveContextSource(bookshelfOptions.context || {}),
         memberId,
-        memberEmail,
         memberStatus,
         previousMemberStatus,
         memberTierIds,
