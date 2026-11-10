@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { knownKeys } from './primitives';
 
 /**
- * One express-brute limiter's settings. defaults.json sets every key on every
- * block, except `lifetime` on `user_login`, where express-brute fills in its own.
+ * One limiter's settings. defaults.json sets every key on every block, except
+ * `lifetime` on `user_login`, where the limiter fills in its own.
  *
  * Strips unknown keys, as express-brute was only ever handed these four.
  */
@@ -35,7 +35,8 @@ export const spamLimiter = z.object({
     .min(0)
     .optional()
     .meta({
-      description: 'Seconds before a key with no further attempts is forgotten.',
+      description:
+        "Seconds a key's count lasts from its first request. Defaults to the sum of every wait from minWait up to maxWait.",
       examples: [3600, 43200],
     }),
 });

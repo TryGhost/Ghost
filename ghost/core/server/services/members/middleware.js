@@ -453,7 +453,10 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
 
   try {
     const member = await membersService.ssr.exchangeTokenForSession(req, res);
-    spamPrevention.membersAuth().reset(req.ip, `${member.email}login`);
+    spamPrevention
+      .membersAuth()
+      .reset({ ip: req.ip, key: spamPrevention.emailKey(member.email) })
+      .catch((err) => logging.error(err));
     // Note: don't reset 'member_login', or that would give an easy way around user enumeration by logging in to a manually created account
     const subscriptions = (member && member.subscriptions) || [];
 
