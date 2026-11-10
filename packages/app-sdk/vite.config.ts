@@ -103,6 +103,8 @@ const packageBuild = (): UserConfig => ({
         index: 'src/index.ts',
         // An app's backend, on any platform.
         backend: 'src/backend/index.ts',
+        // An app's tooling, in Node.
+        tooling: 'src/tooling/index.ts',
       },
       formats: ['es'],
       fileName: (_format, name) => `${name}.js`,
