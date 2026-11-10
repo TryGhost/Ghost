@@ -6,8 +6,11 @@ kind of leaf, or a shape. The blocks are explained in
 
 Adding a block leads the compiler to everything written per block of its kind.
 
-- **A text format**, in `TEXT_FORMATS`: its rule and messages in `TEXT_RULES`, and which
-  control it is typed into in Admin's `TEXT_CONTROL` and Portal's `TEXT_INPUT`.
+- **A text format**, in `TEXT_FORMATS`: its rule and messages in `TEXT_RULES`, which
+  control it is typed into in Admin's `TEXT_CONTROL` and Portal's `TEXT_INPUT`, and how
+  Admin's filter reads what staff type for it in `TEXT_FILTER`, such as a phone number in
+  the form the field keeps it. That reading reaches a field of the format on its own, not a
+  record's part: a record's parts share one text filter, which compares what was typed.
 - **A list**, in `LIST_SOURCES`: which keys it accepts in `LIST_RULES`, how Admin offers
   it and names a key in `memberCustomFieldChoiceLists`, and how Portal offers it in
   `LIST_OPTIONS`.

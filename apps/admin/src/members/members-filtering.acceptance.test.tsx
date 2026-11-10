@@ -131,6 +131,40 @@ describe('Members list', () => {
     );
   });
 
+  // A phone field keeps every number in E.164, so what staff type is compared in that form: a
+  // whole number as E.164, read in their own country unless it gives its code, and part of one
+  // without its spaces, brackets and dashes.
+  it('finds a phone number however it is written', async () => {
+    fakeMemberCustomFields([
+      {
+        namespace: CUSTOM_NAMESPACE,
+        key: KeySchema.parse('mobile'),
+        name: 'Mobile',
+        type: 'phone',
+        status: 'active',
+        access: { member: 'none' },
+        created_at: '2026-08-05T00:00:00.000Z',
+        updated_at: null,
+      },
+    ]);
+    const membersApi = fakeMembers([member()]);
+    await renderAdminApp('/members');
+
+    await membersScreen.openFilterField('Mobile');
+    const valueInput = page.getByRole('textbox', { name: 'Mobile value' });
+    await valueInput.fill('7946 0000');
+    await expect(membersApi).toHaveSentFilter(
+      "(metafields.identity:'custom.mobile'+metafields.value:~'79460000')",
+    );
+
+    await page.getByRole('button', { name: 'Mobile operator' }).click();
+    await membersScreen.menuItem(/^is$/).click();
+    await valueInput.fill('+44 (0)20 7946-0000');
+    await expect(membersApi).toHaveSentFilter(
+      "(metafields.identity:'custom.mobile'+metafields.value:'+442079460000')",
+    );
+  });
+
   it('filters a list field by the options picked, the way labels are', async () => {
     fakeMemberCustomFields([
       {
