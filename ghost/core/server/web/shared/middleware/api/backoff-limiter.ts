@@ -10,7 +10,7 @@ export interface BackoffOptions {
   freeRetries: number;
   minWait: number;
   maxWait: number;
-  /** Seconds. Defaults to long enough to reach maxWait. */
+  /** Seconds. Defaults to the sum of every wait, so the backoff can reach and serve maxWait. */
   lifetime?: number;
   /** What a request counts against, alongside its IP unless ignoreIP is set. */
   key?: (req: Request) => string | undefined;
@@ -96,8 +96,9 @@ export class BackoffLimiter {
     const minWait = Math.max(options.minWait, 1);
     const maxWait = Math.max(options.maxWait, 1);
     const delays = backoffDelays(minWait, maxWait);
+    // by default, just long enough to climb every wait back to back
     const lifetime = Math.max(
-      options.lifetime ?? Math.ceil((maxWait / 1000) * (delays.length + options.freeRetries)),
+      options.lifetime ?? Math.ceil(delays.reduce((sum, delay) => sum + delay, 0) / 1000),
       1,
     );
 
