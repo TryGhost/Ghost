@@ -22,6 +22,7 @@ import {
   type LeafKind,
   type LeafValues,
   type TextFormat,
+  type TextLeaf,
   type TypedSettings,
   type ValueOf,
   typesOfShape,
@@ -498,6 +499,44 @@ function readPhone(text: string, country?: string): { number: string } | { refus
 export function phoneNumberIn(text: string, country: string | undefined): string | undefined {
   const read = readPhone(text, country);
   return 'number' in read ? read.number : undefined;
+}
+
+/**
+ * What a phone field's filter looks for, so it finds a number held in E.164 however staff wrote
+ * it: a whole number in E.164, read as it is dialled in `country` unless it gives its code, and
+ * part of one as the digits written, with a + for a code written after one. Each is what it gives
+ * for itself too, as a filter is read back and looked for again.
+ */
+function phoneFilterText(typed: string, country: string | undefined): string {
+  const whole = phoneNumberIn(typed, country);
+  if (whole) {
+    return whole;
+  }
+  const digits = typed.replace(/\(0\)/g, '').replace(/[^\d+]/g, '');
+  // Nothing to look for: a filter that is only a + would find every number.
+  return /\d/.test(digits) ? digits : '';
+}
+
+/**
+ * How each text format reads what was typed into a filter, as its field holds its values, so a
+ * filter compares like with like: as typed, or for a phone number as `phoneFilterText` reads it.
+ */
+const TEXT_FILTER_TEXT: {
+  [F in TextFormat]: (typed: string, country: string | undefined) => string;
+} = {
+  line: (typed) => typed,
+  code: (typed) => typed,
+  long: (typed) => typed,
+  phone: phoneFilterText,
+};
+
+/**
+ * What a filter on a text leaf looks for, given what was typed and the country of whoever typed it:
+ * the text as the leaf's field holds it, so a phone field's filter finds `+442079460000` from
+ * `020 7946 0000` typed in the United Kingdom.
+ */
+export function filterTextFor(leaf: TextLeaf, typed: string, country: string | undefined): string {
+  return TEXT_FILTER_TEXT[leaf.format](typed, country);
 }
 
 /** What a refused phone number is told, for each reason `readPhone` gives. */
