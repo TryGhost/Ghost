@@ -8,7 +8,7 @@ const messages = {
   labelNotFound: 'Label not found.',
   labelAlreadyExists: 'Label already exists',
   labelUsedByAutomation:
-    'This label is used by an automation trigger. Remove it from the automation before deleting it.',
+    'This label is used by an automation. Remove it from the automation before deleting it.',
 };
 
 const ALLOWED_INCLUDES = ['count.members'];
@@ -155,7 +155,26 @@ const controller = {
         .knex('automation_trigger_rules')
         .where('label_id', frame.options.id)
         .first('id');
-      if (automationRule) {
+      // Conditions keep every past revision, so only the current one of a live action counts.
+      const automationCondition = await db
+        .knex('automation_condition_labels as condition_label')
+        .innerJoin(
+          'automation_action_revisions as revision',
+          'revision.id',
+          'condition_label.action_revision_id',
+        )
+        .innerJoin('automation_actions as action', 'action.id', 'revision.action_id')
+        .where('condition_label.label_id', frame.options.id)
+        .whereNull('action.deleted_at')
+        .where(
+          'revision.created_at',
+          db
+            .knex('automation_action_revisions')
+            .max('created_at')
+            .where('action_id', db.knex.ref('action.id')),
+        )
+        .first('condition_label.id');
+      if (automationRule || automationCondition) {
         throw new errors.ValidationError({ message: tpl(messages.labelUsedByAutomation) });
       }
       return models.Label.destroy({ ...frame.options, require: true });
