@@ -105,6 +105,7 @@ const packageBuild = (): UserConfig => ({
         backend: 'src/backend/index.ts',
         // An app's tooling, in Node.
         tooling: 'src/tooling/index.ts',
+        vite: 'src/vite/index.ts',
         bin: 'src/bin.ts',
       },
       formats: ['es'],
@@ -114,7 +115,7 @@ const packageBuild = (): UserConfig => ({
       // Node builtins stay imports, for the entry points that run in Node. The bundle tests fail
       // if the page or the backend reaches one, and lint requires the `node:` prefix, as Vite
       // stubs a builtin imported without it.
-      external: [/^node:/, /^(?:@quilted\/threads|commander|jose|zod)(?:\/|$)/],
+      external: [/^node:/, /^(?:@quilted\/threads|commander|jose|zod|vite)(?:\/|$)/],
       output: {
         sourcemapPathTransform: fromNodeModules,
         chunkFileNames: 'chunks/[name]-[hash].js',
