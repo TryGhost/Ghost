@@ -601,6 +601,7 @@ class MemberWelcomeEmailService {
    * @param {string[]} [options.tags]
    * @param {boolean} [options.trackOpens]
    * @param {string} [options.listUnsubscribe]
+   * @param {BulkMailer} [options.bulkMailer]
    * @returns {Promise<unknown>}
    */
   async #sendBulkEmail({
@@ -613,8 +614,9 @@ class MemberWelcomeEmailService {
     tags,
     trackOpens,
     listUnsubscribe,
+    bulkMailer = this.#bulkMailer,
   }) {
-    return await this.#bulkMailer.send(
+    return await bulkMailer.send(
       {
         subject,
         html,
@@ -717,12 +719,12 @@ class MemberWelcomeEmailService {
     });
   }
 
-  async sendAutomationEmail(options) {
+  async sendAutomationEmail(options, bulkMailer = this.#bulkMailer) {
     const message = await this.#prepareAutomationEmail(options);
     if (process.env.GHOST_BENCHMARK_AUTOMATIONS_DRAIN === '1') {
       return await this.#sendTransactionalEmail(message);
     }
-    return await this.#sendBulkEmail(message);
+    return await this.#sendBulkEmail({ ...message, bulkMailer });
   }
 
   async sendAutomationEmails(emails) {

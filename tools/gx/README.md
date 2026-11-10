@@ -111,6 +111,45 @@ Email steps use configured development mail transport.
 Automation and members remain in development database under `Drain benchmark
 <automation-id>` and member emails beginning `benchmark-<automation-id>-`.
 
+On the email batching spike branch, `--bulkSmoke baseline` and
+`--bulkSmoke batch` use a disposable database on local MySQL. They accept 2 to
+100,000 synthetic recipients and one `send_email` step. Both use the Mailgun client
+with dummy credentials and a fixed local fake API at port 4010. The API must
+forward to local Mailpit at port 8025. The baseline sends one request per
+recipient, while the batch sends one request for each group of up to 100. Each run
+reports queue drain time and verifies all recipients in Mailpit after the timer
+stops.
+
+The report includes the number of calls and the wall time with at least one
+operation in flight for rendering, database queries, and provider requests.
+These intervals can overlap. Summed operation times can exceed the drain time.
+
+Start the fake API from the [local email testing setup](../../docs/contributing/testing-email.md#capture-bulk-email-in-mailpit).
+On macOS, restrict the smoke process to the three local ports:
+
+```sh
+/usr/bin/sandbox-exec -p '(version 1) (allow default) (deny network-outbound) (allow network-outbound (remote ip "localhost:3306") (remote ip "localhost:4010") (remote ip "localhost:8025"))' \
+  pnpm gx benchmark automations-drain --numberOfRuns 100 --steps send_email --bulkSmoke baseline
+```
+
+For the batch run, replace `baseline` with `batch`. This prototype combines the
+already rendered fixture emails using recipient variables for the
+unsubscribe link. It does not benchmark rendering once per batch or cover
+arbitrary personalized content.
+
+For runs that exceed the default Mailpit retention limit of 500 messages, use a
+separate Mailpit instance with enough capacity for both runs. To use the
+benchmark inbox on port 18025, 28025, or 38025, point fake Mailgun at that inbox, set
+`AUTOMATION_SMOKE_MAILPIT_PORT` to its port, and allow that port in the sandbox
+profile. For large runs, configure the fake API to discard its in-memory copy of
+each request after accepting it. Mailpit retains the actual messages.
+
+Use `--numberOfRuns 2 --steps send_email --bulkSmoke worker` to exercise the
+normal automation worker. It stages two ready steps in the disposable database,
+dispatches the normal poll event, and verifies both steps finish with distinct
+Mailgun message IDs and both messages appear in Mailpit. Keep the same local
+fake Mailgun setup and network restriction.
+
 ## Recipient preparation benchmark
 
 Run `pnpm gx benchmark recipient-preparation [members] [concurrency]` to measure
