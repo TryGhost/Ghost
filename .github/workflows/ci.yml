@@ -2185,13 +2185,17 @@ jobs:
 
       - name: Pack public app artifacts
         run: |
-          tar -czf e2e-public-apps.tar.gz \
-            apps/portal/umd \
-            apps/comments-ui/umd \
-            apps/sodo-search/umd \
-            apps/signup-form/umd \
-            apps/announcement-bar/umd \
+          apps=(
+            apps/portal/umd
+            apps/comments-ui/umd
+            apps/sodo-search/umd
+            apps/signup-form/umd
+            apps/announcement-bar/umd
             apps/admin-toolbar/umd
+          )
+          # Nx cache restores keep the uploader's file modes; Ghost reads these as a non-root user
+          chmod -R u=rwX,go=rX "${apps[@]}"
+          tar -czf e2e-public-apps.tar.gz "${apps[@]}"
           ls -lh e2e-public-apps.tar.gz
 
       - name: Upload public app artifacts
