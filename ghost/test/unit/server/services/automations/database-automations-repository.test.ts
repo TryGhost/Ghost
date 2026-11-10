@@ -100,6 +100,7 @@ const createDatabase = async (): Promise<Knex> => {
     table.text('scope');
     table.text('product_id');
     table.text('direction');
+    table.text('label_id');
     table.dateTime('created_at').notNullable();
   });
 
