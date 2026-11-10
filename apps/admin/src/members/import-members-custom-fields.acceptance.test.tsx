@@ -630,6 +630,37 @@ describe('Import members custom fields', () => {
     await expect.element(createForm()).not.toBeInTheDocument();
   });
 
+  // Put away before its answer, the form would leave a refusal nowhere to show, and a second
+  // Enter would send a second create for the same name.
+  it('can be neither put away nor saved again from the moment it saves', async () => {
+    const fields: MemberCustomField[] = [];
+    fakeCustomFieldsWorld();
+    fakeMemberCustomFields(() => fields);
+    let release = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    // Released however the test ends, as a save left in flight would fail the tests after it.
+    onTestFinished(() => release());
+    const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', async () => {
+      await held;
+      fields.push(NICKNAME_FIELD);
+      return { members_metafields: [NICKNAME_FIELD] };
+    });
+    await renderAdminApp('/members');
+    await openMappingStep();
+
+    await openCreateForm('nickname');
+    // Straight after Enter, before the request has said it is under way.
+    await userEvent.keyboard('{Enter}{Enter}{Escape}');
+    await expect.element(createForm().getByRole('button', { name: 'Saving' })).toBeDisabled();
+
+    release();
+    await expect.element(createForm()).not.toBeInTheDocument();
+    await expect.element(fieldSelect('nickname')).toHaveTextContent('Nickname');
+    expect(createApi.requests).toHaveLength(1);
+  });
+
   it('pins a name the site already uses to the name input', async () => {
     fakeCustomFieldsWorld();
     fakeAdminEndpoint(

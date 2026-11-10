@@ -13,6 +13,7 @@ import {
   TypeField,
 } from '@/shared/member-custom-fields/custom-field-form';
 import { ListField } from '@/shared/member-custom-fields/list-settings';
+import type { CreateAttempt } from '@/shared/member-custom-fields/use-custom-field-create-attempt';
 import { matchShape, type SetSettings } from '@tryghost/metafield-types/structure';
 import { type RefObject, useState } from 'react';
 import type {
@@ -43,17 +44,10 @@ interface CreateCustomFieldPopoverProps {
   types: CreatableMemberCustomFieldTypes;
   // The request in flight and what came back of it. Owned by the place, which runs the create:
   // this asks for a field and shows what it is told, and knows nothing about how either happens.
-  isSaving: boolean;
-  // On the name input, for a refusal the publisher can fix by typing.
-  nameError: string | null;
-  // Below the form, for one they cannot.
-  saveError: string | null;
-  // False once a refusal cannot be argued with, such as a site at its field ceiling, so the
-  // button stops inviting the same doomed request.
-  canRetry: boolean;
+  attempt: CreateAttempt;
   onSubmit: (field: NewMemberCustomField) => void;
-  // Editing answers the last refusal: it was about what was there before. Not called once
-  // canRetry is false, since no edit answers a ceiling or a permission.
+  // Editing answers the last refusal: it was about what was there before. Not called once a
+  // refusal can't be retried, since no edit answers a ceiling or a permission.
   onEdit: () => void;
   onCancel: () => void;
   testId: string;
@@ -81,15 +75,17 @@ export function CreateCustomFieldPopover({
   initialName,
   suggestList,
   types,
-  isSaving,
-  nameError,
-  saveError,
-  canRetry,
+  attempt,
   onSubmit,
   onEdit,
   onCancel,
   testId,
 }: CreateCustomFieldPopoverProps) {
+  const isSaving = attempt.state === 'saving';
+  const refusal = attempt.state === 'refused' ? attempt : null;
+  const nameError = refusal?.on === 'name' ? refusal.message : null;
+  const saveError = refusal?.on === 'form' ? refusal.message : null;
+  const canRetry = refusal?.canRetry ?? true;
   const [suggestion] = useState(() => suggestList?.());
   // What a list made here starts from, whenever List is chosen.
   const suggestedList = suggestion?.kind === 'list' ? suggestion.settings : undefined;
