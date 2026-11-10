@@ -32,8 +32,52 @@ const changedPaidRule = (
   direction,
 });
 
+const firstLabel = '64b6f7b7c8f1a2b3c4d5e6fa';
+const secondLabel = '64b6f7b7c8f1a2b3c4d5e6fb';
+const labelFilter = (
+  operator: 'has_any' | 'has_all' | 'has_none',
+  labelId: string,
+  triggerType: AutomationTriggerRuleDefinition['trigger_type'] = 'free_signup',
+): AutomationTriggerRuleDefinition => ({
+  trigger_type: triggerType,
+  scope: 'specific_label',
+  product_id: null,
+  direction: null,
+  operator,
+  label_id: labelId,
+});
+
 const validCases = [
   { name: 'one free signup', rules: [freeRule] },
+  { name: 'free signup with one label', rules: [freeRule, labelFilter('has_any', firstLabel)] },
+  {
+    name: 'free signup with included and excluded labels',
+    rules: [freeRule, labelFilter('has_any', firstLabel), labelFilter('has_none', secondLabel)],
+  },
+  {
+    name: 'free signup with two labels the member must have',
+    rules: [freeRule, labelFilter('has_all', firstLabel), labelFilter('has_all', secondLabel)],
+  },
+  {
+    name: 'label filters listed before the trigger',
+    rules: [labelFilter('has_none', firstLabel), labelFilter('has_none', secondLabel), freeRule],
+  },
+  {
+    name: 'specific paid tiers with a label',
+    rules: [
+      specificPaidRule(firstTier),
+      specificPaidRule(secondTier),
+      labelFilter('has_any', firstLabel, 'paid_subscription_started'),
+    ],
+  },
+  {
+    name: 'a tier change with a label',
+    rules: [
+      changedPaidRule('from', firstTier),
+      changedPaidRule('to', secondTier),
+      labelFilter('has_none', firstLabel, 'paid_subscription_changed'),
+    ],
+  },
   { name: 'one any-paid-tier signup', rules: [anyPaidRule] },
   { name: 'one specific paid tier', rules: [specificPaidRule(firstTier)] },
   {
@@ -53,6 +97,19 @@ describe('areTriggerRulesValid', () => {
 
   it.each([
     { name: 'no rules', rules: [] },
+    { name: 'only label filters', rules: [labelFilter('has_any', firstLabel)] },
+    {
+      name: 'the same label twice',
+      rules: [freeRule, labelFilter('has_any', firstLabel), labelFilter('has_any', firstLabel)],
+    },
+    {
+      name: 'a label both included and excluded',
+      rules: [freeRule, labelFilter('has_any', firstLabel), labelFilter('has_none', firstLabel)],
+    },
+    {
+      name: 'a label filter for a different trigger type',
+      rules: [freeRule, labelFilter('has_any', firstLabel, 'paid_subscription_started')],
+    },
     { name: 'multiple free signups', rules: [freeRule, { ...freeRule }] },
     { name: 'multiple any-paid-tier signups', rules: [anyPaidRule, { ...anyPaidRule }] },
     { name: 'free then any paid', rules: [freeRule, anyPaidRule] },

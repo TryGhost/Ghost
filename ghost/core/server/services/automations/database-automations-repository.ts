@@ -1,6 +1,7 @@
 import {
   automationTriggerRuleSchema,
   automationTriggerRuleDefinitionSchema,
+  splitTriggerRules,
   type AutomationTriggerRule,
   type AutomationTriggerRuleDefinition,
 } from './trigger-rules';
@@ -377,6 +378,8 @@ export function createDatabaseAutomationsRepository({
           }
         }
 
+        await assertTriggerLabelsExist(trx, data.trigger_rules);
+
         const now = new Date();
         const automation: AutomationRow = {
           id: ObjectId().toHexString(),
@@ -450,6 +453,8 @@ export function createDatabaseAutomationsRepository({
             });
           }
         }
+
+        await assertTriggerLabelsExist(trx, triggerRules);
 
         const updatedAutomation = await updateAutomation(trx, {
           ...automation,
@@ -1074,7 +1079,17 @@ async function getRulesByAutomation(
   }
 
   const rules = await trx('automation_trigger_rules')
-    .select('id', 'automation_id', 'created_at', 'trigger_type', 'scope', 'product_id', 'direction')
+    .select(
+      'id',
+      'automation_id',
+      'created_at',
+      'trigger_type',
+      'scope',
+      'product_id',
+      'direction',
+      'operator',
+      'label_id',
+    )
     .whereIn('automation_id', automationIds);
   for (const rule of rules) {
     result.get(rule.automation_id).push(automationTriggerRuleSchema.parse(rule));
@@ -1336,6 +1351,24 @@ async function updateStep(
     .where('locked_by', step.locked_by);
   /* eslint-enable camelcase */
   return changes >= 1;
+}
+
+async function assertTriggerLabelsExist(
+  trx: Knex.Transaction,
+  rules: readonly AutomationTriggerRuleDefinition[],
+): Promise<void> {
+  const labelIds = splitTriggerRules(rules).labelFilters.map((rule) => rule.label_id);
+  if (labelIds.length === 0) {
+    return;
+  }
+  // Lock the labels so they aren't deleted while we're saving.
+  const labels = await trx('labels').select('id').whereIn('id', labelIds).orderBy('id').forUpdate();
+  if (labels.length !== labelIds.length) {
+    throw new errors.ValidationError({
+      message: 'Trigger labels must all exist.',
+      property: 'trigger_rules',
+    });
+  }
 }
 
 async function loadAutomation(
@@ -1734,9 +1767,9 @@ async function buildAutomation(
   const edgeRows = await repository2.loadEdgeRows(trx, automation.id);
   const rules = (
     await trx('automation_trigger_rules')
-      .select('trigger_type', 'scope', 'product_id', 'direction')
+      .select('trigger_type', 'scope', 'product_id', 'direction', 'operator', 'label_id')
       .where('automation_id', automation.id)
-      .orderBy(['product_id', 'direction'])
+      .orderBy(['product_id', 'direction', 'operator', 'label_id'])
   ).map((rule) => automationTriggerRuleDefinitionSchema.parse(rule));
 
   if (rules.length === 0) {

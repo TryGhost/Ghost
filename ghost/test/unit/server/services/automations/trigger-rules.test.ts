@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import {
   automationTriggerRuleDefinitionSchema,
   buildTriggerRuleRows,
+  doLabelsMatchFilters,
+  splitTriggerRules,
 } from '../../../../../core/server/services/automations/trigger-rules';
 
 const automationId = '64b6f7b7c8f1a2b3c4d5e6f7';
@@ -128,4 +130,153 @@ describe('automationTriggerRuleDefinitionSchema', () => {
       ).toBe(false);
     },
   );
+});
+
+describe('label filter rules', function () {
+  const labelId = '64b6f7b7c8f1a2b3c4d5e6fa';
+  const labelFilter = {
+    trigger_type: 'free_signup',
+    scope: 'specific_label',
+    product_id: null,
+    direction: null,
+    operator: 'has_any',
+    label_id: labelId,
+  } as const;
+  const freeRule = {
+    trigger_type: 'free_signup',
+    scope: null,
+    product_id: null,
+    direction: null,
+  } as const;
+
+  it.each(['free_signup', 'paid_subscription_started', 'paid_subscription_changed'])(
+    'accepts a label filter on %s',
+    (trigger_type) => {
+      expect(automationTriggerRuleDefinitionSchema.parse({ ...labelFilter, trigger_type })).toEqual(
+        { ...labelFilter, trigger_type },
+      );
+    },
+  );
+
+  it.each([
+    { name: 'no operator', rule: { ...labelFilter, operator: null } },
+    { name: 'an unknown operator', rule: { ...labelFilter, operator: 'has_most' } },
+    { name: 'no label', rule: { ...labelFilter, label_id: null } },
+    { name: 'an invalid label ID', rule: { ...labelFilter, label_id: 'invalid' } },
+    { name: 'a product', rule: { ...labelFilter, product_id: labelId } },
+    { name: 'a direction', rule: { ...labelFilter, direction: 'to' } },
+  ])('rejects a label filter with $name', ({ rule }) => {
+    expect(automationTriggerRuleDefinitionSchema.safeParse(rule).success).toBe(false);
+  });
+
+  it('drops the label columns from stored event rules', function () {
+    expect(
+      automationTriggerRuleDefinitionSchema.parse({ ...freeRule, operator: null, label_id: null }),
+    ).toEqual(freeRule);
+  });
+
+  it('splits event rules from label filters', function () {
+    expect(splitTriggerRules([labelFilter, freeRule])).toEqual({
+      eventRules: [freeRule],
+      labelFilters: [labelFilter],
+    });
+  });
+
+  it.each([
+    { name: 'no filters', filters: [], labels: [], expected: true },
+    {
+      name: 'one required label the member has',
+      filters: [['has_any', 'a']],
+      labels: ['a'],
+      expected: true,
+    },
+    {
+      name: 'one required label the member lacks',
+      filters: [['has_any', 'a']],
+      labels: ['b'],
+      expected: false,
+    },
+    {
+      name: 'any of two required labels',
+      filters: [
+        ['has_any', 'a'],
+        ['has_any', 'b'],
+      ],
+      labels: ['b'],
+      expected: true,
+    },
+    {
+      name: 'none of two required labels',
+      filters: [
+        ['has_any', 'a'],
+        ['has_any', 'b'],
+      ],
+      labels: [],
+      expected: false,
+    },
+    {
+      name: 'every label of two the member must have',
+      filters: [
+        ['has_all', 'a'],
+        ['has_all', 'b'],
+      ],
+      labels: ['a', 'b', 'c'],
+      expected: true,
+    },
+    {
+      name: 'only one label of two the member must have',
+      filters: [
+        ['has_all', 'a'],
+        ['has_all', 'b'],
+      ],
+      labels: ['a'],
+      expected: false,
+    },
+    {
+      name: 'an excluded label the member lacks',
+      filters: [['has_none', 'a']],
+      labels: ['b'],
+      expected: true,
+    },
+    {
+      name: 'an excluded label the member has',
+      filters: [['has_none', 'a']],
+      labels: ['a'],
+      expected: false,
+    },
+    {
+      name: 'one of two excluded labels',
+      filters: [
+        ['has_none', 'a'],
+        ['has_none', 'b'],
+      ],
+      labels: ['b'],
+      expected: false,
+    },
+    {
+      name: 'a required label and no excluded label',
+      filters: [
+        ['has_any', 'a'],
+        ['has_none', 'b'],
+      ],
+      labels: ['a'],
+      expected: true,
+    },
+    {
+      name: 'a required label and an excluded label',
+      filters: [
+        ['has_any', 'a'],
+        ['has_none', 'b'],
+      ],
+      labels: ['a', 'b'],
+      expected: false,
+    },
+  ] as const)('matches labels against filters: $name', ({ filters, labels, expected }) => {
+    expect(
+      doLabelsMatchFilters(
+        new Set(labels),
+        filters.map(([operator, label_id]) => ({ operator, label_id })),
+      ),
+    ).toBe(expected);
+  });
 });

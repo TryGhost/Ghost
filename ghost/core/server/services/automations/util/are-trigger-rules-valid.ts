@@ -1,20 +1,28 @@
 import errors from '@tryghost/errors';
 import type { ReadonlyDeep } from 'type-fest';
-import type { AutomationTriggerRuleDefinition } from '../trigger-rules';
+import { splitTriggerRules } from '../trigger-rules';
+import type {
+  AutomationEventRuleDefinition,
+  AutomationLabelFilterRuleDefinition,
+  AutomationTriggerRuleDefinition,
+} from '../trigger-rules';
 
-type TriggerType = AutomationTriggerRuleDefinition['trigger_type'];
+type TriggerType = AutomationEventRuleDefinition['trigger_type'];
 
-const isEveryScopeTheSame = (rules: ReadonlyDeep<AutomationTriggerRuleDefinition[]>): boolean =>
+const isEveryScopeTheSame = (rules: ReadonlyDeep<AutomationEventRuleDefinition[]>): boolean =>
   new Set(rules.map((rule) => rule.scope)).size === 1;
 
-const hasUniqueProducts = (rules: ReadonlyDeep<AutomationTriggerRuleDefinition[]>): boolean =>
+const hasUniqueProducts = (rules: ReadonlyDeep<AutomationEventRuleDefinition[]>): boolean =>
   new Set(rules.map((rule) => rule.product_id)).size === rules.length;
+
+const hasUniqueLabels = (rules: ReadonlyDeep<AutomationLabelFilterRuleDefinition[]>): boolean =>
+  new Set(rules.map((rule) => rule.label_id)).size === rules.length;
 
 const typeSpecificValidators: Record<
   TriggerType,
   (
-    firstRule: ReadonlyDeep<AutomationTriggerRuleDefinition>,
-    rules: ReadonlyDeep<AutomationTriggerRuleDefinition[]>,
+    firstRule: ReadonlyDeep<AutomationEventRuleDefinition>,
+    rules: ReadonlyDeep<AutomationEventRuleDefinition[]>,
   ) => boolean
 > = {
   free_signup: (_firstRule, rules) => rules.length === 1,
@@ -38,8 +46,8 @@ const typeSpecificValidators: Record<
   },
 
   paid_subscription_changed: (_firstRule, rules) => {
-    const froms: AutomationTriggerRuleDefinition[] = [];
-    const tos: AutomationTriggerRuleDefinition[] = [];
+    const froms: AutomationEventRuleDefinition[] = [];
+    const tos: AutomationEventRuleDefinition[] = [];
     for (const rule of rules) {
       switch (rule.direction) {
         case 'from':
@@ -122,7 +130,9 @@ const typeSpecificValidators: Record<
 export const areTriggerRulesValid = (
   rules: readonly AutomationTriggerRuleDefinition[],
 ): boolean => {
-  const [firstRule] = rules;
+  const { eventRules, labelFilters } = splitTriggerRules(rules);
+
+  const [firstRule] = eventRules;
   if (!firstRule) {
     return false;
   }
@@ -134,6 +144,10 @@ export const areTriggerRulesValid = (
     return false;
   }
 
+  if (!hasUniqueLabels(labelFilters)) {
+    return false;
+  }
+
   if (!Object.hasOwn(typeSpecificValidators, firstRule.trigger_type)) {
     throw new errors.InternalServerError({
       message: `Unexpected automation trigger rule type: ${firstRule.trigger_type}`,
@@ -141,5 +155,5 @@ export const areTriggerRulesValid = (
   }
 
   const typeSpecificValidator = typeSpecificValidators[firstRule.trigger_type];
-  return typeSpecificValidator(firstRule, rules);
+  return typeSpecificValidator(firstRule, eventRules);
 };

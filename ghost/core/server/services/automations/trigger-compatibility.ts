@@ -1,5 +1,6 @@
 import errors from '@tryghost/errors';
 import type { AutomationTriggerTierData } from './automations-repository';
+import { splitTriggerRules } from './trigger-rules';
 import type { AutomationTriggerRuleDefinition } from './trigger-rules';
 
 /**
@@ -45,8 +46,9 @@ export function legacyTriggerToRules(
  * `trigger_tier_ids` style. This will soon be removed; see NY-1746.
  */
 export function rulesToLegacyTrigger(
-  rules: readonly AutomationTriggerRuleDefinition[],
+  allRules: readonly AutomationTriggerRuleDefinition[],
 ): AutomationTriggerTierData {
+  const rules = splitTriggerRules(allRules).eventRules;
   if (rules.length === 0) {
     throw new errors.InternalServerError({
       message: 'Cannot translate automation trigger rules: no rules provided.',

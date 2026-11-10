@@ -96,7 +96,7 @@ const triggerRulesSchema = z
   .max(MAX_TRIGGER_RULES)
   .refine(areTriggerRulesValid, {
     error:
-      'Trigger rules must use one trigger type and scope, with unique product IDs for specific paid tiers and exactly one rule otherwise.',
+      'Trigger rules must use one trigger type and scope, with unique product IDs for specific paid tiers and exactly one rule otherwise. Label filters must use unique labels.',
   });
 
 // This will be removed soon, when we stop accepting the legacy format. See NY-1746.

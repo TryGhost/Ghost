@@ -6,7 +6,18 @@ import { DbDate } from '../../lib/db-types/date';
 import { ObjectIdSchema } from '../../lib/db-types/object-id';
 import type { AutomationTriggerTierScope } from './automations-repository-2';
 
-export const automationTriggerRuleDefinitionSchema = z.discriminatedUnion('trigger_type', [
+const labelFilterRuleDefinitionSchema = z.object({
+  trigger_type: z.enum(['free_signup', 'paid_subscription_started', 'paid_subscription_changed']),
+  scope: z.literal('specific_label'),
+  product_id: z.null(),
+  direction: z.null(),
+  operator: z.enum(['has_any', 'has_all', 'has_none']),
+  label_id: ObjectIdSchema,
+});
+
+export type AutomationLabelFilterRuleDefinition = z.infer<typeof labelFilterRuleDefinitionSchema>;
+
+const eventRuleDefinitionSchema = z.discriminatedUnion('trigger_type', [
   z.object({
     trigger_type: z.literal('free_signup'),
     scope: z.null(),
@@ -49,7 +60,53 @@ export const automationTriggerRuleDefinitionSchema = z.discriminatedUnion('trigg
   ]),
 ]);
 
+export type AutomationEventRuleDefinition = z.infer<typeof eventRuleDefinitionSchema>;
+
+export const automationTriggerRuleDefinitionSchema = z.union([
+  eventRuleDefinitionSchema,
+  labelFilterRuleDefinitionSchema,
+]);
+
 export type AutomationTriggerRuleDefinition = z.infer<typeof automationTriggerRuleDefinitionSchema>;
+
+type LabelFilterOf<RuleT> = Extract<RuleT, { operator: string }>;
+type EventRuleOf<RuleT> = Exclude<RuleT, { operator: string }>;
+
+export const isLabelFilterRule = <RuleT extends AutomationTriggerRuleDefinition>(
+  rule: RuleT,
+): rule is LabelFilterOf<RuleT> => 'operator' in rule;
+
+export const splitTriggerRules = <RuleT extends AutomationTriggerRuleDefinition>(
+  rules: readonly RuleT[],
+): {
+  eventRules: EventRuleOf<RuleT>[];
+  labelFilters: LabelFilterOf<RuleT>[];
+} => {
+  const eventRules: EventRuleOf<RuleT>[] = [];
+  const labelFilters: LabelFilterOf<RuleT>[] = [];
+  for (const rule of rules) {
+    if (isLabelFilterRule(rule)) {
+      labelFilters.push(rule);
+    } else {
+      eventRules.push(rule as EventRuleOf<RuleT>);
+    }
+  }
+  return { eventRules, labelFilters };
+};
+
+export const doLabelsMatchFilters = (
+  memberLabelIds: ReadonlySet<string>,
+  labelFilters: readonly Pick<AutomationLabelFilterRuleDefinition, 'operator' | 'label_id'>[],
+): boolean => {
+  const hasLabel = (filter: (typeof labelFilters)[number]) => memberLabelIds.has(filter.label_id);
+  const anyOf = labelFilters.filter((filter) => filter.operator === 'has_any');
+  const allOf = labelFilters.filter((filter) => filter.operator === 'has_all');
+  const noneOf = labelFilters.filter((filter) => filter.operator === 'has_none');
+  if (anyOf.length > 0 && !anyOf.some(hasLabel)) {
+    return false;
+  }
+  return allOf.every(hasLabel) && !noneOf.some(hasLabel);
+};
 
 export const automationTriggerRuleSchema = automationTriggerRuleDefinitionSchema.and(
   z.object({

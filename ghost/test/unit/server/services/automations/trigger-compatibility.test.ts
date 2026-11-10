@@ -44,6 +44,27 @@ describe('automation API trigger compatibility', () => {
     );
   });
 
+  it('ignores label filters when translating to the legacy trigger', () => {
+    expect(
+      rulesToLegacyTrigger([
+        {
+          trigger_type: 'paid_subscription_started',
+          scope: 'any_paid_tier',
+          product_id: null,
+          direction: null,
+        },
+        {
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_label',
+          product_id: null,
+          direction: null,
+          operator: 'has_any',
+          label_id: tierIds[0],
+        },
+      ]),
+    ).toEqual({ trigger_tier_scope: 'all_paid', trigger_tier_ids: null });
+  });
+
   for (const { legacy, rules } of cases) {
     it(`round-trips ${legacy.trigger_tier_scope}`, () => {
       const translated = legacyTriggerToRules(legacy);
