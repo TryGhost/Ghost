@@ -338,28 +338,31 @@ export default defineConfig({ plugins: [ghostApp(), cloudflare()] });
 
 In `vite dev`, the plugin creates the development keys if there are none, and
 serves `/ghost-app.json` signed for the address it's requested at: a name for
-the machine on the dev server's port, or a tunnel named by the `tunnelUrl`
-option or `GHOST_APP_TUNNEL_URL` (comma-separated). It refuses any other host
-with a 421, so the dev server never signs a manifest for someone else's address.
-Ghost in Docker reaches the machine through `host.docker.internal` with the
-original Host, which counts as the machine. It prints the app at a name of its
-own under `.localhost`, from the last part of its ID, such as
+this machine, such as `localhost`, `127.0.0.1` or any `.localhost` name, or a
+tunnel named by the `tunnelUrl` option or `GHOST_APP_TUNNEL_URL`
+(comma-separated). It refuses any other host with a 421, so the dev server never
+signs a manifest for someone else's address. Ghost in Docker reaches the machine
+through `host.docker.internal` with the original Host, which counts as the
+machine. It prints the app at a name of its own under `.localhost`, from the
+last part of its ID, such as
 `http://hello-world.localhost:<port>/ghost-app.json` for
 `org.ghost.hello-world`, as Ghost on `localhost` refuses an app on its own host
 on any port. It prints the install link too, for `GHOST_URL` or
 `http://localhost:2368`.
 
 The dev server is for development only. The plugin adds `.ghost-app/`,
-`.dev.vars*`, `.env` and `.env.*` to Vite's `server.fs.deny`, and refuses to start with
-`server.fs.strict` off, which would make Vite skip that list. Like Vite's own
+`.dev.vars*`, `.env` and `.env.*` to Vite's `server.fs.deny`. Like Vite's own
 `.env` protection, the list matches files by name: a link or alias you make to
-the keys elsewhere in the project is served like any other file.
+the keys elsewhere in the project is served like any other file. Keep the keys
+out of `publicDir`, which Vite serves and copies into the build as it is.
 
 In a Cloudflare Workers project (one with a `wrangler.json`, `wrangler.jsonc`
 or `wrangler.toml`), it adds `GHOST_APP_BACKEND_KEY` to `.dev.vars` with the
 development backend key, so the Worker answers challenges in development as it
-does in production. It never changes a value that's already there, says so when
-it differs, and writes nothing unless git ignores `.dev.vars`.
+does in production. It leaves a `.dev.vars` that already names the variable as
+it is. Wrangler reads `.env` only when there's no `.dev.vars`, so in a project
+with a `.env` and no `.dev.vars`, it asks you to add the key to `.env` instead.
+Git must ignore whichever file holds it.
 
 In `vite build`, it signs `ghost-app.json` for `GHOST_APP_URL`, the app's public
 address (the manifest is at `<GHOST_APP_URL>/ghost-app.json`), with the
