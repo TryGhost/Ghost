@@ -1,11 +1,14 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
+const db = require('../../data/db');
 const { restrictAdminApiQueryOptions } = require('./utils/api-filter-utils');
 
 const messages = {
   labelNotFound: 'Label not found.',
   labelAlreadyExists: 'Label already exists',
+  labelUsedByAutomation:
+    'This label is used by an automation trigger. Remove it from the automation before deleting it.',
 };
 
 const ALLOWED_INCLUDES = ['count.members'];
@@ -147,7 +150,14 @@ const controller = {
       },
     },
     permissions: true,
-    query(frame) {
+    async query(frame) {
+      const automationRule = await db
+        .knex('automation_trigger_rules')
+        .where('label_id', frame.options.id)
+        .first('id');
+      if (automationRule) {
+        throw new errors.ValidationError({ message: tpl(messages.labelUsedByAutomation) });
+      }
       return models.Label.destroy({ ...frame.options, require: true });
     },
   },
