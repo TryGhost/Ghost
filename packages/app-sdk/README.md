@@ -1,10 +1,18 @@
 # @tryghost/app-sdk
 
-The SDK apps use to talk to Ghost from inside Admin.
+The SDK apps use to talk to Ghost: from their page inside Admin, and from their
+backend.
 
 An app's page runs in a frame inside Ghost Admin. The SDK connects it to Admin,
 gives it the site, the user and the theme, and lets it call the Admin API, keep
 its route in sync with Admin's URL, and send the publisher elsewhere in Admin.
+
+| Entry point                 | Runs in                    | What it's for                                                        |
+| --------------------------- | -------------------------- | -------------------------------------------------------------------- |
+| `@tryghost/app-sdk`         | The app's page             | Talking to Admin (below)                                             |
+| `@tryghost/app-sdk/backend` | Any platform with web APIs | [Answering Ghost's challenge and serving the manifest](#the-backend) |
+
+The page's entry point loads none of the backend's code.
 
 > **Alpha.** CI publishes each change to npm as the next `0.1.0-alpha.N` under
 > the `latest` tag. Alphas make no compatibility promise.
@@ -29,7 +37,8 @@ ES module with everything inlined:
 ```
 
 With a bundler, install the package. It includes the types and code it uses
-from Ghost's contracts, so its only dependency is `@quilted/threads`:
+from Ghost's contracts. The page needs only `@quilted/threads`, and the backend
+adds `jose` and `zod`:
 
 ```sh
 pnpm add @tryghost/app-sdk
@@ -251,24 +260,51 @@ documents in a row, each replaced within three seconds of starting. A publisher
 clicking quickly through more than five pages of a multi-page app would trip it
 too.
 
-## Who can frame the page
+## The backend
 
-The SDK talks to whichever window frames the page. It can't know a site's Admin
-origin in advance, so if any site can frame the page, any site can fool it: send
-it a start context of its choosing, and answer every `fetch` itself. No Ghost
-credential is ever in the page. But whatever the publisher types into the page
-is exposed, and the app acts on whatever responses it gets.
+`@tryghost/app-sdk/backend` uses only `Request`, `Response`, `fetch` and
+WebCrypto, so the same code runs on Cloudflare Workers, Node, Bun and Deno, and
+in frameworks such as Hono. Configuration is passed in.
 
-Serve app pages with a `frame-ancestors` Content Security Policy that names the
-Ghost Admin origins of the sites using the app, so nothing else can frame them:
+`withGhostApp` is the app's backend. It answers Ghost's challenge itself and
+passes every other request to `fetch`. It returns `{ fetch }`, so a Worker
+exports it as it is, reading its configuration from `cloudflare:workers`:
 
-```http
-Content-Security-Policy: frame-ancestors https://site.example
+```ts
+import { env } from 'cloudflare:workers';
+import { withGhostApp } from '@tryghost/app-sdk/backend';
+
+export default withGhostApp({
+  backendKey: env.GHOST_APP_BACKEND_KEY,
+  fetch: (request) => env.ASSETS.fetch(request),
+});
 ```
 
-Admin is usually on the site's own origin, or on a separate Admin domain when
-the site has one. An app installed on many sites can build the list from its
-own record of where it is installed.
+It takes `handleChallenge`'s options and `fetch`, which gets whatever else the
+platform passes too, such as a Worker's `env` and `ctx`. Frameworks that route
+requests themselves, such as Hono, use `handleChallenge` directly.
+
+| Export                                              | What it does                                                                                                                                                                                                                                                                                                   |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `withGhostApp({ backendKey, fetch })`               | The app's backend, as `{ fetch }`: answers the challenge at `CHALLENGE_PATH` with `handleChallenge`, and passes every other request to `fetch`.                                                                                                                                                                |
+| `handleChallenge(request, { backendKey, origin? })` | Answers Ghost's challenge, posted to `CHALLENGE_PATH`, with the backend key: a private JWK, or its JSON as a secret holds it. `405` for any method but `POST`, `413` past 4 KB, `400` for anything that isn't a challenge for `origin` when it's given, or else `request.url`'s origin, `200` with the answer. |
+| `serveManifest(signed)`                             | A response for the signed manifest, for a backend that doesn't serve it as a file. Caches must revalidate it, so a new manifest reaches Ghost the next time it reads it.                                                                                                                                       |
+
+`handleChallenge` refuses a challenge for any origin but the one the platform
+reports in `request.url`, so pass the request as the platform hands it over,
+never one rebuilt from `X-Forwarded-Host`. A server that doesn't see the public
+scheme and host, such as Node behind a proxy that terminates TLS, passes the
+app's public origin as `origin` (`https://app.example.com`), from its own
+configuration, never from a request's headers. Workers don't need it.
+
+## Who can frame the page
+
+The SDK talks to whichever window frames the page, and can't yet tell whether
+it's Ghost Admin. A site that frames the page can send it a start context of
+its choosing and answer every `fetch` itself. No Ghost credential is ever in the
+page, but whatever the publisher types into the page reaches that site, and the
+app acts on the responses it gets. Ghost will close this by vouching for the
+site and the staff user to the app's backend.
 
 ## Serve only the app from its origin
 
@@ -295,9 +331,10 @@ This is a workspace package in the Ghost monorepo. From the package directory:
 
 ```bash
 pnpm build   # the package to build/ and the browser bundle to dist/, with Vite
-pnpm test    # type-check + unit tests (jsdom, with a fake Admin on a real MessageChannel),
-             # which build both afresh to check what they import, and pack build/ and dist/
-             # to use them from an app outside the workspace (after pnpm build; Nx runs it)
+pnpm test    # type-check + unit tests (jsdom for the page, with a fake Admin on a real
+             # MessageChannel; Node for the backend), which build both
+             # afresh to check what they import, and pack build/ and dist/ to use them from an
+             # app outside the workspace (after pnpm build; Nx runs it)
 pnpm lint    # lint source and tests
 ```
 
@@ -307,14 +344,19 @@ and also writes `dist/`, which is in `files` and in the Nx build outputs.
 
 It uses `@tryghost/app-contracts` for the bridge's message types, limits and
 shape checks, so the SDK and Admin apply the same rules to paths, themes and
-start contexts. It imports only the contracts' root entry point, which doesn't
-load `zod`, and the build inlines what it uses into the SDK, so the contracts
-are a dev dependency:
+start contexts, and for answering challenges, so the backend applies Ghost's
+own rules. The build inlines what it uses
+into the SDK, so the contracts are a dev dependency. `build/` has an ES module
+per entry point, which share chunks:
 
-- `build/index.js` imports only `@quilted/threads`;
-- `build/index.d.ts`, emitted by TypeScript 7 and bundled by
-  `rolldown-plugin-dts`, imports nothing;
+- `index.js` loads only `@quilted/threads`, never `jose`, `zod` or a Node
+  builtin;
+- `backend.js` loads only `jose` and `zod`, and no Node builtin;
+- each entry point's declarations, emitted by TypeScript 7 and bundled by
+  `rolldown-plugin-dts`, import nothing;
 - `dist/` imports nothing at all.
 
-`test/bundle.test.ts` checks this on a fresh build. The build fails if the code
-imports a Node builtin, which Vite would otherwise replace with an empty stub.
+`test/bundle.test.ts` checks this on a fresh build. The build keeps `node:`
+imports as imports, so a builtin the page or the backend reaches shows up there.
+Lint requires the `node:` prefix, as Vite replaces a builtin imported without it
+with an empty stub.

@@ -1,12 +1,9 @@
 // @vitest-environment node
 import { readFileSync } from 'node:fs';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
 import ts from 'typescript';
-import { build, parseAst } from 'vite';
+import { parseAst } from 'vite';
 import { describe, expect, inject, it } from 'vitest';
 
 // Built from the source under test by `test/build.ts`.
@@ -47,35 +44,34 @@ function importsOf(file: string): string[] {
     });
 }
 
+/**
+ * Everything a module loads, following its imports of the package's own chunks, by specifier.
+ * Only imports of other packages and builtins are listed.
+ */
+function reachableImports(file: string, seen = new Set<string>()): Set<string> {
+  const found = new Set<string>();
+  if (seen.has(file)) {
+    return found;
+  }
+  seen.add(file);
+  for (const specifier of importsOf(file)) {
+    if (specifier.startsWith('.')) {
+      for (const inner of reachableImports(join(dirname(file), specifier), seen)) {
+        found.add(inner);
+      }
+    } else {
+      found.add(specifier);
+    }
+  }
+  return found;
+}
+
 function exportsOf(file: string): string[] {
   return [...nodes(parseAst(readFileSync(file, 'utf8')))]
     .filter((node) => node.type === 'ExportSpecifier')
     .map((node) => (node as unknown as { exported: { name: string } }).exported.name)
     .sort();
 }
-
-describe('the build', () => {
-  // Vite would stub the builtin out, and the module would break the page that loaded it.
-  it.each(['package', 'production'])('refuses a Node builtin, in %s mode', async (mode) => {
-    const directory = await mkdtemp(join(tmpdir(), 'app-sdk-'));
-    const entry = join(directory, 'entry.js');
-    await writeFile(
-      entry,
-      "import { randomUUID } from 'node:crypto';\nexport const id = randomUUID();\n",
-    );
-    try {
-      const building = build({
-        root: fileURLToPath(new URL('..', import.meta.url)),
-        mode,
-        logLevel: 'silent',
-        build: { write: false, lib: { entry, formats: ['es'] } },
-      });
-      await expect(building).rejects.toThrow('node:crypto, a Node builtin no page can load');
-    } finally {
-      await rm(directory, { recursive: true, force: true });
-    }
-  });
-});
 
 describe('the browser bundle', () => {
   const bundle = join(built.bundle, 'app-sdk.js');
@@ -92,59 +88,86 @@ describe('the browser bundle', () => {
 });
 
 describe('the package', () => {
-  const code = join(built.package, 'index.js');
-  const declarations = join(built.package, 'index.d.ts');
+  const code = (entry: string) => join(built.package, `${entry}.js`);
+  const declarations = (entry: string) => join(built.package, `${entry}.d.ts`);
 
-  // An app installs the SDK with only @quilted/threads: the parts of the contracts it uses
-  // are inlined.
-  it('imports @quilted/threads and nothing else', () => {
-    expect(new Set(importsOf(code))).toEqual(new Set(['@quilted/threads']));
+  // An app installs the SDK with only its dependencies: the parts of the contracts it uses are
+  // inlined. The page's SDK loads none of jose, zod or the contracts' validation, and a
+  // backend no Node builtin, so it runs on any platform.
+  it.each([
+    ['index', ['@quilted/threads']],
+    ['backend', ['jose', 'zod']],
+  ])('%s.js loads only %j, through every chunk it imports', (entry, packages) => {
+    expect(reachableImports(code(entry))).toEqual(new Set(packages));
   });
 
-  it('exports connect and its error', () => {
-    expect(exportsOf(code)).toEqual(['GhostAppError', 'connect']);
+  it("keeps the page's SDK free of the contracts' validation", () => {
+    const loaded = [...reachableImports(code('index'))].join();
+    expect(loaded).not.toMatch(/jose|zod|node:/);
   });
 
-  it('declares its types without importing or referring to any other package', () => {
-    const source = ts.createSourceFile(
-      declarations,
-      readFileSync(declarations, 'utf8'),
-      ts.ScriptTarget.ES2022,
-    );
-    const imports: string[] = [];
-    const visit = (node: ts.Node) => {
-      if ((ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) && node.moduleSpecifier) {
-        imports.push(node.moduleSpecifier.getText(source));
-      } else if (ts.isImportTypeNode(node)) {
-        imports.push(node.argument.getText(source));
-      }
-      ts.forEachChild(node, visit);
-    };
-    visit(source);
-
-    expect(imports).toEqual([]);
-    expect(source.referencedFiles).toEqual([]);
-    expect(source.typeReferenceDirectives).toEqual([]);
+  it.each([
+    ['index', ['GhostAppError', 'connect']],
+    [
+      'backend',
+      ['CHALLENGE_PATH', 'MANIFEST_PATH', 'handleChallenge', 'serveManifest', 'withGhostApp'],
+    ],
+  ])('%s.js exports %j', (entry, names) => {
+    expect(exportsOf(code(entry))).toEqual(names);
   });
+
+  it.each([
+    ['index', []],
+    ['backend', []],
+  ])(
+    '%s.d.ts declares its types without importing or referring to any other package but %j',
+    (entry, expected) => {
+      // The package's own declaration chunks, which entry points share, are followed.
+      const imports: string[] = [];
+      const seen = new Set<string>();
+      const read = (file: string) => {
+        if (seen.has(file)) {
+          return;
+        }
+        seen.add(file);
+        const source = ts.createSourceFile(
+          file,
+          readFileSync(file, 'utf8'),
+          ts.ScriptTarget.ES2022,
+        );
+        const visit = (node: ts.Node) => {
+          let specifier: string | undefined;
+          if (
+            (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
+            node.moduleSpecifier
+          ) {
+            specifier = node.moduleSpecifier.getText(source);
+          } else if (ts.isImportTypeNode(node)) {
+            specifier = node.argument.getText(source);
+          }
+          const own = specifier && /^["']\.\/(.*)\.js["']$/.exec(specifier);
+          if (own) {
+            read(join(dirname(file), `${own[1]}.d.ts`));
+          } else if (specifier) {
+            imports.push(specifier);
+          }
+          ts.forEachChild(node, visit);
+        };
+        visit(source);
+        expect(source.referencedFiles).toEqual([]);
+        expect(source.typeReferenceDirectives).toEqual([]);
+      };
+      read(declarations(entry));
+
+      expect(imports).toEqual(expected);
+    },
+  );
 
   // Type-checking against the DOM lib is quick locally, but can time out on a CPU-constrained
-  // CI runner.
-  it('declares every type it exports, with nothing missing', { timeout: 60_000 }, () => {
-    const program = ts.createProgram([declarations], {
-      strict: true,
-      noEmit: true,
-      types: [],
-      lib: ['lib.es2022.d.ts', 'lib.dom.d.ts'],
-    });
-    const diagnostics = ts
-      .getPreEmitDiagnostics(program)
-      .map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
-    expect(diagnostics).toEqual([]);
-
-    const checker = program.getTypeChecker();
-    const module = checker.getSymbolAtLocation(program.getSourceFile(declarations) as ts.Node);
-    const exported = checker.getExportsOfModule(module as ts.Symbol).map((symbol) => symbol.name);
-    expect(exported.sort()).toEqual(
+  // CI runner. A backend's platform has the same web standards as a page.
+  it.each([
+    [
+      'index',
       [
         'ConnectOptions',
         'Ghost',
@@ -161,7 +184,47 @@ describe('the package', () => {
         'Unsubscribe',
         'User',
         'connect',
-      ].sort(),
-    );
-  });
+      ],
+    ],
+    [
+      'backend',
+      [
+        'BackendKey',
+        'CHALLENGE_PATH',
+        'FetchHandler',
+        'GhostAppOptions',
+        'HandleChallengeOptions',
+        'MANIFEST_PATH',
+        'SignedManifest',
+        'handleChallenge',
+        'serveManifest',
+        'withGhostApp',
+      ],
+    ],
+  ])(
+    'declares every type %s exports, with nothing missing',
+    { timeout: 60_000 },
+    (entry, expected) => {
+      const file = declarations(entry);
+      const program = ts.createProgram([file], {
+        strict: true,
+        noEmit: true,
+        types: [],
+        lib: ['lib.es2022.d.ts', 'lib.dom.d.ts'],
+      });
+      const diagnostics = ts
+        .getPreEmitDiagnostics(program)
+        .map((diagnostic) => ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
+      expect(diagnostics).toEqual([]);
+
+      if (expected) {
+        const checker = program.getTypeChecker();
+        const module = checker.getSymbolAtLocation(program.getSourceFile(file) as ts.Node);
+        const exported = checker
+          .getExportsOfModule(module as ts.Symbol)
+          .map((symbol) => symbol.name);
+        expect(exported.sort()).toEqual([...expected].sort());
+      }
+    },
+  );
 });
