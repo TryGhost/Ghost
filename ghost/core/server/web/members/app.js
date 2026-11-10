@@ -60,8 +60,12 @@ module.exports = function setupMembersApp() {
   // A member's own account. Its routes and how they authenticate live together.
   membersApp.use('/api/member', accountRoutes());
 
-  membersApp.post('/api/member/email', bodyParser.json({ limit: '50mb' }), (req, res, next) =>
-    membersService.api.middleware.updateEmailAddress(req, res, next),
+  membersApp.post(
+    '/api/member/email',
+    bodyParser.json({ limit: '50mb' }),
+    middleware.loadIdentityTokenMember,
+    shared.middleware.rateLimiting.memberEmailUpdateLimiter,
+    (req, res, next) => membersService.api.middleware.updateEmailAddress(req, res, next),
   );
 
   // Member offers (retention etc.)

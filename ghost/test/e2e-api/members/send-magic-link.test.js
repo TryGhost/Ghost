@@ -7,6 +7,7 @@ const {
   resetRateLimits,
   dbUtils,
 } = require('../../utils/e2e-framework');
+const jwt = require('jsonwebtoken');
 const sinon = require('sinon');
 const { mockSystemTime } = require('../../utils/clock-utils');
 const assert = require('node:assert/strict');
@@ -571,6 +572,95 @@ describe('sendMagicLink', function () {
 
     afterEach(function () {
       clock.restore();
+    });
+
+    it('Will rate limit email changes per member across IP addresses', async function () {
+      const sendLimit = configUtils.config.get('spam').member_email_update.freeRetries + 1;
+      const member = await membersService.api.members.create({
+        email: 'email-change-limit@test.com',
+      });
+      const otherMember = await membersService.api.members.create({
+        email: 'email-change-other@test.com',
+      });
+
+      const changeEmail = async (changingMember, i, ip, status) => {
+        const identity = await membersService.api.getMemberIdentityToken(
+          changingMember.get('transient_id'),
+        );
+        await membersAgent
+          .post('/api/member/email/')
+          .header('X-Forwarded-For', ip)
+          .body({ email: `new-address-${i}@test.com`, identity })
+          .expectStatus(status);
+      };
+
+      for (let i = 0; i < sendLimit; i++) {
+        await changeEmail(member, i, `10.0.0.${i + 1}`, 201);
+      }
+
+      // A new IP address and recipient do not get the same member a new budget
+      await changeEmail(member, sendLimit, '10.0.1.1', 429);
+
+      await changeEmail(otherMember, 0, '10.0.0.1', 201);
+    });
+
+    it('Will keep a member email change budget across a completed email change', async function () {
+      const sendLimit = configUtils.config.get('spam').member_email_update.freeRetries + 1;
+      const member = await membersService.api.members.create({
+        email: 'email-change-before@test.com',
+      });
+      const alias = 'email-change-after@test.com';
+
+      const changeEmail = async (email, status) => {
+        const current = await membersService.api.members.get({ id: member.id });
+        const identity = await membersService.api.getMemberIdentityToken(
+          current.get('transient_id'),
+        );
+        await membersAgent
+          .post('/api/member/email/')
+          .body({ email, identity })
+          .expectStatus(status);
+      };
+
+      for (let i = 0; i < sendLimit - 1; i++) {
+        await changeEmail(`email-change-victim-${i}@test.com`, 201);
+      }
+      await changeEmail(alias, 201);
+
+      // Confirm the change to the alias with the link the endpoint emails
+      const link = await membersService.api.getMagicLink(alias, 'updateEmail', {
+        oldEmail: member.get('email'),
+      });
+      const token = new URL(link).searchParams.get('token');
+      await membersService.api.getMemberDataFromMagicLinkToken(token);
+
+      const changed = await membersService.api.members.get({ id: member.id });
+      assert.equal(changed.get('email'), alias);
+
+      // A token for the new email is the same member, with the same spent budget
+      await changeEmail('email-change-victim-next@test.com', 429);
+    });
+
+    it('Will not let forged identity tokens spend a member email change budget', async function () {
+      const sendLimit = configUtils.config.get('spam').member_email_update.freeRetries + 1;
+      const member = await membersService.api.members.create({
+        email: 'email-change-forged@test.com',
+      });
+      const forged = jwt.sign({ sub: member.get('email') }, 'not-the-site-key');
+
+      for (let i = 0; i <= sendLimit; i++) {
+        await membersAgent
+          .post('/api/member/email/')
+          .header('X-Forwarded-For', `10.0.2.${i + 1}`)
+          .body({ email: `forged-address-${i}@test.com`, identity: forged })
+          .expectStatus(401);
+      }
+
+      const identity = await membersService.api.getMemberIdentityToken(member.get('transient_id'));
+      await membersAgent
+        .post('/api/member/email/')
+        .body({ email: 'forged-address-real@test.com', identity })
+        .expectStatus(201);
     });
 
     it('Will rate limit member enumeration', async function () {

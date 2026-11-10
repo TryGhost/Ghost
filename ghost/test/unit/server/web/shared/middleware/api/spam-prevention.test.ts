@@ -14,6 +14,7 @@ type FactoryName =
   | 'upgradeBlock'
   | 'upgradeApiBlock'
   | 'staffInviteBlock'
+  | 'memberEmailUpdateBlock'
   | 'globalBlock'
   | 'globalReset'
   | 'userLogin'
@@ -42,6 +43,7 @@ const factories: Array<{
   { name: 'upgradeBlock', configKey: 'upgrade_block', ignoreIP: true },
   { name: 'upgradeApiBlock', configKey: 'upgrade_api_block' },
   { name: 'staffInviteBlock', configKey: 'staff_invite_block', ignoreIP: true },
+  { name: 'memberEmailUpdateBlock', configKey: 'member_email_update', ignoreIP: true },
   { name: 'globalBlock', configKey: 'global_block' },
   { name: 'globalReset', configKey: 'global_reset' },
   { name: 'userLogin', configKey: 'user_login' },
@@ -194,5 +196,15 @@ describe('Spam Prevention', function () {
     }
     assert.equal(spamPrevention.emailKey(' Foo@Example.com '), 'foo@example.com');
     assert.equal(spamPrevention.emailKey(undefined), undefined);
+  });
+
+  it('keys member email changes only on a verified member id', function () {
+    const key = (req: object) => build('memberEmailUpdateBlock').options.key?.(req as never);
+    const forged = { body: { identity: 'header.eyJzdWIiOiJtZW1iZXJAZXhhbXBsZS5jb20ifQ.sig' } };
+
+    assert.equal(key({ identityTokenMemberId: 'member-id' }), 'member-id');
+    assert.equal(key({ identityTokenMemberId: null }), undefined);
+    assert.equal(key(forged), undefined);
+    assert.equal(spamPrevention.memberIdentityKey(forged as never), undefined);
   });
 });

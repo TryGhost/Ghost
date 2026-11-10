@@ -123,6 +123,12 @@
             "maxWait": 60000,
             "lifetime": 60
         },
+        "member_email_update": {
+            "freeRetries": 4,
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600
+        },
         "email_preview_block": {
             "minWait": 360000,
             "maxWait": 360000,
