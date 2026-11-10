@@ -1180,17 +1180,6 @@ Using subscrip",
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
-
-Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
-
-Ghost takes 0% payment fees, so everything you make is yours to keep!
-
-Using subscriptions, you can build an independent media business like Stratechery, The Information, or The Browser.
-
-The creator economy is just getting started, and Ghost allows you to build something based on technology that you own and control.
-
-Most successful subscription businesses publish a mix of free and paid posts to attract a new audience, and upsell the most loyal members to a premium offering. You can also mix different access levels within the same post, showing a free preview to logged out members and then, right when you're ready for a cliffhanger, that's a good time to...",
       "primary_author": Object {
         "bio": "You can delete this user to remove all the welcome posts",
         "bluesky": null,
@@ -2249,7 +2238,7 @@ exports[`Posts Content API Can filter posts by authors 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "public, max-age=0",
-  "content-length": "102695",
+  "content-length": "101589",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -3017,17 +3006,6 @@ Using subscrip",
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
-
-Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
-
-Ghost takes 0% payment fees, so everything you make is yours to keep!
-
-Using subscriptions, you can build an independent media business like Stratechery, The Information, or The Browser.
-
-The creator economy is just getting started, and Ghost allows you to build something based on technology that you own and control.
-
-Most successful subscription businesses publish a mix of free and paid posts to attract a new audience, and upsell the most loyal members to a premium offering. You can also mix different access levels within the same post, showing a free preview to logged out members and then, right when you're ready for a cliffhanger, that's a good time to...",
       "primary_author": Object {
         "bio": "You can delete this user to remove all the welcome posts",
         "bluesky": null,
@@ -4058,7 +4036,7 @@ exports[`Posts Content API Can include relations 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "public, max-age=0",
-  "content-length": "115694",
+  "content-length": "114588",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -4391,17 +4369,6 @@ Using subscrip",
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
-
-Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
-
-Ghost takes 0% payment fees, so everything you make is yours to keep!
-
-Using subscriptions, you can build an independent media business like Stratechery, The Information, or The Browser.
-
-The creator economy is just getting started, and Ghost allows you to build something based on technology that you own and control.
-
-Most successful subscription businesses publish a mix of free and paid posts to attract a new audience, and upsell the most loyal members to a premium offering. You can also mix different access levels within the same post, showing a free preview to logged out members and then, right when you're ready for a cliffhanger, that's a good time to...",
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "reading_time": 1,
       "slug": "sell",
@@ -5048,7 +5015,7 @@ exports[`Posts Content API Can request posts 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "public, max-age=0",
-  "content-length": "89691",
+  "content-length": "88585",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -5256,17 +5223,6 @@ Using subscrip",
       "og_description": null,
       "og_image": null,
       "og_title": null,
-      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
-
-Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
-
-Ghost takes 0% payment fees, so everything you make is yours to keep!
-
-Using subscriptions, you can build an independent media business like Stratechery, The Information, or The Browser.
-
-The creator economy is just getting started, and Ghost allows you to build something based on technology that you own and control.
-
-Most successful subscription businesses publish a mix of free and paid posts to attract a new audience, and upsell the most loyal members to a premium offering. You can also mix different access levels within the same post, showing a free preview to logged out members and then, right when you're ready for a cliffhanger, that's a good time to...",
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "reading_time": 1,
       "slug": "sell",
@@ -5913,7 +5869,7 @@ exports[`Posts Content API Can request posts from different origin 2: [headers] 
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "public, max-age=0",
-  "content-length": "89691",
+  "content-length": "88585",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -5961,7 +5917,13 @@ Object {
       "excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
     },
     Object {
-      "excerpt": "",
+      "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
+
+Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
+
+Ghost takes 0% payment fees, so everything you make is yours to keep!
+
+Using subscrip",
     },
     Object {
       "excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
@@ -6342,7 +6304,17 @@ Social networks go in and out of fashion all the time. Email addresses are timel
 Growing your audience is valuable no matter what type of site you run, but if your content is your business, then you might also be interested in setting up premium subscriptions.",
     },
     Object {
-      "plaintext": "",
+      "plaintext": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
+
+Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
+
+Ghost takes 0% payment fees, so everything you make is yours to keep!
+
+Using subscriptions, you can build an independent media business like Stratechery, The Information, or The Browser.
+
+The creator economy is just getting started, and Ghost allows you to build something based on technology that you own and control.
+
+Most successful subscription businesses publish a mix of free and paid posts to attract a new audience, and upsell the most loyal members to a premium offering. You can also mix different access levels within the same post, showing a free preview to logged out members and then, right when you're ready for a cliffhanger, that's a good time to...",
     },
     Object {
       "plaintext": "As you grow, you'll probably want to start inviting team members and collaborators to your site. Ghost has a number of different user roles for your team:
@@ -6950,7 +6922,13 @@ Object {
       "custom_excerpt": null,
       "custom_template": null,
       "email_subject": null,
-      "excerpt": "",
+      "excerpt": "For creators and aspiring entrepreneurs looking to generate a sustainable recurring revenue stream from their creative work, Ghost has built-in payments allowing you to create a subscription commerce business.
+
+Connect your Stripe account to Ghost, and you'll be able to quickly and easily create monthly and yearly premium plans for members to subscribe to, as well as complimentary plans for friends and family.
+
+Ghost takes 0% payment fees, so everything you make is yours to keep!
+
+Using subscrip",
       "feature_image": "https://static.ghost.org/v4.0.0/images/organizing-your-content.png",
       "feature_image_alt": null,
       "feature_image_caption": null,
