@@ -34,6 +34,7 @@ const messages = {
 
 const TABLE = 'rate_limits';
 const CLEANUP_INTERVAL = 60 * 60 * 1000;
+const CLEANUP_BATCH = 500;
 
 let databaseFactory: LimiterFactory | undefined;
 let cleanupTimer: NodeJS.Timeout | undefined;
@@ -59,8 +60,38 @@ const memoryFactory: LimiterFactory = (options) => new RateLimiterMemory(options
 // required late, as before: loading db builds the knex instance
 const getDb = (): typeof import('../../../../data/db') => require('../../../../data/db');
 
-/** Deletes expired rows from every limiter. Runs hourly once a database limiter exists. */
-const clearExpired = () => getDb().knex(TABLE).where('expire', '<', Date.now()).del();
+/**
+ * Deletes expired rows from every limiter. Runs hourly once a database limiter exists.
+ *
+ * Reads the keys first, then deletes by primary key, so it locks rows in the
+ * same order as a limiter's upsert. A DELETE ranging over the expire index
+ * deadlocks with an upsert resetting the same expired row.
+ */
+const clearExpired = async () => {
+  const { knex } = getDb();
+
+  for (;;) {
+    const now = Date.now();
+    const keys: string[] = await knex(TABLE)
+      .where('expire', '<', now)
+      .limit(CLEANUP_BATCH)
+      .pluck('key');
+
+    if (keys.length === 0) {
+      return;
+    }
+
+    // MySQL may still pick the expire index for a short key list; the hint is a comment to SQLite
+    await knex.raw(
+      `DELETE /*+ NO_INDEX(${TABLE} ${TABLE}_expire_index) */ FROM ?? WHERE ?? IN (${keys.map(() => '?').join(', ')}) AND ?? < ?`,
+      [TABLE, 'key', ...keys, 'expire', now],
+    );
+
+    if (keys.length < CLEANUP_BATCH) {
+      return;
+    }
+  }
+};
 
 /**
  * Limiters over the `rate_limits` table, built lazily because loading db builds
