@@ -12,8 +12,11 @@ const {
   unsubscribePlaceholder,
 } = require('./automation-first-name-template');
 
+/** @import { memoize } from '../../../shared/memoize' */
+
 const REPLACEMENT_REGEX = /%%\{(\w+?)(?:,? *"(.*?)")?\}%%/g;
 const UNMATCHED_TOKEN_REGEX = /%%\{.*?\}%%/g;
+const FINALIZED_EMAIL_CACHE_SIZE = 25;
 
 class MemberWelcomeEmailRenderer {
   #wrapperTemplate;
@@ -21,6 +24,7 @@ class MemberWelcomeEmailRenderer {
   #urlUtils;
   #linkTracking;
   #renderLexical;
+  #finalizeEmailRender;
 
   /**
    * @param {object} deps
@@ -31,6 +35,7 @@ class MemberWelcomeEmailRenderer {
    * @param {{addAutomationTrackingToUrl: (url: URL, automationActionRevisionId: string, automationRunStepId: string, memberUuid: string) => Promise<URL>}} deps.linkTracking
    * @param {(handlebars: object, labs: object, t: Function) => void} deps.registerHelpers
    * @param {(lexical: string, options: {target: 'email', design: object}) => Promise<string>} deps.renderLexical
+   * @param {typeof memoize} deps.memoize
    * @param {(name: 'baseStyles' | 'contentStyles' | 'cardStyles' | 'styles' | 'emailWrapper' | 'wrapper') => string} deps.readTemplate
    */
   constructor({
@@ -41,12 +46,17 @@ class MemberWelcomeEmailRenderer {
     linkTracking,
     registerHelpers,
     renderLexical,
+    memoize,
     readTemplate,
   }) {
     this.#dir = dir;
     this.#urlUtils = urlUtils;
     this.#linkTracking = linkTracking;
     this.#renderLexical = renderLexical;
+    // Cache finished emails so repeated sends avoid slow CSS inlining; each member's unsubscribe link is added afterward.
+    this.#finalizeEmailRender = memoize(finalize, (html) => html, {
+      max: FINALIZED_EMAIL_CACHE_SIZE,
+    });
     this.Handlebars = require('handlebars').create();
     registerHelpers(this.Handlebars, labs, t);
     for (const partial of ['baseStyles', 'contentStyles', 'cardStyles', 'styles', 'emailWrapper']) {
@@ -293,7 +303,8 @@ class MemberWelcomeEmailRenderer {
       },
     });
 
-    let { html: inlinedHtml, plaintext: text } = finalize(html);
+    let { html: inlinedHtml, plaintext: text } =
+      unsubscribeUrl || firstNameSlots ? this.#finalizeEmailRender(html) : finalize(html);
 
     if (unsubscribeUrl) {
       const escapedUrl = escapeUnsubscribeHref(unsubscribeUrl);
