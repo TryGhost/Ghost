@@ -228,6 +228,40 @@ describe('Checkout settings', () => {
     await expect.element(form.getByRole('button', { name: 'Save' })).toBeDisabled();
   });
 
+  // As in the CSV import: a fault's own wording is for whoever investigates it, not for the form.
+  it('says something clear when the site fails to save a new field for a reason it did not expect', async () => {
+    fakeAdminEndpoint(
+      'POST',
+      '/members/metafields/custom/',
+      {
+        errors: [
+          {
+            message: 'ER_LOCK_DEADLOCK: Deadlock found when trying to get lock',
+            type: 'InternalServerError',
+          },
+        ],
+      },
+      { status: 500 },
+    );
+    const { modal } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+    });
+
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    await modal.getByRole('combobox', { name: 'Save phone as' }).click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    const form = page.getByRole('dialog', { name: 'New custom field' });
+    await userEvent.fill(form.getByLabelText('Name'), 'Contact phone');
+    await form.getByRole('button', { name: 'Save' }).click();
+
+    await expect
+      .element(form.getByRole('alert'))
+      .toHaveTextContent('An unexpected error occurred, please try again.');
+    expect(form.getByText(/ER_LOCK_DEADLOCK/).all()).toHaveLength(0);
+  });
+
   // Each save gets its own answer: the last attempt's refusal goes as the next save starts, rather
   // than sitting under "Saving" or beside the new answer.
   it('shows only the latest refusal when a new field is saved again', async () => {

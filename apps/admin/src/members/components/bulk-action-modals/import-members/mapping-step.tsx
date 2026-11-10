@@ -12,12 +12,12 @@ import {
 } from '@tryghost/shade/components';
 import { CreateCustomFieldPopover } from '@/shared/member-custom-fields/create-custom-field-popover';
 import {
-  type NewMemberCustomField,
   memberCustomFieldCsvColumns,
   useCreatableMemberCustomFieldTypes,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { matchShape } from '@tryghost/metafield-types/structure';
 import { useCustomFieldCreateAttempt } from '@/shared/member-custom-fields/use-custom-field-create-attempt';
+import type { CustomFieldValues } from '@/shared/member-custom-fields/custom-field-values';
 import { FieldPicker } from '@/members/components/bulk-action-modals/import-members/field-picker';
 import { LabelPicker } from '@/members/label-picker';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
@@ -196,8 +196,8 @@ export function MappingStep({
 
   // The whole create, from asking to what its answer means for the row. Named rather than
   // inlined into the form's prop: it is the step's business end, not markup.
-  const createFieldForRow = async (rowKey: string, newField: NewMemberCustomField) => {
-    const field = await create(newField);
+  const createFieldForRow = async (rowKey: string, values: CustomFieldValues) => {
+    const field = await create(values);
     if (!field) {
       return;
     }
@@ -547,10 +547,10 @@ export function MappingStep({
                     closeCreateForm();
                   }}
                   onEdit={resetCreate}
-                  onSubmit={(newField) => {
+                  onSubmit={(values) => {
                     // Against null, as the popover's open is: a blank header is the column ''.
                     if (createFieldForColumn !== null) {
-                      void createFieldForRow(createFieldForColumn, newField);
+                      void createFieldForRow(createFieldForColumn, values);
                     }
                   }}
                 />
