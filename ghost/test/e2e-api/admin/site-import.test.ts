@@ -11,6 +11,8 @@ const { ZipArchive } = require('archiver');
 const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-framework');
 const configUtils = require('../../utils/config-utils');
 const models = require('../../../core/server/models');
+const adapterManager = require('../../../core/server/services/adapter-manager').default;
+const urlUtils = require('../../../core/shared/url-utils').default;
 
 // What a user sees of a site content import: the request is accepted, an email
 // reports the outcome, and the content is there. Runs as production would, so
@@ -80,6 +82,11 @@ describe('Site content import', function () {
     mockManager.assert.sentEmailCount(1);
   }
 
+  async function readStored(type: 'images' | 'media' | 'files', url: string) {
+    const storage = adapterManager.getAdapter(`storage:${type}`);
+    return storage.read({ path: storage.urlToPath(urlUtils.transformReadyToAbsolute(url)) });
+  }
+
   async function findPost(slug: string) {
     const post = await models.Post.findOne({ slug }, { context: { internal: true } });
     assert.ok(post, `expected the import to create the post "${slug}"`);
@@ -138,5 +145,69 @@ describe('Site content import', function () {
 
     const post = await findPost(slug);
     assert.match(post.get('feature_image'), new RegExp(`${slug}.*\\.png$`));
+  });
+
+  it('imports images from a site export into image storage', async function () {
+    const slug = `site-export-image-${crypto.randomUUID()}`;
+    const imagePath = `content/images/2026/11/${slug}.png`;
+    const imageBytes = await fs.readFile(
+      path.join(__dirname, '../../utils/fixtures/images/ghost-logo.png'),
+    );
+    const content = JSON.stringify({
+      db: [
+        {
+          meta: { version: '5.0.0' },
+          data: {
+            posts: [
+              { title: 'With an image', slug, status: 'draft', feature_image: `/${imagePath}` },
+            ],
+          },
+        },
+      ],
+    });
+    await importFile(
+      await archive('site-export-image.zip', { 'export.json': content, [imagePath]: imageBytes }),
+    );
+
+    const post = await findPost(slug);
+    const featureImage = post.get('feature_image');
+    assert.match(featureImage, new RegExp(`/content/images/2026/11/${slug}.*\\.png$`));
+    assert.deepEqual(await readStored('images', featureImage), imageBytes);
+  });
+
+  it('imports media and files from a site export into their own storage', async function () {
+    const slug = `site-export-assets-${crypto.randomUUID()}`;
+    const mediaPath = `content/media/2026/11/${slug}.mp4`;
+    const filePath = `content/files/2026/11/${slug}.pdf`;
+    const mediaBytes = await fs.readFile(
+      path.join(__dirname, '../../utils/fixtures/media/sample_640x360.mp4'),
+    );
+    const fileBytes = await fs.readFile(
+      path.join(__dirname, '../../utils/fixtures/files/test.pdf'),
+    );
+    const html = `<p><a href="/${mediaPath}">Video</a> <a href="/${filePath}">File</a></p>`;
+    const content = JSON.stringify({
+      db: [
+        {
+          meta: { version: '5.0.0' },
+          data: { posts: [{ title: 'With assets', slug, status: 'draft', html }] },
+        },
+      ],
+    });
+    await importFile(
+      await archive('site-export-assets.zip', {
+        'export.json': content,
+        [mediaPath]: mediaBytes,
+        [filePath]: fileBytes,
+      }),
+    );
+
+    const post = await findPost(slug);
+    const mediaUrl = post.get('html').match(/[^"]*\/content\/media\/[^"]+\.mp4/)?.[0];
+    const fileUrl = post.get('html').match(/[^"]*\/content\/files\/[^"]+\.pdf/)?.[0];
+    assert.ok(mediaUrl, `expected a media URL in ${post.get('html')}`);
+    assert.ok(fileUrl, `expected a file URL in ${post.get('html')}`);
+    assert.deepEqual(await readStored('media', mediaUrl), mediaBytes);
+    assert.deepEqual(await readStored('files', fileUrl), fileBytes);
   });
 });

@@ -8,6 +8,7 @@ const tpl = require('@tryghost/tpl');
 const debug = require('@tryghost/debug')('import-manager');
 const errors = require('@tryghost/errors');
 const ImportArchive = require('./import-archive').default;
+const { routeContentFiles } = require('./content-file-routing');
 const ContentImportJob = require('./jobs/content-import-job').default;
 
 const { emailTemplate } = require('./email-template');
@@ -205,8 +206,18 @@ class ImportManager {
     this.isValidZip(zipDirectory);
     const baseDir = this.getBaseDirectory(zipDirectory);
 
+    const handlerFiles = new Map(
+      this.handlers.map((handler) => [handler, this.getFilesFromZip(handler, zipDirectory)]),
+    );
+    const contentHandlers = this.handlers.filter((handler) => handler.directories?.length);
+    const routed = routeContentFiles(
+      contentHandlers.map((handler) => ({ type: handler.type, files: handlerFiles.get(handler) })),
+      baseDir,
+    );
+    contentHandlers.forEach((handler, index) => handlerFiles.set(handler, routed[index].files));
+
     for (const handler of this.handlers) {
-      const files = this.getFilesFromZip(handler, zipDirectory);
+      const files = handlerFiles.get(handler);
 
       debug('handler', handler.type, files);
 
