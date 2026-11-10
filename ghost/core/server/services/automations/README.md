@@ -15,6 +15,10 @@ Mailgun request when their rendered content matches after substituting the
 recipient's unsubscribe link. Each recipient has a distinct Message-Id, and
 each run is recorded and advanced separately. Retries are sent individually.
 
+A supported first-name token in paragraph text can share a render per poll.
+The renderer falls back to per-recipient rendering for personalized subjects,
+tokens in URLs, and links that need per-run click tracking.
+
 ## Where to look
 
 - [`automations-api.ts`](automations-api.ts) handles reads, edits, validation, and event notifications. Edits require one path with no branches or loops.

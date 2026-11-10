@@ -104,4 +104,42 @@ describe('sendAutomationEmailGroups', function () {
       'three@example.invalid',
     ]);
   });
+
+  it('batches first-name variants separately for each action revision', async function () {
+    const emails = ['Alice', 'Bob', 'Carol', 'Dan'].map((name, index) => ({
+      ...email(name, {
+        html: `<p>Hi ${name}</p>`,
+        text: `Hi ${name}`,
+        listUnsubscribe: undefined,
+        batchBody: {
+          html: '<p>Hi %recipient.first_name_html%</p>',
+          text: 'Hi %recipient.first_name%',
+          variables: { first_name: name, first_name_html: name },
+        },
+      }),
+      automationActionRevisionId: index < 2 ? 'revision-a' : 'revision-b',
+    }));
+    const sendSingle = sinon.stub();
+    const send = sinon.stub().callsFake(async (_message, recipients) => ({
+      recipientMessageIds: Object.fromEntries(
+        Object.keys(recipients).map((address) => [address, address]),
+      ),
+    }));
+    const results = await sendAutomationEmailGroups({
+      emails,
+      prepare: async ({ message }) => message,
+      sendSingle,
+      bulkMailer: { send, getBatchSize: () => 100 },
+    });
+    sinon.assert.notCalled(sendSingle);
+    sinon.assert.calledTwice(send);
+    assert.deepEqual(
+      send.getCalls().map(({ args }) => Object.keys(args[1])),
+      [
+        ['Alice@example.invalid', 'Bob@example.invalid'],
+        ['Carol@example.invalid', 'Dan@example.invalid'],
+      ],
+    );
+    assert(results.every(({ status }) => status === 'fulfilled'));
+  });
 });

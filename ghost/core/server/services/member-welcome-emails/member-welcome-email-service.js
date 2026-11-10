@@ -1,4 +1,5 @@
 const { sendAutomationEmailGroups } = require('./send-automation-email-groups');
+const { personalizeFirstNameTemplate } = require('./automation-first-name-template');
 const errors = require('@tryghost/errors');
 const MagicLink = require('../../lib/magic-link/magic-link');
 const { parseMailbox } = require('@tryghost/parse-email-address/mailbox');
@@ -423,6 +424,35 @@ class MemberWelcomeEmailService {
     }
   }
 
+  async #renderEmail(options, firstNameTemplates) {
+    if (firstNameTemplates && options.lexical.includes('{first_name')) {
+      const key = JSON.stringify([
+        options.automationActionRevisionId,
+        options.lexical,
+        options.subject,
+        options.designSettings,
+        options.siteSettings,
+        options.trackClicks,
+        Boolean(options.unsubscribeUrl),
+      ]);
+      if (!firstNameTemplates.has(key)) {
+        firstNameTemplates.set(key, this.#renderer.renderFirstNameTemplate(options));
+      }
+      const template = await firstNameTemplates.get(key);
+      if (template) {
+        const rendered = personalizeFirstNameTemplate({
+          template,
+          name: options.member.name,
+          unsubscribeUrl: options.unsubscribeUrl,
+        });
+        if (rendered) {
+          return rendered;
+        }
+      }
+    }
+    return await this.#renderer.render(options);
+  }
+
   /**
    * @param {object} options
    * @param {object} options.member
@@ -438,6 +468,7 @@ class MemberWelcomeEmailService {
    * @param {boolean} [options.trackClicks]
    * @param {string | null} [options.automationActionRevisionId]
    * @param {string | null} [options.automationRunStepId]
+   * @param {Map<string, Promise<import('./automation-first-name-template').FirstNameTemplate | null>>} [options.firstNameTemplates]
    * @param {null | {url: string, oneClickUrl: string}} [options.unsubscribe] - When set, the footer links to an unsubscribe URL and the email carries one-click List-Unsubscribe headers
    */
   async #prepareEmail({
@@ -449,6 +480,7 @@ class MemberWelcomeEmailService {
     automationActionRevisionId = null,
     automationRunStepId = null,
     unsubscribe = null,
+    firstNameTemplates,
   }) {
     if (!member.email) {
       throw new errors.IncorrectUsageError({
@@ -469,21 +501,24 @@ class MemberWelcomeEmailService {
       `${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending ${emailType} email to ${name}${member.email}`,
     );
 
-    const rendered = await this.#renderer.render({
-      lexical: email.lexical,
-      subject: email.subject,
-      designSettings: email.designSettings,
-      member: {
-        name: member.name,
-        email: member.email,
-        uuid: member.uuid,
+    const rendered = await this.#renderEmail(
+      {
+        lexical: email.lexical,
+        subject: email.subject,
+        designSettings: email.designSettings,
+        member: {
+          name: member.name,
+          email: member.email,
+          uuid: member.uuid,
+        },
+        siteSettings: this.#getSiteSettings(),
+        unsubscribeUrl: unsubscribe?.url,
+        trackClicks,
+        automationActionRevisionId,
+        automationRunStepId,
       },
-      siteSettings: this.#getSiteSettings(),
-      unsubscribeUrl: unsubscribe?.url,
-      trackClicks,
-      automationActionRevisionId,
-      automationRunStepId,
-    });
+      firstNameTemplates,
+    );
 
     const senderOptions = await this.#getEffectiveSenderOptions(
       getSenderDetails(email.designSettings),
@@ -628,15 +663,19 @@ class MemberWelcomeEmailService {
    * @param {boolean} options.trackClicks
    * @param {string} options.automationActionRevisionId
    * @param {string} options.automationRunStepId
+   * @param {Map<string, Promise<import('./automation-first-name-template').FirstNameTemplate | null>>} [firstNameTemplates]
    */
-  async #prepareAutomationEmail({
-    email,
-    member,
-    trackOpens,
-    trackClicks,
-    automationActionRevisionId,
-    automationRunStepId,
-  }) {
+  async #prepareAutomationEmail(
+    {
+      email,
+      member,
+      trackOpens,
+      trackClicks,
+      automationActionRevisionId,
+      automationRunStepId,
+    },
+    firstNameTemplates,
+  ) {
     const designSettings = email.designSettingId
       ? await this.#models.EmailDesignSetting.findOne({ id: email.designSettingId })
       : null;
@@ -668,6 +707,7 @@ class MemberWelcomeEmailService {
       automationActionRevisionId,
       automationRunStepId,
       unsubscribe,
+      firstNameTemplates,
     });
   }
 
@@ -683,9 +723,10 @@ class MemberWelcomeEmailService {
     if (emails.length < 2 || process.env.GHOST_BENCHMARK_AUTOMATIONS_DRAIN === '1') {
       return await Promise.allSettled(emails.map((email) => this.sendAutomationEmail(email)));
     }
+    const firstNameTemplates = new Map();
     return await sendAutomationEmailGroups({
       emails,
-      prepare: (email) => this.#prepareAutomationEmail(email),
+      prepare: (email) => this.#prepareAutomationEmail(email, firstNameTemplates),
       sendSingle: (message) => this.#sendBulkEmail(message),
       bulkMailer: this.#bulkMailer,
     });

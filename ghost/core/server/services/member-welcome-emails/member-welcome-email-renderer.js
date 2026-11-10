@@ -4,6 +4,13 @@ const { MESSAGES } = require('./constants');
 const { wrapReplacementStrings } = require('@tryghost/kg-default-nodes').utils.replacementStrings;
 const linkReplacer = require('../../lib/link-replacer');
 const emailDesign = require('../../lib/email-rendering/email-design');
+const {
+  addFirstNameSlot,
+  escapeUnsubscribeHref,
+  getFirstName,
+  hasFirstNameTextSlots,
+  unsubscribePlaceholder,
+} = require('./automation-first-name-template');
 
 const REPLACEMENT_REGEX = /%%\{(\w+?)(?:,? *"(.*?)")?\}%%/g;
 const UNMATCHED_TOKEN_REGEX = /%%\{.*?\}%%/g;
@@ -61,16 +68,7 @@ class MemberWelcomeEmailRenderer {
    */
   #buildReplacementDefinitions({ member, siteSettings }) {
     return [
-      {
-        id: 'first_name',
-        getValue: () => {
-          const name = member.name?.trim();
-          if (!name) {
-            return undefined;
-          }
-          return name.split(/\s+/)[0];
-        },
-      },
+      { id: 'first_name', getValue: () => getFirstName(member.name) },
       { id: 'name', getValue: () => member.name },
       { id: 'email', getValue: () => member.email },
       { id: 'uuid', getValue: () => member.uuid },
@@ -86,16 +84,17 @@ class MemberWelcomeEmailRenderer {
    * @param {{id: string, getValue: () => string|undefined}[]} options.definitions - Replacement token definitions
    * @param {string} options.text - The text to process (content body or subject line)
    * @param {boolean} [options.escapeHtml=false] - Whether to HTML-escape replaced values
+   * @param {(options: {property: string, fallback?: string, resolved: string}) => string} [options.resolve]
    * @returns {string}
    */
-  #applyReplacements({ definitions, text, escapeHtml = false }) {
+  #applyReplacements({ definitions, text, escapeHtml = false, resolve }) {
     let processed = wrapReplacementStrings(text);
 
     processed = processed.replace(REPLACEMENT_REGEX, (match, property, fallback) => {
       const def = definitions.find((d) => d.id === property);
       if (def) {
-        const raw = def.getValue();
-        const resolved = raw || fallback || '';
+        const value = def.getValue() || fallback || '';
+        const resolved = resolve ? resolve({ property, fallback, resolved: value }) : value;
         return escapeHtml ? this.Handlebars.Utils.escapeExpression(resolved) : resolved;
       }
       return match;
@@ -118,17 +117,35 @@ class MemberWelcomeEmailRenderer {
    * @param {string | null} [options.automationRunStepId]
    * @returns {Promise<{html: string, text: string, subject: string}>}
    */
-  async render({
-    lexical,
-    subject,
-    designSettings,
-    member,
-    siteSettings,
-    unsubscribeUrl,
-    trackClicks = false,
-    automationActionRevisionId = null,
-    automationRunStepId = null,
-  }) {
+  async render(options) {
+    return await this.#render(options);
+  }
+
+  async renderFirstNameTemplate(options) {
+    return await this.#render(
+      {
+        ...options,
+        member: {},
+        unsubscribeUrl: options.unsubscribeUrl ? unsubscribePlaceholder : undefined,
+      },
+      [],
+    );
+  }
+
+  async #render(
+    {
+      lexical,
+      subject,
+      designSettings,
+      member,
+      siteSettings,
+      unsubscribeUrl,
+      trackClicks = false,
+      automationActionRevisionId = null,
+      automationRunStepId = null,
+    },
+    firstNameSlots,
+  ) {
     designSettings = designSettings || {};
 
     const design = emailDesign.getEmailDesign({
@@ -167,16 +184,38 @@ class MemberWelcomeEmailRenderer {
       '$1',
     );
 
+    let unsupportedTemplate = false;
+    const resolve =
+      (inBody) =>
+      ({ property, fallback, resolved }) => {
+        if (inBody && property === 'first_name') {
+          return addFirstNameSlot(firstNameSlots, fallback);
+        }
+        if (['first_name', 'name', 'email', 'uuid'].includes(property)) {
+          unsupportedTemplate = true;
+        }
+        return resolved;
+      };
     const contentWithReplacements = this.#applyReplacements({
       definitions,
       text: content,
       escapeHtml: true,
+      ...(firstNameSlots && { resolve: resolve(true) }),
     });
     const subjectWithReplacements = this.#applyReplacements({
       definitions,
       text: subject,
       escapeHtml: false,
+      ...(firstNameSlots && { resolve: resolve(false) }),
     });
+    if (
+      firstNameSlots &&
+      (unsupportedTemplate ||
+        !firstNameSlots.length ||
+        !hasFirstNameTextSlots(contentWithReplacements, firstNameSlots))
+    ) {
+      return null;
+    }
 
     // Resolve relative links, including Ghost Portal routes such as #/portal/signup,
     // while preserving document-local anchors such as #section.
@@ -188,6 +227,10 @@ class MemberWelcomeEmailRenderer {
           return originalPath;
         }
         const isTrackable = ['http:', 'https:'].includes(url.protocol);
+        if (firstNameSlots && trackClicks && isTrackable) {
+          unsupportedTemplate = true;
+          return url;
+        }
         if (
           trackClicks &&
           automationActionRevisionId &&
@@ -206,6 +249,9 @@ class MemberWelcomeEmailRenderer {
       },
       { base: siteSettings.url },
     );
+    if (unsupportedTemplate) {
+      return null;
+    }
 
     const managePreferencesUrl = new URL('#/portal/account/newsletters', siteSettings.url).href;
     const year = new Date().getFullYear();
@@ -237,7 +283,7 @@ class MemberWelcomeEmailRenderer {
       siteTitle: siteSettings.title,
       siteUrl: siteSettings.url,
       managePreferencesUrl,
-      unsubscribeUrl: unsubscribeUrl || null,
+      unsubscribeUrl: unsubscribeUrl ? unsubscribePlaceholder : null,
       year,
       ctaBgColors: ['grey', 'blue', 'green', 'yellow', 'red', 'pink', 'purple', 'white'],
       ...design,
@@ -247,8 +293,24 @@ class MemberWelcomeEmailRenderer {
       },
     });
 
-    const { html: inlinedHtml, plaintext: text } = finalize(html);
+    let { html: inlinedHtml, plaintext: text } = finalize(html);
 
+    if (unsubscribeUrl) {
+      const escapedUrl = escapeUnsubscribeHref(unsubscribeUrl);
+      inlinedHtml = inlinedHtml.replaceAll(unsubscribePlaceholder, () => escapedUrl);
+      text = text.replaceAll(unsubscribePlaceholder, () => unsubscribeUrl);
+    }
+
+    if (firstNameSlots) {
+      if (
+        firstNameSlots.some(
+          ({ marker }) => inlinedHtml.split(marker).length !== 2 || text.split(marker).length !== 2,
+        )
+      ) {
+        return null;
+      }
+      return { html: inlinedHtml, text, subject: subjectWithReplacements, slots: firstNameSlots };
+    }
     return {
       html: inlinedHtml,
       text,
