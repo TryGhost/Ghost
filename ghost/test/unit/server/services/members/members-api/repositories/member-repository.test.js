@@ -445,6 +445,114 @@ describe('MemberRepository', function () {
   });
 
   describe('bulkEdit', function () {
+    let existingRows;
+    let committed;
+    beforeEach(function () {
+      existingRows = [];
+      committed = false;
+      Member.transaction = sinon.stub().callsFake(async (callback) => {
+        const query = {
+          where: () => query,
+          whereIn: () => query,
+          select: async () => existingRows,
+        };
+        const result = await callback(() => query);
+        committed = true;
+        return result;
+      });
+    });
+
+    it('notifies only newly inserted successful assignments after commit', async function () {
+      existingRows = [{ member_id: 'existing' }];
+      Member.getFilteredCollectionQuery = sinon.stub().returns({
+        select: () => ({
+          distinct: async () => ['existing', 'new', 'failed'].map((id) => ({ id })),
+        }),
+      });
+      Member.lockForUpdate = sinon.stub().resolves();
+      Member.bulkAdd = sinon.stub().resolves({
+        successful: 1,
+        unsuccessful: 1,
+        unsuccessfulData: [{ member_id: 'failed' }],
+        errors: [],
+      });
+      automationsApi.notify.callsFake(async (payload) => {
+        assert.equal(committed, true);
+        assert.deepEqual(payload, {
+          eventName: 'label_added',
+          labelId: 'label-id',
+          memberIds: ['new'],
+        });
+      });
+      const result = await buildRepo().bulkEdit(
+        { action: 'addLabel', meta: { label: { id: 'label-id' } } },
+        { all: true },
+      );
+      assert.equal(result.successful, 2);
+      sinon.assert.calledOnce(automationsApi.notify);
+      assert.deepEqual(
+        Member.bulkAdd.firstCall.args[0].map((row) => row.member_id),
+        ['failed', 'new'],
+      );
+    });
+
+    it('awaits each notification before processing the next bounded chunk', async function () {
+      const ids = Array.from({ length: 2001 }, (_, i) => `member-${String(i).padStart(4, '0')}`);
+      Member.getFilteredCollectionQuery = sinon
+        .stub()
+        .returns({ select: () => ({ distinct: async () => ids.map((id) => ({ id })) }) });
+      Member.lockForUpdate = sinon.stub().resolves();
+      Member.bulkAdd = sinon.stub().callsFake(async (relations) => ({
+        successful: relations.length,
+        unsuccessful: 0,
+        unsuccessfulData: [],
+        errors: [],
+      }));
+      let release;
+      let reached;
+      const held = new Promise((resolve) => {
+        release = resolve;
+      });
+      const notifying = new Promise((resolve) => {
+        reached = resolve;
+      });
+      automationsApi.notify.onFirstCall().callsFake(async () => {
+        reached();
+        await held;
+      });
+      const editing = buildRepo().bulkEdit(
+        { action: 'addLabel', meta: { label: { id: 'label-id' } } },
+        { all: true },
+      );
+      await notifying;
+      sinon.assert.calledOnce(Member.transaction);
+      release();
+      assert.equal((await editing).successful, 2001);
+      assert.deepEqual(
+        automationsApi.notify.args.map(([event]) => event.memberIds.length),
+        [1000, 1000, 1],
+      );
+    });
+
+    it('preserves bulk success when notification fails', async function () {
+      Member.getFilteredCollectionQuery = sinon
+        .stub()
+        .returns({ select: () => ({ distinct: async () => [{ id: 'new' }] }) });
+      Member.lockForUpdate = sinon.stub().resolves();
+      Member.bulkAdd = sinon
+        .stub()
+        .resolves({ successful: 1, unsuccessful: 0, unsuccessfulData: [], errors: [] });
+      automationsApi.notify.rejects(new Error('notify failed'));
+      const log = sinon.stub(logging, 'error');
+      const result = await buildRepo().bulkEdit(
+        { action: 'addLabel', meta: { label: { id: 'label-id' } } },
+        { all: true },
+      );
+      assert.equal(result.successful, 1);
+      assert.equal(result.unsuccessful, 0);
+      sinon.assert.calledOnce(log);
+    });
+
     it('reports the members of a failed chunk as unsuccessful and keeps the committed chunks', async function () {
       const memberIds = Array.from(
         { length: 1001 },
@@ -475,6 +583,9 @@ describe('MemberRepository', function () {
       assert.equal(result.errors.length, 1);
       assert.equal(result.errors[0].message, 'Lock wait timeout exceeded');
       assert.equal(result.errors[0].errorDetails, 'member-1000');
+      sinon.assert.calledOnce(automationsApi.notify);
+      assert.equal(automationsApi.notify.firstCall.args[0].memberIds.length, 1000);
+      assert.ok(!automationsApi.notify.firstCall.args[0].memberIds.includes('member-1000'));
     });
   });
 

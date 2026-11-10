@@ -15,6 +15,12 @@ type DomainEvents = { dispatch: (event: unknown) => unknown };
 
 type Labs = { isSet(key: 'automations'): boolean };
 
+export type LabelAddedEvent = {
+  eventName: 'label_added';
+  labelId: string;
+  memberIds: readonly string[];
+};
+
 type MemberStatus = 'free' | 'paid' | 'gift' | 'comped';
 
 /**
@@ -47,22 +53,29 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
 
     notify: async (
       event: ReadonlyDeep<
-        {
-          source: 'member' | 'admin' | 'api' | 'import' | 'system';
-          memberEmail: string;
-          memberId: string;
-          memberStatus: MemberStatus;
-          memberTierIds: string[];
-        } & (
-          | { eventName: 'membership_started'; previousMemberStatus: MemberStatus | null }
-          | {
-              eventName: 'paid_subscription_changed';
-              previousMemberStatus: MemberStatus;
-              previousMemberTierIds: string[];
-            }
-        )
+        | LabelAddedEvent
+        | ({
+            source: 'member' | 'admin' | 'api' | 'import' | 'system';
+            memberEmail: string;
+            memberId: string;
+            memberStatus: MemberStatus;
+            memberTierIds: string[];
+          } & (
+            | { eventName: 'membership_started'; previousMemberStatus: MemberStatus | null }
+            | {
+                eventName: 'paid_subscription_changed';
+                previousMemberStatus: MemberStatus;
+                previousMemberTierIds: string[];
+              }
+          ))
       >,
     ): Promise<void> => {
+      if (event.eventName === 'label_added') {
+        // Spike boundary: detection and notification only. Matching, enrollment,
+        // eligibility, and durable delivery are deliberately left for later.
+        return;
+      }
+
       const {
         eventName,
         source,

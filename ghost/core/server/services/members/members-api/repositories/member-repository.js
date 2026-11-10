@@ -1358,12 +1358,29 @@ module.exports = class MemberRepository {
     const results = [];
     for (const chunk of _.chunk(memberIds.sort(), BULK_EDIT_CHUNK_SIZE)) {
       try {
-        results.push(
-          await this._Member.transaction(async (transacting) => {
+        const { addedMemberIds, ...result } = await this._Member.transaction(
+          async (transacting) => {
             await this._Member.lockForUpdate(chunk, { transacting });
             return this.#bulkEditChunk(data, chunk, { transacting });
-          }),
+          },
         );
+        results.push(result);
+        if (addedMemberIds?.length) {
+          // Await each bounded batch after commit; failures must not change the
+          // successful label operation or its API response.
+          try {
+            await this._automationsApi.notify({
+              eventName: 'label_added',
+              labelId: data.meta.label.id,
+              memberIds: addedMemberIds,
+            });
+          } catch (err) {
+            logging.error({
+              err,
+              message: `Error notifying automations for label ${data.meta.label.id}`,
+            });
+          }
+        }
       } catch (err) {
         results.push({
           successful: 0,
@@ -1420,15 +1437,33 @@ module.exports = class MemberRepository {
       return this._Member.bulkDestroy(membersLabelsIds, 'members_labels', { transacting });
     }
 
-    const relations = memberIds.map((id) => {
-      return {
-        member_id: id,
-        label_id: data.meta.label.id,
-        id: ObjectId().toHexString(),
-      };
-    });
+    // Parent locks are the first read in this fresh transaction. A plain read
+    // here has a fresh snapshot and avoids gap locks on absent relationships,
+    // which can deadlock disjoint batches adding the same label.
+    const existing = await transacting('members_labels')
+      .where('label_id', data.meta.label.id)
+      .whereIn('member_id', memberIds)
+      .select('member_id');
+    const existingMemberIds = new Set(existing.map((row) => row.member_id));
+    const relations = memberIds
+      .filter((id) => !existingMemberIds.has(id))
+      .map((id) => {
+        return {
+          member_id: id,
+          label_id: data.meta.label.id,
+          id: ObjectId().toHexString(),
+        };
+      });
 
-    return this._Member.bulkAdd(relations, 'members_labels', { transacting });
+    const result = await this._Member.bulkAdd(relations, 'members_labels', { transacting });
+    const failedIds = new Set(result.unsuccessfulData.map((row) => row.member_id));
+    return {
+      ...result,
+      successful: result.successful + existingMemberIds.size,
+      addedMemberIds: relations
+        .filter((row) => !failedIds.has(row.member_id))
+        .map((row) => row.member_id),
+    };
   }
 
   async upsertCustomer(data) {

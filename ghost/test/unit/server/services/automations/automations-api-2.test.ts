@@ -67,7 +67,10 @@ describe('automations API', function () {
 
     let repository: ReturnType<typeof createTestAutomationsRepository2>;
     let domainEvents: { dispatch: ReturnType<typeof vi.fn<(event: unknown) => unknown>> };
-    let event: Parameters<ReturnType<typeof createApi>['notify']>[0];
+    let event: Exclude<
+      Parameters<ReturnType<typeof createApi>['notify']>[0],
+      { eventName: 'label_added' }
+    >;
     let firstActions: FirstAction[];
     let runs: Array<Pick<RunToInsert, 'id' | 'automation_id' | 'member_id'>>;
     let steps: RunStepToInsert[];
@@ -116,6 +119,16 @@ describe('automations API', function () {
 
     afterEach(function () {
       vi.useRealTimers();
+    });
+
+    it('accepts a label batch without matching or enrolling members', async function () {
+      const api = createApi({ repository: createTestAutomationsRepository2() });
+      await api.notify({
+        eventName: 'label_added',
+        labelId: 'label-id',
+        memberIds: ['one', 'two'],
+      });
+      expect(domainEvents.dispatch).not.toHaveBeenCalled();
     });
 
     it('fails if called with an unexpected `eventName`', async function () {

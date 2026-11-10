@@ -10,6 +10,38 @@ The database repository creates run(s) and queues their first step(s). Ghost's b
 
 Each check locks ready steps, then runs up to 100 at once. A `wait` action advances when its time arrives. A `send_email` action checks the member's current status and email preference before sending. Disabled automations and ineligible members stop.
 
+## Label-added notification spike
+
+Label additions now call `notify({eventName: 'label_added', labelId, memberIds})`.
+This event intentionally returns immediately inside `notify`: it does not match
+an automation, check eligibility, or create runs or steps.
+
+Normal member saves capture the exact newly attached label IDs in the Member
+model. This covers Admin/API create and edit, signup (including gift signup),
+and CSV imports. A boot-registered automation listener forwards each committed
+addition to `notify`. The commit hook supports Bookshelf and raw Knex
+transactions, suppresses rollbacks including silent rollbacks, and defers
+savepoint additions until the outer transaction commits.
+
+Bulk additions bypass model attachment events. Each existing 1,000-member
+transaction locks its members, reads existing assignments, and inserts only
+missing pairs. After commit, the repository awaits one notification containing
+only successful new assignments. Already-present labels count as successful
+bulk results but emit no event. Earlier committed chunks still notify when a
+later chunk fails. Added notification state is discarded after each chunk.
+
+Removing and re-adding a label produces another event. Removal, unrelated edits,
+and saving an existing assignment do not. Events carry IDs captured during the
+write; handlers do not query everyone who currently holds a label. Development
+seeders and benchmark fixture writers bypassing the Member model are excluded.
+
+Notification failures are logged without failing label operations. Delivery is
+not durable: a crash after commit can lose notifications, and there are no
+retries. Existing duplicate link rows are not cleaned up. Bulk selection still
+loads all matching member IDs, as before; only the added detection and
+notification work is bounded per chunk. Matching, activation timing, re-entry,
+and scalable run insertion remain outside this spike.
+
 ## Where to look
 
 - [`automations-api.ts`](automations-api.ts) handles reads, edits, validation, and event notifications. Edits require one path with no branches or loops.

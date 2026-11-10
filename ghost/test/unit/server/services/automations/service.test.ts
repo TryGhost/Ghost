@@ -11,6 +11,17 @@ import type {
 import { StartAutomationsPollEvent } from '../../../../../core/server/services/automations/events/start-automations-poll-event';
 import { AutomationsService } from '../../../../../core/server/services/automations/service';
 
+import { LabelAddedToMembersEvent } from '../../../../../core/server/services/automations/events/label-added-to-members-event';
+import * as automationsApi from '../../../../../core/server/services/automations/automations-api';
+vi.mock(
+  '../../../../../core/server/services/automations/automations-api',
+  async (importOriginal) => ({
+    ...(await importOriginal<typeof automationsApi>()),
+    notify: vi.fn(),
+  }),
+);
+import logging from '@tryghost/logging';
+
 type InitOptions = Parameters<AutomationsService['init']>[0];
 type DomainEvents = InitOptions['domainEvents'];
 type SchedulerAdapter = InitOptions['schedulerAdapter'];
@@ -48,6 +59,7 @@ describe('automations service', function () {
 
   afterEach(function () {
     sinon.restore();
+    vi.resetAllMocks();
   });
 
   describe('init', function () {
@@ -63,10 +75,11 @@ describe('automations service', function () {
     it('subscribes to StartAutomationsPollEvent', function () {
       automations.init(initOptions);
       sinon.assert.called(domainEvents.subscribe);
-      sinon.assert.alwaysCalledWith(
-        domainEvents.subscribe,
-        StartAutomationsPollEvent,
-        sinon.match.func,
+      assert.equal(
+        domainEvents.subscribe
+          .getCalls()
+          .filter((call: sinon.SinonSpyCall) => call.args[0] === StartAutomationsPollEvent).length,
+        2,
       );
     });
 
@@ -75,7 +88,38 @@ describe('automations service', function () {
       automations.init(initOptions);
       automations.init(initOptions);
       automations.init(initOptions);
-      sinon.assert.calledTwice(domainEvents.subscribe);
+      sinon.assert.calledThrice(domainEvents.subscribe);
+    });
+  });
+
+  describe('label notifications', function () {
+    it('forwards exact member IDs and label ID to notify', async function () {
+      const notify = vi.mocked(automationsApi.notify).mockResolvedValue(undefined);
+      automations.init(initOptions);
+      const handler = domainEvents.subscribe
+        .getCalls()
+        .find((call: sinon.SinonSpyCall) => call.args[0] === LabelAddedToMembersEvent).args[1];
+      await handler(new LabelAddedToMembersEvent('label-id', ['one', 'two']));
+      expect(notify).toHaveBeenCalledExactlyOnceWith({
+        eventName: 'label_added',
+        labelId: 'label-id',
+        memberIds: ['one', 'two'],
+      });
+    });
+
+    it('logs notification failure without rejecting', async function () {
+      const err = new Error('notify failed');
+      vi.mocked(automationsApi.notify).mockRejectedValue(err);
+      const log = sinon.stub(logging, 'error');
+      automations.init(initOptions);
+      const handler = domainEvents.subscribe
+        .getCalls()
+        .find((call: sinon.SinonSpyCall) => call.args[0] === LabelAddedToMembersEvent).args[1];
+      await handler(new LabelAddedToMembersEvent('label-id', ['one']));
+      sinon.assert.calledOnceWithExactly(log, {
+        err,
+        message: 'Error notifying automations for label label-id',
+      });
     });
   });
 

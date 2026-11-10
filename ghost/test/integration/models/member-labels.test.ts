@@ -1,4 +1,9 @@
 import assert from 'node:assert/strict';
+import sinon from 'sinon';
+const DomainEvents = require('@tryghost/domain-events');
+const {
+  LabelAddedToMembersEvent,
+} = require('../../../core/server/services/automations/events/label-added-to-members-event');
 
 interface LabelRow {
   id: string;
@@ -154,5 +159,141 @@ describe('Member Model: saving labels', function () {
       lookups[0].rows.map((row) => row.name),
       ['VIP'],
     );
+  });
+  describe('label addition events', function () {
+    let dispatch: sinon.SinonSpy;
+    beforeEach(function () {
+      dispatch = sinon.spy(DomainEvents, 'dispatch');
+    });
+    afterEach(function () {
+      dispatch.restore();
+    });
+    const additions = () =>
+      dispatch.args
+        .map(([event]) => event)
+        .filter((event) => event instanceof LabelAddedToMembersEvent)
+        .map((event) => event.data);
+
+    it('captures every new label and waits for commit, including imports', async function () {
+      let memberId!: string;
+      await models.Member.transaction(async (transacting: unknown) => {
+        const member = await models.Member.add(
+          {
+            email_disabled: false,
+            email: 'label-event-import@example.com',
+            labels: [{ name: 'VIP' }, { name: 'Import Event' }],
+          },
+          { ...testUtils.context.internal, importing: true, transacting },
+        );
+        memberId = member.id;
+        assert.deepEqual(additions(), []);
+      });
+      const labels = await attachedLabels(memberId);
+      assert.deepEqual(
+        additions()
+          .map((event) => event.labelId)
+          .sort(),
+        labels.map((label) => label.id).sort(),
+      );
+      assert.ok(
+        additions().every(
+          (event) => JSON.stringify(event.memberIds) === JSON.stringify([memberId]),
+        ),
+      );
+    });
+
+    it('ignores existing assignments, removal, and unrelated edits; emits again on re-add', async function () {
+      const member = await models.Member.add(
+        { email_disabled: false, email: 'label-event-edit@example.com', labels: [{ name: 'VIP' }] },
+        testUtils.context.internal,
+      );
+      const options = { ...testUtils.context.internal, id: member.id };
+      dispatch.resetHistory();
+      await models.Member.edit({ labels: [{ name: 'vip' }], name: 'Changed name' }, options);
+      await models.Member.edit({ labels: [] }, options);
+      assert.deepEqual(additions(), []);
+      await models.Member.edit({ labels: [{ name: 'VIP' }, { name: 'Added Event' }] }, options);
+      assert.equal(additions().length, 2);
+      assert.ok(additions().every((event) => event.memberIds[0] === member.id));
+    });
+
+    it('emits nothing for rollback, including rollback without error', async function () {
+      for (const withError of [true, false]) {
+        dispatch.resetHistory();
+        const email = `label-event-rollback-${withError}@example.com`;
+        try {
+          await models.Member.transaction(
+            async (transacting: { rollback: () => Promise<void> }) => {
+              await models.Member.add(
+                {
+                  email_disabled: false,
+                  email,
+                  labels: [{ name: 'VIP' }, { name: `Rolled Back ${withError}` }],
+                },
+                { ...testUtils.context.internal, transacting },
+              );
+              if (withError) {
+                throw new Error('rollback');
+              }
+              await transacting.rollback();
+            },
+          );
+        } catch (err) {
+          assert.equal((err as Error).message, 'rollback');
+        }
+        assert.deepEqual(additions(), []);
+        assert.equal(await models.Member.findOne({ email }), null);
+      }
+    });
+
+    it('preserves additions across repeated edits in one transaction', async function () {
+      const member = await models.Member.add(
+        { email_disabled: false, email: 'label-event-repeated@example.com' },
+        testUtils.context.internal,
+      );
+      await models.Member.transaction(async (transacting: unknown) => {
+        const options = { ...testUtils.context.internal, id: member.id, transacting };
+        await models.Member.edit({ labels: [{ name: 'VIP' }] }, options);
+        await models.Member.edit({ labels: [] }, options);
+        assert.deepEqual(additions(), []);
+      });
+      assert.equal(additions().length, 1);
+      assert.equal(additions()[0].memberIds[0], member.id);
+    });
+
+    it('suppresses silent rollback of a raw Knex transaction', async function () {
+      const trx = await knex.transaction();
+      await models.Member.add(
+        {
+          email_disabled: false,
+          email: 'label-event-raw-rollback@example.com',
+          labels: [{ name: 'VIP' }],
+        },
+        { ...testUtils.context.internal, transacting: trx },
+      );
+      await trx.rollback();
+      assert.deepEqual(additions(), []);
+    });
+
+    it('waits for outer commit when a savepoint commits', async function () {
+      await assert.rejects(
+        models.Member.transaction(async (transacting: any) => {
+          await transacting.transaction(async (savepoint: unknown) => {
+            await models.Member.add(
+              {
+                email_disabled: false,
+                email: 'label-event-savepoint@example.com',
+                labels: [{ name: 'VIP' }],
+              },
+              { ...testUtils.context.internal, transacting: savepoint },
+            );
+          });
+          assert.deepEqual(additions(), []);
+          throw new Error('outer rollback');
+        }),
+        /outer rollback/,
+      );
+      assert.deepEqual(additions(), []);
+    });
   });
 });

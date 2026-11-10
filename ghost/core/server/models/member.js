@@ -5,6 +5,10 @@ const { chainTransformers } = require('@tryghost/mongo-utils');
 const { memberAvatarImage } = require('../services/members/member-avatar');
 const { MemberCommentingCodec } = require('../services/members/commenting');
 const {
+  LabelAddedToMembersEvent,
+  dispatchLabelAddedAfterCommit,
+} = require('../services/automations/events/label-added-to-members-event');
+const {
   METAFIELDS_RELATION,
   createMetafieldsFilterTransformer,
 } = require('../services/members-metafields/filter');
@@ -573,6 +577,9 @@ const Member = ghostBookshelf.Model.extend(
             labels.forEach((label) => {
               label.emitChange('attached', options);
               model.emitChange('label.attached', options);
+              // Capture identity now: model relations can change again before commit.
+              const event = new LabelAddedToMembersEvent(label.id, [model.id]);
+              dispatchLabelAddedAfterCommit(event, options.transacting);
             });
           });
       });

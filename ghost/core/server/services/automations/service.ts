@@ -15,6 +15,7 @@ import logging from '@tryghost/logging';
 // @ts-expect-error This module currently lacks type definitions.
 import emailAnalyticsJobs from '../email-analytics/jobs';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
+import { LabelAddedToMembersEvent } from './events/label-added-to-members-event';
 import { welcomeEmailAutomationPoll } from './welcome-email-automation-poll';
 import memberWelcomeEmails from '../member-welcome-emails';
 
@@ -118,6 +119,17 @@ export class AutomationsService {
         }),
       ),
     );
+
+    domainEvents.subscribe(LabelAddedToMembersEvent, async (event: LabelAddedToMembersEvent) => {
+      try {
+        await automationsApi.notify({ eventName: 'label_added', ...event.data });
+      } catch (err) {
+        logging.error({
+          err,
+          message: `Error notifying automations for label ${event.data.labelId}`,
+        });
+      }
+    });
 
     schedulerAdapter.register(this);
 
