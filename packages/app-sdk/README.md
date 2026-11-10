@@ -377,8 +377,7 @@ it takes the app down wherever it's installed.
 
 The plugin reads `GHOST_APP_URL`, `GHOST_APP_TUNNEL_URL` and `GHOST_URL` from
 the environment, or from the mode's `.env` files as Vite reads them; the
-environment wins. `GHOST_URL` and `GHOST_APP_URL` must be `http` or `https`
-URLs, and `CLOUDFLARE_ENV` an environment's name, without `/` or `\`. `.env.development` is the easy way to name a tunnel or your
+environment wins. `.env.development` is the easy way to name a tunnel or your
 Ghost in development, on Windows too. Commit the app's address in `.env.production` once it has
 one, so no deploy can forget it:
 
