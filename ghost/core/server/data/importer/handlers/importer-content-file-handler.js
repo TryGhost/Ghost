@@ -47,7 +47,7 @@ class ImporterContentFileHandler {
 
     if (this.ignoreRootFolderFiles) {
       files = _.filter(files, function (file) {
-        return file.name.indexOf('/') !== -1;
+        return file.name.replace(baseDirRegex, '').indexOf('/') !== -1;
       });
     }
 

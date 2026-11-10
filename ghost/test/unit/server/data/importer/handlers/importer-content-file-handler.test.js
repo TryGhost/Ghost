@@ -185,5 +185,30 @@ describe('ImporterContentFileHandler', function () {
       assert.equal(files[1].targetDir, '.');
       assert.equal(files[1].newPath, '//blog/content/media/1.mp4');
     });
+
+    it('ignores files in the root of a base directory', async function () {
+      const contentFileImporter = new ImporterContentFileHandler({
+        storage: {
+          staticFileURLPrefix: 'content/files',
+          getUniqueFileName: (file, targetDir) =>
+            Promise.resolve(path.join(targetDir, path.basename(file.name))),
+        },
+        ignoreRootFolderFiles: true,
+        urlUtils: {
+          getSubdir: () => '',
+          urlJoin: (...args) => args.join('/'),
+        },
+      });
+
+      const loaded = await contentFileImporter.loadFile(
+        [{ name: 'export/export.json' }, { name: 'export/content/files/a.pdf' }],
+        'export',
+      );
+
+      assert.deepEqual(
+        loaded.map((file) => file.originalPath),
+        ['content/files/a.pdf'],
+      );
+    });
   });
 });
