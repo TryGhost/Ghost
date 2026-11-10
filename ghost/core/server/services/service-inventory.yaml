@@ -12733,7 +12733,8 @@ services:
           Boot initializes the root and later supplies the jobs instance. Identity tokens and
           the staff JWKS app retain staff providers; members API construction retains a
           members provider for signing, verification and public keys. Boot passes the ready
-          service to the check-signing-keys job handler, which a boot unit asserts. Handler tests use a stub service to
+          service to the check-signing-keys job handler. A boot unit asserts that forwarding; readiness
+          before registration remains source evidence. Handler tests use a stub service to
           verify the check runs and its rejection propagates. Existing HTTP tests cover
           both JWKS responses and staff-token verification, not live rotation through those
           retained HTTP consumers.
