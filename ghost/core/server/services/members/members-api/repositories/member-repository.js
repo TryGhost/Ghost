@@ -19,6 +19,9 @@ const crypto = require('crypto');
 const { hasActiveOffer } = require('../utils/has-active-offer');
 const { afterCommit } = require('../../../../lib/after-commit');
 const {
+  LabelAddedToMembersEvent,
+} = require('../../../../../shared/events/label-added-to-members-event');
+const {
   StartAutomationsPollEvent,
 } = require('../../../automations/events/start-automations-poll-event');
 const { MEMBER_WELCOME_EMAIL_SLUGS } = require('../../../member-welcome-emails/constants');
@@ -1417,15 +1420,42 @@ module.exports = class MemberRepository {
       return this._Member.bulkDestroy(membersLabelsIds, 'members_labels', { transacting });
     }
 
-    const relations = memberIds.map((id) => {
-      return {
+    const existingLabelRelations = await this._Member.getLabelRelations(
+      { labelId: data.meta.label.id, memberIds },
+      { transacting },
+    );
+    const memberIdsWhoAlreadyHaveThisLabel = new Set(
+      existingLabelRelations.map((row) => row.member_id),
+    );
+
+    const relations = memberIds
+      .filter((id) => !memberIdsWhoAlreadyHaveThisLabel.has(id))
+      .map((id) => ({
         member_id: id,
         label_id: data.meta.label.id,
         id: ObjectId().toHexString(),
-      };
-    });
+      }));
 
-    return this._Member.bulkAdd(relations, 'members_labels', { transacting });
+    const result = await this._Member.bulkAdd(relations, 'members_labels', { transacting });
+
+    const failedIds = new Set(result.unsuccessfulData.map((row) => row.member_id));
+
+    const addedMemberIds = relations
+      .filter((row) => !failedIds.has(row.member_id))
+      .map((row) => row.member_id);
+    if (addedMemberIds.length) {
+      this.dispatchEvent(new LabelAddedToMembersEvent(data.meta.label.id, addedMemberIds), {
+        transacting,
+      });
+    }
+
+    return {
+      ...result,
+      // This addition is for API backwards compatibility. Callers expect it to
+      // be the number of affected members before any filtering (like we do
+      // above).
+      successful: result.successful + memberIdsWhoAlreadyHaveThisLabel.size,
+    };
   }
 
   async upsertCustomer(data) {
