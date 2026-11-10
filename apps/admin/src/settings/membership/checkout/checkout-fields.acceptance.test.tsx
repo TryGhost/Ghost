@@ -362,6 +362,63 @@ describe('Checkout settings', () => {
     await expect.element(picker).toHaveTextContent('Work phone');
   });
 
+  // Enter saves the form only from where a name is typed. On a button it does what the button
+  // does, so a publisher who changed their mind and tabbed to Cancel makes no field.
+  it("cancels a new field's form with Enter on Cancel, making no field", async () => {
+    const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
+      members_metafields: [phoneField],
+    });
+    const { modal } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+    });
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    const picker = modal.getByRole('combobox', { name: 'Save phone as' });
+
+    await picker.click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    const form = page.getByRole('dialog', { name: 'New custom field' });
+    await userEvent.fill(form.getByLabelText('Name'), 'Work phone');
+    form.getByRole('button', { name: 'Cancel' }).element().focus();
+    await userEvent.keyboard('{Enter}');
+
+    await expect.element(form).not.toBeInTheDocument();
+    await expect.element(picker).toHaveTextContent('Select...');
+    expect(createApi.requests).toHaveLength(0);
+  });
+
+  // Back on the control it hangs from, wherever the form is left from, so the keyboard carries
+  // on from the picker rather than from nowhere.
+  it("hands focus back to the picker once a new field's form is left", async () => {
+    const { modal } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+    });
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    const picker = modal.getByRole('combobox', { name: 'Save phone as' });
+    const form = page.getByRole('dialog', { name: 'New custom field' });
+
+    await picker.click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    await expect.element(form.getByLabelText('Name')).toHaveFocus();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(form).not.toBeInTheDocument();
+    await expect.element(picker).toHaveFocus();
+
+    await picker.click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    await userEvent.fill(form.getByLabelText('Name'), 'Work phone');
+    await form.getByRole('button', { name: 'Cancel' }).click();
+    await expect.element(form).not.toBeInTheDocument();
+    await expect.element(picker).toHaveFocus();
+
+    // And it opens again from the keyboard, with its search ready for typing.
+    await userEvent.keyboard('{Enter}');
+    await expect.element(page.getByPlaceholder('Search fields...')).toHaveFocus();
+  });
+
   it('previews on paid tiers only, as a free tier has no checkout', async () => {
     const { modal } = await openCheckoutFields({
       design: { customize: false },
