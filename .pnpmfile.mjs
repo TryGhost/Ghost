@@ -63,6 +63,18 @@ function beforePacking(pkg) {
   return pkg;
 }
 
+// Drops optional peers (all of them, or only `names`). pnpm links any optional
+// peer the workspace happens to satisfy, dragging it into production closures.
+// Required peers are kept so pnpm still enforces them.
+function dropOptionalPeers(pkg, names) {
+  for (const [name, meta] of Object.entries(pkg.peerDependenciesMeta ?? {})) {
+    if (meta?.optional && (!names || names.includes(name))) {
+      delete pkg.peerDependencies?.[name];
+      delete pkg.peerDependenciesMeta[name];
+    }
+  }
+}
+
 function readPackage(pkg) {
   // consolidate declares 48 template engines as optional peers. pnpm links any
   // that another workspace package happens to satisfy, so react, react-dom and
@@ -71,8 +83,7 @@ function readPackage(pkg) {
   // it never renders through it. packageExtensions can only add, so dropping the
   // peers outright needs this hook.
   if (pkg.name === 'consolidate') {
-    delete pkg.peerDependencies;
-    delete pkg.peerDependenciesMeta;
+    dropOptionalPeers(pkg);
   }
 
   // The 8.x Elasticsearch client hard-depends on apache-arrow for two ES|QL
@@ -94,8 +105,7 @@ function readPackage(pkg) {
   // NOTE: auto-install-peers: false doesn't solve the problem here unfortunately,
   // and it causes more issues with other deps
   if (['viem', 'ox', 'abitype'].includes(pkg.name)) {
-    delete pkg.peerDependencies?.typescript;
-    delete pkg.peerDependenciesMeta?.typescript;
+    dropOptionalPeers(pkg, ['typescript']);
   }
 
   // abitype's zod peer is only used by its `abitype/zod` subpath, which nothing
@@ -104,8 +114,16 @@ function readPackage(pkg) {
   // so ghost's production closure carried two identical copies of viem (~2.9k
   // files each), ox and abitype.
   if (pkg.name === 'abitype') {
-    delete pkg.peerDependencies?.zod;
-    delete pkg.peerDependenciesMeta?.zod;
+    dropOptionalPeers(pkg, ['zod']);
+  }
+
+  // better-auth declares its framework clients, ORM adapters and test helpers
+  // as optional peers. pnpm satisfied vitest and react from the workspace,
+  // pulling ~150 packages (vitest, vite, playwright, typescript, react) into
+  // ghost's production closure. Ghost uses only the server with its own Knex
+  // adapter, so none of them are needed.
+  if (pkg.name === 'better-auth') {
+    dropOptionalPeers(pkg);
   }
 
   return pkg;

@@ -18,7 +18,7 @@ export type MemberColumnCustomField = Pick<
 /**
  * Runtime data the static field schema cannot hold. Custom fields are defined by the
  * publisher, so their names arrive from the API; passing none (the default) simply leaves
- * them out of the columns, which is also what the flag being off looks like.
+ * them out of the columns.
  */
 export interface MemberActiveColumnOptions {
   customFields?: readonly MemberColumnCustomField[];

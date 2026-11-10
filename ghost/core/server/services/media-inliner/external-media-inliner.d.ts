@@ -1,3 +1,4 @@
+import type { OriginSchemes } from './origin-schemes';
 import type { ExternalMediaImportResult, ExternalMediaInlinerDependencies } from './types';
 
 declare class ExternalMediaInliner {
@@ -5,7 +6,10 @@ declare class ExternalMediaInliner {
 
   getMediaStorage: ExternalMediaInlinerDependencies['getMediaStorage'];
 
-  importUrl(sourceUrl: string): Promise<ExternalMediaImportResult>;
+  importUrl(
+    sourceUrl: string,
+    options?: { originSchemes?: OriginSchemes },
+  ): Promise<ExternalMediaImportResult>;
   inline(domains: string[]): Promise<void>;
 }
 

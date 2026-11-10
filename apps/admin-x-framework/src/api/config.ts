@@ -160,10 +160,6 @@ export type Config = {
     enabled?: boolean;
     organization?: string;
   };
-  docsbot?: {
-    enabled?: boolean;
-    id?: string;
-  };
   clientExtensions?: {
     script?: {
       container?: string;

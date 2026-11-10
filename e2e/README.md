@@ -285,8 +285,9 @@ pnpm preflight:build
 # Debug failed tests (keeps containers)
 PRESERVE_ENV=true pnpm test
 
-# Check the fake Stripe server against captured Stripe responses, and the fake
-# upgrade host against the upgrade protocol fixtures (no infra, ~1s)
+# Check the fake Stripe server against captured Stripe responses, the fake
+# upgrade host against the upgrade protocol fixtures, and that every frontend
+# app is served locally rather than from jsDelivr (no infra, ~1s)
 pnpm test:fixtures
 
 # Put a Stripe test account into the state fixtures are captured from

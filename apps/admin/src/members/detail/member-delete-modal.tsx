@@ -7,7 +7,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  LoadingIndicator,
   Switch,
 } from '@tryghost/shade/components';
 import { getDeleteMemberButtonLabel, hasCancelableStripeSubscription } from './member-delete';
@@ -137,18 +136,11 @@ const MemberDeleteModal: React.FC<MemberDeleteModalProps> = ({
           </Button>
           <Button
             data-testid="confirm-delete-member"
-            disabled={deleteMember.isPending}
+            loading={deleteMember.isPending}
             variant="destructive"
             onClick={() => void onConfirm()}
           >
-            {deleteMember.isPending ? (
-              <>
-                <LoadingIndicator size="sm" />
-                <span className="sr-only">Deleting</span>
-              </>
-            ) : (
-              getDeleteMemberButtonLabel(cancelStripe && showCancelStripeToggle)
-            )}
+            {getDeleteMemberButtonLabel(cancelStripe && showCancelStripeToggle)}
           </Button>
         </DialogFooter>
       </DialogContent>

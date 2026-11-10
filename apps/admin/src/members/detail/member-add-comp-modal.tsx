@@ -10,7 +10,6 @@ import {
   DialogTitle,
   Input,
   Label,
-  LoadingIndicator,
   Select,
   SelectContent,
   SelectItem,
@@ -214,16 +213,10 @@ const MemberAddCompModal: React.FC<MemberAddCompModalProps> = ({ open, onOpenCha
           <Button
             data-testid="comp-add-confirm"
             disabled={!canSubmit}
+            loading={isSubmitting}
             onClick={() => void onSubmit()}
           >
-            {isSubmitting ? (
-              <>
-                <LoadingIndicator size="sm" />
-                <span className="sr-only">Adding</span>
-              </>
-            ) : (
-              'Add subscription'
-            )}
+            Add subscription
           </Button>
         </DialogFooter>
       </DialogContent>

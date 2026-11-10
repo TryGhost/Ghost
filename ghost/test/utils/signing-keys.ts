@@ -17,7 +17,13 @@ export function staticSigningKeys(...privateKeys: string[]): SigningKeyProvider 
 
   return {
     async getSigningKey() {
-      return { privateKey: privateKeys[0], kid: (await getPublicKeyInfo(privateKeys[0])).kid };
+      const privateKey = privateKeys[0];
+      return {
+        privateKey,
+        kid: (await getPublicKeyInfo(privateKey)).kid,
+        legacy:
+          (crypto.createPrivateKey(privateKey).asymmetricKeyDetails?.modulusLength ?? 0) < 2048,
+      };
     },
     async getVerificationKey(kid) {
       const all = await keys();

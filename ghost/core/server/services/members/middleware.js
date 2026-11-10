@@ -289,6 +289,33 @@ const authMemberByUuid = async function authMemberByUuid(req, res, next) {
   }
 };
 
+/**
+ * Find the member the identity token in the request body names, so a limiter
+ * can count them before the controller runs.
+ *
+ * Sets `req.identityTokenMemberId` to the member's id, or to null when the token
+ * is missing, does not verify or names nobody. The controller rejects those
+ * requests itself, without sending anything. The id, not the token's email, so
+ * a member who changes their email keeps the same budget, and only a verified
+ * token, so nobody can spend another member's budget by naming them.
+ */
+const loadIdentityTokenMember = async function loadIdentityTokenMember(req, res, next) {
+  const identity = req.body?.identity;
+  let memberId = null;
+
+  if (typeof identity === 'string') {
+    try {
+      const member = await membersService.api.members.getByToken(identity);
+      memberId = member?.id ?? null;
+    } catch (err) {
+      memberId = null;
+    }
+  }
+
+  Object.assign(req, { identityTokenMemberId: memberId });
+  return next();
+};
+
 const getIdentityToken = async function getIdentityToken(req, res) {
   try {
     const token = await membersService.ssr.getIdentityTokenForMemberFromSession(req, res);
@@ -453,7 +480,10 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
 
   try {
     const member = await membersService.ssr.exchangeTokenForSession(req, res);
-    spamPrevention.membersAuth().reset(req.ip, `${member.email}login`);
+    spamPrevention
+      .membersAuth()
+      .reset({ ip: req.ip, key: spamPrevention.emailKey(member.email) })
+      .catch((err) => logging.error(err));
     // Note: don't reset 'member_login', or that would give an easy way around user enumeration by logging in to a manually created account
     const subscriptions = (member && member.subscriptions) || [];
 
@@ -549,6 +579,7 @@ module.exports = {
   emptyWhenAnonymous,
   authMemberByUuid,
   createSessionFromMagicLink,
+  loadIdentityTokenMember,
   getIdentityToken,
   getEntitlementToken,
   getMemberNewsletters,

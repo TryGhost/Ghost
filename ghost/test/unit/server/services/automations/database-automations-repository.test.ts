@@ -2477,7 +2477,7 @@ describe('automations repository', function () {
       assert.equal(nextStep.automation_run_id, run.id);
       assert.equal(nextStep.automation_action_revision_id, nextAction.revision_id);
       assert.equal(nextStep.status, 'pending');
-      assert.equal(nextStep.ready_at, toDatabaseDate(nextReadyAt));
+      assert.equal(toDatabaseDate(Number(nextStep.ready_at)), toDatabaseDate(nextReadyAt));
     });
 
     it('uses wait hours when the next action is a wait action', async function () {
@@ -2676,7 +2676,7 @@ describe('automations repository', function () {
       const nextStep = allSteps.find((candidate) => candidate.id !== stepRow.id);
       assert(nextStep);
       assert.equal(nextStep.automation_action_revision_id, updatedNextAction.revision_id);
-      assert.equal(nextStep.ready_at, toDatabaseDate(nextReadyAt));
+      assert.equal(toDatabaseDate(Number(nextStep.ready_at)), toDatabaseDate(nextReadyAt));
     });
   });
 

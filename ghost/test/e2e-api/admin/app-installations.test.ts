@@ -2147,6 +2147,29 @@ describe('App installations Admin API', function () {
       );
     });
 
+    it('refuses an approval whose icon stopped loading after the review, storing nothing', async function () {
+      const installed = await installWithIcon();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      serveIcon(NEW_ICON);
+      const reviewed = await preview();
+      serve(manifest({ ...servedIcon, name: 'Podcasts' }));
+      nock(MANIFEST_HOST).get(ICON_PATH).reply(503);
+
+      const { body } = await agent
+        .put(`apps/installations/${installed.id}/`)
+        .body({
+          app_installations: [{ manifest_url: MANIFEST_URL, digest: reviewed.digest, revision: 0 }],
+        })
+        .expectStatus(422);
+
+      assert.equal(body.errors[0].code, 'APP_MANIFEST_INVALID');
+      assert.deepEqual(body.errors[0].details, [
+        { path: 'icon.url', message: 'Expected an icon that loads, not HTTP 503' },
+      ]);
+      assert.equal((await manifestRows()).length, 1);
+      assert.equal((await installationRow(installed.id)).revision, 0);
+    });
+
     // The digest doesn't cover the icon, so the copy is whatever the app serves on approval.
     it('stores the icon fetched on approval for an approval that stores a new manifest', async function () {
       const approvedIcon =

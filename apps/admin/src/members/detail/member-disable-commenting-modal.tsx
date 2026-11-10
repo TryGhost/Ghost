@@ -7,7 +7,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  LoadingIndicator,
   Switch,
 } from '@tryghost/shade/components';
 import { toast } from 'sonner';
@@ -104,17 +103,10 @@ const MemberDisableCommentingModal: React.FC<MemberDisableCommentingModalProps> 
           </Button>
           <Button
             data-testid="confirm-disable-commenting"
-            disabled={disable.isPending}
+            loading={disable.isPending}
             onClick={() => void onConfirm()}
           >
-            {disable.isPending ? (
-              <>
-                <LoadingIndicator size="sm" />
-                <span className="sr-only">Disabling</span>
-              </>
-            ) : (
-              'Disable commenting'
-            )}
+            Disable commenting
           </Button>
         </DialogFooter>
       </DialogContent>

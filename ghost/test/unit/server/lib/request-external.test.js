@@ -5,6 +5,8 @@ const nock = require('nock');
 const externalRequest = require('../../../../core/server/lib/request-external');
 const { isPrivateIp, _installSafeDnsLookup: installSafeDnsLookup } = externalRequest;
 const configUtils = require('../../../utils/config-utils');
+const http = require('node:http');
+const { once } = require('node:events');
 
 // for sinon stubs
 const dns = require('dns');
@@ -853,6 +855,229 @@ describe('External Request', function () {
           }
           reject(new Error('Should have passed through DNS error'));
         });
+      });
+    });
+  });
+
+  describe('names under .localhost (lookupLocalhostNames)', function () {
+    const notFound = (hostname) => {
+      const error = new Error(`getaddrinfo ENOTFOUND ${hostname}`);
+      error.code = 'ENOTFOUND';
+      error.hostname = hostname;
+      return error;
+    };
+
+    /**
+     * A system resolver that knows `names`, answering each name's lookups with its
+     * address, and nothing else. It records the names it's asked for.
+     */
+    const resolver = (names) => {
+      const asked = [];
+      const lookup = (hostname, options, callback) => {
+        asked.push(hostname);
+        const address = names[hostname];
+        if (!address) {
+          return process.nextTick(callback, notFound(hostname));
+        }
+        const family = address.includes(':') ? 6 : 4;
+        if (options.all) {
+          return process.nextTick(callback, null, [{ address, family }]);
+        }
+        process.nextTick(callback, null, address, family);
+      };
+      return { lookup, asked };
+    };
+
+    const lookUp = (lookup, hostname, options = {}) =>
+      new Promise((resolve) => {
+        lookup(hostname, options, (error, ...found) => resolve({ error, found }));
+      });
+
+    it('looks up a name under .localhost the system doesn’t know as localhost', async function () {
+      const system = resolver({ localhost: '::1' });
+      const lookup = externalRequest._lookupLocalhostNames(system.lookup);
+
+      assert.deepEqual(await lookUp(lookup, 'my-app.localhost'), {
+        error: null,
+        found: ['::1', 6],
+      });
+      assert.deepEqual(await lookUp(lookup, 'a.b.localhost.'), { error: null, found: ['::1', 6] });
+      assert.deepEqual(await lookUp(lookup, 'my-app.localhost..'), {
+        error: null,
+        found: ['::1', 6],
+      });
+      assert.deepEqual(system.asked, [
+        'my-app.localhost',
+        'localhost',
+        'a.b.localhost.',
+        'localhost',
+        'my-app.localhost..',
+        'localhost',
+      ]);
+    });
+
+    it('tells a name under .localhost in linear time, however many dots it has', async function () {
+      // A pattern for trailing dots that could start at any dot would retry from each one
+      // in a run that doesn't end the name, taking quadratic time on this one.
+      const dots = '.'.repeat(200_000);
+      const system = resolver({ localhost: '::1' });
+      const lookup = externalRequest._lookupLocalhostNames(system.lookup);
+
+      const started = performance.now();
+      assert.deepEqual(await lookUp(lookup, `my-app.localhost${dots}`), {
+        error: null,
+        found: ['::1', 6],
+      });
+      assert.equal((await lookUp(lookup, `a${dots}b`)).error.code, 'ENOTFOUND');
+      assert.ok(performance.now() - started < 1000);
+      assert.equal(system.asked.length, 3);
+    });
+
+    it('keeps the system’s answer for a name under .localhost it knows', async function () {
+      const system = resolver({ localhost: '::1', 'vm.localhost': '192.168.64.5' });
+      const lookup = externalRequest._lookupLocalhostNames(system.lookup);
+
+      assert.deepEqual(await lookUp(lookup, 'vm.localhost'), {
+        error: null,
+        found: ['192.168.64.5', 4],
+      });
+      assert.deepEqual(system.asked, ['vm.localhost']);
+    });
+
+    it('leaves every other name to the system, errors included', async function () {
+      const system = resolver({ localhost: '::1' });
+      const lookup = externalRequest._lookupLocalhostNames(system.lookup);
+
+      for (const hostname of ['example.com', 'localhost.example.com', 'localhost']) {
+        await lookUp(lookup, hostname);
+      }
+
+      assert.deepEqual(system.asked, ['example.com', 'localhost.example.com', 'localhost']);
+    });
+
+    it('gives the system’s error for the name asked for when localhost can’t be looked up either', async function () {
+      const lookup = externalRequest._lookupLocalhostNames(resolver({}).lookup);
+
+      const { error } = await lookUp(lookup, 'my-app.localhost');
+
+      assert.equal(error.code, 'ENOTFOUND');
+      assert.equal(error.hostname, 'my-app.localhost');
+    });
+
+    it('looks up localhost whatever error the system gave, as offline it gives EAI_AGAIN', async function () {
+      // Offline, a name the hosts file doesn't have can't be asked of a nameserver, but
+      // `localhost` is in the hosts file.
+      const offline = (hostsFile) => {
+        const asked = [];
+        const lookup = (hostname, options, callback) => {
+          asked.push(hostname);
+          if (hostsFile[hostname]) {
+            return process.nextTick(callback, null, hostsFile[hostname], 4);
+          }
+          const error = new Error(`getaddrinfo EAI_AGAIN ${hostname}`);
+          error.code = 'EAI_AGAIN';
+          error.hostname = hostname;
+          process.nextTick(callback, error);
+        };
+        return { lookup, asked };
+      };
+
+      const system = offline({ localhost: '127.0.0.1' });
+      const lookup = externalRequest._lookupLocalhostNames(system.lookup);
+      assert.deepEqual(await lookUp(lookup, 'my-app.localhost'), {
+        error: null,
+        found: ['127.0.0.1', 4],
+      });
+      assert.deepEqual(system.asked, ['my-app.localhost', 'localhost']);
+
+      const withoutLocalhost = externalRequest._lookupLocalhostNames(offline({}).lookup);
+      const { error } = await lookUp(withoutLocalhost, 'my-app.localhost');
+      assert.equal(error.code, 'EAI_AGAIN');
+      assert.equal(error.hostname, 'my-app.localhost');
+    });
+
+    it('passes the lookup’s options on, and takes a callback in their place', async function () {
+      const lookup = externalRequest._lookupLocalhostNames(resolver({ localhost: '::1' }).lookup);
+
+      assert.deepEqual(await lookUp(lookup, 'my-app.localhost', { all: true }), {
+        error: null,
+        found: [[{ address: '::1', family: 6 }]],
+      });
+      const found = await new Promise((resolve) => {
+        lookup('my-app.localhost', (error, ...rest) => resolve([error, ...rest]));
+      });
+      assert.deepEqual(found, [null, '::1', 6]);
+    });
+
+    describe('as the request guard installs it', function () {
+      beforeEach(function () {
+        // Restore any existing stubs from global disableNetwork()
+        dns.lookup.restore?.();
+        dnsPromises.lookup.restore?.();
+      });
+
+      afterEach(async function () {
+        await configUtils.restore();
+        sinon.restore();
+        nock.cleanAll();
+        nock.disableNetConnect();
+      });
+
+      /** Stands in for a system resolver like Windows's: it knows `localhost`, but no name under it. */
+      const withoutLocalhostNames = () => {
+        const systemLookup = dns.lookup;
+        return sinon.stub(dns, 'lookup').callsFake((hostname, options, callback) => {
+          if (typeof options === 'function') {
+            callback = options;
+            options = {};
+          }
+          if (hostname !== 'localhost') {
+            return process.nextTick(callback, notFound(hostname));
+          }
+          systemLookup(hostname, options, callback);
+        });
+      };
+
+      it('looks up names under .localhost in development only', async function () {
+        withoutLocalhostNames();
+        const url = new URL('http://my-app.localhost:5190/ghost-app.json');
+
+        configUtils.set('env', 'development');
+        const development = { url };
+        await installSafeDnsLookup(development);
+        const inDevelopment = await lookUp(development.dnsLookup, 'my-app.localhost');
+        assert.equal(inDevelopment.error, null);
+
+        configUtils.set('env', 'production');
+        const production = { url };
+        await installSafeDnsLookup(production);
+        const inProduction = await lookUp(production.dnsLookup, 'my-app.localhost');
+        assert.equal(inProduction.error.code, 'ENOTFOUND');
+      });
+
+      it('in development, reaches a server on localhost by a .localhost name the system doesn’t know', async function () {
+        withoutLocalhostNames();
+        configUtils.set('env', 'development');
+        // Listening on `localhost` takes its first address, as a dev server does: `::1` on
+        // some systems and `127.0.0.1` on others.
+        const server = http.createServer((request, response) => response.end(request.headers.host));
+        server.listen(0, 'localhost');
+        await once(server, 'listening');
+        const { port } = server.address();
+        nock.enableNetConnect(`my-app.localhost:${port}`);
+
+        try {
+          const response = await externalRequest(`http://my-app.localhost:${port}/`);
+          assert.equal(response.body, `my-app.localhost:${port}`);
+
+          // Node's own lookup goes to the stand-in, which doesn't know the name.
+          const direct = http.get(`http://my-app.localhost:${port}/`);
+          const [error] = await once(direct, 'error');
+          assert.equal(error.code, 'ENOTFOUND');
+        } finally {
+          server.close();
+          await once(server, 'close');
+        }
       });
     });
   });

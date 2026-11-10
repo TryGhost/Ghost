@@ -9,9 +9,8 @@ const security = require('@tryghost/security');
 const { validatePassword } = require('../lib/validate-password');
 const { generatePassword } = require('../lib/generate-password');
 const urlUtils = require('../../shared/url-utils').default;
-const { setIsRoles } = require('./role-utils');
+const { ASSIGNABLE_ROLES, setIsRoles } = require('./role-utils');
 const activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'];
-const ASSIGNABLE_ROLES = ['Administrator', 'Super Editor', 'Editor', 'Author', 'Contributor'];
 const DEFAULT_ACCESSIBILITY_PREFERENCES = JSON.stringify({ nightShift: 'system' });
 
 const messages = {
@@ -699,8 +698,68 @@ const User = ghostBookshelf.Model.extend(
         userData.accessibility = DEFAULT_ACCESSIBILITY_PREFERENCES;
       }
 
-      return ghostBookshelf.Model.add
-        .call(self, userData, options)
+      /**
+       * Resolve a role given by name, by id or by object ({id}, {role_id},
+       * {name} or a Role model) to the role id to attach.
+       */
+      async function resolveRole(role) {
+        const Role = ghostBookshelf.model('Role');
+        const roleOptions = { transacting: options.transacting };
+        let roleId = null;
+        let roleModel = null;
+
+        if (typeof role === 'string') {
+          roleModel = await Role.findOne({ name: role }, roleOptions);
+
+          if (!roleModel && ObjectId.isValid(role)) {
+            roleId = role;
+          }
+        } else if (role && typeof role === 'object') {
+          roleId = role.id || role.role_id;
+
+          if (!roleId && role.name) {
+            roleModel = await Role.findOne({ name: role.name }, roleOptions);
+          }
+        }
+
+        if (roleId) {
+          roleModel = await Role.findOne({ id: roleId }, roleOptions);
+
+          // Preserve the existing behaviour of attaching role ids as given
+          if (!roleModel) {
+            return roleId;
+          }
+        }
+
+        if (!roleModel) {
+          throw new errors.ValidationError({
+            message: tpl(messages.invalidRoleValue.message),
+            context: tpl(messages.invalidRoleValue.context),
+            help: tpl(messages.invalidRoleValue.help),
+          });
+        }
+
+        // The Owner role is only ever assigned via fixtures or ownership transfer
+        if (roleModel.get('name') === 'Owner') {
+          throw new errors.ValidationError({
+            message: tpl(messages.methodDoesNotSupportOwnerRole),
+          });
+        }
+
+        return roleModel.id;
+      }
+
+      // CASE: it is possible to add roles by name, by id or by object.
+      // Resolve them before inserting the user so an invalid role never leaves a user behind.
+      const resolveRoles = roles
+        ? Promise.all([].concat(roles).map(resolveRole))
+        : Promise.resolve();
+
+      return resolveRoles
+        .then(function (resolvedRoles) {
+          roles = resolvedRoles;
+          return ghostBookshelf.Model.add.call(self, userData, options);
+        })
         .then(function then(addedUser) {
           // Assign the userData to our created user so we can pass it back
           userData = addedUser;
@@ -713,29 +772,7 @@ const User = ghostBookshelf.Model.extend(
           return Promise.resolve(roles);
         })
         .then(function (_roles) {
-          roles = _roles;
-
-          // CASE: it is possible to add roles by name, by id or by object
-          if (typeof roles[0] === 'string' && !ObjectId.isValid(roles[0])) {
-            const rolePromises = roles.map((roleName) => {
-              return ghostBookshelf.model('Role').findOne(
-                {
-                  name: roleName,
-                },
-                options,
-              );
-            });
-            return Promise.all(rolePromises).then((roleModels) => {
-              roles = roleModels.map((roleModel) => {
-                return roleModel.id;
-              });
-            });
-          }
-
-          return Promise.resolve();
-        })
-        .then(function () {
-          return baseUtils.attach(User, userData.id, 'roles', roles, options);
+          return baseUtils.attach(User, userData.id, 'roles', _roles, options);
         })
         .then(function then() {
           // find and return the added user
