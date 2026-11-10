@@ -39,7 +39,6 @@ const pipelines = [
 describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperName, schedule }) {
   afterEach(async function () {
     sinon.restore();
-    vi.unstubAllEnvs();
     await configUtils.restore();
   });
 
@@ -117,7 +116,6 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
   });
 
   it('leaves registration retryable after rejection', async function () {
-    vi.stubEnv('NODE_ENV', 'production');
     const jobsService = {
       scheduleRecurring: sinon.stub().onFirstCall().rejects(new Error('unavailable')),
     };
@@ -138,7 +136,6 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
   });
 
   it('lets the real backend deduplicate concurrent recurring registration without fetching immediately', async function () {
-    vi.stubEnv('NODE_ENV', 'production');
     const backend = new InMemoryJobsBackend();
     // Recurring ticks queue through the backend's internal push, not enqueue()
     const enqueue = sinon.spy(backend as unknown as { _push: () => void }, '_push');
