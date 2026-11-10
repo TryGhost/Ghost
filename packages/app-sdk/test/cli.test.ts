@@ -1,22 +1,13 @@
 // @vitest-environment node
-import { createServer, type IncomingMessage, type Server } from 'node:http';
-import type { AddressInfo } from 'node:net';
 import { existsSync } from 'node:fs';
 import { readFile, rename, symlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { signManifest } from '@tryghost/app-contracts/identity';
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { CHALLENGE_PATH, handleChallenge } from '../src/backend/index.ts';
 import { run } from '../src/cli.ts';
-import {
-  generateKey,
-  publicKeyOf,
-  signAppManifest,
-  type PrivateKeyJwk,
-} from '../src/tooling/index.ts';
+import { generateKey } from '../src/tooling/index.ts';
 import { SOURCE, makeProject, readAsGhost } from './helpers.ts';
 
 /** Runs the CLI, collecting what it prints. */
@@ -26,135 +17,6 @@ async function cli(...args: string[]) {
   const code = await run(args, { out: (text) => out.push(text), err: (text) => err.push(text) });
   return { code, out: out.join('\n'), err: err.join('\n') };
 }
-
-async function toRequest(req: IncomingMessage): Promise<Request> {
-  const chunks: Buffer[] = [];
-  for await (const chunk of req) {
-    chunks.push(chunk as Buffer);
-  }
-  return new Request(`http://${req.headers.host}${req.url}`, {
-    method: req.method,
-    headers: req.headers as Record<string, string>,
-    body: req.method === 'GET' || req.method === 'HEAD' ? undefined : Buffer.concat(chunks),
-  });
-}
-
-/**
- * An app on localhost, as an app's backend would serve it: the signed manifest, and the
- * challenge answered by `handleChallenge`. Each test sets what it serves.
- */
-let server: Server;
-let origin: string;
-let app: {
-  manifest: (manifestUrl: string) => Promise<unknown>;
-  backendKey: PrivateKeyJwk;
-  challengeStatus?: number;
-};
-
-beforeAll(async () => {
-  server = createServer((req, res) => {
-    void (async () => {
-      const request = await toRequest(req);
-      let response: Response;
-      if (req.url === '/ghost-app.json') {
-        response = Response.json(await app.manifest(`${origin}/ghost-app.json`));
-      } else if (req.url === '/moved.json') {
-        response = new Response(null, {
-          status: 301,
-          headers: { location: 'https://elsewhere.example/ghost-app.json' },
-        });
-      } else if (req.url === '/utf8.json') {
-        // A Location of raw UTF-8 bytes, as a server sends a path outside ASCII unescaped.
-        response = new Response(null, {
-          status: 301,
-          headers: { location: Buffer.from('/ghost-app-ü.json').toString('latin1') },
-        });
-      } else if (req.url === '/ghost-app-%C3%BC.json') {
-        response = Response.json(await app.manifest(`${origin}/utf8.json`));
-      } else if (req.url === CHALLENGE_PATH && !app.challengeStatus) {
-        response = await handleChallenge(request, { backendKey: app.backendKey });
-      } else {
-        response = new Response('Not found', { status: app.challengeStatus ?? 404 });
-      }
-      res.writeHead(response.status, Object.fromEntries(response.headers));
-      res.end(Buffer.from(await response.arrayBuffer()));
-    })();
-  });
-  await new Promise<void>((resolve) => {
-    server.listen(0, resolve);
-  });
-  origin = `http://localhost:${(server.address() as AddressInfo).port}`;
-});
-
-afterAll(
-  () =>
-    new Promise((resolve) => {
-      server.close(resolve);
-    }),
-);
-
-const identityKey = generateKey();
-
-/** Serves a manifest signed with `identityKey`, naming `backendKey`. */
-function serveSigned(backendKey: PrivateKeyJwk, { signFor }: { signFor?: string } = {}) {
-  app = {
-    backendKey,
-    manifest: async (manifestUrl) => {
-      const result = await signAppManifest(SOURCE, {
-        manifestUrl: signFor ?? manifestUrl,
-        identityKey,
-        backendKey,
-        development: true,
-      });
-      if (!result.success) {
-        throw new Error(JSON.stringify(result.errors));
-      }
-      return result.signed;
-    },
-  };
-}
-
-// What `check` finds is checkApp's, and tested with it. These test what the CLI prints.
-describe('ghost-app check', () => {
-  beforeEach(() => serveSigned(generateKey()));
-
-  it('says so, and exits with 0, for an app Ghost would install', async () => {
-    const result = await cli('check', `${origin}/ghost-app.json`);
-    expect(result).toMatchObject({ code: 0, err: '' });
-    expect(result.out).toContain(`OK: Hello (com.example.hello) at ${origin}/ghost-app.json`);
-    expect(result.out).toContain('development build');
-  });
-
-  it("prints Ghost's code, its message and what was wrong, and exits with 1", async () => {
-    serveSigned(generateKey(), { signFor: 'http://localhost:1/ghost-app.json' });
-    const result = await cli('check', `${origin}/ghost-app.json`);
-    expect(result).toMatchObject({ code: 1, out: '' });
-    expect(result.err).toContain(
-      'APP_MANIFEST_URL_MISMATCH: The app’s manifest is for another address.',
-    );
-    expect(result.err).toContain(`Expected ${origin}/ghost-app.json`);
-  });
-
-  it('prints a manifest Ghost would refuse field by field', async () => {
-    app.manifest = async (manifestUrl) => {
-      const backendKey = generateKey();
-      return signManifest(
-        {
-          ...SOURCE,
-          accent_color: 'red',
-          manifest_url: manifestUrl,
-          identity_key: publicKeyOf(identityKey),
-          backend_key: publicKeyOf(backendKey),
-          development: true,
-        },
-        identityKey,
-      );
-    };
-    const result = await cli('check', `${origin}/ghost-app.json`);
-    expect(result.code).toBe(1);
-    expect(result.err).toContain('accent_color: Expected a hex colour such as #ff5500');
-  });
-});
 
 describe('ghost-app keys, sign and backend-key', () => {
   let root: string;
@@ -435,7 +297,6 @@ describe('ghost-app keys, sign and backend-key', () => {
     expect(none).toMatchObject({ code: 2, out: '' });
     expect(none.err).toContain('Usage: ghost-app');
     for (const [args, says] of [
-      [['check'], "missing required argument 'manifest URL'"],
       [['keys', 'extra'], "too many arguments for 'keys'"],
       [['keys', '--nope'], "unknown option '--nope'"],
       [['sign', '--dir', root], "required option '--url <manifest URL>' not specified"],

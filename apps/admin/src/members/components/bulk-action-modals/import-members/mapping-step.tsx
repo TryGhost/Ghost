@@ -12,20 +12,12 @@ import {
 } from '@tryghost/shade/components';
 import { CreateCustomFieldPopover } from '@/shared/member-custom-fields/create-custom-field-popover';
 import {
-  APIError,
-  HostLimitError,
-  JSONError,
-  ValidationError,
-  getErrorMessage,
-} from '@tryghost/admin-x-framework/errors';
-import {
-  type NewMemberCustomField,
   memberCustomFieldCsvColumns,
-  memberCustomFieldUserTypes,
-  useCreateMemberCustomField,
+  useCreatableMemberCustomFieldTypes,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { matchShape } from '@tryghost/metafield-types/structure';
-import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useCustomFieldCreateAttempt } from '@/shared/member-custom-fields/use-custom-field-create-attempt';
+import type { CustomFieldValues } from '@/shared/member-custom-fields/custom-field-values';
 import { FieldPicker } from '@/members/components/bulk-action-modals/import-members/field-picker';
 import { LabelPicker } from '@/members/label-picker';
 import { LucideIcon, cn, formatNumber } from '@tryghost/shade/utils';
@@ -168,6 +160,7 @@ export function MappingStep({
   } | null>(null);
   const createFieldForColumn = creating?.open ? creating.column : null;
   const closeCreateForm = () => setCreating((current) => current && { ...current, open: false });
+  const creatableTypes = useCreatableMemberCustomFieldTypes();
   // What the popover hangs from: the column's field button, looked up whenever the popover asks,
   // so a button drawn afresh is the one it finds.
   const createColumn = creating?.column;
@@ -187,75 +180,25 @@ export function MappingStep({
   // filtered to the field just made — and only one can be open at a time regardless.
   const [openPicker, setOpenPicker] = useState<{ columnKey: string; search: string } | null>(null);
 
-  // The create lives here rather than in the form because its outcome is this step's
-  // business: a scalar finishes a row's mapping, a composite reopens the picker, and a
-  // refusal has to keep the form on screen to be shown in. The form asks; this answers.
-  const { mutateAsync: createField, isPending: isCreating } = useCreateMemberCustomField();
-  const [nameError, setNameError] = useState<string | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [canRetry, setCanRetry] = useState(true);
-  const handleError = useHandleError();
-
-  const clearCreateErrors = useCallback(() => {
-    setNameError(null);
-    setSaveError(null);
-    setCanRetry(true);
-  }, []);
-
-  const reportCreateFailure = (error: unknown) => {
-    const apiError = error instanceof JSONError ? error.data?.errors?.[0] : null;
-
-    // A refusal the publisher can answer by typing belongs on the input they would change.
-    if (error instanceof ValidationError && apiError?.property === 'name') {
-      setNameError(getErrorMessage(error, 'Invalid name'));
-      return;
-    }
-
-    // The server's own sentence wherever there is one — for the site's field ceiling it is
-    // the only thing that explains the refusal. The fallback covers the errors carrying no
-    // API body at all (maintenance, timeout, unreachable), whose class message is the text.
-    setSaveError(
-      getErrorMessage(
-        error,
-        error instanceof APIError
-          ? error.message
-          : 'Could not create the custom field, please try again.',
-      ),
-    );
-    // Nothing they can type changes a ceiling or a permission.
-    setCanRetry(!(error instanceof HostLimitError) && apiError?.type !== 'NoPermissionError');
-
-    // The ceiling is an expected answer rather than a fault; everything else reaching here
-    // (a 500, a timeout, an expired session) should be visible to us. No toast: the form is
-    // still on screen saying it, an inch above the button they pressed.
-    if (!(error instanceof HostLimitError)) {
-      handleError(error, { withToast: false });
-    }
-  };
+  // The create's outcome is this step's business: a scalar finishes a row's mapping, a composite
+  // reopens the picker, and a refusal has to keep the form on screen to be shown in. The form
+  // asks; this answers.
+  const {
+    attempt: createAttempt,
+    create,
+    reset: resetCreate,
+  } = useCustomFieldCreateAttempt({
+    // The row is then mapped by hand from the list.
+    createdUnusable:
+      'The field was created, but this column could not be mapped to it. Choose it from the list.',
+  });
+  const isCreating = createAttempt.state === 'saving';
 
   // The whole create, from asking to what its answer means for the row. Named rather than
   // inlined into the form's prop: it is the step's business end, not markup.
-  const createFieldForRow = async (rowKey: string, newField: NewMemberCustomField) => {
-    clearCreateErrors();
-
-    let field;
-    try {
-      const response = await createField(newField);
-      field = response.members_metafields?.[0];
-    } catch (error) {
-      reportCreateFailure(error);
-      return;
-    }
-
+  const createFieldForRow = async (rowKey: string, values: CustomFieldValues) => {
+    const field = await create(values);
     if (!field) {
-      // A success carrying nothing. The field may well have been made, so saying it could
-      // not be would have them make a second one; this says what is true and leaves the
-      // row to be mapped by hand from the list.
-      setSaveError(
-        'The field was created, but this column could not be mapped to it. Choose it from the list.',
-      );
-      setCanRetry(false);
-      handleError(new Error('Custom field create returned no field'));
       return;
     }
 
@@ -290,13 +233,13 @@ export function MappingStep({
     // A refusal belonged to the form that was open. Left standing it would greet the next one,
     // under an input nobody has touched, and a ceiling refusal would arrive with its Save
     // already disabled.
-    clearCreateErrors();
+    resetCreate();
     closeCreateForm();
     setOpenPicker({ columnKey, search });
   };
 
   const showCreateForm = (columnKey: string) => {
-    clearCreateErrors();
+    resetCreate();
     setCreating((current) => ({
       column: columnKey,
       session: (current?.session ?? 0) + 1,
@@ -592,25 +535,22 @@ export function MappingStep({
                 <CreateCustomFieldPopover
                   key={creating?.session ?? 0}
                   anchorRef={createAnchor}
-                  canRetry={canRetry}
+                  attempt={createAttempt}
                   initialName={creating ? suggestedFieldName(creating.column) : ''}
-                  isSaving={isCreating}
-                  nameError={nameError}
                   open={createFieldForColumn !== null}
-                  saveError={saveError}
                   suggestList={suggestList}
                   testId="import-create-custom-field"
-                  types={memberCustomFieldUserTypes}
+                  types={creatableTypes}
                   // Focus goes back to the column's field button as the popover closes.
                   onCancel={() => {
-                    clearCreateErrors();
+                    resetCreate();
                     closeCreateForm();
                   }}
-                  onEdit={clearCreateErrors}
-                  onSubmit={(newField) => {
+                  onEdit={resetCreate}
+                  onSubmit={(values) => {
                     // Against null, as the popover's open is: a blank header is the column ''.
                     if (createFieldForColumn !== null) {
-                      void createFieldForRow(createFieldForColumn, newField);
+                      void createFieldForRow(createFieldForColumn, values);
                     }
                   }}
                 />

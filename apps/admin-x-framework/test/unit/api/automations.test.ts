@@ -751,14 +751,12 @@ describe('automation mutation contracts', () => {
   it.each([
     { method: 'POST', useMutation: useAddAutomation },
     { method: 'PUT', useMutation: useEditAutomation },
-  ])('sends rules without legacy or server fields on $method', async ({ method, useMutation }) => {
+  ])('sends rules without server fields on $method', async ({ method, useMutation }) => {
     const automation = baseDetail([], []);
-    // Core still returns legacy fields, which must not leak into mutations.
-    const serverAutomation = { ...automation, trigger_tier_scope: 'free', trigger_tier_ids: null };
     await withMockFetch({ json: { automations: [automation] } }, async (mock) => {
       const { result } = renderHookWithProviders(() => useMutation());
       await act(async () => {
-        await result.current.mutateAsync(serverAutomation);
+        await result.current.mutateAsync(automation);
       });
       const request = mock.calls.find(
         ([, options]: [unknown, RequestInit]) => options.method === method,

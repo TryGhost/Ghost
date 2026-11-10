@@ -3,7 +3,6 @@ import { dirname, join, resolve } from 'node:path';
 
 import { Command, CommanderError } from 'commander';
 
-import { checkApp } from './tooling/check.ts';
 import {
   KEYS_DIRECTORY,
   KEY_NAMES,
@@ -14,8 +13,7 @@ import {
   type Mode,
 } from './tooling/keys.ts';
 import { canonicalPath, isWithin } from './tooling/paths.ts';
-import { formatErrors } from './shared/manifest.ts';
-import { MANIFEST_FILE, serialiseSigned, signProject } from './tooling/sign.ts';
+import { MANIFEST_FILE, formatErrors, serialiseSigned, signProject } from './tooling/sign.ts';
 
 export interface Io {
   out: (text: string) => void;
@@ -106,23 +104,6 @@ async function sign(
   return 0;
 }
 
-async function check(url: string, io: Io) {
-  const result = await checkApp(url);
-  if (!result.success) {
-    io.err(`${result.code}: ${result.message}`);
-    io.err(result.errors ? formatErrors(result.errors) : result.detail);
-    return 1;
-  }
-  const { manifest } = result;
-  io.out(
-    `OK: ${manifest.name} (${manifest.id}) at ${result.manifestUrl} is signed with the identity key it names, and its origin answered the challenge with its backend key.`,
-  );
-  if (manifest.development) {
-    io.out('It is a development build, which Admin labels as one.');
-  }
-  return 0;
-}
-
 async function backendKey(
   root: string,
   {
@@ -143,7 +124,7 @@ async function backendKey(
 export async function run(args: string[], io: Io): Promise<number> {
   let exitCode = 0;
   const program = new Command('ghost-app')
-    .description("Creates an app's keys, signs its manifest, and checks it as Ghost does.")
+    .description("Creates an app's keys and signs its manifest.")
     .option('--dir <directory>', "the project's directory", '.')
     .showHelpAfterError()
     // Thrown rather than exiting, so `run` resolves with the code, and prints through `io`.
@@ -170,14 +151,6 @@ export async function run(args: string[], io: Io): Promise<number> {
     .option('--manifest <file>', 'sign another file than ghost-app.json')
     .action(async (options: Parameters<typeof sign>[1]) => {
       exitCode = await sign(root(), options, io);
-    });
-
-  program
-    .command('check')
-    .description('Checks an app as Ghost does before installing it')
-    .argument('<manifest URL>', 'the address of its signed manifest')
-    .action(async (url: string) => {
-      exitCode = await check(url, io);
     });
 
   program

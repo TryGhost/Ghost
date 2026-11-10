@@ -105,6 +105,27 @@ export const FIELD_STRUCTURES = {
   },
 } as const satisfies Record<FieldType, FieldStructure>;
 
+/**
+ * The types still in development, each with the Labs flag it is developed behind, as in
+ * `number: 'customFieldTypeNumber'`. A site offers such a type only where its flag is on, which is
+ * off on every customer's site until Admin and Ghost can both handle the type, so it can be merged
+ * and tried out long before it is released. A type with no flag here is released: removing its
+ * entry releases it. `docs/how-to/add-a-field-type.md` and `docs/how-to/release-a-field-type.md`
+ * cover both steps.
+ */
+export const FIELD_TYPE_FLAGS: { readonly [T in FieldType]?: string } = {};
+
+/**
+ * Whether a field of `type` can be created where `isFlagOn` says which Labs flags are on. Creating
+ * a field is the only thing a type's flag holds back. While it is off no field of the type can be
+ * created, so reading, editing, exporting and filtering one need no flag of their own, and a field
+ * created while the flag was on keeps working if it is switched off again.
+ */
+export function isCreatableType(type: FieldType, isFlagOn: (flag: string) => boolean): boolean {
+  const flag = FIELD_TYPE_FLAGS[type];
+  return flag === undefined || isFlagOn(flag);
+}
+
 export type StructureOf<T extends FieldType> = (typeof FIELD_STRUCTURES)[T];
 export type ShapeOf<T extends FieldType> = StructureOf<T>['shape'];
 

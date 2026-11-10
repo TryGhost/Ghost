@@ -4,7 +4,6 @@ import {
   type CustomFieldValues,
   hasChanged,
   newFieldErrors,
-  newFieldOf,
   newValues,
 } from '@/shared/member-custom-fields/custom-field-values';
 import {
@@ -13,11 +12,12 @@ import {
   TypeField,
 } from '@/shared/member-custom-fields/custom-field-form';
 import { ListField } from '@/shared/member-custom-fields/list-settings';
+import type { CreateAttempt } from '@/shared/member-custom-fields/use-custom-field-create-attempt';
 import { matchShape, type SetSettings } from '@tryghost/metafield-types/structure';
 import { type RefObject, useState } from 'react';
 import type {
+  CreatableMemberCustomFieldTypes,
   MemberCustomFieldUserType,
-  NewMemberCustomField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 /**
@@ -38,21 +38,15 @@ interface CreateCustomFieldPopoverProps {
   // What this place knows about a list made here, such as the options an import column already
   // holds. Asked once, as the popover opens.
   suggestList?: () => ListSuggestion;
-  // The types this place can use; one pins it.
-  types: MemberCustomFieldUserType[];
+  // The types this place can use, of those the site can create a field with; one pins it.
+  types: CreatableMemberCustomFieldTypes;
   // The request in flight and what came back of it. Owned by the place, which runs the create:
   // this asks for a field and shows what it is told, and knows nothing about how either happens.
-  isSaving: boolean;
-  // On the name input, for a refusal the publisher can fix by typing.
-  nameError: string | null;
-  // Below the form, for one they cannot.
-  saveError: string | null;
-  // False once a refusal cannot be argued with, such as a site at its field ceiling, so the
-  // button stops inviting the same doomed request.
-  canRetry: boolean;
-  onSubmit: (field: NewMemberCustomField) => void;
-  // Editing answers the last refusal: it was about what was there before. Not called once
-  // canRetry is false, since no edit answers a ceiling or a permission.
+  attempt: CreateAttempt;
+  // The form's values, which the place both creates the field from and files a refusal against.
+  onSubmit: (values: CustomFieldValues) => void;
+  // Editing answers the last refusal: it was about what was there before. Not called once a
+  // failure can't be retried, since no edit answers a ceiling or a permission.
   onEdit: () => void;
   onCancel: () => void;
   testId: string;
@@ -80,15 +74,16 @@ export function CreateCustomFieldPopover({
   initialName,
   suggestList,
   types,
-  isSaving,
-  nameError,
-  saveError,
-  canRetry,
+  attempt,
   onSubmit,
   onEdit,
   onCancel,
   testId,
 }: CreateCustomFieldPopoverProps) {
+  const isSaving = attempt.state === 'saving';
+  const refusedErrors = attempt.state === 'refused' ? attempt.errors : {};
+  const saveError = attempt.state === 'failed' ? attempt.message : null;
+  const canRetry = attempt.state === 'failed' ? attempt.canRetry : true;
   const [suggestion] = useState(() => suggestList?.());
   // What a list made here starts from, whenever List is chosen.
   const suggestedList = suggestion?.kind === 'list' ? suggestion.settings : undefined;
@@ -98,7 +93,7 @@ export function CreateCustomFieldPopover({
     return newValues(startType.id, initialName, suggestedList);
   });
   const [values, setValues] = useState(start);
-  // The values' own problems, found on Save. A refusal from the server comes in as nameError.
+  // The values' own problems, found on Save. A refusal from the server comes in with the attempt.
   const [errors, setErrors] = useState<CustomFieldErrors>({});
   const isDirty = hasChanged(values, start);
 
@@ -118,7 +113,7 @@ export function CreateCustomFieldPopover({
     if (typeProblem || Object.values(found).some(Boolean)) {
       return;
     }
-    onSubmit(newFieldOf(values));
+    onSubmit(values);
   };
 
   // Kept while it is changed or saving: a click outside or Escape would throw the form away, and
@@ -208,7 +203,8 @@ export function CreateCustomFieldPopover({
             listStart={suggestedList}
             state={{
               values,
-              errors: { ...errors, name: errors.name ?? nameError ?? undefined },
+              // A refusal lasts until the next edit, which forgets it, so it can stand over them.
+              errors: { ...errors, ...refusedErrors },
               saving: isSaving,
               update: change,
               setErrors,

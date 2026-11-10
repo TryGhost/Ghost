@@ -47,8 +47,8 @@ export interface PartSettingsProps<State> {
   /** The fields chosen for every collected value, which no other value is offered. */
   chosenFields: Array<string | null>;
   errors: ErrorMessages;
-  /** Whether automatic tax is on, which offers a tax ID on every checkout. */
-  automaticTax: boolean;
+  /** Whether every checkout asks for the part, whatever its setting says. */
+  alwaysAsked: boolean;
   onChange: (next: State) => void;
 }
 

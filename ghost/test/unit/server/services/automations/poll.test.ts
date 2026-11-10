@@ -962,9 +962,9 @@ describe('automations poll', function () {
     sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
   });
 
-  it('logs the original Mailgun error without the email payload', async function () {
+  it('logs Mailgun context without the email payload', async function () {
     const step = buildEmailStep();
-    const error = new Error('Mailgun request timed out');
+    const error = new Error('Forbidden');
     const logError = sinon.stub(logging, 'error');
     automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
     memberWelcomeEmailService.sendAutomationEmail.rejects({
@@ -977,7 +977,7 @@ describe('automations poll', function () {
     sinon.assert.calledOnceWithExactly(
       logError,
       {
-        err: sinon.match.same(error),
+        err: sinon.match({ message: 'Mailgun error: Forbidden' }),
         system: {
           event: 'automations.poll.step_execution_failed',
           step_id: step.id,

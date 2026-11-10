@@ -13,9 +13,13 @@ import {
 } from '@test-utils/acceptance';
 import { settingsScreen } from '@/settings/settings.screen';
 import { CUSTOM_FIELDS_FLAG } from '@/shared/member-custom-fields/availability';
-import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {
+  type MemberCustomField,
+  userTypeForFieldType,
+} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
 import { MAX_OPTIONS } from '@tryghost/metafield-types/structure';
+import { FIELDS_IN_DEVELOPMENT } from '@tryghost/metafield-types/test/fixtures';
 import { z } from 'zod';
 
 const companyField: MemberCustomField = {
@@ -67,6 +71,16 @@ async function dragField(name: string, target: Locator) {
 }
 
 type CustomField = MemberCustomField;
+
+/** Opens the types a new field can take in Settings, on a site with the given Labs flags. */
+async function openAddFieldTypes(labs: Record<string, boolean>) {
+  fakeSettingsScreens();
+  fakeCustomFields();
+  await renderAdminApp('/settings', { labs });
+  await settingsScreen.customFields().getByRole('button', { name: 'Add custom field' }).click();
+  await settingsScreen.customFieldModal().getByLabelText('Type').click();
+  await expect.element(page.getByRole('option', { name: 'Short text' })).toBeVisible();
+}
 
 function fakeCustomFields(fields: CustomField[] = [companyField]) {
   return fakeMemberCustomFields(fields);
@@ -250,6 +264,25 @@ describe('Custom fields', () => {
     expect(createApi.lastRequest?.body).toEqual({
       members_metafields: [{ name: 'Bio', type: 'long_text', access: { member: 'none' } }],
     });
+  });
+
+  // A type still in development is offered only where its Labs flag is on. The flag is switched on
+  // only once every server can store the type, which is what lets Admin go live before them.
+  it.each(FIELDS_IN_DEVELOPMENT)(
+    "doesn't offer $field.type while $flag is off",
+    async ({ field, flag }) => {
+      const { label } = userTypeForFieldType(field.type);
+      await openAddFieldTypes({ [flag]: false });
+
+      await expect(page.getByRole('option', { name: label, exact: true })).toHaveCount(0);
+    },
+  );
+
+  it.each(FIELDS_IN_DEVELOPMENT)('offers $field.type once $flag is on', async ({ field, flag }) => {
+    const { label } = userTypeForFieldType(field.type);
+    await openAddFieldTypes({ [flag]: true });
+
+    await expect.element(page.getByRole('option', { name: label, exact: true })).toBeVisible();
   });
 
   it('shows an API duplicate-name error on the name field without leaking the envelope message', async () => {

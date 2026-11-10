@@ -37,8 +37,9 @@ export type JobSettlement = { status: 'completed' } | { status: 'dead'; error: u
 
 export interface JobsStartOptions {
   processor: JobProcessor;
-  // Called once per enqueued job when it settles, with the id it was enqueued
-  // with. Never called for recurring ticks, which were never enqueued.
+  // Called when an enqueued job settles, with the id it was enqueued with, and
+  // again for each later enqueue of an id that has already settled (see
+  // enqueue). Never called for recurring ticks, which were never enqueued.
   onSettled?: (id: string, settlement: JobSettlement) => Promise<void> | void;
   // Queues declared by registered handlers. A backend that cannot satisfy a
   // declared queue's constraints - whatever that means for its implementation -
@@ -67,6 +68,11 @@ export abstract class JobsBackendBase {
   abstract start(options: JobsStartOptions): void | Promise<void>;
 
   // `id` is identical on every outbox retry, so a durable backend can dedupe on it.
+  // Deduping must not swallow the settlement: the outbox can keep its row until
+  // onSettled and re-enqueue it after a crash, so enqueueing an id that has
+  // already settled reports that settlement again. Report it after enqueue
+  // resolves, never while enqueue waits on it: the caller holds a lock on the
+  // row that settling removes.
   abstract enqueue(id: string, envelope: DispatchEnvelope): void | Promise<void>;
 
   abstract scheduleRecurring(

@@ -57,13 +57,14 @@ export function booted(): {
   namespaces: Namespaces;
   definitions: MetafieldDefinitionsService;
   values: MetafieldValuesService;
+  bindings: MetafieldBindingsService;
 } {
-  if (!namespaces || !definitions || !values) {
+  if (!namespaces || !definitions || !values || !bindings) {
     throw new errors.IncorrectUsageError({
       message: 'Members metafields were used before boot initialised them.',
     });
   }
-  return { namespaces, definitions, values };
+  return { namespaces, definitions, values, bindings };
 }
 
 export function init(): void {
@@ -89,12 +90,15 @@ export function init(): void {
   fields = fieldSource(namespaces);
 
   const tracking = metafieldsTracking({ tracer, meter });
+  // A field type still in development can be created only where its Labs flag is on.
+  const labs = require('../../../shared/labs');
   definitions = new MetafieldDefinitionsService({
     knex,
     fields,
     actionLog: new ActionLog({ logging }).for(customFieldActions),
     namespaces,
     tracking,
+    labs,
   });
   // The values service reads the field definitions itself, so it needs knex, the fields and
   // the ceiling, which also caps how many values one request can carry — no handle on the

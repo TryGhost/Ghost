@@ -120,6 +120,8 @@ describe('Exporter', function () {
       'subscriptions',
       'suppressions',
       'tags',
+      'tier_requirement_tiers',
+      'tier_requirements',
       'tinybird_syncs',
       'tokens',
       'user_accounts',
