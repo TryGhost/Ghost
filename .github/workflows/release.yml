@@ -37,8 +37,40 @@ permissions:
   contents: read
 
 jobs:
-  release:
+  # Scheduled runs skip when a release was already cut in the last day
+  # (e.g. a manual release earlier on Tuesday). Manual dispatches always run.
+  # Fails open: if this job errors, release still runs.
+  check-recent-release:
     if: github.repository == 'TryGhost/Ghost'
+    runs-on: ubuntu-latest
+    name: Check for recent release
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: github.event_name == 'schedule'
+        with:
+          ref: main
+          fetch-depth: 0
+          filter: tree:0
+          persist-credentials: false
+
+      - id: check
+        if: github.event_name == 'schedule'
+        run: |
+          read -r TAG_TIME TAG < <(git for-each-ref --merged=HEAD --sort=-creatordate --count=1 \
+            --format='%(creatordate:unix) %(refname:short)' 'refs/tags/v[0-9]*')
+          AGE=$(( $(date +%s) - TAG_TIME ))
+          if [ "$AGE" -lt 86400 ]; then
+            echo "::notice::Skipping scheduled release: $TAG was released $(( AGE / 3600 ))h ago"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Latest release $TAG is $(( AGE / 3600 ))h old, continuing"
+          fi
+
+  release:
+    needs: check-recent-release
+    if: ${{ !cancelled() && github.repository == 'TryGhost/Ghost' && needs.check-recent-release.outputs.skip != 'true' }}
     runs-on: ubuntu-latest
     name: Prepare & Push Release
     steps:
