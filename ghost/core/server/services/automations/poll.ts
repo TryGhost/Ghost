@@ -1,4 +1,5 @@
-import type { AutomationTriggerRuleDefinition } from './trigger-rules';
+import { doLabelsMatchFilters, splitTriggerRules } from './trigger-rules';
+import type { AutomationEventRuleDefinition } from './trigger-rules';
 import type { AutomationStepToRun, AutomationsRepository } from './automations-repository';
 import { getMailgunMessageId } from '../../lib/mailgun/mailgun-message-id';
 import { getMailgunError } from '../../lib/mailgun/mailgun-error';
@@ -37,7 +38,7 @@ type MemberModel = {
   related(key: 'newsletters'): {
     models: unknown[];
   };
-  related(key: 'products'): {
+  related(key: 'labels' | 'products'): {
     models: { id: string }[];
   };
 };
@@ -57,7 +58,7 @@ type PollOptions = {
 };
 
 const getFreeOrPaidForTriggerRule = (
-  rule: Readonly<AutomationTriggerRuleDefinition>,
+  rule: Readonly<AutomationEventRuleDefinition>,
 ): 'free' | 'paid' => {
   const triggerType = rule.trigger_type;
   switch (triggerType) {
@@ -78,7 +79,7 @@ const getFreeOrPaidForTriggerRule = (
 
 const doesMemberMatchTriggerRuleStatus = (
   member: MemberModel,
-  rule: Readonly<AutomationTriggerRuleDefinition>,
+  rule: Readonly<AutomationEventRuleDefinition>,
 ): boolean => {
   const expectedFreeOrPaid = getFreeOrPaidForTriggerRule(rule);
   const actualMemberStatus = member.get('status');
@@ -106,7 +107,7 @@ const doesMemberMatchTriggerRuleStatus = (
 
 const doesMemberMatchTriggerRuleScope = (
   member: MemberModel,
-  rule: Readonly<AutomationTriggerRuleDefinition>,
+  rule: Readonly<AutomationEventRuleDefinition>,
 ): boolean => {
   switch (rule.scope) {
     case null:
@@ -217,7 +218,8 @@ const processStep = async ({
 
   // For paid_subscription_changed triggers, only the destination rules determine whether the run continues.
   // Other trigger types have no 'from' rules, so this filter leaves them unchanged.
-  const rulesToCheck = step.automation_trigger_rules.filter((rule) => rule.direction !== 'from');
+  const { eventRules, labelFilters } = splitTriggerRules(step.automation_trigger_rules);
+  const rulesToCheck = eventRules.filter((rule) => rule.direction !== 'from');
 
   const memberRelationsToLoad: string[] = [];
   if (step.type === 'send_email') {
@@ -225,6 +227,9 @@ const processStep = async ({
   }
   if (rulesToCheck.some((rule) => rule.scope === 'specific_paid_tier')) {
     memberRelationsToLoad.push('products');
+  }
+  if (labelFilters.length > 0) {
+    memberRelationsToLoad.push('labels');
   }
   const member = (await Member.findOne(
     { id: step.member_id },
@@ -267,6 +272,14 @@ const processStep = async ({
       stillMatchesStatus ? 'member changed tier' : 'member changed status',
     );
     return null;
+  }
+
+  if (labelFilters.length > 0) {
+    const memberLabelIds = new Set(member.related('labels').models.map((label) => label.id));
+    if (!doLabelsMatchFilters(memberLabelIds, labelFilters)) {
+      await automationsApi.markStepTerminal(step, 'member changed label');
+      return null;
+    }
   }
 
   const memberStatus = getFreeOrPaidForTriggerRule(matchingRule);

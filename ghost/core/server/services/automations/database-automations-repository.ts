@@ -757,6 +757,7 @@ function getRunHistoryStatus(steps: AutomationRunHistoryStep[]): AutomationRunHi
         break;
       case 'automation disabled':
       case 'failed':
+      case 'member changed label':
       case 'member changed status':
       case 'member changed tier':
       case 'member unsubscribed':

@@ -2474,6 +2474,7 @@ module.exports = {
             'automation disabled',
             'failed',
             'finished',
+            'member changed label',
             'member changed status',
             'member changed tier',
             'member unsubscribed',

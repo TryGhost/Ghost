@@ -55,6 +55,7 @@ type MemberFixture = {
   enable_updates_and_announcements: boolean | null;
   newsletters: unknown[];
   products: { id: string }[];
+  labels: { id: string }[];
 };
 
 const fake = <TFunction extends (..._args: never[]) => unknown>(): StubbedFunction<TFunction> =>
@@ -69,6 +70,7 @@ function buildMember(attrs: Partial<MemberFixture> = {}) {
     enable_updates_and_announcements: true,
     newsletters: [{}],
     products: [],
+    labels: [],
     ...attrs,
   };
 
@@ -76,7 +78,7 @@ function buildMember(attrs: Partial<MemberFixture> = {}) {
     get(key: keyof MemberFixture): string | boolean | null | unknown[] {
       return values[key];
     },
-    related(key: 'newsletters' | 'products') {
+    related(key: 'newsletters' | 'products' | 'labels') {
       return {
         models: values[key],
       };
@@ -310,6 +312,93 @@ describe('automations poll', function () {
       sinon.assert.notCalled(automationsApi.markStepTerminal);
       sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
       sinon.assert.calledOnce(memberWelcomeEmailService.sendAutomationEmail);
+    });
+  });
+
+  describe('label filters', function () {
+    const labelFilter = (operator: 'has_any' | 'has_all' | 'has_none', labelId: string) =>
+      ({
+        id: `label-filter-${labelId}`,
+        automation_id: 'automation-id',
+        created_at: new Date('2026-01-01T00:00:00Z'),
+        trigger_type: 'free_signup',
+        scope: 'specific_label',
+        product_id: null,
+        direction: null,
+        operator,
+        label_id: labelId,
+      }) as const;
+    const freeRule = buildStep().automation_trigger_rules[0];
+
+    it.each([
+      {
+        name: 'has a required label',
+        filters: [labelFilter('has_any', 'magnet')],
+        labels: ['magnet'],
+      },
+      {
+        name: 'has no excluded label',
+        filters: [labelFilter('has_none', 'magnet')],
+        labels: ['other'],
+      },
+    ])('continues when the member $name', async function ({ filters, labels }) {
+      const step = buildWaitStep({ automation_trigger_rules: [freeRule, ...filters] });
+      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+      Member.findOne.resolves(buildMember({ labels: labels.map((id) => ({ id })) }));
+
+      await poll(options);
+
+      sinon.assert.calledOnceWithExactly(
+        Member.findOne,
+        { id: 'member-id' },
+        { withRelated: ['labels'] },
+      );
+      sinon.assert.notCalled(automationsApi.markStepTerminal);
+      sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+    });
+
+    it.each([
+      { name: 'lost a required label', filters: [labelFilter('has_any', 'magnet')], labels: [] },
+      {
+        name: 'gained an excluded label',
+        filters: [labelFilter('has_none', 'magnet')],
+        labels: ['magnet'],
+      },
+      {
+        name: 'lost one of the labels they must have',
+        filters: [labelFilter('has_all', 'magnet'), labelFilter('has_all', 'course')],
+        labels: ['magnet'],
+      },
+    ])('ends the run when the member $name', async function ({ filters, labels }) {
+      const step = buildEmailStep({ automation_trigger_rules: [freeRule, ...filters] });
+      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+      Member.findOne.resolves(buildMember({ labels: labels.map((id) => ({ id })) }));
+
+      await poll(options);
+
+      sinon.assert.calledOnceWithExactly(
+        automationsApi.markStepTerminal,
+        step,
+        'member changed label',
+      );
+      sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+      sinon.assert.notCalled(memberWelcomeEmailService.sendAutomationEmail);
+    });
+
+    it('reports a status change before a label change', async function () {
+      const step = buildWaitStep({
+        automation_trigger_rules: [freeRule, labelFilter('has_any', 'magnet')],
+      });
+      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+      Member.findOne.resolves(buildMember({ status: 'paid' }));
+
+      await poll(options);
+
+      sinon.assert.calledOnceWithExactly(
+        automationsApi.markStepTerminal,
+        step,
+        'member changed status',
+      );
     });
   });
 
