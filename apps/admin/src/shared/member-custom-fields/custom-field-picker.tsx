@@ -17,8 +17,8 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import type {
   CreatableMemberCustomFieldTypes,
   MemberCustomField,
-  NewMemberCustomField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import type { CustomFieldValues } from '@/shared/member-custom-fields/custom-field-values';
 import { useCustomFieldCreateAttempt } from '@/shared/member-custom-fields/use-custom-field-create-attempt';
 import { useRef, useState } from 'react';
 
@@ -112,8 +112,8 @@ export function CustomFieldPicker({
   // The ordinary closed default. This picker only renders where the setting for opening a field
   // to members is also available, so a publisher who wants members to fill this in can say so;
   // nothing here has to guess on their behalf.
-  const createNewField = async (newField: NewMemberCustomField) => {
-    const field = await create(newField);
+  const createNewField = async (values: CustomFieldValues) => {
+    const field = await create(values);
     if (field) {
       setCreating(false);
       onChange(field.key);
@@ -236,7 +236,7 @@ export function CustomFieldPicker({
           types={createTypes}
           onCancel={leaveForm}
           onEdit={resetCreate}
-          onSubmit={(newField) => void createNewField(newField)}
+          onSubmit={(values) => void createNewField(values)}
         />
       ) : null}
     </>

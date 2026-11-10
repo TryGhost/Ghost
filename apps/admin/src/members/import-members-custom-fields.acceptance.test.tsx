@@ -192,6 +192,38 @@ describe('Import members custom fields', () => {
       await expect.element(fieldSelect('topics')).toHaveTextContent('Topics');
     });
 
+    // As in Settings: a refusal of something typed shows beside it, not as a failure of the form.
+    it('shows Ghost refusing one option on that option’s row', async () => {
+      fakeSiteCreatingLists();
+      fakeAdminEndpoint(
+        'POST',
+        '/members/metafields/custom/',
+        {
+          errors: [
+            {
+              type: 'ValidationError',
+              message: 'Validation error, cannot save members_metafield.',
+              context: 'Ghost refused this option.',
+              property: 'settings.options.1',
+            },
+          ],
+        },
+        { status: 422 },
+      );
+      await renderAdminApp('/members');
+      await openMappingStep(TOPICS_CSV);
+
+      await openCreateForm('topics');
+      const form = createForm();
+      await form.getByRole('button', { name: 'Save' }).click();
+
+      await expect.element(form.getByText('Ghost refused this option.')).toBeVisible();
+      await expect.element(form.getByLabelText('Option 2')).toHaveAttribute('aria-invalid', 'true');
+      expect(form.getByText('An unexpected error occurred, please try again.').all()).toHaveLength(
+        0,
+      );
+    });
+
     it('suggests a column’s answers when its field is made a list, taking one answer when no cell holds several', async () => {
       fakeSiteCreatingLists();
       await renderAdminApp('/members');
@@ -669,7 +701,10 @@ describe('Import members custom fields', () => {
       {
         errors: [
           {
-            message: 'A custom field with this name already exists.',
+            // As Ghost serialises a refusal: a generic summary in `message`, the sentence in
+            // `context`.
+            message: 'Validation error, cannot save members_metafield.',
+            context: 'A custom field with this name already exists.',
             property: 'name',
             type: 'ValidationError',
           },
@@ -725,6 +760,69 @@ describe('Import members custom fields', () => {
     await expect.element(createForm().getByRole('button', { name: 'Save' })).toBeDisabled();
     await userEvent.fill(createForm().getByLabelText('Name'), 'Nick');
     await expect.element(createForm().getByText(/limited to 20 per site/)).toBeVisible();
+    await expect.element(createForm().getByRole('button', { name: 'Save' })).toBeDisabled();
+  });
+
+  // Only what the site deliberately says to publishers is shown as it says it. A fault's own
+  // wording is for whoever investigates it, not for the form.
+  it('says something clear when the site fails to save a field for a reason it did not expect', async () => {
+    fakeCustomFieldsWorld();
+    fakeAdminEndpoint(
+      'POST',
+      '/members/metafields/custom/',
+      {
+        errors: [
+          {
+            message: 'ER_LOCK_DEADLOCK: Deadlock found when trying to get lock',
+            type: 'InternalServerError',
+          },
+        ],
+      },
+      { status: 500 },
+    );
+    await renderAdminApp('/members');
+    await openMappingStep();
+
+    await openCreateForm('nickname');
+    await createForm().getByRole('button', { name: 'Save' }).click();
+
+    await expect
+      .element(createForm().getByRole('alert'))
+      .toHaveTextContent('An unexpected error occurred, please try again.');
+    expect(
+      createForm()
+        .getByText(/ER_LOCK_DEADLOCK/)
+        .all(),
+    ).toHaveLength(0);
+    // A fault can pass, so saving again stays on offer.
+    await expect.element(createForm().getByRole('button', { name: 'Save' })).toBeEnabled();
+  });
+
+  it('says a staff user without permission cannot add a field, and stops offering to retry', async () => {
+    fakeCustomFieldsWorld();
+    fakeAdminEndpoint(
+      'POST',
+      '/members/metafields/custom/',
+      {
+        errors: [
+          {
+            message: 'Permission error, cannot add members_metafield.',
+            context: 'You do not have permission to perform this action',
+            type: 'NoPermissionError',
+          },
+        ],
+      },
+      { status: 403 },
+    );
+    await renderAdminApp('/members');
+    await openMappingStep();
+
+    await openCreateForm('nickname');
+    await createForm().getByRole('button', { name: 'Save' }).click();
+
+    await expect
+      .element(createForm().getByRole('alert'))
+      .toHaveTextContent("You don't have permission to create custom fields.");
     await expect.element(createForm().getByRole('button', { name: 'Save' })).toBeDisabled();
   });
 
