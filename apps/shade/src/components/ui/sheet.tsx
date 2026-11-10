@@ -72,13 +72,15 @@ const SheetContent = React.forwardRef<
   SheetContentProps
 >(({ side = 'right', className, children, ...props }, ref) => {
   // In an app inside Ghost Admin, the sheet renders in the app's overlay, over all of Admin,
-  // and Admin draws the backdrop, which shows through the sheet's own.
+  // and Admin draws the backdrop, which shows through the sheet's own. Admin shows sheets only
+  // against the window's right edge, as its own are, so a sheet on another side stays in the page.
+  const modal = React.useContext(SheetModalContext);
   const {
     container,
     overlayStyle,
     ref: contentRef,
     wrap,
-  } = useHostedModal('sheet', ref, React.useContext(SheetModalContext));
+  } = useHostedModal('sheet', ref, modal && side === 'right');
   return (
     <SheetPortal container={container}>
       <ShadeScope>
