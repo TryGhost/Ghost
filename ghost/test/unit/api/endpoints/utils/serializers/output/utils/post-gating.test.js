@@ -91,6 +91,36 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
       assert.equal(attrs.html, '<p>Can read this</p>');
     });
 
+    it('should hide content attributes when the paywall is at the start of a "paid" post', function () {
+      const attrs = {
+        visibility: 'paid',
+        html: '<!--members-only--><p>Paid content</p>',
+        plaintext: 'Paid content',
+        excerpt: 'Paid content',
+      };
+
+      gating.forPost(attrs, frame);
+
+      assert.equal(attrs.html, '');
+      assert.equal(attrs.plaintext, '');
+      assert.equal(attrs.excerpt, '');
+    });
+
+    it('should keep only the preview text when the paywall follows a preview', function () {
+      const attrs = {
+        visibility: 'paid',
+        html: '<p>Preview</p><!--members-only--><p>Paid content</p>',
+        plaintext: 'Preview Paid content',
+        excerpt: 'Preview Paid content',
+      };
+
+      gating.forPost(attrs, frame);
+
+      assert.equal(attrs.html, '<p>Preview</p>');
+      assert.equal(attrs.plaintext.trim(), 'Preview');
+      assert.equal(attrs.excerpt.trim(), 'Preview');
+    });
+
     describe('member UUID substitution', function () {
       it('replaces %7Buuid%7D placeholder with member UUID', function () {
         const attrs = {
@@ -211,6 +241,21 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
         assert.match(attrs.html, /<p>Everyone can see this\.<\/p>\n\s+<p>Anonymous only.<\/p>/);
         assert.match(attrs.plaintext, /^\n+Everyone can see this.\n+Anonymous only.\n$/);
         assert.match(attrs.excerpt, /^\n+Everyone can see this.\n+Anonymous only.\n$/);
+      });
+
+      it('clears plaintext and excerpt when a denied gated block is the whole post', function () {
+        const attrs = {
+          visibility: 'public',
+          html: '<!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free"--><p>Members only.</p><!--kg-gated-block:end-->',
+          plaintext: 'Members only.',
+          excerpt: 'Members only.',
+        };
+
+        gating.forPost(attrs, frame);
+
+        assert.equal(attrs.html, '');
+        assert.equal(attrs.plaintext, '');
+        assert.equal(attrs.excerpt, '');
       });
 
       it('does not call htmlToPlaintext.excerpt more than once', function () {

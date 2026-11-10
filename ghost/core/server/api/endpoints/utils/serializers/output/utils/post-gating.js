@@ -80,12 +80,15 @@ const stripGatedBlocks = function (html, member) {
 };
 
 function _updateTextAttrs(attrs) {
-  if (attrs.html) {
-    attrs.plaintext = htmlToPlaintext.excerpt(attrs.html);
+  // Text is always derived from the gated html. When gating leaves no html, the
+  // plaintext and excerpt computed from the full post must not survive.
+  const plaintext = attrs.html ? htmlToPlaintext.excerpt(attrs.html) : '';
+
+  if (attrs.html || attrs.plaintext !== undefined) {
+    attrs.plaintext = plaintext;
   }
 
   if (!attrs.custom_excerpt && attrs.excerpt) {
-    const plaintext = attrs.plaintext || htmlToPlaintext.excerpt(attrs.html);
     attrs.excerpt = plaintext.substring(0, 500);
   }
 }

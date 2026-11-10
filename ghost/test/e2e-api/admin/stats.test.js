@@ -402,3 +402,37 @@ describe('Stats API', function () {
     });
   });
 });
+
+describe('Stats API revenue permissions', function () {
+  let postId;
+
+  beforeAll(async function () {
+    agent = await agentProvider.getAdminAPIAgent();
+    await fixtureManager.init('users', 'posts', 'members');
+    postId = fixtureManager.get('posts', 0).id;
+  });
+
+  describe.each(['Editor', 'Author', 'Contributor'])('As %s', function (role) {
+    beforeAll(async function () {
+      await agent[`loginAs${role}`]();
+    });
+
+    it.each([
+      'stats/mrr/',
+      'stats/referrers/',
+      'stats/top-posts/',
+      'stats/top-sources-growth/',
+      'stats/posts/:id/top-referrers/',
+      'stats/posts/:id/growth/',
+    ])('cannot fetch MRR from %s', async function (path) {
+      await agent.get(path.replace(':id', postId)).expectStatus(403);
+    });
+
+    it('can still fetch member counts for the posts list', async function () {
+      await agent
+        .post('stats/posts-member-counts/')
+        .body({ postIds: [postId] })
+        .expectStatus(200);
+    });
+  });
+});

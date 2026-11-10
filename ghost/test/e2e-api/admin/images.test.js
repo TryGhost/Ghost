@@ -463,7 +463,9 @@ describe('Images API', function () {
     await uploadImageCheck({
       path: originalFilePath2,
       filename: 'a.png',
-      contentType: 'image/png',
+      // The second upload is a JPEG stored under a .png name, and the content
+      // type is read from the contents rather than the name
+      contentType: 'image/jpeg',
       expectedFileName: 'a-1.png',
       expectedOriginalFileName: 'a-1_o.png',
     });

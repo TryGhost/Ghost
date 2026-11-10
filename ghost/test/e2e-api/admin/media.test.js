@@ -460,5 +460,53 @@ describe('Media API', function () {
 
       media.push(new URL(thumbnailRes.body.media[0].url).pathname);
     });
+
+    it('Does not overwrite an existing file when uploading a thumbnail', async function () {
+      // Both the target directory and the filename come from the request, so the
+      // endpoint must not delete a file that matches by name. A second upload is
+      // stored under a new, unique name instead of replacing the first.
+      const store = adapterManager.getAdapter('storage:media');
+      const deleteSpy = sinon.spy(store, 'delete');
+
+      const res = await request
+        .post(localUtils.API.getApiQuery('media/upload'))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample_640x360.mp4'))
+        .expect(201);
+
+      media.push(new URL(res.body.media[0].url).pathname);
+
+      const first = await request
+        .put(localUtils.API.getApiQuery('media/thumbnail/upload'))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .field('url', res.body.media[0].url)
+        .attach('file', path.join(__dirname, '/../../utils/fixtures/images/ghosticon.jpg'))
+        .expect(200);
+
+      media.push(new URL(first.body.media[0].url).pathname);
+
+      // second upload targeting the same media/thumbnail name must not overwrite the first
+      const second = await request
+        .put(localUtils.API.getApiQuery('media/thumbnail/upload'))
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .field('url', res.body.media[0].url)
+        .attach('file', path.join(__dirname, '/../../utils/fixtures/images/ghosticon.jpg'))
+        .expect(200);
+
+      media.push(new URL(second.body.media[0].url).pathname);
+
+      assert.notEqual(
+        second.body.media[0].url,
+        first.body.media[0].url,
+        'second thumbnail upload must be stored under a unique name, not overwrite the existing file',
+      );
+      assert.ok(
+        deleteSpy.notCalled,
+        'thumbnail upload must not delete an existing file by its caller-controlled name',
+      );
+    });
   });
 });
