@@ -19,9 +19,9 @@
 }
 
 /* One caps label style everywhere (type.ts): the metric labels Planned sets
-   in 12px mono (Shade's admin7AnalyticsLabel, on metric cards and KPI tabs)
+   in 12px mono (Shade's admin7DesignLabel, on metric cards and KPI tabs)
    are 14px sans regular here instead */
-[data-shaping-family~='exploration-1'] .admin7-analytics\:font-mono {
+[data-shaping-family~='exploration-1'] .admin7-design\:font-mono {
   font-family: var(--font-sans);
   font-size: var(--text-md);
   font-weight: 400;
@@ -43,7 +43,7 @@
    text-4xl). Planned sets the 28px with !important, so this sits in the
    same layer, where the more specific selector wins. */
 @layer utilities {
-  [data-shaping-family~='exploration-1'] .admin7-analytics\:text-3xl\! {
+  [data-shaping-family~='exploration-1'] .admin7-design\:text-3xl\! {
     font-size: var(--text-4xl) !important;
   }
 }
@@ -170,7 +170,7 @@
   }
 
   /* The chart starts right under the tabs (no my-4 above it); the room is
-     inside its grey ground instead */
+     its own top padding instead */
   & div:has(> [data-chart]) {
     margin-top: 0;
   }
@@ -267,14 +267,6 @@
     transform: translate(16px, -1.6rem);
   }
 
-  /* 32px of room at the top of the plot, inside the grey ground */
+  /* 32px of room between the tabs and the top of the plot */
   padding-top: 3.2rem;
-
-  /* A grey 50 ground behind the plot only, content edge to content edge:
-     the chart's box runs past it (left over the y-axis it's pulled back
-     across, right over its 4px margin, below over its hidden date strip) */
-  background-image: linear-gradient(var(--color-gray-50), var(--color-gray-50));
-  background-repeat: no-repeat;
-  background-position: var(--plot-start, 0px) 0;
-  background-size: calc(100% - var(--plot-start, 0px) - 0.4rem) calc(100% - 3rem);
 }

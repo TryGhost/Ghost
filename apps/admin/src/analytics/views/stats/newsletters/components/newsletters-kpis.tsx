@@ -117,8 +117,8 @@ const NewsletterKPIs: React.FC<{
   initialTab = 'total-subscribers',
 }) => {
   const [currentTab, setCurrentTab] = useState(initialTab);
-  // ANALYTICS PROTOTYPE: Admin 7 analytics style draws flat bars
-  const admin7Analytics = useRootFlag('admin7-analytics');
+  // ANALYTICS PROTOTYPE: Admin 7 design style draws flat bars
+  const admin7Design = useRootFlag('admin7-design');
   const [isHoveringClickable, setIsHoveringClickable] = useState(false);
   const { range } = useAnalytics();
   const navigate = useNavigate();
@@ -503,8 +503,8 @@ const NewsletterKPIs: React.FC<{
                     <Recharts.Bar
                       activeBar={{ fillOpacity: 1 }}
                       dataKey={tabConfig[currentTab].datakey}
-                      fill={admin7Analytics ? tabConfig[currentTab].color : 'url(#barGradient)'}
-                      fillOpacity={admin7Analytics ? 0.5 : 0.6}
+                      fill={admin7Design ? tabConfig[currentTab].color : 'url(#barGradient)'}
+                      fillOpacity={admin7Design ? 0.5 : 0.6}
                       isAnimationActive={false}
                       maxBarSize={32}
                       minPointSize={3}

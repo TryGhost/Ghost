@@ -123,6 +123,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const admin7Design = useFeatureFlag('admin7Design');
   const isViewSiteRoute = useLocation().pathname === '/site';
 
+  // ANALYTICS PROTOTYPE: admin7Design as one attribute on the page root, so
+  // the restyled pieces can read it without flag checks (Shade's
+  // `useRootFlag('admin7-design')` and the `admin7-design:` variant). The
+  // shaping prototype sets it from its own View menu instead
+  // (data-shaping-view present), so it's left alone there.
+  React.useEffect(() => {
+    if (document.documentElement.hasAttribute('data-shaping-view')) {
+      return;
+    }
+    document.documentElement.toggleAttribute('data-admin7-design', admin7Design);
+  }, [admin7Design]);
+
   // With admin7Design, the desktop page sits inside a frame: a top bar and
   // thin bezels around a rounded card. View site becomes a place of its own,
   // switched to from the top bar, so it shows without the sidebar, and

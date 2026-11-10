@@ -66,8 +66,8 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({ isLoading
   const { data: subscriptionStatsResponse } = useSubscriptionStats();
   const { data: { tiers: tierObjects = [] } = {} } = useBrowseTiers();
   const [breakdownType, setBreakdownType] = useState<BreakdownType>('billing-period');
-  // ANALYTICS PROTOTYPE: Admin 7 analytics style draws flat slices
-  const admin7Analytics = useRootFlag('admin7-analytics');
+  // ANALYTICS PROTOTYPE: Admin 7 design style draws flat slices
+  const admin7Design = useRootFlag('admin7-design');
 
   // Calculate date range for filtering
   const { startDate, endDate } = useMemo(() => getRangeDates(range), [range]);
@@ -337,12 +337,12 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({ isLoading
                   animationBegin={0}
                   animationDuration={1000}
                   data={
-                    admin7Analytics
+                    admin7Design
                       ? chartData.map((slice) => ({ ...slice, fill: slice.color }))
                       : chartData
                   }
                   dataKey="count"
-                  fillOpacity={admin7Analytics ? 0.7 : undefined}
+                  fillOpacity={admin7Design ? 0.7 : undefined}
                   innerRadius={70}
                   nameKey="name"
                   stroke="var(--card)"

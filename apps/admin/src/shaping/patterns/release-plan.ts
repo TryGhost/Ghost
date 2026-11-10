@@ -4,8 +4,9 @@
 // ship, so each lands without depending on anything still unshipped. A
 // running list; shown at the bottom of the patterns page.
 //
-// Every slice ships behind the private `admin7Analytics` Labs flag, is
-// dogfooded, then graduates by deleting the old path in the same PR.
+// Every slice lands on main behind Admin 7's bucket flag, `admin7Design`.
+// To release one, it moves to its own private `admin7[feature-name]` flag,
+// is dogfooded, then graduates by deleting the old path in the same PR.
 
 export type SliceStatus = 'built' | 'on-hold' | 'to-do';
 
@@ -29,12 +30,13 @@ export const SLICES: ReleaseSlice[] = [
     title: 'Analytics flag',
     status: 'built',
     summary:
-      'A private Labs flag, admin7Analytics, that Admin turns into one attribute on the page root (data-admin7-analytics).',
+      'The existing admin7Design Labs flag, which Admin turns into one attribute on the page root (data-admin7-design).',
     reach: 'Nothing visible on its own; every slice below reads it.',
     notes: [
-      'Shade reads it with useRootFlag and the admin7-analytics: style variant.',
-      'Prototype: the menu’s View list stands in for the Labs flag (off in Today, on in every other view).',
-      'PR: register the Labs flag; agree useRootFlag with Zimo, since isAdmin7 now stays on for the shipped pill controls.',
+      'Shade reads it with useRootFlag and the admin7-design: style variant.',
+      'Admin’s layout sets the attribute from useFeatureFlag(admin7Design), in one place.',
+      'Prototype: the menu’s View list stands in for the flag (off in Today, on in every other view).',
+      'PR: no new Labs flag; agree useRootFlag with Zimo, since isAdmin7 now stays on for the shipped pill controls. A slice gets its own admin7[feature-name] flag only when it’s released.',
     ],
     commits: ['98af0d1c1f', 'fd5a516ff6'],
   },

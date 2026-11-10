@@ -184,8 +184,8 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
   range,
   isLoading,
 }) => {
-  // ANALYTICS PROTOTYPE: Admin 7 analytics style draws flat bars
-  const admin7Analytics = useRootFlag('admin7-analytics');
+  // ANALYTICS PROTOTYPE: Admin 7 design style draws flat bars
+  const admin7Design = useRootFlag('admin7-design');
   // State for user-selected resolution
   const [selectedResolution, setSelectedResolution] = useState<ResolutionOption>(() =>
     getDefaultResolution(range),
@@ -554,8 +554,8 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                 <Recharts.Bar
                   activeBar={{ fillOpacity: 1 }}
                   dataKey="new"
-                  fill={admin7Analytics ? 'var(--color-new)' : 'url(#tealGradient)'}
-                  fillOpacity={admin7Analytics ? 0.5 : 0.75}
+                  fill={admin7Design ? 'var(--color-new)' : 'url(#tealGradient)'}
+                  fillOpacity={admin7Design ? 0.5 : 0.75}
                   maxBarSize={32}
                   minPointSize={3}
                   radius={[4, 4, 0, 0]}
@@ -564,8 +564,8 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                 <Recharts.Bar
                   activeBar={{ fillOpacity: 1 }}
                   dataKey="cancelled"
-                  fill={admin7Analytics ? 'var(--color-cancelled)' : 'url(#roseGradient)'}
-                  fillOpacity={admin7Analytics ? 0.5 : 0.75}
+                  fill={admin7Design ? 'var(--color-cancelled)' : 'url(#roseGradient)'}
+                  fillOpacity={admin7Design ? 0.5 : 0.75}
                   maxBarSize={32}
                   radius={[4, 4, 0, 0]}
                   stackId="a"

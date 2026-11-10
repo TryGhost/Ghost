@@ -182,7 +182,7 @@
 }
 
 /* The chart starts right under the tabs (no my-4 above it); the room is
-   inside its grey ground instead (exploration.css) */
+   its own top padding instead (exploration.css) */
 .web-open-chart {
   margin-top: 0;
 }

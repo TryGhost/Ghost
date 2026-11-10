@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { admin7AnalyticsLabel } from '@/lib/admin7-analytics';
+import { admin7DesignLabel } from '@/lib/admin7-design';
 import { cn } from '@/lib/utils';
 import { MetricValue } from '@/components/ui/metric-value';
 import { TrendBadge } from '@/components/ui/trend-badge';
@@ -33,7 +33,7 @@ const KpiCardHeaderLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
       className={cn(
         'flex h-[22px] items-center gap-1.5 text-base font-medium text-muted-foreground [&_svg]:size-4',
         // ANALYTICS PROTOTYPE: Admin 7 analytics label style
-        admin7AnalyticsLabel,
+        admin7DesignLabel,
         className,
       )}
       {...props}

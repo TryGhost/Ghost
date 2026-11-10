@@ -54,7 +54,7 @@ type GrowthChartDataItem = {
 
 // EXPLORATION: the latest post and the posts beside it, a third and two
 // thirds, as in the Vision prototype; stacked below lg. Same columns and 40px
-// gap as the stat cards above (overview-kpis.tsx, admin7-analytics:gap-10),
+// gap as the stat cards above (overview-kpis.tsx, admin7-design:gap-10),
 // so the latest post lines up under Unique visitors and the posts under
 // Members and MRR.
 const LatestAndTopPosts: React.FC = () => {

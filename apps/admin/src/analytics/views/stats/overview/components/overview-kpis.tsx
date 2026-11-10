@@ -220,7 +220,7 @@ const Admin7OverviewKPICard: React.FC<OverviewKPICardProps> = ({
 // ANALYTICS PROTOTYPE: the one switch between today's stat card and the
 // Admin 7 one; the cards below don't know which they get
 const OverviewKPICard: React.FC<OverviewKPICardProps> = (props) =>
-  useRootFlag('admin7-analytics') ? (
+  useRootFlag('admin7-design') ? (
     <Admin7OverviewKPICard {...props} />
   ) : (
     <ClassicOverviewKPICard {...props} />
@@ -288,7 +288,7 @@ const OverviewKPIs: React.FC<OverviewKPIsProps> = ({
     cols = 'lg:grid-cols-1';
   }
   // ANALYTICS PROTOTYPE: open columns need more room between them than cards
-  const containerClass = `flex flex-col lg:grid ${cols} gap-6 admin7-analytics:gap-10`;
+  const containerClass = `flex flex-col lg:grid ${cols} gap-6 admin7-design:gap-10`;
 
   return (
     // SHAPING PROTOTYPE ONLY: data-overview-kpis is a hook for explorations' CSS

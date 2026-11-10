@@ -127,8 +127,8 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
 }) => {
   // ANALYTICS PROTOTYPE: the Admin 7 analytics chart style. No gridlines, a
   // smooth line over a flat fill, dates in capitals. Off is today's chart.
-  const admin7Analytics = useRootFlag('admin7-analytics');
-  const gridLines = showHorizontalLines && !admin7Analytics;
+  const admin7Design = useRootFlag('admin7-design');
+  const gridLines = showHorizontalLines && !admin7Design;
 
   const yRange = yAxisRange || [getYRange(data).min, getYRange(data).max];
   const chartConfig = {
@@ -181,7 +181,7 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
                   showHours,
                   xTickHoursOnly,
                 );
-                return admin7Analytics ? label.toUpperCase() : label;
+                return admin7Design ? label.toUpperCase() : label;
               }}
               textAnchor={xTicks.length === 1 ? 'middle' : undefined}
             />
@@ -213,7 +213,7 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
           isAnimationActive={false}
           position={{ y: 10 }}
         />
-        {!admin7Analytics && (
+        {!admin7Design && (
           <defs>
             <linearGradient id={`fillChart-${id}`} x1="0" x2="0" y1="0" y2="1">
               <stop offset="5%" stopColor={color} stopOpacity={0.8} />
@@ -224,12 +224,12 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
         <Area
           baseValue={baseValue}
           dataKey="value"
-          fill={admin7Analytics ? color : `url(#fillChart-${id})`}
-          fillOpacity={admin7Analytics ? 0.1 : 0.2}
+          fill={admin7Design ? color : `url(#fillChart-${id})`}
+          fillOpacity={admin7Design ? 0.1 : 0.2}
           isAnimationActive={false}
           stroke={color}
           strokeWidth={1.5}
-          type={admin7Analytics ? 'monotone' : 'linear'}
+          type={admin7Design ? 'monotone' : 'linear'}
         />
       </AreaChart>
     </ChartContainer>

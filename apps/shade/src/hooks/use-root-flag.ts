@@ -1,8 +1,8 @@
 import { useSyncExternalStore } from 'react';
 
 // ANALYTICS PROTOTYPE: whether a milestone's root attribute is on, e.g.
-// `useRootFlag('admin7-analytics')` reads `data-admin7-analytics` on <html>.
-// The app sets the attribute in one place from its feature flag; shared
+// `useRootFlag('admin7-design')` reads `data-admin7-design` on <html>.
+// Admin sets the attribute in one place from the admin7Design flag; shared
 // components read it here, and scoped CSS can use the same attribute.
 // Re-renders live when the attribute changes.
 //

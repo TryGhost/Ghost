@@ -1,26 +1,26 @@
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 
-import { admin7AnalyticsLabel } from '@/lib/admin7-analytics';
+import { admin7DesignLabel } from '@/lib/admin7-design';
 import { cn } from '@/lib/utils';
 
 const metricValueRootVariants = cva('flex w-full flex-col items-start gap-2');
 
-// ANALYTICS PROTOTYPE: the `admin7-analytics:` classes are the Admin 7
-// analytics style: small caps mono labels, bigger and lighter numbers. Style
+// ANALYTICS PROTOTYPE: the `admin7-design:` classes are the Admin 7
+// design style: small caps mono labels, bigger and lighter numbers. Style
 // only, applied while the milestone's root attribute is on.
 const metricValueLabelVariants = cva(
-  `flex h-[22px] items-center gap-1.5 text-base font-medium text-muted-foreground [&_svg]:size-4 ${admin7AnalyticsLabel}`,
+  `flex h-[22px] items-center gap-1.5 text-base font-medium text-muted-foreground [&_svg]:size-4 ${admin7DesignLabel}`,
 );
 
 const metricValueNumberVariants = cva(
-  'leading-none font-semibold tracking-tighter admin7-analytics:font-normal admin7-analytics:tracking-tight',
+  'leading-none font-semibold tracking-tighter admin7-design:font-normal admin7-design:tracking-tight',
   {
     variants: {
       size: {
-        md: 'text-[2.2rem] admin7-analytics:text-4xl',
+        md: 'text-[2.2rem] admin7-design:text-4xl',
         // Important, so it also beats the xl size
-        lg: 'text-[1.9rem] xl:text-[2.1rem] admin7-analytics:text-3xl!',
+        lg: 'text-[1.9rem] xl:text-[2.1rem] admin7-design:text-3xl!',
       },
     },
     defaultVariants: {

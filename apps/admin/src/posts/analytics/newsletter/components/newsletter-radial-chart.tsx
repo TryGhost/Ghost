@@ -32,9 +32,9 @@ export const NewsletterRadialChart: React.FC<NewsletterRadialChartProps> = ({
   tooltip = true,
   size = 'responsive',
 }) => {
-  // ANALYTICS PROTOTYPE: Admin 7 analytics style draws each ring in its solid
+  // ANALYTICS PROTOTYPE: Admin 7 design style draws each ring in its solid
   // `color` rather than the gradient callers pass as `fill`
-  const admin7Analytics = useRootFlag('admin7-analytics');
+  const admin7Design = useRootFlag('admin7-design');
   const normalizePercentageValue = (value: unknown): number => {
     if (typeof value === 'number') {
       return value;
@@ -101,7 +101,7 @@ export const NewsletterRadialChart: React.FC<NewsletterRadialChartProps> = ({
   return (
     <ChartContainer className={cn('mx-auto', className)} config={config}>
       <Recharts.RadialBarChart
-        data={admin7Analytics ? data.map((item) => ({ ...item, fill: item.color })) : data}
+        data={admin7Design ? data.map((item) => ({ ...item, fill: item.color })) : data}
         endAngle={chartComponentConfig.endAngle}
         innerRadius={chartComponentConfig.innerRadius}
         outerRadius={chartComponentConfig.outerRadius}
@@ -130,7 +130,7 @@ export const NewsletterRadialChart: React.FC<NewsletterRadialChartProps> = ({
         <Recharts.RadialBar
           cornerRadius={10}
           dataKey="value"
-          fillOpacity={admin7Analytics ? 0.8 : undefined}
+          fillOpacity={admin7Design ? 0.8 : undefined}
           minPointSize={-2}
           background
         >

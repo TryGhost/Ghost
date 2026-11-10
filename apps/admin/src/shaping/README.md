@@ -40,17 +40,22 @@ The one swap point is the `analytics` route in `routes.tsx`, which renders
 
 ### The flag stand-in
 
-Every view but Today sets `data-admin7-analytics` on `<html>`, standing in
-for the milestone's Labs flag. Planned pieces read that one attribute, so
+Every view but Today sets `data-admin7-design` on `<html>`, standing in
+for the `admin7Design` Labs flag: Admin 7's single bucket flag for
+everything queued for the next public release (see the Admin 7.0 Design
+project in Linear). Outside the prototype, Admin's layout sets the same
+attribute from the real flag. Planned pieces read that one attribute, so
 each change is built the way its PR will be:
 
-- Shared Shade components read it with `useRootFlag('admin7-analytics')`
+- Shared Shade components read it with `useRootFlag('admin7-design')`
   (`apps/shade/src/hooks/use-root-flag.ts`), and scoped CSS can select it.
 - Style-only changes switch values (fill, curve, gridlines), never structure.
   Structural changes get a whole new component beside the old one, switched
   in one place.
 - Lines marked `ANALYTICS PROTOTYPE` are the ones a PR carries over, with
-  Admin setting the attribute from `useFeatureFlag('admin7Analytics')`.
+  Admin setting the attribute from `useFeatureFlag('admin7Design')`
+  (`layout/admin-layout.tsx`). When a slice is ready to release, it moves
+  to its own private `admin7[feature-name]` flag to dogfood, then graduates.
 
 Open question for the PR: Admin 7 milestones normally reach Shade through
 ShadeApp's `isAdmin7`, but that now stays on for the shipped pill controls,
