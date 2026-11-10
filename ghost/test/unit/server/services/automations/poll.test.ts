@@ -14,12 +14,15 @@ const RETRY_DELAY_MS = 10 * 60 * 1000;
 
 type WaitStep = Extract<AutomationStepToRun, { type: 'wait' }>;
 type SendEmailStep = Extract<AutomationStepToRun, { type: 'send_email' }>;
+type ConditionStep = Extract<AutomationStepToRun, { type: 'condition' }>;
 type StepSpecificField =
   | 'type'
   | 'wait_hours'
   | 'email_subject'
   | 'email_lexical'
-  | 'email_design_setting_id';
+  | 'email_design_setting_id'
+  | 'condition_operator'
+  | 'condition_label_ids';
 type StepBase = Omit<AutomationStepToRun, StepSpecificField>;
 type PollOptions = Parameters<typeof poll>[0];
 type AutomationsApi = PollOptions['automationsApi'];
@@ -121,6 +124,16 @@ function buildWaitStep(attrs: Partial<WaitStep> = {}): WaitStep {
     wait_hours: 24,
     ...attrs,
   } satisfies WaitStep;
+}
+
+function buildConditionStep(attrs: Partial<ConditionStep> = {}): ConditionStep {
+  return {
+    ...buildStep(attrs),
+    type: 'condition',
+    condition_operator: 'has_any',
+    condition_label_ids: ['magnet'],
+    ...attrs,
+  } satisfies ConditionStep;
 }
 
 function buildEmailStep(attrs: Partial<SendEmailStep> = {}): SendEmailStep {
@@ -400,6 +413,72 @@ describe('automations poll', function () {
         'member changed status',
       );
     });
+  });
+
+  describe('condition steps', function () {
+    it.each([
+      { name: 'has one of the labels', operator: 'has_any', labels: ['magnet'] },
+      { name: 'has every label', operator: 'has_all', labels: ['magnet', 'course'] },
+      { name: 'has none of the labels', operator: 'has_none', labels: ['other'] },
+    ] as const)('continues when the member $name', async function ({ operator, labels }) {
+      const step = buildConditionStep({
+        condition_operator: operator,
+        condition_label_ids: ['magnet', 'course'],
+      });
+      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+      Member.findOne.resolves(buildMember({ labels: labels.map((id) => ({ id })) }));
+
+      await poll(options);
+
+      sinon.assert.calledOnceWithExactly(
+        Member.findOne,
+        { id: 'member-id' },
+        { withRelated: ['labels'] },
+      );
+      sinon.assert.notCalled(automationsApi.markStepTerminal);
+      sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+    });
+
+    it.each([
+      { name: 'has none of the labels it needs', operator: 'has_any', labels: [] },
+      { name: 'is missing one label it needs', operator: 'has_all', labels: ['magnet'] },
+      { name: 'has a label it must not have', operator: 'has_none', labels: ['course'] },
+      { name: 'reaches a condition with no rule', operator: null, labels: ['magnet'] },
+    ] as const)('ends the run when the member $name', async function ({ operator, labels }) {
+      const step = buildConditionStep({
+        condition_operator: operator,
+        condition_label_ids: ['magnet', 'course'],
+      });
+      automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+      Member.findOne.resolves(buildMember({ labels: labels.map((id) => ({ id })) }));
+
+      await poll(options);
+
+      sinon.assert.calledOnceWithExactly(
+        automationsApi.markStepTerminal,
+        step,
+        'condition not met',
+      );
+      sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+    });
+
+    it.each([
+      { operator: 'has_any', met: false },
+      { operator: 'has_all', met: false },
+      { operator: 'has_none', met: true },
+    ] as const)(
+      'treats $operator with no labels left as met: $met',
+      async function ({ operator, met }) {
+        const step = buildConditionStep({ condition_operator: operator, condition_label_ids: [] });
+        automationsApi.fetchAndLockSteps.resolves({ steps: [step], nextStepReadyAt: null });
+        Member.findOne.resolves(buildMember({ labels: [{ id: 'magnet' }] }));
+
+        await poll(options);
+
+        sinon.assert.callCount(automationsApi.finishStepAndEnqueueNext, met ? 1 : 0);
+        sinon.assert.callCount(automationsApi.markStepTerminal, met ? 0 : 1);
+      },
+    );
   });
 
   describe('paid subscription started', function () {

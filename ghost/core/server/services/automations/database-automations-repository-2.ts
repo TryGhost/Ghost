@@ -24,6 +24,10 @@ const nextActionRevisionRowSchema = z.discriminatedUnion('type', [
     type: z.literal('send_email'),
     wait_hours: z.null(),
   }),
+  nextActionRevisionRowBaseSchema.extend({
+    type: z.literal('condition'),
+    wait_hours: z.null(),
+  }),
 ]);
 
 const selectExists = async (connection: Connection, query: Knex.QueryBuilder): Promise<boolean> => {

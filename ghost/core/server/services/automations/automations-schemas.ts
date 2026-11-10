@@ -29,6 +29,22 @@ const sendEmailActionSchema = z.object({
   }),
 });
 
+const MAX_CONDITION_LABELS = 100;
+
+const conditionActionSchema = z.object({
+  id: objectIdSchema,
+  type: z.literal('condition'),
+  data: z.object({
+    condition_operator: z.enum(['has_any', 'has_all', 'has_none']).nullable(),
+    condition_label_ids: z
+      .array(objectIdSchema)
+      .max(MAX_CONDITION_LABELS)
+      .refine((ids) => new Set(ids).size === ids.length, {
+        error: 'Duplicate condition_label_ids are not allowed.',
+      }),
+  }),
+});
+
 const edgeSchema = z.object({
   source_action_id: objectIdSchema,
   target_action_id: objectIdSchema,
@@ -39,7 +55,13 @@ const automationShape = {
   description: z.string().trim().max(2000),
   status: z.enum(['active', 'inactive', 'archived']),
   actions: z
-    .array(z.discriminatedUnion('type', [waitActionSchema, sendEmailActionSchema]))
+    .array(
+      z.discriminatedUnion('type', [
+        waitActionSchema,
+        sendEmailActionSchema,
+        conditionActionSchema,
+      ]),
+    )
     .max(MAX_AUTOMATION_ACTIONS),
   edges: z.array(edgeSchema),
 };

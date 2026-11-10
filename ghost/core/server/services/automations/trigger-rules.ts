@@ -94,6 +94,24 @@ export const splitTriggerRules = <RuleT extends AutomationTriggerRuleDefinition>
   return { eventRules, labelFilters };
 };
 
+// A condition with nothing left to check only passes when it excludes labels.
+export const doLabelsMeetCondition = (
+  memberLabelIds: ReadonlySet<string>,
+  operator: AutomationLabelFilterRuleDefinition['operator'] | null,
+  labelIds: readonly string[],
+): boolean => {
+  if (!operator) {
+    return false;
+  }
+  if (labelIds.length === 0) {
+    return operator === 'has_none';
+  }
+  return doLabelsMatchFilters(
+    memberLabelIds,
+    labelIds.map((labelId) => ({ operator, label_id: labelId })),
+  );
+};
+
 export const doLabelsMatchFilters = (
   memberLabelIds: ReadonlySet<string>,
   labelFilters: readonly Pick<AutomationLabelFilterRuleDefinition, 'operator' | 'label_id'>[],

@@ -50,7 +50,18 @@ export type SendEmailAction = {
   stats?: AutomationEmailStats;
 };
 
-export type AutomationAction = WaitAction | SendEmailAction;
+export type ConditionOperator = 'has_any' | 'has_all' | 'has_none';
+
+export type ConditionAction = {
+  id: string;
+  type: 'condition';
+  data: {
+    condition_operator: ConditionOperator | null;
+    condition_label_ids: string[];
+  };
+};
+
+export type AutomationAction = WaitAction | SendEmailAction | ConditionAction;
 
 export type AutomationEdge = {
   source_action_id: string;
@@ -146,11 +157,17 @@ export type AutomationStepToRun = ReadonlyDeep<
           email_lexical: string;
           email_design_setting_id: string | null;
         }
+      | {
+          type: 'condition';
+          condition_operator: ConditionOperator | null;
+          condition_label_ids: string[];
+        }
     )
 >;
 
 export const AUTOMATION_STEP_TERMINAL_STATUSES = [
   'automation disabled',
+  'condition not met',
   'failed',
   'finished',
   'member changed label',
@@ -164,6 +181,7 @@ export type AutomationStepStatus = 'pending' | AutomationStepTerminalStatus;
 
 export type AutomationRunHistoryAction =
   | WaitAction
+  | ConditionAction
   | (Pick<SendEmailAction, 'id' | 'type'> & {
       data: Pick<SendEmailAction['data'], 'email_subject' | 'email_lexical'>;
     });

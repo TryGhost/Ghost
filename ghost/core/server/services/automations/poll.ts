@@ -1,4 +1,4 @@
-import { doLabelsMatchFilters, splitTriggerRules } from './trigger-rules';
+import { doLabelsMatchFilters, doLabelsMeetCondition, splitTriggerRules } from './trigger-rules';
 import type { AutomationEventRuleDefinition } from './trigger-rules';
 import type { AutomationStepToRun, AutomationsRepository } from './automations-repository';
 import { getMailgunMessageId } from '../../lib/mailgun/mailgun-message-id';
@@ -228,7 +228,7 @@ const processStep = async ({
   if (rulesToCheck.some((rule) => rule.scope === 'specific_paid_tier')) {
     memberRelationsToLoad.push('products');
   }
-  if (labelFilters.length > 0) {
+  if (labelFilters.length > 0 || step.type === 'condition') {
     memberRelationsToLoad.push('labels');
   }
   const member = (await Member.findOne(
@@ -274,12 +274,10 @@ const processStep = async ({
     return null;
   }
 
-  if (labelFilters.length > 0) {
-    const memberLabelIds = new Set(member.related('labels').models.map((label) => label.id));
-    if (!doLabelsMatchFilters(memberLabelIds, labelFilters)) {
-      await automationsApi.markStepTerminal(step, 'member changed label');
-      return null;
-    }
+  const getMemberLabelIds = () => new Set(member.related('labels').models.map((label) => label.id));
+  if (labelFilters.length > 0 && !doLabelsMatchFilters(getMemberLabelIds(), labelFilters)) {
+    await automationsApi.markStepTerminal(step, 'member changed label');
+    return null;
   }
 
   const memberStatus = getFreeOrPaidForTriggerRule(matchingRule);
@@ -288,6 +286,18 @@ const processStep = async ({
   try {
     switch (step.type) {
       case 'wait':
+        break;
+      case 'condition':
+        if (
+          !doLabelsMeetCondition(
+            getMemberLabelIds(),
+            step.condition_operator,
+            step.condition_label_ids,
+          )
+        ) {
+          await automationsApi.markStepTerminal(step, 'condition not met');
+          return null;
+        }
         break;
       case 'send_email': {
         if (!hasUpdatesAndAnnouncementsEnabled(member)) {

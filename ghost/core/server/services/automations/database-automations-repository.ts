@@ -36,6 +36,7 @@ import type {
   AutomationStepTerminalStatus,
   AutomationStepToRun,
   AutomationsRepository,
+  ConditionOperator,
   Page,
 } from './automations-repository';
 import type { ActionToInsert, EdgeRow, AutomationsRepository2 } from './automations-repository-2';
@@ -132,11 +133,13 @@ const runHistoryStepRowSchema = z
     email_delivered_at: DbDate.nullable(),
     status: z.enum(['pending', ...AUTOMATION_STEP_TERMINAL_STATUSES]),
     action_id: z.string(),
-    action_type: z.enum(['wait', 'send_email']),
+    action_type: z.enum(['wait', 'send_email', 'condition']),
     revision_id: z.string(),
     wait_hours: z.number().nullable(),
     email_subject: z.string().nullable(),
     email_lexical: z.string().nullable(),
+    condition_operator: z.enum(['has_any', 'has_all', 'has_none']).nullable(),
+    condition_label_ids: z.string().nullable(),
   })
   .refine((step) => step.status === 'pending' || step.finished_at !== null, {
     message: 'Terminal automation steps must have a completion timestamp.',
@@ -144,11 +147,13 @@ const runHistoryStepRowSchema = z
 
 type ActionRow = {
   id: string;
-  type: 'wait' | 'send_email';
+  type: 'wait' | 'send_email' | 'condition';
   wait_hours: number | null;
   email_subject: string | null;
   email_lexical: string | null;
   email_design_setting_id: string | null;
+  condition_operator: ConditionOperator | null;
+  condition_label_ids: string | null;
 };
 
 type ActionStatsRow = {
@@ -170,13 +175,15 @@ type ActionRevisionRow = {
   email_subject: string | null;
   email_lexical: string | null;
   email_design_setting_id: string | null;
+  condition_operator: ConditionOperator | null;
+  condition_label_ids: string | null;
 };
 
 type NextActionRevisionRow = {
   automation_id: string;
   action_id: string;
   automation_action_revision_id: string;
-  type: 'wait' | 'send_email';
+  type: 'wait' | 'send_email' | 'condition';
   wait_hours: number | null;
 };
 
@@ -197,7 +204,22 @@ type StepToRunRow = {
   email_subject: string | null;
   email_lexical: string | null;
   email_design_setting_id: string | null;
+  condition_operator: ConditionOperator | null;
+  condition_label_ids: string | null;
 };
+
+type ConditionRevisionData = Extract<AutomationAction, { type: 'condition' }>['data'];
+
+// A condition's labels live in their own table, one row per label. Reads fold them into one
+// column so every query that loads a revision can carry them without a second round trip.
+const conditionLabelIdsColumn = (trx: Knex.Transaction, revisionIdColumn: string) =>
+  trx.raw(
+    '(select group_concat(label_id) from automation_condition_labels where action_revision_id = ??) as condition_label_ids',
+    [revisionIdColumn],
+  );
+
+const parseConditionLabelIds = (labelIds: string | null): string[] =>
+  labelIds ? labelIds.split(',').sort() : [];
 
 type WaitActionData = Extract<AutomationAction, { type: 'wait' }>['data'];
 type SendEmailActionData = Extract<AutomationAction, { type: 'send_email' }>['data'];
@@ -379,6 +401,7 @@ export function createDatabaseAutomationsRepository({
         }
 
         await assertTriggerLabelsExist(trx, data.trigger_rules);
+        await assertConditionLabelsExist(trx, data.actions);
 
         const now = new Date();
         const automation: AutomationRow = {
@@ -455,6 +478,7 @@ export function createDatabaseAutomationsRepository({
         }
 
         await assertTriggerLabelsExist(trx, triggerRules);
+        await assertConditionLabelsExist(trx, data.actions ?? []);
 
         const updatedAutomation = await updateAutomation(trx, {
           ...automation,
@@ -677,6 +701,8 @@ async function loadRunHistory(
       'revisions.wait_hours',
       'revisions.email_subject',
       'revisions.email_lexical',
+      'revisions.condition_operator',
+      conditionLabelIdsColumn(trx, 'revisions.id'),
       // A retry can leave more than one recipient record. Read the first
       // successful send/delivery without duplicating the recorded step or
       // exposing recipient identity. Both the step and revision must match.
@@ -724,6 +750,16 @@ function buildRunHistoryStep(
         },
       };
       break;
+    case 'condition':
+      action = {
+        id: row.action_id,
+        type: 'condition',
+        data: {
+          condition_operator: row.condition_operator,
+          condition_label_ids: parseConditionLabelIds(row.condition_label_ids),
+        },
+      };
+      break;
     /* v8 ignore start -- @preserve */
     default: {
       const _exhaustive: never = row.action_type;
@@ -756,6 +792,7 @@ function getRunHistoryStatus(steps: AutomationRunHistoryStep[]): AutomationRunHi
       case 'finished':
         break;
       case 'automation disabled':
+      case 'condition not met':
       case 'failed':
       case 'member changed label':
       case 'member changed status':
@@ -1047,6 +1084,8 @@ async function fetchAndLockSteps(
       'revision.email_subject as email_subject',
       'revision.email_lexical as email_lexical',
       'revision.email_design_setting_id as email_design_setting_id',
+      'revision.condition_operator as condition_operator',
+      conditionLabelIdsColumn(trx, 'revision.id'),
     )
     .innerJoin('automation_runs as run', 'run.id', 'step.automation_run_id')
     .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
@@ -1147,6 +1186,13 @@ function buildStepToRun(
         email_subject: requireValue(row, 'email_subject'),
         email_lexical: requireValue(row, 'email_lexical'),
         email_design_setting_id: row.email_design_setting_id,
+      };
+    case 'condition':
+      return {
+        ...base,
+        type: 'condition',
+        condition_operator: row.condition_operator,
+        condition_label_ids: parseConditionLabelIds(row.condition_label_ids),
       };
     default:
       throw new errors.InternalServerError({
@@ -1275,6 +1321,7 @@ function getReadyAtForAction(
       return new Date(now.getTime() + waitMs);
     }
     case 'send_email':
+    case 'condition':
       return now;
     /* v8 ignore start -- @preserve */
     default: {
@@ -1354,11 +1401,33 @@ async function updateStep(
   return changes >= 1;
 }
 
+async function assertConditionLabelsExist(
+  trx: Knex.Transaction,
+  actions: readonly AutomationAction[],
+): Promise<void> {
+  const labelIds = [
+    ...new Set(
+      actions.flatMap((action) =>
+        action.type === 'condition' ? action.data.condition_label_ids : [],
+      ),
+    ),
+  ];
+  await assertLabelsExist(trx, labelIds, 'actions');
+}
+
 async function assertTriggerLabelsExist(
   trx: Knex.Transaction,
   rules: readonly AutomationTriggerRuleDefinition[],
 ): Promise<void> {
   const labelIds = splitTriggerRules(rules).labelFilters.map((rule) => rule.label_id);
+  await assertLabelsExist(trx, labelIds, 'trigger_rules');
+}
+
+async function assertLabelsExist(
+  trx: Knex.Transaction,
+  labelIds: readonly string[],
+  property: 'actions' | 'trigger_rules',
+): Promise<void> {
   if (labelIds.length === 0) {
     return;
   }
@@ -1366,8 +1435,11 @@ async function assertTriggerLabelsExist(
   const labels = await trx('labels').select('id').whereIn('id', labelIds).orderBy('id').forUpdate();
   if (labels.length !== labelIds.length) {
     throw new errors.ValidationError({
-      message: 'Trigger labels must all exist.',
-      property: 'trigger_rules',
+      message:
+        property === 'actions'
+          ? 'Condition labels must all exist.'
+          : 'Trigger labels must all exist.',
+      property,
     });
   }
 }
@@ -1485,6 +1557,16 @@ async function replaceAutomationGraph(
 }
 
 function formatActionOnWrite(action: AutomationAction): AutomationAction {
+  if (action.type === 'condition') {
+    return {
+      ...action,
+      data: {
+        ...action.data,
+        condition_label_ids: [...action.data.condition_label_ids].sort(),
+      },
+    };
+  }
+
   if (action.type !== 'send_email') {
     return action;
   }
@@ -1585,11 +1667,16 @@ function shouldInsertActionRevision(
 function buildRevisionActionData(
   action: AutomationAction,
   revision: ActionRevisionRow,
-): ExclusifyUnion<WaitRevisionData | SendEmailRevisionData> {
+): ExclusifyUnion<WaitRevisionData | SendEmailRevisionData | ConditionRevisionData> {
   switch (action.type) {
     case 'wait':
       return {
         wait_hours: revision.wait_hours,
+      };
+    case 'condition':
+      return {
+        condition_operator: revision.condition_operator,
+        condition_label_ids: parseConditionLabelIds(revision.condition_label_ids),
       };
     case 'send_email':
       return {
@@ -1631,6 +1718,8 @@ async function loadLatestActionRevisions(
       'automation_action_revisions.email_subject',
       'automation_action_revisions.email_lexical',
       'automation_action_revisions.email_design_setting_id',
+      'automation_action_revisions.condition_operator',
+      conditionLabelIdsColumn(trx, 'automation_action_revisions.id'),
     )
     .innerJoin(latestRevisionDates, function () {
       this.on('automation_action_revisions.action_id', 'latest_revision_dates.action_id').andOn(
@@ -1663,11 +1752,24 @@ async function insertActionRevisions(
   if (revisions.length === 0) {
     return;
   }
-  await trx('automation_action_revisions').insert(
-    revisions.map(({ actionId, action, createdAt }) =>
-      buildActionRevision(actionId, action, createdAt),
-    ),
+  const rows = revisions.map(({ actionId, action, createdAt }) => ({
+    action,
+    row: buildActionRevision(actionId, action, createdAt),
+  }));
+  await trx('automation_action_revisions').insert(rows.map(({ row }) => row));
+
+  const conditionLabels = rows.flatMap(({ action, row }) =>
+    action.type === 'condition'
+      ? action.data.condition_label_ids.map((labelId) => ({
+          id: ObjectId().toHexString(),
+          action_revision_id: row.id,
+          label_id: labelId,
+        }))
+      : [],
   );
+  if (conditionLabels.length > 0) {
+    await trx('automation_condition_labels').insert(conditionLabels);
+  }
 }
 
 function getNextRevisionCreatedAt(
@@ -1699,6 +1801,18 @@ function buildActionRevision(actionId: string, action: AutomationAction, created
         email_subject: null,
         email_lexical: null,
         email_design_setting_id: null,
+        condition_operator: null,
+      };
+    case 'condition':
+      return {
+        id: ObjectId().toString(),
+        created_at: createdAt,
+        action_id: actionId,
+        wait_hours: null,
+        email_subject: null,
+        email_lexical: null,
+        email_design_setting_id: null,
+        condition_operator: action.data.condition_operator,
       };
     case 'send_email':
       return {
@@ -1709,6 +1823,7 @@ function buildActionRevision(actionId: string, action: AutomationAction, created
         email_subject: action.data.email_subject,
         email_lexical: action.data.email_lexical,
         email_design_setting_id: action.data.email_design_setting_id,
+        condition_operator: null,
       };
     /* v8 ignore start -- @preserve */
     default: {
@@ -1814,6 +1929,8 @@ async function loadActionRows(trx: Knex.Transaction, automationId: string): Prom
       'r.email_subject as email_subject',
       'r.email_lexical as email_lexical',
       'r.email_design_setting_id as email_design_setting_id',
+      'r.condition_operator as condition_operator',
+      conditionLabelIdsColumn(trx, 'r.id'),
     )
     .innerJoin('automation_action_revisions as r', 'r.action_id', 'a.id')
     .where('a.automation_id', automationId)
@@ -1866,6 +1983,15 @@ function buildActionPayload(row: ActionRow, stats: AutomationEmailStats | null):
           email_design_setting_id: requireValue(row, 'email_design_setting_id'),
         },
         stats: stats ?? EMPTY_EMAIL_STATS,
+      };
+    case 'condition':
+      return {
+        id: row.id,
+        type: 'condition',
+        data: {
+          condition_operator: row.condition_operator,
+          condition_label_ids: parseConditionLabelIds(row.condition_label_ids),
+        },
       };
   }
 }

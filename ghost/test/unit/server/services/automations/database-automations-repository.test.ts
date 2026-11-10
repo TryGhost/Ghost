@@ -152,7 +152,19 @@ const createDatabase = async (): Promise<Knex> => {
     table.integer('email_tracked_sent_count');
     table.integer('email_opened_count');
     table.integer('email_clicked_count');
+    table.text('condition_operator');
     table.unique(['created_at', 'action_id']);
+  });
+
+  await database.schema.createTable('automation_condition_labels', (table) => {
+    table.text('id').primary();
+    table
+      .text('action_revision_id')
+      .notNullable()
+      .references('id')
+      .inTable('automation_action_revisions');
+    table.text('label_id');
+    table.unique(['action_revision_id', 'label_id']);
   });
 
   await database.schema.createTable('redirects', (table) => {

@@ -59,6 +59,8 @@ const messages = {
   emptyActionsWhenActive: 'Active automations require at least one action.',
   emptyEmailSubjectWhenActive: 'Active automations require a subject line for every email.',
   emptyEmailBodyWhenActive: 'Active automations require a body for every email.',
+  incompleteConditionWhenActive:
+    'Active automations require a rule and at least one label for every condition.',
   invalidEmailLexical: 'Email lexical must be a well-formed Lexical document.',
 };
 
@@ -343,6 +345,13 @@ function validateActiveEmailSteps(status: Automation['status'], actions: Automat
   }
 
   for (const action of actions) {
+    if (action.type === 'condition') {
+      if (!action.data.condition_operator || action.data.condition_label_ids.length === 0) {
+        throwValidationError(messages.incompleteConditionWhenActive, 'actions');
+      }
+      continue;
+    }
+
     if (action.type !== 'send_email') {
       continue;
     }
