@@ -247,7 +247,7 @@ catalog:
   '@floating-ui/react-dom': 2.1.9
   shell-quote: 1.11.0
   unidecode: 1.1.0
-  mppx: 0.17.0
+  mppx: 0.17.4
   '@x402/core': 2.29.0
   '@x402/evm': 2.29.0
   '@x402/hono': 2.29.0

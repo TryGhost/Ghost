@@ -669,8 +669,8 @@ catalogs:
       specifier: 2.5.3
       version: 2.5.3
     mppx:
-      specifier: 0.17.0
-      version: 0.17.0
+      specifier: 0.17.4
+      version: 0.17.4
     msw:
       specifier: 2.14.6
       version: 2.14.6
@@ -2530,7 +2530,7 @@ importers:
         version: 0.6.6
       mppx:
         specifier: 'catalog:'
-        version: 0.17.0(@x402/core@2.29.0)(@x402/hono@2.29.0(hono@4.13.16))(express@4.22.3(supports-color@10.2.2))(hono@4.13.16)(viem@2.57.13)
+        version: 0.17.4(@x402/core@2.29.0)(@x402/hono@2.29.0(hono@4.13.16))(express@4.22.3(supports-color@10.2.2))(hono@4.13.16)(viem@2.57.13)
       multer:
         specifier: 2.5.0
         version: 2.5.0
@@ -8558,10 +8558,6 @@ packages:
       typescript:
         optional: true
 
-  '@stripe/stripe-js@9.17.0':
-    resolution: {integrity: sha512-uidL4OJum5kivsOAQnVfQmYLJ2zdgirtmT0zWgskASZ4TPXxpXQ0MNrzW4NsXB90uEqmPHpSEtciLFbF1QQvNA==}
-    engines: {node: '>=12.16'}
-
   '@svg-maps/world@2.0.0':
     resolution: {integrity: sha512-VmYYnyygJ5Zhr48xPqukFBoq4aCBgVNIjBzqBnWKXSdHhrRK3pntdvbCa8lMsxwVCFzEw9a+smIMEGI2sC1xcQ==}
 
@@ -11766,10 +11762,6 @@ packages:
     resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
     engines: {node: '>=0.8.x'}
 
-  eventsource-parser@4.1.1:
-    resolution: {integrity: sha512-zaWNqeSLeyzEAAt2Q6aDBRDRk/VnPmsKqvToyGvv6aahvLv71A4Jw7jG93Hckf11zXurbqgsffvpSgKPoeU1Qw==}
-    engines: {node: '>=22.12'}
-
   execa@10.2.1:
     resolution: {integrity: sha512-/Bofl3ZBh2Q4/PG0W63qFzP5vDAypi8Zc90UWTBzaDNIYiX7apPOd0N6L8hG8CojUdq4V51adu8BObP+iVsSTw==}
     engines: {node: '>=22'}
@@ -13872,8 +13864,8 @@ packages:
   moment@2.31.0:
     resolution: {integrity: sha512-0acOTfMiWOheYS4eoWb80yYMb/JLvVv9SHbs2PehaDzfUG0Bw855SKyk0IKTnPGa5+U2bmi3W68l1+sGLX/pvw==}
 
-  mppx@0.17.0:
-    resolution: {integrity: sha512-lKCT7op2VaqqGVK5BpeMrh6mCgSf6gXkJCE9C1+ezdOS5lX3SwQhdS6jVWp+BXffSxy4xtfTMs3WO9V7zE4q3A==}
+  mppx@0.17.4:
+    resolution: {integrity: sha512-M9v19NPoLj8Rlrnnvb6bvyc9Xl4iTfP9A4SG1khor6EG8wh/23/+AD8zp/2gno8B98NQPI0kIHyvXAHsbE7Pnw==}
     hasBin: true
     peerDependencies:
       '@modelcontextprotocol/sdk': '>=1.25.0'
@@ -20836,8 +20828,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@stripe/stripe-js@9.17.0': {}
-
   '@svg-maps/world@2.0.0': {}
 
   '@svgr/babel-plugin-add-jsx-attribute@8.0.0(@babel/core@7.29.7(supports-color@10.2.2))':
@@ -24491,8 +24481,6 @@ snapshots:
 
   events@3.3.0: {}
 
-  eventsource-parser@4.1.1: {}
-
   execa@10.2.1:
     dependencies:
       '@sindresorhus/merge-streams': 4.0.0
@@ -27034,10 +27022,8 @@ snapshots:
 
   moment@2.31.0: {}
 
-  mppx@0.17.0(@x402/core@2.29.0)(@x402/hono@2.29.0(hono@4.13.16))(express@4.22.3(supports-color@10.2.2))(hono@4.13.16)(viem@2.57.13):
+  mppx@0.17.4(@x402/core@2.29.0)(@x402/hono@2.29.0(hono@4.13.16))(express@4.22.3(supports-color@10.2.2))(hono@4.13.16)(viem@2.57.13):
     dependencies:
-      '@stripe/stripe-js': 9.17.0
-      eventsource-parser: 4.1.1
       ox: 0.14.59
       structured-headers: 2.1.0
       viem: 2.57.13
