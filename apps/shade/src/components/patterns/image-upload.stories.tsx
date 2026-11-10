@@ -68,7 +68,7 @@ export const Dashed: Story = {
     docs: {
       description: {
         story:
-          'Use the default Dropzone variant for a one-pixel dashed border, matching muted icon and text, and an unclipped focus ring.',
+          'With admin7Design on, the default Dropzone variant has a one-pixel dashed border, matching muted icon and text, and an unclipped focus ring. With the flag off, the previous clipping, border, and prompt styling remain.',
       },
     },
   },

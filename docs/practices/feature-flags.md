@@ -159,8 +159,11 @@ The `admin7Design` milestone also moves the member detail sidebar to the right w
 Engagement first, and sections sit under larger headings with a line across the
 top instead of a card.
 
-Tag details use the same larger section headings and ruled sections for Details,
-Meta data and Code injection, with wider spacing between sections and columns.
+Tag details use the same larger section headings for Details, Meta data and
+Code injection, without horizontal rules beneath them. Code injection stays
+open without an expand/collapse control. Member Details and Engagement also
+omit their heading rules. Both detail screens have a vertical divider midway
+between their desktop columns, hidden when the columns stack.
 Meta data has no helper description under its heading. At desktop widths, the metadata
 column is 400px wide to accommodate previews, with the same 80px gap as member
 details. The columns stack below the sidebarlg breakpoint, with 32px between them.
@@ -171,9 +174,13 @@ an inset background or padding. The flag-off design keeps its underline tabs and
 outlined cards; tag editing, uploads, previews and saving use the same behavior
 in both designs.
 
-Empty tag image slots use Shade's default dashed Dropzone style. Metadata image
+With `admin7Design` on, empty tag image slots use Shade's default dashed Dropzone style. Metadata image
 slots use the same field surface as their inputs, giving them a white background
-in light mode.
+in light mode. Shared Dropzones use a 1px border, muted prompts, and thin icons;
+ImageUpload leaves its outer surface unclipped. With the flag off, the previous
+2px Dropzone border, prompt/icon styling, ImageUpload clipping, Unsplash hover
+styling, and PageMenu fit calculation remain. The legacy code-injection
+accordion retains its original expand/collapse behavior without auto-scroll.
 
 The `admin7CustomizeFromViewSite` experiment adds Customize to the frame's top
 bar on View site, opening the Design settings in a panel over a live, browsable

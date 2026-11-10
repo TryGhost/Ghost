@@ -29,49 +29,8 @@ const TagCodeInjectionAccordion: React.FC<TagCodeInjectionAccordionProps> = ({
 }) => {
   const admin7Design = useFeatureFlag('admin7Design');
   const hasCodeInjection = Boolean(headerValue.trim() || footerValue.trim());
-  const sectionRef = React.useRef<HTMLDivElement>(null);
-  const contentRef = React.useRef<HTMLDivElement>(null);
-  const scrollOnExpandRef = React.useRef(false);
-  const cancelScrollRef = React.useRef<(() => void) | undefined>(undefined);
-
-  React.useEffect(() => () => cancelScrollRef.current?.(), []);
-
-  const onExpandedChange = (value: string) => {
-    cancelScrollRef.current?.();
-    scrollOnExpandRef.current = value === 'code-injection';
-  };
-
-  const onEditorsReady = () => {
-    if (!scrollOnExpandRef.current) {
-      return;
-    }
-    let cancelled = false;
-    // CodeMirror loads lazily. Wait for it and the opening animation so the
-    // page has enough scrollable space before bringing the section into view.
-    const frame = requestAnimationFrame(() => {
-      void Promise.allSettled(
-        (contentRef.current?.getAnimations() ?? []).map((animation) => animation.finished),
-      ).then(() => {
-        if (!cancelled && scrollOnExpandRef.current) {
-          scrollOnExpandRef.current = false;
-          sectionRef.current?.scrollIntoView({
-            block: 'start',
-            inline: 'nearest',
-            behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-              ? 'instant'
-              : 'smooth',
-          });
-        }
-      });
-    });
-    cancelScrollRef.current = () => {
-      cancelled = true;
-      cancelAnimationFrame(frame);
-    };
-  };
-
   const editors = (
-    <Stack gap="lg">
+    <Stack className={admin7Design ? undefined : 'pt-1'} gap="lg">
       <CodeEditor
         data-testid="codeinjection-head"
         editable={!disabled}
@@ -97,7 +56,6 @@ const TagCodeInjectionAccordion: React.FC<TagCodeInjectionAccordionProps> = ({
         }
         value={footerValue}
         onChange={onFooterChange}
-        onCreateEditor={admin7Design ? undefined : onEditorsReady}
       />
     </Stack>
   );
@@ -121,17 +79,11 @@ const TagCodeInjectionAccordion: React.FC<TagCodeInjectionAccordionProps> = ({
   }
 
   return (
-    <Card
-      ref={sectionRef}
-      className="scroll-mt-6"
-      data-testid="tag-code-injection-card"
-      variant="outline"
-    >
+    <Card data-testid="tag-code-injection-card" variant="outline">
       <Accordion
         defaultValue={hasCodeInjection ? 'code-injection' : undefined}
         type="single"
         collapsible
-        onValueChange={onExpandedChange}
       >
         <AccordionItem className="border-b-0" value="code-injection">
           <AccordionTrigger className="px-6 py-5 hover:no-underline">
@@ -142,9 +94,7 @@ const TagCodeInjectionAccordion: React.FC<TagCodeInjectionAccordionProps> = ({
               </span>
             </Stack>
           </AccordionTrigger>
-          <AccordionContent ref={contentRef} className="px-6">
-            <Stack className="pt-1">{editors}</Stack>
-          </AccordionContent>
+          <AccordionContent className="px-6">{editors}</AccordionContent>
         </AccordionItem>
       </Accordion>
     </Card>

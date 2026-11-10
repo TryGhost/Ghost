@@ -9,8 +9,10 @@ const meta = {
   args: {
     children: (
       <div className="pointer-events-none flex flex-col items-center">
-        <Upload className="mb-2 size-6" />
-        <span className="text-sm">Select or drop a CSV file</span>
+        <Upload className="mb-2 size-6 in-data-[admin7-design=false]:text-muted-foreground" />
+        <span className="text-sm in-data-[admin7-design=false]:text-secondary-foreground">
+          Select or drop a CSV file
+        </span>
       </div>
     ),
   },
@@ -31,7 +33,7 @@ export const Idle: Story = {
     docs: {
       description: {
         story:
-          'The default dropzone uses a one-pixel dashed border, matching muted icon and text, and a 1.25px icon stroke.',
+          'Admin 7 uses a one-pixel dashed border, matching muted icon and text, and a 1.25px icon stroke. With admin7Design off, the previous two-pixel border and prompt styling remain.',
       },
     },
   },
@@ -106,8 +108,8 @@ export const CustomContent: Story = {
     <Dropzone {...args}>
       {({ isDragActive, isDragReject }) => (
         <div className="pointer-events-none flex flex-col items-center">
-          <Upload className="mb-2 size-6" />
-          <span className="text-sm">
+          <Upload className="mb-2 size-6 in-data-[admin7-design=false]:text-muted-foreground" />
+          <span className="text-sm in-data-[admin7-design=false]:text-secondary-foreground">
             {isDragReject
               ? 'This file type is not supported'
               : isDragActive

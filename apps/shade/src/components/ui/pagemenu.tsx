@@ -52,6 +52,8 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
     const [uncontrolledValue, setUncontrolledValue] = React.useState(defaultValue);
     const isControlled = value !== undefined;
     const activeValue = isControlled ? value : uncontrolledValue;
+    const measuredActiveValue = admin7Design ? activeValue : undefined;
+    const measuredVisibleCount = admin7Design ? visibleCount : undefined;
 
     const handleSelect = React.useCallback(
       (nextValue: string) => {
@@ -86,8 +88,12 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
         const container = containerRef.current;
         const measureContainer = measureRef.current;
         const containerWidth = container.clientWidth;
-        const dropdownWidth = overflowTriggerRef.current?.getBoundingClientRect().width || 60;
-        const gap = Number.parseFloat(getComputedStyle(container).columnGap) || 0;
+        const dropdownWidth = admin7Design
+          ? overflowTriggerRef.current?.getBoundingClientRect().width || 60
+          : 60;
+        const gap = admin7Design
+          ? Number.parseFloat(getComputedStyle(container).columnGap) || 0
+          : 6;
 
         // Get all child elements from the measure container
         const items = Array.from(measureContainer.children) as HTMLElement[];
@@ -117,7 +123,7 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
           const newWidth = currentWidth + gapWidth + itemWidth;
 
           // Reserve space for dropdown (since we know not all items fit)
-          const totalNeededWidth = newWidth + gap + dropdownWidth;
+          const totalNeededWidth = newWidth + (admin7Design ? gap : 0) + dropdownWidth;
 
           if (totalNeededWidth <= containerWidth) {
             currentWidth = newWidth;
@@ -131,7 +137,7 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
       };
 
       requestAnimationFrame(calculateSizes);
-    }, [responsive, children, resizeKey, admin7Design, activeValue, visibleCount]);
+    }, [responsive, children, resizeKey, admin7Design, measuredActiveValue, measuredVisibleCount]);
 
     React.useLayoutEffect(() => {
       if (!responsive || !containerRef.current) {
@@ -196,7 +202,9 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
                       ? tabSurfaceVariants({ admin7Design })
                       : selectedHiddenItem && 'bg-accent text-accent-foreground',
                   )}
-                  data-state={selectedHiddenItem ? 'active' : undefined}
+                  {...(admin7Design
+                    ? { 'data-state': selectedHiddenItem ? 'active' : undefined }
+                    : {})}
                   variant="ghost"
                 >
                   {selectedHiddenItem ? (

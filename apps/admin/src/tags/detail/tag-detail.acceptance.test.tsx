@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 
 import { deferred } from '@/utils/deferred';
@@ -34,7 +34,7 @@ function fakeTagWorld(t: Tag) {
 }
 
 describe('Tag detail', () => {
-  it('scrolls to code injection when expanded with admin7Design off', async () => {
+  it('keeps the legacy code injection accordion without auto-scroll', async () => {
     const t = tag({
       name: 'News',
       slug: 'news',
@@ -47,11 +47,19 @@ describe('Tag detail', () => {
     await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
     trigger.element().scrollIntoView({ block: 'end', behavior: 'instant' });
     const section = tagDetailScreen.codeInjectionCard().element();
-    const before = section.getBoundingClientRect().top;
+    const scrollIntoView = vi.spyOn(section, 'scrollIntoView');
     await trigger.click();
     await expect.element(tagDetailScreen.footerEditor()).toBeVisible();
-    await expect.poll(() => section.getBoundingClientRect().top).toBeLessThan(before - 80);
-    expect(section.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
+    await Promise.allSettled(
+      section.getAnimations({ subtree: true }).map((animation) => animation.finished),
+    );
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve());
+    });
+    expect(scrollIntoView).not.toHaveBeenCalled();
+    await trigger.click();
+    await expect.element(tagDetailScreen.footerEditor()).not.toBeInTheDocument();
+    scrollIntoView.mockRestore();
   });
 
   it('shows empty code injection editors without a toggle in Admin 7', async () => {

@@ -172,7 +172,7 @@ const TagImageField: React.FC<TagImageFieldProps> = ({
                     className={
                       admin7Design
                         ? 'size-6'
-                        : 'size-6 text-muted-foreground transition-colors group-hover/dropzone:text-foreground'
+                        : 'size-6 stroke-[1.5px] text-muted-foreground transition-colors group-hover/dropzone:text-foreground'
                     }
                   />
                   <span
@@ -191,14 +191,23 @@ const TagImageField: React.FC<TagImageFieldProps> = ({
               <ImageUploadActions className="top-1 right-1 opacity-100">
                 <Button
                   aria-label={`Select ${label.toLowerCase()} from Unsplash`}
-                  className="hover:bg-button-hover"
+                  className={
+                    admin7Design ? 'hover:bg-button-hover' : 'group/unsplash hover:bg-button-hover'
+                  }
                   disabled={fieldDisabled}
                   size="icon"
                   type="button"
                   variant="ghost"
                   onClick={() => setShowUnsplash(true)}
                 >
-                  <BrandIcon className="size-4 text-foreground" name="unsplash" />
+                  <BrandIcon
+                    className={
+                      admin7Design
+                        ? 'size-4 text-foreground'
+                        : 'size-4 text-muted-foreground transition-colors group-hover/unsplash:text-foreground'
+                    }
+                    name="unsplash"
+                  />
                 </Button>
               </ImageUploadActions>
             )}
