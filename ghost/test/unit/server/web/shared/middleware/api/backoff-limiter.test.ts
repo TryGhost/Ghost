@@ -78,11 +78,27 @@ describe('BackoffLimiter', function () {
     assert.deepEqual(backoffDelays(5, 5), [5]);
   });
 
-  it('defaults lifetime to long enough to reach maxWait', function () {
+  it('defaults lifetime to the sum of every wait', function () {
     const limiter = build({ lifetime: undefined });
 
-    // 7 delays plus 2 free retries, each up to 10 seconds
-    assert.equal(limiter.options.lifetime, 90);
+    // 1 + 1 + 2 + 3 + 5 + 8 + 10 seconds
+    assert.equal(limiter.options.lifetime, 30);
+  });
+
+  it('keeps the default count window open long enough to reach maxWait', async function () {
+    vi.useFakeTimers({ now: 0 });
+    const limiter = build({ freeRetries: 0, lifetime: undefined });
+
+    // climb each wait as soon as the last ends; the last one opened should be maxWait
+    let lastWait = 0;
+    for (let i = 0; i < 7; i++) {
+      assert.equal((await request(limiter)).allowed, true);
+      const blocked = await request(limiter);
+      assert.ok(blocked.allowed === false);
+      lastWait = blocked.waitMs;
+      vi.advanceTimersByTime(lastWait);
+    }
+    assert.equal(lastWait, 10000);
   });
 
   it('allows freeRetries + 1 requests, then blocks for minWait', async function () {
