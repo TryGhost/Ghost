@@ -9,11 +9,11 @@ describe('Content API middleware', function () {
   });
 
   describe('authenticatePublic', function () {
-    it('uses brute content api middleware as the first middleware in the chain', function () {
+    it('uses the Content API rate limiter as the first middleware in the chain', function () {
       const firstMiddleware = middleware.authenticatePublic[0];
-      const brute = require('../../../../../../../core/server/web/shared/middleware/brute');
+      const rateLimiting = require('../../../../../../../core/server/web/shared/middleware/rate-limiting');
 
-      assert.equal(firstMiddleware, brute.contentApiKey);
+      assert.equal(firstMiddleware, rateLimiting.contentApiKey);
     });
   });
 });

@@ -96,7 +96,6 @@ describe('Stripe Checkout Preview Admin API', function () {
   describe('with unsaved shipping', function () {
     beforeEach(async function () {
       mockManager.mockLabsEnabled('stripeCheckoutCollection');
-      mockManager.mockLabsEnabled('membersCustomFields');
       for (const field of [
         { name: 'Delivery address', type: 'address' },
         { name: 'Recipient name', type: 'short_text' },
@@ -216,7 +215,7 @@ describe('Stripe Checkout Preview Admin API', function () {
     // Each sign-in counts towards the login attempt limit, so clear it before signing the
     // owner back in.
     afterEach(async function () {
-      await dbUtils.truncate('brute');
+      await dbUtils.truncate('rate_limits');
       await agent.loginAsOwner();
     });
 

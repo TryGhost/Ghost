@@ -73,6 +73,13 @@ rotates the session when signing in and after authentication resets so verified
 state cannot be carried to a different user. Verification codes are
 session-bound, short-lived, and invalidated after successful use.
 
+Both verification requests and sign-ins that include a code share a database-backed
+attempt budget per challenge, independent of IP or session ID changes. By default,
+`spam.user_verification_challenge` allows five attempts and blocks further attempts
+for the rest of the code's five-minute validity. Requesting a new code creates a
+new challenge and budget. The separate per-IP verification and resend limits still
+apply.
+
 The current flow lives in
 [`auth/session/session-service.js`](../../ghost/core/server/auth/session/session-service.js),
 with request middleware in

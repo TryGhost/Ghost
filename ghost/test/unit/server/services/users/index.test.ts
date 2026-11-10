@@ -66,18 +66,20 @@ function createModels({
       return Promise.resolve(value);
     });
   class NotFoundError extends Error {}
+  const inTransaction = () =>
+    sinon.stub().callsFake(async (run: (tx: object) => Promise<unknown>) => {
+      state.open = true;
+      try {
+        return await run(transaction);
+      } finally {
+        state.open = false;
+        state.settled = true;
+      }
+    });
   const fakes = {
     Base: {
       knex,
-      transaction: sinon.stub().callsFake(async (run: (tx: object) => Promise<unknown>) => {
-        state.open = true;
-        try {
-          return await run(transaction);
-        } finally {
-          state.open = false;
-          state.settled = true;
-        }
-      }),
+      transaction: inTransaction(),
     },
     User: {
       findOne: sinon.stub().resolves(author),
@@ -91,8 +93,8 @@ function createModels({
     Post: {
       addActions: sinon.stub().resolves(),
       reassignByAuthor: whileOpen(sinon.stub(), undefined),
-      // Row locking helper used by newer deletion code paths; nothing here asserts on it.
       lockLinkedForUpdate: sinon.stub().resolves([]),
+      transactionLockingLinked: inTransaction(),
     },
     ApiKey: {
       destroy: whileOpen(sinon.stub(), undefined),
@@ -411,7 +413,7 @@ describe('Users service', function () {
 
       await service.destroyUser(frameOptions);
 
-      sinon.assert.calledOnce(fakes.Base.transaction);
+      sinon.assert.calledOnce(fakes.Post.transactionLockingLinked);
       assert.equal(
         frameOptions.transacting,
         transaction,
@@ -447,13 +449,34 @@ describe('Users service', function () {
       });
     });
 
-    it('runs revision cleanup, tagging, reassignment, key removal and deletion in order inside the transaction', async function () {
-      const { models: fakes, state } = createModels();
+    it("locks the user's posts, then runs revision cleanup, tagging, reassignment, key removal and deletion in order inside the transaction", async function () {
+      const { models: fakes, state, transaction } = createModels();
+      // Cleanup must wait for the lock to be held, not only start after it was asked for
+      let locked = false;
+      fakes.Post.lockLinkedForUpdate.callsFake(async () => {
+        await new Promise((resolve) => {
+          setImmediate(resolve);
+        });
+        locked = true;
+        return [];
+      });
+      fakes.PostRevision.findAll.callsFake(async () => {
+        assert.equal(locked, true, 'expected the posts to be locked before cleanup');
+        return { toJSON: () => [] };
+      });
       const service = createService(fakes);
 
       await service.destroyUser({ id: 'user-id', context });
 
+      sinon.assert.calledOnceWithExactly(
+        fakes.Post.lockLinkedForUpdate,
+        'posts_authors',
+        'post_id',
+        { author_id: 'user-id' },
+        { transacting: transaction },
+      );
       sinon.assert.callOrder(
+        fakes.Post.lockLinkedForUpdate,
         fakes.PostRevision.findAll,
         fakes.User.findOne,
         fakes.Post.addActions,

@@ -245,6 +245,51 @@ describe('Members Service Middleware', function () {
     }
   });
 
+  describe('loadIdentityTokenMember', function () {
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    const run = async (body, getByToken) => {
+      sinon.restore();
+      sinon.stub(membersService, 'api').get(() => ({ members: { getByToken } }));
+      const req = { body };
+      const next = sinon.stub();
+
+      await membersMiddleware.loadIdentityTokenMember(req, {}, next);
+
+      sinon.assert.calledOnceWithExactly(next);
+      return req.identityTokenMemberId;
+    };
+
+    it('sets the id of the member a verified token names', async function () {
+      const getByToken = sinon.stub().resolves({ id: 'member-id' });
+
+      assert.equal(await run({ identity: 'token' }, getByToken), 'member-id');
+      sinon.assert.calledOnceWithExactly(getByToken, 'token');
+    });
+
+    it('sets null when the token does not verify', async function () {
+      const getByToken = sinon.stub().rejects(new Error('invalid signature'));
+
+      assert.equal(await run({ identity: 'forged' }, getByToken), null);
+    });
+
+    it('sets null when the token names no member', async function () {
+      const getByToken = sinon.stub().resolves(null);
+
+      assert.equal(await run({ identity: 'token' }, getByToken), null);
+    });
+
+    it('sets null without a token', async function () {
+      const getByToken = sinon.stub();
+
+      assert.equal(await run({}, getByToken), null);
+      assert.equal(await run({ identity: { sub: 'member@example.com' } }, getByToken), null);
+      sinon.assert.notCalled(getByToken);
+    });
+  });
+
   describe('updateMemberNewsletters', function () {
     // let oldMembersService;
     let req;

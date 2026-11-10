@@ -211,3 +211,13 @@ export const EGRESS_ALLOWLIST: readonly string[] = [
   'transistor.fm', // podcast embeds (partner.transistor.fm)
   'geojs.io', // member signup + staff sign-in geolocation (get.geojs.io)
 ];
+
+/**
+ * URL prefixes the browser may request on hosts that are NOT allowlisted as a
+ * whole. Narrower than a host entry, so other files on the same host still fail.
+ */
+export const EGRESS_BROWSER_URL_ALLOWLIST: readonly string[] = [
+  // Bunny Fonts serves part of its catalogue from fontsource on jsDelivr: its
+  // stylesheets point some families (and multi-family requests) there.
+  'https://cdn.jsdelivr.net/fontsource/',
+];

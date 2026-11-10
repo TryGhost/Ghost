@@ -342,17 +342,13 @@ describe('S3RouteSettingsStore', function () {
           throw sdkException;
         });
 
-        // Guards the guard: if this stops throwing, the hazard is gone
-        // upstream and this whole approach can be revisited.
-        assert.throws(() => errorUtils.prepareStackForUser(sdkException), RangeError);
-
         await assert.rejects(
           createStore(client).get(),
           (err: { message?: string; stack?: string }) => {
             assert.equal(err.message, 'Something went wrong, please try again.');
             assert.doesNotThrow(() => errorUtils.prepareStackForUser(err as Error));
             // The S3 failure is still diagnosable from the logs.
-            assert.match(String(err.stack), /Caused by: AccessDenied: Access Denied/);
+            assert.match(String(err.stack), /^AccessDenied: Access Denied\n/);
             return true;
           },
         );

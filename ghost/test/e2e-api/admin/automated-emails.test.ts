@@ -149,7 +149,7 @@ describe('Automated Emails API', function () {
   beforeEach(async function () {
     configUtils.set('hostSettings:managedEmail:enabled', false);
     configUtils.set('hostSettings:managedEmail:sendingDomain', null);
-    await dbUtils.truncate('brute');
+    await dbUtils.truncate('rate_limits');
     await dbUtils.truncate('welcome_email_automated_emails');
     await dbUtils.truncate('automations');
     await models.Base.knex('email_design_settings')

@@ -136,7 +136,8 @@ describe.each(pipelines)('$type migration', function ({ JobClass, type, wrapperN
   it('lets the real backend deduplicate concurrent recurring registration without fetching immediately', async function () {
     vi.stubEnv('NODE_ENV', 'production');
     const backend = new InMemoryJobsBackend();
-    const enqueue = sinon.spy(backend, 'enqueue');
+    // Recurring ticks queue through the backend's internal push, not enqueue()
+    const enqueue = sinon.spy(backend as unknown as { _push: () => void }, '_push');
     const jobsService = new JobsService({ backend, logging: createLoggingFake() });
     const newsletters = { startFetch: sinon.stub().resolves() };
     registerJobHandlers({ jobsService, [wrapperName]: newsletters });

@@ -3,6 +3,8 @@
  * A collection of utilities for handling settings including a cache
  */
 const events = require('../../lib/common/events');
+const logging = require('@tryghost/logging');
+const { tracer } = require('../../lib/tracing');
 const models = require('../../models');
 const labs = require('../../../shared/labs');
 const { limitService: limits } = require('../limits');
@@ -85,21 +87,42 @@ module.exports = {
    * Initialize the cache, used in boot and in testing
    */
   async init() {
-    const cacheStore = adapterManager.getAdapter('cache:settings');
-    await models.Settings.populateDefaults();
-    await this.enforcePublicSiteAccessLimit();
-    const settingsCollection = await models.Settings.findAll({ context: { internal: true } });
-    const settingsOverrides = getSettingsOverrides();
-    SettingsCache.init(
-      events,
-      settingsCollection,
-      this.getCalculatedFields(),
-      cacheStore,
-      settingsOverrides,
-    );
+    return tracer.track('settings.init', async (span) => {
+      logging.info({ event: { name: 'settings.init.started' } }, 'Initializing settings');
+      const preparationStart = performance.now();
+      span.setAttribute('phase', 'adapter');
+      const cacheStore = adapterManager.getAdapter('cache:settings');
+      span.setAttribute('phase', 'populate_defaults');
+      await models.Settings.populateDefaults();
+      span.setAttribute('phase', 'enforce_access_limit');
+      await this.enforcePublicSiteAccessLimit();
+      span.setAttribute('preparation_ms', performance.now() - preparationStart);
 
-    // Validate site_uuid matches config
-    this.validateSiteUuid();
+      span.setAttribute('phase', 'find_all');
+      const reloadStart = performance.now();
+      const settingsCollection = await models.Settings.findAll({ context: { internal: true } });
+      const readEnd = performance.now();
+      span.setAttribute('find_all_ms', readEnd - reloadStart);
+
+      span.setAttribute('phase', 'cache_rebuild');
+      const settingsOverrides = getSettingsOverrides();
+      SettingsCache.init(
+        events,
+        settingsCollection,
+        this.getCalculatedFields(),
+        cacheStore,
+        settingsOverrides,
+      );
+      const rebuildEnd = performance.now();
+      span.setAttribute('cache_rebuild_ms', rebuildEnd - readEnd);
+      span.setAttribute('reload_ms', rebuildEnd - reloadStart);
+      if (typeof settingsCollection.length === 'number') {
+        span.setAttribute('settings_count', settingsCollection.length);
+      }
+
+      span.setAttribute('phase', 'validate_uuid');
+      this.validateSiteUuid();
+    });
   },
 
   /**
@@ -343,7 +366,6 @@ module.exports = {
       settingSiteUuid &&
       configSiteUuid.toLowerCase() !== settingSiteUuid.toLowerCase()
     ) {
-      const logging = require('@tryghost/logging');
       const errors = require('@tryghost/errors');
 
       logging.error(

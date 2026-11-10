@@ -15,7 +15,6 @@ import {
   DialogTitle,
   Input,
   Label,
-  LoadingIndicator,
   MultiSelectCombobox,
   Textarea,
   tokenFieldClasses,
@@ -470,15 +469,8 @@ const MemberCustomFieldEditModal: React.FC<{
           <Button disabled={editMutation.isPending} variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button className="min-w-16" disabled={editMutation.isPending} onClick={onSave}>
-            {editMutation.isPending ? (
-              <>
-                <LoadingIndicator size="sm" />
-                <span className="sr-only">Saving</span>
-              </>
-            ) : (
-              'Save'
-            )}
+          <Button loading={editMutation.isPending} onClick={onSave}>
+            Save
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -486,10 +478,30 @@ const MemberCustomFieldEditModal: React.FC<{
   );
 };
 
+// How many fields show before the rest collapse behind "Show all": Settings' preview size.
+const PREVIEW_COUNT = 5;
+
+/** Whether a leaf's text is written in a textarea, so it can hold line breaks. */
+const isMultiline = (leaf: Leaf) =>
+  matchLeaf(leaf, {
+    text: ({ size }) => TEXT_CONTROL[size] === 'textarea',
+    choice: () => false,
+  });
+
 // select-text: button text is unselectable by default, and values (addresses especially) get
 // copied.
-const TextValue: React.FC<{ text: string }> = ({ text }) => (
-  <span className="block break-words select-text in-data-[admin7-design=true]:text-md">{text}</span>
+const TextValue: React.FC<{ text: string; multiline?: boolean }> = ({ text, multiline }) => (
+  <span
+    className={cn(
+      'break-words select-text in-data-[admin7-design=true]:text-md',
+      // Text written in a textarea keeps its line breaks: pre-line shows them and still collapses
+      // runs of spaces, as the rest of the screen's text does. A long one shows its first four
+      // lines, since the row opens the editor, which shows all of it.
+      multiline ? 'line-clamp-4 whitespace-pre-line' : 'block',
+    )}
+  >
+    {text}
+  </span>
 );
 
 // A list's answers as the chips its editor shows, since an option can hold a comma and a
@@ -525,7 +537,7 @@ const CustomFieldValue: React.FC<{ field: MemberCustomField; stored: unknown }> 
     );
   }
   return matchShape<React.ReactElement>(field.type, {
-    scalar: () => <TextValue text={text} />,
+    scalar: ({ leaf }) => <TextValue multiline={isMultiline(leaf)} text={text} />,
     record: () => <TextValue text={text} />,
     set: () => (
       <ListAnswers
@@ -557,10 +569,25 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
   const { data, isLoading } = useCustomFieldDefinitions();
   const fields = data ?? [];
   const [editingField, setEditingField] = React.useState<MemberCustomField | null>(null);
+  const [showAll, setShowAll] = React.useState(false);
+  const listRef = React.useRef<HTMLUListElement>(null);
+
+  // "Show all" leaves with its click, so focus moves to the first field it revealed rather than
+  // dropping back to the page.
+  React.useEffect(() => {
+    if (showAll) {
+      listRef.current?.children[PREVIEW_COUNT]?.querySelector('button')?.focus();
+    }
+  }, [showAll]);
 
   if (isLoading || fields.length === 0) {
     return null;
   }
+
+  // A long list of fields collapses behind "Show all", as it does in Settings, so the rest of the
+  // member's record stays in reach.
+  const isTruncated = !showAll && fields.length > PREVIEW_COUNT;
+  const visibleFields = isTruncated ? fields.slice(0, PREVIEW_COUNT) : fields;
 
   return (
     <section
@@ -576,8 +603,8 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
                     the same height; the card's vertical padding is what gives the
                     first and last chips breathing room from the card edge. */}
         <CardContent className={admin7Design ? 'pt-3' : 'px-6 py-4'}>
-          <ul>
-            {fields.map((field) => {
+          <ul ref={listRef}>
+            {visibleFields.map((field) => {
               const stored = metafields?.[field.namespace]?.[field.key];
               // Null rather than an empty line, so an unset value has no value in the label.
               const display = formatMemberCustomFieldValue(field, stored) || null;
@@ -600,7 +627,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
                     // -mx/px + calc width: the hover tint bleeds past the text
                     // column like the settings rows, while the row text (and the
                     // li dividers) stay aligned with the rest of the card.
-                    className="group -mx-3 flex w-[calc(100%+1.5rem)] items-center justify-between gap-4 rounded-md p-3 text-left transition-colors hover:bg-table-row-hover disabled:cursor-not-allowed disabled:opacity-50 in-data-[admin7-design=true]:py-4"
+                    className="group -mx-3 flex w-[calc(100%+--spacing(6))] items-center justify-between gap-4 rounded-md p-3 text-left transition-colors hover:bg-table-row-hover disabled:cursor-not-allowed disabled:opacity-50 in-data-[admin7-design=true]:py-4"
                     disabled={disabled}
                     type="button"
                     onClick={() => {
@@ -629,6 +656,14 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
               );
             })}
           </ul>
+          {/* The divider fades with the last row's hover, as the lines between rows do. */}
+          {isTruncated && (
+            <div className="border-t border-border pt-3 transition-colors [ul:has(>li:last-child:hover)+&]:border-t-transparent">
+              <Button size="sm" type="button" variant="outline" onClick={() => setShowAll(true)}>
+                Show all
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
       {editingField && (

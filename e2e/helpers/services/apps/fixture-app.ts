@@ -1,20 +1,23 @@
 import express from 'express';
 import path from 'node:path';
-import { CHALLENGE_PATH, answerChallenge, signManifest } from '@tryghost/app-contracts/identity';
+import { CHALLENGE_PATH, handleChallenge } from '@tryghost/app-sdk/backend';
 import { FakeServer } from '@/helpers/services/fake-server';
-import { type KeyObject, generateKeyPairSync } from 'node:crypto';
+import { type PrivateKeyJwk, generateKey, signAppManifest } from '@tryghost/app-sdk/tooling';
 import { REPO_ROOT } from '@/helpers/environment/constants';
 import { readFileSync } from 'node:fs';
 
 /** The test ID of the element where the fixture app's page shows the path it was served from. */
 export const FIXTURE_APP_PATH_TEST_ID = 'fixture-app-path';
 
-/** The app SDK's browser bundle, as `pnpm nx run @tryghost/app-sdk:build` writes it. */
+/**
+ * The app SDK's browser bundle, as `pnpm nx run @tryghost/app-sdk:build` writes it. The fixture
+ * imports the SDK's tooling and backend as built too, as an app would.
+ */
 const APP_SDK_BUNDLE = path.join(REPO_ROOT, 'packages/app-sdk/dist/app-sdk.js');
 
 /**
- * The manifest the fixture app serves, before it adds its manifest URL and keys and signs it.
- * Its fields follow `@tryghost/app-contracts`' manifest.
+ * The manifest the fixture app serves, before the SDK's tooling adds its manifest URL and keys and
+ * signs it, as an app's `ghost-app.json`. Its fields follow `@tryghost/app-contracts`' manifest.
  */
 export interface FixtureAppManifest {
   id: string;
@@ -24,8 +27,6 @@ export interface FixtureAppManifest {
   accent_color: string;
   icon: { name: string };
   surfaces: [{ type: 'admin_page'; url: string }];
-  /** Ghost requires it for an app on localhost, as the fixture always is. */
-  development: true;
 }
 
 /**
@@ -109,30 +110,30 @@ function readAppSdkBundle(): string {
  * The page uses the app SDK as built from the checkout, so the SDK must be built first, which
  * `pnpm test` does.
  *
- * It signs its manifest with its identity key and answers Ghost's challenge with its backend key,
- * as an app's tooling and backend would. Ghost in development trusts localhost without the
- * challenge, so only the signature is checked today.
+ * It signs its manifest with its identity key using the SDK's tooling, as a development build, and
+ * answers Ghost's challenge with its backend key using the SDK's backend, as an app would. Ghost in
+ * development trusts localhost without the challenge, so only the signature is checked today.
  */
 export class FixtureApp extends FakeServer {
   manifest: FixtureAppManifest;
   /** The private key the app signs its manifest with, which Ghost pins at install. */
-  readonly identityKey: KeyObject;
-  private readonly backendKey: KeyObject;
+  readonly identityKey: PrivateKeyJwk;
+  private readonly backendKey: PrivateKeyJwk;
   private readonly pageHtml: string;
 
   constructor({
     appId,
     name = 'Fixture App',
-    identityKey = generateKeyPairSync('ed25519').privateKey,
+    identityKey = generateKey(),
   }: {
     appId: string;
     name?: string;
-    identityKey?: KeyObject;
+    identityKey?: PrivateKeyJwk;
   }) {
     super({ debugNamespace: 'e2e:fixture-app' });
     this.pageHtml = pageHtml(readAppSdkBundle());
     this.identityKey = identityKey;
-    this.backendKey = generateKeyPairSync('ed25519').privateKey;
+    this.backendKey = generateKey();
     this.manifest = {
       id: appId,
       name,
@@ -141,7 +142,6 @@ export class FixtureApp extends FakeServer {
       accent_color: '#15171a',
       icon: { name: 'blocks' },
       surfaces: [{ type: 'admin_page', url: 'app.html' }],
-      development: true,
     };
   }
 
@@ -170,37 +170,41 @@ export class FixtureApp extends FakeServer {
 
   protected setupRoutes(): void {
     this.app.get('/manifest.json', (_req, res, next) => {
-      const served = {
-        ...this.manifest,
-        manifest_url: this.manifestUrl,
-        identity_key: publicJwk(this.identityKey),
-        backend_key: publicJwk(this.backendKey),
-      };
-      signManifest(served, this.identityKey).then((signed) => res.json(signed), next);
+      signAppManifest(this.manifest, {
+        manifestUrl: this.manifestUrl,
+        identityKey: this.identityKey,
+        backendKey: this.backendKey,
+        development: true,
+      })
+        .then((result) => {
+          if (!result.success) {
+            throw new Error(
+              `The fixture app's manifest can't be signed: ${JSON.stringify(result.errors)}`,
+            );
+          }
+          res.json(result.signed);
+        })
+        .catch(next);
     });
 
-    this.app.post(CHALLENGE_PATH, express.text({ type: '*/*' }), (req, res, next) => {
-      const requestUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
-      answerChallenge(String(req.body), { backendKey: this.backendKey, requestUrl }).then(
-        (result) => {
-          if (result.success) {
-            res.json(result.answer);
-          } else {
-            res.status(400).json({ error: result.error });
-          }
-        },
-        next,
-      );
+    this.app.post(CHALLENGE_PATH, express.raw({ type: '*/*' }), (req, res, next) => {
+      // As the platform would hand the request to the app's backend.
+      const request = new Request(`${req.protocol}://${req.get('host')}${req.originalUrl}`, {
+        method: req.method,
+        body: Buffer.isBuffer(req.body) ? new Uint8Array(req.body) : undefined,
+      });
+      handleChallenge(request, { backendKey: this.backendKey })
+        .then(async (response) => {
+          res
+            .status(response.status)
+            .type('json')
+            .send(await response.text());
+        })
+        .catch(next);
     });
 
     this.app.get(/\.html$/, (_req, res) => {
       res.type('html').send(this.pageHtml);
     });
   }
-}
-
-/** A private key's public half, as the manifest names it. */
-function publicJwk(privateKey: KeyObject) {
-  const { kty, crv, x } = privateKey.export({ format: 'jwk' });
-  return { kty, crv, x };
 }

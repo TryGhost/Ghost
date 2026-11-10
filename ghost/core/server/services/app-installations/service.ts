@@ -281,18 +281,7 @@ export class AppInstallationsService {
 
     const write = await this.withIconCopy(
       approvalWrite({ current, pending: await this.pendingManifestOf(current), loaded }),
-    ).catch(async (error: unknown) => {
-      // If the installation was uninstalled or changed during the icon fetch, report that,
-      // whatever went wrong with its icon, as `store` would have.
-      const latest = await this.currentInstallation(id);
-      if (!latest) {
-        throw uninstalled();
-      }
-      if (latest.revision !== current.revision) {
-        throw await this.changedSinceReview(checked, id);
-      }
-      throw error;
-    });
+    ).catch((iconError: unknown) => ({ iconError }));
     const stored = await this.knex.transaction(async (transacting) => {
       const outcome = await this.store(current, write, { transacting });
       if (outcome.status === 'written' && outcome.value) {
@@ -521,16 +510,21 @@ export class AppInstallationsService {
 
   /**
    * Applies a write planned from `current`, unless the installation changed since. Returns
-   * the newly approved or pending manifest's ID, or null for `nothing`.
+   * the newly approved or pending manifest's ID, or null for `nothing`. Throws the error of an
+   * icon fetch that failed, but only once the installation is known to be unchanged.
    */
   private store(
     current: Installation,
-    write: ManifestWrite<AddedRow>,
+    write: ManifestWrite<AddedRow> | { iconError: unknown },
     { transacting }: { transacting: Knex.Transaction },
   ): Promise<WriteOutcome<string | null>> {
     return this.repository.whileUnchanged(
       current,
       async (locked) => {
+        // Thrown under the lock, so an uninstall or change during the icon fetch wins.
+        if ('iconError' in write) {
+          throw write.iconError;
+        }
         switch (write.kind) {
           case 'nothing':
             return null;

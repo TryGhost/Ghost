@@ -122,6 +122,11 @@ const doesMemberMatchTriggerRuleScope = (
   }
 };
 
+/**
+ * Does this user have automation emails enabled?
+ *
+ * Should only be called if the `newsletters` relation is loaded.
+ */
 const hasUpdatesAndAnnouncementsEnabled = (member: MemberModel): boolean => {
   const preference = member.get('enable_updates_and_announcements');
 
@@ -214,7 +219,10 @@ const processStep = async ({
   // Other trigger types have no 'from' rules, so this filter leaves them unchanged.
   const rulesToCheck = step.automation_trigger_rules.filter((rule) => rule.direction !== 'from');
 
-  const memberRelationsToLoad = ['newsletters'];
+  const memberRelationsToLoad: string[] = [];
+  if (step.type === 'send_email') {
+    memberRelationsToLoad.push('newsletters');
+  }
   if (rulesToCheck.some((rule) => rule.scope === 'specific_paid_tier')) {
     memberRelationsToLoad.push('products');
   }

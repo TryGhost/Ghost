@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const { assertExists } = require('../../../utils/assertions');
 
 const sinon = require('sinon');
+const cssParser = require('css-tree');
 const { assertMatchSnapshot } = require('../../../utils/assertions');
 const _ = require('lodash');
 const moment = require('moment');
@@ -1059,6 +1060,21 @@ describe('{{ghost_head}} helper', function () {
       );
     });
 
+    it('returns an injected large image preview tag as well', async function () {
+      getStub
+        .withArgs('codeinjection_head')
+        .returns('<meta name="robots" content="max-image-preview:large">');
+
+      await testGhostHead(
+        testUtils.createHbsResponse({
+          locals: {
+            context: ['paged', 'index'],
+            safeVersion: '0.3',
+          },
+        }),
+      );
+    });
+
     it('outputs post codeinjection as well', async function () {
       await testGhostHead(
         testUtils.createHbsResponse({
@@ -1230,7 +1246,7 @@ describe('{{ghost_head}} helper', function () {
         }),
       });
 
-      assert.match(rendered, /--ghost-accent-color: #123456/);
+      assert.match(rendered, /--ghost-accent-color:#123456/);
       sinon.assert.notCalled(loggingErrorStub);
     });
 
@@ -1262,6 +1278,149 @@ describe('{{ghost_head}} helper', function () {
           },
         }),
       );
+    });
+
+    it('does not emit a style tag when accent_color contains CSS metacharacters', async function () {
+      const loggingErrorStub = sinon.stub(logging, 'error');
+
+      // A value that would break out of the --ghost-accent-color declaration and
+      // inject an arbitrary rule (reachable via the unauthenticated preview header)
+      const templateOptions = {
+        site: {
+          accent_color: 'red;}body{outline:10px solid red}',
+          _preview: 'test',
+        },
+      };
+
+      const rendered = await testGhostHead({
+        hash: { exclude: 'card_assets,comment_counts' },
+        ...testUtils.createHbsResponse({
+          templateOptions,
+          locals: {
+            relativeUrl: '/',
+            context: ['home', 'index'],
+            safeVersion: '4.3',
+          },
+        }),
+      });
+
+      assert.doesNotMatch(rendered, /--ghost-accent-color/);
+      assert.doesNotMatch(rendered, /body\{outline/);
+      sinon.assert.notCalled(loggingErrorStub);
+    });
+
+    it.each([
+      ['rgb(255 0 0 / 50%)', 'rgb(255 0 0/50%)'],
+      ['hsl(120 50% 50% / .5)', 'hsl(120 50% 50%/.5)'],
+      ['oklch(60% .2 30 / .5)', 'oklch(60%.2 30/.5)'],
+      ['rgb(+255 0 0)', 'rgb(+255 0 0)'],
+      ['rgb(1e+2 0 0)', 'rgb(1e+2 0 0)'],
+      ['rgb(calc(100 + 20) 0 0)', 'rgb(calc(100 + 20)0 0)'],
+      ['rgb(calc(100 * 2) 0 0)', 'rgb(calc(100*2)0 0)'],
+      ['var(--brand_color, rgb(1 2 3 / .5))', 'var(--brand_color,rgb(1 2 3/.5))'],
+      ['color(display-p3 1 0 0 / .5)', 'color(display-p3 1 0 0/.5)'],
+      ['color-mix(in srgb, red 50%, blue)', 'color-mix(in srgb,red 50%,blue)'],
+      ['rgb(from red r g b / .5)', 'rgb(from red r g b/.5)'],
+      ['red/* comment */', 'red'],
+      ['r\\65 d', 'r\\65 d'],
+      ['var(--brand, "quoted; } & fallback")', 'var(--brand,"quoted; } & fallback")'],
+      ['var(--品牌, red)', 'var(--品牌,red)'],
+      ['red/*', 'red'],
+      ['"red', '"red"'],
+      ['rgb(1 2 3', 'rgb(1 2 3)'],
+      ['var(--brand, red', 'var(--brand,red)'],
+    ])('serializes contained CSS value %s', async function (accentColor, expectedColor) {
+      const rendered = (
+        await ghost_head({
+          hash: { exclude: 'card_assets,comment_counts' },
+          ...testUtils.createHbsResponse({
+            templateOptions: { site: { accent_color: accentColor } },
+            locals: { relativeUrl: '/', context: ['home', 'index'], safeVersion: '4.3' },
+          }),
+        })
+      ).toString();
+
+      assert.ok(rendered.includes(`<style>:root {--ghost-accent-color:${expectedColor};}</style>`));
+    });
+
+    it.each([
+      'rgb(255 0 0 / 50%);color:red',
+      'red;}body{outline:10px solid red}',
+      '</style><script>alert(1)</script>',
+      'red/* </StYlE><script>alert(1)</script> */',
+      'red;--ghost-accent-color-end:0/*',
+      'red;--ghost-accent-color-end:0;}',
+      'red;@import "https://example.com/style.css"',
+      'var(--brand, "\\3c /style>")',
+      'red\\',
+      'red; color:blue/*',
+      '',
+      {},
+      123,
+    ])('rejects unsafe accent color %s', async function (accentColor) {
+      const rendered = (
+        await ghost_head({
+          hash: { exclude: 'card_assets,comment_counts' },
+          ...testUtils.createHbsResponse({
+            templateOptions: { site: { accent_color: accentColor, _preview: 'test' } },
+            locals: { relativeUrl: '/', context: ['home', 'index'], safeVersion: '4.3' },
+          }),
+        })
+      ).toString();
+
+      assert.doesNotMatch(rendered, /--ghost-accent-color/);
+    });
+
+    it('memoizes valid and invalid values with bounded eviction', async function () {
+      const parseSpy = sinon.spy(cssParser, 'parse');
+      const generateSpy = sinon.spy(cssParser, 'generate');
+      const render = async (accentColor) =>
+        ghost_head({
+          hash: { exclude: 'card_assets,comment_counts' },
+          ...testUtils.createHbsResponse({
+            templateOptions: { site: { accent_color: accentColor } },
+            locals: { relativeUrl: '/', context: ['home', 'index'], safeVersion: '4.3' },
+          }),
+        });
+      const valid = 'rgb(17 23 41 / .37)';
+      const invalid = 'rgb(17 23 41 / .37);color:red';
+
+      await render(valid);
+      await render(valid);
+      await render(invalid);
+      await render(invalid);
+      sinon.assert.callCount(parseSpy, 2);
+      sinon.assert.calledOnce(generateSpy);
+
+      for (let i = 0; i < 32; i += 1) {
+        await render(`rgb(${i} 42 73 / .23)`);
+      }
+      await render(valid);
+      sinon.assert.callCount(parseSpy, 35);
+      sinon.assert.callCount(generateSpy, 34);
+    });
+
+    it('emits a style tag for a valid non-hex colour value', async function () {
+      const templateOptions = {
+        site: {
+          accent_color: 'rgb(1, 2, 3)',
+          _preview: 'test',
+        },
+      };
+
+      const rendered = await testGhostHead({
+        hash: { exclude: 'card_assets,comment_counts' },
+        ...testUtils.createHbsResponse({
+          templateOptions,
+          locals: {
+            relativeUrl: '/',
+            context: ['home', 'index'],
+            safeVersion: '4.3',
+          },
+        }),
+      });
+
+      assert.match(rendered, /--ghost-accent-color:rgb\(1,2,3\)/);
     });
   });
 

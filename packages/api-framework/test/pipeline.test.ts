@@ -582,15 +582,112 @@ describe('Pipeline', function () {
 
       assert.equal(response, 'CACHED RESPONSE');
 
-      // request went through all stages
-      assert.equal(validationInputStub.calledOnce, false);
-      assert.equal(serialisationInputStub.calledOnce, false);
-      assert.equal(permissionsStub.calledOnce, false);
+      // Cache hits still prepare and authorize the request.
+      assert.equal(validationInputStub.calledOnce, true);
+      assert.equal(serialisationInputStub.calledOnce, true);
+      assert.equal(permissionsStub.calledOnce, true);
       assert.equal(queryStub.calledOnce, false);
       assert.equal(serialisationOutputStub.calledOnce, false);
 
       // cache not set
       assert.equal(apiController.browse.cache.set.calledOnce, false);
+    });
+
+    it.each(['Editor', 'Author', 'Contributor'])(
+      'denies %s access to a response cached by an Owner',
+      async function (role) {
+        permissionsStub.restore();
+        const store = new Map<string, unknown>();
+        const cache = {
+          get: sinon.spy((key: string) => store.get(key)),
+          set: sinon.spy((key: string, value: unknown) => store.set(key, value)),
+        };
+        const result = shared.pipeline(
+          {
+            docName: 'stats',
+            browse: {
+              cache,
+              generateCacheKeyData: () => ({ method: 'mrr' }),
+              permissions: { docName: 'members', method: 'browse' },
+            },
+          },
+          {
+            permissions: {
+              handle(config, frame) {
+                assert.equal(config.docName, 'members');
+                assert.equal(config.method, 'browse');
+                if (frame.options.context?.role !== 'Owner') {
+                  throw new errors.NoPermissionError();
+                }
+              },
+            },
+          },
+        );
+        const revenue = { stats: [{ mrr: 1000 }] };
+        queryStub.resolves(revenue);
+        serialisationOutputStub.callsFake((response, _utils, _config, _impl, frame) => {
+          frame.response = response;
+        });
+
+        assert.deepEqual(await result.browse({ context: { role: 'Owner' } }), revenue);
+        await assert.rejects(result.browse({ context: { role } }), errors.NoPermissionError);
+        assert.equal(cache.get.callCount, 1, 'denied requests must not reach the cache');
+        assert.equal(cache.set.callCount, 1);
+        assert.deepEqual(await result.browse({ context: { role: 'Owner' } }), revenue);
+        assert.equal(queryStub.callCount, 1, 'authorized requests can reuse the response');
+      },
+    );
+
+    it('prepares and authorizes once when the cache invokes its loader', async function () {
+      const cache = {
+        async get(_key: string, loader: () => Promise<unknown>) {
+          return loader();
+        },
+        set: sinon.stub(),
+      };
+      const result = shared.pipeline({ browse: { cache } }, {});
+      queryStub.resolves('response');
+      serialisationOutputStub.callsFake((response, _utils, _config, _impl, frame) => {
+        frame.response = response;
+      });
+
+      assert.equal(await result.browse(), 'response');
+      sinon.assert.callOrder(
+        validationInputStub,
+        serialisationInputStub,
+        permissionsStub,
+        queryStub,
+      );
+      assert.equal(validationInputStub.callCount, 1);
+      assert.equal(serialisationInputStub.callCount, 1);
+      assert.equal(permissionsStub.callCount, 1);
+      assert.equal(queryStub.callCount, 1);
+    });
+
+    it('waits for authorization before reading a cached response', async function () {
+      let deny!: (error: Error) => void;
+      permissionsStub.returns(
+        new Promise((_resolve, reject) => {
+          deny = reject;
+        }),
+      );
+      const cache = {
+        get: sinon.stub().resolves('private response'),
+        set: sinon.stub(),
+      };
+      const result = shared.pipeline({ browse: { cache } }, {});
+      const request = result.browse();
+      const rejected = assert.rejects(request, errors.NoPermissionError);
+
+      await new Promise<void>((resolve) => {
+        setImmediate(resolve);
+      });
+      assert.equal(permissionsStub.calledOnce, true);
+      assert.equal(cache.get.called, false);
+      deny(new errors.NoPermissionError());
+      await rejected;
+      assert.equal(cache.get.called, false);
+      assert.equal(queryStub.called, false);
     });
 
     it('produces distinct cache keys when cacheKeyData objects differ only in nested fields', async function () {

@@ -10,6 +10,7 @@ type QueryCall = {
   whereInField?: string;
   ids?: string[] | null;
   where?: [string, string];
+  orderBy?: string;
   data?: any;
   rows?: any[];
 };
@@ -37,6 +38,7 @@ function createTrx({
       ids: null as string[] | null,
       whereInField: undefined as string | undefined,
       andWhereArgs: undefined as [string, string] | undefined,
+      orderByField: undefined as string | undefined,
 
       where() {
         return query;
@@ -53,12 +55,18 @@ function createTrx({
         return query;
       },
 
+      orderBy(field: string) {
+        query.orderByField = field;
+        return query;
+      },
+
       forUpdate() {
         forUpdateCalls.push({
           tableName,
           whereInField: query.whereInField,
           ids: query.ids,
-          where: query.andWhereArgs,
+          ...(query.andWhereArgs && { where: query.andWhereArgs }),
+          ...(query.orderByField && { orderBy: query.orderByField }),
         });
         ops.push(`forUpdate:${tableName}`);
         return Promise.resolve(compedMembers);
@@ -145,12 +153,12 @@ describe('clean-expired-comped task', function () {
       { tableName: 'members_products', ids: ['expired-product-relation-id'] },
     ]);
 
-    // Only the affected members, filtered to those still comped, are read -
-    // and read with a row lock taken before the update, so a concurrent
-    // status change cannot slip in between the read and the update. The ops
-    // assertion pins the whole write sequence of the transaction.
+    // Every affected member is locked in id order before their tiers are
+    // deleted, so a concurrent status change cannot slip in between the read
+    // and the update. The ops assertion pins the whole write sequence of the
+    // transaction.
     assert.deepEqual(forUpdateCalls, [
-      { tableName: 'members', whereInField: 'id', ids: ['member-id'], where: ['status', 'comped'] },
+      { tableName: 'members', whereInField: 'id', ids: ['member-id'], orderBy: 'id' },
     ]);
     assert.deepEqual(ops, [
       'forUpdate:members',
@@ -182,6 +190,25 @@ describe('clean-expired-comped task', function () {
       updatedMemberCount: 1,
       emittedEventCount: 1,
     });
+  });
+
+  it('locks members losing a tier who are no longer comped without updating them', async function () {
+    const { trx, updateCalls, deleteCalls, forUpdateCalls } = createTrx({
+      expiredRows: [
+        { id: 'comped-relation-id', member_id: 'comped-member-id' },
+        { id: 'paid-relation-id', member_id: 'paid-member-id' },
+      ],
+      compedMembers: [
+        { id: 'comped-member-id', status: 'comped', updated_at: previousUpdatedAt },
+        { id: 'paid-member-id', status: 'paid', updated_at: previousUpdatedAt },
+      ],
+    });
+
+    await cleanExpiredComped(createDeps(trx));
+
+    assert.deepEqual(forUpdateCalls[0]!.ids, ['comped-member-id', 'paid-member-id']);
+    assert.deepEqual(deleteCalls[0]!.ids, ['comped-relation-id', 'paid-relation-id']);
+    assert.deepEqual(updateCalls[0]!.ids, ['comped-member-id']);
   });
 
   it('emits a member.edited model event per updated member after the transaction', async function () {

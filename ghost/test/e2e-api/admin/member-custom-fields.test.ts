@@ -13,6 +13,7 @@ const DatabaseInfo = require('@tryghost/database-info');
 const { knex } = require('../../../core/server/data/db');
 const models = require('../../../core/server/models');
 const events = require('../../../core/server/lib/common/events');
+const settingsService = require('../../../core/server/services/settings/settings-service');
 
 describe('Member Custom Fields Admin API', function () {
   let agent: {
@@ -74,10 +75,6 @@ describe('Member Custom Fields Admin API', function () {
     agent = await agentProvider.getAdminAPIAgent();
     await fixtureManager.init('users');
     await agent.loginAsOwner();
-  });
-
-  beforeEach(function () {
-    mockManager.mockLabsEnabled('membersCustomFields');
   });
 
   afterEach(async function () {
@@ -2822,7 +2819,7 @@ describe('Member Custom Fields Admin API', function () {
     // Switching back to a session means logging in again, and this file already logs in
     // close to the limit on login attempts, so clear the count before the later blocks do.
     afterAll(async function () {
-      await dbUtils.truncate('brute');
+      await dbUtils.truncate('rate_limits');
       await agent.loginAsOwner();
     });
 
@@ -2893,23 +2890,57 @@ describe('Member Custom Fields Admin API', function () {
     });
   });
 
-  // The flag governs whether a publisher can set custom fields up, not whether the rest of
-  // Ghost may ask what they are. Admin reads this list to draw screens it renders either
-  // way, and a site that has never enabled the flag has no fields, so the honest answer is
-  // an empty list. Every route that changes something stays behind the flag.
-  describe('Flag disabled', function () {
-    beforeEach(function () {
-      mockManager.restore();
-      mockManager.mockLabsDisabled('membersCustomFields');
+  // Custom fields are released, so a site has them whatever its own Labs setting says. That
+  // includes a site that turned them off in Labs while they were private. Ghost no longer
+  // saves a released flag into the setting, so the row is written as that site left it.
+  describe('Released', function () {
+    let storedLabs: string;
+
+    async function storeLabs(value: string) {
+      await models.Base.knex('settings').where({ key: 'labs' }).update({ value });
+      await settingsService.init();
+    }
+
+    beforeEach(async function () {
+      storedLabs = (await models.Settings.findOne({ key: 'labs' })).get('value');
+      await storeLabs(JSON.stringify({ ...JSON.parse(storedLabs), membersCustomFields: false }));
     });
 
-    it('serves the definitions endpoint, with nothing on it', async function () {
-      const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
-      assert.deepEqual(body.members_metafields, []);
+    afterEach(async function () {
+      await storeLabs(storedLabs);
     });
 
-    it('404s a read of a field that does not exist, rather than hiding the route', async function () {
-      await agent.get('members/metafields/custom/company/').expectStatus(404);
+    it('lets a site that turned custom fields off in Labs before release define one', async function () {
+      const created = await createField({ name: 'Company' });
+      assert.equal(created.key, 'company');
+    });
+  });
+
+  // A released flag can still be switched off, from config or remote flags, and the site
+  // then behaves as it did before release. The flag governs whether a publisher can set
+  // custom fields up, not whether the rest of Ghost may ask what they are: Admin reads this
+  // list to draw screens it renders either way. Every route that changes something stays
+  // behind the flag.
+  describe('Flag switched off', function () {
+    beforeEach(async function () {
+      await createField({ name: 'Company' });
+      configUtils.set('labs', { membersCustomFields: false });
+    });
+
+    afterEach(async function () {
+      await configUtils.restore();
+    });
+
+    it('still lists and reads the fields the site has', async function () {
+      const { body: list } = await agent.get('members/metafields/custom/').expectStatus(200);
+      assert.deepEqual(
+        list.members_metafields.map((field: { key: string }) => field.key),
+        ['company'],
+      );
+      const { body: read } = await agent
+        .get('members/metafields/custom/company/')
+        .expectStatus(200);
+      assert.equal(read.members_metafields[0].key, 'company');
     });
 
     it('404s the create endpoint', async function () {
