@@ -7,10 +7,10 @@ An app's page runs in a frame inside Ghost Admin. The SDK connects it to Admin,
 gives it the site, the user and the theme, and lets it call the Admin API, keep
 its route in sync with Admin's URL, and send the publisher elsewhere in Admin.
 
-| Entry point                 | Runs in                    | What it's for                                                                 |
-| --------------------------- | -------------------------- | ----------------------------------------------------------------------------- |
-| `@tryghost/app-sdk`         | The app's page             | Talking to Admin (below)                                                      |
-| `@tryghost/app-sdk/backend` | Any platform with web APIs | [Answering Ghost's challenge, serving the manifest and framing](#the-backend) |
+| Entry point                 | Runs in                    | What it's for                                                        |
+| --------------------------- | -------------------------- | -------------------------------------------------------------------- |
+| `@tryghost/app-sdk`         | The app's page             | Talking to Admin (below)                                             |
+| `@tryghost/app-sdk/backend` | Any platform with web APIs | [Answering Ghost's challenge and serving the manifest](#the-backend) |
 
 The page's entry point loads none of the backend's code.
 
@@ -280,21 +280,15 @@ export default withGhostApp({
 });
 ```
 
-It takes `handleChallenge`'s options, `fetch`, and an optional `adminOrigins`,
-which passes `fetch`'s responses through `allowFraming`. Without it, responses
-are passed on as they are. `adminOrigins` only reaches responses `fetch` makes:
-on Workers, a request for a static asset is served without running the Worker
-unless `assets.run_worker_first` is set, and Vite's dev server serves pages
-itself. `fetch` gets whatever else the platform passes too, such as a Worker's
-`env` and `ctx`. Frameworks that route requests themselves, such as Hono, use
-`handleChallenge` and `allowFraming` directly.
+It takes `handleChallenge`'s options and `fetch`, which gets whatever else the
+platform passes too, such as a Worker's `env` and `ctx`. Frameworks that route
+requests themselves, such as Hono, use `handleChallenge` directly.
 
-| Export                                               | What it does                                                                                                                                                                                                                                                                                                   |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `withGhostApp({ backendKey, fetch, adminOrigins? })` | The app's backend, as `{ fetch }`: answers the challenge at `CHALLENGE_PATH` with `handleChallenge`, and passes every other request to `fetch`. With `adminOrigins`, `fetch`'s responses go through `allowFraming`.                                                                                            |
-| `handleChallenge(request, { backendKey, origin? })`  | Answers Ghost's challenge, posted to `CHALLENGE_PATH`, with the backend key: a private JWK, or its JSON as a secret holds it. `405` for any method but `POST`, `413` past 4 KB, `400` for anything that isn't a challenge for `origin` when it's given, or else `request.url`'s origin, `200` with the answer. |
-| `serveManifest(signed)`                              | A response for the signed manifest, for a backend that doesn't serve it as a file. Caches must revalidate it, so a new manifest reaches Ghost the next time it reads it.                                                                                                                                       |
-| `allowFraming(response, { adminOrigins })`           | A copy of a page's response that only those Ghost Admin origins may frame: it sets `frame-ancestors` in its Content-Security-Policy and drops `X-Frame-Options`.                                                                                                                                               |
+| Export                                              | What it does                                                                                                                                                                                                                                                                                                   |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `withGhostApp({ backendKey, fetch })`               | The app's backend, as `{ fetch }`: answers the challenge at `CHALLENGE_PATH` with `handleChallenge`, and passes every other request to `fetch`.                                                                                                                                                                |
+| `handleChallenge(request, { backendKey, origin? })` | Answers Ghost's challenge, posted to `CHALLENGE_PATH`, with the backend key: a private JWK, or its JSON as a secret holds it. `405` for any method but `POST`, `413` past 4 KB, `400` for anything that isn't a challenge for `origin` when it's given, or else `request.url`'s origin, `200` with the answer. |
+| `serveManifest(signed)`                             | A response for the signed manifest, for a backend that doesn't serve it as a file. Caches must revalidate it, so a new manifest reaches Ghost the next time it reads it.                                                                                                                                       |
 
 `handleChallenge` refuses a challenge for any origin but the one the platform
 reports in `request.url`, so pass the request as the platform hands it over,
@@ -305,23 +299,12 @@ configuration, never from a request's headers. Workers don't need it.
 
 ## Who can frame the page
 
-The SDK talks to whichever window frames the page. It can't know a site's Admin
-origin in advance, so if any site can frame the page, any site can fool it: send
-it a start context of its choosing, and answer every `fetch` itself. No Ghost
-credential is ever in the page. But whatever the publisher types into the page
-is exposed, and the app acts on whatever responses it gets.
-
-Serve app pages with a `frame-ancestors` Content Security Policy that names the
-Ghost Admin origins of the sites using the app, so nothing else can frame them.
-The backend's `allowFraming` sets it:
-
-```http
-Content-Security-Policy: frame-ancestors https://site.example
-```
-
-Admin is usually on the site's own origin, or on a separate Admin domain when
-the site has one. An app installed on many sites can build the list from its
-own record of where it is installed.
+The SDK talks to whichever window frames the page, and can't yet tell whether
+it's Ghost Admin. A site that frames the page can send it a start context of
+its choosing and answer every `fetch` itself. No Ghost credential is ever in the
+page, but whatever the publisher types into the page reaches that site, and the
+app acts on the responses it gets. Ghost will close this by vouching for the
+site and the staff user to the app's backend.
 
 ## Serve only the app from its origin
 

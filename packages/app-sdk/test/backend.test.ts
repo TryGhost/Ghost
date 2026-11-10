@@ -6,7 +6,6 @@ import { describe, expect, it, vi } from 'vitest';
 
 import {
   CHALLENGE_PATH,
-  allowFraming,
   handleChallenge,
   serveManifest,
   withGhostApp,
@@ -178,20 +177,15 @@ describe('handleChallenge', () => {
 
 describe('withGhostApp', () => {
   const { privateJwk, publicJwk } = backendKeyPair();
-  const page = () => new Response('<p>Hi</p>', { headers: { 'x-frame-options': 'DENY' } });
+  const page = () => new Response('<p>Hi</p>');
 
   it("answers Ghost's challenge itself, without calling fetch", async () => {
     const fetch = vi.fn(page);
-    const app = withGhostApp({
-      backendKey: privateJwk,
-      fetch,
-      adminOrigins: ['https://site.example'],
-    });
+    const app = withGhostApp({ backendKey: privateJwk, fetch });
     const challenge = createChallenge(ORIGIN);
     const response = await app.fetch(challengeRequest(challenge));
 
     expect(response.status).toBe(200);
-    expect(response.headers.has('content-security-policy')).toBe(false);
     expect(
       await verifyChallengeAnswer(challenge, await response.text(), publicJwk as never),
     ).toEqual({ success: true });
@@ -205,24 +199,8 @@ describe('withGhostApp', () => {
     const request = new Request(`${ORIGIN}${CHALLENGE_PATH}/more`, { method: 'POST' });
     const env = { name: 'env' };
 
-    // Without adminOrigins, the response is passed on as it is.
     expect(await app.fetch(request, env, 1)).toBe(response);
     expect(fetch).toHaveBeenCalledWith(request, env, 1);
-  });
-
-  it("lets only the given Admin origins frame fetch's responses", async () => {
-    const app = withGhostApp({
-      backendKey: privateJwk,
-      fetch: page,
-      adminOrigins: ['https://site.example'],
-    });
-    const framed = await app.fetch(new Request(`${ORIGIN}/`));
-
-    expect(framed.headers.get('content-security-policy')).toBe(
-      'frame-ancestors https://site.example',
-    );
-    expect(framed.headers.has('x-frame-options')).toBe(false);
-    expect(await framed.text()).toBe('<p>Hi</p>');
   });
 
   it("answers for the public origin it's given, behind a proxy", async () => {
@@ -248,99 +226,5 @@ describe('serveManifest', () => {
     expect(response.headers.get('content-type')).toBe('application/json; charset=utf-8');
     expect(response.headers.get('cache-control')).toBe('no-cache');
     expect(await response.text()).toBe(body);
-  });
-});
-
-describe('allowFraming', () => {
-  it('lets only the given Admin origins frame the page, and drops X-Frame-Options', async () => {
-    const page = new Response('<p>Hi</p>', {
-      status: 201,
-      headers: { 'x-frame-options': 'DENY', 'content-type': 'text/html' },
-    });
-    const framed = allowFraming(page, {
-      adminOrigins: ['https://site.example', 'https://admin.example/'],
-    });
-    expect(framed.status).toBe(201);
-    expect(framed.headers.get('content-security-policy')).toBe(
-      'frame-ancestors https://site.example https://admin.example',
-    );
-    expect(framed.headers.has('x-frame-options')).toBe(false);
-    expect(framed.headers.get('content-type')).toBe('text/html');
-    expect(await framed.text()).toBe('<p>Hi</p>');
-  });
-
-  it("keeps the rest of the page's policy, replacing any frame-ancestors it had", () => {
-    const page = new Response(null, {
-      headers: {
-        'content-security-policy': "default-src 'self'; frame-ancestors 'none'; img-src *",
-      },
-    });
-    expect(
-      allowFraming(page, { adminOrigins: ['https://site.example'] }).headers.get(
-        'content-security-policy',
-      ),
-    ).toBe("default-src 'self'; img-src *; frame-ancestors https://site.example");
-  });
-
-  it.each(['http://[::1]:2368', 'https://[2001:db8::1]'])(
-    "refuses %s, an IPv6 address a policy can't name",
-    (origin) => {
-      expect(() => allowFraming(new Response(), { adminOrigins: [origin] })).toThrow(
-        "frame-ancestors can't name an IPv6 address",
-      );
-    },
-  );
-
-  it('accepts an origin in any case the URL parser reads as one', () => {
-    const framed = allowFraming(new Response(), { adminOrigins: ['HTTPS://Site.Example:443'] });
-    expect(framed.headers.get('content-security-policy')).toBe(
-      'frame-ancestors https://site.example',
-    );
-  });
-
-  it("drops each of several policies' frame-ancestors, and keeps everything else", () => {
-    const page = new Response(null, {
-      headers: [
-        ['content-security-policy', "script-src 'none'; frame-ancestors 'none'"],
-        ['content-security-policy', "default-src 'self'"],
-        ['content-security-policy', "frame-ancestors 'self'"],
-      ],
-    });
-    expect(
-      allowFraming(page, { adminOrigins: ['https://site.example'] }).headers.get(
-        'content-security-policy',
-      ),
-    ).toBe("script-src 'none'; frame-ancestors https://site.example, default-src 'self'");
-  });
-
-  it('passes on a response it cannot copy, such as an error or an upgrade, as it is', () => {
-    const error = Response.error();
-    expect(allowFraming(error, { adminOrigins: ['https://site.example'] })).toBe(error);
-    // As a platform's WebSocket upgrade answers, which a Response can't be constructed with.
-    const upgrade = Object.defineProperty(new Response(null), 'status', { value: 101 });
-    expect(allowFraming(upgrade, { adminOrigins: ['https://site.example'] })).toBe(upgrade);
-  });
-
-  it('works on a response whose headers are immutable, as fetch returns them', () => {
-    const fetched = Response.redirect('https://app.example/', 302);
-    expect(() => fetched.headers.set('x', 'y')).toThrow();
-    expect(allowFraming(fetched, { adminOrigins: [] }).headers.get('content-security-policy')).toBe(
-      "frame-ancestors 'none'",
-    );
-  });
-
-  it.each([
-    'https://site.example/ghost/',
-    'site.example',
-    "https://site.example; script-src 'unsafe-inline'",
-    'https://*.example',
-    'ftp://site.example',
-    // The URL parser takes these into the host, where they would end a source or a policy.
-    'https://a.example;sandbox',
-    'https://a.example,b.example',
-    'https://a.example%3Bsandbox',
-    'https://a.example\tb.example',
-  ])('refuses %s, which is not an origin', (origin) => {
-    expect(() => allowFraming(new Response(), { adminOrigins: [origin] })).toThrow(TypeError);
   });
 });

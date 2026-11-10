@@ -1,6 +1,5 @@
 /**
- * The SDK for an app's backend: answering Ghost's challenge, serving the signed manifest,
- * and letting Ghost Admin frame the app's pages.
+ * The SDK for an app's backend: answering Ghost's challenge and serving the signed manifest.
  *
  * Built on web standards only (`Request`, `Response`, `fetch` and WebCrypto), so the same code
  * runs on Cloudflare Workers, Node, Bun and Deno, and inside frameworks such as Hono.
@@ -23,5 +22,4 @@ export {
   type BackendKey,
   type HandleChallengeOptions,
 } from './challenge.ts';
-export { allowFraming, type AllowFramingOptions } from './framing.ts';
 export { MANIFEST_PATH, serveManifest, type SignedManifest } from './manifest.ts';

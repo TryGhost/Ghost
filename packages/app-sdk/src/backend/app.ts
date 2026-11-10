@@ -1,5 +1,4 @@
 import { CHALLENGE_PATH, handleChallenge, type HandleChallengeOptions } from './challenge.ts';
-import { allowFraming } from './framing.ts';
 
 /**
  * A fetch handler: the request, then whatever else the platform passes, such as a Worker's `env`
@@ -13,24 +12,16 @@ export type FetchHandler<Args extends unknown[] = []> = (
 export interface GhostAppOptions<Args extends unknown[] = []> extends HandleChallengeOptions {
   /** The app's own handler, for every request but Ghost's challenge. */
   fetch: FetchHandler<Args>;
-  /**
-   * The Ghost Admin origins that may frame the app's pages, such as `https://site.example`.
-   * Optional: without it, `fetch`'s responses are passed on as they are. With it, each one goes
-   * through `allowFraming`.
-   */
-  adminOrigins?: readonly string[];
 }
 
 /**
  * The app's backend: answers Ghost's challenge at `CHALLENGE_PATH` with `handleChallenge`, and
- * passes every other request to `fetch`, with whatever else the platform passes. With
- * `adminOrigins`, `fetch`'s responses also go through `allowFraming`.
+ * passes every other request to `fetch`, with whatever else the platform passes.
  *
  * It returns `{ fetch }`, so a Worker can export it as it is, and Bun can serve it.
  */
 export function withGhostApp<Args extends unknown[] = []>({
   fetch,
-  adminOrigins,
   ...challenge
 }: GhostAppOptions<Args>): { fetch: (request: Request, ...args: Args) => Promise<Response> } {
   return {
@@ -38,8 +29,7 @@ export function withGhostApp<Args extends unknown[] = []>({
       if (new URL(request.url).pathname === CHALLENGE_PATH) {
         return handleChallenge(request, challenge);
       }
-      const response = await fetch(request, ...args);
-      return adminOrigins ? allowFraming(response, { adminOrigins }) : response;
+      return fetch(request, ...args);
     },
   };
 }

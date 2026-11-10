@@ -110,14 +110,7 @@ describe('the package', () => {
     ['index', ['GhostAppError', 'connect']],
     [
       'backend',
-      [
-        'CHALLENGE_PATH',
-        'MANIFEST_PATH',
-        'allowFraming',
-        'handleChallenge',
-        'serveManifest',
-        'withGhostApp',
-      ],
+      ['CHALLENGE_PATH', 'MANIFEST_PATH', 'handleChallenge', 'serveManifest', 'withGhostApp'],
     ],
   ])('%s.js exports %j', (entry, names) => {
     expect(exportsOf(code(entry))).toEqual(names);
@@ -196,7 +189,6 @@ describe('the package', () => {
     [
       'backend',
       [
-        'AllowFramingOptions',
         'BackendKey',
         'CHALLENGE_PATH',
         'FetchHandler',
@@ -204,7 +196,6 @@ describe('the package', () => {
         'HandleChallengeOptions',
         'MANIFEST_PATH',
         'SignedManifest',
-        'allowFraming',
         'handleChallenge',
         'serveManifest',
         'withGhostApp',
