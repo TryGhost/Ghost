@@ -13,7 +13,7 @@ import type { Clock, ImportRun, ImportRunStore, RowOutcome } from './store';
 import type { PreparedImportSource } from './source';
 import type { PreparedPostRow, PreparedPostRows } from './reader';
 import { MediaInliningFailure, type PostMediaInlining } from './media';
-import type { ImportFileStager, StagedImportFile } from './staged-file';
+import type { DownloadedImportFile, ImportFileStager, StagedImportFile } from './staged-file';
 import ContentCSVImportJob from '../jobs/content-csv-import-job';
 
 export type { ImportRequest } from './schema';
@@ -180,12 +180,14 @@ class ContentCSVImporter {
   }
 
   async handle(job: ContentCSVImportJob): Promise<void> {
+    let download: DownloadedImportFile | undefined;
     let source: PreparedImportSource | undefined;
 
     try {
       const run = this._store.create(job.importId, job.total);
+      download = await this._fileStager.download(job.file);
       const prepared = await this.readPreparedRows({
-        filePath: job.file.path,
+        filePath: download.path,
         fileName: job.file.name,
         mapping: job.mapping,
       });
@@ -204,6 +206,9 @@ class ContentCSVImporter {
     } finally {
       if (source) {
         await this.cleanupSource(source.cleanup);
+      }
+      if (download) {
+        await this.cleanupSource(download.cleanup);
       }
       const run = this._store.get(job.importId);
       if (run) {

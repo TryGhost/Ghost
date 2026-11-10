@@ -3,7 +3,7 @@ import { Job } from '../../jobs-service/job';
 export interface ContentCSVImportJobData {
   importId: string;
   file: {
-    path: string;
+    key: string;
     name: string;
   };
   mapping?: Record<string, string>;

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createReadStream, existsSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -26,7 +27,7 @@ type Root = typeof import('../../../../../core/server/services/content-import');
 function job() {
   return new ContentCSVImportJob({
     importId: 'run_test',
-    file: { path: '/tmp/staged-import', name: 'posts.csv' },
+    file: { key: 'staged-import', name: 'posts.csv' },
     importTagNames: ['#Import 2026-01-01 10:30', '#Import Run run_test'],
     emailRecipient: 'owner@example.com',
   });
@@ -139,6 +140,7 @@ describe('Content import composition root', function () {
       storagePath: directory,
       save: sandbox.stub().resolves('/imports/posts.csv'),
       urlToPath: () => 'posts.csv',
+      readStream: sandbox.stub().callsFake(async () => createReadStream(filePath)),
       delete: sandbox.stub().resolves(),
     };
     getAdapter.withArgs('storage:imports').returns(storage);
@@ -195,7 +197,9 @@ describe('Content import composition root', function () {
     assert.ok(delivered instanceof ContentCSVImportJob);
     assert.equal(delivered.importId, accepted.importId);
     root.init();
+    const mkdtemp = sandbox.spy(fs, 'mkdtemp');
     await root.handleJob(delivered);
+    assert.equal(existsSync(await mkdtemp.firstCall.returnValue), false);
     sinon.assert.calledOnceWithExactly(
       importUrl,
       'https://images.example/post.png',
@@ -204,6 +208,21 @@ describe('Content import composition root', function () {
     sinon.assert.calledOnce(write);
     assert.equal(write.firstCall.args[0].feature_image, '/content/images/local.png');
     sinon.assert.calledOnce(send);
+    sinon.assert.calledOnceWithExactly(storage.readStream, { path: 'posts.csv' });
     sinon.assert.calledOnce(storage.delete);
+  });
+
+  it('removes the local copy when the stored upload cannot be downloaded', async function () {
+    const failure = new Error('storage unavailable');
+    sandbox
+      .stub(adapterManager, 'getAdapter')
+      .withArgs('storage:imports')
+      .returns({ readStream: sandbox.stub().rejects(failure), delete: sandbox.stub().resolves() });
+    const mkdtemp = sandbox.spy(fs, 'mkdtemp');
+    root.init();
+
+    await assert.rejects(root.handleJob(job()), (thrown) => thrown === failure);
+
+    assert.equal(existsSync(await mkdtemp.firstCall.returnValue), false);
   });
 });
