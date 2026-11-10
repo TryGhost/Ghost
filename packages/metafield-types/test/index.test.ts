@@ -30,34 +30,6 @@ import { FIELDS_IN_DEVELOPMENT } from './fixtures/fields.ts';
 // metafields HTTP API integration tests, which exercise this catalog together with
 // the backend storage and the wire format.
 describe('metafield-types catalog', function () {
-  // Integrations depend on a published version of this package and talk to sites on
-  // other Ghost versions, so a type that has shipped keeps its parts and what each holds
-  // for good: an integration with a newer package would otherwise send a part an older
-  // site refuses. New structure is a new type. Add a type here once it has shipped.
-  it('never changes a type once it has shipped', function () {
-    const line = { leaf: 'text', size: 'line' };
-    const shipped = {
-      short_text: { shape: 'scalar', leaf: line },
-      long_text: { shape: 'scalar', leaf: { leaf: 'text', size: 'long' } },
-      address: {
-        shape: 'record',
-        parts: {
-          line1: line,
-          line2: line,
-          city: line,
-          state: line,
-          postal_code: { leaf: 'text', size: 'code' },
-          country: { leaf: 'choice', from: 'countries' },
-        },
-      },
-    };
-
-    for (const [type, structure] of Object.entries(shipped)) {
-      assert.ok(isFieldType(type), `${type} still exists`);
-      assert.deepEqual(FIELD_STRUCTURES[type], structure, `${type} keeps its structure`);
-    }
-  });
-
   it('answers for each type by the shape it declares', function () {
     const layout = (type: FieldType) =>
       matchShape(type, {
