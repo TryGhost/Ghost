@@ -147,29 +147,15 @@ class ContentCSVImporter {
 
   async importCSV(request: ImportRequest): Promise<ImportAccepted> {
     const emailRecipient = request.requestUserEmail ?? (await this._email.getDefaultRecipient());
-    let stagedFile: StagedImportFile;
-    try {
-      stagedFile = await this._fileStager.stage(request);
-    } catch (error) {
-      throw new errors.ValidationError({
-        message: tpl(messages.unreadableFile),
-        err: error,
-      });
-    }
+    const { source, preparedRows } = await this.readPreparedRows(request);
+    await this.cleanupSource(source.cleanup);
+
+    this.assertWithinPostLimit(preparedRows.rows);
+
+    const stagedFile = await this._fileStager.stage(request);
     let handedOff = false;
 
     try {
-      const stagedRequest = {
-        filePath: stagedFile.path,
-        fileName: stagedFile.name,
-        mapping: request.mapping,
-        requestUserEmail: request.requestUserEmail,
-      };
-      const { source, preparedRows } = await this.readPreparedRows(stagedRequest);
-      await this.cleanupSource(source.cleanup);
-
-      this.assertWithinPostLimit(preparedRows.rows);
-
       const runId = this._newRunId();
       const importTagNames = buildImportTagNames(runId, this._getTimezone(), this._now());
       const job = new ContentCSVImportJob({
