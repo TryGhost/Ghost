@@ -76,7 +76,10 @@ upload has been deleted. The importer's `site_content_import.completed` event
 records successful imports; generic job completion only records that the handler
 settled, which it also does for an import failure it reported. There are no
 automatic retries and no collection of uploads orphaned by a shutdown between
-dispatch and execution.
+dispatch and execution. The exception is a site with
+`services:jobs:outbox:keepUntilSettled` on: its outbox keeps each row until the
+job settles, so a job that a restart or crash cut short runs again, from the
+start, at the next boot.
 
 ## Scheduling
 

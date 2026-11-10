@@ -130,7 +130,7 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
 
   beforeEach(async function () {
     await knex(TABLE).truncate();
-    outbox = new JobsOutbox({ knex });
+    outbox = new JobsOutbox({ knex, keepUntilSettled: true });
   });
 
   describe('JobsOutbox.insert', function () {
@@ -244,6 +244,19 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       assert.deepEqual(seen[0].envelope, envelope);
       const row = await knex(TABLE).select('submitted_at').where('id', id).first();
       assert.ok(row?.submitted_at, 'the row stays, marked submitted, until its job settles');
+    });
+
+    it('deletes the row on confirmed acceptance when it does not keep rows until they settle', async function () {
+      const handOffOnly = new JobsOutbox({ knex, keepUntilSettled: false });
+      const id = newId();
+      await handOffOnly.insert({ id, envelope: envelopeFor() });
+
+      const outcome = await handOffOnly.processNext(async () => {}, {
+        retryDelayMs: TIMINGS.retryDelayMs,
+      });
+
+      assert.equal(outcome.status, 'delivered');
+      assert.equal(await rowById(id), undefined);
     });
 
     it('retains a rejected row and moves its available_at forward', async function () {
@@ -654,7 +667,7 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       run = async () => {},
     }: { queue?: string; failFirst?: boolean; run?: (job: GreetJob) => Promise<void> } = {}) {
       const backend = new RecordingBackend({ failFirst });
-      const store = new JobsOutbox({ knex });
+      const store = new JobsOutbox({ knex, keepUntilSettled: true });
       const relay = new OutboxRelay({
         outbox: store,
         backend,
@@ -820,6 +833,124 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       assert.ok(
         backend.calls.every((call) => call.envelope.payload.routing?.queue === 'greetings'),
         'every attempt, retry included, preserves the named lane',
+      );
+    });
+  });
+  describe('init wiring', function () {
+    // init() reuses the wrapper's instance, built from whatever config came
+    // first, so each test loads its own copy of the wrapper.
+    const wrapperPath = require.resolve('../../../core/server/services/jobs-service');
+    let previousWrapper: NodeJS.Module | undefined;
+    let wrapper: typeof jobsService;
+
+    beforeEach(function () {
+      previousWrapper = require.cache[wrapperPath];
+      delete require.cache[wrapperPath];
+      wrapper = require(wrapperPath);
+    });
+
+    afterEach(async function () {
+      try {
+        await wrapper.shutdown({ timeoutMs: 1000 });
+      } finally {
+        delete require.cache[wrapperPath];
+        if (previousWrapper) {
+          require.cache[wrapperPath] = previousWrapper;
+        }
+      }
+    });
+
+    function initWithOutbox(keepUntilSettled: boolean) {
+      const config = {
+        get: (key: string) =>
+          key === 'services:jobs:outbox'
+            ? { enabled: true, keepUntilSettled, pollIntervalMs: TIMINGS.pollIntervalMs }
+            : undefined,
+      };
+      return wrapper.init({ knex, config });
+    }
+
+    async function startBlockedJob(keepUntilSettled: boolean) {
+      const release = Promise.withResolvers<void>();
+      const started = Promise.withResolvers<void>();
+      const service = initWithOutbox(keepUntilSettled);
+      service.handle(GreetJob, async () => {
+        started.resolve();
+        await release.promise;
+      });
+      await service.start();
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+      await started.promise;
+      return { service, release };
+    }
+
+    it('deletes the row at hand-off by default', async function () {
+      const { release } = await startBlockedJob(false);
+
+      assert.ok(
+        await waitFor(async () => (await countRows()) === 0),
+        'the row is gone while its job still runs',
+      );
+      release.resolve();
+    });
+
+    it('with the flag off, deletes each row once, at hand-off', async function () {
+      const deletes: string[] = [];
+      const onQuery = ({ sql }: { sql: string }) => {
+        if (/^delete from `jobs_outbox`/i.test(sql)) {
+          deletes.push(sql);
+        }
+      };
+      knex.on('query', onQuery);
+      try {
+        const settled = Promise.withResolvers<void>();
+        const service = initWithOutbox(false);
+        service.handle(GreetJob, async () => {
+          settled.resolve();
+        });
+        await service.start();
+        await service.dispatch(new GreetJob({ name: 'Ada' }));
+        await settled.promise;
+        await wrapper.shutdown({ timeoutMs: 1000 });
+      } finally {
+        knex.off('query', onQuery);
+      }
+
+      assert.equal(deletes.length, 1);
+    });
+
+    it('with the flag turned off, still hands over rows submitted while it was on', async function () {
+      const id = newId();
+      await knex(TABLE).insert({
+        id,
+        envelope: JSON.stringify(envelopeFor(GreetJob.type, { name: 'Ada' })),
+        created_at: new Date(),
+        available_at: new Date(),
+        submitted_at: new Date(),
+      });
+      const delivered: GreetJob[] = [];
+      const service = initWithOutbox(false);
+      service.handle(GreetJob, async (job: GreetJob) => {
+        delivered.push(job);
+      });
+
+      await service.start();
+
+      assert.ok(await waitFor(() => delivered.length === 1), 'the job runs');
+      assert.ok(await waitFor(async () => (await countRows()) === 0), 'and its row is gone');
+    });
+
+    it('keeps the row until its job settles when keepUntilSettled is on', async function () {
+      const { release } = await startBlockedJob(true);
+
+      assert.ok(
+        await waitFor(async () => (await countRows()) === 1 && (await countUnsubmitted()) === 0),
+        'the running job keeps its row, marked submitted',
+      );
+      release.resolve();
+      assert.ok(
+        await waitFor(async () => (await countRows()) === 0),
+        'and loses it once it settles',
       );
     });
   });

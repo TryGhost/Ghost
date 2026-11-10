@@ -65,7 +65,10 @@ function makeLogger() {
   return { logging, calls };
 }
 
-function makeOutbox({ released = [] as { id: string; type: string | null }[] } = {}) {
+function makeOutbox({
+  released = [] as { id: string; type: string | null }[],
+  tracked = true,
+} = {}) {
   const inserts: { id: string; envelope: DispatchEnvelope; transacting?: unknown }[] = [];
   const relayCalls: string[] = [];
   const store = {
@@ -88,7 +91,7 @@ function makeOutbox({ released = [] as { id: string; type: string | null }[] } =
       relayCalls.push('stop');
     },
   };
-  const tracker = { onSettled: async (): Promise<void> => {} };
+  const tracker = tracked ? { onSettled: async (): Promise<void> => {} } : undefined;
   return { inserts, relayCalls, store, relay, tracker };
 }
 
@@ -411,7 +414,16 @@ describe('JobsService', function () {
 
       await service.start();
 
-      assert.equal(backend.startOptions?.onSettled, outbox.tracker.onSettled);
+      assert.equal(backend.startOptions?.onSettled, outbox.tracker?.onSettled);
+    });
+
+    it('active without a tracker: still releases rows at start but asks for no settlements', async function () {
+      const outbox = makeOutbox({ tracked: false });
+
+      await makeService({ outbox }).start();
+
+      assert.deepEqual(outbox.relayCalls, ['release', 'start']);
+      assert.equal(backend.startOptions?.onSettled, undefined);
     });
 
     it('inactive: asks the backend for no settlements', async function () {
