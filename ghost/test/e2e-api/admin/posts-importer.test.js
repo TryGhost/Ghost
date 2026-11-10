@@ -621,7 +621,11 @@ describe('Posts Importer API', function () {
     await agent.post('posts/upload/').attach('postsfile', filePath).expectStatus(202);
     await contentImportService.allSettled();
 
-    sinon.assert.calledOnceWithExactly(importUrl, sourceUrl);
+    sinon.assert.calledOnceWithExactly(
+      importUrl,
+      sourceUrl,
+      sinon.match({ originSchemes: sinon.match.instanceOf(Map) }),
+    );
     const post = await models.Post.findOne({ title: 'Unexpected media failure', status: 'all' });
     assert.equal(post, null);
   });
