@@ -14,9 +14,13 @@ import {
 import { importMembersScreen } from './import-members.screen';
 import { membersScreen } from './members.screen';
 import { CUSTOM_FIELDS_FLAG } from '@/shared/member-custom-fields/availability';
-import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {
+  type MemberCustomField,
+  userTypeForFieldType,
+} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { MetafieldDefinitionSchema } from '@tryghost/metafield-types';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
+import { FIELDS_IN_DEVELOPMENT } from '@tryghost/metafield-types/test/fixtures';
 import { z } from 'zod';
 
 // Admin goes live before the servers it talks to, and a server that hasn't released custom
@@ -124,6 +128,16 @@ async function openCreateForm(column: string) {
   await expect.element(importToggle(column)).toBeChecked();
   await fieldSelect(column).click();
   await importMembersScreen.addCustomFieldOption().click();
+}
+
+/** Opens the types a field made from a column can take, on a site with the given Labs flags. */
+async function openCreateFormTypes(labs: Record<string, boolean>) {
+  fakeCustomFieldsWorld();
+  await renderAdminApp('/members', { labs });
+  await openMappingStep();
+  await openCreateForm('nickname');
+  await createForm().getByRole('combobox', { name: 'Type' }).click();
+  await expect.element(importMembersScreen.option('Short text', { exact: true })).toBeVisible();
 }
 
 describe('Import members custom fields', () => {
@@ -449,6 +463,24 @@ describe('Import members custom fields', () => {
     await importToggle('nickname').click();
 
     await expect.element(fieldSelect('nickname')).toHaveTextContent('Nickname');
+  });
+
+  // A type still in development is offered only where its Labs flag is on, as in Settings.
+  it.each(FIELDS_IN_DEVELOPMENT)(
+    "doesn't offer $field.type while $flag is off",
+    async ({ field, flag }) => {
+      const { label } = userTypeForFieldType(field.type);
+      await openCreateFormTypes({ [flag]: false });
+
+      await expect(importMembersScreen.option(label, { exact: true })).toHaveCount(0);
+    },
+  );
+
+  it.each(FIELDS_IN_DEVELOPMENT)('offers $field.type once $flag is on', async ({ field, flag }) => {
+    const { label } = userTypeForFieldType(field.type);
+    await openCreateFormTypes({ [flag]: true });
+
+    await expect.element(importMembersScreen.option(label, { exact: true })).toBeVisible();
   });
 
   // A composite spans several columns, so the form has nothing to say about which one this

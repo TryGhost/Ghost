@@ -58,6 +58,7 @@ export {
 export {
   FIELD_STRUCTURES,
   FIELD_TYPE_IDS,
+  FIELD_TYPE_FLAGS,
   LIST_SOURCES,
   MAX_OPTIONS,
   MIN_OPTIONS,
@@ -67,6 +68,7 @@ export {
   country,
   editableAnswers,
   inOptionOrder,
+  isCreatableType,
   isFieldType,
   isRecordValue,
   matchField,

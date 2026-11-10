@@ -22,12 +22,11 @@ import {
 import { CreateCustomFieldPopover } from '@/shared/member-custom-fields/create-custom-field-popover';
 import { LucideIcon } from '@tryghost/shade/utils';
 import {
+  type CreatableMemberCustomFieldTypes,
   type MemberCustomField,
   type NewMemberCustomField,
   useCreateMemberCustomField,
-  userTypeForFieldType,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
-import type { FieldType } from '@tryghost/metafield-types/structure';
 import { useRef, useState } from 'react';
 import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 
@@ -51,9 +50,10 @@ export interface CustomFieldPickerProps {
    * The types a field created from this picker may have: one entry pins the type, which the
    * create form still shows, disabled; several offer a choice among exactly these.
    * Keep it within the types `fields` is filtered by — a creation outside that range
-   * would make a field this picker then refuses to list. Omit to hide the create action.
+   * would make a field this picker then refuses to list. Only types the site can create a field
+   * with, narrowed with `creatableTypesAmong`. Omit, or leave empty, to hide the create action.
    */
-  createTypes?: FieldType[];
+  createTypes?: CreatableMemberCustomFieldTypes;
 }
 
 /**
@@ -284,7 +284,7 @@ export function CustomFieldPicker({
           open={creating}
           saveError={saveError}
           testId="custom-field-picker-create"
-          types={createTypes.map(userTypeForFieldType)}
+          types={createTypes}
           onCancel={leaveForm}
           onEdit={clearCreateErrors}
           onSubmit={(newField) => void createNewField(newField)}

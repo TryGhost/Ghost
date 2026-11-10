@@ -23,6 +23,12 @@ Core deploy independently, so a flag may be visible before the endpoint,
 setting, or response field needed by the UI exists. Admin must detect the
 backend capability and handle the older-server case separately.
 
+One exception: a new member custom field type is built behind a Labs flag that
+also decides when Admin offers it. That holds only because the flag is switched
+on after every Ghost(Pro) server has the type's code, and only creating a field
+of the type is gated. See
+[why a new field type starts behind a flag](../../packages/metafield-types/docs/explanation/why-a-new-field-type-starts-behind-a-flag.md).
+
 ## Flag stages
 
 Flags are camelCase keys registered in

@@ -14,7 +14,11 @@ import {
   Switch,
 } from '@tryghost/shade/components';
 import { CustomFieldPicker } from '@/shared/member-custom-fields/custom-field-picker';
-import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {
+  type MemberCustomField,
+  creatableTypesAmong,
+  useCreatableMemberCustomFieldTypes,
+} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
 import { type CollectFormState, tierChoiceOf } from './collect-form';
 
@@ -92,28 +96,31 @@ export const Destination: React.FC<{
   value: string | null;
   error?: string;
   onChange: (key: string) => void;
-}> = ({ label, type, fields, chosen, value, error, onChange }) => (
-  <SubRow error={error} label={label}>
-    <CustomFieldPicker
-      // Offered without asking about the custom fields flag or host limit. Checkout collection
-      // is released with custom fields, and it needs Stripe, which a host only lets a site
-      // connect where it lets it have custom fields. A site that loses them keeps its
-      // connection, and the server refuses a new field there with the host's message, which the
-      // picker shows.
-      createTypes={[type]}
-      // A field archived after it was chosen stays chosen, so the setting can be saved back.
-      fields={fields.filter(
-        (field) =>
-          field.key === value ||
-          (field.type === type && field.status === 'active' && !chosen.includes(field.key)),
-      )}
-      invalid={Boolean(error)}
-      label={label}
-      value={value}
-      onChange={onChange}
-    />
-  </SubRow>
-);
+}> = ({ label, type, fields, chosen, value, error, onChange }) => {
+  const creatableTypes = useCreatableMemberCustomFieldTypes();
+  return (
+    <SubRow error={error} label={label}>
+      <CustomFieldPicker
+        // Offered without asking about the custom fields flag or host limit. Checkout collection
+        // is released with custom fields, and it needs Stripe, which a host only lets a site
+        // connect where it lets it have custom fields. A site that loses them keeps its
+        // connection, and the server refuses a new field there with the host's message, which
+        // the picker shows. A type still in development is offered where its own flag is on.
+        createTypes={creatableTypesAmong(creatableTypes, [type])}
+        // A field archived after it was chosen stays chosen, so the setting can be saved back.
+        fields={fields.filter(
+          (field) =>
+            field.key === value ||
+            (field.type === type && field.status === 'active' && !chosen.includes(field.key)),
+        )}
+        invalid={Boolean(error)}
+        label={label}
+        value={value}
+        onChange={onChange}
+      />
+    </SubRow>
+  );
+};
 
 /**
  * A part checkout can ask for: a switch, and while it's on, the paid tiers that ask for it

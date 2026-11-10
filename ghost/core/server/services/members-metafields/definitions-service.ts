@@ -8,8 +8,10 @@ import {
   FieldTypeSchema,
   TypedSettingsInputSchema,
   WRITTEN_SETTINGS,
+  isCreatableType,
   refusedProperty,
   withTypedSettings,
+  type FieldType,
   type TypedSettings,
 } from '@tryghost/metafield-types';
 import { metafieldCodec, metafieldCodecWithDefaults } from './codec';
@@ -126,6 +128,7 @@ export class MetafieldDefinitionsService {
   private recordAction: RecordMetafieldAction;
   private namespaces: Namespaces;
   private tracking: MetafieldsTracking;
+  private labs: { isSet(flag: string): boolean };
 
   constructor({
     knex,
@@ -133,18 +136,22 @@ export class MetafieldDefinitionsService {
     recordAction,
     namespaces,
     tracking,
+    labs,
   }: {
     knex: Knex;
     fields: FieldSource;
     recordAction: RecordMetafieldAction;
     namespaces: Namespaces;
     tracking: MetafieldsTracking;
+    /** Asked on every create, as a type's flag can be switched on while Ghost runs. */
+    labs: { isSet(flag: string): boolean };
   }) {
     this.knex = knex;
     this.fields = fields;
     this.recordAction = recordAction;
     this.namespaces = namespaces;
     this.tracking = tracking;
+    this.labs = labs;
   }
 
   async browse(
@@ -229,6 +236,10 @@ export class MetafieldDefinitionsService {
       const fields = parsed.data;
       attempt.fields(fields);
 
+      fields.forEach((field, index) => {
+        this.assertCreatable(field.type, batchContext(index, requestedCount));
+      });
+
       // Mint before opening the transaction: it needs no database access, and
       // an unusable name is a payload problem worth reporting on its own terms.
       const bases = fields.map((field, index) => {
@@ -308,6 +319,7 @@ export class MetafieldDefinitionsService {
     { executor = this.knex }: { executor?: Knex } = {},
   ): Promise<Metafield> {
     await this.namespaces.assertChangeable(namespace);
+    this.assertCreatable(wanted.type);
     // Before any database access, the way `add` mints before opening its transaction:
     // an unusable key is a payload problem worth reporting on its own terms.
     const key = usableKey(wanted.key);
@@ -331,6 +343,21 @@ export class MetafieldDefinitionsService {
 
     // knex's marker for a transactor: join it rather than nesting a savepoint under it.
     return executor.isTransaction ? write(executor) : executor.transaction(write);
+  }
+
+  /**
+   * Refuses a type this site doesn't offer yet: one still in development, whose Labs flag is
+   * off here. Asked of every create, whoever makes it, so the API refuses what Admin doesn't
+   * offer.
+   */
+  private assertCreatable(type: FieldType, context?: string): void {
+    if (!isCreatableType(type, (flag) => this.labs.isSet(flag))) {
+      throw new errors.ValidationError({
+        message: `Custom fields of the type ${type} are not available on this site.`,
+        property: 'type',
+        context,
+      });
+    }
   }
 
   /**

@@ -92,12 +92,15 @@ export function init(): void {
   fields = fieldSource(namespaces);
 
   const tracking = metafieldsTracking({ tracer, meter });
+  // A field type still in development can be created only where its Labs flag is on.
+  const labs = require('../../../shared/labs');
   definitions = new MetafieldDefinitionsService({
     knex,
     fields,
     recordAction,
     namespaces,
     tracking,
+    labs,
   });
   // The values service reads the field definitions itself, so it needs knex, the fields and
   // the ceiling, which also caps how many values one request can carry — no handle on the

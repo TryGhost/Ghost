@@ -16,6 +16,7 @@ import { ListField } from '@/shared/member-custom-fields/list-settings';
 import { matchShape, type SetSettings } from '@tryghost/metafield-types/structure';
 import { type RefObject, useState } from 'react';
 import type {
+  CreatableMemberCustomFieldTypes,
   MemberCustomFieldUserType,
   NewMemberCustomField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
@@ -38,8 +39,8 @@ interface CreateCustomFieldPopoverProps {
   // What this place knows about a list made here, such as the options an import column already
   // holds. Asked once, as the popover opens.
   suggestList?: () => ListSuggestion;
-  // The types this place can use; one pins it.
-  types: MemberCustomFieldUserType[];
+  // The types this place can use, of those the site can create a field with; one pins it.
+  types: CreatableMemberCustomFieldTypes;
   // The request in flight and what came back of it. Owned by the place, which runs the create:
   // this asks for a field and shows what it is told, and knows nothing about how either happens.
   isSaving: boolean;

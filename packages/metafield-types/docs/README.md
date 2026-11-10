@@ -10,7 +10,9 @@ way they are. The [package README](../README.md) covers using the package, and t
 
 - [Add a field type](how-to/add-a-field-type.md)
 - [Add a building block](how-to/add-a-building-block.md)
+- [Release a field type](how-to/release-a-field-type.md)
 
 ## Explanation
 
 - [How a field type is built](explanation/how-a-field-type-is-built.md)
+- [Why a new field type starts behind a flag](explanation/why-a-new-field-type-starts-behind-a-flag.md)
