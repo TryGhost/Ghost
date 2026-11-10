@@ -2326,7 +2326,7 @@ module.exports = {
       type: 'string',
       maxlength: 50,
       nullable: false,
-      validations: { isIn: [['wait', 'send_email']] },
+      validations: { isIn: [['wait', 'send_email', 'condition']] },
     },
   },
   automation_action_revisions: {
@@ -2352,7 +2352,31 @@ module.exports = {
     email_sent_count: { type: 'integer', nullable: true, unsigned: true },
     email_opened_count: { type: 'integer', nullable: true, unsigned: true },
     email_clicked_count: { type: 'integer', nullable: true, unsigned: true },
+    condition_operator: {
+      type: 'string',
+      maxlength: 50,
+      nullable: true,
+      validations: { isIn: [['has_any', 'has_all', 'has_none']] },
+    },
     '@@UNIQUE_CONSTRAINTS@@': [['created_at', 'action_id']],
+  },
+  automation_condition_labels: {
+    id: { type: 'string', maxlength: 24, nullable: false, primary: true },
+    action_revision_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: false,
+      references: 'automation_action_revisions.id',
+      cascadeDelete: true,
+    },
+    label_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: true,
+      references: 'labels.id',
+      setNullDelete: true,
+    },
+    '@@UNIQUE_CONSTRAINTS@@': [['action_revision_id', 'label_id']],
   },
   redirects: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
@@ -2472,6 +2496,7 @@ module.exports = {
           [
             'pending',
             'automation disabled',
+            'condition not met',
             'failed',
             'finished',
             'member changed label',

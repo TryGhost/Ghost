@@ -79,6 +79,7 @@ const BACKUP_TABLES = [
   'automation_actions',
   'automation_action_edges',
   'automation_action_revisions',
+  'automation_condition_labels',
   'automation_run_steps',
   'automation_runs',
   'automation_trigger_rules',
