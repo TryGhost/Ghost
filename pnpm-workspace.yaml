@@ -276,7 +276,7 @@ catalog:
   '@types/supertest': 7.2.1
   '@tryghost/validator': 3.2.21
   '@types/probability-distributions': 0.1.3
-  d3-geo: 3.1.1
+  d3-geo: 3.1.2
   bullmq: 5.81.5
   rate-limiter-flexible: 11.2.3
 
