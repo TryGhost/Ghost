@@ -15442,8 +15442,8 @@ services:
         tests: []
       consumers:
         summary: >-
-          Boot calls scheduleJobs and centrally registers UpdateCheckJob with a handler that
-          awaits the root with rethrowErrors true on the shared default jobs lane. The current
+          Boot calls scheduleJobs and passes the root to the central UpdateCheckJob handler, which
+          awaits it with rethrowErrors true on the shared default jobs lane. The current
           in-memory backend invokes that handler in-process; no separate update-check worker,
           CLI or HTTP consumer was found. The checker itself calls API pipelines with internal
           context to read/write the due date, resolve active Owner/Administrator recipients

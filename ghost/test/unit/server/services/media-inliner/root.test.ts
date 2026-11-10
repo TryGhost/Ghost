@@ -189,6 +189,7 @@ describe('Media inliner service root', function () {
       siteImporter: { executeImport: sinon.stub().resolves() },
       tinybirdSync: { sync: sinon.stub().resolves() },
       contentImport: { handleJob: sinon.stub().resolves() },
+      updateCheck: sinon.stub().resolves(),
     });
     const registration = jobsService.handle
       .getCalls()

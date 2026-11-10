@@ -505,6 +505,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
   const memberJobs = require('./server/services/members/jobs');
   const membersService = require('./server/services/members');
   const tinybirdSync = require('./server/services/tinybird-sync');
+  const updateCheck = require('./server/services/update-check');
   memberJobs.init();
   const siteImporter = require('./server/data/importer').init({ jobsService });
   assert(giftService.service, 'Gift service should be initialized');
@@ -527,6 +528,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     siteImporter,
     tinybirdSync,
     contentImport,
+    updateCheck,
   });
   await jobsService.start();
   debug('End: Register job handlers');

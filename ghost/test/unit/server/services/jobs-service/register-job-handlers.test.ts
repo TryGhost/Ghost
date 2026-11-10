@@ -39,6 +39,7 @@ describe('register-job-handlers', function () {
   let emailService: { handleSendEmailJob: sinon.SinonStub };
   let tinybirdSync: { sync: sinon.SinonStub };
   let contentImport: { handleJob: sinon.SinonStub };
+  let updateCheck: sinon.SinonStub;
 
   // Handlers are looked up by their job type rather than registration order,
   // so adding a handler does not silently shift which one a test exercises.
@@ -77,6 +78,7 @@ describe('register-job-handlers', function () {
     emailService = { handleSendEmailJob: sinon.stub().resolves() };
     tinybirdSync = { sync: sinon.stub().resolves() };
     contentImport = { handleJob: sinon.stub().resolves() };
+    updateCheck = sinon.stub().resolves();
 
     registerJobHandlers({
       gifts: { startFetch: sinon.stub().resolves() },
@@ -93,6 +95,7 @@ describe('register-job-handlers', function () {
       siteImporter,
       tinybirdSync,
       contentImport,
+      updateCheck,
     });
   });
 
@@ -258,16 +261,17 @@ describe('register-job-handlers', function () {
     assert.equal(registration.args[2], undefined);
   });
 
-  // Under the test env the update check executor exits at its environment
-  // gate, so invoking the registered handler proves the wiring without
-  // touching the network.
-  it('registers the update-check handler', async function () {
-    // handlerFor matches on the type string, not class identity: the module
-    // under test loads its job class through the CJS cache, a different
-    // instance from this file's ESM import.
-    const updateCheckHandler = handlerFor('update-check');
+  it('runs update-check with errors rethrown', async function () {
+    await handlerFor('update-check')(new UpdateCheckJob());
 
-    await updateCheckHandler(new UpdateCheckJob());
+    sinon.assert.calledOnceWithExactly(updateCheck, { rethrowErrors: true });
+  });
+
+  it('propagates update-check failures', async function () {
+    const error = new Error('Update check failed');
+    updateCheck.rejects(error);
+
+    await assert.rejects(handlerFor('update-check')({}), (thrown) => thrown === error);
   });
 
   it('resolves signing keys when the job runs and awaits its check', async function () {
