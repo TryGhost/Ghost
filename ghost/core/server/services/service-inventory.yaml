@@ -1562,9 +1562,9 @@ services:
         summary: >-
           There is no reset, stop, abort or public implementation accessor. The module retains
           its graph across init calls; run records are mutable, in memory, created when the
-          job starts and released after its completion email. Lazy age/count eviction excludes running
-          runs. Media promises, including failed results, are cached by exact URL within one
-          job, not across jobs. Store units assert retention/eviction;
+          job starts and released after its completion email.
+          Media promises, including failed results, are cached by exact URL within one
+          job, not across jobs. Store units assert finished runs stay regardless of age or count;
           media units hold an import to prove sharing, and assert separate-instance
           isolation. Root units retain the same request/job receiver and call handleJob
           directly after repeated init. Dispatch is stubbed; the jobs backend queue is not
