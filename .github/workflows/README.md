@@ -46,6 +46,10 @@ How we write GitHub Actions workflows safely. Follow these when adding or editin
   Fork PRs get no secrets, so this bites on same-repo branches — and there it is damage control rather than a boundary, since anyone who can push a branch can also edit the workflow. What it does buy is that a compromised dependency or third-party action in that job never sees the secret.
 
 - **A secret is exposed to its whole job, not just its step.** Steps share a runner, so PR-authored code running earlier in the job — a repo script, a build, a lifecycle hook — can shadow a binary on `$GITHUB_PATH` or write `$GITHUB_ENV` and capture the secret from a later step. If a job checks out PR code, keep secrets out of it entirely and do the privileged work in a separate job with no checkout.
+- **Nx cache exception:** `NX_CLOUD_ACCESS_TOKEN` may be exposed to push runs and
+  pull requests whose head repository matches the current repository. This
+  deliberately trusts same-repository PR code with cache access; fork PRs receive
+  no token. Keep this exception limited to Nx cache credentials.
 - Prefer OIDC (`id-token: write`) over long-lived stored secrets where the provider supports it.
 
 ## Supply chain
