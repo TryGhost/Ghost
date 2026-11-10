@@ -4,9 +4,13 @@ const { MESSAGES } = require('./constants');
 const { wrapReplacementStrings } = require('@tryghost/kg-default-nodes').utils.replacementStrings;
 const linkReplacer = require('../../lib/link-replacer');
 const emailDesign = require('../../lib/email-rendering/email-design');
+const { randomUUID } = require('node:crypto');
+/** @import { memoize } from '../../../shared/memoize' */
 
 const REPLACEMENT_REGEX = /%%\{(\w+?)(?:,? *"(.*?)")?\}%%/g;
 const UNMATCHED_TOKEN_REGEX = /%%\{.*?\}%%/g;
+const UNSUBSCRIBE_PLACEHOLDER = `https://ghost.example/unsubscribe/${randomUUID()}`;
+const FINALIZED_EMAIL_CACHE_SIZE = 25;
 
 class MemberWelcomeEmailRenderer {
   #wrapperTemplate;
@@ -14,6 +18,7 @@ class MemberWelcomeEmailRenderer {
   #urlUtils;
   #linkTracking;
   #renderLexical;
+  #finalizeEmailRender;
 
   /**
    * @param {object} deps
@@ -24,6 +29,7 @@ class MemberWelcomeEmailRenderer {
    * @param {{addAutomationTrackingToUrl: (url: URL, automationActionRevisionId: string, automationRunStepId: string, memberUuid: string) => Promise<URL>}} deps.linkTracking
    * @param {(handlebars: object, labs: object, t: Function) => void} deps.registerHelpers
    * @param {(lexical: string, options: {target: 'email', design: object}) => Promise<string>} deps.renderLexical
+   * @param {typeof memoize} deps.memoize
    * @param {(name: 'baseStyles' | 'contentStyles' | 'cardStyles' | 'styles' | 'emailWrapper' | 'wrapper') => string} deps.readTemplate
    */
   constructor({
@@ -34,12 +40,17 @@ class MemberWelcomeEmailRenderer {
     linkTracking,
     registerHelpers,
     renderLexical,
+    memoize,
     readTemplate,
   }) {
     this.#dir = dir;
     this.#urlUtils = urlUtils;
     this.#linkTracking = linkTracking;
     this.#renderLexical = renderLexical;
+    // Cache finished emails so repeated sends avoid slow CSS inlining; each member's unsubscribe link is added afterward.
+    this.#finalizeEmailRender = memoize(finalize, (html) => html, {
+      max: FINALIZED_EMAIL_CACHE_SIZE,
+    });
     this.Handlebars = require('handlebars').create();
     registerHelpers(this.Handlebars, labs, t);
     for (const partial of ['baseStyles', 'contentStyles', 'cardStyles', 'styles', 'emailWrapper']) {
@@ -237,7 +248,7 @@ class MemberWelcomeEmailRenderer {
       siteTitle: siteSettings.title,
       siteUrl: siteSettings.url,
       managePreferencesUrl,
-      unsubscribeUrl: unsubscribeUrl || null,
+      unsubscribeUrl: unsubscribeUrl ? UNSUBSCRIBE_PLACEHOLDER : null,
       year,
       ctaBgColors: ['grey', 'blue', 'green', 'yellow', 'red', 'pink', 'purple', 'white'],
       ...design,
@@ -247,7 +258,16 @@ class MemberWelcomeEmailRenderer {
       },
     });
 
-    const { html: inlinedHtml, plaintext: text } = finalize(html);
+    let { html: inlinedHtml, plaintext: text } = unsubscribeUrl
+      ? this.#finalizeEmailRender(html)
+      : finalize(html);
+
+    if (unsubscribeUrl) {
+      inlinedHtml = inlinedHtml.replaceAll(UNSUBSCRIBE_PLACEHOLDER, () =>
+        this.Handlebars.Utils.escapeExpression(unsubscribeUrl).replaceAll('&#x3D;', '='),
+      );
+      text = text.replaceAll(UNSUBSCRIBE_PLACEHOLDER, () => unsubscribeUrl);
+    }
 
     return {
       html: inlinedHtml,
