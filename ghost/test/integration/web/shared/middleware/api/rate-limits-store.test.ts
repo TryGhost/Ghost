@@ -80,6 +80,46 @@ describe('rate_limits store', function () {
     assert.equal(outcomes.filter(Boolean).length, 5);
   });
 
+  it('shares the verification-email budget across instances and IPs, and resets only that user', async function () {
+    configUtils.set('spam:send_verification_code_user', {
+      freeRetries: 4,
+      minWait: 3600000,
+      maxWait: 3600000,
+      lifetime: 3600,
+    });
+    const first = spamPrevention.verificationEmail();
+    spamPrevention.reset();
+    const second = spamPrevention.verificationEmail();
+    const outcomes = await Promise.all(
+      Array.from({ length: 25 }, (_, i) =>
+        (i % 2 ? first : second).consume({ ip: `192.0.2.${i}`, key: 'user-1' }),
+      ),
+    );
+
+    assert.equal(outcomes.filter((result) => result.allowed).length, 5);
+    assert.equal((await second.consume({ key: 'user-1' })).allowed, false);
+    assert.equal((await second.consume({ key: 'user-2' })).allowed, true);
+    await second.reset({ key: 'user-2' });
+    assert.equal((await first.consume({ key: 'user-1' })).allowed, false);
+    await second.reset({ key: 'user-1' });
+    assert.equal((await first.consume({ key: 'user-1' })).allowed, true);
+  });
+
+  it('shares a challenge budget across instances and IPs under concurrency', async function () {
+    const first = spamPrevention.userVerificationChallenge();
+    spamPrevention.reset();
+    const second = spamPrevention.userVerificationChallenge();
+    const outcomes = await Promise.all(
+      Array.from({ length: 25 }, (_, i) =>
+        (i % 2 ? first : second).consume({ ip: `192.0.2.${i}`, key: 'same-challenge' }),
+      ),
+    );
+
+    assert.equal(outcomes.filter((result) => result.allowed).length, 5);
+    assert.equal((await second.consume({ key: 'same-challenge' })).allowed, false);
+    assert.equal((await second.consume({ key: 'fresh-challenge' })).allowed, true);
+  });
+
   it('clears only expired rows', async function () {
     await db.knex('rate_limits').insert([
       { key: 'expired', points: 1, expire: Date.now() - 1000 },

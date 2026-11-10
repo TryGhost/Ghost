@@ -60,7 +60,13 @@ export const spam = knownKeys('spam', {
     'Staff sign-in attempts per IP, and member sign-in requests per email and IP.',
   ),
   user_reset: limiter('Staff password reset requests per email and IP.'),
+  send_verification_code_user: limiter(
+    'Staff verification emails per user, across IPs and sessions.',
+  ),
   user_verification: limiter('Staff email verification code attempts per IP.'),
+  user_verification_challenge: limiter(
+    'Staff email verification code attempts per challenge, across IPs.',
+  ),
   send_verification_code: limiter('Staff email verification code resends per IP.'),
   global_reset: limiter('Staff password reset requests per IP, across all emails.'),
   global_block: limiter('Staff sign-in and session requests per IP, across all users.'),

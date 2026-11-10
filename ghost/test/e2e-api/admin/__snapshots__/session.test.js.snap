@@ -34,6 +34,24 @@ Object {
 }
 `;
 
+exports[`Sessions API Staff 2FA rate-limits verification emails per user across fresh sessions 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Too many attempts.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": StringMatching /Too many verification emails requested/,
+      "property": null,
+      "type": "TooManyRequestsError",
+    },
+  ],
+}
+`;
+
 exports[`Sessions API Staff 2FA rejects a 2FA code when reused in a fresh session 1: [body] 1`] = `
 Object {
   "errors": Array [

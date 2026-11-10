@@ -131,7 +131,19 @@
       "lifetime": 3600,
       "freeRetries": 4
     },
+    "user_verification_challenge": {
+      "minWait": 300000,
+      "maxWait": 300000,
+      "lifetime": 300,
+      "freeRetries": 4
+    },
     "send_verification_code": {
+      "minWait": 3600000,
+      "maxWait": 3600000,
+      "lifetime": 3600,
+      "freeRetries": 4
+    },
+    "send_verification_code_user": {
       "minWait": 3600000,
       "maxWait": 3600000,
       "lifetime": 3600,

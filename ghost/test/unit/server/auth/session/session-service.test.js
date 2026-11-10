@@ -2,7 +2,23 @@ const assert = require('node:assert/strict');
 const { assertExists } = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const express = require('express');
-const SessionService = require('../../../../../core/server/auth/session/session-service');
+const errors = require('@tryghost/errors');
+const createSessionService = require('../../../../../core/server/auth/session/session-service');
+const { RateLimiterMemory } = require('rate-limiter-flexible');
+const {
+  BackoffLimiter,
+} = require('../../../../../core/server/web/shared/middleware/api/backoff-limiter');
+const defaults = require('../../../../../core/shared/config/defaults.json');
+
+// Most tests exercise session behavior independently of the email and challenge budgets.
+// Limiter tests override these stubs with the behavior they need to verify.
+const SessionService = (options) =>
+  createSessionService({
+    limitVerificationEmailForUser: sinon.stub().resolves(),
+    resetVerificationEmailForUser: sinon.stub().resolves(),
+    consumeAuthCodeAttempt: sinon.stub().resolves(),
+    ...options,
+  });
 
 // Mimics express-session, where regenerate swaps in a brand new session object
 function createGetSession(initialProps = {}) {
@@ -514,6 +530,55 @@ describe('SessionService', function () {
     assert.equal(req.session.verified, true);
   });
 
+  it('#createSessionForUser resets the verification-email rate limit when a valid token is provided on request', async function () {
+    // The one-shot login path (POST /session with a token) verifies via
+    // assignUserToSession without calling verifySession, so it must reset the
+    // limiter on its own branch.
+    const getSession = createGetSession();
+
+    const findUserById = sinon.spy(async ({ id }) => ({ id }));
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+    const isStaffDeviceVerificationDisabled = sinon.stub().returns(false);
+    const resetVerificationEmailForUser = sinon.stub().resolves();
+
+    const sessionService = SessionService({
+      getSession,
+      findUserById,
+      getOriginOfRequest,
+      getSettingsCache,
+      isStaffDeviceVerificationDisabled,
+      urlUtils,
+      resetVerificationEmailForUser,
+    });
+
+    const req = Object.create(express.request, {
+      ip: {
+        value: '0.0.0.0',
+      },
+      headers: {
+        value: {
+          cookie: 'thing',
+        },
+      },
+      get: {
+        value: () => 'https://admin.example.com',
+      },
+    });
+    const res = Object.create(express.response);
+    const user = { id: 'egg' };
+
+    // Generate a valid token for the same session challenge
+    const previousSession = await getSession(req);
+    previousSession.user_id = 'egg';
+    const validToken = await sessionService.generateAuthCodeForUser(req, res);
+
+    req.body = { token: validToken };
+    await sessionService.createSessionForUser(req, res, user);
+
+    assert.equal(req.session.verified, true);
+    sinon.assert.calledOnceWithExactly(resetVerificationEmailForUser, 'egg');
+  });
+
   it('#createSessionForUser does not verify session when invalid token is provided on request', async function () {
     const getSession = createGetSession();
 
@@ -718,6 +783,124 @@ describe('SessionService', function () {
     assert.equal(isValid, false);
   });
 
+  describe('challenge attempt budget', function () {
+    function setup() {
+      const limiter = new BackoffLimiter(
+        'staff-challenge-test',
+        (options) => new RateLimiterMemory(options),
+        {
+          ...defaults.spam.user_verification_challenge,
+          ignoreIP: true,
+          onBlocked: () => new Error('Challenge exhausted'),
+        },
+      );
+      const consumeAuthCodeAttempt = sinon.spy(async (challenge) => {
+        if (!(await limiter.consume({ key: challenge })).allowed) {
+          throw new Error('Challenge exhausted');
+        }
+      });
+      const sessionService = SessionService({
+        getSession: createGetSession({ user_id: 'egg', origin: 'https://admin.example.com' }),
+        getOriginOfRequest: () => 'https://admin.example.com',
+        getSettingsCache,
+        urlUtils,
+        isStaffDeviceVerificationDisabled: () => false,
+        consumeAuthCodeAttempt,
+      });
+      const req = { get: () => 'https://admin.example.com', body: {} };
+      return { sessionService, req, consumeAuthCodeAttempt };
+    }
+
+    it('shares the budget across verification and regenerated sign-in sessions', async function () {
+      const { sessionService, req } = setup();
+      const code = await sessionService.generateAuthCodeForUser(req, {});
+      req.body = { token: 'wrong-code' };
+      for (let i = 0; i < 4; i++) {
+        assert.equal(await sessionService.verifyAuthCodeForUser(req, {}), false);
+      }
+      await sessionService.createSessionForUser(req, {}, { id: 'egg' });
+      req.body = { token: code };
+      await assert.rejects(sessionService.verifyAuthCodeForUser(req, {}), /Challenge exhausted/);
+      await assert.rejects(
+        sessionService.createSessionForUser(req, {}, { id: 'egg' }),
+        /Challenge exhausted/,
+      );
+      assert.notEqual(req.session.verified, true);
+    });
+
+    it('allows the correct code on the fifth attempt', async function () {
+      const { sessionService, req } = setup();
+      const code = await sessionService.generateAuthCodeForUser(req, {});
+      req.body = { token: 'wrong-code' };
+      for (let i = 0; i < 4; i++) {
+        await sessionService.verifyAuthCodeForUser(req, {});
+      }
+      req.body = { token: code };
+      await sessionService.createSessionForUser(req, {}, { id: 'egg' });
+      assert.equal(req.session.verified, true);
+    });
+
+    it('limits concurrent session snapshots across IPs and gives a fresh challenge its own budget', async function () {
+      const { sessionService, req } = setup();
+      const code = await sessionService.generateAuthCodeForUser(req, {});
+      const outcomes = await Promise.allSettled(
+        Array.from({ length: 20 }, (_, i) =>
+          sessionService.verifyAuthCodeForUser(
+            {
+              session: { ...req.session },
+              ip: `192.0.2.${i}`,
+              body: { token: 'wrong-code' },
+            },
+            {},
+          ),
+        ),
+      );
+      assert.equal(
+        outcomes.filter((result) => result.status === 'fulfilled' && result.value === false).length,
+        5,
+      );
+      assert.equal(
+        outcomes.filter(
+          (result) =>
+            result.status === 'rejected' && result.reason.message === 'Challenge exhausted',
+        ).length,
+        15,
+      );
+      req.body = { token: code };
+      await assert.rejects(sessionService.verifyAuthCodeForUser(req, {}), /Challenge exhausted/);
+
+      const freshReq = {};
+      const freshCode = await sessionService.generateAuthCodeForUser(freshReq, {});
+      freshReq.body = { token: freshCode };
+      assert.equal(await sessionService.verifyAuthCodeForUser(freshReq, {}), true);
+    });
+
+    it('does not consume attempts for missing tokens or expired challenges, and fails closed on store errors', async function () {
+      const { sessionService, req, consumeAuthCodeAttempt } = setup();
+      await sessionService.generateAuthCodeForUser(req, {});
+      assert.equal(await sessionService.verifyAuthCodeForUser(req, {}), false);
+      req.body = { token: '123456' };
+      req.session.auth_code_generated_at = Date.now() - 300001;
+      assert.equal(await sessionService.verifyAuthCodeForUser(req, {}), false);
+      sinon.assert.notCalled(consumeAuthCodeAttempt);
+
+      const broken = SessionService({
+        getSession: async () => ({
+          user_id: 'egg',
+          auth_code_challenge: 'challenge',
+          auth_code_generated_at: Date.now(),
+        }),
+        getOriginOfRequest: () => 'https://admin.example.com',
+        getSettingsCache,
+        urlUtils,
+        consumeAuthCodeAttempt: async () => {
+          throw new Error('Store unavailable');
+        },
+      });
+      await assert.rejects(broken.verifyAuthCodeForUser(req, {}), /Store unavailable/);
+    });
+  });
+
   it('Generates a different auth code for a different secret', async function () {
     const getSession = async (req) => {
       if (req.session) {
@@ -832,6 +1015,84 @@ describe('SessionService', function () {
     const emailArgs = mailer.send.firstCall.args[0];
     assert.equal(emailArgs.to, 'test@example.com');
     assert.match(emailArgs.subject, /Ghost sign in verification code/);
+  });
+
+  it('rate-limits the verification email per user and does not send when the limit is exceeded', async function () {
+    const getSession = async (req) => {
+      if (req.session) {
+        return req.session;
+      }
+      req.session = {
+        user_id: 'user-123',
+        origin: 'https://admin.example.com',
+      };
+      return req.session;
+    };
+
+    const mailer = {
+      send: sinon.stub().resolves(),
+    };
+
+    const getOriginOfRequest = sinon.stub().returns('https://admin.example.com');
+    const limitVerificationEmailForUser = sinon
+      .stub()
+      .rejects(new errors.TooManyRequestsError({ message: 'Too many attempts.' }));
+
+    const sessionService = SessionService({
+      getSession,
+      getOriginOfRequest,
+      urlUtils,
+      mailer,
+      limitVerificationEmailForUser,
+    });
+
+    const req = Object.create(express.request, {
+      headers: {
+        value: {
+          origin: 'https://admin.example.com',
+        },
+      },
+    });
+    const res = Object.create(express.response);
+
+    await assert.rejects(sessionService.sendAuthCodeToUser(req, res), {
+      errorType: 'TooManyRequestsError',
+    });
+
+    sinon.assert.calledOnceWithExactly(limitVerificationEmailForUser, 'user-123');
+    assert.equal(mailer.send.callCount, 0, 'No email should be sent when rate limited');
+  });
+
+  it('resets the verification-email rate limit for the user on successful verification', async function () {
+    const getSession = createGetSession({ user_id: 'user-777' });
+    const resetVerificationEmailForUser = sinon.stub().resolves();
+
+    const sessionService = SessionService({
+      getSession,
+      resetVerificationEmailForUser,
+    });
+
+    const req = Object.create(express.request);
+    const res = Object.create(express.response);
+
+    await sessionService.verifySession(req, res);
+
+    assert.equal(req.session.verified, true);
+    sinon.assert.calledOnceWithExactly(resetVerificationEmailForUser, 'user-777');
+  });
+
+  it('completes verification when resetting the email budget fails', async function () {
+    const resetVerificationEmailForUser = sinon.stub().rejects(new Error('Store unavailable'));
+    const sessionService = SessionService({
+      getSession: createGetSession({ user_id: 'user-777' }),
+      resetVerificationEmailForUser,
+    });
+    const req = Object.create(express.request);
+
+    await sessionService.verifySession(req, Object.create(express.response));
+
+    assert.equal(req.session.verified, true);
+    sinon.assert.calledOnceWithExactly(resetVerificationEmailForUser, 'user-777');
   });
 
   it('throws an error when mail fails to send', async function () {
