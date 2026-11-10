@@ -65,6 +65,17 @@ const FIELDS: MemberCustomField[] = [
 
 const ADDRESS = { line1: '1 Main St', city: 'Berlin', postal_code: '10115', country: 'DE' };
 
+const MOBILE: MemberCustomField = {
+  namespace: CUSTOM_NAMESPACE,
+  key: KeySchema.parse('mobile'),
+  name: 'Mobile',
+  type: 'phone',
+  status: 'active',
+  access: { member: 'none' },
+  created_at: '2026-07-14T00:00:00.000Z',
+  updated_at: null,
+};
+
 /** What a write the members API accepts does to what the member holds, as the domain says. */
 function applied<S extends FieldShape>(
   of: ShapedField<TypedSettings, S>,
@@ -230,6 +241,42 @@ describe('Member detail custom fields', () => {
     await modal().getByRole('button', { name: 'Cancel' }).click();
 
     await expect.element(memberDetailScreen.fieldValue('Editor')).toBeVisible();
+    expect(editApi.requests).toHaveLength(0);
+  });
+
+  it('takes a phone number in a phone input and keeps it in international form', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    fakeMemberDetailWorld(m, {}, [...FIELDS, MOBILE]);
+    await renderAdminApp(`/members/${m.id}`);
+
+    await memberDetailScreen.editFieldButton('Mobile').click();
+    const input = modal().getByLabelText('Mobile');
+    await expect.element(input).toHaveAttribute('type', 'tel');
+    // Staff type a member's number, so the browser mustn't offer their own.
+    await expect.element(input).toHaveAttribute('autocomplete', 'off');
+    await input.fill('+44 (0)20 7946 0000');
+    await modal().getByRole('button', { name: 'Save', exact: true }).click();
+
+    await expect.element(modal()).not.toBeInTheDocument();
+    await expect.element(memberDetailScreen.fieldValue('+442079460000')).toBeVisible();
+  });
+
+  it('asks for the country code before saving a phone number written without one', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    const editApi = fakeMemberDetailWorld(m, {}, [...FIELDS, MOBILE]);
+    await renderAdminApp(`/members/${m.id}`);
+
+    await memberDetailScreen.editFieldButton('Mobile').click();
+    await modal().getByLabelText('Mobile').fill('020 7946 0000');
+    await modal().getByRole('button', { name: 'Save', exact: true }).click();
+
+    await expect
+      .element(
+        modal().getByText(
+          'Enter the phone number with its country code, starting with +, like +44 20 7946 0000.',
+        ),
+      )
+      .toBeVisible();
     expect(editApi.requests).toHaveLength(0);
   });
 

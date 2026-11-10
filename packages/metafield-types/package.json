@@ -85,6 +85,7 @@
     "lint": "pnpm run '/^lint:/'"
   },
   "dependencies": {
+    "libphonenumber-js": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

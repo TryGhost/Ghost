@@ -124,6 +124,7 @@ const fieldTypePresentation: { [T in FieldType]: FieldTypePresentation<T> } = {
       country: 'Country',
     },
   },
+  phone: { label: 'Phone', icon: LucideIcon.Phone },
 };
 
 /**

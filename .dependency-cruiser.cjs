@@ -248,6 +248,19 @@ module.exports = {
       },
       to: { path: '^@tryghost/(shade|admin-x-framework)($|/)|^apps/(shade|admin-x-framework)/' },
     },
+    {
+      name: 'public-apps-not-field-rules',
+      comment:
+        "Public UMD apps load on every page view of a site, so they draw custom fields from @tryghost/metafield-types/structure rather than loading the package root's value rules, which carry zod and libphonenumber-js. Types from the root are fine.",
+      severity: 'error',
+      from: {
+        path: '^apps/(portal|comments-ui|signup-form|sodo-search|announcement-bar|admin-toolbar)/',
+      },
+      to: {
+        path: '^@tryghost/metafield-types$|^packages/metafield-types/(src|build)/index\\.(ts|js)$|^libphonenumber-js($|/)|(^|/)node_modules/libphonenumber-js/',
+        dependencyTypesNot: ['type-only', 'type-import'],
+      },
+    },
     // ============================================================
     // apps/ — admin is an app, not a library
     // ============================================================

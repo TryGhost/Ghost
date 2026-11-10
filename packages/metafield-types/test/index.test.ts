@@ -199,6 +199,64 @@ describe('metafield-types catalog', function () {
     });
   });
 
+  // The end-to-end tests pin these through the Admin and Members APIs too. They are here as
+  // well because the package's coverage gate counts only the package's own tests.
+  describe('a phone number', function () {
+    const rule = valueSchemaFor({ type: 'phone' });
+
+    it('is kept in E.164 however it was written, without a national (0)', function () {
+      assert.deepEqual(rule.safeParse('+44 (0)20 7946-0000'), {
+        success: true,
+        data: '+442079460000',
+      });
+      assert.deepEqual(rule.safeParse(' +1 (415) 555 0100 '), {
+        success: true,
+        data: '+14155550100',
+      });
+    });
+
+    // The 0 is dialled only from inside the country, so after the country code it is dropped.
+    // Italy's leading 0 is part of the number, and stays.
+    it('drops a national 0 written after the country code', function () {
+      assert.deepEqual(rule.safeParse('+44 07911 123456'), {
+        success: true,
+        data: '+447911123456',
+      });
+      assert.deepEqual(rule.safeParse('+39 06 6982 0000'), {
+        success: true,
+        data: '+390669820000',
+      });
+    });
+
+    it('needs its country code, as nothing else says which country it is from', function () {
+      const countryCode =
+        'Enter the phone number with its country code, starting with +, like +44 20 7946 0000.';
+      assert.equal(rule.safeParse('020 7946 0000').error?.issues[0]?.message, countryCode);
+      assert.equal(rule.safeParse('0044 20 7946 0000').error?.issues[0]?.message, countryCode);
+    });
+
+    it('is refused when the country it names has no number like it', function () {
+      const invalid = 'Enter a valid phone number, like +44 20 7946 0000.';
+      assert.equal(rule.safeParse('+44 20 7946 000').error?.issues[0]?.message, invalid);
+      assert.equal(rule.safeParse('+999 1234567').error?.issues[0]?.message, invalid);
+    });
+
+    // Not told to add the country code it already has.
+    it('is refused with anything else around it, which would be lost', function () {
+      const invalid = 'Enter a valid phone number, like +44 20 7946 0000.';
+      assert.equal(rule.safeParse('+44 20 7946 0000 (home)').error?.issues[0]?.message, invalid);
+      assert.equal(rule.safeParse('Mobile: +44 20 7946 0000').error?.issues[0]?.message, invalid);
+    });
+
+    it('is refused with an extension rather than losing it', function () {
+      const refused = rule.safeParse('+1 415 555 0100 ext. 12');
+      assert.equal(
+        refused.error?.issues[0]?.message,
+        'Enter the phone number without an extension.',
+      );
+    });
+  });
+
   // The rule that replaced per-part requiredness. An end-to-end test can't
   // pin it: the CSV and admin paths both strip blank parts before a value
   // reaches the catalog, so neither ever presents the empty case this rejects.

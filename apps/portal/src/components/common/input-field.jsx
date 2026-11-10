@@ -183,6 +183,9 @@ function InputField({
   label,
   hideLabel,
   type,
+  // What the browser may fill the input in with. A field can name its own; otherwise it
+  // comes from which input this is, below.
+  autoComplete: givenAutoComplete,
   value,
   placeholder,
   disabled = false,
@@ -216,7 +219,7 @@ function InputField({
     disabled = true;
   }
 
-  let autoComplete = '';
+  let autoComplete = givenAutoComplete ?? '';
   let autoCorrect = '';
   let autoCapitalize = '';
   let inputMode;

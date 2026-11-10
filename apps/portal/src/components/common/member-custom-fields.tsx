@@ -58,16 +58,23 @@ const LIST_OPTIONS: {
   countries: (held, within) => (within ? countryOptionsAmong(within) : countryOptions(held)),
 };
 
-const TEXT_INPUT: { [F in TextFormat]: 'text' | 'textarea' } = {
-  line: 'text',
-  code: 'text',
-  long: 'textarea',
+/**
+ * The input each text format is typed into. A phone number gets a phone input, so phones show a
+ * number keypad, and asks to be filled in with the member's own number.
+ */
+const TEXT_INPUT: { [F in TextFormat]: TextInput } = {
+  line: { type: 'text' },
+  code: { type: 'text' },
+  long: { type: 'textarea' },
+  phone: { type: 'tel', autoComplete: 'tel' },
 };
 
-interface LeafInput {
-  type: 'text' | 'textarea' | 'select';
-  options?: { value: string; label: string }[];
+interface TextInput {
+  type: 'text' | 'textarea' | 'tel';
+  autoComplete?: string;
 }
+
+type LeafInput = TextInput | { type: 'select'; options: { value: string; label: string }[] };
 
 const leafInput = (
   leaf: Leaf,
@@ -75,7 +82,7 @@ const leafInput = (
   within?: readonly string[] | undefined,
 ): LeafInput =>
   matchLeaf<LeafInput>(leaf, {
-    text: ({ format }) => ({ type: TEXT_INPUT[format] }),
+    text: ({ format }) => TEXT_INPUT[format],
     choice: ({ from }) => ({ type: 'select', options: LIST_OPTIONS[from](held, within) }),
   });
 

@@ -7,16 +7,16 @@
  * once per building block, so a type composed from existing blocks needs nothing beyond its entry
  * here.
  *
- * This half is separate from `./index` because that half is built out of zod, and zod is
- * sixty-odd kilobytes. Ghost's server enforces the rules and can afford them; Portal only draws
- * the inputs, and it loads on every page view of every themed site.
+ * This half is separate from `./index` because that half is built out of zod and libphonenumber-js,
+ * and together they are well over a hundred kilobytes. Ghost's server enforces the rules and can
+ * afford them; Portal only draws the inputs, and it loads on every page view of every themed site.
  */
 
 /**
- * What a text leaf holds: a line of text, a short code, or long text. Each format has its rule,
- * and its messages, in `./index`, and its own input in Admin and Portal.
+ * What a text leaf holds: a line of text, a short code, long text, or a phone number. Each format
+ * has its rule, and its messages, in `./index`, and its own input in Admin and Portal.
  */
-export const TEXT_FORMATS = ['line', 'code', 'long'] as const;
+export const TEXT_FORMATS = ['line', 'code', 'long', 'phone'] as const;
 export type TextFormat = (typeof TEXT_FORMATS)[number];
 
 /** The lists a choice can pick from. Each list says which keys it accepts in `./index`. */
@@ -79,7 +79,7 @@ export type FieldStructure = ScalarStructure | RecordStructure | SetStructure;
 export type FieldShape = FieldStructure['shape'];
 
 /** The source for the union type, the zod enum and the `FIELD_STRUCTURES` keys alike. */
-export const FIELD_TYPE_IDS = ['short_text', 'long_text', 'list', 'address'] as const;
+export const FIELD_TYPE_IDS = ['short_text', 'long_text', 'list', 'address', 'phone'] as const;
 export type FieldType = (typeof FIELD_TYPE_IDS)[number];
 
 /**
@@ -106,6 +106,9 @@ export const FIELD_STRUCTURES = {
       country,
     },
   },
+  // One number as text, in E.164, such as `+442079460000`: one form for every number, whoever
+  // typed it, so a filter or an integration can rely on it.
+  phone: { shape: 'scalar', leaf: text('phone') },
 } as const satisfies Record<FieldType, FieldStructure>;
 
 /**
@@ -116,7 +119,9 @@ export const FIELD_STRUCTURES = {
  * entry releases it. `docs/how-to/add-a-field-type.md` and `docs/how-to/release-a-field-type.md`
  * cover both steps.
  */
-export const FIELD_TYPE_FLAGS: { readonly [T in FieldType]?: string } = {};
+export const FIELD_TYPE_FLAGS: { readonly [T in FieldType]?: string } = {
+  phone: 'customFieldTypePhone',
+};
 
 /**
  * Whether a field of `type` can be created where `isFlagOn` says which Labs flags are on. Creating

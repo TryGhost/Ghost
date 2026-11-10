@@ -647,6 +647,9 @@ catalogs:
     knip:
       specifier: 6.32.1
       version: 6.32.1
+    libphonenumber-js:
+      specifier: 1.13.15
+      version: 1.13.15
     lint-staged:
       specifier: 17.3.0
       version: 17.3.0
@@ -4319,6 +4322,9 @@ importers:
 
   packages/metafield-types:
     dependencies:
+      libphonenumber-js:
+        specifier: 'catalog:'
+        version: 1.13.15
       zod:
         specifier: 'catalog:'
         version: 4.6.7
@@ -13116,6 +13122,9 @@ packages:
   libheif-js@1.19.8:
     resolution: {integrity: sha512-vQJWusIxO7wavpON1dusciL8Go9jsIQ+EUrckauFYAiSTjcmLAsuJh3SszLpvkwPci3JcL41ek2n+LUZGFpPIQ==}
     engines: {node: '>=8.0.0'}
+
+  libphonenumber-js@1.13.15:
+    resolution: {integrity: sha512-AHdhEQeDFEJ4GKDAQ9AwxChy+v2kUILUB3TGQRpkXMkWePjXTU/WQEzWVQoIx/Gz8fE73Wr5SEuZCy2vk8jrMQ==}
 
   lie@3.1.1:
     resolution: {integrity: sha512-RiNhHysUjhrDQntfYSfY4MU24coXXdEOgw9WGcKHNeEwffDYbF//u87M1EWaMGzuFoSbqW0C9C6lEEhDOAswfw==}
@@ -26072,6 +26081,8 @@ snapshots:
       isomorphic.js: 0.2.5
 
   libheif-js@1.19.8: {}
+
+  libphonenumber-js@1.13.15: {}
 
   lie@3.1.1:
     dependencies:

@@ -1,3 +1,4 @@
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import { z } from 'zod';
 import { KeySchema, NamespaceSchema } from './identity.js';
 import {
@@ -454,6 +455,33 @@ const filled = () => trimmed().min(1, { error: 'Enter a value, or send null to c
  */
 type LeafRule<K extends LeafKind = LeafKind> = z.ZodType<LeafValues[K], LeafValues[K]>;
 
+/** Why text isn't a phone number a field can keep. */
+type PhoneRefusal = 'countryCode' | 'invalid' | 'extension';
+
+/**
+ * A phone number in E.164, such as `+442079460000`, from however it was written: spaces, brackets,
+ * dashes and a national `(0)` after the country code make no difference, but nothing else may
+ * surround the number, as anything else would be lost. Otherwise it says why it isn't one: it was
+ * written without its country code, which nothing here could supply, it isn't a valid number of
+ * the country it names, or it carries an extension, which E.164 has no room for.
+ */
+function phoneNumber(text: string): { number: string } | { refused: PhoneRefusal } {
+  const read = parsePhoneNumberFromString(text, { extract: false });
+  if (!read?.isValid()) {
+    // Text with a + in it gave a country code, so what is wrong is the number or what is around it.
+    return { refused: text.includes('+') ? 'invalid' : 'countryCode' };
+  }
+  return read.ext ? { refused: 'extension' } : { number: read.number };
+}
+
+/** What a refused phone number is told, for each reason `phoneNumber` gives. */
+const PHONE_REFUSED: { [R in PhoneRefusal]: string } = {
+  countryCode:
+    'Enter the phone number with its country code, starting with +, like +44 20 7946 0000.',
+  invalid: 'Enter a valid phone number, like +44 20 7946 0000.',
+  extension: 'Enter the phone number without an extension.',
+};
+
 /** Each text format's rule. Each message is a literal, so it can be a translation key. */
 const TEXT_RULES: { [F in TextFormat]: () => LeafRule<'text'> } = {
   line: () => filled().max(255, { error: 'Use 255 characters or fewer.' }),
@@ -466,6 +494,18 @@ const TEXT_RULES: { [F in TextFormat]: () => LeafRule<'text'> } = {
   long: () =>
     filled().refine((value) => byteLength(value) <= MAX_LONG_TEXT_BYTES, {
       error: 'This text is too long to save. Shorten it a little.',
+    }),
+
+  // Stored as E.164 whatever was typed, so the same number is one value wherever it came from.
+  // Without a country code there is no telling which country a number belongs to.
+  phone: () =>
+    filled().transform((value, ctx) => {
+      const read = phoneNumber(value);
+      if ('refused' in read) {
+        ctx.issues.push({ code: 'custom', message: PHONE_REFUSED[read.refused], input: value });
+        return z.NEVER;
+      }
+      return read.number;
     }),
 };
 
