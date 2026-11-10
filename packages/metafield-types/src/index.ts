@@ -1,4 +1,6 @@
-import { isSupportedCountry, parsePhoneNumberFromString } from 'libphonenumber-js';
+// The full metadata, so a valid number is one a country has given out rather than one of the right
+// length, as the default metadata would have it.
+import { isSupportedCountry, parsePhoneNumberFromString } from 'libphonenumber-js/max';
 import { z } from 'zod';
 import { KeySchema, NamespaceSchema } from './identity.js';
 import {
@@ -460,16 +462,28 @@ type PhoneRefusal = 'countryCode' | 'invalid' | 'extension';
 
 /**
  * A phone number in E.164, such as `+442079460000`, from however it was written: spaces, brackets,
- * dashes and a national `(0)` after the country code make no difference, but nothing else may
- * surround the number, as anything else would be lost. Otherwise it says why it isn't one: it was
- * written without its country code, which nothing here could supply, it isn't a valid number of
- * the country it names, or it carries an extension, which E.164 has no room for.
+ * dashes and a national 0 after the country code make no difference, but nothing else may surround
+ * the number, as anything else would be lost. A number written without its country code is read
+ * as it is dialled in `country`, when there is one. Otherwise it says why it isn't one: it was
+ * written without its country code and no country says where it is from, it isn't a number the
+ * country has given out, or it carries an extension, which E.164 has no room for.
  */
-function phoneNumber(text: string): { number: string } | { refused: PhoneRefusal } {
-  const read = parsePhoneNumberFromString(text, { extract: false });
+function readPhone(text: string, country?: string): { number: string } | { refused: PhoneRefusal } {
+  const defaultCountry = country !== undefined && isSupportedCountry(country) ? country : undefined;
+  // A country's own way of dialling abroad is read with the country. After that, a number written
+  // after the 00 most countries dial abroad with gives its code as surely as one after a +.
+  const given = text.trim();
+  const international = given.startsWith('00') ? `+${given.slice(2)}` : undefined;
+  let read = parsePhoneNumberFromString(text, { defaultCountry, extract: false });
+  if (!read?.isValid() && international) {
+    read = parsePhoneNumberFromString(international, { extract: false });
+  }
   if (!read?.isValid()) {
-    // Text with a + in it gave a country code, so what is wrong is the number or what is around it.
-    return { refused: text.includes('+') ? 'invalid' : 'countryCode' };
+    // A code or a country says where the number is from, so what is wrong is the number or what
+    // is around it.
+    return {
+      refused: given.includes('+') || international || defaultCountry ? 'invalid' : 'countryCode',
+    };
   }
   return read.ext ? { refused: 'extension' } : { number: read.number };
 }
@@ -482,14 +496,11 @@ function phoneNumber(text: string): { number: string } | { refused: PhoneRefusal
  * its code is read.
  */
 export function phoneNumberIn(text: string, country: string | undefined): string | undefined {
-  const read = parsePhoneNumberFromString(text, {
-    defaultCountry: country !== undefined && isSupportedCountry(country) ? country : undefined,
-    extract: false,
-  });
-  return read?.isValid() && !read.ext ? read.number : undefined;
+  const read = readPhone(text, country);
+  return 'number' in read ? read.number : undefined;
 }
 
-/** What a refused phone number is told, for each reason `phoneNumber` gives. */
+/** What a refused phone number is told, for each reason `readPhone` gives. */
 const PHONE_REFUSED: { [R in PhoneRefusal]: string } = {
   countryCode:
     'Enter the phone number with its country code, starting with +, like +44 20 7946 0000.',
@@ -515,7 +526,7 @@ const TEXT_RULES: { [F in TextFormat]: () => LeafRule<'text'> } = {
   // Without a country code there is no telling which country a number belongs to.
   phone: () =>
     filled().transform((value, ctx) => {
-      const read = phoneNumber(value);
+      const read = readPhone(value);
       if ('refused' in read) {
         ctx.issues.push({ code: 'custom', message: PHONE_REFUSED[read.refused], input: value });
         return z.NEVER;
