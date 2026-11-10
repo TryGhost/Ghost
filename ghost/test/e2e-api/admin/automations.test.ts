@@ -1,5 +1,4 @@
 import type { AutomationTriggerRuleDefinition } from '../../../core/server/services/automations/trigger-rules';
-import { buildTriggerRuleRows } from '../../../core/server/services/automations/trigger-rules';
 import { createRequire } from 'node:module';
 import got, { type ExtendOptions, type Got } from 'got';
 import logging from '@tryghost/logging';
@@ -1332,14 +1331,17 @@ describe('Automations API', function () {
       await models.Base.knex('automation_trigger_rules')
         .where('automation_id', automationId)
         .delete();
-      await models.Base.knex('automation_trigger_rules').insert(
-        buildTriggerRuleRows({
-          automationId,
-          scope: 'selected_paid',
-          tierIds: [tierId],
-          createdAt: new Date(),
-        }),
-      );
+      await models.Base.knex('automation_trigger_rules').insert([
+        {
+          id: ObjectId().toHexString(),
+          automation_id: automationId,
+          created_at: new Date(),
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_paid_tier',
+          product_id: tierId,
+          direction: null,
+        },
+      ]);
       const waitActionId = ObjectId().toHexString();
       const emailActionId = ObjectId().toHexString();
       const { body: beforeBody } = await agent.get(`automations/${automationId}`).expectStatus(200);
@@ -1428,14 +1430,17 @@ describe('Automations API', function () {
       };
       await models.Base.knex('automations').where({ id }).update(original);
       await models.Base.knex('automation_trigger_rules').where('automation_id', id).delete();
-      await models.Base.knex('automation_trigger_rules').insert(
-        buildTriggerRuleRows({
-          automationId: id,
-          scope: 'selected_paid',
-          tierIds: [tierId],
-          createdAt: new Date(),
-        }),
-      );
+      await models.Base.knex('automation_trigger_rules').insert([
+        {
+          id: ObjectId().toHexString(),
+          automation_id: id,
+          created_at: new Date(),
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_paid_tier',
+          product_id: tierId,
+          direction: null,
+        },
+      ]);
 
       const { body: edited } = await agent
         .put(`automations/${id}`)
