@@ -93,4 +93,24 @@ describe('rate_limits store', function () {
       ['live'],
     );
   });
+
+  it('clears expired rows across more than one batch', async function () {
+    const expired = Date.now() - 1000;
+    const rows = Array.from({ length: 1203 }, (_, i) => ({
+      key: `expired:${i}`,
+      points: 1,
+      expire: expired,
+    }));
+    for (let i = 0; i < rows.length; i += 200) {
+      await db.knex('rate_limits').insert(rows.slice(i, i + 200));
+    }
+    await db.knex('rate_limits').insert({ key: 'live', points: 1, expire: Date.now() + 60000 });
+
+    await spamPrevention.clearExpired();
+
+    assert.deepEqual(
+      (await db.knex('rate_limits').select('key')).map((row: { key: string }) => row.key),
+      ['live'],
+    );
+  });
 });

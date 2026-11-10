@@ -61,6 +61,21 @@ export function normalizeIP(ip: string): string {
   return new ipaddr.IPv6([...address.parts.slice(0, 4), 0, 0, 0, 0]).toFixedLengthString();
 }
 
+/**
+ * Runs a store call again once if MySQL picked it as a deadlock victim. Each
+ * call is its own transaction, which InnoDB has already rolled back.
+ */
+async function retryDeadlock<T>(call: () => Promise<T>): Promise<T> {
+  try {
+    return await call();
+  } catch (err) {
+    if ((err as { code?: unknown } | null)?.code !== 'ER_LOCK_DEADLOCK') {
+      throw err;
+    }
+    return call();
+  }
+}
+
 const hashKey = (parts: (string | undefined)[]) =>
   createHash('sha256')
     .update(parts.map((part) => part ?? '').join('\0'))
@@ -167,7 +182,7 @@ export class BackoffLimiter {
   /** Milliseconds the request is blocked for, or null when it may continue. */
   private async attempt(key: string): Promise<number | null> {
     // a wait outlives the count window that opened it, so check it first
-    const waiting = await this.wait.get(key);
+    const waiting = await retryDeadlock(() => this.wait.get(key));
     if (waiting && waiting.msBeforeNext > 0) {
       return waiting.msBeforeNext;
     }
@@ -175,7 +190,7 @@ export class BackoffLimiter {
     let windowLeft: number;
 
     try {
-      await this.count.consume(key);
+      await retryDeadlock(() => this.count.consume(key));
       return null;
     } catch (result) {
       if (!(result instanceof RateLimiterRes)) {
@@ -184,11 +199,11 @@ export class BackoffLimiter {
       windowLeft = result.msBeforeNext;
     }
 
-    const step = (await this.step.get(key))?.consumedPoints ?? 0;
+    const step = (await retryDeadlock(() => this.step.get(key)))?.consumedPoints ?? 0;
     const delay = this.delays[Math.min(step, this.delays.length - 1)]!;
 
     try {
-      await this.wait.consume(key, 1, { customDuration: delay / 1000 });
+      await retryDeadlock(() => this.wait.consume(key, 1, { customDuration: delay / 1000 }));
     } catch (result) {
       if (!(result instanceof RateLimiterRes)) {
         throw result;
@@ -198,11 +213,15 @@ export class BackoffLimiter {
 
     // only the request that opened the wait advances the backoff, and the
     // steps end with the count window, so a fresh window starts at minWait
-    await this.step.penalty(key, 1, { customDuration: Math.max(windowLeft, 1) / 1000 });
+    await retryDeadlock(() =>
+      this.step.penalty(key, 1, { customDuration: Math.max(windowLeft, 1) / 1000 }),
+    );
     return null;
   }
 
   private async clear(key: string) {
-    await Promise.all([this.count.delete(key), this.wait.delete(key), this.step.delete(key)]);
+    await Promise.all(
+      [this.count, this.wait, this.step].map((store) => retryDeadlock(() => store.delete(key))),
+    );
   }
 }

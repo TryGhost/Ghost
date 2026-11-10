@@ -342,6 +342,54 @@ describe('BackoffLimiter', function () {
     assert.match(err.stack ?? '', /database gone/);
   });
 
+  it('retries a store call once when MySQL picks it as a deadlock victim', async function () {
+    let deadlocks = 0;
+    const deadlocking: LimiterFactory = (options) => {
+      const limiter = new RateLimiterMemory(options);
+      const consume = limiter.consume.bind(limiter);
+      limiter.consume = (...args) => {
+        if (deadlocks < 1) {
+          deadlocks += 1;
+          return Promise.reject(
+            Object.assign(new Error('Deadlock found'), { code: 'ER_LOCK_DEADLOCK' }),
+          );
+        }
+        return consume(...args);
+      };
+      return limiter;
+    };
+    const limiter = build({ freeRetries: 0 }, deadlocking);
+
+    assert.deepEqual(await request(limiter), { allowed: true });
+    assert.equal(deadlocks, 1);
+    // the retried consume counted, so the next request opens a wait
+    assert.equal((await request(limiter)).allowed, false);
+  });
+
+  it('fails the request when the retry deadlocks too', async function () {
+    const deadlock = Object.assign(new Error('Deadlock found'), { code: 'ER_LOCK_DEADLOCK' });
+    let calls = 0;
+    const deadlocking: LimiterFactory = (options) => {
+      const limiter = new RateLimiterMemory(options);
+      limiter.consume = () => {
+        calls += 1;
+        return Promise.reject(deadlock);
+      };
+      return limiter;
+    };
+
+    const err = await new Promise<{ errorType?: string }>((resolve) => {
+      build({}, deadlocking).middleware(
+        { ip: '127.0.0.1' } as Request,
+        {} as Response,
+        resolve as NextFunction,
+      );
+    });
+
+    assert.equal(err.errorType, 'InternalServerError');
+    assert.equal(calls, 2);
+  });
+
   it('passes an error thrown by onBlocked to next', async function () {
     const failure = new Error('onBlocked failed');
     const limiter = build({
