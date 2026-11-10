@@ -198,11 +198,12 @@ function InputField({
   maxLength,
   autoFocus,
   errorMessage,
-  // Marked wrong without saying why here. A composite's inputs share one field, and its
+  // Marked wrong without saying why here. A custom field's reasons are listed under its
+  // inputs, where a reason long enough to say how to put it right has room, and a composite's
   // reasons are listed under the group rather than wedged between its rows.
   invalid = false,
-  // What says why, when it is not printed beside the input: a composite's reasons are
-  // listed under the group, and an input has to point at them to be read out with it.
+  // What says why, when it is not printed beside the input: an input has to point at the
+  // reasons listed under it to be read out with them.
   describedBy,
 }) {
   const fieldNode = useRef(null);

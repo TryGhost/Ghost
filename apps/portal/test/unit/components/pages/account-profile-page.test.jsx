@@ -123,6 +123,27 @@ describe('Account Profile Page', () => {
       });
     });
 
+    // A reason that says how to put a value right is too long for the label's line, where
+    // Portal puts a short one such as a missing name. It sits under the input, like an
+    // address's reasons, and the input points at it so it is read out too.
+    test("shows why a field's value was refused under its input", () => {
+      const message =
+        'Enter the phone number with its country code, starting with +, like +44 20 7946 0000.';
+      const mobile = { key: 'mobile', name: 'Mobile', type: 'phone', access: { member: 'write' } };
+      const { getByLabelText, getByText } = setup({
+        site,
+        member,
+        customFields: [mobile],
+        fieldErrors: { 'custom:mobile': message },
+      });
+
+      const input = getByLabelText('Mobile');
+      const reason = getByText(message).closest('ul');
+      expect(input).toHaveAttribute('aria-invalid', 'true');
+      expect(input).toHaveAttribute('aria-describedby', reason.id);
+      expect(input.compareDocumentPosition(reason) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
     test('saves only the writable fields the member changed', () => {
       const customFields = [nickname, address];
       const { getByLabelText, saveBtn, mockDoActionFn } = setup({ site, member, customFields });
