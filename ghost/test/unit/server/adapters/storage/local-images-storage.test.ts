@@ -4,6 +4,7 @@ import { setImmediate } from 'node:timers/promises';
 import errors from '@tryghost/errors';
 import sinon from 'sinon';
 import fs from 'node:fs/promises';
+import fsSync from 'node:fs';
 import moment from 'moment';
 import os from 'node:os';
 import path from 'path';
@@ -222,21 +223,26 @@ describe('Local Images Storage', function () {
     let serveDir: string;
     let store: LocalImagesStorageClass;
 
+    const outputFileSync = (filePath: string, data: string | Buffer) => {
+      fsSync.mkdirSync(path.dirname(filePath), { recursive: true });
+      fsSync.writeFileSync(filePath, data);
+    };
+
     const fixture = (name: string) =>
-      fs.readFileSync(path.join(__dirname, '../../../../utils/fixtures/images', name));
+      fsSync.readFileSync(path.join(__dirname, '../../../../utils/fixtures/images', name));
 
     const writeImage = (relativePath: string, fixtureName: string) =>
-      fs.outputFileSync(path.join(serveDir, relativePath), fixture(fixtureName));
+      outputFileSync(path.join(serveDir, relativePath), fixture(fixtureName));
 
     beforeEach(function () {
       sinon.restore();
-      serveDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-images-'));
+      serveDir = fsSync.mkdtempSync(path.join(os.tmpdir(), 'ghost-images-'));
       sinon.stub(configUtils.config, 'getContentPath').returns(serveDir);
       store = new LocalImagesStorage();
     });
 
     afterEach(function () {
-      fs.removeSync(serveDir);
+      fsSync.rmSync(serveDir, { recursive: true, force: true });
     });
 
     it('takes the type from the contents, not from the name', async function () {
@@ -277,7 +283,7 @@ describe('Local Images Storage', function () {
       // The cache key has to move with the contents, or the old type sticks
       writeImage('2024/06/photo.png', 'loadingcat.gif');
       const later = new Date(Date.now() + 5000);
-      fs.utimesSync(path.join(serveDir, '2024/06/photo.png'), later, later);
+      fsSync.utimesSync(path.join(serveDir, '2024/06/photo.png'), later, later);
 
       assert.equal(await store._getServeContentType('/2024/06/photo.png'), 'image/gif');
     });
@@ -294,7 +300,7 @@ describe('Local Images Storage', function () {
       // A .svgz is a gzip wrapper, which identifies itself but says nothing
       // about the image inside, so detection has to stay out of the way and
       // let express.static type it from the extension
-      fs.outputFileSync(
+      outputFileSync(
         path.join(serveDir, '2024/06/logo.svgz'),
         require('node:zlib').gzipSync(fixture('ghost-logo.svg')),
       );
@@ -312,7 +318,7 @@ describe('Local Images Storage', function () {
 
       it('shares detection between concurrent requests for the same file', async function () {
         writeImage('photo.png', 'ghosticon.jpg');
-        const stats = fs.statSync(path.join(serveDir, 'photo.png'));
+        const stats = fsSync.statSync(path.join(serveDir, 'photo.png'));
         let releaseLookup!: () => void;
         const lookupGate = new Promise<void>((resolve) => {
           releaseLookup = resolve;
@@ -389,7 +395,7 @@ describe('Local Images Storage', function () {
 
       it('serves markup as inert text', async function () {
         const markup = '<h1>Example</h1>';
-        fs.outputFileSync(path.join(serveDir, 'page.html'), markup);
+        outputFileSync(path.join(serveDir, 'page.html'), markup);
 
         await request(app)
           .get('/content/images/page.html')
@@ -440,13 +446,13 @@ describe('Local Images Storage', function () {
 
       const writePinned = (relativePath: string, contents: Buffer) => {
         const filePath = path.join(serveDir, relativePath);
-        fs.outputFileSync(filePath, contents);
-        fs.utimesSync(filePath, PINNED_TIME, PINNED_TIME);
+        outputFileSync(filePath, contents);
+        fsSync.utimesSync(filePath, PINNED_TIME, PINNED_TIME);
       };
 
       const swapKeepingStat = (relativePath: string, contents: Buffer) => {
         const filePath = path.join(serveDir, relativePath);
-        const before = fs.statSync(filePath);
+        const before = fsSync.statSync(filePath);
 
         assert.equal(
           contents.length,
@@ -456,7 +462,7 @@ describe('Local Images Storage', function () {
 
         writePinned(relativePath, contents);
 
-        const after = fs.statSync(filePath);
+        const after = fsSync.statSync(filePath);
         assert.equal(after.mtimeMs, before.mtimeMs, 'swap must leave the timestamp untouched');
         assert.equal(after.size, before.size, 'swap must leave the size untouched');
       };
@@ -475,7 +481,7 @@ describe('Local Images Storage', function () {
         assert.equal(await store._getServeContentType(`/${relativePath}`), undefined);
 
         const changedTime = new Date(PINNED_TIME.getTime() + 1000);
-        fs.utimesSync(path.join(serveDir, relativePath), changedTime, changedTime);
+        fsSync.utimesSync(path.join(serveDir, relativePath), changedTime, changedTime);
         assert.equal(await store._getServeContentType(`/${relativePath}`), 'image/gif');
       });
 
@@ -510,7 +516,7 @@ describe('Local Images Storage', function () {
       it('does not upgrade disguised contents to an executable type', async function () {
         // Markup under an image name is served as the image its name claims,
         // never as something a browser will parse as a document
-        fs.outputFileSync(
+        outputFileSync(
           path.join(serveDir, '2024/06/disguised.png'),
           '<!DOCTYPE html><script>alert(document.domain)</script>',
         );
@@ -524,9 +530,9 @@ describe('Local Images Storage', function () {
         // Upload validation rejects these extensions, so nothing should put
         // them here — but the serving layer must not hand out an executable
         // type if one ever arrives
-        fs.outputFileSync(path.join(serveDir, '2024/06/page.html'), '<script>alert(1)</script>');
-        fs.outputFileSync(path.join(serveDir, '2024/06/app.js'), 'alert(1)');
-        fs.outputFileSync(path.join(serveDir, '2024/06/styles.css'), 'body{color:red}');
+        outputFileSync(path.join(serveDir, '2024/06/page.html'), '<script>alert(1)</script>');
+        outputFileSync(path.join(serveDir, '2024/06/app.js'), 'alert(1)');
+        outputFileSync(path.join(serveDir, '2024/06/styles.css'), 'body{color:red}');
 
         assert.equal(await store._getServeContentType('/2024/06/page.html'), 'text/plain');
         assert.equal(await store._getServeContentType('/2024/06/app.js'), 'text/plain');
@@ -536,15 +542,15 @@ describe('Local Images Storage', function () {
       it('leaves a harmless name alone', async function () {
         // Only names a browser would execute are forced. Ghost ships
         // content/images/README.md, which stays readable
-        fs.outputFileSync(path.join(serveDir, 'README.md'), '# Images');
-        fs.outputFileSync(path.join(serveDir, '2024/06/thing.randomjunk'), 'whatever');
+        outputFileSync(path.join(serveDir, 'README.md'), '# Images');
+        outputFileSync(path.join(serveDir, '2024/06/thing.randomjunk'), 'whatever');
 
         assert.equal(await store._getServeContentType('/README.md'), undefined);
         assert.equal(await store._getServeContentType('/2024/06/thing.randomjunk'), undefined);
       });
 
       it('serves an image with a script appended as that image', async function () {
-        fs.outputFileSync(
+        outputFileSync(
           path.join(serveDir, '2024/06/polyglot.gif'),
           Buffer.concat([
             fixture('loadingcat.gif'),
@@ -573,17 +579,17 @@ describe('Local Images Storage', function () {
       });
 
       it('claims nothing for a symlink to a text file outside the directory', async function () {
-        const outsideDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-images-outside-'));
+        const outsideDir = fsSync.mkdtempSync(path.join(os.tmpdir(), 'ghost-images-outside-'));
         try {
           const target = path.join(outsideDir, 'notes.txt');
-          fs.outputFileSync(target, 'plain text');
+          outputFileSync(target, 'plain text');
           const linkPath = path.join(serveDir, '2024/06/link.png');
-          fs.ensureDirSync(path.dirname(linkPath));
-          fs.symlinkSync(target, linkPath);
+          fsSync.mkdirSync(path.dirname(linkPath), { recursive: true });
+          fsSync.symlinkSync(target, linkPath);
 
           assert.equal(await store._getServeContentType('/2024/06/link.png'), undefined);
         } finally {
-          fs.removeSync(outsideDir);
+          fsSync.rmSync(outsideDir, { recursive: true, force: true });
         }
       });
     });
