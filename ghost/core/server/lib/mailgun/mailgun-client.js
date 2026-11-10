@@ -26,6 +26,7 @@ module.exports = class MailgunClient {
    *
    * @param {Object} message
    * @param {boolean} [message.perRecipientMessageId] Give every recipient its own Message-Id header
+   * @param {Record<string, string>} [message.recipientMessageIdPrefixes] Per-recipient Message-Id prefixes
    * @param {Object} recipientData
    * @param {Array<Object>} replacements
    *
@@ -125,11 +126,23 @@ module.exports = class MailgunClient {
       // Use overriden domain if specified in message
       const mailDomain = message.domainOverride ? message.domainOverride : mailgunConfig.domain;
 
-      if (message.perRecipientMessageId === true) {
+      let recipientMessageIds;
+      if (message.perRecipientMessageId === true || message.recipientMessageIdPrefixes) {
         // one Message-Id per recipient, referenced from a recipient variable like List-Unsubscribe above
-        messageData['recipient-variables'] = JSON.stringify(
-          addRecipientMessageIds(recipientData, { emailId: message.id, domain: mailDomain }),
-        );
+        const variables = addRecipientMessageIds(recipientData, {
+          emailId: message.id,
+          domain: mailDomain,
+          emailIdByRecipient: message.recipientMessageIdPrefixes,
+        });
+        if (message.recipientMessageIdPrefixes) {
+          recipientMessageIds = Object.fromEntries(
+            Object.entries(variables).map(([email, data]) => [
+              email,
+              data[RECIPIENT_MESSAGE_ID_VARIABLE],
+            ]),
+          );
+        }
+        messageData['recipient-variables'] = JSON.stringify(variables);
         messageData['h:Message-Id'] = `<%recipient.${RECIPIENT_MESSAGE_ID_VARIABLE}%>`;
       }
 
@@ -142,6 +155,7 @@ module.exports = class MailgunClient {
       return {
         // a batch of per-recipient Message-Ids has no single provider id
         id: isTemplatedRecipientMessageId(response.id) ? null : response.id,
+        ...(recipientMessageIds && { recipientMessageIds }),
       };
     } catch (error) {
       logging.error(error);

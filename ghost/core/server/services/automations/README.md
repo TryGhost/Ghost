@@ -10,6 +10,11 @@ The database repository creates run(s) and queues their first step(s). Ghost's b
 
 Each check locks ready steps, then runs up to 100 at once. A `wait` action advances when its time arrives. A `send_email` action checks the member's current status and email preference before sending. Disabled automations and ineligible members stop.
 
+Within a poll, first-attempt emails from the same action revision can share one
+Mailgun request when their rendered content matches after substituting the
+recipient's unsubscribe link. Each recipient has a distinct Message-Id, and
+each run is recorded and advanced separately. Retries are sent individually.
+
 ## Where to look
 
 - [`automations-api.ts`](automations-api.ts) handles reads, edits, validation, and event notifications. Edits require one path with no branches or loops.

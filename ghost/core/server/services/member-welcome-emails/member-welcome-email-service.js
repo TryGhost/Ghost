@@ -1,3 +1,4 @@
+const { sendAutomationEmailGroups } = require('./send-automation-email-groups');
 const errors = require('@tryghost/errors');
 const MagicLink = require('../../lib/magic-link/magic-link');
 const { parseMailbox } = require('@tryghost/parse-email-address/mailbox');
@@ -14,6 +15,7 @@ const {
 const VERIFIED_SENDER_PROPERTIES = ['sender_reply_to'];
 const WELCOME_EMAIL_FILTER = `slug:${MEMBER_WELCOME_EMAIL_SLUGS.free},slug:${MEMBER_WELCOME_EMAIL_SLUGS.paid}`;
 const SHARED_SENDER_FIELDS = ['sender_name', 'sender_email', 'sender_reply_to'];
+/** @typedef {{send: (message: object, recipientData: object, replacements: unknown[]) => Promise<unknown>, getBatchSize?: () => number}} BulkMailer */
 const EMAIL_VALIDATION_TYPE_BY_FIELD = {
   sender_email: 'from',
   sender_reply_to: 'replyTo',
@@ -74,7 +76,7 @@ class MemberWelcomeEmailService {
    * @param {object} deps.emailAddressService - The ready email address policy instance
    * @param {object} deps.settingsHelpers
    * @param {{send: (message: object) => Promise<unknown>}} deps.transactionalMailer
-   * @param {{send: (message: object, recipientData: object, replacements: unknown[]) => Promise<unknown>}} deps.bulkMailer
+   * @param {BulkMailer} deps.bulkMailer
    * @param {import('./member-welcome-email-renderer')} deps.renderer
    * @param {(options: {url: string, email: string}) => string} deps.verifyEmailTemplate
    * @param {object} deps.singleUseTokenProvider
@@ -437,9 +439,8 @@ class MemberWelcomeEmailService {
    * @param {string | null} [options.automationActionRevisionId]
    * @param {string | null} [options.automationRunStepId]
    * @param {null | {url: string, oneClickUrl: string}} [options.unsubscribe] - When set, the footer links to an unsubscribe URL and the email carries one-click List-Unsubscribe headers
-   * @returns {Promise<unknown>}
    */
-  async #sendEmail({
+  async #prepareEmail({
     member,
     email,
     emailType,
@@ -468,7 +469,7 @@ class MemberWelcomeEmailService {
       `${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending ${emailType} email to ${name}${member.email}`,
     );
 
-    const { html, text, subject } = await this.#renderer.render({
+    const rendered = await this.#renderer.render({
       lexical: email.lexical,
       subject: email.subject,
       designSettings: email.designSettings,
@@ -488,43 +489,22 @@ class MemberWelcomeEmailService {
       getSenderDetails(email.designSettings),
     );
 
-    /** @type {string[]} */ let tags;
-    let sendEmail;
-    switch (emailType) {
-      case 'welcome':
-        tags = [MEMBER_WELCOME_EMAIL_TAG];
-        sendEmail = this.#sendTransactionalEmail.bind(this);
-        break;
-      case 'automation': {
-        tags = [AUTOMATION_EMAIL_TAG];
-        const mailgunTagFromConfig = this.#config.get('bulkEmail:mailgun:tag');
-        if (typeof mailgunTagFromConfig === 'string' && mailgunTagFromConfig.length > 0) {
-          tags.push(mailgunTagFromConfig);
-        }
-        sendEmail =
-          process.env.GHOST_BENCHMARK_AUTOMATIONS_DRAIN === '1'
-            ? this.#sendTransactionalEmail.bind(this)
-            : this.#sendBulkEmail.bind(this);
-        break;
-      }
-      default: {
-        /** @type {never} */ const _exhaustive = emailType;
-        throw new errors.InternalServerError({
-          message: `Unexpected email type ${_exhaustive}`,
-        });
+    const tags = emailType === 'welcome' ? [MEMBER_WELCOME_EMAIL_TAG] : [AUTOMATION_EMAIL_TAG];
+    if (emailType === 'automation') {
+      const tag = this.#config.get('bulkEmail:mailgun:tag');
+      if (typeof tag === 'string' && tag.length > 0) {
+        tags.push(tag);
       }
     }
 
-    return await sendEmail({
+    return {
       to: member.email,
-      subject,
-      html,
-      text,
+      ...rendered,
       tags,
       trackOpens,
       listUnsubscribe: unsubscribe?.oneClickUrl,
       ...senderOptions,
-    });
+    };
   }
 
   /**
@@ -628,11 +608,8 @@ class MemberWelcomeEmailService {
       });
     }
 
-    await this.#sendEmail({
-      member,
-      emailType: 'welcome',
-      email,
-    });
+    const message = await this.#prepareEmail({ member, emailType: 'welcome', email });
+    await this.#sendTransactionalEmail(message);
   }
 
   // TODO(NY-1319) This isn't the right place for automation email sends. We
@@ -651,9 +628,8 @@ class MemberWelcomeEmailService {
    * @param {boolean} options.trackClicks
    * @param {string} options.automationActionRevisionId
    * @param {string} options.automationRunStepId
-   * @returns {Promise<unknown>}
    */
-  async sendAutomationEmail({
+  async #prepareAutomationEmail({
     email,
     member,
     trackOpens,
@@ -679,7 +655,7 @@ class MemberWelcomeEmailService {
       ? { url: unsubscribeUrl, oneClickUrl: unsubscribeUrl }
       : null;
 
-    return await this.#sendEmail({
+    return await this.#prepareEmail({
       member,
       emailType: 'automation',
       email: {
@@ -692,6 +668,26 @@ class MemberWelcomeEmailService {
       automationActionRevisionId,
       automationRunStepId,
       unsubscribe,
+    });
+  }
+
+  async sendAutomationEmail(options) {
+    const message = await this.#prepareAutomationEmail(options);
+    if (process.env.GHOST_BENCHMARK_AUTOMATIONS_DRAIN === '1') {
+      return await this.#sendTransactionalEmail(message);
+    }
+    return await this.#sendBulkEmail(message);
+  }
+
+  async sendAutomationEmails(emails) {
+    if (emails.length < 2 || process.env.GHOST_BENCHMARK_AUTOMATIONS_DRAIN === '1') {
+      return await Promise.allSettled(emails.map((email) => this.sendAutomationEmail(email)));
+    }
+    return await sendAutomationEmailGroups({
+      emails,
+      prepare: (email) => this.#prepareAutomationEmail(email),
+      sendSingle: (message) => this.#sendBulkEmail(message),
+      bulkMailer: this.#bulkMailer,
     });
   }
 

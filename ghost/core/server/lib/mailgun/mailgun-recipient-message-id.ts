@@ -49,14 +49,22 @@ export function isTemplatedRecipientMessageId(messageId: unknown): boolean {
 /** Returns a new recipient-variables map with a `message_id` per recipient; the input is not mutated */
 export function addRecipientMessageIds(
   recipientData: RecipientData,
-  { emailId, domain }: MessageIdOptions,
+  {
+    emailId,
+    domain,
+    emailIdByRecipient,
+  }: MessageIdOptions & { emailIdByRecipient?: Record<string, string> },
 ): RecipientData {
   const result: RecipientData = {};
 
   for (const [recipientEmail, variables] of Object.entries(recipientData)) {
     result[recipientEmail] = {
       ...variables,
-      [RECIPIENT_MESSAGE_ID_VARIABLE]: buildRecipientMessageId({ emailId, recipientEmail, domain }),
+      [RECIPIENT_MESSAGE_ID_VARIABLE]: buildRecipientMessageId({
+        emailId: emailIdByRecipient?.[recipientEmail] ?? emailId,
+        recipientEmail,
+        domain,
+      }),
     };
   }
 
