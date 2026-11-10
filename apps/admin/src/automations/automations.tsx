@@ -29,6 +29,10 @@ const Automations: React.FC = () => {
   const hasArchivedAutomations = automations?.some(
     (automation) => automation.status === 'archived',
   );
+  // The filter hides once nothing is archived, so don't leave the view stuck on it.
+  if (!hasArchivedAutomations && automationsToShow !== 'non-archived') {
+    setAutomationsToShow('non-archived');
+  }
   const canCreateNewAutomations =
     !!currentUser &&
     canManageAutomations(currentUser) &&
