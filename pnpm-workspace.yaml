@@ -334,6 +334,8 @@ overrides:
   'axios@>=1.0.0 <1.20.0': ^1.20.0
   'brace-expansion@>=5.0.0 <5.0.12': ^5.0.12
   'http-cache-semantics@<4.3.0': ^4.3.0
+  # micromark-extension-math asks for ^0.16; markdownlint never loads its katex renderer
+  'katex@>=0.11.0 <0.18.2': ^0.18.2
   'markdown-it@>=14.0.0 <14.3.1': ^14.3.1
   'postcss-selector-parser@>=7.0.0 <7.1.6': ^7.1.6
   'proxy-addr@<2.0.8': ^2.0.8
