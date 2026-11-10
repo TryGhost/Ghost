@@ -149,7 +149,7 @@ catalog:
   cli-progress: 3.12.0
   clsx: 2.1.1
   commander: 15.0.0
-  concurrently: 10.0.6
+  concurrently: 10.0.7
   country-flag-icons: 1.6.20
   css-tree: 3.2.1
   dependency-cruiser: ^18.1.1

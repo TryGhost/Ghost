@@ -525,8 +525,8 @@ catalogs:
       specifier: 15.0.0
       version: 15.0.0
     concurrently:
-      specifier: 10.0.6
-      version: 10.0.6
+      specifier: 10.0.7
+      version: 10.0.7
     country-flag-icons:
       specifier: 1.6.20
       version: 1.6.20
@@ -3524,7 +3524,7 @@ importers:
         version: 2.1.1
       concurrently:
         specifier: 'catalog:'
-        version: 10.0.6
+        version: 10.0.7
       dompurify:
         specifier: 'catalog:'
         version: 3.4.17
@@ -10775,8 +10775,8 @@ packages:
   concat-stream@2.0.0:
     resolution: {integrity: sha512-MWufYdFw53ccGjCA+Ol7XJYpAlW6/prSMzuPOTRnJGcGzuhLn4Scrz7qf6o8bROZ514ltazcIFJZevcfbo0x7A==}
 
-  concurrently@10.0.6:
-    resolution: {integrity: sha512-qgICXXFp2/3nAebRLmxcINKEXM1mLK3ij/y31P02VTs/KIkddIeC05n73DxOXsXMB9LFSqNU1/na3lDlOhcbIw==}
+  concurrently@10.0.7:
+    resolution: {integrity: sha512-zMCeLhawVIj3SLbpg0/BWCdJl1wcBSpcHKbNrhaM01P3xAlEWcH30Lea2q+F4uGZ7YM0scDK0dgpWyn1uCJj6w==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -23324,7 +23324,7 @@ snapshots:
       readable-stream: 3.6.2
       typedarray: 0.0.6
 
-  concurrently@10.0.6:
+  concurrently@10.0.7:
     dependencies:
       chalk: 5.6.2
       rxjs: 7.8.2
