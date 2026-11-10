@@ -4577,6 +4577,9 @@ importers:
       luxon:
         specifier: 'catalog:'
         version: 3.7.2
+      oxfmt:
+        specifier: 'catalog:'
+        version: 0.63.0
       semver:
         specifier: 'catalog:'
         version: 7.8.5

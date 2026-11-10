@@ -46,6 +46,24 @@ next minor-version folder and promotes package versions to RC when needed.
 See [database migrations](../../docs/practices/database-migrations.md) for the
 workflow.
 
+## Service generator
+
+Run `pnpm gx generate service <name>` to create a boot-owned TypeScript service.
+Use lowercase kebab-case beginning with a letter, for example:
+
+```sh
+pnpm gx generate service delivery-receipts
+```
+
+It creates a `defineService` root, a separate implementation with typed logging
+injection, and a starter root test. It adds `migrated: true` to the service
+inventory and registers the root in Oxlint, enabling root and dependency checks
+immediately. Existing service files, directories and tests are never overwritten.
+
+The command prints the remaining steps, including choosing the right place for
+`init()` in boot. See [creating a service](../../ghost/core/server/services/README.md#creating-a-service)
+for the ownership, implementation and testing requirements.
+
 ## Rebuild development tables
 
 Run `pnpm gx db rebuild-development-tables` after editing development-only table

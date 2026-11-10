@@ -14,7 +14,7 @@ const cli = prettyCli.Api.get({ name: 'pnpm gx' })
 
 cli.command({
   flags: 'generate',
-  desc: 'Generate a package, golden-email or migration.',
+  desc: 'Generate a package, service, golden-email or migration.',
   setup(group) {
     group.command({
       flags: 'package',
@@ -33,6 +33,7 @@ cli.command({
         file: './generate-golden-email.ts',
       },
       { flags: 'migration', desc: 'Scaffold a database migration.', file: './create-migration.ts' },
+      { flags: 'service', desc: 'Scaffold a boot-owned service.', file: './create-service.ts' },
     ]) {
       group.command({
         flags: command.flags,
