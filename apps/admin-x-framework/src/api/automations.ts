@@ -61,7 +61,19 @@ export type AutomationSendEmailAction = {
   stats?: AutomationEmailStats;
 };
 
-export type AutomationAction = AutomationWaitAction | AutomationSendEmailAction;
+export type AutomationConditionAction = {
+  id: string;
+  type: 'condition';
+  data: {
+    condition_operator: AutomationLabelFilterRule['operator'] | null;
+    condition_label_ids: readonly string[];
+  };
+};
+
+export type AutomationAction =
+  | AutomationWaitAction
+  | AutomationSendEmailAction
+  | AutomationConditionAction;
 
 export type AutomationEdge = {
   source_action_id: string;
@@ -342,6 +354,7 @@ export const useBrowseAutomationActionLinks = (
 const serializeEditableAction = (action: AutomationAction): AutomationAction => {
   switch (action.type) {
     case 'wait':
+    case 'condition':
       return action;
     case 'send_email':
       return { id: action.id, type: action.type, data: action.data };
@@ -438,6 +451,12 @@ const buildWaitAction = (): AutomationWaitAction => ({
   id: generateActionId(),
   type: 'wait',
   data: { wait_hours: 24 },
+});
+
+const buildConditionAction = (): AutomationConditionAction => ({
+  id: generateActionId(),
+  type: 'condition',
+  data: { condition_operator: null, condition_label_ids: [] },
 });
 
 const buildSendEmailAction = (): AutomationSendEmailAction => ({
@@ -540,6 +559,32 @@ export const insertWaitAction = ({ detail, anchor }: InsertActionArgs): Automati
 
 export const insertSendEmailAction = ({ detail, anchor }: InsertActionArgs): AutomationDetail =>
   spliceAction({ detail, action: buildSendEmailAction(), anchor });
+
+export const insertConditionAction = ({ detail, anchor }: InsertActionArgs): AutomationDetail =>
+  spliceAction({ detail, action: buildConditionAction(), anchor });
+
+export const updateConditionAction = ({
+  detail,
+  actionId,
+  data,
+}: ReadonlyDeep<{
+  detail: AutomationDetail;
+  actionId: string;
+  data: Partial<AutomationConditionAction['data']>;
+}>): AutomationDetail => {
+  const actions = detail.actions.map((action) =>
+    action.id === actionId && action.type === 'condition'
+      ? {
+          ...action,
+          data: {
+            condition_operator: data.condition_operator ?? action.data.condition_operator,
+            condition_label_ids: data.condition_label_ids ?? action.data.condition_label_ids,
+          },
+        }
+      : action,
+  );
+  return { ...detail, actions, edges: [...detail.edges] };
+};
 
 type RemoveActionArgs = ReadonlyDeep<{
   detail: AutomationDetail;

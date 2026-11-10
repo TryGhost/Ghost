@@ -13,6 +13,14 @@ const PlanActionSchema = z.discriminatedUnion('type', [
     type: z.literal('send_email'),
     data: z.object({ email_subject: z.string().nullable(), email_lexical: z.string().nullable() }),
   }),
+  z.object({
+    id: z.string().min(1),
+    type: z.literal('condition'),
+    data: z.object({
+      condition_operator: z.enum(['has_any', 'has_all', 'has_none']).nullable(),
+      condition_label_ids: z.array(z.string()),
+    }),
+  }),
 ]);
 
 const HistoryActionSchema = z.discriminatedUnion('type', [
@@ -25,6 +33,14 @@ const HistoryActionSchema = z.discriminatedUnion('type', [
     id: z.string().min(1),
     type: z.literal('send_email'),
     data: z.object({ email_subject: z.string(), email_lexical: z.string() }),
+  }),
+  z.object({
+    id: z.string().min(1),
+    type: z.literal('condition'),
+    data: z.object({
+      condition_operator: z.enum(['has_any', 'has_all', 'has_none']).nullable(),
+      condition_label_ids: z.array(z.string()),
+    }),
   }),
 ]);
 
@@ -48,6 +64,7 @@ export const AutomationRunHistorySchema = z.object({
           'finished',
           'failed',
           'automation disabled',
+          'condition not met',
           'member changed label',
           'member changed status',
           'member changed tier',

@@ -12,9 +12,11 @@ import {
   AutomationDetail,
   AutomationSendEmailAction,
   InsertActionAnchor,
+  insertConditionAction,
   insertSendEmailAction,
   insertWaitAction,
   removeAction,
+  updateConditionAction,
   updateSendEmailAction,
   updateWaitAction,
   useBrowseAutomationActionLinks,
@@ -322,6 +324,67 @@ describe('automations api helpers', () => {
         expect(next.edges).not.toContainEqual({ source_action_id: 'a', target_action_id: 'b' });
         expect(next.edges).toHaveLength(2);
       }
+    });
+  });
+
+  describe('condition actions', () => {
+    it('inserts an empty condition between two actions', () => {
+      const detail = baseDetail(
+        [
+          { id: 'a', type: 'wait', data: { wait_hours: 24 } },
+          { id: 'b', type: 'wait', data: { wait_hours: 48 } },
+        ],
+        [{ source_action_id: 'a', target_action_id: 'b' }],
+      );
+
+      const next = insertConditionAction({
+        detail,
+        anchor: { previousActionId: 'a', nextActionId: 'b' },
+      });
+
+      const condition = next.actions.find((action) => action.type === 'condition');
+      expect(condition).toMatchObject({
+        data: { condition_operator: null, condition_label_ids: [] },
+      });
+      expect(next.edges).toEqual([
+        { source_action_id: 'a', target_action_id: condition?.id },
+        { source_action_id: condition?.id, target_action_id: 'b' },
+      ]);
+    });
+
+    it('updates the rule and the labels separately', () => {
+      const detail = baseDetail(
+        [
+          {
+            id: 'c',
+            type: 'condition',
+            data: { condition_operator: null, condition_label_ids: [] },
+          },
+          { id: 'w', type: 'wait', data: { wait_hours: 24 } },
+        ],
+        [{ source_action_id: 'c', target_action_id: 'w' }],
+      );
+
+      const withRule = updateConditionAction({
+        detail,
+        actionId: 'c',
+        data: { condition_operator: 'has_none' },
+      });
+      const withLabels = updateConditionAction({
+        detail: withRule,
+        actionId: 'c',
+        data: { condition_label_ids: ['staff'] },
+      });
+
+      expect(withLabels.actions).toEqual([
+        {
+          id: 'c',
+          type: 'condition',
+          data: { condition_operator: 'has_none', condition_label_ids: ['staff'] },
+        },
+        { id: 'w', type: 'wait', data: { wait_hours: 24 } },
+      ]);
+      expect(withLabels.edges).toEqual(detail.edges);
     });
   });
 

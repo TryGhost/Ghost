@@ -54,6 +54,9 @@ export function mapUpcomingRunSteps(
         cards.push({ ...base, kind: 'wait', title: `Wait ${duration}` });
         break;
       }
+      case 'condition':
+        cards.push({ ...base, kind: 'condition', title: 'Check condition' });
+        break;
       case 'send_email':
         cards.push({
           ...base,

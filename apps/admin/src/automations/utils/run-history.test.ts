@@ -35,6 +35,8 @@ const mapStep = (overrides: Partial<typeof step>) =>
     status: [
       'failed',
       'automation disabled',
+      'condition not met',
+      'member changed label',
       'member changed status',
       'member changed tier',
       'member unsubscribed',
@@ -47,6 +49,34 @@ const mapStep = (overrides: Partial<typeof step>) =>
   })[1];
 
 describe('recorded run history presentation', () => {
+  const condition = {
+    id: 'condition',
+    type: 'condition' as const,
+    data: { condition_operator: 'has_any' as const, condition_label_ids: ['magnet'] },
+  };
+
+  it('shows a condition the member met as a completed step', () => {
+    expect(mapStep({ action: condition })).toMatchObject({
+      kind: 'condition',
+      title: 'Met condition',
+      state: 'occurred',
+    });
+  });
+
+  it.each([
+    { status: 'condition not met', label: 'Condition not met' },
+    { status: 'member changed label', label: 'Member labels changed' },
+  ] as const)('ends the run with "$label" for a $status step', ({ status, label }) => {
+    const cards = mapRunHistory({
+      ...history,
+      status: 'exited_early',
+      steps: [{ ...step, status, action: condition }],
+    });
+
+    expect(cards[1]).toMatchObject({ kind: 'condition', title: 'Check condition' });
+    expect(cards.at(-1)).toMatchObject({ title: label });
+  });
+
   it.each(['finished', 'pending', 'failed'] as const)(
     'uses send and delivery evidence for a %s email step',
     (status) => {

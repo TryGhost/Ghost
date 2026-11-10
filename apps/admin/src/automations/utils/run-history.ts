@@ -15,7 +15,7 @@ export type HistoryTimestamp = {
 };
 export type HistoryCardData = {
   id: string;
-  kind: 'trigger' | 'wait' | 'email' | 'end' | 'event';
+  kind: 'trigger' | 'wait' | 'email' | 'condition' | 'end' | 'event';
   title: string;
   state: HistoryCardState;
   statusLabel: string;
@@ -30,6 +30,7 @@ const stepStates = {
   finished: { state: 'occurred', label: 'Completed' },
   failed: { state: 'exited', label: 'Step failed' },
   'automation disabled': { state: 'exited', label: 'Automation turned off' },
+  'condition not met': { state: 'exited', label: 'Condition not met' },
   'member changed label': { state: 'exited', label: 'Member labels changed' },
   'member changed status': { state: 'exited', label: 'Member changed subscription status' },
   'member changed tier': { state: 'exited', label: 'Member changed subscription tier' },
@@ -52,6 +53,11 @@ function stepContent(step: Step, state: (typeof stepStates)[Step['status']]['sta
       };
       return { kind: 'wait' as const, title: `${verbs[state]} ${duration}` };
     }
+    case 'condition':
+      return {
+        kind: 'condition' as const,
+        title: state === 'occurred' ? 'Met condition' : 'Check condition',
+      };
     case 'send_email':
       return {
         kind: 'email' as const,
@@ -159,10 +165,11 @@ const mapEnd = (
         }
       }
       if (lastStep.status === 'failed') {
-        const names = { send_email: 'Email', wait: 'Wait' } satisfies Record<
-          Step['action']['type'],
-          string
-        >;
+        const names = {
+          send_email: 'Email',
+          wait: 'Wait',
+          condition: 'Condition',
+        } satisfies Record<Step['action']['type'], string>;
         title = `${names[lastStep.action.type]} step failed`;
       }
       return [
