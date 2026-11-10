@@ -1,4 +1,5 @@
 import type { GhostLogger } from '@tryghost/logging';
+import type ExternalMediaInlinerJob from './external-media-inliner-job';
 import type { OriginSchemes } from './origin-schemes';
 
 export type ExternalMediaFailureStage = 'download' | 'extract' | 'unsupported' | 'storage';
@@ -52,4 +53,5 @@ export interface ExternalMediaInlinerDependencies {
   }>;
   /** Loads the HEIC codec when a file needs converting; a throw fails that extraction. */
   loadHeicConvert: () => (options: { buffer: Buffer; format: 'JPEG' }) => Promise<Buffer>;
+  dispatchJob: (job: ExternalMediaInlinerJob) => Promise<void>;
 }
