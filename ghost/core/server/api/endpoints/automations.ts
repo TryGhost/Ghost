@@ -5,10 +5,9 @@ import type {
 import type { Controller, Frame } from '@tryghost/api-framework';
 import errors from '@tryghost/errors';
 import * as automationsApi from '../../services/automations/automations-api';
+import { MAX_AUTOMATIONS } from '../../services/automations/constants';
 // @ts-expect-error This module lacks type definitions.
 import labs from '../../../shared/labs';
-
-const MAX_AUTOMATIONS = 50;
 
 type ReadFrame = Frame<{ data: { id: string } }>;
 type AddFrame = Frame<{ data: AddAutomationData }>;
