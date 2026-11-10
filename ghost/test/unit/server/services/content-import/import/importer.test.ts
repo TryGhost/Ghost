@@ -216,13 +216,44 @@ describe('ContentCSVImporter', function () {
       file: { path: '/tmp/staged-1', name: 'posts.csv' },
       importTagNames: ['#Import 2026-01-01 11:30', '#Import Run run_test'],
       emailRecipient: 'owner@example.com',
+      total: 2,
     });
     assert.deepEqual(JSON.parse(JSON.stringify(new ContentCSVImportJob(serialized))), serialized);
     assert.equal(h.created.length, 0, 'nothing is written until the job runs');
-    assert.equal(
-      h.store.get('run_test')?.status,
-      'running',
-      'the run is registered before the job starts',
+    assert.equal(h.store.get('run_test'), undefined, 'the job creates the run');
+  });
+
+  it('runs a job dispatched by another process', async function () {
+    const upload = harness();
+    await upload.importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
+    const h = harness();
+
+    await h.importer.handle(new ContentCSVImportJob(JSON.parse(JSON.stringify(upload.jobs[0]))));
+
+    assert.equal(h.created.length, 2);
+    sinon.assert.calledOnceWithExactly(
+      h.sendEmail,
+      sinon.match({ status: 'complete', total: 2 }),
+      'owner@example.com',
+    );
+  });
+
+  it('reports zero rows for a job queued without a total', async function () {
+    const h = harness();
+
+    await h.importer.handle(
+      new ContentCSVImportJob({
+        importId: 'run_test',
+        file: { path: '/tmp/staged-1', name: 'posts.csv' },
+        importTagNames: ['#Import 2026-01-01 11:30', '#Import Run run_test'],
+        emailRecipient: 'owner@example.com',
+      }),
+    );
+
+    sinon.assert.calledOnceWithExactly(
+      h.sendEmail,
+      sinon.match({ status: 'complete', total: 0 }),
+      'owner@example.com',
     );
   });
 
@@ -233,23 +264,6 @@ describe('ContentCSVImporter', function () {
 
     sinon.assert.calledWithExactly(infoLog, '[Background Job] content-csv-import queued');
     assert.deepEqual(h.removedFiles, [{ path: '/tmp/staged-1', name: 'posts.csv' }]);
-  });
-
-  it('settles only after the dispatched import has finished reporting and cleanup', async function () {
-    const h = harness();
-    await h.importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
-    let settled = false;
-    const waiting = h.importer.allSettled().then(() => {
-      settled = true;
-    });
-
-    await Promise.resolve();
-    assert.equal(settled, false);
-
-    h.releaseRun.restore();
-    await h.importer.handle(h.jobs[0]);
-    await waiting;
-    assert.equal(settled, true);
   });
 
   it('carries original source columns and cells into the completed run', async function () {
@@ -364,10 +378,9 @@ describe('ContentCSVImporter', function () {
   it('finishes safely if an injected store loses the run before the job settles', async function () {
     const h = harness();
     h.releaseRun.restore();
+    h.inlineMedia.callsFake(async () => h.store.release('run_test'));
 
-    await h.importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
-    h.store.release('run_test');
-    await h.importer.handle(h.jobs[0]);
+    await h.run();
 
     sinon.assert.notCalled(h.sendEmail);
     assert.equal(h.created.length, 2);
@@ -846,7 +859,7 @@ describe('ContentCSVImporter', function () {
     assert.match(h.store.get('run_test')?.failureReason ?? '', /could not be parsed as a CSV/);
     sinon.assert.calledOnceWithExactly(
       h.sendEmail,
-      sinon.match({ status: 'failed' }),
+      sinon.match({ status: 'failed', total: 1 }),
       'owner@example.com',
     );
     assert.deepEqual(h.removedFiles, [{ path: '/tmp/staged-1', name: 'posts.csv' }]);
@@ -867,11 +880,8 @@ describe('ContentCSVImporter', function () {
       importer.importCSV({ filePath: '/tmp/posts.zip', fileName: 'posts.zip' }),
       /queue unavailable/,
     );
-    assert.equal(h.store.get('run_test')?.status, 'failed');
-    assert.equal(h.store.get('run_test')?.failureReason, 'queue unavailable');
     sinon.assert.calledOnce(cleanup);
     sinon.assert.notCalled(h.sendEmail);
-    sinon.assert.calledOnceWithExactly(h.releaseRun, 'run_test');
     assert.deepEqual(h.removedFiles, [{ path: '/tmp/staged-1', name: 'posts.zip' }]);
   });
 

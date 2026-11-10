@@ -47,7 +47,6 @@ const MAX_RUN_AGE_MS = 60 * 60 * 1000;
 export class ImportRunStore {
   // Insertion-ordered, so count-eviction drops the oldest run first.
   private _runs = new Map<string, ImportRun>();
-  private _settledWaiters = new Set<() => void>();
   private _now: Clock;
 
   constructor({ now = () => new Date() }: { now?: Clock } = {}) {
@@ -96,28 +95,6 @@ export class ImportRunStore {
 
   release(id: string): void {
     this._runs.delete(id);
-    this.resolveSettledWaiters();
-  }
-
-  allSettled(): Promise<void> {
-    if (this._runs.size === 0) {
-      return Promise.resolve();
-    }
-
-    return new Promise((resolve) => {
-      this._settledWaiters.add(resolve);
-    });
-  }
-
-  private resolveSettledWaiters(): void {
-    if (this._runs.size > 0) {
-      return;
-    }
-
-    for (const resolve of this._settledWaiters) {
-      resolve();
-    }
-    this._settledWaiters.clear();
   }
 
   // A running run is never evicted, whatever its age: the job holds only the runId,
