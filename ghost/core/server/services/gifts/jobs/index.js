@@ -7,10 +7,6 @@ const hasScheduled = {
   reminders: false,
 };
 
-function alreadyScheduledOrTest(key) {
-  return hasScheduled[key] || process.env.NODE_ENV?.startsWith('test');
-}
-
 // randomise the schedule so the job doesn't fire at the same instant
 // across every Ghost instance - spreads load across the day and avoids
 // DB spikes on the hour. Hour is bounded to a 0-5am off-peak window.
@@ -24,7 +20,7 @@ function randomOffPeakDailyCron() {
 
 module.exports = {
   async scheduleGiftCleanupJob(jobsService) {
-    if (alreadyScheduledOrTest('cleanup')) {
+    if (hasScheduled.cleanup) {
       return;
     }
 
@@ -36,7 +32,7 @@ module.exports = {
   },
 
   async scheduleGiftReminderJob(jobsService) {
-    if (alreadyScheduledOrTest('reminders')) {
+    if (hasScheduled.reminders) {
       return;
     }
 

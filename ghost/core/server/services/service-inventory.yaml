@@ -4382,7 +4382,7 @@ services:
           incomplete graph. Scheduler sets, renderer template/partial promises including rejected
           promises, mail transport and recurring-job flags survive same-process stop. Flags are
           set only after successful scheduling, without an in-flight guard. Job tests assert
-          sequential scheduling once, test skipping and cron hour shape; they do not exercise
+          sequential scheduling once and cron hour shape; they do not exercise
           concurrent calls, failed scheduling or backend replacement. Durable gifts/deliveries
           survive separately: real database tests assert single winners for concurrent pending
           and stale claims and sequential outcome precedence, not process restart or lease renewal.
@@ -8007,8 +8007,7 @@ services:
           dependencies. Cleanup task closures and successful schedule flags persist
           independently; concurrent scheduling is not promise-coalesced. Repeat migration tests
           pin database-run guards, not these identities. Expired-comped scheduling units assert
-          two sequential calls schedule once; token scheduling only checks a single production
-          call and test suppression.
+          two sequential calls schedule once; token scheduling only checks a single call.
           Historical evidence removed after auditedAt: [Members migration tests](https://github.com/TryGhost/Ghost/blob/bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e/ghost/core/test/e2e-server/services/members-migrations.test.ts).
         sources:
           - core/server/services/members/service.js
@@ -12763,9 +12762,9 @@ services:
           initCore awaits init after settings and before token/JWKS consumers. check advances
           due rotation and initiates replacement of weak keys. After jobs startup,
           background boot calls extras.scheduleCheckJob, which stores the jobs reference and checks
-          rotation state. Registration is skipped in test environments, without jobs, or after
+          rotation state. Registration is skipped without jobs or after
           a prior successful schedule; the guard is set only after registration resolves. Root
-          tests cover idle/rotating state, test-environment suppression, registration awaiting,
+          tests cover idle/rotating state, registration awaiting,
           sequential deduplication and retry, plus rotation before and after jobs are supplied.
           Boot units hold settings initialization, settings synchronization and signing-key
           initialization pending; they also hold background registration and verify continuation
