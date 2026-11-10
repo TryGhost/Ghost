@@ -1,3 +1,4 @@
+import { toDatabaseDate } from '../../lib/db-types/date';
 import errors from '@tryghost/errors';
 import { type Knex } from 'knex';
 import { z } from 'zod';
@@ -247,12 +248,17 @@ export const createDatabaseAutomationsRepository2 = ({
 
     async insertRunSteps(connection, toInsert) {
       if (toInsert.length > 0) {
+        const runs: { id: string; automation_id: string }[] = await connection('automation_runs')
+          .select('id', 'automation_id')
+          .whereIn('id', [...new Set(toInsert.map((step) => step.automation_run_id))]);
+        const automationByRun = new Map(runs.map((run) => [run.id, run.automation_id]));
         await connection('automation_run_steps').insert(
           toInsert.map((step) => ({
             ...step,
-            created_at: step.created_at,
-            updated_at: step.updated_at,
-            ready_at: step.ready_at,
+            automation_id: automationByRun.get(step.automation_run_id),
+            created_at: toDatabaseDate(step.created_at),
+            updated_at: toDatabaseDate(step.updated_at),
+            ready_at: toDatabaseDate(step.ready_at),
           })),
         );
       }

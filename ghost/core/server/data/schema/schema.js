@@ -2432,6 +2432,13 @@ module.exports = {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: false },
+    automation_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: true,
+      references: 'automations.id',
+      restrictDelete: true,
+    },
     automation_run_id: {
       type: 'string',
       maxlength: 24,
@@ -2471,7 +2478,14 @@ module.exports = {
     },
     locked_by: { type: 'string', maxlength: 191, nullable: true },
     locked_at: { type: 'dateTime', nullable: true },
-    '@@INDEXES@@': [['status', 'ready_at', 'created_at', 'id'], ['updated_at']],
+    '@@INDEXES@@': [
+      ['status', 'ready_at', 'created_at', 'id'],
+      ['updated_at'],
+      {
+        columns: ['automation_id', 'status', 'ready_at', 'created_at', 'id'],
+        indexName: 'automation_run_steps_queue_index',
+      },
+    ],
   },
   welcome_email_automated_emails: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },

@@ -537,3 +537,7 @@ export const trackEmailClicked = async (
   options: TrackEmailClickedOptions,
   connectionOptions: { transacting: Knex.Transaction },
 ) => automationsApi2.trackEmailClicked(options, { connection: connectionOptions.transacting });
+
+export async function listPollingAutomationIds(): Promise<string[]> {
+  return await repository.listPollingAutomationIds();
+}

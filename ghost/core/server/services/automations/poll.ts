@@ -43,8 +43,10 @@ type MemberModel = {
 };
 
 type PollOptions = {
+  queueRotation?: { offset: number };
   automationsApi: Pick<
     AutomationsRepository,
+    | 'listPollingAutomationIds'
     | 'fetchAndLockSteps'
     | 'finishStepAndEnqueueNext'
     | 'markStepTerminal'
@@ -383,31 +385,30 @@ export const poll = async ({
   enqueueAnotherPollAt,
   scheduleAutomationEmailAnalyticsJob,
   memberWelcomeEmailService,
+  queueRotation,
 }: Readonly<PollOptions>): Promise<void> => {
-  const { steps, nextStepReadyAt } = await automationsApi.fetchAndLockSteps(MAX_STEPS_PER_BATCH);
-
-  let nextPollAt = nextStepReadyAt;
-
-  // tl;dr: this may enqueue 1 unnecessary poll. That's worth it.
-  //
-  // If the batch is full, that means one of two things:
-  //
-  // 1. The number of remaining steps after this batch is positive. In other
-  //    words, this batch doesn't cover everything.
-  // 2. The number of remaining steps after this batch is 0. In other words,
-  //    this is the last batch (for now).
-  //
-  // With the current design, we can't tell the difference! That is suboptimal.
-  //
-  // We *could* fix this by doing another query. But we don't because:
-  //
-  // - for most batches, we'd be doing an unnecessary query
-  // - unnecessary polls do not impact correctness. At worst, they are a waste
-  // - it would add complexity
-  if (steps.length >= MAX_STEPS_PER_BATCH) {
-    nextPollAt = dateMin(nextPollAt, new Date());
+  const automationIds = await automationsApi.listPollingAutomationIds();
+  const offset = automationIds.length ? (queueRotation?.offset ?? 0) % automationIds.length : 0;
+  const orderedIds = [...automationIds.slice(offset), ...automationIds.slice(0, offset)];
+  if (queueRotation) {
+    queueRotation.offset = automationIds.length ? (offset + 1) % automationIds.length : 0;
   }
 
+  const steps: AutomationStepToRun[] = [];
+  let nextPollAt: Date | null = null;
+  for (const [index, automationId] of orderedIds.entries()) {
+    const quota = Math.floor((MAX_STEPS_PER_BATCH - steps.length) / (orderedIds.length - index));
+    // Zero quotas still probe next-ready time. This also prevents starvation if
+    // legacy/imported data exceeds the supported MAX_AUTOMATIONS (50).
+    const batch = await automationsApi.fetchAndLockSteps(quota, automationId);
+    steps.push(...batch.steps);
+    nextPollAt = dateMin(nextPollAt, batch.nextStepReadyAt);
+    if (quota > 0 && batch.steps.length >= quota) {
+      nextPollAt = dateMin(nextPollAt, new Date());
+    }
+  }
+
+  // Selection finishes before execution; at most 100 steps execute concurrently.
   await Promise.all(
     steps.map(async (step) => {
       try {

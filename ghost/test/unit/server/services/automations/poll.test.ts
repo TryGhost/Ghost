@@ -145,6 +145,9 @@ describe('automations poll', function () {
     sinon.useFakeTimers({ now: new Date('2026-01-01T12:00:00.000Z'), shouldAdvanceTime: true });
 
     automationsApi = {
+      listPollingAutomationIds: fake<AutomationsApi['listPollingAutomationIds']>().resolves([
+        'automation-id',
+      ]),
       fetchAndLockSteps: fake<AutomationsApi['fetchAndLockSteps']>().resolves({
         steps: [],
         nextStepReadyAt: null,
@@ -179,10 +182,119 @@ describe('automations poll', function () {
     sinon.restore();
   });
 
+  describe('fair scheduling', function () {
+    function queues(ids: string[], sizes: number[]) {
+      automationsApi.listPollingAutomationIds.resolves(ids);
+      const remaining = new Map(ids.map((id, index) => [id, sizes[index]]));
+      automationsApi.fetchAndLockSteps.callsFake(async (quota, id) => {
+        const count = Math.min(quota, remaining.get(id!) ?? 0);
+        remaining.set(id!, (remaining.get(id!) ?? 0) - count);
+        return {
+          steps: Array.from({ length: count }, (_, index) => ({
+            ...buildWaitStep(),
+            id: `${id}-${index}`,
+            automation_id: id!,
+            automation_status: 'inactive' as const,
+          })),
+          nextStepReadyAt: (remaining.get(id!) ?? 0) > 0 ? new Date() : null,
+        };
+      });
+    }
+
+    it('claims small queues alongside a large backlog before executing any steps', async function () {
+      queues(['large', 'small'], [10000, 3]);
+      automationsApi.markStepTerminal.callsFake(async () => {
+        assert.equal(automationsApi.fetchAndLockSteps.callCount, 2);
+        return true;
+      });
+      await poll(options);
+      assert.deepEqual(automationsApi.fetchAndLockSteps.args, [
+        [50, 'large'],
+        [50, 'small'],
+      ]);
+      assert.equal(automationsApi.markStepTerminal.callCount, 53);
+      sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, new Date());
+    });
+
+    it('passes idle capacity forward and caps total claims at 100', async function () {
+      queues(['idle', 'small', 'large'], [0, 2, 10000]);
+      await poll(options);
+      assert.deepEqual(automationsApi.fetchAndLockSteps.args, [
+        [33, 'idle'],
+        [50, 'small'],
+        [98, 'large'],
+      ]);
+      assert.equal(automationsApi.markStepTerminal.callCount, 100);
+    });
+
+    it('rotates allocation advantage between polls', async function () {
+      queues(['a', 'b', 'c'], [10000, 10000, 10000]);
+      options = { ...options, queueRotation: { offset: 0 } };
+      await poll(options);
+      await poll(options);
+      await poll(options);
+      assert.deepEqual(automationsApi.fetchAndLockSteps.args, [
+        [33, 'a'],
+        [33, 'b'],
+        [34, 'c'],
+        [33, 'b'],
+        [33, 'c'],
+        [34, 'a'],
+        [33, 'c'],
+        [33, 'a'],
+        [34, 'b'],
+      ]);
+      assert.equal(automationsApi.markStepTerminal.callCount, 300);
+    });
+
+    it('handles zero automations', async function () {
+      queues([], []);
+      await poll(options);
+      sinon.assert.notCalled(automationsApi.fetchAndLockSteps);
+      sinon.assert.notCalled(options.enqueueAnotherPollAt);
+    });
+
+    for (const count of [50, 100, 101]) {
+      it(`caps claims and rotates fairly across ${count} queues`, async function () {
+        const ids = Array.from({ length: count }, (_, index) => String(index));
+        queues(
+          ids,
+          ids.map(() => 10000),
+        );
+        options = { ...options, queueRotation: { offset: 0 } };
+        await poll(options);
+        assert.equal(automationsApi.markStepTerminal.callCount, 100);
+        if (count <= 100) {
+          assert(automationsApi.fetchAndLockSteps.args.every(([quota]) => quota > 0));
+        }
+        await poll(options);
+        assert.equal(automationsApi.markStepTerminal.callCount, 200);
+        for (const id of ids) {
+          assert(
+            automationsApi.fetchAndLockSteps.args.some(
+              ([quota, queue]) => quota > 0 && queue === id,
+            ),
+          );
+        }
+      });
+    }
+
+    it('repolls when a queue exactly fills quota even if the total is under 100', async function () {
+      queues(['busy', 'idle'], [50, 0]);
+      await poll(options);
+      assert.equal(automationsApi.markStepTerminal.callCount, 50);
+      sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, new Date());
+    });
+  });
+
   it('does nothing when no steps are ready', async function () {
     await poll(options);
 
-    sinon.assert.calledOnceWithExactly(automationsApi.fetchAndLockSteps, MAX_STEPS_PER_BATCH);
+    sinon.assert.calledOnceWithExactly(
+      automationsApi.fetchAndLockSteps,
+      MAX_STEPS_PER_BATCH,
+      'automation-id',
+    );
     sinon.assert.notCalled(options.enqueueAnotherPollAt);
   });
 

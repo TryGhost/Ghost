@@ -185,6 +185,7 @@ const createDatabase = async (): Promise<Knex> => {
   });
 
   await database.schema.createTable('automation_run_steps', (table) => {
+    table.text('automation_id').references('id').inTable('automations');
     table.text('id').primary();
     table.text('created_at').notNullable();
     table.text('updated_at').notNullable();
@@ -683,6 +684,7 @@ describe('automations repository', function () {
       created_at: now,
       updated_at: now,
       automation_run_id: runId,
+      automation_id: (await knex('automation_runs').where({ id: runId }).first()).automation_id,
       automation_action_revision_id: revisionId,
       ready_at: now,
       step_attempts: 0,
@@ -2171,6 +2173,52 @@ describe('automations repository', function () {
       assert.equal(step.updated_at, step.locked_at);
     };
 
+    it('filters candidates and next-ready times by automation, including disabled queues', async function () {
+      const free = await getAutomationBySlug('member-welcome-email-free');
+      const paid = await getAutomationBySlug('member-welcome-email-paid');
+      const freeAction = await getActionByIndex(free.id, 0);
+      const paidAction = await getActionByIndex(paid.id, 0);
+      const freeRun = await insertRun(free.id);
+      const paidRun = await insertRun(paid.id);
+      const freeStep = await insertStep(freeRun.id, freeAction.revision_id);
+      await insertStep(paidRun.id, paidAction.revision_id);
+      const future = new Date(Date.now() + 10000);
+      await insertStep(freeRun.id, freeAction.revision_id, { ready_at: future });
+      await knex('automations').where({ id: free.id }).update({ status: 'inactive' });
+      const result = await repo.fetchAndLockSteps(100, free.id);
+      assert.deepEqual(
+        result.steps.map((step) => step.id),
+        [freeStep.id],
+      );
+      assert.equal(result.steps[0].automation_status, 'inactive');
+      assert.equal(result.nextStepReadyAt?.toISOString(), toRepositoryDateISOString(future));
+      assert((await repo.listPollingAutomationIds()).includes(free.id));
+      assert.equal((await repo.fetchAndLockSteps(100, paid.id)).steps.length, 1);
+    });
+
+    it('stores parent automation ID on initial and subsequent steps', async function () {
+      const automation = await getAutomationBySlug('member-welcome-email-free');
+      const action = await getActionByIndex(automation.id, 0);
+      const run = await insertRun(automation.id);
+      const repository2 = createDatabaseAutomationsRepository2({ knex });
+      await repository2.insertRunSteps(knex, [
+        {
+          id: ObjectId().toHexString(),
+          automation_run_id: run.id,
+          automation_action_revision_id: action.revision_id,
+          created_at: new Date(),
+          updated_at: new Date(),
+          ready_at: new Date(),
+        },
+      ]);
+      const claimed = await repo.fetchAndLockSteps(1, automation.id);
+      assert.equal(claimed.steps.length, 1);
+      await repo.finishStepAndEnqueueNext(claimed.steps[0]);
+      const steps = await knex('automation_run_steps').where({ automation_run_id: run.id });
+      assert.equal(steps.length, 2);
+      assert(steps.every((step) => step.automation_id === automation.id));
+    });
+
     it('returns step data', async function () {
       const automation = await getAutomationBySlug('member-welcome-email-free');
       const action = await getActionByIndex(automation.id, 0);
@@ -2353,7 +2401,10 @@ describe('automations repository', function () {
       const result = await repo.fetchAndLockSteps(10);
 
       assert.deepEqual(result.steps, []);
-      assert.equal(result.nextStepReadyAt, null);
+      assert.equal(
+        result.nextStepReadyAt?.getTime(),
+        new Date(toRepositoryDateISOString(lockedAt)).getTime() + 30 * 60 * 1000 + 1000,
+      );
     });
 
     it('respects the limit argument', async function () {
@@ -2502,7 +2553,7 @@ describe('automations repository', function () {
       assert.equal(nextStep.automation_run_id, run.id);
       assert.equal(nextStep.automation_action_revision_id, nextAction.revision_id);
       assert.equal(nextStep.status, 'pending');
-      assert.equal(toDatabaseDate(Number(nextStep.ready_at)), toDatabaseDate(nextReadyAt));
+      assert.equal(toDatabaseDate(nextStep.ready_at as string), toDatabaseDate(nextReadyAt));
     });
 
     it('uses wait hours when the next action is a wait action', async function () {
@@ -2701,7 +2752,7 @@ describe('automations repository', function () {
       const nextStep = allSteps.find((candidate) => candidate.id !== stepRow.id);
       assert(nextStep);
       assert.equal(nextStep.automation_action_revision_id, updatedNextAction.revision_id);
-      assert.equal(toDatabaseDate(Number(nextStep.ready_at)), toDatabaseDate(nextReadyAt));
+      assert.equal(toDatabaseDate(nextStep.ready_at as string), toDatabaseDate(nextReadyAt));
     });
   });
 

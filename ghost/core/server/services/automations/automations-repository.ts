@@ -204,6 +204,9 @@ export type AutomationsRepository = {
   ): Promise<AutomationActionLink[] | null>;
   add(data: AddAutomationData): Promise<Automation>;
   edit(id: string, data: EditAutomationData): Promise<Automation | null>;
+  /** Stable queue order, including disabled automations whose steps need cleanup. */
+  listPollingAutomationIds(): Promise<string[]>;
+
   /**
    * Select the steps we want to run and return the next time any remaining
    * pending step should be polled, if any.
@@ -214,7 +217,10 @@ export type AutomationsRepository = {
    * querying the same database). That's why we implement a row-level locking
    * mechanism, hence the word "lock" in the name of this function.
    */
-  fetchAndLockSteps(limit: number): Promise<{
+  fetchAndLockSteps(
+    limit: number,
+    automationId?: string,
+  ): Promise<{
     steps: AutomationStepToRun[];
     nextStepReadyAt: Date | null;
   }>;

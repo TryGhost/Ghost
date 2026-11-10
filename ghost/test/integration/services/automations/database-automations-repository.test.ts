@@ -212,6 +212,7 @@ describe('database automations repository', function () {
       assert.equal(runs.length, 1);
       const steps = await knex('automation_run_steps').where({ automation_run_id: runs[0]?.id });
       assert.equal(steps.length, 1);
+      assert.equal(steps[0].automation_id, selectedAutomationId);
     });
 
     it('only triggers automations once per automation+member, even with race conditions', async function () {
@@ -338,6 +339,42 @@ describe('database automations repository', function () {
   });
 
   describe('fetchAndLockSteps', function () {
+    it('claims per automation concurrently and recovers stale locks without changing ownership', async function () {
+      const id = await insertAutomation({ triggerTierScope: 'all_paid' });
+      const memberId = ObjectId().toHexString();
+      await createApi().notify({
+        eventName: 'membership_started',
+        source: 'member',
+        memberId,
+        memberEmail: await insertMember(memberId),
+        memberStatus: 'paid',
+        previousMemberStatus: null,
+        memberTierIds: [],
+      });
+      const run = await knex('automation_runs').where({ automation_id: id }).first();
+      assert(run);
+      await knex('automation_run_steps')
+        .where({ automation_run_id: run.id })
+        .update({ ready_at: toDatabaseDate(new Date('2024-01-01')) });
+      const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
+      const batches = await Promise.all([
+        repo.fetchAndLockSteps(1, id),
+        repo.fetchAndLockSteps(1, id),
+      ]);
+      const claimed = batches.flatMap((batch) => batch.steps);
+      assert.equal(claimed.length, 1);
+      assert.equal(claimed[0].automation_id, id);
+      await knex('automation_run_steps')
+        .where({ id: claimed[0].id })
+        .update({ locked_at: toDatabaseDate(new Date(Date.now() - 31 * 60 * 1000)) });
+      const recovered = await repo.fetchAndLockSteps(1, id);
+      assert.equal(recovered.steps.length, 1);
+      assert.notEqual(recovered.steps[0].locked_by, claimed[0].locked_by);
+      assert.equal(recovered.steps[0].step_attempts, 2);
+      assert.equal(await repo.markStepTerminal(claimed[0], 'finished'), false);
+      assert.equal(await repo.markStepTerminal(recovered.steps[0], 'finished'), true);
+    });
+
     it("returns each step once with the automation's current selected tiers", async function () {
       const selectedAutomationId = await insertAutomation({ triggerTierIds: selectedTierIds });
       const repo = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: null });
@@ -362,7 +399,7 @@ describe('database automations repository', function () {
         )
         .update({ ready_at: toDatabaseDate(new Date('2024-01-01')) });
 
-      const first = await repo.fetchAndLockSteps(1);
+      const first = await repo.fetchAndLockSteps(1, selectedAutomationId);
       assert.equal(first.steps.length, 1);
       assert.deepEqual(
         [...first.steps[0].automation_trigger_rules.map((rule) => rule.product_id)].sort(),
@@ -373,7 +410,7 @@ describe('database automations repository', function () {
       await knex('automation_trigger_rules')
         .where({ automation_id: selectedAutomationId, product_id: selectedTierIds[0] })
         .delete();
-      const second = await repo.fetchAndLockSteps(1);
+      const second = await repo.fetchAndLockSteps(1, selectedAutomationId);
       assert.equal(second.steps.length, 1);
       assert.notEqual(second.steps[0].id, first.steps[0].id);
       assert.deepEqual(

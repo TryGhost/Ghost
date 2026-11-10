@@ -46,6 +46,7 @@ import {
   type DatabaseDate,
 } from '../../lib/db-types/date';
 import { getStaleLockCutoff } from './stale-lock-cutoff';
+import { LOCK_TIMEOUT_MS } from './constants';
 import { limitService } from '../limits';
 import { lockAutomationLimit } from './automation-limit';
 import type { ExclusifyUnion, ReadonlyDeep } from 'type-fest';
@@ -499,11 +500,19 @@ export function createDatabaseAutomationsRepository({
       });
     },
 
-    async fetchAndLockSteps(limit: number): Promise<{
+    async listPollingAutomationIds(): Promise<string[]> {
+      const rows = await knex('automations').select('id').orderBy('id');
+      return rows.map((row: { id: string }) => row.id);
+    },
+
+    async fetchAndLockSteps(
+      limit: number,
+      automationId?: string,
+    ): Promise<{
       steps: AutomationStepToRun[];
       nextStepReadyAt: null | Date;
     }> {
-      return await knex.transaction((trx) => fetchAndLockSteps(trx, limit));
+      return await knex.transaction((trx) => fetchAndLockSteps(trx, limit, automationId));
     },
 
     async finishStepAndEnqueueNext(step: AutomationStepToRun): Promise<Date | null> {
@@ -963,9 +972,21 @@ async function ensureWelcomeEmailAction(
   ]);
 }
 
+function scopeAutomationQueue(knex: Knex, query: Knex.QueryBuilder, automationId: string): void {
+  query.where('automation_id', automationId);
+  // LIMIT can make MySQL prefer the global ordering index and scan other
+  // queues. Force the queue-local index for both candidates and wakeups.
+  if (isMysql(knex)) {
+    query.from(
+      knex.raw('?? FORCE INDEX (??)', ['automation_run_steps', 'automation_run_steps_queue_index']),
+    );
+  }
+}
+
 async function fetchAndLockSteps(
   trx: Knex.Transaction,
   limit: number,
+  automationId?: string,
 ): Promise<{
   steps: AutomationStepToRun[];
   nextStepReadyAt: null | Date;
@@ -990,6 +1011,11 @@ async function fetchAndLockSteps(
   // 1. Select up to `limit` candidate rows.
   const candidates: ReadonlyArray<{ id: string }> = await trx('automation_run_steps')
     .select('id')
+    .modify((query) => {
+      if (automationId !== undefined) {
+        scopeAutomationQueue(trx, query, automationId);
+      }
+    })
     .where('status', 'pending')
     .where('ready_at', '<=', nowString)
     .where((builder) => {
@@ -1000,7 +1026,7 @@ async function fetchAndLockSteps(
   if (candidates.length === 0) {
     return {
       steps: [],
-      nextStepReadyAt: await findNextPendingReadyAt(trx, staleLockCutoff),
+      nextStepReadyAt: await findNextPendingReadyAt(trx, staleLockCutoff, automationId),
     };
   }
 
@@ -1058,7 +1084,7 @@ async function fetchAndLockSteps(
 
   return {
     steps: rows.map((row) => buildStepToRun(row, rulesByAutomation.get(row.automation_id))),
-    nextStepReadyAt: await findNextPendingReadyAt(trx, staleLockCutoff),
+    nextStepReadyAt: await findNextPendingReadyAt(trx, staleLockCutoff, automationId),
   };
 }
 
@@ -1086,16 +1112,42 @@ async function getRulesByAutomation(
 async function findNextPendingReadyAt(
   trx: Knex.Transaction,
   staleLockCutoff: Readonly<Date>,
+  automationId?: string,
 ): Promise<Date | null> {
   const row = await trx('automation_run_steps')
     .select({ next_ready_at: 'ready_at' })
+    .modify((query) => {
+      if (automationId !== undefined) {
+        scopeAutomationQueue(trx, query, automationId);
+      }
+    })
     .where('status', 'pending')
     .where((builder) => {
       builder.whereNull('locked_by').orWhere('locked_at', '<', toDatabaseDate(staleLockCutoff));
     })
     .orderBy('ready_at')
     .first();
-  return row?.next_ready_at ? fromDatabaseDate(row.next_ready_at) : null;
+  const locked = await trx('automation_run_steps')
+    .min({ locked_at: 'locked_at' })
+    .where('status', 'pending')
+    .whereNotNull('locked_by')
+    .where('locked_at', '>=', toDatabaseDate(staleLockCutoff))
+    .modify((query) => {
+      if (automationId !== undefined) {
+        scopeAutomationQueue(trx, query, automationId);
+      }
+    })
+    .first();
+  const readyAt = row?.next_ready_at ? fromDatabaseDate(row.next_ready_at) : null;
+  // Claims use a strict stale cutoff stored at second precision. Wake at the
+  // next representable second to avoid repeatedly polling before it is stale.
+  const recoveryAt = locked?.locked_at
+    ? new Date(fromDatabaseDate(locked.locked_at).getTime() + LOCK_TIMEOUT_MS + 1000)
+    : null;
+  if (!readyAt) {
+    return recoveryAt;
+  }
+  return recoveryAt && recoveryAt < readyAt ? recoveryAt : readyAt;
 }
 
 function buildStepToRun(

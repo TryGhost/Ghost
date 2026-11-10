@@ -8,7 +8,27 @@ The member repository calls `notify(event)` after signup or a paid subscription 
 
 The database repository creates run(s) and queues their first step(s). Ghost's boot process starts the service, which checks for ready steps. It checks again when a new run starts or a later step becomes ready. An in-memory timer handles checks while Ghost is running; the scheduler can wake Ghost after a restart.
 
-Each check locks ready steps, then runs up to 100 at once. A `wait` action advances when its time arrives. A `send_email` action checks the member's current status and email preference before sending. Disabled automations and ineligible members stop.
+Each check treats each automation as a queue and claims at most 100 steps in total,
+then executes the collected batch with at most 100 concurrent actions. Queues have
+stable ID order; the service rotates its starting offset between checks. For each
+queue, its quota is the remaining step budget divided by the remaining queue
+count, rounded down. Unused capacity passes forward in this single pass; later
+idle queues can leave the batch underfilled. Rotation resets when Ghost restarts.
+
+The API supports 50 automations, so each queue normally receives a positive quota.
+If imported data exceeds 100 automations, zero-quota queues still contribute their
+next-ready times and rotation prevents starvation. Disabled and archived queues
+remain included for cleanup. A queue filling its quota triggers an immediate
+check even if the total batch contains fewer than 100 steps. Future steps,
+retries, and lock expiry otherwise determine the next check.
+
+Run steps store their parent run's `automation_id`. The queue index covers
+`(automation_id, status, ready_at, created_at, id)`; MySQL queue reads explicitly
+use it because the global ordering index can otherwise win under `LIMIT`.
+Lock filtering still scans past locked rows within a queue, and finding the
+oldest fresh lock for recovery can scan that queue's pending steps.
+
+A `wait` action advances when its time arrives. A `send_email` action checks the member's current status and email preference before sending. Disabled automations and ineligible members stop.
 
 ## Where to look
 

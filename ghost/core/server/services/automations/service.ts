@@ -97,11 +97,14 @@ export class AutomationsService {
       }
     };
 
+    const queueRotation = { offset: 0 };
+
     domainEvents.subscribe(
       StartAutomationsPollEvent,
       oneAtATime(() =>
         poll({
           automationsApi,
+          queueRotation,
           memberWelcomeEmailService: memberWelcomeEmails.service,
           scheduleAutomationEmailAnalyticsJob,
           enqueueAnotherPollAt: enqueuePollAt,

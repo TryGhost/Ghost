@@ -735,6 +735,7 @@ describe('database automations repository', function () {
         .select(
           'id',
           'automation_run_id',
+          'automation_id',
           'automation_action_revision_id',
           'created_at',
           'updated_at',
@@ -783,7 +784,9 @@ describe('database automations repository', function () {
       ];
       await repository.withConnection((connection) => repository.insertRunSteps(connection, steps));
       await expect(findRunSteps()).resolves.toEqual(
-        steps.toSorted((a, b) => a.id.localeCompare(b.id)),
+        steps
+          .map((step) => ({ ...step, automation_id: automationId }))
+          .toSorted((a, b) => a.id.localeCompare(b.id)),
       );
     });
 
