@@ -4,6 +4,7 @@ const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-
 const { stripeMocker } = require('../../utils/e2e-framework-mock-manager');
 const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
 const logging = require('@tryghost/logging');
+const nock = require('nock');
 const sinon = require('sinon');
 const models = require('../../../core/server/models');
 
@@ -124,7 +125,7 @@ describe('Member answers by port', function () {
 
   beforeAll(async function () {
     ({ adminAgent, membersAgent, contentAPIAgent } = await agentProvider.getAgentsForMembers());
-    await fixtureManager.init('newsletters', 'members:newsletters', 'api_keys');
+    await fixtureManager.init('newsletters', 'members:newsletters', 'integrations', 'api_keys');
     await adminAgent.loginAsOwner();
     await contentAPIAgent.authenticate();
   });
@@ -148,6 +149,7 @@ describe('Member answers by port', function () {
     await models.Base.knex('tier_requirements').del();
     await models.Base.knex('members_metafield_values').del();
     await models.Base.knex('members_metafields').del();
+    await models.Base.knex('webhooks').del();
   });
 
   describe('given with a change of tier', function () {
@@ -281,6 +283,37 @@ describe('Member answers by port', function () {
         line1: '2 Low Road',
         city: 'Leeds',
         country: 'GB',
+      });
+    });
+
+    it('tells member webhooks about the answers a change of tier saves', async function () {
+      // Every delivery is kept, as the change of tier's own edit to the member is sent too.
+      const delivered: Array<{
+        member: { current: { email: string; metafields?: { custom?: Record<string, unknown> } } };
+      }> = [];
+      nock('https://test-webhook-receiver.com')
+        .persist()
+        .post('/tier-change-member-edited/')
+        .reply(200, (_uri: string, body: unknown) => {
+          delivered.push(typeof body === 'string' ? JSON.parse(body) : body);
+          return {};
+        });
+      await fixtureManager.insertWebhook({
+        event: 'member.edited',
+        url: 'https://test-webhook-receiver.com/tier-change-member-edited/',
+      });
+
+      await changeTier(toTierId, 204, ANSWERED);
+
+      const withAnswers = await vi.waitUntil(
+        () => delivered.find(({ member }) => member.current.metafields?.custom?.[addressKey]),
+        { timeout: 5000 },
+      );
+      assert.equal(withAnswers.member.current.email, email);
+      assert.deepEqual(withAnswers.member.current.metafields?.custom, {
+        [addressKey]: ADDRESS_HELD,
+        [recipientKey]: 'Ada Lovelace',
+        [phoneKey]: '+44 7700 900000',
       });
     });
 
