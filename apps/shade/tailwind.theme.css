@@ -355,6 +355,8 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-tab-hover: var(--tab-hover);
+  --color-tab-inactive: var(--tab-inactive);
+  --color-tab-inactive-hover: var(--tab-inactive-hover);
   --color-tab-active: var(--tab-active);
   --color-button-hover: var(--button-hover);
   --color-button-ghost-hover: var(--button-ghost-hover);

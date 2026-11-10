@@ -10,7 +10,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Versatile tabs primitive supporting segmented, button, underline, and other variants. KPI-flavoured tabs live under `Features / KPI / Tabs`.',
+          'With admin7Design on, standard tabs share a pill shape, primary selected fill, and gray inactive fill with dark text. Compact variants retain their smaller size. With the flag off, each variant keeps its previous appearance. KPI tabs retain their chart-card layout.',
       },
     },
   },
@@ -49,7 +49,7 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          'Admin 7 button tabs use a primary selected fill with contrasting text and muted inactive fills with dark text. Shape follows the shared control shape.',
+          'Admin 7 button tabs use a primary selected fill with contrasting text and a gray inactive fill. Tabs and PageMenu share the same color treatment.',
       },
     },
   },
@@ -140,7 +140,8 @@ export const Segmented: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Segmented control style tabs with rounded background for clear selection.',
+        story:
+          'Segmented tabs become separate pills in Admin 7. Turn the design flag off to compare the previous segmented appearance.',
       },
     },
   },
@@ -186,7 +187,8 @@ export const Underline: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Underline style tabs commonly used for website navigation sections.',
+        story:
+          'Underline tabs become pills in Admin 7. Turn the design flag off to compare the previous underline appearance.',
       },
     },
   },

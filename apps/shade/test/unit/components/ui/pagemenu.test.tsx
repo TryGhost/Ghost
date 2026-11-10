@@ -145,7 +145,7 @@ describe('PageMenu Component', () => {
 
       const trigger = await getOverflowTrigger();
       expect(trigger.textContent).toBe('Second');
-      expect(trigger.className).toMatch(/bg-accent/);
+      expect(trigger.getAttribute('data-state')).toBe('active');
 
       await openOverflow();
       expect(screen.getByRole('menuitem', { name: 'Second' }).className).toMatch(/bg-accent/);

@@ -34,33 +34,44 @@ function fakeTagWorld(t: Tag) {
 }
 
 describe('Tag detail', () => {
-  it.each([false, true])(
-    'scrolls to code injection when expanded with admin7Design=%s',
-    async (admin7Design) => {
-      if (admin7Design) {
-        fakeAdminStats.memberCount();
-        fakeAdminStats.mrr();
-      }
-      const t = tag({
-        name: 'News',
-        slug: 'news',
-        codeinjection_head: null,
-        codeinjection_foot: null,
-      });
-      fakeTagWorld(t);
-      await renderAdminApp(`/tags/${t.slug}`, { labs: { admin7Design } });
-      const trigger = tagDetailScreen.codeInjectionTrigger();
-      await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
-      trigger.element().scrollIntoView({ block: 'end', behavior: 'instant' });
-      const section = tagDetailScreen.codeInjectionCard().element();
-      const before = section.getBoundingClientRect().top;
+  it('scrolls to code injection when expanded with admin7Design off', async () => {
+    const t = tag({
+      name: 'News',
+      slug: 'news',
+      codeinjection_head: null,
+      codeinjection_foot: null,
+    });
+    fakeTagWorld(t);
+    await renderAdminApp(`/tags/${t.slug}`, { labs: { admin7Design: false } });
+    const trigger = tagDetailScreen.codeInjectionTrigger();
+    await expect.element(trigger).toHaveAttribute('aria-expanded', 'false');
+    trigger.element().scrollIntoView({ block: 'end', behavior: 'instant' });
+    const section = tagDetailScreen.codeInjectionCard().element();
+    const before = section.getBoundingClientRect().top;
+    await trigger.click();
+    await expect.element(tagDetailScreen.footerEditor()).toBeVisible();
+    await expect.poll(() => section.getBoundingClientRect().top).toBeLessThan(before - 80);
+    expect(section.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
+  });
 
-      await trigger.click();
-      await expect.element(tagDetailScreen.footerEditor()).toBeVisible();
-      await expect.poll(() => section.getBoundingClientRect().top).toBeLessThan(before - 80);
-      expect(section.getBoundingClientRect().top).toBeGreaterThanOrEqual(0);
-    },
-  );
+  it('shows empty code injection editors without a toggle in Admin 7', async () => {
+    fakeAdminStats.memberCount();
+    fakeAdminStats.mrr();
+    const t = tag({
+      name: 'News',
+      slug: 'news',
+      codeinjection_head: null,
+      codeinjection_foot: null,
+    });
+    fakeTagWorld(t);
+    await renderAdminApp(`/tags/${t.slug}`, { labs: { admin7Design: true } });
+    await expect.element(tagDetailScreen.codeInjectionTrigger()).not.toBeInTheDocument();
+    await expect
+      .element(tagDetailScreen.codeInjectionCard().getByRole('heading', { name: 'Code injection' }))
+      .toBeVisible();
+    await expect.element(tagDetailScreen.headerEditor()).toBeVisible();
+    await expect.element(tagDetailScreen.footerEditor()).toBeVisible();
+  });
 
   it.each([false, true])(
     'edits tag details and metadata with admin7Design=%s',
@@ -91,7 +102,9 @@ describe('Tag detail', () => {
         .getByRole('tab', { name: 'Search', exact: true })
         .click();
       await expect.element(tagDetailScreen.metaTitleInput()).toHaveValue('News from our team');
-      await tagDetailScreen.codeInjectionTrigger().click();
+      if (!admin7Design) {
+        await tagDetailScreen.codeInjectionTrigger().click();
+      }
       await expect.element(tagDetailScreen.headerEditor()).toBeVisible();
       await expect.element(tagDetailScreen.footerEditor()).toBeVisible();
     },
@@ -202,54 +215,65 @@ describe('Tag detail', () => {
     ).toBeTruthy();
   });
 
-  it('edits and saves tag code injection with CodeMirror', async () => {
-    const head = '<script>\n    head();\n</script>';
-    const foot = '<style>\n    .footer { display: block; }\n</style>';
-    const t = tag({
-      name: 'News',
-      slug: 'news',
-      codeinjection_head: head,
-      codeinjection_foot: foot,
-    });
-    const saveApi = fakeTagWorld(t);
-    await renderAdminApp(`/tags/${t.slug}`);
+  it.each([false, true])(
+    'edits and saves code injection with admin7Design=%s',
+    async (admin7Design) => {
+      if (admin7Design) {
+        fakeAdminStats.memberCount();
+        fakeAdminStats.mrr();
+      }
+      const head = '<script>\n    head();\n</script>';
+      const foot = '<style>\n    .footer { display: block; }\n</style>';
+      const t = tag({
+        name: 'News',
+        slug: 'news',
+        codeinjection_head: head,
+        codeinjection_foot: foot,
+      });
+      const saveApi = fakeTagWorld(t);
+      await renderAdminApp(`/tags/${t.slug}`, { labs: { admin7Design } });
 
-    await expect
-      .element(tagDetailScreen.codeInjectionTrigger())
-      .toHaveAttribute('aria-expanded', 'true');
-    const headerEditor = tagDetailScreen.headerEditor();
-    const footerEditor = tagDetailScreen.footerEditor();
-    await expect.element(headerEditor).toBeVisible();
-    await expect.element(footerEditor).toBeVisible();
-    await expect.poll(() => (headerEditor.element() as HTMLElement).innerText).toBe(head);
-    await expect.poll(() => (footerEditor.element() as HTMLElement).innerText).toBe(foot);
+      if (admin7Design) {
+        await expect.element(tagDetailScreen.codeInjectionTrigger()).not.toBeInTheDocument();
+      } else {
+        await expect
+          .element(tagDetailScreen.codeInjectionTrigger())
+          .toHaveAttribute('aria-expanded', 'true');
+      }
+      const headerEditor = tagDetailScreen.headerEditor();
+      const footerEditor = tagDetailScreen.footerEditor();
+      await expect.element(headerEditor).toBeVisible();
+      await expect.element(footerEditor).toBeVisible();
+      await expect.poll(() => (headerEditor.element() as HTMLElement).innerText).toBe(head);
+      await expect.poll(() => (footerEditor.element() as HTMLElement).innerText).toBe(foot);
 
-    const updatedHead = '<script>updatedHead();</script>';
-    const updatedFoot = '<style>.footer { display: grid; }</style>';
+      const updatedHead = '<script>updatedHead();</script>';
+      const updatedFoot = '<style>.footer { display: grid; }</style>';
 
-    // Playwright manipulates contenteditable DOM directly when clearing,
-    // which can race CodeMirror's document reconciliation. Clear through
-    // CodeMirror's keyboard handling before filling the empty editor.
-    await headerEditor.click();
-    await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
-    await userEvent.keyboard('{Backspace}');
-    await expect.poll(() => headerEditor.element().textContent).toBe('');
-    await headerEditor.fill(updatedHead);
-    await expect.poll(() => (headerEditor.element() as HTMLElement).innerText).toBe(updatedHead);
+      // Playwright manipulates contenteditable DOM directly when clearing,
+      // which can race CodeMirror's document reconciliation. Clear through
+      // CodeMirror's keyboard handling before filling the empty editor.
+      await headerEditor.click();
+      await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
+      await userEvent.keyboard('{Backspace}');
+      await expect.poll(() => headerEditor.element().textContent).toBe('');
+      await headerEditor.fill(updatedHead);
+      await expect.poll(() => (headerEditor.element() as HTMLElement).innerText).toBe(updatedHead);
 
-    await footerEditor.click();
-    await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
-    await userEvent.keyboard('{Backspace}');
-    await expect.poll(() => footerEditor.element().textContent).toBe('');
-    await footerEditor.fill(updatedFoot);
-    await expect.poll(() => (footerEditor.element() as HTMLElement).innerText).toBe(updatedFoot);
-    await tagDetailScreen.saveButton().click();
+      await footerEditor.click();
+      await userEvent.keyboard('{ControlOrMeta>}a{/ControlOrMeta}');
+      await userEvent.keyboard('{Backspace}');
+      await expect.poll(() => footerEditor.element().textContent).toBe('');
+      await footerEditor.fill(updatedFoot);
+      await expect.poll(() => (footerEditor.element() as HTMLElement).innerText).toBe(updatedFoot);
+      await tagDetailScreen.saveButton().click();
 
-    await expect.element(tagDetailScreen.savedButton()).toBeVisible();
-    const saved = (saveApi.lastRequest?.body as { tags: Array<Record<string, unknown>> }).tags[0];
-    expect(saved.codeinjection_head).toBe(updatedHead);
-    expect(saved.codeinjection_foot).toBe(updatedFoot);
-  });
+      await expect.element(tagDetailScreen.savedButton()).toBeVisible();
+      const saved = (saveApi.lastRequest?.body as { tags: Array<Record<string, unknown>> }).tags[0];
+      expect(saved.codeinjection_head).toBe(updatedHead);
+      expect(saved.codeinjection_foot).toBe(updatedFoot);
+    },
+  );
 
   it('opens code injection when only the footer contains code', async () => {
     const t = tag({ name: 'News', slug: 'news', codeinjection_foot: '<script>footer();</script>' });

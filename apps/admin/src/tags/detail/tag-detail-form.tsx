@@ -129,14 +129,21 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({
       {/* The main form and advanced settings collapse into one column
                 below the medium breakpoint. */}
       <Stack className="min-w-0 in-data-[admin7-design=true]:gap-18" gap="lg">
-        <Stack aria-labelledby={admin7Design ? 'tag-details-heading' : undefined} gap="md">
+        <Stack
+          aria-labelledby={admin7Design ? 'tag-details-heading' : undefined}
+          gap={admin7Design ? 'lg' : 'md'}
+        >
           {admin7Design && (
             <h3 className="section-heading text-base font-semibold" id="tag-details-heading">
               Details
             </h3>
           )}
-          <Card data-testid="tag-core-data-card" variant={admin7Design ? 'ruled' : 'outline'}>
-            <CardContent className={admin7Design ? undefined : 'p-6'}>
+          <Card
+            className={admin7Design ? 'border-t-0' : undefined}
+            data-testid="tag-core-data-card"
+            variant={admin7Design ? 'ruled' : 'outline'}
+          >
+            <CardContent className={admin7Design ? 'pt-0' : 'p-6'}>
               <Stack gap="lg">
                 <Stack gap="sm">
                   <Inline align="start" gap="md">
@@ -250,16 +257,20 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({
 
       <Stack
         aria-labelledby="tag-metadata-heading"
-        className="min-w-0"
+        className={cn(
+          'min-w-0',
+          admin7Design &&
+            "relative self-stretch sidebarlg:before:pointer-events-none sidebarlg:before:absolute sidebarlg:before:inset-y-0 sidebarlg:before:-left-10 sidebarlg:before:border-l sidebarlg:before:border-border sidebarlg:before:content-['']",
+        )}
         data-testid="tag-metadata-card"
-        gap="md"
+        gap={admin7Design ? 'lg' : 'md'}
       >
         {admin7Design && metadataHeading}
         <Card
-          className={admin7Design ? undefined : 'overflow-hidden'}
+          className={admin7Design ? 'border-t-0' : 'overflow-hidden'}
           variant={admin7Design ? 'ruled' : 'outline'}
         >
-          <CardContent className={admin7Design ? undefined : 'p-6'}>
+          <CardContent className={admin7Design ? 'pt-0' : 'p-6'}>
             <Stack gap="lg">
               {!admin7Design && (
                 <Stack gap="none">
@@ -267,7 +278,7 @@ const TagDetailForm: React.FC<TagDetailFormProps> = ({
                   {metadataDescription}
                 </Stack>
               )}
-              <Tabs defaultValue="search" variant={admin7Design ? 'button' : 'underline'}>
+              <Tabs defaultValue="search" variant="underline">
                 <TabsList aria-label="Tag metadata">
                   <TabsTrigger value="search">Search</TabsTrigger>
                   <TabsTrigger value="x-card">X card</TabsTrigger>

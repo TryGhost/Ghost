@@ -129,6 +129,8 @@ Hover, active, and selected states are their own tokens — don't reach for raw 
 
 In dark mode `--interactive-hover`, `--button-hover`, and `--tab-hover` are translucent (`gray-900/30`) so they composite over whatever surface sits behind them. `--table-row-hover` is opaque (it matches `--surface-elevated`) — use it where you need an opaque fill, like sticky table cells where content scrolls underneath.
 
+With `admin7Design` on, standard `Tabs` variants and `PageMenu` share pill styling: `--tab-inactive` for the resting fill, `--tab-inactive-hover` for hover, and `--primary` / `--primary-foreground` for selection. The inactive fill uses gray-200 in light mode and gray-900 in dark mode. Compact tabs retain their smaller size; KPI tabs retain their chart-card layout. With the flag off, existing tab and page-menu styles remain.
+
 ## Card corners
 
 `Card` and `SettingGroup` round their corners with `--radius-card`. Anything clipped to those corners, like a section footer, should use `rounded-t-card` or `rounded-b-card` so it follows the same value. With `admin7Design` on, it's 8px.
@@ -141,11 +143,11 @@ Text-entry fields, including inputs, textareas and select triggers, take their c
 
 ## Section headings and stats
 
-With `admin7Design` on, the `section-heading` class sets a heading for a section inside a page or card, one step below the page title, at `--text-section-heading`. A page whose headings sit outside cards, like member details, sets it to `--text-section-heading-lg`. `stat-label` sets the small label above a stat or a value, and `stat-value` sets a stat's large, light number.
+With `admin7Design` on, the `section-heading` class sets a heading for a section inside a page or card, one step below the page title, at `--text-section-heading`. A page whose headings sit outside cards, like member and tag details, sets it to `--text-section-heading-lg` (21px) on the common parent of both columns so main and sidebar headings match. Section headings use Inter at medium weight, -0.025em letter spacing, a 1.35 line height, and optical size 28, matching the Admin 7 Vision prototype. `stat-label` sets the small label above a stat or a value, and `stat-value` sets a stat's large, light number.
 
 ## Title weight
 
-With `admin7Design` on, large titles, section headings, modal titles and tier names share one weight, `--font-weight-title`. Use the `font-title` class for it, so they can be tuned together.
+With `admin7Design` on, large titles, modal titles and tier names share one weight, `--font-weight-title`. Use the `font-title` class for it, so they can be tuned together. Section headings use `--font-weight-medium` independently.
 
 ## Column headers
 

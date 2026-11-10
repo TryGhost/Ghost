@@ -367,6 +367,8 @@ export const SHADE_TOKEN_NAMES = [
   'surface-elevated',
   'surface-page',
   'surface-panel',
+  'tab-inactive',
+  'tab-inactive-hover',
   'text-2xl',
   'text-2xs',
   'text-3xl',
