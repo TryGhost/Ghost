@@ -90,6 +90,7 @@
     "Could not sign in. Login link expired.": "Kirjautuminen epäonnistui. Kirjautumislinkki on vanhentunut.",
     "Could not update email! Invalid link.": "Sähköpostia ei pystytty päivittämään! Linkki ei toimi.",
     "Country": "",
+    "Country code": "",
     "Create a new contact": "Luo uusi kontakti",
     "Current plan": "Nykyinen tilaus",
     "Delete account": "Poista tilisi",

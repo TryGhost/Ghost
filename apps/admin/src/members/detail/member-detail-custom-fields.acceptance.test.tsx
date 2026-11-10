@@ -261,23 +261,43 @@ describe('Member detail custom fields', () => {
     await expect.element(memberDetailScreen.fieldValue('+442079460000')).toBeVisible();
   });
 
-  it('asks for the country code before saving a phone number written without one', async () => {
+  // As Portal and Stripe Checkout ask for one: written as it is dialled at home, beside the
+  // country it is from.
+  it("puts the picked country's code in front of a number written as at home", async () => {
     const m = member({ name: 'Ada Lovelace' });
     const editApi = fakeMemberDetailWorld(m, {}, [...FIELDS, MOBILE]);
     await renderAdminApp(`/members/${m.id}`);
 
     await memberDetailScreen.editFieldButton('Mobile').click();
-    await modal().getByLabelText('Mobile').fill('020 7946 0000');
-    await modal().getByRole('button', { name: 'Save', exact: true }).click();
-
+    const countryCode = modal().getByRole('combobox', { name: 'Country code' });
+    // Measured before the list opens, as an open list hides the rest of the dialog.
+    const phoneInputWidth = countryCode.element().parentElement?.getBoundingClientRect().width;
+    await countryCode.click();
+    // The list of countries opens as wide as the country and the number together, so a
+    // country's name fits rather than being cut off at the width of its code.
+    const list = page.getByRole('listbox');
+    await expect.element(list).toBeVisible();
+    // Within the list's border.
+    const listWidth = list.element().getBoundingClientRect().width;
+    expect(Math.abs(listWidth - (phoneInputWidth ?? 0))).toBeLessThanOrEqual(2);
+    await page.getByPlaceholder('Search countries...').fill('United Kingdom');
+    await page.getByRole('option', { name: 'United Kingdom +44' }).click();
     await expect
-      .element(
-        modal().getByText(
-          'Enter the phone number with its country code, starting with +, like +44 20 7946 0000.',
-        ),
-      )
+      .element(modal().getByRole('combobox', { name: 'Country code' }))
+      .toHaveTextContent('+44');
+
+    // One the country has no number like is refused before it's sent.
+    await modal().getByLabelText('Mobile').fill('020 7946 000');
+    await modal().getByRole('button', { name: 'Save', exact: true }).click();
+    await expect
+      .element(modal().getByText('Enter a valid phone number, like +44 20 7946 0000.'))
       .toBeVisible();
     expect(editApi.requests).toHaveLength(0);
+
+    await modal().getByLabelText('Mobile').fill('020 7946 0000');
+    await modal().getByRole('button', { name: 'Save', exact: true }).click();
+    await expect.element(modal()).not.toBeInTheDocument();
+    await expect.element(memberDetailScreen.fieldValue('+442079460000')).toBeVisible();
   });
 
   it('saves an address that leaves parts the country does not use empty', async () => {

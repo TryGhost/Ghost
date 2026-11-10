@@ -90,6 +90,7 @@
     "Could not sign in. Login link expired.": "Kunde inte logga in. Inloggningslänken har slutat gälla.",
     "Could not update email! Invalid link.": "Kunde inte uppdatera e-postadressen. Länken fungerande inte.",
     "Country": "",
+    "Country code": "",
     "Create a new contact": "Skapa en ny kontakt",
     "Current plan": "Nuvarande plan",
     "Delete account": "Radera konto",

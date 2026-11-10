@@ -31,6 +31,13 @@ async function aListFieldMembersMayEdit(
   });
 }
 
+/** Defines a phone field the members of this site may edit. */
+async function aPhoneFieldMembersMayEdit(page: Page, fieldName: string): Promise<void> {
+  const settingsPage = new SettingsPage(page);
+  await settingsPage.goto();
+  await settingsPage.customFieldsSection.createField(fieldName, 'Phone', true);
+}
+
 /** Opens Portal account settings as the member, in a browser context of their own. */
 async function accountSettingsAs(
   browser: Browser,
@@ -246,5 +253,61 @@ test.describe('Portal - member custom fields', () => {
     } finally {
       await context.close();
     }
+  });
+
+  test.describe('a phone field', () => {
+    test.use({ labs: { customFieldTypePhone: true } });
+
+    // As Stripe Checkout asks for one: the member writes the number as they would at home,
+    // beside the country it's from, and the site keeps it in one international form.
+    test('keeps a number written at home in its international form', async ({
+      page,
+      browser,
+      baseURL,
+    }) => {
+      const fieldName = `Mobile ${Date.now()}`;
+      const member = await createMemberFactory(page.request).create({
+        name: 'Ada Lovelace',
+        email: `ada-phone-${Date.now()}@ghost.org`,
+      });
+      await aPhoneFieldMembersMayEdit(page, fieldName);
+
+      const { context, memberPage, accountHome, profile, key } = await accountSettingsAs(
+        browser,
+        baseURL!,
+        member,
+        fieldName,
+      );
+      try {
+        // Found by its code, which three other countries share.
+        await profile.phoneCountry(key).click();
+        await profile.listSearch('Country code').fill('+44');
+        await profile.listOption('United Kingdom +44').click();
+        await expect(profile.phoneCountry(key)).toHaveText('🇬🇧 +44');
+
+        // One the country has no number like is refused, with the reason under the input.
+        await profile.fieldInput(key).fill('020 7946 000');
+        await profile.save();
+        await expect(
+          profile.portalFrame.getByText('Enter a valid phone number, like +44 20 7946 0000.'),
+        ).toBeVisible();
+
+        // Portal names the button Retry once a save has been refused.
+        await profile.fieldInput(key).fill('020 7946 0000');
+        await profile.portalFrame.getByRole('button', { name: 'Retry' }).click();
+        await expect(accountHome.signOutButton).toBeVisible();
+
+        const held = await memberPage.request.get('/members/api/member/');
+        expect((await held.json()).metafields.custom[key]).toBe('+442079460000');
+
+        // Shown after the country that gives its code, as it was typed.
+        await accountHome.portalFrame.locator('[data-test-button="edit-profile"]').click();
+        await expect(profile.title).toBeVisible();
+        await expect(profile.phoneCountry(key)).toHaveText('🇬🇧 +44');
+        await expect(profile.fieldInput(key)).toHaveValue('2079460000');
+      } finally {
+        await context.close();
+      }
+    });
   });
 });
