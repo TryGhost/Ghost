@@ -465,9 +465,9 @@ describe('database automations repository', function () {
         const labelId = ObjectId().toHexString();
         await trx('labels').insert({ id: labelId, name: labelId, slug: labelId, created_at: now });
         const members = [
-          { email: 'automation-load-test-eligible@example.com', status: 'free' },
-          { email: 'automation-load-test-paid@example.com', status: 'paid' },
-          { email: 'ordinary-member@example.com', status: 'free' },
+          { email: 'seeded-member@example.com', status: 'free' },
+          { email: 'paid-member@example.com', status: 'paid' },
+          { email: 'other-member@example.com.invalid', status: 'free' },
         ].map(({ email, status }) => ({
           ...createMember(ObjectId().toHexString()),
           email,

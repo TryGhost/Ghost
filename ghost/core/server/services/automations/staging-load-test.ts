@@ -42,7 +42,7 @@ export async function enrollLoadTestMembers(
     .select<{ id: string; email: string }[]>('members.id', 'members.email')
     .whereIn('relation.id', relationIds)
     .where('members.status', 'free')
-    .where('members.email', 'like', 'automation-load-test-%@example.com')
+    .where('members.email', 'like', '%@example.com')
     .whereNotExists(
       trx('automation_runs')
         .select('id')
