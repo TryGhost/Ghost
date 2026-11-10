@@ -125,7 +125,7 @@ const PARTS: { [Part in CollectedPart]: PartUnderTest<Part> } = {
 const FIELDS = [
   { name: 'Delivery address', type: 'address' },
   { name: 'Recipient name', type: 'short_text' },
-  { name: 'Contact phone', type: 'short_text' },
+  { name: 'Contact phone', type: 'phone' },
 ];
 
 const OFF = { collect: false };
@@ -217,6 +217,8 @@ describe('Stripe Checkout collected parts', function () {
   beforeEach(async function () {
     mockManager.mockStripe();
     mockManager.mockLabsEnabled('stripeCheckoutCollection');
+    // The phone number saves only into a phone field.
+    mockManager.mockLabsEnabled('customFieldTypePhone');
     // Automatic tax asks for a tax ID on every checkout by itself.
     mockManager.mockLabsDisabled('stripeAutomaticTax');
     for (const field of FIELDS) {
@@ -509,20 +511,25 @@ describe('Stripe Checkout collected parts', function () {
 
   it('lists the same parts whichever custom fields a save moves them to', async function () {
     await addPaidTier(SECOND_TIER_ID);
-    await adminAgent
-      .post('members/metafields/custom/')
-      .body({ members_metafields: [{ name: 'Mobile phone', type: 'short_text' }] })
-      .expectStatus(201);
+    for (const field of [
+      { name: 'Full name', type: 'short_text' },
+      { name: 'Mobile phone', type: 'phone' },
+    ]) {
+      await adminAgent
+        .post('members/metafields/custom/')
+        .body({ members_metafields: [field] })
+        .expectStatus(201);
+    }
     await setCheckout({
       shipping: PARTS.shipping.on({ tier_ids: [SECOND_TIER_ID] }),
       phone: PARTS.phone.on(),
     });
 
-    // The phone's field becomes the recipient's name, and the phone moves to another field.
+    // The recipient's name and the phone each move to another field.
     await setCheckout({
       shipping: PARTS.shipping.on(
         { tier_ids: [SECOND_TIER_ID] },
-        { name: { custom_field_key: 'contact_phone' } },
+        { name: { custom_field_key: 'full_name' } },
       ),
       phone: PARTS.phone.on({}, { custom_field_key: 'mobile_phone' }),
     });
@@ -662,6 +669,11 @@ describe('Stripe Checkout collected parts', function () {
   });
 
   it('clears the site cache when what tiers list changes', async function () {
+    // Another phone field the phone can move to, kept from members as a new field is.
+    await adminAgent
+      .post('members/metafields/custom/')
+      .body({ members_metafields: [{ name: 'Mobile phone', type: 'phone' }] })
+      .expectStatus(201);
     // Tiers list to anyone what their members must give, so a cached list would go stale.
     const save = (config: Record<string, unknown>) =>
       adminAgent
@@ -684,7 +696,7 @@ describe('Stripe Checkout collected parts', function () {
     // Tiers name no field members can't read, so moving the answers between those leaves them.
     const movePhone = (key: string) =>
       save({ phone: PARTS.phone.on({ tier_ids: [paidTierId] }, { custom_field_key: key }) });
-    for (const key of ['recipient_name', 'contact_phone']) {
+    for (const key of ['mobile_phone', 'contact_phone']) {
       const moved = await movePhone(key);
       assert.equal(moved.headers['x-cache-invalidate'], undefined);
     }
@@ -702,7 +714,7 @@ describe('Stripe Checkout collected parts', function () {
     assert.equal(writable.headers['x-cache-invalidate'], undefined);
 
     // Moving the phone to a field members can't read, and back, changes which field is named.
-    assert.equal((await movePhone('recipient_name')).headers['x-cache-invalidate'], '/*');
+    assert.equal((await movePhone('mobile_phone')).headers['x-cache-invalidate'], '/*');
     assert.equal((await movePhone('contact_phone')).headers['x-cache-invalidate'], '/*');
 
     // Deleting a field no port writes into changes nothing tiers list.
@@ -715,7 +727,7 @@ describe('Stripe Checkout collected parts', function () {
     // Tiers name a field by its key, so a rename leaves them as they were.
     const renamed = await adminAgent
       .put('members/metafields/custom/contact_phone/')
-      .body({ members_metafields: [{ name: 'Mobile phone' }] })
+      .body({ members_metafields: [{ name: 'Main phone' }] })
       .expectStatus(200);
     assert.equal(renamed.headers['x-cache-invalidate'], undefined);
 

@@ -1,4 +1,4 @@
-import { parsePhoneNumberFromString } from 'libphonenumber-js';
+import { isSupportedCountry, parsePhoneNumberFromString } from 'libphonenumber-js';
 import { z } from 'zod';
 import { KeySchema, NamespaceSchema } from './identity.js';
 import {
@@ -472,6 +472,21 @@ function phoneNumber(text: string): { number: string } | { refused: PhoneRefusal
     return { refused: text.includes('+') ? 'invalid' : 'countryCode' };
   }
   return read.ext ? { refused: 'extension' } : { number: read.number };
+}
+
+/**
+ * A phone number in E.164, read as it is dialled in `country` unless it was written with a country
+ * code of its own, or undefined when it isn't a number a phone field could keep. For a number that
+ * comes with a country rather than a code, such as one Apple Pay or Google Pay passes on beside the
+ * country of the buyer's card. Without a country a phone can belong to, only a number written with
+ * its code is read.
+ */
+export function phoneNumberIn(text: string, country: string | undefined): string | undefined {
+  const read = parsePhoneNumberFromString(text, {
+    defaultCountry: country !== undefined && isSupportedCountry(country) ? country : undefined,
+    extract: false,
+  });
+  return read?.isValid() && !read.ext ? read.number : undefined;
 }
 
 /** What a refused phone number is told, for each reason `phoneNumber` gives. */

@@ -60,7 +60,7 @@ const ON = {
     address: Destination,
     name: Destination,
   }),
-  /** The phone number, saved into a short text custom field. */
+  /** The phone number, saved into a phone custom field. */
   phone: z.strictObject({
     collect: z.literal(true),
     tier_ids: TierIds.optional(),

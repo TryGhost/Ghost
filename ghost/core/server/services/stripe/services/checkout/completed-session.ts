@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { PORT_FIELD, CHECKOUT_PORT, CHECKOUT_PORTS, type CheckoutPort } from '@tryghost/checkout';
-import { FIELD_STRUCTURES, keysOf, type ValueOf } from '@tryghost/metafield-types';
+import { FIELD_STRUCTURES, keysOf, phoneNumberIn, type ValueOf } from '@tryghost/metafield-types';
 
 const Collected = z
   .string()
@@ -34,7 +34,13 @@ const CompletedSession = z
     shipping: ShippingDetails,
     shipping_details: ShippingDetails,
     collected_information: z.object({ shipping_details: ShippingDetails }).nullish().catch(null),
-    customer_details: z.object({ phone: Collected }).nullish().catch(null),
+    customer_details: z
+      .object({
+        phone: Collected,
+        address: z.object({ country: Collected }).nullish().catch(null),
+      })
+      .nullish()
+      .catch(null),
   })
   .loose();
 type CompletedSession = z.output<typeof CompletedSession>;
@@ -71,6 +77,24 @@ function shippingAsked(session: CompletedSession) {
     : undefined;
 }
 
+/** The country the buyer is in: their card's, or else where the checkout ships. */
+function buyerCountry(session: CompletedSession): string | undefined {
+  return session.customer_details?.address?.country ?? shippingAsked(session)?.address?.country;
+}
+
+/**
+ * The phone number, if the checkout asked for one. Stripe gives a number typed into Checkout in
+ * E.164, but Apple Pay and Google Pay pass one on as the wallet keeps it, which can be without its
+ * country code, so a number is read in the buyer's country, as Stripe's own phone input starts
+ * from it. One that doesn't read as a number there goes as given, for the phone field to refuse.
+ */
+function phoneAsked(session: CompletedSession): string | undefined {
+  const phone = session.phone_number_collection?.enabled
+    ? session.customer_details?.phone
+    : undefined;
+  return phone && (phoneNumberIn(phone, buyerCountry(session)) ?? phone);
+}
+
 /**
  * What a completed checkout gave back for each port, as a whole value for the field the port is
  * collected into, or nothing when it didn't ask. Stripe returns the recipient's name beside
@@ -83,8 +107,7 @@ const ANSWERS: {
 } = {
   [CHECKOUT_PORT.shippingAddress]: (session) => addressValue(shippingAsked(session)?.address),
   [CHECKOUT_PORT.shippingName]: (session) => shippingAsked(session)?.name,
-  [CHECKOUT_PORT.phone]: (session) =>
-    session.phone_number_collection?.enabled ? session.customer_details?.phone : undefined,
+  [CHECKOUT_PORT.phone]: phoneAsked,
 };
 
 export interface CollectedByPort {

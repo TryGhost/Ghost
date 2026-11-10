@@ -4517,10 +4517,11 @@ describe('Members API', function () {
     beforeEach(async function () {
       mockManager.mockMail();
       mockManager.mockLabsEnabled('stripeCheckoutCollection');
+      mockManager.mockLabsEnabled('customFieldTypePhone');
       for (const field of [
         { name: 'Delivery address', type: 'address' },
         { name: 'Recipient name', type: 'short_text' },
-        { name: 'Contact phone', type: 'short_text' },
+        { name: 'Contact phone', type: 'phone' },
       ]) {
         await adminAgent
           .post('/members/metafields/custom/')
@@ -4564,6 +4565,8 @@ describe('Members API', function () {
         metadata = {},
         created = Math.floor(Date.now() / 1000),
         name = 'Jamie Doe',
+        phone = '+442079460000',
+        billingCountry = 'GB',
       } = {},
     ) {
       set(customer, {
@@ -4584,7 +4587,7 @@ describe('Members API', function () {
             shipping_address_collection: asked.shipping ? { allowed_countries: ['GB'] } : null,
             shipping: { name, address },
             phone_number_collection: { enabled: Boolean(asked.phone) },
-            customer_details: { email, phone: '+442079460000' },
+            customer_details: { email, phone, address: { country: billingCountry } },
           },
         },
       });
@@ -4611,6 +4614,49 @@ describe('Members API', function () {
       assert.equal(before.body.members.length, 0);
 
       assert.deepEqual(await completeCheckout('shipping-new@example.com'), {
+        delivery_address: {
+          line1: '1 High Street',
+          city: 'London',
+          postal_code: 'N1 1AA',
+          country: 'GB',
+        },
+        recipient_name: 'Jamie Doe',
+      });
+    });
+
+    it("keeps a wallet's phone number in international form", async function () {
+      // Apple Pay and Google Pay pass a number on as the wallet kept it, rather than in E.164.
+      const saved = await completeCheckout('wallet-phone@example.com', {
+        asked: { shipping: true, phone: true },
+        phone: '+44 (0)20 7946 0000',
+      });
+
+      assert.equal(saved.contact_phone, '+442079460000');
+    });
+
+    // Apple Pay and Google Pay can pass a number on as the wallet keeps it, without its country
+    // code. The buyer's billing country says where it is dialled, as the country Stripe's own
+    // phone input starts from says it for a number typed into Checkout.
+    it("reads a wallet's number without its country code in the buyer's billing country", async function () {
+      const saved = await completeCheckout('national-phone@example.com', {
+        asked: { shipping: true, phone: true },
+        phone: '020 7946 0000',
+        billingCountry: 'GB',
+      });
+
+      assert.equal(saved.contact_phone, '+442079460000');
+    });
+
+    it("still saves the address when a wallet's number isn't one in the billing country", async function () {
+      // The phone field refuses it, and the payment has already been taken, so nothing else the
+      // checkout collected is lost.
+      const saved = await completeCheckout('unreadable-phone@example.com', {
+        asked: { shipping: true, phone: true },
+        phone: '020 7946 0000',
+        billingCountry: 'US',
+      });
+
+      assert.deepEqual(saved, {
         delivery_address: {
           line1: '1 High Street',
           city: 'London',
