@@ -436,6 +436,22 @@ describe('ContentCSVImporter', function () {
     assert.deepEqual(h.jobs[0].mapping, { Headline: 'title' });
   });
 
+  it('validates the uploaded file rather than a staged copy', async function () {
+    const h = harness();
+    const readPaths: string[] = [];
+    const importer = new ContentCSVImporter({
+      ...h.deps,
+      readRows: async (filePath) => {
+        readPaths.push(filePath);
+        return [row('First')];
+      },
+    });
+
+    await importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' });
+
+    assert.deepEqual(readPaths, ['/tmp/posts.csv']);
+  });
+
   it('reads a prepared archive source and cleans it after the job', async function () {
     const h = harness();
     const cleanup = sinon.stub().resolves();
@@ -734,24 +750,25 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.jobs.length, 0, 'no job was scheduled');
     sinon.assert.calledOnce(cleanup);
     assert.equal(h.reported.at(-1), cleanupError);
-    assert.deepEqual(h.removedFiles, [{ path: '/tmp/staged-1', name: 'posts.csv' }]);
+    assert.deepEqual(h.stagedFiles, []);
   });
 
-  it('reports an upload that cannot be staged as an unreadable file', async function () {
+  it('rejects with the storage error when a valid upload cannot be staged', async function () {
     const h = harness();
+    const failure = new Error('storage unavailable');
     const importer = new ContentCSVImporter({
       ...h.deps,
       fileStager: {
         ...h.deps.fileStager,
         stage: async () => {
-          throw new Error('copy failed');
+          throw failure;
         },
       },
     });
 
     await assert.rejects(
       importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' }),
-      /The file could not be parsed as a CSV file/,
+      (thrown) => thrown === failure,
     );
 
     assert.equal(h.jobs.length, 0);
@@ -813,7 +830,7 @@ describe('ContentCSVImporter', function () {
     assert.equal(h.store.get('run_test'), undefined, 'no run was registered');
     sinon.assert.notCalled(storeAssets);
     sinon.assert.calledOnce(cleanup);
-    assert.deepEqual(h.removedFiles, [{ path: '/tmp/staged-1', name: 'posts.zip' }]);
+    assert.deepEqual(h.stagedFiles, []);
   });
 
   it('rechecks the temporary cap inside the job before writing', async function () {
