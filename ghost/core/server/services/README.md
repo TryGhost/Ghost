@@ -125,10 +125,11 @@ lifecycle work.
 
 ### Dependency boundaries
 
-For migrated services, the root `index.ts` wires runtime dependencies and passes
-them to the implementation. Other files in that service may import:
+The root `index.ts` wires runtime dependencies and passes them to the
+implementation. Dependency rules apply to every service, regardless of its
+`migrated` marker or presence in the inventory. Implementation files may import:
 
-- Files within the same service, except its root `index.ts`.
+- Files within the same service, except its root `index.ts` or `index.js`.
 - Types, using explicit type-only imports.
 - The libraries and individual shared files in the
   [dependency-cruiser config](../../../../.dependency-cruiser.cjs).
@@ -143,7 +144,7 @@ root is fine, including validating configuration with Zod and passing computed
 values such as `getUnixTime()`.
 
 `pnpm lint:oxlint` enforces direct constructor wiring with
-`ghost/no-injected-service-libraries`. In migrated root `index.ts` files, it
+`ghost/no-injected-service-libraries`. In root `index.ts` files, it
 rejects allowlisted imports and `const require()` bindings passed to constructors
 imported from within that service, including values in literal options objects
 and arrays. It reads the same allowlist and service scope as the boundary rule.
@@ -197,10 +198,32 @@ adjacent `build:tsc` output out of the report; ordinary JavaScript implementatio
 remain checked. Package exports resolve through their `source` condition when
 available, so workspace contracts are checked without relying on build output.
 
-`pnpm lint:boundaries`, also run by `pnpm check` and CI, enforces these rules as
-errors for every entry marked `migrated: true`. New implementation files inherit
-the same rules. Marking a service migrated opts it into enforcement; review
-changes to that marker as part of the migration.
+`pnpm lint:boundaries`, also run by `pnpm check` and CI, checks all service
+implementations in the same dependency-cruiser scan as Core and app boundaries.
+Top-level `index.ts` and legacy `index.js` files are wiring roots and exempt;
+nested indexes and standalone service files are checked. This preserves the
+legacy audit's wiring exemption without making migration status an enforcement
+switch.
+
+Existing violations are recorded in
+[the known-violations file](../../../../.dependency-cruiser-known-violations.json).
+Each entry names one rule, importing file and dependency. External packages use
+the exact import specifier, including subpaths, so pnpm store locations do not
+change the baseline. Local and workspace dependencies use resolved source paths.
+Moving either file or adding a new import cannot inherit another entry's exception.
+
+CI rejects new violations, stale entries, duplicate entries and entries for
+migrated services. When fixing a violation, remove its entry in the same change;
+when marking a service migrated, remove all its entries. Do not regenerate the
+file to accept new violations. The file should only shrink. Any exceptional
+addition or move needs explicit review; CODEOWNERS covers it and the rule config.
+
+The shared [boundary checker](../../../../tools/scripts/lib/dependency-boundaries.ts)
+compares the current graph with this file. Native dependency-cruiser baselines
+match resolved paths and silently retain stale entries, so they cannot enforce
+this contract on their own. `gx services report` and `gx services audit` use the
+same scan and file, retaining all current findings so migration reports still
+show the remaining work.
 
 The allowlist names individual packages or files, with a reason for each.
 Review additions individually; do not allow whole shared directories or all

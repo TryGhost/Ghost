@@ -16,6 +16,10 @@
 # Kernel
 /ghost/core/kernel/ @ErisDS
 
+# Service dependency policy and reviewed legacy violations
+/.dependency-cruiser.cjs @ErisDS
+/.dependency-cruiser-known-violations.json @ErisDS
+
 # Inbox Links
 ghost/core/server/lib/get-inbox-links.ts @EvanHahn
 ghost/test/unit/server/lib/get-inbox-links.test.ts @EvanHahn

@@ -537,10 +537,19 @@ test('allows local library use, computed values, injected application dependenci
   assert.deepEqual(result.diagnostics, []);
 });
 
-test('limits injection enforcement to migrated TypeScript wiring roots', () => {
+test('checks library injection in all TypeScript wiring roots regardless of migration status', () => {
   for (const filename of [
     'ghost/core/server/services/legacy/index.ts',
     'ghost/core/server/services/unlisted/index.ts',
+  ]) {
+    const result = lint(
+      "import Service from './service'; import tpl from '@tryghost/tpl'; new Service({tpl});",
+      filename,
+    );
+    assert.equal(result.status, 1, filename);
+    assert.equal(result.diagnostics.length, 1);
+  }
+  for (const filename of [
     'ghost/core/server/services/alpha/helper.ts',
     'ghost/core/server/services/alpha/nested/index.ts',
     'ghost/core/server/services/alpha/index.js',

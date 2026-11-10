@@ -223,8 +223,11 @@ importing implementation files per target, largest first; it excludes unresolved
 and own-root findings. The native `audit` counts rule violations, so one import
 can appear under more than one rule.
 
-The audit checks all entries and returns success when it finds violations.
-`pnpm lint:boundaries` enforces the same rules for migrated services in CI.
+All service commands use the same full dependency-cruiser scan and
+known-violations file as `pnpm lint:boundaries`. Reports retain known and new
+findings and return success when violations are found; boundary lint fails on
+new violations or stale entries. Invalid known-violations files fail both.
+The native `audit` output includes Core and app boundaries as well as services.
 Legacy root `index.js` files are treated as wiring candidates. Computed paths
 such as `require(name)` cannot be resolved by the static audit. No violations
 does not mean ready to migrate: recorded blockers, runtime behavior and test
