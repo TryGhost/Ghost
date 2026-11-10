@@ -246,6 +246,35 @@ describe('User Model', function run() {
       );
     });
 
+    it('can NOT add a user with the Owner role', async function () {
+      const ownerRole = await RoleModel.findOne({ name: 'Owner' });
+
+      for (const role of ['Owner', ownerRole.id, { id: ownerRole.id }, { name: 'Owner' }]) {
+        const userData = _.clone(testUtils.DataGenerator.forModel.users[4]);
+        userData.roles = [role];
+
+        await assert.rejects(UserModel.add(userData, context), {
+          errorType: 'ValidationError',
+          message: 'This method does not support assigning the owner role',
+        });
+        assert.equal(await UserModel.findOne({ email: userData.email, status: 'all' }), null);
+      }
+
+      const owners = await ownerRole.users().fetch();
+      assert.equal(owners.length, 1);
+    });
+
+    it('can add a user with a role name that looks like an id', async function () {
+      const userData = _.clone(testUtils.DataGenerator.forModel.users[4]);
+      userData.roles = ['Super Editor'];
+
+      const createdUser = await UserModel.add(
+        userData,
+        _.extend({}, context, { withRelated: ['roles'] }),
+      );
+      assert.equal(createdUser.related('roles').toJSON()[0].name, 'Super Editor');
+    });
+
     it('can edit active user', async function () {
       const firstUser = testUtils.DataGenerator.Content.users[0].id;
       const results = await UserModel.findOne({ id: firstUser });
