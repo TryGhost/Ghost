@@ -12,7 +12,6 @@ import SendGiftRemindersJob from '../gifts/jobs/send-gift-reminders-job';
 import ExternalMediaInliner from '../media-inliner/external-media-inliner';
 import ExternalMediaInlinerJob from '../media-inliner/external-media-inliner-job';
 import ContentCSVImportJob from '../content-import/jobs/content-csv-import-job';
-import * as contentImport from '../content-import';
 import ContentImportJob from '../../data/importer/jobs/content-import-job';
 import MembersImportJob from '../members/jobs/members-import-job';
 import UpdateCheckJob from '../update-check/jobs/update-check-job';
@@ -64,6 +63,9 @@ interface RegisterJobHandlersDependencies {
   tinybirdSync: {
     sync(): Promise<void>;
   };
+  contentImport: {
+    handleJob(job: ContentCSVImportJob): Promise<void>;
+  };
 }
 
 export default function registerJobHandlers({
@@ -80,6 +82,7 @@ export default function registerJobHandlers({
   emailService,
   siteImporter,
   tinybirdSync,
+  contentImport,
 }: RegisterJobHandlersDependencies): void {
   // Each email analytics pipeline fetches on its own five-minute tick and the
   // wrapper skips a tick while its previous fetch is still running. The second

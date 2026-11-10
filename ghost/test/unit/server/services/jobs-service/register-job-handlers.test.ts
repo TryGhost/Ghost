@@ -38,6 +38,7 @@ describe('register-job-handlers', function () {
   let siteImporter: { executeImport: sinon.SinonStub };
   let emailService: { handleSendEmailJob: sinon.SinonStub };
   let tinybirdSync: { sync: sinon.SinonStub };
+  let contentImport: { handleJob: sinon.SinonStub };
 
   // Handlers are looked up by their job type rather than registration order,
   // so adding a handler does not silently shift which one a test exercises.
@@ -75,6 +76,7 @@ describe('register-job-handlers', function () {
     siteImporter = { executeImport: sinon.stub().resolves() };
     emailService = { handleSendEmailJob: sinon.stub().resolves() };
     tinybirdSync = { sync: sinon.stub().resolves() };
+    contentImport = { handleJob: sinon.stub().resolves() };
 
     registerJobHandlers({
       gifts: { startFetch: sinon.stub().resolves() },
@@ -90,6 +92,7 @@ describe('register-job-handlers', function () {
       emailService,
       siteImporter,
       tinybirdSync,
+      contentImport,
     });
   });
 
@@ -212,7 +215,7 @@ describe('register-job-handlers', function () {
     );
   });
 
-  it('routes content CSV import jobs to the content import service', async function () {
+  it('runs content-csv-import with the injected content import service', async function () {
     const job = new ContentCSVImportJob({
       importId: 'run_test',
       file: { path: '/tmp/staged-import', name: 'posts.zip' },
@@ -220,12 +223,17 @@ describe('register-job-handlers', function () {
       importTagNames: ['#Import 2026-01-01 10:30', '#Import Run run_test'],
       emailRecipient: 'owner@example.com',
     });
-    const contentImportHandler = handlerFor('content-csv-import');
 
-    await assert.rejects(
-      () => contentImportHandler(job),
-      /Content import service used before init/,
-    );
+    await handlerFor('content-csv-import')(job);
+
+    sinon.assert.calledOnceWithExactly(contentImport.handleJob, job);
+  });
+
+  it('propagates content-csv-import failures', async function () {
+    const error = new Error('Content import failed');
+    contentImport.handleJob.rejects(error);
+
+    await assert.rejects(handlerFor('content-csv-import')({}), (thrown) => thrown === error);
   });
 
   it('runs members-import with the injected members service', async function () {

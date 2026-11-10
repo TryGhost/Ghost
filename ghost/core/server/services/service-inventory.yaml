@@ -1521,11 +1521,11 @@ services:
           metadata/mapping and the current user's email, and returns HTTP 202 with import_id
           and total after staging, preflight and dispatch. Authentication, feature flag,
           upload validation and content-import permission belong to HTTP/API layers. Jobs
-          registration awaits root handleJob for content-csv-import; the separate
+          registration, given the root by boot, awaits handleJob for content-csv-import; the separate
           site-content-import job is outside this root. Production shutdown does not call
           its test-facing allSettled. Real booted HTTP tests assert role/flag gates, report
           mail through a mocked transport, persisted posts/relations and intercepted remote
-          media. The handler unit only reaches the real root's pre-init error. Webhook tests
+          media. The handler unit uses a stub root to assert forwarding and rejection. Webhook tests
           include a normal-publish control, then assert two imported rows including an
           update, two completion emails, no Email rows and bounded webhook silence.
         sources:
@@ -1547,7 +1547,7 @@ services:
           dispatch and processing require them later. The request needs owner lookup when
           no caller email exists, readable local staging and settings for batch tags; jobs
           additionally need converters, models/storage and optional URL lookup. Real HTTP
-          tests establish selected normal boot-to-job outcomes, while root/handler units
+          tests establish selected normal boot-to-job outcomes, while root units
           establish early errors. Root units additionally assert late dependency acquisition
           and failed-construction retry; held boot readiness and same-process boot contracts
           remain outside their coverage.
@@ -1558,7 +1558,6 @@ services:
           - core/server/services/jobs-service/register-job-handlers.ts
         tests:
           - test/unit/server/services/content-import/index.test.ts
-          - test/unit/server/services/jobs-service/register-job-handlers.test.ts
           - test/e2e-api/admin/posts-importer.test.js
       lifetime:
         summary: >-

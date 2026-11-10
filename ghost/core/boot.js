@@ -526,6 +526,7 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
     emailService: emailService.service,
     siteImporter,
     tinybirdSync,
+    contentImport,
   });
   await jobsService.start();
   debug('End: Register job handlers');
