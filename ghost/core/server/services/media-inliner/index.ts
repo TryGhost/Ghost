@@ -1,5 +1,6 @@
 import { defineService } from '../../../kernel/define-service';
 import type ExternalMediaInliner from './external-media-inliner';
+import type ExternalMediaInlinerJob from './external-media-inliner-job';
 
 // Runs in the required services phase, after the models and storage adapters
 // exist. The upload policy and the active storage adapter are read on every
@@ -11,6 +12,7 @@ export default defineService('Media inliner', (): ExternalMediaInliner => {
   const models = require('../../models');
   const adapterManager = require('../adapter-manager').default;
   const config = require('../../../shared/config');
+  const jobsService = require('../jobs-service');
   const {
     isAllowedImageContent,
     isAllowedImageExtension,
@@ -38,6 +40,7 @@ export default defineService('Media inliner', (): ExternalMediaInliner => {
     // Pulls in libheif-js, a WASM codec costing ~50ms to load, so the inliner
     // only calls it when a HEIC file needs converting.
     loadHeicConvert: () => require('heic-convert'),
+    dispatchJob: (job: ExternalMediaInlinerJob) => jobsService.getInstance().dispatch(job),
     getMediaStorage: async (extension: string, fileBuffer: Buffer) => {
       const imageExtensions = config.get('uploads').images.extensions;
 

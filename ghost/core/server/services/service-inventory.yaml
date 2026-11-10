@@ -5777,7 +5777,7 @@ services:
       consumers:
         summary: >-
           Source inspection establishes these callers: boot injects the instance into
-          retained mentions and email consumers and a fresh site importer. Members, content CSV imports, the media API and email analytics
+          retained mentions and email consumers and a fresh site importer. Members, content CSV imports, the media inliner and email analytics
           resolve it when dispatching or scheduling. Gift/member cleanup, signing keys,
           update checks and Tinybird schedule through boot-supplied references. The default
           backend runs jobs in-process; registered handlers call initialized domain services.
@@ -5794,7 +5794,7 @@ services:
           - core/server/data/importer/index.js
           - core/server/services/members/service.js
           - core/server/services/content-import/index.ts
-          - core/server/api/endpoints/db.js
+          - core/server/services/media-inliner/index.ts
           - core/server/services/email-analytics/jobs/index.js
           - core/server/services/email-analytics/jobs/email-analytics-job-scheduler.ts
           - core/server/services/gifts/jobs/index.js
@@ -6961,8 +6961,8 @@ services:
         complexity: straightforward
         reason: >-
           The root composes models, the three storage adapters, live upload configuration,
-          logging, the external request client, URL utilities and lazy file-type and HEIC
-          loaders in index.ts; the implementation receives them through its constructor and
+          logging, the external request client, URL utilities, a job dispatcher and lazy
+          file-type and HEIC loaders in index.ts; the implementation receives them through its constructor and
           keeps first-use loading and the fallback on a failed file-type load. mime-types, path,
           node:vm and the shared image-content and svg-sanitizer helpers are stateless and stay
           imported directly under exact allowances; no disallowed dependency remains.
@@ -6985,8 +6985,10 @@ services:
           The TypeScript root default-exports a defineService initializer with init and a
           service getter that throws IncorrectUsageError until the inliner is published; there
           is no shutdown/reset and no extras. The deep module exports ExternalMediaInliner,
-          including receiver-dependent importUrl and inline plus processing helpers and static
-          findMatches. importUrl resolves stored/failed result objects; inline resolves undefined.
+          including receiver-dependent startInlining, importUrl and inline plus processing
+          helpers and static findMatches. importUrl resolves stored/failed result objects;
+          startInlining and inline resolve undefined. Seam units pin startInlining's queued log,
+          job and default domains.
           Unit tests pin injected importUrl stages and helpers. Root units pin the getter throwing
           before init, init resolving undefined and the getter then returning the same ready
           inliner synchronously.
@@ -6996,13 +6998,15 @@ services:
           - core/server/services/media-inliner/types.ts
         tests:
           - test/unit/server/services/media-inliner/test/external-media-inliner.test.js
+          - test/unit/server/services/media-inliner/external-media-inliner-seams.test.ts
           - test/unit/server/services/media-inliner/root.test.ts
       construction:
         summary: >-
           Importing the root creates no inliner. The first init loads the class, models and
           collaborators, obtains the media/image/file adapters and creates one inliner with
           retained models, logging, the external request client, URL utilities, lazy codec
-          loaders and a storage callback; later init calls return the same instance. The factory
+          loaders, a storage callback and a job dispatcher that looks up the jobs service on each
+          call; later init calls return the same instance. The factory
           is synchronous, so the kernel publishes once its promise settles. Construction only
           stores references, but requiring the request client creates shared HTTP/HTTPS agents.
           Root tests stub adapter lookup and exercise the resulting selector, and pin that import
@@ -7019,8 +7023,9 @@ services:
       consumers:
         summary: >-
           Boot passes the ready service to a retained external-media job handler. Admin
-          db.inlineMedia dispatches explicit/default domains and returns after enqueue, not
-          completion. Content import instead reads the service getter when creating each run's
+          db.inlineMedia reads the service getter per request and calls startInlining, which
+          dispatches explicit/default domains and returns after enqueue, not completion.
+          Content import reads the service getter when creating each run's
           PostMediaInliner, which retains that instance and caches URL promises across its rows.
           Handler/endpoint units use stubs; a real job integration proves a stored feature-image
           URL and completion log. CSV HTTP tests cover real referenced-media composition,
@@ -7033,12 +7038,14 @@ services:
           - core/server/services/jobs-service/register-job-handlers.ts
           - core/server/services/jobs-service/jobs-service.ts
           - core/server/api/endpoints/db.js
+          - core/server/services/media-inliner/external-media-inliner.js
           - core/server/services/content-import/index.ts
           - core/server/services/content-import/import/importer.ts
           - core/server/services/content-import/import/media.ts
         tests:
           - test/unit/server/services/jobs-service/register-job-handlers.test.ts
           - test/unit/api/endpoints/db.test.js
+          - test/unit/server/services/media-inliner/external-media-inliner-seams.test.ts
           - test/integration/services/media-inliner/external-media-inliner-job.test.ts
           - test/e2e-api/admin/posts-importer.test.js
           - test/unit/server/services/content-import/import/media.test.ts
