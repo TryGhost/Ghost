@@ -1,6 +1,8 @@
 import {
   comparableTriggerRules,
+  conditionFromRules,
   getTriggerTierIds,
+  splitTriggerRules,
   subscriptionChangedSelectionFromRules,
 } from './utils/trigger-rules';
 import { HostLimitError } from '@tryghost/admin-x-framework/errors';
@@ -8,7 +10,7 @@ import { useBrowseConfig, upgradeRoute } from '@tryghost/admin-x-framework/api/c
 import { LimitModalContent } from '@/settings/api';
 import NewAutomation from './new-automation';
 import AutomationStatusDialog from './components/automation-status-dialog';
-import { TRIGGER_CANVAS_ID } from './components/canvas/nodes';
+import { CONDITION_CANVAS_ID, TRIGGER_CANVAS_ID } from './components/canvas/nodes';
 import AutomationCanvas from './components/canvas/automation-canvas';
 import AutomationHeader, { type AutomationValidationAction } from './components/automation-header';
 import { useLimiter } from '@tryghost/admin-x-framework/hooks';
@@ -39,7 +41,7 @@ import { toast } from 'sonner';
 import { useLocation, useMatches, useNavigate, useParams } from '@tryghost/admin-x-framework';
 import { navigateTo } from '@/utils/navigation';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
-import type { AutomationEditState } from './types';
+import type { AutomationEditState, PendingCondition } from './types';
 import { hasMissingTierSelection } from './utils/tier-selection';
 import { isAutomationStatusActive } from './utils/is-automation-status-active';
 import { ScreenEntranceProvider } from '@/layout/screen-entrance-provider';
@@ -62,15 +64,21 @@ const editableSlice = (automation: AutomationDetail) => ({
 const getTriggerErrors = (
   automation: AutomationDetail,
   triggerType: AutomationTriggerRule['trigger_type'] | undefined,
+  pendingCondition: PendingCondition | null,
 ): Record<string, string> => {
-  if (triggerType === 'paid_subscription_changed') {
-    return hasMissingTierSelection(subscriptionChangedSelectionFromRules(automation.trigger_rules))
-      ? { [TRIGGER_CANVAS_ID]: 'Select at least one tier.' }
-      : {};
+  const errors: Record<string, string> = {};
+  if (pendingCondition && !conditionFromRules(automation.trigger_rules)) {
+    errors[CONDITION_CANVAS_ID] =
+      'Choose who can enter and at least one label, or delete this condition.';
   }
-  return !automation.trigger_rules.length
-    ? { [TRIGGER_CANVAS_ID]: 'Select at least one paid tier.' }
-    : {};
+  if (triggerType === 'paid_subscription_changed') {
+    if (hasMissingTierSelection(subscriptionChangedSelectionFromRules(automation.trigger_rules))) {
+      errors[TRIGGER_CANVAS_ID] = 'Select at least one tier.';
+    }
+  } else if (!splitTriggerRules(automation.trigger_rules).eventRules.length) {
+    errors[TRIGGER_CANVAS_ID] = 'Select at least one paid tier.';
+  }
+  return errors;
 };
 
 const isFailedEditState = (editState: AutomationEditState): boolean => {
@@ -124,6 +132,7 @@ const AutomationEditorContent: React.FC<{
   const [selectedRunId, setSelectedRunId] = React.useState<string | null>(null);
   // Invalid text stays in the input, outside the API-ready draft, but must block saving it.
   const [invalidWaitIds, setInvalidWaitIds] = React.useState<Set<string>>(new Set());
+  const [pendingCondition, setPendingCondition] = React.useState<PendingCondition | null>(null);
   const onWaitValidityChange = React.useCallback((stepId: string, valid: boolean) => {
     setValidationFeedback(null);
     setInvalidWaitIds((current) => {
@@ -171,6 +180,7 @@ const AutomationEditorContent: React.FC<{
   const hasUnsavedChanges =
     isNew ||
     invalidWaitIds.size > 0 ||
+    (!!draft && pendingCondition !== null && !conditionFromRules(draft.trigger_rules)) ||
     (!!draft && !!savedAutomation && !dequal(editableSlice(draft), editableSlice(savedAutomation)));
 
   // The canvas rebuilds every card whenever this or `savedTriggerTierIds` changes, so both stay
@@ -193,7 +203,7 @@ const AutomationEditorContent: React.FC<{
 
         const nextErrors = {
           ...getActionErrors(next),
-          ...getTriggerErrors(next, triggerType),
+          ...getTriggerErrors(next, triggerType, pendingCondition),
         };
         return Object.fromEntries(
           Object.entries(oldErrors).filter(([actionId]) => nextErrors[actionId]),
@@ -201,7 +211,7 @@ const AutomationEditorContent: React.FC<{
       });
       setEditState((prev) => (isFailedEditState(prev) ? { phase: 'idle' } : prev));
     },
-    [triggerType],
+    [triggerType, pendingCondition],
   );
   const savedTriggerTierIds = React.useMemo(
     () => (savedAutomation ? getTriggerTierIds(savedAutomation.trigger_rules) : []),
@@ -219,7 +229,7 @@ const AutomationEditorContent: React.FC<{
     }
     const nextActionErrors = {
       ...(action === 'publish' ? getActionErrors(automationToValidate) : {}),
-      ...getTriggerErrors(automationToValidate, triggerType),
+      ...getTriggerErrors(automationToValidate, triggerType, pendingCondition),
     };
     if (Object.keys(nextActionErrors).length > 0 || invalidWaitIds.size > 0) {
       setActionErrors(nextActionErrors);
@@ -547,10 +557,12 @@ const AutomationEditorContent: React.FC<{
         initialTriggerTop={creation?.triggerTop}
         isError={isEditorError}
         isLoading={isEditorLoading}
+        pendingCondition={pendingCondition}
         savedTriggerTierIds={savedTriggerTierIds}
         selectedRunId={selectedRunId}
         triggerType={triggerType}
         onChange={onDraftChange}
+        onPendingConditionChange={setPendingCondition}
         onSelectRun={setSelectedRunId}
         onWaitValidityChange={onWaitValidityChange}
       />

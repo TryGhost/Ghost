@@ -26,7 +26,7 @@ export type AddStepEdgeData = {
   connectIn?: boolean;
 };
 
-const INSERT_BUTTON_CLASSES =
+export const INSERT_BUTTON_CLASSES =
   'border-dashed border-border-default bg-surface-page text-text-secondary shadow-sm hover:border-border-strong';
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
 const DRAW_CLASS = `transition-[stroke-dashoffset] duration-180 ${ENTRANCE_EASE} motion-reduce:transition-none`;

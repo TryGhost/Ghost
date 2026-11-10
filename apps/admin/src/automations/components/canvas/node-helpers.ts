@@ -1,5 +1,7 @@
 import type { InsertActionAnchor } from '@tryghost/admin-x-framework/api/automations';
 import {
+  AddConditionNode,
+  ConditionNode,
   StepNode,
   TAIL_CANVAS_ID,
   TRIGGER_CANVAS_ID,
@@ -15,6 +17,8 @@ export const nodeTypes = {
   trigger: TriggerNode,
   step: StepNode,
   tail: TailNode,
+  condition: ConditionNode,
+  addCondition: AddConditionNode,
 };
 
 export const toApiAnchor = ({ sourceId, targetId }: CanvasAnchor): InsertActionAnchor => ({

@@ -47,4 +47,15 @@ const StepPicker: React.FC<StepPickerProps> = ({ onPick }) => (
   </div>
 );
 
+export const ConditionPicker: React.FC<{ onPick: () => void }> = ({ onPick }) => (
+  <div className="flex w-72 flex-col gap-1 p-1" data-testid="condition-picker">
+    <PickerOption
+      description="Choose who can enter by their labels"
+      icon={LucideIcon.ListFilter}
+      label="Condition"
+      onClick={onPick}
+    />
+  </div>
+);
+
 export default StepPicker;

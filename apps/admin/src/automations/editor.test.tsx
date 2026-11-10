@@ -185,6 +185,10 @@ vi.mock('@tryghost/admin-x-framework/api/tiers', () => ({
   useBrowseTiers: () => ({ data: { tiers: [] }, isLoading: false }),
 }));
 
+vi.mock('@tryghost/admin-x-framework/api/labels', () => ({
+  useBrowseLabelsInfinite: () => ({ data: { labels: [] }, isLoading: false }),
+}));
+
 // xyflow's ReactFlow needs a sized container; stub it out for unit tests.
 type StubNode = { id: string; data?: Record<string, unknown>; type?: string };
 type StubEdge = {
@@ -812,6 +816,7 @@ describe('AutomationEditor', () => {
       li.getAttribute('data-target'),
     ]);
     expect(edgePairs).toEqual([
+      ['__trigger__', '__add_condition__'],
       ['__trigger__', 'action-wait'],
       ['action-wait', 'action-email'],
       ['action-email', '__tail__'],
@@ -1409,7 +1414,7 @@ describe('AutomationEditor', () => {
 
     try {
       renderEditor();
-      await waitFor(() => expect(mockReactFlow.setViewport).toHaveBeenCalled());
+      await screen.findByRole('article', { name: 'Wait: 1 day' });
       mockReactFlow.setViewport.mockClear();
       // This is the bottom-most valid viewport for the original two-step graph. Once one
       // step is deleted, it falls outside the shorter graph's new translate extent.
@@ -2557,6 +2562,7 @@ describe('AutomationEditor', () => {
       li.getAttribute('data-target'),
     ]);
     expect(edgePairs).toEqual([
+      ['__trigger__', '__add_condition__'],
       ['__trigger__', 'action-email'],
       ['action-email', '__tail__'],
     ]);
@@ -2659,6 +2665,7 @@ describe('AutomationEditor', () => {
       li.getAttribute('data-target'),
     ]);
     expect(edgePairs).toEqual([
+      ['__trigger__', '__add_condition__'],
       ['__trigger__', 'action-wait'],
       ['action-wait', '__tail__'],
     ]);
@@ -2696,7 +2703,10 @@ describe('AutomationEditor', () => {
       li.getAttribute('data-source'),
       li.getAttribute('data-target'),
     ]);
-    expect(edgePairs).toEqual([['__trigger__', '__tail__']]);
+    expect(edgePairs).toEqual([
+      ['__trigger__', '__add_condition__'],
+      ['__trigger__', '__tail__'],
+    ]);
   });
 
   it('enables Publish changes when the user adds a step locally', async () => {

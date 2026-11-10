@@ -28,9 +28,21 @@ import type {
   AutomationSendEmailAction,
 } from '@tryghost/admin-x-framework/api/automations';
 import { AutomationCanvasControls } from './controls';
-import { TAIL_CANVAS_ID, TRIGGER_CANVAS_ID } from './nodes';
+import {
+  ADD_CONDITION_CANVAS_ID,
+  CONDITION_CANVAS_ID,
+  CONDITION_CONNECTOR_Y,
+  CONDITION_HANDLE_ID,
+  TAIL_CANVAS_ID,
+  TRIGGER_CANVAS_ID,
+} from './nodes';
 import { nodeTypes, toApiAnchor } from './node-helpers';
-import type { AutomationFlowNode, CanvasAnchor, NodeContextMenuEntry } from './nodes';
+import type {
+  AutomationFlowNode,
+  CanvasAnchor,
+  ConditionNodeData,
+  NodeContextMenuEntry,
+} from './nodes';
 import { Background, BackgroundVariant, ReactFlow } from '@xyflow/react';
 import type { Edge, NodeChange } from '@xyflow/react';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
@@ -39,12 +51,19 @@ import { RunHistory } from './run-history';
 import { canvasBackground } from './canvas-background';
 import { AutomationSidebar } from './automation-sidebar';
 import type { TriggerData } from './trigger-card';
+import { useBrowseLabelsInfinite } from '@tryghost/admin-x-framework/api/labels';
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { type StepPickerType } from './step-picker';
 import { isEmptyEmailLexical } from '@/automations/utils';
 import { useBrowseConfig } from '@tryghost/admin-x-framework/api/config';
 import { useLocation, useNavigate, useSearchParams } from '@tryghost/admin-x-framework';
 import type { EmailModalMode } from '@/automations/components/types';
+import type { LabelFilterOperator, PendingCondition } from '@/automations/types';
+import {
+  buildLabelFilterRules,
+  conditionFromRules,
+  splitTriggerRules,
+} from '@/automations/utils/trigger-rules';
 import { CANVAS_ZOOM_CONFIG, useCanvasViewport } from './use-canvas-viewport';
 import type { CanvasContentBounds } from './use-canvas-viewport';
 
@@ -67,6 +86,9 @@ const INITIAL_VIEWPORT_Y = 40;
 const HEADER_UNDERLAP_Y = 56;
 const NODE_ENTER_ANIMATION_DURATION = 250;
 const DISABLED_REASON = 'Maximum steps added';
+const CONDITION_GAP_X = 96;
+const ADD_CONDITION_GAP_X = 48;
+const ADD_CONDITION_BUTTON_SIZE = 32;
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
 const EMAIL_STEP_QUERY_PARAM = 'emailStep';
 
@@ -173,6 +195,8 @@ type BuildGraphParams = {
   savedTriggerTierIds: readonly string[];
   triggerType: TriggerData['triggerType'];
   tierQuery: TriggerData['tierQuery'];
+  condition: ConditionNodeData | null;
+  onAddCondition: () => void;
   onChange: (next: AutomationDetail) => void;
   nodeSizes: Record<string, { width: number; height: number }>;
   newEmailWithoutWarningsId: string | null;
@@ -194,6 +218,8 @@ const buildGraph = ({
   savedTriggerTierIds,
   triggerType,
   tierQuery,
+  condition,
+  onAddCondition,
   onChange,
   nodeSizes,
   newEmailWithoutWarningsId,
@@ -254,6 +280,28 @@ const buildGraph = ({
   ];
   cursorY +=
     (nodeSizes[TRIGGER_CANVAS_ID]?.height ?? FIXED_TRIGGER_NODE_HEIGHT) + NODE_VISUAL_GAP_Y;
+
+  if (condition) {
+    nodes.push({
+      id: CONDITION_CANVAS_ID,
+      type: 'condition',
+      zIndex: 1,
+      position: { x: nodeX + nodeWidth + CONDITION_GAP_X, y: 0 },
+      data: { ...condition, errorMessage: actionErrors[CONDITION_CANVAS_ID] },
+      ...nodeProps(CONDITION_CANVAS_ID),
+    });
+  } else {
+    nodes.push({
+      id: ADD_CONDITION_CANVAS_ID,
+      type: 'addCondition',
+      position: {
+        x: nodeX + nodeWidth + ADD_CONDITION_GAP_X,
+        y: CONDITION_CONNECTOR_Y - ADD_CONDITION_BUTTON_SIZE / 2,
+      },
+      data: { onAdd: onAddCondition },
+      ...nodeProps(ADD_CONDITION_CANVAS_ID),
+    });
+  }
 
   ordered.forEach((action) => {
     const editableEmail = action.type === 'send_email';
@@ -329,7 +377,17 @@ const buildGraph = ({
   };
 
   // Every connecting line, including the edge to the exit marker, has an insertion control.
-  const edges: Edge[] = [];
+  const edges: Edge[] = [
+    {
+      id: `e-${TRIGGER_CANVAS_ID}-condition`,
+      source: TRIGGER_CANVAS_ID,
+      sourceHandle: CONDITION_HANDLE_ID,
+      target: condition ? CONDITION_CANVAS_ID : ADD_CONDITION_CANVAS_ID,
+      type: 'straight',
+      focusable: false,
+      style: { stroke: DEFAULT_EDGE_STROKE },
+    },
+  ];
   let previousCanvasId: string = TRIGGER_CANVAS_ID;
   ordered.forEach((action) => {
     const edgeData: AddStepEdgeData = {
@@ -399,6 +457,8 @@ type AutomationCanvasProps = {
   isLoading: boolean;
   isError: boolean;
   onChange: (next: AutomationDetail) => void;
+  pendingCondition: PendingCondition | null;
+  onPendingConditionChange: (next: PendingCondition | null) => void;
   selectedRunId: string | null;
   onSelectRun: (id: string | null) => void;
 };
@@ -425,6 +485,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   isLoading,
   isError,
   onChange,
+  pendingCondition,
+  onPendingConditionChange,
   selectedRunId,
   onSelectRun,
 }) => {
@@ -472,6 +534,98 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const tierQuery = useMemo(
     () => ({ data: tierData, isLoading: tiersLoading, isError: tiersError, refetch: refetchTiers }),
     [tierData, tiersLoading, tiersError, refetchTiers],
+  );
+  const {
+    data: labelData,
+    isLoading: labelsLoading,
+    isError: labelsError,
+    hasNextPage: hasMoreLabels,
+    isFetchingNextPage: isFetchingMoreLabels,
+    fetchNextPage: fetchMoreLabels,
+    refetch: refetchLabels,
+  } = useBrowseLabelsInfinite({
+    searchParams: { limit: '100', order: 'name asc' },
+    defaultErrorHandler: false,
+    staleTime: 0,
+  });
+  const canLoadMoreLabels = Boolean(hasMoreLabels) && !isFetchingMoreLabels;
+  const labelQuery = useMemo(
+    () => ({
+      labels: labelData?.labels ?? [],
+      isLoading: labelsLoading,
+      isError: labelsError,
+      hasMore: canLoadMoreLabels,
+      loadMore: () => {
+        if (canLoadMoreLabels) {
+          void fetchMoreLabels();
+        }
+      },
+      refetch: () => void refetchLabels(),
+    }),
+    [labelData, labelsLoading, labelsError, canLoadMoreLabels, fetchMoreLabels, refetchLabels],
+  );
+  const savedCondition = useMemo(
+    () => (automation ? conditionFromRules(automation.trigger_rules) : null),
+    [automation],
+  );
+  const conditionOperator = savedCondition?.operator ?? pendingCondition?.operator ?? null;
+  const hasConditionCard = savedCondition !== null || pendingCondition !== null;
+  const setConditionRules = useCallback(
+    (operator: LabelFilterOperator | null, labelIds: readonly string[]) => {
+      if (!automation || !triggerType) {
+        return;
+      }
+      onChange({
+        ...automation,
+        trigger_rules: [
+          ...splitTriggerRules(automation.trigger_rules).eventRules,
+          ...(operator ? buildLabelFilterRules(triggerType, operator, labelIds) : []),
+        ],
+      });
+    },
+    [automation, triggerType, onChange],
+  );
+  const conditionNode = useMemo<ConditionNodeData | null>(() => {
+    if (!hasConditionCard) {
+      return null;
+    }
+    const labelIds = savedCondition?.labelIds ?? [];
+    return {
+      condition: {
+        labelQuery,
+        operator: conditionOperator,
+        labelIds,
+        onOperatorChange: (operator) => {
+          onPendingConditionChange({ operator });
+          if (labelIds.length > 0) {
+            setConditionRules(operator, labelIds);
+          }
+        },
+        onLabelsChange: (nextLabelIds) => {
+          onPendingConditionChange({ operator: conditionOperator });
+          setConditionRules(conditionOperator, nextLabelIds);
+        },
+      },
+      contextMenuItems: buildNodeContextMenuItems({
+        canDelete: true,
+        onDelete: () => {
+          onPendingConditionChange(null);
+          setConditionRules(null, []);
+        },
+        stepId: CONDITION_CANVAS_ID,
+      }),
+    };
+  }, [
+    hasConditionCard,
+    savedCondition,
+    labelQuery,
+    conditionOperator,
+    onPendingConditionChange,
+    setConditionRules,
+  ]);
+  const handleAddCondition = useCallback(
+    () => onPendingConditionChange({ operator: null }),
+    [onPendingConditionChange],
   );
   const emailModalStepId = searchParams.get(EMAIL_STEP_QUERY_PARAM);
   const getEmailCardElement = useCallback(() => {
@@ -687,6 +841,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
       savedTriggerTierIds,
       triggerType,
       tierQuery,
+      condition: conditionNode,
+      onAddCondition: handleAddCondition,
       onChange,
       nodeSizes,
       newEmailWithoutWarningsId,
@@ -706,6 +862,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     savedTriggerTierIds,
     triggerType,
     tierQuery,
+    conditionNode,
+    handleAddCondition,
     onChange,
     automation,
     nodeSizes,
