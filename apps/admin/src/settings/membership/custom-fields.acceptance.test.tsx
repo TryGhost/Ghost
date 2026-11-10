@@ -1052,7 +1052,7 @@ describe('Custom fields', () => {
       const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
         members_metafields: [animalsField],
       });
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       await modal.getByLabelText('Name').fill('Favourite animals');
@@ -1073,7 +1073,7 @@ describe('Custom fields', () => {
     it('keeps typed text that is already an option, saying why it wasn’t added', async () => {
       fakeSettingsScreens();
       fakeListedFields();
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       await modal.getByLabelText('New option').fill('Dog');
@@ -1098,7 +1098,7 @@ describe('Custom fields', () => {
     it('keeps typed text the rules refuse, saying why it wasn’t added', async () => {
       fakeSettingsScreens();
       fakeListedFields();
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       const input = modal.getByLabelText('New option');
@@ -1116,7 +1116,7 @@ describe('Custom fields', () => {
       const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
         members_metafields: [animalsField],
       });
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       await modal.getByLabelText('Name').fill('Favourite animals');
@@ -1139,7 +1139,7 @@ describe('Custom fields', () => {
       const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
         members_metafields: [animalsField],
       });
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       await modal.getByLabelText('Name').fill('Favourite animals');
@@ -1164,7 +1164,7 @@ describe('Custom fields', () => {
     it('clears why typed text wasn’t added once a pasted list is added', async () => {
       fakeSettingsScreens();
       fakeListedFields();
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       const input = modal.getByLabelText('New option');
@@ -1190,7 +1190,7 @@ describe('Custom fields', () => {
     it('asks only for text when two options are emptied', async () => {
       fakeSettingsScreens();
       fakeListedFields();
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       await modal.getByLabelText('Name').fill('Favourite animals');
@@ -1210,7 +1210,7 @@ describe('Custom fields', () => {
     it('keeps the new option input focused and in place as options are added', async () => {
       fakeSettingsScreens();
       fakeListedFields();
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       const input = modal.getByLabelText('New option');
@@ -1240,7 +1240,7 @@ describe('Custom fields', () => {
       const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
         members_metafields: [animalsField],
       });
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       await modal.getByLabelText('Name').fill('Favourite animals');
@@ -1331,7 +1331,7 @@ describe('Custom fields', () => {
       const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
         members_metafields: [animalsField],
       });
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       await modal.getByLabelText('Name').fill('Favourite animals');
@@ -1355,7 +1355,7 @@ describe('Custom fields', () => {
       const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/favourite_animals/', {
         members_metafields: [animalsField],
       });
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
       const modal = settingsScreen.customFieldModal();
@@ -1389,7 +1389,7 @@ describe('Custom fields', () => {
           return { members_metafields: [{ ...animalsField, settings: savedSettings }] };
         },
       );
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
       const modal = settingsScreen.customFieldModal();
@@ -1422,7 +1422,7 @@ describe('Custom fields', () => {
       const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/favourite_animals/', {
         members_metafields: [animalsField],
       });
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
       const modal = settingsScreen.customFieldModal();
@@ -1469,7 +1469,7 @@ describe('Custom fields', () => {
       const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/favourite_animals/', {
         members_metafields: [animalsField],
       });
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
       const modal = settingsScreen.customFieldModal();
@@ -1501,7 +1501,7 @@ describe('Custom fields', () => {
         await held;
         return { members_metafields: [animalsField] };
       });
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
       const modal = settingsScreen.customFieldModal();
@@ -1545,7 +1545,7 @@ describe('Custom fields', () => {
         await held;
         return { members_metafields: [animalsField] };
       });
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       await modal.getByLabelText('Name').fill('Favourite animals');
@@ -1568,7 +1568,7 @@ describe('Custom fields', () => {
     it('asks before closing with edits, and closes straight away without', async () => {
       fakeSettingsScreens();
       fakeListedFields();
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       await settingsScreen.customFields().getByRole('button', { name: 'Add custom field' }).click();
       const untouched = settingsScreen.customFieldModal();
@@ -1592,7 +1592,7 @@ describe('Custom fields', () => {
     it('still asks before closing after a save is refused', async () => {
       fakeSettingsScreens();
       fakeListedFields();
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       await modal.getByLabelText('New option').fill('Dog');
@@ -1608,7 +1608,7 @@ describe('Custom fields', () => {
     it('closes without asking once an edit is changed back', async () => {
       fakeSettingsScreens();
       fakeListedFields([animalsField]);
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
       const modal = settingsScreen.customFieldModal();
@@ -1626,7 +1626,7 @@ describe('Custom fields', () => {
       const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/favourite_animals/', {
         members_metafields: [animalsField],
       });
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
       const modal = settingsScreen.customFieldModal();
@@ -1646,7 +1646,7 @@ describe('Custom fields', () => {
       const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/favourite_animals/', {
         members_metafields: [animalsField],
       });
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
       const modal = settingsScreen.customFieldModal();
@@ -1667,7 +1667,7 @@ describe('Custom fields', () => {
       const editApi = fakeAdminEndpoint('PUT', '/members/metafields/custom/favourite_animals/', {
         members_metafields: [animalsField],
       });
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
       const modal = settingsScreen.customFieldModal();
@@ -1776,7 +1776,7 @@ describe('Custom fields', () => {
         },
         { status: 422 },
       );
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       const modal = await openNewListField();
       await modal.getByLabelText('Name').fill('Favourite animals');
@@ -1811,7 +1811,7 @@ describe('Custom fields', () => {
       };
       fakeSettingsScreens();
       fakeListedFields([full]);
-      await renderAdminApp('/settings', flagOn);
+      await renderAdminApp('/settings');
 
       await settingsScreen.customFields().getByTestId('custom-field-list-item').click();
       const modal = settingsScreen.customFieldModal();

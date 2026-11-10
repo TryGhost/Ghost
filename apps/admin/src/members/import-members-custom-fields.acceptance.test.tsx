@@ -214,7 +214,7 @@ describe('Import members custom fields', () => {
 
     it('refuses a list for a column whose answers differ only by case', async () => {
       const createApi = fakeSiteCreatingLists();
-      await renderAdminApp('/members', FLAGS);
+      await renderAdminApp('/members');
       await openMappingStep(
         'email,name,topics\nada@example.com,Ada,Film | Travel\ngrace@example.com,Grace,film\n',
       );
@@ -258,7 +258,7 @@ describe('Import members custom fields', () => {
 
     it('stays open when Enter confirms text an input method is composing in an option', async () => {
       const createApi = fakeSiteCreatingLists();
-      await renderAdminApp('/members', FLAGS);
+      await renderAdminApp('/members');
       await openMappingStep(TOPICS_CSV);
 
       await openCreateForm('topics');
