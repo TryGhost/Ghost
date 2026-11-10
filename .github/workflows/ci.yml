@@ -270,6 +270,7 @@ jobs:
           echo "matrix=[\"${NODE_VERSION}\", \"24.22.1\"]" >> $GITHUB_OUTPUT
 
       - name: Start Nx Cloud CI run
+        if: github.repository == 'TryGhost/Ghost'
         run: pnpm nx start-ci-run
 
       - name: Determine Affected Projects
