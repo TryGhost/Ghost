@@ -14,9 +14,10 @@ with a unique static type and serializable payload, register its handler
 through `jobsService.handle(JobClass, handler)` in
 `ghost/core/server/services/jobs-service/register-job-handlers.ts`, which
 boot wires up before starting the service, and inject `JobsService` into the
-service that dispatches the job from boot. Handlers should only route the
-rehydrated payload to an initialized service method. The queue options below
-are part of this API.
+service that dispatches the job. Boot, or that service's root in its
+[`create` callback](../../ghost/core/server/services/README.md#initialization),
+passes in `JobsService`. Handlers should only route the rehydrated payload to
+an initialized service method. The queue options below are part of this API.
 
 Current examples include:
 
@@ -36,8 +37,24 @@ Current examples include:
   as one handler run, continuation passes included, so a shutdown during a
   long fetch drains it up to `server:shutdownTimeout`.
 
-Prefer an existing job with similar lifecycle and failure requirements as the
-starting point for a new one.
+For recurring work, copy the gift reminders job above, scheduled in
+[`gifts/jobs/index.js`](../../ghost/core/server/services/gifts/jobs/index.js).
+For a job dispatched once, copy
+[webmention processing](../../ghost/core/server/services/mentions/process-webmention-job.ts),
+dispatched in
+[`mention-controller.js`](../../ghost/core/server/services/mentions/mention-controller.js).
+Then check that:
+
+- The job class lives in a `*-job.ts` file, and its payload is small JSON,
+  such as IDs or storage keys, not local file paths.
+- It uses the shared default lane unless it can flood the shared workers, must
+  not wait behind other jobs, or must run one at a time. See [Queues](#queues).
+- Its handler is safe to run more than once. See [Scheduling](#scheduling) and
+  the jobs backend's
+  [delivery outcome](../../packages/adapters/jobs-base/README.md#delivery-outcome).
+- It has a unit test that rebuilds the job from its JSON, a handler case in
+  `register-job-handlers.test.ts`, and an integration test that dispatches it
+  and waits for its observable result. See [Testing](#testing).
 
 When adding a service which dispatches jobs, give it an explicit `init()` call
 from `ghost/core/boot.js`. Keep the wrapper's `init()` idempotent, but let
