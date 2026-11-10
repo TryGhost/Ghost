@@ -1,12 +1,12 @@
 # Add a building block
 
-How to add a building block a new field type needs: a text size, a list to choose from, a
+How to add a building block a new field type needs: a text format, a list to choose from, a
 kind of leaf, or a shape. The blocks are explained in
 [How a field type is built](../explanation/how-a-field-type-is-built.md).
 
 Adding a block leads the compiler to everything written per block of its kind.
 
-- **A text size**, in `TEXT_SIZES`: its bound and message in `TEXT_RULES`, and which
+- **A text format**, in `TEXT_FORMATS`: its rule and messages in `TEXT_RULES`, and which
   control it is typed into in Admin's `TEXT_CONTROL` and Portal's `TEXT_INPUT`.
 - **A list**, in `LIST_SOURCES`: which keys it accepts in `LIST_RULES`, how Admin offers
   it and names a key in `memberCustomFieldChoiceLists`, and how Portal offers it in

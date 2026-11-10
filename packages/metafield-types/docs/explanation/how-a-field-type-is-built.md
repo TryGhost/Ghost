@@ -5,7 +5,7 @@
 Every type is composed from a few building blocks in
 [`src/structure.ts`](../../src/structure.ts):
 
-- A **leaf** is one value, stored as one string: text of a size (`text('line')`,
+- A **leaf** is one value, stored as one string: text of a format (`text('line')`,
   `text('code')`, `text('long')`), or a choice from a list (`choice('countries')`).
   `country` is that choice, named so a type can reuse it.
 - A **scalar** type is one leaf. Short text is `text('line')`.

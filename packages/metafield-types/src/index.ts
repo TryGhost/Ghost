@@ -18,7 +18,7 @@ import {
   type FieldOfShape,
   type LeafKind,
   type LeafValues,
-  type TextSize,
+  type TextFormat,
   type TypedSettings,
   type ValueOf,
   typesOfShape,
@@ -63,7 +63,7 @@ export {
   MAX_OPTIONS,
   MIN_OPTIONS,
   OPTION_SEPARATOR,
-  TEXT_SIZES,
+  TEXT_FORMATS,
   choice,
   country,
   editableAnswers,
@@ -99,7 +99,7 @@ export {
   type ShapeOf,
   type StructureOf,
   type TextLeaf,
-  type TextSize,
+  type TextFormat,
   type TypedSettings,
   type ValueOf,
   type WriteOf,
@@ -454,8 +454,8 @@ const filled = () => trimmed().min(1, { error: 'Enter a value, or send null to c
  */
 type LeafRule<K extends LeafKind = LeafKind> = z.ZodType<LeafValues[K], LeafValues[K]>;
 
-/** Each text size's bound. Each message is a literal, so it can be a translation key. */
-const TEXT_RULES: { [S in TextSize]: () => LeafRule<'text'> } = {
+/** Each text format's rule. Each message is a literal, so it can be a translation key. */
+const TEXT_RULES: { [F in TextFormat]: () => LeafRule<'text'> } = {
   line: () => filled().max(255, { error: 'Use 255 characters or fewer.' }),
 
   // A sanity limit rather than a format, used for postal codes: they vary too much between
@@ -487,7 +487,7 @@ const LIST_RULES: { [F in ListSource]: () => LeafRule<'choice'> } = {
 
 /** Each kind of leaf's rule. Keyed by kind, so a kind added to the catalog fails to compile here. */
 const LEAF_RULES: { [K in LeafKind]: (leaf: Extract<Leaf, { leaf: K }>) => LeafRule<K> } = {
-  text: ({ size }) => TEXT_RULES[size](),
+  text: ({ format }) => TEXT_RULES[format](),
   choice: ({ from }) => LIST_RULES[from](),
 };
 

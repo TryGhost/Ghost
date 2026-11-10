@@ -1,7 +1,7 @@
 /**
  * What a field type is made of, with no opinion on what a valid value looks like.
  *
- * Every type is composed from a few building blocks. A leaf is one value: text of a size, a
+ * Every type is composed from a few building blocks. A leaf is one value: text of a format, a
  * choice from a list. A type is a leaf on its own, a record of named leaves, or a set of options its
  * field offers. Everything that stores, exports, edits, filters or draws a value is written
  * once per building block, so a type composed from existing blocks needs nothing beyond its entry
@@ -12,9 +12,12 @@
  * the inputs, and it loads on every page view of every themed site.
  */
 
-/** How much text a text leaf holds. Each size has its bound, and its message, in `./index`. */
-export const TEXT_SIZES = ['line', 'code', 'long'] as const;
-export type TextSize = (typeof TEXT_SIZES)[number];
+/**
+ * What a text leaf holds: a line of text, a short code, or long text. Each format has its rule,
+ * and its messages, in `./index`, and its own input in Admin and Portal.
+ */
+export const TEXT_FORMATS = ['line', 'code', 'long'] as const;
+export type TextFormat = (typeof TEXT_FORMATS)[number];
 
 /** The lists a choice can pick from. Each list says which keys it accepts in `./index`. */
 export const LIST_SOURCES = ['countries'] as const;
@@ -22,7 +25,7 @@ export type ListSource = (typeof LIST_SOURCES)[number];
 
 export interface TextLeaf {
   readonly leaf: 'text';
-  readonly size: TextSize;
+  readonly format: TextFormat;
 }
 
 export interface ChoiceLeaf {
@@ -42,7 +45,7 @@ export interface LeafValues {
 
 export type LeafValue<L extends Leaf> = LeafValues[L['leaf']];
 
-export const text = <const S extends TextSize>(size: S) => ({ leaf: 'text', size }) as const;
+export const text = <const F extends TextFormat>(format: F) => ({ leaf: 'text', format }) as const;
 export const choice = <const F extends ListSource>(from: F) => ({ leaf: 'choice', from }) as const;
 
 /** A country, as the two-letter code a list of countries offers. */
