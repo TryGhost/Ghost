@@ -347,6 +347,36 @@ catalogs:
     '@testing-library/react':
       specifier: 16.3.3
       version: 16.3.3
+    '@tiptap/core':
+      specifier: 3.33.0
+      version: 3.33.0
+    '@tiptap/extension-blockquote':
+      specifier: 3.33.0
+      version: 3.33.0
+    '@tiptap/extension-document':
+      specifier: 3.33.0
+      version: 3.33.0
+    '@tiptap/extension-hard-break':
+      specifier: 3.33.0
+      version: 3.33.0
+    '@tiptap/extension-link':
+      specifier: 3.33.0
+      version: 3.33.0
+    '@tiptap/extension-paragraph':
+      specifier: 3.33.0
+      version: 3.33.0
+    '@tiptap/extension-placeholder':
+      specifier: 3.33.0
+      version: 3.33.0
+    '@tiptap/extension-text':
+      specifier: 3.33.0
+      version: 3.33.0
+    '@tiptap/pm':
+      specifier: 3.33.0
+      version: 3.33.0
+    '@tiptap/react':
+      specifier: 3.33.0
+      version: 3.33.0
     '@tryghost/color-utils':
       specifier: 0.2.23
       version: 0.2.23
@@ -1516,34 +1546,34 @@ importers:
         specifier: 1.7.19
         version: 1.7.19(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@tiptap/core':
-        specifier: 3.33.0
+        specifier: 'catalog:'
         version: 3.33.0(@tiptap/pm@3.33.0)
       '@tiptap/extension-blockquote':
-        specifier: 3.33.0
+        specifier: 'catalog:'
         version: 3.33.0(@tiptap/core@3.33.0(@tiptap/pm@3.33.0))(@tiptap/pm@3.33.0)
       '@tiptap/extension-document':
-        specifier: 3.33.0
+        specifier: 'catalog:'
         version: 3.33.0(@tiptap/core@3.33.0(@tiptap/pm@3.33.0))
       '@tiptap/extension-hard-break':
-        specifier: 3.33.0
+        specifier: 'catalog:'
         version: 3.33.0(@tiptap/core@3.33.0(@tiptap/pm@3.33.0))
       '@tiptap/extension-link':
-        specifier: 3.33.0
+        specifier: 'catalog:'
         version: 3.33.0(@tiptap/core@3.33.0(@tiptap/pm@3.33.0))(@tiptap/pm@3.33.0)
       '@tiptap/extension-paragraph':
-        specifier: 3.33.0
+        specifier: 'catalog:'
         version: 3.33.0(@tiptap/core@3.33.0(@tiptap/pm@3.33.0))
       '@tiptap/extension-placeholder':
-        specifier: 3.33.0
+        specifier: 'catalog:'
         version: 3.33.0(@tiptap/extensions@3.33.0(@tiptap/core@3.33.0(@tiptap/pm@3.33.0))(@tiptap/pm@3.33.0))
       '@tiptap/extension-text':
-        specifier: 3.33.0
+        specifier: 'catalog:'
         version: 3.33.0(@tiptap/core@3.33.0(@tiptap/pm@3.33.0))
       '@tiptap/pm':
-        specifier: 3.33.0
+        specifier: 'catalog:'
         version: 3.33.0
       '@tiptap/react':
-        specifier: 3.33.0
+        specifier: 'catalog:'
         version: 3.33.0(@floating-ui/dom@1.8.0)(@tiptap/core@3.33.0(@tiptap/pm@3.33.0))(@tiptap/pm@3.33.0)(@types/react-dom@17.0.26(@types/react@17.0.93))(@types/react@17.0.93)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@tryghost/debug':
         specifier: 'catalog:'

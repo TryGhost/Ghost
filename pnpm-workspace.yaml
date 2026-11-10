@@ -94,6 +94,16 @@ catalog:
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/preact': 3.2.6
   '@testing-library/react': 16.3.3
+  '@tiptap/core': 3.33.0
+  '@tiptap/extension-blockquote': 3.33.0
+  '@tiptap/extension-document': 3.33.0
+  '@tiptap/extension-hard-break': 3.33.0
+  '@tiptap/extension-link': 3.33.0
+  '@tiptap/extension-paragraph': 3.33.0
+  '@tiptap/extension-placeholder': 3.33.0
+  '@tiptap/extension-text': 3.33.0
+  '@tiptap/pm': 3.33.0
+  '@tiptap/react': 3.33.0
   '@tryghost/color-utils': 0.2.23
   '@tryghost/custom-fonts': 1.0.14
   '@tryghost/debug': 2.3.20
