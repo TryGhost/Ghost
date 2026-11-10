@@ -4,6 +4,7 @@ import { getMailgunMessageId } from '../../lib/mailgun/mailgun-message-id';
 import { getMailgunError } from '../../lib/mailgun/mailgun-error';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
+import type { ReadonlyDeep } from 'type-fest';
 import { MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS } from './constants';
 // @ts-expect-error Models currently lack type definitions.
 import { Member } from '../../models';
@@ -31,6 +32,7 @@ type MemberWelcomeEmailService = {
 };
 
 type MemberModel = {
+  id: string;
   get(key: 'name'): string | null;
   get(key: 'email' | 'status' | 'uuid'): string;
   get(key: 'enable_updates_and_announcements'): boolean | null;
@@ -187,9 +189,66 @@ const handleStepExecutionFailure = async ({
   return null;
 };
 
+const loadMembersForAutomationRunSteps = async (
+  steps: ReadonlyDeep<AutomationStepToRun[]>,
+): Promise<Map<string, MemberModel>> => {
+  const memberIds = new Set<string>();
+  const memberRelations = new Set<string>();
+
+  for (const step of steps) {
+    if (!step.member_id) {
+      continue;
+    }
+
+    if (step.step_attempts > MAX_ATTEMPTS) {
+      continue;
+    }
+
+    switch (step.automation_status) {
+      case 'active':
+        break;
+      case 'archived':
+      case 'inactive':
+        continue;
+      default: {
+        const _exhaustive: never = step.automation_status;
+        throw new errors.InternalServerError({
+          message: `Unexpected automation status ${_exhaustive}`,
+        });
+      }
+    }
+
+    memberIds.add(step.member_id);
+
+    if (step.type === 'send_email') {
+      memberRelations.add('newsletters');
+    }
+
+    if (
+      step.automation_trigger_rules.some(
+        (rule) => rule.direction !== 'from' && rule.scope === 'specific_paid_tier',
+      )
+    ) {
+      memberRelations.add('products');
+    }
+  }
+
+  if (memberIds.size === 0) {
+    return new Map();
+  }
+
+  const members = await Member.where('id', 'in', [...memberIds]).fetchAll({
+    columns: ['id', 'name', 'email', 'status', 'uuid', 'enable_updates_and_announcements'],
+    withRelated: [...memberRelations],
+  });
+
+  return new Map(members.map((member: MemberModel) => [member.id, member]));
+};
+
 const processStep = async ({
   automationsApi,
   memberWelcomeEmailService,
+  members,
   scheduleAutomationEmailAnalyticsJob,
   step,
 }: Readonly<
@@ -198,6 +257,7 @@ const processStep = async ({
     'automationsApi' | 'memberWelcomeEmailService' | 'scheduleAutomationEmailAnalyticsJob'
   > & {
     step: AutomationStepToRun;
+    members: ReadonlyDeep<Map<string, MemberModel>>;
   }
 >): Promise<Date | null> => {
   if (step.automation_status !== 'active') {
@@ -219,17 +279,7 @@ const processStep = async ({
   // Other trigger types have no 'from' rules, so this filter leaves them unchanged.
   const rulesToCheck = step.automation_trigger_rules.filter((rule) => rule.direction !== 'from');
 
-  const memberRelationsToLoad: string[] = [];
-  if (step.type === 'send_email') {
-    memberRelationsToLoad.push('newsletters');
-  }
-  if (rulesToCheck.some((rule) => rule.scope === 'specific_paid_tier')) {
-    memberRelationsToLoad.push('products');
-  }
-  const member = (await Member.findOne(
-    { id: step.member_id },
-    { withRelated: memberRelationsToLoad },
-  )) as MemberModel | null;
+  const member = members.get(step.member_id);
 
   if (!member) {
     // It's possible that the member was deleted between the time the step was fetched and now, though it's
@@ -408,10 +458,13 @@ export const poll = async ({
     nextPollAt = dateMin(nextPollAt, new Date());
   }
 
+  const members = await loadMembersForAutomationRunSteps(steps);
+
   await Promise.all(
     steps.map(async (step) => {
       try {
         const stepNextPollAt = await processStep({
+          members,
           automationsApi,
           memberWelcomeEmailService,
           scheduleAutomationEmailAnalyticsJob,
