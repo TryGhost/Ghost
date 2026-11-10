@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { z } from 'zod';
+import { FIELDS_IN_DEVELOPMENT } from '@tryghost/metafield-types/test/fixtures';
 
 const {
   agentProvider,
@@ -251,6 +252,34 @@ describe('Member Custom Fields Admin API', function () {
         .body({ members_metafields: [{ name: 'Topic', type: 'not_a_type' }] })
         .expectStatus(422);
     });
+
+    // A type still in development can be created only where its Labs flag is on, whoever asks.
+    it.each(FIELDS_IN_DEVELOPMENT)(
+      'refuses a $field.type field while $flag is off',
+      async function ({ field, flag }) {
+        mockManager.mockLabsDisabled(flag);
+
+        const { body } = await agent
+          .post('members/metafields/custom/')
+          .body({ members_metafields: [{ name: 'In development', ...field }] })
+          .expectStatus(422);
+
+        assert.equal(body.errors[0].property, 'type');
+        const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body;
+        assert.deepEqual(list.members_metafields, []);
+      },
+    );
+
+    it.each(FIELDS_IN_DEVELOPMENT)(
+      'creates a $field.type field once $flag is on',
+      async function ({ field, flag }) {
+        mockManager.mockLabsEnabled(flag);
+
+        const created = await createField({ name: 'In development', ...field });
+
+        assert.equal(created.type, field.type);
+      },
+    );
 
     it('rejects a create with no root key', async function () {
       // The framework rejects an empty/malformed body before the query runs,

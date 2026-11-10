@@ -2,9 +2,12 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 import {
   FIELD_STRUCTURES,
+  FIELD_TYPE_FLAGS,
+  FIELD_TYPE_IDS,
   editableAnswers,
   MAX_LONG_TEXT_BYTES,
   isMetafieldChangeSource,
+  isCreatableType,
   isFieldType,
   isRecordValue,
   matchField,
@@ -19,6 +22,7 @@ import {
   type FieldTypeOfShape,
   type TypedSettings,
 } from '../src/index.ts';
+import { FIELDS_IN_DEVELOPMENT } from './fixtures/fields.ts';
 
 // This asserts only the catalog's *contract* — which field types exist, and which of
 // them have parts. The behavioural outcomes (per-type value validation, the composite
@@ -75,6 +79,30 @@ describe('metafield-types catalog', function () {
 
     assert.equal(holds('line1'), 'line text');
     assert.equal(holds('country'), 'a choice from countries');
+  });
+
+  // A released type never waits on a flag, and a type in development waits on its own flag only.
+  it('offers every released type whatever Labs flags are on', function () {
+    for (const type of FIELD_TYPE_IDS) {
+      if (FIELD_TYPE_FLAGS[type] === undefined) {
+        assert.equal(
+          isCreatableType(type, () => false),
+          true,
+          `${type} is released`,
+        );
+      }
+    }
+  });
+
+  it.each(FIELDS_IN_DEVELOPMENT)('offers $field.type only once $flag is on', ({ field, flag }) => {
+    assert.equal(
+      isCreatableType(field.type, () => false),
+      false,
+    );
+    assert.equal(
+      isCreatableType(field.type, (asked) => asked === flag),
+      true,
+    );
   });
 
   it('knows its own types, and nothing else as one', function () {

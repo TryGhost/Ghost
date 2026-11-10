@@ -8,7 +8,7 @@ import {
 import { ListField } from '@/shared/member-custom-fields/list-settings';
 import { SettingsModal } from '@tryghost/shade/patterns';
 import {
-  memberCustomFieldUserTypes,
+  useCreatableMemberCustomFieldTypes,
   useCreateMemberCustomField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import {
@@ -24,7 +24,8 @@ import { useCustomFieldModal } from '@/settings/membership/custom-fields/use-cus
  */
 export function AddCustomFieldModal({ onClose }: { onClose: () => void }) {
   const { mutateAsync: createField } = useCreateMemberCustomField();
-  const [start] = useState(() => newValues(memberCustomFieldUserTypes[0].id));
+  const types = useCreatableMemberCustomFieldTypes();
+  const [start] = useState(() => newValues(types[0].id));
   const { state, modalProps } = useCustomFieldModal({
     start,
     validate: newFieldErrors,
@@ -37,7 +38,7 @@ export function AddCustomFieldModal({ onClose }: { onClose: () => void }) {
       <div className="mt-10">
         <CustomFieldForm className="gap-8" idPrefix="custom-field" state={state}>
           <NameField />
-          <TypeField types={memberCustomFieldUserTypes} />
+          <TypeField types={types} />
           <ListField />
           <VisibilityField />
         </CustomFieldForm>

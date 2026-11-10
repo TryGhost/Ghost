@@ -4,6 +4,7 @@ import {
   MEMBER_ACCESS_LEVELS,
   MetafieldDefinitionSchema,
   SHAPES,
+  isCreatableType,
   matchLeaf,
   matchShape,
   shapedType,
@@ -25,6 +26,8 @@ import { z } from 'zod';
 import { IdentityTextSchema, type Part } from '@tryghost/metafield-types/identity';
 import { csvColumnsForField } from '@tryghost/metafield-csv';
 import { LucideIcon } from '@tryghost/shade/utils';
+import { useMemo } from 'react';
+import { useFeatureFlags } from '../hooks/use-feature-flag';
 import { createMutation, createQuery, createQueryWithId } from '../utils/api/hooks';
 import { countryName, countryOptions } from '../utils/countries';
 import { ValidationError } from '../utils/errors';
@@ -134,10 +137,46 @@ const partLabelsFor = (type: FieldType): Record<string, string> => {
 
 // The catalog in the shared catalog's declared order, so every admin surface
 // offers and renders the field types in the same order.
-export const memberCustomFieldUserTypes: MemberCustomFieldUserType[] = FIELD_TYPE_IDS.map((id) => ({
+const memberCustomFieldUserTypes: MemberCustomFieldUserType[] = FIELD_TYPE_IDS.map((id) => ({
   id,
   ...fieldTypePresentation[id],
 }));
+
+/**
+ * Types a field can be created with on this site. Only `useCreatableMemberCustomFieldTypes` and
+ * `creatableTypesAmong` give a list of them, and every form that creates a field takes one, so no
+ * place can offer a type that hasn't been checked.
+ */
+const CreatableTypesSchema = z
+  .array(z.custom<MemberCustomFieldUserType>())
+  .readonly()
+  .brand<'CreatableMemberCustomFieldTypes'>();
+export type CreatableMemberCustomFieldTypes = z.output<typeof CreatableTypesSchema>;
+
+/**
+ * The types a field can be created with on this site, in the catalog's order: every released
+ * type, and a type still in development only where its Labs flag is on. Admin goes live before the
+ * servers it talks to, and a type's flag is switched on only once every server can store it, so
+ * Admin offers a type only where the site's Ghost will create it. The one exception is a `?labs=`
+ * session override, which shows a type in Admin that Ghost still refuses.
+ */
+export const useCreatableMemberCustomFieldTypes = (): CreatableMemberCustomFieldTypes => {
+  const isFlagOn = useFeatureFlags();
+  return useMemo(
+    () =>
+      CreatableTypesSchema.parse(
+        memberCustomFieldUserTypes.filter(({ id }) => isCreatableType(id, isFlagOn)),
+      ),
+    [isFlagOn],
+  );
+};
+
+/** The types among `ids` that a field can be created with, for a place that takes only those. */
+export const creatableTypesAmong = (
+  creatable: CreatableMemberCustomFieldTypes,
+  ids: readonly FieldType[],
+): CreatableMemberCustomFieldTypes =>
+  CreatableTypesSchema.parse(creatable.filter(({ id }) => ids.includes(id)));
 
 export const userTypeForFieldType = (type: FieldType): MemberCustomFieldUserType => ({
   id: type,

@@ -21,7 +21,7 @@ import {
 import {
   type NewMemberCustomField,
   memberCustomFieldCsvColumns,
-  memberCustomFieldUserTypes,
+  useCreatableMemberCustomFieldTypes,
   useCreateMemberCustomField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { matchShape } from '@tryghost/metafield-types/structure';
@@ -168,6 +168,7 @@ export function MappingStep({
   } | null>(null);
   const createFieldForColumn = creating?.open ? creating.column : null;
   const closeCreateForm = () => setCreating((current) => current && { ...current, open: false });
+  const creatableTypes = useCreatableMemberCustomFieldTypes();
   // What the popover hangs from: the column's field button, looked up whenever the popover asks,
   // so a button drawn afresh is the one it finds.
   const createColumn = creating?.column;
@@ -600,7 +601,7 @@ export function MappingStep({
                   saveError={saveError}
                   suggestList={suggestList}
                   testId="import-create-custom-field"
-                  types={memberCustomFieldUserTypes}
+                  types={creatableTypes}
                   // Focus goes back to the column's field button as the popover closes.
                   onCancel={() => {
                     clearCreateErrors();
