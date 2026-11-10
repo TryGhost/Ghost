@@ -3,6 +3,7 @@ const debug = require('@tryghost/debug');
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const errors = require('@tryghost/errors');
+const { isAutomationLoadTestSite } = require('../../../shared/is-automation-load-test-site');
 const {
   addRecipientMessageIds,
   isTemplatedRecipientMessageId,
@@ -101,7 +102,7 @@ module.exports = class MailgunClient {
       }
       messageData['o:tag'] = tags;
 
-      if (bulkEmailConfig?.mailgun?.testmode) {
+      if (bulkEmailConfig?.mailgun?.testmode || isAutomationLoadTestSite(this.#config)) {
         messageData['o:testmode'] = true;
       }
 

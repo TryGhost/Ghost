@@ -184,6 +184,14 @@ export const createDatabaseAutomationsRepository2 = ({
         .innerJoin('automation_action_revisions as revisions', 'revisions.action_id', 'actions.id')
         .modify((query) => {
           switch (options.eventName) {
+            case 'staging_load_test':
+              query.where('automation.id', options.automationId);
+              applyMembershipStartedFilters(query, connection, {
+                eventName: 'membership_started',
+                memberStatus: 'free',
+                memberTierIds: [],
+              });
+              break;
             case 'membership_started':
               applyMembershipStartedFilters(query, connection, options);
               break;
