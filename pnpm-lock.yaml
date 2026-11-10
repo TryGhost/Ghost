@@ -530,6 +530,9 @@ catalogs:
     country-flag-icons:
       specifier: 1.6.20
       version: 1.6.20
+    css-tree:
+      specifier: 3.2.1
+      version: 3.2.1
     d3-geo:
       specifier: 3.1.2
       version: 3.1.2
@@ -2392,6 +2395,9 @@ importers:
       cron-validate:
         specifier: 1.5.3
         version: 1.5.3
+      css-tree:
+        specifier: 'catalog:'
+        version: 3.2.1
       csso:
         specifier: 5.0.5
         version: 5.0.5

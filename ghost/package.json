@@ -163,6 +163,7 @@
     "cors": "2.8.6",
     "countries-and-timezones": "3.11.0",
     "cron-validate": "catalog:",
+    "css-tree": "catalog:",
     "csso": "5.0.5",
     "dompurify": "catalog:",
     "downsize-cjs": "1.1.2",
