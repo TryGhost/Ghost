@@ -10,6 +10,23 @@ The database repository creates run(s) and queues their first step(s). Ghost's b
 
 Each check locks ready steps, then runs up to 100 at once. A `wait` action advances when its time arrives. A `send_email` action checks the member's current status and email preference before sending. Disabled automations and ineligible members stop.
 
+## Label filters
+
+A trigger can be narrowed by member labels. Label filters are extra rows in
+`automation_trigger_rules` with scope `specific_label`, a `label_id` and an
+`operator`. The operator marks the row as a filter; rows without one describe
+the trigger event. Use `splitTriggerRules` in [`trigger-rules.ts`](trigger-rules.ts)
+before reading rules, since the two kinds combine differently:
+
+- `has_any`: the member has at least one of these labels.
+- `has_all`: the member has every one of these labels.
+- `has_none`: the member has none of these labels.
+
+All three lists must pass. Enrolment checks them in the same query that matches
+the trigger, so a member who fails gets no run. Each step re-checks them, and a
+member who no longer passes stops with the step status `member changed label`.
+A label cannot be deleted while a filter uses it.
+
 ## Where to look
 
 - [`automations-api.ts`](automations-api.ts) handles reads, edits, validation, and event notifications. Edits require one path with no branches or loops.
@@ -50,7 +67,8 @@ from those same rows. The cards sum to the total entries count.
 - **In progress:** any pending step, provided every step has a known status.
 - **Completed:** all recorded steps finished.
 - **Exited early:** no pending steps, and at least one failed, automation-disabled,
-  member-status-changed, member-tier-changed, or member-unsubscribed step.
+  member-label-changed, member-status-changed, member-tier-changed, or
+  member-unsubscribed step.
 
 Runs with no recorded steps are excluded from both chart and cards. An unexpected
 step status fails the request, including when another step is pending. There is no
