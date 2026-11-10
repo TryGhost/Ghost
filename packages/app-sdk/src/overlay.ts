@@ -170,7 +170,8 @@ export interface PageOverlayOptions {
   supported: boolean;
   /** The theme's mode now, for the overlay document's `color-scheme`. */
   mode: () => 'light' | 'dark';
-  show: (tint: OverlayTint) => Promise<void>;
+  /** Asks Admin to show the overlay, as a dialog's or a sheet's, as wide as `width`. */
+  show: (tint: OverlayTint, width: number) => Promise<void>;
   hide: () => Promise<void>;
   /** Called with each overlay document the page renders into, for the page to follow its links. */
   found: (overlay: Document) => void;
@@ -185,7 +186,9 @@ export interface PageOverlayOptions {
  * The overlay document is on the page's own origin, so the page renders straight into it, from
  * the same React tree, and nothing else crosses the channel but "shown" and "hidden". Each
  * dialog or sheet holds the overlay while it's mounted, and is open from when it opens until it
- * starts to close. Admin shows the overlay with the tint of the topmost open one.
+ * starts to close. Admin shows the overlay with the tint of the topmost open one, and only as
+ * wide as it: the overlay frame covers the whole window, so the dialog lays out where Admin's
+ * own would, and Admin clips the frame to a strip that it places and the dialog's width sizes.
  *
  * Code that runs in the page frame reads the page's own `document`, not the overlay's, so the
  * overlay takes over what that breaks: it moves focus between the frames, keeps Tab inside the
@@ -195,7 +198,10 @@ export class PageOverlay implements GhostOverlay {
   readonly #options: PageOverlayOptions;
   readonly #holds = new Set<HoldState>();
   #root: HTMLElement | undefined;
-  #shown: OverlayTint | undefined;
+  #shown: { tint: OverlayTint; width: number } | undefined;
+  // Follows the width of each dialog holding the overlay. Made from the overlay's window, which
+  // the dialogs live in, while one holds it.
+  #resizes: ResizeObserver | undefined;
   // Counts the requests to show or hide the overlay, so a refusal only undoes the latest.
   #requests = 0;
   #returnFocus: Element | null = null;
@@ -251,6 +257,7 @@ export class PageOverlay implements GhostOverlay {
       this.#stopHolding = this.#startHolding(root);
     }
     this.#holds.add(state);
+    this.#resizes?.observe(element);
     let released = false;
     return {
       setOpen: (open) => {
@@ -270,6 +277,7 @@ export class PageOverlay implements GhostOverlay {
         }
         released = true;
         this.#holds.delete(state);
+        this.#resizes?.unobserve(element);
         this.#sync();
         if (this.#holds.size === 0) {
           this.#stopHolding?.();
@@ -323,19 +331,25 @@ export class PageOverlay implements GhostOverlay {
   }
 
   #sync() {
-    const open = [...this.#holds].filter((hold) => hold.open);
-    const tint = open.at(-1)?.tint;
-    if (tint === this.#shown) {
+    const topmost = [...this.#holds].filter((hold) => hold.open).at(-1);
+    // The width it's laid out at, which its opening animation's scale doesn't change. Read from
+    // here: the overlay's frame is hidden until Admin has it, and a hidden frame's rendering,
+    // which observers wait for, is held back.
+    const next = topmost && {
+      tint: topmost.tint,
+      width: Math.max(1, Math.round(topmost.element.offsetWidth)),
+    };
+    if (next?.tint === this.#shown?.tint && next?.width === this.#shown?.width) {
       return;
     }
-    this.#shown = tint;
+    this.#shown = next;
     this.#requests += 1;
     const request = this.#requests;
-    if (tint) {
+    if (next) {
       // Refused, such as when the publisher's click ran out before Admin heard of it: the
       // overlay stays hidden, and what opened renders in the page instead, where it's seen. A
       // refusal of a request that a later one has replaced changes nothing.
-      this.#options.show(tint).catch(() => {
+      this.#options.show(next.tint, next.width).catch(() => {
         if (request === this.#requests) {
           this.#shown = undefined;
           for (const hold of [...this.#holds]) {
@@ -366,6 +380,10 @@ export class PageOverlay implements GhostOverlay {
     const observer = new MutationObserver(mirror);
     observer.observe(page, { attributes: true, attributeFilter: ['class'] });
     const unshareRealm = shareRealm(view);
+    const Resizes =
+      (view as unknown as Partial<typeof globalThis>).ResizeObserver ?? globalThis.ResizeObserver;
+    const resizes = Resizes ? new Resizes(() => this.#sync()) : undefined;
+    this.#resizes = resizes;
 
     // Focus moves into the topmost dialog when it opens, and when Admin focuses the overlay's
     // frame as it shows, where focus lands on the overlay's body. The dialog's own focus handling
@@ -438,6 +456,8 @@ export class PageOverlay implements GhostOverlay {
     window.addEventListener('pagehide', onPageGone);
     return () => {
       observer.disconnect();
+      resizes?.disconnect();
+      this.#resizes = undefined;
       unshareRealm();
       view.removeEventListener('pagehide', onOverlayGone);
       window.removeEventListener('pagehide', onPageGone);

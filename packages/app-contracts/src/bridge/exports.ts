@@ -40,9 +40,9 @@ export interface HostExports {
   open(place: Place): Promise<void>;
   /**
    * Shows the overlay frame, with Admin's tint over the rest of Admin, because the page opened a
-   * dialog or a sheet into it, or changes the tint of the overlay already shown. Admin refuses
-   * to show it as `rejected` unless the app is started and the publisher has just clicked or
-   * typed in it.
+   * dialog or a sheet into it, or changes the tint or width of the overlay already shown. Admin
+   * refuses to show it as `rejected` unless the app is started and the publisher has just
+   * clicked or typed in it.
    */
   overlayShown(options: OverlayOptions): Promise<void>;
   /** Hides the overlay frame and the tint, because the page's last dialog or sheet closed. */

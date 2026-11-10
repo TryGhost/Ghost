@@ -137,7 +137,7 @@ export class Channel {
     this.#overlay = new PageOverlay({
       supported: this.#hostExports.has('overlayShown') && this.#hostExports.has('overlayHidden'),
       mode: () => this.#theme?.mode ?? 'light',
-      show: (tint) => this.#call('overlayShown', { tint }),
+      show: (tint, width) => this.#call('overlayShown', { tint, width }),
       hide: () => this.#call('overlayHidden'),
       found: (overlay) => this.#history?.watchLinks(overlay),
       // The page starts again, rather than hold a dialog no one can see or close.

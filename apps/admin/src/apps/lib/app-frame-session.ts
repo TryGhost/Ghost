@@ -1,5 +1,5 @@
 import {
-  type OverlayTint,
+  type OverlayOptions,
   type Place,
   type StartContext,
   type Theme,
@@ -20,10 +20,10 @@ export interface AppFrameState {
   /** When this load started. Used to show how long the app has gone without responding. */
   startedAt: Date;
   /**
-   * The tint Admin shows while the page has a dialog or sheet open in its overlay frame, or
-   * undefined while the overlay frame is hidden.
+   * The tint, and the width of the dialog or sheet on top, while the page has one open in its
+   * overlay frame, or undefined while the overlay frame is hidden.
    */
-  overlay?: OverlayTint;
+  overlay?: OverlayOptions;
 }
 
 /**
@@ -276,9 +276,9 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
         },
         // The app reports each move before it asks to open a place, so its route is current.
         open: (place) => options.open(place, appPath ?? options.context().path),
-        overlayShown: ({ tint }) => {
+        overlayShown: ({ tint, width }) => {
           // Only showing it needs the publisher's click: a dialog that opens over one already
-          // shown only changes the tint.
+          // shown, or one that changes its width, only changes the tint or the width.
           if (
             host !== bound ||
             state.status !== 'ready' ||
@@ -286,8 +286,8 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
           ) {
             return false;
           }
-          if (state.overlay !== tint) {
-            update({ overlay: tint });
+          if (state.overlay?.tint !== tint || state.overlay.width !== width) {
+            update({ overlay: { tint, width } });
           }
           return true;
         },

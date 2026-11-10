@@ -1043,7 +1043,7 @@ describe('Managing apps', () => {
       await expect.element(appsScreen.frame()).toBeVisible();
       await expect.element(appsScreen.overlayFrame()).not.toBeVisible();
 
-      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'sheet' }));
+      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'sheet', width: 384 }));
 
       await expect.element(appsScreen.overlayFrame()).toBeVisible();
       await expect.poll(() => tintClasses()).toContain('opacity-100');
@@ -1076,7 +1076,7 @@ describe('Managing apps', () => {
       await fakeAppPage(installation(), { kind: 'raw' });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
-      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'dialog' }));
+      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'dialog', width: 512 }));
       await expect.element(appsScreen.overlayFrame()).toBeVisible();
 
       await userEvent.click(appsScreen.overlayTint(), { position: { x: 5, y: 5 } });
@@ -1085,28 +1085,80 @@ describe('Managing apps', () => {
       expect(tintClasses()).not.toContain('opacity-0');
     });
 
-    it('reaches over the padding right of the page, so a sheet docks at the content’s edge', async () => {
-      await fakeAppPage(installation(), { kind: 'raw' });
-      await renderAdminApp(APP_ROUTE, { labs });
-      await expect.element(appsScreen.frame()).toBeVisible();
-      // As Admin pads the page with the sidebar collapsed.
-      const main = (appsScreen.frame().element() as HTMLElement).closest('main') as HTMLElement;
-      main.style.paddingRight = '40px';
+    describe('shows only the strip the dialog or sheet on top fills', () => {
+      const overlayFrame = () => appsScreen.overlayFrame().element() as HTMLIFrameElement;
+      /** What's under a point of the window, for presses there. */
+      const pressed = (x: number, y: number) => document.elementFromPoint(x, y);
 
-      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'sheet' }));
+      it('over the whole window, so the dialog lays out as Admin’s own would', async () => {
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
 
-      await expect.element(appsScreen.overlayFrame()).toBeVisible();
-      const frame = (appsScreen.frame().element() as HTMLElement).getBoundingClientRect();
-      const overlay = (appsScreen.overlayFrame().element() as HTMLElement).getBoundingClientRect();
-      expect(overlay.left).toBe(frame.left);
-      expect(overlay.right).toBe(frame.right + 40);
+        answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'dialog', width: 512 }));
+
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        const box = overlayFrame().getBoundingClientRect();
+        expect([box.left, box.top, box.width, box.height]).toEqual([
+          0,
+          0,
+          window.innerWidth,
+          window.innerHeight,
+        ]);
+      });
+
+      it('centred on the window for a dialog, whatever the page’s own box', async () => {
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
+
+        answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'dialog', width: 512 }));
+
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        const centre = window.innerWidth / 2;
+        const middle = window.innerHeight / 2;
+        expect(pressed(centre, middle)).toBe(overlayFrame());
+        expect(pressed(centre - 256 - 24 + 2, middle)).toBe(overlayFrame());
+        // Beside the strip, a press is Admin's, over its sidebar or its page alike.
+        expect(pressed(centre - 256 - 24 - 2, middle)).toBe(appsScreen.overlayTint().element());
+        expect(pressed(5, middle)).toBe(appsScreen.overlayTint().element());
+      });
+
+      it('against the window’s right edge for a sheet', async () => {
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
+
+        answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'sheet', width: 384 }));
+
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        const right = window.innerWidth;
+        expect(pressed(right - 2, 2)).toBe(overlayFrame());
+        expect(pressed(right - 384 - 24 + 2, 2)).toBe(overlayFrame());
+        expect(pressed(right - 384 - 24 - 2, 2)).toBe(appsScreen.overlayTint().element());
+      });
+
+      it('as wide as the page says, as that changes, without a new click', async () => {
+        await fakeAppPage(installation(), { kind: 'raw' });
+        await renderAdminApp(APP_ROUTE, { labs });
+        await expect.element(appsScreen.frame()).toBeVisible();
+        answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'dialog', width: 512 }));
+        await expect.element(appsScreen.overlayFrame()).toBeVisible();
+        const centre = window.innerWidth / 2;
+        const middle = window.innerHeight / 2;
+        expect(pressed(centre + 256 + 24 + 50, middle)).toBe(appsScreen.overlayTint().element());
+
+        answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'dialog', width: 768 }));
+
+        await expect.poll(() => pressed(centre + 256 + 24 + 50, middle)).toBe(overlayFrame());
+      });
     });
 
     it('keeps focus in the overlay frame when the publisher presses the tint', async () => {
       await fakeAppPage(installation(), { kind: 'raw' });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
-      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'dialog' }));
+      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'dialog', width: 512 }));
       await expect.element(appsScreen.overlayFrame()).toBeVisible();
       const overlayFrame = appsScreen.overlayFrame().element();
       await expect.poll(() => document.activeElement).toBe(overlayFrame);
@@ -1121,7 +1173,7 @@ describe('Managing apps', () => {
       await fakeAppPage(installation(), { kind: 'raw' });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
-      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'dialog' }));
+      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'dialog', width: 512 }));
       await expect.poll(() => document.activeElement).toBe(appsScreen.overlayFrame().element());
 
       answer(await callHostRaw(APP_ORIGIN, 'overlayHidden'));
@@ -1134,7 +1186,7 @@ describe('Managing apps', () => {
       await fakeAppPage(installation(), { kind: 'raw' });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
-      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'dialog' }));
+      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'dialog', width: 512 }));
       await expect.poll(() => document.activeElement).toBe(appsScreen.overlayFrame().element());
       const elsewhere = document.createElement('button');
       document.body.append(elsewhere);
@@ -1158,7 +1210,7 @@ describe('Managing apps', () => {
       const state = () => ({ hidden: admin?.getAttribute('aria-hidden'), inert: admin?.inert });
       expect(state()).toEqual({ hidden: null, inert: false });
 
-      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'dialog' }));
+      answer(await callHostRaw(APP_ORIGIN, 'overlayShown', { tint: 'dialog', width: 512 }));
       // The page frame too, so focus can't land in the page behind the dialog.
       await expect.poll(state).toEqual({ hidden: 'true', inert: true });
       expect(appsScreen.overlayFrame().element().closest('[inert]')).toBeNull();
@@ -1180,12 +1232,17 @@ describe('Managing apps', () => {
       await expect.element(appsScreen.frame()).toBeVisible();
     });
 
-    it('refuses a tint Admin doesn’t know, or a size or position, which Admin decides', async () => {
+    it('refuses a tint Admin doesn’t know, a width that isn’t whole pixels, or a position', async () => {
       await fakeAppPage(installation(), { kind: 'raw' });
       await renderAdminApp(APP_ROUTE, { labs });
       await expect.element(appsScreen.frame()).toBeVisible();
 
-      for (const options of [{ tint: 'none' }, { tint: 'dialog', rect: { x: 0, y: 0 } }]) {
+      for (const options of [
+        { tint: 'none', width: 512 },
+        { tint: 'dialog' },
+        { tint: 'dialog', width: 0 },
+        { tint: 'dialog', width: 512, rect: { x: 0, y: 0 } },
+      ]) {
         expect(refusal(await callHostRaw(APP_ORIGIN, 'overlayShown', options))).toMatch(
           /^invalid_argument: /,
         );
