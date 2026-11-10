@@ -2279,7 +2279,7 @@ module.exports = {
       type: 'string',
       maxlength: 50,
       nullable: true,
-      validations: { isIn: [['any_paid_tier', 'specific_paid_tier', 'free']] },
+      validations: { isIn: [['any_paid_tier', 'specific_paid_tier', 'free', 'specific_label']] },
     },
     direction: {
       type: 'string',
@@ -2293,6 +2293,18 @@ module.exports = {
       nullable: true,
       references: 'products.id',
       cascadeDelete: true,
+    },
+    operator: {
+      type: 'string',
+      maxlength: 50,
+      nullable: true,
+      validations: { isIn: [['has_any', 'has_all', 'has_none']] },
+    },
+    label_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: true,
+      references: 'labels.id',
     },
     created_at: { type: 'dateTime', nullable: false },
     // Note that this UNIQUE constraint allows duplicates if `product_id` is NULL. This is intentional.
