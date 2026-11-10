@@ -1,8 +1,17 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-import { signManifest } from '@tryghost/app-contracts/identity';
-import { parseManifest, parseManifestUrl } from '@tryghost/app-contracts/manifest';
+import {
+  MANIFEST_MAX_BYTES,
+  SIGNED_MANIFEST_MAX_BYTES,
+  parseJsonText,
+  signManifest,
+} from '@tryghost/app-contracts/identity';
+import {
+  formatManifestErrors,
+  parseManifest,
+  parseManifestUrl,
+} from '@tryghost/app-contracts/manifest';
 
 import {
   publicKeyOf,
@@ -13,14 +22,7 @@ import {
   type ReadKeysOptions,
 } from './keys.ts';
 import { UNKNOWN_GHOST_URL } from '../shared/manifest.ts';
-import { parseJsonText } from '../shared/parse.ts';
-import {
-  MANIFEST_MAX_BYTES,
-  SIGNED_MANIFEST_MAX_BYTES,
-  signedTooLargeMessage,
-  storedSize,
-  tooLargeMessage,
-} from './limits.ts';
+import { signedTooLargeMessage, storedSize, tooLargeMessage } from './limits.ts';
 import type { ManifestError, SignedManifest } from './types.ts';
 
 /** The readable manifest a project keeps, which the tooling signs. */
@@ -130,6 +132,11 @@ export async function signAppManifest(source: unknown, options: SignOptions): Pr
     return refuse('APP_MANIFEST_TOO_LARGE', signedTooLargeMessage());
   }
   return { success: true, signed, manifest };
+}
+
+/** A manifest's problems, one per line, as `path: message`, as Ghost lists them. */
+export function formatErrors(errors: readonly ManifestError[]): string {
+  return formatManifestErrors(errors, '\n');
 }
 
 /** A signed manifest as the CLI and the Vite plugin write it to a file. */

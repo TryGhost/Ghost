@@ -35,6 +35,7 @@ export {
 } from './keys.ts';
 export {
   MANIFEST_FILE,
+  formatErrors,
   readManifestSource,
   signAppManifest,
   signProject,
@@ -42,5 +43,4 @@ export {
   type SignProjectOptions,
   type SignResult,
 } from './sign.ts';
-export { formatErrors } from '../shared/manifest.ts';
 export type { AppManifest, ManifestError, ManifestSource, SignedManifest } from './types.ts';
