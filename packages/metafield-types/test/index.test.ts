@@ -45,7 +45,7 @@ describe('metafield-types catalog', function () {
   it('answers for each leaf by the kind it declares', function () {
     const holds = (part: 'line1' | 'country') =>
       matchLeaf(FIELD_STRUCTURES.address.parts[part], {
-        text: ({ size }) => `${size} text`,
+        text: ({ format }) => `${format} text`,
         choice: ({ from }) => `a choice from ${from}`,
       });
 

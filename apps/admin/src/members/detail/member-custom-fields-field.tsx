@@ -40,7 +40,7 @@ import {
   matchShape,
   type Leaf,
   type SetSettings,
-  type TextSize,
+  type TextFormat,
 } from '@tryghost/metafield-types/structure';
 import { partOf } from '@/members/custom-fields/addressing';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
@@ -186,7 +186,7 @@ const ListInput: React.FC<{
   );
 };
 
-const TEXT_CONTROL: { [S in TextSize]: 'input' | 'textarea' } = {
+const TEXT_CONTROL: { [F in TextFormat]: 'input' | 'textarea' } = {
   line: 'input',
   code: 'input',
   long: 'textarea',
@@ -202,8 +202,8 @@ const LeafInput: React.FC<{
   onChange: (value: string) => void;
 }> = ({ leaf, id, label, value, invalid, disabled, onChange }) =>
   matchLeaf(leaf, {
-    text: ({ size }) =>
-      TEXT_CONTROL[size] === 'textarea' ? (
+    text: ({ format }) =>
+      TEXT_CONTROL[format] === 'textarea' ? (
         // max-w-full: Admin's element styles cap textareas at 500px.
         <Textarea
           aria-invalid={invalid || undefined}
@@ -484,7 +484,7 @@ const PREVIEW_COUNT = 5;
 /** Whether a leaf's text is written in a textarea, so it can hold line breaks. */
 const isMultiline = (leaf: Leaf) =>
   matchLeaf(leaf, {
-    text: ({ size }) => TEXT_CONTROL[size] === 'textarea',
+    text: ({ format }) => TEXT_CONTROL[format] === 'textarea',
     choice: () => false,
   });
 

@@ -7,6 +7,7 @@ import {
   memberCustomFieldParts,
 } from '../../../src/api/member-custom-fields';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
+import { FIELD_STRUCTURES } from '@tryghost/metafield-types/structure';
 import { ALL_FIELD_FIXTURES, type AnyFieldFixture } from '@tryghost/metafield-types/test/fixtures';
 import { LucideIcon } from '@tryghost/shade/utils';
 
@@ -197,24 +198,15 @@ describe('member custom fields api helpers', () => {
     });
 
     it("carries each part's key, label, leaf and layout, in schema order", () => {
-      const line = { leaf: 'text', size: 'line' };
+      // Each part's leaf is the catalog's, whatever a leaf is made of.
+      const { parts } = FIELD_STRUCTURES.address;
       expect(memberCustomFieldParts('address')).toEqual([
-        { key: 'line1', label: 'Address line 1', leaf: line, fullRow: true },
-        { key: 'line2', label: 'Address line 2', leaf: line, fullRow: true },
-        { key: 'city', label: 'City', leaf: line, fullRow: false },
-        { key: 'state', label: 'State', leaf: line, fullRow: false },
-        {
-          key: 'postal_code',
-          label: 'Postal code',
-          leaf: { leaf: 'text', size: 'code' },
-          fullRow: false,
-        },
-        {
-          key: 'country',
-          label: 'Country',
-          leaf: { leaf: 'choice', from: 'countries' },
-          fullRow: false,
-        },
+        { key: 'line1', label: 'Address line 1', leaf: parts.line1, fullRow: true },
+        { key: 'line2', label: 'Address line 2', leaf: parts.line2, fullRow: true },
+        { key: 'city', label: 'City', leaf: parts.city, fullRow: false },
+        { key: 'state', label: 'State', leaf: parts.state, fullRow: false },
+        { key: 'postal_code', label: 'Postal code', leaf: parts.postal_code, fullRow: false },
+        { key: 'country', label: 'Country', leaf: parts.country, fullRow: false },
       ]);
     });
   });

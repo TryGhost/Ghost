@@ -13,7 +13,7 @@ npm install @tryghost/metafield-types
 
 - `@tryghost/metafield-types/structure`: the type ids and what each type is composed
   of. A type is one leaf, a record of named leaves, or a set of options its field
-  offers, and a leaf is text of a size or a choice from a list, such as a country. A
+  offers, and a leaf is text of a format or a choice from a list, such as a country. A
   field of a set type is set up with its options, which a field carries as its
   `settings`. It depends on nothing.
 - `@tryghost/metafield-types/countries`: the two-letter country codes the list of
