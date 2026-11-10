@@ -1,6 +1,7 @@
 import { movedBetween, type AppManifest } from '@tryghost/app-contracts/manifest';
 import { z } from 'zod';
-import type { AppInstallationEvent } from './actions';
+import { DbJson } from '../../lib/db-types/json';
+import type { ActionName } from '../action-log/kinds';
 import type { AppInstallationHistoryEntry, HistoryActor } from './codec';
 import type { AppInstallationManifestSource } from './schema';
 
@@ -20,10 +21,36 @@ export interface HistoryAction {
   created_at: Date;
 }
 
+// Context that isn't JSON, or doesn't say these, reads as an action without them rather than
+// failing the history.
+const ActionContext = DbJson(z.json());
+const NamedContext = z.object({ action_name: z.string() });
 const ApprovalContext = z.object({
   from_manifest_id: z.string(),
   to_manifest_id: z.string(),
 });
+
+/** An action with its context read, once. */
+interface ReadAction {
+  action: HistoryAction;
+  /**
+   * What happened, as the action log names it. Actions logged before those names existed carry
+   * the name as their verb.
+   */
+  name: string;
+  /** The manifests an approval moved between, when the context says. */
+  approval: { from: string; to: string } | null;
+}
+
+function read(action: HistoryAction): ReadAction {
+  const context = ActionContext.safeParse(action.context ?? '').data;
+  const approval = ApprovalContext.safeParse(context).data;
+  return {
+    action,
+    name: NamedContext.safeParse(context).data?.action_name ?? action.event,
+    approval: approval ? { from: approval.from_manifest_id, to: approval.to_manifest_id } : null,
+  };
+}
 
 interface Approval {
   action: HistoryAction;
@@ -42,26 +69,26 @@ export function buildHistory(
   actions: HistoryAction[],
   manifestContents: Map<string, AppManifest>,
 ): AppInstallationHistoryEntry[] {
-  const approvals = approvalsIn(actions);
+  const readActions = actions.map(read);
   return newestFirst([
-    ...installOf(manifests, actions),
+    ...installOf(manifests, readActions),
     ...updatesSuspensionsAndResumesOf(manifests),
-    ...approvals.map((approval) => approvalEntry(approval, manifestContents)),
-    ...uninstallsIn(actions),
+    ...approvalsIn(readActions).map((approval) => approvalEntry(approval, manifestContents)),
+    ...uninstallsIn(readActions),
   ]);
 }
 
 /** The ids of the manifests before and after each approval. */
 export function approvalManifestIds(actions: HistoryAction[]): string[] {
-  return [...new Set(approvalsIn(actions).flatMap(({ from, to }) => [from, to]))];
+  return [...new Set(approvalsIn(actions.map(read)).flatMap(({ from, to }) => [from, to]))];
 }
 
-function installOf(manifests: HistoryManifest[], actions: HistoryAction[]): Entry[] {
+function installOf(manifests: HistoryManifest[], actions: ReadAction[]): Entry[] {
   const installed = manifests.find(({ source }) => source === 'install');
   if (!installed) {
     return [];
   }
-  const recorded = actions.find(withEvent('installed'));
+  const recorded = actions.find(named('installed'))?.action;
   return [
     {
       id: recorded?.id ?? installed.id,
@@ -106,8 +133,8 @@ function approvalEntry({ action, from, to }: Approval, contents: Map<string, App
   };
 }
 
-function uninstallsIn(actions: HistoryAction[]): Entry[] {
-  return actions.filter(withEvent('uninstalled')).map((action) => ({
+function uninstallsIn(actions: ReadAction[]): Entry[] {
+  return actions.filter(named('uninstalled')).map(({ action }) => ({
     id: action.id,
     event: 'uninstalled',
     actor: action.actor,
@@ -115,15 +142,11 @@ function uninstallsIn(actions: HistoryAction[]): Entry[] {
   }));
 }
 
-function approvalsIn(actions: HistoryAction[]): Approval[] {
-  return actions.filter(withEvent('changes_approved')).map((action) => {
-    const context = ApprovalContext.parse(JSON.parse(action.context ?? 'null'));
-    return {
-      action,
-      from: context.from_manifest_id,
-      to: context.to_manifest_id,
-    };
-  });
+/** Approvals whose context says which manifests they moved between. */
+function approvalsIn(actions: ReadAction[]): Approval[] {
+  return actions
+    .filter(named('changes_approved'))
+    .flatMap(({ action, approval }) => (approval ? [{ action, ...approval }] : []));
 }
 
 /**
@@ -137,5 +160,6 @@ function newestFirst(entries: Entry[]): Entry[] {
   );
 }
 
-const withEvent = (event: AppInstallationEvent) => (action: HistoryAction) =>
-  action.event === event;
+/** Matches the actions the action log gives this name, which an installation's history uses. */
+const named = (name: ActionName<'app_installation'>) => (action: ReadAction) =>
+  action.name === name;

@@ -34,6 +34,7 @@ function createCoreHarness() {
     './server/services/invites': { default: { init() {} } },
     './server/services/integrations': { default: integrations },
     './server/services/stripe-checkout-config': { default: stripeCheckoutConfig },
+    './server/services/action-log': { default: { init() {} } },
   });
   return {
     init: (): Promise<void> => initCore({ config: { get: () => ({}) } }),

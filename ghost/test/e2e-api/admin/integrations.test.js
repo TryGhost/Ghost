@@ -333,7 +333,7 @@ describe('Integrations API', function () {
 
     const actions = res3.body.actions;
     const refreshedAction = actions.find((action) => {
-      return action.event === 'refreshed';
+      return action.event === 'edited' && JSON.parse(action.context).action_name === 'refreshed';
     });
     assertExists(refreshedAction);
   });
