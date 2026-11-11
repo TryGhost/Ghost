@@ -148,6 +148,12 @@ export default defineConfig(({ command, mode }) => ({
   resolve: sharedResolve,
   test: {
     environment: 'jsdom',
+    // Reuses workers and isolates each file in a VM context, skipping the
+    // per-file jsdom and module reload that dominated the forks pool
+    pool: 'vmThreads',
+    // VM contexts accumulate memory until a worker recycles; 1GB keeps peak
+    // RSS ~5GB at 4 workers without slowing the run
+    vmMemoryLimit: '1GB',
     globals: true,
     setupFiles: ['./test-utils/setup.ts'],
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'test-utils/**/*.test.ts'],
