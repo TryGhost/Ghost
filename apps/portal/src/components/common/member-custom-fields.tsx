@@ -319,7 +319,7 @@ function ListField({ field, value, errors, onChange }: FieldProps<'set'>) {
         label={field.name}
         labelId={labelId}
         multiple={settings.multiple}
-        options={settings.options}
+        options={settings.options.map((option) => ({ value: option, label: option }))}
         placeholder={t('Choose an option')}
         readOnly={readOnly}
         value={picked}
