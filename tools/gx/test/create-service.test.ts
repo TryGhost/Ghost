@@ -10,7 +10,7 @@ import {
   symlinkSync,
   writeFileSync,
 } from 'node:fs';
-import { createRequire } from 'node:module';
+import { createRequire, findPackageJSON } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, test } from 'node:test';
@@ -277,7 +277,14 @@ test('generated output passes real lint, boundary and inventory checks, which re
     path.dirname(requireRoot.resolve('eslint/package.json')),
     'bin/eslint.js',
   );
-  const depcruise = path.join(repo, 'node_modules/dependency-cruiser/bin/dependency-cruise.mjs');
+  const depcruiseManifest =
+    findPackageJSON('dependency-cruiser', import.meta.url) ??
+    assert.fail('dependency-cruiser is not installed');
+  const depcruise = path.join(
+    path.dirname(depcruiseManifest),
+    (JSON.parse(readFileSync(depcruiseManifest, 'utf8')) as { bin: { depcruise: string } }).bin
+      .depcruise,
+  );
   const vitest = path.join(path.dirname(requireRoot.resolve('vitest/package.json')), 'vitest.mjs');
   const tsc = path.join(
     path.dirname(

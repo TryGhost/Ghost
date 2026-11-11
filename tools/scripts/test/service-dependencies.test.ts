@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { findPackageJSON } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { it, type TestContext } from 'node:test';
-import { fileURLToPath } from 'node:url';
 import type { ICruiseResult } from 'dependency-cruiser';
 import ts from 'typescript';
 
@@ -13,8 +13,13 @@ const services = 'ghost/core/server/services';
 const alpha = `${services}/alpha`;
 const config = 'ghost/core/shared/config.ts';
 const resolver = 'tools/scripts/ci/service-dependency-resolver.mjs';
-const cli = fileURLToPath(
-  new URL('../../bin/dependency-cruise.mjs', import.meta.resolve('dependency-cruiser')),
+const depcruiseManifest =
+  findPackageJSON('dependency-cruiser', import.meta.url) ??
+  assert.fail('dependency-cruiser is not installed');
+const cli = path.join(
+  path.dirname(depcruiseManifest),
+  (JSON.parse(readFileSync(depcruiseManifest, 'utf8')) as { bin: { depcruise: string } }).bin
+    .depcruise,
 );
 
 function fixture(t: TestContext, files: Record<string, string>) {
