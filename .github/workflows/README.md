@@ -104,14 +104,15 @@ deployments record the commit that was actually deployed.
 
 ## Documentation changes
 
-CI treats `ghost/core/server/services/service-inventory.yaml` as documentation
-for runtime checks. Inventory edits still run the required **Validate service
-inventory** job, which runs the existing metadata tests without Ghost runtime
-setup or workspace builds. The same job runs when its test or configuration changes.
+Changes confined to documentation skip the full code and E2E jobs. Mixed runtime
+changes retain their normal checks.
 
-Changes confined to inventory and documentation skip the full code and E2E jobs.
-Validator changes still run code checks, and mixed runtime changes retain their
-normal checks.
+Boot never reads `ghost/core/server/services/legacy-service-inventory.yaml`, so a
+change confined to it skips the acceptance, legacy and E2E jobs. Lint decides
+which services to check from it, so it still runs lint and the affected unit
+tests and type checks. It also runs the required **Validate service inventory**
+job, which runs the metadata tests without Ghost runtime setup or workspace
+builds. The same job runs when its test or configuration changes.
 
 Run the focused validation locally with:
 

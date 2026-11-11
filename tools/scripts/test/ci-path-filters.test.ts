@@ -61,7 +61,7 @@ describe('CI path filters', () => {
     for (const exclusion of [
       '!**/*.md',
       '!**/*.mdx',
-      '!ghost/core/server/services/service-inventory.yaml',
+      '!ghost/core/server/services/legacy-service-inventory.yaml',
     ]) {
       const exclusionIndex = patterns.indexOf(exclusion);
       assert.notStrictEqual(exclusionIndex, -1);
@@ -85,40 +85,49 @@ describe('CI path filters', () => {
     assert.ok(e2e.includes('!**/*.mdx'));
   });
 
-  it('treats the service inventory as docs and keeps code checks for mixed changes', async () => {
-    const inventory = 'ghost/core/server/services/service-inventory.yaml';
-    const docs = await getFilterPatterns('docs');
-    assert.ok(docs.some((pattern) => picomatch(pattern, { dot: true })(inventory)));
-
-    for (const filterName of ['core', 'any-code', 'e2e']) {
+  it('runs code checks, but not runtime tests, when only the legacy service inventory changes', async () => {
+    const inventory = 'ghost/core/server/services/legacy-service-inventory.yaml';
+    const readme = 'ghost/core/server/services/README.md';
+    const matcher = async (filterName: string) => {
       const patterns = await getFilterPatterns(filterName);
       const positives = patterns.filter((pattern) => !pattern.startsWith('!'));
       const exclusions = patterns.filter((pattern) => pattern.startsWith('!'));
-      const matches = (path: string) =>
+      return (path: string) =>
         (positives.length === 0 ||
           positives.some((pattern) => picomatch(pattern, { dot: true })(path))) &&
         exclusions.every((pattern) => picomatch(pattern, { dot: true })(path));
-      const metadata = [inventory, 'ghost/core/server/services/README.md'];
+    };
 
-      assert.strictEqual(metadata.some(matches), false, filterName);
+    // Boot never reads the inventory, so it cannot change runtime behaviour.
+    for (const filterName of ['core', 'e2e']) {
+      const matches = await matcher(filterName);
+      assert.strictEqual([inventory, readme].some(matches), false, filterName);
       for (const runtime of [
         'ghost/core/server/services/identity-tokens/index.ts',
         'ghost/core/server/services/other-metadata.yaml',
         '.github/workflows/ci.yml',
       ]) {
-        assert.strictEqual([...metadata, runtime].some(matches), true, `${filterName}: ${runtime}`);
+        assert.strictEqual(
+          [inventory, readme, runtime].some(matches),
+          true,
+          `${filterName}: ${runtime}`,
+        );
       }
     }
 
-    const anyCode = await getFilterPatterns('any-code');
-    assert.ok(
-      anyCode.every((pattern) =>
-        picomatch(pattern, { dot: true })(
-          'ghost/test/unit/server/services/service-inventory.test.ts',
-        ),
-      ),
+    // Lint decides which services to check from the inventory. Removing an
+    // entry must run lint and the tooling tests, so it counts as code.
+    const anyCode = await matcher('any-code');
+    assert.strictEqual(anyCode(inventory), true, 'Inventory changes must run code checks');
+    assert.strictEqual(anyCode(readme), false);
+    assert.strictEqual(
+      anyCode('ghost/test/unit/server/services/legacy-service-inventory.test.ts'),
+      true,
       'Changes to the inventory validator must still run code checks',
     );
+
+    const docs = await matcher('docs');
+    assert.strictEqual(docs(inventory), false, 'The inventory is lint policy, not documentation');
   });
 
   it('requires focused validation for inventory metadata, its test and configuration', async () => {
@@ -126,8 +135,8 @@ describe('CI path filters', () => {
     const matches = (path: string) =>
       patterns.some((pattern) => picomatch(pattern, { dot: true })(path));
     for (const path of [
-      'ghost/core/server/services/service-inventory.yaml',
-      'ghost/test/unit/server/services/service-inventory.test.ts',
+      'ghost/core/server/services/legacy-service-inventory.yaml',
+      'ghost/test/unit/server/services/legacy-service-inventory.test.ts',
       'ghost/vitest.config.inventory.ts',
       '.github/workflows/ci.yml',
     ]) {

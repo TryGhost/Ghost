@@ -169,7 +169,6 @@ jobs:
               - '.github/scripts/**'
               - 'tools/scripts/**'
             docs:
-              - 'ghost/core/server/services/service-inventory.yaml'
               - '**/*.md'
               - '**/*.mdx'
               - '.agents/**'
@@ -181,8 +180,8 @@ jobs:
               - 'tools/scripts/ci/check-agent-guidance.ts'
               - 'tools/scripts/test/check-agent-guidance.test.ts'
             service-inventory:
-              - 'ghost/core/server/services/service-inventory.yaml'
-              - 'ghost/test/unit/server/services/service-inventory.test.ts'
+              - 'ghost/core/server/services/legacy-service-inventory.yaml'
+              - 'ghost/test/unit/server/services/legacy-service-inventory.test.ts'
               - 'ghost/vitest.config.inventory.ts'
               - '.github/workflows/ci.yml'
             package-standards:
@@ -217,8 +216,9 @@ jobs:
               # positive pattern so micromatch cannot add docs files back.
               - '!**/*.md'
               - '!**/*.mdx'
-              # Migration metadata is documentation; boot never reads it.
-              - '!ghost/core/server/services/service-inventory.yaml'
+              # Boot never reads the legacy service inventory. Lint does, so it
+              # still counts as code in any-code below.
+              - '!ghost/core/server/services/legacy-service-inventory.yaml'
               - '!ghost/vitest.config.inventory.ts'
             unit-test-globals:
               - 'vitest.config.mjs'
@@ -226,7 +226,6 @@ jobs:
               - 'ghost/vitest.config.ts'
               - 'ghost/test/utils/vitest-*.ts'
             any-code:
-              - '!ghost/core/server/services/service-inventory.yaml'
               - '!**/*.md'
               - '!**/*.mdx'
               - '!.github/CODEOWNERS'
@@ -240,7 +239,7 @@ jobs:
             # React Admin tests still run through the affected unit, acceptance,
             # lint and typecheck targets; only the build + E2E lane is skipped.
             e2e:
-              - '!ghost/core/server/services/service-inventory.yaml'
+              - '!ghost/core/server/services/legacy-service-inventory.yaml'
               - '!**/*.md'
               - '!**/*.mdx'
               - '!.github/CODEOWNERS'
