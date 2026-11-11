@@ -3,6 +3,7 @@ const debug = require('@tryghost/debug')('services:routing:renderer:renderer');
 const { IncorrectUsageError } = require('@tryghost/errors');
 const setContext = require('./context');
 const templates = require('./templates');
+const themeEngine = require('../theme-engine');
 const tpl = require('@tryghost/tpl');
 const messages = {
   couldNotReadFile: 'Could not read file {file}',
@@ -42,7 +43,7 @@ module.exports = function renderer(req, res, data) {
   }
 
   // Render Call
-  res.render(res._template, data, function (err, html) {
+  themeEngine.render(res, res._template, data, function (err, html) {
     if (err) {
       if (err.code === 'ENOENT') {
         return req.next(

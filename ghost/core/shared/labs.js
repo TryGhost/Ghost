@@ -54,6 +54,7 @@ const PRIVATE_FEATURES = [
   'csvContentImporter',
   'admin7Design',
   'admin7CustomizeFromViewSite',
+  'themePreview',
   'emailUniqueid',
   'themeTranslation',
   'pictureImageFormats',

@@ -10,6 +10,17 @@ let _errors;
  */
 const beforeSend = function (event, hint) {
   try {
+    // Theme preview tokens grant access while they last: never sent along
+    if (event.request) {
+      const themePreviewToken = require('./theme-preview-token');
+      event.request.url = themePreviewToken.redact(event.request.url);
+      if (event.request.headers?.['x-ghost-preview']) {
+        event.request.headers['x-ghost-preview'] = themePreviewToken.redact(
+          event.request.headers['x-ghost-preview'],
+        );
+      }
+    }
+
     const errors = _errors || (_errors = require('@tryghost/errors'));
     const exception = hint.originalException;
     const code = exception?.code ?? null;

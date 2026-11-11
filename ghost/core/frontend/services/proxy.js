@@ -113,6 +113,19 @@ module.exports = {
     },
   },
 
+  // Installed themes, for previewing one without activating it (Admin's Design
+  // settings). Lazy: the themes service loads after the frontend.
+  themes: {
+    // Own keys only: a name such as "constructor" is not a theme
+    get: (name) => {
+      const all = require('../../server/services/themes/list').getAll();
+      return Object.hasOwn(all, name) ? all[name] : undefined;
+    },
+    check: (name, theme) => require('../../server/services/themes/validate').check(name, theme),
+    canActivate: (checkedTheme) =>
+      require('../../server/services/themes/validate').canActivate(checkedTheme),
+  },
+
   // Labs utils for enabling/disabling helpers
   labs: require('../../shared/labs'),
   // URGH... Yuk (unhelpful comment :D)
