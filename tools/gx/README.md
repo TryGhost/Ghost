@@ -60,10 +60,10 @@ pnpm gx generate service delivery-receipts
 ```
 
 It creates a `defineService` root, a separate implementation with typed logging
-injection, and a starter root test. It adds `migrated: true` to the service
-inventory and registers the root in Oxlint for root-shape checks. Dependency
-checks already apply to every service implementation. Existing service files,
-directories and tests are never overwritten.
+injection, and a starter root test. It does not register the service anywhere:
+lint, boundary lint and the inventory test apply to every service that is not
+listed in the legacy service inventory. Existing service files, directories and
+tests are never overwritten, and a name that is still listed as legacy is refused.
 
 The command prints the remaining steps, including choosing the right place for
 `init()` in boot. See [creating a service](../../ghost/core/server/services/README.md#creating-a-service)
@@ -148,16 +148,16 @@ preparing a label segment. See [performance testing](../../docs/contributing/per
 
 ## Service migration reports
 
-These temporary commands combine the service inventory with the current
+These temporary commands combine the legacy service inventory with the current
 Dependency Cruiser audit. Run them from the repository root:
 
-| Command                                 | Output                                                         |
-| --------------------------------------- | -------------------------------------------------------------- |
-| `pnpm gx services report`               | Ownership totals, migration progress and remaining work        |
-| `pnpm gx services list`                 | Entries, ownership, migration status and dependency counts     |
-| `pnpm gx services report email-address` | One entry's notes, assessments, blockers and offending imports |
-| `pnpm gx services dependencies`         | Disallowed dependencies ranked by distinct importing files     |
-| `pnpm gx services audit`                | Dependency Cruiser's full native report                        |
+| Command                                 | Output                                                                |
+| --------------------------------------- | --------------------------------------------------------------------- |
+| `pnpm gx services report`               | Legacy and standard totals, ownership and remaining work              |
+| `pnpm gx services list`                 | Services, ownership, migration status and dependency counts           |
+| `pnpm gx services report email-address` | One legacy entry's notes, assessments, blockers and offending imports |
+| `pnpm gx services dependencies`         | Disallowed dependencies ranked by distinct importing files            |
+| `pnpm gx services audit`                | Dependency Cruiser's full native report                               |
 
 List a group with `list --group <group>`. Report tables show group IDs;
 `list --help` lists all groups. For example:
@@ -167,7 +167,7 @@ pnpm gx services list --group straightforward-clear
 pnpm gx services list --group needs-preparation
 pnpm gx services list --group to-migrate
 pnpm gx services list --group undecided
-pnpm gx services list --group migrated --json
+pnpm gx services list --group standard --json
 ```
 
 `report`, `list` and `dependencies` accept `--json` for structured output.
@@ -179,44 +179,42 @@ It replaces `pnpm audit:services`; `services dependencies` replaces
 ### Interpreting the reports
 
 Counts are calculated from the checkout, not stored in the inventory. The report
-shows one table with `MIGRATION`, `COUNT` and `GROUP` columns. Disposition
-(**Migrate**, **Relocate**, **Split** or **Undecided**) and migration progress
-are counted independently. See the [services README](../../ghost/core/server/services/README.md)
-for what each disposition means.
+shows one table with `MIGRATION`, `COUNT` and `GROUP` columns. The inventory
+lists legacy services only: a service found by the audit and not listed is
+**Standard**. Legacy entries are counted by disposition (**Left to migrate**,
+**Relocate**, **Split** or **Undecided**). See the
+[services README](../../ghost/core/server/services/README.md) for what each
+disposition means.
 
-Migration progress has three groups:
+Entries left to migrate have two progress groups:
 
-- **Migrated:** marked `migrated: true`, whatever the disposition, so this
-  group can overlap Relocate and Split.
-- **Needs preparation:** not migrated, and either assessment is
-  complex or identifies a possible model change.
-- **Straightforward:** not migrated, both assessments are
-  straightforward, and the existing model fits. This can still include
-  dependency violations and test gaps.
+- **Needs preparation:** either assessment is complex or identifies a possible
+  model change.
+- **Straightforward:** both assessments are straightforward, and the existing
+  model fits. This can still include dependency violations and test gaps.
 
 The `to-migrate` filter shows what's left to migrate:
 **needs preparation + straightforward**. Relocations, splits and undecided
 entries are listed by the `relocate`, `split` and `undecided` filters; their
 notes and migration assessments explain the work needed.
 
-Per-service reports show an entry's optional `futureHome`, a suggested home
+Per-service reports show a legacy entry's optional `futureHome`, a suggested home
 after this migration. It does not change the entry's group.
 
 Lists and per-service JSON expose independent `ownership` and `migrationStatus`
-fields instead of a combined category. Summary JSON retains labelled counts;
-ownership counts sum to **Catalogued entries**, and **Migrated + Unmigrated
-entries** gives the same total. Diagnostic counts are overlapping subsets,
-not additional services.
+fields instead of a combined category. A standard service has `Standard` in both
+and no `entry`. Summary JSON retains labelled counts; the disposition counts sum
+to **Legacy entries**, and **Legacy entries + Standard services** is every
+service found. Diagnostic counts are overlapping subsets, not additional services.
 
 Per-service reports show inventory notes before the migration assessments, so
 planned ownership changes are visible alongside earlier assessments. Notes are
 also included in JSON output as `entry.notes`.
 
-Entries found by the audit but absent from the inventory are **Not inventoried**;
-entries absent from the dependency graph have unknown counts. Malformed or
-incomplete assessments fail the report.
-The `not-analyzed` and `not-inventoried` diagnostic counts are available in
-summary JSON and list filters, but omitted from the text summary.
+Legacy entries absent from the dependency graph have unknown counts. Malformed
+or incomplete assessments fail the report.
+The `not-analyzed` diagnostic count is available in summary JSON and list
+filters, but omitted from the text summary.
 
 `list` counts distinct disallowed dependency targets per entry, with unresolved
 and own-root imports in separate columns. `dependencies` counts distinct

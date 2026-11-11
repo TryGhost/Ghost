@@ -65,11 +65,13 @@ checks were already disabled and remain off. All built-in Oxlint categories
 are off; enable further rules individually as `error` or `off`.
 `--deny-warnings` rejects accidental warnings.
 
-The `ghost/service-root-shape` rule checks only the migrated service roots listed
-in `.oxlintrc.json`. Its standalone implementation is
-`../oxlint/rules/service-root-shape.ts`. Update the configured paths when marking
-a root migrated; a tooling test compares them with the service inventory.
-Catalogue metadata validation remains separate from linting.
+The `ghost/service-root-shape` rule checks every service root, unless the
+service is listed in the
+[legacy service inventory](../../../ghost/core/server/services/README.md#standard-and-legacy-services).
+Its standalone implementation is `../oxlint/rules/service-root-shape.ts`. It
+reads the legacy names from the inventory, so a new root needs no configuration
+and deleting a legacy entry applies the rule. Lint fails if the inventory cannot
+be read. Catalogue metadata validation remains separate from linting.
 
 The Oxlint-only `ghost/no-injected-service-libraries` rule checks all TypeScript
 service roots for allowlisted libraries passed into local constructors. It
@@ -92,5 +94,5 @@ comments for custom-rule exceptions so ESLint does not report unused directives.
 Run the rule and scope regression tests with
 `pnpm --filter @internal/scripts exec node --test test/oxlint.test.ts`.
 
-Run service-root compatibility and migration-scope tests with
+Run service-root compatibility and scope tests with
 `pnpm --filter @internal/scripts exec node --test test/service-root-shape.test.ts`.

@@ -164,6 +164,16 @@ The resolver adapter in `ci/` keeps authored source resolution consistent. The
 [services guide](../../ghost/core/server/services/README.md#dependency-boundaries)
 defines the policy.
 
+`lib/legacy-services.ts` reads the legacy service inventory. Boundary lint, the
+`ghost/service-root-shape` Oxlint rule, the service generator and the reports all
+use it, so there is one definition of a legacy service.
+
+`ci/check-legacy-services.ts` (`pnpm lint:legacy-services`) fails when the
+checkout lists a legacy service, or defers dependency checks for one, that the
+commit it forked from `origin/main` does not. CI runs it on pull requests that
+change the inventory. It fails rather than skips when the base branch has not
+been fetched, so `pnpm lint` does not include it.
+
 ## TypeScript inventory
 
 `pnpm inventory:typescript --output /tmp/ghost-typescript` writes an adoption and

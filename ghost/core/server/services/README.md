@@ -73,13 +73,10 @@ show where models, settings, config, DomainEvents and other service instances
 belong. Import allowlisted libraries directly in the implementation; use
 `GhostLogger` for its injected logging type.
 
-The inventory entry uses `migrated: true`, and the root is added to Oxlint's
-configured paths for root-shape checks. Dependency checks apply to every service
-implementation independently of the marker.
-Its audit remains `pending`: the scaffold does not establish the capability's
-contracts. The initial `migration.reviewedAt` records the generator checkout
-revision, as its reason explains; review the implemented source before recording
-audit evidence.
+The generator does not register the service anywhere. Every service check
+applies to a service that is not listed in the
+[legacy service inventory](#standard-and-legacy-services), so a new service is
+checked from its first commit.
 
 Complete the steps printed by the command:
 
@@ -93,7 +90,7 @@ Complete the steps printed by the command:
    fail after acquiring resources, clean them up before rethrowing. Arrange
    normal shutdown separately when needed.
 4. Extend the starter test with behavior, dependency timing, and failure/retry
-   coverage. Record the implemented inventory contracts and resolve its blockers.
+   coverage. If the root declares extras, [catalogue them](#standard-root-contract).
 5. Run the generated root test and the repository checks:
 
    ```sh
@@ -107,28 +104,47 @@ The generator rejects invalid names and existing service or test paths. See the
 
 ## Implementation and migration
 
-The definition above guides new roots and directory cleanup. Existing roots
-still use different construction and export patterns; a uniform managed
-lifecycle interface is not yet the implemented contract throughout this
-directory. Do not assume every root exports `init`, `service`, and `shutdown`.
-Standardizing that interface must include the implementation, boot wiring, and
-tests, not just a documentation change.
+The definition above guides new roots and directory cleanup. Legacy roots
+still use different construction and export patterns. Do not assume a legacy
+root exports `init`, `service`, and `shutdown`. Migrating one must include the
+implementation, boot wiring, and tests, not just a documentation change.
 
-The temporary [service inventory](service-inventory.yaml) tracks this migration.
-Update it when adding, removing or renaming a root. It includes standalone
-files and supporting modules still awaiting relocation. Boot never reads it.
+### Standard and legacy services
 
-Entries marked `migrated: true` use the
-[kernel's `defineService` initializer](../../kernel/README.md#service-initialization).
-The inventory's `exemplaryMigration` points to IndexNow as the example to follow.
-The marker tracks adoption independently of audit completeness or remaining
-lifecycle work.
+Every service check applies to every service, unless the service is listed
+under `services` in the
+[legacy service inventory](legacy-service-inventory.yaml).
+
+A service that is not listed is standard. It must be:
+
+- A directory with an `index.ts` root. The inventory test checks this.
+- A root that default-exports the
+  [kernel's `defineService` initializer](../../kernel/README.md#service-initialization).
+  See the [standard root contract](#standard-root-contract).
+- Free of hidden dependencies. See [dependency boundaries](#dependency-boundaries).
+
+[IndexNow](indexnow-ping/index.ts) (`indexnow-ping`) is the example to follow.
+
+The inventory is temporary and boot never reads it. It has two sections:
+
+- `services` lists the legacy services with their audit record and migration
+  assessment. It includes standalone files and supporting modules still awaiting
+  relocation. This list only shrinks: CI rejects a pull request that adds a name.
+- `standard` records what is still open for services that already meet the
+  standard. An entry can have only `extras` (the catalogue described in the
+  [standard root contract](#standard-root-contract)), `futureHome` and
+  `lifecycle`, a list of notes on what `defineService` does not do for the
+  service yet. A standard service with nothing open has no entry.
+
+Migrating a service means deleting its `services` entry and its known
+violations. Git history keeps the audit record. Move any extra it declares into
+the second section.
 
 ### Dependency boundaries
 
 The root `index.ts` wires runtime dependencies and passes them to the
-implementation. Dependency rules apply to every service, regardless of its
-`migrated` marker or presence in the inventory. Implementation files may import:
+implementation. Dependency rules apply to every service, legacy or standard.
+Implementation files may import:
 
 - Files within the same service, except its root `index.ts` or `index.js`.
 - Types, using explicit type-only imports.
@@ -204,9 +220,8 @@ available, so workspace contracts are checked without relying on build output.
 `pnpm lint:boundaries`, also run by `pnpm check` and CI, checks all service
 implementations in the same dependency-cruiser scan as Core and app boundaries.
 Top-level `index.ts` and legacy `index.js` files are wiring roots and exempt;
-nested indexes and standalone service files are checked. This preserves the
-legacy audit's wiring exemption without making migration status an enforcement
-switch.
+nested indexes and standalone service files are checked. The exemption is the
+same for legacy and standard services.
 
 Existing violations are recorded in
 [the known-violations file](../../../../.dependency-cruiser-known-violations.json).
@@ -216,19 +231,18 @@ change the baseline. Local and workspace dependencies use resolved source paths.
 Moving either file or adding a new import cannot inherit another entry's exception.
 
 CI rejects new violations, stale entries, duplicate entries and entries for
-migrated services. When fixing a violation, remove its entry in the same change;
-when marking a service migrated, remove all its entries. Do not regenerate the
-file to accept new violations. The file should only shrink. Any exceptional
+services that are not legacy. When fixing a violation, remove its entry in the
+same change; when migrating a service, remove all its entries with its legacy
+entry. Do not regenerate the file to accept new violations. The file should only shrink. Any exceptional
 addition or move needs explicit review; CODEOWNERS covers it and the rule config.
 
-A few unmigrated services change too often for a file-level list to hold: it
-would go stale between a pull request opening and merging. The checker's
-[`deferredServices`](../../../../tools/scripts/lib/dependency-boundaries.ts) list
-names them. Their violations stay in reports and in the lint summary count, but
-do not fail lint and have no entries in the file. In those services, still pass
-new dependencies in through whatever file already composes the service. A
-service leaves the list when it is migrated. The list should only shrink, and a
-service that is not named is checked from its first commit.
+A few legacy services change too often for a file-level list to hold: it
+would go stale between a pull request opening and merging. Their inventory entry
+says `dependencyChecks: deferred`. Their violations stay in reports and in the
+lint summary count, but do not fail lint and have no entries in the file. In
+those services, still pass new dependencies in through whatever file already
+composes the service. The deferral ends when the entry is deleted. CI rejects a
+new deferral, and a service that is not listed is checked from its first commit.
 
 The shared [boundary checker](../../../../tools/scripts/lib/dependency-boundaries.ts)
 compares the current graph with this file. Native dependency-cruiser baselines
@@ -255,7 +269,7 @@ per-service details and dependency audits.
 
 ### Migration assessment
 
-Each entry also has a source-based `migration` assessment:
+Each legacy entry has a source-based `migration` assessment:
 
 - `complexity: straightforward` means bounded factory, export and boot-order changes.
   `complex` means substantial ownership, dependency, failure or lifetime work;
@@ -272,11 +286,10 @@ Each entry also has a source-based `migration` assessment:
 These are migration estimates, not proof that the kernel must change or permission
 to redesign a service. Recheck the evidence before implementation. An assessment
 neither completes the contract audit nor establishes test coverage or passing tests.
-Migrated services cannot be classified as `not-applicable`.
 
 #### Dependency assessment
 
-Unmigrated entries also record `migration.dependencies`, separately from the
+Legacy entries also record `migration.dependencies`, separately from the
 earlier overall migration assessment above:
 
 - `complexity: straightforward` means dependencies are already explicit or can
@@ -303,8 +316,8 @@ A newer complex dependency assessment supersedes an older straightforward
 overall estimate for planning: that service needs preparation before a small
 initializer migration. A straightforward dependency assessment does not establish
 an easy lifecycle migration, sufficient test coverage or passing tests. Existing
-`blockers` and contract evidence still apply. Preserve this assessment as historical evidence
-when marking a service migrated; recheck it against current source before use.
+`blockers` and contract evidence still apply. Recheck the assessment against current
+source before use. It is deleted with the entry when the service is migrated.
 Do not store report totals in the inventory or infer kernel requirements from
 violation counts. Shared primitives need a demonstrated application-independent
 contract; feature-specific helpers stay with their owners.
@@ -335,7 +348,7 @@ migration, relative to `ghost`, when its current or planned home is
 questionable. Any disposition can have one. It is a suggestion, not a planned
 move, and does not block the migration, relocation or split.
 
-Each entry records its intended ownership and audit status. `pending` means
+Each legacy entry records its intended ownership and audit status. `pending` means
 the contract audit has not started; `auditing` means evidence is incomplete;
 `audited` means all facets have been investigated and recorded from source or
 test evidence. It describes audit completeness, not test coverage or migration
@@ -382,12 +395,12 @@ Record missing coverage and known bugs in `blockers`. Before changing a service,
 address the gaps relevant to that change; neither `audited` nor a passing
 inventory check proves that its behavior is protected against regressions.
 
-The unit test checks the inventory's shape, example, paths, directory coverage
-and extras catalogue. It reads declared extras without importing services or
-driving initialization. Oxlint separately enforces the public root shape. `README.md` and the inventory
-itself are the only metadata exclusions. Retire the inventory after migration;
-keep the behavioral tests and carry the established service convention check
-forward independently of the catalogue.
+The unit test checks the inventory's shape and paths, and the extras catalogue.
+It checks that every legacy entry exists, and that everything else in this
+directory is a directory with an `index.ts` root. It reads declared extras
+without importing services or driving initialization. Oxlint separately enforces
+the public root shape. `README.md` and the inventory itself are the only metadata
+exclusions. Retire the inventory after migration; keep the behavioral tests.
 
 Follow an existing service in the same area when extending established code,
 without treating its legacy placement or lifecycle shortcuts as requirements.
@@ -399,10 +412,10 @@ its implementation keeps named exports. Existing CommonJS callers read
 `require('./donations').default`; a CommonJS wrapper is not needed merely
 because boot still uses `require()`.
 
-## Migrated root contract
+## Standard root contract
 
-Roots marked `migrated: true` default-export a `defineService` initializer with
-`init`, a guarded `service` getter, and optional typed `extras`. Type-only named
+Every root that is not a legacy service default-exports a `defineService`
+initializer with `init`, a guarded `service` getter, and optional typed `extras`. Type-only named
 exports are allowed; other runtime exports belong in `extras` during migration.
 Implementation files may still export their classes and supporting contracts.
 
@@ -424,7 +437,8 @@ Availability, request identity conversion and later background activation have
 different callers and timing requirements; putting them in one object does not
 change their behaviour or ownership.
 
-Catalogue every member under the service's `extras` inventory entry, recording:
+Catalogue every member under the service's `extras` in the inventory's section
+for standard services, recording:
 
 - `purpose` and production `callers` (paths relative to `ghost`).
 - `timing`, including whether a ready instance is needed and whether configuration
@@ -434,21 +448,22 @@ Catalogue every member under the service's `extras` inventory entry, recording:
 
 The Oxlint rule `ghost/service-root-shape` enforces default initializers,
 explicit extras and the absence of other runtime exports or container mutations.
-Its configuration lists migrated roots explicitly; a tooling test keeps that list
-in sync with `migrated: true` in the inventory. Update `.oxlintrc.json` when marking
-a root migrated. Legacy roots remain outside the rule until migrated. The separate inventory test requires declared extras
-names to match the catalogue exactly. Behavioural tests still establish readiness,
+It applies to every `services/*/index.ts` and reads the legacy service inventory
+for the roots to skip, so a new root needs no registration. Deleting a legacy
+entry applies the rule to that root. The separate inventory test requires
+declared extras names to match the catalogue exactly. Behavioural tests still establish readiness,
 boot ordering, resource cleanup and each extra's semantics.
 
 ## Initialization
 
-Ghost's boot sequence owns service construction. A new service that requires
-initialization must expose an explicit `init()` and be called from
-`ghost/core/boot.js` in the appropriate boot phase. Do not make the first
-request responsible for constructing the service.
+Ghost's boot sequence owns service construction. A new service root must
+default-export the
+[kernel's `defineService` helper](../../kernel/README.md#service-initialization)
+and have its `init()` awaited from `ghost/core/boot.js` in the appropriate boot
+phase. Existing legacy roots keep their shape until migrated. Do not make the
+first request responsible for constructing the service.
 
-For a root using the [kernel's `defineService` helper](../../kernel/README.md#service-initialization),
-the service author supplies a `create` callback that constructs and returns a
+With `defineService`, the service author supplies a `create` callback that constructs and returns a
 ready instance. Boot awaits the root's `init()`; consumers then read `.service`.
 The kernel guide describes the full contract, including concurrent calls and
 explicit retries after failure.

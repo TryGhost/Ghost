@@ -20,9 +20,9 @@ guide; read it rather than copying an earlier migration blindly.
 - Inspect status, existing branches/worktrees and related PRs. Preserve unrelated
   work. Fetch `origin` and start from current `origin/main`; refresh dependencies
   with `pnpm bootstrap` in a fresh checkout or after dependency changes.
-- Read this service's entry in
-  `ghost/core/server/services/service-inventory.yaml` and any existing migration
-  plan. If a plan-registry skill is available, use it to find/update that plan;
+- Read this service's entry under `services` in
+  `ghost/core/server/services/legacy-service-inventory.yaml` and any existing
+  migration plan. If a plan-registry skill is available, use it to find/update that plan;
   do not create a competing plan in the repository.
 - Verify prerequisites are merged. An open tests or enforcement PR is not main.
   Preparation can proceed against a proposed policy, but record its exact head
@@ -70,8 +70,8 @@ that needs the allowance. Assert each rejected target as well as its rule and
 source in boundary regressions. Keep allowances out of standalone skill/tooling
 PRs.
 Seek review when that distinction is unclear or a broader policy change is
-needed; do not widen the rule merely to make lint pass. Normal inventory and
-root-shape opt-ins still belong in each migration.
+needed; do not widen the rule merely to make lint pass. Deleting the service's
+legacy entry still belongs in each migration.
 
 Preserve late acquisition with getters/factories when dependencies are unavailable
 at boot. Inspect `pnpm gx services report <name>` and the full
@@ -146,19 +146,25 @@ preparation. The only new cases permitted in the migration commit are boundary
 regressions for new exact dependency allowances. Never weaken assertions,
 coverage gates, lint or types to make the refactor pass.
 
-## 5. Update metadata and verify
+## 5. Update the inventory and verify
 
-Update this service's inventory entry: `migrated`, entry points, evidence,
-contracts, extras and remaining gaps. Repair affected file references and
-startup-order descriptions in other entries mechanically, without changing
-their unrelated assessments.
-Preserve historical audit provenance;
-record the inspected base and distinguish old evidence from new validation.
-Do not restore manual totals or erase unrelated backlog items.
+A migrated service is no longer legacy:
 
-Opt the root into `ghost/service-root-shape` in `.oxlintrc.json` as required by
-the current configuration; the tooling scope check must agree with the inventory.
-`migrated: true` also opts implementations into the boundary checks. Do not claim enforcement passed if that policy was
+- Delete its entry under `services` in the legacy service inventory. Git
+  history keeps the audit record.
+- Delete all its entries from `.dependency-cruiser-known-violations.json`. A
+  service that is not legacy cannot have any.
+- If the root declares extras, move their catalogue to the service's entry in
+  the inventory's section for standard services. A suggested future home, and
+  notes on what `defineService` does not do for the service yet, go there too.
+  That entry holds nothing else; leave it out when nothing is open.
+- Repair affected file references and startup-order descriptions in other
+  legacy entries mechanically, without changing their unrelated assessments.
+
+There is no lint list to update. Deleting the entry applies
+`ghost/service-root-shape` to the root and full boundary enforcement to the
+implementation. Never add a legacy entry or defer a service's dependency
+checks: CI rejects both. Do not claim enforcement passed if that policy was
 only checked in a temporary integration or is still awaiting merge.
 
 Run focused tests before/after, relevant real consumer/DB checks, root-shape and
