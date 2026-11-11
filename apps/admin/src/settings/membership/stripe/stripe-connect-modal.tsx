@@ -127,7 +127,13 @@ const useSaveStripeConnection = () => {
       handleError(e);
       return 'failed';
     }
-    await saveTier();
+    // Stripe is connected now; setting the tier's prices or Portal's plans
+    // failing is shown, but doesn't undo it.
+    try {
+      await saveTier();
+    } catch (e) {
+      handleError(e);
+    }
     try {
       await editSettings([
         { key: 'portal_plans', value: JSON.stringify(['free', 'monthly', 'yearly']) },
