@@ -59,6 +59,9 @@ module.exports = function getConfigProperties() {
     clientExtensions: config.get('clientExtensions') || {},
     enableDeveloperExperiments: config.get('enableDeveloperExperiments') || false,
     stripeDirect: config.get('stripeDirect'),
+    // Whether Stripe connections go through account.ghost.org. Admin follows
+    // this rather than the labs flag: an older Core leaves it out.
+    stripeConnectBridge: labs.isSet('oauthBridge'),
     mailgunIsConfigured: !!(config.get('bulkEmail') && config.get('bulkEmail').mailgun),
     emailAnalytics: config.get('emailAnalytics:enabled'),
     hostSettings: sanitizeHostSettings(config.get('hostSettings')),

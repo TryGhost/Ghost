@@ -27,6 +27,7 @@ Object {
       "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",
       "version": "0.4",
     },
+    "stripeConnectBridge": true,
     "stripeDirect": false,
     "useGravatar": false,
     "version": StringMatching /\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+/,
