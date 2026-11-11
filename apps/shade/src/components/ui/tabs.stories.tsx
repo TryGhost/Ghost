@@ -218,6 +218,9 @@ export const UnderlineRichLabels: Story = {
             Order <strong>details</strong>
           </span>
         </TabsTrigger>
+        <TabsTrigger data-testid="direct-rich-tab-label" value="direct">
+          Order <strong>details</strong>
+        </TabsTrigger>
         <TabsTrigger value="shipping">Shipping details</TabsTrigger>
       </TabsList>
     </Tabs>

@@ -153,7 +153,7 @@ function renderTabsTriggerLabel(children: React.ReactNode, asChild = false): Rea
     return React.cloneElement(children, undefined, renderTabsTriggerLabel(children.props.children));
   }
 
-  return React.Children.map(children, (child) => {
+  const sizedChildren = React.Children.map(children, (child) => {
     if (typeof child === 'string' || typeof child === 'number') {
       const label = typeof child === 'string' ? child.trim() : child;
       if (label === '') {
@@ -187,6 +187,37 @@ function renderTabsTriggerLabel(children: React.ReactNode, asChild = false): Rea
     }
     return child;
   });
+
+  const renderedChildren: React.ReactNode[] = [];
+  let labelChildren: React.ReactNode[] = [];
+  const flushLabel = () => {
+    if (
+      labelChildren.length > 1 &&
+      labelChildren.some((child) => typeof child !== 'string' || child.trim())
+    ) {
+      // A single inline context preserves spaces between direct trigger children.
+      renderedChildren.push(<span key={`label-${renderedChildren.length}`}>{labelChildren}</span>);
+    } else {
+      renderedChildren.push(...labelChildren);
+    }
+    labelChildren = [];
+  };
+
+  React.Children.toArray(sizedChildren).forEach((child) => {
+    if (
+      typeof child === 'string' ||
+      typeof child === 'number' ||
+      (React.isValidElement(child) &&
+        (child.type === React.Fragment || (typeof child.type === 'string' && child.type !== 'svg')))
+    ) {
+      labelChildren.push(child);
+    } else {
+      flushLabel();
+      renderedChildren.push(child);
+    }
+  });
+  flushLabel();
+  return renderedChildren;
 }
 
 const TabsTrigger = React.forwardRef<
