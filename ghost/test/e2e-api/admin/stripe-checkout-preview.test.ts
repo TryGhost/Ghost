@@ -111,71 +111,66 @@ describe('Stripe Checkout Preview Admin API', function () {
       await models.Base.knex('members_metafields').del();
     });
 
-    function previewShipping(shipping: Record<string, unknown>) {
-      return preview({ tier_id: paidTierId, design: { customize: false }, shipping });
+    const shipping = {
+      collect: true,
+      address: { custom_field_key: 'delivery_address' },
+      name: { custom_field_key: 'recipient_name' },
+    };
+
+    function previewShipping(previewed: Record<string, unknown>, status = 200) {
+      return preview(
+        { tier_id: paidTierId, design: { customize: false }, shipping: previewed },
+        status,
+      );
     }
 
     it('asks for an address in the countries being previewed', async function () {
-      await previewShipping({
-        collect: true,
-        allowed_countries: ['GB', 'IE'],
-        address: { custom_field_key: 'delivery_address' },
-        name: { custom_field_key: 'recipient_name' },
-      });
+      await previewShipping({ ...shipping, allowed_countries: ['GB', 'IE'] });
 
       const session = stripeMocker.checkoutSessions.at(-1);
       assert.deepEqual(session.shipping_address_collection.allowed_countries, ['GB', 'IE']);
     });
-  });
 
-  // A preview has to show what it was asked to, so it never opens without part of it.
-  describe('when Stripe refuses part of it', function () {
-    beforeEach(function () {
-      mockManager.mockLabsEnabled('stripeCheckoutCollection');
-      mockManager.mockLabsDisabled('stripeAutomaticTax');
-    });
+    // A preview has to show what it was asked to, so it never opens without part of it.
+    describe('when Stripe refuses it', function () {
+      it('says which part Stripe refused, with Stripe’s reason', async function () {
+        stripeMocker.checkoutParamRefusal = {
+          param: 'shipping_address_collection',
+          error: {
+            type: 'invalid_request_error',
+            param: 'shipping_address_collection[allowed_countries]',
+            message: 'Shipping address collection is not available.',
+          },
+        };
 
-    function previewTaxId() {
-      return preview(
-        { tier_id: paidTierId, design: { customize: false }, tax_number: { collect: true } },
-        422,
-      );
-    }
+        const { body } = await previewShipping(shipping, 422);
+        assert.equal(
+          body.errors[0].context,
+          'Stripe refused to ask for a shipping address. Shipping address collection is not available.',
+        );
+        assert.equal(body.errors[0].property, 'shipping');
+        assert.equal(stripeMocker.checkoutSessions.length, 0);
+      });
 
-    it('says which part Stripe refused, with Stripe’s reason', async function () {
-      stripeMocker.checkoutParamRefusal = {
-        param: 'tax_id_collection',
-        error: {
-          type: 'invalid_request_error',
-          param: 'tax_id_collection[enabled]',
-          message: 'Tax ID collection is not available.',
-        },
-      };
+      // Stripe also refuses sessions for reasons of the account's own, so without a named part
+      // the preview can't say the settings are why.
+      it('says Stripe refused the checkout when it names nothing, with Stripe’s reason', async function () {
+        stripeMocker.checkoutParamRefusal = {
+          param: 'shipping_address_collection',
+          error: {
+            type: 'invalid_request_error',
+            message: 'Shipping address collection needs more.',
+          },
+        };
 
-      const { body } = await previewTaxId();
-      assert.equal(
-        body.errors[0].context,
-        'Stripe refused to ask for a tax ID. Tax ID collection is not available.',
-      );
-      assert.equal(body.errors[0].property, 'tax_number');
-      assert.equal(stripeMocker.checkoutSessions.length, 0);
-    });
-
-    // Stripe also refuses sessions for reasons of the account's own, so without a named part the
-    // preview can't say the settings are why.
-    it('says Stripe refused the checkout when it names nothing, with Stripe’s reason', async function () {
-      stripeMocker.checkoutParamRefusal = {
-        param: 'tax_id_collection',
-        error: { type: 'invalid_request_error', message: 'Tax ID collection needs more.' },
-      };
-
-      const { body } = await previewTaxId();
-      assert.equal(
-        body.errors[0].context,
-        'Stripe refused to open this checkout. Tax ID collection needs more.',
-      );
-      assert.equal(body.errors[0].property, null);
-      assert.equal(stripeMocker.checkoutSessions.length, 0);
+        const { body } = await previewShipping(shipping, 422);
+        assert.equal(
+          body.errors[0].context,
+          'Stripe refused to open this checkout. Shipping address collection needs more.',
+        );
+        assert.equal(body.errors[0].property, null);
+        assert.equal(stripeMocker.checkoutSessions.length, 0);
+      });
     });
   });
 

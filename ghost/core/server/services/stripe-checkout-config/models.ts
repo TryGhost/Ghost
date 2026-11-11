@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { STRIPE_CHECKOUT_BORDER_STYLES, STRIPE_CHECKOUT_FONTS } from '@tryghost/checkout';
 import { KeySchema } from '@tryghost/metafield-types/identity';
-import { COLLECTED_PARTS, type CollectedPart, type RequirementName } from '@tryghost/checkout';
+import { COLLECTED_PARTS, type CollectedPart } from '@tryghost/checkout';
 import type { CamelToSnake, SnakeToCamel } from '../../lib/case-keys';
 
 /**
@@ -56,23 +56,12 @@ export const PhoneSettings = CollectedPart.extend({
 });
 export type PhoneSettings = z.infer<typeof PhoneSettings>;
 
-/**
- * Letting a business buyer give a tax ID at checkout, as the publisher set it. Stripe keeps the
- * tax ID on the customer and shows it on their invoices, so Ghost saves nothing and needs no
- * custom field. It's called a tax number in code, as a name ending in `_id` reads as a reference
- * to another record.
- */
-export const TaxNumberSettings = CollectedPart;
-export type TaxNumberSettings = z.infer<typeof TaxNumberSettings>;
-
 /** Each collected part of the config as saved. */
 const COLLECTED_SETTINGS = {
   /** Null means checkout doesn't ask for a shipping address. */
   shipping: ShippingSettings.nullable(),
   /** Null means checkout doesn't ask for a phone number. */
   phone: PhoneSettings.nullable(),
-  /** Null means checkout doesn't let buyers give a tax ID. */
-  taxNumber: TaxNumberSettings.nullable(),
 } satisfies Record<CollectedSection, z.ZodType>;
 
 /** The site-wide Stripe Checkout config. */
@@ -90,7 +79,6 @@ export type StripeCheckoutConfig = z.infer<typeof StripeCheckoutConfig>;
 export const SECTION_OF = {
   shipping: 'shipping',
   phone: 'phone',
-  tax_number: 'taxNumber',
 } as const satisfies { [Part in CollectedPart]: SnakeToCamel<Part> };
 export type CollectedSection = (typeof SECTION_OF)[CollectedPart];
 
@@ -101,36 +89,18 @@ export type CollectedSection = (typeof SECTION_OF)[CollectedPart];
 export const COLLECTED_SECTIONS = COLLECTED_PARTS.map((part) => SECTION_OF[part]);
 
 /**
- * The collected parts whose answers Ghost saves nowhere, so they keep their tiers in the config.
- * Every other part saves into custom fields and keeps its tiers as the tier requirement of the
- * same name, so whoever collects it asks on the same tiers.
- */
-export const CONFIG_TIER_PARTS = ['tax_number'] as const satisfies readonly Exclude<
-  CollectedPart,
-  RequirementName
->[];
-export const CONFIG_TIER_SECTIONS = CONFIG_TIER_PARTS.map((part) => SECTION_OF[part]);
-export type ConfigTierSection = (typeof CONFIG_TIER_SECTIONS)[number];
-
-export function keepsTiersInConfig(section: CollectedSection): section is ConfigTierSection {
-  return CONFIG_TIER_SECTIONS.some((candidate) => candidate === section);
-}
-
-/**
- * Each collected part's name where it is stored, in its own column and in the rows naming its
- * tiers, which is also its name in the Admin API.
+ * Each collected part's name in the Admin API, which is also the name of the tier requirement it
+ * keeps its tiers as.
  */
 export const SECTION_NAMES = {
   shipping: 'shipping',
   phone: 'phone',
-  taxNumber: 'tax_number',
 } as const satisfies { [Section in CollectedSection]: CamelToSnake<Section> };
 
 /** What each collected part asks the buyer for, as messages about it name it. */
 export const COLLECTED_NOUNS = {
   shipping: 'shipping address',
   phone: 'phone number',
-  taxNumber: 'tax ID',
 } as const satisfies Record<CollectedSection, string>;
 
 /**
@@ -154,7 +124,6 @@ export type AskedPart = z.infer<typeof CollectedPart>;
 export interface AskedParts {
   shipping: AskedPart & Pick<ShippingSettings, 'allowedCountries'>;
   phone: AskedPart;
-  taxNumber: AskedPart;
 }
 
 /**
@@ -171,8 +140,6 @@ export interface Asking {
   shipping: Pick<ShippingSettings, 'allowedCountries'>;
   /** Asked the same way on every checkout. */
   phone: Record<string, never>;
-  /** Offered the same way on every checkout. */
-  taxNumber: Record<string, never>;
 }
 
 /** How a checkout asks for each collected part, or null for each it doesn't ask for. */

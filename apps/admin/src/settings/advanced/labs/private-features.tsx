@@ -82,7 +82,7 @@ const features: Feature[] = [
   {
     title: 'Stripe checkout collection',
     description:
-      'Let admins turn on shipping address, phone number and tax number collection for a tier, asked by Stripe checkout and stored against the member',
+      'Let admins turn on shipping address and phone number collection for a tier, asked by Stripe checkout and stored against the member',
     flag: 'stripeCheckoutCollection',
   },
   {

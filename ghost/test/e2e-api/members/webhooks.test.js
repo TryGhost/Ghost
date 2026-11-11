@@ -4548,7 +4548,6 @@ describe('Members API', function () {
     afterEach(async function () {
       mockManager.restore();
       await models.Base.knex('webhooks').del();
-      await models.Base.knex('stripe_checkout_config_tiers').del();
       await models.Base.knex('stripe_checkout_config').del();
       await models.Base.knex('members_metafield_bindings').del();
       await models.Base.knex('tier_requirement_tiers').del();
