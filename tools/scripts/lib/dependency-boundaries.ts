@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { findPackageJSON } from 'node:module';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import type { ICruiseResult, IViolation } from 'dependency-cruiser';
 import yaml from 'js-yaml';
 import { z } from 'zod';
@@ -105,9 +105,14 @@ export function compareKnownViolations(graph: ICruiseResult, known: KnownViolati
 // Reports retain all findings; only lint uses the comparison to decide success.
 export function readDependencyBoundaries(repository: string) {
   const known = readKnownViolations(repository);
-  const cli = fileURLToPath(
-    new URL('../../bin/dependency-cruise.mjs', import.meta.resolve('dependency-cruiser')),
-  );
+  const manifest = findPackageJSON('dependency-cruiser', import.meta.url);
+  if (!manifest) {
+    throw new Error('dependency-cruiser is not installed.');
+  }
+  const { bin } = z
+    .object({ bin: z.object({ depcruise: z.string() }) })
+    .parse(JSON.parse(readFileSync(manifest, 'utf8')));
+  const cli = path.join(path.dirname(manifest), bin.depcruise);
   const result = spawnSync(
     process.execPath,
     [cli, 'ghost/core', 'apps', '--config', '.dependency-cruiser.cjs', '--output-type', 'json'],
