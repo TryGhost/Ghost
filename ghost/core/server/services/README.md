@@ -156,7 +156,9 @@ Logging, config, settings, models, event buses and other service instances
 belong in the root wiring. Nested `index.ts` files are implementation files, not
 extra wiring roots. The rule covers static imports, `require()`, literal dynamic
 imports and re-exports. All implementation source inside a service is checked, including
-nested folders named `test` or `fixtures`.
+nested folders named `test` or `fixtures`. The scan cannot follow a computed
+`require()` or `import()` argument, so `import/no-dynamic-require` rejects those
+in every service file.
 
 Some dependencies look like libraries but are treated as instances:
 

@@ -977,3 +977,17 @@ test('rejects any in exported service types only', () => {
   ].join('\n');
   assert.equal(lint(shadowed, file).status, 0);
 });
+
+test('rejects computed require and import in service files, which the boundary scan cannot follow', () => {
+  const source = `
+    const name = ['@tryghost', 'logging'].join('/');
+    module.exports = { eager: require(name), lazy: () => import(name), own: () => import('./helper') };
+  `;
+  const service = lint(source, 'ghost/core/server/services/legacy/implementation.js');
+  assert.deepEqual(
+    service.diagnostics.map(({ code }) => code),
+    ['import(no-dynamic-require)', 'import(no-dynamic-require)'],
+  );
+  const elsewhere = lint(source, 'ghost/core/server/lib/implementation.js');
+  assert.ok(!elsewhere.diagnostics.some(({ code }) => code === 'import(no-dynamic-require)'));
+});
