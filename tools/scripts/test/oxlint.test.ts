@@ -856,6 +856,18 @@ test('requires a stop for the server getAgentsWithFrontend starts', () => {
     lint(`${starts}\ntimer.stop();`, testFile).diagnostics.map((d) => d.code),
     [code],
   );
+  assert.equal(
+    lint(`${starts}\nconst { ghostServer: server } = agents;\nawait server.stop();`, testFile)
+      .status,
+    0,
+  );
+  assert.equal(
+    lint(
+      'let agents;\nagents = await e2e.getAgentsWithFrontend();\n({ ghostServer: server } = agents);\nawait server.stop();',
+      testFile,
+    ).status,
+    0,
+  );
   assert.deepEqual(
     lint(
       `${starts}\nconst { ghostServer: timer } = unrelated;\ntimer.stop();`,

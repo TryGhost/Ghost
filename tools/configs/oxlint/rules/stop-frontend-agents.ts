@@ -25,11 +25,15 @@ export const stopFrontendAgents: CreateRule = {
           ? node.property.name
           : undefined;
 
-    // Only aliases destructured from getAgentsWithFrontend() name its server.
-    const startsServer = (node: ESTree.Node | null | undefined) => {
+    // Variables holding the getAgentsWithFrontend() result.
+    const results = new Set<string>();
+    const isCall = (node: ESTree.Node | null | undefined) => {
       const call = node?.type === 'AwaitExpression' ? node.argument : node;
       return call?.type === 'CallExpression' && nameOf(call.callee) === 'getAgentsWithFrontend';
     };
+    // Only aliases destructured from that result, directly or through a variable, name its server.
+    const startsServer = (node: ESTree.Node | null | undefined) =>
+      isCall(node) || (node?.type === 'Identifier' && results.has(node.name));
     const aliases = (pattern: Extract<ESTree.Node, { type: 'ObjectPattern' }>) => {
       for (const property of pattern.properties) {
         if (
@@ -45,9 +49,11 @@ export const stopFrontendAgents: CreateRule = {
 
     return {
       VariableDeclarator(node) {
+        if (node.id.type === 'Identifier' && isCall(node.init)) results.add(node.id.name);
         if (node.id.type === 'ObjectPattern' && startsServer(node.init)) aliases(node.id);
       },
       AssignmentExpression(node) {
+        if (node.left.type === 'Identifier' && isCall(node.right)) results.add(node.left.name);
         if (node.left.type === 'ObjectPattern' && startsServer(node.right)) aliases(node.left);
       },
       CallExpression(node) {
