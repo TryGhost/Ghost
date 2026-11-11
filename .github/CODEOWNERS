@@ -21,7 +21,7 @@
 /.dependency-cruiser-known-violations.json @ErisDS
 /ghost/core/server/services/legacy-service-inventory.yaml @ErisDS
 /tools/scripts/lib/dependency-boundaries.ts @ErisDS
-/tools/scripts/lib/legacy-services.ts @ErisDS
+/tools/scripts/lib/legacy-services*.ts @ErisDS
 
 # Inbox Links
 ghost/core/server/lib/get-inbox-links.ts @EvanHahn

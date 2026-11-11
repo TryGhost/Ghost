@@ -19,7 +19,10 @@ interface Job {
 }
 
 interface Workflow {
-  jobs: Record<'job_setup' | 'job_service_inventory' | 'job_required_tests', Job>;
+  jobs: Record<
+    'job_setup' | 'job_service_inventory' | 'job_legacy_services' | 'job_required_tests',
+    Job
+  >;
 }
 
 async function loadWorkflow(): Promise<Workflow> {
@@ -167,6 +170,51 @@ describe('CI path filters', () => {
     assert.ok(
       workflow.jobs.job_required_tests.needs.includes('job_service_inventory'),
       'Inventory validation failures must block the required-tests gate',
+    );
+  });
+
+  it('requires pull requests that change the inventory to pass the only-shrinks check', async () => {
+    const patterns = await getFilterPatterns('service-inventory');
+    for (const path of [
+      'ghost/core/server/services/legacy-service-inventory.yaml',
+      'tools/scripts/ci/check-legacy-services.ts',
+      'tools/scripts/lib/legacy-services.ts',
+      'tools/scripts/lib/legacy-services-base.ts',
+    ]) {
+      assert.ok(
+        patterns.some((pattern) => picomatch(pattern, { dot: true })(path)),
+        path,
+      );
+    }
+
+    const workflow = await loadWorkflow();
+    const job = workflow.jobs.job_legacy_services;
+    assert.deepStrictEqual(job.needs, ['job_setup']);
+    // Only a pull request has a base to compare with. The job is skipped
+    // elsewhere; the command itself never skips.
+    assert.strictEqual(
+      job.if,
+      "github.event_name == 'pull_request' && needs.job_setup.outputs.changed_service_inventory == 'true'",
+    );
+    const checkout = job.steps.find((step) => step.with?.ref);
+    assert.strictEqual(checkout?.with?.['fetch-depth'], 0, 'The fork point needs full history');
+    assert.ok(
+      job.steps.some((step) => step.run?.includes('refs/remotes/origin/${PR_BASE_REF}')),
+      'The base branch must be fetched before the comparison',
+    );
+    assert.ok(
+      job.steps.some((step) => step.run === 'node tools/scripts/ci/check-legacy-services.ts'),
+    );
+    assert.ok(
+      workflow.jobs.job_required_tests.needs.includes('job_legacy_services'),
+      'A grown legacy list must block the required-tests gate',
+    );
+    const root = JSON.parse(
+      await readFile(new URL('../../../package.json', import.meta.url), 'utf8'),
+    );
+    assert.strictEqual(
+      root.scripts['lint:legacy-services'],
+      'node tools/scripts/ci/check-legacy-services.ts',
     );
   });
 
