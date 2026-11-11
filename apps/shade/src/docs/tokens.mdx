@@ -139,7 +139,7 @@ With `admin7Design` on, `Tabs` defaults to underline and explicit variants keep 
 
 Outline `Button`s use `--control-border`, not `--border-default`. In dark mode it lifts a step above the page border so form controls keep enough contrast against the page surface. Borders inside cards or popovers can keep using `--border-default`.
 
-Text-entry fields, including inputs, textareas and select triggers, take their chrome from the `inputSurface` recipe: `--field-surface`, `--field-border` and `--radius-field`. Their surfaces follow `--control-surface` and have no resting shadow. With `admin7Design` on, their outline uses `--color-gray-400` in light mode and `--color-gray-900` in dark mode. They also have 4px corners and 14px text (`--text-field`). With it off, they use `--control-border` and `--radius-control`. Checkboxes and radios use the recipe but keep a visible edge with `--control-surface` and `--border-strong`.
+Text-entry fields, including inputs, textareas and select triggers, take their chrome from the `inputSurface` recipe: `--field-surface`, `--field-border`, `--field-shadow` and `--radius-field`. Their surfaces follow `--control-surface` and have no resting shadow; `--field-shadow` retains its neutral value for compatibility. With `admin7Design` on, their outline uses `--color-gray-400` in light mode and `--color-gray-900` in dark mode. They also have 4px corners and 14px text (`--text-field`). With it off, they use `--control-border` and `--radius-control`. Checkboxes and radios use the recipe but keep a visible edge with `--control-surface` and `--border-strong`.
 
 ## Section headings and stats
 

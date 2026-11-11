@@ -26,11 +26,11 @@ import {
   TabsList,
   TabsTrigger,
 } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { useNewslettersEnabled } from '@tryghost/admin-x-framework/api/settings';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
 import { useGlobalData } from '@/settings/providers/global-data-context';
-import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useFeatureFlag, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useVerifyAutomatedEmailSender } from '@tryghost/admin-x-framework/api/automated-emails';
 import { searchKeywords } from './emails-search-keywords';
@@ -83,6 +83,7 @@ const EmailsGroup: React.FC<{ keywords: string[]; newslettersEnabled: boolean }>
   keywords,
   newslettersEnabled,
 }) => {
+  const admin7Design = useFeatureFlag('admin7Design');
   const { updateRoute } = useSettingsNavigation();
   const verifyEmailToken = useQueryParams().getParam('verifyEmail');
   const { mutateAsync: verifySenderUpdate } = useVerifyAutomatedEmailSender();
@@ -186,8 +187,15 @@ const EmailsGroup: React.FC<{ keywords: string[]; newslettersEnabled: boolean }>
         variant="underline"
         onValueChange={(value) => setSelectedTab(value as 'newsletters' | 'transactional')}
       >
-        <div className="flex items-center justify-between inset-shadow-[0_-1px_0] inset-shadow-border-default">
-          <TabsList className="inset-shadow-none">
+        <div
+          className={cn(
+            'flex items-center justify-between',
+            admin7Design
+              ? 'inset-shadow-[0_-1px_0] inset-shadow-border-default'
+              : 'border-b border-gray-200 dark:border-gray-900',
+          )}
+        >
+          <TabsList className={admin7Design ? 'inset-shadow-none' : 'border-b-0'}>
             {newslettersEnabled && <TabsTrigger value="newsletters">Newsletters</TabsTrigger>}
             <TabsTrigger value="transactional">Automation emails</TabsTrigger>
           </TabsList>

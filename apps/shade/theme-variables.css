@@ -172,6 +172,7 @@
   --field-readonly-surface: var(--control-readonly-surface);
   --field-disabled-surface: var(--control-disabled-surface);
   --field-border: var(--color-gray-400);
+  --field-shadow: 0 0 #0000;
   --field-chip-surface: var(--secondary);
   --field-chip-internal-surface: transparent;
   --field-chip-internal-border: var(--field-chip-surface);
@@ -329,6 +330,7 @@
   --field-readonly-surface: var(--control-readonly-surface);
   --field-disabled-surface: var(--control-disabled-surface);
   --field-border: var(--control-border);
+  --field-shadow: 0 0 #0000;
   --field-chip-surface: var(--secondary);
   --field-chip-internal-surface: color-mix(in oklab, var(--secondary) 30%, transparent);
   --field-chip-internal-border: var(--border);
@@ -391,6 +393,7 @@
   --control-disabled-surface: var(--color-gray-950);
   --control-border: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
   --field-border: var(--color-gray-900);
+  --field-shadow: 0 0 #0000;
   --control-pressed-shadow: lch(0 0 0 / 0.07) 0px 1px 2px 0px inset;
   --control-outline-shadow:
     lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
@@ -485,6 +488,7 @@
    delete with the flag. */
 .dark [data-admin7-design='false'] {
   --field-border: var(--control-border);
+  --field-shadow: 0 0 #0000;
   --state-warning-surface: color-mix(in oklab, var(--state-warning) 10%, transparent);
   --state-warning-border: color-mix(in oklab, var(--state-warning) 40%, transparent);
   --color-black: oklch(20.38% 0.0067 258.4);

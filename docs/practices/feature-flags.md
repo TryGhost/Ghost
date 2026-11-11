@@ -123,8 +123,11 @@ With `admin7Design` on, Shade's `Tabs` defaults to underline and respects
 explicit variants. Button tabs and route-based `PageMenu` share pill styling
 and selected, inactive, and hover colors. Compact button tabs keep their
 smaller size, and KPI tabs keep their chart-card layout. With the flag off,
-the default remains segmented. Screens do not need their own flag branch for
-this appearance.
+the default remains segmented and explicit underline tabs keep their previous
+styling. Only the enabled design uses a 1px indicator aligned with the divider
+and prevents vertical scrolling within the tab row. Shared field surfaces are
+flat; the enabled design no longer adds a resting shadow. Screens do not need
+their own flag branch for these shared appearances.
 
 The pill-controls milestone is generally available in Admin. Standalone
 ActivityPub uses Shade's current default.
@@ -175,7 +178,7 @@ between their desktop columns, hidden when the columns stack.
 Meta data has no helper description under its heading. At desktop widths, the metadata
 column is 400px wide to accommodate previews, with the same 80px gap as member
 details. The columns stack below the sidebarlg breakpoint, with 32px between them.
-Metadata navigation uses pill-shaped button tabs. Button and button-small tabs
+Metadata navigation uses underline tabs. Button and button-small tabs
 use a primary selected fill with contrasting text, and muted inactive fills with
 foreground text. Metadata fields and previews sit directly on the page without
 an inset background or padding. The flag-off design keeps its underline tabs and

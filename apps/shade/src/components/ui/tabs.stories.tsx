@@ -187,7 +187,7 @@ export const Underline: Story = {
     docs: {
       description: {
         story:
-          'Use underline tabs to switch sections within a page or panel. The 1px indicator overlaps the divider, and the tab row scrolls horizontally without vertical overflow.',
+          'Use underline tabs to switch sections within a page or panel. In Admin 7, the 1px indicator overlaps the divider and the row scrolls horizontally without vertical overflow. With the flag off, the previous underline styling is preserved.',
       },
     },
   },
