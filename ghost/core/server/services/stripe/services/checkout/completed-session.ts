@@ -77,9 +77,35 @@ function shippingAsked(session: CompletedSession) {
     : undefined;
 }
 
-/** The country the buyer is in: their card's, or else where the checkout ships. */
-function buyerCountry(session: CompletedSession): string | undefined {
-  return session.customer_details?.address?.country ?? shippingAsked(session)?.address?.country;
+/**
+ * How the phone number a completed checkout asked for came back from Stripe, never the number
+ * itself, which is the buyer's. `form` is what reading it took: `e164` as Stripe gives a number
+ * typed into Checkout, `international` readable without a country as it carries its own code,
+ * `national` readable only in the buyer's country, as a wallet's number without its code is, and
+ * `unreadable` not even there. `country` is where the buyer's country came from: their card, where
+ * the checkout ships, or nowhere.
+ */
+export interface CollectedPhone {
+  form: 'e164' | 'international' | 'national' | 'unreadable';
+  country: 'billing' | 'shipping' | 'none';
+}
+
+/** The country the buyer is in, and where it came from: their card's, or else where it ships. */
+function buyerCountry(session: CompletedSession): {
+  country: string | undefined;
+  from: CollectedPhone['country'];
+} {
+  const billing = session.customer_details?.address?.country;
+  if (billing) {
+    return { country: billing, from: 'billing' };
+  }
+  const shipping = shippingAsked(session)?.address?.country;
+  return shipping ? { country: shipping, from: 'shipping' } : { country: undefined, from: 'none' };
+}
+
+/** The phone number as Stripe gave it, if the checkout asked for one. */
+function phoneGiven(session: CompletedSession): string | undefined {
+  return session.phone_number_collection?.enabled ? session.customer_details?.phone : undefined;
 }
 
 /**
@@ -89,10 +115,25 @@ function buyerCountry(session: CompletedSession): string | undefined {
  * from it. One that doesn't read as a number there goes as given, for the phone field to refuse.
  */
 function phoneAsked(session: CompletedSession): string | undefined {
-  const phone = session.phone_number_collection?.enabled
-    ? session.customer_details?.phone
-    : undefined;
-  return phone && (phoneNumberIn(phone, buyerCountry(session)) ?? phone);
+  const phone = phoneGiven(session);
+  return phone && (phoneNumberIn(phone, buyerCountry(session).country) ?? phone);
+}
+
+/** How the phone number came back, or undefined when the checkout didn't ask for one. */
+function phoneCollected(session: CompletedSession): CollectedPhone | undefined {
+  const phone = phoneGiven(session);
+  if (!phone) {
+    return undefined;
+  }
+  const { country, from } = buyerCountry(session);
+  const form = /^\+[1-9]\d{1,14}$/.test(phone)
+    ? 'e164'
+    : phoneNumberIn(phone, undefined)
+      ? 'international'
+      : phoneNumberIn(phone, country)
+        ? 'national'
+        : 'unreadable';
+  return { form, country: from };
 }
 
 /**
@@ -117,12 +158,16 @@ export interface CollectedByPort {
 
 /**
  * What a completed checkout asked the buyer for and got back, each under the port it is saved
- * through. Only what the checkout asked for counts: Stripe can return what it wasn't asked
- * for, such as an address saved with Link, and that isn't the publisher's to keep. What was
- * asked is read from the checkout itself, because the config can change while it is open.
+ * through, and how its phone number came back. Only what the checkout asked for counts: Stripe
+ * can return what it wasn't asked for, such as an address saved with Link, and that isn't the
+ * publisher's to keep. What was asked is read from the checkout itself, because the config can
+ * change while it is open.
  */
-export const collectedAnswers = CompletedSession.transform((session): CollectedByPort[] =>
-  CHECKOUT_PORTS.map((port) => ({ port, value: ANSWERS[port](session) })).filter(
-    (entry) => entry.value !== undefined,
-  ),
+export const collectedFrom = CompletedSession.transform(
+  (session): { answers: CollectedByPort[]; phone: CollectedPhone | undefined } => ({
+    answers: CHECKOUT_PORTS.map((port) => ({ port, value: ANSWERS[port](session) })).filter(
+      (entry) => entry.value !== undefined,
+    ),
+    phone: phoneCollected(session),
+  }),
 );

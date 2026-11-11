@@ -4567,13 +4567,28 @@ describe('Members API', function () {
         name = 'Jamie Doe',
         phone = '+442079460000',
         billingCountry = 'GB',
+        // The wallet the buyer paid with, as Stripe names it, if they paid with one.
+        wallet = undefined,
       } = {},
     ) {
+      const walletMethod = wallet && {
+        id: 'pm_wallet',
+        card: {
+          brand: 'visa',
+          last4: '4242',
+          exp_month: 1,
+          exp_year: 2030,
+          wallet: { type: wallet },
+        },
+      };
       set(customer, {
         id: 'cus_shipping',
         name: 'Jamie Doe',
         email,
-        subscriptions: { type: 'list', data: [subscription] },
+        subscriptions: {
+          type: 'list',
+          data: [{ ...subscription, default_payment_method: walletMethod ?? null }],
+        },
       });
       const payload = JSON.stringify({
         type: 'checkout.session.completed',
@@ -4622,6 +4637,46 @@ describe('Members API', function () {
         },
         recipient_name: 'Jamie Doe',
       });
+    });
+
+    // How often a wallet's number needs a country to be read, whether the checkout knew one, and
+    // what became of it, never with the number itself.
+    it("counts how a checkout's phone number came back and what became of it", async function () {
+      const metrics = mockManager.mockMetrics();
+
+      await completeCheckout('collected-card@example.com', { asked: { phone: true } });
+      await completeCheckout('collected-wallet@example.com', {
+        asked: { phone: true },
+        phone: '020 7946 0000',
+        wallet: 'apple_pay',
+      });
+      await completeCheckout('collected-no-country@example.com', {
+        asked: { phone: true },
+        phone: '020 7946 0000',
+        billingCountry: null,
+        wallet: 'google_pay',
+      });
+
+      assert.deepEqual(
+        metrics.tracked('stripe_checkout.collected_phones').map(({ value, labels }) => ({
+          value,
+          wallet: labels.wallet,
+          form: labels.phone_form,
+          country: labels.phone_country,
+          outcome: labels.phone_outcome,
+        })),
+        [
+          { value: 1, wallet: 'none', form: 'e164', country: 'billing', outcome: 'saved' },
+          { value: 1, wallet: 'apple_pay', form: 'national', country: 'billing', outcome: 'saved' },
+          {
+            value: 1,
+            wallet: 'google_pay',
+            form: 'unreadable',
+            country: 'none',
+            outcome: 'refused',
+          },
+        ],
+      );
     });
 
     it("keeps a wallet's phone number in international form", async function () {

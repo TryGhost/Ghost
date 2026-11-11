@@ -99,6 +99,7 @@ module.exports = class StripeService {
 
     const checkoutSessionEventService = new CheckoutSessionEventService({
       api,
+      tracking,
       get memberRepository() {
         return membersService.api.members;
       },
