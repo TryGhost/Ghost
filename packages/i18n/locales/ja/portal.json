@@ -89,6 +89,7 @@
     "Could not sign in. Login link expired.": "ログインできませんでした。ログインリンクの有効期限が切れています。",
     "Could not update email! Invalid link.": "メールアドレスを更新できませんでした。無効なリンクです。",
     "Country": "",
+    "Country code": "",
     "Create a new contact": "新しい連絡先を作成",
     "Current plan": "現在のプラン",
     "Delete account": "アカウントを削除",

@@ -1,5 +1,7 @@
 import { CHALLENGE_PATH, answerChallenge } from '@tryghost/app-contracts/identity';
+import { base64url } from 'jose';
 
+import { publicHalfOf } from '../shared/keys.ts';
 import { parseOrigin } from '../shared/parse.ts';
 import { json, readText } from './body.ts';
 
@@ -87,12 +89,15 @@ async function importPrivateKey(text: string): Promise<CryptoKey> {
     throw new TypeError(INVALID_KEY);
   }
   try {
-    return await crypto.subtle.importKey('jwk', { kty, crv, x, d }, { name: 'Ed25519' }, false, [
-      'sign',
-    ]);
+    if ((await publicHalfOf(base64url.decode(d))) === x) {
+      return await crypto.subtle.importKey('jwk', { kty, crv, x, d }, { name: 'Ed25519' }, false, [
+        'sign',
+      ]);
+    }
   } catch (error) {
     throw new TypeError(INVALID_KEY, { cause: error });
   }
+  throw new TypeError('backendKey is invalid because its x and d are from different keys');
 }
 
 /**

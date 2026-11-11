@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Pencil, Trash2, Upload } from 'lucide-react';
 
 import ghostLogo from '@/assets/images/ghost-logo.svg';
+import { Stack } from '@/components/primitives';
 import {
   ImageUpload,
   ImageUploadAction,
@@ -47,6 +48,27 @@ export const Empty: Story = {
     docs: {
       description: {
         story: 'Use the empty state when an image has not been selected.',
+      },
+    },
+  },
+};
+
+export const Dashed: Story = {
+  render: () => (
+    <ImageUpload className="size-full">
+      <ImageUploadDropzone variant="default">
+        <Stack align="center" gap="sm">
+          <Upload className="size-6" />
+          <span className="text-sm">Upload image</span>
+        </Stack>
+      </ImageUploadDropzone>
+    </ImageUpload>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'With admin7Design on, the default Dropzone variant has a one-pixel dashed border, matching muted icon and text, and an unclipped focus ring. With the flag off, the previous clipping, border, and prompt styling remain.',
       },
     },
   },

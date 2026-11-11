@@ -65,6 +65,28 @@ describe('Account Profile Page', () => {
 
   describe('Custom fields', () => {
     const site = getSiteData({ labs: { membersCustomFields: true } });
+
+    // jsdom has neither, and a list picker asks both: whether the screen is a touch screen, and
+    // to bring the highlighted option into view.
+    beforeEach(() => {
+      vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }));
+      Element.prototype.scrollIntoView = vi.fn();
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+      delete Element.prototype.scrollIntoView;
+    });
+
+    // The button that opens the list and, while a long list is open, its search box are both
+    // comboboxes named after the field. The button is the one that isn't a text box.
+    const picker = (utils, name) =>
+      utils
+        .getAllByRole('combobox', { name: new RegExp(`^${name}`) })
+        .find((element) => element.tagName === 'BUTTON');
+    const searchBox = (utils, name) =>
+      utils.getAllByRole('combobox', { name }).find((element) => element.tagName === 'INPUT');
+
     const nickname = {
       key: 'nickname',
       name: 'Nickname',
@@ -99,6 +121,121 @@ describe('Account Profile Page', () => {
       // The part names stay as placeholders either way: they are what tells the
       // parts of an address apart once their labels are hidden.
       expect(getByLabelText('Postal code')).toHaveAttribute('placeholder', 'Postal code');
+    });
+
+    // The country shows the number's code, so the number is shown after it, as one typed beside it is.
+    test('offers a phone field as a phone number, so phones show a keypad and can fill it in', () => {
+      const mobile = { key: 'mobile', name: 'Mobile', type: 'phone', access: { member: 'write' } };
+      const { getByLabelText } = setup({
+        site,
+        member: { ...member, metafields: { custom: { mobile: '+442079460000' } } },
+        customFields: [mobile],
+      });
+
+      const input = getByLabelText('Mobile');
+      expect(input).toHaveAttribute('type', 'tel');
+      expect(input).toHaveAttribute('autocomplete', 'tel');
+      expect(getByLabelText('Country code')).toHaveTextContent('🇬🇧 +44');
+      expect(input).toHaveValue('2079460000');
+    });
+
+    // A member rewriting the number they hold as they dial it at home keeps its country, whatever
+    // language their browser speaks.
+    test('keeps the country of the number a member holds when they rewrite it', () => {
+      const mobile = { key: 'mobile', name: 'Mobile', type: 'phone', access: { member: 'write' } };
+      const { getByLabelText } = setup({
+        site,
+        member: { ...member, metafields: { custom: { mobile: '+33612345678' } } },
+        customFields: [mobile],
+      });
+
+      expect(getByLabelText('Country code')).toHaveTextContent('🇫🇷 +33');
+      fireEvent.change(getByLabelText('Mobile'), { target: { value: '06 12 34 56 79' } });
+      expect(getByLabelText('Country code')).toHaveTextContent('🇫🇷 +33');
+    });
+
+    describe("a phone number's country", () => {
+      const holdingMobile = (access = 'write') =>
+        setup({
+          site,
+          member: { ...member, metafields: { custom: { mobile: '+442079460000' } } },
+          customFields: [
+            { key: 'mobile', name: 'Mobile', type: 'phone', access: { member: access } },
+          ],
+        });
+
+      // Every country a number can be from is offered, too many to scroll through, so a member
+      // finds theirs by its name or by its code. The number they hold goes with the country they
+      // pick.
+      test('is found by its name or its code', () => {
+        const utils = holdingMobile();
+        const offered = () => utils.getAllByRole('option').map(({ textContent }) => textContent);
+
+        fireEvent.click(picker(utils, 'Country code'));
+        expect(searchBox(utils, 'Country code')).toHaveFocus();
+        fireEvent.change(searchBox(utils, 'Country code'), { target: { value: 'germ' } });
+        expect(offered()).toEqual(['Germany +49']);
+        fireEvent.change(searchBox(utils, 'Country code'), { target: { value: '+33' } });
+        expect(offered()).toEqual(['France +33']);
+        fireEvent.keyDown(searchBox(utils, 'Country code'), { key: 'Enter' });
+
+        expect(picker(utils, 'Country code')).toHaveTextContent('🇫🇷 +33');
+        fireEvent.click(utils.saveBtn);
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith(
+          'updateProfile',
+          expect.objectContaining({ metafields: { custom: { mobile: '+33 2079460000' } } }),
+        );
+      });
+
+      // The list opens on the country shown, so Enter picks it again. As a select changes nothing
+      // when its own option is picked, the number stays as the member holds it.
+      test('leaves the number alone when the country shown is picked again', () => {
+        const utils = holdingMobile();
+
+        fireEvent.click(picker(utils, 'Country code'));
+        fireEvent.keyDown(searchBox(utils, 'Country code'), { key: 'Enter' });
+        fireEvent.click(utils.saveBtn);
+
+        expect(utils.getByLabelText('Mobile')).toHaveValue('2079460000');
+        expect(utils.mockDoActionFn).toHaveBeenCalledWith('updateProfile', {
+          email: member.email,
+          name: member.name,
+        });
+      });
+
+      // Shown as the number's is, read-only rather than disabled, with nothing to pick from.
+      test('is shown as its flag and code, with nothing to pick, where the member may only read the number', () => {
+        const utils = holdingMobile('read');
+
+        expect(utils.getByRole('group', { name: 'Country code' })).toHaveTextContent('🇬🇧 +44');
+        expect(utils.queryByRole('combobox', { name: 'Country code' })).not.toBeInTheDocument();
+        expect(utils.getByLabelText('Mobile')).toHaveAttribute('readonly');
+      });
+    });
+
+    // A reason that says how to put a value right is too long for the label's line, where
+    // Portal puts a short one such as a missing name. It sits under the input, like an
+    // address's reasons, and the input points at it so it is read out too.
+    test("shows why a field's value was refused under its input", () => {
+      const message =
+        'Enter the phone number with its country code, starting with +, like +44 20 7946 0000.';
+      const mobile = { key: 'mobile', name: 'Mobile', type: 'phone', access: { member: 'write' } };
+      const { getByLabelText, getByText } = setup({
+        site,
+        member,
+        customFields: [mobile],
+        fieldErrors: { 'custom:mobile': message },
+      });
+
+      const input = getByLabelText('Mobile');
+      const reason = getByText(message).closest('ul');
+      expect(input).toHaveAttribute('aria-invalid', 'true');
+      expect(input).toHaveAttribute('aria-describedby', reason.id);
+      expect(input.compareDocumentPosition(reason) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      // A phone number is refused as a whole, and its country is often what puts it right.
+      const country = getByLabelText('Country code');
+      expect(country).toHaveAttribute('aria-invalid', 'true');
+      expect(country).toHaveAttribute('aria-describedby', reason.id);
     });
 
     test('saves only the writable fields the member changed', () => {
@@ -325,27 +462,6 @@ describe('Account Profile Page', () => {
         settings: { ...animals.settings, multiple: false },
       };
       const holding = (custom) => ({ ...member, metafields: { custom } });
-
-      // jsdom has neither, and the picker asks both: whether the screen is a touch screen, and to
-      // bring the highlighted option into view.
-      beforeEach(() => {
-        vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }));
-        Element.prototype.scrollIntoView = vi.fn();
-      });
-
-      afterEach(() => {
-        vi.unstubAllGlobals();
-        delete Element.prototype.scrollIntoView;
-      });
-
-      // The button that opens the list and, while a long list is open, its search box are both
-      // comboboxes named after the field. The button is the one that isn't a text box.
-      const picker = (utils, name) =>
-        utils
-          .getAllByRole('combobox', { name: new RegExp(`^${name}`) })
-          .find((element) => element.tagName === 'BUTTON');
-      const searchBox = (utils, name) =>
-        utils.getAllByRole('combobox', { name }).find((element) => element.tagName === 'INPUT');
 
       test('shows the options a member picked as chips, and saves every option picked', () => {
         const utils = setup({

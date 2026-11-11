@@ -18,28 +18,48 @@ function hasAccessCode(accessCode) {
   return typeof accessCode === 'string' && accessCode.trim().length > 0;
 }
 
-function hashAccessCode(accessCode, salt) {
-  const hasher = crypto.createHash('sha256');
-  hasher.update(accessCode + salt, 'utf8');
-  return hasher.digest('hex');
+function getSessionSecret() {
+  const secret = settingsCache.get('theme_session_secret');
+  return typeof secret === 'string' ? secret : '';
+}
+
+// The ghost-private cookie is unsigned, so the token must depend on a server-held
+// secret. Otherwise anyone could compute a valid token for a guessed access code
+// and use every gated request as an unthrottled guessing oracle.
+function hashAccessCode(accessCode, salt, secret) {
+  const hmac = crypto.createHmac('sha256', secret);
+  hmac.update(`ghost-private:${accessCode}:${salt}`, 'utf8');
+  return hmac.digest('hex');
 }
 
 function hasAccess(req) {
   const accessCode = getAccessCode();
   const salt = req.session?.salt || '';
   const hash = req.session?.token || '';
+  const secret = getSessionSecret();
 
-  if (!salt || !hash || !hasAccessCode(accessCode)) {
+  if (
+    typeof salt !== 'string' ||
+    typeof hash !== 'string' ||
+    !salt ||
+    !hash ||
+    !secret ||
+    !hasAccessCode(accessCode)
+  ) {
     return false;
   }
 
-  return hashAccessCode(accessCode, salt) === hash;
+  const expected = Buffer.from(hashAccessCode(accessCode, salt, secret));
+  const actual = Buffer.from(hash);
+  return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
 }
 
 function grantAccess(req, submittedAccessCode) {
   const accessCode = getAccessCode();
+  const secret = getSessionSecret();
 
   if (
+    !secret ||
     !hasAccessCode(accessCode) ||
     !hasAccessCode(submittedAccessCode) ||
     accessCode !== submittedAccessCode
@@ -48,7 +68,7 @@ function grantAccess(req, submittedAccessCode) {
   }
 
   const salt = Date.now().toString();
-  req.session.token = hashAccessCode(submittedAccessCode, salt);
+  req.session.token = hashAccessCode(submittedAccessCode, salt, secret);
   req.session.salt = salt;
   return true;
 }

@@ -3,6 +3,7 @@ import { Inline, Stack, Text } from '@tryghost/shade/primitives';
 import { cn, LucideIcon } from '@tryghost/shade/utils';
 import FeatureImagePlaceholder from '@/shared/feature-image-placeholder';
 import { AdminLink } from '@/shared/admin-link';
+import { FadingText } from '@/shared/fading-text';
 import { PostsContextMenu } from '@/posts/list/components/posts-context-menu';
 import type { PostContextMenuItem, PostContextMenuKey } from '@/posts/list/post-context-menu-items';
 import {
@@ -291,12 +292,12 @@ const PostListRowComponent = forwardRef<HTMLLIElement, PostListRowComponentProps
                   }
                 >
                   {displayedStatusLabel}
-                  {/* Mounted only while hovered. A CSS
-                                  opacity fade would keep it in the DOM, so a screen
-                                  reader would read every scheduled row's full
-                                  dispatch details aloud, always. */}
-                  {emailSendingState.status !== 'failed' && isHovered && statusDetail && (
-                    <span> {statusDetail}</span>
+                  {/* Mounted only while hovered, fading in and out. A CSS
+                                  opacity fade alone would keep it in the DOM, so a screen
+                                  reader would read every row's full dispatch details
+                                  aloud, always. */}
+                  {emailSendingState.status !== 'failed' && statusDetail && (
+                    <FadingText show={isHovered}> {statusDetail}</FadingText>
                   )}
                 </Text>
               )}

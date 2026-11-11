@@ -38,14 +38,17 @@ describe('Checkout session outcomes', function () {
       .expectStatus(200);
   }
 
-  // The tax ID is the one thing a checkout can ask the buyer for without a custom field to save
-  // the answer in, because Stripe keeps the tax ID itself, so it's the simplest part to set up.
-  async function offerTaxId() {
+  // The phone number saves into one custom field, so it's the simplest part to set up.
+  async function askForPhone() {
     mockManager.mockLabsEnabled('stripeCheckoutCollection');
-    mockManager.mockLabsDisabled('stripeAutomaticTax');
+    mockManager.mockLabsEnabled('customFieldTypePhone');
+    await adminAgent
+      .post('/members/metafields/custom/')
+      .body({ members_metafields: [{ name: 'Contact phone', type: 'phone' }] })
+      .expectStatus(201);
     await adminAgent
       .put('/stripe/checkout/config/')
-      .body({ checkout_config: [{ tax_number: { collect: true } }] })
+      .body({ checkout_config: [{ phone: { collect: true, custom_field_key: 'contact_phone' } }] })
       .expectStatus(200);
   }
 
@@ -77,8 +80,11 @@ describe('Checkout session outcomes', function () {
 
   afterEach(async function () {
     mockManager.restore();
-    await models.Base.knex('stripe_checkout_config_tiers').del();
     await models.Base.knex('stripe_checkout_config').del();
+    await models.Base.knex('members_metafield_bindings').del();
+    await models.Base.knex('tier_requirement_tiers').del();
+    await models.Base.knex('tier_requirements').del();
+    await models.Base.knex('members_metafields').del();
   });
 
   it('records each checkout a buyer starts, beside its session', async function () {
@@ -178,49 +184,49 @@ describe('Checkout session outcomes', function () {
   });
 
   it('records each part of the checkout a session was sent with', async function () {
-    await offerTaxId();
+    await askForPhone();
     await startCheckout();
 
     expect(sessions()).toMatchObject([
       {
         event: { outcome: 'success' },
-        labels: { design: 'none', shipping: 'none', phone: 'none', tax_number: 'applied' },
+        labels: { design: 'none', shipping: 'none', phone: 'applied' },
       },
     ]);
   });
 
   it('records a collected part Stripe refused by name, as the session went ahead without it', async function () {
-    await offerTaxId();
+    await askForPhone();
     stripeMocker.checkoutParamRefusal = {
-      param: 'tax_id_collection',
+      param: 'phone_number_collection',
       error: {
         type: 'invalid_request_error',
-        param: 'tax_id_collection[enabled]',
-        message: 'Tax ID collection is not available.',
+        param: 'phone_number_collection[enabled]',
+        message: 'Phone number collection is not available.',
       },
     };
     await startCheckout();
 
-    assert.equal(stripeMocker.checkoutSessions.at(-1).tax_id_collection, undefined);
+    assert.equal(stripeMocker.checkoutSessions.at(-1).phone_number_collection, undefined);
     expect(sessions()).toMatchObject([
-      { event: { outcome: 'success' }, labels: { tax_number: 'refused' } },
+      { event: { outcome: 'success' }, labels: { phone: 'refused' } },
     ]);
   });
 
   it('records every part as dropped when Stripe refused the session without naming why, and it went ahead without them', async function () {
     await setDesign();
-    await offerTaxId();
+    await askForPhone();
     stripeMocker.checkoutParamRefusal = {
-      param: 'tax_id_collection',
-      error: { type: 'invalid_request_error', message: 'Tax ID collection needs more.' },
+      param: 'phone_number_collection',
+      error: { type: 'invalid_request_error', message: 'Phone number collection needs more.' },
     };
     await startCheckout();
 
     const session = stripeMocker.checkoutSessions.at(-1);
-    assert.equal(session.tax_id_collection, undefined);
+    assert.equal(session.phone_number_collection, undefined);
     assert.equal(session.branding_settings, undefined);
     expect(sessions()).toMatchObject([
-      { event: { outcome: 'success' }, labels: { design: 'dropped', tax_number: 'dropped' } },
+      { event: { outcome: 'success' }, labels: { design: 'dropped', phone: 'dropped' } },
     ]);
   });
 

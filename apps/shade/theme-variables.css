@@ -146,6 +146,8 @@
   --sidebar-border: var(--color-gray-100);
   --sidebar-ring: var(--color-gray-600);
   --tab-hover: var(--color-gray-100);
+  --tab-inactive: var(--color-gray-200);
+  --tab-inactive-hover: var(--color-gray-300);
   --tab-active: color-mix(in oklab, var(--color-gray-700) 10%, transparent);
   --button-hover: var(--color-gray-100);
   /* Translucent so a ghost Button hover darkens whatever it sits on - an opaque
@@ -164,12 +166,13 @@
   --control-disabled-surface: var(--color-gray-100);
   --control-border: color-mix(in oklab, var(--color-gray-200), var(--color-gray-300));
   --text-section-heading: 1.6rem;
-  --text-section-heading-lg: 1.9rem;
-  /* Text-entry fields are white with a light outline. */
+  --text-section-heading-lg: 2.1rem;
+  /* Text-entry fields have a defined outline and a small resting shadow. */
   --field-surface: var(--control-surface);
   --field-readonly-surface: var(--control-readonly-surface);
   --field-disabled-surface: var(--control-disabled-surface);
-  --field-border: var(--color-gray-300);
+  --field-border: var(--color-gray-400);
+  --field-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
   --field-chip-surface: var(--secondary);
   --field-chip-internal-surface: transparent;
   --field-chip-internal-border: var(--field-chip-surface);
@@ -327,6 +330,7 @@
   --field-readonly-surface: var(--control-readonly-surface);
   --field-disabled-surface: var(--control-disabled-surface);
   --field-border: var(--control-border);
+  --field-shadow: 0 0 #0000;
   --field-chip-surface: var(--secondary);
   --field-chip-internal-surface: color-mix(in oklab, var(--secondary) 30%, transparent);
   --field-chip-internal-border: var(--border);
@@ -376,6 +380,8 @@
   --banner-destructive-secondary: var(--color-red-300);
 
   --tab-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
+  --tab-inactive: var(--color-gray-900);
+  --tab-inactive-hover: color-mix(in oklab, var(--color-gray-800) 30%, var(--color-gray-900));
   --tab-active: color-mix(in oklab, oklch(36.77% 0.0022 255) 60%, transparent);
   --button-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
   --button-ghost-hover: var(--accent);
@@ -386,7 +392,8 @@
   --control-readonly-surface: var(--color-gray-950);
   --control-disabled-surface: var(--color-gray-950);
   --control-border: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
-  --field-border: var(--control-border);
+  --field-border: var(--color-gray-900);
+  --field-shadow: 0 1px 2px rgb(0 0 0 / 0.16);
   --control-pressed-shadow: lch(0 0 0 / 0.07) 0px 1px 2px 0px inset;
   --control-outline-shadow:
     lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,
@@ -480,6 +487,8 @@
 /* admin7Design off in dark mode: today's dark values, exactly. Temporary:
    delete with the flag. */
 .dark [data-admin7-design='false'] {
+  --field-border: var(--control-border);
+  --field-shadow: 0 0 #0000;
   --state-warning-surface: color-mix(in oklab, var(--state-warning) 10%, transparent);
   --state-warning-border: color-mix(in oklab, var(--state-warning) 40%, transparent);
   --color-black: oklch(20.38% 0.0067 258.4);

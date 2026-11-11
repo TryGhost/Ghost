@@ -4,6 +4,7 @@ const { ValidationError } = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const url = require('./utils/url');
 const slugFilterOrder = require('./utils/slug-filter-order');
+const { forceGatingHtmlColumn } = require('./utils/gating');
 const localUtils = require('../../index');
 const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
 const postsSchema = require('../../../../../data/schema').tables.posts;
@@ -141,6 +142,7 @@ module.exports = {
       frame.options.order = rejectPagesContentApiRestrictedOrderFields(frame.options.order);
       setDefaultOrder(frame);
       forceVisibilityColumn(frame);
+      forceGatingHtmlColumn(frame);
       url.forceUrlRelations(frame, 'pages');
     }
 
@@ -160,6 +162,7 @@ module.exports = {
       removeSourceFormats(frame);
       setDefaultOrder(frame);
       forceVisibilityColumn(frame);
+      forceGatingHtmlColumn(frame);
       url.forceUrlRelations(frame, 'pages');
     }
 

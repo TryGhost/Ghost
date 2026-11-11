@@ -1,4 +1,7 @@
+import type Stripe from 'stripe';
+import type { Meter } from '../../lib/tracing/meter';
 import type { Tracer } from '../../lib/tracing/tracer';
+import type { CollectedPhone } from './services/checkout/completed-session';
 import {
   CHECKOUT_PARTS,
   type CheckoutPart,
@@ -7,15 +10,17 @@ import {
   type Refusal,
 } from './checkout-session-params';
 
-// The spans that record how buyers' Stripe Checkouts go. Their names and attributes are defined
-// here, in one place, because the Stripe Checkout dashboard in TryGhost/k8s queries them by name:
-// renaming a span or an attribute breaks the dashboard until it's changed to match.
+// The spans and counts that record how buyers' Stripe Checkouts go. Their names and attributes are
+// defined here, in one place, because the Stripe Checkout dashboard in TryGhost/k8s queries them
+// by name: renaming one or an attribute breaks the dashboard until it's changed to match.
 //
-// Two parts of Ghost record these spans. The members API's router records a
+// Two parts of Ghost record the spans. The members API's router records a
 // `stripe_checkout.start` span for each checkout a buyer starts, and `StripeAPI` records a
 // `stripe_checkout.session` span for each Checkout session it asks Stripe to create. Neither
 // touches its span. Each is handed an attempt object and reports to it what happened, in terms of
-// the checkout, and the functions below decide how each report is recorded on the span.
+// the checkout, and the functions below decide how each report is recorded on the span. The
+// checkout webhook counts each phone number a completed checkout collects, as
+// `stripe_checkout.collected_phones`.
 
 type CheckoutType = 'subscription' | 'donation' | 'gift';
 
@@ -37,7 +42,7 @@ interface CheckoutSessionAttempt {
 /**
  * What happened to one part of a checkout while Ghost created its Checkout session. A checkout's
  * parts are its design and each thing the publisher has it ask the buyer for, such as a phone
- * number or a tax ID.
+ * number.
  *
  * - `applied`: the last request Ghost sent Stripe for the session included the part.
  * - `none`: the publisher hasn't set the part up, so no request included it.
@@ -48,9 +53,29 @@ interface CheckoutSessionAttempt {
  */
 type PartOutcome = 'applied' | 'none' | 'refused' | 'dropped';
 
+/**
+ * What became of the phone number a completed checkout collected:
+ *
+ * - `saved`: its custom field kept it.
+ * - `refused`: its field refused it, such as a wallet's number without its country code that no
+ *   country the checkout knew could read.
+ * - `no_destination`: no field takes it now, as collection was switched off or its field deleted
+ *   while the checkout was open.
+ * - `skipped`: Ghost saved nothing the checkout collected, as it couldn't tell the buyer was the
+ *   member it would have saved onto.
+ */
+export type CollectedPhoneOutcome = 'saved' | 'refused' | 'no_destination' | 'skipped';
+
+/**
+ * The wallet a buyer paid with, as Stripe names it, such as `apple_pay`: `none` for a card or
+ * another method, and `unknown` when the checkout's subscription couldn't be found to tell.
+ */
+export type CheckoutWallet = Stripe.PaymentMethod.Card.Wallet.Type | 'none' | 'unknown';
+
 export type StripeTracking = ReturnType<typeof stripeTracking>;
 
-export function stripeTracking(tracer: Tracer) {
+export function stripeTracking({ tracer, meter }: { tracer: Tracer; meter: Meter }) {
+  const collectedPhones = meter.createCounter('stripe_checkout.collected_phones');
   return {
     /**
      * Records one `stripe_checkout.start` span for each request a buyer makes to start a
@@ -102,6 +127,31 @@ export function stripeTracking(tracer: Tracer) {
             }
           },
         });
+      });
+    },
+
+    /**
+     * Counts one `stripe_checkout.collected_phones` for each phone number a completed checkout
+     * collects and Ghost goes to save. `wallet` says how often buyers pay with Apple Pay or Google
+     * Pay, which pass a number on as the wallet keeps it rather than in E.164. `phone_form`,
+     * `phone_country` and `phone_outcome` say how often such a number needs a country to be read,
+     * whether the checkout knew one, and whether its field kept it. The number itself is never
+     * recorded, as it is the buyer's.
+     */
+    collectedPhone({
+      wallet,
+      phone,
+      outcome,
+    }: {
+      wallet: CheckoutWallet;
+      phone: CollectedPhone;
+      outcome: CollectedPhoneOutcome;
+    }): void {
+      collectedPhones.add(1, {
+        wallet,
+        phone_form: phone.form,
+        phone_country: phone.country,
+        phone_outcome: outcome,
       });
     },
   };

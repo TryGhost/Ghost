@@ -422,12 +422,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     </SidebarProvider>
   );
 
-  // The side panel shows only where the navigation does. In the Admin 7 frame
-  // it sits beside the card, below the top bar, and otherwise runs the full
-  // height on the right. It stays in one place across the mobile breakpoint, so
-  // its content isn't reloaded.
+  // The side panel shows only where the main navigation does, as that's where
+  // it's opened from: not on full-screen screens, nor in Settings, which swaps
+  // the navigation for its own. In the Admin 7 frame it sits beside the card,
+  // below the top bar, and otherwise runs the full height on the right. It
+  // stays in one place across the mobile breakpoint, so its content isn't
+  // reloaded.
   const sidePanel = (
-    <SidePanel framed={adminFrame} locked={dunningLocked} visible={sidebarVisible && !isMobile} />
+    <SidePanel
+      framed={adminFrame}
+      locked={dunningLocked}
+      visible={sidebarVisible && !isSettingsRoute && !isMobile}
+    />
   );
 
   return (

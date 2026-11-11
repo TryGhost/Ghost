@@ -80,7 +80,7 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
   return (
     <section
       aria-labelledby="member-newsletters-heading"
-      className="flex flex-col gap-3"
+      className="flex flex-col gap-3 in-data-[admin7-design=true]:gap-4"
       data-testid="member-newsletters-field"
     >
       <h3 className="section-heading text-base font-semibold" id="member-newsletters-heading">

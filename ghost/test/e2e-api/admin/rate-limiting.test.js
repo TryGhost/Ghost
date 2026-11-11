@@ -1,9 +1,12 @@
+const assert = require('node:assert/strict');
+const supertest = require('supertest');
 const {
   agentProvider,
   fixtureManager,
   matchers: { anyContentVersion, anyEtag },
   dbUtils,
   configUtils,
+  resetRateLimits,
 } = require('../../utils/e2e-framework');
 
 describe('Sessions API', function () {
@@ -66,5 +69,35 @@ describe('Sessions API', function () {
         'content-version': anyContentVersion,
         etag: anyEtag,
       });
+  });
+
+  it('Shares the global login limit across spellings of the session path', async function () {
+    const spam = configUtils.config.get('spam');
+    const globalRetries = spam.global_block.freeRetries;
+    const loginRetries = spam.user_login.freeRetries;
+
+    // The test agent always appends a trailing slash, so send raw requests
+    const login = (path) =>
+      supertest(agent.app).post(`/ghost/api/admin/${path}`).set(agent.defaults.headers).send({
+        grant_type: 'password',
+        username: 'user@domain.tld',
+        password: 'parseword',
+      });
+
+    try {
+      configUtils.set('spam:global_block:freeRetries', 3);
+      configUtils.set('spam:user_login:freeRetries', 100);
+      await resetRateLimits();
+
+      for (const path of ['session', 'session/', 'SESSION', 'Session/']) {
+        assert.equal((await login(path)).status, 404);
+      }
+
+      assert.equal((await login('session')).status, 429);
+    } finally {
+      configUtils.set('spam:global_block:freeRetries', globalRetries);
+      configUtils.set('spam:user_login:freeRetries', loginRetries);
+      await resetRateLimits();
+    }
   });
 });

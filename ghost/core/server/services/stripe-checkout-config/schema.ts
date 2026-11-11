@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import type { Knex } from 'knex';
 import { DbDate } from '../../lib/db-types/date';
-import { CONFIG_TIER_PARTS, CONFIG_TIER_SECTIONS, SECTION_NAMES, SECTION_OF } from './models';
 
 export const CONFIG_TABLE = 'stripe_checkout_config';
 
@@ -13,7 +12,6 @@ export const DbStripeCheckoutConfig = z.object({
   id: z.string(),
   slug: z.string(),
   design: z.string().nullable(),
-  tax_number: z.string().nullable(),
   created_at: DbDate,
   updated_at: DbDate.nullable(),
 });
@@ -23,24 +21,8 @@ type StripeCheckoutConfigRow = z.infer<typeof DbStripeCheckoutConfig>;
 /** The columns holding the parts of the config that are Stripe's own, each JSON or null. */
 export const DbConfigParts = DbStripeCheckoutConfig.pick({
   design: true,
-  tax_number: true,
 });
 export type DbConfigParts = z.infer<typeof DbConfigParts>;
-
-export const CONFIG_TIERS_TABLE = 'stripe_checkout_config_tiers';
-
-/** A part keeping its tiers in the config, as the tiers table names it, read as its name in code. */
-export const DbSection = z.codec(z.enum(CONFIG_TIER_PARTS), z.enum(CONFIG_TIER_SECTIONS), {
-  decode: (name) => SECTION_OF[name],
-  encode: (section) => SECTION_NAMES[section],
-});
-
-/** A `stripe_checkout_config_tiers` row: one of the tiers such a part is limited to. */
-export const DbConfigTier = z.object({
-  section: DbSection,
-  product_id: z.string(),
-});
-type ConfigTierRow = z.input<typeof DbConfigTier>;
 
 declare module 'knex/types/tables' {
   interface Tables {
@@ -50,6 +32,5 @@ declare module 'knex/types/tables' {
         Partial<z.input<typeof DbConfigParts>>,
       Partial<z.input<typeof DbStripeCheckoutConfig>>
     >;
-    stripe_checkout_config_tiers: Knex.CompositeTableType<ConfigTierRow>;
   }
 }

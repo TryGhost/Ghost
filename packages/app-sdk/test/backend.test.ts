@@ -173,6 +173,12 @@ describe('handleChallenge', () => {
       await expect(answering).rejects.not.toThrow(backendKey);
     },
   );
+
+  it("throws for a backend key whose x is another key's, rather than answering", async () => {
+    const backendKey = { ...privateJwk, x: backendKeyPair().publicJwk.x };
+    const answering = handleChallenge(challengeRequest(createChallenge(ORIGIN)), { backendKey });
+    await expect(answering).rejects.toThrow('its x and d are from different keys');
+  });
 });
 
 describe('withGhostApp', () => {

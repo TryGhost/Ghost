@@ -157,7 +157,13 @@ describe('deriveEditorStatus', () => {
   it('reads a scheduled post whose time has passed as published', () => {
     expect(
       derive({ status: 'scheduled', publishedAt: '2026-09-02T11:00:00.000Z', url: 'https://x/y' }),
-    ).toEqual({ kind: 'published', url: 'https://x/y', email: 'none', count: 0 });
+    ).toEqual({
+      kind: 'published',
+      url: 'https://x/y',
+      email: 'none',
+      count: 0,
+      newsletterName: null,
+    });
   });
 
   it('keeps a scheduled post scheduled until its time arrives', () => {
@@ -181,7 +187,7 @@ describe('deriveEditorStatus', () => {
       derive({
         status: 'scheduled',
         publishedAt: '2026-09-02T13:00:00.000Z',
-        newsletter: { slug: 'weekly', visibility: 'members' },
+        newsletter: { slug: 'weekly', visibility: 'members', name: 'Weekly' },
         emailSegment: 'status:free',
       }),
     ).toMatchObject({
@@ -196,7 +202,7 @@ describe('deriveEditorStatus', () => {
       derive({
         status: 'scheduled',
         publishedAt: '2026-09-02T13:00:00.000Z',
-        newsletter: { slug: 'weekly', visibility: 'members' },
+        newsletter: { slug: 'weekly', visibility: 'members', name: 'Weekly' },
         emailSegment: 'all',
       }),
     ).toMatchObject({
@@ -210,7 +216,7 @@ describe('deriveEditorStatus', () => {
       derive({
         status: 'scheduled',
         publishedAt: '2026-09-02T13:00:00.000Z',
-        newsletter: { slug: 'weekly', visibility: 'members' },
+        newsletter: { slug: 'weekly', visibility: 'members', name: 'Weekly' },
         emailSegment: 'none',
       }),
     ).toMatchObject({ recipientFilter: null, recipientSegment: null });
@@ -221,7 +227,7 @@ describe('deriveEditorStatus', () => {
       derive({
         status: 'scheduled',
         publishedAt: '2026-09-02T13:00:00.000Z',
-        newsletter: { slug: 'weekly', visibility: 'paid' },
+        newsletter: { slug: 'weekly', visibility: 'paid', name: 'Weekly' },
       }),
     ).toMatchObject({
       recipientFilter: 'newsletters.slug:weekly+email_disabled:0+status:-free',
@@ -233,7 +239,7 @@ describe('deriveEditorStatus', () => {
       derive({
         status: 'scheduled',
         publishedAt: '2026-09-02T13:00:00.000Z',
-        newsletter: { slug: 'weekly', visibility: 'members' },
+        newsletter: { slug: 'weekly', visibility: 'members', name: 'Weekly' },
         hasEmail: true,
       }),
     ).toMatchObject({ recipientFilter: null });
@@ -258,11 +264,25 @@ describe('deriveEditorStatus', () => {
       kind: 'sent',
       failed: false,
       count: 40,
+      newsletterName: null,
     });
     expect(derive({ status: 'sent', emailStatus: 'failed', emailCount: 40 })).toEqual({
       kind: 'sent',
       failed: true,
       count: 40,
+      newsletterName: null,
+    });
+  });
+
+  it('names the newsletter a published or sent post went out as', () => {
+    const newsletter = { slug: 'weekly', visibility: 'members', name: 'Weekly Digest' } as const;
+
+    expect(
+      derive({ status: 'published', emailStatus: 'submitted', emailCount: 12, newsletter }),
+    ).toMatchObject({ kind: 'published', newsletterName: 'Weekly Digest' });
+    expect(derive({ status: 'sent', emailCount: 12, newsletter })).toMatchObject({
+      kind: 'sent',
+      newsletterName: 'Weekly Digest',
     });
   });
 });

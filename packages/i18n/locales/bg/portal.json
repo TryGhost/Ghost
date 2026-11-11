@@ -90,6 +90,7 @@
     "Could not sign in. Login link expired.": "Неуспешно влизане. Линкът е с изтекла валидност.",
     "Could not update email! Invalid link.": "Не успяхме да обновим имейла! Невалиден линк.",
     "Country": "Държава",
+    "Country code": "",
     "Create a new contact": "Създайте нов контакт",
     "Current plan": "Текущ план",
     "Delete account": "Изтрийте профила",
