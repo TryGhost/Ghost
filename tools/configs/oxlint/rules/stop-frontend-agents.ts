@@ -12,10 +12,11 @@ export const stopFrontendAgents: CreateRule = {
     },
   },
   create(context) {
-    const starts: ESTree.Node[] = [];
-    // Local names for the returned ghostServer, including renames when destructured.
-    const servers = new Set(['ghostServer']);
-    const receivers: string[] = [];
+    // Each start, with the local names that refer to its result or server.
+    const starts = new Map<ESTree.Node, Set<string>>();
+    // Result variables, pointing at the names of the start they hold.
+    const results = new Map<string, Set<string>>();
+    const stopped = new Set<string>();
     let stopsGhost = false;
 
     const nameOf = (node: ESTree.Node) =>
@@ -24,53 +25,80 @@ export const stopFrontendAgents: CreateRule = {
         : node.type === 'MemberExpression' && node.property.type === 'Identifier'
           ? node.property.name
           : undefined;
-
-    // Variables holding the getAgentsWithFrontend() result.
-    const results = new Set<string>();
-    const isCall = (node: ESTree.Node | null | undefined) => {
+    const startOf = (node: ESTree.Node | null | undefined) => {
       const call = node?.type === 'AwaitExpression' ? node.argument : node;
-      return call?.type === 'CallExpression' && nameOf(call.callee) === 'getAgentsWithFrontend';
+      if (call?.type !== 'CallExpression' || nameOf(call.callee) !== 'getAgentsWithFrontend') {
+        return;
+      }
+      let names = starts.get(call);
+      if (!names) starts.set(call, (names = new Set()));
+      return names;
     };
-    // Only aliases destructured from that result, directly or through a variable, name its server.
-    const startsServer = (node: ESTree.Node | null | undefined) =>
-      isCall(node) || (node?.type === 'Identifier' && results.has(node.name));
-    const aliases = (pattern: Extract<ESTree.Node, { type: 'ObjectPattern' }>) => {
-      for (const property of pattern.properties) {
+    // The start a value comes from: the call itself, a result variable, or result.ghostServer.
+    const sourceOf = (node: ESTree.Node | null | undefined) => {
+      if (node?.type === 'Identifier') return results.get(node.name);
+      if (
+        node?.type === 'MemberExpression' &&
+        node.object.type === 'Identifier' &&
+        node.property.type === 'Identifier' &&
+        node.property.name === 'ghostServer'
+      ) {
+        return results.get(node.object.name);
+      }
+      return startOf(node);
+    };
+    const bind = (target: ESTree.Node, value: ESTree.Node | null | undefined) => {
+      const names = sourceOf(value);
+      if (!names) return;
+      if (target.type === 'Identifier') {
+        names.add(target.name);
+        if (startOf(value) || value?.type === 'Identifier') results.set(target.name, names);
+        return;
+      }
+      if (target.type !== 'ObjectPattern') return;
+      for (const property of target.properties) {
         if (
           property.type === 'Property' &&
           property.key.type === 'Identifier' &&
           property.key.name === 'ghostServer' &&
           property.value.type === 'Identifier'
         ) {
-          servers.add(property.value.name);
+          names.add(property.value.name);
         }
       }
     };
 
     return {
       VariableDeclarator(node) {
-        if (node.id.type === 'Identifier' && isCall(node.init)) results.add(node.id.name);
-        if (node.id.type === 'ObjectPattern' && startsServer(node.init)) aliases(node.id);
+        bind(node.id, node.init);
       },
       AssignmentExpression(node) {
-        if (node.left.type === 'Identifier' && isCall(node.right)) results.add(node.left.name);
-        if (node.left.type === 'ObjectPattern' && startsServer(node.right)) aliases(node.left);
+        bind(node.left, node.right);
       },
       CallExpression(node) {
         const { callee } = node;
         const name = nameOf(callee);
-        if (name === 'getAgentsWithFrontend') starts.push(node);
+        startOf(node);
         if (name === 'stopGhost') stopsGhost = true;
-        if (callee.type === 'MemberExpression' && name === 'stop') {
-          // ghostServer.stop() or agents.ghostServer.stop(); other stop() calls don't count.
-          const receiver = nameOf(callee.object);
-          if (receiver) receivers.push(receiver);
+        if (callee.type !== 'MemberExpression' || name !== 'stop') return;
+        // server.stop() or result.ghostServer.stop(); other stop() calls don't count.
+        const receiver = callee.object;
+        if (receiver.type === 'Identifier') stopped.add(receiver.name);
+        else if (
+          receiver.type === 'MemberExpression' &&
+          receiver.object.type === 'Identifier' &&
+          receiver.property.type === 'Identifier' &&
+          receiver.property.name === 'ghostServer'
+        ) {
+          stopped.add(receiver.object.name);
         }
       },
       'Program:exit'() {
-        if (stopsGhost || receivers.some((receiver) => servers.has(receiver))) return;
-        for (const node of starts) {
-          context.report({ node, messageId: 'running' });
+        if (stopsGhost) return;
+        for (const [node, names] of starts) {
+          if (![...names].some((name) => stopped.has(name))) {
+            context.report({ node, messageId: 'running' });
+          }
         }
       },
     };
