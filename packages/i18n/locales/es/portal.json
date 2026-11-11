@@ -91,6 +91,7 @@
     "Could not sign in. Login link expired.": "No se pudo iniciar sesión. El enlace de inicio de sesión ha expirado.",
     "Could not update email! Invalid link.": "¡No se pudo actualizar el correo electrónico! Enlace no válido.",
     "Country": "País",
+    "Country code": "",
     "Create a new contact": "Crea un nuevo contacto",
     "Current plan": "Plan actual",
     "Delete account": "Eliminar cuenta",

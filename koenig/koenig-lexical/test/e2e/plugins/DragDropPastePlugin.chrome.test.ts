@@ -5,10 +5,8 @@ import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Video card is tested in firefox
-// Need to get video thumbnail before uploading on the server; for this purpose, convert video to blob https://github.com/TryGhost/Koenig/blob/a04c59c2d81ddc783869c47653aa9d7adf093629/packages/koenig-lexical/src/utils/extractVideoMetadata.js#L45
-// The problem is that Chromium can't read video src as blob
-test.describe('Drag Drop Paste Plugin Firefox', async function () {
+// Runs in Google Chrome: Playwright's Chromium lacks the H.264 codec needed to read video.mp4
+test.describe('Drag Drop Paste Plugin video', async function () {
     let page;
 
     test.beforeAll(async ({browser}) => {

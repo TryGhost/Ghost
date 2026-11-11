@@ -3,14 +3,17 @@ import { cn } from '@tryghost/shade/utils';
 import { type SidePanelSize, sidePanelStore } from './side-panel-store';
 import { useSidePanel } from './use-side-panel';
 
+// At its default size the panel is as wide as the navigation across the page from it
+const DEFAULT_WIDTH = 'w-(--side-panel-navigation-width)';
+
 const PANEL_WIDTH: Record<SidePanelSize, string> = {
-  default: 'w-[380px]',
+  default: DEFAULT_WIDTH,
   full: 'w-[calc(100%-var(--side-panel-navigation-width))]',
 };
 
 // Less the bezel between the panel and the page's card
 const FRAMED_PANEL_WIDTH: Record<SidePanelSize, string> = {
-  default: 'w-[380px]',
+  default: DEFAULT_WIDTH,
   full: 'w-[calc(100%-var(--side-panel-navigation-width)-var(--admin-frame-side))]',
 };
 
@@ -129,7 +132,7 @@ export function SidePanel({ visible, framed, locked }: SidePanelProps) {
         ref={contentRef}
         className={cn(
           'h-full shrink-0 *:size-full',
-          state.size === 'full' ? 'w-full' : 'w-[380px]',
+          state.size === 'full' ? 'w-full' : DEFAULT_WIDTH,
         )}
       />
     </div>

@@ -90,6 +90,7 @@
     "Could not sign in. Login link expired.": "Oturum açılamadı. Oturum açma bağlantısının süresi doldu.",
     "Could not update email! Invalid link.": "E-posta güncellenemedi! Geçersiz bağlantı.",
     "Country": "Ülke",
+    "Country code": "",
     "Create a new contact": "Yeni bir kullanıcı oluştur",
     "Current plan": "Mevcut plan",
     "Delete account": "Hesabı sil",

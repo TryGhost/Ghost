@@ -23,6 +23,19 @@ export class PortalAccountProfilePage extends PortalPage {
     return this.portalFrame.locator(`[name="custom:${key}"]`);
   }
 
+  /**
+   * The button beside a phone field's number that shows the country the number is from, as its
+   * flag and calling code, and opens the list of countries to pick from.
+   */
+  phoneCountry(key: string): Locator {
+    return this.portalFrame.locator(`[data-test-input="input-custom:${key}-country"]`);
+  }
+
+  /** The search box over the list that is open, which shows what it searches as its placeholder. */
+  listSearch(placeholder: string): Locator {
+    return this.portalFrame.getByPlaceholder(placeholder, { exact: true });
+  }
+
   /** One part of a composite field, such as the first line of an address. */
   partInput(key: string, part: string): Locator {
     return this.portalFrame.locator(`[name="custom:${key}:${part}"]`);

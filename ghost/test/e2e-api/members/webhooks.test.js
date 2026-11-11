@@ -4517,10 +4517,11 @@ describe('Members API', function () {
     beforeEach(async function () {
       mockManager.mockMail();
       mockManager.mockLabsEnabled('stripeCheckoutCollection');
+      mockManager.mockLabsEnabled('customFieldTypePhone');
       for (const field of [
         { name: 'Delivery address', type: 'address' },
         { name: 'Recipient name', type: 'short_text' },
-        { name: 'Contact phone', type: 'short_text' },
+        { name: 'Contact phone', type: 'phone' },
       ]) {
         await adminAgent
           .post('/members/metafields/custom/')
@@ -4547,7 +4548,6 @@ describe('Members API', function () {
     afterEach(async function () {
       mockManager.restore();
       await models.Base.knex('webhooks').del();
-      await models.Base.knex('stripe_checkout_config_tiers').del();
       await models.Base.knex('stripe_checkout_config').del();
       await models.Base.knex('members_metafield_bindings').del();
       await models.Base.knex('tier_requirement_tiers').del();
@@ -4564,13 +4564,30 @@ describe('Members API', function () {
         metadata = {},
         created = Math.floor(Date.now() / 1000),
         name = 'Jamie Doe',
+        phone = '+442079460000',
+        billingCountry = 'GB',
+        // The wallet the buyer paid with, as Stripe names it, if they paid with one.
+        wallet = undefined,
       } = {},
     ) {
+      const walletMethod = wallet && {
+        id: 'pm_wallet',
+        card: {
+          brand: 'visa',
+          last4: '4242',
+          exp_month: 1,
+          exp_year: 2030,
+          wallet: { type: wallet },
+        },
+      };
       set(customer, {
         id: 'cus_shipping',
         name: 'Jamie Doe',
         email,
-        subscriptions: { type: 'list', data: [subscription] },
+        subscriptions: {
+          type: 'list',
+          data: [{ ...subscription, default_payment_method: walletMethod ?? null }],
+        },
       });
       const payload = JSON.stringify({
         type: 'checkout.session.completed',
@@ -4584,7 +4601,7 @@ describe('Members API', function () {
             shipping_address_collection: asked.shipping ? { allowed_countries: ['GB'] } : null,
             shipping: { name, address },
             phone_number_collection: { enabled: Boolean(asked.phone) },
-            customer_details: { email, phone: '+442079460000' },
+            customer_details: { email, phone, address: { country: billingCountry } },
           },
         },
       });
@@ -4611,6 +4628,89 @@ describe('Members API', function () {
       assert.equal(before.body.members.length, 0);
 
       assert.deepEqual(await completeCheckout('shipping-new@example.com'), {
+        delivery_address: {
+          line1: '1 High Street',
+          city: 'London',
+          postal_code: 'N1 1AA',
+          country: 'GB',
+        },
+        recipient_name: 'Jamie Doe',
+      });
+    });
+
+    // How often a wallet's number needs a country to be read, whether the checkout knew one, and
+    // what became of it, never with the number itself.
+    it("counts how a checkout's phone number came back and what became of it", async function () {
+      const metrics = mockManager.mockMetrics();
+
+      await completeCheckout('collected-card@example.com', { asked: { phone: true } });
+      await completeCheckout('collected-wallet@example.com', {
+        asked: { phone: true },
+        phone: '020 7946 0000',
+        wallet: 'apple_pay',
+      });
+      await completeCheckout('collected-no-country@example.com', {
+        asked: { phone: true },
+        phone: '020 7946 0000',
+        billingCountry: null,
+        wallet: 'google_pay',
+      });
+
+      assert.deepEqual(
+        metrics.tracked('stripe_checkout.collected_phones').map(({ value, labels }) => ({
+          value,
+          wallet: labels.wallet,
+          form: labels.phone_form,
+          country: labels.phone_country,
+          outcome: labels.phone_outcome,
+        })),
+        [
+          { value: 1, wallet: 'none', form: 'e164', country: 'billing', outcome: 'saved' },
+          { value: 1, wallet: 'apple_pay', form: 'national', country: 'billing', outcome: 'saved' },
+          {
+            value: 1,
+            wallet: 'google_pay',
+            form: 'unreadable',
+            country: 'none',
+            outcome: 'refused',
+          },
+        ],
+      );
+    });
+
+    it("keeps a wallet's phone number in international form", async function () {
+      // Apple Pay and Google Pay pass a number on as the wallet kept it, rather than in E.164.
+      const saved = await completeCheckout('wallet-phone@example.com', {
+        asked: { shipping: true, phone: true },
+        phone: '+44 (0)20 7946 0000',
+      });
+
+      assert.equal(saved.contact_phone, '+442079460000');
+    });
+
+    // Apple Pay and Google Pay can pass a number on as the wallet keeps it, without its country
+    // code. The buyer's billing country says where it is dialled, as the country Stripe's own
+    // phone input starts from says it for a number typed into Checkout.
+    it("reads a wallet's number without its country code in the buyer's billing country", async function () {
+      const saved = await completeCheckout('national-phone@example.com', {
+        asked: { shipping: true, phone: true },
+        phone: '020 7946 0000',
+        billingCountry: 'GB',
+      });
+
+      assert.equal(saved.contact_phone, '+442079460000');
+    });
+
+    it("still saves the address when a wallet's number isn't one in the billing country", async function () {
+      // The phone field refuses it, and the payment has already been taken, so nothing else the
+      // checkout collected is lost.
+      const saved = await completeCheckout('unreadable-phone@example.com', {
+        asked: { shipping: true, phone: true },
+        phone: '020 7946 0000',
+        billingCountry: 'US',
+      });
+
+      assert.deepEqual(saved, {
         delivery_address: {
           line1: '1 High Street',
           city: 'London',

@@ -13,7 +13,9 @@ import {
   matchField,
   matchLeaf,
   matchShape,
+  filterTextFor,
   partsOf,
+  phoneNumberIn,
   refusedProperty,
   valueSchemaFor,
   type Address,
@@ -22,6 +24,7 @@ import {
   type FieldTypeOfShape,
   type TypedSettings,
 } from '../src/index.ts';
+import { TEXT_FORMATS, text } from '../src/structure.ts';
 import { FIELDS_IN_DEVELOPMENT } from './fixtures/fields.ts';
 
 // This asserts only the catalog's *contract* — which field types exist, and which of
@@ -45,7 +48,7 @@ describe('metafield-types catalog', function () {
   it('answers for each leaf by the kind it declares', function () {
     const holds = (part: 'line1' | 'country') =>
       matchLeaf(FIELD_STRUCTURES.address.parts[part], {
-        text: ({ size }) => `${size} text`,
+        text: ({ format }) => `${format} text`,
         choice: ({ from }) => `a choice from ${from}`,
       });
 
@@ -196,6 +199,122 @@ describe('metafield-types catalog', function () {
 
     it('accepts a multibyte value that reaches the limit exactly', function () {
       assert.equal(parse('€'.repeat(21845)), true);
+    });
+  });
+
+  // The end-to-end tests pin these through the Admin and Members APIs too. They are here as
+  // well because the package's coverage gate counts only the package's own tests.
+  describe('a phone number', function () {
+    const rule = valueSchemaFor({ type: 'phone' });
+
+    it('is kept in E.164 however it was written, without a national (0)', function () {
+      assert.deepEqual(rule.safeParse('+44 (0)20 7946-0000'), {
+        success: true,
+        data: '+442079460000',
+      });
+      assert.deepEqual(rule.safeParse(' +1 (415) 555 0100 '), {
+        success: true,
+        data: '+14155550100',
+      });
+      // After the 00 most countries dial abroad with, as after a +.
+      assert.deepEqual(rule.safeParse('0044 20 7946 0000'), {
+        success: true,
+        data: '+442079460000',
+      });
+    });
+
+    // The 0 is dialled only from inside the country, so after the country code it is dropped.
+    // Italy's leading 0 is part of the number, and stays.
+    it('drops a national 0 written after the country code', function () {
+      assert.deepEqual(rule.safeParse('+44 07911 123456'), {
+        success: true,
+        data: '+447911123456',
+      });
+      assert.deepEqual(rule.safeParse('+39 06 6982 0000'), {
+        success: true,
+        data: '+390669820000',
+      });
+    });
+
+    it('needs its country code, as nothing else says which country it is from', function () {
+      const countryCode =
+        'Enter the phone number with its country code, starting with +, like +44 20 7946 0000.';
+      assert.equal(rule.safeParse('020 7946 0000').error?.issues[0]?.message, countryCode);
+    });
+
+    it('is refused when the country it names has no number like it', function () {
+      const invalid = 'Enter a valid phone number, like +44 20 7946 0000.';
+      assert.equal(rule.safeParse('+44 20 7946 000').error?.issues[0]?.message, invalid);
+      assert.equal(rule.safeParse('+999 1234567').error?.issues[0]?.message, invalid);
+      // The right length for France, in a range France hasn't given out.
+      assert.equal(rule.safeParse('+33 7 01 23 45 67').error?.issues[0]?.message, invalid);
+    });
+
+    // Not told to add the country code it already has.
+    it('is refused with anything else around it, which would be lost', function () {
+      const invalid = 'Enter a valid phone number, like +44 20 7946 0000.';
+      assert.equal(rule.safeParse('+44 20 7946 0000 (home)').error?.issues[0]?.message, invalid);
+      assert.equal(rule.safeParse('Mobile: +44 20 7946 0000').error?.issues[0]?.message, invalid);
+    });
+
+    // For a number that comes with a country rather than a code, as a wallet's can at checkout.
+    it('is read as it is dialled in a country, unless it gives its own code', function () {
+      assert.equal(phoneNumberIn('020 7946 0000', 'GB'), '+442079460000');
+      assert.equal(phoneNumberIn('+33 6 12 34 56 78', 'GB'), '+33612345678');
+      assert.equal(phoneNumberIn('020 7946 000', 'GB'), undefined);
+      assert.equal(phoneNumberIn('+1 415 555 0100 ext. 12', 'US'), undefined);
+      assert.equal(phoneNumberIn('020 7946 0000', 'AQ'), undefined);
+      assert.equal(phoneNumberIn('020 7946 0000', undefined), undefined);
+      assert.equal(phoneNumberIn('+44 20 7946 0000', undefined), '+442079460000');
+    });
+
+    // As a filter compares it with numbers held in E.164: a whole number as the field holds it,
+    // and part of one as its digits, whichever text operator the filter uses.
+    it('is looked for as a number held in E.164 would hold it, however it was written', function () {
+      const phone = text('phone');
+      assert.equal(filterTextFor(phone, '+44 (0)20 7946-0000', undefined), '+442079460000');
+      assert.equal(filterTextFor(phone, '020 7946 0000', 'GB'), '+442079460000');
+      assert.equal(filterTextFor(phone, '+44 (0)20 7946', 'GB'), '+44207946');
+      assert.equal(filterTextFor(phone, '79-46 00 00', 'GB'), '79460000');
+      // Part of a number written as dialled at home is looked for as written.
+      assert.equal(filterTextFor(phone, '020 79', 'GB'), '02079');
+      // Nothing to look for: a filter that is only a + would find every number.
+      assert.equal(filterTextFor(phone, '(0)', 'GB'), '');
+    });
+
+    it('is looked for as written in every other text format', function () {
+      for (const format of TEXT_FORMATS.filter((candidate) => candidate !== 'phone')) {
+        assert.equal(filterTextFor(text(format), ' 020 7946 ', 'GB'), ' 020 7946 ', format);
+      }
+    });
+
+    // A filter's value is read back from the query and looked for again whenever filters change.
+    it('is looked for the same way again', function () {
+      const phone = text('phone');
+      const cases: Array<[string, string | undefined]> = [
+        ['8 800', 'RU'],
+        ['0000', 'GB'],
+        ['+44 20', undefined],
+        ['79460000', 'DK'],
+        ['020 7946 0000', 'GB'],
+      ];
+      for (const [typed, country] of cases) {
+        const once = filterTextFor(phone, typed, country);
+        assert.equal(filterTextFor(phone, once, country), once, `${typed} ${country}`);
+      }
+    });
+
+    it('reads 00 as the way abroad when its country dials abroad otherwise', function () {
+      assert.equal(phoneNumberIn('0044 20 7946 0000', 'US'), '+442079460000');
+      assert.equal(phoneNumberIn('011 44 20 7946 0000', 'US'), '+442079460000');
+    });
+
+    it('is refused with an extension rather than losing it', function () {
+      const refused = rule.safeParse('+1 415 555 0100 ext. 12');
+      assert.equal(
+        refused.error?.issues[0]?.message,
+        'Enter the phone number without an extension.',
+      );
     });
   });
 

@@ -13,11 +13,16 @@ npm install @tryghost/metafield-types
 
 - `@tryghost/metafield-types/structure`: the type ids and what each type is composed
   of. A type is one leaf, a record of named leaves, or a set of options its field
-  offers, and a leaf is text of a size or a choice from a list, such as a country. A
+  offers, and a leaf is text of a format or a choice from a list, such as a country. A
   field of a set type is set up with its options, which a field carries as its
   `settings`. It depends on nothing.
 - `@tryghost/metafield-types/countries`: the two-letter country codes the list of
   countries offers. It depends on nothing.
+- `@tryghost/metafield-types/phone`: each country's calling code, and what a phone input
+  needs to sit beside a choice of country: the country a number is from, telling apart the
+  countries that share a code, such as the US and Canada, the number with the chosen country's
+  code in front, and the country of the reader's language. It depends on nothing, so a browser
+  app can draw a phone input without the rules.
 - `@tryghost/metafield-types/identity`: how a field is named everywhere: its
   namespace, its key, the parts of a record value, and the identity they make
   together (`custom.shipping_address.country`). Each is a type that only its
@@ -25,9 +30,10 @@ npm install @tryghost/metafield-types
   browser app can check identities without paying for the rest.
 - `@tryghost/metafield-types`: the structure above, plus `valueSchemaFor(field)`,
   the rule a value of a field must satisfy given its type and settings. The rules are built on
-  [zod](https://zod.dev), and only this entry point loads all of it, so an
-  integration that only draws inputs can use `./structure` and `./countries`
-  without loading zod at all.
+  [zod](https://zod.dev), and a phone number's on
+  [libphonenumber-js](https://gitlab.com/catamphetamine/libphonenumber-js). Only this
+  entry point loads all of zod or any of libphonenumber-js, so an integration that only
+  draws inputs can use `./structure` and `./countries` without loading either.
 
 ## Compatibility
 

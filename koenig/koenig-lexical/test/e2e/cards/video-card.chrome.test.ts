@@ -14,9 +14,7 @@ import {fileURLToPath} from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Video card is tested in firefox
-// Need to get video thumbnail before uploading on the server; for this purpose, convert video to blob https://github.com/TryGhost/Koenig/blob/a04c59c2d81ddc783869c47653aa9d7adf093629/packages/koenig-lexical/src/utils/extractVideoMetadata.js#L45
-// The problem is that Chromium can't read video src as blob
+// Runs in Google Chrome: Playwright's Chromium lacks the H.264 codec needed to read video.mp4
 test.describe('Video card', async () => {
     let page;
 
@@ -241,7 +239,8 @@ test.describe('Video card', async () => {
         await page.getByTestId('media-upload-placeholder').click();
         const picker = page.getByRole('dialog');
         const scrubber = picker.getByRole('slider', {name: 'Thumbnail frame'});
-        await expect(scrubber).toBeVisible();
+        // Disabled until the preview's metadata loads, and End does nothing before then
+        await expect(scrubber).toBeEnabled();
 
         await scrubber.focus();
         await page.keyboard.press('End');

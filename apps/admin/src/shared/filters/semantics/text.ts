@@ -77,11 +77,22 @@ function anchorsToOperator(
   return negated ? 'does-not-contain' : 'contains';
 }
 
-export function textSemantics(): ValueSemantics<TextOperator> {
+/** How a field's text filter reads what was typed, beyond as written. */
+export interface TextConfig {
+  /**
+   * What was typed, in the form the field holds its values in, so a filter compares like with
+   * like: a phone field's whole number in E.164, say.
+   */
+  normalise?: (typed: string) => string;
+}
+
+export function textSemantics(config?: TextConfig): ValueSemantics<TextOperator> {
   return {
     operators: TEXT_OPERATORS,
     serialize({ operator, values }) {
-      const rawValue = values[0];
+      const typed = values[0];
+      const rawValue =
+        typeof typed === 'string' && config?.normalise ? config.normalise(typed) : typed;
 
       if (typeof rawValue !== 'string' || rawValue === '') {
         return null;

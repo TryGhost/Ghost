@@ -49,11 +49,12 @@ describe('ports', function () {
 
   it('names a field for every port, of a type that can hold what it returns', function () {
     // Stripe returns a structured address for the address, plain text for the rest, so a
-    // port left out here would be collected into whatever a request happened to name.
+    // port left out here would be collected into whatever a request happened to name. A phone
+    // number goes into a phone field, which keeps every number in one form.
     assert.deepEqual(Object.keys(PORT_FIELD).sort(), [...CHECKOUT_PORTS].sort());
     assert.equal(PORT_FIELD[CHECKOUT_PORT.shippingAddress].type, 'address');
     assert.equal(PORT_FIELD[CHECKOUT_PORT.shippingName].type, 'short_text');
-    assert.equal(PORT_FIELD[CHECKOUT_PORT.phone].type, 'short_text');
+    assert.equal(PORT_FIELD[CHECKOUT_PORT.phone].type, 'phone');
   });
 
   it('gives each port to one requirement', function () {
@@ -75,7 +76,6 @@ describe('ports', function () {
   it('recognises what a tier can require', function () {
     assert.ok(isRequirementName('shipping'));
     assert.ok(isRequirementName('phone'));
-    assert.equal(isRequirementName('tax_number'), false);
     assert.equal(isRequirementName(CHECKOUT_PORT.phone), false);
     assert.equal(isRequirementName('toString'), false);
   });

@@ -226,14 +226,16 @@ describe('Account Plan Page', () => {
       SHIPPING_AND_PHONE,
       {
         metafields: {
-          custom: { recipient_name: 'Ada Lovelace', contact_phone: '+44 7700 900000' },
+          custom: { recipient_name: 'Ada Lovelace', contact_phone: '+44 7400 123456' },
         },
       },
     );
 
     const recipient = await findByLabelText('Recipient name');
     expect(recipient).toHaveValue('Ada Lovelace');
-    expect(getByLabelText('Phone number')).toHaveValue('+44 7700 900000');
+    // Shown after the country its code names, as the phone input shows a number held.
+    expect(getByLabelText('Country code')).toHaveTextContent('🇬🇧 +44');
+    expect(getByLabelText('Phone number')).toHaveValue('7400 123456');
     // Shipping first, then the phone number, whatever order the tier lists them in.
     expect(
       recipient.compareDocumentPosition(getByLabelText('Phone number')) &
@@ -257,10 +259,38 @@ describe('Account Plan Page', () => {
         answers: {
           'checkout.shipping.name': 'Ada Lovelace',
           'checkout.shipping.address': { line1: '1 High Street', country: 'GB' },
-          'checkout.phone': '+44 7700 900000',
+          'checkout.phone': '+44 7400 123456',
         },
       }),
     );
+  });
+
+  // Most members hold no number yet. The phone input starts in the reader's own country, and the
+  // number goes as it's dialled at home with that country's code in front, for the site to keep in
+  // its international form.
+  test('asks a paid member holding no phone number in their own country, and sends it with its code', async () => {
+    const languages = vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['en-GB']);
+    try {
+      const { getByRole, findByLabelText, getByLabelText, mockDoActionFn } = changingToRequiring([
+        SHIPPING_AND_PHONE[0],
+      ]);
+
+      const number = await findByLabelText('Phone number');
+      expect(number).toHaveValue('');
+      expect(getByLabelText('Country code')).toHaveTextContent('🇬🇧 +44');
+      const confirm = getByRole('button', { name: 'Confirm' });
+      expect(confirm).toBeDisabled();
+
+      fireEvent.change(number, { target: { value: '07400 123456' } });
+      fireEvent.click(confirm);
+
+      expect(mockDoActionFn).toHaveBeenCalledWith(
+        'updateSubscription',
+        expect.objectContaining({ answers: { 'checkout.phone': '+44 07400 123456' } }),
+      );
+    } finally {
+      languages.mockRestore();
+    }
   });
 
   test('sends each answer whole, as it replaces what the member gave before', async () => {
@@ -360,17 +390,17 @@ describe('Account Plan Page', () => {
         },
         SHIPPING_AND_PHONE[0],
       ],
-      { metafields: { custom: { contact_phone: '+44 7700 900000' } } },
+      { metafields: { custom: { contact_phone: '+44 7400 123456' } } },
     );
 
-    expect(await findByLabelText('Phone number')).toHaveValue('+44 7700 900000');
+    expect(await findByLabelText('Phone number')).toHaveValue('7400 123456');
     expect(queryByLabelText('Recipient name')).not.toBeInTheDocument();
     fireEvent.click(getByRole('button', { name: 'Confirm' }));
 
     // Only what this build asked for, as each requirement is answered whole or not at all.
     expect(mockDoActionFn).toHaveBeenCalledWith(
       'updateSubscription',
-      expect.objectContaining({ answers: { 'checkout.phone': '+44 7700 900000' } }),
+      expect.objectContaining({ answers: { 'checkout.phone': '+44 7400 123456' } }),
     );
   });
 

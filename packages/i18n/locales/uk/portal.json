@@ -92,6 +92,7 @@
     "Could not sign in. Login link expired.": "Неможливо увійти. Термін дії посилання для входу закінчився.",
     "Could not update email! Invalid link.": "Неможливо оновити електронну адресу! Недійсне посилання.",
     "Country": "",
+    "Country code": "",
     "Create a new contact": "Створити новий контакт",
     "Current plan": "Поточний план",
     "Delete account": "Видалити обліковий запис",

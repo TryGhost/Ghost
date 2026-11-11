@@ -1196,7 +1196,7 @@ module.exports = {
       // Keep in sync with FIELD_TYPE_IDS in @tryghost/metafield-types,
       // the source of truth (this static schema can't import it).
       validations: {
-        isIn: [['short_text', 'long_text', 'list', 'address']],
+        isIn: [['short_text', 'long_text', 'list', 'address', 'phone']],
       },
     },
     // What the field is set up with beyond its name, as JSON: a list field's options and
@@ -1683,37 +1683,15 @@ module.exports = {
   },
   // The site-wide Stripe Checkout config. It is a single row found by its slug, so the first
   // save inserts it and later saves update it. Each part with settings of Stripe's own has its
-  // own JSON column, which is null until that part is set. Which tiers ask for a part that saves
-  // into custom fields, and the countries a shipping address must be in, are its tier requirement.
+  // own JSON column, which is null until that part is set. Which tiers ask for what checkout
+  // collects into custom fields, and the countries a shipping address must be in, are tier
+  // requirements.
   stripe_checkout_config: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     slug: { type: 'string', maxlength: 191, nullable: false, unique: true },
     design: { type: 'text', maxlength: 65535, nullable: true },
-    tax_number: { type: 'text', maxlength: 65535, nullable: true },
     created_at: { type: 'dateTime', nullable: false },
     updated_at: { type: 'dateTime', nullable: true },
-  },
-  // The tiers a section of `stripe_checkout_config` is limited to, when it is limited to some
-  // rather than every paid tier. Only a section that saves into no custom field keeps its tiers
-  // here: the others' tiers are their tier requirements. Deleting a tier takes it out of every
-  // list, so the config never stops a tier being deleted and never names one that is gone. A
-  // section whose last tier is deleted reads as switched off, rather than widening to every
-  // tier.
-  stripe_checkout_config_tiers: {
-    section: {
-      type: 'string',
-      maxlength: 50,
-      nullable: false,
-      validations: { isIn: [['tax_number']] },
-    },
-    product_id: {
-      type: 'string',
-      maxlength: 24,
-      nullable: false,
-      references: 'products.id',
-      cascadeDelete: true,
-    },
-    '@@PRIMARY_KEY@@': ['section', 'product_id'],
   },
   actions: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },

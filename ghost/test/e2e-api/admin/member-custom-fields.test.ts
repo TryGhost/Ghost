@@ -1510,6 +1510,19 @@ describe('Member Custom Fields Admin API', function () {
       assert.deepEqual(await readValues(memberId), {});
     });
 
+    it('keeps a phone number in one international form, however it was written', async function () {
+      // E.164 whatever the separators, and a national (0) after the country code isn't part of
+      // the number, so one number is one value for filters and integrations to rely on.
+      const field = await createField({ name: 'Mobile', type: 'phone' });
+      const memberId = await createMember();
+
+      await setValues(memberId, { [field.key]: '+44 (0)20 7946-0000' });
+      assert.deepEqual(await readValues(memberId), { [field.key]: '+442079460000' });
+
+      await setValues(memberId, { [field.key]: '+1 (415) 555 0100' });
+      assert.deepEqual(await readValues(memberId), { [field.key]: '+14155550100' });
+    });
+
     it('rejects an empty string for a non-text field rather than clearing it', async function () {
       // '' is no value of any type, so it's an invalid value, and nothing is coerced.
       const field = await createField({ name: 'Home address', type: 'address' });
@@ -1557,6 +1570,31 @@ describe('Member Custom Fields Admin API', function () {
         assert.equal(await reasonFor({ [field.key]: { country: 'IRL' } }, memberId), expected);
         assert.equal(await reasonFor({ [field.key]: { country: '12' } }, memberId), expected);
         assert.equal(await reasonFor({ [field.key]: { country: 'D' } }, memberId), expected);
+      });
+
+      it('asks for the country code a phone number was written without', async function () {
+        // Without it there is no telling which country's number it is.
+        const field = await createField({ name: 'Mobile', type: 'phone' });
+        const memberId = await createMember();
+
+        assert.equal(
+          await reasonFor({ [field.key]: '020 7946 0000' }, memberId),
+          'Enter the phone number with its country code, starting with +, like +44 20 7946 0000.',
+        );
+        assert.equal(
+          await reasonFor({ [field.key]: '+44 20 7946 000' }, memberId),
+          'Enter a valid phone number, like +44 20 7946 0000.',
+        );
+      });
+
+      it('refuses a phone number with an extension rather than dropping it', async function () {
+        const field = await createField({ name: 'Office', type: 'phone' });
+        const memberId = await createMember();
+
+        assert.equal(
+          await reasonFor({ [field.key]: '+1 415 555 0100 ext. 12' }, memberId),
+          'Enter the phone number without an extension.',
+        );
       });
 
       it('asks for a part when an address names none', async function () {

@@ -90,9 +90,12 @@ offers "Sent" or the retry. A read that found the session gone asks for the
 password in the editor's sign-in dialog first and reads again once the writer
 is back; cancelling it leaves the error, a later background read that fails the
 same way does not ask again, and Retry asks again. A published post's status
-line reads "Published and sending to N members" while its email is on its way
-and "Published and sent to N members" once it is submitted; an email-only send
-reads "Sent to N members" throughout. Neither a publish that emails nor a retry
+line reads "Published and sending" while its email is on its way and
+"Published and sent" once it is submitted; an email-only send reads "Sent"
+throughout. Hovering either, or focusing its link or button from the keyboard,
+fades in who it reached ("…to N members of Weekly Digest"), the way a scheduled
+post's status reveals its audience, and the posts list says the same on hover;
+screen readers always read it. Neither a publish that emails nor a retry
 waits for the send, so the status line shows it as the save or retry left it.
 
 After successful completion, the editor follows the publish flow's celebration

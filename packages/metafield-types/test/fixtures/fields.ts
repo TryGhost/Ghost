@@ -55,6 +55,7 @@ export const FIELD_FIXTURES: {
       ],
     },
   ],
+  phone: [{ field: { type: 'phone' }, values: ['+442079460000', '+14155550100'] }],
 };
 
 /** Every fixture, as a list to run a law over. */
