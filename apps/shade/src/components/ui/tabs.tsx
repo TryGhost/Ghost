@@ -32,16 +32,9 @@ export interface TabsProps extends React.ComponentPropsWithoutRef<typeof TabsPri
 }
 
 const Tabs = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Root>, TabsProps>(
-  ({ variant = 'segmented', ...props }, ref) => {
+  ({ variant, ...props }, ref) => {
     const { controlShape, admin7Design } = useShade();
-    // Standard tabs share the Admin 7 pill treatment. KPI tabs retain their
-    // chart-card layout; compact tabs retain their smaller size.
-    const resolvedVariant =
-      admin7Design && variant !== 'kpis'
-        ? variant === 'button-sm' || variant === 'segmented-sm' || variant === 'pill'
-          ? 'button-sm'
-          : 'button'
-        : variant;
+    const resolvedVariant = variant ?? (admin7Design ? 'underline' : 'segmented');
 
     return (
       <TabsContext.Provider value={{ variant: resolvedVariant, controlShape }}>
@@ -150,7 +143,7 @@ const TabsTrigger = React.forwardRef<
       ref={ref}
       className={cn(
         tabsTriggerVariants({ variant, controlShape }),
-        variant !== 'kpis' &&
+        (variant === 'button' || variant === 'button-sm') &&
           tabSurfaceVariants({
             admin7Design,
             size: variant === 'button-sm' ? 'compact' : 'default',
@@ -252,7 +245,7 @@ const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTrig
           ref={ref}
           className={cn(
             tabsTriggerVariants({ variant, controlShape }),
-            variant !== 'kpis' &&
+            (variant === 'button' || variant === 'button-sm') &&
               tabSurfaceVariants({
                 admin7Design,
                 size: variant === 'button-sm' ? 'compact' : 'default',

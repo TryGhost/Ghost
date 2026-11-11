@@ -10,7 +10,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'With admin7Design on, standard tabs share a pill shape, primary selected fill, and gray inactive fill with dark text. Compact variants retain their smaller size. With the flag off, each variant keeps its previous appearance. KPI tabs retain their chart-card layout.',
+          'Tabs default to underline with admin7Design on and segmented with it off. Explicit variants keep their own appearance. Button tabs share PageMenu’s pill styling in Admin 7; KPI tabs retain their chart-card layout.',
       },
     },
   },
@@ -29,9 +29,8 @@ type Story = StoryObj<typeof Tabs>;
 export const Default: Story = {
   args: {
     defaultValue: 'account',
-    variant: 'button',
     children: [
-      <TabsList key="list" className="grid w-full grid-cols-2">
+      <TabsList key="list">
         <TabsTrigger value="account">Account</TabsTrigger>
         <TabsTrigger value="password">Password</TabsTrigger>
       </TabsList>,
@@ -49,7 +48,7 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          'Admin 7 button tabs use a primary selected fill with contrasting text and a gray inactive fill. Tabs and PageMenu share the same color treatment.',
+          'Default tabs use underline styling in Admin 7. Turn the design flag off to compare the previous segmented default.',
       },
     },
   },
@@ -141,7 +140,7 @@ export const Segmented: Story = {
     docs: {
       description: {
         story:
-          'Segmented tabs become separate pills in Admin 7. Turn the design flag off to compare the previous segmented appearance.',
+          'Use segmented tabs for a control with a shared background and a distinct selected segment.',
       },
     },
   },
@@ -188,7 +187,7 @@ export const Underline: Story = {
     docs: {
       description: {
         story:
-          'Underline tabs become pills in Admin 7. Turn the design flag off to compare the previous underline appearance.',
+          'Use underline tabs to switch sections within a page or panel, with or without Admin 7 enabled.',
       },
     },
   },

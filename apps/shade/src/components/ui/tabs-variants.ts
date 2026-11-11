@@ -1,6 +1,6 @@
 import { cva } from 'class-variance-authority';
 
-// Shared by panel tabs and route-based PageMenu navigation.
+// Shared by button tabs and route-based PageMenu navigation.
 const tabSurfaceVariants = cva('', {
   variants: {
     admin7Design: {
