@@ -4,7 +4,7 @@ module.exports = {
   },
 
   get authenticate() {
-    return require('./authenticate');
+    return require('./authenticate').default;
   },
 
   get session() {
