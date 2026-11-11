@@ -14,8 +14,13 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { it, type TestContext } from 'node:test';
 import type { ICruiseResult } from 'dependency-cruiser';
+import yaml from 'js-yaml';
 import ts from 'typescript';
-import { dependencyIdentity, readKnownViolations } from '../lib/dependency-boundaries.ts';
+import {
+  deferredServices,
+  dependencyIdentity,
+  readKnownViolations,
+} from '../lib/dependency-boundaries.ts';
 
 const repository = path.resolve(import.meta.dirname, '../../..');
 const services = 'ghost/core/server/services';
@@ -189,6 +194,52 @@ it('rejects known violations for migrated services, duplicates and non-service r
 
 it('keeps the checked-in known violations limited to unmigrated services', () => {
   assert.doesNotThrow(() => readKnownViolations(repository));
+});
+
+it('reports but does not gate services with deferred enforcement', (t) => {
+  const [deferred] = deferredServices;
+  assert.ok(deferred);
+  const from = `${services}/${deferred}/implementation.js`;
+  const f = fixture(t, { [from]: "require('../../../shared/config');" });
+  const added = f.lint();
+  assert.equal(added.status, 0, added.stderr);
+  assert.match(added.stdout, /0 known violations, 1 in services with deferred enforcement/);
+  assert.deepEqual(violations(f.graph()), [['service-dependencies', from, config]]);
+
+  // A sibling that is not named is still gated from its first file.
+  f.write(`${services}/${deferred}-extra/implementation.js`, "require('../../../shared/config');");
+  const sibling = f.lint();
+  assert.equal(sibling.status, 1, sibling.stderr);
+  assert.match(sibling.stderr, new RegExp(`${deferred}-extra/implementation.js`));
+  f.write(`${services}/${deferred}-extra/implementation.js`, '');
+
+  // Deferred services keep no entries, so the file cannot hide what they add.
+  f.write(
+    '.dependency-cruiser-known-violations.json',
+    JSON.stringify([{ rule: 'service-dependencies', from, to: config }]),
+  );
+  assert.throws(() => readKnownViolations(f.root), /deferred enforcement/);
+  const listed = f.lint();
+  assert.equal(listed.status, 1, listed.stderr);
+
+  // Migrating a deferred service ends its deferral.
+  f.write('.dependency-cruiser-known-violations.json', '[]');
+  f.write(
+    `${services}/service-inventory.yaml`,
+    JSON.stringify({ services: { [deferred]: { migrated: true } } }),
+  );
+  assert.throws(() => readKnownViolations(f.root), /Remove it from deferredServices/);
+});
+
+it('defers enforcement only for unmigrated services in the inventory', () => {
+  const inventory = yaml.load(
+    readFileSync(path.join(repository, services, 'service-inventory.yaml'), 'utf8'),
+  ) as { services: Record<string, { migrated?: boolean }> };
+  assert.deepEqual([...deferredServices], [...deferredServices].sort());
+  for (const name of deferredServices) {
+    assert.ok(inventory.services[name], `${name} is not in the service inventory`);
+    assert.notEqual(inventory.services[name].migrated, true, `${name} is migrated`);
+  }
 });
 
 it('matches external packages across stores without merging subpaths or workspace targets', () => {

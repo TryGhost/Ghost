@@ -219,6 +219,15 @@ when marking a service migrated, remove all its entries. Do not regenerate the
 file to accept new violations. The file should only shrink. Any exceptional
 addition or move needs explicit review; CODEOWNERS covers it and the rule config.
 
+A few unmigrated services change too often for a file-level list to hold: it
+would go stale between a pull request opening and merging. The checker's
+[`deferredServices`](../../../../tools/scripts/lib/dependency-boundaries.ts) list
+names them. Their violations stay in reports and in the lint summary count, but
+do not fail lint and have no entries in the file. In those services, still pass
+new dependencies in through whatever file already composes the service. A
+service leaves the list when it is migrated. The list should only shrink, and a
+service that is not named is checked from its first commit.
+
 The shared [boundary checker](../../../../tools/scripts/lib/dependency-boundaries.ts)
 compares the current graph with this file. Native dependency-cruiser baselines
 match resolved paths and silently retain stale entries, so they cannot enforce

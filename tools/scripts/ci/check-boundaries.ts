@@ -6,7 +6,7 @@ import {
 } from '../lib/dependency-boundaries.ts';
 
 try {
-  const { graph, newViolations, stale } = readDependencyBoundaries(
+  const { graph, newViolations, stale, deferred } = readDependencyBoundaries(
     path.resolve(import.meta.dirname, '../../..'),
   );
   for (const violation of newViolations) {
@@ -22,7 +22,7 @@ try {
     process.exitCode = 1;
   } else {
     console.log(
-      `No new dependency violations (${graph.modules.length} modules, ${graph.summary.violations.length} known violations).`,
+      `No new dependency violations (${graph.modules.length} modules, ${graph.summary.violations.length - deferred.length} known violations, ${deferred.length} in services with deferred enforcement).`,
     );
   }
 } catch (error) {

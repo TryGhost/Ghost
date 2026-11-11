@@ -18,6 +18,22 @@ const inventorySchema = z.object({
 });
 type KnownViolation = z.infer<typeof knownViolationSchema>;
 
+// Unmigrated services that change too often for a file-level list to hold: it
+// would go stale between a pull request opening and merging. Their findings
+// stay in reports but neither fail lint nor appear in the known-violations
+// file. Remove a name when its service is migrated. This list should only
+// shrink; a service that is not named here is checked from its first commit.
+export const deferredServices: readonly string[] = [
+  'automations',
+  'members',
+  'members-metafields',
+  'stripe',
+];
+
+const serviceName = (file: string) => file.slice(servicesRoot.length).split('/')[0]!;
+const isDeferred = (file: string) =>
+  file.startsWith(servicesRoot) && deferredServices.includes(serviceName(file));
+
 // External package locations vary between pnpm stores and CI. Keep their exact
 // import specifier (including subpaths); local and workspace targets stay resolved
 // so moving either end of an internal dependency needs explicit review.
@@ -42,9 +58,21 @@ export function readKnownViolations(repository: string): KnownViolation[] {
   const { services } = inventorySchema.parse(
     yaml.load(readFileSync(path.join(repository, servicesRoot, 'service-inventory.yaml'), 'utf8')),
   );
+  for (const name of deferredServices) {
+    if (services[name]?.migrated) {
+      throw new Error(
+        `${name} is migrated, so its dependencies are enforced. Remove it from deferredServices.`,
+      );
+    }
+  }
   const seen = new Set<string>();
   for (const item of known) {
-    const name = item.from.slice(servicesRoot.length).split('/')[0]!;
+    const name = serviceName(item.from);
+    if (isDeferred(item.from)) {
+      throw new Error(
+        `${knownViolationsFile}: ${item.from} belongs to a service with deferred enforcement. Remove the entry.`,
+      );
+    }
     if (!services[name] || services[name].migrated) {
       throw new Error(
         `${knownViolationsFile}: ${item.from} must belong to an unmigrated inventory entry.`,
@@ -63,11 +91,13 @@ export function readKnownViolations(repository: string): KnownViolation[] {
 export function compareKnownViolations(graph: ICruiseResult, known: KnownViolation[]) {
   const current = new Set(graph.summary.violations.map((item) => key(dependencyIdentity(item))));
   const accepted = new Set(known.map(key));
+  const deferred = graph.summary.violations.filter((item) => isDeferred(item.from));
   return {
     newViolations: graph.summary.violations.filter(
-      (item) => !accepted.has(key(dependencyIdentity(item))),
+      (item) => !isDeferred(item.from) && !accepted.has(key(dependencyIdentity(item))),
     ),
     stale: known.filter((item) => !current.has(key(item))),
+    deferred,
   };
 }
 

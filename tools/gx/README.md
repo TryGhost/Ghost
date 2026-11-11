@@ -228,6 +228,8 @@ All service commands use the same full dependency-cruiser scan and
 known-violations file as `pnpm lint:boundaries`. Reports retain known and new
 findings and return success when violations are found; boundary lint fails on
 new violations or stale entries. Invalid known-violations files fail both.
+Violations in services with deferred enforcement appear in reports but do not
+fail boundary lint.
 The native `audit` output includes Core and app boundaries as well as services.
 Legacy root `index.js` files are treated as wiring candidates. Computed paths
 such as `require(name)` cannot be resolved by the static audit. No violations

@@ -19,6 +19,7 @@
 # Service dependency policy and reviewed legacy violations
 /.dependency-cruiser.cjs @ErisDS
 /.dependency-cruiser-known-violations.json @ErisDS
+/tools/scripts/lib/dependency-boundaries.ts @ErisDS
 
 # Inbox Links
 ghost/core/server/lib/get-inbox-links.ts @EvanHahn
