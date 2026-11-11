@@ -362,6 +362,10 @@
     - breezy-owls-help
     - funny-moons-travel
     - happy-knives-shake
+"@tryghost/kg-unsplash-selector@0.4.11":
+  dir: koenig/kg-unsplash-selector
+  intents:
+    - bump-playwright-1-65
 "@tryghost/kg-unsplash-selector@0.4.4":
   dir: koenig/kg-unsplash-selector
   intents:
@@ -521,6 +525,13 @@
     - mighty-hounds-punch
     - shiny-snails-explain
     - sweet-ants-search
+"@tryghost/koenig-lexical@2.3.0":
+  dir: koenig/koenig-lexical
+  intents:
+    - bump-playwright-1-65
+    - chilly-lions-walk
+    - email-file-card
+    - koenig-video-tests-chrome
 "@tryghost/metafield-types@0.1.1":
   dir: packages/metafield-types
   intents:
@@ -552,6 +563,13 @@
   intents:
     - field-shapes-described-once
     - repeated-option-refused-on-option
+"@tryghost/metafield-types@0.5.0":
+  dir: packages/metafield-types
+  intents:
+    - field-types-behind-labs-flags
+    - metafield-types-docs-moved
+    - phone-custom-fields
+    - text-leaf-format
 ghost-storage-base@3.0.0:
   dir: packages/adapters/storage-base
   intents:
