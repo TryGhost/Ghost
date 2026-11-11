@@ -13,12 +13,29 @@ loads Better Auth or reads its tables, so Ghost runs without them. Under
 SQLite or where in-development tables are off (`createInDevelopmentTables`
 outside development and testing). Boot creates those tables before it builds
 the instance, so the check reads config rather than the database; it becomes a
-real table check, or goes away, when the tables get a migration. Nothing
-mounts its handler yet.
+real table check, or goes away, when the tables get a migration.
+
+Under `better-auth` the Admin API serves the handler on `/auth/*`
+(`web/api/endpoints/admin/better-auth.ts`), after the private cache header and ahead of body parsing because
+Better Auth reads the request stream. Better Auth's limiter runs on Ghost's
+`spam` limiters through `customStorage`, in every environment: each native
+credential route counts against its compatibility route's limiters, sharing
+their counters, and a successful sign-in or password reset clears `userLogin`
+as the compatibility routes do. `/change-password` and `/verify-password`,
+which check the current password, count against `globalBlock` under their own
+paths. `/change-password` stays disabled until legacy sign-in reads
+`user_accounts` (plan Phase 2). Other paths are not limited. An after-hook strips
+session tokens from native response bodies, by shape: a top-level `token`,
+`session.token`, and each list item's `token`. The token still travels in the
+`httpOnly` session cookie, and server-side `auth.api` calls keep it. Origin
+and CSRF checks are pinned on, since Better Auth turns them off when
+`NODE_ENV` is `test` or `TEST` is set. Admin config publishes `auth: {engine}`.
 
 - `create-auth.ts`: `createAuth()` builds the instance with Ghost's options
   (plan §3.1) from injected dependencies; `assertDatabaseSupported()` is the
   boot check above.
+- `rate-limit.ts`: the `customStorage` that maps native credential routes to
+  Ghost's limiters.
 - `index.ts`: the boot-owned service root, exposed as `auth.betterAuth`. Boot
   calls `init()`; consumers read `.service`.
 
@@ -218,7 +235,7 @@ Settled in Phase 0 (plan §10):
   without it: a top-level `token` from `/sign-in/email` and
   `/change-password`, `session.token` from `/get-session`, and a `token` on
   each session from `/list-sessions`. A global after-hook strips them from
-  every native response before the handler is mounted (Phase 2). Because
+  every native response, and landed with the mount. Because
   `revokeSession` takes a token, revoking one session (Phase 8) uses a Ghost
   endpoint that takes a session id and checks ownership.
 - OAuth clients for apps are Phase 4b, alongside Phase 5.

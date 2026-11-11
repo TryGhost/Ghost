@@ -13,6 +13,7 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
   const settingsCache = require('../../../shared/settings-cache');
   const urlUtils = require('../../../shared/url-utils').default;
   const { knex } = require('../../data/db');
+  const spamPrevention = require('../../web/shared/middleware/api/spam-prevention');
 
   assertDatabaseSupported({
     client: config.get('database:client'),
@@ -26,6 +27,12 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
     urlUtils,
     password: security.password,
     logger: logging,
+    limiters: {
+      globalBlock: spamPrevention.globalBlock,
+      globalReset: spamPrevention.globalReset,
+      userLogin: spamPrevention.userLogin,
+      userReset: spamPrevention.userReset,
+    },
   });
   // betterAuth() defers its setup to this promise; awaiting it fails boot, not the first request
   await auth.$context;
