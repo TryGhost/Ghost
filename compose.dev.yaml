@@ -7,7 +7,7 @@ services:
     # Shared by every checkout's Ghost and DB test runs, which outgrow MySQL's default 151 connections
     command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT --log-error-verbosity=1 --max-connections=1000
     ports:
-      - '3306:3306'
+      - '127.0.0.1:3306:3306'
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-ghost_dev}
@@ -38,7 +38,7 @@ services:
     container_name: ghost-dev-redis
     command: ['redis-server', '--loglevel', 'warning']
     ports:
-      - '6379:6379'
+      - '127.0.0.1:6379:6379'
     volumes:
       - redis-data:/data
     healthcheck:
@@ -57,9 +57,9 @@ services:
     # Tags each message with the SMTP username, which `pnpm dev` sets to the checkout's name
     command: ['--quiet', '--smtp-auth-accept-any', '--smtp-auth-allow-insecure', '--tags-username']
     ports:
-      - '1025:1025' # SMTP server
-      - '8025:8025' # Web interface
-      - '8026:8025' # Web interface (for e2e tests)
+      - '127.0.0.1:1025:1025' # SMTP server
+      - '127.0.0.1:8025:8025' # Web interface
+      - '127.0.0.1:8026:8025' # Web interface (for e2e tests)
     healthcheck:
       interval: 1s
       retries: 30
