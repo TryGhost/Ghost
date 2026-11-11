@@ -592,7 +592,7 @@ const MemberCustomFieldsField: React.FC<MemberCustomFieldsFieldProps> = ({
   return (
     <section
       aria-labelledby="member-custom-fields-heading"
-      className="flex flex-col gap-3"
+      className="flex flex-col gap-3 in-data-[admin7-design=true]:gap-4"
       data-testid="member-custom-fields-field"
     >
       <h3 className="section-heading text-base font-semibold" id="member-custom-fields-heading">

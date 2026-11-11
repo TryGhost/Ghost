@@ -11,7 +11,7 @@ const meta: Meta<typeof PageMenu> = {
     docs: {
       description: {
         component:
-          'Responsive page navigation menu that automatically collapses overflowing items into a dropdown. Pass `value` and `onValueChange` to control the active item, for example from the current route, or `defaultValue` to let the menu track it.',
+          'Responsive page navigation menu that automatically collapses overflowing items into a dropdown. With admin7Design on, it shares the pill shape and selected, inactive, and hover colors of Tabs. Pass `value` and `onValueChange` to control the active item, for example from the current route, or `defaultValue` to let the menu track it.',
       },
     },
   },
