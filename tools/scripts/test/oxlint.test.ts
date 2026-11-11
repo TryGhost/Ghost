@@ -14,6 +14,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { legacyInventoryFile } from '../lib/legacy-services.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
 const requireRoot = createRequire(path.join(root, 'package.json'));
@@ -42,12 +43,16 @@ function runLint(
     cpSync(path.join(root, 'tools/configs/oxlint'), path.join(cwd, 'tools/configs/oxlint'), {
       recursive: true,
     });
-    const inventory = 'ghost/core/server/services/service-inventory.yaml';
-    mkdirSync(path.dirname(path.join(cwd, inventory)), { recursive: true });
+    // Both fixture services are legacy entries, so the root-shape rule stays
+    // out of tests for the other rules. Its own tests cover unlisted roots.
+    mkdirSync(path.dirname(path.join(cwd, legacyInventoryFile)), { recursive: true });
     writeFileSync(
-      path.join(cwd, inventory),
-      JSON.stringify({ services: { alpha: { migrated: true }, legacy: { migrated: false } } }),
+      path.join(cwd, legacyInventoryFile),
+      JSON.stringify({ services: { alpha: {}, legacy: {} } }),
     );
+    const legacyReader = 'tools/scripts/lib/legacy-services.ts';
+    mkdirSync(path.dirname(path.join(cwd, legacyReader)), { recursive: true });
+    cpSync(path.join(root, legacyReader), path.join(cwd, legacyReader));
     writeFileSync(
       path.join(cwd, '.dependency-cruiser.cjs'),
       boundarySource ?? readFileSync(path.join(root, '.dependency-cruiser.cjs')),
@@ -537,7 +542,7 @@ test('allows local library use, computed values, injected application dependenci
   assert.deepEqual(result.diagnostics, []);
 });
 
-test('checks library injection in all TypeScript wiring roots regardless of migration status', () => {
+test('checks library injection in all TypeScript wiring roots, legacy or not', () => {
   for (const filename of [
     'ghost/core/server/services/legacy/index.ts',
     'ghost/core/server/services/unlisted/index.ts',
@@ -547,7 +552,12 @@ test('checks library injection in all TypeScript wiring roots regardless of migr
       filename,
     );
     assert.equal(result.status, 1, filename);
-    assert.equal(result.diagnostics.length, 1);
+    // The unlisted root also fails the root-shape rule, which has its own tests.
+    assert.equal(
+      result.diagnostics.filter(({ code }) => code === injectionCode).length,
+      1,
+      filename,
+    );
   }
   for (const filename of [
     'ghost/core/server/services/alpha/helper.ts',
