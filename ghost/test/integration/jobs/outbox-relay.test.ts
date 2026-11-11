@@ -7,6 +7,7 @@ import { JobsService } from '../../../core/server/services/jobs-service/jobs-ser
 import { OutboxTracker } from '../../../core/server/services/jobs-service/outbox-tracker';
 import { Job } from '../../../core/server/services/jobs-service/job';
 import InMemoryJobsBackend from '../../../core/server/adapters/jobs/InMemoryJobsBackend';
+import SendEmailJob from '../../../core/server/services/email-service/jobs/send-email-job';
 
 const testUtils = require('../../utils');
 const jobsService = require('../../../core/server/services/jobs-service');
@@ -184,7 +185,7 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       }));
       await knex(TABLE).insert(rows);
 
-      const released = await outbox.releaseSubmitted();
+      const { released, dropped } = await outbox.releaseSubmitted({ replays: () => true });
 
       assert.deepEqual(
         [...released].sort((a, b) => a.id.localeCompare(b.id)),
@@ -193,8 +194,33 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
           { id: rows[1].id, type: null },
         ].sort((a, b) => a.id.localeCompare(b.id)),
       );
+      assert.deepEqual(dropped, []);
       const [{ count }] = await knex(TABLE).whereNotNull('submitted_at').count({ count: '*' });
       assert.equal(Number(count), 0);
+    });
+
+    it('deletes, instead of releasing, submitted rows whose job type is not replayed', async function () {
+      const [replayed, notReplayed] = ['greet', 'own-recovery'].map((type) => ({
+        id: newId(),
+        envelope: JSON.stringify(envelopeFor(type)),
+        created_at: new Date(),
+        available_at: new Date(),
+        submitted_at: new Date(),
+      }));
+      await knex(TABLE).insert([replayed, notReplayed]);
+
+      const { released, dropped } = await outbox.releaseSubmitted({
+        replays: (type) => type !== 'own-recovery',
+      });
+
+      assert.deepEqual(released, [{ id: replayed.id, type: 'greet' }]);
+      assert.deepEqual(dropped, [{ id: notReplayed.id, type: 'own-recovery' }]);
+      assert.deepEqual(
+        (await knex(TABLE).select('id', 'submitted_at')).map(
+          (row: { id: string; submitted_at: Date | null }) => [row.id, row.submitted_at],
+        ),
+        [[replayed.id, null]],
+      );
     });
   });
 
@@ -917,6 +943,27 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       }
 
       assert.equal(deletes.length, 1);
+    });
+
+    it('leaves a retained newsletter send to the newsletter boot scan', async function () {
+      await knex(TABLE).insert({
+        id: newId(),
+        envelope: JSON.stringify(envelopeFor(SendEmailJob.type, { emailId: 'e1' })),
+        created_at: new Date(),
+        available_at: new Date(),
+        submitted_at: new Date(),
+      });
+      const sent: SendEmailJob[] = [];
+      const service = initWithOutbox(true);
+      service.handle(SendEmailJob, async (job: SendEmailJob) => {
+        sent.push(job);
+      });
+
+      await service.start();
+      await delay(TIMINGS.pollIntervalMs * 5);
+
+      assert.equal(await countRows(), 0, 'the row is dropped at boot');
+      assert.equal(sent.length, 0, 'and the send is not handed over again');
     });
 
     it('with the flag turned off, still hands over rows submitted while it was on', async function () {

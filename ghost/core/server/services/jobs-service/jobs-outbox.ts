@@ -35,6 +35,11 @@ export interface ReleasedRow {
   type: string | null;
 }
 
+export interface ReleaseOutcome {
+  released: ReleasedRow[];
+  dropped: ReleasedRow[];
+}
+
 export type ProcessOutcome =
   | { status: 'idle' }
   | { status: 'delivered'; id: string; type: string; createdAt: Date }
@@ -45,11 +50,23 @@ const ClaimedRow = z.object({ id: z.string(), envelope: z.string(), created_at: 
 
 const SubmittedRow = z.object({ id: z.string(), envelope: z.string() });
 
-// Only for logging which jobs a boot hands over again; a row whose envelope
-// cannot be read takes the relay's retry path once it is claimed.
+// The job type of a submitted row, or null when its envelope cannot be read.
 function typeOf(stored: string): string | null {
   const result = z.safeDecode(OutboxEnvelope, stored);
   return result.success ? result.data.payload.job.type : null;
+}
+
+// A row whose type cannot be read is released, so the relay's retry path
+// deals with it once it is claimed.
+function partitionByReplay(
+  rows: ReleasedRow[],
+  replays: (type: string) => boolean,
+): ReleaseOutcome {
+  const outcome: ReleaseOutcome = { released: [], dropped: [] };
+  for (const row of rows) {
+    (row.type === null || replays(row.type) ? outcome.released : outcome.dropped).push(row);
+  }
+  return outcome;
 }
 
 // MySQL rounds a fractional DATETIME on insert, which can round available_at up
@@ -140,19 +157,27 @@ export class JobsOutbox {
     await this.#knex(TABLE).where('id', id).delete();
   }
 
-  async releaseSubmitted(): Promise<ReleasedRow[]> {
+  // A job type that is not replayed has its own recovery, so its rows are
+  // deleted rather than handed over again.
+  async releaseSubmitted({
+    replays,
+  }: {
+    replays: (type: string) => boolean;
+  }): Promise<ReleaseOutcome> {
     const rows = z
       .array(SubmittedRow)
       .parse(await this.#knex(TABLE).select('id', 'envelope').whereNotNull('submitted_at'));
-    if (rows.length === 0) {
-      return [];
+    const outcome = partitionByReplay(
+      rows.map(({ id, envelope }) => ({ id, type: typeOf(envelope) })),
+      replays,
+    );
+    const ids = (list: ReleasedRow[]) => list.map(({ id }) => id);
+    if (outcome.released.length > 0) {
+      await this.#knex(TABLE).whereIn('id', ids(outcome.released)).update({ submitted_at: null });
     }
-    await this.#knex(TABLE)
-      .whereIn(
-        'id',
-        rows.map(({ id }) => id),
-      )
-      .update({ submitted_at: null });
-    return rows.map(({ id, envelope }) => ({ id, type: typeOf(envelope) }));
+    if (outcome.dropped.length > 0) {
+      await this.#knex(TABLE).whereIn('id', ids(outcome.dropped)).delete();
+    }
+    return outcome;
   }
 }

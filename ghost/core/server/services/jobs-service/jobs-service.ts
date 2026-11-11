@@ -21,12 +21,16 @@ export interface JobsErrorReporter {
   captureException(err: unknown, captureContext?: { tags?: Record<string, string> }): void;
 }
 
+type OutboxRow = { id: string; type: string | null };
+
 export interface OutboxStore {
   insert(
     entry: { id: string; envelope: DispatchEnvelope },
     options?: { transacting?: Knex.Transaction },
   ): Promise<void>;
-  releaseSubmitted(): Promise<{ id: string; type: string | null }[]>;
+  releaseSubmitted(options: {
+    replays: (type: string) => boolean;
+  }): Promise<{ released: OutboxRow[]; dropped: OutboxRow[] }>;
 }
 
 export interface OutboxRelayLike {
@@ -83,6 +87,7 @@ export class JobsService {
   readonly #registry = new Map<string, Deliverer>();
   readonly #queueByType = new Map<string, string>();
   readonly #queues = new Map<string, QueueDeclaration>();
+  readonly #notReplayed = new Set<string>();
 
   constructor({ backend, logging, sentry, outbox, logOutboxUnavailable }: JobsServiceOptions) {
     this.#backend = backend;
@@ -109,6 +114,9 @@ export class JobsService {
       });
     }
     this.#declareQueue(type, options);
+    if (JobClass.replayAfterRestart === false) {
+      this.#notReplayed.add(type);
+    }
     this.#registry.set(type, (payload) => handler(new JobClass(JSON.parse(payload))));
   }
 
@@ -219,16 +227,7 @@ export class JobsService {
       onSettled: this.#outbox?.tracker?.onSettled,
     });
     if (this.#outbox) {
-      // Rows submitted before this start belong to a process that has gone,
-      // so their jobs may be lost. That holds while a site never runs two
-      // processes at once; more than one would need to know who owns a row.
-      const released = await this.#outbox.store.releaseSubmitted();
-      if (released.length > 0) {
-        this.#logging.info(
-          { system: { event: 'jobs_outbox.released', count: released.length, rows: released } },
-          `[Jobs Outbox] Released ${released.length} submitted rows to hand over again`,
-        );
-      }
+      await this.#releaseSubmitted(this.#outbox.store);
       this.#outbox.relay.start();
     } else if (this.#logOutboxUnavailable) {
       this.#logging.warn(
@@ -242,6 +241,27 @@ export class JobsService {
       { system: { event: 'jobs.started', backend, outbox_enabled: outboxEnabled } },
       `[Jobs] Started on ${backend} with the outbox ${outboxEnabled ? 'on' : 'off'}`,
     );
+  }
+
+  // Rows submitted before this start belong to a process that has gone, so
+  // their jobs may be lost. That holds while a site never runs two processes
+  // at once; more than one would need to know who owns a row.
+  async #releaseSubmitted(store: OutboxStore): Promise<void> {
+    const { released, dropped } = await store.releaseSubmitted({
+      replays: (type) => !this.#notReplayed.has(type),
+    });
+    if (dropped.length > 0) {
+      this.#logging.info(
+        { system: { event: 'jobs_outbox.dropped', count: dropped.length, rows: dropped } },
+        `[Jobs Outbox] Dropped ${dropped.length} submitted rows whose job types recover on their own`,
+      );
+    }
+    if (released.length > 0) {
+      this.#logging.info(
+        { system: { event: 'jobs_outbox.released', count: released.length, rows: released } },
+        `[Jobs Outbox] Released ${released.length} submitted rows to hand over again`,
+      );
+    }
   }
 
   async shutdown(options?: JobsShutdownOptions): Promise<void> {
@@ -258,6 +278,7 @@ export class JobsService {
     this.#registry.clear();
     this.#queueByType.clear();
     this.#queues.clear();
+    this.#notReplayed.clear();
   }
 
   #buildEnvelope(job: Job): DispatchEnvelope {
