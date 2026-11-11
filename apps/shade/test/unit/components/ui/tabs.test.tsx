@@ -11,6 +11,22 @@ import {
 import { render } from '../../utils/test-utils';
 
 describe('Tabs Component', () => {
+  it('preserves void elements while reserving underline label width', () => {
+    render(
+      <Tabs defaultValue="first" variant="underline">
+        <TabsList>
+          <TabsTrigger value="first">
+            <img alt="" src="/avatar.png" />
+            First
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>,
+    );
+
+    const tab = screen.getByRole('tab', { name: 'First' });
+    expect(tab.querySelectorAll('img')).toHaveLength(1);
+  });
+
   it('keeps sizing copies out of tab names and renders count badges once', () => {
     render(
       <Tabs defaultValue="first" variant="underline">

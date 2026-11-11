@@ -149,6 +149,10 @@ const tabsTriggerVariants = cva(
 
 // Reserve selected-weight text width without duplicating icons, badges or child components.
 function renderTabsTriggerLabel(children: React.ReactNode, asChild = false): React.ReactNode {
+  if (children === null || children === undefined) {
+    return children;
+  }
+
   if (asChild && React.isValidElement<{ children?: React.ReactNode }>(children)) {
     return React.cloneElement(children, undefined, renderTabsTriggerLabel(children.props.children));
   }
