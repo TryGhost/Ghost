@@ -126,7 +126,7 @@ export async function signAppManifest(source: unknown, options: SignOptions): Pr
   if (new TextEncoder().encode(serialiseSigned(signed)).byteLength > SIGNED_MANIFEST_MAX_BYTES) {
     return refuse(
       'APP_MANIFEST_TOO_LARGE',
-      `Expected a signed manifest of at most ${Math.floor(SIGNED_MANIFEST_MAX_BYTES / 1024)} KB, as Ghost fetches it; text Ghost trims still counts`,
+      `Expected a signed manifest of at most ${Math.floor(SIGNED_MANIFEST_MAX_BYTES / 1024)} KB`,
     );
   }
   return { success: true, signed, manifest };
