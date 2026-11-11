@@ -127,16 +127,6 @@ export const useReadAppInstallation = createQueryWithId<AppInstallationsResponse
   defaultSearchParams: { include: 'history' },
 });
 
-/** Has Ghost fetch and check an app's manifest. Stores nothing, so nothing is invalidated. */
-export const usePreviewAppInstallation = createMutation<
-  AppInstallationPreviewsResponseType,
-  string
->({
-  method: 'POST',
-  path: () => '/apps/installations/preview/',
-  body: (manifestUrl) => ({ app_installation_previews: [{ manifest_url: manifestUrl }] }),
-});
-
 /**
  * Starts a session of an installed app. Opening the app's page does this. Ghost first re-checks the
  * app's manifest: a change that needs no approval is applied, and one that needs approval suspends

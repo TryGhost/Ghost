@@ -4,7 +4,6 @@ import { renderHookWithProviders } from '../../../src/test/test-utils';
 import {
   useAddAppInstallation,
   useApproveAppInstallation,
-  usePreviewAppInstallation,
   useStartAppSession,
 } from '../../../src/api/app-installations';
 import { withMockFetch } from '../../utils/mock-fetch';
@@ -28,22 +27,6 @@ const requestOf = (mock: { calls: unknown[][] }) => {
 };
 
 describe('app installations api', () => {
-  it('previews a manifest by its URL', async () => {
-    await withMockFetch(okResponse({ app_installation_previews: [] }), async (mock) => {
-      const { result } = renderHookWithProviders(() => usePreviewAppInstallation());
-
-      await act(async () => {
-        await result.current.mutateAsync(MANIFEST_URL);
-      });
-
-      expect(requestOf(mock)).toEqual({
-        path: '/ghost/api/admin/apps/installations/preview/',
-        method: 'POST',
-        body: { app_installation_previews: [{ manifest_url: MANIFEST_URL }] },
-      });
-    });
-  });
-
   it('installs the manifest that was reviewed', async () => {
     await withMockFetch(okResponse({ app_installations: [] }), async (mock) => {
       const { result } = renderHookWithProviders(() => useAddAppInstallation());
