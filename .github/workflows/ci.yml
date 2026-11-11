@@ -1189,7 +1189,10 @@ jobs:
         # also pulls ~20MB of fonts the video-card tests don't use.
         # The package name tracks the image's FFmpeg (libavcodec60 on 24.04, libavcodec62 on 26.04).
         # Worst case 3 × (65 + 125 + 5) = 585s stays inside timeout-minutes.
+        # The runner falls back from the Azure mirror to archive.ubuntu.com, but a stalled
+        # Azure mirror uses up the update timeout first, so retries skip it.
         run: |
+          mirrors=/etc/apt/apt-mirrors.txt
           for i in 1 2 3; do
             if sudo timeout -k 5 60 apt-get update -yq \
                  -o Acquire::Retries=3 -o Acquire::http::Timeout=30 &&
@@ -1198,7 +1201,12 @@ jobs:
                  -o Acquire::Retries=3 -o Acquire::http::Timeout=30 "$codec"; then
               exit 0
             fi
-            echo "libavcodec attempt $i failed/stuck, retrying..."; sleep 5
+            echo "libavcodec attempt $i failed/stuck, retrying..."
+            if [ -f "$mirrors" ] && grep -q 'azure\.archive\.ubuntu\.com' "$mirrors"; then
+              echo "Skipping the Azure Ubuntu mirror on retries"
+              sudo sed -i '/azure\.archive\.ubuntu\.com/d' "$mirrors"
+            fi
+            sleep 5
           done
           echo "libavcodec failed after 3 attempts"; exit 1
 
