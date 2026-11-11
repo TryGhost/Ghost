@@ -547,6 +547,7 @@ test.describe('Paste behaviour', async () => {
                                 </div>
                             </div>
                         </div>
+                        <div><div draggable="true" data-kg-settings-panel="true"></div></div>
                     </div>
                 </div>
                 <p><br /></p>
