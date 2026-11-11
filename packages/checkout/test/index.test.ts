@@ -76,7 +76,6 @@ describe('ports', function () {
   it('recognises what a tier can require', function () {
     assert.ok(isRequirementName('shipping'));
     assert.ok(isRequirementName('phone'));
-    assert.equal(isRequirementName('tax_number'), false);
     assert.equal(isRequirementName(CHECKOUT_PORT.phone), false);
     assert.equal(isRequirementName('toString'), false);
   });

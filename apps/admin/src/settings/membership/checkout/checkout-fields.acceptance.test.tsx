@@ -49,7 +49,6 @@ type HostSettings = ReturnType<typeof configResponse>['config']['hostSettings'];
 async function openCheckoutFields(
   config: StripeCheckoutConfig,
   fields: Parameters<typeof fakeMemberCustomFields>[0] = [phoneField],
-  labs: Record<string, boolean> = {},
   hostSettings?: HostSettings,
 ) {
   fakeSettingsScreens();
@@ -64,17 +63,13 @@ async function openCheckoutFields(
     checkout_config: [config],
   });
   // Phone fields on, as the phone number saves only into one.
-  const allLabs = {
-    stripeCheckoutCollection: true,
-    customFieldTypePhone: true,
-    ...labs,
-  };
-  const siteConfig = configResponse({ labs: allLabs });
+  const labs = { stripeCheckoutCollection: true, customFieldTypePhone: true };
+  const siteConfig = configResponse({ labs });
   if (hostSettings) {
     siteConfig.config.hostSettings = hostSettings;
   }
   await renderAdminApp('/settings/tiers/checkout', {
-    labs: allLabs,
+    labs,
     boot: {
       browseSettings: { response: stripeSettings() },
       browseConfig: { response: siteConfig },
@@ -90,7 +85,6 @@ async function openCheckoutFields(
 const PARTS: { [Part in CollectedPart]: { label: string; sketched: string } } = {
   shipping: { label: 'Shipping address', sketched: 'Shipping address' },
   phone: { label: 'Phone', sketched: 'Phone' },
-  tax_number: { label: 'Tax ID or VAT', sketched: "I'm purchasing as a business" },
 };
 
 /** The config a Ghost reporting these parts gives while it collects nothing. */
@@ -110,6 +104,28 @@ describe('Checkout settings', () => {
       await expect(sketch.getByText(sketched, { exact: true })).toHaveCount(0);
       await modal.getByRole('switch', { name: label, exact: true }).click();
       await expect.element(sketch.getByText(sketched, { exact: true })).toBeVisible();
+    });
+
+    it('saves nothing while it is collected for no tier', async () => {
+      const { modal, saveApi } = await openCheckoutFields(collectingNothing(COLLECTED_PARTS));
+
+      await modal.getByRole('switch', { name: label, exact: true }).click();
+      await modal
+        .getByRole('group', { name: label, exact: true })
+        .getByRole('combobox', { name: 'Collect for' })
+        .click();
+      await page.getByRole('option', { name: 'Supporter' }).click();
+      await userEvent.keyboard('{Escape}');
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect
+        .element(
+          modal
+            .getByRole('group', { name: label, exact: true })
+            .getByText('Choose at least one tier'),
+        )
+        .toBeVisible();
+      expect(saveApi.lastRequest).toBeUndefined();
     });
 
     it('is collected for paid tiers only, as a free tier has no checkout', async () => {
@@ -240,7 +256,6 @@ describe('Checkout settings', () => {
     const { modal } = await openCheckoutFields(
       { design: { customize: false }, shipping: { collect: false }, phone: { collect: false } },
       [{ ...phoneField, status: 'archived' }],
-      {},
       { limits: { limitCustomFields: { disabled: true } } },
     );
 
@@ -594,149 +609,6 @@ describe('Checkout settings', () => {
         await expect.element(shipping).toBeChecked();
       }
     });
-  });
-
-  it('lets business buyers give a tax ID on every paid tier, with no field to choose', async () => {
-    const { modal, saveApi } = await openCheckoutFields({
-      design: { customize: false },
-      shipping: { collect: false },
-      phone: { collect: false },
-      tax_number: { collect: false },
-    });
-
-    await modal.getByRole('switch', { name: 'Tax ID or VAT' }).click();
-    await expect
-      .element(
-        modal
-          .getByRole('figure', { name: 'Checkout preview' })
-          .getByText("I'm purchasing as a business"),
-      )
-      .toBeVisible();
-    // Stripe keeps the tax ID, so the tiers are all there is to choose.
-    const taxId = modal.getByRole('group', { name: 'Tax ID or VAT' });
-    await expect.element(taxId.getByRole('combobox', { name: 'Collect for' })).toBeVisible();
-    await expect(taxId.getByRole('combobox')).toHaveCount(1);
-
-    await modal.getByRole('button', { name: 'Save' }).click();
-    await expect
-      .poll(() => saveApi.lastRequest?.body)
-      .toEqual({
-        checkout_config: [
-          {
-            design: { customize: false },
-            shipping: { collect: false },
-            phone: { collect: false },
-            tax_number: { collect: true },
-          },
-        ],
-      });
-  });
-
-  it('says what offering a tax ID does, and points to where Stripe says which buyers it asks', async () => {
-    const { modal } = await openCheckoutFields({
-      design: { customize: false },
-      shipping: { collect: false },
-      phone: { collect: false },
-      tax_number: { collect: false },
-    });
-
-    const description =
-      'Business buyers can add a tax ID to their invoices, in countries Stripe supports.';
-    await expect.element(modal.getByText(description)).toBeVisible();
-    await expect
-      .element(modal.getByRole('switch', { name: 'Tax ID or VAT' }))
-      .toHaveAccessibleDescription(description);
-    const learnMore = modal
-      .getByRole('group', { name: 'Tax ID or VAT' })
-      .getByRole('link', { name: 'Learn more' });
-    await expect.element(learnMore).toBeVisible();
-    await expect
-      .element(learnMore)
-      .toHaveAttribute('href', 'https://docs.stripe.com/tax/checkout/tax-ids');
-    // In a new tab, so the settings being edited stay open.
-    await expect.element(learnMore).toHaveAttribute('target', '_blank');
-  });
-
-  it.each<{ saved: string; taxNumber: StripeCheckoutConfig['tax_number'] }>([
-    { saved: 'off', taxNumber: { collect: false } },
-    { saved: 'on for one tier', taxNumber: { collect: true, tier_ids: [paidTier.id] } },
-  ])(
-    'shows a tax ID on and fixed while automatic tax asks for it on every checkout, keeping it saved $saved',
-    async ({ taxNumber }) => {
-      const { modal, saveApi } = await openCheckoutFields(
-        {
-          design: { customize: false },
-          shipping: { collect: false },
-          phone: { collect: false },
-          tax_number: taxNumber,
-        },
-        [phoneField],
-        { stripeAutomaticTax: true },
-      );
-
-      await expect
-        .element(
-          modal
-            .getByRole('figure', { name: 'Checkout preview' })
-            .getByText("I'm purchasing as a business"),
-        )
-        .toBeVisible();
-      const taxId = modal.getByRole('group', { name: 'Tax ID or VAT' });
-      const taxSwitch = taxId.getByRole('switch', { name: 'Tax ID or VAT' });
-      await expect.element(taxSwitch).toBeChecked();
-      await expect.element(taxSwitch).toBeDisabled();
-      // Every paid tier asks, so there are no tiers to choose.
-      await expect(taxId.getByRole('combobox', { name: 'Collect for' })).toHaveCount(0);
-      const description =
-        'Stripe Automatic Tax already asks for it on all paid tiers, in countries Stripe supports.';
-      await expect.element(modal.getByText(description)).toBeVisible();
-      await expect.element(taxSwitch).toHaveAccessibleDescription(description);
-      await expect.element(taxId.getByRole('link', { name: 'Learn more' })).toBeVisible();
-
-      await modal.getByRole('tab', { name: 'Design' }).click();
-      await modal.getByRole('switch', { name: 'Customize checkout design' }).click();
-      await modal.getByRole('button', { name: 'Save' }).click();
-
-      // Kept as it was, so turning automatic tax off brings it back.
-      await expect
-        .poll(() => saveApi.lastRequest?.body)
-        .toEqual({
-          checkout_config: [
-            {
-              design: {
-                customize: true,
-                button_color: '#0074d4',
-                background_color: '#ffffff',
-                border_style: 'rounded',
-                font_family: 'default',
-              },
-              shipping: { collect: false },
-              phone: { collect: false },
-              tax_number: taxNumber,
-            },
-          ],
-        });
-    },
-  );
-
-  it('saves no tax ID setting that no tier offers', async () => {
-    const { modal, saveApi } = await openCheckoutFields({
-      design: { customize: false },
-      shipping: { collect: false },
-      phone: { collect: false },
-      tax_number: { collect: true },
-    });
-
-    await modal
-      .getByRole('group', { name: 'Tax ID or VAT' })
-      .getByRole('combobox', { name: 'Collect for' })
-      .click();
-    await page.getByRole('option', { name: 'Supporter' }).click();
-    await userEvent.keyboard('{Escape}');
-    await modal.getByRole('button', { name: 'Save' }).click();
-
-    await expect.element(modal.getByText('Choose at least one tier')).toBeVisible();
-    expect(saveApi.lastRequest).toBeUndefined();
   });
 
   it('offers only the design on a Ghost too old to collect shipping, and saves no shipping', async () => {
