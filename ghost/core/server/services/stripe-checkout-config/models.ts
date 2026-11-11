@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { STRIPE_CHECKOUT_BORDER_STYLES, STRIPE_CHECKOUT_FONTS } from '@tryghost/checkout';
 import { KeySchema } from '@tryghost/metafield-types/identity';
-import { COLLECTED_PARTS, type CollectedPart } from '@tryghost/checkout';
+import { COLLECTED_PARTS, type CollectedPart, type RequirementName } from '@tryghost/checkout';
 import type { CamelToSnake, SnakeToCamel } from '../../lib/case-keys';
 
 /**
@@ -101,6 +101,22 @@ export type CollectedSection = (typeof SECTION_OF)[CollectedPart];
 export const COLLECTED_SECTIONS = COLLECTED_PARTS.map((part) => SECTION_OF[part]);
 
 /**
+ * The collected parts whose answers Ghost saves nowhere, so they keep their tiers in the config.
+ * Every other part saves into custom fields and keeps its tiers as the tier requirement of the
+ * same name, so whoever collects it asks on the same tiers.
+ */
+export const CONFIG_TIER_PARTS = ['tax_number'] as const satisfies readonly Exclude<
+  CollectedPart,
+  RequirementName
+>[];
+export const CONFIG_TIER_SECTIONS = CONFIG_TIER_PARTS.map((part) => SECTION_OF[part]);
+export type ConfigTierSection = (typeof CONFIG_TIER_SECTIONS)[number];
+
+export function keepsTiersInConfig(section: CollectedSection): section is ConfigTierSection {
+  return CONFIG_TIER_SECTIONS.some((candidate) => candidate === section);
+}
+
+/**
  * Each collected part's name where it is stored, in its own column and in the rows naming its
  * tiers, which is also its name in the Admin API.
  */
@@ -118,21 +134,18 @@ export const COLLECTED_NOUNS = {
 } as const satisfies Record<CollectedSection, string>;
 
 /**
- * The private flag the collected parts are behind. The config itself is behind the design
- * flag, which releases first. Staff only see and save the collected parts while it's on, and
- * checkouts and the completed-checkout webhook only act on them while it's on.
+ * The private flag the collected parts are behind. Staff only see and save the collected parts
+ * while it's on, checkouts and the completed-checkout webhook only act on them while it's on,
+ * and tiers only list what their members must give while it's on.
  */
 export const COLLECTION_FLAG = 'stripeCheckoutCollection';
 
-/** What a checkout needs to know about every collected part to ask for it. */
-export interface AskedPart extends z.infer<typeof CollectedPart> {
-  /**
-   * Whether checkouts can ask for it right now. A saved part can't while a field it can't do
-   * without is archived or no longer holds what it collects, as the answer would have nowhere
-   * to go, so checkouts stop asking until the field is restored.
-   */
-  collectable: boolean;
-}
+/**
+ * What a checkout needs to know about every collected part to ask for it: the tiers it asks on.
+ * A saved part is asked for while it's on, even while a field it saves into is archived, so an
+ * archived field never changes what buyers are asked. The answers for that field are dropped.
+ */
+export type AskedPart = z.infer<typeof CollectedPart>;
 
 /**
  * What a checkout needs to know about each collected part to ask for it: which tiers ask and

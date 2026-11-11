@@ -89,7 +89,7 @@ module.exports = class CheckoutSessionEventService {
    * @param {function} deps.sendSignupEmail
    * @param {function} deps.isPaidWelcomeEmailActive
    * @param {{isSet(flag: string): boolean}} deps.labs
-   * @param {Pick<import('../../../members-metafields/bindings-service').MetafieldBindingsService, 'planCollected'>} deps.metafieldBindings
+   * @param {Pick<import('../../../members-metafields/bindings-service').MetafieldBindingsService, 'planThrough'>} deps.metafieldBindings
    * @param {{updateWithMetafields: (data: object, options: {id: string}, plans: import('../../../members-metafields/values-service').MetafieldPlan[]) => Promise<unknown>}} deps.memberBREADService
    */
   constructor(deps) {
@@ -506,11 +506,16 @@ module.exports = class CheckoutSessionEventService {
         return;
       }
 
-      const { plans, failure } = await this.deps.metafieldBindings.planCollected(collected);
+      // Each value recorded against the binding that routed it, and what a field refuses is
+      // logged rather than thrown, as the money is already taken: the rest are still saved.
+      const { plans, refused, kept } = await this.deps.metafieldBindings.planThrough(collected, {
+        type: 'binding',
+      });
       if (plans.length > 0) {
         // Through the members service, like any other edit, so the change reaches webhooks.
         await this.deps.memberBREADService.updateWithMetafields({}, { id: memberId }, plans);
-      } else if (!failure) {
+      }
+      if (kept.size === 0) {
         // The checkout asked, but collection was switched off or its fields deleted since.
         logging.warn(
           {
@@ -521,8 +526,17 @@ module.exports = class CheckoutSessionEventService {
           'Dropped what a checkout collected, as no custom field takes it now',
         );
       }
-      if (failure) {
-        throw failure;
+      if (refused.length > 0) {
+        // Named by port and part, never with what was given, which is the member's.
+        logging.error(
+          {
+            event: { name: 'stripe_checkout.collection.refused' },
+            refused: refused.map(({ property }) => property),
+            member_id: memberId,
+            session_id: session.id,
+          },
+          'Saved what a checkout collected, apart from what its custom fields refused',
+        );
       }
     } catch (err) {
       logging.error(

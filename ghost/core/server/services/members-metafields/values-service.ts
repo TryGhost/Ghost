@@ -96,7 +96,7 @@ const ValuesInput = z.record(z.string().max(MAX_IDENTITY_LENGTH), z.unknown());
 const wireProperty = (identity: string): string => [QUALIFIER, identity].join(SEPARATOR);
 
 /** One value the site will not accept, against the name the write gave it. */
-interface Refusal {
+export interface Refusal {
   message: string;
   property: string;
 }
@@ -109,7 +109,7 @@ interface Refusal {
  * `errorDetails`, which the renderer already passes through as `details`, so a client
  * that wants to mark every refused input can have them all from one attempt.
  */
-function refusalError(first: Refusal, rest: Refusal[]): errors.ValidationError {
+export function refusalError(first: Refusal, rest: Refusal[]): errors.ValidationError {
   return new errors.ValidationError({
     message: first.message,
     property: first.property,
@@ -436,9 +436,37 @@ export class MetafieldValuesService {
   /**
    * Resolve input into the writes it implies, writing nothing. Returned so a caller can
    * validate before opening a transaction it would otherwise have to unwind, then apply
-   * the same plan without re-resolving it.
+   * the same plan without re-resolving it. A value the site won't accept refuses the whole
+   * write, with every refusal at once.
    */
   async planWrite(input: unknown, audience: Audience): Promise<PlannedWrite[]> {
+    const { writes, refusals } = await this.planOrRefuse(input, audience);
+    const [first, ...rest] = refusals;
+    if (first) {
+      throw refusalError(first, rest);
+    }
+    return writes;
+  }
+
+  /**
+   * Resolve input into the writes for the values the site accepts, and what it refuses of the
+   * rest, writing nothing, for a caller that saves what it can or decides for itself what a
+   * refusal means. A write that can't be planned at all, such as one naming too many fields,
+   * still throws.
+   *
+   * A refusal names the value it refuses the way the API's body names it,
+   * `metafields.<namespace>.<key>`. A caller that took the value under another name, such as a
+   * port, passes `named`, given the value's identity, and every refusal names the value that way
+   * instead, in its property and its message, so a client is told about what it sent rather than
+   * about a field it may not know of.
+   */
+  async planOrRefuse(
+    input: unknown,
+    audience: Audience,
+    named?: (identity: string) => string,
+  ): Promise<{ writes: PlannedWrite[]; refusals: Refusal[] }> {
+    const propertyOf = named ?? wireProperty;
+    const nameOf = named ?? ((identity: string) => identity);
     const values = this.parseValues(input);
     const identities = Object.keys(values);
 
@@ -463,8 +491,8 @@ export class MetafieldValuesService {
       const field = byIdentity.get(identity);
       if (!field) {
         refusals.push({
-          message: `Unknown custom field: ${identity}`,
-          property: wireProperty(identity),
+          message: `Unknown custom field: ${nameOf(identity)}`,
+          property: propertyOf(identity),
         });
         continue;
       }
@@ -473,8 +501,8 @@ export class MetafieldValuesService {
       // already see the field, so naming it discloses nothing.
       if (!canWrite(audience, field)) {
         refusals.push({
-          message: `Cannot set custom field: ${identity}`,
-          property: wireProperty(identity),
+          message: `Cannot set custom field: ${nameOf(identity)}`,
+          property: propertyOf(identity),
         });
         continue;
       }
@@ -496,7 +524,7 @@ export class MetafieldValuesService {
         for (const issue of acceptance.issues) {
           refusals.push({
             message: issue.message,
-            property: [wireProperty(identity), ...issue.path].join(SEPARATOR),
+            property: [propertyOf(identity), ...issue.path].join(SEPARATOR),
           });
         }
         continue;
@@ -504,12 +532,7 @@ export class MetafieldValuesService {
       writes.push({ field, accepted: acceptance.accepted });
     }
 
-    const [first, ...rest] = refusals;
-    if (first) {
-      throw refusalError(first, rest);
-    }
-
-    return writes;
+    return { writes, refusals };
   }
 
   /**

@@ -287,6 +287,12 @@ function createApiInstance(config) {
     // two together in boot order. Metafields is initialised in initCore, the
     // members API is built in initServices, so this is always the live instance.
     metafieldValues: metafieldsService.values,
+    // And the bindings, through which a member's own answers to what a tier asks are saved, as
+    // a checkout saves them.
+    metafieldBindings: metafieldsService.bindings,
+    // What a tier asks of its members, read when one changes tier: tiers is still initializing
+    // here, like the tiers API above.
+    tierRequirements: () => tiers.service.requirements,
     // Read here for the same reason: the Stripe Checkout config is also initialised in
     // initCore, so its guarded service is ready when the members API is built.
     checkouts: stripeCheckoutConfig.service.checkouts,

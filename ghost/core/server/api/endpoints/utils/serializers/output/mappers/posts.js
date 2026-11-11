@@ -68,11 +68,19 @@ module.exports = async (model, frame, options = {}) => {
   const formatsToKeep = frame.options.formats || frame.options.columns || defaultFormats;
 
   // Iterate over all known formats, and if they are not in the keep list, remove them
-  _.each(['mobiledoc', 'lexical', 'html', 'plaintext'], function (format) {
-    if (formatsToKeep.indexOf(format) === -1) {
-      delete jsonModel[format];
-    }
-  });
+  const stripUnrequestedFormats = () => {
+    _.each(['mobiledoc', 'lexical', 'html', 'plaintext'], function (format) {
+      if (formatsToKeep.indexOf(format) === -1 || (format === 'html' && frame.forcedGatingHtml)) {
+        delete jsonModel[format];
+      }
+    });
+  };
+
+  // Content API gating reads the html to strip paid text from plaintext and
+  // excerpt, so the html has to survive until gating has run there.
+  if (!utils.isContentAPI(frame)) {
+    stripUnrequestedFormats();
+  }
 
   // Attach tiers to custom nql visibility filter
   if (jsonModel.visibility) {
@@ -100,6 +108,7 @@ module.exports = async (model, frame, options = {}) => {
     date.forPost(jsonModel);
     gating.forPost(jsonModel, frame);
     previewRendering.forPost(jsonModel, frame);
+    stripUnrequestedFormats();
 
     if (jsonModel.access) {
       if (commentsService.service.api.enabled !== 'off') {

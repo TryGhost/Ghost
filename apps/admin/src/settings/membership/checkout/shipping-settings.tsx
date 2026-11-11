@@ -6,7 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@tryghost/shade/components';
-import { PORT_FIELD, STRIPE_ALLOWED_COUNTRIES, STRIPE_PORT } from '@tryghost/checkout';
+import { PORT_FIELD, STRIPE_ALLOWED_COUNTRIES, CHECKOUT_PORT } from '@tryghost/checkout';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
 import { countryName } from '@tryghost/admin-x-framework/utils/countries';
@@ -52,12 +52,15 @@ const ShippingSettings: React.FC<{
   /** The fields chosen for every collected value, which no other value is offered. */
   chosenFields: Array<string | null>;
   errors: ShippingErrors;
+  /** Whether every checkout asks for it, whatever this says. */
+  alwaysAsked: boolean;
   onChange: (next: ShippingFormState) => void;
-}> = ({ state, tiers, fields, chosenFields, errors, onChange }) => {
+}> = ({ state, tiers, fields, chosenFields, errors, alwaysAsked, onChange }) => {
   const set = (next: Partial<ShippingFormState>) => onChange({ ...state, ...next });
 
   return (
     <CollectRow
+      alwaysAsked={alwaysAsked}
       id="checkout-collect-shipping"
       label="Shipping address"
       state={state}
@@ -92,7 +95,7 @@ const ShippingSettings: React.FC<{
         error={errors.shippingAddressField}
         fields={fields}
         label="Save address as"
-        type={PORT_FIELD[STRIPE_PORT.shippingAddress].type}
+        type={PORT_FIELD[CHECKOUT_PORT.shippingAddress].type}
         value={state.addressFieldKey}
         onChange={(addressFieldKey) => set({ addressFieldKey })}
       />
@@ -101,7 +104,7 @@ const ShippingSettings: React.FC<{
         error={errors.shippingNameField}
         fields={fields}
         label="Save name as"
-        type={PORT_FIELD[STRIPE_PORT.shippingName].type}
+        type={PORT_FIELD[CHECKOUT_PORT.shippingName].type}
         value={state.nameFieldKey}
         onChange={(nameFieldKey) => set({ nameFieldKey })}
       />

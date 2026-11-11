@@ -23,9 +23,9 @@ const action = { id: ObjectId().toHexString(), type: 'wait', data: { wait_hours:
 const payload = { ...data, actions: [action], trigger_rules: rules };
 const tierIds = [ObjectId().toHexString(), ObjectId().toHexString()];
 const triggerCases = [
-  { legacy: { trigger_tier_scope: 'free', trigger_tier_ids: null }, rules },
+  { name: 'free signup', rules },
   {
-    legacy: { trigger_tier_scope: 'all_paid', trigger_tier_ids: null },
+    name: 'any paid tier',
     rules: [
       {
         trigger_type: 'paid_subscription_started',
@@ -36,7 +36,7 @@ const triggerCases = [
     ],
   },
   {
-    legacy: { trigger_tier_scope: 'selected_paid', trigger_tier_ids: tierIds },
+    name: 'specific paid tier',
     rules: tierIds.map((productId) => ({
       trigger_type: 'paid_subscription_started',
       scope: 'specific_paid_tier',
@@ -193,10 +193,10 @@ const commonTests = (method: 'add' | 'edit') => {
       },
     ],
     [...rules, ...rules],
-  ])('rejects invalid explicit rules without falling back: %j', async (trigger_rules) => {
-    await expect(
-      serializeInput(method, { ...payload, trigger_rules, ...triggerCases[0].legacy }),
-    ).rejects.toMatchObject({ errorType: 'ValidationError' });
+  ])('rejects invalid rules: %j', async (trigger_rules) => {
+    await expect(serializeInput(method, { ...payload, trigger_rules })).rejects.toMatchObject({
+      errorType: 'ValidationError',
+    });
   });
 
   const freeRule = {
@@ -242,26 +242,10 @@ const commonTests = (method: 'add' | 'edit') => {
     });
   });
 
-  for (const { legacy, rules: triggerRules } of triggerCases) {
-    it(`normalizes legacy ${legacy.trigger_tier_scope} fields on the frame`, async () => {
-      await expect(serializeInput(method, { ...data, ...legacy })).resolves.toEqual({
-        ...data,
-        trigger_rules: triggerRules,
-      });
-    });
-
-    it(`accepts ${legacy.trigger_tier_scope} rules with precedence over invalid legacy fields`, async () => {
-      const request = { ...payload, trigger_rules: triggerRules };
-      await expect(serializeInput(method, request)).resolves.toEqual(request);
-      await expect(
-        serializeInput(method, {
-          ...request,
-          trigger_tier_scope: 'invalid',
-          trigger_tier_ids: false,
-        }),
-      ).resolves.toEqual(request);
-    });
-  }
+  it.each(triggerCases)('accepts $name rules', async ({ rules: trigger_rules }) => {
+    const request = { ...payload, trigger_rules };
+    await expect(serializeInput(method, request)).resolves.toEqual(request);
+  });
 
   it('accepts 100 distinct specific paid tiers and rejects 101', async () => {
     const trigger_rules = Array.from({ length: 100 }, () => ({
@@ -322,39 +306,6 @@ const commonTests = (method: 'add' | 'edit') => {
       }),
     ).resolves.toMatchObject({ name: 'x'.repeat(191), description: 'x'.repeat(2000) });
   });
-
-  it.each([
-    { trigger_tier_scope: 'paid' },
-    { trigger_tier_scope: null },
-    { trigger_tier_ids: [tierIds[0]] },
-    { trigger_tier_scope: null, trigger_tier_ids: [tierIds[0]] },
-    { trigger_tier_scope: 'free', trigger_tier_ids: [tierIds[0]] },
-    { trigger_tier_scope: 'all_paid', trigger_tier_ids: [tierIds[0]] },
-    { trigger_tier_scope: 'selected_paid' },
-    { trigger_tier_scope: 'selected_paid', trigger_tier_ids: [] },
-    { trigger_tier_scope: 'selected_paid', trigger_tier_ids: [123] },
-    { trigger_tier_scope: 'selected_paid', trigger_tier_ids: ['invalid'] },
-  ])('rejects invalid legacy trigger input: %j', async (legacy) => {
-    await expect(serializeInput(method, { ...data, ...legacy })).rejects.toMatchObject({
-      errorType: 'ValidationError',
-    });
-  });
-
-  it('reports duplicate legacy tier IDs with their field-level error', async () => {
-    await expect(
-      serializeInput(method, {
-        ...data,
-        trigger_tier_scope: 'selected_paid',
-        trigger_tier_ids: [...tierIds, tierIds[0]],
-      }),
-    ).rejects.toMatchObject({
-      errorType: 'ValidationError',
-      statusCode: 422,
-      message: expect.stringMatching(
-        /trigger_tier_ids: Duplicate trigger_tier_ids are not allowed\./,
-      ),
-    });
-  });
 };
 
 describe('automation input serializers', () => {
@@ -380,6 +331,8 @@ describe('automation input serializers', () => {
       { slug: 'member-welcome-email-free' },
       { id: ObjectId().toHexString() },
       { status: 'invalid' },
+      { trigger_tier_scope: 'free' },
+      { trigger_tier_ids: null },
     ])('rejects invalid add fields: %j', async (extra) => {
       await expect(serializeInput('add', { ...payload, ...extra })).rejects.toMatchObject({
         errorType: 'ValidationError',

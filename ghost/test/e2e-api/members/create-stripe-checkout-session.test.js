@@ -5,7 +5,6 @@ const {
   mockManager,
   fixtureManager,
   matchers,
-  hostLimits,
 } = require('../../utils/e2e-framework');
 const nock = require('nock');
 const { stripeMocker } = require('../../utils/e2e-framework-mock-manager');
@@ -849,6 +848,8 @@ describe('Create Stripe Checkout Session', function () {
       await models.Base.knex('stripe_checkout_config_tiers').del();
       await models.Base.knex('stripe_checkout_config').del();
       await models.Base.knex('members_metafield_bindings').del();
+      await models.Base.knex('tier_requirement_tiers').del();
+      await models.Base.knex('tier_requirements').del();
       await models.Base.knex('members_metafields').del();
     });
 
@@ -888,18 +889,19 @@ describe('Create Stripe Checkout Session', function () {
       assert.ok(countries.length > 200);
     });
 
-    it('keeps asking while only the name field is archived, and stops once the address field is', async function () {
+    // Archiving a field stops answers being saved into it, but never changes what buyers are
+    // asked. Deleting one takes its binding with it, which switches shipping off.
+    it('keeps asking while its fields are archived, and stops once one is deleted', async function () {
       await setShipping(shippingSettings());
-      const archive = (key) =>
-        adminAgent
+      for (const key of ['recipient_name', 'delivery_address']) {
+        await adminAgent
           .put(`/members/metafields/custom/${key}/`)
           .body({ members_metafields: [{ status: 'archived' }] })
           .expectStatus(200);
-
-      await archive('recipient_name');
+      }
       assert.ok((await startCheckout()).shipping_address_collection);
 
-      await archive('delivery_address');
+      await adminAgent.delete('/members/metafields/custom/delivery_address/').expectStatus(204);
       assert.equal((await startCheckout()).shipping_address_collection, undefined);
     });
   });
@@ -924,6 +926,8 @@ describe('Create Stripe Checkout Session', function () {
       await models.Base.knex('stripe_checkout_config_tiers').del();
       await models.Base.knex('stripe_checkout_config').del();
       await models.Base.knex('members_metafield_bindings').del();
+      await models.Base.knex('tier_requirement_tiers').del();
+      await models.Base.knex('tier_requirements').del();
       await models.Base.knex('members_metafields').del();
     });
 
@@ -948,16 +952,14 @@ describe('Create Stripe Checkout Session', function () {
       return stripeMocker.checkoutSessions.at(-1);
     }
 
-    it('stops asking while its field is archived, and so does a preview of it', async function () {
+    it('keeps asking while its field is archived, and so does a preview of it', async function () {
       await setCheckout(collect());
-      assert.deepEqual((await startCheckout()).phone_number_collection, { enabled: true });
-
       await adminAgent
         .put('/members/metafields/custom/contact_phone/')
         .body({ members_metafields: [{ status: 'archived' }] })
         .expectStatus(200);
 
-      assert.equal((await startCheckout()).phone_number_collection, undefined);
+      assert.deepEqual((await startCheckout()).phone_number_collection, { enabled: true });
 
       await adminAgent
         .post('/stripe/checkout/preview/')
@@ -965,27 +967,8 @@ describe('Create Stripe Checkout Session', function () {
           checkout_preview: [{ tier_id: paidTierId, design: { customize: false }, ...collect() }],
         })
         .expectStatus(200);
-      assert.equal(stripeMocker.checkoutSessions.at(-1).phone_number_collection, undefined);
-    });
-
-    // While the host switches custom fields off, every field reads as archived, so checkout
-    // stops asking for what it saves into one. A tax ID saves into no field, so it is still
-    // asked for.
-    describe('while the host switches custom fields off', function () {
-      afterEach(async function () {
-        await hostLimits.restoreHostLimits();
-      });
-
-      it('stops asking for it while still asking for a tax ID, and asks again once they are back on', async function () {
-        await setCheckout({ ...collect(), tax_number: { collect: true } });
-        await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
-
-        const session = await startCheckout();
-        assert.equal(session.phone_number_collection, undefined);
-        assert.deepEqual(session.tax_id_collection, { enabled: true });
-
-        await hostLimits.restoreHostLimits();
-        assert.deepEqual((await startCheckout()).phone_number_collection, { enabled: true });
+      assert.deepEqual(stripeMocker.checkoutSessions.at(-1).phone_number_collection, {
+        enabled: true,
       });
     });
   });

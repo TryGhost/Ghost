@@ -35,12 +35,14 @@ An integration using this package talks to sites on many Ghost versions, so a ty
 never changes once it has shipped. It keeps what it is composed of: its shape, its
 leaves, and the names of any parts. New structure arrives as a new type. An integration
 should skip a type it doesn't recognise, which is what happens when a site is on a newer
-Ghost than the package the integration was built with.
+Ghost than the package the integration was built with. A type `FIELD_TYPE_FLAGS` lists is
+still in development: sites offer it only where its Labs flag is on, and it can still change
+until that flag is switched on for customers' sites.
 
 ## Develop
 
-This is a workspace package in the Ghost monorepo. Adding a field type to Ghost is
-covered in [`docs/adding-a-field-type.md`](docs/adding-a-field-type.md). From the repo
+This is a workspace package in the Ghost monorepo. Adding a field type to Ghost, and why
+types are built the way they are, is covered in [`docs/`](docs/README.md). From the repo
 root:
 
 ```bash
