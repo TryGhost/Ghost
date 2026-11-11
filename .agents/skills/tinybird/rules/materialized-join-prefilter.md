@@ -112,7 +112,7 @@ subquery per right-side table.
 - [ ] Key pre-filter uses an `IN` tuple of the join columns from the
       left-side source, replicating the same `WHERE` that bounds the MV.
 - [ ] For `ASOF`/time-bounded joins, include `right.time BETWEEN
-(min(left.time) - INTERVAL N <unit>) AND max(left.time)`.
+  (min(left.time) - INTERVAL N <unit>) AND max(left.time)`.
 - [ ] The `INTERVAL N <unit>` constant is a single, obvious literal —
       not buried in arithmetic — so the maximum gap is tunable.
 - [ ] The `WHERE` filter inside the inner subqueries over the left-side

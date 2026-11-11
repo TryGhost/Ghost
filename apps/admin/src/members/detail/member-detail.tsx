@@ -465,18 +465,17 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                 {(isCreating || member) && (
                   <PageHeader.Actions>
                     <PageHeader.ActionGroup>
-                      {member &&
-                        !isCreating && (
-                          // key={member.id} unmounts+remounts on member change so
-                          // local modal state (`showDelete`, `cancelStripe`, etc.)
-                          // can't leak across members if the user navigates while a
-                          // modal is open.
-                          <MemberActionsMenu
-                            key={member.id}
-                            allowLeaveWithUnsavedChanges={bypassNextNavigation}
-                            member={member}
-                          />
-                        )}
+                      {member && !isCreating && (
+                        // key={member.id} unmounts+remounts on member change so
+                        // local modal state (`showDelete`, `cancelStripe`, etc.)
+                        // can't leak across members if the user navigates while a
+                        // modal is open.
+                        <MemberActionsMenu
+                          key={member.id}
+                          allowLeaveWithUnsavedChanges={bypassNextNavigation}
+                          member={member}
+                        />
+                      )}
                       <PageHeader.ActionGroup.Primary>
                         <Button
                           className="min-w-16"
