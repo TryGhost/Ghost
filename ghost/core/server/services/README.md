@@ -74,7 +74,8 @@ belong. Import allowlisted libraries directly in the implementation; use
 `GhostLogger` for its injected logging type.
 
 The inventory entry uses `migrated: true`, and the root is added to Oxlint's
-configured paths, so both root-shape and dependency checks apply immediately.
+configured paths for root-shape checks. Dependency checks apply to every service
+implementation independently of the marker.
 Its audit remains `pending`: the scaffold does not establish the capability's
 contracts. The initial `migration.reviewedAt` records the generator checkout
 revision, as its reason explains; review the implemented source before recording

@@ -61,8 +61,9 @@ pnpm gx generate service delivery-receipts
 
 It creates a `defineService` root, a separate implementation with typed logging
 injection, and a starter root test. It adds `migrated: true` to the service
-inventory and registers the root in Oxlint, enabling root and dependency checks
-immediately. Existing service files, directories and tests are never overwritten.
+inventory and registers the root in Oxlint for root-shape checks. Dependency
+checks already apply to every service implementation. Existing service files,
+directories and tests are never overwritten.
 
 The command prints the remaining steps, including choosing the right place for
 `init()` in boot. See [creating a service](../../ghost/core/server/services/README.md#creating-a-service)
