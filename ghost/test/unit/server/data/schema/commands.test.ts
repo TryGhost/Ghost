@@ -65,7 +65,7 @@ describe('schema commands', function () {
       const knex = createKnex({ client, useNullAsDefault: true });
 
       try {
-        return commands.createTable('test_table', knex, tableSpec).toString();
+        return commands._buildTable('test_table', knex, tableSpec).toString();
       } finally {
         knex.destroy();
       }
@@ -148,7 +148,7 @@ describe('schema commands', function () {
         assert.throws(
           () =>
             commands
-              .createTable('posts_meta', knex, {
+              ._buildTable('posts_meta', knex, {
                 post_id: { type: 'string', maxlength: 24, nullable: false, references },
               })
               .toSQL(),
@@ -156,6 +156,175 @@ describe('schema commands', function () {
           references,
         );
       }
+    });
+  });
+
+  describe('collation of foreign key columns', function () {
+    const id = { type: 'string', maxlength: 24, nullable: false };
+
+    function fakeKnex({
+      client = 'mysql2',
+      connectionSettings = {},
+      rows = [] as { tableName: string; columnName: string; collation: string }[],
+    } = {}) {
+      const queries: { sql: string; bindings: unknown[] }[] = [];
+      return {
+        queries,
+        client: { config: { client }, connectionSettings },
+        raw: async (sql: string, bindings: unknown[]) => {
+          queries.push({ sql, bindings });
+          return [rows, []];
+        },
+      };
+    }
+
+    describe('getForeignKeyCollations', function () {
+      it('reads the collation of the column each foreign key references', async function () {
+        const knex = fakeKnex({
+          rows: [
+            { tableName: 'posts', columnName: 'id', collation: 'utf8mb4_general_ci' },
+            { tableName: 'members', columnName: 'id', collation: 'utf8mb4_0900_ai_ci' },
+          ],
+        });
+
+        const collations = await commands._getForeignKeyCollations(
+          {
+            id,
+            post_id: { ...id, references: 'posts.id' },
+            member_id: { ...id, references: 'members.id' },
+            slug: { type: 'string', maxlength: 191, nullable: false },
+          },
+          knex,
+        );
+
+        assert.deepEqual(collations, {
+          post_id: 'utf8mb4_general_ci',
+          member_id: 'utf8mb4_0900_ai_ci',
+        });
+        assert.equal(knex.queries.length, 1);
+        assert.match(knex.queries[0].sql, /information_schema\.COLUMNS/);
+        assert.deepEqual(knex.queries[0].bindings, ['posts', 'id', 'members', 'id']);
+      });
+
+      it('pairs each column of a foreign key over several with the one it references', async function () {
+        const knex = fakeKnex({
+          rows: [
+            { tableName: 'fields', columnName: 'namespace', collation: 'utf8mb4_general_ci' },
+            { tableName: 'fields', columnName: 'key', collation: 'utf8mb4_bin' },
+          ],
+        });
+
+        const collations = await commands._getForeignKeyCollations(
+          {
+            field_namespace: { type: 'string', maxlength: 191, nullable: false },
+            field_key: { type: 'string', maxlength: 191, nullable: false },
+            '@@FOREIGN_KEYS@@': [
+              {
+                columns: ['field_namespace', 'field_key'],
+                references: { table: 'fields', columns: ['namespace', 'key'] },
+              },
+            ],
+          },
+          knex,
+        );
+
+        assert.deepEqual(collations, {
+          field_namespace: 'utf8mb4_general_ci',
+          field_key: 'utf8mb4_bin',
+        });
+        assert.deepEqual(knex.queries[0].bindings, ['fields', 'namespace', 'fields', 'key']);
+      });
+
+      it('leaves out a column whose referenced column is not in the database yet', async function () {
+        const knex = fakeKnex({
+          rows: [{ tableName: 'posts', columnName: 'id', collation: 'utf8mb4_general_ci' }],
+        });
+
+        const collations = await commands._getForeignKeyCollations(
+          {
+            id,
+            post_id: { ...id, references: 'posts.id' },
+            parent_id: { ...id, references: 'new_table.id' },
+          },
+          knex,
+        );
+
+        assert.deepEqual(collations, { post_id: 'utf8mb4_general_ci' });
+      });
+
+      it('does not query the database for a table with no foreign keys', async function () {
+        const knex = fakeKnex();
+
+        assert.deepEqual(await commands._getForeignKeyCollations({ id }, knex), {});
+        assert.equal(knex.queries.length, 0);
+      });
+
+      it('does not query SQLite, which has no collations to match', async function () {
+        const knex = fakeKnex({ client: 'better-sqlite3' });
+
+        const collations = await commands._getForeignKeyCollations(
+          { id, post_id: { ...id, references: 'posts.id' } },
+          knex,
+        );
+
+        assert.deepEqual(collations, {});
+        assert.equal(knex.queries.length, 0);
+      });
+
+      it('leaves the collation to the one configured for the connection', async function () {
+        const knex = fakeKnex({ connectionSettings: { collate: 'utf8mb4_unicode_ci' } });
+
+        const collations = await commands._getForeignKeyCollations(
+          { id, post_id: { ...id, references: 'posts.id' } },
+          knex,
+        );
+
+        assert.deepEqual(collations, {});
+        assert.equal(knex.queries.length, 0);
+      });
+    });
+
+    describe('_buildTable', function () {
+      it('gives a foreign key column the collation it is passed, and no other column', function () {
+        const knex = createKnex({ client: 'mysql2' });
+
+        try {
+          const ddl = commands
+            ._buildTable(
+              'posts_meta',
+              knex,
+              {
+                id,
+                post_id: { ...id, references: 'posts.id' },
+                slug: { type: 'string', maxlength: 191, nullable: false },
+              },
+              { post_id: 'utf8mb4_general_ci' },
+            )
+            .toString();
+
+          assert.match(ddl, /`post_id` varchar\(24\) not null collate 'utf8mb4_general_ci'/);
+          assert.equal(ddl.match(/collate/g)?.length, 1);
+        } finally {
+          knex.destroy();
+        }
+      });
+
+      it('leaves every column to the default collation when it is passed none', function () {
+        const knex = createKnex({ client: 'mysql2' });
+
+        try {
+          const ddl = commands
+            ._buildTable('posts_meta', knex, {
+              id,
+              post_id: { ...id, references: 'posts.id' },
+            })
+            .toString();
+
+          assert.doesNotMatch(ddl, /collate/);
+        } finally {
+          knex.destroy();
+        }
+      });
     });
   });
 
@@ -167,7 +336,7 @@ describe('schema commands', function () {
       const knex = createKnex({ client: 'better-sqlite3', useNullAsDefault: true });
       try {
         const ddl = commands
-          .createTable('posts_meta', knex, { slug: { ...slug, pattern: '^[a-z_]+$' } })
+          ._buildTable('posts_meta', knex, { slug: { ...slug, pattern: '^[a-z_]+$' } })
           .toString();
         assert.doesNotMatch(ddl, /check/i);
       } finally {
@@ -180,7 +349,7 @@ describe('schema commands', function () {
 
       assert.throws(
         () =>
-          commands.createTable('posts_meta', knex, { slug: { ...slug, pattern: '[a-z' } }).toSQL(),
+          commands._buildTable('posts_meta', knex, { slug: { ...slug, pattern: '[a-z' } }).toSQL(),
         /slug[\s\S]*A column pattern is a regular expression/,
       );
     });
@@ -190,7 +359,7 @@ describe('schema commands', function () {
 
       for (const pattern of ['^\\w+$', '^[[:lower:]]+$', '^[[a]_]+$', '^[a-z&&b]+$']) {
         assert.throws(
-          () => commands.createTable('posts_meta', knex, { slug: { ...slug, pattern } }).toSQL(),
+          () => commands._buildTable('posts_meta', knex, { slug: { ...slug, pattern } }).toSQL(),
           /must read the same in MySQL as in JavaScript[\s\S]*"slug"/,
           pattern,
         );
