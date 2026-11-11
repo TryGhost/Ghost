@@ -49,10 +49,6 @@ migration, private feature flag, Shade component, or internal package.
   use `admin-x-framework` for APIs, and use Shade for UI. Admin and Core deploy
   independently, so feature-detect backend support and test the older-backend
   case.
-  - Ghost Apps exception: while `apps` is in `PRIVATE_FEATURES`, Admin's Apps
-    code and `admin-x-framework`'s app API hooks assume a matching Core, with
-    no older-Core fallbacks or tests. Origin, framing, identity and allowlist
-    checks still apply.
   - Shade docs: in this repo, `https://shade.ghost.org/docs/<page>.md` is the
     source `apps/shade/src/docs/<page>.mdx`, and `docs/components/<path>.md`
     is `apps/shade/src/components/<path>.mdx`. Read those files directly.
