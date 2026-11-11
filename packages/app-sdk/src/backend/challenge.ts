@@ -1,6 +1,7 @@
 import { CHALLENGE_PATH, answerChallenge } from '@tryghost/app-contracts/identity';
 import { base64url } from 'jose';
 
+import { publicHalfOf } from '../shared/keys.ts';
 import { parseOrigin } from '../shared/parse.ts';
 import { json, readText } from './body.ts';
 
@@ -57,9 +58,6 @@ const CHALLENGE_MAX_BYTES = 4 * 1024;
 const INVALID_KEY =
   'backendKey must be a private Ed25519 key as a JWK, with kty "OKP", crv "Ed25519", x and d';
 
-// What PKCS#8 puts before an Ed25519 private key's 32 bytes (RFC 8410).
-const ED25519_PKCS8 = [48, 46, 2, 1, 0, 48, 5, 6, 3, 43, 101, 112, 4, 34, 4, 32];
-
 // The last key imported, so a backend that answers with one key imports it once.
 let imported: { text: string; key: Promise<CryptoKey> } | undefined;
 
@@ -91,13 +89,7 @@ async function importPrivateKey(text: string): Promise<CryptoKey> {
     throw new TypeError(INVALID_KEY);
   }
   try {
-    // Workers signs with d whatever x says, so a key whose x is another key's would answer for a
-    // key the manifest doesn't name. Its x is checked against the one d derives.
-    const pkcs8 = Uint8Array.of(...ED25519_PKCS8, ...base64url.decode(d));
-    const fromD = await crypto.subtle.importKey('pkcs8', pkcs8, { name: 'Ed25519' }, true, [
-      'sign',
-    ]);
-    if ((await crypto.subtle.exportKey('jwk', fromD)).x === x) {
+    if ((await publicHalfOf(base64url.decode(d))) === x) {
       return await crypto.subtle.importKey('jwk', { kty, crv, x, d }, { name: 'Ed25519' }, false, [
         'sign',
       ]);
