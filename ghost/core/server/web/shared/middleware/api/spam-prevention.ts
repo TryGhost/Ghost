@@ -159,6 +159,9 @@ const bodyField = (req: Request, field: string): string | undefined =>
 const emailKey = (email: unknown): string | undefined =>
   email ? String(email).trim().toLowerCase() : undefined;
 
+// Express routes match case-insensitively with an optional trailing slash, so each route gets one key
+const routeKey = (req: Request): string => `${req.path.toLowerCase().replace(/\/$/, '')}/`;
+
 /**
  * The id of the member a verified identity token names, as set by the members
  * `loadIdentityTokenMember` middleware, or undefined. Not the email, which the
@@ -236,7 +239,7 @@ const memberEmailUpdateBlock = () =>
 // Defaults to 50 attempts per hour and locks the endpoint for an hour
 const globalBlock = () =>
   limiter('globalBlock', 'global_block', {
-    key: (req) => req.path,
+    key: routeKey,
     onBlocked(retryAfterMs) {
       const { attempts, period } = quotedLimits('global_block');
 
@@ -250,7 +253,7 @@ const globalBlock = () =>
 
 const globalReset = () =>
   limiter('globalReset', 'global_reset', {
-    key: (req) => req.path,
+    key: routeKey,
     onBlocked(retryAfterMs) {
       const { attempts, period } = quotedLimits('global_reset');
 
