@@ -3,6 +3,7 @@ import { render } from 'vitest-browser-react';
 
 import '@/index.css';
 import { AdminAppRoot } from '@/app-root';
+import { captureDeliveredSecureKey } from '@/settings/api';
 
 import {
   composeConfigBootOverrides,
@@ -90,6 +91,9 @@ export async function renderAdminApp(
     locationState === undefined ? null : { usr: locationState, key: 'initial', idx: 0 },
     '',
   );
+
+  // As src/main.tsx does at startup, once the route is in the address.
+  captureDeliveredSecureKey();
 
   const framework = createFrameworkProps();
 
