@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 /**
  * Shared visual recipe for input-like surfaces (Input, Textarea, InputGroup, Select trigger).
  *
- * The recipe owns: border, background, radius, shadow, transition, focus ring, invalid state.
+ * The recipe owns: border, background, radius, transition, focus ring, invalid state.
  * Consumers add their own size, padding, typography, and component-specific tweaks.
  *
  * `inputSurface()` covers the two common shapes:
@@ -33,7 +33,7 @@ import { cn } from '@/lib/utils';
  *   )} />
  */
 export const inputSurfaceClasses = {
-  base: 'rounded-field border border-field-border bg-field-surface shadow-field transition-colors',
+  base: 'rounded-field border border-field-border bg-field-surface transition-colors',
   focusSelf:
     'focus-visible:outline-hidden focus-visible:border-focus-ring focus-visible:ring-2 focus-visible:ring-focus-ring/25',
   focusWithin:
