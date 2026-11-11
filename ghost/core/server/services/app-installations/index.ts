@@ -1,7 +1,9 @@
+import { decodeJwt } from 'jose';
 import { z } from 'zod';
 import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import { defineService } from '../../../kernel/define-service';
+import type { GhostAuth } from '../../auth/better-auth';
 import config from '../../../shared/config';
 import urlUtils from '../../../shared/url-utils';
 import {
@@ -9,6 +11,7 @@ import {
   recordAppInstallationAction,
   type RecordAppInstallationAction,
 } from './actions';
+import type { AppTokenIssuer } from './app-tokens';
 import { createAppFetcher } from './fetch-from-app';
 import { createIconFetcher } from './fetch-icon';
 import { createIdentityChecker, readTrustedOrigins } from './identity-check';
@@ -88,6 +91,30 @@ function localhostAlias(): string | null {
   return appsConfig().localhostAlias;
 }
 
+/** App tokens from Better Auth's OAuth provider, through Ghost's server-only endpoints. */
+function betterAuthTokens(): AppTokenIssuer {
+  // Read per call: Better Auth boots after this service
+  const auth = (): GhostAuth => require('../../auth/better-auth').default.service;
+  return {
+    async createUserClient(input) {
+      await auth().api.createAppUserClient({ body: input });
+    },
+    async issueUserTokens({ installationId, staff, scopes }) {
+      const issued = await auth().api.issueAppUserTokens({
+        body: { installationId, userId: staff.userId, sessionId: staff.sessionId, scopes },
+      });
+      // Always present: every app session asks for `openid`
+      const idToken = issued.id_token ?? '';
+      return {
+        access_token: issued.access_token,
+        id_token: idToken,
+        expires_at: issued.expires_at,
+        id_token_expires_at: decodeJwt(idToken).exp ?? 0,
+      };
+    },
+  };
+}
+
 const extras = { actingContext };
 
 // Constructed by init() at boot, not at import: knex is only available once the DB has connected.
@@ -129,6 +156,8 @@ export default defineService(
         getManifestRules,
       }),
       fetchIcon: createIconFetcher({ fetchFromApp, logging }),
+      // Legacy staff sessions aren't Better Auth's, so tokens can't be tied to them
+      tokens: config.get('auth:engine') === 'better-auth' ? betterAuthTokens() : null,
     });
   },
   extras,

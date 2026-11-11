@@ -311,6 +311,7 @@ export class Channel {
         this.#onSessionEnd(callback),
       fetch: (path: string, init?: GhostFetchInit): Promise<Response> => this.#fetch(path, init),
       open: (place: Place): Promise<void> => this.#open(place),
+      idToken: (): Promise<string> => this.#idToken(),
     });
   }
 
@@ -351,5 +352,12 @@ export class Channel {
       throw invalidArgument(ARGUMENT_MESSAGES.place);
     }
     await this.#call('open', cloneArgument(place, ARGUMENT_MESSAGES.place));
+  }
+
+  async #idToken(): Promise<string> {
+    if (!this.#hostExports.has('idToken')) {
+      throw unsupported('ID tokens');
+    }
+    return this.#call('idToken');
   }
 }

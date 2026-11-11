@@ -8,6 +8,12 @@ import {
   type AddedRow,
   type WriteOutcome,
 } from './app-installations-repository';
+import {
+  approvedScopesOf,
+  type AppTokenIssuer,
+  type AppUserTokens,
+  type StaffSession,
+} from './app-tokens';
 import type { AppInstallationHistoryEntry, Installation, InstallationWithHistory } from './codec';
 import {
   approvalWrite,
@@ -66,6 +72,8 @@ export interface AppInstallationPreview {
  */
 export interface AppSession {
   installation: Installation;
+  /** The staff user's tokens for this session. Absent when Ghost can't issue app tokens. */
+  tokens?: AppUserTokens;
 }
 
 function notFound() {
@@ -141,6 +149,8 @@ export class AppInstallationsService {
   private loadManifest: LoadManifest;
   private identity: IdentityChecker;
   private fetchIcon: FetchIcon;
+  /** Null under `auth:engine: legacy`, where there are no app tokens. */
+  private tokens: AppTokenIssuer | null;
   /** Re-checks in progress, by installation ID. Sessions that start together share one. */
   private rechecking = new Map<string, Promise<void>>();
 
@@ -150,18 +160,21 @@ export class AppInstallationsService {
     loadManifest,
     identity,
     fetchIcon,
+    tokens = null,
   }: {
     knex: Knex;
     recordAction: RecordAppInstallationAction;
     loadManifest: LoadManifest;
     identity: IdentityChecker;
     fetchIcon: FetchIcon;
+    tokens?: AppTokenIssuer | null;
   }) {
     this.repository = new AppInstallationsRepository(knex);
     this.recordAction = recordAction;
     this.loadManifest = loadManifest;
     this.identity = identity;
     this.fetchIcon = fetchIcon;
+    this.tokens = tokens;
   }
 
   /** Lists installed apps, suspended ones included. Uninstalled apps aren't listed. */
@@ -210,6 +223,12 @@ export class AppInstallationsService {
         : error;
     });
     const installation = await this.repository.insert(loaded, iconDataUrl);
+    // Unwired: not in the insert's transaction, so a failure here leaves an app without a client
+    await this.tokens?.createUserClient({
+      installationId: installation.id,
+      name: loaded.manifest.name,
+      scopes: approvedScopesOf(installation),
+    });
     await this.recordAction({
       context,
       event: 'installed',
@@ -279,17 +298,26 @@ export class AppInstallationsService {
 
   /**
    * Starts an app session when Admin opens an app page. Re-checks the manifest, then
-   * returns the installation, which Admin decides what to show from. Nothing about the
-   * session is stored.
+   * returns the installation, which Admin decides what to show from, with the staff user's
+   * tokens for the app. Admin renews the tokens by starting a new session.
    */
-  async startSession(id: string): Promise<AppSession> {
+  async startSession(id: string, staff?: StaffSession): Promise<AppSession> {
     await this.recheck(id);
     const installation = await this.read(id);
     // Uninstalled after the re-check, or during a re-check this session shared.
     if (installation.status === 'uninstalled') {
       throw notInstalled();
     }
-    return { installation };
+    // A suspended app loads nothing, so it gets no tokens
+    if (!this.tokens || !staff || installation.status !== 'active') {
+      return { installation };
+    }
+    const tokens = await this.tokens.issueUserTokens({
+      installationId: id,
+      staff,
+      scopes: ['openid', ...approvedScopesOf(installation)],
+    });
+    return { installation, tokens };
   }
 
   /**
@@ -302,6 +330,7 @@ export class AppInstallationsService {
     const installation = await this.read(id);
 
     const ended = await this.repository.uninstall(id);
+    // Unwired: here, and on approval and suspension, disable or update the client and delete its tokens
     if (!ended) {
       return;
     }

@@ -41,6 +41,7 @@ export interface AppFrameSessionOptions {
    */
   context: () => StartContext;
   fetchAdminApi: AdminApiFetch;
+  idToken: () => Promise<string>;
   /**
    * Called when the app moves to one of its routes that Admin isn't on yet. Admin navigates there,
    * adding a history entry or replacing its current one, and returns whether it did. It doesn't
@@ -223,6 +224,7 @@ export function createAppFrameSession(options: AppFrameSessionOptions): AppFrame
         return context;
       },
       fetchAdminApi: options.fetchAdminApi,
+      idToken: options.idToken,
       handlers: {
         titleChanged: (title) => update({ title }),
         pathChanged: (next, move) => {

@@ -129,6 +129,7 @@ describe('createAppFrameSession', () => {
       surfaceOrigin: ORIGIN,
       context: () => admin.context,
       fetchAdminApi,
+      idToken: () => Promise.resolve('id-token'),
       navigate,
       open,
     });

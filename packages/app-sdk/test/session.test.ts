@@ -521,6 +521,7 @@ describe('the Ghost object an app gets', () => {
     expect(Object.keys(ghost).sort()).toEqual([
       'connected',
       'fetch',
+      'idToken',
       'onPathChange',
       'onSessionEnd',
       'onThemeChange',

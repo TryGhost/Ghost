@@ -78,6 +78,7 @@ export function hostExports(): HostMocks {
     // Follows every move, as Admin does when the publisher isn't navigating elsewhere.
     pathChanged: vi.fn<HostExports['pathChanged']>(async (path) => normaliseAppPath(path)),
     open: vi.fn<HostExports['open']>(async () => {}),
+    idToken: vi.fn<HostExports['idToken']>(async () => 'id-token'),
   };
 }
 

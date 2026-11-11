@@ -93,4 +93,9 @@ export interface Ghost {
   fetch(path: string, init?: GhostFetchInit): Promise<Response>;
   /** Sends the person using the app to a place in Admin, such as `{ post: { id } }`. */
   open(place: Place): Promise<void>;
+  /**
+   * A short-lived ID token, signed by Ghost, that says which site and staff user this is.
+   * Send it to the app's backend, which verifies it against the site's published keys.
+   */
+  idToken(): Promise<string>;
 }

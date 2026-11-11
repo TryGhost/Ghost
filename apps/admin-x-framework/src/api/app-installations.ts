@@ -86,8 +86,18 @@ export interface AppInstallationsResponseType {
  * app's manifest. The session is pinned to that installation's revision, and ends once the
  * revision changes.
  */
+/** The staff user's tokens for an app session. Times are Unix seconds. */
+export interface AppUserTokens {
+  access_token: string;
+  id_token: string;
+  expires_at: number;
+  id_token_expires_at: number;
+}
+
 export interface AppSession {
   installation: AppInstallation;
+  /** Absent from Ghost versions, and auth engines, that don't issue app tokens. */
+  tokens?: AppUserTokens;
 }
 
 export interface AppSessionsResponseType {
