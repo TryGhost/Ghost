@@ -15,8 +15,8 @@ workspace and compose the shared factories or presets.
 | `vitest/`                   | Shared test configuration                         | `@internal/cfg-vitest`                                      |
 
 Configuration can use JavaScript, JSON, declarations or TypeScript according to
-its loader. Custom Oxlint rules are TypeScript; their private workspace checks
-them without adding a build or package API. Use the
+its loader. Custom Oxlint rules and the test worker count are TypeScript; each
+private workspace type-checks its own source without adding a build. Use the
 [ESLint guide](eslint/README.md) for factory composition, plugin dependency
 ownership and Oxlint scope changes.
 

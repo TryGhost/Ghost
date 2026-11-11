@@ -1,5 +1,16 @@
 import { availableParallelism, totalmem } from 'node:os';
 
+export interface TestWorkerOptions {
+  /** Memory one worker uses at its peak, including the browser or Ghost it drives. */
+  memoryPerWorkerGB: number;
+  /** Cores one worker keeps busy. Default `1`. */
+  cpusPerWorker?: number;
+  /** Default `1`. */
+  min?: number;
+  /** Default no limit. */
+  max?: number;
+}
+
 const GB = 1024 ** 3;
 
 // The rest of the machine needs memory too, and a machine that swaps runs
@@ -32,10 +43,13 @@ function usableMemory() {
  * or a Ghost. Such workers can exhaust memory before they saturate the cores,
  * so take whichever limit is lower. `TEST_WORKERS_COUNT` sets an exact count
  * instead.
- *
- * @param {import('./index.d.mts').TestWorkerOptions} options
  */
-export function testWorkerCount({ memoryPerWorkerGB, cpusPerWorker = 1, min = 1, max = Infinity }) {
+export function testWorkerCount({
+  memoryPerWorkerGB,
+  cpusPerWorker = 1,
+  min = 1,
+  max = Infinity,
+}: TestWorkerOptions): number {
   // A fractional count makes Vitest start a fork with no pool id
   const override = Math.floor(Number(process.env.TEST_WORKERS_COUNT));
   if (override >= 1) {

@@ -5,14 +5,18 @@
   "description": "Shared worker count for Ghost's expensive test suites",
   "license": "MIT",
   "files": [
-    "index.mjs",
-    "index.d.mts"
+    "index.ts"
   ],
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./index.d.mts",
-      "default": "./index.mjs"
-    }
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test:types": "tsc6 --noEmit"
+  },
+  "devDependencies": {
+    "@internal/cfg-typescript": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
   }
 }

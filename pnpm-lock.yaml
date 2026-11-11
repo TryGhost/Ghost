@@ -4506,7 +4506,17 @@ importers:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
 
-  tools/configs/test-workers: {}
+  tools/configs/test-workers:
+    devDependencies:
+      '@internal/cfg-typescript':
+        specifier: workspace:*
+        version: link:../typescript
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.5
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   tools/configs/typescript: {}
 
