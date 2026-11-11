@@ -1,4 +1,4 @@
-import type { CreateRule, ESTree } from '@oxlint/plugins';
+import type { CreateRule, ESTree, Scope, Variable } from '@oxlint/plugins';
 
 // assert.rejects and assert.throws compare an Error object by name and message,
 // so a different error with the same message still passes.
@@ -15,18 +15,32 @@ export const noAssertErrorInstance: CreateRule = {
     },
   },
   create(context) {
-    const errors = new Set<string>();
-    const calls: { node: ESTree.Node; method: string; name: string }[] = [];
+    const sourceCode = context.sourceCode;
+    const errors = new Set<Variable>();
+    const calls: { node: ESTree.Node; method: string; name: string; target?: Variable }[] = [];
+
+    // Resolve by binding, so a same-named error in another scope doesn't count.
+    function variable(identifier: Extract<ESTree.Node, { type: 'Identifier' }>) {
+      for (let scope: Scope | null = sourceCode.getScope(identifier); scope; scope = scope.upper) {
+        const found = scope.set.get(identifier.name);
+        if (found) return found;
+      }
+      return undefined;
+    }
+    function track(identifier: Extract<ESTree.Node, { type: 'Identifier' }>) {
+      const found = variable(identifier);
+      if (found) errors.add(found);
+    }
 
     return {
       VariableDeclarator(node) {
         if (node.id.type === 'Identifier' && node.init?.type === 'NewExpression') {
-          errors.add(node.id.name);
+          track(node.id);
         }
       },
       AssignmentExpression(node) {
         if (node.left.type === 'Identifier' && node.right.type === 'NewExpression') {
-          errors.add(node.left.name);
+          track(node.left);
         }
       },
       CallExpression(node) {
@@ -40,12 +54,17 @@ export const noAssertErrorInstance: CreateRule = {
           ['rejects', 'throws'].includes(callee.property.name) &&
           expected?.type === 'Identifier'
         ) {
-          calls.push({ node: expected, method: callee.property.name, name: expected.name });
+          calls.push({
+            node: expected,
+            method: callee.property.name,
+            name: expected.name,
+            target: variable(expected),
+          });
         }
       },
       'Program:exit'() {
-        for (const { node, method, name } of calls) {
-          if (errors.has(name)) {
+        for (const { node, method, name, target } of calls) {
+          if (target && errors.has(target)) {
             context.report({ node, messageId: 'instance', data: { method, name } });
           }
         }

@@ -1,4 +1,4 @@
-import type { CreateRule, ESTree } from '@oxlint/plugins';
+import type { CreateRule, ESTree, Scope, Variable } from '@oxlint/plugins';
 
 const loggerKeys = new Set(['logging', 'logger']);
 
@@ -20,18 +20,32 @@ export const noRealLoggerInjection: CreateRule = {
     },
   },
   create(context) {
-    const bindings = new Set<string>();
+    const sourceCode = context.sourceCode;
+    const bindings = new Set<Variable>();
+
+    // Resolve by binding, so a fake that shadows the imported name is not reported.
+    function variable(identifier: Extract<ESTree.Node, { type: 'Identifier' }>) {
+      for (let scope: Scope | null = sourceCode.getScope(identifier); scope; scope = scope.upper) {
+        const found = scope.set.get(identifier.name);
+        if (found) return found;
+      }
+      return undefined;
+    }
+    function track(identifier: Extract<ESTree.Node, { type: 'Identifier' }>) {
+      const found = variable(identifier);
+      if (found) bindings.add(found);
+    }
 
     return {
       ImportDeclaration(node) {
         if (node.source.value !== '@tryghost/logging') return;
         for (const specifier of node.specifiers) {
-          if (specifier.type !== 'ImportSpecifier') bindings.add(specifier.local.name);
+          if (specifier.type !== 'ImportSpecifier') track(specifier.local);
         }
       },
       VariableDeclarator(node) {
         if (node.id.type === 'Identifier' && requiredModule(node.init) === '@tryghost/logging') {
-          bindings.add(node.id.name);
+          track(node.id);
         }
       },
       NewExpression(node) {
@@ -42,10 +56,12 @@ export const noRealLoggerInjection: CreateRule = {
               property.type === 'Property' &&
               property.key.type === 'Identifier' &&
               loggerKeys.has(property.key.name) &&
-              property.value.type === 'Identifier' &&
-              bindings.has(property.value.name)
+              property.value.type === 'Identifier'
             ) {
-              context.report({ node: property, messageId: 'real' });
+              const found = variable(property.value);
+              if (found && bindings.has(found)) {
+                context.report({ node: property, messageId: 'real' });
+              }
             }
           }
         }

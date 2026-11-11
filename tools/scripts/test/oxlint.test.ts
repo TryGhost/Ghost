@@ -815,6 +815,9 @@ test('rejects comparing a shared error object in assert.rejects and assert.throw
     'assert.rejects(run, TypeError);',
     "assert.rejects(run, { message: 'x' });",
     'other.rejects(run, failure);',
+    "const matcher = { message: 'x' };",
+    "function elsewhere() { const matcher = new Error('x'); return matcher; }",
+    'assert.rejects(run, matcher);',
   ].join('\n');
   const result = lint(source, testFile);
   assert.deepEqual(
@@ -842,6 +845,17 @@ test('requires a stop for the server getAgentsWithFrontend starts', () => {
   );
   assert.equal(lint(`${starts}\nawait agents.ghostServer.stop();`, testFile).status, 0);
   assert.equal(lint(`${starts}\nawait stopGhost();`, testFile).status, 0);
+  assert.equal(
+    lint(
+      `({ ghostServer: server } = await e2e.getAgentsWithFrontend());\nawait server?.stop();`,
+      testFile,
+    ).status,
+    0,
+  );
+  assert.deepEqual(
+    lint(`${starts}\ntimer.stop();`, testFile).diagnostics.map((d) => d.code),
+    [code],
+  );
   assert.equal(lint('const other = 1;', testFile).status, 0);
 });
 
@@ -866,6 +880,16 @@ test('rejects passing the real logger to a class under test', () => {
     lint('const logging = createLoggingFake();\nnew One({ logging });', testFile).status,
     0,
   );
+  assert.equal(
+    lint(
+      [
+        "import logging from '@tryghost/logging';",
+        'function check(logging = createLoggingFake()) { new One({ logging }); }',
+      ].join('\n'),
+      testFile,
+    ).status,
+    0,
+  );
 });
 
 test('rejects any in exported service types only', () => {
@@ -876,6 +900,8 @@ test('rejects any in exported service types only', () => {
     'type Local = { value: any };',
     'export function run(input: any) { return input; }',
     'export type Fine = { value: unknown };',
+    'type Public = { value: any };',
+    'export type { Public };',
   ].join('\n');
   const file = 'ghost/core/server/services/alpha/types.ts';
   assert.deepEqual(
@@ -883,6 +909,7 @@ test('rejects any in exported service types only', () => {
     [
       [code, 1],
       [code, 2],
+      [code, 6],
     ],
   );
   assert.equal(lint(source, 'ghost/core/server/lib/types.ts').status, 0);
