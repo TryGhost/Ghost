@@ -131,7 +131,8 @@ const tabsTriggerVariants = cva(
       {
         variant: 'underline',
         admin7Design: true,
-        className: 'after:bottom-0 after:h-px',
+        className:
+          'h-auto py-2.5 text-control-lg font-normal data-[state=active]:font-semibold after:bottom-0 after:h-px',
       },
       {
         variant: ['button', 'button-sm'],
@@ -146,10 +147,40 @@ const tabsTriggerVariants = cva(
   },
 );
 
+// Reserve selected-weight text width without duplicating icons, badges or child components.
+function renderTabsTriggerLabel(children: React.ReactNode, asChild = false): React.ReactNode {
+  if (asChild && React.isValidElement<{ children?: React.ReactNode }>(children)) {
+    return React.cloneElement(children, undefined, renderTabsTriggerLabel(children.props.children));
+  }
+
+  return React.Children.map(children, (child) => {
+    if (typeof child === 'string' || typeof child === 'number') {
+      return (
+        <span className="inline-grid">
+          <span
+            aria-hidden="true"
+            className="pointer-events-none invisible col-start-1 row-start-1 font-semibold select-none"
+          >
+            {child}
+          </span>
+          <span className="col-start-1 row-start-1">{child}</span>
+        </span>
+      );
+    }
+    if (
+      React.isValidElement<{ children?: React.ReactNode }>(child) &&
+      (child.type === React.Fragment || (typeof child.type === 'string' && child.type !== 'svg'))
+    ) {
+      return React.cloneElement(child, undefined, renderTabsTriggerLabel(child.props.children));
+    }
+    return child;
+  });
+}
+
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({ className, onMouseDownCapture, ...props }, ref) => {
+>(({ children, className, onMouseDownCapture, ...props }, ref) => {
   const { variant, controlShape } = React.useContext(TabsContext);
   const { admin7Design } = useShade();
   return (
@@ -175,7 +206,11 @@ const TabsTrigger = React.forwardRef<
         onMouseDownCapture?.(event);
       }}
       {...props}
-    />
+    >
+      {admin7Design && variant === 'underline'
+        ? renderTabsTriggerLabel(children, props.asChild)
+        : children}
+    </TabsPrimitive.Trigger>
   );
 });
 TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
@@ -268,7 +303,9 @@ const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTrig
           )}
           {...props}
         >
-          <div className="flex items-center gap-2">{children}</div>
+          <div className="flex items-center gap-2">
+            {admin7Design && variant === 'underline' ? renderTabsTriggerLabel(children) : children}
+          </div>
         </TabsPrimitive.Trigger>
         <DropdownMenuTrigger
           className="absolute inset-0 size-full cursor-pointer"

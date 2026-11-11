@@ -188,7 +188,22 @@ export const Underline: Story = {
     docs: {
       description: {
         story:
-          'Use underline tabs to switch sections within a page or panel. In Admin 7, the 1px indicator overlaps the divider and the row scrolls horizontally without vertical overflow. With the flag off, the previous underline styling is preserved.',
+          'Use underline tabs to switch sections within a page or panel. In Admin 7, 14px labels have 10px vertical padding, regular inactive text and semibold selected text. Hidden semibold label copies reserve width without duplicating count badges. The 1px indicator overlaps the divider with no vertical scrolling. Flag-off styling is preserved.',
+      },
+    },
+  },
+};
+
+export const UnderlineStableSelectionWidth: Story = {
+  args: {
+    ...StableSelectionWidth.args,
+    variant: 'underline',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Switch between long underline labels: the selected text becomes semibold while all tab widths and positions remain fixed in Admin 7.',
       },
     },
   },

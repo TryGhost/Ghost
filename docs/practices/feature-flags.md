@@ -128,7 +128,11 @@ expanded items use the ghost-button background. Compact button tabs keep their
 smaller size, and KPI tabs keep their chart-card layout. With the flag off,
 the default remains segmented and explicit underline tabs keep their previous
 styling. Only the enabled design uses a 1px indicator aligned with the divider
-and prevents vertical scrolling within the tab row. Shared field surfaces are
+and prevents vertical scrolling within the tab row. Underline tabs use 14px
+labels and 10px vertical padding, with regular inactive text and semibold
+selected text. Hidden semibold label copies reserve the selected width, so
+switching tabs does not move adjacent tabs. Copies are hidden from assistive
+technology, and count badges and icons are rendered only once. Shared field surfaces are
 flat; the enabled design no longer adds a resting shadow. Screens do not need
 their own flag branch for these shared appearances.
 
