@@ -54,12 +54,13 @@ export default defineConfig({
         {
             name: 'chromium',
             use: {...devices['Desktop Chrome']},
-            testIgnore: /.*firefox.test.ts/
+            testIgnore: /.*chrome.test.ts/
         },
         {
-            name: 'firefox',
-            use: {...devices['Desktop Firefox']},
-            testMatch: /.*firefox.test.ts/
+            // Google Chrome ships the H.264 codec; Playwright's Chromium doesn't
+            name: 'chrome',
+            use: {...devices['Desktop Chrome'], channel: 'chrome'},
+            testMatch: /.*chrome.test.ts/
         }
     ],
 
