@@ -1031,6 +1031,10 @@ describe('Email Service', function () {
         'silver',
       );
       assert.equal(renderBody.firstCall.args[2], "status:-free+product:'silver'");
+      assert.deepEqual(renderBody.firstCall.args[3], {
+        clickTrackingEnabled: false,
+        previewAudience: { memberStatus: 'paid', memberTier: 'silver' },
+      });
     });
   });
 
@@ -1094,6 +1098,11 @@ describe('Email Service', function () {
       sinon.assert.calledOnceWithExactly(getSegmentForAudience, post, 'paid', 'silver');
       const { segment } = sendingService.send.firstCall.args[0];
       assert.equal(segment, "status:-free+product:'silver'");
+      // The browser link in the email renders the same audience
+      assert.deepEqual(sendingService.send.firstCall.args[1].previewAudience, {
+        memberStatus: 'paid',
+        memberTier: 'silver',
+      });
     });
   });
 });

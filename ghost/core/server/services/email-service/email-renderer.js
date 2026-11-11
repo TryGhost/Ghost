@@ -266,8 +266,17 @@ function cheerioLoad(html) {
  */
 
 /**
+ * The audience an editor picked when previewing or test-sending a post. The
+ * site's preview route (`/p/:uuid/`) takes the same pair as query params.
+ * @typedef {object} PreviewAudience
+ * @prop {'free'|'paid'|null} memberStatus
+ * @prop {string} [memberTier]
+ */
+
+/**
  * @typedef {object} EmailRenderOptions
  * @prop {boolean} clickTrackingEnabled
+ * @prop {PreviewAudience} [previewAudience] - set for previews and test sends
  */
 
 /**
@@ -638,6 +647,7 @@ class EmailRenderer {
       html,
       addPaywall,
       audience,
+      previewAudience: options.previewAudience,
     });
     html = await this.renderTemplate(templateData);
 
@@ -1203,6 +1213,34 @@ class EmailRenderer {
   }
 
   /**
+   * The post's URL for the email's title and "View in browser" links. An
+   * unpublished post links to its `/p/:uuid/` preview, which shows the full,
+   * ungated post unless it is told which audience to render for. Previews and
+   * test sends carry the audience the editor picked, so the browser view
+   * matches the email it was opened from.
+   * @param {Post} post
+   * @param {PreviewAudience} [previewAudience]
+   * @returns {string}
+   */
+  #getPostViewUrl(post, previewAudience) {
+    const postUrl = this.#getPostUrl(post);
+    if (!previewAudience?.memberStatus) {
+      return postUrl;
+    }
+
+    const url = new URL(postUrl);
+    if (!url.pathname.endsWith(`/p/${post.get('uuid')}/`)) {
+      return postUrl;
+    }
+
+    url.searchParams.set('member_status', previewAudience.memberStatus);
+    if (previewAudience.memberStatus === 'paid' && previewAudience.memberTier) {
+      url.searchParams.set('member_tier', previewAudience.memberTier);
+    }
+    return url.href;
+  }
+
+  /**
    * @param {Newsletter} newsletter
    * @returns {ReturnType<typeof getEmailDesign>}
    */
@@ -1300,8 +1338,9 @@ class EmailRenderer {
    * @param {string} options.html
    * @param {boolean} options.addPaywall
    * @param {SegmentAudience} options.audience
+   * @param {PreviewAudience} [options.previewAudience]
    */
-  async getTemplateData({ post, newsletter, html, addPaywall, audience }) {
+  async getTemplateData({ post, newsletter, html, addPaywall, audience, previewAudience }) {
     const emailDesign = this.#getEmailDesign(newsletter);
 
     const { href: headerImage, width: headerImageWidth } = await this.limitImageWidth(
@@ -1336,7 +1375,7 @@ class EmailRenderer {
       }
     }
 
-    const postUrl = this.#getPostUrl(post);
+    const postUrl = this.#getPostViewUrl(post, previewAudience);
     const hasEmailOnlyFlag = post.related('posts_meta')?.get('email_only') ?? false;
     const showShareButton = newsletter.get('show_share_button') && !hasEmailOnlyFlag;
     const shareUrl = new URL(postUrl);

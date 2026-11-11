@@ -1690,6 +1690,85 @@ describe('Email renderer', function () {
       assert.doesNotMatch(heading.attr('style'), /inherit/);
     });
 
+    describe('browser links for previews and test sends', function () {
+      const uuid = '11111111-2222-4333-8444-555555555555';
+
+      async function renderBrowserLinks(previewAudience) {
+        const post = createModel({ ...basePost, uuid });
+        const newsletter = createModel(baseNewsletter);
+        const options = previewAudience ? { previewAudience } : {};
+
+        const response = await emailRenderer.renderBody(post, newsletter, null, options);
+        const $ = cheerio.load(response.html);
+        return {
+          title: $('a.post-title-link').attr('href'),
+          viewOnline: $('a.view-online-link')
+            .map((_i, el) => $(el).attr('href'))
+            .get(),
+        };
+      }
+
+      beforeEach(function () {
+        postUrl = `http://example.com/p/${uuid}/`;
+      });
+
+      it('keeps the free audience on an unpublished post', async function () {
+        const links = await renderBrowserLinks({ memberStatus: 'free' });
+        const expected = `http://example.com/p/${uuid}/?member_status=free`;
+
+        assert.equal(links.title, expected);
+        assert.ok(links.viewOnline.length > 0);
+        assert.ok(links.viewOnline.every((href) => href === expected));
+      });
+
+      it('keeps the paid audience on an unpublished post', async function () {
+        const links = await renderBrowserLinks({ memberStatus: 'paid' });
+        const expected = `http://example.com/p/${uuid}/?member_status=paid`;
+
+        assert.equal(links.title, expected);
+        assert.ok(links.viewOnline.every((href) => href === expected));
+      });
+
+      it('keeps the selected tier for a paid audience', async function () {
+        const links = await renderBrowserLinks({ memberStatus: 'paid', memberTier: 'gold tier' });
+        const expected = `http://example.com/p/${uuid}/?member_status=paid&member_tier=gold+tier`;
+
+        assert.equal(links.title, expected);
+        assert.ok(links.viewOnline.every((href) => href === expected));
+      });
+
+      it('ignores a tier for a free audience', async function () {
+        const links = await renderBrowserLinks({ memberStatus: 'free', memberTier: 'gold' });
+
+        assert.equal(links.title, `http://example.com/p/${uuid}/?member_status=free`);
+      });
+
+      it('leaves the preview unrestricted when no audience was picked', async function () {
+        const unpicked = await renderBrowserLinks({ memberStatus: null });
+        const absent = await renderBrowserLinks(undefined);
+
+        assert.equal(unpicked.title, `http://example.com/p/${uuid}/`);
+        assert.equal(absent.title, `http://example.com/p/${uuid}/`);
+      });
+
+      it('leaves published and email-only links alone', async function () {
+        postUrl = 'http://example.com/published-post/';
+        const published = await renderBrowserLinks({ memberStatus: 'paid' });
+        postUrl = `http://example.com/email/${uuid}/`;
+        const emailOnly = await renderBrowserLinks({ memberStatus: 'paid' });
+
+        assert.equal(published.title, 'http://example.com/published-post/');
+        assert.equal(emailOnly.title, `http://example.com/email/${uuid}/`);
+      });
+
+      it('keeps the audience under a subdirectory', async function () {
+        postUrl = `http://example.com/blog/p/${uuid}/`;
+        const links = await renderBrowserLinks({ memberStatus: 'paid' });
+
+        assert.equal(links.title, `http://example.com/blog/p/${uuid}/?member_status=paid`);
+      });
+    });
+
     it('Converts a mobiledoc-only post to lexical before rendering', async function () {
       // Legacy posts can still be stored as mobiledoc with no lexical (mobiledoc is only
       // converted on save, not on read). The email renderer must convert the mobiledoc to
