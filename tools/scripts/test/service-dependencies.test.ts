@@ -14,13 +14,9 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { it, type TestContext } from 'node:test';
 import type { ICruiseResult } from 'dependency-cruiser';
-import yaml from 'js-yaml';
 import ts from 'typescript';
-import {
-  deferredServices,
-  dependencyIdentity,
-  readKnownViolations,
-} from '../lib/dependency-boundaries.ts';
+import { dependencyIdentity, readKnownViolations } from '../lib/dependency-boundaries.ts';
+import { legacyInventoryFile, readLegacyServices } from '../lib/legacy-services.ts';
 
 const repository = path.resolve(import.meta.dirname, '../../..');
 const services = 'ghost/core/server/services';
@@ -49,11 +45,9 @@ function fixture(t: TestContext, files: Record<string, string>) {
       path.join(repository, '.dependency-cruiser.cjs'),
       'utf8',
     ),
-    [`${services}/service-inventory.yaml`]: JSON.stringify({
-      services: {
-        alpha: { kind: 'directory', disposition: 'migrate', migrated: true },
-        legacy: { kind: 'directory', disposition: 'migrate' },
-      },
+    // alpha is not listed, so it is a standard service.
+    [legacyInventoryFile]: JSON.stringify({
+      services: { legacy: { kind: 'directory', disposition: 'migrate' } },
     }),
     'tools/scripts/package.json': '{"type":"module"}',
     '.dependency-cruiser-known-violations.json': '[]',
@@ -65,6 +59,7 @@ function fixture(t: TestContext, files: Record<string, string>) {
   }
   for (const file of [
     'tools/scripts/lib/dependency-boundaries.ts',
+    'tools/scripts/lib/legacy-services.ts',
     'tools/scripts/ci/check-boundaries.ts',
   ]) {
     mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
@@ -120,7 +115,7 @@ const edges = (graph: ICruiseResult) =>
     )
     .sort();
 
-it('enforces every implementation independently of inventory and migration markers', (t) => {
+it('enforces every implementation whether or not its service is a legacy entry', (t) => {
   const f = fixture(t, {
     [`${alpha}/implementation.ts`]: "import '../../../shared/config';",
     [`${alpha}/index.js`]: "require('../../../shared/config');",
@@ -144,7 +139,7 @@ it('enforces every implementation independently of inventory and migration marke
   assert.equal(markdown.status, 0);
   assert.ok(markdown.stdout.includes(`${services}/unlisted/helper.ts`));
   for (const entries of [{ alpha: {} }, {}]) {
-    f.write(`${services}/service-inventory.yaml`, JSON.stringify({ services: entries }));
+    f.write(legacyInventoryFile, JSON.stringify({ services: entries }));
     assert.deepEqual(
       violations(f.graph()).map(([, from]) => from),
       expected,
@@ -178,11 +173,11 @@ it('rejects new and moved dependencies and stale entries through the boundary li
   assert.equal(f.lint().status, 0);
 });
 
-it('rejects known violations for migrated services, duplicates and non-service rules', (t) => {
+it('rejects known violations for standard services, duplicates and non-service rules', (t) => {
   const known = { rule: 'service-dependencies', from: `${alpha}/implementation.ts`, to: config };
   const f = fixture(t, { '.dependency-cruiser-known-violations.json': JSON.stringify([known]) });
-  assert.throws(() => readKnownViolations(f.root), /unmigrated inventory entry/);
-  f.write(`${services}/service-inventory.yaml`, JSON.stringify({ services: { alpha: {} } }));
+  assert.throws(() => readKnownViolations(f.root), /does not belong to a legacy service/);
+  f.write(legacyInventoryFile, JSON.stringify({ services: { alpha: {} } }));
   f.write('.dependency-cruiser-known-violations.json', JSON.stringify([known, known]));
   assert.throws(() => readKnownViolations(f.root), /duplicate entry/);
   f.write(
@@ -192,26 +187,29 @@ it('rejects known violations for migrated services, duplicates and non-service r
   assert.throws(() => readKnownViolations(f.root));
 });
 
-it('keeps the checked-in known violations limited to unmigrated services', () => {
+it('keeps the checked-in known violations limited to legacy services', () => {
   assert.doesNotThrow(() => readKnownViolations(repository));
 });
 
-it('reports but does not gate services with deferred enforcement', (t) => {
-  const [deferred] = deferredServices;
-  assert.ok(deferred);
-  const from = `${services}/${deferred}/implementation.js`;
-  const f = fixture(t, { [from]: "require('../../../shared/config');" });
+it('reports but does not gate legacy services that defer dependency checks', (t) => {
+  const from = `${services}/busy/implementation.js`;
+  const f = fixture(t, {
+    [from]: "require('../../../shared/config');",
+    [legacyInventoryFile]: JSON.stringify({
+      services: { busy: { dependencyChecks: 'deferred' } },
+    }),
+  });
   const added = f.lint();
   assert.equal(added.status, 0, added.stderr);
   assert.match(added.stdout, /0 known violations, 1 in services with deferred enforcement/);
   assert.deepEqual(violations(f.graph()), [['service-dependencies', from, config]]);
 
-  // A sibling that is not named is still gated from its first file.
-  f.write(`${services}/${deferred}-extra/implementation.js`, "require('../../../shared/config');");
+  // A sibling that is not listed is still gated from its first file.
+  f.write(`${services}/busy-extra/implementation.js`, "require('../../../shared/config');");
   const sibling = f.lint();
   assert.equal(sibling.status, 1, sibling.stderr);
-  assert.match(sibling.stderr, new RegExp(`${deferred}-extra/implementation.js`));
-  f.write(`${services}/${deferred}-extra/implementation.js`, '');
+  assert.match(sibling.stderr, /busy-extra\/implementation.js/);
+  f.write(`${services}/busy-extra/implementation.js`, '');
 
   // Deferred services keep no entries, so the file cannot hide what they add.
   f.write(
@@ -221,25 +219,30 @@ it('reports but does not gate services with deferred enforcement', (t) => {
   assert.throws(() => readKnownViolations(f.root), /deferred enforcement/);
   const listed = f.lint();
   assert.equal(listed.status, 1, listed.stderr);
-
-  // Migrating a deferred service ends its deferral.
   f.write('.dependency-cruiser-known-violations.json', '[]');
-  f.write(
-    `${services}/service-inventory.yaml`,
-    JSON.stringify({ services: { [deferred]: { migrated: true } } }),
-  );
-  assert.throws(() => readKnownViolations(f.root), /Remove it from deferredServices/);
+
+  // Only the exact value defers checks.
+  f.write(legacyInventoryFile, JSON.stringify({ services: { busy: { dependencyChecks: 'off' } } }));
+  assert.throws(() => readKnownViolations(f.root), /can only be "deferred"/);
+
+  // Deleting the legacy entry ends the deferral: the service must be standard.
+  f.write(legacyInventoryFile, JSON.stringify({ services: {} }));
+  const removed = f.lint();
+  assert.equal(removed.status, 1, removed.stderr);
+  assert.match(removed.stderr, /error service-dependencies:.*busy\/implementation.js/);
 });
 
-it('defers enforcement only for unmigrated services in the inventory', () => {
-  const inventory = yaml.load(
-    readFileSync(path.join(repository, services, 'service-inventory.yaml'), 'utf8'),
-  ) as { services: Record<string, { migrated?: boolean }> };
-  assert.deepEqual([...deferredServices], [...deferredServices].sort());
-  for (const name of deferredServices) {
-    assert.ok(inventory.services[name], `${name} is not in the service inventory`);
-    assert.notEqual(inventory.services[name].migrated, true, `${name} is migrated`);
-  }
+it('defers dependency checks only for the services that already had them deferred', () => {
+  // Deferral may only shrink. Remove a name here when its entry is deleted.
+  const allowed = ['automations', 'members', 'members-metafields', 'stripe'];
+  const deferred = [...readLegacyServices(repository)]
+    .filter(([, service]) => service.deferred)
+    .map(([name]) => name);
+  assert.deepEqual(
+    deferred.filter((name) => !allowed.includes(name)),
+    [],
+    'Do not defer dependency checks for more services',
+  );
 });
 
 it('matches external packages across stores without merging subpaths or workspace targets', () => {
@@ -1026,6 +1029,7 @@ it('invalidates cached boundary checks and fixture tests when their configuratio
     'koenig/**/*',
     '.dependency-cruiser-known-violations.json',
     'tools/scripts/lib/dependency-boundaries.ts',
+    'tools/scripts/lib/legacy-services.ts',
     'tools/scripts/ci/check-boundaries.ts',
   ]) {
     assert.ok(root.nx.targets['lint:boundaries'].inputs.includes(`{workspaceRoot}/${input}`));

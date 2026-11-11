@@ -16,10 +16,12 @@
 # Kernel
 /ghost/core/kernel/ @ErisDS
 
-# Service dependency policy and reviewed legacy violations
+# Service policy: dependency rules, legacy services and their reviewed violations
 /.dependency-cruiser.cjs @ErisDS
 /.dependency-cruiser-known-violations.json @ErisDS
+/ghost/core/server/services/legacy-service-inventory.yaml @ErisDS
 /tools/scripts/lib/dependency-boundaries.ts @ErisDS
+/tools/scripts/lib/legacy-services.ts @ErisDS
 
 # Inbox Links
 ghost/core/server/lib/get-inbox-links.ts @EvanHahn
