@@ -89,6 +89,7 @@
     "Could not sign in. Login link expired.": "无法登录。登录链接已过期。",
     "Could not update email! Invalid link.": "无法更新电子邮件！链接无效。",
     "Country": "",
+    "Country code": "",
     "Create a new contact": "创建新联系",
     "Current plan": "当前订阅",
     "Delete account": "删除账户",

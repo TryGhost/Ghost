@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const StripeService = require('./stripe-service');
 const logging = require('@tryghost/logging');
-const { tracer } = require('../../lib/tracing');
+const { tracer, meter } = require('../../lib/tracing');
 const { stripeTracking } = require('./tracking');
 const membersService = require('../members');
 const config = require('../../../shared/config');
@@ -41,7 +41,7 @@ const debouncedConfigureApi = _.debounce(() => {
 
 module.exports = new StripeService({
   labs,
-  tracking: stripeTracking(tracer),
+  tracking: stripeTracking({ tracer, meter }),
   membersService,
   models: _.pick(models, [
     'Product',

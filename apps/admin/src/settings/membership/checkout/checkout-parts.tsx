@@ -6,8 +6,6 @@ import type { Tier } from '@tryghost/admin-x-framework/api/tiers';
 import type { ErrorMessages } from '@tryghost/admin-x-framework/hooks';
 import PhoneSettings from './phone-settings';
 import ShippingSettings from './shipping-settings';
-import TaxNumberSettings from './tax-number-settings';
-import { collectFormStateOf, collectSettingOf } from './collect-form';
 import {
   PHONE_ERRORS,
   type PhoneFormState,
@@ -22,20 +20,17 @@ import {
   shippingSettingOf,
   validateShipping,
 } from './shipping-form';
-import { TAX_NUMBER_ERRORS, type TaxNumberFormState, validateTaxNumber } from './tax-number-form';
 
 /** Each part checkout can ask the buyer for, as the Fields tab edits it. */
 export type PartFormStates = {
   shipping: ShippingFormState;
   phone: PhoneFormState;
-  tax_number: TaxNumberFormState;
 };
 
 /** The error keys each part's checks give, which its row shows them under. */
 type PartErrorKeys = {
   shipping: (typeof SHIPPING_ERRORS)[number];
   phone: (typeof PHONE_ERRORS)[number];
-  tax_number: (typeof TAX_NUMBER_ERRORS)[number];
 };
 
 /** What a part's row in the Fields tab is given. */
@@ -47,8 +42,6 @@ export interface PartSettingsProps<State> {
   /** The fields chosen for every collected value, which no other value is offered. */
   chosenFields: Array<string | null>;
   errors: ErrorMessages;
-  /** Whether every checkout asks for the part, whatever its setting says. */
-  alwaysAsked: boolean;
   onChange: (next: State) => void;
 }
 
@@ -63,8 +56,6 @@ interface PartDefinition<Part extends CollectedPart> {
   settingOf: (state: PartFormStates[Part]) => StripeCheckoutPartSetting<Part>;
   /** The custom fields the part saves into, which no other part is offered. */
   fieldsOf: (state: PartFormStates[Part]) => Array<string | null>;
-  /** Whether every checkout asks for the part, whatever its setting says. */
-  alwaysAsked?: (context: { automaticTax: boolean }) => boolean;
   Settings: React.FC<PartSettingsProps<PartFormStates[Part]>>;
 }
 
@@ -86,16 +77,6 @@ export const CHECKOUT_PARTS: { [Part in CollectedPart]: PartDefinition<Part> } =
     fieldsOf: (state) => [state.fieldKey],
     Settings: PhoneSettings,
   },
-  tax_number: {
-    formStateOf: collectFormStateOf,
-    validate: validateTaxNumber,
-    errorKeys: TAX_NUMBER_ERRORS,
-    settingOf: collectSettingOf,
-    // Stripe keeps the tax ID, so it saves into no field.
-    fieldsOf: () => [],
-    alwaysAsked: ({ automaticTax }) => automaticTax,
-    Settings: TaxNumberSettings,
-  },
 };
 
 /** Every part as the Fields tab edits it, from what Ghost says is saved. */
@@ -105,7 +86,6 @@ export function partFormStatesOf(saved: Partial<CheckoutPartSettings>): PartForm
   return {
     shipping: stateOf('shipping'),
     phone: stateOf('phone'),
-    tax_number: stateOf('tax_number'),
   };
 }
 

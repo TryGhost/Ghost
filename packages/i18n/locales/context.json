@@ -96,6 +96,7 @@
     "Could not sign in. Login link expired.": "Message when a login link has expired",
     "Could not update email! Invalid link.": "Message when an email update link is invalid",
     "Country": "Label and placeholder of the country select when a member edits an address custom field in their Portal account settings",
+    "Country code": "Label of the country select beside a phone number custom field in Portal, whose calling code goes in front of the number the member writes",
     "Create a new contact": "A section title in email receiving FAQ",
     "Current plan": "Label for the current plan",
     "Delete": "Delete button",

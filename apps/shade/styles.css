@@ -32,12 +32,12 @@
    title. Comes after the utilities at their specificity, so it beats text classes. */
 .section-heading:where([data-admin7-design='true'] *) {
   font-size: var(--text-section-heading);
-  font-weight: var(--font-weight-title);
-  letter-spacing: 0;
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--tracking-tighter);
   line-height: 1.35;
   font-variation-settings:
-    'opsz' 22,
-    'wght' var(--font-weight-title);
+    'opsz' 28,
+    'wght' var(--font-weight-medium);
   font-feature-settings: 'dlig', 'zero', 'ss01', 'ss02', 'cv10', 'cv06';
 }
 

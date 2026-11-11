@@ -4,7 +4,11 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
 
-import { readSignedManifest, verifySignedManifest } from '@tryghost/app-contracts/identity';
+import {
+  parseJsonText,
+  readSignedManifest,
+  verifySignedManifest,
+} from '@tryghost/app-contracts/identity';
 import { parseManifest } from '@tryghost/app-contracts/manifest';
 
 export const SOURCE = {
@@ -43,7 +47,7 @@ export async function readAsGhost(body: unknown, manifestUrl: string) {
   if (!read.success) {
     throw new Error(read.error);
   }
-  const parsed = parseManifest(JSON.parse(read.payload), {
+  const parsed = parseManifest(parseJsonText(read.payload), {
     manifestUrl,
     ghostUrls: ['http://localhost:2368'],
     allowLocalhost: true,

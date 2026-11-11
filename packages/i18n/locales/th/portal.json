@@ -89,6 +89,7 @@
     "Could not sign in. Login link expired.": "ไม่สามารถลงชื่อเข้าใช้ได้ ลิงก์เข้าสู่ระบบหมดอายุ",
     "Could not update email! Invalid link.": "ไม่สามารถอัปเดตอีเมลได้! ลิงก์ไม่ถูกต้อง",
     "Country": "",
+    "Country code": "",
     "Create a new contact": "สร้างผู้ติดต่อใหม่",
     "Current plan": "แผนปัจจุบัน",
     "Delete account": "ลบบัญชี",

@@ -6,11 +6,9 @@ import {
   ComboboxValue,
   Field,
   FieldContent,
-  FieldDescription,
   FieldError,
   FieldLabel,
   FieldTitle,
-  Link,
   MultiSelectCombobox,
   Switch,
 } from '@tryghost/shade/components';
@@ -130,89 +128,48 @@ export const Destination: React.FC<{
 export const CollectRow: React.FC<{
   id: string;
   label: string;
-  /**
-   * Shown under the label: the text, read out with the switch, and docs that explain the part
-   * further, linked after it.
-   */
-  description?: { text: string; learnMoreUrl?: string };
-  /**
-   * Whether every checkout asks for the part, whatever its setting says. The switch then shows
-   * it on and can't be changed, and the tiers to ask on, which make no difference, are left out.
-   * What is saved stays as it was, for when the part is only asked as set again.
-   */
-  alwaysAsked: boolean;
   state: CollectFormState;
   /** Paid tiers, archived ones included. */
   tiers: Tier[];
   tiersError?: string;
   onChange: (next: CollectFormState) => void;
   children?: React.ReactNode;
-}> = ({ id, label, description, alwaysAsked, state, tiers, tiersError, onChange, children }) => {
+}> = ({ id, label, state, tiers, tiersError, onChange, children }) => {
   const set = (next: Partial<CollectFormState>) => onChange({ ...state, ...next });
   const activeTierIds = tiers.filter((tier) => tier.active).map((tier) => tier.id);
-  const labelled = (
-    <FieldLabel htmlFor={id} id={`${id}-label`}>
-      {label}
-    </FieldLabel>
-  );
-  // The switch is described by the sentence alone: the link beside it is its own control.
-  const descriptionId = `${id}-description`;
 
   return (
     // A group named by the part, so its "Collect for" and other settings are told apart from
     // another part's.
     <div aria-labelledby={`${id}-label`} className="flex flex-col gap-3" role="group">
-      <Field data-disabled={alwaysAsked || undefined} orientation="horizontal">
-        {description ? (
-          <FieldContent>
-            {labelled}
-            <FieldDescription>
-              <span id={descriptionId}>{description.text}</span>
-              {description.learnMoreUrl && (
-                <>
-                  {' '}
-                  <Link href={description.learnMoreUrl} external>
-                    Learn more
-                  </Link>
-                </>
-              )}
-            </FieldDescription>
-          </FieldContent>
-        ) : (
-          labelled
-        )}
-        <Switch
-          aria-describedby={description ? descriptionId : undefined}
-          checked={alwaysAsked || state.collect}
-          disabled={alwaysAsked}
-          id={id}
-          onCheckedChange={(collect) => set({ collect })}
-        />
+      <Field orientation="horizontal">
+        <FieldLabel htmlFor={id} id={`${id}-label`}>
+          {label}
+        </FieldLabel>
+        <Switch checked={state.collect} id={id} onCheckedChange={(collect) => set({ collect })} />
       </Field>
       {state.collect && (
         <>
-          {!alwaysAsked && (
-            <SubRow error={tiersError} label="Collect for">
-              <MultiPicker
-                empty="No tiers"
-                invalid={Boolean(tiersError)}
-                label="Collect for"
-                // An archived tier stays listed while it's chosen, so it can be unticked.
-                options={tiers
-                  .filter(
-                    (tier) => tier.active || (!state.allTiers && state.tierIds.includes(tier.id)),
-                  )
-                  .map((tier) => ({
-                    value: tier.id,
-                    label: tier.active ? tier.name : `${tier.name} (archived)`,
-                  }))}
-                searchPlaceholder="Search tiers..."
-                summary={state.allTiers ? 'All paid tiers' : undefined}
-                values={state.allTiers ? activeTierIds : state.tierIds}
-                onChange={(tierIds) => set(tierChoiceOf(tierIds, activeTierIds))}
-              />
-            </SubRow>
-          )}
+          <SubRow error={tiersError} label="Collect for">
+            <MultiPicker
+              empty="No tiers"
+              invalid={Boolean(tiersError)}
+              label="Collect for"
+              // An archived tier stays listed while it's chosen, so it can be unticked.
+              options={tiers
+                .filter(
+                  (tier) => tier.active || (!state.allTiers && state.tierIds.includes(tier.id)),
+                )
+                .map((tier) => ({
+                  value: tier.id,
+                  label: tier.active ? tier.name : `${tier.name} (archived)`,
+                }))}
+              searchPlaceholder="Search tiers..."
+              summary={state.allTiers ? 'All paid tiers' : undefined}
+              values={state.allTiers ? activeTierIds : state.tierIds}
+              onChange={(tierIds) => set(tierChoiceOf(tierIds, activeTierIds))}
+            />
+          </SubRow>
           {children}
         </>
       )}

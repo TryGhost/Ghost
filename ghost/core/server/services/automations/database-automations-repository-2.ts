@@ -46,7 +46,7 @@ const applyMembershipStartedFilters = (
 ): void => {
   query.whereExists(
     connection('automation_trigger_rules as rule')
-      .select('rule.id')
+      .select(1)
       .where('rule.automation_id', connection.ref('automation.id'))
       .where((builder) => {
         switch (memberStatus) {
@@ -100,7 +100,7 @@ const applyPaidSubscriptionChangedFilters = (
   // Is there a matching "from" rule?
   query.whereExists(
     connection('automation_trigger_rules as rule')
-      .select('rule.id')
+      .select(1)
       .where('rule.automation_id', connection.ref('automation.id'))
       .where('rule.trigger_type', 'paid_subscription_changed')
       .where('rule.direction', 'from')
@@ -112,7 +112,7 @@ const applyPaidSubscriptionChangedFilters = (
             // Don't include "from" rules if they overlap with "to" rules.
             .whereNotExists(
               connection('automation_trigger_rules as previous_destination')
-                .select('previous_destination.id')
+                .select(1)
                 .where('previous_destination.automation_id', connection.ref('automation.id'))
                 .where('previous_destination.trigger_type', 'paid_subscription_changed')
                 .where('previous_destination.direction', 'to')
@@ -125,7 +125,7 @@ const applyPaidSubscriptionChangedFilters = (
   // Is there a matching "to" rule?
   query.whereExists(
     connection('automation_trigger_rules as destination')
-      .select('destination.id')
+      .select(1)
       .where('destination.automation_id', connection.ref('automation.id'))
       .where('destination.trigger_type', 'paid_subscription_changed')
       .where('destination.direction', 'to')

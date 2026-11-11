@@ -4,6 +4,7 @@ const { agentProvider, fixtureManager, mockManager } = require('../../utils/e2e-
 const { stripeMocker } = require('../../utils/e2e-framework-mock-manager');
 const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
 const logging = require('@tryghost/logging');
+const nock = require('nock');
 const sinon = require('sinon');
 const models = require('../../../core/server/models');
 
@@ -41,7 +42,8 @@ const ADDRESS = {
 const ANSWERED = {
   'checkout.shipping.name': 'Ada Lovelace',
   'checkout.shipping.address': ADDRESS,
-  'checkout.phone': '+44 7700 900000',
+  // In the form the phone field keeps it in, so it reads back as it was sent.
+  'checkout.phone': '+447400123456',
 };
 
 /** The same address as it reads back: only the parts that hold something. */
@@ -124,7 +126,7 @@ describe('Member answers by port', function () {
 
   beforeAll(async function () {
     ({ adminAgent, membersAgent, contentAPIAgent } = await agentProvider.getAgentsForMembers());
-    await fixtureManager.init('newsletters', 'members:newsletters', 'api_keys');
+    await fixtureManager.init('newsletters', 'members:newsletters', 'integrations', 'api_keys');
     await adminAgent.loginAsOwner();
     await contentAPIAgent.authenticate();
   });
@@ -133,21 +135,22 @@ describe('Member answers by port', function () {
     mockManager.mockMail();
     mockManager.mockStripe();
     mockManager.mockLabsEnabled('stripeCheckoutCollection');
+    mockManager.mockLabsEnabled('customFieldTypePhone');
     addressKey = await defineField('Delivery address', 'address');
     recipientKey = await defineField('Recipient name', 'short_text');
-    phoneKey = await defineField('Contact phone', 'short_text');
+    phoneKey = await defineField('Contact phone', 'phone');
     await collect();
   });
 
   afterEach(async function () {
     mockManager.restore();
-    await models.Base.knex('stripe_checkout_config_tiers').del();
     await models.Base.knex('stripe_checkout_config').del();
     await models.Base.knex('members_metafield_bindings').del();
     await models.Base.knex('tier_requirement_tiers').del();
     await models.Base.knex('tier_requirements').del();
     await models.Base.knex('members_metafield_values').del();
     await models.Base.knex('members_metafields').del();
+    await models.Base.knex('webhooks').del();
   });
 
   describe('given with a change of tier', function () {
@@ -235,12 +238,20 @@ describe('Member answers by port', function () {
       assert.deepEqual(await heldAsStaff(memberId), {
         [addressKey]: ADDRESS_HELD,
         [recipientKey]: 'Ada Lovelace',
-        [phoneKey]: '+44 7700 900000',
+        [phoneKey]: '+447400123456',
       });
       const events = await fieldChangesInActivityFeed();
       assert.equal(events.length, 1, 'one entry for one change of tier');
       assert.equal(events[0].data.written_by_type, 'member', 'the member gave them themselves');
       assert.equal(events[0].data.source, 'portal');
+    });
+
+    // Portal sends the number as written beside the country picked, such as with a national 0
+    // after the code, and the phone field keeps it in its international form.
+    it('keeps a phone number in its international form', async function () {
+      await changeTier(toTierId, 204, { 'checkout.phone': '+44 07400 123456' });
+
+      assert.equal((await heldAsStaff(memberId))[phoneKey], '+447400123456');
     });
 
     it("reads back from the member's own record, through the field each port the tier names", async function () {
@@ -284,6 +295,37 @@ describe('Member answers by port', function () {
       });
     });
 
+    it('tells member webhooks about the answers a change of tier saves', async function () {
+      // Every delivery is kept, as the change of tier's own edit to the member is sent too.
+      const delivered: Array<{
+        member: { current: { email: string; metafields?: { custom?: Record<string, unknown> } } };
+      }> = [];
+      nock('https://test-webhook-receiver.com')
+        .persist()
+        .post('/tier-change-member-edited/')
+        .reply(200, (_uri: string, body: unknown) => {
+          delivered.push(typeof body === 'string' ? JSON.parse(body) : body);
+          return {};
+        });
+      await fixtureManager.insertWebhook({
+        event: 'member.edited',
+        url: 'https://test-webhook-receiver.com/tier-change-member-edited/',
+      });
+
+      await changeTier(toTierId, 204, ANSWERED);
+
+      const withAnswers = await vi.waitUntil(
+        () => delivered.find(({ member }) => member.current.metafields?.custom?.[addressKey]),
+        { timeout: 5000 },
+      );
+      assert.equal(withAnswers.member.current.email, email);
+      assert.deepEqual(withAnswers.member.current.metafields?.custom, {
+        [addressKey]: ADDRESS_HELD,
+        [recipientKey]: 'Ada Lovelace',
+        [phoneKey]: '+447400123456',
+      });
+    });
+
     it('leaves the member on their tier when answers are refused, naming every one by its port', async function () {
       await holdAsStaff(memberId, { [addressKey]: ADDRESS_HELD });
       // Hidden from members, so a refusal must not name the field.
@@ -318,7 +360,7 @@ describe('Member answers by port', function () {
     it('refuses a requirement answered in part, naming each answer it leaves out', async function () {
       const { body } = await changeTier(toTierId, 422, {
         'checkout.shipping.address': ADDRESS,
-        'checkout.phone': '+44 7700 900000',
+        'checkout.phone': '+44 7400 123456',
       });
 
       assert.equal(body.errors[0].property, 'answers.checkout.shipping.name');
@@ -327,10 +369,10 @@ describe('Member answers by port', function () {
     });
 
     it('saves the rest with a requirement left out whole, as a client may not know of it', async function () {
-      await changeTier(toTierId, 204, { 'checkout.phone': '+44 7700 900000' });
+      await changeTier(toTierId, 204, { 'checkout.phone': '+44 7400 123456' });
 
       assert.equal(await tierNow(), toTierId);
-      assert.deepEqual(await heldAsStaff(memberId), { [phoneKey]: '+44 7700 900000' });
+      assert.deepEqual(await heldAsStaff(memberId), { [phoneKey]: '+447400123456' });
     });
 
     it('refuses an address outside the countries alongside what its fields refuse', async function () {
@@ -390,16 +432,16 @@ describe('Member answers by port', function () {
     });
 
     it('refuses an answer of nothing rather than clearing what the field holds', async function () {
-      await holdAsStaff(memberId, { [phoneKey]: '+44 7700 900000' });
+      await holdAsStaff(memberId, { [phoneKey]: '+44 7400 123456' });
 
       const { body } = await changeTier(toTierId, 422, { 'checkout.phone': null });
 
       assert.equal(body.errors[0].property, 'answers.checkout.phone');
-      assert.equal((await heldAsStaff(memberId))[phoneKey], '+44 7700 900000');
+      assert.equal((await heldAsStaff(memberId))[phoneKey], '+447400123456');
     });
 
     it("saves nothing with a subscription that is not the member's", async function () {
-      await changeTier(toTierId, 404, { 'checkout.phone': '+44 7700 900000' }, 'sub_not_theirs');
+      await changeTier(toTierId, 404, { 'checkout.phone': '+44 7400 123456' }, 'sub_not_theirs');
 
       assert.deepEqual(await heldAsStaff(memberId), {});
     });
@@ -418,7 +460,7 @@ describe('Member answers by port', function () {
 
       await changeTier(toTierId, 204, ANSWERED);
 
-      assert.equal((await heldAsStaff(memberId))[phoneKey], '+44 7700 900000');
+      assert.equal((await heldAsStaff(memberId))[phoneKey], '+447400123456');
     });
 
     it('drops an answer the new tier does not ask for', async function () {
@@ -431,10 +473,10 @@ describe('Member answers by port', function () {
       // This tier asks for a phone number, but doesn't ship to members.
       await changeTier(other.id, 204, {
         'checkout.shipping.name': 'Ada Lovelace',
-        'checkout.phone': '+44 7700 900000',
+        'checkout.phone': '+44 7400 123456',
       });
 
-      assert.deepEqual(await heldAsStaff(memberId), { [phoneKey]: '+44 7700 900000' });
+      assert.deepEqual(await heldAsStaff(memberId), { [phoneKey]: '+447400123456' });
     });
 
     it('drops an answer for an archived field', async function () {
@@ -449,7 +491,7 @@ describe('Member answers by port', function () {
     it('saves nothing with a change that keeps the tier, as it asks for nothing', async function () {
       await collect();
 
-      await changeTier(fromTierId, 204, { 'checkout.phone': '+44 7700 900000' });
+      await changeTier(fromTierId, 204, { 'checkout.phone': '+44 7400 123456' });
 
       assert.deepEqual(await heldAsStaff(memberId), {});
     });
