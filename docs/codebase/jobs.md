@@ -79,7 +79,9 @@ automatic retries and no collection of uploads orphaned by a shutdown between
 dispatch and execution. The exception is a site with
 `services:jobs:outbox:keepUntilSettled` on: its outbox keeps each row until the
 job settles, so a job that a restart or crash cut short runs again, from the
-start, at the next boot.
+start, at the next boot. A job type with its own recovery opts out with
+`static replayAfterRestart = false`, and its rows are dropped at boot instead.
+Newsletter sends do this, because the newsletter boot scan recovers them.
 
 ## Scheduling
 

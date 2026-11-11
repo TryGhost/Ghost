@@ -65,16 +65,21 @@ function makeLogger() {
   return { logging, calls };
 }
 
-function makeOutbox({
-  released = [] as { id: string; type: string | null }[],
-  tracked = true,
-} = {}) {
+type Row = { id: string; type: string | null };
+
+function makeOutbox({ released = [] as Row[], dropped = [] as Row[], tracked = true } = {}) {
+  const replayChecks: ((type: string) => boolean)[] = [];
   const inserts: { id: string; envelope: DispatchEnvelope; transacting?: unknown }[] = [];
   const relayCalls: string[] = [];
   const store = {
-    async releaseSubmitted(): Promise<{ id: string; type: string | null }[]> {
+    async releaseSubmitted({
+      replays,
+    }: {
+      replays: (type: string) => boolean;
+    }): Promise<{ released: Row[]; dropped: Row[] }> {
       relayCalls.push('release');
-      return released;
+      replayChecks.push(replays);
+      return { released, dropped };
     },
     async insert(
       entry: { id: string; envelope: DispatchEnvelope },
@@ -92,7 +97,7 @@ function makeOutbox({
     },
   };
   const tracker = tracked ? { onSettled: async (): Promise<void> => {} } : undefined;
-  return { inserts, relayCalls, store, relay, tracker };
+  return { inserts, relayCalls, replayChecks, store, relay, tracker };
 }
 
 // Lets an after-commit hand-off registered on the transaction run.
@@ -461,6 +466,60 @@ describe('JobsService', function () {
         system: { event: 'jobs_outbox.released', count: 2, rows: released },
       });
       assert.equal(message, '[Jobs Outbox] Released 2 submitted rows to hand over again');
+    });
+
+    it('asks the store to drop rows of job types that are not replayed after a restart', async function () {
+      class OwnRecoveryJob extends Job {
+        static type = 'own-recovery';
+        static replayAfterRestart = false;
+      }
+      const outbox = makeOutbox();
+      const service = makeService({ outbox });
+      service.handle(OwnRecoveryJob, async () => {});
+      service.handle(GreetJob, async () => {});
+
+      await service.start();
+
+      const [replays] = outbox.replayChecks;
+      assert.equal(replays('own-recovery'), false);
+      assert.equal(replays(GreetJob.type), true);
+      assert.equal(replays('unregistered'), true);
+    });
+
+    it('forgets which job types are not replayed when handlers are cleared', async function () {
+      class OwnRecoveryJob extends Job {
+        static type = 'own-recovery';
+        static replayAfterRestart = false;
+      }
+      class ReplayedJob extends Job {
+        static type = 'own-recovery';
+      }
+      const outbox = makeOutbox();
+      const service = makeService({ outbox });
+      service.handle(OwnRecoveryJob, async () => {});
+      service.clearHandlers();
+      service.handle(ReplayedJob, async () => {});
+
+      await service.start();
+
+      assert.equal(outbox.replayChecks[0]('own-recovery'), true);
+    });
+
+    it('logs at start which submitted rows it dropped', async function () {
+      const dropped = [{ id: 'c', type: 'own-recovery' }];
+      await makeService({ outbox: makeOutbox({ dropped }) }).start();
+
+      const [event, message] = logger.calls.info[0] as [
+        { system: { event: string; count: number } },
+        string,
+      ];
+      assert.deepEqual(event, {
+        system: { event: 'jobs_outbox.dropped', count: 1, rows: dropped },
+      });
+      assert.equal(
+        message,
+        '[Jobs Outbox] Dropped 1 submitted rows whose job types recover on their own',
+      );
     });
 
     it('logs no release when there was nothing to release', async function () {
