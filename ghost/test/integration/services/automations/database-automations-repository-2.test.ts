@@ -231,6 +231,97 @@ describe('database automations repository', function () {
     });
   });
 
+  alphabeticalDescribe('findExistingEnrollments', function () {
+    let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
+    let automationId: string;
+    let otherAutomationId: string;
+    let memberId: string;
+    let otherMemberId: string;
+
+    const findExistingEnrollments = () =>
+      repository.withConnection((connection) =>
+        repository.findExistingEnrollments(connection, [automationId], [memberId]),
+      );
+
+    beforeEach(async function () {
+      repository = createDatabaseAutomationsRepository2({ knex });
+      automationId = ObjectId().toHexString();
+      otherAutomationId = ObjectId().toHexString();
+      memberId = ObjectId().toHexString();
+      otherMemberId = ObjectId().toHexString();
+      await knex('automations').insert(createAutomation(automationId));
+      await knex('members').insert(createMember(memberId));
+    });
+
+    afterEach(async function () {
+      await knex('automation_runs')
+        .whereIn('automation_id', [automationId, otherAutomationId])
+        .delete();
+      await knex('automations').whereIn('id', [automationId, otherAutomationId]).delete();
+      await knex('members').whereIn('id', [memberId, otherMemberId]).delete();
+    });
+
+    it('returns an empty array when the member has not entered any automation', async function () {
+      await expect(findExistingEnrollments()).resolves.toEqual([]);
+    });
+
+    it('returns a member who has entered an automation', async function () {
+      await knex('automation_runs').insert(createRun(automationId, memberId));
+      await expect(findExistingEnrollments()).resolves.toEqual([
+        { automation_id: automationId, member_id: memberId },
+      ]);
+    });
+
+    it('returns an empty array when only another member has entered the automation', async function () {
+      await knex('members').insert(createMember(otherMemberId));
+      await knex('automation_runs').insert(createRun(automationId, otherMemberId));
+      await expect(findExistingEnrollments()).resolves.toEqual([]);
+    });
+
+    it('returns an empty array when the member has only entered another automation', async function () {
+      await knex('automations').insert(createAutomation(otherAutomationId));
+      await knex('automation_runs').insert(createRun(otherAutomationId, memberId));
+      await expect(findExistingEnrollments()).resolves.toEqual([]);
+    });
+
+    it('returns distinct pairs across multiple automations and members', async function () {
+      await knex('automations').insert(createAutomation(otherAutomationId));
+      await knex('members').insert(createMember(otherMemberId));
+      const pairs = [
+        { automation_id: automationId, member_id: memberId },
+        { automation_id: automationId, member_id: otherMemberId },
+        { automation_id: otherAutomationId, member_id: memberId },
+      ];
+      await knex('automation_runs').insert([
+        ...pairs.map((pair) => createRun(pair.automation_id, pair.member_id)),
+        createRun(automationId, memberId),
+      ]);
+
+      const result = await repository.withConnection((connection) =>
+        repository.findExistingEnrollments(
+          connection,
+          [automationId, otherAutomationId],
+          [memberId, otherMemberId],
+        ),
+      );
+
+      expect(result).toHaveLength(3);
+      expect(result).toEqual(expect.arrayContaining(pairs));
+    });
+
+    it.each([
+      [[], ['member']],
+      [['automation'], []],
+      [[], []],
+    ])('returns no pairs for empty inputs %j and %j', async function (automationIds, memberIds) {
+      await expect(
+        repository.withConnection((connection) =>
+          repository.findExistingEnrollments(connection, automationIds, memberIds),
+        ),
+      ).resolves.toEqual([]);
+    });
+  });
+
   alphabeticalDescribe('findFirstActionRevisions', function () {
     let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
     let automationIds: string[];
@@ -584,58 +675,6 @@ describe('database automations repository', function () {
       );
 
       expect(result).toBe(0);
-    });
-  });
-
-  alphabeticalDescribe('hasMemberEnteredAutomation', function () {
-    let repository: ReturnType<typeof createDatabaseAutomationsRepository2>;
-    let automationId: string;
-    let otherAutomationId: string;
-    let memberId: string;
-    let otherMemberId: string;
-
-    const hasMemberEnteredAutomation = () =>
-      repository.withConnection((connection) =>
-        repository.hasMemberEnteredAutomation(connection, automationId, memberId),
-      );
-
-    beforeEach(async function () {
-      repository = createDatabaseAutomationsRepository2({ knex });
-      automationId = ObjectId().toHexString();
-      otherAutomationId = ObjectId().toHexString();
-      memberId = ObjectId().toHexString();
-      otherMemberId = ObjectId().toHexString();
-      await knex('automations').insert(createAutomation(automationId));
-      await knex('members').insert(createMember(memberId));
-    });
-
-    afterEach(async function () {
-      await knex('automation_runs')
-        .whereIn('automation_id', [automationId, otherAutomationId])
-        .delete();
-      await knex('automations').whereIn('id', [automationId, otherAutomationId]).delete();
-      await knex('members').whereIn('id', [memberId, otherMemberId]).delete();
-    });
-
-    it('returns false when the member has not entered any automation', async function () {
-      await expect(hasMemberEnteredAutomation()).resolves.toBe(false);
-    });
-
-    it('returns true when the member has entered the automation', async function () {
-      await knex('automation_runs').insert(createRun(automationId, memberId));
-      await expect(hasMemberEnteredAutomation()).resolves.toBe(true);
-    });
-
-    it('returns false when only another member has entered the automation', async function () {
-      await knex('members').insert(createMember(otherMemberId));
-      await knex('automation_runs').insert(createRun(automationId, otherMemberId));
-      await expect(hasMemberEnteredAutomation()).resolves.toBe(false);
-    });
-
-    it('returns false when the member has only entered another automation', async function () {
-      await knex('automations').insert(createAutomation(otherAutomationId));
-      await knex('automation_runs').insert(createRun(otherAutomationId, memberId));
-      await expect(hasMemberEnteredAutomation()).resolves.toBe(false);
     });
   });
 

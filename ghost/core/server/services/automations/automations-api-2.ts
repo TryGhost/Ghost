@@ -136,45 +136,52 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
 
         const firstActions = await repository.findFirstActionRevisions(trx, findFirstActionOptions);
 
+        const existingEnrollments = await repository.findExistingEnrollments(
+          trx,
+          firstActions.map((action) => action.automation_id),
+          [memberId],
+        );
+        const existingEnrollmentPairs = new Set(
+          existingEnrollments.map((pair) => `${pair.automation_id}:${pair.member_id}`),
+        );
+
         const runsToInsert: RunToInsert[] = [];
         const stepsToInsert: RunStepToInsert[] = [];
 
-        await Promise.all(
-          firstActions.map(async (firstAction) => {
-            const automationId = firstAction.automation_id;
+        for (const firstAction of firstActions) {
+          const automationId = firstAction.automation_id;
 
-            if (await repository.hasMemberEnteredAutomation(trx, automationId, memberId)) {
-              logging.info(
-                `Skipping automation ${automationId} for member ${memberId} because they have already run it`,
-              );
-              return;
-            }
+          if (existingEnrollmentPairs.has(`${automationId}:${memberId}`)) {
+            logging.info(
+              `Skipping automation ${automationId} for member ${memberId} because they have already run it`,
+            );
+            continue;
+          }
 
-            const now = new Date();
+          const now = new Date();
 
-            const readyAt = getReadyAtForAction(firstAction, now, fakeWaitHoursMultiplier);
+          const readyAt = getReadyAtForAction(firstAction, now, fakeWaitHoursMultiplier);
 
-            const run = {
-              id: ObjectId().toHexString(),
-              created_at: now,
-              updated_at: now,
-              automation_id: automationId,
-              member_id: memberId,
-              member_email: memberEmail,
-            };
-            runsToInsert.push(run);
+          const run = {
+            id: ObjectId().toHexString(),
+            created_at: now,
+            updated_at: now,
+            automation_id: automationId,
+            member_id: memberId,
+            member_email: memberEmail,
+          };
+          runsToInsert.push(run);
 
-            const step = {
-              id: ObjectId().toHexString(),
-              automation_run_id: run.id,
-              automation_action_revision_id: firstAction.automation_action_revision_id,
-              created_at: now,
-              updated_at: now,
-              ready_at: readyAt,
-            };
-            stepsToInsert.push(step);
-          }),
-        );
+          const step = {
+            id: ObjectId().toHexString(),
+            automation_run_id: run.id,
+            automation_action_revision_id: firstAction.automation_action_revision_id,
+            created_at: now,
+            updated_at: now,
+            ready_at: readyAt,
+          };
+          stepsToInsert.push(step);
+        }
 
         await repository.insertRuns(trx, runsToInsert);
         await repository.insertRunSteps(trx, stepsToInsert);

@@ -22,9 +22,9 @@ export const createTestAutomationsRepository2 = (
     ...errorIfCalled([
       'deleteTriggerRules',
       'findEmailRecipientForClick',
+      'findExistingEnrollments',
       'findFirstActionRevisions',
       'getNumberOfAutomations',
-      'hasMemberEnteredAutomation',
       'incrementEmailClickedCount',
       'insertActions',
       'insertRunSteps',

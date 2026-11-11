@@ -1,6 +1,7 @@
 import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
 import { noop } from 'lodash';
+import { setImmediate as nextTurn } from 'node:timers/promises';
 import { createAutomationsApi2 } from '../../../../../core/server/services/automations/automations-api-2';
 import type {
   AutomationsRepository2,
@@ -102,9 +103,11 @@ describe('automations API', function () {
 
       repository = createTestAutomationsRepository2({
         lockMember: noop,
+        findExistingEnrollments: (_connection, automationIds, memberIds) =>
+          runs.filter(
+            (run) => automationIds.includes(run.automation_id) && memberIds.includes(run.member_id),
+          ),
         findFirstActionRevisions: () => firstActions,
-        hasMemberEnteredAutomation: (_connection, automationId, memberId) =>
-          runs.some((run) => run.automation_id === automationId && run.member_id === memberId),
         insertRuns: (_connection, toInsert) => {
           runs.push(...toInsert);
         },
@@ -257,16 +260,16 @@ describe('automations API', function () {
 
     it('locks the member before any other repository operation', async function () {
       const lockMember = vi.fn();
+      const findExistingEnrollments = vi.fn().mockReturnValue([]);
       const findFirstActionRevisions = vi.fn().mockReturnValue([createFirstAction()]);
-      const hasMemberEnteredAutomation = vi.fn().mockReturnValue(false);
       const insertRuns = vi.fn();
       const insertRunSteps = vi.fn();
 
       const api = createApi({
         repository: createTestAutomationsRepository2({
           lockMember,
+          findExistingEnrollments,
           findFirstActionRevisions,
-          hasMemberEnteredAutomation,
           insertRuns,
           insertRunSteps,
         }),
@@ -275,8 +278,8 @@ describe('automations API', function () {
 
       await api.notify(event);
 
+      expect(lockMember).toHaveBeenCalledBefore(findExistingEnrollments);
       expect(lockMember).toHaveBeenCalledBefore(findFirstActionRevisions);
-      expect(lockMember).toHaveBeenCalledBefore(hasMemberEnteredAutomation);
       expect(lockMember).toHaveBeenCalledBefore(insertRunSteps);
       expect(lockMember).toHaveBeenCalledBefore(insertRuns);
     });
@@ -418,8 +421,8 @@ describe('automations API', function () {
 
     it.each([
       'lockMember',
+      'findExistingEnrollments',
       'findFirstActionRevisions',
-      'hasMemberEnteredAutomation',
       'insertRuns',
       'insertRunSteps',
     ] as const)('propagates %s failures without requesting a poll', async function (method) {

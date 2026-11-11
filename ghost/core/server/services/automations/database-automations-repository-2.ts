@@ -171,6 +171,17 @@ export const createDatabaseAutomationsRepository2 = ({
       return row === undefined ? undefined : emailRecipientClickRowSchema.parse(row);
     },
 
+    async findExistingEnrollments(connection, automationIds, memberIds) {
+      if (automationIds.length === 0 || memberIds.length === 0) {
+        return [];
+      }
+      const rows = await connection('automation_runs')
+        .distinct('automation_id', 'member_id')
+        .whereIn('automation_id', automationIds)
+        .whereIn('member_id', memberIds);
+      return z.array(z.object({ automation_id: z.string(), member_id: z.string() })).parse(rows);
+    },
+
     async findFirstActionRevisions(connection, options) {
       const rows: unknown[] = await connection('automations as automation')
         .select(
@@ -224,13 +235,6 @@ export const createDatabaseAutomationsRepository2 = ({
     async getNumberOfAutomations(connection) {
       const result = await connection('automations').count({ count: '*' }).first();
       return Number(result?.count ?? 0);
-    },
-
-    async hasMemberEnteredAutomation(connection, automationId, memberId) {
-      const query = connection('automation_runs')
-        .select(connection.raw('1'))
-        .where({ automation_id: automationId, member_id: memberId });
-      return await selectExists(connection, query);
     },
 
     async incrementEmailClickedCount(connection, revisionId) {

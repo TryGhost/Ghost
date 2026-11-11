@@ -72,6 +72,13 @@ export type AutomationsRepository2<Connection> = {
     options: Omit<TrackEmailClickedOptions, 'clickedAt'>,
   ) => Promisable<undefined | EmailRecipientClickRow>;
 
+  /** Find automation/member pairs that have already enrolled. */
+  findExistingEnrollments: (
+    connection: Connection,
+    automationIds: ReadonlyArray<string>,
+    memberIds: ReadonlyArray<string>,
+  ) => Promisable<Array<{ automation_id: string; member_id: string }>>;
+
   /** Find the first action revision for all automations that match these trigger criteria. */
   findFirstActionRevisions: (
     connection: Connection,
@@ -92,13 +99,6 @@ export type AutomationsRepository2<Connection> = {
 
   /** Get the count of all automations. */
   getNumberOfAutomations: (connection: Connection) => Promisable<number>;
-
-  /** Has this member ever entered this automation? */
-  hasMemberEnteredAutomation: (
-    connection: Connection,
-    automationId: string,
-    memberId: string,
-  ) => Promisable<boolean>;
 
   /** Increment the number of recipients that clicked this revision. */
   incrementEmailClickedCount: (connection: Connection, revisionId: string) => Promisable<void>;
