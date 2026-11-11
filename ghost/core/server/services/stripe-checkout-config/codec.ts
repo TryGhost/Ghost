@@ -2,40 +2,20 @@ import type { GhostLogger } from '@tryghost/logging';
 import { z } from 'zod';
 import { camelKeys, snakeKeys } from '../../lib/case-keys';
 import { DbJson } from '../../lib/db-types/json';
-import type { CollectedPart } from '@tryghost/checkout';
 import { StripeCheckoutDesign } from './models';
 
 /** The design's fields in snake_case, as used by the database, the Admin API and Stripe. */
 export const SnakeDesign = z.object(snakeKeys(StripeCheckoutDesign.shape));
 
 /**
- * Whether a part of the config covers every paid tier, including ones added later, or only
- * the tiers listed for it. Stored as a choice rather than read off an empty list, so a part
- * limited to some tiers never quietly widens to all of them.
- */
-export const TierScope = z.enum(['all_paid', 'selected_paid']);
-export type TierScope = z.infer<typeof TierScope>;
-
-/**
- * A part of the config that can no longer be read, such as a design using a font Stripe has
- * dropped, reads as off and is logged. Checkouts then go without it until the publisher saves
- * it again, and the other parts are unaffected.
- */
-function offWhenUnreadable(logging: GhostLogger, part: 'design' | CollectedPart, message: string) {
-  return ({ error }: z.core.$ZodCatchCtx) => {
-    logging.warn(
-      { event: { name: `stripe_checkout.${part}.unreadable` }, err: new z.ZodError(error.issues) },
-      message,
-    );
-    return null;
-  };
-}
-
-/**
  * The parts of a `stripe_checkout_config` row that are Stripe's own, each JSON or null. They
  * are validated when read as well as when saved, so a stored value that is no longer allowed
- * never reaches Stripe. A part whose answers Ghost keeps has no tiers here: they are the tier
- * requirement it's required under.
+ * never reaches Stripe. The collected parts have no column here: their tiers and options are the
+ * tier requirement each is required under.
+ *
+ * A design that can no longer be read, such as one using a font Stripe has dropped, reads as
+ * none and is logged. Checkouts then use the Stripe dashboard's design until the publisher saves
+ * one again.
  */
 export function configRow(logging: GhostLogger) {
   return z.object({
@@ -44,24 +24,16 @@ export function configRow(logging: GhostLogger) {
       { message: 'The stored Stripe Checkout design is not JSON.' },
     )
       .nullable()
-      .catch(
-        offWhenUnreadable(
-          logging,
-          'design',
+      .catch(({ error }) => {
+        logging.warn(
+          {
+            event: { name: 'stripe_checkout.design.unreadable' },
+            err: new z.ZodError(error.issues),
+          },
           'Ignoring a Stripe Checkout design that is no longer valid',
-        ),
-      ),
-    tax_number: DbJson(z.object({ tier_scope: TierScope }), {
-      message: 'The stored tax ID settings are not JSON.',
-    })
-      .nullable()
-      .catch(
-        offWhenUnreadable(
-          logging,
-          'tax_number',
-          'Ignoring Stripe Checkout tax ID settings that are no longer valid',
-        ),
-      ),
+        );
+        return null;
+      }),
   });
 }
 export type ConfigRowSchema = ReturnType<typeof configRow>;

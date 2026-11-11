@@ -42,7 +42,7 @@ interface CheckoutSessionAttempt {
 /**
  * What happened to one part of a checkout while Ghost created its Checkout session. A checkout's
  * parts are its design and each thing the publisher has it ask the buyer for, such as a phone
- * number or a tax ID.
+ * number.
  *
  * - `applied`: the last request Ghost sent Stripe for the session included the part.
  * - `none`: the publisher hasn't set the part up, so no request included it.

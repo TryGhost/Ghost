@@ -75,26 +75,10 @@ const PhoneSketch: React.FC<PartSketchProps> = ({ audience, radius }) => (
   </div>
 );
 
-const TaxNumberSketch: React.FC<PartSketchProps> = ({ audience }) => (
-  <div className="flex items-center justify-between gap-2 text-[16px]">
-    <span className="flex items-center gap-2">
-      <span aria-hidden="true" className="size-4 shrink-0 rounded-sm border-2 border-neutral-300" />
-      {/* Stripe's own words for the box that asks for the tax ID. */}
-      I&apos;m purchasing as a business
-    </span>
-    {audience && (
-      <Badge className="font-sans" size="sm" variant="warning">
-        {audience}
-      </Badge>
-    )}
-  </div>
-);
-
 /** How the sketch draws each part checkout can ask for. */
 const PART_SKETCHES: { [Part in CollectedPart]: React.FC<PartSketchProps> } = {
   shipping: ShippingSketch,
   phone: PhoneSketch,
-  tax_number: TaxNumberSketch,
 };
 
 const Block: React.FC<{ className: string }> = ({ className }) => (

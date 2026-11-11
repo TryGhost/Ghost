@@ -109,10 +109,10 @@ test.describe('Fake Stripe - rejects what Stripe rejects', () => {
     expect(status).toBe(200);
   });
 
-  // Every signed-in checkout carries a customer, so a tier collecting a tax number could
-  // not be bought by an existing member until Ghost sent the pair. Shipping and phone
-  // collection were probed alongside it and need nothing, so this is a rule about tax
-  // rather than about collecting from a customer.
+  // Every signed-in checkout carries a customer, so a checkout taking a tax ID, as every paid
+  // checkout does under Stripe Automatic Tax, could not be bought by an existing member until
+  // Ghost sent the pair. Shipping and phone collection were probed alongside it and need
+  // nothing, so this is a rule about tax rather than about collecting from a customer.
   test('tax_id_collection for an existing customer needs customer_update[name]', async () => {
     const { status, body } = await createSession({
       customer: 'cus_probe',

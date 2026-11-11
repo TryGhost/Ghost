@@ -86,7 +86,6 @@ const BACKUP_TABLES = [
   'welcome_email_automated_emails',
   'tinybird_syncs',
   'stripe_checkout_config',
-  'stripe_checkout_config_tiers',
   'tier_requirements',
   'tier_requirement_tiers',
 ];

@@ -55,9 +55,6 @@ export class CheckoutSettingsModal {
   readonly phoneTiersPicker: Locator;
   readonly phoneFieldPicker: Locator;
   readonly previewPhone: Locator;
-  readonly taxIdSwitch: Locator;
-  readonly taxIdTiersPicker: Locator;
-  readonly previewTaxId: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -100,11 +97,6 @@ export class CheckoutSettingsModal {
       .getByRole('combobox', { name: 'Collect for' });
     this.phoneFieldPicker = this.modal.getByRole('combobox', { name: 'Save phone as' });
     this.previewPhone = this.preview.getByText('Phone', { exact: true });
-    this.taxIdSwitch = this.modal.getByRole('switch', { name: 'Tax ID or VAT' });
-    this.taxIdTiersPicker = this.modal
-      .getByRole('group', { name: 'Tax ID or VAT' })
-      .getByRole('combobox', { name: 'Collect for' });
-    this.previewTaxId = this.preview.getByText("I'm purchasing as a business");
   }
 
   /** The tiers the sketch tags a collected part with, when it's limited to some. */
@@ -139,14 +131,6 @@ export class CheckoutSettingsModal {
       await this.limitTiers(this.phoneTiersPicker, choice.tiers);
     }
     await this.setDestination(this.phoneFieldPicker, choice.field);
-  }
-
-  /** Lets business buyers give a tax ID on these tiers or, left out, on every paid tier. */
-  async collectTaxId(tiers?: string[]): Promise<void> {
-    await this.taxIdSwitch.setChecked(true);
-    if (tiers) {
-      await this.limitTiers(this.taxIdTiersPicker, tiers);
-    }
   }
 
   /** Unticks every tier but these, from the default of every paid tier ticked. */

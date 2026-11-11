@@ -17,16 +17,6 @@ export interface CheckoutSessionParams {
   branding_settings?: SnakeKeys<StripeCheckoutDesign>;
   shipping_address_collection?: { allowed_countries: string[] };
   phone_number_collection?: { enabled: true };
-  tax_id_collection?: { enabled: true };
-}
-
-/**
- * The session's own parameters, set by Ghost rather than by the publisher's checkout settings,
- * that change which parameters a checkout's parts add. With `automatic_tax` enabled, for example,
- * the session already lets a business buyer give a tax ID, so the tax ID part adds nothing.
- */
-export interface SessionParams {
-  automatic_tax?: { enabled: boolean };
 }
 
 /**
@@ -46,7 +36,7 @@ export type CheckoutPart = 'design' | keyof CheckoutAsks;
 export const CHECKOUT_PARTS: readonly CheckoutPart[] = ['design', ...COLLECTED_SECTIONS];
 
 /**
- * The name the Admin API uses for a part, such as `tax_number`. Span attributes and log lines use
+ * The name the Admin API uses for a part, such as `shipping`. Span attributes and log lines use
  * the same name, so one name finds a part everywhere.
  */
 export const partName = (part: CheckoutPart) =>
@@ -148,7 +138,6 @@ export function withoutParts(parts: CheckoutSessionParts, refusal: Refusal): Che
 const STRIPE_PARAMS: {
   [Section in keyof CheckoutAsks]: (
     asking: NonNullable<CheckoutAsks[Section]>,
-    session: SessionParams,
   ) => CheckoutSessionParams;
 } = {
   shipping: ({ allowedCountries }) => ({
@@ -159,10 +148,6 @@ const STRIPE_PARAMS: {
     },
   }),
   phone: () => ({ phone_number_collection: { enabled: true } }),
-  // With automatic tax, every session that takes payment already sends `tax_id_collection` in
-  // its tax parameters (see `taxSessionParams`), so the tax ID part adds nothing.
-  taxNumber: (_asking, session) =>
-    session.automatic_tax?.enabled ? {} : { tax_id_collection: { enabled: true } },
 };
 
 /**
@@ -170,10 +155,7 @@ const STRIPE_PARAMS: {
  * checkout, nothing is added, and Stripe uses the branding set in the publisher's Stripe
  * dashboard.
  */
-export function checkoutSessionParts(
-  checkout: CheckoutDefinition | null,
-  session: SessionParams,
-): CheckoutSessionParts {
+export function checkoutSessionParts(checkout: CheckoutDefinition | null): CheckoutSessionParts {
   if (!checkout) {
     return {};
   }
@@ -182,12 +164,8 @@ export function checkoutSessionParts(
     : {};
   const ask = <Section extends keyof CheckoutAsks>(section: Section) => {
     const asking = checkout.asks[section];
-    const params = asking && STRIPE_PARAMS[section](asking, session);
-    // A part that adds no parameters, such as a tax ID that automatic tax already asks for, isn't
-    // kept as a part, so the session's span doesn't record it as applied and a refusal can't be
-    // blamed on it.
-    if (params && Object.keys(params).length) {
-      parts[section] = params;
+    if (asking) {
+      parts[section] = STRIPE_PARAMS[section](asking);
     }
   };
   COLLECTED_SECTIONS.forEach(ask);
@@ -219,9 +197,7 @@ export function taxSessionParams({ automaticTax }: SessionTax): TaxSessionParams
 
 /** The parameters of a session that decide what Checkout must save onto an existing customer. */
 export interface CustomerSessionParams
-  extends
-    SessionParams,
-    Pick<CheckoutSessionParams, 'tax_id_collection' | 'shipping_address_collection'> {
+  extends Partial<TaxSessionParams>, Pick<CheckoutSessionParams, 'shipping_address_collection'> {
   customer?: string;
 }
 
@@ -255,7 +231,8 @@ export function sessionCreateParams<Params extends CustomerSessionParams>(
  * a session that works out tax or takes a tax ID. Stripe checks both against the customer's
  * address, and no customer Ghost creates has one, so Stripe must be allowed to save the address
  * the buyer enters, and also the shipping address when the session collects one. Stripe only
- * takes a tax ID when it may also save the business name the buyer gives with it.
+ * takes a tax ID when it may also save the business name the buyer gives with it. Each rule
+ * follows the Stripe parameter it's about, as Stripe checks them, whatever sends that parameter.
  *
  * Returns null when the session needs no update: when it neither works out tax nor takes a tax
  * ID, or when it has no customer, because Stripe refuses `customer_update` on a session without

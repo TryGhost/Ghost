@@ -67,10 +67,6 @@ function latestPhoneRequest(stripe: StripeTestService) {
   return latestCollectionRequest(stripe).phone_number_collection;
 }
 
-function latestTaxIdRequest(stripe: StripeTestService) {
-  return latestCollectionRequest(stripe).tax_id_collection;
-}
-
 test.describe('Ghost Admin - Checkout fields', () => {
   test.use({
     stripeEnabled: true,
@@ -314,39 +310,11 @@ test.describe('Ghost Admin - Checkout fields', () => {
     expect(latestShippingRequest(stripe!)).toBeUndefined();
   });
 
-  test('tax ID - a business buyer can give one at checkout, and still becomes a member', async ({
+  test('shipping address - a free member who upgrades gives one, and it lands on their record', async ({
     page,
     stripe,
   }) => {
-    const tierName = await paidTier(page, stripe!, 'Business');
-
-    const checkout = await openCheckoutFields(page);
-    await checkout.collectTaxId();
-    await expect(checkout.previewTaxId).toBeVisible();
-    await checkout.save();
-    await checkout.close();
-
-    const { name } = await startPaidSignupViaPortal(page, { tierName });
-    expect(latestTaxIdRequest(stripe!)).toEqual({ enabled: true });
-
-    // Stripe keeps the tax ID on the customer, so there is nothing of it to see in Ghost.
-    await stripe!.completeLatestSubscriptionCheckout({
-      name,
-      collected: { taxId: 'GB123456789' },
-    });
-
-    const membersPage = new MembersListPage(page);
-    await membersPage.goto();
-    await expect(membersPage.getMemberLinkByName(name)).toBeVisible();
-  });
-
-  // A free member upgrading already has a Stripe customer, and Stripe asks more before it
-  // takes a tax ID from an existing customer than from a new buyer.
-  test('tax ID and shipping address - a free member who upgrades gives both, and the address lands on their record', async ({
-    page,
-    stripe,
-  }) => {
-    const tierName = await paidTier(page, stripe!, 'Business Print');
+    const tierName = await paidTier(page, stripe!, 'Print Edition');
     const name = `Free Member ${Date.now()}`;
     const member = await createMemberFactory(page.request).create({
       email: `upgrade-${Date.now()}@example.com`,
@@ -359,7 +327,6 @@ test.describe('Ghost Admin - Checkout fields', () => {
       addressField: { create: 'Delivery address' },
       nameField: { create: 'Recipient' },
     });
-    await checkout.collectTaxId();
     await checkout.save();
     await checkout.close();
 
@@ -367,7 +334,6 @@ test.describe('Ghost Admin - Checkout fields', () => {
       cadence: 'monthly',
       tierName,
       collected: {
-        taxId: 'GB123456789',
         shipping: {
           name: 'Ada Lovelace',
           line1: '12 Ada Street',
@@ -377,9 +343,6 @@ test.describe('Ghost Admin - Checkout fields', () => {
         },
       },
     });
-    expect(latestTaxIdRequest(stripe!)).toEqual({ enabled: true });
-    // The case that matters: Stripe asks more of a checkout for an existing customer.
-    expect(stripe!.getCheckoutSessions().at(-1)?.response.customer).toBeTruthy();
 
     const membersPage = new MembersListPage(page);
     await membersPage.goto();
@@ -388,29 +351,6 @@ test.describe('Ghost Admin - Checkout fields', () => {
     await expect(memberPage.customFieldRow('Delivery address')).toHaveAccessibleName(
       /12 Ada Street, London, N1 9GU/,
     );
-  });
-
-  test('tax ID on specific tiers - only their checkouts offer it, previewed before saving', async ({
-    page,
-    stripe,
-  }) => {
-    const business = await paidTier(page, stripe!, 'Business');
-    const personal = await paidTier(page, stripe!, 'Personal');
-
-    const checkout = await openCheckoutFields(page);
-    await checkout.collectTaxId([business]);
-    await expect(checkout.previewTierTag(business)).toBeVisible();
-    const tab = await checkout.previewInStripe(business);
-    await tab.close();
-    expect(latestTaxIdRequest(stripe!)).toEqual({ enabled: true });
-    await checkout.save();
-    await checkout.close();
-
-    await startPaidSignupViaPortal(page, { tierName: personal });
-    expect(latestTaxIdRequest(stripe!)).toBeUndefined();
-
-    await startPaidSignupViaPortal(page, { tierName: business });
-    expect(latestTaxIdRequest(stripe!)).toEqual({ enabled: true });
   });
 
   test('incomplete - saving says which fields are missing, and saves nothing', async ({
