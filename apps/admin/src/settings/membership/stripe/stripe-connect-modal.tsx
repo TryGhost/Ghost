@@ -558,7 +558,16 @@ const StripeConnectModal: React.FC = () => {
   } else if (step === 'start') {
     contents = <Start onNext={startFlow} />;
   } else if (secureKey && !connectError && (startedHere || confirmed)) {
-    contents = <Connecting secureKey={secureKey} onFailed={setConnectError} />;
+    contents = (
+      <Connecting
+        secureKey={secureKey}
+        onFailed={(error) => {
+          // The admin connects again from here, so this key isn't needed.
+          setSecureKey('');
+          setConnectError(error);
+        }}
+      />
+    );
   } else if (secureKey && !connectError && account) {
     contents = (
       <ConfirmAccount
