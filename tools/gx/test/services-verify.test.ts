@@ -6,14 +6,18 @@ import { dirname, join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import {
   addedAllowances,
-  allowancePaths,
+  allowanceProblems,
+  builtViolations,
   changedAuditShas,
   findInventoryReferences,
   findNewJavaScript,
+  fixturePath,
   mutateBootInit,
   serviceTerms,
   verifyService,
+  type Cruise,
   type RunCommand,
+  type ServiceRule,
 } from '../services-verify.ts';
 
 const inventoryPath = 'ghost/core/server/services/service-inventory.yaml';
@@ -28,6 +32,29 @@ async function initServices() {
   await Promise.all([staffService.init()]);
 }
 `;
+
+const rule: ServiceRule = {
+  from: {
+    path: '^ghost/core/server/services/(staff)(?:/|$)',
+    pathNot: '^ghost/core/server/services/[^/]+/index\\.ts$',
+  },
+  to: { pathNot: ['^ghost/core/server/lib/a\\.ts$', '^ghost/core/server/services/$1/'] },
+};
+
+function cruise(
+  imports: Array<[source: string, module: string, resolved: string, type?: string]>,
+  violations: Cruise['summary']['violations'] = [],
+): Cruise {
+  return {
+    modules: imports.map(([source, module, resolved, type = 'local']) => ({
+      source,
+      dependencies: [{ module, resolved, dependencyTypes: [type] }],
+    })),
+    summary: { violations },
+  };
+}
+
+const empty = cruise([]);
 
 async function fixture(t: TestContext) {
   const root = await mkdtemp(join(tmpdir(), 'gx-verify-'));
@@ -51,10 +78,15 @@ async function fixture(t: TestContext) {
   await write('ghost/core/boot.js', boot);
   const base = commit('base');
   const calls: string[] = [];
-  const run: RunCommand = (command, args, { cwd }) => {
+  const cruises: Record<string, Cruise> = { source: empty, built: empty };
+  const run: RunCommand = (command, args, { cwd, env }) => {
     if (command === 'git') {
       const result = spawnSync('git', args, { cwd, encoding: 'utf8' });
       return { status: result.status ?? 1, output: `${result.stdout}${result.stderr}` };
+    }
+    if (args[1] === 'depcruise') {
+      const output = JSON.stringify(cruises[env?.GHOST_DEPENDENCY_RESOLUTION ?? 'source']);
+      return { status: 0, output: `${output}\nnoise on stderr`, stdout: output };
     }
     calls.push(args.join(' '));
     return { status: 0, output: '' };
@@ -63,7 +95,7 @@ async function fixture(t: TestContext) {
     verifyService({ repository: root, service, base, staticOnly, run: runner });
   const status = (service?: string) =>
     Object.fromEntries(verify(service).map((check) => [check.name, check.status]));
-  return { root, base, write, commit, verify, status, calls, run };
+  return { root, base, write, commit, verify, status, calls, run, cruises };
 }
 
 test('only new JavaScript outside fixtures is rejected', () => {
@@ -119,30 +151,58 @@ test('inventory references skip the service entry and lines without lifecycle wo
   ]);
 });
 
-test('allowance patterns expand to the files they name', () => {
-  assert.deepEqual(
-    allowancePaths('^cheerio/slim$|(^|/)node_modules/cheerio/dist/(esm|commonjs)/slim\\\\.js$'),
-    {
-      paths: [
-        'node_modules/cheerio/dist/esm/slim.js',
-        'node_modules/cheerio/dist/commonjs/slim.js',
-      ],
-      unparsed: [],
-    },
-  );
-  assert.deepEqual(allowancePaths('^ghost/core/server/lib/a\\\\.ts$'), {
-    paths: ['ghost/core/server/lib/a.ts'],
-    unparsed: [],
-  });
-  assert.deepEqual(allowancePaths('^lodash/isEmpty(?:\\\\.js)?$'), { paths: [], unparsed: [] });
-  assert.deepEqual(allowancePaths('(^|/)node_modules/a/.*\\\\.js$').unparsed, [
-    '(^|/)node_modules/a/.*\\\\.js$',
+test('added allowances must match imports under both resolutions and have regression cases', () => {
+  const service = 'ghost/core/server/services/staff/a.ts';
+  const source = cruise([
+    [service, 'pkg', 'packages/pkg/src/index.ts'],
+    [service, 'lib', 'node_modules/.pnpm/lib@1/node_modules/lib/index.js'],
+    [service, 'typed', 'packages/typed/src/index.ts', 'type-only'],
+    ['ghost/core/server/services/staff/index.ts', 'root', 'packages/root/src/index.ts'],
   ]);
-  assert.deepEqual(allowancePaths('^koenig/nodes/(src|build)/index\\\\.(ts|js)$'), {
-    paths: [],
-    unparsed: ['^koenig/nodes/(src|build)/index\\\\.(ts|js)$'],
-  });
+  const built = cruise([[service, 'pkg', 'packages/pkg/build/esm/index.js']]);
+  assert.deepEqual(
+    allowanceProblems({
+      allowances: [
+        '^pkg$|^packages/pkg/(src/index\\.ts|build/esm/index\\.js)$',
+        '^lib$|(^|/)node_modules/lib/index\\.js$',
+        '^packages/typed/',
+        '^packages/root/',
+      ],
+      rule,
+      cruises: [source, built],
+      regressionCases: "'packages/pkg/src/index.ts' 'packages/pkg/build/esm/index.js'",
+    }),
+    [
+      'node_modules/lib/index.js has no regression case.',
+      '^packages/typed/ matches no import from a migrated service.',
+      '^packages/root/ matches no import from a migrated service.',
+    ],
+  );
+  assert.equal(fixturePath('packages/pkg/src/index.ts'), 'packages/pkg/src/index.ts');
   assert.deepEqual(addedAllowances("+  'one', // why\n-  'two',\n   'three',\n"), ['one']);
+});
+
+test('only service rules count as built-output violations', () => {
+  assert.deepEqual(
+    builtViolations(
+      cruise(
+        [],
+        [
+          {
+            from: 'a.ts',
+            to: 'packages/pkg/build/index.js',
+            rule: { name: 'service-dependencies' },
+          },
+          { from: 'b.ts', to: 'pkg', rule: { name: 'service-unresolved' } },
+          { from: 'c.ts', to: 'd.ts', rule: { name: 'shared-not-server-or-frontend' } },
+        ],
+      ),
+    ),
+    [
+      'a.ts → packages/pkg/build/index.js breaks service-dependencies.',
+      'b.ts → pkg breaks service-unresolved.',
+    ],
+  );
 });
 
 test('the boot mutation stops boot waiting without removing the call', () => {
@@ -199,30 +259,58 @@ test('audit SHAs already on the base pass', async (t) => {
   assert.equal(f.status()['audit-shas-on-base'], 'pass');
 });
 
-test('allowances must name real files and have a regression case', async (t) => {
+test('an added allowance that only holds for authored source fails on built output', async (t) => {
   const f = await fixture(t);
-  await f.write('ghost/core/server/lib/real.ts', '');
-  await f.write('tools/scripts/test/service-dependencies.test.ts', 'ghost/core/server/lib/real.ts');
+  const allowance = '^pkg$|^packages/pkg/(src|build)/index\\.(ts|js)$';
   await f.write(
     '.dependency-cruiser.cjs',
-    "  '^ghost/core/server/lib/real\\\\.ts$', // ok\n  '^ghost/core/server/lib/gone\\\\.ts$', // bad\n",
+    [
+      `const from = ${JSON.stringify(rule.from)};`,
+      "module.exports = { forbidden: [{ name: 'service-dependencies', from, to: { pathNot: [",
+      `  '${allowance.replaceAll('\\', '\\\\')}',`,
+      "  '^ghost/core/server/services/$1/',",
+      '] } }] };',
+      '',
+    ].join('\n'),
   );
-  f.commit('allowances');
-  const check = f.verify().find((item) => item.name === 'allowances-accurate');
-  assert.equal(check?.status, 'fail');
-  assert.deepEqual(check?.details, [
-    'ghost/core/server/lib/gone.ts does not exist.',
-    'ghost/core/server/lib/gone.ts has no regression case.',
-  ]);
+  await f.write('tools/scripts/test/service-dependencies.test.ts', 'packages/pkg/src/index.ts');
+  f.commit('allowance');
+  const service = 'ghost/core/server/services/staff/a.ts';
+  f.cruises.source = cruise([[service, 'pkg', 'packages/pkg/src/index.ts']]);
+  f.cruises.built = cruise(
+    [[service, 'pkg', 'packages/pkg/build/esm/index.js']],
+    [
+      {
+        from: service,
+        to: 'packages/pkg/build/esm/index.js',
+        rule: { name: 'service-dependencies' },
+      },
+    ],
+  );
+  const result = f.status();
+  assert.equal(result['allowances-accurate'], 'pass');
+  assert.equal(result['built-boundaries'], 'fail');
+  f.cruises.source = empty;
+  f.cruises.built = empty;
+  assert.equal(f.status()['allowances-accurate'], 'fail');
 });
 
-test('allowances the check cannot read are returned for review', async (t) => {
+test('unreadable dependency-cruiser output fails the run that produced it', async (t) => {
   const f = await fixture(t);
-  await f.write('.dependency-cruiser.cjs', "  '^koenig/nodes/index\\\\.ts$', // why\n");
-  f.commit('allowance');
-  const check = f.verify().find((item) => item.name === 'allowances-accurate');
-  assert.equal(check?.status, 'review');
-  assert.match(check?.details[0] ?? '', /koenig\/nodes/);
+  const runner: RunCommand = (command, args, options) =>
+    args[1] === 'depcruise' ? { status: 1, output: 'boom' } : f.run(command, args, options);
+  const checks = verifyService({
+    repository: f.root,
+    service: 'staff',
+    base: f.base,
+    staticOnly: true,
+    run: runner,
+  });
+  assert.deepEqual(checks.find((item) => item.name === 'dependencies-source')?.details, ['boom']);
+  assert.equal(
+    checks.find((item) => item.name === 'built-boundaries'),
+    undefined,
+  );
 });
 
 test('other inventory entries that mention the service are returned for review', async (t) => {
@@ -248,7 +336,7 @@ test('changed unit tests run shuffled and alone after the full suite', async (t)
   f.commit('test');
   const seen: Array<[string, string]> = [];
   const runner: RunCommand = (command, args, options) => {
-    if (command !== 'git') {
+    if (command !== 'git' && args[1] !== 'depcruise') {
       seen.push([args.join(' '), options.cwd]);
       return { status: args.includes('test/unit/boot') ? 1 : 0, output: '' };
     }
@@ -267,11 +355,13 @@ test('the boot check fails when tests survive the mutation and restores boot.js'
   const f = await fixture(t);
   let during = '';
   const runner: RunCommand = (command, args, options) => {
-    if (command !== 'git' && args.includes('test/unit/boot')) {
+    if (command !== 'git' && args[1] !== 'depcruise' && args.includes('test/unit/boot')) {
       during = execFileSync('cat', ['ghost/core/boot.js'], { cwd: f.root, encoding: 'utf8' });
       return { status: 0, output: '' };
     }
-    return command === 'git' ? f.run(command, args, options) : { status: 0, output: '' };
+    return command === 'git' || args[1] === 'depcruise'
+      ? f.run(command, args, options)
+      : { status: 0, output: '' };
   };
   await f.write('marker.ts', '');
   f.commit('change');
@@ -287,7 +377,7 @@ test('a failing tool reports its failure and the end of its output', async (t) =
   await f.write('marker.ts', '');
   f.commit('change');
   const runner: RunCommand = (command, args, options) => {
-    if (command === 'git') {
+    if (command === 'git' || args[1] === 'depcruise') {
       return f.run(command, args, options);
     }
     return args[0] === 'lint:oxlint'

@@ -27,7 +27,7 @@ one at a time.
 
 1. `gx services verify` has no `fail` result.
 2. For each `review` line, read the diff and decide whether it is still true. A
-   stale inventory sentence or an allowance that names a missing file is a finding.
+   stale inventory sentence is a finding.
 3. Map every claim to evidence: each inventory sentence added or changed, and each
    statement in the PR description and commit messages. "Unchanged" is a claim.
 4. Ask whether this is the simplest way. List anything the change does not need.

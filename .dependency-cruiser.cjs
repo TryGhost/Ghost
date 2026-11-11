@@ -340,9 +340,17 @@ module.exports = {
   ],
   options: {
     // Resolve public package exports to authored workspace source when available.
+    // `pnpm gx services verify` also resolves them to built output, the files Ghost
+    // loads at runtime, so an allowance must hold for both.
     enhancedResolveOptions: {
       exportsFields: ['exports'],
-      conditionNames: ['source', 'import', 'require', 'node', 'default'],
+      conditionNames: [
+        ...(process.env.GHOST_DEPENDENCY_RESOLUTION === 'built' ? [] : ['source']),
+        'import',
+        'require',
+        'node',
+        'default',
+      ],
     },
     reporterOptions: {
       err: { showExternalModulesUnresolved: true },

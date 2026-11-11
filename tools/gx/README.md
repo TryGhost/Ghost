@@ -178,8 +178,11 @@ It replaces `pnpm audit:services`; `services dependencies` replaces
 `pnpm audit:services:summary` without requiring `jq`.
 
 `services verify` needs a clean tree on a branch that contains the fetched base.
-It checks new files, audit SHAs, allowances, formatting, lint, types and boundaries.
-It then runs the full unit suite, runs the changed unit tests shuffled and each one
+It checks new files, audit SHAs, formatting, lint, types and boundaries. It runs
+dependency-cruiser twice, resolving workspace packages to authored source and then
+to the built output Ghost loads: service boundaries must hold for both, every part
+of an added allowance must match an import from a migrated service, and each file
+an added allowance admits must be named in a boundary regression. It then runs the full unit suite, runs the changed unit tests shuffled and each one
 alone and, for a migrated service, confirms boot tests fail when boot stops waiting
 for its `init()`.
 `--static` skips lint, types and tests. `review` lines are other inventory entries

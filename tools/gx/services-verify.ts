@@ -1,10 +1,12 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
 import yaml from 'js-yaml';
 
-const inventoryPath = 'ghost/core/server/services/service-inventory.yaml';
+const servicesRoot = 'ghost/core/server/services';
+const inventoryPath = `${servicesRoot}/service-inventory.yaml`;
 const bootPath = 'ghost/core/boot.js';
 const allowlistPath = '.dependency-cruiser.cjs';
 const allowanceTestPath = 'tools/scripts/test/service-dependencies.test.ts';
@@ -13,7 +15,13 @@ const shuffleSeeds = [1, 2, 3];
 
 type Status = 'pass' | 'fail' | 'review' | 'skip';
 type Check = { name: string; status: Status; details: string[] };
-type CommandResult = { status: number; output: string };
+type CommandResult = { status: number; output: string; stdout?: string };
+type CruiseDependency = { module: string; resolved: string; dependencyTypes: string[] };
+export type Cruise = {
+  modules: Array<{ source: string; dependencies: CruiseDependency[] }>;
+  summary: { violations: Array<{ from: string; to: string; rule: { name: string } }> };
+};
+export type ServiceRule = { from: { path: string; pathNot: string }; to: { pathNot: string[] } };
 export type RunCommand = (
   command: string,
   args: string[],
@@ -69,49 +77,70 @@ function splitAlternatives(pattern: string) {
   return parts;
 }
 
-function expandGroups(value: string): string[] {
-  const group = /\(([^()]+)\)/.exec(value);
-  if (!group) {
-    return [value];
-  }
-  return (group[1] as string)
-    .split('|')
-    .flatMap((option) => expandGroups(value.replace(group[0], option)));
-}
-
-// Reads the alternatives that name a file, so each can be checked against the checkout.
-export function allowancePaths(pattern: string) {
-  const paths: string[] = [];
-  const unparsed: string[] = [];
-  for (const alternative of splitAlternatives(pattern)) {
-    if (/^\^(?:apps|koenig)\//.test(alternative)) {
-      unparsed.push(alternative);
-      continue;
-    }
-    if (!alternative.includes('node_modules/') && !alternative.includes('^ghost/')) {
-      continue;
-    }
-    const literal = alternative
-      .replace(/^\(\^\|\/\)/, '')
-      .replace(/^\^/, '')
-      .replace(/\$$/, '')
-      .replaceAll('\\\\.', '.');
-    if (/[\\*+?[\]{}^$]/.test(literal)) {
-      unparsed.push(alternative);
-    } else {
-      paths.push(...expandGroups(literal));
-    }
-  }
-  return { paths, unparsed };
-}
-
+// The source text of added string entries, as written in the config file.
 export function addedAllowances(allowlistDiff: string) {
   return [...allowlistDiff.matchAll(/^\+\s*'([^']+)',/gm)].map((match) => match[1] as string);
 }
 
-function allowanceTarget(repository: string, allowed: string) {
-  const roots = allowed.startsWith('node_modules/') ? ['', 'ghost/', 'ghost/core/'] : [''];
-  return roots.some((root) => existsSync(path.join(repository, root, allowed)));
+// Regression fixtures name package files under node_modules/ and repository files by path.
+export function fixturePath(resolved: string) {
+  const packagePath = resolved.split('node_modules/');
+  return packagePath.length > 1 ? `node_modules/${packagePath.at(-1)}` : resolved;
+}
+
+export function builtViolations(cruise: Cruise) {
+  return cruise.summary.violations
+    .filter(
+      ({ rule }) => rule.name === 'service-dependencies' || rule.name === 'service-unresolved',
+    )
+    .map(({ from, to, rule }) => `${from} → ${to} breaks ${rule.name}.`);
+}
+
+// Checks added allowances against the imports dependency-cruiser resolved from migrated
+// services, in both the authored-source and built-output runs.
+export function allowanceProblems({
+  allowances,
+  rule,
+  cruises,
+  regressionCases,
+}: {
+  allowances: string[];
+  rule: ServiceRule;
+  cruises: Cruise[];
+  regressionCases: string;
+}) {
+  const from = new RegExp(rule.from.path);
+  const fromRoot = new RegExp(rule.from.pathNot);
+  const imports = cruises.flatMap(({ modules }) =>
+    modules
+      .filter(({ source }) => from.test(source) && !fromRoot.test(source))
+      .flatMap(({ dependencies }) =>
+        dependencies.filter(
+          ({ dependencyTypes }) =>
+            !dependencyTypes.some((type) => type === 'type-only' || type === 'type-import'),
+        ),
+      ),
+  );
+  return allowances.flatMap((allowance) => {
+    const unused = splitAlternatives(allowance)
+      .filter((alternative) => {
+        const pattern = new RegExp(alternative);
+        return !imports.some(
+          ({ module, resolved }) => pattern.test(module) || pattern.test(resolved),
+        );
+      })
+      .map((alternative) => `${alternative} matches no import from a migrated service.`);
+    const pattern = new RegExp(allowance);
+    const targets = new Set(
+      imports
+        .filter(({ resolved }) => pattern.test(resolved))
+        .map(({ resolved }) => fixturePath(resolved)),
+    );
+    const untested = [...targets]
+      .filter((target) => !regressionCases.includes(target))
+      .map((target) => `${target} has no regression case.`);
+    return [...unused, ...untested];
+  });
 }
 
 export function mutateBootInit(boot: string, service: string) {
@@ -182,26 +211,57 @@ export function verifyService({
     unreachable.map((sha) => `${sha} will not exist after a squash merge; cite a commit on main.`),
   );
 
-  const allowanceTests = existsSync(path.join(repository, allowanceTestPath))
-    ? read(allowanceTestPath)
-    : '';
-  const allowances = addedAllowances(diff(allowlistPath)).map(allowancePaths);
-  const allowanceProblems = allowances.flatMap(({ paths }) =>
-    paths.flatMap((allowed) => [
-      ...(allowanceTarget(repository, allowed) ? [] : [`${allowed} does not exist.`]),
-      ...(allowanceTests.includes(allowed.replace(/^node_modules\//, ''))
-        ? []
-        : [`${allowed} has no regression case.`]),
-    ]),
-  );
-  const unreadAllowances = allowances.flatMap(({ unparsed }) =>
-    unparsed.map((item) => `Confirm each file "${item}" can match exists.`),
-  );
-  record(
-    'allowances-accurate',
-    allowanceProblems.length ? 'fail' : unreadAllowances.length ? 'review' : 'pass',
-    [...allowanceProblems, ...unreadAllowances],
-  );
+  // Ghost runs workspace packages from their built output, while boundary lint resolves
+  // them to authored source. Service dependencies must hold under both.
+  const cruises: Cruise[] = [];
+  for (const resolution of ['source', 'built'] as const) {
+    const env: NodeJS.ProcessEnv = {
+      ...process.env,
+      NODE_PATH: path.join(repository, 'node_modules'),
+      GHOST_DEPENDENCY_RESOLUTION: resolution,
+    };
+    delete env.GHOST_SERVICE_DEPENDENCY_AUDIT;
+    const result = run(
+      'pnpm',
+      ['exec', 'depcruise', servicesRoot, '--config', allowlistPath, '--output-type', 'json'],
+      { cwd: repository, env },
+    );
+    try {
+      cruises.push(JSON.parse(result.stdout ?? result.output) as Cruise);
+    } catch {
+      record(`dependencies-${resolution}`, 'fail', failureOutput({ ...result, status: 1 }));
+    }
+  }
+  const [, built] = cruises;
+  if (built) {
+    const violations = builtViolations(built);
+    record('built-boundaries', violations.length ? 'fail' : 'pass', violations);
+  }
+
+  const written = addedAllowances(diff(allowlistPath));
+  if (written.length && cruises.length === 2) {
+    const config = createRequire(import.meta.url)(path.join(repository, allowlistPath)) as {
+      forbidden: Array<ServiceRule & { name: string }>;
+    };
+    const rule = config.forbidden.find(({ name }) => name === 'service-dependencies');
+    // The diff shows each entry as written, with its backslashes escaped.
+    const allowances = (rule?.to.pathNot ?? []).filter(
+      (pattern) => !pattern.includes('$1') && written.includes(pattern.replaceAll('\\', '\\\\')),
+    );
+    const problems = rule
+      ? allowanceProblems({
+          allowances,
+          rule,
+          cruises,
+          regressionCases: existsSync(path.join(repository, allowanceTestPath))
+            ? read(allowanceTestPath)
+            : '',
+        })
+      : ['No service-dependencies rule in the dependency-cruiser config.'];
+    record('allowances-accurate', problems.length ? 'fail' : 'pass', problems);
+  } else {
+    record('allowances-accurate', written.length ? 'skip' : 'pass');
+  }
 
   const references = findInventoryReferences(inventory, service).map(
     (item) => `${inventoryPath}:${item.line} (${item.entry}): ${item.text}`,
@@ -323,7 +383,11 @@ const runCommand: RunCommand = (command, args, { cwd, env }) => {
   if (result.error) {
     throw result.error;
   }
-  return { status: result.status ?? 1, output: `${result.stdout}${result.stderr}` };
+  return {
+    status: result.status ?? 1,
+    output: `${result.stdout}${result.stderr}`,
+    stdout: result.stdout,
+  };
 };
 
 const usage = `Usage: pnpm gx services verify <service> [--base <ref>] [--static] [--json]
