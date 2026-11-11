@@ -342,10 +342,16 @@ export const ListPickerStyles = `
 
 const classes = (...names: Array<string | false>) => names.filter(Boolean).join(' ');
 
+/** An option of the list: the answer it stands for, and what the list calls it. */
+export interface ListOption<V extends string> {
+  value: V;
+  label: string;
+}
+
 /** A row of the list: an option, or, in a field that takes one answer, the row that clears it. */
-interface Row {
-  /** The option the row picks, or null for the row that clears the answer. */
-  option: string | null;
+interface Row<V extends string> {
+  /** The answer the row picks, or null for the row that clears the answer. */
+  option: V | null;
   label: string;
 }
 
@@ -373,7 +379,7 @@ function startingWith(labels: readonly string[], typed: string, from: number): n
   return -1;
 }
 
-interface ListPickerProps {
+interface ListPickerProps<V extends string> {
   /**
    * The id of the button that opens the list, or of the box holding the answers when read-only.
    */
@@ -382,9 +388,9 @@ interface ListPickerProps {
   labelId: string;
   /** The field's name: the sheet's title, and the search box's placeholder. */
   label: string;
-  options: readonly string[];
-  /** The options picked, in the order the field offers them. */
-  value: readonly string[];
+  options: readonly ListOption<V>[];
+  /** The answers picked, in the order the field offers them. */
+  value: readonly V[];
   /** Several answers, shown as chips. Otherwise one, shown as text, and picking closes the list. */
   multiple: boolean;
   placeholder: string;
@@ -394,7 +400,7 @@ interface ListPickerProps {
   readOnly?: boolean;
   /** The id of the element that says why the field was refused, when it was. */
   describedBy?: string | undefined;
-  onChange: (picked: string[]) => void;
+  onChange: (picked: V[]) => void;
 }
 
 /**
@@ -407,7 +413,7 @@ interface ListPickerProps {
  * search box, where they move the caret. Enter picks, as Space does outside the search box, Escape
  * closes the list, and typing jumps to an option as it does in a native select.
  */
-export default function ListPicker({
+export default function ListPicker<V extends string>({
   id,
   labelId,
   label,
@@ -420,7 +426,7 @@ export default function ListPicker({
   readOnly,
   describedBy,
   onChange,
-}: ListPickerProps) {
+}: ListPickerProps<V>) {
   const [open, setOpen] = useState(false);
   const [sheet, setSheet] = useState(false);
   const [highlight, setHighlight] = useState<Highlight>({ index: 0, byKeyboard: false });
@@ -438,12 +444,14 @@ export default function ListPicker({
   // One answer is cleared the way a native select's is: once something is chosen, a first row
   // stands for no answer, named as Portal's selects name it. A search is for an option, so it
   // leaves that row out.
-  const rowsFor = (searched: string): Row[] => [
+  const rowsFor = (searched: string): Row<V>[] => [
     ...(!multiple && value.length > 0 && !searched ? [{ option: null, label: t('(None)') }] : []),
     ...options
-      .filter((option) => !searched || option.toLowerCase().includes(searched))
-      .map((option) => ({ option, label: option })),
+      .filter(({ label: text }) => !searched || text.toLowerCase().includes(searched))
+      .map(({ value: option, label: text }) => ({ option, label: text })),
   ];
+  // An answer the options leave out, which a member may only read, goes by the answer itself.
+  const labelOf = (answer: V) => options.find((option) => option.value === answer)?.label ?? answer;
   const shown = rowsFor(term);
   const view = () => fieldRef.current?.ownerDocument.defaultView;
 
@@ -504,7 +512,7 @@ export default function ListPicker({
     }
   };
 
-  const pick = (option: string | null) => {
+  const pick = (option: V | null) => {
     if (option === null) {
       onChange([]);
       closeList(true);
@@ -512,9 +520,11 @@ export default function ListPicker({
     }
     if (multiple) {
       onChange(
-        options.filter((candidate) =>
-          candidate === option ? !value.includes(option) : value.includes(candidate),
-        ),
+        options
+          .map((candidate) => candidate.value)
+          .filter((candidate) =>
+            candidate === option ? !value.includes(option) : value.includes(candidate),
+          ),
       );
       return;
     }
@@ -698,7 +708,7 @@ export default function ListPicker({
   if (multiple && value.length > 0) {
     fieldText = '';
   } else if (value[0] !== undefined) {
-    fieldText = value[0];
+    fieldText = labelOf(value[0]);
   }
 
   // Every answer as a chip, one or several, since an option's text can hold a comma.
@@ -716,7 +726,7 @@ export default function ListPicker({
             <ul className="gh-portal-listpicker-chips">
               {value.map((answer) => (
                 <li key={answer} className="gh-portal-listpicker-chip is-read-only">
-                  {answer}
+                  {labelOf(answer)}
                 </li>
               ))}
             </ul>
@@ -752,9 +762,9 @@ export default function ListPicker({
         {multiple &&
           value.map((answer) => (
             <span key={answer} className="gh-portal-listpicker-chip">
-              <span>{answer}</span>
+              <span>{labelOf(answer)}</span>
               <button
-                aria-label={t('Remove {option}', { option: answer })}
+                aria-label={t('Remove {option}', { option: labelOf(answer) })}
                 className="gh-portal-listpicker-chip-remove"
                 disabled={disabled}
                 type="button"
