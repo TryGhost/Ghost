@@ -31,7 +31,7 @@ When sources disagree, trust them in this order:
 
 Check each step against the app, and do the ones it's missing:
 
-1. Install `@tryghost/shade@alpha` and its peers from npm; `latest` is older.
+1. Install `@tryghost/shade` and its peers from npm.
    `npm create vite` scaffolds React 19, which npm refuses beside Shade, so
    move the React packages and types first, as
    [Install](https://shade.ghost.org/docs/ghost-apps.md#install) shows.
