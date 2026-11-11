@@ -18,8 +18,14 @@ const freeTier = tier({ id: '645453f4d254799990dd0e21', name: 'Free', slug: 'fre
 // What clicking Connect with Stripe in this tab leaves behind.
 const startConnectionInThisTab = () =>
   sessionStorage.setItem('ghost-stripe-connect-started', String(Date.now()));
-// The account.ghost.org flow is behind this alpha lab.
+// The account.ghost.org flow is behind this alpha lab, and Ghost Core says
+// it's in use with stripeConnectBridge.
 const labs = { oauthBridge: true };
+const bridgeConfig = () => {
+  const response = configResponse();
+  response.config.stripeConnectBridge = true;
+  return { browseConfig: { response } };
+};
 const accountKey = btoa(JSON.stringify({ n: 'Dummy Co', i: 'acct_123', l: false, s: 'state' }));
 
 describe('Stripe settings', () => {
@@ -50,6 +56,7 @@ describe('Stripe settings', () => {
     startConnectionInThisTab();
     await renderAdminApp(`/settings/stripe-connect?${new URLSearchParams({ secure_key: key })}`, {
       labs,
+      boot: bridgeConfig(),
     });
 
     expect(window.location.hash).toBe('#/settings/stripe-connect');
@@ -74,7 +81,10 @@ describe('Stripe settings', () => {
       { status: 400 },
     );
     startConnectionInThisTab();
-    await renderAdminApp('/settings/stripe-connect?secure_key=stale', { labs });
+    await renderAdminApp('/settings/stripe-connect?secure_key=stale', {
+      labs,
+      boot: bridgeConfig(),
+    });
 
     const modal = settingsScreen.stripeModal();
     await expect
@@ -100,7 +110,7 @@ describe('Stripe settings', () => {
     const settingsApi = fakeEditSettings();
     await renderAdminApp(
       `/settings/stripe-connect?${new URLSearchParams({ secure_key: accountKey })}`,
-      { labs },
+      { labs, boot: bridgeConfig() },
     );
 
     const modal = settingsScreen.stripeModal();
@@ -124,7 +134,7 @@ describe('Stripe settings', () => {
     const settingsApi = fakeEditSettings();
     await renderAdminApp(
       `/settings/stripe-connect?${new URLSearchParams({ secure_key: accountKey })}`,
-      { labs },
+      { labs, boot: bridgeConfig() },
     );
 
     const modal = settingsScreen.stripeModal();
@@ -137,7 +147,10 @@ describe('Stripe settings', () => {
     fakeSettingsScreens();
     fakeTiers([freeTier]);
     const settingsApi = fakeEditSettings();
-    await renderAdminApp('/settings/stripe-connect?secure_key=stale', { labs });
+    await renderAdminApp('/settings/stripe-connect?secure_key=stale', {
+      labs,
+      boot: bridgeConfig(),
+    });
     await expect
       .element(settingsScreen.stripeModal().getByText(/This link isn’t a Stripe connection/))
       .toBeVisible();
@@ -173,6 +186,7 @@ describe('Stripe settings', () => {
       {
         labs,
         boot: {
+          ...bridgeConfig(),
           browseSettings: {
             response: () => Promise.resolve(settingsResponse({ settings: stripeSettings() })),
           },
@@ -191,7 +205,7 @@ describe('Stripe settings', () => {
     expect(settingsApi.requests).toHaveLength(0);
   });
 
-  it('without the oauthBridge lab, connects Stripe with a pasted secure key', async () => {
+  it('with an older Ghost Core, connects Stripe with a pasted secure key even with the lab on', async () => {
     fakeSettingsScreens();
     fakeTiers([freeTier]);
     const settingsApi = fakeAdminEndpoint('PUT', '/settings/', ({ body }) => {
@@ -213,9 +227,11 @@ describe('Stripe settings', () => {
       });
     });
     fakeAdminEndpoint('PUT', /^\/tiers\/[^/]+\/$/, ({ body }) => body);
-    // A key in the address is ignored without the lab.
+    // An older Core leaves stripeConnectBridge out and sends connections to
+    // stripe.ghost.org's paste page, so a key in the address is ignored.
     await renderAdminApp(
       `/settings/stripe-connect?${new URLSearchParams({ secure_key: accountKey })}`,
+      { labs },
     );
 
     const modal = settingsScreen.stripeModal();

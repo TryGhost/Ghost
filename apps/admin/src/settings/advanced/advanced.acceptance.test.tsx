@@ -71,6 +71,26 @@ describe('Advanced settings', () => {
     await expect.element(toggle).toBeChecked();
   });
 
+  it.each([
+    ['hides', 'an older Ghost Core', undefined],
+    ['shows', 'a Ghost Core that supports it', false],
+  ])('%s the OAuth bridge lab for %s', async (action, _core, stripeConnectBridge) => {
+    fakeSettingsScreens();
+    const response = configResponse();
+    response.config.enableDeveloperExperiments = true;
+    response.config.stripeConnectBridge = stripeConnectBridge;
+    await renderAdminApp('/settings/labs', { labs: {}, boot: { browseConfig: { response } } });
+
+    const section = settingsScreen.section('labs');
+    await section.getByRole('button', { name: 'Open' }).click();
+    await section.getByRole('tab', { name: 'Private features' }).click();
+    // Another private feature, so the list has rendered either way.
+    await expect.element(section.getByRole('switch', { name: 'Machine payments' })).toBeVisible();
+    await expect(section.getByRole('switch', { name: 'OAuth bridge' })).toHaveCount(
+      action === 'shows' ? 1 : 0,
+    );
+  });
+
   it('saves header and footer code injection', async () => {
     fakeSettingsScreens();
     const settingsApi = fakeEditSettings();
