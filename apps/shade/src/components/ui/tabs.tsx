@@ -53,7 +53,7 @@ const tabsListVariants = cva('inline-flex items-center text-muted-foreground', {
       button: 'gap-2',
       'button-sm': 'gap-1',
       underline:
-        'no-scrollbar w-full max-w-full gap-5 overflow-x-auto border-b border-border-default',
+        'no-scrollbar w-full max-w-full gap-5 overflow-x-auto overflow-y-hidden border-b border-border-default',
       navbar: 'h-[52px] items-end gap-6',
       pill: '-ml-0.5 h-[30px] gap-px',
       // The `kpis` variant is consumed only by `features/kpi/kpi-tabs.tsx`.
@@ -107,7 +107,7 @@ const tabsTriggerVariants = cva(
         'button-sm':
           'h-6 gap-1.5 rounded-control p-2 text-sm font-medium text-text-secondary hover:bg-tab-hover data-[state=active]:bg-tab-active data-[state=active]:text-foreground data-[state=active]:hover:bg-tab-active',
         underline:
-          'relative h-9 px-0 text-control font-semibold text-text-secondary after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:opacity-100!',
+          'relative h-9 px-0 text-control font-semibold text-text-secondary after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-foreground after:opacity-0 after:content-[""] hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:opacity-100!',
         navbar:
           'relative h-[52px] px-px text-control font-semibold text-muted-foreground after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:opacity-100!',
         pill: 'relative h-[30px] rounded-md px-3 text-control font-medium text-text-secondary hover:bg-tab-hover hover:text-foreground data-[state=active]:bg-tab-active data-[state=active]:text-foreground data-[state=active]:hover:bg-tab-active',

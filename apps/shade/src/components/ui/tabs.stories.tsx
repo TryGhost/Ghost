@@ -187,7 +187,7 @@ export const Underline: Story = {
     docs: {
       description: {
         story:
-          'Use underline tabs to switch sections within a page or panel, with or without Admin 7 enabled.',
+          'Use underline tabs to switch sections within a page or panel. The indicator is 1px thick, and the tab row scrolls horizontally without vertical overflow.',
       },
     },
   },
