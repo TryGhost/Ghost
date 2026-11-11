@@ -4647,6 +4647,8 @@ describe('Members API', function () {
         billingCountry = 'GB',
         // The wallet the buyer paid with, as Stripe names it, if they paid with one.
         wallet = undefined,
+        // What Ghost answers Stripe with. Nothing is read back from a failed checkout.
+        status = 200,
       } = {},
     ) {
       const walletMethod = wallet && {
@@ -4692,8 +4694,11 @@ describe('Members API', function () {
           'stripe-signature',
           stripe.webhooks.generateTestHeaderString({ payload, secret: process.env.WEBHOOK_SECRET }),
         )
-        .expectStatus(200);
+        .expectStatus(status);
       await DomainEvents.allSettled();
+      if (status !== 200) {
+        return undefined;
+      }
 
       const {
         body: { members },
@@ -4715,6 +4720,150 @@ describe('Members API', function () {
         },
         recipient_name: 'Jamie Doe',
       });
+    });
+
+    it('records what became of each part each completed checkout asked for', async function () {
+      const metrics = mockManager.mockMetrics();
+
+      await completeCheckout('complete-both@example.com', {
+        asked: { shipping: true, phone: true },
+      });
+      // Longer than the recipient's short text field takes.
+      await completeCheckout('complete-refused@example.com', { name: 'x'.repeat(300) });
+      await completeCheckout('complete-unasked@example.com', { asked: {} });
+
+      assert.deepEqual(spansOf(metrics, 'stripe_checkout.complete'), [
+        {
+          outcome: 'success',
+          type: 'subscription',
+          member: 'new',
+          shipping: 'saved',
+          phone: 'saved',
+        },
+        {
+          outcome: 'success',
+          type: 'subscription',
+          member: 'new',
+          shipping: 'refused',
+          phone: 'none',
+        },
+        {
+          outcome: 'success',
+          type: 'subscription',
+          member: 'new',
+          shipping: 'none',
+          phone: 'none',
+        },
+      ]);
+    });
+
+    it('records a part as partly saved, or with nowhere to go, while its fields are archived', async function () {
+      for (const key of ['recipient_name', 'contact_phone']) {
+        await adminAgent
+          .put(`/members/metafields/custom/${key}/`)
+          .body({ members_metafields: [{ status: 'archived' }] })
+          .expectStatus(200);
+      }
+      const metrics = mockManager.mockMetrics();
+
+      await completeCheckout('complete-archived@example.com', {
+        asked: { shipping: true, phone: true },
+      });
+
+      assert.deepEqual(spansOf(metrics, 'stripe_checkout.complete'), [
+        {
+          outcome: 'success',
+          type: 'subscription',
+          member: 'new',
+          shipping: 'partly_saved',
+          phone: 'no_destination',
+        },
+      ]);
+    });
+
+    it('records what it skipped for a member who checked out without signing in', async function () {
+      await adminAgent
+        .post('/members/')
+        .body({ members: [{ email: 'complete-unverified@example.com' }] })
+        .expectStatus(201);
+      await adminAgent
+        .post('/members/')
+        .body({ members: [{ email: 'complete-signed-in@example.com' }] })
+        .expectStatus(201);
+      const metrics = mockManager.mockMetrics();
+
+      // Both checkouts started after their member already existed.
+      const startedAt = Math.floor(Date.now() / 1000) + 1;
+      await completeCheckout('complete-unverified@example.com', { created: startedAt });
+      await completeCheckout('complete-signed-in@example.com', {
+        created: startedAt,
+        metadata: { ghostSignupContext: 'already_authenticated' },
+      });
+
+      assert.deepEqual(spansOf(metrics, 'stripe_checkout.complete'), [
+        {
+          outcome: 'success',
+          type: 'subscription',
+          member: 'unverified',
+          shipping: 'skipped',
+          phone: 'none',
+        },
+        {
+          outcome: 'success',
+          type: 'subscription',
+          member: 'signed_in',
+          shipping: 'saved',
+          phone: 'none',
+        },
+      ]);
+    });
+
+    it('records what it failed to save, while the checkout itself completes', async function () {
+      const membersService = require('../../../core/server/services/members');
+      // Nothing a checkout can send fails the save, so the member edit that saves what it
+      // collected fails here as a database write would.
+      sinon
+        .stub(membersService.api.memberBREADService, 'updateWithMetafields')
+        .rejects(new Error('The database went away.'));
+      const metrics = mockManager.mockMetrics();
+
+      await completeCheckout('complete-save-failed@example.com', {
+        asked: { shipping: true, phone: true },
+      });
+
+      assert.deepEqual(spansOf(metrics, 'stripe_checkout.complete'), [
+        {
+          outcome: 'success',
+          type: 'subscription',
+          member: 'new',
+          shipping: 'failed',
+          phone: 'failed',
+        },
+      ]);
+    });
+
+    it('records a checkout it failed to complete, as it fails the webhook for Stripe to send again', async function () {
+      const membersService = require('../../../core/server/services/members');
+      sinon
+        .stub(membersService.api.members, 'create')
+        .rejects(new Error('The database went away.'));
+      const metrics = mockManager.mockMetrics();
+
+      await completeCheckout('complete-failed@example.com', { status: 500 });
+
+      assert.deepEqual(spansOf(metrics, 'stripe_checkout.complete'), [
+        {
+          outcome: 'failure',
+          error: 'Error',
+          type: 'subscription',
+          member: 'new',
+          shipping: 'none',
+          phone: 'none',
+        },
+      ]);
+      assert.deepEqual(spansOf(metrics, 'stripe.webhook'), [
+        { outcome: 'failure', error: 'Error', type: 'checkout.session.completed' },
+      ]);
     });
 
     // How often a wallet's number needs a country to be read, whether the checkout knew one, and
