@@ -80,15 +80,14 @@ const legacyEntry = z
     blockers: z.array(description),
   })
   .strict();
-// What is still open for a service that already meets the standard.
+// What is still open for a service that already meets the standard. A test
+// below rejects any other field, so the failure names the entry.
 const standardFields = ['extras', 'futureHome', 'lifecycle'];
-const standardEntry = z
-  .object({
-    extras: z.record(description, extraSchema).optional(),
-    futureHome: description.optional(),
-    lifecycle: z.array(description).min(1).optional(),
-  })
-  .strict();
+const standardEntry = z.object({
+  extras: z.record(description, extraSchema).optional(),
+  futureHome: description.optional(),
+  lifecycle: z.array(description).min(1).optional(),
+});
 const inventorySchema = z
   .object({
     services: z.record(description, legacyEntry),
@@ -185,21 +184,26 @@ describe('legacy service inventory', function () {
   const onDisk = readdirSync(servicesRoot, { withFileTypes: true }).filter(
     (item) => !metadata.includes(item.name),
   );
-  // A service that is not listed as legacy must meet the standard.
-  const standard = onDisk.filter((item) => !legacy[item.name]).map((item) => item.name);
   const isFile = (file: string) => statSync(file, { throwIfNoEntry: false })?.isFile() === true;
+  // A service that is not listed as legacy must meet the standard.
+  const standard = onDisk
+    .filter(
+      (item) =>
+        !legacy[item.name] &&
+        item.isDirectory() &&
+        isFile(path.join(servicesRoot, item.name, 'index.ts')),
+    )
+    .map((item) => item.name);
 
   it('requires everything that is not a legacy entry to be a directory with an index.ts root', function () {
     for (const name of metadata) {
       assertFileWithin(servicesRoot, name);
     }
     for (const item of onDisk) {
-      if (!legacy[item.name]) {
-        assert.ok(
-          item.isDirectory() && isFile(path.join(servicesRoot, item.name, 'index.ts')),
-          `${item.name} is not a legacy entry, so it must be a directory with an index.ts root`,
-        );
-      }
+      assert.ok(
+        legacy[item.name] || standard.includes(item.name),
+        `${item.name} is not a legacy entry, so it must be a directory with an index.ts root`,
+      );
     }
   });
 

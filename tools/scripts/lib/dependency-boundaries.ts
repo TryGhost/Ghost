@@ -124,5 +124,5 @@ export function readDependencyBoundaries(repository: string) {
   if (!graph.modules?.length || !Array.isArray(graph.summary?.violations)) {
     throw new Error('Dependency analysis returned no modules or an invalid report.');
   }
-  return { graph, legacy, ...compareKnownViolations(graph, known, legacy) };
+  return { graph, ...compareKnownViolations(graph, known, legacy) };
 }
