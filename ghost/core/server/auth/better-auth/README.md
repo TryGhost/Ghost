@@ -31,6 +31,14 @@ session tokens from native response bodies, by shape: a top-level `token`,
 and CSRF checks are pinned on, since Better Auth turns them off when
 `NODE_ENV` is `test` or `TEST` is set. Admin config publishes `auth: {engine}`.
 
+Under `better-auth`, `auth/authenticate.ts` keeps the `api-key` middleware and
+then runs `resolvePrincipal` (`auth/resolve-principal.ts`), which sets
+`req.auth` to a `Principal` (`auth/principal.ts`) and derives `req.user` and
+`req.api_key` from it. A verified key wins; otherwise the cookie branch reads
+Better Auth's session, pins it to the admin origin and to the session's own
+`origin`, and treats an unverified session as anonymous. Legacy session
+cookies are not read. `Bearer` is still rejected until Phase 4.
+
 - `create-auth.ts`: `createAuth()` builds the instance with Ghost's options
   (plan §3.1) from injected dependencies; `assertDatabaseSupported()` is the
   boot check above.
