@@ -11,6 +11,7 @@ const crypto = require('crypto');
 const CachedImageSizeFromUrl = require('../../../../../core/server/lib/image/cached-image-size-from-url');
 const InMemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
 const { malformedCssCases } = require('../../../../utils/fixtures/email-service/malformed-css');
+const lexicalLib = require('../../../../../core/server/lib/lexical');
 
 async function validateHtml(html) {
   const htmlvalidate = new HtmlValidate({
@@ -1759,6 +1760,88 @@ describe('Email renderer', function () {
 
         assert.equal(published.title, 'http://example.com/published-post/');
         assert.equal(emailOnly.title, `http://example.com/email/${uuid}/`);
+      });
+
+      describe('cards that link to the post', function () {
+        const lexical = JSON.stringify({
+          root: {
+            children: [
+              {
+                type: 'video',
+                version: 1,
+                src: 'https://example.com/content/media/video.mp4',
+                width: 1920,
+                height: 1080,
+                duration: 120,
+                thumbnailSrc: 'https://example.com/content/images/video-thumb.jpg',
+              },
+              {
+                type: 'audio',
+                version: 1,
+                src: 'https://example.com/content/media/audio.mp3',
+                title: 'Test Audio',
+                duration: 180,
+              },
+              {
+                type: 'file',
+                version: 1,
+                src: 'https://example.com/content/files/guide.pdf',
+                fileTitle: 'Guide',
+                fileName: 'guide.pdf',
+                fileSize: 2048,
+              },
+            ],
+            direction: null,
+            format: '',
+            indent: 0,
+            type: 'root',
+            version: 1,
+          },
+        });
+
+        // The first real render lazily loads the Koenig renderer and jsdom
+        beforeAll(async function () {
+          await lexicalLib.render(lexical, { target: 'email' });
+        }, 30000);
+
+        beforeEach(function () {
+          renderersStub.lexical.render = (doc, options) => lexicalLib.render(doc, options);
+        });
+
+        // Video, audio and file cards link to the post in email, as email can't play or attach them
+        it('keeps the audience on video, audio and file card links', async function () {
+          const post = createModel({ ...basePost, uuid, lexical });
+          const newsletter = createModel(baseNewsletter);
+
+          const response = await emailRenderer.renderBody(post, newsletter, null, {
+            previewAudience: { memberStatus: 'paid', memberTier: 'gold' },
+          });
+
+          const expected = `http://example.com/p/${uuid}/?member_status=paid&member_tier=gold`;
+          const $ = cheerio.load(response.html);
+          const cardLinks = $(
+            'a.kg-video-preview, a.kg-audio-title, a.kg-audio-play-button, a.kg-file-title, a.kg-file-meta',
+          )
+            .map((_i, el) => $(el).attr('href'))
+            .get();
+
+          assert.equal(cardLinks.length, 5);
+          assert.ok(cardLinks.every((href) => href === expected));
+          // Every link to the preview carries the audience, including Outlook's VML markup
+          assert.doesNotMatch(response.html, new RegExp(`/p/${uuid}/(?!\\?member_status=paid)`));
+        });
+
+        it('links cards to the unrestricted preview when no audience was picked', async function () {
+          const post = createModel({ ...basePost, uuid, lexical });
+          const newsletter = createModel(baseNewsletter);
+
+          const response = await emailRenderer.renderBody(post, newsletter, null, {});
+
+          const $ = cheerio.load(response.html);
+          assert.equal($('a.kg-video-preview').attr('href'), `http://example.com/p/${uuid}/`);
+          assert.equal($('a.kg-audio-title').attr('href'), `http://example.com/p/${uuid}/`);
+          assert.equal($('a.kg-file-title').attr('href'), `http://example.com/p/${uuid}/`);
+        });
       });
 
       it('keeps the audience under a subdirectory', async function () {

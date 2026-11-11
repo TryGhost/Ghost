@@ -574,9 +574,13 @@ class EmailRenderer {
     };
   }
 
-  async renderPostBaseHtml(post, newsletter) {
-    const postUrl = this.#getPostUrl(post);
-
+  /**
+   * @param {Post} post
+   * @param {Newsletter} [newsletter]
+   * @param {string} [postUrl] - where cards that can't play in email, such
+   *   as video and audio, link to
+   */
+  async renderPostBaseHtml(post, newsletter, postUrl = this.#getPostUrl(post)) {
     // posts are migrated to lexical on save, but legacy content may still be stored as
     // mobiledoc - convert it to lexical so it can be rendered.
     const lexical = post.get('lexical') || mobiledocToLexical(post.get('mobiledoc'));
@@ -599,8 +603,9 @@ class EmailRenderer {
    */
   async renderBody(post, newsletter, segment, options) {
     const audience = this.describeSegment(post, segment);
+    const postUrl = this.#getPostViewUrl(post, options.previewAudience);
 
-    let html = await this.renderPostBaseHtml(post, newsletter);
+    let html = await this.renderPostBaseHtml(post, newsletter, postUrl);
 
     // Paywall and members only content handling
     const isPaidPost = post.get('visibility') === 'paid' || post.get('visibility') === 'tiers';
@@ -647,7 +652,7 @@ class EmailRenderer {
       html,
       addPaywall,
       audience,
-      previewAudience: options.previewAudience,
+      postUrl,
     });
     html = await this.renderTemplate(templateData);
 
@@ -1213,11 +1218,12 @@ class EmailRenderer {
   }
 
   /**
-   * The post's URL for the email's title and "View in browser" links. An
-   * unpublished post links to its `/p/:uuid/` preview, which shows the full,
-   * ungated post unless it is told which audience to render for. Previews and
-   * test sends carry the audience the editor picked, so the browser view
-   * matches the email it was opened from.
+   * The post's URL for every link in the email that opens the post: the
+   * title, "View in browser", and video and audio cards. An unpublished post
+   * links to its `/p/:uuid/` preview, which shows the full, ungated post
+   * unless it is told which audience to render for. Previews and test sends
+   * carry the audience the editor picked, so the browser view matches the
+   * email it was opened from.
    * @param {Post} post
    * @param {PreviewAudience} [previewAudience]
    * @returns {string}
@@ -1338,9 +1344,16 @@ class EmailRenderer {
    * @param {string} options.html
    * @param {boolean} options.addPaywall
    * @param {SegmentAudience} options.audience
-   * @param {PreviewAudience} [options.previewAudience]
+   * @param {string} [options.postUrl] - from #getPostViewUrl
    */
-  async getTemplateData({ post, newsletter, html, addPaywall, audience, previewAudience }) {
+  async getTemplateData({
+    post,
+    newsletter,
+    html,
+    addPaywall,
+    audience,
+    postUrl = this.#getPostUrl(post),
+  }) {
     const emailDesign = this.#getEmailDesign(newsletter);
 
     const { href: headerImage, width: headerImageWidth } = await this.limitImageWidth(
@@ -1375,7 +1388,6 @@ class EmailRenderer {
       }
     }
 
-    const postUrl = this.#getPostViewUrl(post, previewAudience);
     const hasEmailOnlyFlag = post.related('posts_meta')?.get('email_only') ?? false;
     const showShareButton = newsletter.get('show_share_button') && !hasEmailOnlyFlag;
     const shareUrl = new URL(postUrl);
