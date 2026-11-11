@@ -10,6 +10,9 @@ an execution workflow, not permission to redesign a service's lifecycle. The
 [services guide](../../../ghost/core/server/services/README.md) is the authoring
 guide; read it rather than copying an earlier migration blindly.
 
+For a new service, use [add-service](../add-service/SKILL.md) to generate and
+complete the root instead.
+
 ## 1. Establish the starting point
 
 - Read the root and nearest `AGENTS.md`, the
