@@ -154,6 +154,7 @@ module.exports = class StripeService {
       invoiceEventService,
       checkoutSessionEventService,
       chargeRefundedEventService,
+      tracking,
     });
 
     this.models = models;

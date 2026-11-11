@@ -46,6 +46,18 @@ const sinon = require('sinon');
 let membersAgent;
 let adminAgent;
 
+/**
+ * Each span recorded under `name`, as its outcome, the type of its error when it failed, and its
+ * attributes.
+ */
+function spansOf(metrics, name) {
+  return metrics.tracked(name).map(({ event, error, labels }) => ({
+    outcome: event.outcome,
+    ...(error ? { error: error.type } : {}),
+    ...labels,
+  }));
+}
+
 function createStripeID(prefix) {
   return `${prefix}_${crypto.randomBytes(16).toString('hex')}`;
 }
@@ -260,6 +272,73 @@ describe('Members API', function () {
         })
         .header('stripe-signature', 'dodgy')
         .expectStatus(401);
+    });
+
+    it('records a webhook whose signature does not show it came from Stripe as unauthorised', async function () {
+      const metrics = mockManager.mockMetrics();
+
+      await membersAgent
+        .post('/webhooks/stripe/')
+        .body({ fake: 'data' })
+        .header('stripe-signature', 'dodgy')
+        .expectStatus(401);
+
+      assert.deepEqual(spansOf(metrics, 'stripe.webhook'), [
+        { outcome: 'failure', error: 'UnauthorizedError' },
+      ]);
+    });
+
+    it('records an event it ignores, for a customer whose events it is set to ignore', async function () {
+      const stripeService = require('../../../core/server/services/stripe');
+      stripeService.webhookController.configure({ webhookCustomerIgnoreList: ['cus_ignored'] });
+      try {
+        const metrics = mockManager.mockMetrics();
+        const webhookPayload = JSON.stringify({
+          type: 'customer.subscription.updated',
+          data: { object: { id: 'sub_ignored', customer: 'cus_ignored' } },
+        });
+
+        await membersAgent
+          .post('/webhooks/stripe/')
+          .body(webhookPayload)
+          .header('content-type', 'application/json')
+          .header(
+            'stripe-signature',
+            stripe.webhooks.generateTestHeaderString({
+              payload: webhookPayload,
+              secret: process.env.WEBHOOK_SECRET,
+            }),
+          )
+          .expectStatus(200);
+
+        assert.deepEqual(spansOf(metrics, 'stripe.webhook'), [
+          { outcome: 'success', type: 'customer.subscription.updated', ignored: true },
+        ]);
+      } finally {
+        stripeService.webhookController.configure({});
+      }
+    });
+
+    it('records each event it handles by its type', async function () {
+      const metrics = mockManager.mockMetrics();
+      const webhookPayload = JSON.stringify({ type: 'unknown', data: { id: 'id_123' } });
+
+      await membersAgent
+        .post('/webhooks/stripe/')
+        .body(webhookPayload)
+        .header('content-type', 'application/json')
+        .header(
+          'stripe-signature',
+          stripe.webhooks.generateTestHeaderString({
+            payload: webhookPayload,
+            secret: process.env.WEBHOOK_SECRET,
+          }),
+        )
+        .expectStatus(200);
+
+      assert.deepEqual(spansOf(metrics, 'stripe.webhook'), [
+        { outcome: 'success', type: 'unknown' },
+      ]);
     });
 
     it('Responds with a 200 to unknown events with valid signature', async function () {

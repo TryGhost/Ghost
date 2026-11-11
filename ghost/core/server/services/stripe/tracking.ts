@@ -10,13 +10,15 @@ import {
   type Refusal,
 } from './checkout-session-params';
 
-// The spans and counts that record how buyers' Stripe Checkouts go. Their names and attributes are
-// defined here, in one place, because the Stripe Checkout dashboard in TryGhost/k8s queries them
-// by name: renaming one or an attribute breaks the dashboard until it's changed to match.
+// The spans and counts that record how buyers' Stripe Checkouts go, and how Ghost handles what
+// Stripe sends it. Their names and attributes are defined here, in one place, because the Stripe
+// Checkout dashboard in TryGhost/k8s queries them by name: renaming one or an attribute breaks the
+// dashboard until it's changed to match.
 //
-// Two parts of Ghost record the spans. The members API's router records a
-// `stripe_checkout.start` span for each checkout a buyer starts, and `StripeAPI` records a
-// `stripe_checkout.session` span for each Checkout session it asks Stripe to create. Neither
+// Several parts of Ghost record the spans. The members API's router records a
+// `stripe_checkout.start` span for each checkout a buyer starts, `StripeAPI` records a
+// `stripe_checkout.session` span for each Checkout session it asks Stripe to create, and the
+// webhook controller records a `stripe.webhook` span for each event Stripe sends. None of them
 // touches its span. Each is handed an attempt object and reports to it what happened, in terms of
 // the checkout, and the functions below decide how each report is recorded on the span. The
 // checkout webhook counts each phone number a completed checkout collects, as
@@ -52,6 +54,14 @@ interface CheckoutSessionAttempt {
  *   part was the reason and sent the request again without any of them.
  */
 type PartOutcome = 'applied' | 'none' | 'refused' | 'dropped';
+
+/** What the webhook controller reports to a `stripe.webhook` span while it handles an event. */
+interface WebhookAttempt {
+  /** Called once Ghost has checked the event came from Stripe, with its type, such as `invoice.payment_succeeded`. */
+  receiving(type: string): void;
+  /** Called when Ghost ignores the event, as it's for a customer whose events Ghost is set to ignore. */
+  ignoring(): void;
+}
 
 /**
  * What became of the phone number a completed checkout collected:
@@ -94,6 +104,25 @@ export function stripeTracking({ tracer, meter }: { tracer: Tracer; meter: Meter
     checkout<Result>(start: (attempt: CheckoutAttempt) => Promise<Result>): Promise<Result> {
       return tracer.track('stripe_checkout.start', (span) =>
         start({ starting: (type) => span.setAttribute('type', type) }),
+      );
+    },
+
+    /**
+     * Records one `stripe.webhook` span for each event Stripe sends to Ghost's webhook, from the
+     * webhook starting on the request to Ghost answering Stripe. The span fails when Ghost answers
+     * with a failure, which makes Stripe send the event again later, including when the event's
+     * signature doesn't show it came from Stripe, as an `UnauthorizedError`. A request with no
+     * body or no signature at all isn't from Stripe, so it records no span.
+     *
+     * The `type` attribute holds the event's type, such as `checkout.session.completed`, and
+     * `ignored` is true for an event Ghost is set to ignore.
+     */
+    webhook<Result>(handle: (attempt: WebhookAttempt) => Promise<Result>): Promise<Result> {
+      return tracer.track('stripe.webhook', (span) =>
+        handle({
+          receiving: (type) => span.setAttribute('type', type),
+          ignoring: () => span.setAttribute('ignored', true),
+        }),
       );
     },
 
