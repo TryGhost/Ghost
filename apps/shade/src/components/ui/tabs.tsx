@@ -155,16 +155,28 @@ function renderTabsTriggerLabel(children: React.ReactNode, asChild = false): Rea
 
   return React.Children.map(children, (child) => {
     if (typeof child === 'string' || typeof child === 'number') {
+      const label = typeof child === 'string' ? child.trim() : child;
+      if (label === '') {
+        return child;
+      }
+
+      // Keep boundary spaces in the inline flow between nested label elements.
+      const leadingSpace = typeof child === 'string' ? child.match(/^\s*/)?.[0] : undefined;
+      const trailingSpace = typeof child === 'string' ? child.match(/\s*$/)?.[0] : undefined;
       return (
-        <span className="inline-grid">
-          <span
-            aria-hidden="true"
-            className="pointer-events-none invisible col-start-1 row-start-1 font-semibold select-none"
-          >
-            {child}
+        <>
+          {leadingSpace}
+          <span className="inline-grid">
+            <span
+              aria-hidden="true"
+              className="pointer-events-none invisible col-start-1 row-start-1 font-semibold select-none"
+            >
+              {label}
+            </span>
+            <span className="col-start-1 row-start-1">{label}</span>
           </span>
-          <span className="col-start-1 row-start-1">{child}</span>
-        </span>
+          {trailingSpace}
+        </>
       );
     }
     if (

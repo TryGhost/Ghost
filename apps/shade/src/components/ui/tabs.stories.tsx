@@ -209,6 +209,29 @@ export const UnderlineStableSelectionWidth: Story = {
   },
 };
 
+export const UnderlineRichLabels: Story = {
+  render: () => (
+    <Tabs defaultValue="order" variant="underline">
+      <TabsList>
+        <TabsTrigger value="order">
+          <span data-testid="rich-tab-label">
+            Order <strong>details</strong>
+          </span>
+        </TabsTrigger>
+        <TabsTrigger value="shipping">Shipping details</TabsTrigger>
+      </TabsList>
+    </Tabs>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Inline formatting keeps the space between words when underline labels reserve their selected width.',
+      },
+    },
+  },
+};
+
 export const CountBackgrounds: Story = {
   render: () => (
     <div className="flex flex-col gap-6">
