@@ -22,7 +22,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Groups related Ghost settings into a consistent card with composable header, actions, content, and value regions.',
+          'Groups related Ghost settings into a consistent card with composable header, actions, content, and value regions. With admin7Design on, titles share the Settings heading tokens: weight 540 and -0.01em tracking.',
       },
     },
   },

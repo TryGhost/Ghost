@@ -41,6 +41,19 @@
   font-feature-settings: 'dlig', 'zero', 'ss01', 'ss02', 'cv10', 'cv06';
 }
 
+/* Settings headings share weight and tracking without changing headings on
+   member and tag details. Large Settings titles keep their own size. */
+.settings-heading:where([data-admin7-design='true'] *) {
+  font-weight: var(--font-weight-settings-heading);
+  letter-spacing: var(--tracking-settings-heading);
+}
+
+.section-heading.settings-heading:where([data-admin7-design='true'] *) {
+  font-variation-settings:
+    'opsz' 28,
+    'wght' var(--font-weight-settings-heading);
+}
+
 /* admin7Design: a small label above a stat or a value, and a large, light number
    for stats. Any unit inside the number is the number's size too. */
 .stat-label:where([data-admin7-design='true'] *) {

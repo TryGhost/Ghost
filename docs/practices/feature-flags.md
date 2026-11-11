@@ -158,7 +158,11 @@ preserves the docked sidebar and the separate Settings sidebar.
 
 The `admin7Design` milestone also sets column headers in a small uppercase label
 style. Section headings on member details, tag details and Settings share one
-style, and member stats and list text follow the prototype.
+style, and member stats and list text follow the prototype. Settings sidebar
+group labels and content headings refine this through `settings-heading`:
+`--font-weight-settings-heading` is 540 and `--tracking-settings-heading` is
+-0.01em. These tokens apply only with the flag on, in both light and dark mode;
+member and tag headings retain their existing typography.
 
 The `admin7Design` milestone also gives text-entry fields 4px corners and 14px
 text. Checkboxes, radios, Filter bar items and Koenig keep their current look.
