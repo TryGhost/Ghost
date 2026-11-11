@@ -186,8 +186,8 @@ const EmailsGroup: React.FC<{ keywords: string[]; newslettersEnabled: boolean }>
         variant="underline"
         onValueChange={(value) => setSelectedTab(value as 'newsletters' | 'transactional')}
       >
-        <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-900">
-          <TabsList className="border-b-0">
+        <div className="flex items-center justify-between inset-shadow-[0_-1px_0] inset-shadow-border-default">
+          <TabsList className="inset-shadow-none">
             {newslettersEnabled && <TabsTrigger value="newsletters">Newsletters</TabsTrigger>}
             <TabsTrigger value="transactional">Automation emails</TabsTrigger>
           </TabsList>

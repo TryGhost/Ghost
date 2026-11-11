@@ -53,7 +53,7 @@ const tabsListVariants = cva('inline-flex items-center text-muted-foreground', {
       button: 'gap-2',
       'button-sm': 'gap-1',
       underline:
-        'no-scrollbar w-full max-w-full gap-5 overflow-x-auto overflow-y-hidden border-b border-border-default',
+        'no-scrollbar w-full max-w-full gap-5 overflow-x-auto overflow-y-hidden inset-shadow-[0_-1px_0] inset-shadow-border-default',
       navbar: 'h-[52px] items-end gap-6',
       pill: '-ml-0.5 h-[30px] gap-px',
       // The `kpis` variant is consumed only by `features/kpi/kpi-tabs.tsx`.
