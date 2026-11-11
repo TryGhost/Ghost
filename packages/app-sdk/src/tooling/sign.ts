@@ -73,9 +73,9 @@ export async function signAppManifest(source: unknown, options: SignOptions): Pr
   // private half with another key's public half. The manifest would name a key that didn't sign
   // it, or one the backend can't answer for, and Ghost would refuse it. That's the caller's
   // mistake, so it throws.
-  readKey(JSON.stringify(options.identityKey), 'identityKey');
+  await readKey(JSON.stringify(options.identityKey), 'identityKey');
   if ('d' in options.backendKey) {
-    readKey(JSON.stringify(options.backendKey), 'backendKey');
+    await readKey(JSON.stringify(options.backendKey), 'backendKey');
   }
   // Ghost's own hosts are the one rule only a site knows, so a name no site has stands in.
   const address = parseManifestUrl(options.manifestUrl, {
