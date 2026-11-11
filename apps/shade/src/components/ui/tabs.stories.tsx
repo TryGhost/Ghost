@@ -10,7 +10,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Tabs default to underline with admin7Design on and segmented with it off. Explicit variants keep their own appearance. Button tabs use primary selected fills in Admin 7; KPI tabs retain their chart-card layout.',
+          'Tabs default to underline with admin7Design on and segmented with it off. Explicit variants keep their own appearance. Button tabs, including Settings previews, share PageMenu’s muted active fill, outlined inactive items, stable active hover, and ghost-button pressed background. KPI tabs retain their chart-card layout.',
       },
     },
   },
@@ -81,7 +81,8 @@ export const StableSelectionWidth: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Button tabs keep the same font weight and width when the active tab changes.',
+        story:
+          'Use button tabs for preview navigation, as in Theme, Design, and Portal settings. Selection uses a muted fill and inactive tabs have outlines in Admin 7; widths stay stable when switching.',
       },
     },
   },

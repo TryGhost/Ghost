@@ -120,10 +120,11 @@ changes need visual review, not tests that assert appearance. Keep permanent
 permission and backend capability checks independent of the temporary flag.
 
 With `admin7Design` on, Shade's `Tabs` defaults to underline and respects
-explicit variants. Button tabs use a primary selected fill. Route-based
-`PageMenu` uses the previous inactive fill for the active page, while inactive
-items have a transparent surface and an outline matching the header divider
-(`border-border`). Compact button tabs keep their
+explicit variants. Button tabs, including Settings previews, and route-based
+`PageMenu` use the previous inactive fill for selection, while inactive items
+have a transparent surface and an outline matching the header divider
+(`border-border`). The active fill stays unchanged on hover; pressed and
+expanded items use the ghost-button background. Compact button tabs keep their
 smaller size, and KPI tabs keep their chart-card layout. With the flag off,
 the default remains segmented and explicit underline tabs keep their previous
 styling. Only the enabled design uses a 1px indicator aligned with the divider
@@ -181,8 +182,8 @@ Meta data has no helper description under its heading. At desktop widths, the me
 column is 400px wide to accommodate previews, with the same 80px gap as member
 details. The columns stack below the sidebarlg breakpoint, with 32px between them.
 Metadata navigation uses underline tabs. Button and button-small tabs
-use a primary selected fill with contrasting text, and muted inactive fills with
-foreground text. Metadata fields and previews sit directly on the page without
+use a muted selected fill and outlined inactive items with foreground text,
+matching page navigation and Settings preview controls. Metadata fields and previews sit directly on the page without
 an inset background or padding. The flag-off design keeps its underline tabs and
 outlined cards; tag editing, uploads, previews and saving use the same behavior
 in both designs.

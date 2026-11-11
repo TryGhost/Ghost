@@ -199,7 +199,7 @@ const PageMenu = React.forwardRef<HTMLDivElement, PageMenuProps>(
                   className={cn(
                     'h-[30px] flex-shrink-0 px-3 py-2',
                     admin7Design
-                      ? tabSurfaceVariants({ admin7Design, surface: 'navigation' })
+                      ? tabSurfaceVariants({ admin7Design })
                       : selectedHiddenItem && 'bg-accent text-accent-foreground',
                   )}
                   {...(admin7Design
@@ -268,7 +268,7 @@ const PageMenuItem = React.forwardRef<HTMLButtonElement, PageMenuItemProps>(
         className={cn(
           'relative gap-1.5 px-3 text-control font-medium',
           admin7Design
-            ? tabSurfaceVariants({ admin7Design, surface: 'navigation' })
+            ? tabSurfaceVariants({ admin7Design })
             : 'text-text-secondary hover:text-foreground focus-visible:ring-0 data-[state=active]:bg-muted-foreground/10 data-[state=active]:text-foreground dark:hover:bg-tab-hover dark:data-[state=active]:bg-tab-active dark:data-[state=active]:hover:bg-tab-active',
           className,
         )}

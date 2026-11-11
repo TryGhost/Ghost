@@ -1,15 +1,11 @@
 import { cva } from 'class-variance-authority';
 
-// Shared pill geometry, with distinct button-tab and page-navigation surfaces.
+// Shared by button tabs, including Settings previews, and PageMenu navigation.
 const tabSurfaceVariants = cva('', {
   variants: {
     admin7Design: {
-      true: 'rounded-full',
+      true: 'rounded-full border border-border bg-transparent text-foreground hover:bg-tab-hover hover:text-foreground enabled:active:bg-button-ghost-hover enabled:aria-expanded:bg-button-ghost-hover enabled:aria-expanded:text-foreground data-[state=active]:border-transparent data-[state=active]:bg-tab-inactive data-[state=active]:text-foreground data-[state=active]:hover:bg-tab-inactive data-[state=active]:hover:text-foreground data-[state=active]:enabled:active:bg-button-ghost-hover data-[state=active]:enabled:aria-expanded:bg-button-ghost-hover data-[state=active]:enabled:aria-expanded:text-foreground',
       false: '',
-    },
-    surface: {
-      button: '',
-      navigation: '',
     },
     size: {
       default: '',
@@ -17,22 +13,10 @@ const tabSurfaceVariants = cva('', {
     },
   },
   compoundVariants: [
-    {
-      admin7Design: true,
-      surface: 'button',
-      className:
-        'bg-tab-inactive text-foreground hover:bg-tab-inactive-hover hover:text-foreground enabled:active:bg-tab-inactive-hover enabled:aria-expanded:bg-tab-inactive-hover enabled:aria-expanded:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:hover:bg-primary data-[state=active]:hover:text-primary-foreground data-[state=active]:enabled:active:bg-primary data-[state=active]:enabled:aria-expanded:bg-primary data-[state=active]:enabled:aria-expanded:text-primary-foreground',
-    },
-    {
-      admin7Design: true,
-      surface: 'navigation',
-      className:
-        'border border-border bg-transparent text-foreground hover:bg-tab-hover hover:text-foreground enabled:active:bg-button-ghost-hover enabled:aria-expanded:bg-button-ghost-hover enabled:aria-expanded:text-foreground data-[state=active]:border-transparent data-[state=active]:bg-tab-inactive data-[state=active]:text-foreground data-[state=active]:hover:bg-tab-inactive data-[state=active]:hover:text-foreground data-[state=active]:enabled:active:bg-button-ghost-hover data-[state=active]:enabled:aria-expanded:bg-button-ghost-hover data-[state=active]:enabled:aria-expanded:text-foreground',
-    },
     { admin7Design: true, size: 'default', className: 'px-4' },
     { admin7Design: true, size: 'compact', className: 'px-3' },
   ],
-  defaultVariants: { size: 'default', surface: 'button' },
+  defaultVariants: { size: 'default' },
 });
 
 const tabsVariants = cva('', {
