@@ -26,6 +26,8 @@ export type Config = {
     id?: string;
   };
   emailAnalytics?: boolean;
+  /** The server can render an installed theme that isn't active (Admin's theme previews) */
+  themePreview?: boolean;
   klipy?: {
     apiKey?: string | null;
     contentFilter?: string;
