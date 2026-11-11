@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 // account.ghost.org's Connect page sends the admin to
 // #/settings/stripe-connect?secure_key=… once Stripe is connected. The key
 // holds the connected account's secret key, so it leaves the address before
@@ -64,19 +66,30 @@ export function forgetDeliveredSecureKey() {
   }
 }
 
+// What a secure key says about the Stripe account it connects (see
+// account.ghost.org's worker/oauth/stripe.ts). The name is missing when the
+// account has no display name.
+const SecureKeyAccount = z.object({
+  i: z.string().min(1),
+  l: z.boolean(),
+  n: z.string().nullish(),
+});
+
 /** The account a delivered key names, for the admin to confirm; null if it isn't a key. */
 export function describeSecureKey(
   key: string,
 ): { name: string; id: string; livemode: boolean } | null {
+  let data: unknown;
   try {
     const bytes = Uint8Array.from(atob(key), (char) => char.charCodeAt(0));
-    const data: unknown = JSON.parse(new TextDecoder().decode(bytes));
-    if (!data || typeof data !== 'object' || typeof (data as { i?: unknown }).i !== 'string') {
-      return null;
-    }
-    const { n, i, l } = data as { n?: unknown; i: string; l?: unknown };
-    return { name: typeof n === 'string' ? n : '', id: i, livemode: l === true };
+    data = JSON.parse(new TextDecoder().decode(bytes));
   } catch {
     return null;
   }
+  const parsed = SecureKeyAccount.safeParse(data);
+  if (!parsed.success) {
+    return null;
+  }
+  const { n, i, l } = parsed.data;
+  return { name: n ?? '', id: i, livemode: l };
 }
