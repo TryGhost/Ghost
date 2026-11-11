@@ -402,6 +402,7 @@ export const SHADE_TOKEN_NAMES = [
   'text-xl',
   'text-xs',
   'tracking-normal',
+  'tracking-section-heading',
   'tracking-settings-heading',
   'tracking-tight',
   'tracking-tighter',

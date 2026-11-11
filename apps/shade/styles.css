@@ -33,7 +33,7 @@
 .section-heading:where([data-admin7-design='true'] *) {
   font-size: var(--text-section-heading);
   font-weight: var(--font-weight-medium);
-  letter-spacing: var(--tracking-tighter);
+  letter-spacing: var(--tracking-section-heading);
   line-height: 1.35;
   font-variation-settings:
     'opsz' 28,
