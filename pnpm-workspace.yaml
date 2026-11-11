@@ -215,7 +215,7 @@ catalog:
   snakecase-keys: 9.0.2
   sonner: 2.0.8
   storybook: 10.6.5
-  stylelint: 17.14.1
+  stylelint: 18.0.0
   supertest: 7.3.1
   tailwindcss: 4.3.3
   temporal-polyfill: 0.3.2
