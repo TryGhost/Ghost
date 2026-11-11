@@ -1802,7 +1802,7 @@ module.exports = {
   email_recipients: {
     id: { type: 'string', maxlength: 24, nullable: false, primary: true },
     email_id: { type: 'string', maxlength: 24, nullable: false, references: 'emails.id' },
-    member_id: { type: 'string', maxlength: 24, nullable: false, index: true },
+    member_id: { type: 'string', maxlength: 24, nullable: false },
     batch_id: { type: 'string', maxlength: 24, nullable: false, references: 'email_batches.id' },
     processed_at: { type: 'dateTime', nullable: true },
     delivered_at: { type: 'dateTime', nullable: true },

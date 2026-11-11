@@ -11,6 +11,10 @@ const SESSION_MAX_AGE_MS = 15552000000;
 // Building the instance runs no queries
 const fakeKnex = () => ({}) as Knex;
 
+// Never blocks; the rate limits have their own tests
+const allow = () => ({ consume: async () => ({ allowed: true as const }), reset: async () => {} });
+const limiters = { globalBlock: allow, globalReset: allow, userLogin: allow, userReset: allow };
+
 function deps({
   siteUrl = 'https://example.com/',
   adminUrl,
@@ -31,6 +35,7 @@ function deps({
       compare: async (password, hash) => hash === `hashed:${password}`,
     },
     logger: { debug() {}, info() {}, warn() {}, error() {} },
+    limiters,
   };
 }
 
@@ -125,7 +130,7 @@ describe('createAuth', function () {
     assert.equal(context.options.session?.disableSessionRefresh, true);
   });
 
-  it('disables sign-up, account changes, social sign-in, rate limiting and telemetry', async function () {
+  it('disables sign-up, account and password changes, social sign-in and telemetry', async function () {
     const { options } = await createAuth(deps()).$context;
 
     assert.equal(options.emailAndPassword?.disableSignUp, true);
@@ -136,9 +141,16 @@ describe('createAuth', function () {
       '/change-email',
       '/delete-user',
       '/sign-in/social',
+      '/change-password',
     ]);
-    assert.equal(options.rateLimit?.enabled, false);
     assert.equal(options.telemetry?.enabled, false);
+  });
+
+  it("rate limits on Ghost's limiters in every environment", async function () {
+    const { options } = await createAuth(deps()).$context;
+
+    assert.equal(options.rateLimit?.enabled, true);
+    assert.equal(typeof options.rateLimit?.customStorage?.consume, 'function');
   });
 
   it('never exposes the legacy password hash as a user field', async function () {
@@ -162,6 +174,28 @@ describe('createAuth', function () {
       assert.ok(typeof context.secretConfig === 'object');
       assert.deepEqual([...context.secretConfig.keys.values()], ['a'.repeat(64)]);
       assert.equal(context.secretConfig.legacySecret, 'a'.repeat(64));
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it('rejects a sign-in from an untrusted origin even under NODE_ENV=test', async function () {
+    vi.stubEnv('NODE_ENV', 'test');
+    vi.stubEnv('TEST', 'true');
+    try {
+      const auth = createAuth(
+        deps({ siteUrl: 'https://example.com/', adminUrl: 'https://admin.example.com/' }),
+      );
+      const response = await auth.handler(
+        new Request('https://admin.example.com/ghost/api/admin/auth/sign-in/email', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', origin: 'https://example.com' },
+          body: JSON.stringify({ email: 'owner@example.com', password: 'password' }),
+        }),
+      );
+
+      assert.equal(response.status, 403);
+      assert.equal((await response.json()).code, 'INVALID_ORIGIN');
     } finally {
       vi.unstubAllEnvs();
     }

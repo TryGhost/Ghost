@@ -1,10 +1,12 @@
 // Minimal skips Kysely, which only serves direct connections and migrations;
 // Ghost brings its own Knex adapter and knex-migrator
 import { betterAuth } from 'better-auth/minimal';
+import { createAuthMiddleware, isAPIError } from 'better-auth/api';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import { CLIENT_IP_HEADER } from './client-ip';
 import { createKnexAdapter } from './knex-adapter';
+import { rateLimitStorage, type Limiters } from './rate-limit';
 import {
   generateGhostId,
   ghostCreateDefaults,
@@ -34,6 +36,8 @@ export type CreateAuthDeps = {
     compare(password: string, hash: string): Promise<boolean>;
   };
   logger: Logger;
+  /** Ghost's `spam` limiters, which also back the compatibility routes */
+  limiters: Limiters;
 };
 
 /**
@@ -68,6 +72,36 @@ export function assertDatabaseSupported({
       help,
     });
   }
+}
+
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && Object.getPrototypeOf(value) === Object.prototype;
+
+const omitToken = (value: Record<string, unknown>) => {
+  const rest = { ...value };
+  delete rest.token;
+  return rest;
+};
+
+/**
+ * Removes session tokens from a native response body (plan §10): a top-level
+ * `token` (`/sign-in/email`, `/change-password`), `session.token`
+ * (`/get-session`) and each session's `token` (`/list-sessions`). The cookie
+ * is the only place a session token leaves the server.
+ */
+export function stripSessionTokens(body: unknown): unknown {
+  if (Array.isArray(body)) {
+    return body.map((item) => (isPlainObject(item) ? omitToken(item) : item));
+  }
+  if (!isPlainObject(body)) {
+    return body;
+  }
+
+  const stripped = omitToken(body);
+  if (isPlainObject(stripped.session)) {
+    stripped.session = omitToken(stripped.session);
+  }
+  return stripped;
 }
 
 /** Builds the Better Auth instance with Ghost's options (plan §3.1). */
@@ -124,15 +158,40 @@ export function createAuth(deps: CreateAuthDeps) {
         verify: ({ hash, password }) => deps.password.compare(password, hash),
       },
     },
-    // Ghost's spam-prevention limiters wrap the native routes when they are mounted
-    rateLimit: { enabled: false },
+    // On by default in production only
+    rateLimit: { enabled: true, customStorage: rateLimitStorage(deps.limiters) },
     disabledPaths: [
       '/sign-up/email',
       '/update-user',
       '/change-email',
       '/delete-user',
       '/sign-in/social',
+      // Writes `user_accounts`, which legacy sign-in doesn't read until Phase 2
+      '/change-password',
     ],
+    hooks: {
+      after: createAuthMiddleware(async (ctx) => {
+        // Server-side `auth.api` calls have no request and keep their tokens
+        if (!ctx.request) {
+          return;
+        }
+        const returned = ctx.context.returned;
+
+        // Clears this IP's failed sign-ins, as the compatibility routes do
+        if (['/sign-in/email', '/reset-password'].includes(ctx.path) && !isAPIError(returned)) {
+          const ip = ctx.request.headers.get(CLIENT_IP_HEADER) ?? undefined;
+          // Awaited, so the next request sees the cleared count
+          await deps.limiters
+            .userLogin()
+            .reset({ ip })
+            .catch((err: unknown) => deps.logger.error(err));
+        }
+
+        if (Array.isArray(returned) || isPlainObject(returned)) {
+          return ctx.json(stripSessionTokens(returned) as Record<string, unknown>);
+        }
+      }),
+    },
     telemetry: { enabled: false },
     logger: {
       log: (level, message, ...args) => deps.logger[level](message, ...args),
@@ -141,6 +200,9 @@ export function createAuth(deps: CreateAuthDeps) {
       database: { generateId: generateGhostId },
       // Express's req.ip, set by setClientIPHeader; IPv6 counts per /64, as Ghost's limiters key it
       ipAddress: { ipAddressHeaders: [CLIENT_IP_HEADER], ipv6Subnet: 64 },
+      // Pinned: Better Auth turns both checks off when NODE_ENV is test or TEST is set
+      disableOriginCheck: false,
+      disableCSRFCheck: false,
       // Sets `Secure` and the `__Secure-` name prefix together, on an HTTPS admin URL only
       useSecureCookies: ssl,
       cookies: {
