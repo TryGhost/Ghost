@@ -25,6 +25,7 @@ describe('WebhookController', function () {
       chargeRefundedEventService: { handleEvent: sinon.stub() },
       webhookManager: { parseWebhook: sinon.stub() },
       tracking,
+      sentry: { captureException: sinon.stub() },
     };
 
     controller = new WebhookController(deps);
@@ -253,6 +254,19 @@ describe('WebhookController', function () {
 
     sinon.assert.calledWith(res.writeHead, 500);
     sinon.assert.called(res.end);
+  });
+
+  it('reports an event it failed to handle to Sentry', async function () {
+    const failure = new Error('Unexpected error');
+    deps.webhookManager.parseWebhook.returns({
+      type: 'customer.subscription.created',
+      data: { object: { customer: 'cust_123' } },
+    });
+    deps.subscriptionEventService.handleSubscriptionEvent.throws(failure);
+
+    await controller.handle(req, res);
+
+    sinon.assert.calledOnceWithExactly(deps.sentry.captureException, failure);
   });
 
   it('should handle charge.refunded event', async function () {
