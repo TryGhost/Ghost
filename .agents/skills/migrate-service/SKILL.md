@@ -66,10 +66,11 @@ Do not inject stateless utilities to evade the policy or duplicate shared helper
 Inspect the source before adding a library allowance. Justify why the dependency
 is a library rather than an application-owned instance, and allow only its exact
 entry or file. Include the reason and a boundary regression in the migration PR
-that needs the allowance. Name each file the allowance admits, as dependency-cruiser
-resolves it from source and from built output, in a boundary regression, and
-assert each rejected target as well as its rule and source. Keep allowances out of standalone skill/tooling
-PRs.
+that needs the allowance. Write out each file the allowance admits in full, as
+dependency-cruiser resolves it from source and from built output, in a boundary
+regression; `gx services verify` looks for the literal path, not one built from
+variables. Assert each rejected target as well as its rule and source. Keep
+allowances out of standalone skill/tooling PRs.
 Seek review when that distinction is unclear or a broader policy change is
 needed; do not widen the rule merely to make lint pass. Normal inventory and
 root-shape opt-ins still belong in each migration.

@@ -173,7 +173,7 @@ test('added allowances must match imports under both resolutions and have regres
       regressionCases: "'packages/pkg/src/index.ts' 'packages/pkg/build/esm/index.js'",
     }),
     [
-      'node_modules/lib/index.js has no regression case.',
+      'node_modules/lib/index.js has no regression case naming it in full.',
       '^packages/typed/ matches no import from a migrated service.',
       '^packages/root/ matches no import from a migrated service.',
     ],

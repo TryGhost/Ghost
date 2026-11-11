@@ -138,7 +138,7 @@ export function allowanceProblems({
     );
     const untested = [...targets]
       .filter((target) => !regressionCases.includes(target))
-      .map((target) => `${target} has no regression case.`);
+      .map((target) => `${target} has no regression case naming it in full.`);
     return [...unused, ...untested];
   });
 }
