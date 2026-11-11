@@ -1,6 +1,16 @@
 import { act, renderHook } from '@testing-library/react';
 import useForm from '../../../src/hooks/use-form';
 
+function deferred() {
+  let resolve!: () => void;
+  let reject!: (error: Error) => void;
+  const promise = new Promise<void>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, resolve, reject };
+}
+
 describe('useForm', () => {
   // Mock timers for testing delays
   beforeEach(() => {
@@ -261,6 +271,184 @@ describe('useForm', () => {
   });
 
   describe('async operations', () => {
+    it('keeps edits made during a save unsaved until a second save', async () => {
+      const pending = deferred();
+      const onSave = vi.fn().mockReturnValueOnce(pending.promise);
+      const onSavedStateReset = vi.fn();
+      const { result } = renderHook(() =>
+        useForm({
+          initialState: { field: 'initial' },
+          onSave,
+          onSavedStateReset,
+        }),
+      );
+
+      act(() => result.current.updateForm(() => ({ field: 'Title A' })));
+      let saving!: Promise<boolean>;
+      act(() => {
+        saving = result.current.handleSave();
+      });
+      expect(onSave).toHaveBeenCalledExactlyOnceWith({ field: 'Title A' });
+
+      act(() => result.current.updateForm(() => ({ field: 'Title B' })));
+      expect(result.current.formState).toEqual({ field: 'Title B' });
+      expect(result.current.saveState).toBe('saving');
+      expect(result.current.okProps.disabled).toBe(true);
+
+      await act(async () => {
+        pending.resolve();
+        expect(await saving).toBe(false);
+      });
+      expect(result.current.saveState).toBe('unsaved');
+      expect(result.current.okProps.disabled).toBe(false);
+      act(() => vi.advanceTimersByTime(2000));
+      expect(onSavedStateReset).not.toHaveBeenCalled();
+
+      await act(async () => {
+        expect(await result.current.handleSave()).toBe(true);
+      });
+      expect(onSave.mock.calls).toEqual([[{ field: 'Title A' }], [{ field: 'Title B' }]]);
+      expect(result.current.saveState).toBe('saved');
+    });
+
+    it('keeps edits made during the saving delay unsaved', async () => {
+      const onSave = vi.fn();
+      const { result } = renderHook(() =>
+        useForm({
+          initialState: { field: 'initial' },
+          onSave,
+          savingDelay: 500,
+        }),
+      );
+
+      act(() => result.current.updateForm(() => ({ field: 'Title A' })));
+      let saving!: Promise<boolean>;
+      await act(async () => {
+        saving = result.current.handleSave();
+      });
+      expect(onSave).toHaveBeenCalledExactlyOnceWith({ field: 'Title A' });
+      expect(result.current.saveState).toBe('saving');
+
+      act(() => result.current.updateForm(() => ({ field: 'Title B' })));
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(500);
+        expect(await saving).toBe(false);
+      });
+      expect(result.current.formState).toEqual({ field: 'Title B' });
+      expect(result.current.saveState).toBe('unsaved');
+    });
+
+    it('does not start or acknowledge another save while one is pending', async () => {
+      const pending = deferred();
+      const onSave = vi.fn().mockReturnValue(pending.promise);
+      const { result } = renderHook(() => useForm({ initialState: { field: 'initial' }, onSave }));
+
+      act(() => result.current.updateForm(() => ({ field: 'Title A' })));
+      let saving!: Promise<boolean>;
+      act(() => {
+        saving = result.current.handleSave();
+      });
+      await act(async () => {
+        expect(await result.current.handleSave()).toBe(false);
+        expect(await result.current.handleSave({ force: true })).toBe(false);
+        expect(await result.current.handleSave({ fakeWhenUnchanged: true })).toBe(false);
+      });
+      act(() => result.current.updateForm(() => ({ field: 'Title B' })));
+      await act(async () => {
+        expect(await result.current.handleSave()).toBe(false);
+      });
+      expect(onSave).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        pending.resolve();
+        expect(await saving).toBe(false);
+      });
+    });
+
+    it.each(['resolve', 'reject'] as const)(
+      'does not change reset state when a pending save ends with %s',
+      async (outcome) => {
+        const pending = deferred();
+        const onSaveError = vi.fn();
+        const { result } = renderHook(() =>
+          useForm({
+            initialState: { field: 'initial' },
+            onSave: () => pending.promise,
+            onSaveError,
+          }),
+        );
+
+        act(() => result.current.updateForm(() => ({ field: 'Title A' })));
+        let saving!: Promise<boolean>;
+        act(() => {
+          saving = result.current.handleSave();
+        });
+        act(() => result.current.reset());
+        const error = new Error('Save failed');
+
+        await act(async () => {
+          if (outcome === 'reject') {
+            pending.reject(error);
+            await expect(saving).rejects.toBe(error);
+          } else {
+            pending.resolve();
+            expect(await saving).toBe(false);
+          }
+        });
+        expect(result.current.formState).toEqual({ field: 'initial' });
+        expect(result.current.saveState).toBe('');
+        expect(onSaveError).toHaveBeenCalledTimes(outcome === 'reject' ? 1 : 0);
+      },
+    );
+
+    it('keeps edits made after resetting a pending save available for saving', async () => {
+      const pending = deferred();
+      const onSave = vi.fn().mockReturnValueOnce(pending.promise);
+      const { result } = renderHook(() => useForm({ initialState: { field: 'initial' }, onSave }));
+
+      act(() => result.current.updateForm(() => ({ field: 'Title A' })));
+      let saving!: Promise<boolean>;
+      act(() => {
+        saving = result.current.handleSave();
+      });
+      act(() => result.current.reset());
+      act(() => result.current.updateForm(() => ({ field: 'Title B' })));
+
+      await act(async () => {
+        pending.resolve();
+        expect(await saving).toBe(false);
+      });
+      expect(result.current.formState).toEqual({ field: 'Title B' });
+      expect(result.current.saveState).toBe('unsaved');
+
+      await act(async () => {
+        expect(await result.current.handleSave()).toBe(true);
+      });
+      expect(onSave).toHaveBeenLastCalledWith({ field: 'Title B' });
+    });
+
+    it('cancels the saved callback when another edit is made', async () => {
+      const onSavedStateReset = vi.fn();
+      const { result } = renderHook(() =>
+        useForm({
+          initialState: { field: 'initial' },
+          onSave: vi.fn(),
+          savedDelay: 100,
+          onSavedStateReset,
+        }),
+      );
+
+      act(() => result.current.updateForm(() => ({ field: 'Title A' })));
+      await act(async () => {
+        await result.current.handleSave();
+      });
+      act(() => result.current.updateForm(() => ({ field: 'Title B' })));
+      act(() => vi.advanceTimersByTime(100));
+
+      expect(result.current.saveState).toBe('unsaved');
+      expect(onSavedStateReset).not.toHaveBeenCalled();
+    });
+
     it('shows saving state during async save', async () => {
       let resolveOnSave: () => void;
       const savePromise = new Promise<void>((resolve) => {
