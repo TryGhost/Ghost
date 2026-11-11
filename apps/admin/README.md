@@ -50,6 +50,9 @@ Add an acceptance test for the older-backend case. The social accounts settings
 and membership tiers tests contain current examples of hiding controls until
 their supporting settings are present.
 
+Ghost Apps is the exception while `apps` is a private Labs flag: its Admin code
+assumes a matching Core, with no older-backend fallbacks or tests.
+
 ### Code that fails to load
 
 Screens, the editor and the search modal load their code when first needed. A
