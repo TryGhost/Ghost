@@ -40,6 +40,16 @@ session tokens from native response bodies, by shape: a top-level `token`,
 and CSRF checks are pinned on, since Better Auth turns them off when
 `NODE_ENV` is `test` or `TEST` is set. Admin config publishes `auth: {engine}`.
 
+Under `better-auth`, `auth/authenticate.ts` keeps the `api-key` middleware and
+then runs `resolvePrincipal` (`auth/resolve-principal.ts`), which sets
+`req.auth` to a `Principal` (`auth/principal.ts`) and derives `req.user` and
+`req.api_key` from it. A verified key wins; otherwise the cookie branch reads
+Better Auth's session, pins it to the admin origin and to the session's own
+`origin`, and treats an unverified session, or one with no `origin`, as
+anonymous. A request that sends an `Authorization` header never falls back to
+the cookie. Legacy session cookies are not read. `Bearer` is still rejected
+until Phase 4.
+
 - `create-auth.ts`: `createAuth()` builds the instance with Ghost's options
   (plan §3.1) from injected dependencies; `assertDatabaseSupported()` is the
   boot check above.
@@ -283,8 +293,8 @@ Settled in Phase 0 (plan §10):
 - Scopes use the `object_type:action` permission keys, with finer scopes where
   one key covers more than one capability. They are checked on includes and
   relations too. Phase 4 starts with a spike on both.
-- The principal has `kind: 'app'` with `actingFor: User | null` for installed
-  apps. It lands with `resolvePrincipal` in Phase 2.
+- The principal's `app` kind lands with app tokens in Phase 4b. Its shape is
+  settled with the Apps scope vocabulary, not ahead of it.
 - No `bearer` plugin. Better Auth still returns session tokens in JSON
   without it: a top-level `token` from `/sign-in/email` and
   `/change-password`, `session.token` from `/get-session`, and a `token` on
