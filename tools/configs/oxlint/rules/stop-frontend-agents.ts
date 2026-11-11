@@ -12,11 +12,12 @@ export const stopFrontendAgents: CreateRule = {
     },
   },
   create(context) {
-    // Each start, with the local names that refer to its result or server.
-    const starts = new Map<ESTree.Node, Set<string>>();
-    // Result variables, pointing at the names of the start they hold.
-    const results = new Map<string, Set<string>>();
-    const stopped = new Set<string>();
+    // Each start, and the start each local name refers to at this point in the file.
+    const starts: ESTree.Node[] = [];
+    const current = new Map<string, ESTree.Node>();
+    // Result variables, pointing at the start they hold.
+    const results = new Map<string, ESTree.Node>();
+    const stopped = new Set<ESTree.Node>();
     let stopsGhost = false;
 
     const nameOf = (node: ESTree.Node) =>
@@ -30,9 +31,8 @@ export const stopFrontendAgents: CreateRule = {
       if (call?.type !== 'CallExpression' || nameOf(call.callee) !== 'getAgentsWithFrontend') {
         return;
       }
-      let names = starts.get(call);
-      if (!names) starts.set(call, (names = new Set()));
-      return names;
+      if (!starts.includes(call)) starts.push(call);
+      return call;
     };
     // The start a value comes from: the call itself, a result variable, or result.ghostServer.
     const sourceOf = (node: ESTree.Node | null | undefined) => {
@@ -48,11 +48,11 @@ export const stopFrontendAgents: CreateRule = {
       return startOf(node);
     };
     const bind = (target: ESTree.Node, value: ESTree.Node | null | undefined) => {
-      const names = sourceOf(value);
-      if (!names) return;
+      const start = sourceOf(value);
+      if (!start) return;
       if (target.type === 'Identifier') {
-        names.add(target.name);
-        if (startOf(value) || value?.type === 'Identifier') results.set(target.name, names);
+        current.set(target.name, start);
+        if (startOf(value) || value?.type === 'Identifier') results.set(target.name, start);
         return;
       }
       if (target.type !== 'ObjectPattern') return;
@@ -63,7 +63,7 @@ export const stopFrontendAgents: CreateRule = {
           property.key.name === 'ghostServer' &&
           property.value.type === 'Identifier'
         ) {
-          names.add(property.value.name);
+          current.set(property.value.name, start);
         }
       }
     };
@@ -83,22 +83,23 @@ export const stopFrontendAgents: CreateRule = {
         if (callee.type !== 'MemberExpression' || name !== 'stop') return;
         // server.stop() or result.ghostServer.stop(); other stop() calls don't count.
         const receiver = callee.object;
-        if (receiver.type === 'Identifier') stopped.add(receiver.name);
+        let local: string | undefined;
+        if (receiver.type === 'Identifier') local = receiver.name;
         else if (
           receiver.type === 'MemberExpression' &&
           receiver.object.type === 'Identifier' &&
           receiver.property.type === 'Identifier' &&
           receiver.property.name === 'ghostServer'
         ) {
-          stopped.add(receiver.object.name);
+          local = receiver.object.name;
         }
+        const start = local === undefined ? undefined : current.get(local);
+        if (start) stopped.add(start);
       },
       'Program:exit'() {
         if (stopsGhost) return;
-        for (const [node, names] of starts) {
-          if (![...names].some((name) => stopped.has(name))) {
-            context.report({ node, messageId: 'running' });
-          }
+        for (const node of starts) {
+          if (!stopped.has(node)) context.report({ node, messageId: 'running' });
         }
       },
     };

@@ -890,6 +890,17 @@ test('requires a stop for the server getAgentsWithFrontend starts', () => {
     ).diagnostics.map((d) => [d.code, d.labels[0]?.span.line]),
     [[code, 6]],
   );
+  assert.deepEqual(
+    lint(
+      [
+        'let agents = await e2e.getAgentsWithFrontend();',
+        'await agents.ghostServer.stop();',
+        'agents = await e2e.getAgentsWithFrontend();',
+      ].join('\n'),
+      testFile,
+    ).diagnostics.map((d) => [d.code, d.labels[0]?.span.line]),
+    [[code, 3]],
+  );
   assert.equal(lint('const other = 1;', testFile).status, 0);
 });
 
