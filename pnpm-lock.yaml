@@ -860,6 +860,7 @@ overrides:
   body-parser: 1.20.9
   express: 4.22.3
   qs: 6.16.1
+  readdir-glob: ^4.0.0
 
 packageExtensionsChecksum: sha256-ObOLO7cMPhZpUKrGhf0yokgWfmIPQH99MnaBfCkqyCs=
 
@@ -15295,9 +15296,9 @@ packages:
     resolution: {integrity: sha512-oIGGmcpTLwPga8Bn6/Z75SVaH1z5dUut2ibSyAMVhmUggWpmDn2dapB0n7f8nwaSiRtepAsfJyfXIO5DCVAODg==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
 
-  readdir-glob@3.0.0:
-    resolution: {integrity: sha512-AhNB2KgKeVJr16nK9LLZbJNWnYoT23ZrumNKFDebHBdkC8KHSqWo871JAUhoWC/RtjEVdqNMFpM6qrwRbaUqpw==}
-    engines: {node: '>=18'}
+  readdir-glob@4.0.0:
+    resolution: {integrity: sha512-TG+tPOT85yLmgnlsp6xIu7/cOZsFYs74utMOZRahGQ1HAm3QGT63MSUD64WyzbQg/WN8hciv/+43XTzeIgn83w==}
+    engines: {node: '>=20'}
 
   readdirp@3.6.0:
     resolution: {integrity: sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==}
@@ -22444,7 +22445,7 @@ snapshots:
       lazystream: 1.0.1
       normalize-path: 3.0.0
       readable-stream: 4.7.0
-      readdir-glob: 3.0.0
+      readdir-glob: 4.0.0
       tar-stream: 3.2.0
       zip-stream: 7.0.5
     transitivePeerDependencies:
@@ -28574,9 +28575,9 @@ snapshots:
       process: 0.11.10
       string_decoder: 1.3.0
 
-  readdir-glob@3.0.0:
+  readdir-glob@4.0.0:
     dependencies:
-      minimatch: 10.2.6
+      minimatch: 11.0.5
 
   readdirp@3.6.0:
     dependencies:

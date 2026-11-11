@@ -336,6 +336,7 @@ overrides:
   body-parser: 'catalog:'
   express: 'catalog:'
   qs: 'catalog:'
+  readdir-glob: '^4.0.0'
 
 packageExtensions:
   # These import packages they don't declare.
@@ -431,6 +432,7 @@ minimumReleaseAgeExclude:
   # nx pins its platform binaries to its own exact version, so the release age
   # of nx itself still gates them
   - '@nx/nx-*'
+  - 'readdir-glob@4.0.0' # audit fix bump
 
 # configuration for pnpm's native versioning (changesets). Private packages opt out
 # by carrying the non-semver placeholder version "private", so only published
