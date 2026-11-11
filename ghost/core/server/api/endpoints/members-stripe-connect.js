@@ -6,7 +6,12 @@ const urlUtils = require('../../../shared/url-utils').default;
 function isFromAdmin(req) {
   const fetchSite = req.get('sec-fetch-site');
   if (fetchSite) {
-    return fetchSite === 'same-origin' || fetchSite === 'none';
+    // The Connect button is a link. A script or image on the site's public
+    // pages is often same-origin too, but its request isn't a navigation.
+    return (
+      (fetchSite === 'same-origin' || fetchSite === 'none') &&
+      req.get('sec-fetch-mode') === 'navigate'
+    );
   }
   // Browsers without Fetch Metadata still say where a link was clicked.
   const adminOrigin = new URL(urlUtils.getAdminUrl() || urlUtils.getSiteUrl()).origin;

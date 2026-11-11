@@ -36,13 +36,35 @@ describe('Members Stripe Connect controller', function () {
   }
 
   it('starts a connection that Fetch Metadata says came from Ghost Admin', async function () {
-    assert.equal(await start({ 'sec-fetch-site': 'same-origin' }), 'started');
-    assert.equal(await start({ 'sec-fetch-site': 'none' }), 'started');
+    assert.equal(
+      await start({ 'sec-fetch-site': 'same-origin', 'sec-fetch-mode': 'navigate' }),
+      'started',
+    );
+    assert.equal(
+      await start({ 'sec-fetch-site': 'none', 'sec-fetch-mode': 'navigate' }),
+      'started',
+    );
+  });
+
+  it('refuses a same-origin start that is not a navigation, such as an image or script', async function () {
+    assert.equal(
+      await start({ 'sec-fetch-site': 'same-origin', 'sec-fetch-mode': 'no-cors' }),
+      'refused',
+    );
+    assert.equal(
+      await start({ 'sec-fetch-site': 'same-origin', 'sec-fetch-mode': 'cors' }),
+      'refused',
+    );
+    assert.equal(await start({ 'sec-fetch-site': 'same-origin' }), 'refused');
   });
 
   it('refuses a start from another site, whatever its Referer says', async function () {
     assert.equal(
-      await start({ 'sec-fetch-site': 'cross-site', referer: 'https://admin.example.com/ghost/' }),
+      await start({
+        'sec-fetch-site': 'cross-site',
+        'sec-fetch-mode': 'navigate',
+        referer: 'https://admin.example.com/ghost/',
+      }),
       'refused',
     );
   });
