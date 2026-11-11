@@ -516,14 +516,14 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
             )}
 
             {showEditor && draft && (
-              <div className="flex flex-1 flex-col gap-8 lg:flex-row lg:items-start lg:gap-12 in-data-[admin7-design=true]:lg:gap-20">
+              <div className="flex flex-1 flex-col gap-8 in-data-[admin7-design=true]:[--text-section-heading:var(--text-section-heading-lg)] lg:flex-row lg:items-start lg:gap-12 in-data-[admin7-design=true]:lg:gap-20">
                 {!admin7Design && sidebar}
-                <div className="flex min-w-0 flex-1 flex-col gap-8 in-data-[admin7-design=true]:gap-18 in-data-[admin7-design=true]:[--text-section-heading:var(--text-section-heading-lg)]">
+                <div className="flex min-w-0 flex-1 flex-col gap-8 in-data-[admin7-design=true]:gap-18">
                   {/* First card: name, email, labels, note. Admin 7 gives it a heading
                                     like the sections below it. */}
                   <section
                     aria-labelledby={admin7Design ? 'member-details-heading' : undefined}
-                    className="flex flex-col gap-3"
+                    className="flex flex-col gap-3 in-data-[admin7-design=true]:gap-4"
                   >
                     {admin7Design && (
                       <h3
@@ -533,8 +533,11 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                         Details
                       </h3>
                     )}
-                    <Card variant={admin7Design ? 'ruled' : 'outline'}>
-                      <CardContent className={admin7Design ? undefined : 'p-6'}>
+                    <Card
+                      className={admin7Design ? 'border-t-0' : undefined}
+                      variant={admin7Design ? 'ruled' : 'outline'}
+                    >
+                      <CardContent className={admin7Design ? 'pt-0' : 'p-6'}>
                         <MemberDetailForm
                           disabled={activeMutation.isPending}
                           draft={draft}
@@ -556,7 +559,10 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                                     only — the create contract doesn't take values yet, and a
                                     value can't exist before its member does. */}
                   {member && (
+                    // key={member.id} so moving straight to another member, whose record
+                    // is already cached, starts it on the five-field preview again.
                     <MemberCustomFieldsField
+                      key={member.id}
                       disabled={activeMutation.isPending}
                       memberId={member.id}
                       metafields={member.metafields}
@@ -586,7 +592,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                   {paidMembersEnabled && (
                     <section
                       aria-labelledby="member-subscriptions-heading"
-                      className="flex flex-col gap-3"
+                      className="flex flex-col gap-3 in-data-[admin7-design=true]:gap-4"
                     >
                       <h3
                         className="section-heading text-base font-semibold"

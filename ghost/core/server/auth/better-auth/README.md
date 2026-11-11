@@ -13,12 +13,29 @@ loads Better Auth or reads its tables, so Ghost runs without them. Under
 SQLite or where in-development tables are off (`createInDevelopmentTables`
 outside development and testing). Boot creates those tables before it builds
 the instance, so the check reads config rather than the database; it becomes a
-real table check, or goes away, when the tables get a migration. Nothing
-mounts its handler yet.
+real table check, or goes away, when the tables get a migration.
+
+Under `better-auth` the Admin API serves the handler on `/auth/*`
+(`web/api/endpoints/admin/better-auth.ts`), after the private cache header and ahead of body parsing because
+Better Auth reads the request stream. Better Auth's limiter runs on Ghost's
+`spam` limiters through `customStorage`, in every environment: each native
+credential route counts against its compatibility route's limiters, sharing
+their counters, and a successful sign-in or password reset clears `userLogin`
+as the compatibility routes do. `/change-password` and `/verify-password`,
+which check the current password, count against `globalBlock` under their own
+paths. `/change-password` stays disabled until legacy sign-in reads
+`user_accounts` (plan Phase 2). Other paths are not limited. An after-hook strips
+session tokens from native response bodies, by shape: a top-level `token`,
+`session.token`, and each list item's `token`. The token still travels in the
+`httpOnly` session cookie, and server-side `auth.api` calls keep it. Origin
+and CSRF checks are pinned on, since Better Auth turns them off when
+`NODE_ENV` is `test` or `TEST` is set. Admin config publishes `auth: {engine}`.
 
 - `create-auth.ts`: `createAuth()` builds the instance with Ghost's options
   (plan §3.1) from injected dependencies; `assertDatabaseSupported()` is the
   boot check above.
+- `rate-limit.ts`: the `customStorage` that maps native credential routes to
+  Ghost's limiters.
 - `index.ts`: the boot-owned service root, exposed as `auth.betterAuth`. Boot
   calls `init()`; consumers read `.service`.
 
@@ -37,6 +54,15 @@ cookie the browser accepts. It is not `__Host-`, which would need `Path=/` and
 send the admin session with every frontend request. Its `maxAge` is Better
 Auth's, in seconds, from `expiresIn`. The auth frame (`web/admin/app.js`)
 accepts either name.
+
+Better Auth reads the client IP, for session rows and its rate limiter, only
+from request headers. A client can set any header, so Ghost points
+`advanced.ipAddress.ipAddressHeaders` at its own `x-ghost-client-ip`, which
+`setClientIPHeader` (`client-ip.ts`) overwrites with Express's `req.ip` as
+`trust proxy` resolved it. Mount it before any route that hands request headers
+to Better Auth. `ipv6Subnet: 64` and `normalizeIP` in Ghost's `BackoffLimiter`
+format an address the same way, so both count a client against the same key.
+IPv6 counts per /64, the block a single subscriber usually holds.
 
 - `knex-adapter.ts`: a Better Auth database adapter over a Knex instance. It
   imports nothing from Ghost, so it can become a package later. Ghost
@@ -197,7 +223,7 @@ Settled in Phase 0 (plan §10):
 - Sessions last 180 days, absolute (`disableSessionRefresh`). Rolling sessions
   come later.
 - Email codes are 6 random digits, hashed in `verifications`, expiring after
-  5 minutes. Five wrong attempts delete the code; `express-brute` stays on top.
+  5 minutes. Five wrong attempts delete the code; Ghost's rate limiters stay on top.
 - Magic link, passkey, TOTP and SSO sign-ins count as verified.
   `require_email_mfa` applies to password sign-in only.
 - Scopes use the `object_type:action` permission keys, with finer scopes where
@@ -209,7 +235,7 @@ Settled in Phase 0 (plan §10):
   without it: a top-level `token` from `/sign-in/email` and
   `/change-password`, `session.token` from `/get-session`, and a `token` on
   each session from `/list-sessions`. A global after-hook strips them from
-  every native response before the handler is mounted (Phase 2). Because
+  every native response, and landed with the mount. Because
   `revokeSession` takes a token, revoking one session (Phase 8) uses a Ghost
   endpoint that takes a session id and checks ownership.
 - OAuth clients for apps are Phase 4b, alongside Phase 5.

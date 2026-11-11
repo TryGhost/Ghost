@@ -124,9 +124,6 @@ describe('Member Custom Fields Members API', function () {
     await fixtureManager.init('newsletters', 'members:newsletters');
     await adminAgent.loginAsOwner();
     await membersAgent.loginAs(MEMBER_EMAIL);
-    // Defining and removing fields is behind the flag, so it is on for the whole
-    // file rather than for each test: every test both makes and unmakes one.
-    mockManager.mockLabsEnabled('membersCustomFields');
 
     const { body } = await adminAgent
       .get(`members/?filter=email:'${MEMBER_EMAIL}'`)
@@ -299,6 +296,35 @@ describe('Member Custom Fields Members API', function () {
       .expectStatus(422);
 
     assert.equal(body.errors[0].message, 'Choose one option.');
+    assert.equal((await readMemberAsStaff()).metafields?.custom?.[key], undefined);
+  });
+
+  // Portal checks nothing about a phone number itself: it sends what the member typed and
+  // shows the site's refusal under the input the refusal names.
+  it('keeps the phone number a member writes in international form', async function () {
+    const key = await defineField('Mobile', { type: 'phone' });
+
+    const { body } = await membersAgent
+      .put('/api/member/')
+      .body({ metafields: { custom: { [key]: '+44 20 7946 0000' } } })
+      .expectStatus(200);
+
+    assert.equal(body.metafields.custom[key], '+442079460000');
+  });
+
+  it('refuses a phone number without its country code, naming the field', async function () {
+    const key = await defineField('Mobile', { type: 'phone' });
+
+    const { body } = await membersAgent
+      .put('/api/member/')
+      .body({ metafields: { custom: { [key]: '020 7946 0000' } } })
+      .expectStatus(422);
+
+    assert.equal(body.errors[0].property, `metafields.custom.${key}`);
+    assert.equal(
+      body.errors[0].message,
+      'Enter the phone number with its country code, starting with +, like +44 20 7946 0000.',
+    );
     assert.equal((await readMemberAsStaff()).metafields?.custom?.[key], undefined);
   });
 

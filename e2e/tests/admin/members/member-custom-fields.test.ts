@@ -9,15 +9,10 @@ import { usePerTestIsolation } from '@/helpers/playwright/isolation';
  * own editor, and survive a reload. The acceptance tests cover the component
  * against a fake API; this pins the settings -> member-detail -> server
  * round-trip they mock away.
- *
- * React member detail only (the editor is a React-only feature) plus the
- * membersCustomFields flag, which is what lets the test define a field in Settings.
  */
 usePerTestIsolation();
 
 test.describe('Ghost Admin - Member custom fields', () => {
-  test.use({ labs: { membersCustomFields: true } });
-
   test('a field defined in settings takes a value on a member and persists it', async ({
     page,
   }) => {

@@ -27,7 +27,7 @@ const metafieldsService = require('../members-metafields');
 const signingKeys = require('../signing-keys').default;
 const { t } = require('../../../shared/i18n');
 const sentry = require('../../../shared/sentry');
-const { tracer } = require('../../lib/tracing');
+const { tracer, meter } = require('../../lib/tracing');
 const { stripeTracking } = require('../stripe/tracking');
 
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
@@ -287,10 +287,16 @@ function createApiInstance(config) {
     // two together in boot order. Metafields is initialised in initCore, the
     // members API is built in initServices, so this is always the live instance.
     metafieldValues: metafieldsService.values,
+    // And the bindings, through which a member's own answers to what a tier asks are saved, as
+    // a checkout saves them.
+    metafieldBindings: metafieldsService.bindings,
+    // What a tier asks of its members, read when one changes tier: tiers is still initializing
+    // here, like the tiers API above.
+    tierRequirements: () => tiers.service.requirements,
     // Read here for the same reason: the Stripe Checkout config is also initialised in
     // initCore, so its guarded service is ready when the members API is built.
     checkouts: stripeCheckoutConfig.service.checkouts,
-    tracking: stripeTracking(tracer),
+    tracking: stripeTracking({ tracer, meter }),
   });
 
   return membersApiInstance;

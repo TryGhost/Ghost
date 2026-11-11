@@ -21,6 +21,7 @@ const BACKUP_TABLES = [
   'permissions',
   'permissions_roles',
   'permissions_users',
+  'rate_limits',
   'webhooks',
   'tokens',
   'sessions',
@@ -85,7 +86,8 @@ const BACKUP_TABLES = [
   'welcome_email_automated_emails',
   'tinybird_syncs',
   'stripe_checkout_config',
-  'stripe_checkout_config_tiers',
+  'tier_requirements',
+  'tier_requirement_tiers',
 ];
 
 // NOTE: exposing only tables which are going to be included in a "default" export file

@@ -223,8 +223,6 @@ describe('Members export -> import round-trip', function () {
   });
 
   it('exports a custom field and re-imports its value onto a fresh member', async function () {
-    mockManager.mockLabsEnabled('membersCustomFields');
-
     const fieldRes = await request
       .post(localUtils.API.getApiQuery('members/metafields/custom/'))
       .set('Origin', config.get('url'))
@@ -324,12 +322,70 @@ describe('Members export -> import round-trip', function () {
     );
   });
 
+  // A phone number starts with a +, which a spreadsheet would read as a formula and turn into
+  // a number without its +. The export's formula guard keeps it text, and the import takes the
+  // guard back off, so the number survives a spreadsheet and comes back as it was.
+  it('round-trips a phone number through the formula guard', async function () {
+    const fieldRes = await request
+      .post(localUtils.API.getApiQuery('members/metafields/custom/'))
+      .set('Origin', config.get('url'))
+      .send({ members_metafields: [{ name: 'Round Trip Mobile', type: 'phone' }] })
+      .expect(201);
+    const phoneKey = fieldRes.body.members_metafields[0].key;
+
+    const srcEmail = 'rtphone-src@example.com';
+    await models.Member.add({
+      email_disabled: false,
+      email: srcEmail,
+      name: 'Phone Member',
+      labels: [{ name: customLabel.get('name') }],
+    });
+    const src = await findMember(srcEmail);
+    await request
+      .put(localUtils.API.getApiQuery(`members/${src.id}/`))
+      .set('Origin', config.get('url'))
+      .send({ members: [{ metafields: { custom: { [phoneKey]: '+44 20 7946 0000' } } }] })
+      .expect(200);
+
+    const csv = await exportSet(customLabel.get('slug'));
+    assert.equal(
+      Papa.parse(csv, { header: true }).data.find((r) => r.email === srcEmail)[
+        `metafields.custom.${phoneKey}`
+      ],
+      "'+442079460000",
+    );
+
+    const freshEmail = 'rtphone-fresh@example.com';
+    const csvPath = path.join(os.tmpdir(), `members-phone-${Date.now()}.csv`);
+    fs.writeFileSync(csvPath, csv.replace(srcEmail, freshEmail));
+    try {
+      await request
+        .post(localUtils.API.getApiQuery('members/upload/'))
+        .attach('membersfile', csvPath)
+        .set('Origin', config.get('url'))
+        .expect('Content-Type', /json/)
+        .expect(201);
+    } finally {
+      fs.unlinkSync(csvPath);
+    }
+
+    const freshRes = await request
+      .get(
+        localUtils.API.getApiQuery(
+          `members/?search=${encodeURIComponent(freshEmail)}&include=metafields`,
+        ),
+      )
+      .set('Origin', config.get('url'))
+      .expect(200);
+    const fresh = freshRes.body.members.find((m) => m.email === freshEmail);
+    assertExists(fresh);
+    assert.equal(fresh.metafields?.custom?.[phoneKey], '+442079460000');
+  });
+
   // A row with a Stripe customer id is not imported inline; the importer spools it to a
   // background job as JSON first. This case proves the custom-field columns survive that
   // spool, which the inline path never exercises.
   it('round-trips an address custom field and leaves a value-less member untouched', async function () {
-    mockManager.mockLabsEnabled('membersCustomFields');
-
     await models.Label.add({ name: 'Round-Trip Address' });
     const addressLabel = (await models.Label.findAll()).models.find(
       (l) => l.get('name') === 'Round-Trip Address',

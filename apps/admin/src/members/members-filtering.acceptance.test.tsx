@@ -104,7 +104,7 @@ describe('Members list', () => {
     const membersApi = fakeMembers(({ filter }) =>
       filter ? [member({ name: 'Acme Member' })] : [member({ name: 'Acme Member' }), member()],
     );
-    await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+    await renderAdminApp('/members');
 
     await expect(membersScreen.memberRows()).toHaveCount(2);
 
@@ -131,6 +131,40 @@ describe('Members list', () => {
     );
   });
 
+  // A phone field keeps every number in E.164, so what staff type is compared in that form: a
+  // whole number as E.164, read in their own country unless it gives its code, and part of one
+  // without its spaces, brackets and dashes.
+  it('finds a phone number however it is written', async () => {
+    fakeMemberCustomFields([
+      {
+        namespace: CUSTOM_NAMESPACE,
+        key: KeySchema.parse('mobile'),
+        name: 'Mobile',
+        type: 'phone',
+        status: 'active',
+        access: { member: 'none' },
+        created_at: '2026-08-05T00:00:00.000Z',
+        updated_at: null,
+      },
+    ]);
+    const membersApi = fakeMembers([member()]);
+    await renderAdminApp('/members');
+
+    await membersScreen.openFilterField('Mobile');
+    const valueInput = page.getByRole('textbox', { name: 'Mobile value' });
+    await valueInput.fill('7946 0000');
+    await expect(membersApi).toHaveSentFilter(
+      "(metafields.identity:'custom.mobile'+metafields.value:~'79460000')",
+    );
+
+    await page.getByRole('button', { name: 'Mobile operator' }).click();
+    await membersScreen.menuItem(/^is$/).click();
+    await valueInput.fill('+44 (0)20 7946-0000');
+    await expect(membersApi).toHaveSentFilter(
+      "(metafields.identity:'custom.mobile'+metafields.value:'+442079460000')",
+    );
+  });
+
   it('filters a list field by the options picked, the way labels are', async () => {
     fakeMemberCustomFields([
       {
@@ -151,7 +185,7 @@ describe('Members list', () => {
     const membersApi = fakeMembers(({ filter }) =>
       filter ? [member({ name: 'Dog Lover' })] : [member({ name: 'Dog Lover' }), member()],
     );
-    await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+    await renderAdminApp('/members');
 
     await membersScreen.addMultiselectFilter('Favourite animals', ['Dog']);
 
@@ -182,7 +216,7 @@ describe('Members list', () => {
     const membersApi = fakeMembers(({ filter }) =>
       filter ? [member({ name: 'Unanswered' })] : [member({ name: 'Unanswered' }), member()],
     );
-    await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+    await renderAdminApp('/members');
 
     await membersScreen.addMultiselectFilter('Favourite animals', ['Dog']);
     await userEvent.keyboard('{Escape}');
@@ -217,7 +251,7 @@ describe('Members list', () => {
       { status: 404 },
     );
     fakeMembers([member()]);
-    await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+    await renderAdminApp('/members');
 
     await membersScreen.openFilterField('Favourite animals');
 
@@ -244,9 +278,7 @@ describe('Members list', () => {
     });
     const membersApi = fakeMembers([]);
     const saved = "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dolphin'])";
-    await renderAdminApp(`/members?filter=${encodeURIComponent(saved)}`, {
-      labs: { membersCustomFields: true },
-    });
+    await renderAdminApp(`/members?filter=${encodeURIComponent(saved)}`);
 
     await membersScreen.openMultiselectValue('Dolphin');
     await expect.element(membersScreen.multiselectOption('Dolphin')).toBeVisible();
@@ -273,7 +305,7 @@ describe('Members list', () => {
     const membersApi = fakeMembers(({ filter }) =>
       filter ? [member({ name: 'Dolphin Fan' })] : [member({ name: 'Dolphin Fan' }), member()],
     );
-    await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+    await renderAdminApp('/members');
 
     await membersScreen.addMultiselectFilter('Favourite animals', ['Dolphin']);
 
@@ -305,7 +337,7 @@ describe('Members list', () => {
       const membersApi = fakeMembers(({ filter }) =>
         filter ? [member({ name: 'Both' })] : [member({ name: 'Both' }), member()],
       );
-      await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+      await renderAdminApp('/members');
 
       await membersScreen.addMultiselectFilter('Favourite animals', ['Dog', 'Cat']);
       await userEvent.keyboard('{Escape}');
@@ -324,7 +356,7 @@ describe('Members list', () => {
         values: [],
       });
       fakeMembers([member()]);
-      await renderAdminApp('/members', { labs: { membersCustomFields: true } });
+      await renderAdminApp('/members');
 
       await membersScreen.addMultiselectFilter('Favourite animals', ['Dog']);
       await userEvent.keyboard('{Escape}');
@@ -341,9 +373,7 @@ describe('Members list', () => {
       const membersApi = fakeMembers([member({ name: 'Both' })]);
       const typed =
         "(metafields.identity:'custom.favourite_animals'+metafields.value:['Dog'+'Cat'])";
-      await renderAdminApp(`/members?filter=${encodeURIComponent(typed)}`, {
-        labs: { membersCustomFields: true },
-      });
+      await renderAdminApp(`/members?filter=${encodeURIComponent(typed)}`);
 
       await expect
         .element(page.getByRole('button', { name: 'is all of', exact: true }))

@@ -485,7 +485,7 @@ describe('Advanced settings', () => {
     await expect.poll(() => actionsApi.requests.length).toBeGreaterThan(0);
     const initialQuery = new URL(actionsApi.requests[0].url).searchParams;
     expect(initialQuery.get('include')).toBe('actor,resource');
-    expect(initialQuery.get('limit')).toBe('200');
+    expect(initialQuery.get('limit')).toBe('100');
     expect(initialQuery.get('filter')).toBe('resource_type:-[label]');
 
     await modal.getByRole('button', { name: 'Filter' }).click();

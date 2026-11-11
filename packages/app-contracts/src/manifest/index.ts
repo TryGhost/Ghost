@@ -19,6 +19,7 @@ export type { AppIcon } from './icon.ts';
 export type { PublicKeyJwk } from './keys.ts';
 export { URL_MAX_LENGTH } from './limits.ts';
 export {
+  formatManifestErrors,
   parseManifest,
   parseManifestUrl,
   type ManifestError,

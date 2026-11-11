@@ -23,6 +23,12 @@ Core deploy independently, so a flag may be visible before the endpoint,
 setting, or response field needed by the UI exists. Admin must detect the
 backend capability and handle the older-server case separately.
 
+One exception: a new member custom field type is built behind a Labs flag that
+also decides when Admin offers it. That holds only because the flag is switched
+on after every Ghost(Pro) server has the type's code, and only creating a field
+of the type is gated. See
+[why a new field type starts behind a flag](../../packages/metafield-types/docs/explanation/why-a-new-field-type-starts-behind-a-flag.md).
+
 ## Flag stages
 
 Flags are camelCase keys registered in
@@ -113,6 +119,11 @@ Test the flag boundary and preserve existing behavioral coverage. Styling-only
 changes need visual review, not tests that assert appearance. Keep permanent
 permission and backend capability checks independent of the temporary flag.
 
+With `admin7Design` on, Shade's standard `Tabs` and route-based `PageMenu`
+share pill styling and selected, inactive, and hover colors. Compact tabs keep
+their smaller size, and KPI tabs keep their chart-card layout. Screens do not
+need their own flag branch for this appearance.
+
 The pill-controls milestone is generally available in Admin. Standalone
 ActivityPub uses Shade's current default.
 
@@ -153,6 +164,29 @@ and the space above them follow the width of the page area.
 The `admin7Design` milestone also moves the member detail sidebar to the right with
 Engagement first, and sections sit under larger headings with a line across the
 top instead of a card.
+
+Tag details use the same larger section headings for Details, Meta data and
+Code injection, without horizontal rules beneath them. Code injection stays
+open without an expand/collapse control. Member Details and Engagement also
+omit their heading rules. Both detail screens have a vertical divider midway
+between their desktop columns, hidden when the columns stack.
+Meta data has no helper description under its heading. At desktop widths, the metadata
+column is 400px wide to accommodate previews, with the same 80px gap as member
+details. The columns stack below the sidebarlg breakpoint, with 32px between them.
+Metadata navigation uses pill-shaped button tabs. Button and button-small tabs
+use a primary selected fill with contrasting text, and muted inactive fills with
+foreground text. Metadata fields and previews sit directly on the page without
+an inset background or padding. The flag-off design keeps its underline tabs and
+outlined cards; tag editing, uploads, previews and saving use the same behavior
+in both designs.
+
+With `admin7Design` on, empty tag image slots use Shade's default dashed Dropzone style. Metadata image
+slots use the same field surface as their inputs, giving them a white background
+in light mode. Shared Dropzones use a 1px border, muted prompts, and thin icons;
+ImageUpload leaves its outer surface unclipped. With the flag off, the previous
+2px Dropzone border, prompt/icon styling, ImageUpload clipping, Unsplash hover
+styling, and PageMenu fit calculation remain. The legacy code-injection
+accordion retains its original expand/collapse behavior without auto-scroll.
 
 The `admin7CustomizeFromViewSite` experiment adds Customize to the frame's top
 bar on View site, opening the Design settings in a panel over a live, browsable
@@ -206,9 +240,9 @@ or parse failure keeps the last known good overrides.
 ## Admin session overrides
 
 To preview a flagged Admin feature, add `labs` to the query string inside the
-Admin hash route, for example `/ghost/#/members?labs=membersCustomFields`. Use
-comma-separated names (`?labs=membersCustomFields,apps`) or repeated
-parameters (`?labs=membersCustomFields&labs=apps`) to enable multiple flags.
+Admin hash route, for example `/ghost/#/members?labs=importMemberTier`. Use
+comma-separated names (`?labs=importMemberTier,apps`) or repeated
+parameters (`?labs=importMemberTier&labs=apps`) to enable multiple flags.
 
 Admin stores the list in `sessionStorage` under `ghost-admin:labs-overrides`.
 It persists across navigation and reloads in the same tab for that browser

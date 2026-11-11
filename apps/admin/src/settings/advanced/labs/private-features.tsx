@@ -14,6 +14,12 @@ type Feature = {
 
 const features: Feature[] = [
   {
+    title: 'Phone custom fields',
+    description:
+      'Offers Phone as a type of custom field while it is being built. A field made while this is on keeps working if it is turned off.',
+    flag: 'customFieldTypePhone',
+  },
+  {
     title: 'Automations',
     description:
       'Toggle the automations beta. Unexpected problems can occur if you turn this off after previously turning it on.',
@@ -74,15 +80,9 @@ const features: Feature[] = [
     flag: 'getHelperDeduplication',
   },
   {
-    title: 'Member custom fields',
-    description:
-      'Let admins create and manage custom field definitions for members, and choose which field each Stripe checkout answer is stored in',
-    flag: 'membersCustomFields',
-  },
-  {
     title: 'Stripe checkout collection',
     description:
-      'Let admins turn on shipping address, phone number and tax number collection for a tier, asked by Stripe checkout and stored against the member',
+      'Let admins turn on shipping address and phone number collection for a tier, asked by Stripe checkout and stored against the member',
     flag: 'stripeCheckoutCollection',
   },
   {

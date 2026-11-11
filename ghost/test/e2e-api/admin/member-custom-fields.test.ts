@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { z } from 'zod';
+import { FIELDS_IN_DEVELOPMENT } from '@tryghost/metafield-types/test/fixtures';
 
 const {
   agentProvider,
@@ -13,6 +14,7 @@ const DatabaseInfo = require('@tryghost/database-info');
 const { knex } = require('../../../core/server/data/db');
 const models = require('../../../core/server/models');
 const events = require('../../../core/server/lib/common/events');
+const settingsService = require('../../../core/server/services/settings/settings-service');
 
 describe('Member Custom Fields Admin API', function () {
   let agent: {
@@ -74,10 +76,6 @@ describe('Member Custom Fields Admin API', function () {
     agent = await agentProvider.getAdminAPIAgent();
     await fixtureManager.init('users');
     await agent.loginAsOwner();
-  });
-
-  beforeEach(function () {
-    mockManager.mockLabsEnabled('membersCustomFields');
   });
 
   afterEach(async function () {
@@ -254,6 +252,34 @@ describe('Member Custom Fields Admin API', function () {
         .body({ members_metafields: [{ name: 'Topic', type: 'not_a_type' }] })
         .expectStatus(422);
     });
+
+    // A type still in development can be created only where its Labs flag is on, whoever asks.
+    it.each(FIELDS_IN_DEVELOPMENT)(
+      'refuses a $field.type field while $flag is off',
+      async function ({ field, flag }) {
+        mockManager.mockLabsDisabled(flag);
+
+        const { body } = await agent
+          .post('members/metafields/custom/')
+          .body({ members_metafields: [{ name: 'In development', ...field }] })
+          .expectStatus(422);
+
+        assert.equal(body.errors[0].property, 'type');
+        const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body;
+        assert.deepEqual(list.members_metafields, []);
+      },
+    );
+
+    it.each(FIELDS_IN_DEVELOPMENT)(
+      'creates a $field.type field once $flag is on',
+      async function ({ field, flag }) {
+        mockManager.mockLabsEnabled(flag);
+
+        const created = await createField({ name: 'In development', ...field });
+
+        assert.equal(created.type, field.type);
+      },
+    );
 
     it('rejects a create with no root key', async function () {
       // The framework rejects an empty/malformed body before the query runs,
@@ -1484,6 +1510,19 @@ describe('Member Custom Fields Admin API', function () {
       assert.deepEqual(await readValues(memberId), {});
     });
 
+    it('keeps a phone number in one international form, however it was written', async function () {
+      // E.164 whatever the separators, and a national (0) after the country code isn't part of
+      // the number, so one number is one value for filters and integrations to rely on.
+      const field = await createField({ name: 'Mobile', type: 'phone' });
+      const memberId = await createMember();
+
+      await setValues(memberId, { [field.key]: '+44 (0)20 7946-0000' });
+      assert.deepEqual(await readValues(memberId), { [field.key]: '+442079460000' });
+
+      await setValues(memberId, { [field.key]: '+1 (415) 555 0100' });
+      assert.deepEqual(await readValues(memberId), { [field.key]: '+14155550100' });
+    });
+
     it('rejects an empty string for a non-text field rather than clearing it', async function () {
       // '' is no value of any type, so it's an invalid value, and nothing is coerced.
       const field = await createField({ name: 'Home address', type: 'address' });
@@ -1531,6 +1570,31 @@ describe('Member Custom Fields Admin API', function () {
         assert.equal(await reasonFor({ [field.key]: { country: 'IRL' } }, memberId), expected);
         assert.equal(await reasonFor({ [field.key]: { country: '12' } }, memberId), expected);
         assert.equal(await reasonFor({ [field.key]: { country: 'D' } }, memberId), expected);
+      });
+
+      it('asks for the country code a phone number was written without', async function () {
+        // Without it there is no telling which country's number it is.
+        const field = await createField({ name: 'Mobile', type: 'phone' });
+        const memberId = await createMember();
+
+        assert.equal(
+          await reasonFor({ [field.key]: '020 7946 0000' }, memberId),
+          'Enter the phone number with its country code, starting with +, like +44 20 7946 0000.',
+        );
+        assert.equal(
+          await reasonFor({ [field.key]: '+44 20 7946 000' }, memberId),
+          'Enter a valid phone number, like +44 20 7946 0000.',
+        );
+      });
+
+      it('refuses a phone number with an extension rather than dropping it', async function () {
+        const field = await createField({ name: 'Office', type: 'phone' });
+        const memberId = await createMember();
+
+        assert.equal(
+          await reasonFor({ [field.key]: '+1 415 555 0100 ext. 12' }, memberId),
+          'Enter the phone number without an extension.',
+        );
       });
 
       it('asks for a part when an address names none', async function () {
@@ -2822,7 +2886,7 @@ describe('Member Custom Fields Admin API', function () {
     // Switching back to a session means logging in again, and this file already logs in
     // close to the limit on login attempts, so clear the count before the later blocks do.
     afterAll(async function () {
-      await dbUtils.truncate('brute');
+      await dbUtils.truncate('rate_limits');
       await agent.loginAsOwner();
     });
 
@@ -2893,23 +2957,57 @@ describe('Member Custom Fields Admin API', function () {
     });
   });
 
-  // The flag governs whether a publisher can set custom fields up, not whether the rest of
-  // Ghost may ask what they are. Admin reads this list to draw screens it renders either
-  // way, and a site that has never enabled the flag has no fields, so the honest answer is
-  // an empty list. Every route that changes something stays behind the flag.
-  describe('Flag disabled', function () {
-    beforeEach(function () {
-      mockManager.restore();
-      mockManager.mockLabsDisabled('membersCustomFields');
+  // Custom fields are released, so a site has them whatever its own Labs setting says. That
+  // includes a site that turned them off in Labs while they were private. Ghost no longer
+  // saves a released flag into the setting, so the row is written as that site left it.
+  describe('Released', function () {
+    let storedLabs: string;
+
+    async function storeLabs(value: string) {
+      await models.Base.knex('settings').where({ key: 'labs' }).update({ value });
+      await settingsService.init();
+    }
+
+    beforeEach(async function () {
+      storedLabs = (await models.Settings.findOne({ key: 'labs' })).get('value');
+      await storeLabs(JSON.stringify({ ...JSON.parse(storedLabs), membersCustomFields: false }));
     });
 
-    it('serves the definitions endpoint, with nothing on it', async function () {
-      const { body } = await agent.get('members/metafields/custom/').expectStatus(200);
-      assert.deepEqual(body.members_metafields, []);
+    afterEach(async function () {
+      await storeLabs(storedLabs);
     });
 
-    it('404s a read of a field that does not exist, rather than hiding the route', async function () {
-      await agent.get('members/metafields/custom/company/').expectStatus(404);
+    it('lets a site that turned custom fields off in Labs before release define one', async function () {
+      const created = await createField({ name: 'Company' });
+      assert.equal(created.key, 'company');
+    });
+  });
+
+  // A released flag can still be switched off, from config or remote flags, and the site
+  // then behaves as it did before release. The flag governs whether a publisher can set
+  // custom fields up, not whether the rest of Ghost may ask what they are: Admin reads this
+  // list to draw screens it renders either way. Every route that changes something stays
+  // behind the flag.
+  describe('Flag switched off', function () {
+    beforeEach(async function () {
+      await createField({ name: 'Company' });
+      configUtils.set('labs', { membersCustomFields: false });
+    });
+
+    afterEach(async function () {
+      await configUtils.restore();
+    });
+
+    it('still lists and reads the fields the site has', async function () {
+      const { body: list } = await agent.get('members/metafields/custom/').expectStatus(200);
+      assert.deepEqual(
+        list.members_metafields.map((field: { key: string }) => field.key),
+        ['company'],
+      );
+      const { body: read } = await agent
+        .get('members/metafields/custom/company/')
+        .expectStatus(200);
+      assert.equal(read.members_metafields[0].key, 'company');
     });
 
     it('404s the create endpoint', async function () {

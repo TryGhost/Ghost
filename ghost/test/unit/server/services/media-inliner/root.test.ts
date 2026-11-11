@@ -7,6 +7,7 @@ import ExternalMediaInlinerJob from '../../../../../core/server/services/media-i
 import { PostMediaInliner } from '../../../../../core/server/services/content-import/import/media';
 import type { PostData } from '../../../../../core/server/services/content-import/import/post-data';
 import type { ExternalMediaImportResult } from '../../../../../core/server/services/media-inliner/types';
+import type { OriginSchemes } from '../../../../../core/server/services/media-inliner/origin-schemes';
 
 // Required rather than imported so the stubs land on the module instances the
 // root requires at init.
@@ -17,8 +18,14 @@ const registerJobHandlers: typeof import('../../../../../core/server/services/jo
 
 type MediaInliner = {
   inline(domains: string[]): Promise<void>;
-  importUrl(sourceUrl: string): Promise<ExternalMediaImportResult>;
-  getRemoteMedia(sourceUrl: string): Promise<object | null>;
+  importUrl(
+    sourceUrl: string,
+    options?: { originSchemes?: OriginSchemes },
+  ): Promise<ExternalMediaImportResult>;
+  getRemoteMedia(
+    sourceUrl: string,
+    options?: { originSchemes?: OriginSchemes },
+  ): Promise<object | null>;
   extractFileDataFromResponse(
     sourceUrl: string,
     response: object,
@@ -270,7 +277,11 @@ describe('Media inliner service root', function () {
     await firstRun.inline(firstPost);
     assert.equal(firstPost.feature_image, '__GHOST_URL__/content/images/local.jpg');
     assert.equal(firstPost.posts_meta?.og_image, '__GHOST_URL__/content/images/local.jpg');
-    sinon.assert.calledOnceWithExactly(firstImport, sourceUrl);
+    sinon.assert.calledOnceWithExactly(
+      firstImport,
+      sourceUrl,
+      sinon.match({ originSchemes: sinon.match.has('get').and(sinon.match.has('set')) }),
+    );
 
     await root.init();
 
@@ -281,6 +292,14 @@ describe('Media inliner service root', function () {
 
     await run().inline(post());
     sinon.assert.calledTwice(firstImport);
-    assert.deepEqual(firstImport.args, [[sourceUrl], [sourceUrl]]);
+    assert.deepEqual(
+      firstImport.args.map(([url]) => url),
+      [sourceUrl, sourceUrl],
+    );
+    // Each run also learns origin schemes afresh
+    assert.notEqual(
+      firstImport.firstCall.args[1]?.originSchemes,
+      firstImport.secondCall.args[1]?.originSchemes,
+    );
   });
 });

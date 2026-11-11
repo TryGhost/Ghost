@@ -34,7 +34,7 @@ services:
       start_interval: 1s
 
   redis:
-    image: redis:7.4@sha256:b6b6e3dc0c0952737748e55d5d885272840c7e42ba41ab1d5489f693419882f5
+    image: redis:7.4@sha256:2e3eb11462c4e3759e6972678dd051d150ff54b1e60714b3c33b701260172a90
     container_name: ghost-dev-redis
     command: ['redis-server', '--loglevel', 'warning']
     ports:
@@ -181,7 +181,7 @@ services:
         condition: service_healthy
 
   stripe:
-    image: stripe/stripe-cli:latest@sha256:16a5c75bd681b756fdd174e54840623170f811efe9d49522d401013d97ade7bd
+    image: stripe/stripe-cli:latest@sha256:c8e5a48108fb4c1e83583912c85810e9ac3bc8db91070da3f915ac369ceecf31
     container_name: ghost-dev-stripe
     entrypoint: ['/entrypoint.sh']
     profiles: ['stripe']

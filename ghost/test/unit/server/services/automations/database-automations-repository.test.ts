@@ -1,5 +1,4 @@
 import { omit } from 'lodash';
-import { buildTriggerRuleRows } from '../../../../../core/server/services/automations/trigger-rules';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import errors from '@tryghost/errors';
@@ -18,7 +17,6 @@ import type {
   AutomationStatus,
   AutomationStepToRun,
 } from '../../../../../core/server/services/automations/automations-repository';
-import type { AutomationTriggerTierScope } from '../../../../../core/server/services/automations/automations-repository-2';
 import { fromDatabaseDate, toDatabaseDate } from '../../../../../core/server/lib/db-types/date';
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -265,18 +263,24 @@ const createDatabase = async (): Promise<Knex> => {
   ]);
 
   await database('automation_trigger_rules').insert([
-    ...buildTriggerRuleRows({
-      automationId: freeAutomationId,
-      scope: 'free',
-      tierIds: [],
-      createdAt: fromDatabaseDate(now()),
-    }),
-    ...buildTriggerRuleRows({
-      automationId: paidAutomationId,
-      scope: 'all_paid',
-      tierIds: [],
-      createdAt: fromDatabaseDate(now()),
-    }),
+    {
+      id: ObjectId().toHexString(),
+      automation_id: freeAutomationId,
+      created_at: fromDatabaseDate(now()),
+      trigger_type: 'free_signup',
+      scope: null,
+      product_id: null,
+      direction: null,
+    },
+    {
+      id: ObjectId().toHexString(),
+      automation_id: paidAutomationId,
+      created_at: fromDatabaseDate(now()),
+      trigger_type: 'paid_subscription_started',
+      scope: 'any_paid_tier',
+      product_id: null,
+      direction: null,
+    },
   ]);
 
   const freeAction1Id = id();
@@ -580,7 +584,7 @@ describe('automations repository', function () {
     status = 'active',
   }: {
     slug: null | string;
-    triggerTierScope: AutomationTriggerTierScope;
+    triggerTierScope: 'free' | 'all_paid' | 'selected_paid';
     triggerTierIds?: string[];
     status?: AutomationStatus;
   }) => {
@@ -597,12 +601,33 @@ describe('automations repository', function () {
       description: slug ?? 'Automation with no slug',
       status,
     });
-    const rules = buildTriggerRuleRows({
-      automationId,
-      scope: triggerTierScope,
-      tierIds: triggerTierIds,
-      createdAt: fromDatabaseDate(now),
-    });
+    let definitions: { trigger_type: string; scope: string | null; product_id: string | null }[];
+    switch (triggerTierScope) {
+      case 'free':
+        definitions = [{ trigger_type: 'free_signup', scope: null, product_id: null }];
+        break;
+      case 'all_paid':
+        definitions = [
+          { trigger_type: 'paid_subscription_started', scope: 'any_paid_tier', product_id: null },
+        ];
+        break;
+      case 'selected_paid':
+        definitions = [...new Set(triggerTierIds)].map((product_id) => ({
+          trigger_type: 'paid_subscription_started',
+          scope: 'specific_paid_tier',
+          product_id,
+        }));
+        break;
+      default:
+        throw new Error(`Unexpected trigger tier scope: ${triggerTierScope satisfies never}`);
+    }
+    const rules = definitions.map((definition) => ({
+      ...definition,
+      id: ObjectId().toHexString(),
+      automation_id: automationId,
+      created_at: fromDatabaseDate(now),
+      direction: null,
+    }));
     if (rules.length > 0) {
       await knex('automation_trigger_rules').insert(rules);
     }
@@ -2477,7 +2502,7 @@ describe('automations repository', function () {
       assert.equal(nextStep.automation_run_id, run.id);
       assert.equal(nextStep.automation_action_revision_id, nextAction.revision_id);
       assert.equal(nextStep.status, 'pending');
-      assert.equal(nextStep.ready_at, toDatabaseDate(nextReadyAt));
+      assert.equal(toDatabaseDate(Number(nextStep.ready_at)), toDatabaseDate(nextReadyAt));
     });
 
     it('uses wait hours when the next action is a wait action', async function () {
@@ -2676,7 +2701,7 @@ describe('automations repository', function () {
       const nextStep = allSteps.find((candidate) => candidate.id !== stepRow.id);
       assert(nextStep);
       assert.equal(nextStep.automation_action_revision_id, updatedNextAction.revision_id);
-      assert.equal(nextStep.ready_at, toDatabaseDate(nextReadyAt));
+      assert.equal(toDatabaseDate(Number(nextStep.ready_at)), toDatabaseDate(nextReadyAt));
     });
   });
 

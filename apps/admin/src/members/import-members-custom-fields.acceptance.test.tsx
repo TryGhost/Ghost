@@ -9,18 +9,24 @@ import {
   member,
   renderAdminApp,
   settleAnimations,
+  settleRequests,
 } from '@test-utils/acceptance';
 import { importMembersScreen } from './import-members.screen';
 import { membersScreen } from './members.screen';
-import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import { CUSTOM_FIELDS_FLAG } from '@/shared/member-custom-fields/availability';
+import {
+  type MemberCustomField,
+  userTypeForFieldType,
+} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { MetafieldDefinitionSchema } from '@tryghost/metafield-types';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
+import { FIELDS_IN_DEVELOPMENT } from '@tryghost/metafield-types/test/fixtures';
 import { z } from 'zod';
 
-// The import dialog is served to everyone now, so custom fields are the only switch left, and
-// the dialog has to hold up on either side of it.
-const FLAGS = { labs: { membersCustomFields: true } };
-const WITHOUT_CUSTOM_FIELDS = { labs: {} };
+// Admin goes live before the servers it talks to, and a server that hasn't released custom
+// fields reports their flag off and refuses new ones. The dialog still maps onto the fields
+// such a site has, but offers no way to make another.
+const WITHOUT_CUSTOM_FIELDS = { labs: { [CUSTOM_FIELDS_FLAG]: false } };
 
 // A `nickname` column no defined field matches, alongside the columns auto-detection claims.
 // `name` is present deliberately: it takes the /name/i heuristic, which would otherwise map
@@ -124,6 +130,16 @@ async function openCreateForm(column: string) {
   await importMembersScreen.addCustomFieldOption().click();
 }
 
+/** Opens the types a field made from a column can take, on a site with the given Labs flags. */
+async function openCreateFormTypes(labs: Record<string, boolean>) {
+  fakeCustomFieldsWorld();
+  await renderAdminApp('/members', { labs });
+  await openMappingStep();
+  await openCreateForm('nickname');
+  await createForm().getByRole('combobox', { name: 'Type' }).click();
+  await expect.element(importMembersScreen.option('Short text', { exact: true })).toBeVisible();
+}
+
 describe('Import members custom fields', () => {
   describe('a list made from a column', () => {
     const TOPICS_CSV =
@@ -151,7 +167,7 @@ describe('Import members custom fields', () => {
 
     it('starts a field for a column with several answers in a cell as a list of its answers', async () => {
       const createApi = fakeSiteCreatingLists();
-      await renderAdminApp('/members', FLAGS);
+      await renderAdminApp('/members');
       await openMappingStep(TOPICS_CSV);
 
       await openCreateForm('topics');
@@ -176,9 +192,41 @@ describe('Import members custom fields', () => {
       await expect.element(fieldSelect('topics')).toHaveTextContent('Topics');
     });
 
+    // As in Settings: a refusal of something typed shows beside it, not as a failure of the form.
+    it('shows Ghost refusing one option on that option’s row', async () => {
+      fakeSiteCreatingLists();
+      fakeAdminEndpoint(
+        'POST',
+        '/members/metafields/custom/',
+        {
+          errors: [
+            {
+              type: 'ValidationError',
+              message: 'Validation error, cannot save members_metafield.',
+              context: 'Ghost refused this option.',
+              property: 'settings.options.1',
+            },
+          ],
+        },
+        { status: 422 },
+      );
+      await renderAdminApp('/members');
+      await openMappingStep(TOPICS_CSV);
+
+      await openCreateForm('topics');
+      const form = createForm();
+      await form.getByRole('button', { name: 'Save' }).click();
+
+      await expect.element(form.getByText('Ghost refused this option.')).toBeVisible();
+      await expect.element(form.getByLabelText('Option 2')).toHaveAttribute('aria-invalid', 'true');
+      expect(form.getByText('An unexpected error occurred, please try again.').all()).toHaveLength(
+        0,
+      );
+    });
+
     it('suggests a column’s answers when its field is made a list, taking one answer when no cell holds several', async () => {
       fakeSiteCreatingLists();
-      await renderAdminApp('/members', FLAGS);
+      await renderAdminApp('/members');
       await openMappingStep(
         'email,name,topics\nada@example.com,Ada,Film\ngrace@example.com,Grace,Cooking\n',
       );
@@ -196,7 +244,7 @@ describe('Import members custom fields', () => {
 
     it('reads an answer past the export’s formula guard, as the import does', async () => {
       fakeSiteCreatingLists();
-      await renderAdminApp('/members', FLAGS);
+      await renderAdminApp('/members');
       // The export puts an apostrophe before a cell that starts the way a formula does.
       await openMappingStep(
         "email,name,topics\nada@example.com,Ada,'-Other | Film\ngrace@example.com,Grace,Cooking\n",
@@ -210,9 +258,32 @@ describe('Import members custom fields', () => {
         .not.toBeInTheDocument();
     });
 
+    it('refuses a list for a column whose answers differ only by case', async () => {
+      const createApi = fakeSiteCreatingLists();
+      await renderAdminApp('/members');
+      await openMappingStep(
+        'email,name,topics\nada@example.com,Ada,Film | Travel\ngrace@example.com,Grace,film\n',
+      );
+
+      await openCreateForm('topics');
+      const form = createForm();
+      await form.getByLabelText('Type').click();
+      await page.getByRole('option', { name: /List/ }).click();
+
+      // An answer has to match an option exactly, and a list can't offer both spellings, so the
+      // import would refuse the rows of whichever spelling the list left out.
+      const refusal = form.getByText(
+        'A list can’t offer both “Film” and “film”, and this column holds both.',
+      );
+      await expect.element(refusal).toBeVisible();
+      await form.getByRole('button', { name: 'Save' }).click();
+      await expect.element(refusal).toBeVisible();
+      expect(createApi.requests).toHaveLength(0);
+    });
+
     it('refuses a list for a column with more answers than a list can offer', async () => {
       const createApi = fakeSiteCreatingLists();
-      await renderAdminApp('/members', FLAGS);
+      await renderAdminApp('/members');
       const rows = Array.from({ length: 101 }, (_, n) => `m${n}@example.com,Member,Topic ${n}`);
       await openMappingStep(`email,name,topics\n${rows.join('\n')}\n`);
 
@@ -230,11 +301,31 @@ describe('Import members custom fields', () => {
       await expect.element(refusal).toBeVisible();
       expect(createApi.requests).toHaveLength(0);
     });
+
+    it('stays open when Enter confirms text an input method is composing in an option', async () => {
+      const createApi = fakeSiteCreatingLists();
+      await renderAdminApp('/members');
+      await openMappingStep(TOPICS_CSV);
+
+      await openCreateForm('topics');
+      const form = createForm();
+      const option = form.getByLabelText('Option 1');
+      await expect.element(option).toHaveValue('Film');
+      option
+        .element()
+        .dispatchEvent(
+          new KeyboardEvent('keydown', { key: 'Enter', isComposing: true, bubbles: true }),
+        );
+
+      await settleRequests();
+      await expect.element(form).toBeVisible();
+      expect(createApi.requests).toHaveLength(0);
+    });
   });
 
   it('creates a custom field for an unmatched column and maps the column onto it', async () => {
     const { createApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await importToggle('nickname').click();
@@ -266,7 +357,7 @@ describe('Import members custom fields', () => {
 
   it('creates a field for a column whose header is blank, and imports the column into it', async () => {
     const { createApi, uploadApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep('email,name,\nada@example.com,Ada,Countess\n');
 
     // The column's key is empty, so its controls' names have nothing where the key would be.
@@ -289,7 +380,7 @@ describe('Import members custom fields', () => {
 
   it('marks a custom field a membership field already has the name of', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -307,7 +398,7 @@ describe('Import members custom fields', () => {
 
   it('leaves a custom field no membership field is named like unmarked', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -319,7 +410,7 @@ describe('Import members custom fields', () => {
 
   it('selects the second of two fields sharing a name from the keyboard', async () => {
     const { uploadApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -354,7 +445,7 @@ describe('Import members custom fields', () => {
 
   it('searches the names on the rows rather than the columns behind them', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -376,7 +467,7 @@ describe('Import members custom fields', () => {
 
   it('puts the create form away on Escape, leaving the import open', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -391,7 +482,7 @@ describe('Import members custom fields', () => {
 
   it('keeps its field when a column is deselected', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -406,12 +497,30 @@ describe('Import members custom fields', () => {
     await expect.element(fieldSelect('nickname')).toHaveTextContent('Nickname');
   });
 
+  // A type still in development is offered only where its Labs flag is on, as in Settings.
+  it.each(FIELDS_IN_DEVELOPMENT)(
+    "doesn't offer $field.type while $flag is off",
+    async ({ field, flag }) => {
+      const { label } = userTypeForFieldType(field.type);
+      await openCreateFormTypes({ [flag]: false });
+
+      await expect(importMembersScreen.option(label, { exact: true })).toHaveCount(0);
+    },
+  );
+
+  it.each(FIELDS_IN_DEVELOPMENT)('offers $field.type once $flag is on', async ({ field, flag }) => {
+    const { label } = userTypeForFieldType(field.type);
+    await openCreateFormTypes({ [flag]: true });
+
+    await expect.element(importMembersScreen.option(label, { exact: true })).toBeVisible();
+  });
+
   // A composite spans several columns, so the form has nothing to say about which one this
   // is. It creates the field and hands the question back to the picker, filtered to what it
   // just made — the same question as any other mapping, asked where the others are.
   it('creates a composite field and asks which part the column holds', async () => {
     const { createApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('city');
@@ -448,7 +557,7 @@ describe('Import members custom fields', () => {
 
   it('creates a list field with the options its form is given and maps the column onto it', async () => {
     const { createApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('city');
@@ -482,7 +591,7 @@ describe('Import members custom fields', () => {
 
   it('says what a list field needs before sending it', async () => {
     const { createApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('city');
@@ -497,7 +606,7 @@ describe('Import members custom fields', () => {
 
   it('keeps a changed form on a stray Escape, and Cancel puts it away', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -514,7 +623,7 @@ describe('Import members custom fields', () => {
 
   it('keeps a changed form on a stray click outside it', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -538,7 +647,7 @@ describe('Import members custom fields', () => {
       await held;
       return { members_metafields: [NICKNAME_FIELD] };
     });
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -553,6 +662,37 @@ describe('Import members custom fields', () => {
     await expect.element(createForm()).not.toBeInTheDocument();
   });
 
+  // Put away before its answer, the form would leave a refusal nowhere to show, and a second
+  // Enter would send a second create for the same name.
+  it('can be neither put away nor saved again from the moment it saves', async () => {
+    const fields: MemberCustomField[] = [];
+    fakeCustomFieldsWorld();
+    fakeMemberCustomFields(() => fields);
+    let release = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    // Released however the test ends, as a save left in flight would fail the tests after it.
+    onTestFinished(() => release());
+    const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', async () => {
+      await held;
+      fields.push(NICKNAME_FIELD);
+      return { members_metafields: [NICKNAME_FIELD] };
+    });
+    await renderAdminApp('/members');
+    await openMappingStep();
+
+    await openCreateForm('nickname');
+    // Straight after Enter, before the request has said it is under way.
+    await userEvent.keyboard('{Enter}{Enter}{Escape}');
+    await expect.element(createForm().getByRole('button', { name: 'Saving' })).toBeDisabled();
+
+    release();
+    await expect.element(createForm()).not.toBeInTheDocument();
+    await expect.element(fieldSelect('nickname')).toHaveTextContent('Nickname');
+    expect(createApi.requests).toHaveLength(1);
+  });
+
   it('pins a name the site already uses to the name input', async () => {
     fakeCustomFieldsWorld();
     fakeAdminEndpoint(
@@ -561,7 +701,10 @@ describe('Import members custom fields', () => {
       {
         errors: [
           {
-            message: 'A custom field with this name already exists.',
+            // As Ghost serialises a refusal: a generic summary in `message`, the sentence in
+            // `context`.
+            message: 'Validation error, cannot save members_metafield.',
+            context: 'A custom field with this name already exists.',
             property: 'name',
             type: 'ValidationError',
           },
@@ -569,7 +712,7 @@ describe('Import members custom fields', () => {
       },
       { status: 422 },
     );
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -604,7 +747,7 @@ describe('Import members custom fields', () => {
       },
       { status: 403 },
     );
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -620,13 +763,76 @@ describe('Import members custom fields', () => {
     await expect.element(createForm().getByRole('button', { name: 'Save' })).toBeDisabled();
   });
 
+  // Only what the site deliberately says to publishers is shown as it says it. A fault's own
+  // wording is for whoever investigates it, not for the form.
+  it('says something clear when the site fails to save a field for a reason it did not expect', async () => {
+    fakeCustomFieldsWorld();
+    fakeAdminEndpoint(
+      'POST',
+      '/members/metafields/custom/',
+      {
+        errors: [
+          {
+            message: 'ER_LOCK_DEADLOCK: Deadlock found when trying to get lock',
+            type: 'InternalServerError',
+          },
+        ],
+      },
+      { status: 500 },
+    );
+    await renderAdminApp('/members');
+    await openMappingStep();
+
+    await openCreateForm('nickname');
+    await createForm().getByRole('button', { name: 'Save' }).click();
+
+    await expect
+      .element(createForm().getByRole('alert'))
+      .toHaveTextContent('An unexpected error occurred, please try again.');
+    expect(
+      createForm()
+        .getByText(/ER_LOCK_DEADLOCK/)
+        .all(),
+    ).toHaveLength(0);
+    // A fault can pass, so saving again stays on offer.
+    await expect.element(createForm().getByRole('button', { name: 'Save' })).toBeEnabled();
+  });
+
+  it('says a staff user without permission cannot add a field, and stops offering to retry', async () => {
+    fakeCustomFieldsWorld();
+    fakeAdminEndpoint(
+      'POST',
+      '/members/metafields/custom/',
+      {
+        errors: [
+          {
+            message: 'Permission error, cannot add members_metafield.',
+            context: 'You do not have permission to perform this action',
+            type: 'NoPermissionError',
+          },
+        ],
+      },
+      { status: 403 },
+    );
+    await renderAdminApp('/members');
+    await openMappingStep();
+
+    await openCreateForm('nickname');
+    await createForm().getByRole('button', { name: 'Save' }).click();
+
+    await expect
+      .element(createForm().getByRole('alert'))
+      .toHaveTextContent("You don't have permission to create custom fields.");
+    await expect.element(createForm().getByRole('button', { name: 'Save' })).toBeDisabled();
+  });
+
   it('says the field exists when the response carries nothing to map onto', async () => {
     fakeCustomFieldsWorld();
     // A 2xx the client cannot use: an older bundle against a newer server, a proxy that
     // reshapes the envelope. The field is created either way, so the form must not claim
     // otherwise and send them to create a second one.
     fakeAdminEndpoint('POST', '/members/metafields/custom/', { members_metafields: [] });
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('nickname');
@@ -644,7 +850,7 @@ describe('Import members custom fields', () => {
   // switched off has to be named with an empty target, not left out.
   it('names every column it is not importing rather than omitting it', async () => {
     const { uploadApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     // `name` is auto-detected, so this deselects a column that has a field; the three
@@ -670,7 +876,7 @@ describe('Import members custom fields', () => {
   // it stays out. Collapsing the two into one in-or-out decision would resurrect it here.
   it('keeps a deselected column out when another column takes the field it held', async () => {
     const { uploadApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await importToggle('name').click();
@@ -705,7 +911,7 @@ describe('Import members custom fields', () => {
   // request, whichever sample happens to be on screen.
   it('shows every column the file has, not just the previewed row', async () => {
     const { uploadApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep(RAGGED_CSV);
 
     // Row 1 holds only an email, so reading columns off it would leave these two off the
@@ -731,12 +937,10 @@ describe('Import members custom fields', () => {
       });
   });
 
-  // The upload result and its refusals are re-implemented in this modal, so they are asserted
-  // here rather than inherited: the shipped modal's own suite covers the file the gate no
-  // longer serves when the flag is on.
+  // The upload result and its refusals are drawn by this modal, so they are asserted here.
   describe('after the upload', () => {
     async function importAll() {
-      await renderAdminApp('/members', FLAGS);
+      await renderAdminApp('/members');
       await openMappingStep();
       await importMembersScreen.importButton(1).click();
     }
@@ -825,7 +1029,7 @@ describe('Import members custom fields', () => {
         import_label: { name: 'Import', slug: 'import' },
       },
     });
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     // The table is reached at all — waiting on a failed query would leave it on a spinner.
@@ -841,7 +1045,7 @@ describe('Import members custom fields', () => {
 
   it('clears a refusal when the column it named is answered by creating a field', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     // Refused: in the import with nothing chosen for it.
@@ -865,7 +1069,7 @@ describe('Import members custom fields', () => {
 
   it('will not import a file whose email column is deselected', async () => {
     const { uploadApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     // Mapped, but out of the import. The request would go without an email column and
@@ -879,7 +1083,7 @@ describe('Import members custom fields', () => {
 
   it('marks the column it cannot import a selected row as, and lets it through once answered', async () => {
     const { uploadApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await importToggle('nickname').click();
@@ -909,7 +1113,7 @@ describe('Import members custom fields', () => {
   // not by switching a kind picker to find out what is behind each setting.
   it('offers membership and custom fields in one searchable list', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep(EXPORTED_CSV);
 
     // A Ghost export re-imported where its field no longer exists: nothing matches, so it
@@ -938,7 +1142,7 @@ describe('Import members custom fields', () => {
   // exist yet, so the way to make one has to survive the search that proves it.
   it('offers to add a field when the search matches none', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await importToggle('nickname').click();
@@ -957,7 +1161,7 @@ describe('Import members custom fields', () => {
   // guard made impossible. The column is in the import with nothing to fill, and Import says so.
   it('refuses the import when a composite is created and no part is chosen', async () => {
     const { uploadApi } = fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await openCreateForm('city');
@@ -988,7 +1192,7 @@ describe('Import members custom fields', () => {
   // a mapping. Nothing has been changed here, so there is nothing to lose and nothing to ask.
   it('closes without asking when nothing has been changed', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
     await expect.element(fieldSelect('email')).toBeVisible();
 
@@ -1000,7 +1204,7 @@ describe('Import members custom fields', () => {
 
   it('asks before discarding a mapping that has been changed', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
 
     await importToggle('nickname').click();
@@ -1021,7 +1225,7 @@ describe('Import members custom fields', () => {
   // userEvent adds task boundaries that let React settle and hide this race.
   it('asks even when the dismissal lands before React has settled', async () => {
     fakeCustomFieldsWorld();
-    await renderAdminApp('/members', FLAGS);
+    await renderAdminApp('/members');
     await openMappingStep();
     await expect.element(fieldSelect('email')).toBeVisible();
 
@@ -1068,9 +1272,9 @@ describe('Import members custom fields', () => {
     // none to map onto, and the server would refuse a new one.
     it('offers no way to make a field while the host switches custom fields off', async () => {
       fakeCustomFieldsWorld();
-      const config = configResponse(FLAGS);
+      const config = configResponse();
       config.config.hostSettings = { limits: { limitCustomFields: { disabled: true } } };
-      await renderAdminApp('/members', { ...FLAGS, boot: { browseConfig: { response: config } } });
+      await renderAdminApp('/members', { boot: { browseConfig: { response: config } } });
       await openMappingStep();
 
       await importToggle('nickname').click();

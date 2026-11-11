@@ -31,12 +31,12 @@ function stripeSettings() {
   });
 }
 
-// A short text field, typed as one, so a copy can be given another plain type.
+// A phone field, typed as one, so a copy can be given another plain type.
 const phoneField = {
   namespace: CUSTOM_NAMESPACE,
   key: KeySchema.parse('contact_phone'),
   name: 'Contact phone',
-  type: 'short_text',
+  type: 'phone',
   status: 'active',
   access: { member: 'none' },
   created_at: '2026-10-19T00:00:00.000Z',
@@ -49,7 +49,6 @@ type HostSettings = ReturnType<typeof configResponse>['config']['hostSettings'];
 async function openCheckoutFields(
   config: StripeCheckoutConfig,
   fields: Parameters<typeof fakeMemberCustomFields>[0] = [phoneField],
-  labs: Record<string, boolean> = {},
   hostSettings?: HostSettings,
 ) {
   fakeSettingsScreens();
@@ -63,17 +62,14 @@ async function openCheckoutFields(
   const saveApi = fakeAdminEndpoint('PUT', '/stripe/checkout/config/', {
     checkout_config: [config],
   });
-  const allLabs = {
-    stripeCheckoutCollection: true,
-    membersCustomFields: true,
-    ...labs,
-  };
-  const siteConfig = configResponse({ labs: allLabs });
+  // Phone fields on, as the phone number saves only into one.
+  const labs = { stripeCheckoutCollection: true, customFieldTypePhone: true };
+  const siteConfig = configResponse({ labs });
   if (hostSettings) {
     siteConfig.config.hostSettings = hostSettings;
   }
   await renderAdminApp('/settings/tiers/checkout', {
-    labs: allLabs,
+    labs,
     boot: {
       browseSettings: { response: stripeSettings() },
       browseConfig: { response: siteConfig },
@@ -89,7 +85,6 @@ async function openCheckoutFields(
 const PARTS: { [Part in CollectedPart]: { label: string; sketched: string } } = {
   shipping: { label: 'Shipping address', sketched: 'Shipping address' },
   phone: { label: 'Phone', sketched: 'Phone' },
-  tax_number: { label: 'Tax ID or VAT', sketched: "I'm purchasing as a business" },
 };
 
 /** The config a Ghost reporting these parts gives while it collects nothing. */
@@ -109,6 +104,28 @@ describe('Checkout settings', () => {
       await expect(sketch.getByText(sketched, { exact: true })).toHaveCount(0);
       await modal.getByRole('switch', { name: label, exact: true }).click();
       await expect.element(sketch.getByText(sketched, { exact: true })).toBeVisible();
+    });
+
+    it('saves nothing while it is collected for no tier', async () => {
+      const { modal, saveApi } = await openCheckoutFields(collectingNothing(COLLECTED_PARTS));
+
+      await modal.getByRole('switch', { name: label, exact: true }).click();
+      await modal
+        .getByRole('group', { name: label, exact: true })
+        .getByRole('combobox', { name: 'Collect for' })
+        .click();
+      await page.getByRole('option', { name: 'Supporter' }).click();
+      await userEvent.keyboard('{Escape}');
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect
+        .element(
+          modal
+            .getByRole('group', { name: label, exact: true })
+            .getByText('Choose at least one tier'),
+        )
+        .toBeVisible();
+      expect(saveApi.lastRequest).toBeUndefined();
     });
 
     it('is collected for paid tiers only, as a free tier has no checkout', async () => {
@@ -191,6 +208,33 @@ describe('Checkout settings', () => {
       });
   });
 
+  // A phone field keeps every number in one form, so it's the only kind the number goes into,
+  // as a shipping address goes only into an address field.
+  it('offers only phone fields for the phone number, and makes a new field there a phone field', async () => {
+    const notesField = {
+      ...phoneField,
+      key: KeySchema.parse('notes'),
+      name: 'Notes',
+      type: 'short_text',
+    } satisfies MemberCustomField;
+    const { modal } = await openCheckoutFields(
+      { design: { customize: false }, shipping: { collect: false }, phone: { collect: false } },
+      [phoneField, notesField],
+    );
+
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    await modal.getByRole('combobox', { name: 'Save phone as' }).click();
+    await expect.element(page.getByRole('option', { name: 'Contact phone' })).toBeVisible();
+    await expect.element(page.getByRole('option', { name: 'Notes' })).not.toBeInTheDocument();
+
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    const type = page.getByRole('dialog', { name: 'New custom field' }).getByRole('combobox', {
+      name: 'Type',
+    });
+    await expect.element(type).toHaveTextContent('Phone');
+    await expect.element(type).toBeDisabled();
+  });
+
   // A site keeps its Stripe connection when the host switches its custom fields off, so it
   // can still reach these settings. Its fields read as archived, and the server refuses a new
   // one with the host's sentence.
@@ -212,7 +256,6 @@ describe('Checkout settings', () => {
     const { modal } = await openCheckoutFields(
       { design: { customize: false }, shipping: { collect: false }, phone: { collect: false } },
       [{ ...phoneField, status: 'archived' }],
-      {},
       { limits: { limitCustomFields: { disabled: true } } },
     );
 
@@ -227,6 +270,40 @@ describe('Checkout settings', () => {
       .element(form.getByText('Custom fields are available on the Publisher plan and above.'))
       .toBeVisible();
     await expect.element(form.getByRole('button', { name: 'Save' })).toBeDisabled();
+  });
+
+  // As in the CSV import: a fault's own wording is for whoever investigates it, not for the form.
+  it('says something clear when the site fails to save a new field for a reason it did not expect', async () => {
+    fakeAdminEndpoint(
+      'POST',
+      '/members/metafields/custom/',
+      {
+        errors: [
+          {
+            message: 'ER_LOCK_DEADLOCK: Deadlock found when trying to get lock',
+            type: 'InternalServerError',
+          },
+        ],
+      },
+      { status: 500 },
+    );
+    const { modal } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+    });
+
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    await modal.getByRole('combobox', { name: 'Save phone as' }).click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    const form = page.getByRole('dialog', { name: 'New custom field' });
+    await userEvent.fill(form.getByLabelText('Name'), 'Contact phone');
+    await form.getByRole('button', { name: 'Save' }).click();
+
+    await expect
+      .element(form.getByRole('alert'))
+      .toHaveTextContent('An unexpected error occurred, please try again.');
+    expect(form.getByText(/ER_LOCK_DEADLOCK/).all()).toHaveLength(0);
   });
 
   // Each save gets its own answer: the last attempt's refusal goes as the next save starts, rather
@@ -327,6 +404,63 @@ describe('Checkout settings', () => {
 
     finishSaving();
     await expect.element(picker).toHaveTextContent('Work phone');
+  });
+
+  // Enter saves the form only from where a name is typed. On a button it does what the button
+  // does, so a publisher who changed their mind and tabbed to Cancel makes no field.
+  it("cancels a new field's form with Enter on Cancel, making no field", async () => {
+    const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', {
+      members_metafields: [phoneField],
+    });
+    const { modal } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+    });
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    const picker = modal.getByRole('combobox', { name: 'Save phone as' });
+
+    await picker.click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    const form = page.getByRole('dialog', { name: 'New custom field' });
+    await userEvent.fill(form.getByLabelText('Name'), 'Work phone');
+    form.getByRole('button', { name: 'Cancel' }).element().focus();
+    await userEvent.keyboard('{Enter}');
+
+    await expect.element(form).not.toBeInTheDocument();
+    await expect.element(picker).toHaveTextContent('Select...');
+    expect(createApi.requests).toHaveLength(0);
+  });
+
+  // Back on the control it hangs from, wherever the form is left from, so the keyboard carries
+  // on from the picker rather than from nowhere.
+  it("hands focus back to the picker once a new field's form is left", async () => {
+    const { modal } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+    });
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    const picker = modal.getByRole('combobox', { name: 'Save phone as' });
+    const form = page.getByRole('dialog', { name: 'New custom field' });
+
+    await picker.click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    await expect.element(form.getByLabelText('Name')).toHaveFocus();
+    await userEvent.keyboard('{Escape}');
+    await expect.element(form).not.toBeInTheDocument();
+    await expect.element(picker).toHaveFocus();
+
+    await picker.click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    await userEvent.fill(form.getByLabelText('Name'), 'Work phone');
+    await form.getByRole('button', { name: 'Cancel' }).click();
+    await expect.element(form).not.toBeInTheDocument();
+    await expect.element(picker).toHaveFocus();
+
+    // And it opens again from the keyboard, with its search ready for typing.
+    await userEvent.keyboard('{Enter}');
+    await expect.element(page.getByPlaceholder('Search fields...')).toHaveFocus();
   });
 
   it('previews on paid tiers only, as a free tier has no checkout', async () => {
@@ -475,86 +609,6 @@ describe('Checkout settings', () => {
         await expect.element(shipping).toBeChecked();
       }
     });
-  });
-
-  it('lets business buyers give a tax ID on every paid tier, with no field to choose', async () => {
-    const { modal, saveApi } = await openCheckoutFields({
-      design: { customize: false },
-      shipping: { collect: false },
-      phone: { collect: false },
-      tax_number: { collect: false },
-    });
-
-    await modal.getByRole('switch', { name: 'Tax ID or VAT' }).click();
-    await expect
-      .element(
-        modal
-          .getByRole('figure', { name: 'Checkout preview' })
-          .getByText("I'm purchasing as a business"),
-      )
-      .toBeVisible();
-    // Stripe keeps the tax ID, so the tiers are all there is to choose.
-    const taxId = modal.getByRole('group', { name: 'Tax ID or VAT' });
-    await expect.element(taxId.getByRole('combobox', { name: 'Collect for' })).toBeVisible();
-    await expect(taxId.getByRole('combobox')).toHaveCount(1);
-
-    await modal.getByRole('button', { name: 'Save' }).click();
-    await expect
-      .poll(() => saveApi.lastRequest?.body)
-      .toEqual({
-        checkout_config: [
-          {
-            design: { customize: false },
-            shipping: { collect: false },
-            phone: { collect: false },
-            tax_number: { collect: true },
-          },
-        ],
-      });
-  });
-
-  it('shows a tax ID offered on every checkout while automatic tax is on', async () => {
-    const { modal } = await openCheckoutFields(
-      {
-        design: { customize: false },
-        shipping: { collect: false },
-        phone: { collect: false },
-        tax_number: { collect: false },
-      },
-      [phoneField],
-      { stripeAutomaticTax: true },
-    );
-
-    await expect
-      .element(
-        modal
-          .getByRole('figure', { name: 'Checkout preview' })
-          .getByText("I'm purchasing as a business"),
-      )
-      .toBeVisible();
-    await expect
-      .element(modal.getByText('Stripe Automatic Tax already asks for it on every checkout'))
-      .toBeVisible();
-  });
-
-  it('saves no tax ID setting that no tier offers', async () => {
-    const { modal, saveApi } = await openCheckoutFields({
-      design: { customize: false },
-      shipping: { collect: false },
-      phone: { collect: false },
-      tax_number: { collect: true },
-    });
-
-    await modal
-      .getByRole('group', { name: 'Tax ID or VAT' })
-      .getByRole('combobox', { name: 'Collect for' })
-      .click();
-    await page.getByRole('option', { name: 'Supporter' }).click();
-    await userEvent.keyboard('{Escape}');
-    await modal.getByRole('button', { name: 'Save' }).click();
-
-    await expect.element(modal.getByText('Choose at least one tier')).toBeVisible();
-    expect(saveApi.lastRequest).toBeUndefined();
   });
 
   it('offers only the design on a Ghost too old to collect shipping, and saves no shipping', async () => {

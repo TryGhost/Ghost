@@ -77,17 +77,6 @@ export type AutomationBrowseResult = AutomationSummary & {
   };
 };
 
-// This is deprecated and will be removed soon. See NY-1746.
-export type AutomationTriggerTierData =
-  | {
-      trigger_tier_scope: null | 'free' | 'all_paid';
-      trigger_tier_ids: null;
-    }
-  | {
-      trigger_tier_scope: 'selected_paid';
-      trigger_tier_ids: string[];
-    };
-
 export type Automation = AutomationSummary & {
   actions: AutomationAction[];
   edges: AutomationEdge[];

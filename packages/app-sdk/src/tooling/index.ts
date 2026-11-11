@@ -1,0 +1,46 @@
+/**
+ * The SDK's tooling, for Node: creating an app's keys, and signing its manifest.
+ * The `ghost-app` CLI and the Vite plugin are built on it.
+ *
+ * ```ts
+ * import { createKeys, signProject } from '@tryghost/app-sdk/tooling';
+ *
+ * await createKeys({ root: '.', mode: 'development' });
+ * const result = await signProject({
+ *   root: '.',
+ *   mode: 'development',
+ *   manifestUrl: 'http://my-app.localhost:5173/ghost-app.json',
+ * });
+ * ```
+ */
+
+export {
+  BACKEND_KEY_VARIABLE,
+  IDENTITY_KEY_VARIABLE,
+  KEYS_DIRECTORY,
+  createKeys,
+  generateKey,
+  keyFile,
+  publicKeyOf,
+  readBackendKey,
+  readSigningKeys,
+  type CreateKeysResult,
+  type KeyName,
+  type KeyOptions,
+  type Mode,
+  type PrivateKeyJwk,
+  type PublicKeyJwk,
+  type ReadKeysOptions,
+  type SigningKeys,
+} from './keys.ts';
+export {
+  MANIFEST_FILE,
+  formatErrors,
+  readManifestSource,
+  signAppManifest,
+  signProject,
+  type SignOptions,
+  type SignProjectOptions,
+  type SignResult,
+} from './sign.ts';
+export type { AppManifest, ManifestError, ManifestSource, SignedManifest } from './types.ts';

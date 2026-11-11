@@ -13,11 +13,15 @@ import {
 } from '@/shared/filters';
 import {
   keysOf,
+  matchLeaf,
   matchShape,
   type FieldType,
   type Leaf,
   type LeafKind,
+  type TextLeaf,
 } from '@tryghost/metafield-types/structure';
+import { filterTextFor } from '@tryghost/metafield-types';
+import { phoneCountryOfLocales } from '@tryghost/metafield-types/phone';
 import type {
   FilterTypeId,
   FieldDescriptor,
@@ -26,6 +30,7 @@ import type {
   ValueSemantics,
 } from '@/shared/filters';
 import type { OperatorId } from '@/shared/filters/filter-operators';
+import type { TextConfig } from '@/shared/filters/semantics/text';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 type ScalarFilterBase = {
@@ -46,10 +51,23 @@ export const LEAF_FILTER = {
 
 export type LeafFilterType = (typeof LEAF_FILTER)[LeafKind];
 
+/**
+ * A text leaf's filter reads what was typed as the leaf's field holds it, in the staff member's own
+ * country, so a phone field's filter finds a number however it was written.
+ */
+const textFilter = (leaf: TextLeaf): TextConfig => {
+  const country = phoneCountryOfLocales(navigator.languages);
+  return { normalise: (typed) => filterTextFor(leaf, typed, country) };
+};
+
 // Each entry builds its own descriptor so the compiler checks it against that filter type, which a
 // map to a union of filter types can't do.
-const SCALAR_FILTER: { [F in LeafFilterType]: (base: ScalarFilterBase) => FieldDescriptor } = {
-  text: (base) => ({ ...base, type: 'text' }),
+const SCALAR_FILTER: {
+  [F in LeafFilterType]: F extends 'text'
+    ? (base: ScalarFilterBase, leaf: TextLeaf) => FieldDescriptor
+    : (base: ScalarFilterBase) => FieldDescriptor;
+} = {
+  text: (base, leaf) => ({ ...base, type: 'text', valueConfig: textFilter(leaf) }),
   set: (base) => ({ ...base, type: 'set' }),
 };
 
@@ -158,8 +176,8 @@ export type CustomFieldDefinition = Pick<MemberCustomField, 'namespace' | 'key' 
 
 export function customFieldDescriptor(definition: CustomFieldDefinition): FieldDescriptor {
   return matchShape<FieldDescriptor>(definition.type, {
-    scalar: ({ leaf }) =>
-      SCALAR_FILTER[LEAF_FILTER[leaf.leaf]]({
+    scalar: ({ leaf }) => {
+      const base: ScalarFilterBase = {
         key: metafieldFieldId(definition),
         icon: 'text',
         addressing: customFieldAddressing(definition),
@@ -167,7 +185,13 @@ export function customFieldDescriptor(definition: CustomFieldDefinition): FieldD
           label: definition.name,
           type: 'custom',
         },
-      }),
+      };
+      // Typed text filters as text, and a choice from a list as a set, as LEAF_FILTER has it.
+      return matchLeaf(leaf, {
+        text: (text) => SCALAR_FILTER[LEAF_FILTER.text](base, text),
+        choice: () => SCALAR_FILTER[LEAF_FILTER.choice](base),
+      });
+    },
     record: ({ parts }) =>
       domainField({
         key: metafieldFieldId(definition),

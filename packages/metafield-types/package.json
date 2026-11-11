@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/metafield-types",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Ghost member custom field types: which types exist, what each is made of, and how a value of each is validated",
   "license": "MIT",
   "author": "Ghost Foundation",
@@ -41,6 +41,11 @@
       "types": "./build/countries.d.ts",
       "default": "./build/countries.js"
     },
+    "./phone": {
+      "source": "./src/phone.ts",
+      "types": "./build/phone.d.ts",
+      "default": "./build/phone.js"
+    },
     "./test/fixtures": {
       "source": "./test/fixtures/fields.ts",
       "types": "./test/fixtures/fields.ts"
@@ -72,6 +77,11 @@
         "source": "./src/countries.ts",
         "types": "./build/countries.d.ts",
         "default": "./build/countries.js"
+      },
+      "./phone": {
+        "source": "./src/phone.ts",
+        "types": "./build/phone.d.ts",
+        "default": "./build/phone.js"
       }
     }
   },
@@ -85,6 +95,7 @@
     "lint": "pnpm run '/^lint:/'"
   },
   "dependencies": {
+    "libphonenumber-js": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

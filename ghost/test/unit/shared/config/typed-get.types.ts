@@ -55,7 +55,19 @@ const exploreUrl: string | undefined = config.get('explore:update_url');
 // @ts-expect-error ...so it is not typed as always present
 const exploreUrlPresent: string = config.get('explore:update_url');
 
+// spam blocks are typed, and every block is present
+const userLoginRetries: number = config.get('spam:user_login:freeRetries');
+const userLoginLifetime: number | undefined = config.get('spam:user_login:lifetime');
+const blockedDomains: readonly string[] = config.get('spam:blocked_email_domains');
+
+// @ts-expect-error a block the spam schema does not name
+const spamTypo = config.get('spam').user_logn;
+
 export {
+  userLoginRetries,
+  blockedDomains,
+  spamTypo,
+  userLoginLifetime,
   exploreUrl,
   exploreUrlPresent,
   url,

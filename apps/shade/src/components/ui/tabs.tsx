@@ -5,6 +5,7 @@ import { DropdownMenuTrigger } from './dropdown-menu';
 import { cn } from '@/lib/utils';
 import { cva } from 'class-variance-authority';
 import { type ControlShape, useShade } from '@/providers/shade-context';
+import { tabSurfaceVariants } from '@/components/ui/tabs-variants';
 
 type TabsVariant =
   | 'segmented'
@@ -32,10 +33,18 @@ export interface TabsProps extends React.ComponentPropsWithoutRef<typeof TabsPri
 
 const Tabs = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Root>, TabsProps>(
   ({ variant = 'segmented', ...props }, ref) => {
-    const { controlShape } = useShade();
+    const { controlShape, admin7Design } = useShade();
+    // Standard tabs share the Admin 7 pill treatment. KPI tabs retain their
+    // chart-card layout; compact tabs retain their smaller size.
+    const resolvedVariant =
+      admin7Design && variant !== 'kpis'
+        ? variant === 'button-sm' || variant === 'segmented-sm' || variant === 'pill'
+          ? 'button-sm'
+          : 'button'
+        : variant;
 
     return (
-      <TabsContext.Provider value={{ variant, controlShape }}>
+      <TabsContext.Provider value={{ variant: resolvedVariant, controlShape }}>
         <TabsPrimitive.Root ref={ref} {...props} />
       </TabsContext.Provider>
     );
@@ -58,7 +67,18 @@ const tabsListVariants = cva('inline-flex items-center text-muted-foreground', {
       // Kept here so the cva variant set is in one place; not for direct use by app code.
       kpis: 'border-b ring-0',
     },
+    admin7Design: {
+      true: '',
+      false: '',
+    },
   },
+  compoundVariants: [
+    {
+      variant: ['button', 'button-sm'],
+      admin7Design: true,
+      className: 'no-scrollbar max-w-full overflow-x-auto',
+    },
+  ],
   defaultVariants: {
     variant: 'segmented',
   },
@@ -69,10 +89,11 @@ const TabsList = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
 >(({ className, ...props }, ref) => {
   const { variant } = React.useContext(TabsContext);
+  const { admin7Design } = useShade();
   return (
     <TabsPrimitive.List
       ref={ref}
-      className={cn(tabsListVariants({ variant, className }))}
+      className={cn(tabsListVariants({ variant, admin7Design, className }))}
       {...props}
     />
   );
@@ -123,10 +144,19 @@ const TabsTrigger = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
 >(({ className, onMouseDownCapture, ...props }, ref) => {
   const { variant, controlShape } = React.useContext(TabsContext);
+  const { admin7Design } = useShade();
   return (
     <TabsPrimitive.Trigger
       ref={ref}
-      className={cn(tabsTriggerVariants({ variant, controlShape, className }))}
+      className={cn(
+        tabsTriggerVariants({ variant, controlShape }),
+        variant !== 'kpis' &&
+          tabSurfaceVariants({
+            admin7Design,
+            size: variant === 'button-sm' ? 'compact' : 'default',
+          }),
+        className,
+      )}
       onMouseDownCapture={(event) => {
         const activeElement = document.activeElement;
         if (
@@ -208,6 +238,7 @@ interface TabsDropdownTriggerProps extends Omit<
 const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTriggerProps>(
   ({ children, className, ...props }, ref) => {
     const { variant, controlShape } = React.useContext(TabsContext);
+    const { admin7Design } = useShade();
     return (
       <div
         className={cn(
@@ -219,7 +250,15 @@ const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTrig
       >
         <TabsPrimitive.Trigger
           ref={ref}
-          className={cn(tabsTriggerVariants({ variant, controlShape, className }))}
+          className={cn(
+            tabsTriggerVariants({ variant, controlShape }),
+            variant !== 'kpis' &&
+              tabSurfaceVariants({
+                admin7Design,
+                size: variant === 'button-sm' ? 'compact' : 'default',
+              }),
+            className,
+          )}
           {...props}
         >
           <div className="flex items-center gap-2">{children}</div>

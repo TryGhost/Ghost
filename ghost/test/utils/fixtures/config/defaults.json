@@ -27,7 +27,19 @@
             "lifetime": 3600,
             "freeRetries": 4
         },
+        "user_verification_challenge": {
+            "minWait": 300000,
+            "maxWait": 300000,
+            "lifetime": 300,
+            "freeRetries": 4
+        },
         "send_verification_code": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 4
+        },
+        "send_verification_code_user": {
             "minWait": 3600000,
             "maxWait": 3600000,
             "lifetime": 3600,
@@ -92,7 +104,38 @@
             "maxWait": 3600000,
             "lifetime": 3600,
             "freeRetries": 4
-        }
+        },
+        "upgrade_api_block": {
+            "freeRetries": 599,
+            "minWait": 60000,
+            "maxWait": 60000,
+            "lifetime": 60
+        },
+        "upgrade_block": {
+            "freeRetries": 2,
+            "minWait": 60000,
+            "maxWait": 60000,
+            "lifetime": 60
+        },
+        "staff_invite_block": {
+            "freeRetries": 2,
+            "minWait": 60000,
+            "maxWait": 60000,
+            "lifetime": 60
+        },
+        "member_email_update": {
+            "freeRetries": 4,
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600
+        },
+        "email_preview_block": {
+            "minWait": 360000,
+            "maxWait": 360000,
+            "lifetime": 3600,
+            "freeRetries": 10
+        },
+        "blocked_email_domains": []
     },
     "paths": {
         "contentPath": "content/",

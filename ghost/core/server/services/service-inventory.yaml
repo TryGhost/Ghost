@@ -8448,7 +8448,8 @@ services:
           resolves a namespace's policy (owner and limits) and refuses what it doesn't allow. Definitions
           exposes asynchronous CRUD/reorder and addOne/find/recordCreated helpers; values
           exposes synchronous unwrapWire plus asynchronous read/plan/apply/feed methods; bindings exposes asynchronous
-          bind/remove/planning. HTTP tests assert selected serialized definitions, values, access
+          bind/remove/planning, which of a set of ports are bound and the field each names, and
+          whether any port writes into a field. HTTP tests assert selected serialized definitions, values, access
           rules and provenance; they do not pin the root export shape or init return timing.
         sources:
           - core/server/services/members-metafields/index.ts
@@ -8471,8 +8472,8 @@ services:
           values receives the ceiling callback; all three receive the field source. Constructors
           store dependencies without querying or starting work.
           The shared DB getter can create the module-cached Knex client if not already loaded.
-          No other production construction of these classes was found. Binding units construct
-          the class with fake query/values collaborators, not the root or publication sequence.
+          No other production construction of these classes was found. HTTP covers the
+          bindings only through the published root.
         sources:
           - core/server/services/members-metafields/index.ts
           - core/server/services/members-metafields/namespaces.ts
@@ -8483,18 +8484,21 @@ services:
           - core/server/data/db/index.js
           - core/server/data/db/connection.ts
         tests:
-          - test/unit/server/services/members-metafields/bindings-service.test.ts
+          - test/e2e-api/members/webhooks.test.js
       consumers:
         summary: >-
           Admin/member endpoints use definitions; members retains values for BREAD, account,
           member deletion and activity feeds, and definitions/values for CSV import/export.
           Webhooks read values through members BREAD. The Stripe Checkout config reads fields
           through the exported field source. Member filtering and API serialization
-          also deep-import helpers. No production calls to the exported bindings service were
-          found in the inspected Core source after checkout collection was removed; it remains
-          constructed and exported. Real HTTP asserts field/value visibility, CSV cells/import
-          provenance, filter matches and filtered bulk actions. Binding units exercise planning
-          with fake query/value collaborators, not a production consumer.
+          also deep-import helpers. The Stripe Checkout config binds and removes ports through the
+          exported bindings service, the Stripe webhook plans collected values through it, the tiers
+          root reads which ports are bound, and which field each names, through it, and the custom
+          fields endpoints ask it whether a field is bound before clearing the site cache.
+          The member account saves the answers a member gives with a change of tier through it, as
+          a checkout does. Real HTTP asserts field/value visibility, CSV cells/import
+          provenance, filter matches, filtered bulk actions, and what checkouts and a member's
+          change of tier save through ports, with their provenance and refusals.
         sources:
           - core/server/api/endpoints/member-metafields.ts
           - core/server/api/endpoints/member-metafields-members.ts
@@ -8512,13 +8516,17 @@ services:
           - core/server/models/member.js
           - core/server/services/members-metafields/filter.ts
           - core/server/services/members-metafields/index.ts
+          - core/server/services/stripe-checkout-config/index.ts
+          - core/server/services/stripe/stripe-service.js
+          - core/server/services/tiers/index.ts
         tests:
           - test/e2e-api/admin/member-custom-fields.test.ts
           - test/e2e-api/members/custom-fields.test.ts
           - test/e2e-api/admin/members-import-custom-fields.test.ts
           - test/e2e-api/admin/members-exporter-custom-fields.test.ts
           - test/e2e-api/admin/members-filter-custom-fields.test.ts
-          - test/unit/server/services/members-metafields/bindings-service.test.ts
+          - test/e2e-api/members/member-answers.test.ts
+          - test/e2e-api/members/webhooks.test.js
       startup:
         summary: >-
           Boot calls init during initCore after database/settings/signing-key/i18n setup and
@@ -8604,11 +8612,11 @@ services:
         summary: >-
           Invalid plans reject before writes; malformed value leaves are logged/omitted and
           malformed history field lists become empty, while invalid definition decoding rejects
-          the read. Bindings skip unresolved/invalid rows and return ordered good plans plus the
-          first failure. Definition action failures are logged after data writes. Multi-property definition edits are not atomic; limit
+          the read. Bindings skip unresolved/invalid rows, and return the plans for the values
+          accepted, one per writer, beside every refusal named by port; a failed lookup rejects. Definition action failures are logged after data writes. Multi-property definition edits are not atomic; limit
           counting deliberately permits concurrent overshoot, and applying a plan does not
           revalidate its captured definition. HTTP asserts selected refusals/corrupt reads and
-          successful actions; fake binding/import tests assert continuation/reporting.
+          successful actions; webhook HTTP and fake import tests assert continuation/reporting.
           Action failure, partial edits, stale plans and concurrency guarantees remain untested.
         sources:
           - core/server/services/members-metafields/definitions-service.ts
@@ -8619,7 +8627,7 @@ services:
         tests:
           - test/e2e-api/admin/member-custom-fields.test.ts
           - test/e2e-api/members/custom-fields.test.ts
-          - test/unit/server/services/members-metafields/bindings-service.test.ts
+          - test/e2e-api/members/webhooks.test.js
           - test/unit/server/services/members/import-export/import/error-handling.test.ts
     unverified: []
     blockers:
@@ -13991,9 +13999,10 @@ services:
       construction:
         summary: >-
           Boot awaits init in initCore after the custom fields services. The initializer builds
-          the config service with knex, its history recorder, logging and the custom field
-          bindings it saves the shipping address and phone number into, and throws if those
-          bindings aren't set up yet. It builds the checkout service over that config service,
+          the config service with knex, its history recorder, logging, the custom fields' field
+          source, the custom field bindings it saves the shipping address and phone number into,
+          and the tier requirements, looked up from the tiers root on each use as tiers start later
+          in boot, and throws if the custom fields services aren't set up yet. It builds the checkout service over that config service,
           labs and logging, the preview service with that checkout service and lookups of Stripe,
           tiers and the members payments service made per preview, and the branding service with
           lookups of Stripe made per read, as those start later in boot. Later init calls keep
@@ -14634,8 +14643,10 @@ services:
       exports:
         summary: >-
           The TypeScript root default-exports a defineService root with async init and no
-          shutdown/reset. Its service, holding api and repository, throws IncorrectUsageError
-          before initialization. The API exposes async
+          shutdown/reset. Its service, holding api, repository and requirements, throws
+          IncorrectUsageError before initialization. requirements reads and writes tier
+          requirements, which the Stripe Checkout config looks up on each use, and the repository
+          reads them for a tier on each read that asks for them. The API exposes async
           browse/read/readDefaultTier/add/edit; browse returns one-page metadata, read returns
           null for a missing valid ID and readDefaultTier can return undefined. API units use
           the separate in-memory repository: they assert edited name, archived status, browse
@@ -14651,19 +14662,24 @@ services:
           - test/unit/server/services/tiers/tiers-api.test.js
       construction:
         summary: >-
-          The root's factory creates TierRepository with Product and DomainEvents, and a slug
-          collaborator calling Product.generateSlug. It awaits loading products with benefits,
-          then builds TiersAPI and returns both for publication together. This is the only
-          production construction path found for these two implementations. Deep Tier and event
+          The root's factory creates TierRequirements over knex, logging and the custom fields
+          bindings, which boot sets up first, refusing to start before the custom fields services
+          are set up, and TierRepository with Product, DomainEvents and the
+          requirements, and a slug collaborator calling Product.generateSlug. It awaits loading
+          products with benefits, then builds TiersAPI and returns all three for publication
+          together. This is the only
+          production construction path found for these three implementations. Deep Tier and event
           classes support that graph; the in-memory tier repository is used by API units, not
           production composition. Root units pin the benefits load, the API reading through the
           published repository, TierCreatedEvent dispatch through DomainEvents, and slugs from
           the current Product model while the repository saves through the model read at init.
         sources:
           - core/server/services/tiers/index.ts
+          - core/server/services/tiers/requirements.ts
           - core/server/services/tiers/tier-repository.js
           - core/server/services/tiers/tiers-api.js
           - core/server/services/tiers/tier.js
+          - core/server/services/members-metafields/index.ts
           - test/unit/server/services/tiers/in-memory-tier-repository.ts
         tests:
           - test/unit/server/services/tiers/index.test.ts
@@ -14671,7 +14687,10 @@ services:
         summary: >-
           Source searches found boot, Admin/Content tier endpoints, post/page/
           preview/email-post serializers, members imports/access middleware/controllers, gifts
-          and Stripe checkout previews. These consumers resolve the service's api at use; the
+          and Stripe checkout previews, and the Stripe Checkout config reads and writes tier
+          requirements through service.requirements on each use, which the member account also reads
+          when a member changes tier. These consumers resolve the
+          service's api at use; the
           Members API and gift services receive a getter that does so, and payments deep-imports
           three tier event classes. The preview callback resolves the current api.read for each
           request. Its HTTP tests assert refusal of free, absent and malformed tiers, but do not
@@ -14720,7 +14739,7 @@ services:
           then awaits tiers.init alongside members.init. Tier loading must complete before that
           group and boot can finish; members and gifts deliberately hold getters before the
           service is available. defineService shares one pending initialization between
-          overlapping calls, as its kernel units cover. Root units pin publication only after priming resolves, nothing published and a
+          overlapping calls, as its kernel units cover. Root units pin refusing to start before the custom fields services are set up, publication only after priming resolves, nothing published and a
           retry loading again after priming or API construction rejects, sequential init
           retaining both instances without reloading, and overlapping calls settling with an API
           over the published repository. Boot units pin gifts constructed before tiers.init

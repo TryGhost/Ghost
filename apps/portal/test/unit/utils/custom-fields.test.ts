@@ -13,7 +13,7 @@ import { ALL_FIELD_FIXTURES, type AnyFieldFixture } from '@tryghost/metafield-ty
 import {
   changedCustomFields,
   customFieldTexts,
-  type MemberCustomField,
+  type FieldInput,
 } from '../../../src/utils/custom-fields';
 
 /** What a write does to what a field of this shape holds, as the members API accepts and applies it. */
@@ -37,12 +37,7 @@ function applied<S extends FieldShape>(
 describe.each(
   ALL_FIELD_FIXTURES.map((fixture): [string, AnyFieldFixture] => [fixture.field.type, fixture]),
 )('a %s field on the profile page', (_type, { field, values }) => {
-  const writable: MemberCustomField = {
-    key: 'sampled',
-    name: 'Sample',
-    access: { member: 'write' },
-    ...field,
-  };
+  const writable: FieldInput = { key: 'sampled', name: 'Sample', readOnly: false, ...field };
   const held = (value: unknown): Record<string, unknown> => ({ sampled: value });
 
   it('sends nothing when the form is saved untouched', () => {
@@ -64,7 +59,7 @@ describe.each(
   });
 
   it('starts a field they may only see from everything they hold, as text', () => {
-    const readOnly: MemberCustomField = { ...writable, access: { member: 'read' } };
+    const readOnly: FieldInput = { ...writable, readOnly: true };
     for (const value of values) {
       const { sampled } = customFieldTexts([readOnly], held(value));
       expect(sampled).toEqual(textOfValue(shaped(readOnly).shape, value));
