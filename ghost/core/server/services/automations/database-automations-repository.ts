@@ -376,6 +376,8 @@ export function createDatabaseAutomationsRepository({
           }
         }
 
+        await validateTriggerLabels(trx, data.trigger_rules);
+
         const now = new Date();
         const automation: AutomationRow = {
           id: ObjectId().toHexString(),
@@ -449,6 +451,8 @@ export function createDatabaseAutomationsRepository({
             });
           }
         }
+
+        await validateTriggerLabels(trx, triggerRules);
 
         const updatedAutomation = await updateAutomation(trx, {
           ...automation,
@@ -1808,4 +1812,22 @@ function buildPagination(total: number) {
     prev: null,
     next: null,
   };
+}
+
+async function validateTriggerLabels(
+  trx: Knex.Transaction,
+  rules: readonly AutomationTriggerRuleDefinition[],
+): Promise<void> {
+  for (const rule of rules) {
+    if (rule.trigger_type !== 'label_added') {
+      continue;
+    }
+    const label = await trx('labels').select('id').where('id', rule.label_id).forUpdate().first();
+    if (!label) {
+      throw new errors.ValidationError({
+        message: 'Trigger label must exist.',
+        property: 'trigger_rules',
+      });
+    }
+  }
 }
