@@ -1,6 +1,15 @@
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const WebhookController = require('../../../../../core/server/services/stripe/webhook-controller');
+const { createTracer } = require('../../../../../core/server/lib/tracing/create-tracer');
+const { createMeter } = require('../../../../../core/server/lib/tracing/create-meter');
+const { stripeTracking } = require('../../../../../core/server/services/stripe/tracking');
+
+const shipNothing = { transport: { metric: async () => null }, logging: { error() {} } };
+const tracking = stripeTracking({
+  tracer: createTracer(shipNothing),
+  meter: createMeter(shipNothing),
+});
 
 describe('WebhookController', function () {
   let controller;
@@ -15,6 +24,7 @@ describe('WebhookController', function () {
       checkoutSessionEventService: { handleEvent: sinon.stub(), handleDonationEvent: sinon.stub() },
       chargeRefundedEventService: { handleEvent: sinon.stub() },
       webhookManager: { parseWebhook: sinon.stub() },
+      tracking,
     };
 
     controller = new WebhookController(deps);
