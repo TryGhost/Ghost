@@ -177,7 +177,7 @@ export function CreateCustomFieldPopover({
             used it, as the options editor does to add one; the type menu, the switch and the
             buttons keep Enter for themselves. */}
         <div
-          className="space-y-5"
+          className="flex flex-col gap-5"
           data-testid={testId}
           onKeyDown={(event) => {
             // Enter that confirms what an input method is composing isn't saving the form: the
