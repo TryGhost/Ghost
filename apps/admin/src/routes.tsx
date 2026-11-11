@@ -30,7 +30,7 @@ import {
 import {
   lazyAutomationEditorScreen,
   lazyAutomationsScreen,
-  lazyTriggerPatternsScreen,
+  lazyLeadMagnetStatesScreen,
 } from './automations/api';
 import { lazyCommentsScreen } from './comments/api';
 import { lazyMigrateScreen } from './migrate/api';
@@ -109,10 +109,14 @@ const appRoutes: RouteObject[] = [
     lazy: lazyComponent(lazyAppPageScreen),
   },
   {
-    // PROTOTYPE ONLY (NY-1750): every trigger card on one page. Don't merge.
-    path: '/automations/triggers',
-    handle: { requiresAccess: canManageAutomations } satisfies AccessRouteHandle,
-    lazy: lazyComponent(lazyTriggerPatternsScreen),
+    // PROTOTYPE ONLY (NY-1750): the lead magnet states, one pattern at a time, with the page's own
+    // text nav in place of Admin's. Don't merge.
+    path: '/automations/lead-magnet-states/:pattern?',
+    handle: {
+      hideAdminSidebar: true,
+      requiresAccess: canManageAutomations,
+    } satisfies AdminRouteHandle & AccessRouteHandle,
+    lazy: lazyComponent(lazyLeadMagnetStatesScreen),
   },
   {
     // The automation editor hides the admin sidebar for a focused,

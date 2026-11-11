@@ -21,6 +21,8 @@ interface MemberDetailFormProps {
   // "committed identity" display state (e.g. the sidebar avatar) so it
   // doesn't churn on every keystroke.
   onNameBlur?: () => void;
+  // PROTOTYPE ONLY (NY-1750): a hint under Labels. Don't merge.
+  labelsHint?: React.ReactNode;
 }
 
 const MemberDetailForm: React.FC<MemberDetailFormProps> = ({
@@ -30,6 +32,7 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({
   onChange,
   onEmailBlur,
   onNameBlur,
+  labelsHint,
 }) => {
   // Soft limit: the note can be typed past 500; the counter just turns negative
   // and red.
@@ -87,6 +90,7 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({
             labels={draft.labels}
             onChange={(nextLabels) => onChange({ labels: nextLabels })}
           />
+          {labelsHint}
         </div>
       </div>
 

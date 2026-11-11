@@ -39,6 +39,8 @@ import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { type FieldTargetGroup } from '@/members/components/bulk-action-modals/import-members/field-targets';
 import { type MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { type UseLabelPickerResult } from '@/members/hooks/use-label-picker';
+// PROTOTYPE ONLY (NY-1750): which label automations the import starts. Don't merge.
+import { LeadMagnetBulkNote } from '@/automations/api';
 
 interface MappingPreviewRow {
   key: string;
@@ -643,6 +645,15 @@ export function MappingStep({
                 onEdit={labelPicker.editLabel}
                 onToggle={labelPicker.toggleLabel}
               />
+              {/* PROTOTYPE ONLY (NY-1750) */}
+              <div className="mt-2">
+                <LeadMagnetBulkNote
+                  labels={labelPicker.labels}
+                  memberCount={membersCount}
+                  selectedSlugs={labelPicker.selectedSlugs}
+                  source="import"
+                />
+              </div>
             </div>
           </>
         }

@@ -58,3 +58,53 @@ export const useStripeConnectedWithPrototype = (siteStripeEnabled: boolean): boo
   }, [siteStripeEnabled]);
   return override ?? siteStripeEnabled;
 };
+
+// How the member page says saving starts or stops a label automation, switched in the prototype
+// menu. Hints are plain text: design review (2026-11-10) dropped the icons and bold names, and
+// asked for a dialog on Save instead.
+// - lines: a hint under Labels, one line per automation
+// - sentence: a hint under Labels, one sentence for all of them
+// - dialog (default, chosen in design review): no hint; Save asks first
+export type HintStyle = 'lines' | 'sentence' | 'dialog';
+export const HINT_STYLES: { value: HintStyle; label: string }[] = [
+  { value: 'dialog', label: 'Dialog on Save' },
+  { value: 'lines', label: 'Hint, one line per automation' },
+  { value: 'sentence', label: 'Hint, one sentence' },
+];
+const HINT_STYLE_KEY = 'prototype.ny1750.hintStyle';
+
+let hintStyle: HintStyle = (() => {
+  try {
+    const stored = localStorage.getItem(HINT_STYLE_KEY);
+    return HINT_STYLES.some((style) => style.value === stored) ? (stored as HintStyle) : 'dialog';
+  } catch {
+    return 'dialog';
+  }
+})();
+
+export const setHintStyle = (style: HintStyle) => {
+  hintStyle = style;
+  try {
+    localStorage.setItem(HINT_STYLE_KEY, style);
+  } catch {
+    // Storage blocked: the choice still works until the next reload.
+  }
+  notify();
+};
+
+export const useHintStyle = () => useSyncExternalStore(subscribe, () => hintStyle);
+
+export const useConfirmLabelChangesOnSave = () => useHintStyle() === 'dialog';
+
+// Clears every prototype setting and the fake lead magnet data in this browser, then reloads so
+// nothing kept in memory survives. Automations and labels saved to the site stay.
+export const resetPrototype = () => {
+  try {
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith('prototype.ny1750.'))
+      .forEach((key) => localStorage.removeItem(key));
+  } catch {
+    // Storage blocked: nothing was kept there.
+  }
+  window.location.reload();
+};

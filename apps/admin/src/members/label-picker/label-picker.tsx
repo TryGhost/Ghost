@@ -43,6 +43,9 @@ export interface LabelPickerProps {
   // Editing
   onEdit?: (id: string, name: string) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
+  // PROTOTYPE ONLY (NY-1750): runs on the first Delete click; returning true skips the inline
+  // confirm, e.g. for a label an active automation uses. Don't merge.
+  onDeleteClick?: (id: string) => boolean;
   // Placeholder shown in the search input when nothing is selected. Defaults
   // to 'Search labels...' — pass an empty string on surfaces where the field
   // itself is already contextualized by a nearby Label element.
@@ -108,6 +111,9 @@ interface LabelListItemsProps {
   onToggle: (slug: string) => void;
   onEdit?: (id: string, name: string) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
+  // PROTOTYPE ONLY (NY-1750): runs on the first Delete click; returning true skips the inline
+  // confirm, e.g. for a label an active automation uses. Don't merge.
+  onDeleteClick?: (id: string) => boolean;
   onCreate?: (name: string) => Promise<Label | undefined>;
   isCreating?: boolean;
   onSearchClear?: () => void;
@@ -121,6 +127,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
   onToggle,
   onEdit,
   onDelete,
+  onDeleteClick,
   onCreate,
   isCreating,
   onSearchClear,
@@ -192,6 +199,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
                   label={label}
                   onCancel={() => setEditingLabelId(null)}
                   onDelete={handleDelete}
+                  onDeleteClick={onDeleteClick}
                   onSave={handleEdit}
                 />
               ) : (
@@ -357,6 +365,7 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
   isCreating,
   onEdit,
   onDelete,
+  onDeleteClick,
   placeholder,
 }) => {
   const selectedLabels =
@@ -375,6 +384,7 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
       selectedSlugs={selectedSlugs}
       onCreate={onCreate}
       onDelete={onDelete}
+      onDeleteClick={onDeleteClick}
       onEdit={onEdit}
       onToggle={onToggle}
     />
@@ -393,6 +403,9 @@ interface ComboboxPickerProps {
   isCreating?: boolean;
   onEdit?: (id: string, name: string) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
+  // PROTOTYPE ONLY (NY-1750): runs on the first Delete click; returning true skips the inline
+  // confirm, e.g. for a label an active automation uses. Don't merge.
+  onDeleteClick?: (id: string) => boolean;
   placeholder?: string;
 }
 
@@ -406,6 +419,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
   isCreating,
   onEdit,
   onDelete,
+  onDeleteClick,
   placeholder = 'Search labels...',
 }) => {
   const [open, setOpen] = useState(false);
@@ -594,6 +608,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                   shouldClientFilter={optionSource.shouldClientFilter}
                   onCreate={onCreate}
                   onDelete={onDelete}
+                  onDeleteClick={onDeleteClick}
                   onEdit={onEdit}
                   onSearchClear={() => handleSearchChange('')}
                   onToggle={onToggle}

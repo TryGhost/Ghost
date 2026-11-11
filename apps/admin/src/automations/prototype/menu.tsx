@@ -15,12 +15,27 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  RadioGroup,
+  RadioGroupItem,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Switch,
 } from '@tryghost/shade/components';
 import { Stack, Text } from '@tryghost/shade/primitives';
 import { ShadeApp } from '@tryghost/shade/app';
 import { LucideIcon, cn } from '@tryghost/shade/utils';
-import { setStripeConnected, usePrototypeStripeConnected } from './settings';
+import {
+  HINT_STYLES,
+  type HintStyle,
+  resetPrototype,
+  setHintStyle,
+  setStripeConnected,
+  useHintStyle,
+  usePrototypeStripeConnected,
+} from './settings';
 
 const subscribeToTheme = (onChange: () => void) => {
   const observer = new MutationObserver(onChange);
@@ -28,6 +43,20 @@ const subscribeToTheme = (onChange: () => void) => {
   return () => observer.disconnect();
 };
 const isDark = () => document.documentElement.classList.contains('dark');
+
+// The two views: the working prototype, and the UI patterns page. Picked from where Admin is now;
+// this menu has its own React root, outside Admin's router, so it reads the address directly.
+const PATTERNS_HASH = '#/automations/lead-magnet-states';
+const VIEWS = [
+  { value: 'prototype', label: 'Prototype', hash: '#/automations' },
+  { value: 'patterns', label: 'UI patterns', hash: PATTERNS_HASH },
+];
+const subscribeToHash = (onChange: () => void) => {
+  window.addEventListener('hashchange', onChange);
+  return () => window.removeEventListener('hashchange', onChange);
+};
+const currentView = () =>
+  window.location.hash.startsWith(PATTERNS_HASH) ? 'patterns' : 'prototype';
 
 const Section: React.FC<React.PropsWithChildren<{ title: string }>> = ({ title, children }) => (
   <Stack gap="sm">
@@ -42,6 +71,8 @@ export const PrototypeMenu: React.FC = () => {
   const [open, setOpen] = useState(false);
   const dark = useSyncExternalStore(subscribeToTheme, isDark);
   const stripeConnected = usePrototypeStripeConnected();
+  const hintStyle = useHintStyle();
+  const view = useSyncExternalStore(subscribeToHash, currentView);
 
   // Close on a press anywhere else. Radix listens for that on the document, but the canvas stops
   // pointer events before they get there, so listen in the capture phase. Presses inside the
@@ -83,6 +114,23 @@ export const PrototypeMenu: React.FC = () => {
               <Text size="md" weight="semibold">
                 Prototype
               </Text>
+              <Section title="Views">
+                <RadioGroup
+                  aria-label="Views"
+                  value={view}
+                  onValueChange={(next) => {
+                    window.location.hash = VIEWS.find((v) => v.value === next)?.hash ?? '';
+                    setOpen(false);
+                  }}
+                >
+                  {VIEWS.map(({ value, label }) => (
+                    <Field key={value} orientation="horizontal">
+                      <RadioGroupItem id={`prototype-view-${value}`} value={value} />
+                      <FieldLabel htmlFor={`prototype-view-${value}`}>{label}</FieldLabel>
+                    </Field>
+                  ))}
+                </RadioGroup>
+              </Section>
               <Section title="Site">
                 <Field className="justify-between" orientation="horizontal">
                   <FieldContent>
@@ -96,18 +144,41 @@ export const PrototypeMenu: React.FC = () => {
                   />
                 </Field>
               </Section>
-              <Section title="Pages">
-                <Button
-                  className="-mx-2 justify-start px-2"
-                  type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    window.location.hash = '#/automations/triggers';
-                    setOpen(false);
-                  }}
-                >
-                  <LucideIcon.LayoutGrid /> Trigger patterns
-                </Button>
+              <Section title="Member page">
+                <Field>
+                  <FieldLabel htmlFor="prototype-hint-style">Label automation changes</FieldLabel>
+                  <Select
+                    value={hintStyle}
+                    onValueChange={(next) => setHintStyle(next as HintStyle)}
+                  >
+                    <SelectTrigger id="prototype-hint-style">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {HINT_STYLES.map((style) => (
+                        <SelectItem key={style.value} value={style.value}>
+                          {style.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+              </Section>
+              <Section title="Prototype">
+                <Field>
+                  <Button
+                    className="-mx-2 justify-start px-2"
+                    type="button"
+                    variant="ghost"
+                    onClick={resetPrototype}
+                  >
+                    <LucideIcon.RotateCcw /> Reset prototype
+                  </Button>
+                  <FieldDescription>
+                    Clears every setting here and the fake lead magnet data in this browser, then
+                    reloads. Automations and labels saved to the site stay
+                  </FieldDescription>
+                </Field>
               </Section>
             </Stack>
           </PopoverContent>

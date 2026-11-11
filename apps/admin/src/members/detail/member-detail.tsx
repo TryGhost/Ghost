@@ -58,6 +58,14 @@ import { useBrowseNewsletters } from '@tryghost/admin-x-framework/api/newsletter
 import { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import type { MemberEditableFields } from './member-detail-edit';
+// PROTOTYPE ONLY (NY-1750): label automations from the prototype's fake backend. Don't merge.
+import {
+  LeadMagnetLabelsHint,
+  LeadMagnetSaveDialog,
+  hasLeadMagnetChanges,
+  useConfirmLabelChangesOnSave,
+  useLeadMagnetLabelChanges,
+} from '@/automations/api';
 
 // The create screen reuses this route with the sentinel id "new". Safe because
 // real member ids are 24-char hex ObjectIds and can't collide with this literal.
@@ -267,6 +275,52 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
     setDraft((prev) => (prev ? { ...prev, ...patch } : prev));
   };
 
+  // PROTOTYPE ONLY (NY-1750): which label automations saving starts or ends for this member,
+  // shown under Labels and recorded once the save succeeds. Don't merge.
+  const savedLabelSlugs = React.useMemo(
+    () => (isCreating ? [] : (member?.labels ?? []).map((label) => label.slug)),
+    [isCreating, member],
+  );
+  const draftLabelSlugs = React.useMemo(
+    () => (draft?.labels ?? []).map((label) => label.slug),
+    [draft],
+  );
+  // Label slug → name, for the Save dialog's added and removed labels.
+  const leadMagnetLabelNames = React.useMemo(
+    () =>
+      Object.fromEntries(
+        [...(member?.labels ?? []), ...(draft?.labels ?? [])].map((label) => [
+          label.slug,
+          label.name,
+        ]),
+      ),
+    [member, draft],
+  );
+  const leadMagnetChanges = useLeadMagnetLabelChanges(
+    isCreating ? undefined : member?.id,
+    savedLabelSlugs,
+    draftLabelSlugs,
+  );
+
+  // PROTOTYPE ONLY (NY-1750): with "Dialog on Save" picked in the prototype menu, Save asks first
+  // when it starts or stops a label automation. Don't merge.
+  const confirmLabelChangesOnSave = useConfirmLabelChangesOnSave();
+  const [isLeadMagnetConfirmOpen, setLeadMagnetConfirmOpen] = React.useState(false);
+  const onSaveClick = () => {
+    if (
+      confirmLabelChangesOnSave &&
+      draft &&
+      hasUnsavedChanges &&
+      emailValid &&
+      !activeMutation.isPending &&
+      hasLeadMagnetChanges(leadMagnetChanges)
+    ) {
+      setLeadMagnetConfirmOpen(true);
+      return;
+    }
+    onSave();
+  };
+
   const onSave = () => {
     if (!draft || !hasUnsavedChanges || !emailValid || activeMutation.isPending) {
       return;
@@ -305,6 +359,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
             }
             // Skip the unsaved-changes guard for our own redirect to the
             // freshly-created member.
+            leadMagnetChanges.record(created.id); // PROTOTYPE ONLY (NY-1750)
             bypassNextNavigation();
             toast.success('Member created');
             navigate(`/members/${created.id}`, { replace: true });
@@ -331,6 +386,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
             lastServerSliceRef.current = savedSlice;
             setDraft(savedSlice);
           }
+          leadMagnetChanges.record(member.id); // PROTOTYPE ONLY (NY-1750)
           toast.success('Member updated');
         },
         onError: () => {
@@ -482,7 +538,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                           className="min-w-16"
                           disabled={saveDisabled}
                           variant={saveVariant}
-                          onClick={onSave}
+                          onClick={onSaveClick}
                         >
                           {saveLabel}
                         </Button>
@@ -539,6 +595,8 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                           disabled={activeMutation.isPending}
                           draft={draft}
                           emailError={emailError}
+                          // PROTOTYPE ONLY (NY-1750)
+                          labelsHint={<LeadMagnetLabelsHint changes={leadMagnetChanges} />}
                           onChange={onFieldChange}
                           onEmailBlur={() => {
                             setEmailTouched(true);
@@ -624,6 +682,18 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
           </DetailPage.Body>
 
           <DirtyConfirmDialog {...dialogProps} />
+          {/* PROTOTYPE ONLY (NY-1750) */}
+          <LeadMagnetSaveDialog
+            changes={leadMagnetChanges}
+            labelNames={leadMagnetLabelNames}
+            memberName={draft?.name}
+            open={isLeadMagnetConfirmOpen}
+            onConfirm={() => {
+              setLeadMagnetConfirmOpen(false);
+              onSave();
+            }}
+            onOpenChange={setLeadMagnetConfirmOpen}
+          />
         </DetailPage>
       </Container>
     </Box>

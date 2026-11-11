@@ -3,15 +3,27 @@ import { Stack } from '@tryghost/shade/primitives';
 import { Button, Input } from '@tryghost/shade/components';
 import { type Label } from '@tryghost/admin-x-framework/api/labels';
 import { getErrorMessage } from '@tryghost/admin-x-framework/errors';
+// PROTOTYPE ONLY (NY-1750): the label automations' fake backend. Don't merge.
+import { LeadMagnetDeleteBlockedDialog, useLeadMagnetDeleteBlocker } from '@/automations/api';
 
 interface EditRowProps {
-  label: Pick<Label, 'id' | 'name'>;
+  // `slug` is for the prototype's delete check (NY-1750).
+  label: Pick<Label, 'id' | 'name'> & { slug?: string };
   onSave: (id: string, name: string) => Promise<void>;
   onCancel: () => void;
   onDelete: (id: string) => Promise<void>;
+  // PROTOTYPE ONLY (NY-1750): runs on the first Delete click; returning true skips the inline
+  // confirm, e.g. for a label an active automation uses. Don't merge.
+  onDeleteClick?: (id: string) => boolean;
 }
 
-export const EditRow: React.FC<EditRowProps> = ({ label, onSave, onCancel, onDelete }) => {
+export const EditRow: React.FC<EditRowProps> = ({
+  label,
+  onSave,
+  onCancel,
+  onDelete,
+  onDeleteClick,
+}) => {
   const [name, setName] = useState(label.name);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState('');
@@ -19,6 +31,9 @@ export const EditRow: React.FC<EditRowProps> = ({ label, onSave, onCancel, onDel
   const [isDeleting, setIsDeleting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const isBusy = isSaving || isDeleting;
+  // PROTOTYPE ONLY (NY-1750): an active automation's label can't be deleted. Don't merge.
+  const blockingAutomation = useLeadMagnetDeleteBlocker(label.slug);
+  const [isBlockedOpen, setBlockedOpen] = useState(false);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -106,7 +121,16 @@ export const EditRow: React.FC<EditRowProps> = ({ label, onSave, onCancel, onDel
             disabled={isBusy}
             size="sm"
             variant="ghost"
-            onClick={() => setShowDeleteConfirm(true)}
+            onClick={() => {
+              if (onDeleteClick?.(label.id)) {
+                return;
+              }
+              if (blockingAutomation) {
+                setBlockedOpen(true);
+                return;
+              }
+              setShowDeleteConfirm(true);
+            }}
           >
             Delete
           </Button>
@@ -130,6 +154,15 @@ export const EditRow: React.FC<EditRowProps> = ({ label, onSave, onCancel, onDel
             </Button>
           </div>
         </div>
+      )}
+      {/* PROTOTYPE ONLY (NY-1750) */}
+      {blockingAutomation && (
+        <LeadMagnetDeleteBlockedDialog
+          automation={blockingAutomation}
+          labelName={label.name}
+          open={isBlockedOpen}
+          onOpenChange={setBlockedOpen}
+        />
       )}
     </Stack>
   );

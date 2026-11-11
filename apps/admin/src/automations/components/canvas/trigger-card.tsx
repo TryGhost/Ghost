@@ -11,6 +11,9 @@ import type {
 import type { useBrowseTiers } from '@tryghost/admin-x-framework/api/tiers';
 import {
   Button,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
   Label,
   Select,
   SelectContent,
@@ -37,6 +40,10 @@ export type TriggerData = {
   labelSelection?: {
     value: LabelSelection;
     onChange: (next: LabelSelection) => void;
+    // The chosen label's name, kept by the automation after the label is deleted.
+    deletedName?: string;
+    // An active automation's label can't change until it's turned off.
+    locked?: boolean;
   };
 };
 
@@ -265,7 +272,7 @@ const LabelAddedPicker: React.FC<{
   errorMessage?: string;
 }> = ({ labelSelection, errorMessage }) => {
   const id = useId();
-  const { value, onChange } = labelSelection;
+  const { value, onChange, deletedName, locked } = labelSelection;
   const selectedSlugs = React.useMemo(() => (value === null ? [] : [value]), [value]);
   const picker = useLabelPicker({
     selectedSlugs,
@@ -273,13 +280,38 @@ const LabelAddedPicker: React.FC<{
   });
   const { isInitialLoad, hasMore, isLoadingMore, loadMore, onSearchChange } = picker.optionSource;
   // In name order: the label source lists the chosen label first, which would move it on each pick.
-  const options = React.useMemo(
-    () =>
-      picker.labels
-        .map((label) => ({ id: label.slug, name: label.name }))
-        .sort((a, b) => a.name.localeCompare(b.name)),
-    [picker.labels],
-  );
+  // A deleted label stays listed while it's chosen, as archived tiers do.
+  const options = React.useMemo(() => {
+    const labels = picker.labels.map((label) => ({ id: label.slug, name: label.name }));
+    if (deletedName && value !== null && !labels.some((label) => label.id === value)) {
+      labels.push({ id: value, name: `${deletedName} (deleted)` });
+    }
+    return labels.sort((a, b) => a.name.localeCompare(b.name));
+  }, [picker.labels, deletedName, value]);
+
+  if (locked) {
+    return (
+      <Stack className="nowheel" gap="sm">
+        <Label className="leading-normal font-normal" htmlFor={`${id}-label`}>
+          Triggered when this label is added to a member:
+        </Label>
+        <InputGroup data-disabled="true">
+          <InputGroupInput
+            aria-describedby={`${id}-locked`}
+            id={`${id}-label`}
+            value={options.find((option) => option.id === value)?.name ?? value ?? ''}
+            disabled
+          />
+          <InputGroupAddon align="inline-end">
+            <LucideIcon.Lock />
+          </InputGroupAddon>
+        </InputGroup>
+        <Text as="p" id={`${id}-locked`} size="sm" tone="secondary">
+          Turn off automation to edit trigger
+        </Text>
+      </Stack>
+    );
+  }
 
   return (
     <Stack className="nowheel" gap="sm">
@@ -308,7 +340,14 @@ const LabelAddedPicker: React.FC<{
         inputId={`${id}-label`}
         inputLabel="Label"
         invalid={Boolean(errorMessage)}
-        missingTierLabel="Unavailable label"
+        missingTierLabel={
+          // Like an archived tier's "Silver (archived)".
+          deletedName
+            ? `${deletedName} (deleted)`
+            : isInitialLoad
+              ? 'Loading label...'
+              : 'Label deleted'
+        }
         notice={isInitialLoad ? <Text size="md">Loading labels...</Text> : undefined}
         options={options}
         optionsHeading="Labels"
