@@ -11,6 +11,7 @@ const messages = {
   incorrectState: 'State did not match.',
   expiredState: 'This Stripe connection has expired.',
   incorrectMode: 'The Stripe account is not in the mode this connection started in.',
+  incompleteKey: 'The Stripe key is missing its API keys.',
 };
 
 // How long after the admin clicks Connect the secure key is accepted.
@@ -93,6 +94,9 @@ async function getStripeConnectTokenData(encodedData, getSessionProp, deleteSess
   }
   if (data.l !== (mode === 'live')) {
     throw new errors.NoPermissionError({ message: tpl(messages.incorrectMode) });
+  }
+  if (![data.p, data.a].every((value) => typeof value === 'string' && value)) {
+    throw new errors.ValidationError({ message: tpl(messages.incompleteKey) });
   }
   // Used up only once the key passes every check.
   await deleteSessionProp(STATE_PROP);
