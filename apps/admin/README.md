@@ -51,7 +51,8 @@ and membership tiers tests contain current examples of hiding controls until
 their supporting settings are present.
 
 Ghost Apps is the exception while `apps` is a private Labs flag: its Admin code
-assumes a matching Core, with no older-backend fallbacks or tests.
+assumes a matching Core, with no older-backend fallbacks or tests. Origin,
+framing, identity and allowlist checks still apply.
 
 ### Code that fails to load
 
