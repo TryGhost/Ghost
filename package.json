@@ -89,7 +89,7 @@
     "knip": "catalog:",
     "lint-staged": "catalog:",
     "markdownlint-cli2": "catalog:",
-    "nx": "23.3.1",
+    "nx": "24.0.5",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "remark-cli": "catalog:",
