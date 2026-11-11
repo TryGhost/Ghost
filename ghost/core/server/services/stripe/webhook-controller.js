@@ -11,9 +11,11 @@ module.exports = class WebhookController {
    * @param {import('./services/webhook/invoice-event-service')} deps.invoiceEventService
    * @param {import('./services/webhook/charge-refunded-event-service')} deps.chargeRefundedEventService
    * @param {Pick<import('./tracking').StripeTracking, 'webhook'>} deps.tracking
+   * @param {{captureException(err: unknown): unknown}} deps.sentry
    */
   constructor(deps) {
     this.tracking = deps.tracking;
+    this.sentry = deps.sentry;
     this.checkoutSessionEventService = deps.checkoutSessionEventService;
     this.subscriptionEventService = deps.subscriptionEventService;
     this.invoiceEventService = deps.invoiceEventService;
@@ -140,7 +142,9 @@ module.exports = class WebhookController {
       res.writeHead(200);
       res.end();
     } catch (err) {
-      // The span has logged the error. Stripe sends the event again later.
+      // The span has logged the error. Sentry keeps only the unexpected ones, as Ghost's Sentry
+      // setup drops every Ghost error whose status isn't 500. Stripe sends the event again later.
+      this.sentry.captureException(err);
       res.writeHead(err.statusCode || 500);
       res.end();
     }
