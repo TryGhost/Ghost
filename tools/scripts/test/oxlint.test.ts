@@ -856,6 +856,13 @@ test('requires a stop for the server getAgentsWithFrontend starts', () => {
     lint(`${starts}\ntimer.stop();`, testFile).diagnostics.map((d) => d.code),
     [code],
   );
+  assert.deepEqual(
+    lint(
+      `${starts}\nconst { ghostServer: timer } = unrelated;\ntimer.stop();`,
+      testFile,
+    ).diagnostics.map((d) => d.code),
+    [code],
+  );
   assert.equal(lint('const other = 1;', testFile).status, 0);
 });
 
@@ -913,4 +920,13 @@ test('rejects any in exported service types only', () => {
     ],
   );
   assert.equal(lint(source, 'ghost/core/server/lib/types.ts').status, 0);
+  const shadowed = [
+    'type Shared = { value: string };',
+    'function example() {',
+    '  type Shared = any;',
+    '  return {} as Shared;',
+    '}',
+    'export type { Shared };',
+  ].join('\n');
+  assert.equal(lint(shadowed, file).status, 0);
 });

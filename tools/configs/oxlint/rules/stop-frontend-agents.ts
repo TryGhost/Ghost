@@ -13,7 +13,7 @@ export const stopFrontendAgents: CreateRule = {
   },
   create(context) {
     const starts: ESTree.Node[] = [];
-    // Local names for the returned ghostServer, including destructured renames.
+    // Local names for the returned ghostServer, including renames when destructured.
     const servers = new Set(['ghostServer']);
     const receivers: string[] = [];
     let stopsGhost = false;
@@ -25,18 +25,30 @@ export const stopFrontendAgents: CreateRule = {
           ? node.property.name
           : undefined;
 
-    return {
-      ObjectPattern(node) {
-        for (const property of node.properties) {
-          if (
-            property.type === 'Property' &&
-            property.key.type === 'Identifier' &&
-            property.key.name === 'ghostServer' &&
-            property.value.type === 'Identifier'
-          ) {
-            servers.add(property.value.name);
-          }
+    // Only aliases destructured from getAgentsWithFrontend() name its server.
+    const startsServer = (node: ESTree.Node | null | undefined) => {
+      const call = node?.type === 'AwaitExpression' ? node.argument : node;
+      return call?.type === 'CallExpression' && nameOf(call.callee) === 'getAgentsWithFrontend';
+    };
+    const aliases = (pattern: Extract<ESTree.Node, { type: 'ObjectPattern' }>) => {
+      for (const property of pattern.properties) {
+        if (
+          property.type === 'Property' &&
+          property.key.type === 'Identifier' &&
+          property.key.name === 'ghostServer' &&
+          property.value.type === 'Identifier'
+        ) {
+          servers.add(property.value.name);
         }
+      }
+    };
+
+    return {
+      VariableDeclarator(node) {
+        if (node.id.type === 'ObjectPattern' && startsServer(node.init)) aliases(node.id);
+      },
+      AssignmentExpression(node) {
+        if (node.left.type === 'ObjectPattern' && startsServer(node.right)) aliases(node.left);
       },
       CallExpression(node) {
         const { callee } = node;

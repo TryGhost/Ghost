@@ -14,7 +14,9 @@ export const noAnyInExportedTypes: CreateRule = {
   create(context) {
     let exported = 0;
     // Types declared locally and exported later with `export type { Name }`.
-    const declaring: string[] = [];
+    // Export specifiers can only name module-level types, so nested ones are skipped.
+    const declaring: (string | undefined)[] = [];
+    const topLevel = (node: ESTree.Node) => node.parent?.type === 'Program';
     const pending: { node: ESTree.Node; type: string }[] = [];
     const exportedNames = new Set<string>();
     const isType = (type?: string) =>
@@ -32,13 +34,13 @@ export const noAnyInExportedTypes: CreateRule = {
         if (isType(node.declaration?.type)) exported -= 1;
       },
       TSTypeAliasDeclaration(node) {
-        declaring.push(node.id.name);
+        declaring.push(topLevel(node) ? node.id.name : undefined);
       },
       'TSTypeAliasDeclaration:exit'() {
         declaring.pop();
       },
       TSInterfaceDeclaration(node) {
-        declaring.push(node.id.name);
+        declaring.push(topLevel(node) ? node.id.name : undefined);
       },
       'TSInterfaceDeclaration:exit'() {
         declaring.pop();
