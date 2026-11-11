@@ -4,10 +4,9 @@ import type {
   AutomationDetail,
   AutomationTriggerRule,
 } from '@tryghost/admin-x-framework/api/automations';
-import { Button, LoadingIndicator } from '@tryghost/shade/components';
+import { LoadingIndicator } from '@tryghost/shade/components';
 import { DirtyConfirmDialog } from '@tryghost/shade/patterns';
-import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { Box, Stack } from '@tryghost/shade/primitives';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { Background, ReactFlow } from '@xyflow/react';
 import AutomationHeader from './components/automation-header';
@@ -19,40 +18,15 @@ import { getNewAutomationName } from './utils/get-new-automation-name';
 import { useUnsavedChangesGuard } from '@/hooks/use-unsaved-changes-guard';
 import { ScreenEntranceContext } from '@/layout/screen-transition';
 import type { LabelSelection } from './types';
-
-type PickedTrigger = AutomationTriggerRule['trigger_type'] | 'member_label_added';
-
-const TRIGGER_OPTIONS = [
-  [
-    'free_signup',
-    LucideIcon.UserPlus,
-    'Free member signed up',
-    'When someone signs up as a free member',
-  ],
-  [
-    'paid_subscription_started',
-    LucideIcon.CreditCard,
-    'Paid subscription started',
-    'When a new or free member starts a paid subscription',
-  ],
-] as const;
-
-// Remains behind Labs while lifecycle enrollment and execution are being completed.
-const SUBSCRIPTION_CHANGED_OPTION = [
-  'paid_subscription_changed',
-  LucideIcon.ArrowRightLeft,
-  'Paid subscription changed',
-  "When a member's paid subscription moves to another tier or ends",
-] as const;
-
-// Behind the lead magnets flag until the API can save it (NY-1750). A label can be added to a free
-// member, so it's offered with or without Stripe.
-const LABEL_ADDED_OPTION = [
-  'member_label_added',
-  LucideIcon.Tag,
-  'Label added to a member',
-  'When a label is added to a member',
-] as const;
+import { TriggerPickerCard } from './components/trigger-picker-card';
+import {
+  FREE_SIGNUP_OPTION,
+  LABEL_ADDED_OPTION,
+  PAID_STARTED_OPTION,
+  type PickedTrigger,
+  SUBSCRIPTION_CHANGED_OPTION,
+  type TriggerOption,
+} from './utils/trigger-options';
 
 const TriggerPicker: React.FC<{
   automation: AutomationDetail;
@@ -63,13 +37,9 @@ const TriggerPicker: React.FC<{
   const { dialogProps } = useUnsavedChangesGuard({ when: true });
   const lifecycleTriggers = useFeatureFlag('automationsLifecycleTriggers');
   const isLeadMagnetsEnabled = useFeatureFlag('automationsLeadMagnets');
-  const options: Array<
-    | (typeof TRIGGER_OPTIONS)[number]
-    | typeof SUBSCRIPTION_CHANGED_OPTION
-    | typeof LABEL_ADDED_OPTION
-  > = [TRIGGER_OPTIONS[0]];
+  const options: TriggerOption[] = [FREE_SIGNUP_OPTION];
   if (stripeEnabled) {
-    options.push(TRIGGER_OPTIONS[1]);
+    options.push(PAID_STARTED_OPTION);
     if (lifecycleTriggers) {
       options.push(SUBSCRIPTION_CHANGED_OPTION);
     }
@@ -111,34 +81,11 @@ const TriggerPicker: React.FC<{
         {/* Slightly above center: 40% of the spare height above the card, 60% below. */}
         <Stack align="center" className="pointer-events-none absolute inset-0" gap="none">
           <Box className="min-h-12 flex-[2]" />
-          <Stack
+          <TriggerPickerCard
             ref={cardRef}
-            className="pointer-events-auto w-[400px] max-w-[calc(100%-32px)] rounded-xl border border-border-default bg-surface-elevated p-6 shadow-sm"
-            gap="xl"
-          >
-            <Text weight="semibold">Select a trigger</Text>
-            {options.map(([trigger, Icon, title, description]) => (
-              <Button
-                key={trigger}
-                className="-mx-2 h-auto justify-start px-2 text-left whitespace-normal"
-                shape="rounded"
-                variant="ghost"
-                onClick={() => onPick(trigger, cardRef.current?.offsetTop ?? 0)}
-              >
-                <Inline gap="md">
-                  <Inline className="size-9 shrink-0 rounded-md bg-muted" justify="center">
-                    <Icon className="size-4" />
-                  </Inline>
-                  <Stack gap="none">
-                    <Text weight="medium">{title}</Text>
-                    <Text size="sm" tone="secondary">
-                      {description}
-                    </Text>
-                  </Stack>
-                </Inline>
-              </Button>
-            ))}
-          </Stack>
+            options={options}
+            onPick={(trigger) => onPick(trigger, cardRef.current?.offsetTop ?? 0)}
+          />
           <Box className="min-h-12 flex-[3]" />
         </Stack>
       </Box>

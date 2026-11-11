@@ -38,34 +38,67 @@ import { TriggerCard, type TriggerData } from '@/automations/components/canvas/t
 import { buildTriggerRules } from '@/automations/utils/trigger-rules';
 import type { LabelSelection } from '@/automations/types';
 import { LabelPicker, canCreateLabel, useLabelPicker } from '@/members/api';
+import { TriggerPickerCard } from '@/automations/components/trigger-picker-card';
+import {
+  FREE_SIGNUP_OPTION,
+  LABEL_ADDED_OPTION,
+  PAID_STARTED_OPTION,
+  SUBSCRIPTION_CHANGED_OPTION,
+} from '@/automations/utils/trigger-options';
 import { LeadMagnetSaveDescription } from './lead-magnets-dialog';
 import { LeadMagnetDeleteBlockedDescription } from './lead-magnets-delete-dialog';
 import { LeadMagnetBulkNoteText } from './lead-magnets-bulk-note';
-import { BULK_NOTE_THRESHOLD } from './lead-magnets';
 
 // --- Page structure ---
 
-const Column: React.FC<React.PropsWithChildren<{ name: string }>> = ({ name, children }) => (
-  <Stack gap="sm">
-    <Text className="font-mono text-[10px]" size="sm" tone="secondary">
-      {name}
-    </Text>
-    {children}
-  </Stack>
-);
+// An example: its name above the UI, or, with a `description`, the name and scenario on the left
+// and the UI on the right (trying this on Trigger states first): 240px, a 64px gap, then the UI.
+const Column: React.FC<React.PropsWithChildren<{ name: string; description?: string }>> = ({
+  name,
+  description,
+  children,
+}) =>
+  description ? (
+    <Box className="grid grid-cols-[240px_minmax(0,1fr)] items-start gap-16">
+      <Stack gap="xs">
+        <Text size="md" weight="medium">
+          {name}
+        </Text>
+        <Text size="sm" tone="secondary">
+          {description}
+        </Text>
+      </Stack>
+      {children}
+    </Box>
+  ) : (
+    <Stack gap="sm">
+      <Text className="font-mono text-[10px]" size="sm" tone="secondary">
+        {name}
+      </Text>
+      {children}
+    </Stack>
+  );
 
 const State: React.FC<
   React.PropsWithChildren<{
     title: string;
+    // Where in Admin this interaction lives, under the title.
+    location?: string;
     useCase?: React.ReactNode;
     openQuestion?: React.ReactNode;
   }>
-> = ({ title, useCase, openQuestion, children }) => (
-  <Stack gap="lg">
+> = ({ title, location, useCase, openQuestion, children }) => (
+  // Twice Shade's lg and 2xl gaps: 40px around the separator, 64px between examples.
+  <Stack className="gap-10" gap="none">
     <Stack className="max-w-2xl" gap="xs">
-      <Text as="h2" size="xl" weight="semibold">
+      <Text as="h2" size="2xl" weight="semibold">
         {title}
       </Text>
+      {location && (
+        <Text size="sm" tone="secondary">
+          {location}
+        </Text>
+      )}
       {useCase && (
         <Text size="md" tone="secondary">
           {useCase}
@@ -77,9 +110,11 @@ const State: React.FC<
         </Text>
       )}
     </Stack>
-    <Inline align="start" gap="xl" wrap>
+    <Separator />
+    {/* Examples stacked, one under another. */}
+    <Stack className="gap-16" gap="none">
       {children}
-    </Inline>
+    </Stack>
   </Stack>
 );
 
@@ -233,11 +268,31 @@ const TriggerStatesState: React.FC = () => {
     [data, isLoading, isError, refetch],
   );
   return (
-    <State title="Trigger states">
-      <Column name="Editable">
+    <State location="Automation editor" title="Trigger">
+      <Column
+        description="Picking a trigger for a new automation. Label added to a member sits with the others, behind the lead magnets flag."
+        name="Picker"
+      >
+        <TriggerPickerCard
+          options={[
+            FREE_SIGNUP_OPTION,
+            PAID_STARTED_OPTION,
+            SUBSCRIPTION_CHANGED_OPTION,
+            LABEL_ADDED_OPTION,
+          ]}
+          onPick={() => {}}
+        />
+      </Column>
+      <Column
+        description="The default. Pick a label, or create one, and the automation starts when it's added to a member."
+        name="Set up"
+      >
         <LabelTriggerState initialLabel={null} tierQuery={tierQuery} />
       </Column>
-      <Column name="Locked while active">
+      <Column
+        description="While the automation is on, its trigger can't change. Turning it off unlocks it."
+        name="Locked while live"
+      >
         <TriggerShell Icon={LucideIcon.Tag} title="Label added to a member">
           <LockedTriggerField
             fieldLabel="Triggered when this label is added to a member:"
@@ -245,16 +300,20 @@ const TriggerStatesState: React.FC = () => {
           />
         </TriggerShell>
       </Column>
-      <Column name="Error: no label, after Publish">
+      <Column
+        description="Publishing without a label. The error clears once one is picked."
+        name="Error: empty at publish"
+      >
         <LabelTriggerState
           errorMessage="Select a label"
           initialLabel={null}
           tierQuery={tierQuery}
         />
       </Column>
-      {/* In error from the start, not just after Publish: the label may have been deleted by
-          mistake, or by someone else. */}
-      <Column name="Error: label deleted">
+      <Column
+        description="The label was deleted while the automation was off, perhaps by a colleague. The error shows as soon as the automation opens, so it's caught before publishing."
+        name="Error: label deleted"
+      >
         <LabelTriggerState
           deletedName="Spring ebook"
           errorMessage="Select a different label"
@@ -269,19 +328,25 @@ const TriggerStatesState: React.FC = () => {
 // --- 2. Turn off automation ---
 
 const TurnOffState: React.FC = () => (
-  <State title="Turn off automation">
+  <State location="Automation editor" title="Turn off">
     {/* The copy in automation-status-dialog.tsx today. */}
-    <Column name="Current">
+    <Column description="What turning off says today, for every automation." name="Existing">
       <DialogCard actionLabel="Turn off" title="Turn off automation?">
         <p>
           Your automation will no longer run, and any members currently in progress will be removed.
         </p>
       </DialogCard>
     </Column>
-    <Column name="Proposed, 12 in progress">
+    <Column
+      description="Says how many members are removed, and that members who've already entered can't enter again."
+      name="Proposed: Active members"
+    >
       <ProposedTurnOffCard inProgressCount={12} />
     </Column>
-    <Column name="Proposed, none in progress">
+    <Column
+      description="With nobody in progress, it only says the automation stops, and that nobody can re-enter."
+      name="Proposed: None in progress"
+    >
       <ProposedTurnOffCard inProgressCount={0} />
     </Column>
   </State>
@@ -394,12 +459,21 @@ const FakeLabelField: React.FC = () => {
 };
 
 const DeleteLabelState: React.FC = () => (
-  <State title="Delete a label used by an automation">
-    <Column name="Try deleting Lead magnet (active) or Spring ebook (inactive)">
+  <State
+    location="Any label picker: Member profile, Members index filter and bulk actions, Members import"
+    title="Delete label"
+  >
+    <Column
+      description="Open a label's pencil and click Delete. Lead magnet's automation is on, so it's blocked; Spring ebook's is off, so it deletes as normal."
+      name="Input"
+    >
       <FakeLabelField />
     </Column>
     {/* The real dialog's message (lead-magnets-delete-dialog.tsx). */}
-    <Column name="Blocked: active automation">
+    <Column
+      description="Shown on the first Delete click when an active automation uses the label. The picker stays open behind it."
+      name="Dialog"
+    >
       <DialogCard actionLabel="Go to automation" cancelLabel="Close" title="Can't delete label">
         <LeadMagnetDeleteBlockedDescription
           automationName={ACTIVE_AUTOMATION}
@@ -507,7 +581,7 @@ const StartForMemberDialog: React.FC<{ open: boolean; onOpenChange: (open: boole
 );
 
 const MemberPageState: React.FC = () => (
-  <State title="Label warning on the member page">
+  <State location="Member profile" title="Label warning on the member page">
     <Column name="New or existing member: add Lead magnet">
       <MemberLabelsDemo history="never" initialSlugs={['vip']} />
     </Column>
@@ -542,12 +616,21 @@ const SAVE_MULTIPLE = {
 };
 
 const MemberSaveDialogState: React.FC = () => (
-  <State title="Member page save dialog">
+  <State location="Member profile" title="Member update">
     {[
-      { name: 'Single', changes: SAVE_SINGLE },
-      { name: 'Multiple', changes: SAVE_MULTIPLE },
-    ].map(({ name, changes }) => (
-      <Column key={name} name={name}>
+      {
+        name: 'Single label changed',
+        description: 'Saving a member whose label change starts one automation.',
+        changes: SAVE_SINGLE,
+      },
+      {
+        name: 'Multiple labels changed',
+        description:
+          'Several outcomes, grouped by label: one label starting two automations, and one removal. "(no re-entry)" follows each automation\'s setting.',
+        changes: SAVE_MULTIPLE,
+      },
+    ].map(({ name, description, changes }) => (
+      <Column key={name} description={description} name={name}>
         <DialogCard actionLabel="Save" title="Save changes?">
           <LeadMagnetSaveDescription
             changes={changes}
@@ -600,11 +683,17 @@ const BulkRemoveCard: React.FC<{ inProgressCount: number }> = ({ inProgressCount
 };
 
 const BulkRemoveState: React.FC = () => (
-  <State title="Bulk remove a label">
-    <Column name="12 in progress">
+  <State location="Members index, bulk actions" title="Bulk remove label">
+    <Column
+      description="Removing a label from members who are in its automation ends it for them. The note says how many."
+      name="Active members"
+    >
       <BulkRemoveCard inProgressCount={12} />
     </Column>
-    <Column name="None in progress (as today)">
+    <Column
+      description="Nobody selected is in the automation, so the dialog is as it is today."
+      name="None in progress"
+    >
       <BulkRemoveCard inProgressCount={0} />
     </Column>
   </State>
@@ -771,7 +860,7 @@ const LearnMoreHint: React.FC = () => {
 };
 
 const SignupAlternatives: React.FC = () => (
-  <State title="Trigger concepts">
+  <State location="Automation editor" title="Trigger concepts">
     <Column name="A new signup trigger">
       <SignedUpWithLabelCard />
     </Column>
@@ -881,8 +970,6 @@ const ImportLabelCard: React.FC<{ note: React.ReactNode }> = ({ note }) => {
 
 // --- Bulk add a label ---
 
-const BULK_THRESHOLD = BULK_NOTE_THRESHOLD;
-
 // The real note (lead-magnets-bulk-note.tsx), for the made-up Lead magnet automation.
 const BulkStartNote: React.FC<{ count: number; source: 'bulk' | 'import' }> = ({
   count,
@@ -938,21 +1025,33 @@ const ImportStartCard: React.FC<{ count: number }> = ({ count }) => {
 };
 
 const BulkAddState: React.FC = () => (
-  <State title="Bulk add a label">
-    <Column name={`Under ${formatNumber(BULK_THRESHOLD)} members`}>
+  <State location="Members index, bulk actions, and Members import" title="Bulk add label">
+    <Column
+      description="Adding a label that starts an active automation names it."
+      name="Under 1k members"
+    >
       <BulkAddCard count={5} />
     </Column>
-    <Column name={`${formatNumber(BULK_THRESHOLD)} members or more`}>
+    <Column
+      description="From 1,000 members, a second sentence says it can take longer. The docs give the detail."
+      name="1k+ members"
+    >
       <BulkAddCard count={BULK_MEMBER_COUNT} />
     </Column>
-    <Column name={`Import, ${formatNumber(IMPORT_MEMBER_COUNT)} rows`}>
+    <Column
+      description="The same note on the import's label field, counted by rows in the CSV."
+      name="1k+ members: import"
+    >
       <ImportStartCard count={IMPORT_MEMBER_COUNT} />
     </Column>
   </State>
 );
 
 const BulkDoesntTrigger: React.FC = () => (
-  <State title="B1. Bulk add and import don't start automations">
+  <State
+    location="Automation editor, Members index and Members import"
+    title="B1. Bulk add and import don't start automations"
+  >
     <Column name="Trigger card">
       <LabelAddedWithHintCard fieldLabel="Triggered when this label is added to a member during signup:" />
     </Column>
@@ -986,7 +1085,10 @@ const BulkDoesntTrigger: React.FC = () => (
 );
 
 const BulkTriggersSlowly: React.FC = () => (
-  <State title="B2. Bulk add and import start automations, more slowly">
+  <State
+    location="Automation editor, Members index and Members import"
+    title="B2. Bulk add and import start automations, more slowly"
+  >
     <Column name="Trigger card">
       <LabelAddedWithHintCard hint="During beta, members labeled in bulk or by import can take longer to start" />
     </Column>
@@ -1046,12 +1148,12 @@ const ArchivedStates: React.FC = () => (
 // One pattern at a time, picked from the text nav. Each has its own address:
 // #/automations/lead-magnet-states/<slug>.
 const PATTERNS: { slug: string; name: string; Pattern: React.FC }[] = [
-  { slug: 'trigger-states', name: 'Trigger states', Pattern: TriggerStatesState },
-  { slug: 'turn-off', name: 'Turn off automation', Pattern: TurnOffState },
-  { slug: 'delete-label', name: 'Delete a label', Pattern: DeleteLabelState },
-  { slug: 'member-save-dialog', name: 'Member save dialog', Pattern: MemberSaveDialogState },
-  { slug: 'bulk-add', name: 'Bulk add a label', Pattern: BulkAddState },
-  { slug: 'bulk-remove', name: 'Bulk remove a label', Pattern: BulkRemoveState },
+  { slug: 'trigger-states', name: 'Trigger', Pattern: TriggerStatesState },
+  { slug: 'turn-off', name: 'Turn off', Pattern: TurnOffState },
+  { slug: 'member-save-dialog', name: 'Member update', Pattern: MemberSaveDialogState },
+  { slug: 'delete-label', name: 'Delete label', Pattern: DeleteLabelState },
+  { slug: 'bulk-add', name: 'Bulk add label', Pattern: BulkAddState },
+  { slug: 'bulk-remove', name: 'Bulk remove label', Pattern: BulkRemoveState },
 ];
 const ARCHIVED = { slug: 'archived', name: 'Archived', Pattern: ArchivedStates };
 
@@ -1119,7 +1221,10 @@ const LeadMagnetStates: React.FC = () => {
       </nav>
       {/* Keyed by pattern, so switching starts the new one at the top. */}
       <Box key={current.slug} className="min-w-0 flex-1 overflow-y-auto p-10">
-        <Pattern />
+        {/* Centred, up to 896px. */}
+        <Box className="mx-auto w-full max-w-4xl">
+          <Pattern />
+        </Box>
       </Box>
     </Inline>
   );
