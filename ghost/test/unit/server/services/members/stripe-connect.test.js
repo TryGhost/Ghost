@@ -163,11 +163,13 @@ describe('Members - Stripe Connect', function () {
     }
   });
 
-  it('getStripeConnectTokenData throws for a test-mode account in a live-mode connection', async function () {
-    const { getSessionProp, deleteSessionProp, key } = await startConnection('live');
+  it('getStripeConnectTokenData throws for a test-mode account in a live-mode connection, and keeps the state', async function () {
+    const { session, getSessionProp, deleteSessionProp, key } = await startConnection('live');
 
     await rejects(
       stripeConnect.getStripeConnectTokenData(key({ l: false }), getSessionProp, deleteSessionProp),
     );
+    // Only a key that passes every check uses the state up.
+    assert.equal(session.has(stripeConnect.STATE_PROP), true);
   });
 });
