@@ -29,10 +29,11 @@ import { downloadFromEndpoint } from '@tryghost/admin-x-framework/helpers';
 import { toast } from 'sonner';
 import { useCheckThemeLimitError } from '@/settings/hooks/use-check-theme-limit-error';
 import { useConfirmation } from '@/settings/providers/confirmation-context';
-import { useHandleError } from '@tryghost/admin-x-framework/hooks';
+import { useFeatureFlag, useHandleError } from '@tryghost/admin-x-framework/hooks';
 import { useSettingsNavigation } from '@/settings/hooks/use-settings-navigation';
 import { useUpgradeRoute } from '@/settings/hooks/use-upgrade-route';
 import { navigateTo } from '@/utils/navigation';
+import { useOpenThemePreview } from './use-themes-navigation';
 
 interface ThemeActionProps {
   theme: Theme;
@@ -159,9 +160,27 @@ const ThemeActions: React.FC<ThemeActionProps> = ({ theme }) => {
     );
   };
 
+  // With theme previews, trying a theme happens in the Design settings, with the
+  // site's own content, and only for a theme the plan allows
+  const themePreviewEnabled = useFeatureFlag('themePreview');
+  const openThemePreview = useOpenThemePreview();
+  const handlePreview = async () => {
+    const limitError = await checkThemeLimitError(theme.name);
+    if (limitError) {
+      showLimit({
+        prompt: limitError,
+        onOk: () => {
+          navigateTo(upgradeRoute);
+        },
+      });
+      return;
+    }
+    openThemePreview({ theme: theme.name, view: 'installed' });
+  };
+
   const actions = [];
 
-  if (!isActiveTheme(theme)) {
+  if (!isActiveTheme(theme) && !themePreviewEnabled) {
     actions.push(
       <Button
         key="activate"
@@ -172,6 +191,20 @@ const ThemeActions: React.FC<ThemeActionProps> = ({ theme }) => {
         onClick={() => void handleActivate()}
       >
         Activate
+      </Button>,
+    );
+  } else if (!isActiveTheme(theme)) {
+    actions.push(
+      <Button
+        key="preview"
+        className="ml-2"
+        data-testid="theme-preview-button"
+        size="sm"
+        type="button"
+        variant="ghost"
+        onClick={() => void handlePreview()}
+      >
+        Preview
       </Button>,
     );
   }
@@ -187,6 +220,9 @@ const ThemeActions: React.FC<ThemeActionProps> = ({ theme }) => {
         </DropdownMenuTrigger>
         {/* legacy Modal overlay is z-[1000]; keep the portalled menu above it */}
         <DropdownMenuContent align="end" className="z-[9999]">
+          {!isActiveTheme(theme) && themePreviewEnabled && (
+            <DropdownMenuItem onSelect={() => void handleActivate()}>Activate</DropdownMenuItem>
+          )}
           <DropdownMenuItem onSelect={() => void handleEditCode()}>Edit code</DropdownMenuItem>
           <DropdownMenuItem onSelect={handleDownload}>Download</DropdownMenuItem>
           {isDeletableTheme(theme) && (

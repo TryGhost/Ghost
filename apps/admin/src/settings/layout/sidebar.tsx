@@ -472,7 +472,7 @@ const Sidebar: React.FC = () => {
             icon={<LucideIcon.PanelsTopLeft />}
             keywords={siteSearchKeywords.theme}
             navid="theme"
-            title="Theme"
+            title={visibility.themesTitle}
             onClick={handleSectionClick}
           />
           <NavItem

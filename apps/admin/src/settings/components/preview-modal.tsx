@@ -72,11 +72,20 @@ export interface PreviewModalProps {
   okLabel?: string;
   okVariant?: ButtonProps['variant'];
   buttonsDisabled?: boolean;
+  /** Disables only the OK button, leaving Close available */
+  okDisabled?: boolean;
+  /** What the unsaved-changes confirmation says, in place of its defaults */
+  dirtyConfirmTitle?: React.ReactNode;
+  dirtyConfirmDescription?: React.ReactNode;
   previewToolbar?: boolean;
   leftToolbar?: boolean;
   rightToolbar?: boolean;
   deviceSelector?: React.ReactNode;
   siteLink?: string;
+  /** The site link's label; "View site" by default */
+  siteLinkLabel?: string;
+  /** Handles the site link in place of opening siteLink in a new tab */
+  onSiteLinkClick?: () => void;
   /** Replaces the site link with a button that opens a menu of these choices. */
   siteLinkMenu?: {
     label: string;
@@ -119,12 +128,17 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
   rightToolbar = true,
   deviceSelector,
   siteLink,
+  siteLinkLabel = 'View site',
+  onSiteLinkClick,
   siteLinkMenu,
   previewToolbarURLs,
   previewBgColor = 'grey',
   previewToolbarTabs,
   previewToolbarBreadcrumbs,
   buttonsDisabled,
+  okDisabled,
+  dirtyConfirmTitle,
+  dirtyConfirmDescription,
   sidebarButtons,
   sidebarHeader,
   sidebarPadding = true,
@@ -221,11 +235,17 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
-                {siteLink && !siteLinkMenu && (
+                {siteLink && !siteLinkMenu && onSiteLinkClick && (
+                  <Button type="button" variant="outline" onClick={onSiteLinkClick}>
+                    <LucideIcon.Eye />
+                    {siteLinkLabel}
+                  </Button>
+                )}
+                {siteLink && !siteLinkMenu && !onSiteLinkClick && (
                   <Button variant="outline" asChild>
                     <a href={siteLink} rel="noopener noreferrer" target="_blank">
                       <LucideIcon.ExternalLink />
-                      View site
+                      {siteLinkLabel}
                     </a>
                   </Button>
                 )}
@@ -305,7 +325,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                       {cancelLabel}
                     </PageHeader.Action>
                     <Button
-                      disabled={buttonsDisabled}
+                      disabled={buttonsDisabled || okDisabled}
                       type="button"
                       variant={okVariant}
                       onClick={() => void onOk?.()}
@@ -329,7 +349,11 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
           </Box>
         )}
       </Inline>
-      <DirtyConfirmDialog {...dialogProps} />
+      <DirtyConfirmDialog
+        {...dialogProps}
+        description={dirtyConfirmDescription}
+        title={dirtyConfirmTitle}
+      />
     </SettingsModal>
   );
 };

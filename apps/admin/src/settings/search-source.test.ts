@@ -11,6 +11,7 @@ const visibility = (overrides: Partial<SettingsSectionVisibility> = {}) => ({
   tipsAndDonations: false,
   customFields: false,
   offers: false,
+  themesTitle: 'Theme',
   emailKeywords: ['emails'],
   ...overrides,
 });

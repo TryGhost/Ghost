@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import SettingsBreadcrumbs from '@/settings/components/settings-breadcrumbs';
 import {
+  Badge,
   Button,
   Field,
   FieldLabel,
@@ -16,6 +17,7 @@ import { LucideIcon } from '@tryghost/shade/utils';
 import { type OfficialTheme, type ThemeVariant } from '@/settings/providers/settings-app-context';
 import { PageHeader } from '@tryghost/shade/patterns';
 import { type Theme, isDefaultOrLegacyTheme } from '@tryghost/admin-x-framework/api/themes';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 
 const hasVariants = (theme: OfficialTheme) => theme.variants && theme.variants.length > 0;
 
@@ -44,9 +46,16 @@ const ThemePreview: React.FC<{
   onBack: () => void;
   onClose: () => void;
   onInstall?: () => void | Promise<void>;
-}> = ({ selectedTheme, isInstalling, installedTheme, onBack, onInstall }) => {
+  /** Shows the theme on the site's own content, in the Design settings (installing it first if needed) */
+  onPreview?: (variant?: string) => void | Promise<void>;
+}> = ({ selectedTheme, isInstalling, installedTheme, onBack, onInstall, onPreview }) => {
   const [previewMode, setPreviewMode] = useState('desktop');
   const [selectedVariant, setSelectedVariant] = useState<string | undefined>(undefined);
+  // Only a variant picked on purpose is carried into the Design settings: the
+  // default one would otherwise reset a theme's settings just by previewing it
+  const [variantChosen, setVariantChosen] = useState(false);
+  // With theme previews, the next step after a theme's demo is the site's own content
+  const themePreviewEnabled = useFeatureFlag('themePreview');
 
   if (!selectedTheme) {
     return null;
@@ -72,11 +81,21 @@ const ThemePreview: React.FC<{
       )?.previewUrl || previewUrl;
   }
 
-  let installButtonLabel = `Install ${selectedTheme.name}`;
+  // The theme's state shows once, beside its name; each button names the theme,
+  // with the same few verbs used across Admin. A theme that isn't installed is installed first, as a
+  // step of its own (the demo stays); Preview and Customize open the Design settings,
+  // where activating happens.
+  const primaryVerb = installedTheme?.active ? 'Customize' : installedTheme ? 'Preview' : 'Install';
+  const primaryLabel = `${primaryVerb} ${selectedTheme.name}`;
+  const installedVersion = installedTheme?.package?.version;
+  const stateLabel = installedTheme
+    ? `${installedTheme.active ? 'Active' : 'Installed'}${installedVersion ? ` · v${installedVersion}` : ''}`
+    : null;
+  // An installed copy of an official theme (not one Ghost ships) can be brought up to date
+  const canUpdate = Boolean(installedTheme) && !isDefaultOrLegacyTheme(selectedTheme);
 
-  if (isInstalling) {
-    installButtonLabel = 'Installing...';
-  } else if (isDefaultOrLegacyTheme(selectedTheme) && !installedTheme?.active) {
+  let installButtonLabel = `Install ${selectedTheme.name}`;
+  if (isDefaultOrLegacyTheme(selectedTheme) && !installedTheme?.active) {
     installButtonLabel = `Activate ${selectedTheme.name}`;
   } else if (installedTheme) {
     installButtonLabel = `Update ${selectedTheme.name}`;
@@ -89,13 +108,31 @@ const ThemePreview: React.FC<{
 
   const left = (
     <div className="flex items-center gap-2">
-      <SettingsBreadcrumbs current={selectedTheme.name} label="Change theme" onBack={onBack} />
+      <SettingsBreadcrumbs
+        current={selectedTheme.name}
+        label={themePreviewEnabled ? 'Themes' : 'Change theme'}
+        onBack={onBack}
+      />
+      {themePreviewEnabled && stateLabel && (
+        <Badge
+          data-testid="official-theme-state"
+          variant={installedTheme?.active ? 'success' : 'secondary'}
+        >
+          {stateLabel}
+        </Badge>
+      )}
       {hasVariants(selectedTheme) ? (
         <>
           <span className="hidden md:!visible md:!block">–</span>
           <Field className="w-auto">
             <FieldLabel className="sr-only">Theme variant</FieldLabel>
-            <Select value={selectedVariant} onValueChange={setSelectedVariant}>
+            <Select
+              value={selectedVariant}
+              onValueChange={(value) => {
+                setSelectedVariant(value);
+                setVariantChosen(true);
+              }}
+            >
               <SelectTrigger
                 aria-label="Theme variant"
                 className="w-auto border-0 bg-transparent shadow-none"
@@ -142,9 +179,28 @@ const ThemePreview: React.FC<{
           />
         </Button>
       </Inline>
-      <Button disabled={isInstalling} type="button" onClick={handleInstall}>
-        {isInstalling ? 'Installing...' : installButtonLabel}
-      </Button>
+      {themePreviewEnabled ? (
+        <>
+          {canUpdate && (
+            <Button disabled={isInstalling} type="button" variant="outline" onClick={handleInstall}>
+              Update {selectedTheme.name}
+            </Button>
+          )}
+          <Button
+            data-testid="official-theme-preview-on-site"
+            disabled={isInstalling}
+            type="button"
+            // A variant picked here comes along, to start the theme's settings from
+            onClick={() => void onPreview?.(variantChosen ? selectedVariant : undefined)}
+          >
+            {isInstalling ? 'Installing...' : primaryLabel}
+          </Button>
+        </>
+      ) : (
+        <Button disabled={isInstalling} type="button" onClick={handleInstall}>
+          {isInstalling ? 'Installing...' : installButtonLabel}
+        </Button>
+      )}
     </div>
   );
 
