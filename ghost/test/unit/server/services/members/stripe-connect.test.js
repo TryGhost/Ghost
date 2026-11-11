@@ -163,6 +163,25 @@ describe('Members - Stripe Connect', function () {
     }
   });
 
+  it('getStripeConnectTokenData throws for a key without its API keys, and keeps the state', async function () {
+    const { session, getSessionProp, deleteSessionProp, key } = await startConnection('live');
+
+    for (const fields of [{ p: '' }, { a: undefined }, { a: 42 }]) {
+      await assert.rejects(
+        stripeConnect.getStripeConnectTokenData(key(fields), getSessionProp, deleteSessionProp),
+        { errorType: 'ValidationError' },
+      );
+    }
+    assert.equal(session.has(stripeConnect.STATE_PROP), true);
+    // The complete key for this connection still works.
+    const tokenData = await stripeConnect.getStripeConnectTokenData(
+      key(),
+      getSessionProp,
+      deleteSessionProp,
+    );
+    assert.equal(tokenData.secret_key, 'sk_connected');
+  });
+
   it('getStripeConnectTokenData throws for a test-mode account in a live-mode connection, and keeps the state', async function () {
     const { session, getSessionProp, deleteSessionProp, key } = await startConnection('live');
 
