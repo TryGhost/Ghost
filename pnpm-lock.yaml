@@ -839,8 +839,8 @@ catalogs:
 overrides:
   '@tryghost/errors': 3.4.7
   '@tryghost/logging': 6.0.4
-  '@tryghost/nql': 0.13.4
-  '@tryghost/nql-lang': 0.7.0
+  '@tryghost/nql': 0.13.5
+  '@tryghost/nql-lang': 0.7.1
   jackspeak: 4.2.3
   moment: 2.31.0
   moment-timezone: 0.6.6
@@ -1122,11 +1122,11 @@ importers:
         specifier: workspace:*
         version: link:../../packages/metafield-types
       '@tryghost/nql':
-        specifier: 0.13.4
-        version: 0.13.4(supports-color@10.2.2)
+        specifier: 0.13.5
+        version: 0.13.5(supports-color@10.2.2)
       '@tryghost/nql-lang':
-        specifier: 0.7.0
-        version: 0.7.0
+        specifier: 0.7.1
+        version: 0.7.1
       '@tryghost/nql-string':
         specifier: workspace:*
         version: link:../../packages/nql-string
@@ -1571,8 +1571,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/i18n
       '@tryghost/nql':
-        specifier: 0.13.4
-        version: 0.13.4(supports-color@10.2.2)
+        specifier: 0.13.5
+        version: 0.13.5(supports-color@10.2.2)
       '@types/react':
         specifier: catalog:react17
         version: 17.0.93
@@ -2268,11 +2268,11 @@ importers:
         specifier: 2.3.22
         version: 2.3.22(debug@2.6.9(supports-color@10.2.2))(supports-color@10.2.2)
       '@tryghost/nql':
-        specifier: 0.13.4
-        version: 0.13.4(supports-color@10.2.2)
+        specifier: 0.13.5
+        version: 0.13.5(supports-color@10.2.2)
       '@tryghost/nql-lang':
-        specifier: 0.7.0
-        version: 0.7.0
+        specifier: 0.7.1
+        version: 0.7.1
       '@tryghost/nql-string':
         specifier: workspace:*
         version: link:../packages/nql-string
@@ -4357,8 +4357,8 @@ importers:
         specifier: workspace:*
         version: link:../../tools/configs/vitest
       '@tryghost/nql':
-        specifier: 0.13.4
-        version: 0.13.4(supports-color@10.2.2)
+        specifier: 0.13.5
+        version: 0.13.5(supports-color@10.2.2)
       '@types/node':
         specifier: 'catalog:'
         version: 22.20.5
@@ -8987,11 +8987,11 @@ packages:
   '@tryghost/nodemailer@2.3.22':
     resolution: {integrity: sha512-YYnvVnvAhCSrmWRjyJtWm3yJY3Dles3Cyeejc4UkWe54KSAjMLgjvlqYXxndnPqg6qUwodWNyTzY70yaNwinRA==}
 
-  '@tryghost/nql-lang@0.7.0':
-    resolution: {integrity: sha512-S3P66JRL7kiKhYR7VnYC5S5xnkKqS+A5aW60nCGi/lraAhk/G5+xmPisztQiJWbHxM1odIagt2GpDMbKCDXT2w==}
+  '@tryghost/nql-lang@0.7.1':
+    resolution: {integrity: sha512-I61vJTAlJNTYZO0zF5hGBzVBzIBlxOtxMQPA9BuHZ15buKMukIru3Jnf82umP44nkF0WMinjlH2kOVbNFgS4Aw==}
 
-  '@tryghost/nql@0.13.4':
-    resolution: {integrity: sha512-XE3lEpkqZM3ueOyKz5suwb2W4muWAM/YfYYpXHrnu0H7r46Xuo7FZm1s6Ga2Cut/STtuax5E6NfZ1AFv017X4w==}
+  '@tryghost/nql@0.13.5':
+    resolution: {integrity: sha512-3bkeCCA7Z2pmlKdViGZfscudXwummmCzX/CTxxBOWNjZ3k/8dXKvOJsNuT1KcgI1OoKcaFlsK9EY6ABWHVFzfg==}
 
   '@tryghost/pretty-cli@3.4.3':
     resolution: {integrity: sha512-UfYbgaiNrZnmYIGWY/XFF0LiiCb3Jx1qRdzu3HU2QYS+JzG2ZHBwj5lpsycKEJPu37tSpQwC4tBoRprsandKag==}
@@ -21181,7 +21181,7 @@ snapshots:
     dependencies:
       '@tryghost/debug': 2.3.21(supports-color@10.2.2)
       '@tryghost/errors': 3.4.7
-      '@tryghost/nql': 0.13.4(supports-color@10.2.2)
+      '@tryghost/nql': 0.13.5(supports-color@10.2.2)
       '@tryghost/tpl': 2.3.21
     transitivePeerDependencies:
       - supports-color
@@ -21377,15 +21377,15 @@ snapshots:
       - debug
       - supports-color
 
-  '@tryghost/nql-lang@0.7.0':
+  '@tryghost/nql-lang@0.7.1':
     dependencies:
       luxon: 3.7.2
 
-  '@tryghost/nql@0.13.4(supports-color@10.2.2)':
+  '@tryghost/nql@0.13.5(supports-color@10.2.2)':
     dependencies:
       '@tryghost/mongo-knex': 0.11.2(supports-color@10.2.2)
       '@tryghost/mongo-utils': 0.6.6
-      '@tryghost/nql-lang': 0.7.0
+      '@tryghost/nql-lang': 0.7.1
       lodash: 4.18.1
       mingo: 2.5.3
     transitivePeerDependencies:
@@ -24995,7 +24995,7 @@ snapshots:
     dependencies:
       '@tryghost/debug': 2.3.21(supports-color@10.2.2)
       '@tryghost/errors': 3.4.7
-      '@tryghost/nql': 0.13.4(supports-color@10.2.2)
+      '@tryghost/nql': 0.13.5(supports-color@10.2.2)
       '@tryghost/pretty-cli': 3.4.3
       '@tryghost/zip': 4.0.2
       chalk: 6.0.1
