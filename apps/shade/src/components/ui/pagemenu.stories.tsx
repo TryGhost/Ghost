@@ -12,7 +12,7 @@ const meta: Meta<typeof PageMenu> = {
     docs: {
       description: {
         component:
-          'Responsive page navigation menu that automatically collapses overflowing items into a dropdown. With admin7Design on, active items have a muted fill that stays unchanged on hover, and inactive items have an outline matching the page-header divider. Pass `value` and `onValueChange` to control the active item, for example from the current route, or `defaultValue` to let the menu track it.',
+          'Responsive page navigation menu that automatically collapses overflowing items into a dropdown. With admin7Design on, active items have a muted fill that stays unchanged on hover, and inactive items have an outline matching the page-header divider. Pressed and expanded items use the ghost-button background. Pass `value` and `onValueChange` to control the active item, for example from the current route, or `defaultValue` to let the menu track it.',
       },
     },
   },
