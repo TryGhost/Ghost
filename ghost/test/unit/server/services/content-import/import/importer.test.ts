@@ -338,7 +338,7 @@ describe('ContentCSVImporter', function () {
 
     await assert.rejects(
       importer.importCSV({ filePath: '/tmp/posts.csv', fileName: 'posts.csv' }),
-      failure,
+      (thrown) => thrown === failure,
     );
 
     sinon.assert.notCalled(prepareSource);
@@ -353,7 +353,7 @@ describe('ContentCSVImporter', function () {
       throw failure;
     });
 
-    await assert.rejects(h.run(), failure);
+    await assert.rejects(h.run(), (thrown) => thrown === failure);
 
     sinon.assert.calledOnce(h.sendEmail);
     assert.equal(h.sentRuns[0].status, 'failed');
@@ -504,7 +504,7 @@ describe('ContentCSVImporter', function () {
     });
 
     await importer.importCSV({ filePath: '/tmp/posts.zip', fileName: 'posts.zip' });
-    await assert.rejects(importer.handle(h.jobs[0]), failure);
+    await assert.rejects(importer.handle(h.jobs[0]), (thrown) => thrown === failure);
 
     assert.equal(h.converterResolutions(), 0);
     assert.equal(h.created.length, 0);
@@ -641,7 +641,7 @@ describe('ContentCSVImporter', function () {
     const failure = new Error('media importer defect');
     h.inlineMedia.rejects(failure);
 
-    await assert.rejects(h.run(), failure);
+    await assert.rejects(h.run(), (thrown) => thrown === failure);
 
     assert.equal(h.created.length, 0);
     assert.equal(h.inlineMedia.callCount, 1);
@@ -1178,7 +1178,7 @@ describe('ContentCSVImporter', function () {
       throw failure;
     });
 
-    await assert.rejects(h.run(), failure);
+    await assert.rejects(h.run(), (thrown) => thrown === failure);
 
     assert.deepEqual(h.reported, []);
     assert.equal(h.store.get('run_test')?.status, 'failed');
@@ -1196,7 +1196,7 @@ describe('ContentCSVImporter', function () {
     });
     const h = harness([badRow, row('Never reached')]);
 
-    await assert.rejects(h.run(), failure);
+    await assert.rejects(h.run(), (thrown) => thrown === failure);
 
     assert.deepEqual(h.reported, []);
     assert.equal(h.created.length, 0);

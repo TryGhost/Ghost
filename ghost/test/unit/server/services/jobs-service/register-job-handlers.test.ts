@@ -139,7 +139,7 @@ describe('register-job-handlers', function () {
   it('propagates site import completion-email failures', async function () {
     const error = new Error('email failed');
     siteImporter.executeImport.rejects(error);
-    await assert.rejects(handlerFor(ContentImportJob.type)({}), error);
+    await assert.rejects(handlerFor(ContentImportJob.type)({}), (thrown) => thrown === error);
   });
 
   it('runs clean-gifts with the injected gift service', async function () {
@@ -165,9 +165,12 @@ describe('register-job-handlers', function () {
     giftService.processReminders.rejects(error);
     const sendGiftRemindersHandler = handlerFor('send-gift-reminders');
 
-    await assert.rejects(async () => {
-      await sendGiftRemindersHandler({});
-    }, error);
+    await assert.rejects(
+      async () => {
+        await sendGiftRemindersHandler({});
+      },
+      (thrown) => thrown === error,
+    );
   });
 
   it('runs clean-tokens with the injected member jobs module', async function () {
@@ -201,9 +204,12 @@ describe('register-job-handlers', function () {
     const externalMediaInlinerHandler = handlerFor('external-media-inliner');
     const job = new ExternalMediaInlinerJob({ domains: ['https://example.com'] });
 
-    await assert.rejects(async () => {
-      await externalMediaInlinerHandler(job);
-    }, error);
+    await assert.rejects(
+      async () => {
+        await externalMediaInlinerHandler(job);
+      },
+      (thrown) => thrown === error,
+    );
   });
 
   it('routes content CSV import jobs to the content import service', async function () {
@@ -355,7 +361,7 @@ describe('register-job-handlers', function () {
 
     await assert.rejects(
       () => handlerFor('send-email')(new SendEmailJob({ emailId: 'email-id' })),
-      error,
+      (thrown) => thrown === error,
     );
   });
 

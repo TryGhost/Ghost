@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import type { SinonSpy, SinonStub } from 'sinon';
+import type { GhostLogger } from '@tryghost/logging';
+import type { SinonSpy, SinonStub, SinonStubbedInstance } from 'sinon';
 // @ts-expect-error This module lacks type definitions.
 import { SafeString } from '../../../../core/frontend/services/handlebars';
 import configUtils from '../../../utils/config-utils';
@@ -26,7 +27,7 @@ describe('{{#get}} helper', function () {
     member?: { uuid: string };
     _queryCache?: Map<string, Promise<unknown>>;
   } = { root: {} };
-  let logging: { error: SinonStub; warn: SinonStub };
+  let logging: Pick<SinonStubbedInstance<GhostLogger>, 'error' | 'warn'>;
 
   beforeEach(function () {
     fn = sinon.spy();
