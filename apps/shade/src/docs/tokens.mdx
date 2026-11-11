@@ -129,7 +129,7 @@ Hover, active, and selected states are their own tokens — don't reach for raw 
 
 In dark mode `--interactive-hover`, `--button-hover`, and `--tab-hover` are translucent (`gray-900/30`) so they composite over whatever surface sits behind them. `--table-row-hover` is opaque (it matches `--surface-elevated`) — use it where you need an opaque fill, like sticky table cells where content scrolls underneath.
 
-With `admin7Design` on, `Tabs` defaults to underline and explicit variants keep their own appearance. Button tabs and `PageMenu` share pill styling: `--tab-inactive` for the resting fill, `--tab-inactive-hover` for hover, and `--primary` / `--primary-foreground` for selection. The inactive fill uses gray-200 in light mode and gray-900 in dark mode. Compact button tabs retain their smaller size; KPI tabs retain their chart-card layout. With the flag off, the segmented tab default and existing tab and page-menu styles remain.
+With `admin7Design` on, `Tabs` defaults to underline and explicit variants keep their own appearance. Button tabs use `--tab-inactive` for the resting fill, `--tab-inactive-hover` for hover, and `--primary` / `--primary-foreground` for selection. `PageMenu` uses `--tab-inactive` for the active page, with transparent inactive items outlined in `--border`, matching the page-header divider. The muted fill uses gray-200 in light mode and gray-900 in dark mode. Compact button tabs retain their smaller size; KPI tabs retain their chart-card layout. With the flag off, the segmented tab default and existing tab and page-menu styles remain.
 
 ## Card corners
 

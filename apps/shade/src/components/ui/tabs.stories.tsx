@@ -10,7 +10,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Tabs default to underline with admin7Design on and segmented with it off. Explicit variants keep their own appearance. Button tabs share PageMenu’s pill styling in Admin 7; KPI tabs retain their chart-card layout.',
+          'Tabs default to underline with admin7Design on and segmented with it off. Explicit variants keep their own appearance. Button tabs use primary selected fills in Admin 7; KPI tabs retain their chart-card layout.',
       },
     },
   },

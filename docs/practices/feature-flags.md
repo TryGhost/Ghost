@@ -120,8 +120,10 @@ changes need visual review, not tests that assert appearance. Keep permanent
 permission and backend capability checks independent of the temporary flag.
 
 With `admin7Design` on, Shade's `Tabs` defaults to underline and respects
-explicit variants. Button tabs and route-based `PageMenu` share pill styling
-and selected, inactive, and hover colors. Compact button tabs keep their
+explicit variants. Button tabs use a primary selected fill. Route-based
+`PageMenu` uses the previous inactive fill for the active page, while inactive
+items have a transparent surface and an outline matching the header divider
+(`border-border`). Compact button tabs keep their
 smaller size, and KPI tabs keep their chart-card layout. With the flag off,
 the default remains segmented and explicit underline tabs keep their previous
 styling. Only the enabled design uses a 1px indicator aligned with the divider
