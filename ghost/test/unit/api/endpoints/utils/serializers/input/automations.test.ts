@@ -151,6 +151,62 @@ const commonTests = (method: 'add' | 'edit') => {
     });
   });
 
+  describe('label added triggers', () => {
+    const rule = {
+      trigger_type: 'label_added',
+      label_id: ObjectId().toHexString(),
+      scope: null,
+      product_id: null,
+      direction: null,
+    };
+    let isSet: sinon.SinonStub;
+
+    beforeEach(() => {
+      isSet = sinon.stub(labs, 'isSet');
+      isSet.withArgs('automationsLeadMagnets').returns(true);
+      isSet.withArgs('automationsLifecycleTriggers').returns(true);
+    });
+
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it('accepts one label rule when the lead magnets flag is enabled', async () => {
+      const request = { ...payload, trigger_rules: [rule] };
+      await expect(serializeInput(method, request)).resolves.toEqual(request);
+    });
+
+    it('requires the lead magnets flag', async () => {
+      isSet.withArgs('automationsLeadMagnets').returns(false);
+      await expect(
+        serializeInput(method, { ...payload, trigger_rules: [rule] }),
+      ).rejects.toMatchObject({
+        errorType: 'ValidationError',
+        statusCode: 422,
+        property: 'trigger_rules',
+        message: 'Label added triggers require automationsLeadMagnets to be enabled.',
+      });
+    });
+
+    it.each([
+      [{ ...rule, label_id: undefined }],
+      [{ ...rule, label_id: null }],
+      [{ ...rule, label_id: 'invalid' }],
+      [{ ...rule, scope: 'any_paid_tier' }],
+      [{ ...rule, product_id: tierIds[0] }],
+      [{ ...rule, direction: 'from' }],
+      [rule, { ...rule, label_id: ObjectId().toHexString() }],
+      [rule, rule],
+      [rule, ...rules],
+      [...rules, rule],
+    ])('rejects invalid label rules: %j', async (...trigger_rules) => {
+      await expect(serializeInput(method, { ...payload, trigger_rules })).rejects.toMatchObject({
+        errorType: 'ValidationError',
+        statusCode: 422,
+      });
+    });
+  });
+
   it.each([
     undefined,
     null,
