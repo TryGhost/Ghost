@@ -77,6 +77,7 @@ module.exports = function MembersAPI({
   tierRequirements,
   checkouts,
   tracking,
+  membersTracking,
 }) {
   const tokenService = new TokenService({
     signingKeys,
@@ -209,6 +210,7 @@ module.exports = function MembersAPI({
     sendEmailWithMagicLink,
     settingsCache,
     account,
+    tracking: membersTracking,
   });
 
   const routerController = new RouterController({

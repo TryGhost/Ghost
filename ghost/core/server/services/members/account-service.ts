@@ -13,6 +13,7 @@ import {
 import { parseRequest } from '../../lib/parse-request';
 import { COLLECTION_FLAG } from '../stripe-checkout-config/models';
 import type { TierRequirement, TierRequirements } from '../tiers/requirements';
+import type { TierChangeAttempt } from './tracking';
 
 /**
  * A member's own account: what they are shown about themselves, and what they may
@@ -178,6 +179,7 @@ export class MemberAccountService {
     given: unknown,
     memberId: string,
     tier: { id: string; type: string },
+    attempt: Pick<TierChangeAttempt, 'answering'>,
   ): Promise<MetafieldPlan[]> {
     if (!this.#labs.isSet(COLLECTION_FLAG)) {
       return [];
@@ -191,6 +193,7 @@ export class MemberAccountService {
         .map((port) => ({ port, value: answers[port] })),
       { type: 'member', id: memberId },
     );
+    attempt.answering({ required, answers, kept });
 
     // Every refusal at once, each named as the request named the answer. Where a field refuses a
     // value a rule here also refuses, such as a country that isn't a code at all, the field's own

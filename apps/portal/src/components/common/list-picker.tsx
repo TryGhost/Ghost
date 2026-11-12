@@ -278,7 +278,6 @@ export const ListPickerStyles = `
         box-shadow: inset 0 0 0 2px var(--brandcolor);
     }
 
-    /* A box for several answers and a circle for one, the cue checkboxes and radios give. */
     .gh-portal-listpicker-marker {
         position: relative;
         flex: none;
@@ -288,13 +287,8 @@ export const ListPickerStyles = `
         border-radius: 4px;
     }
 
-    .gh-portal-listpicker-marker.is-round {
-        border-radius: 50%;
-    }
-
-    /* Keeps the row's text in line with the options' without a marker of its own. */
-    .gh-portal-listpicker-marker.is-none {
-        visibility: hidden;
+    .gh-portal-listpicker-marker.is-check {
+        border: 0;
     }
 
     .gh-portal-listpicker-option[aria-selected="true"] .gh-portal-listpicker-marker {
@@ -305,7 +299,7 @@ export const ListPickerStyles = `
     .gh-portal-listpicker-option[aria-selected="true"] .gh-portal-listpicker-marker::after {
         content: "";
         position: absolute;
-        top: 0.5px;
+        top: 1px;
         left: 3.5px;
         width: 3.5px;
         height: 7px;
@@ -314,15 +308,16 @@ export const ListPickerStyles = `
         transform: rotate(45deg);
     }
 
-    .gh-portal-listpicker-option[aria-selected="true"] .gh-portal-listpicker-marker.is-round::after {
-        top: 3px;
-        left: 3px;
-        width: 5px;
-        height: 5px;
-        border: 0;
-        border-radius: 50%;
-        background: var(--white);
-        transform: none;
+    .gh-portal-listpicker-option[aria-selected="true"] .gh-portal-listpicker-marker.is-check {
+        background: none;
+    }
+
+    .gh-portal-listpicker-option[aria-selected="true"] .gh-portal-listpicker-marker.is-check::after {
+        top: 2px;
+        left: 4.5px;
+        width: 4px;
+        height: 8px;
+        border-color: var(--brandcolor);
     }
 
     /* In the sheet, rows are sized for a finger and the list takes the sheet's remaining height. */
@@ -401,7 +396,7 @@ type AnswerCount<V extends string> =
       /**
        * The text the field shows for the answer it holds, where that isn't the option's label,
        * whether the member may change it or only read it: a phone number's country shows as its
-       * flag and calling code, and the list names it in full.
+       * calling code, and the list names it in full.
        */
       answerText?: ((answer: V) => string) | undefined;
     };
@@ -698,13 +693,12 @@ export default function ListPicker<V extends string>({
           onMouseDown={(event) => event.preventDefault()}
           onMouseMove={() => highlightRow(index, false)}
         >
+          {/* A box for several answers, the cue a checkbox gives. For one, a space where a check
+              marks the answer picked, as a menu marks its choice, keeping every row's text in
+              line. */}
           <span
             aria-hidden="true"
-            className={classes(
-              'gh-portal-listpicker-marker',
-              !multiple && 'is-round',
-              option === null && 'is-none',
-            )}
+            className={classes('gh-portal-listpicker-marker', !multiple && 'is-check')}
           />
           <span>{text}</span>
         </li>
@@ -755,7 +749,7 @@ export default function ListPicker<V extends string>({
     fieldText = (answerText ?? labelOf)(value[0]);
   }
   // A field that takes one answer and says how to show it shows that text, as it does when the
-  // answer can be changed, such as a phone number's country as its flag and code, or the
+  // answer can be changed, such as a phone number's country as its calling code, or the
   // placeholder while it holds none. Otherwise every answer is a chip, one or several, since an
   // option's text can hold a comma.
   if (readOnly) {

@@ -1,6 +1,15 @@
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const WebhookController = require('../../../../../core/server/services/stripe/webhook-controller');
+const { createTracer } = require('../../../../../core/server/lib/tracing/create-tracer');
+const { createMeter } = require('../../../../../core/server/lib/tracing/create-meter');
+const { stripeTracking } = require('../../../../../core/server/services/stripe/tracking');
+
+const shipNothing = { transport: { metric: async () => null }, logging: { error() {} } };
+const tracking = stripeTracking({
+  tracer: createTracer(shipNothing),
+  meter: createMeter(shipNothing),
+});
 
 describe('WebhookController', function () {
   let controller;
@@ -15,6 +24,8 @@ describe('WebhookController', function () {
       checkoutSessionEventService: { handleEvent: sinon.stub(), handleDonationEvent: sinon.stub() },
       chargeRefundedEventService: { handleEvent: sinon.stub() },
       webhookManager: { parseWebhook: sinon.stub() },
+      tracking,
+      sentry: { captureException: sinon.stub() },
     };
 
     controller = new WebhookController(deps);
@@ -243,6 +254,19 @@ describe('WebhookController', function () {
 
     sinon.assert.calledWith(res.writeHead, 500);
     sinon.assert.called(res.end);
+  });
+
+  it('reports an event it failed to handle to Sentry', async function () {
+    const failure = new Error('Unexpected error');
+    deps.webhookManager.parseWebhook.returns({
+      type: 'customer.subscription.created',
+      data: { object: { customer: 'cust_123' } },
+    });
+    deps.subscriptionEventService.handleSubscriptionEvent.throws(failure);
+
+    await controller.handle(req, res);
+
+    sinon.assert.calledOnceWithExactly(deps.sentry.captureException, failure);
   });
 
   it('should handle charge.refunded event', async function () {

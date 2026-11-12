@@ -166,7 +166,7 @@ test('rejects incomplete assessments and invalid audit data instead of reporting
 });
 
 async function fixture(t: TestContext) {
-  const root = await mkdtemp(join(import.meta.dirname, '../gx-services-'));
+  const root = await mkdtemp(join(tmpdir(), 'ghost-gx-services-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   const write = async (file: string, source: string) => {
     await mkdir(dirname(join(root, file)), { recursive: true });
@@ -180,9 +180,16 @@ async function fixture(t: TestContext) {
     new URL('../../../.dependency-cruiser.cjs', import.meta.url),
     join(root, '.dependency-cruiser.cjs'),
   );
-  const resolver = 'tools/scripts/ci/service-dependency-resolver.mjs';
-  await mkdir(dirname(join(root, resolver)), { recursive: true });
-  await cp(new URL(`../../../${resolver}`, import.meta.url), join(root, resolver));
+  for (const file of [
+    'tools/scripts/ci/service-dependency-resolver.mjs',
+    'tools/scripts/lib/dependency-boundaries.ts',
+    'tools/scripts/ci/check-boundaries.ts',
+  ]) {
+    await mkdir(dirname(join(root, file)), { recursive: true });
+    await cp(new URL(`../../../${file}`, import.meta.url), join(root, file));
+  }
+  await write('.dependency-cruiser-known-violations.json', '[]');
+  await write('apps/empty.ts', 'export {};');
   await write('package.json', '{"type":"module"}');
   await symlink(new URL('../node_modules', import.meta.url), join(root, 'node_modules'));
   await write(
@@ -518,6 +525,48 @@ test('CLI help needs no audit and analyzer failures cannot produce clean reports
     assert.notEqual(failed.status, 0);
     assert.equal(failed.stdout, '');
     assert.match(failed.stderr, /Broken audit configuration/);
+  }
+});
+
+test('reports and boundary lint share the graph and known-violations file', async (t) => {
+  const f = await fixture(t);
+  await f.write(
+    '.dependency-cruiser-known-violations.json',
+    JSON.stringify(
+      ['implementation', 'second'].map((name) => ({
+        rule: 'service-dependencies',
+        from: `${services}/alpha/${name}.ts`,
+        to: 'ghost/core/shared/client.js',
+      })),
+    ),
+  );
+  const lint = () =>
+    spawnSync(process.execPath, [join(f.root, 'tools/scripts/ci/check-boundaries.ts')], {
+      cwd: tmpdir(),
+      encoding: 'utf8',
+    });
+  assert.equal(lint().status, 0);
+  const report = f.run(['report', 'alpha', '--json']);
+  assert.equal(report.status, 0, report.stderr);
+  assert.equal(JSON.parse(report.stdout).findings.length, 2);
+  await f.write('apps/portal/forbidden.ts', "import '../admin-x-framework/implementation';");
+  await f.write('apps/admin-x-framework/implementation.ts', 'export {};');
+  const auditResult = f.run(['audit', '--output-type', 'json']);
+  assert.equal(auditResult.status, 0, auditResult.stderr);
+  const graph = JSON.parse(auditResult.stdout);
+  assert.equal(graph.summary.violations.length, 3);
+  const invalid = lint();
+  assert.equal(invalid.status, 1);
+  assert.match(invalid.stderr, /public-apps-not-admin-libs/);
+
+  await f.write(
+    `${services}/service-inventory.yaml`,
+    JSON.stringify({ services: { alpha: entry({ migrated: true }) } }),
+  );
+  for (const command of ['report', 'audit']) {
+    const invalidReport = f.run([command]);
+    assert.equal(invalidReport.status, 1);
+    assert.match(invalidReport.stderr, /unmigrated inventory entry/);
   }
 });
 

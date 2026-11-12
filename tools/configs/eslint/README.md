@@ -30,6 +30,29 @@ Ghost Core keeps a standalone configuration because its rule set does not fit
 a shared factory. Read that file directly. It can still import shared atoms such as `correctnessRules`, `nodeLibRules`,
 and `strictLinterOptions` from `@internal/cfg-eslint`.
 
+## React Compiler rules
+
+`reactAppConfig()` runs the React Compiler rules from
+`eslint-plugin-react-hooks` as errors. The violations that existed when they
+were turned on are recorded, per file and rule, in each app's
+`eslint-suppressions.json`. ESLint reads that file from the app directory:
+
+- A violation in a new place fails lint, as does one more in a file than its
+  recorded count.
+- Fixing a recorded violation fails lint too, until the count is lowered. Run
+  the app's ESLint command with `--prune-suppressions`, for example
+  `pnpm exec eslint . --prune-suppressions` in `apps/admin`, and commit the
+  result.
+
+Counts only go down. Fix a new violation rather than adding it to the file.
+ESLint writes these files, so `oxfmt` ignores them.
+
+To see how many violations remain across the apps:
+
+```bash
+jq -s '[.[][][] | .count] | add' apps/*/eslint-suppressions.json
+```
+
 ## Plugin dependencies
 
 A workspace must declare every ESLint plugin that its configuration resolves.
@@ -71,7 +94,7 @@ in `.oxlintrc.json`. Its standalone implementation is
 a root migrated; a tooling test compares them with the service inventory.
 Catalogue metadata validation remains separate from linting.
 
-The Oxlint-only `ghost/no-injected-service-libraries` rule checks migrated
+The Oxlint-only `ghost/no-injected-service-libraries` rule checks all TypeScript
 service roots for allowlisted libraries passed into local constructors. It
 reuses the service dependency policy in `.dependency-cruiser.cjs`; see the
 [services guide](../../../ghost/core/server/services/README.md#dependency-boundaries)

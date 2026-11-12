@@ -5,6 +5,7 @@ import type { SinonStub } from 'sinon';
 // @ts-expect-error This module lacks type definitions.
 import handlebarsService from '../../../../core/frontend/services/handlebars';
 import configUtils from '../../../utils/config-utils';
+import { restoreHandlebarsAfterSuite } from '../../../utils/handlebars-state';
 import path from 'path';
 import { promisify } from 'node:util';
 
@@ -46,6 +47,8 @@ const runHelperThunk = (data: NavigationOptions) => () => runHelper(data);
 describe('{{navigation}} helper', function () {
   let optionsData: NavigationOptions;
   let labsStub: SinonStub;
+
+  restoreHandlebarsAfterSuite();
 
   beforeAll(async function () {
     hbs.express4({
@@ -463,11 +466,18 @@ describe('{{navigation}} helper', function () {
 describe('{{navigation}} helper with custom template', function () {
   let optionsData: NavigationOptions;
 
+  restoreHandlebarsAfterSuite();
+
   beforeAll(async function () {
     hbs.express4({ partialsDir: [path.resolve(__dirname, './test_tpl')] });
 
     const cachePartials = promisify(hbs.cachePartials.bind(hbs));
     await cachePartials();
+
+    hbs.registerHelper('link_class', link_class);
+    hbs.registerHelper('concat', concat);
+    hbs.registerHelper('url', url);
+    hbs.registerHelper('foreach', foreach);
   });
 
   beforeEach(function () {
@@ -534,6 +544,10 @@ describe('{{navigation}} helper with custom template', function () {
 
   describe('using compile', function () {
     let defaultGlobals: Record<string, unknown>;
+
+    // This block swaps in stand-in helpers and a site url the rest of the file doesn't expect
+    restoreHandlebarsAfterSuite();
+
     function compile(templateString: string) {
       const template = handlebars.compile(templateString);
       template.with = (locals: Record<string, unknown> = {}, globals?: Record<string, unknown>) => {
@@ -550,7 +564,7 @@ describe('{{navigation}} helper with custom template', function () {
       handlebars.registerHelper('concat', concat);
       handlebars.registerHelper('url', concat);
       handlebars.registerHelper('navigation', navigation);
-      configUtils.config.set('url', 'https://siteurl.com');
+      configUtils.set('url', 'https://siteurl.com');
       defaultGlobals = {
         data: {
           site: {
@@ -560,6 +574,10 @@ describe('{{navigation}} helper with custom template', function () {
           },
         },
       };
+    });
+
+    afterAll(async function () {
+      await configUtils.restore();
     });
 
     it('can render both primary and secondary nav in order', function () {

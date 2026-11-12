@@ -3,11 +3,16 @@ const fs = require('fs');
 const path = require('path');
 const _ = require('lodash');
 const hbs = require('../../../../../../core/frontend/services/theme-engine/engine');
-
-// Stuff we are testing
-const helpers = require('../../../../../../core/frontend/services/helpers');
+const {
+  freshHelperServiceForSuite,
+  restoreHandlebarsAfterSuite,
+} = require('../../../../../utils/handlebars-state');
 
 describe('Helpers', function () {
+  restoreHandlebarsAfterSuite();
+  // Stuff we are testing: a fresh helper service, so init registers every helper
+  const helpers = freshHelperServiceForSuite();
+
   const hbsHelpers = [
     'each',
     'if',
@@ -79,7 +84,7 @@ describe('Helpers', function () {
   describe('Load Core Helpers', function () {
     beforeAll(function () {
       hbs.express4();
-      helpers.init();
+      helpers().init();
     });
 
     // This will work when we finish refactoring

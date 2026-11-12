@@ -13,6 +13,7 @@ const { color_to_rgba } = require('../../../../../core/frontend/helpers/color_to
 const contrast_text_color = require('../../../../../core/frontend/helpers/contrast_text_color');
 const json = require('../../../../../core/frontend/helpers/json');
 const { setupI18nTest, initLocale } = require('../../../../utils/i18n-test-utils');
+const { restoreHandlebarsAfterSuite } = require('../../../../utils/handlebars-state');
 
 describe('Private Controller', function () {
   let res;
@@ -107,6 +108,8 @@ describe('Private Controller', function () {
 });
 
 describe('private.hbs template translation', function () {
+  restoreHandlebarsAfterSuite();
+
   const privateViewPath = path.join(
     __dirname,
     '../../../../../core/frontend/apps/private-blogging/lib/views/private.hbs',
@@ -128,15 +131,6 @@ describe('private.hbs template translation', function () {
     hbs.registerHelper('img_url', function () {
       return new hbs.SafeString('');
     });
-  });
-
-  afterAll(function () {
-    hbs.handlebars.unregisterHelper('input_password');
-    hbs.handlebars.unregisterHelper('color_to_rgba');
-    hbs.handlebars.unregisterHelper('contrast_text_color');
-    hbs.handlebars.unregisterHelper('json');
-    hbs.handlebars.unregisterHelper('asset');
-    hbs.handlebars.unregisterHelper('img_url');
   });
 
   function renderPrivateTemplate(context) {

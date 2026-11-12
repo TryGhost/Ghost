@@ -61,8 +61,9 @@ pnpm gx generate service delivery-receipts
 
 It creates a `defineService` root, a separate implementation with typed logging
 injection, and a starter root test. It adds `migrated: true` to the service
-inventory and registers the root in Oxlint, enabling root and dependency checks
-immediately. Existing service files, directories and tests are never overwritten.
+inventory and registers the root in Oxlint for root-shape checks. Dependency
+checks already apply to every service implementation. Existing service files,
+directories and tests are never overwritten.
 
 The command prints the remaining steps, including choosing the right place for
 `init()` in boot. See [creating a service](../../ghost/core/server/services/README.md#creating-a-service)
@@ -223,8 +224,13 @@ importing implementation files per target, largest first; it excludes unresolved
 and own-root findings. The native `audit` counts rule violations, so one import
 can appear under more than one rule.
 
-The audit checks all entries and returns success when it finds violations.
-`pnpm lint:boundaries` enforces the same rules for migrated services in CI.
+All service commands use the same full dependency-cruiser scan and
+known-violations file as `pnpm lint:boundaries`. Reports retain known and new
+findings and return success when violations are found; boundary lint fails on
+new violations or stale entries. Invalid known-violations files fail both.
+Violations in services with deferred enforcement appear in reports but do not
+fail boundary lint.
+The native `audit` output includes Core and app boundaries as well as services.
 Legacy root `index.js` files are treated as wiring candidates. Computed paths
 such as `require(name)` cannot be resolved by the static audit. No violations
 does not mean ready to migrate: recorded blockers, runtime behavior and test

@@ -283,7 +283,7 @@ test.describe('Portal - member custom fields', () => {
         await profile.phoneCountry(key).click();
         await profile.listSearch('Country code').fill('+44');
         await profile.listOption('United Kingdom (+44)').click();
-        await expect(profile.phoneCountry(key)).toHaveText('🇬🇧 +44');
+        await expect(profile.phoneCountry(key)).toHaveText('+44');
 
         // One the country has no number like is refused, with the reason under the input.
         await profile.fieldInput(key).fill('020 7946 000');
@@ -303,7 +303,7 @@ test.describe('Portal - member custom fields', () => {
         // Shown after the country that gives its code, as it was typed.
         await accountHome.portalFrame.locator('[data-test-button="edit-profile"]').click();
         await expect(profile.title).toBeVisible();
-        await expect(profile.phoneCountry(key)).toHaveText('🇬🇧 +44');
+        await expect(profile.phoneCountry(key)).toHaveText('+44');
         await expect(profile.fieldInput(key)).toHaveValue('2079460000');
       } finally {
         await context.close();

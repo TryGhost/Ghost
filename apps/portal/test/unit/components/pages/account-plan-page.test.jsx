@@ -234,7 +234,7 @@ describe('Account Plan Page', () => {
     const recipient = await findByLabelText('Recipient name');
     expect(recipient).toHaveValue('Ada Lovelace');
     // Shown after the country its code names, as the phone input shows a number held.
-    expect(getByLabelText('Country code')).toHaveTextContent('🇬🇧 +44');
+    expect(getByLabelText('Country code')).toHaveTextContent(/^\+44$/);
     expect(getByLabelText('Phone number')).toHaveValue('7400 123456');
     // Shipping first, then the phone number, whatever order the tier lists them in.
     expect(
@@ -265,11 +265,17 @@ describe('Account Plan Page', () => {
     );
   });
 
-  // Most members hold no number yet. The phone input starts in the reader's own country, and the
-  // number goes as it's dialled at home with that country's code in front, for the site to keep in
-  // its international form.
+  // Most members hold no number yet. The phone input starts in the reader's own country, by their
+  // time zone, as many browsers speak en-US wherever they are, and the number goes as it's dialled
+  // at home with that country's code in front, for the site to keep in its international form.
   test('asks a paid member holding no phone number in their own country, and sends it with its code', async () => {
-    const languages = vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['en-GB']);
+    const languages = vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['en-US']);
+    const { resolvedOptions } = Intl.DateTimeFormat.prototype;
+    const timeZone = vi
+      .spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions')
+      .mockImplementation(function () {
+        return { ...resolvedOptions.call(this), timeZone: 'Europe/London' };
+      });
     try {
       const { getByRole, findByLabelText, getByLabelText, mockDoActionFn } = changingToRequiring([
         SHIPPING_AND_PHONE[0],
@@ -277,7 +283,7 @@ describe('Account Plan Page', () => {
 
       const number = await findByLabelText('Phone number');
       expect(number).toHaveValue('');
-      expect(getByLabelText('Country code')).toHaveTextContent('🇬🇧 +44');
+      expect(getByLabelText('Country code')).toHaveTextContent(/^\+44$/);
       const confirm = getByRole('button', { name: 'Confirm' });
       expect(confirm).toBeDisabled();
 
@@ -290,6 +296,7 @@ describe('Account Plan Page', () => {
       );
     } finally {
       languages.mockRestore();
+      timeZone.mockRestore();
     }
   });
 

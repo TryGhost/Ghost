@@ -27,6 +27,7 @@ module.exports = class MemberController {
    * @param {any} deps.sendEmailWithMagicLink
    * @param {any} deps.settingsCache
    * @param {Pick<import('../../account-service').MemberAccountService, 'planAnswers' | 'saveAnswers'>} deps.account
+   * @param {Pick<import('../../tracking').MembersTracking, 'tierChange'>} deps.tracking
    */
   constructor({
     memberRepository,
@@ -38,8 +39,10 @@ module.exports = class MemberController {
     sendEmailWithMagicLink,
     settingsCache,
     account,
+    tracking,
   }) {
     this._account = account;
+    this._tracking = tracking;
     this._memberRepository = memberRepository;
     this._productRepository = productRepository;
     this._paymentsService = paymentsService;
@@ -277,40 +280,43 @@ module.exports = class MemberController {
    * @param {unknown} change.answers
    */
   async _changePlan({ email, subscriptionId, tier, price, answers }) {
-    const changing = () =>
-      this._memberRepository.updateSubscription({
+    return this._tracking.tierChange({ answered: answers !== undefined }, async (attempt) => {
+      const changing = () =>
+        this._memberRepository.updateSubscription({
+          email,
+          subscription: { subscription_id: subscriptionId, price },
+        });
+      if (answers === undefined) {
+        return changing();
+      }
+
+      // The member's own subscription, or nothing is checked or saved: the change below would
+      // refuse anyone else's, and answers are only ever saved with a change.
+      const subscription = await this._memberRepository.getSubscription({
         email,
-        subscription: { subscription_id: subscriptionId, price },
+        subscription: { subscription_id: subscriptionId },
       });
-    if (answers === undefined) {
-      return changing();
-    }
+      const [current, member] = await Promise.all([
+        // `plan` is how a subscription names the Stripe price it's on.
+        this._productRepository.get({ stripe_price_id: subscription.plan.id }),
+        this._memberRepository.get({ email }),
+      ]);
+      const plans =
+        current?.id === tier.id
+          ? []
+          : await this._account.planAnswers(answers, member.id, tier, attempt).catch((err) => {
+              throw err instanceof errors.ValidationError ? new AnswersRefused(err) : err;
+            });
 
-    // The member's own subscription, or nothing is checked or saved: the change below would
-    // refuse anyone else's, and answers are only ever saved with a change.
-    const subscription = await this._memberRepository.getSubscription({
-      email,
-      subscription: { subscription_id: subscriptionId },
-    });
-    const [current, member] = await Promise.all([
-      // `plan` is how a subscription names the Stripe price it's on.
-      this._productRepository.get({ stripe_price_id: subscription.plan.id }),
-      this._memberRepository.get({ email }),
-    ]);
-    const plans =
-      current?.id === tier.id
-        ? []
-        : await this._account.planAnswers(answers, member.id, tier).catch((err) => {
-            throw err instanceof errors.ValidationError ? new AnswersRefused(err) : err;
-          });
-
-    await changing();
-    await this._account.saveAnswers(member.id, plans).catch((err) => {
-      logging.error({
-        event: { name: 'members.tier_change.answers_not_saved' },
-        err,
-        member_id: member.id,
-        subscription_id: subscriptionId,
+      await changing();
+      await this._account.saveAnswers(member.id, plans).catch((err) => {
+        attempt.answersNotSaved();
+        logging.error({
+          event: { name: 'members.tier_change.answers_not_saved' },
+          err,
+          member_id: member.id,
+          subscription_id: subscriptionId,
+        });
       });
     });
   }
