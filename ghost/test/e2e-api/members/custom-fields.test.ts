@@ -299,8 +299,8 @@ describe('Member Custom Fields Members API', function () {
     assert.equal((await readMemberAsStaff()).metafields?.custom?.[key], undefined);
   });
 
-  // Portal checks nothing about a phone number itself: it sends what the member typed and
-  // shows the site's refusal under the input the refusal names.
+  // Portal validates only a phone number's characters: it sends what the member typed and shows
+  // the server's error under the input the error names.
   it('keeps the phone number a member writes in international form', async function () {
     const key = await defineField('Mobile', { type: 'phone' });
 

@@ -7,11 +7,12 @@ import {
   parsePhoneNumber,
 } from 'libphonenumber-js';
 import examples from 'libphonenumber-js/mobile/examples';
-import { valueSchemaFor } from '../src/index.ts';
+import { phoneNumberIn, valueSchemaFor } from '../src/index.ts';
 import {
   CALLING_CODES,
   INTERNATIONAL_PREFIXES,
   SHARED_CODES,
+  hasOnlyPhoneCharacters,
   holdNumber,
   isPhoneCountry,
   phoneCountryOfLocales,
@@ -306,6 +307,48 @@ describe('phone numbers in a browser', function () {
         metadata.countries[country]?.[1],
         country,
       );
+    }
+  });
+
+  it('tells whether text contains only valid phone number characters', function () {
+    for (const written of [
+      '',
+      '+44 20 7946 0000',
+      ' (415) 555-0100 ',
+      '06.12.34.56.78',
+      '030/123456',
+      '+44 [20] 7946~0000',
+      '+٤٤ ٢٠ ٧٩٤٦ ٠٠٠٠',
+    ]) {
+      assert.equal(hasOnlyPhoneCharacters(written), true, written);
+    }
+    for (const written of [
+      'asdsadasdd1213213123',
+      '+1 800 FLOWERS',
+      '+44 20 7946 0000 x3',
+      '+44 20 7946 0000 #3',
+      '+44 20 7946*0000',
+      '+44\t20 7946 0000',
+    ]) {
+      assert.equal(hasOnlyPhoneCharacters(written), false, written);
+    }
+  });
+
+  // A phone input shows an error as soon as an invalid character is typed, so it must allow every
+  // character the server accepts in a number, wherever in the number the character appears.
+  it('allows every character the server accepts in a number', { timeout: 30_000 }, function () {
+    for (let code = 0; code < 0x10000; code++) {
+      const character = String.fromCharCode(code);
+      for (const written of [
+        `${character}+44 20 7946 0000`,
+        `+44${character}20 7946 0000`,
+        `+44 20 7946${character}0000`,
+        `+44 20 7946 0000${character}`,
+      ]) {
+        if (phoneNumberIn(written, undefined) !== undefined) {
+          assert.equal(hasOnlyPhoneCharacters(written), true, JSON.stringify(written));
+        }
+      }
     }
   });
 
