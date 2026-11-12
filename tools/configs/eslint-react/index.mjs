@@ -251,7 +251,9 @@ export function reactAppConfig(options = {}) {
     ...js.configs.recommended.rules,
     ...reactFlat.rules,
     ...(i18nextFlat?.rules ?? {}),
-    ...reactHooksPlugin.configs.recommended.rules,
+    // Listed rather than spread from the plugin's `recommended` preset: from
+    // v6 that preset also turns on the React Compiler rules.
+    'react-hooks/rules-of-hooks': 'error',
     // TODO: ~46 legacy violations (~24 across Vite TS apps + 22 in
     // comments-ui surfaced when react-hooks plugin was added there + 1 in
     // announcement-bar). Real bug-catcher (missing useEffect/useMemo deps);
