@@ -250,12 +250,12 @@ const LockedBinding = z.object({ port: z.enum(CHECKOUT_PORTS), metafield_key: Ke
 /** Points a port at a field, or stops it writing anywhere. */
 export interface PortBinder {
   bind(
-    db: Knex,
     port: string,
     field: Pick<Identity, 'namespace' | 'key'>,
     now: Date,
+    executor: Knex,
   ): Promise<string>;
-  remove(db: Knex, port: string): Promise<void>;
+  remove(port: string, executor: Knex): Promise<void>;
 }
 
 /** The custom fields as the metafields domain reads them for this site. */
@@ -451,16 +451,16 @@ export class StripeCheckoutConfigService {
       await this.requirements().require(targets.requirement, now, { transacting: trx });
       for (const { port, customFieldKey } of targets.destinations) {
         await this.bindings.bind(
-          trx,
           port,
           { namespace: CUSTOM_NAMESPACE, key: customFieldKey },
           now,
+          trx,
         );
       }
     } else {
       await this.requirements().release(SECTION_NAMES[section], { transacting: trx });
       for (const { port } of destinationsOf(section)) {
-        await this.bindings.remove(trx, port);
+        await this.bindings.remove(port, trx);
       }
     }
   }

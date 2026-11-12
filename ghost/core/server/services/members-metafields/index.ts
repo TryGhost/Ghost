@@ -76,8 +76,8 @@ export function init(): void {
   const { knex } = require('../../data/db');
   const models = require('../../models');
 
-  const recordAction: RecordMetafieldAction = ({ context, verb, subject, details }) =>
-    recordMetafieldAction({ Action: models.Action, context, verb, subject, details });
+  const recordAction: RecordMetafieldAction = (transacting, { context, verb, subject, details }) =>
+    recordMetafieldAction({ Action: models.Action, transacting, context, verb, subject, details });
 
   // Resolved here, not in the service: reading config is this module's job, and
   // the service is handed a number. A getter rather than a value because the

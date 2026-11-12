@@ -16,6 +16,7 @@ import {
 } from './queries';
 import { DbBoundField, DbNamedBinding, FIELD_STATUS } from './schema';
 import type { MetafieldPlan, MetafieldValuesService } from './values-service';
+import { ensureTransaction } from '../../lib/ensure-transaction';
 
 const BINDINGS_TABLE = 'members_metafield_bindings';
 
@@ -73,25 +74,40 @@ export class MetafieldBindingsService {
     this.values = values;
   }
 
-  async bind(db: Knex, port: string, field: FieldIdentity, now: Date): Promise<string> {
-    const existing = await db(BINDINGS_TABLE).where({ port }).first();
-    if (existing?.metafield_namespace === field.namespace && existing.metafield_key === field.key) {
-      await db(BINDINGS_TABLE).where('id', existing.id).update({ updated_at: now });
-      return existing.id;
-    }
-    if (existing) {
-      await db(BINDINGS_TABLE).where('id', existing.id).del();
-    }
+  /**
+   * Points a port at a field, in place of whichever field the port wrote into before, and returns
+   * the binding's id. Given a transaction as `executor` it joins that transaction; given a plain
+   * connection it opens its own.
+   */
+  async bind(
+    port: string,
+    field: FieldIdentity,
+    now: Date,
+    executor: Knex = this.knex,
+  ): Promise<string> {
+    return ensureTransaction(executor, async (trx) => {
+      const existing = await trx(BINDINGS_TABLE).where({ port }).first();
+      if (
+        existing?.metafield_namespace === field.namespace &&
+        existing.metafield_key === field.key
+      ) {
+        await trx(BINDINGS_TABLE).where('id', existing.id).update({ updated_at: now });
+        return existing.id;
+      }
+      if (existing) {
+        await trx(BINDINGS_TABLE).where('id', existing.id).del();
+      }
 
-    const bindingId = new ObjectID().toHexString();
-    await db(BINDINGS_TABLE).insert({
-      id: bindingId,
-      port,
-      ...fieldReference(field),
-      created_at: now,
-      updated_at: now,
+      const bindingId = new ObjectID().toHexString();
+      await trx(BINDINGS_TABLE).insert({
+        id: bindingId,
+        port,
+        ...fieldReference(field),
+        created_at: now,
+        updated_at: now,
+      });
+      return bindingId;
     });
-    return bindingId;
   }
 
   /**
@@ -132,9 +148,12 @@ export class MetafieldBindingsService {
     return (await this.knex(BINDINGS_TABLE).where(fieldReference(field)).first('id')) !== undefined;
   }
 
-  /** Stops the writing. Whatever hangs off the binding cascades with it. */
-  async remove(db: Knex, port: string): Promise<void> {
-    await db(BINDINGS_TABLE).where({ port }).del();
+  /**
+   * Stops the writing. Whatever hangs off the binding cascades with it. Given a transaction as
+   * `executor` it joins that transaction; given a plain connection it opens its own.
+   */
+  async remove(port: string, executor: Knex = this.knex): Promise<void> {
+    await ensureTransaction(executor, (trx) => trx(BINDINGS_TABLE).where({ port }).del());
   }
 
   /**
