@@ -88,11 +88,30 @@ export function fixturePath(resolved: string) {
   return packagePath.length > 1 ? `node_modules/${packagePath.at(-1)}` : resolved;
 }
 
-export function builtViolations(cruise: Cruise) {
+// Service rule violations keyed by importing file and the specifier as written, so
+// the same import matches across resolutions even though its resolved path differs.
+function serviceViolations(cruise: Cruise) {
+  const specifiers = new Map(
+    cruise.modules.flatMap(({ source, dependencies }) =>
+      dependencies.map(({ module, resolved }) => [`${source}\0${resolved}`, module] as const),
+    ),
+  );
   return cruise.summary.violations
     .filter(
       ({ rule }) => rule.name === 'service-dependencies' || rule.name === 'service-unresolved',
     )
+    .map((violation) => ({
+      ...violation,
+      key: `${violation.from}\0${specifiers.get(`${violation.from}\0${violation.to}`) ?? violation.to}`,
+    }));
+}
+
+// Violations that appear only when packages resolve to built output. Known
+// violations, which boundary lint already tracks, appear in both runs.
+export function builtOnlyViolations(source: Cruise, built: Cruise) {
+  const known = new Set(serviceViolations(source).map(({ key }) => key));
+  return serviceViolations(built)
+    .filter(({ key }) => !known.has(key))
     .map(({ from, to, rule }) => `${from} → ${to} breaks ${rule.name}.`);
 }
 
@@ -129,7 +148,7 @@ export function allowanceProblems({
           ({ module, resolved }) => pattern.test(module) || pattern.test(resolved),
         );
       })
-      .map((alternative) => `${alternative} matches no import from a migrated service.`);
+      .map((alternative) => `${alternative} matches no import from a service.`);
     const pattern = new RegExp(allowance);
     const targets = new Set(
       imports
@@ -240,7 +259,6 @@ export function verifyService({
       NODE_PATH: path.join(repository, 'node_modules'),
       GHOST_DEPENDENCY_RESOLUTION: resolution,
     };
-    delete env.GHOST_SERVICE_DEPENDENCY_AUDIT;
     const result = run(
       'pnpm',
       ['exec', 'depcruise', servicesRoot, '--config', allowlistPath, '--output-type', 'json'],
@@ -252,9 +270,9 @@ export function verifyService({
       record(`dependencies-${resolution}`, 'fail', failureOutput({ ...result, status: 1 }));
     }
   }
-  const [, built] = cruises;
-  if (built) {
-    const violations = builtViolations(built);
+  const [source, built] = cruises;
+  if (source && built) {
+    const violations = builtOnlyViolations(source, built);
     record('built-boundaries', violations.length ? 'fail' : 'pass', violations);
   }
 

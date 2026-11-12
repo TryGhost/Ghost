@@ -8,7 +8,7 @@ import { runInNewContext } from 'node:vm';
 import {
   addedAllowances,
   allowanceProblems,
-  builtViolations,
+  builtOnlyViolations,
   changedAuditShas,
   findInventoryReferences,
   findNewJavaScript,
@@ -175,35 +175,42 @@ test('added allowances must match imports under both resolutions and have regres
     }),
     [
       'node_modules/lib/index.js has no regression case naming it in full.',
-      '^packages/typed/ matches no import from a migrated service.',
-      '^packages/root/ matches no import from a migrated service.',
+      '^packages/typed/ matches no import from a service.',
+      '^packages/root/ matches no import from a service.',
     ],
   );
   assert.equal(fixturePath('packages/pkg/src/index.ts'), 'packages/pkg/src/index.ts');
   assert.deepEqual(addedAllowances("+  'one', // why\n-  'two',\n   'three',\n"), ['one']);
 });
 
-test('only service rules count as built-output violations', () => {
-  assert.deepEqual(
-    builtViolations(
-      cruise(
-        [],
-        [
-          {
-            from: 'a.ts',
-            to: 'packages/pkg/build/index.js',
-            rule: { name: 'service-dependencies' },
-          },
-          { from: 'b.ts', to: 'pkg', rule: { name: 'service-unresolved' } },
-          { from: 'c.ts', to: 'd.ts', rule: { name: 'shared-not-server-or-frontend' } },
-        ],
-      ),
-    ),
+test('only service rule violations new to built output are reported', () => {
+  const service = 'ghost/core/server/services/staff/a.ts';
+  const known = { from: service, to: 'lib/known.js', rule: { name: 'service-dependencies' } };
+  const source = cruise(
     [
-      'a.ts → packages/pkg/build/index.js breaks service-dependencies.',
-      'b.ts → pkg breaks service-unresolved.',
+      [service, 'pkg', 'packages/pkg/src/index.ts'],
+      [service, 'known', 'lib/known.js'],
+    ],
+    [known],
+  );
+  const built = cruise(
+    [
+      [service, 'pkg', 'packages/pkg/build/index.js'],
+      [service, 'known', 'lib/known.js'],
+      ['b.ts', 'missing', 'missing'],
+      ['c.ts', 'd', 'd.ts'],
+    ],
+    [
+      known,
+      { from: service, to: 'packages/pkg/build/index.js', rule: { name: 'service-dependencies' } },
+      { from: 'b.ts', to: 'missing', rule: { name: 'service-unresolved' } },
+      { from: 'c.ts', to: 'd.ts', rule: { name: 'shared-not-server-or-frontend' } },
     ],
   );
+  assert.deepEqual(builtOnlyViolations(source, built), [
+    `${service} → packages/pkg/build/index.js breaks service-dependencies.`,
+    'b.ts → missing breaks service-unresolved.',
+  ]);
 });
 
 test('the boot mutation stops boot waiting but keeps rejections', async () => {
