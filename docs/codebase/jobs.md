@@ -16,8 +16,9 @@ through `jobsService.handle(JobClass, handler)` in
 boot wires up before starting the service, and inject `JobsService` into the
 service that dispatches the job. Boot, or that service's root in its
 [`create` callback](../../ghost/core/server/services/README.md#initialization),
-passes in `JobsService`. Handlers should only route the rehydrated payload to
-an initialized service method. The queue options below are part of this API.
+passes in `JobsService` or a dispatch function. Handlers should only route the
+rehydrated payload to an initialized service method. The queue options below
+are part of this API.
 
 Current examples include:
 
@@ -39,14 +40,25 @@ Current examples include:
 
 For recurring work, copy the gift reminders job above, scheduled in
 [`gifts/jobs/index.js`](../../ghost/core/server/services/gifts/jobs/index.js).
-For a job dispatched once, copy
-[webmention processing](../../ghost/core/server/services/mentions/process-webmention-job.ts),
-dispatched in
-[`mention-controller.js`](../../ghost/core/server/services/mentions/mention-controller.js).
+For a job dispatched once, copy the
+[external media inliner job](../../ghost/core/server/services/media-inliner/external-media-inliner-job.ts),
+dispatched by `startInlining` in
+[`external-media-inliner.js`](../../ghost/core/server/services/media-inliner/external-media-inliner.js).
 Then check that:
 
-- The job class lives in a `*-job.ts` file, and its payload is small JSON,
-  such as IDs or storage keys, not local file paths.
+- The job class lives in a `*-job.ts` file. A test in
+  `register-job-handlers.test.ts` finds job classes by that name and fails if
+  one has no handler.
+- Its payload is small JSON, such as IDs or storage keys, not local file
+  paths. The content CSV import still passes a file path; don't copy that.
+- Import `jobs-service/index.ts` only from boot or a service root. API
+  endpoints and a service's other files get the jobs service, or a dispatch
+  function, passed in.
+- Its handler gets its service from boot through `registerJobHandlers`, not
+  from an import.
+- It has no `NODE_ENV` checks. Boot starts no schedules under test. A schedule
+  started later needs a `backgroundJobs` config key that both testing configs
+  in `ghost/core/shared/config/env/` set to `false`, as email analytics does.
 - It uses the shared default lane unless it can flood the shared workers, must
   not wait behind other jobs, or must run one at a time. See [Queues](#queues).
 - Its handler is safe to run more than once. See [Scheduling](#scheduling) and
