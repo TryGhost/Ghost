@@ -184,7 +184,8 @@ jobs:
               - 'ghost/test/unit/server/services/legacy-service-inventory.test.ts'
               - 'ghost/vitest.config.inventory.ts'
               - 'tools/scripts/ci/check-legacy-services.ts'
-              - 'tools/scripts/lib/legacy-services*.ts'
+              - 'tools/scripts/ci/legacy-services-base.ts'
+              - 'tools/configs/oxlint/legacy-services.ts'
               - '.github/workflows/ci.yml'
             package-standards:
               - 'packages/**'
@@ -591,8 +592,9 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           trust-lockfile: 'true'
-          # The check reads YAML with the scripts workspace's own parser.
-          install-args: --filter @internal/scripts --ignore-scripts
+          # The check and the inventory reader each read YAML with their own
+          # workspace's parser.
+          install-args: --filter @internal/scripts --filter @internal/cfg-oxlint --ignore-scripts
           store-cache: 'false'
 
       - name: Check legacy services only shrink

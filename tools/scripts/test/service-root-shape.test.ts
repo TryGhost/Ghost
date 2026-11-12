@@ -14,7 +14,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { legacyInventoryFile } from '../lib/legacy-services.ts';
+import { legacyInventoryFile } from '../../configs/oxlint/legacy-services.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
 const requireRoot = createRequire(path.join(root, 'package.json'));
@@ -49,7 +49,6 @@ function lint(
     for (const file of [
       '.dependency-cruiser.cjs',
       'tools/scripts/ci/service-dependency-resolver.mjs',
-      'tools/scripts/lib/legacy-services.ts',
     ]) {
       mkdirSync(path.dirname(path.join(cwd, file)), { recursive: true });
       cpSync(path.join(root, file), path.join(cwd, file));

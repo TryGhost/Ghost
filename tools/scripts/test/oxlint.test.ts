@@ -14,7 +14,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { legacyInventoryFile } from '../lib/legacy-services.ts';
+import { legacyInventoryFile } from '../../configs/oxlint/legacy-services.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
 const requireRoot = createRequire(path.join(root, 'package.json'));
@@ -50,9 +50,6 @@ function runLint(
       path.join(cwd, legacyInventoryFile),
       JSON.stringify({ services: { alpha: {}, legacy: {} } }),
     );
-    const legacyReader = 'tools/scripts/lib/legacy-services.ts';
-    mkdirSync(path.dirname(path.join(cwd, legacyReader)), { recursive: true });
-    cpSync(path.join(root, legacyReader), path.join(cwd, legacyReader));
     writeFileSync(
       path.join(cwd, '.dependency-cruiser.cjs'),
       boundarySource ?? readFileSync(path.join(root, '.dependency-cruiser.cjs')),

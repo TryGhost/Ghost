@@ -2,7 +2,7 @@ import type { CreateRule, ESTree, Scope, Variable } from '@oxlint/plugins';
 
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readLegacyServices, servicesRoot } from '../../../scripts/lib/legacy-services.ts';
+import { readLegacyServices, servicesRoot } from '../legacy-services.ts';
 
 const root = fileURLToPath(new URL('../../../../', import.meta.url));
 const serviceRoot = new RegExp(`^${servicesRoot}/([^/]+)/index\\.ts$`);

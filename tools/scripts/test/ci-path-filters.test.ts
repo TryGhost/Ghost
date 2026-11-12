@@ -178,8 +178,8 @@ describe('CI path filters', () => {
     for (const path of [
       'ghost/core/server/services/legacy-service-inventory.yaml',
       'tools/scripts/ci/check-legacy-services.ts',
-      'tools/scripts/lib/legacy-services.ts',
-      'tools/scripts/lib/legacy-services-base.ts',
+      'tools/configs/oxlint/legacy-services.ts',
+      'tools/scripts/ci/legacy-services-base.ts',
     ]) {
       assert.ok(
         patterns.some((pattern) => picomatch(pattern, { dot: true })(path)),

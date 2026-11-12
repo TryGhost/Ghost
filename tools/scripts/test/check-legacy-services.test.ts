@@ -4,8 +4,8 @@ import { cpSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } fr
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { it, type TestContext } from 'node:test';
-import { compareLegacyServicesWithBase } from '../lib/legacy-services-base.ts';
-import { legacyInventoryFile, servicesRoot } from '../lib/legacy-services.ts';
+import { compareLegacyServicesWithBase } from '../ci/legacy-services-base.ts';
+import { legacyInventoryFile, servicesRoot } from '../../configs/oxlint/legacy-services.ts';
 
 const repository = path.resolve(import.meta.dirname, '../../..');
 const previousInventoryFile = `${servicesRoot}/service-inventory.yaml`;
@@ -170,17 +170,20 @@ it('reports each addition through the command and exits non-zero', (t) => {
   const f = fixture(t, inventory({ alpha: {}, busy: {} }));
   for (const file of [
     'tools/scripts/ci/check-legacy-services.ts',
-    'tools/scripts/lib/legacy-services-base.ts',
-    'tools/scripts/lib/legacy-services.ts',
+    'tools/scripts/ci/legacy-services-base.ts',
+    'tools/configs/oxlint/legacy-services.ts',
   ]) {
     mkdirSync(path.dirname(path.join(f.root, file)), { recursive: true });
     cpSync(path.join(repository, file), path.join(f.root, file));
   }
-  writeFileSync(path.join(f.root, 'tools/scripts/package.json'), '{"type":"module"}');
-  symlinkSync(
-    path.join(repository, 'tools/scripts/node_modules'),
-    path.join(f.root, 'tools/scripts/node_modules'),
-  );
+  // Each workspace reads YAML with its own parser.
+  for (const workspace of ['tools/scripts', 'tools/configs/oxlint']) {
+    writeFileSync(path.join(f.root, workspace, 'package.json'), '{"type":"module"}');
+    symlinkSync(
+      path.join(repository, workspace, 'node_modules'),
+      path.join(f.root, workspace, 'node_modules'),
+    );
+  }
   const run = (env: NodeJS.ProcessEnv = {}) =>
     spawnSync(process.execPath, ['tools/scripts/ci/check-legacy-services.ts'], {
       cwd: f.root,

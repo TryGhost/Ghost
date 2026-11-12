@@ -4,7 +4,11 @@ import { findPackageJSON } from 'node:module';
 import path from 'node:path';
 import type { ICruiseResult, IViolation } from 'dependency-cruiser';
 import { z } from 'zod';
-import { type LegacyService, readLegacyServices, servicesRoot } from './legacy-services.ts';
+import {
+  type LegacyService,
+  readLegacyServices,
+  servicesRoot,
+} from '../../configs/oxlint/legacy-services.ts';
 
 export const knownViolationsFile = '.dependency-cruiser-known-violations.json';
 const servicePrefix = `${servicesRoot}/`;

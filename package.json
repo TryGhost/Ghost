@@ -132,7 +132,7 @@
           "{workspaceRoot}/.dependency-cruiser-known-violations.json",
           "{workspaceRoot}/tools/scripts/ci/check-boundaries.ts",
           "{workspaceRoot}/tools/scripts/lib/dependency-boundaries.ts",
-          "{workspaceRoot}/tools/scripts/lib/legacy-services.ts",
+          "{workspaceRoot}/tools/configs/oxlint/legacy-services.ts",
           "{workspaceRoot}/tools/scripts/ci/service-dependency-resolver.mjs",
           "{workspaceRoot}/ghost/core/**/*",
           "{workspaceRoot}/ghost/package.json",

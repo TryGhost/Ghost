@@ -1,6 +1,6 @@
 import path from 'node:path';
-import { compareLegacyServicesWithBase } from '../lib/legacy-services-base.ts';
-import { legacyInventoryFile } from '../lib/legacy-services.ts';
+import { compareLegacyServicesWithBase } from './legacy-services-base.ts';
+import { legacyInventoryFile } from '../../configs/oxlint/legacy-services.ts';
 
 // Fails when a pull request adds a legacy service, or defers dependency checks
 // for one. It never skips: without a base to compare with, it fails.

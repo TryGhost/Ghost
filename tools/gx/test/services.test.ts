@@ -8,7 +8,7 @@ import { buildServiceReport } from '../services.ts';
 import {
   legacyInventoryFile,
   servicesRoot as services,
-} from '../../scripts/lib/legacy-services.ts';
+} from '../../configs/oxlint/legacy-services.ts';
 
 const assessment = {
   complexity: 'straightforward',
@@ -191,7 +191,7 @@ async function fixture(t: TestContext) {
   for (const file of [
     'tools/scripts/ci/service-dependency-resolver.mjs',
     'tools/scripts/lib/dependency-boundaries.ts',
-    'tools/scripts/lib/legacy-services.ts',
+    'tools/configs/oxlint/legacy-services.ts',
     'tools/scripts/ci/check-boundaries.ts',
   ]) {
     await mkdir(dirname(join(root, file)), { recursive: true });

@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-oxlint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
     "@playwright/test": "catalog:",
     "@types/js-yaml": "catalog:",

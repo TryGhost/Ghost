@@ -16,7 +16,7 @@ import { it, type TestContext } from 'node:test';
 import type { ICruiseResult } from 'dependency-cruiser';
 import ts from 'typescript';
 import { dependencyIdentity, readKnownViolations } from '../lib/dependency-boundaries.ts';
-import { legacyInventoryFile, readLegacyServices } from '../lib/legacy-services.ts';
+import { legacyInventoryFile, readLegacyServices } from '../../configs/oxlint/legacy-services.ts';
 
 const repository = path.resolve(import.meta.dirname, '../../..');
 const services = 'ghost/core/server/services';
@@ -50,6 +50,7 @@ function fixture(t: TestContext, files: Record<string, string>) {
       services: { legacy: { kind: 'directory', disposition: 'migrate' } },
     }),
     'tools/scripts/package.json': '{"type":"module"}',
+    'tools/configs/oxlint/package.json': '{"type":"module"}',
     '.dependency-cruiser-known-violations.json': '[]',
     'apps/empty.ts': 'export {};',
     [config]: 'export const enabled = true; export interface Config {}',
@@ -59,7 +60,7 @@ function fixture(t: TestContext, files: Record<string, string>) {
   }
   for (const file of [
     'tools/scripts/lib/dependency-boundaries.ts',
-    'tools/scripts/lib/legacy-services.ts',
+    'tools/configs/oxlint/legacy-services.ts',
     'tools/scripts/ci/check-boundaries.ts',
   ]) {
     mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
@@ -1062,7 +1063,7 @@ it('invalidates cached boundary checks and fixture tests when their configuratio
     'koenig/**/*',
     '.dependency-cruiser-known-violations.json',
     'tools/scripts/lib/dependency-boundaries.ts',
-    'tools/scripts/lib/legacy-services.ts',
+    'tools/configs/oxlint/legacy-services.ts',
     'tools/scripts/ci/check-boundaries.ts',
   ]) {
     assert.ok(root.nx.targets['lint:boundaries'].inputs.includes(`{workspaceRoot}/${input}`));

@@ -19,14 +19,14 @@ import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import { createService } from '../create-service.ts';
 import { readDependencyBoundaries } from '../../scripts/lib/dependency-boundaries.ts';
-import { legacyInventoryFile as inventoryPath } from '../../scripts/lib/legacy-services.ts';
+import { legacyInventoryFile as inventoryPath } from '../../configs/oxlint/legacy-services.ts';
 
 const repo = fileURLToPath(new URL('../../..', import.meta.url));
 const requireRoot = createRequire(path.join(repo, 'package.json'));
 const services = 'ghost/core/server/services';
 const tests = 'ghost/test/unit/server/services';
 const inventoryName = path.basename(inventoryPath);
-const legacyReader = 'tools/scripts/lib/legacy-services.ts';
+const legacyReader = 'tools/configs/oxlint/legacy-services.ts';
 const name = 'delivery-receipts';
 const roots: string[] = [];
 // The real inventory's sections, with nothing in them except what a test lists.
@@ -218,7 +218,8 @@ test('gx routes service generation to its checkout and prints boot instructions'
     copy(root, `tools/gx/${file}`);
   }
   copy(root, legacyReader);
-  for (const modules of ['tools/gx/node_modules', 'tools/scripts/node_modules']) {
+  copy(root, 'tools/configs/oxlint/package.json');
+  for (const modules of ['tools/gx/node_modules', 'tools/configs/oxlint/node_modules']) {
     symlinkSync(path.join(repo, modules), path.join(root, modules));
   }
   const cli = path.join(root, 'tools/gx/cli.ts');
@@ -249,7 +250,6 @@ test('generated output passes real lint, boundary and inventory checks with no r
     'ghost/test/tsconfig.json',
     `${services}/README.md`,
     `${tests}/legacy-service-inventory.test.ts`,
-    legacyReader,
   ]) {
     copy(root, file);
   }

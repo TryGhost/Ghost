@@ -7,7 +7,7 @@ import {
   legacyInventoryFile,
   parseLegacyServices,
   servicesRoot,
-} from './legacy-services.ts';
+} from '../../configs/oxlint/legacy-services.ts';
 
 // Before the legacy service inventory, one file listed every service and
 // marked the standard ones with `migrated: true`. A branch can still fork from

@@ -12,6 +12,7 @@
     "test:types": "tsc6 --noEmit"
   },
   "dependencies": {
+    "@internal/cfg-oxlint": "workspace:*",
     "@internal/scripts": "workspace:*",
     "@tryghost/errors": "catalog:",
     "@tryghost/logging": "catalog:",

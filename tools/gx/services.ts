@@ -8,7 +8,7 @@ import { readDependencyBoundaries } from '../scripts/lib/dependency-boundaries.t
 import {
   legacyInventoryFile,
   servicesRoot as servicesDir,
-} from '../scripts/lib/legacy-services.ts';
+} from '../configs/oxlint/legacy-services.ts';
 
 const servicesRoot = `${servicesDir}/`;
 const repository = path.resolve(import.meta.dirname, '../..');

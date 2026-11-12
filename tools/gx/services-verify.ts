@@ -7,7 +7,7 @@ import {
   legacyInventoryFile as inventoryPath,
   parseLegacyServices,
   servicesRoot,
-} from '../scripts/lib/legacy-services.ts';
+} from '../configs/oxlint/legacy-services.ts';
 
 const bootPath = 'ghost/core/boot.js';
 const allowlistPath = '.dependency-cruiser.cjs';

@@ -8,7 +8,7 @@ import {
   legacyInventoryFile,
   readLegacyServices,
   servicesRoot as SERVICES,
-} from '../scripts/lib/legacy-services.ts';
+} from '../configs/oxlint/legacy-services.ts';
 
 const TESTS = 'ghost/test/unit/server/services';
 const FORMATTER = fileURLToPath(new URL('./bin/oxfmt', import.meta.resolve('oxfmt/package.json')));
