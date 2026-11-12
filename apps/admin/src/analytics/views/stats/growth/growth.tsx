@@ -99,7 +99,15 @@ const Growth: React.FC = () => {
   }, [initialTab]);
 
   // Get stats from custom hook once
-  const { isLoading, chartData, totals, currencySymbol, subscriptionData } = useGrowthStats(range);
+  const {
+    isLoading,
+    chartData,
+    dateFrom,
+    memberChangeData,
+    totals,
+    currencySymbol,
+    subscriptionData,
+  } = useGrowthStats(range);
 
   // Get growth data with post_type filtering - only call when not on Sources tab
   const { data: topPostsData, isLoading: isTopPostsLoading } = useTopPostsStatsWithRange(
@@ -209,8 +217,9 @@ const Growth: React.FC = () => {
         {paidMembersEnabled && currentKpiTab === 'paid-members' && (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[2fr_minmax(460px,1fr)]">
             <PaidMembersChangeChart
+              dateFrom={dateFrom}
               isLoading={isPageLoading}
-              memberData={chartData}
+              memberData={memberChangeData}
               range={range}
               subscriptionData={subscriptionData}
             />

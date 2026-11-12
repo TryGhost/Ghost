@@ -246,23 +246,19 @@ export const useGrowthStats = (range: number) => {
   const { data: subscriptionStatsResponse, isLoading: isSubscriptionLoading } =
     useSubscriptionStats();
 
-  // Process member data with stable reference
-  const memberData = useMemo(() => {
-    let rawData: MemberStatusItem[] = [];
-
-    // Check the structure of the response and extract data
+  const rawMemberData = useMemo<MemberStatusItem[]>(() => {
     if (memberCountResponse?.stats) {
-      rawData = memberCountResponse.stats;
-    } else if (Array.isArray(memberCountResponse)) {
-      // If response is directly an array
-      rawData = memberCountResponse;
+      return memberCountResponse.stats;
     }
+    return Array.isArray(memberCountResponse) ? memberCountResponse : [];
+  }, [memberCountResponse]);
 
+  const memberData = useMemo(() => {
     // For single day (Today), ensure we have two data points for a proper line
-    if (range === 1 && rawData.length >= 2) {
+    if (range === 1 && rawMemberData.length >= 2) {
       // We should have yesterday's data and today's data
-      const yesterdayData = rawData[rawData.length - 2]; // Yesterday's EOD counts
-      const todayData = rawData[rawData.length - 1]; // Today's EOD counts
+      const yesterdayData = rawMemberData[rawMemberData.length - 2]; // Yesterday's EOD counts
+      const todayData = rawMemberData[rawMemberData.length - 1]; // Today's EOD counts
 
       const startOfToday = moment(dateFrom).format('YYYY-MM-DD'); // 6/26
       const startOfTomorrow = moment(dateFrom).add(1, 'day').format('YYYY-MM-DD'); // 6/27
@@ -283,8 +279,8 @@ export const useGrowthStats = (range: number) => {
       return [startPoint, endPoint];
     }
 
-    return rawData;
-  }, [memberCountResponse, range, dateFrom]);
+    return rawMemberData;
+  }, [rawMemberData, range, dateFrom]);
 
   const { mrrData, selectedCurrency } = useMemo(() => {
     const dateFromMoment = moment(dateFrom);
@@ -439,6 +435,8 @@ export const useGrowthStats = (range: number) => {
     endDate,
     totals: totalsData,
     chartData,
+    // Today’s event counts belong to the API dates, before shifting the line chart points.
+    memberChangeData: range === 1 ? rawMemberData : chartData,
     subscriptionData,
     selectedCurrency,
     currencySymbol,

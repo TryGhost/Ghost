@@ -34,6 +34,7 @@ import {
 import { useShade } from '@tryghost/shade/app';
 
 type PaidMembersChangeChartProps = {
+  dateFrom: string;
   subscriptionData?: { date: string; signups: number; cancellations: number }[];
   memberData: {
     date: string;
@@ -179,6 +180,7 @@ const getDefaultResolution = (range: number): ResolutionOption => {
 };
 
 const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
+  dateFrom,
   subscriptionData,
   memberData,
   range,
@@ -222,13 +224,12 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
     if (subscriptionData && subscriptionData.length > 0) {
       // For "Today" range, show just the change for today
       if (range === 1) {
-        const today = moment().format('YYYY-MM-DD');
-        const todayData = subscriptionData.find((item) => item.date === today);
+        const todayData = subscriptionData.find((item) => item.date === dateFrom);
 
         return [
           {
-            date: formatDisplayDateWithRange(today, range),
-            rawDate: today, // Keep raw date for dynamic tooltip formatting
+            date: formatDisplayDateWithRange(dateFrom, range),
+            rawDate: dateFrom, // Keep raw date for dynamic tooltip formatting
             new: todayData?.signups || 0,
             cancelled: -(todayData?.cancellations || 0), // Negative for the stacked bar chart
           },
@@ -294,15 +295,14 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
         return [];
       }
 
-      // For "Today" range, show just today's change
+      // For Today, memberData contains the original daily history rows.
       if (range === 1) {
-        const today = moment().format('YYYY-MM-DD');
-        const todayData = memberData.find((item) => item.date === today);
+        const todayData = memberData.find((item) => item.date === dateFrom);
 
         return [
           {
-            date: formatDisplayDateWithRange(today, range),
-            rawDate: today, // Keep raw date for dynamic tooltip formatting
+            date: formatDisplayDateWithRange(dateFrom, range),
+            rawDate: dateFrom, // Keep raw date for dynamic tooltip formatting
             new: todayData?.paid_subscribed || 0,
             cancelled: -(todayData?.paid_canceled || 0), // Negative for the stacked bar chart
           },
@@ -360,7 +360,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
         };
       });
     }
-  }, [memberData, subscriptionData, range, aggregationStrategy, displayRange]);
+  }, [dateFrom, memberData, subscriptionData, range, aggregationStrategy, displayRange]);
 
   const paidChangeChartConfig = {
     new: {
