@@ -200,12 +200,16 @@ export function verifyService({
   repository,
   service,
   base,
+  main = base,
   staticOnly,
   run,
 }: {
   repository: string;
   service: string;
   base: string;
+  // Audit revisions must survive a squash merge, so they are checked against main
+  // even when the branch is compared with another base.
+  main?: string;
   staticOnly: boolean;
   run: RunCommand;
 }) {
@@ -242,7 +246,7 @@ export function verifyService({
   record('new-files-typescript', javaScript.length ? 'fail' : 'pass', javaScript);
 
   const unreachable = changedAuditShas(diff(inventoryPath)).filter(
-    (sha) => git('merge-base', '--is-ancestor', sha, base).status !== 0,
+    (sha) => git('merge-base', '--is-ancestor', sha, main).status !== 0,
   );
   record(
     'audit-shas-on-base',
@@ -428,13 +432,22 @@ const runCommand: RunCommand = (command, args, { cwd, env }) => {
   };
 };
 
+// A stale origin/main would let verify pass against an old policy, so stop instead.
+export function fetchMain(repository: string, run: RunCommand) {
+  const result = run('git', ['fetch', '-q', 'origin', 'main'], { cwd: repository });
+  if (result.status !== 0) {
+    throw new Error(`Could not fetch origin/main:\n${result.output.trim()}`);
+  }
+}
+
 const usage = `Usage: pnpm gx services verify <service> [--base <ref>] [--static] [--json]
 
 Checks a committed service change before it is reported or pushed. Fails on a dirty
 tree or a branch that does not contain the base. "review" lines need a person or
 the verify-service-change skill to confirm they are still true.
 
-  --base <ref>  Commit the branch must contain (default: origin/main, fetched first)
+  --base <ref>  Commit the branch must contain (default: origin/main). origin/main is
+                always fetched first, and audit revisions are checked against it
   --static      Skip lint, types and tests
   --json        Print the checks as JSON
 `;
@@ -460,13 +473,12 @@ export function runServicesVerify(args: string[]) {
       throw new Error('Supply exactly one service name.');
     }
     const repository = path.resolve(import.meta.dirname, '../..');
-    if (!values.base) {
-      runCommand('git', ['fetch', '-q', 'origin', 'main'], { cwd: repository });
-    }
+    fetchMain(repository, runCommand);
     const checks = verifyService({
       repository,
       service,
       base: values.base ?? 'origin/main',
+      main: 'origin/main',
       staticOnly: values.static ?? false,
       run: runCommand,
     });

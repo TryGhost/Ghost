@@ -11,6 +11,7 @@ import {
   builtOnlyViolations,
   changedAuditShas,
   findInventoryReferences,
+  fetchMain,
   findNewJavaScript,
   fixturePath,
   mutateBootInit,
@@ -293,6 +294,31 @@ test('static checks fail on new JavaScript and audit SHAs missing from the base'
   assert.equal(result['audit-shas-on-base'], 'fail');
   assert.equal(result['tests-and-lint'], 'skip');
   assert.deepEqual(f.calls, []);
+});
+
+test('audit SHAs are checked against main, not a different base', async (t) => {
+  const f = await fixture(t);
+  await f.write('feature.txt', 'x');
+  const feature = f.commit('feature base');
+  await f.write(inventoryPath, `${inventory}    reviewedAt: ${feature}\n`);
+  f.commit('inventory');
+  const checks = verifyService({
+    repository: f.root,
+    service: 'staff',
+    base: feature,
+    main: f.base,
+    staticOnly: true,
+    run: f.run,
+  });
+  assert.equal(checks.find((item) => item.name === 'audit-shas-on-base')?.status, 'fail');
+});
+
+test('a failed fetch of main stops verification', () => {
+  assert.throws(
+    () => fetchMain('/repo', () => ({ status: 128, output: 'fatal: unable to access\n' })),
+    /Could not fetch origin\/main:\nfatal: unable to access/,
+  );
+  assert.doesNotThrow(() => fetchMain('/repo', () => ({ status: 0, output: '' })));
 });
 
 test('audit SHAs already on the base pass', async (t) => {

@@ -15,6 +15,7 @@ Use only:
 - the branch or pull request diff
 - the PR description, commit messages and inventory changes
 - the output of `pnpm gx services verify <service> --json`
+- the unchanged service source, its consumers and existing tests in your checkout
 
 Do not read the author's mutation list, a coordinator's summary or an earlier
 review. Ignore them if the brief includes them.
