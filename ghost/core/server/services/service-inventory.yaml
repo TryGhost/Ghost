@@ -1471,17 +1471,17 @@ services:
     contracts:
       exports:
         summary: >-
-          The TypeScript root exports synchronous init and Promise-returning importCSV,
-          handleJob and allSettled functions. importCSV and handleJob throw synchronously
+          The TypeScript root exports synchronous init and Promise-returning importCSV and
+          handleJob functions. importCSV and handleJob throw synchronously
           before initialization; request-schema errors also throw synchronously, whereas
-          accepted import preparation and handler failures reject promises. allSettled before
-          init resolves. The deep ContentCSVImportJob class carries serializable upload,
-          mapping, recipient and run metadata; it is a job definition, not another root.
-          Units assert the pre-init handler/drain path and injected job serialization. A
+          accepted import preparation and handler failures reject promises.
+          The deep ContentCSVImportJob class carries serializable upload,
+          mapping, recipient, row count and run metadata; it is a job definition, not another root.
+          Units assert the pre-init handler path and injected job serialization. A
           separately imported root in HTTP tests checks pre-init import, two successful init
           calls, schema errors and asynchronous unreadable-file rejection. Root units also
-          assert pre-init request/job errors, harmless pre-init draining, validation before
-          forwarding and retained request/job/drain receivers.
+          assert pre-init request/job errors, validation before
+          forwarding and retained request/job receivers.
         sources:
           - core/server/services/content-import/index.ts
           - core/server/services/content-import/import/schema.ts
@@ -1522,8 +1522,7 @@ services:
           and total after staging, preflight and dispatch. Authentication, feature flag,
           upload validation and content-import permission belong to HTTP/API layers. Jobs
           registration, given the root by boot, awaits handleJob for content-csv-import; the separate
-          site-content-import job is outside this root. Production shutdown does not call
-          its test-facing allSettled. Real booted HTTP tests assert role/flag gates, report
+          site-content-import job is outside this root. Real booted HTTP tests assert role/flag gates, report
           mail through a mocked transport, persisted posts/relations and intercepted remote
           media. The handler unit uses a stub root to assert forwarding and rejection. Webhook tests
           include a normal-publish control, then assert two imported rows including an
@@ -1562,17 +1561,15 @@ services:
       lifetime:
         summary: >-
           There is no reset, stop, abort or public implementation accessor. The module retains
-          its graph across init calls; run records are mutable, in memory and normally
-          released after completion email. finish/fail alone do not settle waiters; release
-          resolves them when the map becomes empty. Lazy age/count eviction excludes running
-          runs. Media promises, including failed results, are cached by exact URL within one
-          job, not across jobs. Store units assert retention/eviction and two-run release
-          waiting; media units hold an import to prove sharing, and assert separate-instance
-          isolation. Root units retain the same request/job/drain receiver and call handleJob
+          its graph across init calls; run records are mutable, in memory, created when the
+          job starts and released after its completion email.
+          Media promises, including failed results, are cached by exact URL within one
+          job, not across jobs. Store units assert finished runs stay regardless of age or count;
+          media units hold an import to prove sharing, and assert separate-instance
+          isolation. Root units retain the same request/job receiver and call handleJob
           directly after repeated init. Dispatch is stubbed; the jobs backend queue is not
           exercised. Duplicate/concurrent job handling and late admissions during shutdown
-          remain source-only. The importer drain test awaits handle before
-          checking settlement, so it cannot establish the final cleanup boundary.
+          remain source-only.
         sources:
           - core/server/services/content-import/index.ts
           - core/server/services/content-import/import/store.ts
@@ -1618,7 +1615,7 @@ services:
           stored assets/media are not compensated for later row or mail failures. Posts use
           individual DB transactions, not one import transaction. Handler finally awaits
           extracted-source cleanup and best-effort mail, releases the run, then awaits staged
-          deletion: allSettled can finish before that last deletion. Units and filesystem
+          deletion: a test that waits for the mail can finish first. Units and filesystem
           integration assert selected cleanup, asset rollback and cache behavior; real HTTP
           tests assert file removal under injected storage failures and contributor/tag DB
           rollback under a rejected post write. They do not prove root/job shutdown drains
@@ -1642,7 +1639,7 @@ services:
       failures:
         summary: >-
           Owner lookup fails before staging; invalid/staging/parser/cap failures reject before
-          dispatch, and dispatch failure releases the run with best-effort staged cleanup.
+          dispatch, and dispatch failure removes the staged file best-effort.
           Expected row validation, media and DB write failures are recorded and later rows
           continue. All attempted writes failing reports an aggregate but still marks the
           run complete; unexpected preparation/converter/media failures reject the handler.
@@ -1675,7 +1672,7 @@ services:
       - >-
         Characterize the release-before-staged-deletion drain boundary with a held cleanup,
         then define root/job ownership for admission, cancellation, mail and filesystem drain.
-        Existing allSettled coverage does not prove complete handler settlement or restart.
+        Waiting for the completion mail does not prove complete handler settlement or restart.
       - >-
         Preserve staged-file ownership when storage changes between stage/remove; cover
         cleanup failure masking, orphan recovery and bounded CSV/archive resources. The row

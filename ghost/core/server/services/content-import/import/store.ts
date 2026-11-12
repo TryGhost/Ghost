@@ -40,14 +40,8 @@ export interface ImportRun {
   rows: RowOutcome[];
 }
 
-// Both bounds are applied lazily on create() so no timer keeps the process alive.
-const MAX_RUNS = 10;
-const MAX_RUN_AGE_MS = 60 * 60 * 1000;
-
 export class ImportRunStore {
-  // Insertion-ordered, so count-eviction drops the oldest run first.
   private _runs = new Map<string, ImportRun>();
-  private _settledWaiters = new Set<() => void>();
   private _now: Clock;
 
   constructor({ now = () => new Date() }: { now?: Clock } = {}) {
@@ -55,8 +49,6 @@ export class ImportRunStore {
   }
 
   create(id: string, total: number, sourceColumns: string[] = []): ImportRun {
-    this.evict();
-
     const run: ImportRun = {
       id,
       status: 'running',
@@ -96,49 +88,5 @@ export class ImportRunStore {
 
   release(id: string): void {
     this._runs.delete(id);
-    this.resolveSettledWaiters();
-  }
-
-  allSettled(): Promise<void> {
-    if (this._runs.size === 0) {
-      return Promise.resolve();
-    }
-
-    return new Promise((resolve) => {
-      this._settledWaiters.add(resolve);
-    });
-  }
-
-  private resolveSettledWaiters(): void {
-    if (this._runs.size > 0) {
-      return;
-    }
-
-    for (const resolve of this._settledWaiters) {
-      resolve();
-    }
-    this._settledWaiters.clear();
-  }
-
-  // A running run is never evicted, whatever its age: the job holds only the runId,
-  // so evicting mid-import would silently turn its record()/finish() calls into
-  // no-ops and lose the report. The count cap can briefly overshoot while several
-  // imports run at once; the jobs backend bounds how many that can be.
-  private evict(): void {
-    const cutoff = this._now().getTime() - MAX_RUN_AGE_MS;
-    for (const [id, run] of this._runs) {
-      const lastTouched = (run.finishedAt ?? run.startedAt).getTime();
-      if (run.status !== 'running' && lastTouched < cutoff) {
-        this._runs.delete(id);
-      }
-    }
-
-    while (this._runs.size >= MAX_RUNS) {
-      const oldestEvictable = [...this._runs.values()].find((run) => run.status !== 'running');
-      if (!oldestEvictable) {
-        break;
-      }
-      this._runs.delete(oldestEvictable.id);
-    }
   }
 }
