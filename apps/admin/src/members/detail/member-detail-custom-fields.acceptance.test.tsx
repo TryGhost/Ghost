@@ -261,6 +261,21 @@ describe('Member detail custom fields', () => {
     await expect.element(memberDetailScreen.fieldValue('+442079460000')).toBeVisible();
   });
 
+  // A letter is never valid in a phone number, so staff see the error without having to save.
+  it('shows an error while typing an invalid character in a phone number', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    fakeMemberDetailWorld(m, {}, [...FIELDS, MOBILE]);
+    await renderAdminApp(`/members/${m.id}`);
+    const mistyped = 'Enter the phone number using only digits, spaces and symbols like + - ( ).';
+
+    await memberDetailScreen.editFieldButton('Mobile').click();
+    await modal().getByLabelText('Mobile').fill('+44 20 7946 000o');
+    await expect.element(modal().getByText(mistyped)).toBeVisible();
+
+    await modal().getByLabelText('Mobile').fill('+44 (20) 7946-0000');
+    await expect.element(modal().getByText(mistyped)).not.toBeInTheDocument();
+  });
+
   // As Portal and Stripe Checkout ask for one: written as it is dialled at home, beside the
   // country it is from.
   it("puts the picked country's code in front of a number written as at home", async () => {

@@ -21,8 +21,9 @@ npm install @tryghost/metafield-types
 - `@tryghost/metafield-types/phone`: each country's calling code, and what a phone input
   needs to sit beside a choice of country: the country a number is from, telling apart the
   countries that share a code, such as the US and Canada, the number with the chosen country's
-  code in front, and the country of the reader's language. It depends on nothing, so a browser
-  app can draw a phone input without the rules.
+  code in front, the country of the reader's language, and whether the input contains
+  only valid phone number characters. It depends on nothing, so a browser app can draw a phone
+  input without the rules.
 - `@tryghost/metafield-types/identity`: how a field is named everywhere: its
   namespace, its key, the parts of a record value, and the identity they make
   together (`custom.shipping_address.country`). Each is a type that only its
