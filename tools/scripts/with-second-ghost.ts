@@ -49,7 +49,7 @@ async function main() {
     }
   }
 
-  console.log(`Running two Ghosts, on ports ${backendPort} and ${second}`);
+  console.log('Running two Ghosts.');
   const child = spawn(command, args, { stdio: 'inherit', env });
   for (const signal of ['SIGINT', 'SIGTERM'] as const) {
     process.on(signal, () => child.kill(signal));
