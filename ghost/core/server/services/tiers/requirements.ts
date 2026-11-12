@@ -14,6 +14,7 @@ import {
 } from '@tryghost/checkout';
 import { toDatabaseDate, type DatabaseDate } from '../../lib/db-types/date';
 import { DbJson } from '../../lib/db-types/json';
+import { ensureTransaction } from '../../lib/ensure-transaction';
 
 const REQUIREMENTS_TABLE = 'tier_requirements';
 const REQUIREMENT_TIERS_TABLE = 'tier_requirement_tiers';
@@ -160,43 +161,44 @@ export class TierRequirements {
 
   /**
    * Sets a requirement to cover these paid tiers, or every paid tier for null, with its own
-   * settings, in place of whatever it was set to before.
+   * settings, in place of whatever it was set to before. Given a transaction as `executor` it
+   * joins that transaction; given a plain connection it opens its own.
    */
-  async require(
-    requirement: SetRequirement,
-    now: Date,
-    { transacting }: { transacting: Knex.Transaction },
-  ): Promise<void> {
+  async require(requirement: SetRequirement, now: Date, executor: Knex = this.knex): Promise<void> {
     const { name, tierIds } = requirement;
     const tierScope = tierScopeOf(tierIds);
     const countries = storedCountries(requirement);
     const at = toDatabaseDate(now);
-    await transacting(REQUIREMENTS_TABLE)
-      .insert({
-        requirement: name,
-        tier_scope: tierScope,
-        countries,
-        created_at: at,
-        updated_at: at,
-      })
-      .onConflict('requirement')
-      .merge({ tier_scope: tierScope, countries, updated_at: at });
+    await ensureTransaction(executor, async (trx) => {
+      await trx(REQUIREMENTS_TABLE)
+        .insert({
+          requirement: name,
+          tier_scope: tierScope,
+          countries,
+          created_at: at,
+          updated_at: at,
+        })
+        .onConflict('requirement')
+        .merge({ tier_scope: tierScope, countries, updated_at: at });
 
-    await transacting(REQUIREMENT_TIERS_TABLE).where('requirement', name).del();
-    if (tierIds?.length) {
-      await transacting(REQUIREMENT_TIERS_TABLE).insert(
-        tierIds.map((productId) => ({ requirement: name, product_id: productId })),
-      );
-    }
+      await trx(REQUIREMENT_TIERS_TABLE).where('requirement', name).del();
+      if (tierIds?.length) {
+        await trx(REQUIREMENT_TIERS_TABLE).insert(
+          tierIds.map((productId) => ({ requirement: name, product_id: productId })),
+        );
+      }
+    });
   }
 
-  /** Stops requiring this on any tier. */
-  async release(
-    requirement: RequirementName,
-    { transacting }: { transacting: Knex.Transaction },
-  ): Promise<void> {
-    await transacting(REQUIREMENT_TIERS_TABLE).where('requirement', requirement).del();
-    await transacting(REQUIREMENTS_TABLE).where('requirement', requirement).del();
+  /**
+   * Stops requiring this on any tier. Given a transaction as `executor` it joins that
+   * transaction; given a plain connection it opens its own.
+   */
+  async release(requirement: RequirementName, executor: Knex = this.knex): Promise<void> {
+    await ensureTransaction(executor, async (trx) => {
+      await trx(REQUIREMENT_TIERS_TABLE).where('requirement', requirement).del();
+      await trx(REQUIREMENTS_TABLE).where('requirement', requirement).del();
+    });
   }
 
   /**

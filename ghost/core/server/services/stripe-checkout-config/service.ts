@@ -448,7 +448,7 @@ export class StripeCheckoutConfigService {
     now: Date,
   ): Promise<void> {
     if (targets) {
-      await this.requirements().require(targets.requirement, now, { transacting: trx });
+      await this.requirements().require(targets.requirement, now, trx);
       for (const { port, customFieldKey } of targets.destinations) {
         await this.bindings.bind(
           port,
@@ -458,7 +458,7 @@ export class StripeCheckoutConfigService {
         );
       }
     } else {
-      await this.requirements().release(SECTION_NAMES[section], { transacting: trx });
+      await this.requirements().release(SECTION_NAMES[section], trx);
       for (const { port } of destinationsOf(section)) {
         await this.bindings.remove(port, trx);
       }
