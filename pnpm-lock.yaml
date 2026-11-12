@@ -2618,8 +2618,8 @@ importers:
         specifier: 2.3.21
         version: 2.3.21
       '@tryghost/express-test':
-        specifier: 2.3.22
-        version: 2.3.22(express@4.22.3(supports-color@10.2.2))
+        specifier: 2.3.23
+        version: 2.3.23(express@4.22.3(supports-color@10.2.2))
       '@tryghost/webhook-mock-receiver':
         specifier: 2.3.21
         version: 2.3.21(nock@14.0.17)
@@ -8926,8 +8926,8 @@ packages:
   '@tryghost/errors@3.4.7':
     resolution: {integrity: sha512-z8s9WXE/aun0arvza/Sl7MpZItxFOgaoDqSdEgiJW+rWidqEELmBp4+K0x6ZB7Gw9/7uGl/TQi0vGeB2Ub2jgg==}
 
-  '@tryghost/express-test@2.3.22':
-    resolution: {integrity: sha512-PLt52eQOzGKCG5BKpvF9TLMzCdoWs5pHIVBSzXhT/sNv87PrU3rHASTVIGIZbvboCkND/5Ou3hfcAiomid/otg==}
+  '@tryghost/express-test@2.3.23':
+    resolution: {integrity: sha512-KNbCv6FqTz6ct8MC75FKP0eRadWvmOFW3x9nxGc6+GCt6h0CaqscqkEja6Mm58gCv2ZMpHU3mspNd2aReiJoMw==}
     engines: {node: ^22.12.0 || >=24.0.0}
     peerDependencies:
       express: 4.22.3
@@ -8944,8 +8944,8 @@ packages:
   '@tryghost/http-stream@2.3.23':
     resolution: {integrity: sha512-hc9cPJsAseTB6H4QGYCXIKDOPlgcA8QuhNAYidix2yzzlpnWT6cxqWrSJelnOsGjXlDXSxz9qf1SkdGj3MOlpQ==}
 
-  '@tryghost/jest-snapshot@2.3.22':
-    resolution: {integrity: sha512-0hjGmoRgxLK3ehc4dEVieV68MBEVTJoABiT5Cgxo+ZstYigkf5M/Gj8d9//G/GqonYvhMa93Evo6OWJoaPiUew==}
+  '@tryghost/jest-snapshot@2.3.23':
+    resolution: {integrity: sha512-TwYedmsnaKnIfdw+cvd236iWglqz4TO7tpWgRAS0L624esZMjHK8hx+biRnvoHJD2YcGK63TOkm4JvVj6gT1Iw==}
     engines: {node: ^22.12.0 || >=24.0.0}
 
   '@tryghost/logging@6.0.4':
@@ -21166,9 +21166,9 @@ snapshots:
 
   '@tryghost/errors@3.4.7': {}
 
-  '@tryghost/express-test@2.3.22(express@4.22.3(supports-color@10.2.2))':
+  '@tryghost/express-test@2.3.23(express@4.22.3(supports-color@10.2.2))':
     dependencies:
-      '@tryghost/jest-snapshot': 2.3.22
+      '@tryghost/jest-snapshot': 2.3.23
       cookiejar: 2.1.4
       express: 4.22.3(supports-color@10.2.2)
       form-data: 4.0.6
@@ -21194,7 +21194,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/jest-snapshot@2.3.22':
+  '@tryghost/jest-snapshot@2.3.23':
     dependencies:
       '@tryghost/errors': 3.4.7
       '@vitest/expect': 4.1.12

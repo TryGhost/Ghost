@@ -50,11 +50,8 @@ const controller = {
         },
       },
     },
+    // The output serializer streams the response and sets its own disposition
     headers: {
-      disposition: {
-        type: 'file',
-        value: () => exporter.fileName(),
-      },
       cacheInvalidate: false,
     },
     permissions: true,

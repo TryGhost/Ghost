@@ -65,9 +65,7 @@ describe('Backup Integration', function () {
           .expectStatus(200)
           .matchHeaderSnapshot({
             'content-version': anyContentVersion,
-            'content-length': anyContentLength,
             'content-disposition': stringMatching(/^Attachment; filename="[A-Za-z0-9._-]+\.json"$/),
-            etag: anyEtag,
           })
           .expect(cacheInvalidateHeaderNotSet())
           .expect(({ body }) => {
