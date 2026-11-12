@@ -1,3 +1,4 @@
+import type { Frame } from '@tryghost/api-framework';
 import debugFactory from '@tryghost/debug';
 import tpl from '@tryghost/tpl';
 import errors from '@tryghost/errors';
@@ -9,7 +10,7 @@ const messages = {
 };
 
 module.exports = {
-  updateSetup(apiConfig: unknown, frame: { options: { context?: { user?: unknown } } }) {
+  updateSetup(apiConfig: unknown, frame: Frame) {
     debug('resetPassword');
 
     if (!frame.options.context || !frame.options.context.user) {
