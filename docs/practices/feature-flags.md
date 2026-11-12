@@ -160,6 +160,15 @@ Settings, the editor, the automation editor, mobile and pages without a
 navigation inside the same sidebar, pinned without changing the stored mode. Mobile keeps the sidebar sheet, and the flag-off path
 preserves the docked sidebar and the separate Settings sidebar.
 
+With `admin7Design` on, horizontal rules separate the sidebar's navigation
+groups; Content, Audience and Apps keep their headings when apps are enabled.
+Ghost(Pro) and Settings follow the last group in the scrolling navigation.
+The active banner stays above the bottom account avatar, with flat upgrade and
+What's New banners. The account trigger shows only the avatar, private-site
+status sits below the publication name, and the sidebar omits the member count
+already shown in the top bar. The Posts create action appears on sidebar hover
+or keyboard focus and stays visible on touch devices.
+
 The `admin7Design` milestone also sets column headers in a small uppercase label
 style. Section headings on member details, tag details and Settings share one
 style, and member stats and list text follow the prototype. Settings sidebar
