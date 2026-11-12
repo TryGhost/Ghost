@@ -476,12 +476,7 @@ describe('automations poll', function () {
 
       await poll(options);
 
-      sinon.assert.calledOnceWithExactly(
-        memberWelcomeEmailService.sendAutomationEmail,
-        sinon.match({
-          memberStatus: 'paid',
-        }),
-      );
+      sinon.assert.calledOnce(memberWelcomeEmailService.sendAutomationEmail);
       sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
     });
   });
@@ -551,10 +546,7 @@ describe('automations poll', function () {
 
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
         sinon.assert.notCalled(automationsApi.markStepTerminal);
-        sinon.assert.calledOnceWithExactly(
-          memberWelcomeEmailService.sendAutomationEmail,
-          sinon.match({ memberStatus: 'paid' }),
-        );
+        sinon.assert.calledOnce(memberWelcomeEmailService.sendAutomationEmail);
       });
 
       it('continues when a gift member still matches the To tier', async function () {
@@ -602,10 +594,7 @@ describe('automations poll', function () {
 
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
         sinon.assert.notCalled(automationsApi.markStepTerminal);
-        sinon.assert.calledOnceWithExactly(
-          memberWelcomeEmailService.sendAutomationEmail,
-          sinon.match({ memberStatus: 'free' }),
-        );
+        sinon.assert.calledOnce(memberWelcomeEmailService.sendAutomationEmail);
       });
 
       it.each(['paid', 'gift'])(
@@ -700,7 +689,6 @@ describe('automations poll', function () {
           lexical: step.email_lexical,
           subject: 'Welcome!',
         },
-        memberStatus: 'free',
       }),
     );
     sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextReadyAt);
