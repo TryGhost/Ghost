@@ -46,6 +46,8 @@ export interface CustomFieldPickerProps {
    * with, narrowed with `creatableTypesAmong`. Omit, or leave empty, to hide the create action.
    */
   createTypes?: CreatableMemberCustomFieldTypes;
+  /** The name a field created from this picker starts with, when nothing was searched for. */
+  suggestedName?: string;
 }
 
 /**
@@ -68,6 +70,7 @@ export function CustomFieldPicker({
   invalid,
   onChange,
   createTypes,
+  suggestedName,
 }: CustomFieldPickerProps) {
   const [open, setOpen] = useState(false);
   // What the create popover hangs from.
@@ -203,10 +206,10 @@ export function CustomFieldPicker({
                       forceMount
                       onSelect={() => {
                         // The create popover takes over from the list, keeping what was
-                        // searched for.
+                        // searched for, or starting from the suggested name when nothing was.
                         setCreateSession((session) => ({
                           id: session.id + 1,
-                          initialName: search.trim(),
+                          initialName: search.trim() || suggestedName || '',
                         }));
                         // The last form's refusal was about a name that has gone with it.
                         resetCreate();
