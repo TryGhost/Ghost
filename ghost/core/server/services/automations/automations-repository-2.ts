@@ -93,6 +93,10 @@ export type AutomationsRepository2<Connection> = {
           memberTierIds: string[];
           previousMemberTierIds: string[];
         }
+      | {
+          eventName: 'label_added';
+          labelId: string;
+        }
     >,
   ) => Promisable<NextActionRevisionRow[]>;
 
