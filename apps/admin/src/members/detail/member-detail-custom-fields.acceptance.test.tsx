@@ -305,7 +305,7 @@ describe('Member detail custom fields', () => {
     await modal().getByLabelText('Mobile').fill('020 7946 000');
     await modal().getByRole('button', { name: 'Save', exact: true }).click();
     await expect
-      .element(modal().getByText('Enter a valid phone number, like +44 20 7946 0000.'))
+      .element(modal().getByText('Enter a valid phone number, like +44 7400 123456.'))
       .toBeVisible();
     expect(editApi.requests).toHaveLength(0);
 

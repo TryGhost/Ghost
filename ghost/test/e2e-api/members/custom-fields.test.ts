@@ -328,6 +328,23 @@ describe('Member Custom Fields Members API', function () {
     assert.equal((await readMemberAsStaff()).metafields?.custom?.[key], undefined);
   });
 
+  // Portal sends a number with the calling code of the country picked beside it, so the server's
+  // error is the only place a member learns what that country's numbers look like.
+  it('rejects a phone number too short for its country with an example from that country', async function () {
+    const key = await defineField('Mobile', { type: 'phone' });
+
+    const { body } = await membersAgent
+      .put('/api/member/')
+      .body({ metafields: { custom: { [key]: '+55 11 9612' } } })
+      .expectStatus(422);
+
+    assert.equal(body.errors[0].property, `metafields.custom.${key}`);
+    assert.equal(
+      body.errors[0].message,
+      'This phone number is too short. Enter one like +55 11 96123 4567.',
+    );
+  });
+
   describe('webhooks', function () {
     const url = 'https://test-webhook-receiver.com/member-edited/';
     // The mock receiver is untyped; this is the shape these tests use.
