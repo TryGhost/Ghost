@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const { assertExists, assertObjectMatches } = require('../../../utils/assertions');
+const { assertExists } = require('../../../utils/assertions');
 const { BrowserService } = require('../../../../core/frontend/src/ghost-stats/browser-service.js');
 
 // ghost-stats.js auto-runs init() at module load. Outside a browser there's no
@@ -35,8 +35,21 @@ describe('ghost-stats.js', function () {
   };
 
   const assertIsObject = (value) => {
-    assert.equal(typeof value, 'object');
-    assert.notEqual(value, null);
+    assert.equal(Object.prototype.toString.call(value), '[object Object]');
+  };
+
+  // Every expected property is strictly equal on the actual object
+  const assertIncludes = (actual, expected) => {
+    for (const [key, value] of Object.entries(expected)) {
+      assert.equal(actual[key], value, `Property mismatch for key "${key}"`);
+    }
+  };
+
+  // As assertIncludes, but each property is compared deeply
+  const assertDeepIncludes = (actual, expected) => {
+    for (const [key, value] of Object.entries(expected)) {
+      assert.deepEqual(actual[key], value, `Property mismatch for key "${key}"`);
+    }
   };
 
   const assertHasAllKeys = (obj, keys) => {
@@ -66,7 +79,7 @@ describe('ghost-stats.js', function () {
 
     Object.entries(expectedFields).forEach(([key, value]) => {
       if (typeof value === 'object' && value !== null) {
-        assertObjectMatches(innerPayload[key], value);
+        assertDeepIncludes(innerPayload[key], value);
       } else {
         assert.equal(innerPayload[key], value);
       }
@@ -338,7 +351,7 @@ describe('ghost-stats.js', function () {
       assertHasAllKeys(payload.parsedReferrer, ['url', 'source', 'medium']);
 
       // Verify UTM fields are present at top level
-      assertObjectMatches(payload, {
+      assertIncludes(payload, {
         utm_source: 'test-source',
         utm_medium: 'test-medium',
         utm_campaign: 'test-campaign',
@@ -383,7 +396,7 @@ describe('ghost-stats.js', function () {
       // Validate payload structure and content
       assert.equal(payload.action, 'custom_event');
       assert.match(payload.timestamp, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
-      assertObjectMatches(innerPayload, testEventData);
+      assertIncludes(innerPayload, testEventData);
       assert.equal(innerPayload.site_uuid, 'test-site-uuid');
 
       // Custom events should not include page-specific data
@@ -421,7 +434,7 @@ describe('ghost-stats.js', function () {
       });
 
       // Verify UTM tracking fields are present
-      assertObjectMatches(innerPayload, {
+      assertIncludes(innerPayload, {
         utm_source: 'test-source',
         utm_medium: 'test-medium',
         utm_campaign: 'test-campaign',
@@ -662,13 +675,13 @@ describe('ghost-stats.js', function () {
       const innerPayload = getLastPayload();
 
       // Verify referrer data is properly structured
-      assertObjectMatches(innerPayload.parsedReferrer, {
+      assertDeepIncludes(innerPayload.parsedReferrer, {
         source: 'ghost-newsletter',
         medium: 'social',
       });
 
       // Verify UTM data is at top level
-      assertObjectMatches(innerPayload, {
+      assertIncludes(innerPayload, {
         utm_source: 'twitter',
         utm_medium: 'social',
         utm_campaign: 'test-campaign',
@@ -692,7 +705,7 @@ describe('ghost-stats.js', function () {
       assert.equal(innerPayload.parsedReferrer.url, 'https://example.com/internal-page');
 
       // UTM fields should still be present and null
-      assertObjectMatches(innerPayload, {
+      assertIncludes(innerPayload, {
         utm_source: null,
         utm_medium: null,
         utm_campaign: null,
@@ -717,7 +730,7 @@ describe('ghost-stats.js', function () {
       assertHasAllKeys(innerPayload.parsedReferrer, ['url', 'source', 'medium']);
 
       // UTM fields should be present and null
-      assertObjectMatches(innerPayload, {
+      assertIncludes(innerPayload, {
         utm_source: null,
         utm_medium: null,
         utm_campaign: null,
