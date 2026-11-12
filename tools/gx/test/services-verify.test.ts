@@ -556,6 +556,27 @@ test('the boot check fails when tests survive the mutation and restores boot.js'
   assert.equal(await readFile(join(f.root, 'ghost/core/boot.js'), 'utf8'), boot);
 });
 
+test('the boot check says how to write the call when it cannot find one', async (t) => {
+  const f = await fixture(t);
+  // The inline form runs, but the check cannot follow it to mutate it.
+  await f.write(
+    'ghost/core/boot.js',
+    `async function initServices() {
+  await require('./server/services/staff').default.init();
+}
+`,
+  );
+  f.commit('inline');
+  const check = f.verify('staff', false).at(-1);
+  assert.equal(check?.name, 'boot-waits-for-init');
+  assert.equal(check?.status, 'fail');
+  assert.match(check?.details.join('\n') ?? '', /No init call for staff found in boot\.js/);
+  assert.match(
+    check?.details.join('\n') ?? '',
+    /const example = require\('\.\/server\/services\/staff'\)\.default;\n\s+await example\.init\(\);/,
+  );
+});
+
 test('a failing tool reports its failure and the end of its output', async (t) => {
   const f = await fixture(t);
   await f.write('marker.ts', '');

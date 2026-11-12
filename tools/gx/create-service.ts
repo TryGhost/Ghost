@@ -110,6 +110,40 @@ describe('${className} root', function () {
   };
 }
 
+// The boot call an author adds. `gx services verify` finds a root's init() through
+// this binding, so the printed steps, the guides and that check use one form.
+export function bootLines(name: string) {
+  const [first, ...rest] = name.split('-');
+  // A one-word name can be a reserved word, such as "new", so it gets a suffix.
+  const binding = rest.length
+    ? first + rest.map((part) => part[0]!.toUpperCase() + part.slice(1)).join('')
+    : `${first}Service`;
+  return [
+    `const ${binding} = require('./server/services/${name}').default;`,
+    `await ${binding}.init();`,
+  ];
+}
+
+export function nextSteps(name: string) {
+  return `Next steps:
+  1. Implement the capability and inject its application dependencies in index.ts.
+  2. In ghost/core/boot.js, bind the root and await its init() in the right phase,
+     after its dependencies are ready and before its consumers run:
+${bootLines(name)
+  .map((line) => `       ${line}`)
+  .join('\n')}
+     Document that order above defineService.
+  3. Add the root to that phase's test in ghost/test/unit/boot/: hold init() pending
+     and assert boot waits, then assert that its rejection fails boot.
+  4. Add startup failure cleanup and shutdown wiring if the service owns resources.
+  5. Extend the root test. If the root declares extras, catalogue them in
+     ${legacyInventoryFile}.
+  6. Run pnpm nx run ghost:test:unit test/unit/server/services/${name}/index.test.ts,
+     pnpm nx run ghost:test:unit test/unit/boot/ and pnpm check.
+  7. Commit, then run pnpm gx services verify ${name}.
+`;
+}
+
 function formatSource(rootDir: string, file: string, source: string) {
   return execFileSync(
     process.execPath,
@@ -193,16 +227,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 Lint, boundary lint and the inventory test already check it: a service needs
 no inventory entry or lint registration.
 
-Next steps:
-  1. Implement the capability and inject its application dependencies in index.ts.
-  2. Add await require('./server/services/${name}').default.init() in ghost/core/boot.js,
-     after its dependencies are ready and before its consumers run. Document that order.
-  3. Add startup failure cleanup and shutdown wiring if the service owns resources.
-  4. Extend the root test. If the root declares extras, catalogue them in
-     ${legacyInventoryFile}.
-  5. Run pnpm nx run ghost:test:unit test/unit/server/services/${name}/index.test.ts
-     and pnpm check.
-
+${nextSteps(name)}
 See ghost/core/server/services/README.md for the service contract.\n`);
     }
   } catch (error) {

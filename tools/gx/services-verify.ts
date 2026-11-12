@@ -262,6 +262,9 @@ export function specialistProblems({
   });
 }
 
+// Finds a root's init() through its binding in boot.js, the one form the generator
+// and the guides give: `const x = require('./server/services/<name>').default;`
+// followed by `x.init()`. An inline `require(...).default.init()` is not found.
 export function mutateBootInit(boot: string, service: string) {
   const folder = service.replace(/\.[a-z]+$/, '');
   const required = new RegExp(
@@ -496,7 +499,12 @@ export function verifyService({
     const original = readFileSync(absolute, 'utf8');
     const mutated = mutateBootInit(original, service);
     if (!mutated) {
-      record('boot-waits-for-init', 'fail', [`No init call for ${service} found in boot.js.`]);
+      record('boot-waits-for-init', 'fail', [
+        `No init call for ${service} found in boot.js.`,
+        `Bind the root, then await init() on the binding:`,
+        `  const example = require('./server/services/${service}').default;`,
+        `  await example.init();`,
+      ]);
     } else {
       try {
         writeFileSync(absolute, mutated.source);

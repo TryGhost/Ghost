@@ -82,21 +82,43 @@ Complete the steps printed by the command:
 
 1. Implement the capability and wire only its required dependencies in the root.
    Preserve live settings reads and explain any deferred dependency lookups.
-2. Add and await `require('./server/services/delivery-receipts').default.init()`
-   in `ghost/core/boot.js`, after its dependencies are ready and before its
-   consumers run. Document those requirements above `defineService`. Consumers
-   read `.service` after initialization.
-3. Await required startup work before returning the instance. If the service
+2. In `ghost/core/boot.js`, bind the root and await its `init()`, as the roots
+   around it do:
+
+   ```js
+   const deliveryReceipts = require('./server/services/delivery-receipts').default;
+   await deliveryReceipts.init();
+   ```
+
+   Most roots belong in `initServices`. `initCore` and `initServicesForFrontend`
+   run earlier, for roots that later phases or the frontend read. Place the call
+   after its dependencies are ready and before its consumers run, on its own or
+   inside the phase's awaited `Promise.all`. Document those requirements above
+   `defineService`. Consumers read `.service` after initialization. Keep this
+   form: `gx services verify` finds the call through the binding, not through
+   an inline `require(...).default.init()`.
+
+3. Add the root to that phase's test in `ghost/test/unit/boot/`. Hold `init()`
+   pending and assert boot does not move on, then assert that its rejection
+   fails boot.
+4. Await required startup work before returning the instance. If the service
    owns listeners, timers or work to drain, acquire and release them in
    [`start` and `stop` hooks](#starting-and-stopping).
-4. Extend the starter test with behavior, dependency timing, and failure/retry
+5. Extend the starter test with behavior, dependency timing, and failure/retry
    coverage. If the root declares extras, [catalogue them](#standard-root-contract).
-5. Run the generated root test and the repository checks:
+6. Run the generated root test, the boot tests and the repository checks:
 
    ```sh
    pnpm nx run ghost:test:unit test/unit/server/services/delivery-receipts/index.test.ts
+   pnpm nx run ghost:test:unit test/unit/boot/
    pnpm check
    ```
+
+7. Commit, then run `pnpm gx services verify delivery-receipts`. It needs a
+   clean tree on a branch that contains the fetched `origin/main`. It repeats
+   the checks and confirms a boot test fails when boot stops waiting for the
+   root's `init()`. See the
+   [gx guide](../../../../tools/gx/README.md#service-migration-reports).
 
 The generator rejects invalid names and existing service or test paths. See the
 [gx guide](../../../../tools/gx/README.md#service-generator) for command details and
