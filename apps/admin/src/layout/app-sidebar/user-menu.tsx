@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   useSidebar,
 } from '@tryghost/shade/components';
-import { LucideIcon } from '@tryghost/shade/utils';
+import { cn, LucideIcon } from '@tryghost/shade/utils';
 import { useCurrentUser } from '@tryghost/admin-x-framework/api/current-user';
 import { isContributorUser } from '@tryghost/admin-x-framework/api/users';
 import { useDeleteSession } from '@tryghost/admin-x-framework/api/session';
@@ -186,7 +186,10 @@ function UserMenu(props: UserMenuProps) {
       <DropdownMenuTrigger asChild>
         <SidebarMenuButton
           aria-label="User menu"
-          className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          className={cn(
+            'data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground',
+            admin7Design && 'size-11 justify-center overflow-visible rounded-full p-1.5',
+          )}
           size="lg"
         >
           <div className="relative">
@@ -202,18 +205,28 @@ function UserMenu(props: UserMenuProps) {
               </span>
             )}
           </div>
-          <div className="grid flex-1 text-left text-base leading-tight">
-            <span className="truncate font-semibold">{currentUser.data?.name}</span>
-            <span className="-mt-px truncate text-sm text-muted-foreground dark:text-gray-800">
-              {currentUser.data?.email}
-            </span>
-          </div>
-          <LucideIcon.ChevronsUpDown className="ml-auto size-4 text-gray-700" />
+          {!admin7Design && (
+            <>
+              <div className="grid flex-1 text-left text-base leading-tight">
+                <span className="truncate font-semibold">{currentUser.data?.name}</span>
+                <span className="-mt-px truncate text-sm text-muted-foreground dark:text-gray-800">
+                  {currentUser.data?.email}
+                </span>
+              </div>
+              <LucideIcon.ChevronsUpDown className="ml-auto size-4 text-gray-700" />
+            </>
+          )}
         </SidebarMenuButton>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
-        className={`w-[var(--radix-dropdown-menu-trigger-width)] dark:bg-surface-elevated-2 ${showUpgradeBanner ? 'shadow-[0_18px_80px_0_rgba(0,0,0,0.07),0_7.52px_33.422px_0_rgba(0,0,0,0.05),0_4.021px_17.869px_0_rgba(0,0,0,0.04),0_2.254px_10.017px_0_rgba(0,0,0,0.04),0_1.197px_5.32px_0_rgba(0,0,0,0.03),0_0.498px_2.214px_0_rgba(0,0,0,0.02)]' : ''}`}
+        className={cn(
+          admin7Design
+            ? 'w-64 max-w-[calc(100vw-2rem)]'
+            : 'w-[var(--radix-dropdown-menu-trigger-width)] dark:bg-surface-elevated-2',
+          showUpgradeBanner &&
+            'shadow-[0_18px_80px_0_rgba(0,0,0,0.07),0_7.52px_33.422px_0_rgba(0,0,0,0.05),0_4.021px_17.869px_0_rgba(0,0,0,0.04),0_2.254px_10.017px_0_rgba(0,0,0,0.04),0_1.197px_5.32px_0_rgba(0,0,0,0.03),0_0.498px_2.214px_0_rgba(0,0,0,0.02)]',
+        )}
         sideOffset={10}
       >
         <UserMenuHeader email={currentUser.data?.email} name={currentUser.data?.name}>
