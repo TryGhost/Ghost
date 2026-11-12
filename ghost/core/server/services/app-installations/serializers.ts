@@ -25,7 +25,19 @@ const AppInstallationsResponse = z.object({
   app_installations: z.array(AppInstallationResource),
 });
 const AppSessionsResponse = z.object({
-  app_sessions: z.tuple([z.object({ installation: AppInstallationResource })]),
+  app_sessions: z.tuple([
+    z.object({
+      installation: AppInstallationResource,
+      tokens: z
+        .object({
+          access_token: z.string(),
+          id_token: z.string(),
+          expires_at: z.number(),
+          id_token_expires_at: z.number(),
+        })
+        .optional(),
+    }),
+  ]),
 });
 
 export const toAppInstallationsResponse = z

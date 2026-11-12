@@ -45,7 +45,9 @@ import {
   appPathRoute,
   isAppLocation,
 } from './lib/app-path';
+import { type AppTokens, createAppTokens } from './lib/app-tokens';
 import { createAdminApiFetch } from './lib/bridge-fetch';
+import { BridgeError, sessionEnded } from './lib/bridge-error';
 import { placeRoute } from './lib/bridge-places';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostHost } from './lib/frame';
 import { isInstallationNotFound, sessionFailureOf, type SessionFailure } from './lib/not-found';
@@ -208,6 +210,7 @@ const AppFrame: React.FC<{
 }> = ({ session, site, user, timezone, accentColor, onEnded }) => {
   const { installation } = session;
   useSessionEnd(session, onEnded);
+  const tokens = useAppTokens(session, onEnded);
   const navigate = useNavigate();
   const location = useLocation();
   const { ghostVersion } = useFramework();
@@ -260,7 +263,14 @@ const AppFrame: React.FC<{
     createAppFrameSession({
       surfaceOrigin,
       context: () => contextRef.current,
-      fetchAdminApi: createAdminApiFetch({ apiRoot: new URL(apiUrl('/')), ghostVersion }),
+      fetchAdminApi: createAdminApiFetch({
+        apiRoot: new URL(apiUrl('/')),
+        ghostVersion,
+        accessToken: tokens?.accessToken,
+      }),
+      idToken: tokens
+        ? tokens.idToken
+        : () => Promise.reject(new BridgeError('rejected', 'This site doesn’t issue ID tokens')),
       navigate: (next, { replace, move: appMove }) =>
         navigateForApp(appPathRoute(id, next, entryPath), { replace, state: { appMove } }),
       // Wherever the app opens, Admin records the way back to it. The app can't set this.
@@ -483,6 +493,33 @@ const NotInstalled: React.FC = () => (
     </EmptyIndicator>
   </Centered>
 );
+
+/**
+ * The staff user's tokens for this app session, or none from a Ghost that doesn't issue them.
+ * Renewing starts a new app session on the server. If the installation has changed since this
+ * session started, this session ends instead: a renewed token never keeps an old page going.
+ */
+function useAppTokens(session: AppSession, onEnded: () => void): AppTokens | undefined {
+  const { mutateAsync: start } = useStartAppSession();
+  const onEndedRef = useRef(onEnded);
+  onEndedRef.current = onEnded;
+  const [tokens] = useState(() => {
+    const { installation } = session;
+    if (!session.tokens) {
+      return undefined;
+    }
+    return createAppTokens(session.tokens, async () => {
+      const renewed = (await start(installation.id)).app_sessions[0];
+      if (!renewed?.tokens || renewed.installation.revision !== installation.revision) {
+        // Unwired: the token just issued is left to expire rather than revoked
+        onEndedRef.current();
+        throw sessionEnded();
+      }
+      return renewed.tokens;
+    });
+  });
+  return tokens;
+}
 
 /**
  * Starts a session of the app when the page opens, and again on `restart`. Ghost first re-checks

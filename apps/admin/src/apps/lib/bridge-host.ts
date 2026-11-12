@@ -50,6 +50,8 @@ export interface BindAppFrameOptions {
   /** Read when a page connects, so the app starts with Admin's context at that moment. */
   context: () => StartContext;
   fetchAdminApi: AdminApiFetch;
+  /** The staff user's ID token for the app, renewed when it's close to expiry. */
+  idToken: () => Promise<string>;
   handlers: AppFrameHandlers;
 }
 
@@ -114,6 +116,7 @@ export function bindAppFrame({
   surfaceOrigin,
   context,
   fetchAdminApi,
+  idToken,
   handlers,
 }: BindAppFrameOptions): AppFrameHost {
   let disposed = false;
@@ -180,6 +183,7 @@ export function bindAppFrame({
           throw new BridgeError('rejected', 'The publisher is on their way elsewhere in Admin');
         }
       }),
+      idToken: guarded(() => idToken()),
     });
   };
 

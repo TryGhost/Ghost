@@ -2,8 +2,11 @@
 // Ghost brings its own Knex adapter and knex-migrator
 import { betterAuth } from 'better-auth/minimal';
 import { createAuthMiddleware, isAPIError } from 'better-auth/api';
+import { jwt } from 'better-auth/plugins/jwt';
+import { oauthProvider } from '@better-auth/oauth-provider';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
+import { ghostAppTokens } from './app-tokens';
 import { CLIENT_IP_HEADER } from './client-ip';
 import { createKnexAdapter } from './knex-adapter';
 import { rateLimitStorage, type Limiters } from './rate-limit';
@@ -167,6 +170,22 @@ export function createAuth(deps: CreateAuthDeps) {
       '/sign-in/social',
       // Writes `user_accounts`, which legacy sign-in doesn't read until Phase 2
       '/change-password',
+      // The jwt plugin's session JWTs, which Ghost doesn't use
+      '/token',
+    ],
+    // Unwired: the models these add need Ghost table mappings and in-development tables
+    plugins: [
+      // Signs apps' ID tokens, with a key pair separate from the members one
+      jwt({ disableSettingJwtHeader: true }),
+      oauthProvider({
+        loginPage: `${urlUtils.getSubdir()}/ghost/#/signin`,
+        consentPage: `${urlUtils.getSubdir()}/ghost/#/signin`,
+        // Unwired: plus the app scopes, once Ghost has a scope vocabulary
+        scopes: ['openid'],
+        // How long an app's backend may trust an ID token as "this user is using the app now"
+        idTokenExpiresIn: 300,
+      }),
+      ghostAppTokens(),
     ],
     hooks: {
       after: createAuthMiddleware(async (ctx) => {

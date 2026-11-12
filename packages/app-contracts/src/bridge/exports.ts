@@ -37,6 +37,12 @@ export interface HostExports {
   pathChanged(path: string, move: PathMove): Promise<string>;
   /** Sends the publisher to a named place in Admin. */
   open(place: Place): Promise<void>;
+  /**
+   * Resolves with an ID token for the staff user, signed by Ghost and valid for a few minutes.
+   * The app sends it to its own backend, which verifies it to learn the site and the user. The
+   * page never gets the access token Admin calls the Admin API with.
+   */
+  idToken(): Promise<string>;
 }
 
 /** What an app's page exposes to Admin, through the SDK. */

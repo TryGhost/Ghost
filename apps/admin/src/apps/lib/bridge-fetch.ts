@@ -19,10 +19,13 @@ export type AdminApiFetch = (request: FetchRequest, signal: AbortSignal) => Prom
 export function createAdminApiFetch({
   apiRoot,
   ghostVersion,
+  accessToken,
 }: {
   /** The Admin API's root URL, as Admin's own requests use it. */
   apiRoot: URL;
   ghostVersion?: string;
+  /** The app's access token for the staff user. Without one, the request uses the staff session. */
+  accessToken?: () => Promise<string>;
 }): AdminApiFetch {
   return async (request, signal) => {
     const method = request.method ?? 'GET';
@@ -48,17 +51,27 @@ export function createAdminApiFetch({
         ? sessionEnded()
         : new BridgeError('network_error', `${what}: ${String(error)}`);
 
+    // The app's token is limited to its scopes. The staff session isn't, so it's never sent with it.
+    // Unwired: Ghost refuses the token until resolvePrincipal maps app tokens to an app principal
+    const auth: RequestInit = accessToken
+      ? { headers: { authorization: `Bearer ${await accessToken()}` }, credentials: 'omit' }
+      : { credentials: 'include' };
+
     let response: Response;
     try {
       // eslint-disable-next-line no-restricted-syntax -- a raw request, returned to the app as is
       response = await fetch(url, {
         method,
-        headers: { ...ghostApiRequestHeaders({ ghostVersion, body: request.body }), ...appHeaders },
+        headers: {
+          ...ghostApiRequestHeaders({ ghostVersion, body: request.body }),
+          ...appHeaders,
+          // After the app's headers, which can't include `authorization` anyway
+          ...auth.headers,
+        },
         body: request.body,
-        // The request carries the staff user's own session. That stands in for the app-scoped token
-        // that comes with Permissions and auth, and the allowlist above goes away along with it.
-        // Until then, the allowlist is what keeps the rest of the session's reach from the app.
-        credentials: 'include',
+        // Without a token, the request carries the staff user's own session, and the allowlist above
+        // is what keeps the rest of the session's reach from the app.
+        credentials: auth.credentials,
         // A redirect could lead off the API, where the app's path would no longer show where the
         // request went, so no redirect is followed. Most Admin API redirects are for a path missing
         // its trailing `/`, which the app can fix.
