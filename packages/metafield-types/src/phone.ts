@@ -929,6 +929,27 @@ export function withCallingCode(text: string, country: PhoneCountry | undefined)
   return `+${CALLING_CODES[country]} ${typed}`;
 }
 
+/**
+ * Every character libphonenumber-js accepts in a phone number, in every script it supports:
+ * digits, +, spaces, and the dashes, dots, slashes, brackets and tildes used to group a number.
+ * Copied from the library's own lists. The package's tests check that adding any character
+ * outside this set to a valid number makes the server reject the number too.
+ */
+const PHONE_CHARACTERS =
+  /^[0-9\uFF10-\uFF19\u0660-\u0669\u06F0-\u06F9+\uFF0B\-\u2010-\u2015\u2212\u30FC\uFF0D/\uFF0F.\uFF0E \u00A0\u00AD\u200B\u2060\u3000()\uFF08\uFF09[\]\uFF3B\uFF3D~\u2053\u223C\uFF5E]*$/;
+
+/**
+ * Whether `text` contains only characters that are valid in a phone number, so a phone input can
+ * flag an invalid character, such as a letter, while typing and without loading
+ * libphonenumber-js. It doesn't check that the text is a valid number: the server does that.
+ * Surrounding whitespace is ignored, as the server trims it. The one input this flags that the
+ * server accepts is an RFC 3966 `tel:` URI, such as `tel:2079460000;phone-context=+44`, which
+ * libphonenumber-js can read a number from.
+ */
+export function hasOnlyPhoneCharacters(text: string): boolean {
+  return PHONE_CHARACTERS.test(text.trim());
+}
+
 /** What a phone input holds while someone edits it: what they typed, and the country picked. */
 export interface PhoneEntry {
   readonly typed: string;

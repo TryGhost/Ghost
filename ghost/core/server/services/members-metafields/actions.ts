@@ -1,4 +1,5 @@
 import logging from '@tryghost/logging';
+import type { Knex } from 'knex';
 import { z } from 'zod';
 import type { MemberAccess } from './access';
 import type { SingleWriteOrigin } from './schema';
@@ -61,7 +62,10 @@ export function adminWriteOrigin(context: unknown): SingleWriteOrigin | null {
 }
 
 export interface ActionRecorder {
-  add(data: Record<string, unknown>, options: { autoRefresh: boolean }): Promise<unknown>;
+  add(
+    data: Record<string, unknown>,
+    options: { transacting: Knex.Transaction; autoRefresh: boolean },
+  ): Promise<unknown>;
 }
 
 // Field-definition changes map to activity-feed events. A field's timeline reads
@@ -101,22 +105,33 @@ export type MetafieldActionDetails =
   | { action_name: 'reordered'; count: number };
 
 // `subject` is the field's row id, or null for an act that belongs to no single field.
-export type RecordMetafieldAction = (input: {
-  context: RequestContext;
-  verb: MetafieldVerb;
-  subject: string | null;
-  details: MetafieldActionDetails;
-}) => Promise<void>;
+export type RecordMetafieldAction = (
+  transacting: Knex.Transaction,
+  input: {
+    context: RequestContext;
+    verb: MetafieldVerb;
+    subject: string | null;
+    details: MetafieldActionDetails;
+  },
+) => Promise<void>;
 
-// Best-effort action-log write: a failed action must never fail the command that triggered it.
+/**
+ * Writes the staff history entry for a custom field command, inside the command's transaction.
+ *
+ * The entry is part of the change: it is saved when the change is saved and never without it.
+ * A failure to write the entry is logged and then thrown, so it fails the command and the
+ * change is rolled back with it. Nothing is written for a request that has no actor.
+ */
 export async function recordMetafieldAction({
   Action,
+  transacting,
   context,
   verb,
   subject,
   details,
 }: {
   Action: ActionRecorder;
+  transacting: Knex.Transaction;
   context: RequestContext;
   verb: MetafieldVerb;
   subject: string | null;
@@ -138,7 +153,7 @@ export async function recordMetafieldAction({
         actor_id: context.actor.id,
         context: details,
       },
-      { autoRefresh: false },
+      { transacting, autoRefresh: false },
     );
   } catch (err) {
     logging.error(
@@ -152,5 +167,6 @@ export async function recordMetafieldAction({
       },
       'Failed to record a member metafield action',
     );
+    throw err;
   }
 }

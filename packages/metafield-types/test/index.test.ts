@@ -24,6 +24,7 @@ import {
   type FieldTypeOfShape,
   type TypedSettings,
 } from '../src/index.ts';
+import { CALLING_CODES } from '../src/phone.ts';
 import { TEXT_FORMATS, text } from '../src/structure.ts';
 import { FIELDS_IN_DEVELOPMENT } from './fixtures/fields.ts';
 
@@ -242,19 +243,76 @@ describe('metafield-types catalog', function () {
       assert.equal(rule.safeParse('020 7946 0000').error?.issues[0]?.message, countryCode);
     });
 
+    const refusal = (written: string) => rule.safeParse(written).error?.issues[0]?.message;
+
+    // The example comes from the country of the number's code, not always the UK.
     it('is refused when the country it names has no number like it', function () {
-      const invalid = 'Enter a valid phone number, like +44 20 7946 0000.';
-      assert.equal(rule.safeParse('+44 20 7946 000').error?.issues[0]?.message, invalid);
-      assert.equal(rule.safeParse('+999 1234567').error?.issues[0]?.message, invalid);
+      assert.equal(refusal('+44 20 7946 000'), 'Enter a valid phone number, like +44 7400 123456.');
       // The right length for France, in a range France hasn't given out.
-      assert.equal(rule.safeParse('+33 7 01 23 45 67').error?.issues[0]?.message, invalid);
+      assert.equal(
+        refusal('+33 7 01 23 45 67'),
+        'Enter a valid phone number, like +33 6 12 34 56 78.',
+      );
+    });
+
+    it('is rejected as too short or too long for its country', function () {
+      const brazil = '+55 11 96123 4567';
+      assert.equal(
+        refusal('+55 11 9612'),
+        `This phone number is too short. Enter one like ${brazil}.`,
+      );
+      assert.equal(
+        refusal('+55 11 96123 45678 99'),
+        `This phone number is too long. Enter one like ${brazil}.`,
+      );
+      // With nothing after the country code.
+      assert.equal(
+        refusal('+675 7'),
+        'This phone number is too short. Enter one like +675 7012 3456.',
+      );
+      // After the 00 most countries dial abroad with, as after a +.
+      assert.equal(
+        refusal('0055 11 9612'),
+        `This phone number is too short. Enter one like ${brazil}.`,
+      );
+    });
+
+    // Only a valid number's digits distinguish the countries sharing a code.
+    it("gets an example from the code's main country when several share the code", function () {
+      assert.equal(
+        refusal('+1 416 555'),
+        'This phone number is too short. Enter one like +1 201 555 0123.',
+      );
+    });
+
+    it('is rejected with a country code that does not exist', function () {
+      const unknownCode = 'Enter a phone number with a valid country code, like +44 20 7946 0000.';
+      assert.equal(refusal('+999 1234567'), unknownCode);
+    });
+
+    // +870 is for satellite phones and belongs to no country, but the field accepts its numbers.
+    it('gets a length error for a number on a code that belongs to no country', function () {
+      assert.equal(rule.parse('+870 773 111 632'), '+870773111632');
+      assert.equal(
+        refusal('+870 773 111'),
+        'This phone number is too short. Enter one like +44 20 7946 0000.',
+      );
     });
 
     // Not told to add the country code it already has.
     it('is refused with anything else around it, which would be lost', function () {
-      const invalid = 'Enter a valid phone number, like +44 20 7946 0000.';
-      assert.equal(rule.safeParse('+44 20 7946 0000 (home)').error?.issues[0]?.message, invalid);
-      assert.equal(rule.safeParse('Mobile: +44 20 7946 0000').error?.issues[0]?.message, invalid);
+      const invalid = 'Enter a valid phone number, like +44 7400 123456.';
+      assert.equal(refusal('+44 20 7946 0000 (home)'), invalid);
+      assert.equal(refusal('Mobile: +44 20 7946 0000'), invalid);
+      assert.equal(refusal('+44 20 7946 000o'), invalid);
+    });
+
+    // An example only helps if the field would accept a number like it.
+    it('gets an example the field would accept, whatever its country', function () {
+      for (const callingCode of new Set(Object.values(CALLING_CODES))) {
+        const shown = / like (\+[\d ]+)\.$/.exec(refusal(`+${callingCode}`) ?? '')?.[1];
+        assert.equal(rule.safeParse(shown).success, true, `+${callingCode}: ${shown}`);
+      }
     });
 
     // For a number that comes with a country rather than a code, as a wallet's can at checkout.

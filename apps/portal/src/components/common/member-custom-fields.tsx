@@ -17,6 +17,7 @@ import {
 import type { ShapeText } from '@tryghost/metafield-types/shapes';
 import {
   CALLING_CODES,
+  hasOnlyPhoneCharacters,
   holdNumber,
   phoneCountryOptions,
   pickCountry,
@@ -178,20 +179,23 @@ interface FieldProps<S extends FieldShape> {
 }
 
 /**
- * Why the site refused what a field's inputs hold, under the inputs. Beside the label, where Portal
- * puts a short reason such as a missing name, a reason long enough to say how to put it right has
- * no room.
+ * A field's error messages, shown under its inputs. Portal puts short errors such as a missing
+ * name beside the label, but there is no room there for a message long enough to say how to fix
+ * the input. The wrapper is a polite live region that stays mounted while the field is shown, so
+ * a screen reader announces an error that appears while focus is in the input, such as one shown
+ * while typing.
  */
 function FieldErrors({ id, messages }: { id: string; messages: string[] }) {
-  if (messages.length === 0) {
-    return null;
-  }
   return (
-    <ul className="gh-portal-custom-field-errors" id={id}>
-      {messages.map((message) => (
-        <li key={message}>{message}</li>
-      ))}
-    </ul>
+    <div aria-live="polite">
+      {messages.length > 0 && (
+        <ul className="gh-portal-custom-field-errors" id={id}>
+          {messages.map((message) => (
+            <li key={message}>{message}</li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
@@ -308,10 +312,19 @@ function LeafInputs({
 function ScalarField({ field, value, errors, onChange, onKeyDown }: FieldProps<'scalar'>) {
   const name = `custom:${field.key}`;
   const held = scalarValue(value);
-  const error = errors[name];
+  const input = leafInput(FIELD_STRUCTURES[field.type].leaf, held || undefined);
+  // A phone number is validated while typing only for invalid characters, such as a letter, which
+  // needs no knowledge of any country's numbers. Whether the number itself is valid is left to
+  // the server. An error about the current input takes precedence over the server's error about
+  // the last value sent.
+  const mistyped =
+    input.type === 'phone' && !hasOnlyPhoneCharacters(held)
+      ? t('Enter the phone number using only digits, spaces and symbols like + - ( ).')
+      : undefined;
+  const error = mistyped ?? errors[name];
   const errorsId = `custom-${field.key}-errors`;
   const leaf: DrawnLeaf = {
-    ...leafInput(FIELD_STRUCTURES[field.type].leaf, held || undefined),
+    ...input,
     value: held,
     label: field.name,
     name,
