@@ -26,8 +26,7 @@ export type CreateAuthDeps = {
   /** `config.get('admin:sessionMaxAgeMs')` */
   sessionMaxAgeMs: number;
   urlUtils: {
-    getAdminUrl(): string | undefined;
-    getSiteUrl(): string;
+    getAdminOrigin(): string;
     getSubdir(): string;
     isSSL(url: string): boolean;
   };
@@ -109,7 +108,7 @@ export function createAuth(deps: CreateAuthDeps) {
   const { urlUtils } = deps;
   // Origin only: Better Auth ignores basePath when baseURL has a path, so the
   // subdirectory goes in basePath, matching where Ghost mounts the request
-  const adminOrigin = new URL(urlUtils.getAdminUrl() || urlUtils.getSiteUrl()).origin;
+  const adminOrigin = urlUtils.getAdminOrigin();
   // The cookie lives on the admin origin, so its security follows the admin URL
   const ssl = urlUtils.isSSL(adminOrigin);
 

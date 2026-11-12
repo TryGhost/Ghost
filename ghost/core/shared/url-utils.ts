@@ -2,7 +2,15 @@ import UrlUtils from '@tryghost/url-utils';
 import config from './config';
 
 const BASE_API_PATH = '/ghost/api';
-const urlUtils = new UrlUtils({
+
+export class GhostUrlUtils extends UrlUtils {
+  /** The admin URL's origin, or the site URL's when there is no separate admin URL. */
+  getAdminOrigin(): string {
+    return new URL(this.getAdminUrl() || this.getSiteUrl()).origin;
+  }
+}
+
+const urlUtils = new GhostUrlUtils({
   getSubdir: config.getSubdir,
   getSiteUrl: config.getSiteUrl,
   getAdminUrl: config.getAdminUrl as () => string,

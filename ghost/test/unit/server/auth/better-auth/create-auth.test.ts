@@ -25,8 +25,7 @@ function deps({
     secret: 'a'.repeat(64),
     sessionMaxAgeMs: SESSION_MAX_AGE_MS,
     urlUtils: {
-      getAdminUrl: () => adminUrl,
-      getSiteUrl: () => siteUrl,
+      getAdminOrigin: () => new URL(adminUrl ?? siteUrl).origin,
       getSubdir: () => subdir,
       isSSL: (url) => url.startsWith('https://'),
     },
