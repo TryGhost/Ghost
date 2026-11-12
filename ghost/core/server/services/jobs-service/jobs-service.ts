@@ -114,7 +114,7 @@ export class JobsService {
       });
     }
     this.#declareQueue(type, options);
-    if (JobClass.replayAfterRestart === false) {
+    if (JobClass.replayAfterRestart !== true) {
       this.#notReplayed.add(type);
     }
     this.#registry.set(type, (payload) => handler(new JobClass(JSON.parse(payload))));
