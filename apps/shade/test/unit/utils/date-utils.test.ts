@@ -226,10 +226,10 @@ describe('date utils', function () {
 
     // Ranges are day counts, today included: Last 90 days is 90, Last 12 months 365
     it('switches to weeks at 90 days and months at 365', function () {
-      assert.equal(formatDisplayDateWithRange('2025-04-14', 89), '14 Apr 2025');
-      assert.equal(formatDisplayDateWithRange('2025-04-14', 90), 'Week of 14 Apr 2025');
-      assert.equal(formatDisplayDateWithRange('2025-04-14', 364), 'Week of 14 Apr 2025');
-      assert.equal(formatDisplayDateWithRange('2025-04-14', 365), 'Apr 2025');
+      expect(formatDisplayDateWithRange('2025-04-14', 89)).toBe('14 Apr 2025');
+      expect(formatDisplayDateWithRange('2025-04-14', 90)).toBe('Week of 14 Apr 2025');
+      expect(formatDisplayDateWithRange('2025-04-14', 364)).toBe('Week of 14 Apr 2025');
+      expect(formatDisplayDateWithRange('2025-04-14', 365)).toBe('Apr 2025');
     });
 
     it('formats a plain date for shorter ranges', function () {
