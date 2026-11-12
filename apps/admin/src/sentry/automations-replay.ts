@@ -33,11 +33,13 @@ export function createAutomationsReplay(
   let initialCheckDone = false;
   let recordingStarted = false;
 
+  // `document.body` can be null when something outside Admin has removed it, and Admin must
+  // not crash on a replay mask
   const updateMask = () => {
     if (isAutomationsPath(currentPathname)) {
-      document.body.setAttribute(AUTOMATIONS_MASK_ATTRIBUTE, 'true');
+      document.body?.setAttribute(AUTOMATIONS_MASK_ATTRIBUTE, 'true');
     } else {
-      document.body.removeAttribute(AUTOMATIONS_MASK_ATTRIBUTE);
+      document.body?.removeAttribute(AUTOMATIONS_MASK_ATTRIBUTE);
     }
   };
 
@@ -81,7 +83,7 @@ export function createAutomationsReplay(
     },
     dispose() {
       clearTimeout(initialCheck);
-      document.body.removeAttribute(AUTOMATIONS_MASK_ATTRIBUTE);
+      document.body?.removeAttribute(AUTOMATIONS_MASK_ATTRIBUTE);
     },
   };
 }

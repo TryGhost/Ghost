@@ -129,4 +129,18 @@ describe('createAutomationsReplay', () => {
     expect(document.body.hasAttribute(MASK)).toBe(false);
     expect(replay.stop).not.toHaveBeenCalled();
   });
+
+  it('does not throw when document.body is gone', () => {
+    automationsReplay = createAutomationsReplay(fakeReplay(), true, '/automations');
+    const body = document.body;
+    body.remove();
+
+    try {
+      expect(() => automationsReplay?.update('/posts')).not.toThrow();
+      expect(() => automationsReplay?.update('/automations')).not.toThrow();
+      expect(() => automationsReplay?.dispose()).not.toThrow();
+    } finally {
+      document.documentElement.append(body);
+    }
+  });
 });
