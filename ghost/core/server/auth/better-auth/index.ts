@@ -33,6 +33,13 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
       userLogin: spamPrevention.userLogin,
       userReset: spamPrevention.userReset,
     },
+    // The legacy reset email and token, until the reset flow moves (plan Phase 2)
+    async sendPasswordResetEmail(email) {
+      const passwordreset = require('../passwordreset');
+      const api = require('../../api').endpoints;
+      const token = await passwordreset.generateToken(email, api.settings);
+      await passwordreset.sendResetNotification(token, api.mail);
+    },
   });
   // betterAuth() defers its setup to this promise; awaiting it fails boot, not the first request
   await auth.$context;
