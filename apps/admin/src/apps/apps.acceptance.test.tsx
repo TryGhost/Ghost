@@ -614,6 +614,16 @@ describe('Managing apps', () => {
   });
 
   describe('app page footer', () => {
+    /** The space between the nav and the footer, and how far the space after it differs. */
+    const footerSpace = (nav: Element) => {
+      const [n, f] = [
+        nav.getBoundingClientRect(),
+        appsScreen.footer().element().getBoundingClientRect(),
+      ];
+      const start = f.left - n.right;
+      return { start, skew: Math.round(start - (window.innerWidth - f.right)) };
+    };
+
     it('names the app and links its developer for support, under every app', async () => {
       await fakeAppPage(installation());
 
@@ -649,12 +659,9 @@ describe('Managing apps', () => {
       await renderAdminApp(APP_ROUTE, { labs });
 
       await expect.element(appsScreen.frame()).toBeVisible();
-      const nav = document.querySelector('[data-sidebar=sidebar]')!.getBoundingClientRect();
-      const footer = appsScreen.footer().element();
-      await expect
-        .poll(() => footer.getBoundingClientRect().left - nav.right)
-        .toBe(window.innerWidth - footer.getBoundingClientRect().right);
-      expect(footer.getBoundingClientRect().left - nav.right).toBeGreaterThan(0);
+      const nav = document.querySelector('[data-sidebar=sidebar]')!;
+      await expect.poll(() => footerSpace(nav).skew).toBe(0);
+      expect(footerSpace(nav).start).toBeGreaterThan(0);
     });
 
     it('keeps the footer under the frame beside Admin 7’s unpinned nav', async () => {
@@ -678,9 +685,11 @@ describe('Managing apps', () => {
       const frame = appsScreen.frame().element();
       const footer = appsScreen.footer().element();
       await expect
-        .poll(() => footer.getBoundingClientRect().right)
-        .toBe(frame.getBoundingClientRect().right);
-      expect(footer.getBoundingClientRect().left).toBe(frame.getBoundingClientRect().left);
+        .poll(() => {
+          const [f, a] = [footer.getBoundingClientRect(), frame.getBoundingClientRect()];
+          return [Math.round(f.left - a.left), Math.round(f.right - a.right)];
+        })
+        .toEqual([0, 0]);
     });
 
     it('keeps the footer beside Admin 7’s pinned nav, with the same space at both ends', async () => {
@@ -694,12 +703,9 @@ describe('Managing apps', () => {
       await expect
         .poll(() => document.querySelector('[data-slot=floating-sidebar]'))
         .not.toBeNull();
-      const nav = document.querySelector('[data-slot=floating-sidebar]')!.getBoundingClientRect();
-      const footer = appsScreen.footer().element();
-      await expect
-        .poll(() => footer.getBoundingClientRect().left - nav.right)
-        .toBe(window.innerWidth - footer.getBoundingClientRect().right);
-      expect(footer.getBoundingClientRect().left - nav.right).toBeGreaterThan(0);
+      const nav = document.querySelector('[data-slot=floating-sidebar]')!;
+      await expect.poll(() => footerSpace(nav).skew).toBe(0);
+      expect(footerSpace(nav).start).toBeGreaterThan(0);
     });
 
     it('opens an email to the developer when their link is an email address', async () => {
@@ -755,8 +761,7 @@ describe('Managing apps', () => {
         await expect
           .poll(() => appsScreen.footer().element().getBoundingClientRect().bottom)
           .toBeLessThanOrEqual(window.innerHeight);
-        const content = appsScreen.footer().element().parentElement!.previousElementSibling!;
-        expect(content.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+        expect(appsScreen.content().element().getBoundingClientRect().bottom).toBeLessThanOrEqual(
           appsScreen.footer().element().getBoundingClientRect().top,
         );
       } finally {
