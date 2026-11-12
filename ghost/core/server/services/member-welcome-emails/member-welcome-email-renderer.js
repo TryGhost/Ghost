@@ -129,6 +129,62 @@ class MemberWelcomeEmailRenderer {
     automationActionRevisionId = null,
     automationRunStepId = null,
   }) {
+    const definitions = this.#buildReplacementDefinitions({ member, siteSettings });
+    return this.#render({
+      lexical,
+      subject,
+      designSettings,
+      siteSettings,
+      unsubscribeUrl,
+      tokenIds: definitions.map((definition) => definition.id),
+      replaceText: (text, escapeHtml) => this.#applyReplacements({ definitions, text, escapeHtml }),
+      replaceLink: (url, originalPath) =>
+        this.#getMemberLink(url, originalPath, {
+          member,
+          trackClicks,
+          automationActionRevisionId,
+          automationRunStepId,
+        }),
+    });
+  }
+
+  async #getMemberLink(
+    url,
+    originalPath,
+    { member, trackClicks, automationActionRevisionId, automationRunStepId },
+  ) {
+    const isDocumentAnchor = originalPath.startsWith('#') && !originalPath.startsWith('#/');
+    if (isDocumentAnchor) {
+      return originalPath;
+    }
+    const isTrackable = ['http:', 'https:'].includes(url.protocol);
+    if (
+      trackClicks &&
+      automationActionRevisionId &&
+      automationRunStepId &&
+      member.uuid &&
+      isTrackable
+    ) {
+      return this.#linkTracking.addAutomationTrackingToUrl(
+        url,
+        automationActionRevisionId,
+        automationRunStepId,
+        member.uuid,
+      );
+    }
+    return url;
+  }
+
+  async #render({
+    lexical,
+    subject,
+    designSettings,
+    siteSettings,
+    unsubscribeUrl,
+    tokenIds,
+    replaceText,
+    replaceLink,
+  }) {
     designSettings = designSettings || {};
 
     const design = emailDesign.getEmailDesign({
@@ -158,52 +214,20 @@ class MemberWelcomeEmailRenderer {
       });
     }
 
-    const definitions = this.#buildReplacementDefinitions({ member, siteSettings });
-
     // Remove <code> wrappers around replacement strings (Lexical treats curly braces as inline code)
-    const tokenIds = definitions.map((d) => d.id).join('|');
     content = content.replace(
-      new RegExp(`<code>(\\{(?:${tokenIds})(?:\\s*,?\\s*"[^"]*")?\\})<\\/code>`, 'g'),
+      new RegExp(`<code>(\\{(?:${tokenIds.join('|')})(?:\\s*,?\\s*"[^"]*")?\\})<\\/code>`, 'g'),
       '$1',
     );
 
-    const contentWithReplacements = this.#applyReplacements({
-      definitions,
-      text: content,
-      escapeHtml: true,
-    });
-    const subjectWithReplacements = this.#applyReplacements({
-      definitions,
-      text: subject,
-      escapeHtml: false,
-    });
+    const contentWithReplacements = replaceText(content, true);
+    const subjectWithReplacements = replaceText(subject, false);
 
     // Resolve relative links, including Ghost Portal routes such as #/portal/signup,
     // while preserving document-local anchors such as #section.
     const contentWithAbsoluteLinks = await linkReplacer.replace(
       contentWithReplacements,
-      async (url, originalPath) => {
-        const isDocumentAnchor = originalPath.startsWith('#') && !originalPath.startsWith('#/');
-        if (isDocumentAnchor) {
-          return originalPath;
-        }
-        const isTrackable = ['http:', 'https:'].includes(url.protocol);
-        if (
-          trackClicks &&
-          automationActionRevisionId &&
-          automationRunStepId &&
-          member.uuid &&
-          isTrackable
-        ) {
-          return await this.#linkTracking.addAutomationTrackingToUrl(
-            url,
-            automationActionRevisionId,
-            automationRunStepId,
-            member.uuid,
-          );
-        }
-        return url;
-      },
+      replaceLink,
       { base: siteSettings.url },
     );
 
