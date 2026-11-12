@@ -184,6 +184,8 @@ export const useGrowthStats = (range: number) => {
   const dateFrom = formatQueryDate(startDate);
   const openingBalanceDate = formatQueryDate(startDate.clone().subtract(1, 'day'));
   const todayEnd = range === 1 ? formatQueryDate(startDate.clone().add(1, 'day')) : undefined;
+  const todayStart = todayEnd ? startDate.clone().utc() : undefined;
+  const needsExactOpening = todayStart && !todayStart.isSame(todayStart.clone().startOf('day'));
 
   // Member history starts at date_from and each row contains closing balances.
   const { data: memberCountResponse, isLoading: isMemberCountLoading } = useMemberCountHistory({
@@ -195,7 +197,7 @@ export const useGrowthStats = (range: number) => {
   const { data: mrrHistoryResponse, isLoading: isMrrLoading } = useMrrHistory({
     searchParams: {
       date_from: dateFrom,
-      ...(todayEnd ? { start_at: startDate.clone().utc().format('YYYY-MM-DDTHH:mm:ss[Z]') } : {}),
+      ...(todayStart ? { start_at: todayStart.format('YYYY-MM-DDTHH:mm:ss[Z]') } : {}),
     },
   });
 
@@ -237,6 +239,7 @@ export const useGrowthStats = (range: number) => {
     mrrData: dailyMrrData,
     todayMrrData: exactTodayMrrData,
     openingMrr: dailyOpeningMrr,
+    currentMrr,
     selectedCurrency,
   } = useMemo(() => {
     const dateFromMoment = moment(dateFrom);
@@ -287,6 +290,7 @@ export const useGrowthStats = (range: number) => {
           ],
           todayMrrData,
           openingMrr: openingPoint.mrr,
+          currentMrr: currentMax.mrr,
           selectedCurrency: useCurrency,
         };
       }
@@ -325,36 +329,56 @@ export const useGrowthStats = (range: number) => {
         mrrData: finalResult,
         todayMrrData,
         openingMrr: openingPoint?.mrr,
+        currentMrr: currentMax.mrr,
         selectedCurrency: useCurrency,
       };
     }
     return { mrrData: [], selectedCurrency: 'usd' };
   }, [mrrHistoryResponse, dateFrom, range, todayEnd]);
   const mrrData = exactTodayMrrData ?? dailyMrrData;
-  const openingMrr = exactTodayMrrData?.[0].mrr ?? dailyOpeningMrr;
+  // Older Core only provides a UTC-day opening balance.
+  const mrrWithoutLocalOpening = needsExactOpening && !exactTodayMrrData ? currentMrr : undefined;
+  const openingMrr =
+    exactTodayMrrData?.[0].mrr ?? (needsExactOpening ? undefined : dailyOpeningMrr);
 
   // Calculate totals
-  const totalsData = useMemo(
-    () =>
-      calculateTotals({
-        memberData,
-        mrrData,
-        openingMember,
-        openingMrr,
-        memberCountTotals: memberCountResponse?.meta?.totals,
-      }),
-    [memberData, mrrData, openingMember, openingMrr, memberCountResponse?.meta?.totals],
-  );
+  const totalsData = useMemo(() => {
+    const totals = calculateTotals({
+      memberData,
+      mrrData,
+      openingMember,
+      openingMrr,
+      memberCountTotals: memberCountResponse?.meta?.totals,
+    });
+    if (mrrWithoutLocalOpening === undefined) {
+      return totals;
+    }
+    return {
+      ...totals,
+      mrr: mrrWithoutLocalOpening,
+      percentChanges: { ...totals.percentChanges, mrr: '' },
+      directions: { ...totals.directions, mrr: 'hidden' as const },
+    };
+  }, [
+    memberData,
+    mrrData,
+    openingMember,
+    openingMrr,
+    memberCountResponse?.meta?.totals,
+    mrrWithoutLocalOpening,
+  ]);
 
   const chartData = useMemo(
     () => formatChartData(memberData, dailyMrrData),
     [memberData, dailyMrrData],
   );
   // UTC member rows can precede local Today. The exact MRR chart has its own two endpoints.
-  const mrrChartData = useMemo(
-    () => (exactTodayMrrData ? formatChartData([], exactTodayMrrData) : chartData),
-    [chartData, exactTodayMrrData],
-  );
+  const mrrChartData = useMemo(() => {
+    if (mrrWithoutLocalOpening !== undefined) {
+      return [];
+    }
+    return exactTodayMrrData ? formatChartData([], exactTodayMrrData) : chartData;
+  }, [chartData, exactTodayMrrData, mrrWithoutLocalOpening]);
 
   // Get currency symbol
   const currencySymbol = useMemo(() => {

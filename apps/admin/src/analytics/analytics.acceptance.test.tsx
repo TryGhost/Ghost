@@ -1,4 +1,5 @@
-import { describe, expect, it, onTestFinished } from 'vitest';
+import { describe, expect, it, onTestFinished, vi } from 'vitest';
+import moment from 'moment-timezone';
 
 import {
   TINYBIRD_SITE_UUID,
@@ -374,22 +375,40 @@ describe('Analytics growth', () => {
     await expect.element(analyticsScreen.topContentCard()).toHaveTextContent('+30');
   });
 
-  it('shows Today MRR with the history response from older Core', async () => {
+  it.each([
+    { timezone: 'UTC', showsTrend: true },
+    { timezone: 'America/New_York', showsTrend: false },
+    { timezone: 'Asia/Kolkata', showsTrend: false },
+  ])('shows current Today MRR on older Core in $timezone', async ({ timezone, showsTrend }) => {
+    const midnight = moment.tz(timezone).startOf('day');
+    const today = midnight.format('YYYY-MM-DD');
+    const yesterday = midnight.clone().subtract(1, 'day').format('YYYY-MM-DD');
+    const dateOptions = Intl.DateTimeFormat().resolvedOptions();
+    const dateTimeFormat = vi
+      .spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions')
+      .mockReturnValue({
+        ...dateOptions,
+        timeZone: timezone,
+      });
+    onTestFinished(() => {
+      dateTimeFormat.mockRestore();
+    });
+
     seedEmptyAnalyticsWorld();
     const totals = { free: 10, paid: 5, comped: 0, gift: 0 };
     fakeAdminStats.memberCount({
       stats: [
-        { ...totals, date: localDaysAgo(1) },
-        { ...totals, date: localDaysAgo(0) },
+        { ...totals, date: yesterday },
+        { ...totals, date: today },
       ],
       totals,
     });
     const mrr = fakeAdminStats.mrr({
       stats: [
-        { date: localDaysAgo(1), mrr: 10000 },
-        { date: localDaysAgo(0), mrr: 9500 },
+        { date: yesterday, mrr: 10000 },
+        { date: today, mrr: 11000 },
       ],
-      totals: [{ currency: 'usd', mrr: 9500 }],
+      totals: [{ currency: 'usd', mrr: 11000 }],
     });
     fakeAdminStats.topPosts();
     await renderAdminApp('/analytics/growth/?tab=mrr', { boot: webAnalyticsBootOverrides() });
@@ -398,9 +417,27 @@ describe('Analytics growth', () => {
     await analyticsScreen.rangeOption('Today').click();
     await expect.poll(() => mrr.lastRequest?.url).toContain('start_at=');
     const params = new URL(mrr.lastRequest!.url).searchParams;
-    expect(params.get('date_from')).toBe(localDaysAgo(0));
-    const tab = analyticsScreen.totalMembersCard().getByRole('tab', { name: /^MRR/ });
-    await expect.element(tab).toHaveTextContent('$95-5.00%');
+    expect(params.get('date_from')).toBe(today);
+    expect(params.get('start_at')).toBe(midnight.utc().format('YYYY-MM-DDTHH:mm:ss[Z]'));
+
+    const card = analyticsScreen.totalMembersCard();
+    const tab = card.getByRole('tab', { name: /^MRR/ });
+    const chart = () => card.element().querySelector('.recharts-area-curve');
+    if (showsTrend) {
+      await expect.element(tab).toHaveTextContent('$11010%');
+      await expect.poll(chart).not.toBeNull();
+    } else {
+      await expect.element(tab).toHaveTextContent(/\$110$/);
+      await expect
+        .element(card.getByRole('status'))
+        .toHaveTextContent('Update Ghost to see today’s MRR trend.');
+      expect(chart()).toBeNull();
+
+      await analyticsScreen.dateRangeSelect().first().click();
+      await analyticsScreen.rangeOption('Last 7 days').click();
+      await expect.element(tab).toHaveTextContent('$11010%');
+      await expect.poll(chart).not.toBeNull();
+    }
   });
 
   it('shows No conversions across the top content tabs when nothing converted', async () => {
