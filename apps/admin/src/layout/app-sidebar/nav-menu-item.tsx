@@ -267,7 +267,7 @@ function NavSubmenuItem({ children, className, ...props }: NavSubmenuItemProps) 
         <NavMenuItem.Link
           className={cn(
             'w-full min-w-0 pl-2 focus-visible:ring-inset',
-            admin7Design && 'font-[450]',
+            admin7Design && 'font-[425]',
             className,
           )}
           {...props}

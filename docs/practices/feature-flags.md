@@ -176,7 +176,7 @@ shares the pin control's hover intent and transition timing. Submenus retain
 their rows during collapse, immediately make them inert and hidden from
 assistive technology, and stagger their entrances like the Settings navigation.
 Reduced motion skips the submenu transitions and stagger.
-Submenu entries use variable-font weight 450. Their expansion follows the active
+Submenu entries use variable-font weight 425. Their expansion follows the active
 navigation section automatically, with only one open at a time and no manual
 arrow controls. The flag-off sidebar keeps its saved expansion preferences.
 The footer overlaps scrolling navigation with a 24px background gradient; matching
