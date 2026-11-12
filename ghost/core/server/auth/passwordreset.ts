@@ -1,12 +1,13 @@
-const _ = require('lodash');
-const security = require('@tryghost/security');
-const errors = require('@tryghost/errors');
-const tpl = require('@tryghost/tpl');
-const moment = require('moment');
+import type { Knex } from 'knex';
+import _ from 'lodash';
+import security from '@tryghost/security';
+import * as errors from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
+import moment from 'moment';
+import urlUtils from '../../shared/url-utils';
 
 const models = require('../models');
 const ghostBookshelf = require('../models/base');
-const urlUtils = require('../../shared/url-utils').default;
 const mail = require('../lib/mail');
 
 const messages = {
@@ -30,10 +31,34 @@ const messages = {
   },
 };
 
-function generateToken(email, settingsAPI, transaction) {
+interface SettingsAPI {
+  read(options: Record<string, unknown>): Promise<{ settings: Array<{ value: string }> }>;
+}
+
+interface MailAPI {
+  send(payload: unknown, options: Record<string, unknown>): Promise<unknown>;
+}
+
+interface PasswordResetOptions {
+  context?: Record<string, unknown>;
+  data: {
+    password_reset: Array<{ token: string; oldPassword?: string; newPassword: string }>;
+  };
+}
+
+interface TokenParts {
+  expires: number;
+  email: string;
+}
+
+function generateToken(
+  email: string,
+  settingsAPI: SettingsAPI,
+  transaction?: Knex.Transaction,
+): Promise<{ email: string; resetToken: string }> {
   const options = { context: { internal: true }, transacting: transaction };
-  let dbHash;
-  let token;
+  let dbHash: string;
+  let token: string;
 
   return settingsAPI
     .read(_.merge({ key: 'db_hash' }, options))
@@ -42,7 +67,7 @@ function generateToken(email, settingsAPI, transaction) {
 
       return models.User.getByEmail(email, options);
     })
-    .then((user) => {
+    .then((user: { get(key: 'password'): string; isInactive(): boolean } | null) => {
       if (!user) {
         throw new errors.NotFoundError({ message: tpl(messages.userNotFound) });
       }
@@ -69,7 +94,9 @@ function generateToken(email, settingsAPI, transaction) {
     });
 }
 
-function extractTokenParts(options) {
+function extractTokenParts(
+  options: PasswordResetOptions,
+): Promise<{ options: PasswordResetOptions; tokenParts: TokenParts }> {
   options.data.password_reset[0].token = security.url.decodeBase64(
     options.data.password_reset[0].token,
   );
@@ -91,14 +118,18 @@ function extractTokenParts(options) {
   return Promise.resolve({ options, tokenParts });
 }
 
-function doReset(options, tokenParts, settingsAPI) {
+function doReset(
+  options: PasswordResetOptions,
+  tokenParts: TokenParts,
+  settingsAPI: SettingsAPI,
+): Promise<{ user: unknown }> {
   const data = options.data.password_reset[0];
   const resetToken = data.token;
   const oldPassword = data.oldPassword;
   const newPassword = data.newPassword;
 
   return ghostBookshelf
-    .transaction(async (transacting) => {
+    .transaction(async (transacting: Knex.Transaction) => {
       const txOptions = { context: options.context, transacting };
 
       const settingsResponse = await settingsAPI.read({ key: 'db_hash', ...txOptions });
@@ -154,7 +185,7 @@ function doReset(options, tokenParts, settingsAPI) {
       const savedUser = await updatedUser.save(null, txOptions);
       return { user: savedUser };
     })
-    .catch((err) => {
+    .catch((err: Error) => {
       if (errors.utils.isGhostError(err)) {
         return Promise.reject(err);
       }
@@ -162,7 +193,10 @@ function doReset(options, tokenParts, settingsAPI) {
     });
 }
 
-async function sendResetNotification(data, mailAPI) {
+async function sendResetNotification(
+  data: { email: string; resetToken: string },
+  mailAPI: MailAPI,
+) {
   const adminUrl = urlUtils.urlFor('admin', true);
   const resetToken = security.url.encodeBase64(data.resetToken);
   const resetUrl = urlUtils.urlJoin(adminUrl, 'reset', resetToken, '/');
@@ -193,7 +227,7 @@ async function sendResetNotification(data, mailAPI) {
   return mailAPI.send(payload, { context: { internal: true } });
 }
 
-module.exports = {
+export default {
   generateToken,
   extractTokenParts,
   doReset,

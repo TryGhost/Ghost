@@ -1,17 +1,26 @@
-const tpl = require('@tryghost/tpl');
-const errors = require('@tryghost/errors');
+import type { Frame } from '@tryghost/api-framework';
+import type { NextFunction, Request, Response } from 'express';
+import * as errors from '@tryghost/errors';
+import tpl from '@tryghost/tpl';
+import type { SpamPrevention } from '../../web/shared/middleware/api/spam-prevention';
+
 const models = require('../../models');
 const auth = require('../../auth');
 const api = require('./index');
-const spamPrevention = require('../../web/shared/middleware/api/spam-prevention');
+const spamPrevention: SpamPrevention = require('../../web/shared/middleware/api/spam-prevention');
 
 const messages = {
   accessDenied: 'Access Denied.',
 };
 
-/** @type {import('@tryghost/api-framework').Controller} */
+type SessionFrame = Frame<{ data: { username?: string; password?: string } }>;
+
+type SessionRequest = Request & { user?: unknown; skipVerification?: boolean };
+
+type SessionMiddleware = (req: SessionRequest, res: Response, next: NextFunction) => unknown;
+
 const controller = {
-  add(frame) {
+  add(frame: SessionFrame): Promise<SessionMiddleware> {
     const object = frame.data;
 
     if (!object || !object.username || !object.password) {
@@ -25,7 +34,7 @@ const controller = {
     let skipVerification = false;
 
     return models.User.getByEmail(object.username)
-      .then((user) => {
+      .then((user: { hasLoggedIn(): boolean } | null) => {
         if (user && !user.hasLoggedIn()) {
           skipVerification = true;
         }
@@ -35,8 +44,12 @@ const controller = {
           password: object.password,
         });
       })
-      .then((user) => {
-        return Promise.resolve(function sessionMiddleware(req, res, next) {
+      .then((user: unknown) => {
+        return Promise.resolve(function sessionMiddleware(
+          req: SessionRequest,
+          res: Response,
+          next: NextFunction,
+        ) {
           return spamPrevention
             .userLogin()
             .resetRequest(req)
@@ -48,7 +61,7 @@ const controller = {
             }, next);
         });
       })
-      .catch(async (err) => {
+      .catch(async (err: Error & { errorType?: string }) => {
         if (!errors.utils.isGhostError(err)) {
           throw new errors.UnauthorizedError({
             message: tpl(messages.accessDenied),
@@ -72,21 +85,34 @@ const controller = {
         throw err;
       });
   },
-  delete() {
-    return Promise.resolve(function logoutSessionMw(req, res, next) {
+  delete(): Promise<SessionMiddleware> {
+    return Promise.resolve(function logoutSessionMw(
+      req: Request,
+      res: Response,
+      next: NextFunction,
+    ) {
       auth.session.logout(req, res, next);
     });
   },
-  sendVerification() {
-    return Promise.resolve(function sendAuthCodeMw(req, res, next) {
+  sendVerification(): Promise<SessionMiddleware> {
+    return Promise.resolve(function sendAuthCodeMw(
+      req: Request,
+      res: Response,
+      next: NextFunction,
+    ) {
       auth.session.sendAuthCode(req, res, next);
     });
   },
-  verify() {
-    return Promise.resolve(function verifyAuthCodeMw(req, res, next) {
+  verify(): Promise<SessionMiddleware> {
+    return Promise.resolve(function verifyAuthCodeMw(
+      req: Request,
+      res: Response,
+      next: NextFunction,
+    ) {
       auth.session.verifyAuthCode(req, res, next);
     });
   },
 };
 
+// module.exports (not export): api/endpoints/index.js loads controllers via require().
 module.exports = controller;
