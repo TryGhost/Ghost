@@ -1,3 +1,6 @@
+// Lazily loaded with the Cmd-K modal: a static import from shell code would
+// put FlexSearch in Admin's main bundle.
+// eslint-disable-next-line no-restricted-imports -- see comment above
 import {
   type TextSearch,
   createSubstringSearch,
@@ -37,7 +40,7 @@ function createProvider(
   return {
     search(term) {
       return groupResults(sources, (_source, index) =>
-        searches[index].search(term, { limit: RESULT_LIMIT }),
+        searches[index].search(term, { limitPerField: RESULT_LIMIT }),
       );
     },
   };

@@ -6,7 +6,7 @@ import {
   createWordSearch,
 } from './text-search';
 
-const LIMIT = { limit: 100 };
+const LIMIT = { limitPerField: 100 };
 
 const itemsTitled = (titles: string[]): Searchable[] =>
   titles.map((title, index) => ({ id: `i${index}`, title }));
@@ -43,6 +43,28 @@ describe.each([
     const item = { id: 'a', title: 'Alpha', url: '/alpha/' };
 
     expect(create([item]).search('alpha', LIMIT)).toEqual([item]);
+  });
+
+  it('keeps at most limitPerField matches from each field', () => {
+    const searched = itemsTitled(Array.from({ length: 150 }, (_, index) => `Post ${index}`));
+
+    expect(create(searched).search('post', { limitPerField: 20 })).toHaveLength(20);
+  });
+
+  it('can return more than limitPerField when title and keywords both match', () => {
+    const searched = [
+      ...Array.from({ length: 20 }, (_, index) => ({
+        id: `t${index}`,
+        title: `shared title ${index}`,
+      })),
+      ...Array.from({ length: 20 }, (_, index) => ({
+        id: `k${index}`,
+        title: `Other ${index}`,
+        keywords: 'shared',
+      })),
+    ];
+
+    expect(create(searched).search('shared', { limitPerField: 10 })).toHaveLength(20);
   });
 });
 
@@ -86,12 +108,6 @@ describe('word search', () => {
     expect(search('cofee', searched)).toEqual([]);
     expect(search('aa', searched)).toEqual([]);
   });
-
-  it('ranks at most the limit for each field', () => {
-    const searched = itemsTitled(Array.from({ length: 150 }, (_, index) => `Post ${index}`));
-
-    expect(createWordSearch(searched).search('post', { limit: 20 })).toHaveLength(20);
-  });
 });
 
 describe('substring search', () => {
@@ -113,10 +129,18 @@ describe('substring search', () => {
     ]);
   });
 
-  it('returns every match in item order, for the caller to cap', () => {
-    const searched = itemsTitled(Array.from({ length: 150 }, (_, index) => `Post ${index}`));
+  it('merges title and keyword field caps, title first', () => {
+    const searched = [
+      { id: 't1', title: 'shared one' },
+      { id: 't2', title: 'shared two' },
+      { id: 'k1', title: 'Other', keywords: 'shared' },
+      { id: 'k2', title: 'Else', keywords: 'shared' },
+    ];
 
-    expect(search('post', searched)).toEqual(titles(searched));
+    expect(titles(createSubstringSearch(searched).search('shared', { limitPerField: 1 }))).toEqual([
+      'shared one',
+      'Other',
+    ]);
   });
 });
 
