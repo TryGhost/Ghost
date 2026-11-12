@@ -31,6 +31,28 @@ import {
   viteOnlyExtras,
 } from '@internal/cfg-eslint';
 
+// The React Compiler rules from eslint-plugin-react-hooks' `recommended`
+// preset, listed so a plugin update cannot add rules unnoticed. Existing
+// violations are recorded in each app's `eslint-suppressions.json`; see
+// "React Compiler rules" in tools/configs/eslint/README.md.
+//
+// The preset's two warn-level rules (`incompatible-library` and
+// `unsupported-syntax`) are left off: they only matter once code is compiled.
+const reactCompilerRules = {
+  'react-hooks/config': 'error',
+  'react-hooks/error-boundaries': 'error',
+  'react-hooks/gating': 'error',
+  'react-hooks/globals': 'error',
+  'react-hooks/immutability': 'error',
+  'react-hooks/preserve-manual-memoization': 'error',
+  'react-hooks/purity': 'error',
+  'react-hooks/refs': 'error',
+  'react-hooks/set-state-in-effect': 'error',
+  'react-hooks/set-state-in-render': 'error',
+  'react-hooks/static-components': 'error',
+  'react-hooks/use-memo': 'error',
+};
+
 /**
  * Options for {@link reactAppConfig}.
  *
@@ -254,6 +276,7 @@ export function reactAppConfig(options = {}) {
     // Listed rather than spread from the plugin's `recommended` preset: from
     // v6 that preset also turns on the React Compiler rules.
     'react-hooks/rules-of-hooks': 'error',
+    ...reactCompilerRules,
     // TODO: ~46 legacy violations (~24 across Vite TS apps + 22 in
     // comments-ui surfaced when react-hooks plugin was added there + 1 in
     // announcement-bar). Real bug-catcher (missing useEffect/useMemo deps);

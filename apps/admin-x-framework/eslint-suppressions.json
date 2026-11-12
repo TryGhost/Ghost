@@ -1,0 +1,27 @@
+{
+  "src/api/automations.ts": {
+    "react-hooks/immutability": {
+      "count": 1
+    }
+  },
+  "src/hooks/use-active-visitors.ts": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/hooks/use-tinybird-token.ts": {
+    "react-hooks/globals": {
+      "count": 1
+    }
+  },
+  "src/providers/navigation-stack-provider.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/providers/router-provider.tsx": {
+    "react-hooks/refs": {
+      "count": 1
+    }
+  }
+}
