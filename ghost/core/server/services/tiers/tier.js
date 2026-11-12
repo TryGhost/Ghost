@@ -190,6 +190,17 @@ module.exports = class Tier {
     return this.#updatedAt;
   }
 
+  /**
+   * What the tier's members must give, when it was read with the tier. Set by other settings,
+   * such as the checkout's, never by editing the tier.
+   *
+   * @type {import('./requirements').TierRequirement[]|undefined}
+   */
+  #requirements;
+  get requirements() {
+    return this.#requirements;
+  }
+
   toJSON() {
     return {
       id: this.#id.toHexString(),
@@ -207,6 +218,7 @@ module.exports = class Tier {
       createdAt: this.#createdAt,
       updatedAt: this.#updatedAt,
       benefits: this.#benefits,
+      requirements: this.#requirements,
     };
   }
 
@@ -229,6 +241,7 @@ module.exports = class Tier {
     this.#createdAt = data.created_at;
     this.#updatedAt = data.updated_at;
     this.#benefits = data.benefits;
+    this.#requirements = data.requirements;
   }
 
   /**
@@ -283,6 +296,7 @@ module.exports = class Tier {
       created_at: createdAt,
       updated_at: updatedAt,
       benefits,
+      requirements: data.requirements,
     });
 
     if (isNew) {

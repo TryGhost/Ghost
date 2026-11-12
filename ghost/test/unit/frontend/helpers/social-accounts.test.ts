@@ -3,9 +3,11 @@ import errors from '@tryghost/errors';
 // @ts-expect-error This module lacks type definitions.
 import handlebarsService from '../../../../core/frontend/services/handlebars';
 // @ts-expect-error This module lacks type definitions.
-import helpers from '../../../../core/frontend/services/helpers';
-// @ts-expect-error This module lacks type definitions.
 import social_accounts from '../../../../core/frontend/helpers/social_accounts';
+import {
+  freshHelperServiceForSuite,
+  restoreHandlebarsAfterSuite,
+} from '../../../utils/handlebars-state';
 
 const { handlebars } = handlebarsService.hbs;
 
@@ -33,8 +35,11 @@ function compile(templateString: string) {
 }
 
 describe('{{#social_accounts}} helper', function () {
+  restoreHandlebarsAfterSuite();
+  const helpers = freshHelperServiceForSuite();
+
   beforeAll(function () {
-    helpers.registerHelper('social_accounts', social_accounts);
+    helpers().registerHelper('social_accounts', social_accounts);
 
     defaultGlobals = {
       data: {

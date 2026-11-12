@@ -14,13 +14,15 @@ jobs:
     if: github.repository == 'TryGhost/Ghost'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-node-pnpm
         with:
-          node-version: '22.23.4'
+          node-version: '22.23.5'
       - name: Build workspace declarations
         run: pnpm nx run-many -t build:tsc
       - name: Generate inventory

@@ -3,6 +3,7 @@ import type { Knex } from 'knex';
 import { JobsService, JobsOutboxWiring } from './jobs-service';
 import { JobsOutbox } from './jobs-outbox';
 import { OutboxRelay } from './outbox-relay';
+import { OutboxTracker } from './outbox-tracker';
 import { getOutboxConfig } from './outbox-config';
 import type { JobsShutdownOptions } from '@tryghost/adapter-base-jobs';
 
@@ -37,7 +38,7 @@ export function init({ knex, config }: JobsServiceInitOptions): JobsService {
 
   let outbox: JobsOutboxWiring | undefined;
   if (active) {
-    const store = new JobsOutbox({ knex });
+    const store = new JobsOutbox({ knex, keepUntilSettled: outboxConfig.keepUntilSettled });
     const relay = new OutboxRelay({
       outbox: store,
       backend,
@@ -47,7 +48,11 @@ export function init({ knex, config }: JobsServiceInitOptions): JobsService {
       submissionTimeoutMs: outboxConfig.submissionTimeoutMs,
       retryDelayMs: outboxConfig.retryDelayMs,
     });
-    outbox = { store, relay };
+    // With rows deleted at hand-off, there is nothing left for a settlement to remove
+    const tracker = outboxConfig.keepUntilSettled
+      ? new OutboxTracker({ store, logging })
+      : undefined;
+    outbox = { store, relay, tracker };
   }
 
   instance = new JobsService({

@@ -1,8 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
+import type { AppFailureCode } from '@tryghost/app-contracts';
 import {
-  MANIFEST_MAX_BYTES,
   SIGNED_MANIFEST_MAX_BYTES,
   parseJsonText,
   signManifest,
@@ -22,7 +22,6 @@ import {
   type ReadKeysOptions,
 } from './keys.ts';
 import { UNKNOWN_GHOST_URL } from '../shared/manifest.ts';
-import { signedTooLargeMessage, storedSize, tooLargeMessage } from './limits.ts';
 import type { ManifestError, SignedManifest } from './types.ts';
 
 /** The readable manifest a project keeps, which the tooling signs. */
@@ -52,13 +51,14 @@ export type SignResult =
       success: false;
       /**
        * As Ghost would refuse it: `APP_MANIFEST_INVALID`, `APP_MANIFEST_URL_INVALID`, or
-       * `APP_MANIFEST_TOO_LARGE` for one larger than Ghost stores.
+       * `APP_MANIFEST_TOO_LARGE` for one larger than Ghost fetches.
        */
       code: 'APP_MANIFEST_INVALID' | 'APP_MANIFEST_URL_INVALID' | 'APP_MANIFEST_TOO_LARGE';
       errors: ManifestError[];
     };
 
-type Refusal = Extract<SignResult, { success: false }>;
+// Never if a code here stops being one Ghost answers with, so `refuse` stops compiling.
+type Refusal = Extract<SignResult, { success: false; code: AppFailureCode }>;
 
 const refuse = (code: Refusal['code'], message: string, path = ''): Refusal => ({
   success: false,
@@ -75,9 +75,9 @@ export async function signAppManifest(source: unknown, options: SignOptions): Pr
   // private half with another key's public half. The manifest would name a key that didn't sign
   // it, or one the backend can't answer for, and Ghost would refuse it. That's the caller's
   // mistake, so it throws.
-  readKey(JSON.stringify(options.identityKey), 'identityKey');
+  await readKey(JSON.stringify(options.identityKey), 'identityKey');
   if ('d' in options.backendKey) {
-    readKey(JSON.stringify(options.backendKey), 'backendKey');
+    await readKey(JSON.stringify(options.backendKey), 'backendKey');
   }
   // Ghost's own hosts are the one rule only a site knows, so a name no site has stands in.
   const address = parseManifestUrl(options.manifestUrl, {
@@ -121,15 +121,15 @@ export async function signAppManifest(source: unknown, options: SignOptions): Pr
     // A mismatch can't happen, as the manifest URL was just set; any failure is invalid.
     return { success: false, code: 'APP_MANIFEST_INVALID', errors: parsed.errors };
   }
-  if (storedSize(parsed.manifest) > MANIFEST_MAX_BYTES) {
-    return refuse('APP_MANIFEST_TOO_LARGE', tooLargeMessage());
-  }
 
   const signed = await signManifest(JSON.stringify(manifest), options.identityKey);
-  // Ghost limits the signed manifest it fetches too, and the payload keeps whatever the file had,
-  // such as text Ghost trims, so a manifest Ghost stores can still be too large to fetch.
+  // A valid manifest is far smaller than Ghost stores, but the payload keeps whatever the file
+  // had, such as text Ghost trims, so it can still be larger than Ghost fetches.
   if (new TextEncoder().encode(serialiseSigned(signed)).byteLength > SIGNED_MANIFEST_MAX_BYTES) {
-    return refuse('APP_MANIFEST_TOO_LARGE', signedTooLargeMessage());
+    return refuse(
+      'APP_MANIFEST_TOO_LARGE',
+      `Expected a signed manifest of at most ${Math.floor(SIGNED_MANIFEST_MAX_BYTES / 1024)} KB`,
+    );
   }
   return { success: true, signed, manifest };
 }

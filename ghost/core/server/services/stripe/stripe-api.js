@@ -191,7 +191,7 @@ module.exports = class StripeAPI {
    *   in the publisher's Stripe dashboard.
    */
   async _createCheckoutSession(params, requestOptions, checkout) {
-    const parts = checkoutSessionParts(checkout, params);
+    const parts = checkoutSessionParts(checkout);
     return this.tracking.checkoutSession(parts, (attempt) =>
       this._createWithFallback(params, requestOptions, parts, (refusal, err) => {
         logRefusal(refusal, err);
@@ -752,7 +752,7 @@ module.exports = class StripeAPI {
       return await this._createWithFallback(
         stripeSessionOptions,
         undefined,
-        checkoutSessionParts(options.checkout, stripeSessionOptions),
+        checkoutSessionParts(options.checkout),
         reportRefusal,
       );
     } catch (err) {

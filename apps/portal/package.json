@@ -40,6 +40,7 @@
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:react17",
     "@testing-library/user-event": "14.6.8",
+    "@tryghost/checkout": "workspace:*",
     "@tryghost/i18n": "workspace:*",
     "@tryghost/metafield-types": "workspace:*",
     "@types/react": "catalog:react17",
@@ -82,6 +83,7 @@
         "dependsOn": [
           {
             "projects": [
+              "@tryghost/checkout",
               "@tryghost/metafield-types"
             ],
             "target": "build"

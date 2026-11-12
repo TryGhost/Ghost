@@ -8,6 +8,7 @@ import {
   fakeAutomations,
   renderAdminApp,
   settingsResponse,
+  settleTransitions,
   unsavedChangesGuarded,
 } from '@test-utils/acceptance';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
@@ -463,6 +464,9 @@ describe('New automation', () => {
       await button('Hide automation sidebar').click();
       await expect.element(button('Save')).toBeEnabled();
       expect(create.requests).toHaveLength(0);
+      // The canvas shifts while the sidebar collapses, and a click on a moving add-step button can
+      // press it and let go beside it, which opens nothing.
+      await settleTransitions();
       await addWait();
       await button('Save').click();
       await expect.poll(() => create.requests.length).toBe(1);

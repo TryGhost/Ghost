@@ -46,6 +46,10 @@ How we write GitHub Actions workflows safely. Follow these when adding or editin
   Fork PRs get no secrets, so this bites on same-repo branches — and there it is damage control rather than a boundary, since anyone who can push a branch can also edit the workflow. What it does buy is that a compromised dependency or third-party action in that job never sees the secret.
 
 - **A secret is exposed to its whole job, not just its step.** Steps share a runner, so PR-authored code running earlier in the job — a repo script, a build, a lifecycle hook — can shadow a binary on `$GITHUB_PATH` or write `$GITHUB_ENV` and capture the secret from a later step. If a job checks out PR code, keep secrets out of it entirely and do the privileged work in a separate job with no checkout.
+- **Nx cache exception:** `NX_CLOUD_ACCESS_TOKEN` may be exposed to push runs and
+  pull requests whose head repository matches the current repository. This
+  deliberately trusts same-repository PR code with cache access; fork PRs receive
+  no token. Keep this exception limited to Nx cache credentials.
 - Prefer OIDC (`id-token: write`) over long-lived stored secrets where the provider supports it.
 
 ## Supply chain
@@ -100,17 +104,31 @@ deployments record the commit that was actually deployed.
 
 ## Documentation changes
 
-CI treats `ghost/core/server/services/service-inventory.yaml` as documentation
-for runtime checks. Inventory edits still run the required **Validate service
-inventory** job, which runs the existing metadata tests without Ghost runtime
-setup or workspace builds. The same job runs when its test or configuration changes.
+Changes confined to documentation skip the full code and E2E jobs. Mixed runtime
+changes retain their normal checks.
 
-Changes confined to inventory and documentation skip the full code and E2E jobs.
-Validator changes still run code checks, and mixed runtime changes retain their
-normal checks.
+## Legacy service inventory changes
 
-Run the focused validation locally with:
+Boot never reads `ghost/core/server/services/legacy-service-inventory.yaml`, so a
+change confined to it skips the acceptance, legacy and E2E jobs. Lint decides
+which services to check from it, so it still runs lint and the affected unit
+tests and type checks.
+
+It also runs two required jobs:
+
+- **Validate service inventory** runs the metadata tests without Ghost runtime
+  setup or workspace builds. It also runs when its test or configuration changes.
+- **Check legacy services** runs on pull requests. It fails when the branch adds
+  a legacy service, or defers dependency checks for one, compared with the
+  commit it forked from.
+
+Run both locally with:
 
 ```sh
 pnpm --filter ghost exec vitest run --config vitest.config.inventory.ts
+pnpm lint:legacy-services
 ```
+
+`pnpm lint:legacy-services` compares with `origin/main` and fails if that branch
+has not been fetched. `pnpm lint` does not run it, because a checkout does not
+always have its base branch.

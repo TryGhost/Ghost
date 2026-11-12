@@ -1,6 +1,4 @@
-// const chai = require('chai');
 const sinon = require('sinon');
-// const {expect} = chai;
 const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 
@@ -76,9 +74,7 @@ describe('InvoiceEventService', function () {
     }
 
     // Use Sinon to assert that the error is a NotFoundError with the expected message
-    // expect(error).to.be.instanceOf(errors.NotFoundError);
     assert(error instanceof errors.NotFoundError);
-    // expect(error.message).to.equal('No member found for customer cust_123');
     assert(error.message === 'No member found for customer cust_123');
   });
 

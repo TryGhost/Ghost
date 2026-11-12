@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { z } from 'zod';
+import { FIELDS_IN_DEVELOPMENT } from '@tryghost/metafield-types/test/fixtures';
 
 const {
   agentProvider,
@@ -251,6 +252,34 @@ describe('Member Custom Fields Admin API', function () {
         .body({ members_metafields: [{ name: 'Topic', type: 'not_a_type' }] })
         .expectStatus(422);
     });
+
+    // A type still in development can be created only where its Labs flag is on, whoever asks.
+    it.each(FIELDS_IN_DEVELOPMENT)(
+      'refuses a $field.type field while $flag is off',
+      async function ({ field, flag }) {
+        mockManager.mockLabsDisabled(flag);
+
+        const { body } = await agent
+          .post('members/metafields/custom/')
+          .body({ members_metafields: [{ name: 'In development', ...field }] })
+          .expectStatus(422);
+
+        assert.equal(body.errors[0].property, 'type');
+        const list = (await agent.get('members/metafields/custom/').expectStatus(200)).body;
+        assert.deepEqual(list.members_metafields, []);
+      },
+    );
+
+    it.each(FIELDS_IN_DEVELOPMENT)(
+      'creates a $field.type field once $flag is on',
+      async function ({ field, flag }) {
+        mockManager.mockLabsEnabled(flag);
+
+        const created = await createField({ name: 'In development', ...field });
+
+        assert.equal(created.type, field.type);
+      },
+    );
 
     it('rejects a create with no root key', async function () {
       // The framework rejects an empty/malformed body before the query runs,
@@ -1481,6 +1510,19 @@ describe('Member Custom Fields Admin API', function () {
       assert.deepEqual(await readValues(memberId), {});
     });
 
+    it('keeps a phone number in one international form, however it was written', async function () {
+      // E.164 whatever the separators, and a national (0) after the country code isn't part of
+      // the number, so one number is one value for filters and integrations to rely on.
+      const field = await createField({ name: 'Mobile', type: 'phone' });
+      const memberId = await createMember();
+
+      await setValues(memberId, { [field.key]: '+44 (0)20 7946-0000' });
+      assert.deepEqual(await readValues(memberId), { [field.key]: '+442079460000' });
+
+      await setValues(memberId, { [field.key]: '+1 (415) 555 0100' });
+      assert.deepEqual(await readValues(memberId), { [field.key]: '+14155550100' });
+    });
+
     it('rejects an empty string for a non-text field rather than clearing it', async function () {
       // '' is no value of any type, so it's an invalid value, and nothing is coerced.
       const field = await createField({ name: 'Home address', type: 'address' });
@@ -1528,6 +1570,50 @@ describe('Member Custom Fields Admin API', function () {
         assert.equal(await reasonFor({ [field.key]: { country: 'IRL' } }, memberId), expected);
         assert.equal(await reasonFor({ [field.key]: { country: '12' } }, memberId), expected);
         assert.equal(await reasonFor({ [field.key]: { country: 'D' } }, memberId), expected);
+      });
+
+      it('asks for the country code a phone number was written without', async function () {
+        // Without it there is no telling which country's number it is.
+        const field = await createField({ name: 'Mobile', type: 'phone' });
+        const memberId = await createMember();
+
+        assert.equal(
+          await reasonFor({ [field.key]: '020 7946 0000' }, memberId),
+          'Enter the phone number with its country code, starting with +, like +44 20 7946 0000.',
+        );
+      });
+
+      it('rejects an invalid phone number with an example from its own country', async function () {
+        // A British example is no help to someone writing a Brazilian number.
+        const field = await createField({ name: 'Mobile', type: 'phone' });
+        const memberId = await createMember();
+
+        assert.equal(
+          await reasonFor({ [field.key]: '+44 20 7946 000' }, memberId),
+          'Enter a valid phone number, like +44 7400 123456.',
+        );
+        assert.equal(
+          await reasonFor({ [field.key]: '+55 11 9612' }, memberId),
+          'This phone number is too short. Enter one like +55 11 96123 4567.',
+        );
+        assert.equal(
+          await reasonFor({ [field.key]: '+55 11 96123 45678 99' }, memberId),
+          'This phone number is too long. Enter one like +55 11 96123 4567.',
+        );
+        assert.equal(
+          await reasonFor({ [field.key]: '+999 1234567' }, memberId),
+          'Enter a phone number with a valid country code, like +44 20 7946 0000.',
+        );
+      });
+
+      it('refuses a phone number with an extension rather than dropping it', async function () {
+        const field = await createField({ name: 'Office', type: 'phone' });
+        const memberId = await createMember();
+
+        assert.equal(
+          await reasonFor({ [field.key]: '+1 415 555 0100 ext. 12' }, memberId),
+          'Enter the phone number without an extension.',
+        );
       });
 
       it('asks for a part when an address names none', async function () {

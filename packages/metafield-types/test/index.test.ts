@@ -2,15 +2,20 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'vitest';
 import {
   FIELD_STRUCTURES,
+  FIELD_TYPE_FLAGS,
+  FIELD_TYPE_IDS,
   editableAnswers,
   MAX_LONG_TEXT_BYTES,
   isMetafieldChangeSource,
+  isCreatableType,
   isFieldType,
   isRecordValue,
   matchField,
   matchLeaf,
   matchShape,
+  filterTextFor,
   partsOf,
+  phoneNumberIn,
   refusedProperty,
   valueSchemaFor,
   type Address,
@@ -19,6 +24,9 @@ import {
   type FieldTypeOfShape,
   type TypedSettings,
 } from '../src/index.ts';
+import { CALLING_CODES } from '../src/phone.ts';
+import { TEXT_FORMATS, text } from '../src/structure.ts';
+import { FIELDS_IN_DEVELOPMENT } from './fixtures/fields.ts';
 
 // This asserts only the catalog's *contract* — which field types exist, and which of
 // them have parts. The behavioural outcomes (per-type value validation, the composite
@@ -26,34 +34,6 @@ import {
 // metafields HTTP API integration tests, which exercise this catalog together with
 // the backend storage and the wire format.
 describe('metafield-types catalog', function () {
-  // Integrations depend on a published version of this package and talk to sites on
-  // other Ghost versions, so a type that has shipped keeps its parts and what each holds
-  // for good: an integration with a newer package would otherwise send a part an older
-  // site refuses. New structure is a new type. Add a type here once it has shipped.
-  it('never changes a type once it has shipped', function () {
-    const line = { leaf: 'text', size: 'line' };
-    const shipped = {
-      short_text: { shape: 'scalar', leaf: line },
-      long_text: { shape: 'scalar', leaf: { leaf: 'text', size: 'long' } },
-      address: {
-        shape: 'record',
-        parts: {
-          line1: line,
-          line2: line,
-          city: line,
-          state: line,
-          postal_code: { leaf: 'text', size: 'code' },
-          country: { leaf: 'choice', from: 'countries' },
-        },
-      },
-    };
-
-    for (const [type, structure] of Object.entries(shipped)) {
-      assert.ok(isFieldType(type), `${type} still exists`);
-      assert.deepEqual(FIELD_STRUCTURES[type], structure, `${type} keeps its structure`);
-    }
-  });
-
   it('answers for each type by the shape it declares', function () {
     const layout = (type: FieldType) =>
       matchShape(type, {
@@ -69,12 +49,36 @@ describe('metafield-types catalog', function () {
   it('answers for each leaf by the kind it declares', function () {
     const holds = (part: 'line1' | 'country') =>
       matchLeaf(FIELD_STRUCTURES.address.parts[part], {
-        text: ({ size }) => `${size} text`,
+        text: ({ format }) => `${format} text`,
         choice: ({ from }) => `a choice from ${from}`,
       });
 
     assert.equal(holds('line1'), 'line text');
     assert.equal(holds('country'), 'a choice from countries');
+  });
+
+  // A released type never waits on a flag, and a type in development waits on its own flag only.
+  it('offers every released type whatever Labs flags are on', function () {
+    for (const type of FIELD_TYPE_IDS) {
+      if (FIELD_TYPE_FLAGS[type] === undefined) {
+        assert.equal(
+          isCreatableType(type, () => false),
+          true,
+          `${type} is released`,
+        );
+      }
+    }
+  });
+
+  it.each(FIELDS_IN_DEVELOPMENT)('offers $field.type only once $flag is on', ({ field, flag }) => {
+    assert.equal(
+      isCreatableType(field.type, () => false),
+      false,
+    );
+    assert.equal(
+      isCreatableType(field.type, (asked) => asked === flag),
+      true,
+    );
   });
 
   it('knows its own types, and nothing else as one', function () {
@@ -196,6 +200,179 @@ describe('metafield-types catalog', function () {
 
     it('accepts a multibyte value that reaches the limit exactly', function () {
       assert.equal(parse('€'.repeat(21845)), true);
+    });
+  });
+
+  // The end-to-end tests pin these through the Admin and Members APIs too. They are here as
+  // well because the package's coverage gate counts only the package's own tests.
+  describe('a phone number', function () {
+    const rule = valueSchemaFor({ type: 'phone' });
+
+    it('is kept in E.164 however it was written, without a national (0)', function () {
+      assert.deepEqual(rule.safeParse('+44 (0)20 7946-0000'), {
+        success: true,
+        data: '+442079460000',
+      });
+      assert.deepEqual(rule.safeParse(' +1 (415) 555 0100 '), {
+        success: true,
+        data: '+14155550100',
+      });
+      // After the 00 most countries dial abroad with, as after a +.
+      assert.deepEqual(rule.safeParse('0044 20 7946 0000'), {
+        success: true,
+        data: '+442079460000',
+      });
+    });
+
+    // The 0 is dialled only from inside the country, so after the country code it is dropped.
+    // Italy's leading 0 is part of the number, and stays.
+    it('drops a national 0 written after the country code', function () {
+      assert.deepEqual(rule.safeParse('+44 07911 123456'), {
+        success: true,
+        data: '+447911123456',
+      });
+      assert.deepEqual(rule.safeParse('+39 06 6982 0000'), {
+        success: true,
+        data: '+390669820000',
+      });
+    });
+
+    it('needs its country code, as nothing else says which country it is from', function () {
+      const countryCode =
+        'Enter the phone number with its country code, starting with +, like +44 20 7946 0000.';
+      assert.equal(rule.safeParse('020 7946 0000').error?.issues[0]?.message, countryCode);
+    });
+
+    const refusal = (written: string) => rule.safeParse(written).error?.issues[0]?.message;
+
+    // The example comes from the country of the number's code, not always the UK.
+    it('is refused when the country it names has no number like it', function () {
+      assert.equal(refusal('+44 20 7946 000'), 'Enter a valid phone number, like +44 7400 123456.');
+      // The right length for France, in a range France hasn't given out.
+      assert.equal(
+        refusal('+33 7 01 23 45 67'),
+        'Enter a valid phone number, like +33 6 12 34 56 78.',
+      );
+    });
+
+    it('is rejected as too short or too long for its country', function () {
+      const brazil = '+55 11 96123 4567';
+      assert.equal(
+        refusal('+55 11 9612'),
+        `This phone number is too short. Enter one like ${brazil}.`,
+      );
+      assert.equal(
+        refusal('+55 11 96123 45678 99'),
+        `This phone number is too long. Enter one like ${brazil}.`,
+      );
+      // With nothing after the country code.
+      assert.equal(
+        refusal('+675 7'),
+        'This phone number is too short. Enter one like +675 7012 3456.',
+      );
+      // After the 00 most countries dial abroad with, as after a +.
+      assert.equal(
+        refusal('0055 11 9612'),
+        `This phone number is too short. Enter one like ${brazil}.`,
+      );
+    });
+
+    // Only a valid number's digits distinguish the countries sharing a code.
+    it("gets an example from the code's main country when several share the code", function () {
+      assert.equal(
+        refusal('+1 416 555'),
+        'This phone number is too short. Enter one like +1 201 555 0123.',
+      );
+    });
+
+    it('is rejected with a country code that does not exist', function () {
+      const unknownCode = 'Enter a phone number with a valid country code, like +44 20 7946 0000.';
+      assert.equal(refusal('+999 1234567'), unknownCode);
+    });
+
+    // +870 is for satellite phones and belongs to no country, but the field accepts its numbers.
+    it('gets a length error for a number on a code that belongs to no country', function () {
+      assert.equal(rule.parse('+870 773 111 632'), '+870773111632');
+      assert.equal(
+        refusal('+870 773 111'),
+        'This phone number is too short. Enter one like +44 20 7946 0000.',
+      );
+    });
+
+    // Not told to add the country code it already has.
+    it('is refused with anything else around it, which would be lost', function () {
+      const invalid = 'Enter a valid phone number, like +44 7400 123456.';
+      assert.equal(refusal('+44 20 7946 0000 (home)'), invalid);
+      assert.equal(refusal('Mobile: +44 20 7946 0000'), invalid);
+      assert.equal(refusal('+44 20 7946 000o'), invalid);
+    });
+
+    // An example only helps if the field would accept a number like it.
+    it('gets an example the field would accept, whatever its country', function () {
+      for (const callingCode of new Set(Object.values(CALLING_CODES))) {
+        const shown = / like (\+[\d ]+)\.$/.exec(refusal(`+${callingCode}`) ?? '')?.[1];
+        assert.equal(rule.safeParse(shown).success, true, `+${callingCode}: ${shown}`);
+      }
+    });
+
+    // For a number that comes with a country rather than a code, as a wallet's can at checkout.
+    it('is read as it is dialled in a country, unless it gives its own code', function () {
+      assert.equal(phoneNumberIn('020 7946 0000', 'GB'), '+442079460000');
+      assert.equal(phoneNumberIn('+33 6 12 34 56 78', 'GB'), '+33612345678');
+      assert.equal(phoneNumberIn('020 7946 000', 'GB'), undefined);
+      assert.equal(phoneNumberIn('+1 415 555 0100 ext. 12', 'US'), undefined);
+      assert.equal(phoneNumberIn('020 7946 0000', 'AQ'), undefined);
+      assert.equal(phoneNumberIn('020 7946 0000', undefined), undefined);
+      assert.equal(phoneNumberIn('+44 20 7946 0000', undefined), '+442079460000');
+    });
+
+    // As a filter compares it with numbers held in E.164: a whole number as the field holds it,
+    // and part of one as its digits, whichever text operator the filter uses.
+    it('is looked for as a number held in E.164 would hold it, however it was written', function () {
+      const phone = text('phone');
+      assert.equal(filterTextFor(phone, '+44 (0)20 7946-0000', undefined), '+442079460000');
+      assert.equal(filterTextFor(phone, '020 7946 0000', 'GB'), '+442079460000');
+      assert.equal(filterTextFor(phone, '+44 (0)20 7946', 'GB'), '+44207946');
+      assert.equal(filterTextFor(phone, '79-46 00 00', 'GB'), '79460000');
+      // Part of a number written as dialled at home is looked for as written.
+      assert.equal(filterTextFor(phone, '020 79', 'GB'), '02079');
+      // Nothing to look for: a filter that is only a + would find every number.
+      assert.equal(filterTextFor(phone, '(0)', 'GB'), '');
+    });
+
+    it('is looked for as written in every other text format', function () {
+      for (const format of TEXT_FORMATS.filter((candidate) => candidate !== 'phone')) {
+        assert.equal(filterTextFor(text(format), ' 020 7946 ', 'GB'), ' 020 7946 ', format);
+      }
+    });
+
+    // A filter's value is read back from the query and looked for again whenever filters change.
+    it('is looked for the same way again', function () {
+      const phone = text('phone');
+      const cases: Array<[string, string | undefined]> = [
+        ['8 800', 'RU'],
+        ['0000', 'GB'],
+        ['+44 20', undefined],
+        ['79460000', 'DK'],
+        ['020 7946 0000', 'GB'],
+      ];
+      for (const [typed, country] of cases) {
+        const once = filterTextFor(phone, typed, country);
+        assert.equal(filterTextFor(phone, once, country), once, `${typed} ${country}`);
+      }
+    });
+
+    it('reads 00 as the way abroad when its country dials abroad otherwise', function () {
+      assert.equal(phoneNumberIn('0044 20 7946 0000', 'US'), '+442079460000');
+      assert.equal(phoneNumberIn('011 44 20 7946 0000', 'US'), '+442079460000');
+    });
+
+    it('is refused with an extension rather than losing it', function () {
+      const refused = rule.safeParse('+1 415 555 0100 ext. 12');
+      assert.equal(
+        refused.error?.issues[0]?.message,
+        'Enter the phone number without an extension.',
+      );
     });
   });
 

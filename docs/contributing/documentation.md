@@ -92,8 +92,9 @@ pnpm lint:docs
 git diff --check origin/main...HEAD
 ```
 
-- Check links manually; `pnpm lint:docs` does not currently validate Markdown
-  links.
+- `pnpm lint:docs` validates relative Markdown links and heading anchors. CI
+  runs it on every change, because removing or renaming any file can break a
+  link. Check external links manually.
 - Confirm another document does not give a different answer.
 - Confirm no private or temporary material is being published.
 - After a migrated guide is live, replace links to its Notion source and retire

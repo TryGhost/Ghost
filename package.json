@@ -21,6 +21,7 @@
     "dev:analytics:local": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' ANALYTICS_PROXY_TARGET=${ANALYTICS_PROXY_TARGET:-127.0.0.1:3000} nx run ghost-monorepo:dev:host",
     "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' nx run ghost-monorepo:dev:host",
     "dev:stripe": "./docker/stripe/with-stripe.sh nx run ghost-monorepo:dev:host",
+    "dev:multi": "node tools/scripts/with-second-ghost.ts nx run ghost-monorepo:dev:host:multi",
     "dev:up": "node tools/gx/dev-up.ts",
     "dev:down": "node tools/gx/dev-down.ts",
     "dev:status": "node tools/gx/dev-status.ts",
@@ -41,15 +42,17 @@
     "docker:build:verbose": "docker compose --progress=plain -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev build",
     "docker:clean": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile '*' down -v --remove-orphans --rmi local",
     "docker:rebase": "export pnpm_config_enable_global_virtual_store=false && git fetch ${GHOST_UPSTREAM:-origin} main && git rebase ${GHOST_UPSTREAM:-origin}/main && pnpm install && pnpm nx run-many -t build --projects=@tryghost/shade,@tryghost/admin-x-framework && docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile docker-dev up -d --build --force-recreate ghost-dev",
-    "knip": "knip",
-    "knip:fix": "knip --fix --allow-remove-files=false",
-    "lint": "pnpm lint:oxlint && pnpm nx run-many -t lint lint:boundaries && pnpm lint:packages && pnpm lint:versioning && pnpm lint:docs",
+    "knip": "NODE_OPTIONS=--conditions=source knip",
+    "knip:fix": "NODE_OPTIONS=--conditions=source knip --fix --allow-remove-files=false",
+    "lint": "pnpm lint:oxlint && pnpm nx run-many -t lint lint:boundaries && pnpm lint:dependencies && pnpm lint:packages && pnpm lint:versioning && pnpm lint:docs",
     "lint:oxlint": "oxlint --deny-warnings",
     "lint:agent-guidance": "node tools/scripts/ci/check-agent-guidance.ts",
     "lint:agent-skills": "node tools/scripts/ci/check-agent-skill-links.ts",
     "lint:doc-links": "git ls-files -z '*.md' ':(exclude,glob).changeset/**' ':(exclude,glob)**/fixture/**' ':(exclude,glob)**/fixtures/**' | xargs -0 remark --use remark-validate-links --frail --quiet",
     "lint:markdown": "git ls-files -z '*.md' ':(exclude,glob).changeset/**' ':(exclude,glob)**/fixture/**' ':(exclude,glob)**/fixtures/**' | xargs -0 markdownlint-cli2 --config .markdownlint-cli2.jsonc",
-    "lint:boundaries": "depcruise ghost/core apps --config .dependency-cruiser.cjs",
+    "lint:boundaries": "node tools/scripts/ci/check-boundaries.ts",
+    "lint:dependencies": "NODE_OPTIONS=--conditions=source knip --dependencies --treat-config-hints-as-errors",
+    "lint:legacy-services": "node tools/scripts/ci/check-legacy-services.ts",
     "lint:packages": "node tools/scripts/ci/check-internal-packages.ts",
     "lint:versioning": "node tools/scripts/ci/check-versioning-ignore.ts",
     "lint:docs": "pnpm lint:agent-skills && pnpm lint:agent-guidance && pnpm lint:markdown && pnpm lint:doc-links",
@@ -85,11 +88,10 @@
     "dependency-cruiser": "catalog:",
     "eslint": "catalog:",
     "husky": "9.1.7",
-    "js-yaml": "catalog:",
     "knip": "catalog:",
     "lint-staged": "catalog:",
     "markdownlint-cli2": "catalog:",
-    "nx": "23.3.1",
+    "nx": "24.0.5",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
     "remark-cli": "catalog:",
@@ -105,12 +107,12 @@
   "devEngines": {
     "runtime": {
       "name": "node",
-      "version": "22.23.4",
+      "version": "22.23.5",
       "onFail": "download"
     }
   },
   "engines": {
-    "node": "^22.23.4 || ^24.22.1"
+    "node": "^22.23.5 || ^24.22.3"
   },
   "packageManager": "pnpm@12.16.1+sha512.091d1dee7927575661b25dab3c2ae31cafc1c54d6b71ed6a6600cf0c1cb10434a447eae14015f1b23e2e6bedeed79df94a932e2164d2832280dce3fb32f656d1",
   "monorepo": {
@@ -127,20 +129,21 @@
         "cache": true,
         "inputs": [
           "{workspaceRoot}/.dependency-cruiser.cjs",
+          "{workspaceRoot}/.dependency-cruiser-known-violations.json",
+          "{workspaceRoot}/tools/scripts/ci/check-boundaries.ts",
+          "{workspaceRoot}/tools/scripts/lib/dependency-boundaries.ts",
+          "{workspaceRoot}/tools/configs/oxlint/legacy-services.ts",
           "{workspaceRoot}/tools/scripts/ci/service-dependency-resolver.mjs",
           "{workspaceRoot}/ghost/core/**/*",
           "{workspaceRoot}/ghost/package.json",
           "{workspaceRoot}/packages/**/*",
           "{workspaceRoot}/koenig/**/*",
           "{workspaceRoot}/apps/**/*",
-          "sharedGlobals",
-          {
-            "env": "GHOST_SERVICE_DEPENDENCY_AUDIT"
-          }
+          "sharedGlobals"
         ],
         "outputs": [],
         "options": {
-          "command": "depcruise ghost/core apps --config .dependency-cruiser.cjs"
+          "command": "node tools/scripts/ci/check-boundaries.ts"
         }
       },
       "docker:up": {
@@ -235,6 +238,17 @@
               "@tryghost/admin-toolbar"
             ]
           }
+        ]
+      },
+      "dev:host:multi": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "ghost",
+          "command": "node ../tools/scripts/dev-wait-for-ghost.ts && GHOST_DEV_BACKEND_PORT=$GHOST_DEV_BACKEND_PORT_2 node ../tools/scripts/with-ghost-dev-env.ts nodemon index.js"
+        },
+        "dependsOn": [
+          "dev:host"
         ]
       },
       "dev:host:lexical": {

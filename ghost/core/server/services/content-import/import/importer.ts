@@ -172,23 +172,17 @@ class ContentCSVImporter {
 
       const runId = this._newRunId();
       const importTagNames = buildImportTagNames(runId, this._getTimezone(), this._now());
-      this._store.create(runId, preparedRows.rows.length, preparedRows.columns);
       const job = new ContentCSVImportJob({
         importId: runId,
         file: stagedFile,
         mapping: request.mapping,
         importTagNames,
         emailRecipient,
+        total: preparedRows.rows.length,
       });
 
       logLifecycle('queued');
-      try {
-        await this._dispatchJob(job);
-      } catch (error) {
-        this._store.fail(runId, messageOf(error));
-        this._store.release(runId);
-        throw error;
-      }
+      await this._dispatchJob(job);
 
       handedOff = true;
       return { importId: runId, total: preparedRows.rows.length };
@@ -203,12 +197,14 @@ class ContentCSVImporter {
     let source: PreparedImportSource | undefined;
 
     try {
+      const run = this._store.create(job.importId, job.total);
       const prepared = await this.readPreparedRows({
         filePath: job.file.path,
         fileName: job.file.name,
         mapping: job.mapping,
       });
       source = prepared.source;
+      run.sourceColumns = prepared.preparedRows.columns;
       this.assertWithinPostLimit(prepared.preparedRows.rows);
       await this.processRows(
         job.importId,
@@ -230,10 +226,6 @@ class ContentCSVImporter {
       this._store.release(job.importId);
       await this.cleanupStagedFile(job.file);
     }
-  }
-
-  allSettled(): Promise<void> {
-    return this._store.allSettled();
   }
 
   private async processRows(

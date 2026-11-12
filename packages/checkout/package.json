@@ -21,6 +21,11 @@
       "source": "./src/index.ts",
       "types": "./build/index.d.ts",
       "default": "./build/index.js"
+    },
+    "./field-ports": {
+      "source": "./src/field-ports.ts",
+      "types": "./build/field-ports.d.ts",
+      "default": "./build/field-ports.js"
     }
   },
   "scripts": {

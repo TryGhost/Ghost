@@ -4,8 +4,13 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 import yaml from 'js-yaml';
 import { z } from 'zod';
+import { readDependencyBoundaries } from '../scripts/lib/dependency-boundaries.ts';
+import {
+  legacyInventoryFile,
+  servicesRoot as servicesDir,
+} from '../configs/oxlint/legacy-services.ts';
 
-const servicesRoot = 'ghost/core/server/services/';
+const servicesRoot = `${servicesDir}/`;
 const repository = path.resolve(import.meta.dirname, '../..');
 const complexity = z.enum(['straightforward', 'complex', 'not-applicable']);
 const assessment = z.object({
@@ -13,26 +18,22 @@ const assessment = z.object({
   reason: z.string(),
   reviewedAt: z.string(),
 });
+// The inventory lists legacy services only. A service found by the audit and
+// not listed here is standard.
 const inventorySchema = z.object({
   services: z.record(
     z.string(),
     z
       .object({
-        migrated: z.boolean().optional(),
         disposition: z.enum(['migrate', 'relocate', 'split', 'review']),
         futureHome: z.string().trim().min(1).optional(),
         notes: z.string().optional(),
         migration: assessment.extend({
           modelImpact: z.enum(['fits', 'may-change', 'not-applicable']),
-          dependencies: assessment
-            .extend({ preparation: z.array(z.string()).default([]) })
-            .optional(),
+          dependencies: assessment.extend({ preparation: z.array(z.string()).default([]) }),
         }),
         blockers: z.array(z.string()).default([]),
         unverified: z.array(z.string()).default([]),
-      })
-      .refine((entry) => entry.migrated || entry.migration.dependencies, {
-        message: 'Unmigrated entries need a dependency assessment.',
       })
       .refine(
         (entry) =>
@@ -56,25 +57,17 @@ const auditSchema = z.object({
 });
 
 type Entry = z.infer<typeof inventorySchema>['services'][string];
-type MigrationStatus =
-  | 'Migrated'
-  | 'Needs preparation'
-  | 'Straightforward'
-  | 'Not applicable'
-  | 'Not inventoried';
+type MigrationStatus = 'Standard' | 'Needs preparation' | 'Straightforward' | 'Not applicable';
 
 function migrationStatus(entry?: Entry): MigrationStatus {
   if (!entry) {
-    return 'Not inventoried';
-  }
-  if (entry.migrated) {
-    return 'Migrated';
+    return 'Standard';
   }
   if (entry.migration.modelImpact === 'not-applicable') {
     return 'Not applicable';
   }
   return entry.migration.complexity === 'straightforward' &&
-    entry.migration.dependencies?.complexity === 'straightforward' &&
+    entry.migration.dependencies.complexity === 'straightforward' &&
     entry.migration.modelImpact === 'fits'
     ? 'Straightforward'
     : 'Needs preparation';
@@ -93,7 +86,8 @@ function entryName(source: string) {
     : undefined;
 }
 
-// The inventory supplies assessments; the existing audit supplies current findings.
+// The inventory supplies legacy assessments; the existing audit supplies the
+// services found on disk and their current findings.
 export function buildServiceReport(inventory: unknown, audit: unknown) {
   const { services } = inventorySchema.parse(inventory);
   const graph = auditSchema.parse(audit);
@@ -123,7 +117,7 @@ export function buildServiceReport(inventory: unknown, audit: unknown) {
     const wasAnalyzed = analyzed.has(name);
     return {
       name,
-      ownership: entry ? ownership[entry.disposition] : 'Not inventoried',
+      ownership: entry ? ownership[entry.disposition] : 'Standard',
       migrationStatus: migrationStatus(entry),
       analyzed: wasAnalyzed,
       dependencies: wasAnalyzed
@@ -176,22 +170,12 @@ function list(rows: Service[]) {
 }
 
 const groups: { name: string; label: string; matches: (row: Service) => boolean }[] = [
-  { name: 'catalogued', label: 'Catalogued entries', matches: (row) => !!row.entry },
-  {
-    name: 'migrate',
-    label: 'Migrate',
-    matches: (row) => row.entry?.disposition === 'migrate',
-  },
-  { name: 'migrated', label: 'Migrated', matches: (row) => row.migrationStatus === 'Migrated' },
-  {
-    name: 'unmigrated',
-    label: 'Unmigrated entries',
-    matches: (row) => !!row.entry && !row.entry.migrated,
-  },
+  { name: 'legacy', label: 'Legacy entries', matches: (row) => !!row.entry },
+  { name: 'standard', label: 'Standard services', matches: (row) => !row.entry },
   {
     name: 'to-migrate',
     label: 'Left to migrate',
-    matches: (row) => row.entry?.disposition === 'migrate' && !row.entry.migrated,
+    matches: (row) => row.entry?.disposition === 'migrate',
   },
   {
     name: 'relocate',
@@ -238,27 +222,21 @@ const groups: { name: string; label: string; matches: (row: Service) => boolean 
       !row.findings.length,
   },
   {
-    name: 'unmigrated-with-violations',
-    label: 'Unmigrated entries with dependency violations',
-    matches: (row) => !!row.entry && !row.entry.migrated && row.findings.length > 0,
+    name: 'legacy-with-violations',
+    label: 'Legacy entries with dependency violations',
+    matches: (row) => !!row.entry && row.findings.length > 0,
   },
   {
     name: 'to-migrate-with-violations',
     label: 'Left to migrate with dependency violations',
-    matches: (row) =>
-      row.entry?.disposition === 'migrate' && !row.entry.migrated && row.findings.length > 0,
+    matches: (row) => row.entry?.disposition === 'migrate' && row.findings.length > 0,
   },
   {
-    name: 'migrated-with-violations',
-    label: 'Migrated services with dependency violations',
-    matches: (row) => row.migrationStatus === 'Migrated' && row.findings.length > 0,
+    name: 'standard-with-violations',
+    label: 'Standard services with dependency violations',
+    matches: (row) => !row.entry && row.findings.length > 0,
   },
   { name: 'not-analyzed', label: 'Not analyzed', matches: (row) => !row.analyzed },
-  {
-    name: 'not-inventoried',
-    label: 'Not inventoried',
-    matches: (row) => !row.entry,
-  },
 ];
 
 function summary(rows: Service[]) {
@@ -280,17 +258,12 @@ function details(row: Service) {
     lines.push(
       `\nOverall assessment (${migration.complexity}, ${migration.reviewedAt}):\n${migration.reason.trim()}`,
     );
-    if (migration.dependencies) {
-      const deps = migration.dependencies;
-      lines.push(
-        `\nDependency assessment (${deps.complexity}, ${deps.reviewedAt}):\n${deps.reason.trim()}`,
-      );
-      if (deps.preparation.length) {
-        lines.push(
-          '\nRecorded preparation:',
-          ...deps.preparation.map((item) => `- ${item.trim()}`),
-        );
-      }
+    const deps = migration.dependencies;
+    lines.push(
+      `\nDependency assessment (${deps.complexity}, ${deps.reviewedAt}):\n${deps.reason.trim()}`,
+    );
+    if (deps.preparation.length) {
+      lines.push('\nRecorded preparation:', ...deps.preparation.map((item) => `- ${item.trim()}`));
     }
     if (blockers.length) {
       lines.push('\nRecorded blockers:', ...blockers.map((item) => `- ${item.trim()}`));
@@ -325,36 +298,9 @@ function frequencies(rows: Service[]) {
 }
 
 function readAudit() {
-  const result = spawnSync(
-    'pnpm',
-    [
-      'exec',
-      'depcruise',
-      servicesRoot,
-      '--config',
-      '.dependency-cruiser.cjs',
-      '--output-type',
-      'json',
-    ],
-    {
-      cwd: repository,
-      env: { ...process.env, GHOST_SERVICE_DEPENDENCY_AUDIT: '1' },
-      encoding: 'utf8',
-      maxBuffer: 32 * 1024 * 1024,
-    },
-  );
-  if (result.error) {
-    throw result.error;
-  }
-  if (result.status !== 0) {
-    throw new Error(result.stderr.trim() || `Dependency audit failed (exit ${result.status}).`);
-  }
-  if (result.stderr) {
-    process.stderr.write(result.stderr);
-  }
-  const data: unknown = JSON.parse(result.stdout);
+  const { graph: data } = readDependencyBoundaries(repository);
   auditSchema.parse(data);
-  return { data, json: result.stdout };
+  return { data, json: JSON.stringify(data) };
 }
 
 export function runServices(command: string, args: string[]) {
@@ -405,9 +351,7 @@ export function runServices(command: string, args: string[]) {
       throw new Error('Supply at most one service name.');
     }
     const inventory = inventorySchema.parse(
-      yaml.load(
-        readFileSync(path.join(repository, servicesRoot, 'service-inventory.yaml'), 'utf8'),
-      ),
+      yaml.load(readFileSync(path.join(repository, legacyInventoryFile), 'utf8')),
     );
     const rows = buildServiceReport(inventory, readAudit().data);
     const selected = positionals[0] ? rows.find((row) => row.name === positionals[0]) : undefined;
@@ -436,7 +380,7 @@ export function runServices(command: string, args: string[]) {
       text = table(
         ['MIGRATION', 'COUNT', 'GROUP'],
         groups
-          .filter((item) => !['not-analyzed', 'not-inventoried'].includes(item.name))
+          .filter((item) => item.name !== 'not-analyzed')
           .map((item) => [item.label, String(counts[item.label]), item.name]),
       );
       text += '\n\nList a group: pnpm gx services list --group <group>';

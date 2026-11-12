@@ -46,6 +46,18 @@ const sinon = require('sinon');
 let membersAgent;
 let adminAgent;
 
+/**
+ * Each span recorded under `name`, as its outcome, the type of its error when it failed, and its
+ * attributes.
+ */
+function spansOf(metrics, name) {
+  return metrics.tracked(name).map(({ event, error, labels }) => ({
+    outcome: event.outcome,
+    ...(error ? { error: error.type } : {}),
+    ...labels,
+  }));
+}
+
 function createStripeID(prefix) {
   return `${prefix}_${crypto.randomBytes(16).toString('hex')}`;
 }
@@ -260,6 +272,73 @@ describe('Members API', function () {
         })
         .header('stripe-signature', 'dodgy')
         .expectStatus(401);
+    });
+
+    it('records a webhook whose signature does not show it came from Stripe as unauthorised', async function () {
+      const metrics = mockManager.mockMetrics();
+
+      await membersAgent
+        .post('/webhooks/stripe/')
+        .body({ fake: 'data' })
+        .header('stripe-signature', 'dodgy')
+        .expectStatus(401);
+
+      assert.deepEqual(spansOf(metrics, 'stripe.webhook'), [
+        { outcome: 'failure', error: 'UnauthorizedError' },
+      ]);
+    });
+
+    it('records an event it ignores, for a customer whose events it is set to ignore', async function () {
+      const stripeService = require('../../../core/server/services/stripe');
+      stripeService.webhookController.configure({ webhookCustomerIgnoreList: ['cus_ignored'] });
+      try {
+        const metrics = mockManager.mockMetrics();
+        const webhookPayload = JSON.stringify({
+          type: 'customer.subscription.updated',
+          data: { object: { id: 'sub_ignored', customer: 'cus_ignored' } },
+        });
+
+        await membersAgent
+          .post('/webhooks/stripe/')
+          .body(webhookPayload)
+          .header('content-type', 'application/json')
+          .header(
+            'stripe-signature',
+            stripe.webhooks.generateTestHeaderString({
+              payload: webhookPayload,
+              secret: process.env.WEBHOOK_SECRET,
+            }),
+          )
+          .expectStatus(200);
+
+        assert.deepEqual(spansOf(metrics, 'stripe.webhook'), [
+          { outcome: 'success', type: 'customer.subscription.updated', ignored: true },
+        ]);
+      } finally {
+        stripeService.webhookController.configure({});
+      }
+    });
+
+    it('records each event it handles by its type', async function () {
+      const metrics = mockManager.mockMetrics();
+      const webhookPayload = JSON.stringify({ type: 'unknown', data: { id: 'id_123' } });
+
+      await membersAgent
+        .post('/webhooks/stripe/')
+        .body(webhookPayload)
+        .header('content-type', 'application/json')
+        .header(
+          'stripe-signature',
+          stripe.webhooks.generateTestHeaderString({
+            payload: webhookPayload,
+            secret: process.env.WEBHOOK_SECRET,
+          }),
+        )
+        .expectStatus(200);
+
+      assert.deepEqual(spansOf(metrics, 'stripe.webhook'), [
+        { outcome: 'success', type: 'unknown' },
+      ]);
     });
 
     it('Responds with a 200 to unknown events with valid signature', async function () {
@@ -4517,10 +4596,11 @@ describe('Members API', function () {
     beforeEach(async function () {
       mockManager.mockMail();
       mockManager.mockLabsEnabled('stripeCheckoutCollection');
+      mockManager.mockLabsEnabled('customFieldTypePhone');
       for (const field of [
         { name: 'Delivery address', type: 'address' },
         { name: 'Recipient name', type: 'short_text' },
-        { name: 'Contact phone', type: 'short_text' },
+        { name: 'Contact phone', type: 'phone' },
       ]) {
         await adminAgent
           .post('/members/metafields/custom/')
@@ -4547,9 +4627,10 @@ describe('Members API', function () {
     afterEach(async function () {
       mockManager.restore();
       await models.Base.knex('webhooks').del();
-      await models.Base.knex('stripe_checkout_config_tiers').del();
       await models.Base.knex('stripe_checkout_config').del();
       await models.Base.knex('members_metafield_bindings').del();
+      await models.Base.knex('tier_requirement_tiers').del();
+      await models.Base.knex('tier_requirements').del();
       await models.Base.knex('members_metafield_values').del();
       await models.Base.knex('members_metafields').del();
     });
@@ -4557,13 +4638,37 @@ describe('Members API', function () {
     // What the checkout asked for, as Stripe reports it on the completed session.
     async function completeCheckout(
       email,
-      { asked = { shipping: true }, metadata = {}, created = Math.floor(Date.now() / 1000) } = {},
+      {
+        asked = { shipping: true },
+        metadata = {},
+        created = Math.floor(Date.now() / 1000),
+        name = 'Jamie Doe',
+        phone = '+442079460000',
+        billingCountry = 'GB',
+        // The wallet the buyer paid with, as Stripe names it, if they paid with one.
+        wallet = undefined,
+        // What Ghost answers Stripe with. Nothing is read back from a failed checkout.
+        status = 200,
+      } = {},
     ) {
+      const walletMethod = wallet && {
+        id: 'pm_wallet',
+        card: {
+          brand: 'visa',
+          last4: '4242',
+          exp_month: 1,
+          exp_year: 2030,
+          wallet: { type: wallet },
+        },
+      };
       set(customer, {
         id: 'cus_shipping',
         name: 'Jamie Doe',
         email,
-        subscriptions: { type: 'list', data: [subscription] },
+        subscriptions: {
+          type: 'list',
+          data: [{ ...subscription, default_payment_method: walletMethod ?? null }],
+        },
       });
       const payload = JSON.stringify({
         type: 'checkout.session.completed',
@@ -4575,9 +4680,9 @@ describe('Members API', function () {
             subscription: subscription.id,
             metadata,
             shipping_address_collection: asked.shipping ? { allowed_countries: ['GB'] } : null,
-            shipping: { name: 'Jamie Doe', address },
+            shipping: { name, address },
             phone_number_collection: { enabled: Boolean(asked.phone) },
-            customer_details: { email, phone: '+442079460000' },
+            customer_details: { email, phone, address: { country: billingCountry } },
           },
         },
       });
@@ -4589,8 +4694,11 @@ describe('Members API', function () {
           'stripe-signature',
           stripe.webhooks.generateTestHeaderString({ payload, secret: process.env.WEBHOOK_SECRET }),
         )
-        .expectStatus(200);
+        .expectStatus(status);
       await DomainEvents.allSettled();
+      if (status !== 200) {
+        return undefined;
+      }
 
       const {
         body: { members },
@@ -4614,6 +4722,233 @@ describe('Members API', function () {
       });
     });
 
+    it('records what became of each part each completed checkout asked for', async function () {
+      const metrics = mockManager.mockMetrics();
+
+      await completeCheckout('complete-both@example.com', {
+        asked: { shipping: true, phone: true },
+      });
+      // Longer than the recipient's short text field takes.
+      await completeCheckout('complete-refused@example.com', { name: 'x'.repeat(300) });
+      await completeCheckout('complete-unasked@example.com', { asked: {} });
+
+      assert.deepEqual(spansOf(metrics, 'stripe_checkout.complete'), [
+        {
+          outcome: 'success',
+          type: 'subscription',
+          member: 'new',
+          shipping: 'saved',
+          phone: 'saved',
+        },
+        {
+          outcome: 'success',
+          type: 'subscription',
+          member: 'new',
+          shipping: 'refused',
+          phone: 'none',
+        },
+        {
+          outcome: 'success',
+          type: 'subscription',
+          member: 'new',
+          shipping: 'none',
+          phone: 'none',
+        },
+      ]);
+    });
+
+    it('records a part as partly saved, or with nowhere to go, while its fields are archived', async function () {
+      for (const key of ['recipient_name', 'contact_phone']) {
+        await adminAgent
+          .put(`/members/metafields/custom/${key}/`)
+          .body({ members_metafields: [{ status: 'archived' }] })
+          .expectStatus(200);
+      }
+      const metrics = mockManager.mockMetrics();
+
+      await completeCheckout('complete-archived@example.com', {
+        asked: { shipping: true, phone: true },
+      });
+
+      assert.deepEqual(spansOf(metrics, 'stripe_checkout.complete'), [
+        {
+          outcome: 'success',
+          type: 'subscription',
+          member: 'new',
+          shipping: 'partly_saved',
+          phone: 'no_destination',
+        },
+      ]);
+    });
+
+    it('records what it skipped for a member who checked out without signing in', async function () {
+      await adminAgent
+        .post('/members/')
+        .body({ members: [{ email: 'complete-unverified@example.com' }] })
+        .expectStatus(201);
+      await adminAgent
+        .post('/members/')
+        .body({ members: [{ email: 'complete-signed-in@example.com' }] })
+        .expectStatus(201);
+      const metrics = mockManager.mockMetrics();
+
+      // Both checkouts started after their member already existed.
+      const startedAt = Math.floor(Date.now() / 1000) + 1;
+      await completeCheckout('complete-unverified@example.com', { created: startedAt });
+      await completeCheckout('complete-signed-in@example.com', {
+        created: startedAt,
+        metadata: { ghostSignupContext: 'already_authenticated' },
+      });
+
+      assert.deepEqual(spansOf(metrics, 'stripe_checkout.complete'), [
+        {
+          outcome: 'success',
+          type: 'subscription',
+          member: 'unverified',
+          shipping: 'skipped',
+          phone: 'none',
+        },
+        {
+          outcome: 'success',
+          type: 'subscription',
+          member: 'signed_in',
+          shipping: 'saved',
+          phone: 'none',
+        },
+      ]);
+    });
+
+    it('records what it failed to save, while the checkout itself completes', async function () {
+      const membersService = require('../../../core/server/services/members');
+      // Nothing a checkout can send fails the save, so the member edit that saves what it
+      // collected fails here as a database write would.
+      sinon
+        .stub(membersService.api.memberBREADService, 'updateWithMetafields')
+        .rejects(new Error('The database went away.'));
+      const metrics = mockManager.mockMetrics();
+
+      await completeCheckout('complete-save-failed@example.com', {
+        asked: { shipping: true, phone: true },
+      });
+
+      assert.deepEqual(spansOf(metrics, 'stripe_checkout.complete'), [
+        {
+          outcome: 'success',
+          type: 'subscription',
+          member: 'new',
+          shipping: 'failed',
+          phone: 'failed',
+        },
+      ]);
+    });
+
+    it('records a checkout it failed to complete, as it fails the webhook for Stripe to send again', async function () {
+      const membersService = require('../../../core/server/services/members');
+      sinon
+        .stub(membersService.api.members, 'create')
+        .rejects(new Error('The database went away.'));
+      const metrics = mockManager.mockMetrics();
+
+      await completeCheckout('complete-failed@example.com', { status: 500 });
+
+      assert.deepEqual(spansOf(metrics, 'stripe_checkout.complete'), [
+        {
+          outcome: 'failure',
+          error: 'Error',
+          type: 'subscription',
+          member: 'new',
+          shipping: 'none',
+          phone: 'none',
+        },
+      ]);
+      assert.deepEqual(spansOf(metrics, 'stripe.webhook'), [
+        { outcome: 'failure', error: 'Error', type: 'checkout.session.completed' },
+      ]);
+    });
+
+    // How often a wallet's number needs a country to be read, whether the checkout knew one, and
+    // what became of it, never with the number itself.
+    it("counts how a checkout's phone number came back and what became of it", async function () {
+      const metrics = mockManager.mockMetrics();
+
+      await completeCheckout('collected-card@example.com', { asked: { phone: true } });
+      await completeCheckout('collected-wallet@example.com', {
+        asked: { phone: true },
+        phone: '020 7946 0000',
+        wallet: 'apple_pay',
+      });
+      await completeCheckout('collected-no-country@example.com', {
+        asked: { phone: true },
+        phone: '020 7946 0000',
+        billingCountry: null,
+        wallet: 'google_pay',
+      });
+
+      assert.deepEqual(
+        metrics.tracked('stripe_checkout.collected_phones').map(({ value, labels }) => ({
+          value,
+          wallet: labels.wallet,
+          form: labels.phone_form,
+          country: labels.phone_country,
+          outcome: labels.phone_outcome,
+        })),
+        [
+          { value: 1, wallet: 'none', form: 'e164', country: 'billing', outcome: 'saved' },
+          { value: 1, wallet: 'apple_pay', form: 'national', country: 'billing', outcome: 'saved' },
+          {
+            value: 1,
+            wallet: 'google_pay',
+            form: 'unreadable',
+            country: 'none',
+            outcome: 'refused',
+          },
+        ],
+      );
+    });
+
+    it("keeps a wallet's phone number in international form", async function () {
+      // Apple Pay and Google Pay pass a number on as the wallet kept it, rather than in E.164.
+      const saved = await completeCheckout('wallet-phone@example.com', {
+        asked: { shipping: true, phone: true },
+        phone: '+44 (0)20 7946 0000',
+      });
+
+      assert.equal(saved.contact_phone, '+442079460000');
+    });
+
+    // Apple Pay and Google Pay can pass a number on as the wallet keeps it, without its country
+    // code. The buyer's billing country says where it is dialled, as the country Stripe's own
+    // phone input starts from says it for a number typed into Checkout.
+    it("reads a wallet's number without its country code in the buyer's billing country", async function () {
+      const saved = await completeCheckout('national-phone@example.com', {
+        asked: { shipping: true, phone: true },
+        phone: '020 7946 0000',
+        billingCountry: 'GB',
+      });
+
+      assert.equal(saved.contact_phone, '+442079460000');
+    });
+
+    it("still saves the address when a wallet's number isn't one in the billing country", async function () {
+      // The phone field refuses it, and the payment has already been taken, so nothing else the
+      // checkout collected is lost.
+      const saved = await completeCheckout('unreadable-phone@example.com', {
+        asked: { shipping: true, phone: true },
+        phone: '020 7946 0000',
+        billingCountry: 'US',
+      });
+
+      assert.deepEqual(saved, {
+        delivery_address: {
+          line1: '1 High Street',
+          city: 'London',
+          postal_code: 'N1 1AA',
+          country: 'GB',
+        },
+        recipient_name: 'Jamie Doe',
+      });
+    });
+
     it('records what it saved as written in Stripe Checkout', async function () {
       const metrics = mockManager.mockMetrics();
       await completeCheckout('shipping-metric@example.com');
@@ -4626,6 +4961,28 @@ describe('Members API', function () {
       assert.deepEqual(
         new Set(writes.flatMap(({ labels }) => labels.field_types)),
         new Set(['address', 'short_text']),
+      );
+    });
+
+    it('saves what a field accepts when another refuses what the checkout collected, as each binding', async function () {
+      // Longer than the recipient's short text field takes. The money is taken, so the address
+      // is still saved.
+      const saved = await completeCheckout('shipping-refused@example.com', {
+        name: 'x'.repeat(300),
+      });
+
+      assert.equal(saved.delivery_address.line1, '1 High Street');
+      assert.equal(saved.recipient_name, undefined);
+      const {
+        body: { members },
+      } = await adminAgent.get('/members/?search=shipping-refused%40example.com');
+      const filter = encodeURIComponent(
+        `data.member_id:'${members[0].id}'+type:metafield_change_event`,
+      );
+      const { body } = await adminAgent.get(`/members/events/?filter=${filter}`).expectStatus(200);
+      assert.deepEqual(
+        body.events.map(({ data }) => [data.written_by_type, data.source]),
+        [['binding', 'checkout']],
       );
     });
 

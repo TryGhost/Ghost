@@ -5,8 +5,11 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test, type TestContext } from 'node:test';
 import { buildServiceReport } from '../services.ts';
+import {
+  legacyInventoryFile,
+  servicesRoot as services,
+} from '../../configs/oxlint/legacy-services.ts';
 
-const services = 'ghost/core/server/services';
 const assessment = {
   complexity: 'straightforward',
   modelImpact: 'fits',
@@ -42,10 +45,9 @@ function finding(from: string, to: string, rule = 'service-dependencies', extra 
 
 test('reports ownership independently of migration status and combines both assessments', () => {
   const entries = {
-    migrated: entry({ migrated: true, migration: assessment }),
-    migratedSplit: entry({ migrated: true, disposition: 'split' }),
     relocate: entry({ disposition: 'relocate' }),
     review: entry({ disposition: 'review' }),
+    split: entry({ disposition: 'split' }),
     lifecycle: entry({
       migration: { ...entry().migration, complexity: 'complex' },
     }),
@@ -57,22 +59,28 @@ test('reports ownership independently of migration status and combines both asse
     }),
     straight: entry(),
   };
-  const rows = buildServiceReport({ services: entries }, audit(Object.keys(entries)));
+  // A service on disk that the inventory does not list is standard.
+  const rows = buildServiceReport(
+    { services: entries },
+    audit([...Object.keys(entries), 'standard']),
+  );
   assert.deepEqual(
     Object.fromEntries(rows.map(({ name, migrationStatus }) => [name, migrationStatus])),
     {
       dependencies: 'Needs preparation',
       lifecycle: 'Needs preparation',
-      migrated: 'Migrated',
-      migratedSplit: 'Migrated',
       relocate: 'Straightforward',
       review: 'Straightforward',
+      split: 'Straightforward',
+      standard: 'Standard',
       straight: 'Straightforward',
     },
   );
-  assert.equal(rows.find(({ name }) => name === 'migratedSplit')?.ownership, 'Split');
+  assert.equal(rows.find(({ name }) => name === 'split')?.ownership, 'Split');
   assert.equal(rows.find(({ name }) => name === 'relocate')?.ownership, 'Relocate');
   assert.equal(rows.find(({ name }) => name === 'review')?.ownership, 'Undecided');
+  assert.equal(rows.find(({ name }) => name === 'standard')?.ownership, 'Standard');
+  assert.equal(rows.find(({ name }) => name === 'standard')?.entry, undefined);
   assert.deepEqual(rows.find(({ name }) => name === 'straight')?.dependencies, []);
 });
 
@@ -117,7 +125,7 @@ test('counts distinct dependency targets while preserving file and rule evidence
   );
 });
 
-test('distinguishes unanalysed entries from zero violations and exposes unlisted roots', () => {
+test('distinguishes unanalysed entries from zero violations and treats unlisted roots as standard', () => {
   const result = buildServiceReport(
     { services: { absent: entry(), clean: entry() } },
     {
@@ -143,8 +151,8 @@ test('distinguishes unanalysed entries from zero violations and exposes unlisted
   assert.equal(absent.ownRoot, null);
   assert.equal(result.find(({ name }) => name === 'clean')?.analyzed, true);
   assert.deepEqual(result.find(({ name }) => name === 'clean')?.dependencies, []);
-  assert.equal(result.find(({ name }) => name === 'unknown')?.ownership, 'Not inventoried');
-  assert.equal(result.find(({ name }) => name === 'unknown')?.migrationStatus, 'Not inventoried');
+  assert.equal(result.find(({ name }) => name === 'unknown')?.ownership, 'Standard');
+  assert.equal(result.find(({ name }) => name === 'unknown')?.migrationStatus, 'Standard');
 });
 
 test('rejects incomplete assessments and invalid audit data instead of reporting a clean result', () => {
@@ -166,7 +174,7 @@ test('rejects incomplete assessments and invalid audit data instead of reporting
 });
 
 async function fixture(t: TestContext) {
-  const root = await mkdtemp(join(import.meta.dirname, '../gx-services-'));
+  const root = await mkdtemp(join(tmpdir(), 'ghost-gx-services-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   const write = async (file: string, source: string) => {
     await mkdir(dirname(join(root, file)), { recursive: true });
@@ -180,15 +188,20 @@ async function fixture(t: TestContext) {
     new URL('../../../.dependency-cruiser.cjs', import.meta.url),
     join(root, '.dependency-cruiser.cjs'),
   );
-  const resolver = 'tools/scripts/ci/service-dependency-resolver.mjs';
-  await mkdir(dirname(join(root, resolver)), { recursive: true });
-  await cp(new URL(`../../../${resolver}`, import.meta.url), join(root, resolver));
+  for (const file of [
+    'tools/scripts/ci/service-dependency-resolver.mjs',
+    'tools/scripts/lib/dependency-boundaries.ts',
+    'tools/configs/oxlint/legacy-services.ts',
+    'tools/scripts/ci/check-boundaries.ts',
+  ]) {
+    await mkdir(dirname(join(root, file)), { recursive: true });
+    await cp(new URL(`../../../${file}`, import.meta.url), join(root, file));
+  }
+  await write('.dependency-cruiser-known-violations.json', '[]');
+  await write('apps/empty.ts', 'export {};');
   await write('package.json', '{"type":"module"}');
   await symlink(new URL('../node_modules', import.meta.url), join(root, 'node_modules'));
-  await write(
-    `${services}/service-inventory.yaml`,
-    JSON.stringify({ services: { alpha: entry() } }),
-  );
+  await write(legacyInventoryFile, JSON.stringify({ services: { alpha: entry() } }));
   await write(`${services}/alpha/index.ts`, 'export {};');
   await write(`${services}/alpha/implementation.ts`, "import '../../../shared/client.js';");
   await write(`${services}/alpha/second.ts`, "import '../../../shared/client.js';");
@@ -210,10 +223,8 @@ test('CLI reports classifications, per-service evidence and distinct dependency 
   const summary = f.run(['report', '--json']);
   assert.equal(summary.status, 0, summary.stderr);
   assert.deepEqual(JSON.parse(summary.stdout), {
-    'Catalogued entries': 1,
-    Migrate: 1,
-    Migrated: 0,
-    'Unmigrated entries': 1,
+    'Legacy entries': 1,
+    'Standard services': 0,
     'Left to migrate': 1,
     Relocate: 0,
     Split: 0,
@@ -222,11 +233,10 @@ test('CLI reports classifications, per-service evidence and distinct dependency 
     'Straightforward migrations': 1,
     'Straightforward — dependency violations': 1,
     'Straightforward — no dependency violations': 0,
-    'Unmigrated entries with dependency violations': 1,
+    'Legacy entries with dependency violations': 1,
     'Left to migrate with dependency violations': 1,
-    'Migrated services with dependency violations': 0,
+    'Standard services with dependency violations': 0,
     'Not analyzed': 0,
-    'Not inventoried': 0,
   });
   const listing = f.run(['list', '--json']);
   assert.equal(listing.status, 0, listing.stderr);
@@ -289,16 +299,13 @@ test('planned splits show runtime-service notes ahead of older migration assessm
   const notes =
     '\n  This is a configured runtime service. Split its parser out before moving the service.  \n';
   const planned = entry({ disposition: 'split', notes });
-  await f.write(
-    `${services}/service-inventory.yaml`,
-    JSON.stringify({ services: { alpha: planned } }),
-  );
+  await f.write(legacyInventoryFile, JSON.stringify({ services: { alpha: planned } }));
   const summary = f.run(['report', '--json']);
   assert.equal(summary.status, 0, summary.stderr);
   const counts = JSON.parse(summary.stdout);
-  assert.equal(counts['Unmigrated entries'], 1);
+  assert.equal(counts['Legacy entries'], 1);
   assert.equal(counts.Split, 1);
-  assert.equal(counts.Migrated, 0);
+  assert.equal(counts['Standard services'], 0);
   assert.equal(counts['Straightforward migrations'], 0);
 
   const listing = f.run(['list', '--group', 'split', '--json']);
@@ -321,7 +328,7 @@ test('planned splits show runtime-service notes ahead of older migration assessm
   assert.ok(details.stdout.indexOf(notes.trim()) < details.stdout.indexOf('Overall assessment'));
 
   await f.write(
-    `${services}/service-inventory.yaml`,
+    legacyInventoryFile,
     JSON.stringify({ services: { alpha: entry({ notes: ' \n  ' }) } }),
   );
   const blank = f.run(['report', 'alpha']);
@@ -333,10 +340,10 @@ test('suggested future homes are shown without changing the disposition', async 
   const f = await fixture(t);
   const futureHome = 'core/server/auth/alpha';
   await f.write(
-    `${services}/service-inventory.yaml`,
-    JSON.stringify({ services: { alpha: entry({ migrated: true, futureHome }) } }),
+    legacyInventoryFile,
+    JSON.stringify({ services: { alpha: entry({ futureHome }) } }),
   );
-  const listing = f.run(['list', '--group', 'migrated', '--json']);
+  const listing = f.run(['list', '--group', 'to-migrate', '--json']);
   assert.equal(listing.status, 0, listing.stderr);
   const rows = JSON.parse(listing.stdout);
   assert.equal(rows.length, 1);
@@ -354,9 +361,7 @@ test('list filters match every report group, including unknown analysis and ever
     absent: entry(),
     alpha: entry(),
     clean: entry(),
-    done: entry({ migrated: true }),
-    drift: entry({ migrated: true }),
-    moved: entry({ migrated: true, disposition: 'split' }),
+    moved: entry({ disposition: 'split' }),
     reviewRefactor: entry({
       disposition: 'review',
       migration: { ...entry().migration, complexity: 'complex', modelImpact: 'may-change' },
@@ -367,8 +372,10 @@ test('list filters match every report group, including unknown analysis and ever
     review: entry({ disposition: 'review' }),
     unresolved: entry(),
   };
-  await f.write(`${services}/service-inventory.yaml`, JSON.stringify({ services: entries }));
-  for (const name of [...Object.keys(entries), 'unlisted'].filter(
+  // done and drift are on disk and not listed, so they are standard.
+  const standard = ['done', 'drift'];
+  await f.write(legacyInventoryFile, JSON.stringify({ services: entries }));
+  for (const name of [...Object.keys(entries), ...standard].filter(
     (candidate) => candidate !== 'absent',
   )) {
     await f.write(`${services}/${name}/index.ts`, 'export const value = 1;');
@@ -390,28 +397,8 @@ test('list filters match every report group, including unknown analysis and ever
   assert.equal(rows.find(({ name }) => name === 'unresolved')?.unresolved, 1);
 
   const groups: [string, string, string[]][] = [
-    ['catalogued', 'Catalogued entries', Object.keys(entries)],
-    [
-      'migrate',
-      'Migrate',
-      ['absent', 'alpha', 'clean', 'done', 'drift', 'own', 'prepare', 'unresolved'],
-    ],
-    ['migrated', 'Migrated', ['done', 'drift', 'moved']],
-    [
-      'unmigrated',
-      'Unmigrated entries',
-      [
-        'absent',
-        'alpha',
-        'clean',
-        'reviewRefactor',
-        'own',
-        'prepare',
-        'relocate',
-        'review',
-        'unresolved',
-      ],
-    ],
+    ['legacy', 'Legacy entries', Object.keys(entries)],
+    ['standard', 'Standard services', standard],
     ['to-migrate', 'Left to migrate', ['absent', 'alpha', 'clean', 'own', 'prepare', 'unresolved']],
     ['relocate', 'Relocate', ['relocate']],
     ['split', 'Split', ['moved']],
@@ -429,8 +416,8 @@ test('list filters match every report group, including unknown analysis and ever
     ],
     ['straightforward-clear', 'Straightforward — no dependency violations', ['clean']],
     [
-      'unmigrated-with-violations',
-      'Unmigrated entries with dependency violations',
+      'legacy-with-violations',
+      'Legacy entries with dependency violations',
       ['alpha', 'own', 'relocate', 'unresolved'],
     ],
     [
@@ -438,16 +425,15 @@ test('list filters match every report group, including unknown analysis and ever
       'Left to migrate with dependency violations',
       ['alpha', 'own', 'unresolved'],
     ],
-    ['migrated-with-violations', 'Migrated services with dependency violations', ['drift']],
+    ['standard-with-violations', 'Standard services with dependency violations', ['drift']],
     ['not-analyzed', 'Not analyzed', ['absent']],
-    ['not-inventoried', 'Not inventoried', ['unlisted']],
   ];
   const report = f.run(['report']);
   assert.equal(report.status, 0, report.stderr);
   const [reportTable, ...footer] = report.stdout.trimEnd().split('\n\n');
   const [header, ...reportRows] = reportTable!.split('\n');
   assert.match(header!, /^MIGRATION\s+COUNT\s+GROUP$/);
-  assert.equal(reportRows.length, groups.length - 2);
+  assert.equal(reportRows.length, groups.length - 1);
   assert.doesNotMatch(report.stdout, /Not analyzed|Not inventoried/);
   assert.match(report.stdout, /\s+relocate\nSplit\s+1\s+split\n/);
   assert.deepEqual(footer, ['List a group: pnpm gx services list --group <group>']);
@@ -456,10 +442,10 @@ test('list filters match every report group, including unknown analysis and ever
   const counts = JSON.parse(summary.stdout);
   assert.equal(Object.keys(counts).length, groups.length);
   assert.equal(
-    counts['Catalogued entries'],
-    counts.Migrate + counts.Relocate + counts.Split + counts.Undecided,
+    counts['Legacy entries'],
+    counts['Left to migrate'] + counts.Relocate + counts.Split + counts.Undecided,
   );
-  assert.equal(counts['Catalogued entries'], counts.Migrated + counts['Unmigrated entries']);
+  assert.equal(rows.length, counts['Legacy entries'] + counts['Standard services']);
   assert.equal(
     counts['Left to migrate'],
     counts['Needs preparation'] + counts['Straightforward migrations'],
@@ -477,7 +463,7 @@ test('list filters match every report group, including unknown analysis and ever
     );
     assert.equal(counts[label], names.length, group);
     const line = reportRows.find((row) => row.endsWith(`  ${group}`));
-    if (['not-analyzed', 'not-inventoried'].includes(group)) {
+    if (group === 'not-analyzed') {
       assert.equal(line, undefined);
       continue;
     }
@@ -495,14 +481,14 @@ test('list filters match every report group, including unknown analysis and ever
 
 test('empty groups preserve list headers and return an empty JSON array', async (t) => {
   const f = await fixture(t);
-  const empty = f.run(['list', '--group', 'migrated']);
+  const empty = f.run(['list', '--group', 'standard']);
   assert.equal(empty.status, 0, empty.stderr);
   assert.match(
     empty.stdout,
     /^SERVICE\s+OWNERSHIP\s+MIGRATION\s+DISALLOWED DEPS\s+UNRESOLVED\s+OWN ROOT/m,
   );
   assert.doesNotMatch(empty.stdout, /^alpha\s+/m);
-  const json = f.run(['list', '--group', 'migrated', '--json']);
+  const json = f.run(['list', '--group', 'standard', '--json']);
   assert.equal(json.status, 0, json.stderr);
   assert.deepEqual(JSON.parse(json.stdout), []);
 });
@@ -521,6 +507,46 @@ test('CLI help needs no audit and analyzer failures cannot produce clean reports
   }
 });
 
+test('reports and boundary lint share the graph and known-violations file', async (t) => {
+  const f = await fixture(t);
+  await f.write(
+    '.dependency-cruiser-known-violations.json',
+    JSON.stringify(
+      ['implementation', 'second'].map((name) => ({
+        rule: 'service-dependencies',
+        from: `${services}/alpha/${name}.ts`,
+        to: 'ghost/core/shared/client.js',
+      })),
+    ),
+  );
+  const lint = () =>
+    spawnSync(process.execPath, [join(f.root, 'tools/scripts/ci/check-boundaries.ts')], {
+      cwd: tmpdir(),
+      encoding: 'utf8',
+    });
+  assert.equal(lint().status, 0);
+  const report = f.run(['report', 'alpha', '--json']);
+  assert.equal(report.status, 0, report.stderr);
+  assert.equal(JSON.parse(report.stdout).findings.length, 2);
+  await f.write('apps/portal/forbidden.ts', "import '../admin-x-framework/implementation';");
+  await f.write('apps/admin-x-framework/implementation.ts', 'export {};');
+  const auditResult = f.run(['audit', '--output-type', 'json']);
+  assert.equal(auditResult.status, 0, auditResult.stderr);
+  const graph = JSON.parse(auditResult.stdout);
+  assert.equal(graph.summary.violations.length, 3);
+  const invalid = lint();
+  assert.equal(invalid.status, 1);
+  assert.match(invalid.stderr, /public-apps-not-admin-libs/);
+
+  // Deleting the legacy entry makes alpha standard, so it cannot keep known violations.
+  await f.write(legacyInventoryFile, JSON.stringify({ services: {} }));
+  for (const command of ['report', 'audit']) {
+    const invalidReport = f.run([command]);
+    assert.equal(invalidReport.status, 1);
+    assert.match(invalidReport.stderr, /does not belong to a legacy service/);
+  }
+});
+
 test('list help describes groups and invalid filters fail before the audit runs', async (t) => {
   const f = await fixture(t);
   await f.write('.dependency-cruiser.cjs', "throw new Error('Audit must not run');");
@@ -528,10 +554,8 @@ test('list help describes groups and invalid filters fail before the audit runs'
   assert.equal(help.status, 0, help.stderr);
   assert.match(help.stdout, /--group/);
   for (const group of [
-    'catalogued',
-    'migrate',
-    'migrated',
-    'unmigrated',
+    'legacy',
+    'standard',
     'to-migrate',
     'relocate',
     'split',
@@ -540,11 +564,10 @@ test('list help describes groups and invalid filters fail before the audit runs'
     'straightforward',
     'straightforward-with-violations',
     'straightforward-clear',
-    'unmigrated-with-violations',
+    'legacy-with-violations',
     'to-migrate-with-violations',
-    'migrated-with-violations',
+    'standard-with-violations',
     'not-analyzed',
-    'not-inventoried',
   ]) {
     assert.ok(help.stdout.includes(group), group);
   }
@@ -559,7 +582,7 @@ test('list help describes groups and invalid filters fail before the audit runs'
   assert.match(missing.stderr, /--group/);
   assert.doesNotMatch(missing.stderr, /Audit must not run/);
   for (const command of ['report', 'dependencies']) {
-    const result = f.run([command, '--group', 'migrated']);
+    const result = f.run([command, '--group', 'standard']);
     assert.equal(result.status, 1, command);
     assert.equal(result.stdout, '', command);
     assert.match(result.stderr, /--group/, command);

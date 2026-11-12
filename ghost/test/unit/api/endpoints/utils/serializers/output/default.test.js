@@ -132,12 +132,16 @@ describe('Unit: endpoints/utils/serializers/output/default', function () {
   });
 
   it('.all() can map a single Bookshelf model with custom mapper', function () {
-    mappers.stuffs = sinon.stub().callsFake(function (res) {
-      return {
-        title: res.title,
-        custom: 'thing',
-      };
-    });
+    sinon.define(
+      mappers,
+      'stuffs',
+      sinon.stub().callsFake(function (res) {
+        return {
+          title: res.title,
+          custom: 'thing',
+        };
+      }),
+    );
 
     const response = {
       toJSON: toJSONStub,
@@ -160,12 +164,16 @@ describe('Unit: endpoints/utils/serializers/output/default', function () {
   });
 
   it('.all() can map a Bookshelf collection with custom mapper', function () {
-    mappers.stuffs = sinon.stub().callsFake(function (res) {
-      return {
-        title: res.title,
-        custom: 'thing',
-      };
-    });
+    sinon.define(
+      mappers,
+      'stuffs',
+      sinon.stub().callsFake(function (res) {
+        return {
+          title: res.title,
+          custom: 'thing',
+        };
+      }),
+    );
 
     const response = {
       data: [

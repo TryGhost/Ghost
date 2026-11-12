@@ -56,23 +56,12 @@ export const PhoneSettings = CollectedPart.extend({
 });
 export type PhoneSettings = z.infer<typeof PhoneSettings>;
 
-/**
- * Letting a business buyer give a tax ID at checkout, as the publisher set it. Stripe keeps the
- * tax ID on the customer and shows it on their invoices, so Ghost saves nothing and needs no
- * custom field. It's called a tax number in code, as a name ending in `_id` reads as a reference
- * to another record.
- */
-export const TaxNumberSettings = CollectedPart;
-export type TaxNumberSettings = z.infer<typeof TaxNumberSettings>;
-
 /** Each collected part of the config as saved. */
 const COLLECTED_SETTINGS = {
   /** Null means checkout doesn't ask for a shipping address. */
   shipping: ShippingSettings.nullable(),
   /** Null means checkout doesn't ask for a phone number. */
   phone: PhoneSettings.nullable(),
-  /** Null means checkout doesn't let buyers give a tax ID. */
-  taxNumber: TaxNumberSettings.nullable(),
 } satisfies Record<CollectedSection, z.ZodType>;
 
 /** The site-wide Stripe Checkout config. */
@@ -90,7 +79,6 @@ export type StripeCheckoutConfig = z.infer<typeof StripeCheckoutConfig>;
 export const SECTION_OF = {
   shipping: 'shipping',
   phone: 'phone',
-  tax_number: 'taxNumber',
 } as const satisfies { [Part in CollectedPart]: SnakeToCamel<Part> };
 export type CollectedSection = (typeof SECTION_OF)[CollectedPart];
 
@@ -101,38 +89,33 @@ export type CollectedSection = (typeof SECTION_OF)[CollectedPart];
 export const COLLECTED_SECTIONS = COLLECTED_PARTS.map((part) => SECTION_OF[part]);
 
 /**
- * Each collected part's name where it is stored, in its own column and in the rows naming its
- * tiers, which is also its name in the Admin API.
+ * Each collected part's name in the Admin API, which is also the name of the tier requirement it
+ * keeps its tiers as.
  */
 export const SECTION_NAMES = {
   shipping: 'shipping',
   phone: 'phone',
-  taxNumber: 'tax_number',
 } as const satisfies { [Section in CollectedSection]: CamelToSnake<Section> };
 
 /** What each collected part asks the buyer for, as messages about it name it. */
 export const COLLECTED_NOUNS = {
   shipping: 'shipping address',
   phone: 'phone number',
-  taxNumber: 'tax ID',
 } as const satisfies Record<CollectedSection, string>;
 
 /**
- * The private flag the collected parts are behind. The config itself is behind the design
- * flag, which releases first. Staff only see and save the collected parts while it's on, and
- * checkouts and the completed-checkout webhook only act on them while it's on.
+ * The private flag the collected parts are behind. Staff only see and save the collected parts
+ * while it's on, checkouts and the completed-checkout webhook only act on them while it's on,
+ * and tiers only list what their members must give while it's on.
  */
 export const COLLECTION_FLAG = 'stripeCheckoutCollection';
 
-/** What a checkout needs to know about every collected part to ask for it. */
-export interface AskedPart extends z.infer<typeof CollectedPart> {
-  /**
-   * Whether checkouts can ask for it right now. A saved part can't while a field it can't do
-   * without is archived or no longer holds what it collects, as the answer would have nowhere
-   * to go, so checkouts stop asking until the field is restored.
-   */
-  collectable: boolean;
-}
+/**
+ * What a checkout needs to know about every collected part to ask for it: the tiers it asks on.
+ * A saved part is asked for while it's on, even while a field it saves into is archived, so an
+ * archived field never changes what buyers are asked. The answers for that field are dropped.
+ */
+export type AskedPart = z.infer<typeof CollectedPart>;
 
 /**
  * What a checkout needs to know about each collected part to ask for it: which tiers ask and
@@ -141,7 +124,6 @@ export interface AskedPart extends z.infer<typeof CollectedPart> {
 export interface AskedParts {
   shipping: AskedPart & Pick<ShippingSettings, 'allowedCountries'>;
   phone: AskedPart;
-  taxNumber: AskedPart;
 }
 
 /**
@@ -158,8 +140,6 @@ export interface Asking {
   shipping: Pick<ShippingSettings, 'allowedCountries'>;
   /** Asked the same way on every checkout. */
   phone: Record<string, never>;
-  /** Offered the same way on every checkout. */
-  taxNumber: Record<string, never>;
 }
 
 /** How a checkout asks for each collected part, or null for each it doesn't ask for. */

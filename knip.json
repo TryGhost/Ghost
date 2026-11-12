@@ -4,7 +4,7 @@
     "ghost/test/utils/fixtures/themes/**/assets/built/**",
     ".github/scripts/i18n-review/**"
   ],
-  "ignoreBinaries": ["tb"],
+  "ignoreBinaries": ["less"],
   "workspaces": {
     ".": {
       "vitest": {
@@ -14,67 +14,45 @@
         "lint-staged",
         "secretlint",
         "@secretlint/secretlint-rule-pattern",
-        "@secretlint/secretlint-rule-preset-recommend"
+        "@secretlint/secretlint-rule-preset-recommend",
+        "markdownlint-cli2",
+        "remark-cli",
+        "remark-validate-links"
       ]
     },
     "ghost": {
-      "ignoreDependencies": ["cssnano"]
+      "ignoreDependencies": ["cssnano", "mysql"]
     },
-    "apps/activitypub": {
-      "ignoreDependencies": ["tailwindcss"]
+    "apps/admin": {
+      "entry": ["src/members/detail/map-data/generate-map.mjs"]
     },
     "apps/admin-x-framework": {
-      "ignoreDependencies": ["@playwright/test"],
-      "entry": [
-        "src/index.ts",
-        "src/errors.ts",
-        "src/helpers.ts",
-        "src/hooks.ts",
-        "src/api/*.ts",
-        "src/utils/post-utils.ts",
-        "src/utils/get-site-timezone.ts",
-        "src/vite.ts",
-        "src/playwright.ts",
-        "src/test/acceptance.ts",
-        "src/test/hook-testing-utils.ts",
-        "src/test/render.tsx",
-        "src/test/setup.ts",
-        "src/test/test-utils.tsx"
-      ]
+      "entry": ["src/api/*.ts"]
     },
     "apps/comments-ui": {
-      "ignoreDependencies": [
-        "@tryghost/debug",
-        "@testing-library/jest-dom",
-        "eslint-plugin-tailwindcss"
-      ]
-    },
-    "apps/portal": {
-      "ignoreDependencies": ["@tryghost/debug", "@testing-library/jest-dom"]
-    },
-    "apps/shade": {
-      "ignoreDependencies": ["@storybook/addon-links", "remark-gfm"],
-      "entry": [
-        "src/index.ts",
-        "src/tokens.ts",
-        "src/primitives.ts",
-        "src/components.ts",
-        "src/patterns.ts",
-        "src/page-templates.ts",
-        "src/app.ts",
-        "src/utils.ts"
-      ]
+      "ignoreDependencies": ["eslint-plugin-tailwindcss"]
     },
     "apps/signup-form": {
-      "ignoreDependencies": [
-        "@tryghost/debug",
-        "@storybook/addon-links",
-        "@storybook/addon-docs",
-        "eslint-plugin-tailwindcss"
-      ]
+      "ignoreDependencies": ["eslint-plugin-tailwindcss"]
+    },
+    "e2e": {
+      "ignoreDependencies": ["@tryghost/checkout", "@tryghost/metafield-types"]
     },
     "koenig/koenig-lexical": {
       "ignoreDependencies": ["@storybook/react", "prettier-plugin-organize-attributes"]
+    },
+    "packages/app-sdk": {
+      "ignoreDependencies": ["zod"]
+    },
+    "tools/configs/oxlint": {
+      "entry": ["plugin.ts", "local-plugin.ts", "filenames-plugin.ts"]
+    },
+    "tools/gx": {
+      "entry": ["*.ts"],
+      "ignoreDependencies": ["@internal/cfg-oxlint", "@internal/scripts"]
+    },
+    "tools/scripts": {
+      "ignoreDependencies": ["@internal/cfg-oxlint"]
     }
   }
 }

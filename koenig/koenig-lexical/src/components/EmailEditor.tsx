@@ -9,6 +9,7 @@ import EmEnDashPlugin from '../plugins/EmEnDashPlugin';
 import EmailCtaPlugin from '../plugins/EmailCtaPlugin';
 import EmbedPlugin from '../plugins/EmbedPlugin';
 import EmojiPickerPlugin from '../plugins/EmojiPickerPlugin';
+import FilePlugin from '../plugins/FilePlugin';
 import HorizontalRulePlugin from '../plugins/HorizontalRulePlugin';
 import HtmlPlugin from '../plugins/HtmlPlugin';
 import ImagePlugin from '../plugins/ImagePlugin';
@@ -93,6 +94,7 @@ const EmailEditor = ({
                         <EmailCtaPlugin />
                         <EmEnDashPlugin />
                         <EmojiPickerPlugin />
+                        <FilePlugin />
                         <HorizontalRulePlugin />
                         <HtmlPlugin />
                         <ImagePlugin />

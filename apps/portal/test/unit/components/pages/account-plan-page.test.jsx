@@ -180,6 +180,325 @@ describe('Account Plan Page', () => {
     expect(queryByRole('button', { name: 'Gift a membership' })).not.toBeInTheDocument();
   });
 
+  /**
+   * A paid member on the first of two tiers, the second of which requires `requirements`, holding
+   * `metafields` on their own record.
+   */
+  const changingToRequiring = (requirements, { metafields = {}, ...overrides } = {}) => {
+    const products = getProductsData({ numOfProducts: 2 });
+    products[1].requirements = requirements;
+    const current = products[0].monthlyPrice;
+    const member = {
+      ...getMemberData({
+        paid: true,
+        subscriptions: [
+          getSubscriptionData({
+            priceId: current.id,
+            amount: current.amount,
+            currency: current.currency,
+            interval: 'month',
+          }),
+        ],
+      }),
+      metafields,
+    };
+    const utils = customSetup({ site: getSiteData({ products }), member, ...overrides });
+    // The second tier, as the member is on the first.
+    fireEvent.click(utils.getAllByRole('button', { name: 'Choose' })[1]);
+    return utils;
+  };
+
+  // Listed as the tiers API lists them, by name, which isn't the order Portal asks in, each port
+  // naming the field members read its answer from.
+  const SHIPPING_AND_PHONE = [
+    { name: 'phone', ports: { number: { port: 'checkout.phone', field: 'custom.contact_phone' } } },
+    {
+      name: 'shipping',
+      ports: {
+        recipient: { port: 'checkout.shipping.name', field: 'custom.recipient_name' },
+        address: { port: 'checkout.shipping.address', field: 'custom.delivery_address' },
+      },
+    },
+  ];
+
+  test('asks a paid member for what their new tier requires, filled in with what they gave before', async () => {
+    const { getByRole, findByLabelText, getByLabelText, mockDoActionFn } = changingToRequiring(
+      SHIPPING_AND_PHONE,
+      {
+        metafields: {
+          custom: { recipient_name: 'Ada Lovelace', contact_phone: '+44 7400 123456' },
+        },
+      },
+    );
+
+    const recipient = await findByLabelText('Recipient name');
+    expect(recipient).toHaveValue('Ada Lovelace');
+    // Shown after the country its code names, as the phone input shows a number held.
+    expect(getByLabelText('Country code')).toHaveTextContent(/^\+44$/);
+    expect(getByLabelText('Phone number')).toHaveValue('7400 123456');
+    // Shipping first, then the phone number, whatever order the tier lists them in.
+    expect(
+      recipient.compareDocumentPosition(getByLabelText('Phone number')) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    // Every input has to hold an answer before the plan can change.
+    const confirm = getByRole('button', { name: 'Confirm' });
+    expect(confirm).toBeDisabled();
+
+    fireEvent.change(getByLabelText('Address line 1'), { target: { value: '1 High Street' } });
+    // Nobody can ship to an address without a country.
+    expect(confirm).toBeDisabled();
+    fireEvent.change(getByLabelText('Country'), { target: { value: 'GB' } });
+    expect(confirm).toBeEnabled();
+    fireEvent.click(confirm);
+
+    // Every answer, by the port it's saved through, as the tier requires them all.
+    expect(mockDoActionFn).toHaveBeenCalledWith(
+      'updateSubscription',
+      expect.objectContaining({
+        answers: {
+          'checkout.shipping.name': 'Ada Lovelace',
+          'checkout.shipping.address': { line1: '1 High Street', country: 'GB' },
+          'checkout.phone': '+44 7400 123456',
+        },
+      }),
+    );
+  });
+
+  // Most members hold no number yet. The phone input starts in the reader's own country, by their
+  // time zone, as many browsers speak en-US wherever they are, and the number goes as it's dialled
+  // at home with that country's code in front, for the site to keep in its international form.
+  test('asks a paid member holding no phone number in their own country, and sends it with its code', async () => {
+    const languages = vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['en-US']);
+    const { resolvedOptions } = Intl.DateTimeFormat.prototype;
+    const timeZone = vi
+      .spyOn(Intl.DateTimeFormat.prototype, 'resolvedOptions')
+      .mockImplementation(function () {
+        return { ...resolvedOptions.call(this), timeZone: 'Europe/London' };
+      });
+    try {
+      const { getByRole, findByLabelText, getByLabelText, mockDoActionFn } = changingToRequiring([
+        SHIPPING_AND_PHONE[0],
+      ]);
+
+      const number = await findByLabelText('Phone number');
+      expect(number).toHaveValue('');
+      expect(getByLabelText('Country code')).toHaveTextContent(/^\+44$/);
+      const confirm = getByRole('button', { name: 'Confirm' });
+      expect(confirm).toBeDisabled();
+
+      fireEvent.change(number, { target: { value: '07400 123456' } });
+      fireEvent.click(confirm);
+
+      expect(mockDoActionFn).toHaveBeenCalledWith(
+        'updateSubscription',
+        expect.objectContaining({ answers: { 'checkout.phone': '+44 07400 123456' } }),
+      );
+    } finally {
+      languages.mockRestore();
+      timeZone.mockRestore();
+    }
+  });
+
+  test('sends each answer whole, as it replaces what the member gave before', async () => {
+    const { getByRole, findByLabelText, getByLabelText, mockDoActionFn } = changingToRequiring(
+      [SHIPPING_AND_PHONE[1]],
+      {
+        metafields: {
+          custom: {
+            recipient_name: 'Ada Lovelace',
+            delivery_address: { line1: '1 High Street', city: 'London', country: 'GB' },
+          },
+        },
+      },
+    );
+
+    await findByLabelText('Recipient name');
+    fireEvent.change(getByLabelText('City'), { target: { value: 'Leeds' } });
+    fireEvent.click(getByRole('button', { name: 'Confirm' }));
+
+    expect(mockDoActionFn).toHaveBeenCalledWith(
+      'updateSubscription',
+      expect.objectContaining({
+        answers: {
+          'checkout.shipping.name': 'Ada Lovelace',
+          'checkout.shipping.address': { line1: '1 High Street', city: 'Leeds', country: 'GB' },
+        },
+      }),
+    );
+  });
+
+  test('offers only the countries the new tier ships to', async () => {
+    const { findByLabelText, getByLabelText } = changingToRequiring([
+      { ...SHIPPING_AND_PHONE[1], countries: ['US', 'GB'] },
+    ]);
+
+    await findByLabelText('Recipient name');
+    const offered = [...getByLabelText('Country').options].map(({ value }) => value);
+    expect(offered.filter(Boolean).sort()).toEqual(['GB', 'US']);
+  });
+
+  test("doesn't offer a saved country the new tier doesn't ship to, so the member picks one", async () => {
+    const { getByRole, findByLabelText, getByLabelText, mockDoActionFn } = changingToRequiring(
+      [{ ...SHIPPING_AND_PHONE[1], countries: ['US', 'GB'] }],
+      {
+        metafields: {
+          custom: {
+            recipient_name: 'Ada Lovelace',
+            delivery_address: { line1: '1 Rue Haute', city: 'Paris', country: 'FR' },
+          },
+        },
+      },
+    );
+
+    await findByLabelText('Recipient name');
+    const country = getByLabelText('Country');
+    expect([...country.options].map(({ value }) => value).filter(Boolean)).not.toContain('FR');
+    expect(country).toHaveValue('');
+    expect(getByLabelText('Address line 1')).toHaveValue('1 Rue Haute');
+    const confirm = getByRole('button', { name: 'Confirm' });
+    expect(confirm).toBeDisabled();
+
+    fireEvent.change(country, { target: { value: 'GB' } });
+    fireEvent.click(confirm);
+
+    expect(mockDoActionFn).toHaveBeenCalledWith(
+      'updateSubscription',
+      expect.objectContaining({
+        answers: {
+          'checkout.shipping.name': 'Ada Lovelace',
+          'checkout.shipping.address': { line1: '1 Rue Haute', city: 'Paris', country: 'GB' },
+        },
+      }),
+    );
+  });
+
+  test('offers every country when the tier ships anywhere, even where Stripe does not', async () => {
+    const { findByLabelText, getByLabelText } = changingToRequiring([SHIPPING_AND_PHONE[1]]);
+
+    await findByLabelText('Recipient name');
+    const offered = [...getByLabelText('Country').options].map(({ value }) => value);
+    expect(offered).toContain('GB');
+    // Somewhere Stripe Checkout won't ship, which Ghost's list of countries holds.
+    expect(offered).toContain('CU');
+  });
+
+  test("leaves out a requirement this build doesn't know, or knows with other roles, and asks for the rest", async () => {
+    const { getByRole, findByLabelText, queryByLabelText, mockDoActionFn } = changingToRequiring(
+      [
+        { name: 'date_of_birth', ports: { date: { port: 'checkout.date_of_birth' } } },
+        // As a newer site might list shipping, with a role this build doesn't ask for.
+        {
+          ...SHIPPING_AND_PHONE[1],
+          ports: {
+            ...SHIPPING_AND_PHONE[1].ports,
+            instructions: { port: 'checkout.shipping.instructions' },
+          },
+        },
+        SHIPPING_AND_PHONE[0],
+      ],
+      { metafields: { custom: { contact_phone: '+44 7400 123456' } } },
+    );
+
+    expect(await findByLabelText('Phone number')).toHaveValue('7400 123456');
+    expect(queryByLabelText('Recipient name')).not.toBeInTheDocument();
+    fireEvent.click(getByRole('button', { name: 'Confirm' }));
+
+    // Only what this build asked for, as each requirement is answered whole or not at all.
+    expect(mockDoActionFn).toHaveBeenCalledWith(
+      'updateSubscription',
+      expect.objectContaining({ answers: { 'checkout.phone': '+44 7400 123456' } }),
+    );
+  });
+
+  test('shows a refused answer on the input that holds it', async () => {
+    const { findByText } = changingToRequiring([SHIPPING_AND_PHONE[1]], {
+      fieldErrors: {
+        'custom:checkout.shipping.address:country': 'Enter a 2-letter country code, like US.',
+      },
+    });
+
+    expect(
+      await findByText('Country: Enter a 2-letter country code, like US.'),
+    ).toBeInTheDocument();
+  });
+
+  test('forgets a refusal once the member goes back from the confirmation', async () => {
+    const { findByText, getByRole, mockDoActionFn } = changingToRequiring([SHIPPING_AND_PHONE[1]], {
+      fieldErrors: {
+        'custom:checkout.shipping.address:country': 'Enter a 2-letter country code, like US.',
+      },
+    });
+    await findByText('Country: Enter a 2-letter country code, like US.');
+
+    fireEvent.click(getByRole('button', { name: 'Back' }));
+
+    // The inputs it was about are gone, so it mustn't mark the next ones.
+    expect(mockDoActionFn).toHaveBeenCalledWith('clearFieldErrors');
+  });
+
+  test('asks nothing more when only the billing period changes, as the tier stays the same', async () => {
+    const products = getProductsData({ numOfProducts: 2 });
+    products[1].requirements = SHIPPING_AND_PHONE;
+    const current = products[1].monthlyPrice;
+    const member = getMemberData({
+      paid: true,
+      subscriptions: [
+        getSubscriptionData({
+          priceId: current.id,
+          amount: current.amount,
+          currency: current.currency,
+          interval: 'month',
+        }),
+      ],
+    });
+    const { getByTestId, getAllByRole, getByRole, queryByLabelText, mockDoActionFn } = customSetup({
+      site: getSiteData({ products }),
+      member,
+    });
+
+    fireEvent.click(getByTestId('yearly-switch'));
+    // The same tier, yearly.
+    fireEvent.click(getAllByRole('button', { name: 'Choose' })[1]);
+
+    expect(queryByLabelText('Phone number')).not.toBeInTheDocument();
+    fireEvent.click(getByRole('button', { name: 'Confirm' }));
+    expect(mockDoActionFn).toHaveBeenCalledWith(
+      'updateSubscription',
+      expect.objectContaining({ answers: {} }),
+    );
+  });
+
+  test('asks nothing more when the new tier requires nothing', async () => {
+    const products = getProductsData({ numOfProducts: 2 });
+    const current = products[0].monthlyPrice;
+    const member = getMemberData({
+      paid: true,
+      subscriptions: [
+        getSubscriptionData({
+          priceId: current.id,
+          amount: current.amount,
+          currency: current.currency,
+          interval: 'month',
+        }),
+      ],
+    });
+    const { getAllByRole, getByRole, queryByLabelText, mockDoActionFn } = customSetup({
+      site: getSiteData({ products }),
+      member,
+    });
+
+    // The second tier, as the member is on the first.
+    fireEvent.click(getAllByRole('button', { name: 'Choose' })[1]);
+
+    expect(queryByLabelText('Recipient name')).not.toBeInTheDocument();
+    fireEvent.click(getByRole('button', { name: 'Confirm' }));
+    expect(mockDoActionFn).toHaveBeenCalledWith(
+      'updateSubscription',
+      expect.objectContaining({ answers: {} }),
+    );
+  });
+
   test('can cancel subscription for member on hidden tier', async () => {
     const overrides = generateAccountPlanFixture();
     const { queryByRole, queryByText } = customSetup(overrides);

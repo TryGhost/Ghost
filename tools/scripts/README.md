@@ -36,11 +36,13 @@ inventory is a reporting tool, although contributors can run it locally.
 | [check-agent-skill-links.ts](./ci/check-agent-skill-links.ts)           | Validate repository skill discovery and Claude symlinks                 | pnpm lint:agent-skills                                    |
 | [check-app-version-bump.ts](./ci/check-app-version-bump.ts)             | Check CDN app version lines against Core defaults                       | PR CI                                                     |
 | [check-internal-packages.ts](./ci/check-internal-packages.ts)           | Validate internal package layout, exports and template conventions      | pnpm lint:packages                                        |
+| [check-legacy-services.ts](./ci/check-legacy-services.ts)               | Reject new legacy services and new dependency-check deferrals           | pnpm lint:legacy-services / PR CI                         |
 | [check-migration-integrity.ts](./ci/check-migration-integrity.ts)       | Reject invalid changes to released or incorrectly versioned migrations  | PR CI                                                     |
 | [check-versioning-ignore.ts](./ci/check-versioning-ignore.ts)           | Check workspace versioning exclusions and externally versioned packages | pnpm lint:versioning                                      |
 | [compare-image-report.ts](./ci/compare-image-report.ts)                 | Compare production image file/size reports for CI summaries             | Image-report CI step                                      |
 | [e2e-shards.ts](./ci/e2e-shards.ts)                                     | Plan browser-test shards and update recorded execution timings          | Browser-test CI: plan / record; sparse checkout supported |
 | [nx-set-shas.ts](./ci/nx-set-shas.ts)                                   | Select affected CI commit ranges from successful workflow history       | CI job setup                                              |
+| [check-boundaries.ts](./ci/check-boundaries.ts)                         | Enforce dependency boundaries and reject stale known violations         | pnpm lint:boundaries / CI                                 |
 | [service-dependency-resolver.mjs](./ci/service-dependency-resolver.mjs) | Resolve authored Core source for Dependency Cruiser                     | Boundary lint and gx service dependency reports           |
 | [summarize-admin-acceptance.ts](./ci/summarize-admin-acceptance.ts)     | Render Admin acceptance-test results into a CI summary                  | Acceptance CI after test shards                           |
 | [typescript-inventory.ts](./ci/typescript-inventory.ts)                 | Measure tracked JS/TS adoption, dependencies and historical counts      | pnpm inventory:typescript; TypeScript inventory workflow  |
@@ -91,11 +93,13 @@ and gx; it is not another contributor command family.
 | -------------------------------------------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------- |
 | [clean.ts](clean.ts)                                     | Repair a broken checkout by clearing dependencies, Nx state and build artifacts | pnpm fix; plain Node entrypoint before reinstall               |
 | [dev-infra-up.ts](dev-infra-up.ts)                       | Start shared Compose services and provision the checkout database               | Nx development-infrastructure prerequisite                     |
+| [dev-wait-for-ghost.ts](dev-wait-for-ghost.ts)           | Wait for the first Ghost to answer before starting the second                   | Nx `dev:host:multi` task                                       |
 | [enforce-package-manager.ts](enforce-package-manager.ts) | Require pnpm without needing installed dependencies                             | Root preinstall; selectively copied by development Dockerfiles |
 | [format.ts](format.ts)                                   | Run the repository formatter and stabilize its output                           | pnpm format; pre-commit hook                                   |
 | [ghost-dev-env.ts](ghost-dev-env.ts)                     | Prepare checkout configuration, theme submodules and development assets         | Nx setup prerequisite; Stripe wrapper                          |
 | [init-submodules.sh](init-submodules.sh)                 | Initialize theme submodules, reusing local repositories in worktrees            | pnpm bootstrap; direct Bash helper                             |
 | [with-ghost-dev-env.ts](with-ghost-dev-env.ts)           | Run commands with shared checkout and Compose environment settings              | Nx dev tasks, database aliases, analytics tasks and gx         |
+| [with-second-ghost.ts](with-second-ghost.ts)             | Run commands with a second Ghost's port and shared Redis caches                 | pnpm dev:multi                                                 |
 
 ## Shared support and tests
 
@@ -155,10 +159,25 @@ boundary; see [its README](../../.github/scripts/i18n-review/README.md).
 Contributor reports live in [gx](../gx/README.md#service-migration-reports):
 `pnpm gx services audit` provides Dependency Cruiser's native reports and
 `pnpm gx services dependencies` summarises disallowed dependencies. Rules and
-the allowlist remain in `.dependency-cruiser.cjs`; the resolver adapter in
-`ci/` supports both reporting and boundary lint. The
+the allowlist remain in `.dependency-cruiser.cjs`. The shared runner in
+`lib/dependency-boundaries.ts` reads `.dependency-cruiser-known-violations.json`
+and scans Core and apps once for both reports and `ci/check-boundaries.ts`.
+The checker rejects new violations and stale entries; reports retain all findings.
+The resolver adapter in `ci/` keeps authored source resolution consistent. The
 [services guide](../../ghost/core/server/services/README.md#dependency-boundaries)
 defines the policy.
+
+[`legacy-services.ts`](../configs/oxlint/legacy-services.ts) in the Oxlint
+configuration reads the legacy service inventory. Boundary lint, the
+`ghost/service-root-shape` Oxlint rule, the service generator and the reports all
+use it, so there is one definition of a legacy service.
+
+`ci/check-legacy-services.ts` (`pnpm lint:legacy-services`) fails when the
+checkout lists a legacy service, or defers dependency checks for one, that the
+commit it forked from `origin/main` does not. CI runs it on pull requests that
+change the inventory. It fails rather than skips when the base branch has not
+been fetched, so `pnpm lint` does not include it. Its comparison with the fork
+point is private to the check, in `ci/legacy-services-base.ts`.
 
 ## TypeScript inventory
 

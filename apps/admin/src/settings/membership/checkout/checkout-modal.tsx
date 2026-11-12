@@ -340,8 +340,6 @@ const CheckoutEditor: React.FC<{
   // Each part is only offered while the collection flag is on and Ghost says what is saved
   // for it, which a Ghost older than the part doesn't.
   const collecting = useFeatureFlag('stripeCheckoutCollection');
-  // Automatic tax lets a business buyer give a tax ID on every checkout that takes payment.
-  const automaticTax = useFeatureFlag('stripeAutomaticTax');
   const offered = COLLECTED_PARTS.filter((part) => collecting && config[part] !== undefined);
   const { data: { tiers = [] } = {} } = useBrowseTiers();
   const { data: customFields = [] } = useBrowseMemberCustomFieldsIncludingArchived({
@@ -386,11 +384,9 @@ const CheckoutEditor: React.FC<{
     .sort((a, b) => (a.monthly_price ?? 0) - (b.monthly_price ?? 0));
   // What the sketch shows each part as, tagged with the tiers it's asked on.
   const sketched: { [Part in CollectedPart]?: { audience: string } } = {};
-  for (const part of COLLECTED_PARTS) {
+  for (const part of offered) {
     const state = formState.parts[part];
-    if (CHECKOUT_PARTS[part].alwaysAsked?.({ automaticTax })) {
-      sketched[part] = { audience: '' };
-    } else if (offered.includes(part) && state.collect) {
+    if (state.collect) {
       sketched[part] = { audience: audienceOf(state, paidTiers) };
     }
   }
@@ -400,7 +396,6 @@ const CheckoutEditor: React.FC<{
     return (
       <Settings
         key={part}
-        automaticTax={automaticTax}
         chosenFields={chosenFields}
         errors={errors}
         fields={customFields}

@@ -21,9 +21,7 @@ import {
 } from '@tryghost/admin-x-framework';
 import {
   type AppInstallation,
-  type AppInstallationsResponseType,
   type AppSession,
-  appInstallationPath,
   useBrowseAppInstallations,
   useReadAppInstallation,
   useStartAppSession,
@@ -33,7 +31,6 @@ import { getSettingValue, useBrowseSettings } from '@tryghost/admin-x-framework/
 import { type SiteData, useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 import type { User } from '@tryghost/admin-x-framework/api/users';
 import { apiUrl } from '@tryghost/admin-x-framework/helpers';
-import { useFetchApi } from '@tryghost/admin-x-framework/hooks';
 import { getSiteTimezone } from '@tryghost/admin-x-framework/utils/get-site-timezone';
 import { editorReturnState } from '@/editor/api';
 import { usePageTitle } from '@/hooks/use-document-title';
@@ -51,12 +48,7 @@ import {
 import { createAdminApiFetch } from './lib/bridge-fetch';
 import { placeRoute } from './lib/bridge-places';
 import { APP_FRAME_ALLOW, APP_FRAME_SANDBOX, isGhostHost } from './lib/frame';
-import {
-  isInstallationNotFound,
-  isSessionsRouteMissing,
-  sessionFailureOf,
-  type SessionFailure,
-} from './lib/not-found';
+import { isInstallationNotFound, sessionFailureOf, type SessionFailure } from './lib/not-found';
 import { reportAppsError } from './lib/report-error';
 import { appRoute } from './lib/routes';
 import { appPageUrl, servedFrom } from './lib/served-from';
@@ -173,15 +165,11 @@ const SESSION_END_SEARCH_PARAMS: Record<string, string> = {};
  *
  * This only sees changes this tab reads. Changes made in another tab, or by another staff user, are
  * left to the app token that comes with Permissions and auth.
- *
- * Ghost versions from before app sessions don't give installations a revision, so there's nothing
- * to compare, and nothing is read.
  */
 function useSessionEnd(session: AppSession, onEnded: () => void) {
   const [since] = useState(() => Date.now());
   const started = session.installation.revision;
   const { data, dataUpdatedAt, isFetching } = useReadAppInstallation(session.installation.id, {
-    enabled: started !== undefined,
     defaultErrorHandler: false,
     // Without the history the details page shows; this one has no use for it.
     searchParams: SESSION_END_SEARCH_PARAMS,
@@ -197,13 +185,7 @@ function useSessionEnd(session: AppSession, onEnded: () => void) {
   });
   const revision = data?.app_installations[0]?.revision;
   useEffect(() => {
-    if (
-      !isFetching &&
-      dataUpdatedAt >= since &&
-      started !== undefined &&
-      revision !== undefined &&
-      revision > started
-    ) {
+    if (!isFetching && dataUpdatedAt >= since && revision !== undefined && revision > started) {
       onEnded();
     }
   }, [dataUpdatedAt, isFetching, onEnded, revision, started, since]);
@@ -246,7 +228,7 @@ const AppFrame: React.FC<{
     site: { url: site.url, title: site.title, timezone, locale: site.locale },
     user: { id: user.id, role: user.roles[0]?.name ?? '' },
     theme,
-    session: { revision: installation.revision ?? 0 },
+    session: { revision: installation.revision },
     path,
   };
   // Read when the page connects, so the app starts with Admin's context at that moment.
@@ -505,8 +487,7 @@ const NotInstalled: React.FC = () => (
 /**
  * Starts a session of the app when the page opens, and again on `restart`. Ghost first re-checks
  * the app's manifest, and only its response decides what the page shows. No part of the app loads
- * before then. Ghost versions from before app sessions can't re-check, so a plain read of the
- * installation decides instead.
+ * before then.
  */
 function useAppSession(installationId: string): {
   settled: boolean;
@@ -515,7 +496,6 @@ function useAppSession(installationId: string): {
   /** Ends this session and starts a new one, for example after approving changes. */
   restart: () => void;
 } {
-  const fetchApi = useFetchApi();
   const { mutateAsync: start } = useStartAppSession();
   const [generation, setGeneration] = useState(0);
 
@@ -524,27 +504,8 @@ function useAppSession(installationId: string): {
   const { data, error, isPending } = useQuery({
     queryKey: ['app-session', installationId, generation],
     // `null` when there's nothing to open, because a query can't return `undefined`.
-    queryFn: async (): Promise<AppSession | null> => {
-      try {
-        return (await start(installationId)).app_sessions[0] ?? null;
-      } catch (startError) {
-        if (!isSessionsRouteMissing(startError)) {
-          throw startError;
-        }
-      }
-
-      // Admin and Core deploy independently, so this Admin may be talking to a Core from before app
-      // sessions, which has no route for them. The app then opens as it did before sessions: from a
-      // plain read of the installation, without a re-check, and pinned to the revision that read
-      // returned.
-      const read = await fetchApi<AppInstallationsResponseType>(
-        apiUrl(appInstallationPath(installationId)),
-      );
-      const installation = read.app_installations[0];
-      // That Core's installations may not have a revision either. The app then gets revision 0,
-      // which never changes.
-      return installation ? { installation } : null;
-    },
+    queryFn: async (): Promise<AppSession | null> =>
+      (await start(installationId)).app_sessions[0] ?? null,
     staleTime: Infinity,
     gcTime: 0,
     retry: false,

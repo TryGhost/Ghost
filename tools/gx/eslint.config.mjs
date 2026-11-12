@@ -13,11 +13,11 @@ export default [
     extraTestRules: { ...cliRules, 'no-console': 'off' },
   }),
   ...nodeLibConfig({
-    srcGlobs: ['cli.ts', 'run-ghost-command.ts', 'services.ts'],
+    srcGlobs: ['cli.ts', 'run-ghost-command.ts', 'services.ts', 'services-verify.ts'],
     extraSrcRules: cliRules,
   }),
   ...nodeLibConfig({
-    srcGlobs: ['create-package.ts'],
+    srcGlobs: ['create-package.ts', 'create-service.ts'],
     extraSrcRules: cliRules,
   }),
   ...nodeLibConfig({

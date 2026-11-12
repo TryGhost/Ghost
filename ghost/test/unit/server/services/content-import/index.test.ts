@@ -59,21 +59,19 @@ describe('Content import composition root', function () {
     }
   });
 
-  it('rejects both entry points before init and makes allSettled a harmless no-op', async function () {
+  it('rejects both entry points before init', function () {
     assert.throws(
       () => root.importCSV({ filePath: '/tmp/upload', fileName: 'posts.csv' }),
       /Content import service used before init/,
     );
     assert.throws(() => root.handleJob(job()), /Content import service used before init/);
-    await root.allSettled();
     sinon.assert.notCalled(send);
   });
 
-  it('validates requests before forwarding and retains the same importer for requests, jobs and draining', async function () {
+  it('validates requests before forwarding and retains the same importer for requests and jobs', async function () {
     const accepted = Promise.resolve({ importId: 'run_test', total: 1 });
     const imported = sandbox.stub(ContentCSVImporter.prototype, 'importCSV').returns(accepted);
     const handled = sandbox.stub(ContentCSVImporter.prototype, 'handle').resolves();
-    const drained = sandbox.stub(ContentCSVImporter.prototype, 'allSettled').resolves();
     root.init();
     assert.throws(() => root.importCSV({ filePath: '', fileName: 'posts.csv' }), {
       errorType: 'ValidationError',
@@ -91,12 +89,9 @@ describe('Content import composition root', function () {
     root.init();
     const delivered = job();
     assert.equal(root.handleJob(delivered), handled.firstCall.returnValue);
-    assert.equal(root.allSettled(), drained.firstCall.returnValue);
-    await root.allSettled();
     sinon.assert.calledOnceWithExactly(imported, request);
     sinon.assert.calledOnceWithExactly(handled, delivered);
     assert.equal(handled.firstCall.thisValue, importer);
-    assert.equal(drained.firstCall.thisValue, importer);
     sinon.assert.notCalled(send);
   });
 
@@ -113,14 +108,13 @@ describe('Content import composition root', function () {
       (error) => error === failure,
     );
     assert.throws(() => root.handleJob(job()), /Content import service used before init/);
-    await root.allSettled();
     root.init();
     const handled = sandbox.stub(ContentCSVImporter.prototype, 'handle').resolves();
     await root.handleJob(job());
     sinon.assert.calledOnce(handled);
   });
 
-  it('looks up jobs, storage and media when work runs, keeping one run alive across repeated init', async function () {
+  it('looks up jobs, storage and media only when work runs', async function () {
     const getJobs = sandbox.stub().throws(new Error('Jobs not ready'));
     sandbox.replace(require.cache[jobsPath]!, 'exports', { getInstance: getJobs });
     const getMedia = sandbox.stub().throws(new Error('Media not ready'));
@@ -202,7 +196,6 @@ describe('Content import composition root', function () {
     assert.equal(delivered.importId, accepted.importId);
     root.init();
     await root.handleJob(delivered);
-    await root.allSettled();
     sinon.assert.calledOnceWithExactly(
       importUrl,
       'https://images.example/post.png',

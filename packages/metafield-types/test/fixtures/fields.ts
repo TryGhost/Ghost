@@ -9,7 +9,13 @@
  * Test support rather than part of what a field is: exported to other packages' tests as
  * `@tryghost/metafield-types/test/fixtures`, and kept out of the published package.
  */
-import type { FieldType, TypedSettings, ValueOf } from '../../src/structure.js';
+import {
+  FIELD_TYPE_FLAGS,
+  FIELD_TYPE_IDS,
+  type FieldType,
+  type TypedSettings,
+  type ValueOf,
+} from '../../src/structure.js';
 
 export interface FieldFixture<T extends FieldType> {
   readonly field: Extract<TypedSettings, { type: T }>;
@@ -49,8 +55,20 @@ export const FIELD_FIXTURES: {
       ],
     },
   ],
+  phone: [{ field: { type: 'phone' }, values: ['+442079460000', '+14155550100'] }],
 };
 
 /** Every fixture, as a list to run a law over. */
 export const ALL_FIELD_FIXTURES: readonly AnyFieldFixture[] =
   Object.values<readonly AnyFieldFixture[]>(FIELD_FIXTURES).flat();
+
+/**
+ * Each type still in development, with the Labs flag it is behind and a field of it, for checking
+ * that everywhere a field is created holds the type back until its flag is on. Empty while every
+ * type is released, and filled by a type being added behind a flag.
+ */
+export const FIELDS_IN_DEVELOPMENT: readonly { field: TypedSettings; flag: string }[] =
+  FIELD_TYPE_IDS.flatMap((type) => {
+    const flag = FIELD_TYPE_FLAGS[type];
+    return flag === undefined ? [] : [{ field: FIELD_FIXTURES[type][0].field, flag }];
+  });

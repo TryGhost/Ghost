@@ -19,7 +19,14 @@ interface Job {
 }
 
 interface Workflow {
-  jobs: Record<'job_setup' | 'job_service_inventory' | 'job_required_tests', Job>;
+  jobs: Record<
+    | 'job_setup'
+    | 'job_lint_docs'
+    | 'job_service_inventory'
+    | 'job_legacy_services'
+    | 'job_required_tests',
+    Job
+  >;
 }
 
 async function loadWorkflow(): Promise<Workflow> {
@@ -61,7 +68,7 @@ describe('CI path filters', () => {
     for (const exclusion of [
       '!**/*.md',
       '!**/*.mdx',
-      '!ghost/core/server/services/service-inventory.yaml',
+      '!ghost/core/server/services/legacy-service-inventory.yaml',
     ]) {
       const exclusionIndex = patterns.indexOf(exclusion);
       assert.notStrictEqual(exclusionIndex, -1);
@@ -73,50 +80,67 @@ describe('CI path filters', () => {
   });
 
   it('treats Markdown and MDX as documentation rather than code', async () => {
-    const docs = await getFilterPatterns('docs');
     const anyCode = await getFilterPatterns('any-code');
     const e2e = await getFilterPatterns('e2e');
 
-    assert.ok(docs.includes('**/*.md'));
-    assert.ok(docs.includes('**/*.mdx'));
     assert.ok(anyCode.includes('!**/*.md'));
     assert.ok(anyCode.includes('!**/*.mdx'));
     assert.ok(e2e.includes('!**/*.md'));
     assert.ok(e2e.includes('!**/*.mdx'));
   });
 
-  it('treats the service inventory as docs and keeps code checks for mixed changes', async () => {
-    const inventory = 'ghost/core/server/services/service-inventory.yaml';
-    const docs = await getFilterPatterns('docs');
-    assert.ok(docs.some((pattern) => picomatch(pattern, { dot: true })(inventory)));
+  it('lints documentation on every run', async () => {
+    const workflow = await loadWorkflow();
+    const job = workflow.jobs.job_lint_docs;
 
-    for (const filterName of ['core', 'any-code', 'e2e']) {
+    // A link target can be any file, so no path filter can safely skip this job.
+    assert.deepStrictEqual(job.needs, ['job_setup']);
+    assert.strictEqual(job.if, undefined);
+    assert.ok(job.steps.some((step) => step.run === 'pnpm lint:docs'));
+    assert.ok(
+      workflow.jobs.job_required_tests.needs.includes('job_lint_docs'),
+      'Documentation lint failures must block the required-tests gate',
+    );
+  });
+
+  it('runs code checks, but not runtime tests, when only the legacy service inventory changes', async () => {
+    const inventory = 'ghost/core/server/services/legacy-service-inventory.yaml';
+    const readme = 'ghost/core/server/services/README.md';
+    const matcher = async (filterName: string) => {
       const patterns = await getFilterPatterns(filterName);
       const positives = patterns.filter((pattern) => !pattern.startsWith('!'));
       const exclusions = patterns.filter((pattern) => pattern.startsWith('!'));
-      const matches = (path: string) =>
+      return (path: string) =>
         (positives.length === 0 ||
           positives.some((pattern) => picomatch(pattern, { dot: true })(path))) &&
         exclusions.every((pattern) => picomatch(pattern, { dot: true })(path));
-      const metadata = [inventory, 'ghost/core/server/services/README.md'];
+    };
 
-      assert.strictEqual(metadata.some(matches), false, filterName);
+    // Boot never reads the inventory, so it cannot change runtime behaviour.
+    for (const filterName of ['core', 'e2e']) {
+      const matches = await matcher(filterName);
+      assert.strictEqual([inventory, readme].some(matches), false, filterName);
       for (const runtime of [
         'ghost/core/server/services/identity-tokens/index.ts',
         'ghost/core/server/services/other-metadata.yaml',
         '.github/workflows/ci.yml',
       ]) {
-        assert.strictEqual([...metadata, runtime].some(matches), true, `${filterName}: ${runtime}`);
+        assert.strictEqual(
+          [inventory, readme, runtime].some(matches),
+          true,
+          `${filterName}: ${runtime}`,
+        );
       }
     }
 
-    const anyCode = await getFilterPatterns('any-code');
-    assert.ok(
-      anyCode.every((pattern) =>
-        picomatch(pattern, { dot: true })(
-          'ghost/test/unit/server/services/service-inventory.test.ts',
-        ),
-      ),
+    // Lint decides which services to check from the inventory. Removing an
+    // entry must run lint and the tooling tests, so it counts as code.
+    const anyCode = await matcher('any-code');
+    assert.strictEqual(anyCode(inventory), true, 'Inventory changes must run code checks');
+    assert.strictEqual(anyCode(readme), false);
+    assert.strictEqual(
+      anyCode('ghost/test/unit/server/services/legacy-service-inventory.test.ts'),
+      true,
       'Changes to the inventory validator must still run code checks',
     );
   });
@@ -126,8 +150,8 @@ describe('CI path filters', () => {
     const matches = (path: string) =>
       patterns.some((pattern) => picomatch(pattern, { dot: true })(path));
     for (const path of [
-      'ghost/core/server/services/service-inventory.yaml',
-      'ghost/test/unit/server/services/service-inventory.test.ts',
+      'ghost/core/server/services/legacy-service-inventory.yaml',
+      'ghost/test/unit/server/services/legacy-service-inventory.test.ts',
       'ghost/vitest.config.inventory.ts',
       '.github/workflows/ci.yml',
     ]) {
@@ -158,6 +182,51 @@ describe('CI path filters', () => {
     assert.ok(
       workflow.jobs.job_required_tests.needs.includes('job_service_inventory'),
       'Inventory validation failures must block the required-tests gate',
+    );
+  });
+
+  it('requires pull requests that change the inventory to pass the only-shrinks check', async () => {
+    const patterns = await getFilterPatterns('service-inventory');
+    for (const path of [
+      'ghost/core/server/services/legacy-service-inventory.yaml',
+      'tools/scripts/ci/check-legacy-services.ts',
+      'tools/configs/oxlint/legacy-services.ts',
+      'tools/scripts/ci/legacy-services-base.ts',
+    ]) {
+      assert.ok(
+        patterns.some((pattern) => picomatch(pattern, { dot: true })(path)),
+        path,
+      );
+    }
+
+    const workflow = await loadWorkflow();
+    const job = workflow.jobs.job_legacy_services;
+    assert.deepStrictEqual(job.needs, ['job_setup']);
+    // Only a pull request has a base to compare with. The job is skipped
+    // elsewhere; the command itself never skips.
+    assert.strictEqual(
+      job.if,
+      "github.event_name == 'pull_request' && needs.job_setup.outputs.changed_service_inventory == 'true'",
+    );
+    const checkout = job.steps.find((step) => step.with?.ref);
+    assert.strictEqual(checkout?.with?.['fetch-depth'], 0, 'The fork point needs full history');
+    assert.ok(
+      job.steps.some((step) => step.run?.includes('refs/remotes/origin/${PR_BASE_REF}')),
+      'The base branch must be fetched before the comparison',
+    );
+    assert.ok(
+      job.steps.some((step) => step.run === 'node tools/scripts/ci/check-legacy-services.ts'),
+    );
+    assert.ok(
+      workflow.jobs.job_required_tests.needs.includes('job_legacy_services'),
+      'A grown legacy list must block the required-tests gate',
+    );
+    const root = JSON.parse(
+      await readFile(new URL('../../../package.json', import.meta.url), 'utf8'),
+    );
+    assert.strictEqual(
+      root.scripts['lint:legacy-services'],
+      'node tools/scripts/ci/check-legacy-services.ts',
     );
   });
 

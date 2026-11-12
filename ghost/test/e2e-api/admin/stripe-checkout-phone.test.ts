@@ -56,15 +56,17 @@ describe('Stripe Checkout phone number collection', function () {
 
   beforeEach(async function () {
     mockManager.mockLabsEnabled('stripeCheckoutCollection');
-    await createField('Contact phone', 'short_text');
+    mockManager.mockLabsEnabled('customFieldTypePhone');
+    await createField('Contact phone', 'phone');
     await createField('Delivery address', 'address');
   });
 
   afterEach(async function () {
     mockManager.restore();
-    await models.Base.knex('stripe_checkout_config_tiers').del();
     await models.Base.knex('stripe_checkout_config').del();
     await models.Base.knex('members_metafield_bindings').del();
+    await models.Base.knex('tier_requirement_tiers').del();
+    await models.Base.knex('tier_requirements').del();
     await models.Base.knex('members_metafields').del();
     await models.Base.knex('actions')
       .whereIn('resource_type', ['stripe_checkout_config', 'member_custom_field'])
@@ -89,6 +91,14 @@ describe('Stripe Checkout phone number collection', function () {
     });
   });
 
+  it('collects the phone number into a phone field', async function () {
+    await setCheckout(phone());
+
+    const saved = (await readCheckout()).phone;
+    assert.equal(saved.collect, true);
+    assert.equal(saved.custom_field_key, 'contact_phone');
+  });
+
   it('refuses a custom field that cannot hold a phone number', async function () {
     assert.deepEqual(await refusal(phone({ custom_field_key: 'not_a_field' })), {
       property: 'phone.custom_field_key',
@@ -102,7 +112,13 @@ describe('Stripe Checkout phone number collection', function () {
     });
     assert.deepEqual(await refusal(phone({ custom_field_key: 'delivery_address' })), {
       property: 'phone.custom_field_key',
-      message: 'Choose a short text custom field for the phone number.',
+      message: 'Choose a phone custom field for the phone number.',
+    });
+    // A short text field would keep a number however it was written.
+    await createField('Notes', 'short_text');
+    assert.deepEqual(await refusal(phone({ custom_field_key: 'notes' })), {
+      property: 'phone.custom_field_key',
+      message: 'Choose a phone custom field for the phone number.',
     });
     assert.equal(
       (await refusal(phone({ custom_field_key: undefined }))).property,
@@ -118,29 +134,6 @@ describe('Stripe Checkout phone number collection', function () {
       message: 'An archived custom field cannot receive collected data. Restore it first.',
     });
     assert.deepEqual((await readCheckout()).phone, NO_PHONE);
-  });
-
-  it('refuses a field the recipient name is saved into, as one would overwrite the other', async function () {
-    await createField('Recipient name', 'short_text');
-    await setCheckout({
-      shipping: {
-        collect: true,
-        address: { custom_field_key: 'delivery_address' },
-        name: { custom_field_key: 'recipient_name' },
-      },
-    });
-
-    assert.deepEqual(await refusal(phone({ custom_field_key: 'recipient_name' })), {
-      property: 'phone.custom_field_key',
-      message: "That custom field already holds the recipient's name. Choose another.",
-    });
-
-    // Switching shipping off in the same save frees the field.
-    await setCheckout({
-      ...phone({ custom_field_key: 'recipient_name' }),
-      shipping: { collect: false },
-    });
-    assert.equal((await readCheckout()).phone.custom_field_key, 'recipient_name');
   });
 
   it('keeps its place while the field is archived, and switches off once it is deleted', async function () {
@@ -166,7 +159,7 @@ describe('Stripe Checkout phone number collection', function () {
     });
 
     it('keeps its field and saves it back, but takes no newly chosen one', async function () {
-      await createField('Mobile', 'short_text');
+      await createField('Mobile', 'phone');
       await setCheckout(phone());
       await hostLimits.setHostLimits({ limitCustomFields: { disabled: true } });
 

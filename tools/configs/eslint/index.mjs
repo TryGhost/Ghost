@@ -138,7 +138,7 @@ export const tsReactAppRules = {
   ...reactDefaultsOff,
   ...reactStrictRules,
   // Apply react-hooks rules at the rule-set level so they cover BOTH src and
-  // test blocks. The src block ALSO extends reactHooks.configs.recommended-latest
+  // test blocks. The React config's src block lists the same rule again,
   // which is fine — these match. exhaustive-deps stays off everywhere; the
   // workspace-specific overrides for src already handle TODO counts.
   'react-hooks/rules-of-hooks': 'error',

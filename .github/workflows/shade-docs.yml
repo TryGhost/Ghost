@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: 22.23.4
+  NODE_VERSION: 22.23.5
   ARTIFACT_NAME: shade-storybook
 
 jobs:

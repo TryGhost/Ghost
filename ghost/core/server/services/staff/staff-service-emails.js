@@ -665,6 +665,7 @@ class StaffServiceEmails {
   }
 
   async renderText(templateName, data) {
+    // oxlint-disable-next-line import/no-dynamic-require -- the template is chosen by name from this service's own folder
     const { renderText } = require(`./email-templates/${templateName}.txt`);
 
     let sharedData = {};

@@ -4,8 +4,9 @@
  *
  * Shared because three parties have to agree on it and cannot import each other's source:
  * Ghost Core builds the session and validates what a publisher saves, Admin offers the
- * publisher only what the save would accept, and a divergence between them is a setting
- * that looks saved and collects nothing.
+ * publisher only what the save would accept, and Portal asks a member changing tier for what
+ * the new tier requires. A divergence between Ghost Core and Admin is a setting that looks
+ * saved and collects nothing.
  *
  * The Stripe values here, except the branding values, were measured against the live Stripe
  * API at Ghost's pinned version by `e2e/scripts/probe-stripe-constraints.ts`, not read from
@@ -15,8 +16,23 @@
 export { STRIPE_ALLOWED_COUNTRIES, isStripeAllowedCountry } from './allowed-countries.ts';
 export type { StripeAllowedCountry } from './allowed-countries.ts';
 
-export { STRIPE_PORT, STRIPE_PORTS, isStripePort } from './field-ports.ts';
-export type { StripePort } from './field-ports.ts';
+export {
+  CHECKOUT_PORT,
+  CHECKOUT_PORTS,
+  REQUIREMENTS,
+  isCheckoutPort,
+  isRequirementName,
+  matchRequirement,
+  portsOf,
+} from './field-ports.ts';
+export type {
+  CheckoutPort,
+  ListedPort,
+  ListedRequirement,
+  RequirementHandlers,
+  RequirementName,
+  RequirementSettings,
+} from './field-ports.ts';
 
 export { PORT_FIELD } from './destinations.ts';
 

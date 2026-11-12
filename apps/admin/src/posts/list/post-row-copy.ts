@@ -150,7 +150,8 @@ export interface PostStatusDetailOptions {
 
 /**
  * The extra text revealed on hover: who a scheduled post will go to, or
- * how many members already received it. `null` when there is nothing to add.
+ * how many members of which newsletter already received it. `null` when there is
+ * nothing to add.
  */
 export function getPostStatusDetail(
   post: PostListItem,
@@ -176,7 +177,9 @@ export function getPostStatusDetail(
 
   if (wasEmailed(post, resource)) {
     const count = post.email?.email_count ?? 0;
-    return `to ${formatNumber(count)} ${count === 1 ? 'member' : 'members'}`;
+    const newsletterName = post.newsletter?.name;
+    const members = `to ${formatNumber(count)} ${count === 1 ? 'member' : 'members'}`;
+    return newsletterName ? `${members} of ${newsletterName}` : members;
   }
 
   return null;

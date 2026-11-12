@@ -54,7 +54,10 @@ describe('Batch Sending Service', function () {
       const jobsService = { dispatch: sinon.stub().rejects(error) };
       const service = new BatchSendingService({ jobsService });
 
-      await assert.rejects(() => service.scheduleEmail(createModel({ id: 'email-id' })), error);
+      await assert.rejects(
+        () => service.scheduleEmail(createModel({ id: 'email-id' })),
+        (thrown) => thrown === error,
+      );
     });
   });
 

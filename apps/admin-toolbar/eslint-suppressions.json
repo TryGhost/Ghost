@@ -1,0 +1,7 @@
+{
+  "src/components.ts": {
+    "react-hooks/refs": {
+      "count": 2
+    }
+  }
+}

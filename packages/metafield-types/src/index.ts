@@ -1,5 +1,16 @@
+// The full metadata, so a valid number is one a country has given out rather than one of the right
+// length, as the default metadata would have it.
+import {
+  getExampleNumber,
+  isSupportedCountry,
+  parsePhoneNumberFromString,
+  validatePhoneNumberLength,
+  type CountryCode,
+} from 'libphonenumber-js/max';
+import examples from 'libphonenumber-js/mobile/examples';
 import { z } from 'zod';
 import { KeySchema, NamespaceSchema } from './identity.js';
+import { readCallingCode } from './phone.js';
 import {
   FIELD_STRUCTURES,
   FIELD_TYPE_IDS,
@@ -18,7 +29,8 @@ import {
   type FieldOfShape,
   type LeafKind,
   type LeafValues,
-  type TextSize,
+  type TextFormat,
+  type TextLeaf,
   type TypedSettings,
   type ValueOf,
   typesOfShape,
@@ -58,15 +70,17 @@ export {
 export {
   FIELD_STRUCTURES,
   FIELD_TYPE_IDS,
+  FIELD_TYPE_FLAGS,
   LIST_SOURCES,
   MAX_OPTIONS,
   MIN_OPTIONS,
   OPTION_SEPARATOR,
-  TEXT_SIZES,
+  TEXT_FORMATS,
   choice,
   country,
   editableAnswers,
   inOptionOrder,
+  isCreatableType,
   isFieldType,
   isRecordValue,
   matchField,
@@ -97,7 +111,7 @@ export {
   type ShapeOf,
   type StructureOf,
   type TextLeaf,
-  type TextSize,
+  type TextFormat,
   type TypedSettings,
   type ValueOf,
   type WriteOf,
@@ -138,7 +152,8 @@ export {
  * of breaking that rule.
  *
  * The sentences are plain literals with no interpolation, so each is usable as a
- * translation key. Nothing here translates: Ghost's parser reads `t()` calls out of the
+ * translation key. The one exception is an invalid phone number, whose message includes an
+ * example number from its country. Nothing here translates: Ghost's parser reads `t()` calls out of the
  * app that renders a string, so that app owns the step. Admin, the only one today, is not
  * translated at all.
  *
@@ -452,8 +467,160 @@ const filled = () => trimmed().min(1, { error: 'Enter a value, or send null to c
  */
 type LeafRule<K extends LeafKind = LeafKind> = z.ZodType<LeafValues[K], LeafValues[K]>;
 
-/** Each text size's bound. Each message is a literal, so it can be a translation key. */
-const TEXT_RULES: { [S in TextSize]: () => LeafRule<'text'> } = {
+/**
+ * Why text isn't a valid phone number for a field. The country is checked first: the number has
+ * no country code and no default country was given, or its country code doesn't exist. Otherwise
+ * the number is invalid for its country: too short, too long, or not a number that country
+ * issues. Those three reasons carry the country, so the error message can show an example from
+ * it. The country is undefined for a code that belongs to no country, such as +870 for satellite
+ * phones. A valid number can still be rejected for carrying an extension, which E.164 can't
+ * represent.
+ */
+type PhoneRefusal =
+  | { reason: 'countryCode' | 'unknownCode' | 'extension' }
+  | { reason: 'tooShort' | 'tooLong' | 'invalid'; country: CountryCode | undefined };
+
+/**
+ * The country an invalid number was meant for: the one libphonenumber-js detected, or else the
+ * one its country code belongs to. For a code shared by several countries that is the code's
+ * main country, since only a valid number's digits distinguish them. The code is read from the
+ * first +, so text before the number doesn't hide its country.
+ */
+function countryWrittenFor(written: string, placed: CountryCode | undefined) {
+  const plus = written.indexOf('+');
+  return placed ?? readCallingCode(plus < 0 ? written : written.slice(plus))?.country;
+}
+
+/**
+ * A phone number in E.164, such as `+442079460000`, from however it was written: spaces, brackets,
+ * dashes and a national 0 after the country code make no difference, but nothing else may surround
+ * the number, as anything else would be lost. A number written without its country code is read
+ * as it is dialled in `country`, when there is one. Otherwise it returns why the text was
+ * rejected, as a `PhoneRefusal`.
+ */
+function readPhone(text: string, country?: string): { number: string } | { refused: PhoneRefusal } {
+  const defaultCountry = country !== undefined && isSupportedCountry(country) ? country : undefined;
+  // A country's own way of dialling abroad is read with the country. After that, a number written
+  // after the 00 most countries dial abroad with gives its code as surely as one after a +.
+  const given = text.trim();
+  const international = given.startsWith('00') ? `+${given.slice(2)}` : undefined;
+  let written = given;
+  let read = parsePhoneNumberFromString(written, { defaultCountry, extract: false });
+  if (!read?.isValid() && international) {
+    written = international;
+    read = parsePhoneNumberFromString(written, { extract: false });
+  }
+  if (read?.isValid()) {
+    return read.ext ? { refused: { reason: 'extension' } } : { number: read.number };
+  }
+  // With a country code or a default country the country is known, so the problem is the number
+  // itself or the text around it.
+  const coded = written.includes('+');
+  if (!coded && !defaultCountry) {
+    return { refused: { reason: 'countryCode' } };
+  }
+  // libphonenumber-js decides whether a country code exists, since it also decides whether the
+  // number is valid.
+  const length = validatePhoneNumberLength(written, defaultCountry);
+  if (length === 'INVALID_COUNTRY') {
+    return { refused: { reason: 'unknownCode' } };
+  }
+  return {
+    refused: {
+      reason: length === 'TOO_SHORT' ? 'tooShort' : length === 'TOO_LONG' ? 'tooLong' : 'invalid',
+      country: countryWrittenFor(written, read?.country) ?? (coded ? undefined : defaultCountry),
+    },
+  };
+}
+
+/**
+ * A phone number in E.164, read as it is dialled in `country` unless it was written with a country
+ * code of its own, or undefined when it isn't a number a phone field could keep. For a number that
+ * comes with a country rather than a code, such as one Apple Pay or Google Pay passes on beside the
+ * country of the buyer's card. Without a country a phone can belong to, only a number written with
+ * its code is read.
+ */
+export function phoneNumberIn(text: string, country: string | undefined): string | undefined {
+  const read = readPhone(text, country);
+  return 'number' in read ? read.number : undefined;
+}
+
+/**
+ * What a phone field's filter looks for, so it finds a number held in E.164 however staff wrote
+ * it: a whole number in E.164, read as it is dialled in `country` unless it gives its code, and
+ * part of one as the digits written, with a + for a code written after one. Each is what it gives
+ * for itself too, as a filter is read back and looked for again.
+ */
+function phoneFilterText(typed: string, country: string | undefined): string {
+  const whole = phoneNumberIn(typed, country);
+  if (whole) {
+    return whole;
+  }
+  const digits = typed.replace(/\(0\)/g, '').replace(/[^\d+]/g, '');
+  // Nothing to look for: a filter that is only a + would find every number.
+  return /\d/.test(digits) ? digits : '';
+}
+
+/**
+ * How each text format reads what was typed into a filter, as its field holds its values, so a
+ * filter compares like with like: as typed, or for a phone number as `phoneFilterText` reads it.
+ */
+const TEXT_FILTER_TEXT: {
+  [F in TextFormat]: (typed: string, country: string | undefined) => string;
+} = {
+  line: (typed) => typed,
+  code: (typed) => typed,
+  long: (typed) => typed,
+  phone: phoneFilterText,
+};
+
+/**
+ * What a filter on a text leaf looks for, given what was typed and the country of whoever typed it:
+ * the text as the leaf's field holds it, so a phone field's filter finds `+442079460000` from
+ * `020 7946 0000` typed in the United Kingdom.
+ */
+export function filterTextFor(leaf: TextLeaf, typed: string, country: string | undefined): string {
+  return TEXT_FILTER_TEXT[leaf.format](typed, country);
+}
+
+/** The example shown when the number's country is unknown. */
+const ANY_EXAMPLE = '+44 20 7946 0000';
+
+/**
+ * An example number for `country`, formatted the way a phone field accepts it: with its country
+ * code and the country's own grouping, such as `+55 11 96123 4567` for Brazil. libphonenumber-js
+ * has one for every country it supports. The UK example is the fallback when the country is
+ * unknown, or if the library ever lacks one for a country.
+ */
+const exampleOf = (country: CountryCode | undefined): string =>
+  (country && getExampleNumber(country, examples)?.formatInternational()) ?? ANY_EXAMPLE;
+
+/**
+ * The error message for each reason `readPhone` rejects a phone number. A number invalid for its
+ * country gets an example from that country, so someone in Brazil isn't shown a British one.
+ */
+function phoneRefused(refusal: PhoneRefusal): string {
+  switch (refusal.reason) {
+    case 'countryCode':
+      return `Enter the phone number with its country code, starting with +, like ${ANY_EXAMPLE}.`;
+    case 'unknownCode':
+      return `Enter a phone number with a valid country code, like ${ANY_EXAMPLE}.`;
+    case 'extension':
+      return 'Enter the phone number without an extension.';
+    case 'tooShort':
+      return `This phone number is too short. Enter one like ${exampleOf(refusal.country)}.`;
+    case 'tooLong':
+      return `This phone number is too long. Enter one like ${exampleOf(refusal.country)}.`;
+    case 'invalid':
+      return `Enter a valid phone number, like ${exampleOf(refusal.country)}.`;
+  }
+}
+
+/**
+ * Each text format's rule. Each message is a literal, so it can be a translation key, except an
+ * invalid phone number's, which includes an example number from its country.
+ */
+const TEXT_RULES: { [F in TextFormat]: () => LeafRule<'text'> } = {
   line: () => filled().max(255, { error: 'Use 255 characters or fewer.' }),
 
   // A sanity limit rather than a format, used for postal codes: they vary too much between
@@ -464,6 +631,18 @@ const TEXT_RULES: { [S in TextSize]: () => LeafRule<'text'> } = {
   long: () =>
     filled().refine((value) => byteLength(value) <= MAX_LONG_TEXT_BYTES, {
       error: 'This text is too long to save. Shorten it a little.',
+    }),
+
+  // Stored as E.164 whatever was typed, so the same number is one value wherever it came from.
+  // Without a country code there is no telling which country a number belongs to.
+  phone: () =>
+    filled().transform((value, ctx) => {
+      const read = readPhone(value);
+      if ('refused' in read) {
+        ctx.issues.push({ code: 'custom', message: phoneRefused(read.refused), input: value });
+        return z.NEVER;
+      }
+      return read.number;
     }),
 };
 
@@ -485,7 +664,7 @@ const LIST_RULES: { [F in ListSource]: () => LeafRule<'choice'> } = {
 
 /** Each kind of leaf's rule. Keyed by kind, so a kind added to the catalog fails to compile here. */
 const LEAF_RULES: { [K in LeafKind]: (leaf: Extract<Leaf, { leaf: K }>) => LeafRule<K> } = {
-  text: ({ size }) => TEXT_RULES[size](),
+  text: ({ format }) => TEXT_RULES[format](),
   choice: ({ from }) => LIST_RULES[from](),
 };
 

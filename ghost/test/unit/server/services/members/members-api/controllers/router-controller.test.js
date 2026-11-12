@@ -4,11 +4,14 @@ const errors = require('@tryghost/errors');
 
 const RouterController = require('../../../../../../../core/server/services/members/members-api/controllers/router-controller');
 const { createTracer } = require('../../../../../../../core/server/lib/tracing/create-tracer');
+const { createMeter } = require('../../../../../../../core/server/lib/tracing/create-meter');
 const { stripeTracking } = require('../../../../../../../core/server/services/stripe/tracking');
 
-const tracking = stripeTracking(
-  createTracer({ transport: { metric: async () => null }, logging: { error() {} } }),
-);
+const shipNothing = { transport: { metric: async () => null }, logging: { error() {} } };
+const tracking = stripeTracking({
+  tracer: createTracer(shipNothing),
+  meter: createMeter(shipNothing),
+});
 
 describe('RouterController', function () {
   let offersAPI;

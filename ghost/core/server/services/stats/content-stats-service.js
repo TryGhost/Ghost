@@ -21,7 +21,7 @@ class ContentStatsService {
    * @param {object} deps
    * @param {import('knex').Knex} deps.knex - Database client
    * @param {object} deps.urlService - Ghost URL service for resource lookups
-   * @param {object} deps.logging
+   * @param {import('@tryghost/logging').GhostLogger} deps.logging
    * @param {object} [deps.tinybirdClient] - Configured Tinybird client
    */
   constructor(deps) {

@@ -186,6 +186,11 @@ export const ListPickerStyles = `
         white-space: nowrap;
     }
 
+    /* Where the button it sits in when the answer can be changed would put it. */
+    .gh-portal-listpicker-field.is-read-only > .gh-portal-listpicker-value {
+        padding: 0 6px;
+    }
+
     .gh-portal-listpicker-chevron {
         flex: none;
         width: 16px;
@@ -273,7 +278,6 @@ export const ListPickerStyles = `
         box-shadow: inset 0 0 0 2px var(--brandcolor);
     }
 
-    /* A box for several answers and a circle for one, the cue checkboxes and radios give. */
     .gh-portal-listpicker-marker {
         position: relative;
         flex: none;
@@ -283,13 +287,8 @@ export const ListPickerStyles = `
         border-radius: 4px;
     }
 
-    .gh-portal-listpicker-marker.is-round {
-        border-radius: 50%;
-    }
-
-    /* Keeps the row's text in line with the options' without a marker of its own. */
-    .gh-portal-listpicker-marker.is-none {
-        visibility: hidden;
+    .gh-portal-listpicker-marker.is-check {
+        border: 0;
     }
 
     .gh-portal-listpicker-option[aria-selected="true"] .gh-portal-listpicker-marker {
@@ -300,7 +299,7 @@ export const ListPickerStyles = `
     .gh-portal-listpicker-option[aria-selected="true"] .gh-portal-listpicker-marker::after {
         content: "";
         position: absolute;
-        top: 0.5px;
+        top: 1px;
         left: 3.5px;
         width: 3.5px;
         height: 7px;
@@ -309,15 +308,16 @@ export const ListPickerStyles = `
         transform: rotate(45deg);
     }
 
-    .gh-portal-listpicker-option[aria-selected="true"] .gh-portal-listpicker-marker.is-round::after {
-        top: 3px;
-        left: 3px;
-        width: 5px;
-        height: 5px;
-        border: 0;
-        border-radius: 50%;
-        background: var(--white);
-        transform: none;
+    .gh-portal-listpicker-option[aria-selected="true"] .gh-portal-listpicker-marker.is-check {
+        background: none;
+    }
+
+    .gh-portal-listpicker-option[aria-selected="true"] .gh-portal-listpicker-marker.is-check::after {
+        top: 2px;
+        left: 4.5px;
+        width: 4px;
+        height: 8px;
+        border-color: var(--brandcolor);
     }
 
     /* In the sheet, rows are sized for a finger and the list takes the sheet's remaining height. */
@@ -342,10 +342,16 @@ export const ListPickerStyles = `
 
 const classes = (...names: Array<string | false>) => names.filter(Boolean).join(' ');
 
+/** An option of the list: the answer it stands for, and what the list calls it. */
+export interface ListOption<V extends string> {
+  value: V;
+  label: string;
+}
+
 /** A row of the list: an option, or, in a field that takes one answer, the row that clears it. */
-interface Row {
-  /** The option the row picks, or null for the row that clears the answer. */
-  option: string | null;
+interface Row<V extends string> {
+  /** The answer the row picks, or null for the row that clears the answer. */
+  option: V | null;
   label: string;
 }
 
@@ -373,54 +379,91 @@ function startingWith(labels: readonly string[], typed: string, from: number): n
   return -1;
 }
 
-interface ListPickerProps {
+/**
+ * How many answers the field takes: several, shown as chips, or one, shown as text, where picking
+ * closes the list. Only a field that takes one answer has the row that clears it, and shows its
+ * answer as text, so only such a field says whether to offer the row and what text to show.
+ */
+type AnswerCount<V extends string> =
+  | { multiple: true; clearable?: never; answerText?: never }
+  | {
+      multiple: false;
+      /**
+       * Whether the list's first row clears the answer held, as it does by default. A field whose
+       * answer is only ever changed, such as a phone number's country, leaves the row out.
+       */
+      clearable?: boolean;
+      /**
+       * The text the field shows for the answer it holds, where that isn't the option's label,
+       * whether the member may change it or only read it: a phone number's country shows as its
+       * calling code, and the list names it in full.
+       */
+      answerText?: ((answer: V) => string) | undefined;
+    };
+
+type ListPickerProps<V extends string> = AnswerCount<V> & {
   /**
    * The id of the button that opens the list, or of the box holding the answers when read-only.
    */
   id: string;
-  /** The id of the label that names the field and its list. */
-  labelId: string;
+  /**
+   * The id of the label that names the field and its list. A field with no label of its own, such
+   * as a phone number's country, is named by `label`.
+   */
+  labelId?: string | undefined;
   /** The field's name: the sheet's title, and the search box's placeholder. */
   label: string;
-  options: readonly string[];
-  /** The options picked, in the order the field offers them. */
-  value: readonly string[];
-  /** Several answers, shown as chips. Otherwise one, shown as text, and picking closes the list. */
-  multiple: boolean;
+  options: readonly ListOption<V>[];
+  /** The answers picked, in the order the field offers them. */
+  value: readonly V[];
+  /**
+   * The element the list opens across, when it is more than the field: a control the field is one
+   * part of, such as a phone number's input with its country.
+   */
+  alignTo?: React.RefObject<HTMLElement> | undefined;
   placeholder: string;
   invalid?: boolean;
   disabled?: boolean;
-  /** Shows the answers as chips, with nothing to pick from, for a field a member may only read. */
+  /**
+   * Shows what the field holds with nothing to pick from, for a field a member may only read: its
+   * one answer as `answerText` gives it, where there is one, and otherwise every answer as a chip.
+   */
   readOnly?: boolean;
   /** The id of the element that says why the field was refused, when it was. */
   describedBy?: string | undefined;
-  onChange: (picked: string[]) => void;
-}
+  onChange: (picked: V[]) => void;
+};
 
 /**
  * A field whose answers are picked from a list of options: one answer, shown as text, or several,
  * shown as chips. The list opens in a popover under the field, or in a bottom sheet on a phone.
- * Where the field takes one answer and has one, the list's first row clears it. A list of more than
- * VISIBLE_ROWS options has a search box above it, which on a touch screen waits to be tapped.
+ * Where the field takes one answer and has one, the list's first row clears it, unless the field
+ * isn't clearable. A list of more than VISIBLE_ROWS options has a search box above it, which on a
+ * touch screen waits to be tapped.
  *
  * From the keyboard, ↑ and ↓ move through the list, and Home and End jump to its ends except in the
  * search box, where they move the caret. Enter picks, as Space does outside the search box, Escape
  * closes the list, and typing jumps to an option as it does in a native select.
  */
-export default function ListPicker({
+export default function ListPicker<V extends string>({
   id,
   labelId,
   label,
   options,
   value,
   multiple,
+  clearable = true,
+  answerText,
+  alignTo,
   placeholder,
   invalid,
   disabled,
   readOnly,
   describedBy,
   onChange,
-}: ListPickerProps) {
+}: ListPickerProps<V>) {
+  // What names the field and its list: its label where it has one, and otherwise its name.
+  const named = labelId ? { 'aria-labelledby': labelId } : { 'aria-label': label };
   const [open, setOpen] = useState(false);
   const [sheet, setSheet] = useState(false);
   const [highlight, setHighlight] = useState<Highlight>({ index: 0, byKeyboard: false });
@@ -438,12 +481,16 @@ export default function ListPicker({
   // One answer is cleared the way a native select's is: once something is chosen, a first row
   // stands for no answer, named as Portal's selects name it. A search is for an option, so it
   // leaves that row out.
-  const rowsFor = (searched: string): Row[] => [
-    ...(!multiple && value.length > 0 && !searched ? [{ option: null, label: t('(None)') }] : []),
+  const rowsFor = (searched: string): Row<V>[] => [
+    ...(!multiple && clearable && value.length > 0 && !searched
+      ? [{ option: null, label: t('(None)') }]
+      : []),
     ...options
-      .filter((option) => !searched || option.toLowerCase().includes(searched))
-      .map((option) => ({ option, label: option })),
+      .filter(({ label: text }) => !searched || text.toLowerCase().includes(searched))
+      .map(({ value: option, label: text }) => ({ option, label: text })),
   ];
+  // An answer the options leave out, which a member may only read, goes by the answer itself.
+  const labelOf = (answer: V) => options.find((option) => option.value === answer)?.label ?? answer;
   const shown = rowsFor(term);
   const view = () => fieldRef.current?.ownerDocument.defaultView;
 
@@ -504,7 +551,7 @@ export default function ListPicker({
     }
   };
 
-  const pick = (option: string | null) => {
+  const pick = (option: V | null) => {
     if (option === null) {
       onChange([]);
       closeList(true);
@@ -512,9 +559,11 @@ export default function ListPicker({
     }
     if (multiple) {
       onChange(
-        options.filter((candidate) =>
-          candidate === option ? !value.includes(option) : value.includes(candidate),
-        ),
+        options
+          .map((candidate) => candidate.value)
+          .filter((candidate) =>
+            candidate === option ? !value.includes(option) : value.includes(candidate),
+          ),
       );
       return;
     }
@@ -616,7 +665,7 @@ export default function ListPicker({
     <ul
       ref={listRef}
       aria-activedescendant={shown.length > 0 ? optionId(highlight.index) : undefined}
-      aria-labelledby={labelId}
+      {...named}
       aria-multiselectable={multiple || undefined}
       className="gh-portal-listpicker-list"
       id={listId}
@@ -644,13 +693,12 @@ export default function ListPicker({
           onMouseDown={(event) => event.preventDefault()}
           onMouseMove={() => highlightRow(index, false)}
         >
+          {/* A box for several answers, the cue a checkbox gives. For one, a space where a check
+              marks the answer picked, as a menu marks its choice, keeping every row's text in
+              line. */}
           <span
             aria-hidden="true"
-            className={classes(
-              'gh-portal-listpicker-marker',
-              !multiple && 'is-round',
-              option === null && 'is-none',
-            )}
+            className={classes('gh-portal-listpicker-marker', !multiple && 'is-check')}
           />
           <span>{text}</span>
         </li>
@@ -670,7 +718,7 @@ export default function ListPicker({
         aria-autocomplete="list"
         aria-controls={listId}
         aria-expanded="true"
-        aria-labelledby={labelId}
+        {...named}
         autoComplete="off"
         placeholder={label}
         role="combobox"
@@ -698,25 +746,29 @@ export default function ListPicker({
   if (multiple && value.length > 0) {
     fieldText = '';
   } else if (value[0] !== undefined) {
-    fieldText = value[0];
+    fieldText = (answerText ?? labelOf)(value[0]);
   }
-
-  // Every answer as a chip, one or several, since an option's text can hold a comma.
+  // A field that takes one answer and says how to show it shows that text, as it does when the
+  // answer can be changed, such as a phone number's country as its calling code, or the
+  // placeholder while it holds none. Otherwise every answer is a chip, one or several, since an
+  // option's text can hold a comma.
   if (readOnly) {
+    const shownAs = !multiple && answerText ? fieldText : undefined;
     return (
       <div className="gh-portal-listpicker">
         <div
-          aria-labelledby={labelId}
+          {...named}
           className="gh-portal-input gh-portal-listpicker-field is-multiple is-read-only"
           data-test-input={id}
           id={id}
           role="group"
         >
-          {value.length > 0 && (
+          {shownAs !== undefined && <span className="gh-portal-listpicker-value">{shownAs}</span>}
+          {shownAs === undefined && value.length > 0 && (
             <ul className="gh-portal-listpicker-chips">
               {value.map((answer) => (
                 <li key={answer} className="gh-portal-listpicker-chip is-read-only">
-                  {answer}
+                  {labelOf(answer)}
                 </li>
               ))}
             </ul>
@@ -752,9 +804,9 @@ export default function ListPicker({
         {multiple &&
           value.map((answer) => (
             <span key={answer} className="gh-portal-listpicker-chip">
-              <span>{answer}</span>
+              <span>{labelOf(answer)}</span>
               <button
-                aria-label={t('Remove {option}', { option: answer })}
+                aria-label={t('Remove {option}', { option: labelOf(answer) })}
                 className="gh-portal-listpicker-chip-remove"
                 disabled={disabled}
                 type="button"
@@ -783,7 +835,7 @@ export default function ListPicker({
           aria-expanded={open}
           aria-haspopup="listbox"
           aria-invalid={invalid || undefined}
-          aria-labelledby={labelId}
+          {...named}
           className={classes(
             'gh-portal-listpicker-trigger',
             !multiple && value.length > 0 && 'has-value',
@@ -828,6 +880,7 @@ export default function ListPicker({
       {open && !sheet && (
         <Popover
           align="stretch"
+          alignTo={alignTo}
           anchor={fieldRef}
           className="gh-portal-listpicker-popover"
           fit

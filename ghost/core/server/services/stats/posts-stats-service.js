@@ -83,7 +83,7 @@ class PostsStatsService {
    * @param {object} [deps.tinybirdClient] - Tinybird client for analytics
    * @param {object} [deps.urlService] - URL service for checking URL existence
    * @param {object} deps.urlUtils - URL helpers for absolute image URLs
-   * @param {object} deps.logging
+   * @param {import('@tryghost/logging').GhostLogger} deps.logging
    */
   constructor(deps) {
     this.knex = deps.knex;

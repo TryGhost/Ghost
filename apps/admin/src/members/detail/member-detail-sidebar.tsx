@@ -90,7 +90,7 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
       className={cn('flex flex-col text-sm', admin7Design ? 'gap-5' : 'mt-4 gap-3')}
       data-testid="member-detail-engagement"
     >
-      <EngagementHeading className="section-heading border-b border-border pb-2 text-base font-semibold in-data-[admin7-design=true]:pb-3">
+      <EngagementHeading className="section-heading border-b border-border pb-2 text-base font-semibold in-data-[admin7-design=true]:border-b-0 in-data-[admin7-design=true]:pb-0">
         Engagement
       </EngagementHeading>
       {/* A missing `email_count` counts as no newsletters received. */}
@@ -137,7 +137,11 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
 
   return (
     <aside
-      className="flex w-full shrink-0 flex-col gap-6 in-data-[admin7-design=true]:max-lg:order-first lg:w-80"
+      className={cn(
+        'flex w-full shrink-0 flex-col gap-6 in-data-[admin7-design=true]:max-lg:order-first lg:w-80',
+        admin7Design &&
+          "relative lg:self-stretch lg:before:pointer-events-none lg:before:absolute lg:before:inset-y-0 lg:before:-left-10 lg:before:border-l lg:before:border-border lg:before:content-['']",
+      )}
       data-testid="member-detail-sidebar"
     >
       {showIdentity && (
@@ -157,12 +161,11 @@ const MemberDetailSidebar: React.FC<MemberDetailSidebarProps> = ({
                 {email}
               </a>
             )}
-            {!name &&
-              email && (
-                // In create mode only the email is filled at first; still show it so the
-                // sidebar visibly follows what the user has typed.
-                <span className="block truncate text-muted-foreground">{email}</span>
-              )}
+            {!name && email && (
+              // In create mode only the email is filled at first; still show it so the
+              // sidebar visibly follows what the user has typed.
+              <span className="block truncate text-muted-foreground">{email}</span>
+            )}
           </div>
         </div>
       )}

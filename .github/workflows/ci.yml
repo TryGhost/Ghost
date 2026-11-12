@@ -15,7 +15,7 @@ on:
 env:
   FORCE_COLOR: 1
   HEAD_COMMIT: ${{ github.sha }}
-  NODE_VERSION: 22.23.4
+  NODE_VERSION: 22.23.5
   # Disable v8-compile-cache to prevent intermittent V8 deserializer crashes
   # when multiple parallel Nx workers race to read/write shared bytecode cache
   # files. The cache lives in /tmp and is discarded after each run anyway,
@@ -56,6 +56,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
+      # Nx cache credentials are trusted to same-repository PRs, never fork PRs.
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
       IS_TAG: ${{ startsWith(github.ref, 'refs/tags/v') }}
       IS_DEVELOPMENT: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/6.x' }}
@@ -166,22 +168,13 @@ jobs:
               - '.github/actions/**'
               - '.github/scripts/**'
               - 'tools/scripts/**'
-            docs:
-              - 'ghost/core/server/services/service-inventory.yaml'
-              - '**/*.md'
-              - '**/*.mdx'
-              - '.agents/**'
-              - '.claude/**'
-              - '.github/workflows/ci.yml'
-              - 'package.json'
-              - 'tools/scripts/ci/check-agent-skill-links.ts'
-              - 'tools/scripts/test/check-agent-skill-links.test.ts'
-              - 'tools/scripts/ci/check-agent-guidance.ts'
-              - 'tools/scripts/test/check-agent-guidance.test.ts'
             service-inventory:
-              - 'ghost/core/server/services/service-inventory.yaml'
-              - 'ghost/test/unit/server/services/service-inventory.test.ts'
+              - 'ghost/core/server/services/legacy-service-inventory.yaml'
+              - 'ghost/test/unit/server/services/legacy-service-inventory.test.ts'
               - 'ghost/vitest.config.inventory.ts'
+              - 'tools/scripts/ci/check-legacy-services.ts'
+              - 'tools/scripts/ci/legacy-services-base.ts'
+              - 'tools/configs/oxlint/legacy-services.ts'
               - '.github/workflows/ci.yml'
             package-standards:
               - 'packages/**'
@@ -215,8 +208,9 @@ jobs:
               # positive pattern so micromatch cannot add docs files back.
               - '!**/*.md'
               - '!**/*.mdx'
-              # Migration metadata is documentation; boot never reads it.
-              - '!ghost/core/server/services/service-inventory.yaml'
+              # Boot never reads the legacy service inventory. Lint does, so it
+              # still counts as code in any-code below.
+              - '!ghost/core/server/services/legacy-service-inventory.yaml'
               - '!ghost/vitest.config.inventory.ts'
             unit-test-globals:
               - 'vitest.config.mjs'
@@ -224,7 +218,6 @@ jobs:
               - 'ghost/vitest.config.ts'
               - 'ghost/test/utils/vitest-*.ts'
             any-code:
-              - '!ghost/core/server/services/service-inventory.yaml'
               - '!**/*.md'
               - '!**/*.mdx'
               - '!.github/CODEOWNERS'
@@ -238,7 +231,7 @@ jobs:
             # React Admin tests still run through the affected unit, acceptance,
             # lint and typecheck targets; only the build + E2E lane is skipped.
             e2e:
-              - '!ghost/core/server/services/service-inventory.yaml'
+              - '!ghost/core/server/services/legacy-service-inventory.yaml'
               - '!**/*.md'
               - '!**/*.mdx'
               - '!.github/CODEOWNERS'
@@ -266,9 +259,10 @@ jobs:
         # test:unit's Nx cache is keyed on `node -v` (nx.json) so each leg runs.
         id: node_matrix
         run: |
-          echo "matrix=[\"${NODE_VERSION}\", \"24.22.1\"]" >> $GITHUB_OUTPUT
+          echo "matrix=[\"${NODE_VERSION}\", \"24.22.3\"]" >> $GITHUB_OUTPUT
 
       - name: Start Nx Cloud CI run
+        if: github.repository == 'TryGhost/Ghost'
         run: pnpm nx start-ci-run
 
       - name: Determine Affected Projects
@@ -380,7 +374,6 @@ jobs:
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
-      changed_docs: ${{ steps.changed.outputs.docs }}
       changed_service_inventory: ${{ steps.changed.outputs.service-inventory }}
       changed_package_standards: ${{ steps.changed.outputs.package-standards }}
       changed_tb_cli: ${{ steps.changed.outputs.tb-cli }}
@@ -485,6 +478,8 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     name: Lint
+    env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -511,6 +506,9 @@ jobs:
       - name: Lint boundaries
         run: pnpm nx run ghost-monorepo:lint:boundaries
 
+      - name: Lint dependencies
+        run: pnpm lint:dependencies
+
       - name: Check formatting
         run: pnpm format:check
 
@@ -525,19 +523,24 @@ jobs:
     name: Lint docs
     runs-on: ubuntu-slim
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_docs == 'true'
+    # No path filter: a link breaks when its target is removed or renamed, and
+    # the target can be any file in the repository.
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
+          trust-lockfile: 'true'
+          # The Markdown and link checkers are dependencies of the root package.
+          install-args: --filter ghost-monorepo --ignore-scripts
+          store-cache: 'false'
 
-      - name: Lint documentation guidance
-        run: |
-          node --test tools/scripts/test/check-agent-guidance.test.ts
-          node tools/scripts/ci/check-agent-skill-links.ts
-          node tools/scripts/ci/check-agent-guidance.ts
+      - name: Test documentation guidance checker
+        run: node --test tools/scripts/test/check-agent-guidance.test.ts
+
+      - name: Lint documentation
+        run: pnpm lint:docs
 
   job_service_inventory:
     name: Validate service inventory
@@ -557,6 +560,44 @@ jobs:
 
       - name: Validate service inventory
         run: pnpm --filter ghost exec vitest run --config vitest.config.inventory.ts
+
+  # The legacy services only shrink. A pull request is the only place a name can
+  # be added, so this compares the branch with the commit it forked from.
+  job_legacy_services:
+    name: Check legacy services
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [job_setup]
+    if: github.event_name == 'pull_request' && needs.job_setup.outputs.changed_service_inventory == 'true'
+    steps:
+      - name: Checkout PR head commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Fetch PR base branch
+        # Through env, never interpolated into the script: a branch name can
+        # carry shell metacharacters, and template expansion happens before the
+        # shell parses the command.
+        env:
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: git fetch --no-tags origin "+refs/heads/${PR_BASE_REF}:refs/remotes/origin/${PR_BASE_REF}"
+
+      - uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          trust-lockfile: 'true'
+          # The check and the inventory reader each read YAML with their own
+          # workspace's parser.
+          install-args: --filter @internal/scripts --filter @internal/cfg-oxlint --ignore-scripts
+          store-cache: 'false'
+
+      - name: Check legacy services only shrink
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: node tools/scripts/ci/check-legacy-services.ts
 
   job_lint_packages:
     name: Lint packages
@@ -609,6 +650,8 @@ jobs:
     needs: [job_setup]
     if: (needs.job_setup.outputs.changed_core == 'true' && needs.job_setup.outputs.is_development == 'true') || needs.job_setup.outputs.has_perf_tests_label == 'true'
     name: Performance tests
+    env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -757,6 +800,7 @@ jobs:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
       # Only the primary Node leg is instrumented, as in the acceptance job —
       # the other leg covers the same code, and would collide on the
       # unit-coverage artifact name.
@@ -804,6 +848,13 @@ jobs:
         #
         # Non-primary Node legs skip browser-only projects (see
         # unit_test_node_projects_str in job_setup).
+        #
+        # ghost's unit suite runs in a shuffled order seeded by
+        # GHOST_UNIT_TEST_SEED (see ghost/vitest.config.ts), so a test that
+        # only passes after another one fails here. Every attempt reuses the
+        # run's seed, so a retry can't hide that behind a different order.
+        # Vitest prints it as `Running tests with seed "<seed>"`;
+        # docs/contributing/testing.md covers rerunning that order locally.
         run: |
           if [ "${{ matrix.node }}" = "${{ needs.job_setup.outputs.node_version }}" ]; then
             PROJECTS="${{ needs.job_setup.outputs.unit_test_projects_str }}"
@@ -838,6 +889,7 @@ jobs:
           FORCE_COLOR: 0
           NX_SKIP_LOG_GROUPING: true
           logging__level: fatal
+          GHOST_UNIT_TEST_SEED: ${{ github.run_id }}
 
       - name: Check for unexpected file changes
         run: |
@@ -868,6 +920,8 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.typecheck_projects_str != ''
     name: Typecheck
+    env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -927,6 +981,7 @@ jobs:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
       # Only the primary Node leg is instrumented — the others cover the same
       # code, and a second leg would collide on the e2e-coverage artifact name.
       COVERAGE_ENABLED: ${{ needs.job_setup.outputs.coverage_enabled == 'true' && matrix.node == needs.job_setup.outputs.node_version }}
@@ -1042,6 +1097,8 @@ jobs:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     name: Legacy tests (Node ${{ matrix.node }}, mysql8)
+    env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -1098,6 +1155,7 @@ jobs:
       matrix:
         include: ${{ fromJSON(needs.job_setup.outputs.affected_playwright_matrix) }}
     env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
       CI: true
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -1119,8 +1177,8 @@ jobs:
 
       # Cache the msttcorefonts .ttf files so only a cache miss hits the
       # SourceForge download that regularly hangs the koenig-lexical job. Save
-      # is a separate step right after the fonts are in place, so a later codec
-      # or test failure on a cache-miss run still populates the cache.
+      # is a separate step right after the fonts are in place, so a later test
+      # failure on a cache-miss run still populates the cache.
       - name: Restore MS core fonts cache
         if: matrix.app == '@tryghost/koenig-lexical'
         id: mscorefonts-cache
@@ -1166,28 +1224,6 @@ jobs:
         with:
           path: ~/.cache/msttcorefonts
           key: msttcorefonts-ttf-v1
-      - name: Install Koenig editor test media codecs
-        if: matrix.app == '@tryghost/koenig-lexical'
-        timeout-minutes: 10
-        env:
-          DEBIAN_FRONTEND: noninteractive
-        # The runner image already has Firefox's other libraries; `playwright install-deps`
-        # also pulls ~20MB of fonts the video-card tests don't use.
-        # The package name tracks the image's FFmpeg (libavcodec60 on 24.04, libavcodec62 on 26.04).
-        # Worst case 3 × (65 + 125 + 5) = 585s stays inside timeout-minutes.
-        run: |
-          for i in 1 2 3; do
-            if sudo timeout -k 5 60 apt-get update -yq \
-                 -o Acquire::Retries=3 -o Acquire::http::Timeout=30 &&
-               codec=$(apt-cache pkgnames libavcodec | grep -m1 -xE 'libavcodec[0-9]+') &&
-               sudo timeout -k 5 120 apt-get install -yq --no-install-recommends \
-                 -o Acquire::Retries=3 -o Acquire::http::Timeout=30 "$codec"; then
-              exit 0
-            fi
-            echo "libavcodec attempt $i failed/stuck, retrying..."; sleep 5
-          done
-          echo "libavcodec failed after 3 attempts"; exit 1
-
       - name: Run Playwright tests
         run: pnpm nx run ${{ matrix.app }}:test:acceptance --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
@@ -1351,6 +1387,8 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     name: Stripe fixture checks
+    env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
       - uses: ./.github/actions/setup-node-pnpm
@@ -1378,6 +1416,7 @@ jobs:
     if: needs.job_setup.outputs.run_e2e == 'true'
     runs-on: ubuntu-latest
     env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
       IS_SHIPPING: ${{ github.repository == 'TryGhost/Ghost' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag') && 'true' || '' }}
     steps:
       - name: Checkout repository
@@ -2171,6 +2210,8 @@ jobs:
     # publish-packages.yml) hold the privileged path.
     if: needs.job_setup.outputs.run_e2e == 'true'
     runs-on: ubuntu-latest
+    env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -2185,13 +2226,17 @@ jobs:
 
       - name: Pack public app artifacts
         run: |
-          tar -czf e2e-public-apps.tar.gz \
-            apps/portal/umd \
-            apps/comments-ui/umd \
-            apps/sodo-search/umd \
-            apps/signup-form/umd \
-            apps/announcement-bar/umd \
+          apps=(
+            apps/portal/umd
+            apps/comments-ui/umd
+            apps/sodo-search/umd
+            apps/signup-form/umd
+            apps/announcement-bar/umd
             apps/admin-toolbar/umd
+          )
+          # Nx cache restores keep the uploader's file modes; Ghost reads these as a non-root user
+          chmod -R u=rwX,go=rX "${apps[@]}"
+          tar -czf e2e-public-apps.tar.gz "${apps[@]}"
           ls -lh e2e-public-apps.tar.gz
 
       - name: Upload public app artifacts
@@ -2599,6 +2644,7 @@ jobs:
         job_lint,
         job_lint_docs,
         job_service_inventory,
+        job_legacy_services,
         job_lint_packages,
         job_stripe_fixtures,
         job_i18n,
@@ -2662,6 +2708,8 @@ jobs:
     strategy:
       matrix:
         include: ${{ fromJSON(needs.job_setup.outputs.publish_matrix) }}
+    env:
+      NX_CLOUD_ACCESS_TOKEN: ${{ (github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)) && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

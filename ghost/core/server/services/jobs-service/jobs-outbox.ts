@@ -30,6 +30,16 @@ export interface InsertOptions {
   transacting?: Knex.Transaction;
 }
 
+export interface ReleasedRow {
+  id: string;
+  type: string | null;
+}
+
+export interface ReleaseOutcome {
+  released: ReleasedRow[];
+  dropped: ReleasedRow[];
+}
+
 export type ProcessOutcome =
   | { status: 'idle' }
   | { status: 'delivered'; id: string; type: string; createdAt: Date }
@@ -37,6 +47,27 @@ export type ProcessOutcome =
 
 // The row as the claim query returns it, validated before anything trusts it.
 const ClaimedRow = z.object({ id: z.string(), envelope: z.string(), created_at: DbDate });
+
+const SubmittedRow = z.object({ id: z.string(), envelope: z.string() });
+
+// The job type of a submitted row, or null when its envelope cannot be read.
+function typeOf(stored: string): string | null {
+  const result = z.safeDecode(OutboxEnvelope, stored);
+  return result.success ? result.data.payload.job.type : null;
+}
+
+// A row whose type cannot be read is released, so the relay's retry path
+// deals with it once it is claimed.
+function partitionByReplay(
+  rows: ReleasedRow[],
+  replays: (type: string) => boolean,
+): ReleaseOutcome {
+  const outcome: ReleaseOutcome = { released: [], dropped: [] };
+  for (const row of rows) {
+    (row.type === null || replays(row.type) ? outcome.released : outcome.dropped).push(row);
+  }
+  return outcome;
+}
 
 // MySQL rounds a fractional DATETIME on insert, which can round available_at up
 // and leave a freshly inserted row briefly ineligible.
@@ -46,9 +77,11 @@ function floorToSecond(date: Date): Date {
 
 export class JobsOutbox {
   readonly #knex: Knex;
+  readonly #keepUntilSettled: boolean;
 
-  constructor({ knex }: { knex: Knex }) {
+  constructor({ knex, keepUntilSettled }: { knex: Knex; keepUntilSettled: boolean }) {
     this.#knex = knex;
+    this.#keepUntilSettled = keepUntilSettled;
   }
 
   async insert({ id, envelope }: OutboxEntry, { transacting }: InsertOptions = {}): Promise<void> {
@@ -109,8 +142,42 @@ export class JobsOutbox {
         return { status: 'failed', id, error };
       }
 
-      await trx(TABLE).where('id', id).delete();
+      // If the process dies before this commits, the claim rolls back and the
+      // row is handed over again, so the job can run twice either way.
+      const handedOff = trx(TABLE).where('id', id);
+      // A kept row stays, marked submitted, until its job settles
+      await (this.#keepUntilSettled
+        ? handedOff.update({ submitted_at: new Date() })
+        : handedOff.delete());
       return { status: 'delivered', id, type, createdAt };
     });
+  }
+
+  async remove(id: string): Promise<void> {
+    await this.#knex(TABLE).where('id', id).delete();
+  }
+
+  // A job type that is not replayed has its own recovery, so its rows are
+  // deleted rather than handed over again.
+  async releaseSubmitted({
+    replays,
+  }: {
+    replays: (type: string) => boolean;
+  }): Promise<ReleaseOutcome> {
+    const rows = z
+      .array(SubmittedRow)
+      .parse(await this.#knex(TABLE).select('id', 'envelope').whereNotNull('submitted_at'));
+    const outcome = partitionByReplay(
+      rows.map(({ id, envelope }) => ({ id, type: typeOf(envelope) })),
+      replays,
+    );
+    const ids = (list: ReleasedRow[]) => list.map(({ id }) => id);
+    if (outcome.released.length > 0) {
+      await this.#knex(TABLE).whereIn('id', ids(outcome.released)).update({ submitted_at: null });
+    }
+    if (outcome.dropped.length > 0) {
+      await this.#knex(TABLE).whereIn('id', ids(outcome.dropped)).delete();
+    }
+    return outcome;
   }
 }

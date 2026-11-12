@@ -65,6 +65,17 @@ const FIELDS: MemberCustomField[] = [
 
 const ADDRESS = { line1: '1 Main St', city: 'Berlin', postal_code: '10115', country: 'DE' };
 
+const MOBILE: MemberCustomField = {
+  namespace: CUSTOM_NAMESPACE,
+  key: KeySchema.parse('mobile'),
+  name: 'Mobile',
+  type: 'phone',
+  status: 'active',
+  access: { member: 'none' },
+  created_at: '2026-07-14T00:00:00.000Z',
+  updated_at: null,
+};
+
 /** What a write the members API accepts does to what the member holds, as the domain says. */
 function applied<S extends FieldShape>(
   of: ShapedField<TypedSettings, S>,
@@ -231,6 +242,77 @@ describe('Member detail custom fields', () => {
 
     await expect.element(memberDetailScreen.fieldValue('Editor')).toBeVisible();
     expect(editApi.requests).toHaveLength(0);
+  });
+
+  it('takes a phone number in a phone input and keeps it in international form', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    fakeMemberDetailWorld(m, {}, [...FIELDS, MOBILE]);
+    await renderAdminApp(`/members/${m.id}`);
+
+    await memberDetailScreen.editFieldButton('Mobile').click();
+    const input = modal().getByLabelText('Mobile');
+    await expect.element(input).toHaveAttribute('type', 'tel');
+    // Staff type a member's number, so the browser mustn't offer their own.
+    await expect.element(input).toHaveAttribute('autocomplete', 'off');
+    await input.fill('+44 (0)20 7946 0000');
+    await modal().getByRole('button', { name: 'Save', exact: true }).click();
+
+    await expect.element(modal()).not.toBeInTheDocument();
+    await expect.element(memberDetailScreen.fieldValue('+442079460000')).toBeVisible();
+  });
+
+  // A letter is never valid in a phone number, so staff see the error without having to save.
+  it('shows an error while typing an invalid character in a phone number', async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    fakeMemberDetailWorld(m, {}, [...FIELDS, MOBILE]);
+    await renderAdminApp(`/members/${m.id}`);
+    const mistyped = 'Enter the phone number using only digits, spaces and symbols like + - ( ).';
+
+    await memberDetailScreen.editFieldButton('Mobile').click();
+    await modal().getByLabelText('Mobile').fill('+44 20 7946 000o');
+    await expect.element(modal().getByText(mistyped)).toBeVisible();
+
+    await modal().getByLabelText('Mobile').fill('+44 (20) 7946-0000');
+    await expect.element(modal().getByText(mistyped)).not.toBeInTheDocument();
+  });
+
+  // As Portal and Stripe Checkout ask for one: written as it is dialled at home, beside the
+  // country it is from.
+  it("puts the picked country's code in front of a number written as at home", async () => {
+    const m = member({ name: 'Ada Lovelace' });
+    const editApi = fakeMemberDetailWorld(m, {}, [...FIELDS, MOBILE]);
+    await renderAdminApp(`/members/${m.id}`);
+
+    await memberDetailScreen.editFieldButton('Mobile').click();
+    const countryCode = modal().getByRole('combobox', { name: 'Country code' });
+    // Measured before the list opens, as an open list hides the rest of the dialog.
+    const phoneInputWidth = countryCode.element().parentElement?.getBoundingClientRect().width;
+    await countryCode.click();
+    // The list of countries opens as wide as the country and the number together, so a
+    // country's name fits rather than being cut off at the width of its code.
+    const list = page.getByRole('listbox');
+    await expect.element(list).toBeVisible();
+    // Within the list's border.
+    const listWidth = list.element().getBoundingClientRect().width;
+    expect(Math.abs(listWidth - (phoneInputWidth ?? 0))).toBeLessThanOrEqual(2);
+    await page.getByPlaceholder('Search countries...').fill('United Kingdom');
+    await page.getByRole('option', { name: 'United Kingdom (+44)' }).click();
+    await expect
+      .element(modal().getByRole('combobox', { name: 'Country code' }))
+      .toHaveTextContent('+44');
+
+    // One the country has no number like is refused before it's sent.
+    await modal().getByLabelText('Mobile').fill('020 7946 000');
+    await modal().getByRole('button', { name: 'Save', exact: true }).click();
+    await expect
+      .element(modal().getByText('Enter a valid phone number, like +44 7400 123456.'))
+      .toBeVisible();
+    expect(editApi.requests).toHaveLength(0);
+
+    await modal().getByLabelText('Mobile').fill('020 7946 0000');
+    await modal().getByRole('button', { name: 'Save', exact: true }).click();
+    await expect.element(modal()).not.toBeInTheDocument();
+    await expect.element(memberDetailScreen.fieldValue('+442079460000')).toBeVisible();
   });
 
   it('saves an address that leaves parts the country does not use empty', async () => {

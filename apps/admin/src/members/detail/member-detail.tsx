@@ -465,18 +465,17 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                 {(isCreating || member) && (
                   <PageHeader.Actions>
                     <PageHeader.ActionGroup>
-                      {member &&
-                        !isCreating && (
-                          // key={member.id} unmounts+remounts on member change so
-                          // local modal state (`showDelete`, `cancelStripe`, etc.)
-                          // can't leak across members if the user navigates while a
-                          // modal is open.
-                          <MemberActionsMenu
-                            key={member.id}
-                            allowLeaveWithUnsavedChanges={bypassNextNavigation}
-                            member={member}
-                          />
-                        )}
+                      {member && !isCreating && (
+                        // key={member.id} unmounts+remounts on member change so
+                        // local modal state (`showDelete`, `cancelStripe`, etc.)
+                        // can't leak across members if the user navigates while a
+                        // modal is open.
+                        <MemberActionsMenu
+                          key={member.id}
+                          allowLeaveWithUnsavedChanges={bypassNextNavigation}
+                          member={member}
+                        />
+                      )}
                       <PageHeader.ActionGroup.Primary>
                         <Button
                           className="min-w-16"
@@ -516,14 +515,14 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
             )}
 
             {showEditor && draft && (
-              <div className="flex flex-1 flex-col gap-8 lg:flex-row lg:items-start lg:gap-12 in-data-[admin7-design=true]:lg:gap-20">
+              <div className="flex flex-1 flex-col gap-8 in-data-[admin7-design=true]:[--text-section-heading:var(--text-section-heading-lg)] lg:flex-row lg:items-start lg:gap-12 in-data-[admin7-design=true]:lg:gap-20">
                 {!admin7Design && sidebar}
-                <div className="flex min-w-0 flex-1 flex-col gap-8 in-data-[admin7-design=true]:gap-18 in-data-[admin7-design=true]:[--text-section-heading:var(--text-section-heading-lg)]">
+                <div className="flex min-w-0 flex-1 flex-col gap-8 in-data-[admin7-design=true]:gap-18">
                   {/* First card: name, email, labels, note. Admin 7 gives it a heading
                                     like the sections below it. */}
                   <section
                     aria-labelledby={admin7Design ? 'member-details-heading' : undefined}
-                    className="flex flex-col gap-3"
+                    className="flex flex-col gap-3 in-data-[admin7-design=true]:gap-4"
                   >
                     {admin7Design && (
                       <h3
@@ -533,8 +532,11 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                         Details
                       </h3>
                     )}
-                    <Card variant={admin7Design ? 'ruled' : 'outline'}>
-                      <CardContent className={admin7Design ? undefined : 'p-6'}>
+                    <Card
+                      className={admin7Design ? 'border-t-0' : undefined}
+                      variant={admin7Design ? 'ruled' : 'outline'}
+                    >
+                      <CardContent className={admin7Design ? 'pt-0' : 'p-6'}>
                         <MemberDetailForm
                           disabled={activeMutation.isPending}
                           draft={draft}
@@ -589,7 +591,7 @@ const MemberDetailPage: React.FC<MemberDetailPageProps> = ({
                   {paidMembersEnabled && (
                     <section
                       aria-labelledby="member-subscriptions-heading"
-                      className="flex flex-col gap-3"
+                      className="flex flex-col gap-3 in-data-[admin7-design=true]:gap-4"
                     >
                       <h3
                         className="section-heading text-base font-semibold"

@@ -1,0 +1,1747 @@
+[
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/activitypub/activity-pub-service-wrapper.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/activitypub/activity-pub-service-wrapper.js",
+    "to": "ghost/core/server/data/db/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/activitypub/activity-pub-service-wrapper.js",
+    "to": "ghost/core/server/lib/common/events.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/activitypub/activity-pub-service-wrapper.js",
+    "to": "ghost/core/server/services/identity-tokens/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/activitypub/activity-pub-service-wrapper.js",
+    "to": "ghost/core/shared/settings-cache/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/activitypub/activity-pub-service-wrapper.js",
+    "to": "ghost/core/shared/url-utils.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/adapter-manager/adapter-paths.ts",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
+    "to": "packages/adapters/cache-base/src/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
+    "to": "packages/adapters/jobs-base/src/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
+    "to": "packages/adapters/redirects-base/src/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
+    "to": "packages/adapters/route-settings-base/src/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
+    "to": "packages/adapters/scheduling-base/src/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
+    "to": "packages/adapters/sso-base/src/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/adapter-manager/base-classes.ts",
+    "to": "packages/adapters/storage-base/src/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/content-import/csv/parse.ts",
+    "to": "fs-extra"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/content-import/csv/parse.ts",
+    "to": "papaparse"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/content-import/csv/serialize.ts",
+    "to": "papaparse"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/content-import/import/assets.ts",
+    "to": "ghost/core/server/data/importer/content-files.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/content-import/import/importer.ts",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/content-import/import/importer.ts",
+    "to": "moment-timezone"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/content-import/import/media.ts",
+    "to": "ghost/core/server/services/media-inliner/origin-schemes.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/content-import/import/relations.ts",
+    "to": "@tryghost/validator"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/content-import/import/row.ts",
+    "to": "temporal-polyfill"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/content-import/import/source.ts",
+    "to": "fs-extra"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/content-import/import/source.ts",
+    "to": "ghost/core/server/data/importer/import-archive.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/content-import/import/source.ts",
+    "to": "glob"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/custom-redirects/redirect-config-parser.ts",
+    "to": "js-yaml"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/custom-redirects/redirects-service.ts",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/custom-redirects/redirects-service.ts",
+    "to": "ghost/core/server/web/shared/dynamic-redirect-manager.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/custom-redirects/redirects-service.ts",
+    "to": "ghost/core/shared/errify.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/custom-redirects/utils.ts",
+    "to": "moment-timezone"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/custom-redirects/validation.js",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-address/email-address-service-wrapper.js",
+    "to": "@tryghost/validator"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-address/email-address-service-wrapper.js",
+    "to": "ghost/core/server/services/settings-helpers/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-address/email-address-service-wrapper.js",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-address/email-address-service-wrapper.js",
+    "to": "ghost/core/shared/labs.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-address/email-address-service.ts",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-analytics/automation-email-analytics-batch-processor.ts",
+    "to": "ghost/core/server/lib/mailgun/mailgun-message-id.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-analytics/email-analytics-service-wrapper.ts",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-analytics/email-analytics-service.ts",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-analytics/fetch-mailgun-events.ts",
+    "to": "ghost/core/server/lib/mailgun/mailgun-client.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-analytics/gift-email-analytics-batch-processor.ts",
+    "to": "ghost/core/server/lib/mailgun/mailgun-message-id.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-analytics/jobs/email-analytics-job-scheduler.ts",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-analytics/jobs/email-analytics-job-scheduler.ts",
+    "to": "ghost/core/server/services/jobs-service/cron.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-analytics/jobs/email-analytics-job-scheduler.ts",
+    "to": "moment"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-analytics/jobs/index.js",
+    "to": "ghost/core/server/models/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-analytics/jobs/index.js",
+    "to": "ghost/core/server/services/jobs-service/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-analytics/jobs/index.js",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-analytics/lib/queries.ts",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-analytics/lib/queries.ts",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-analytics/newsletter-email-analytics-batch-processor.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/batch-sending-service.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/batch-sending-service.js",
+    "to": "ghost/core/server/lib/promise-pool.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-event-processor.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-renderer.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-renderer.js",
+    "to": "clsx"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-renderer.js",
+    "to": "fs"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-renderer.js",
+    "to": "ghost/core/server/services/members/content-gating.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-renderer.js",
+    "to": "koenig/kg-converters/src/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-renderer.js",
+    "to": "luxon"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "assert/strict"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/server/adapters/storage/utils.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/server/api/endpoints/utils/serializers/output/utils/url.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/server/data/db/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/server/lib/common/events.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/server/lib/image/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/server/lib/lexical.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/server/lib/mailgun/mailgun-client.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/server/models/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/server/services/audience-feedback/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/server/services/email-address/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/server/services/email-analytics/jobs/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/server/services/limits.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/server/services/link-tracking/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/server/services/member-attribution/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/server/services/members/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/server/services/settings-helpers/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/server/services/url/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/shared/labs.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/shared/sentry.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/shared/settings-cache/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "ghost/core/shared/url-utils.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service-wrapper.js",
+    "to": "packages/i18n/src/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/email-service.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/mailgun-email-provider.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/newsletter-email-event-storage.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/newsletter-email-event-storage.js",
+    "to": "ghost/core/server/lib/db-types/affected-rows.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/newsletter-email-event-storage.js",
+    "to": "ghost/core/server/lib/db-types/count.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/newsletter-email-event-storage.js",
+    "to": "moment-timezone"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/recipient-accounting.ts",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/sending-service.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/sending-service.js",
+    "to": "@tryghost/validator"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-service/sending-status-schema.ts",
+    "to": "ghost/core/server/lib/db-types/count.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-suppression-list/email-suppression-list.js",
+    "to": "assert/strict"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-suppression-list/mailgun-email-suppression-list.js",
+    "to": "@tryghost/domain-events"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-suppression-list/mailgun-email-suppression-list.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-suppression-list/mailgun-email-suppression-list.js",
+    "to": "ghost/core/server/models/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-suppression-list/mailgun-email-suppression-list.js",
+    "to": "ghost/core/server/services/email-service/events/email-bounced-event.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-suppression-list/mailgun-email-suppression-list.js",
+    "to": "ghost/core/server/services/email-service/events/spam-complaint-event.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-suppression-list/service.js",
+    "to": "ghost/core/server/lib/mailgun/mailgun-client.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-suppression-list/service.js",
+    "to": "ghost/core/server/models/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-suppression-list/service.js",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/email-suppression-list/service.js",
+    "to": "ghost/core/shared/settings-cache/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/gifts/gift-checkout-adapter.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/gifts/gift-delivery-service.ts",
+    "to": "@tryghost/domain-events"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/gifts/gift-delivery-service.ts",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/gifts/gift-email-renderer.ts",
+    "to": "fs"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/gifts/gift-email-service.ts",
+    "to": "@tryghost/color-utils"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/gifts/gift-email-service.ts",
+    "to": "ghost/core/server/lib/mailgun/mailgun-message-id.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/gifts/gift-service.ts",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/gifts/gift-service.ts",
+    "to": "luxon"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/gifts/gift.ts",
+    "to": "luxon"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/gifts/jobs/index.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/identity-tokens/identity-token-service-wrapper.js",
+    "to": "ghost/core/server/services/signing-keys/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/identity-tokens/identity-token-service-wrapper.js",
+    "to": "ghost/core/shared/url-utils.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/identity-tokens/identity-token-service.ts",
+    "to": "jsonwebtoken"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/jobs-service.ts",
+    "to": "cron-validate"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/jobs-service.ts",
+    "to": "ghost/core/server/lib/after-commit.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/data/importer/jobs/content-import-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/services/content-import/jobs/content-csv-import-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/services/email-analytics/jobs/email-analytics-automation-fetch-latest-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/services/email-analytics/jobs/email-analytics-fetch-latest-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/services/email-analytics/jobs/email-analytics-gift-fetch-latest-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/services/email-service/jobs/send-email-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/services/gifts/jobs/clean-gifts-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/services/gifts/jobs/send-gift-reminders-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/services/media-inliner/external-media-inliner-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/services/members/jobs/clean-expired-comped-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/services/members/jobs/clean-tokens-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/services/members/jobs/members-import-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/services/mentions/process-webmention-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/services/mentions/send-webmentions-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/services/signing-keys/check-signing-keys-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/services/tinybird-sync/jobs/tinybird-sync-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
+    "to": "ghost/core/server/services/update-check/jobs/update-check-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/limits.ts",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/limits.ts",
+    "to": "ghost/core/server/data/db/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/limits.ts",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/limits.ts",
+    "to": "packages/limit-service/src/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/link-tracking/link-click-repository.js",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/link-tracking/link-click-repository.js",
+    "to": "ghost/core/shared/sentry.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/link-tracking/link-click-repository.js",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/link-tracking/link-click-tracking-service.js",
+    "to": "ghost/core/server/services/link-redirection/redirect-event.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/link-tracking/link-click-tracking-service.js",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/link-tracking/link-click-tracking-service.js",
+    "to": "moment"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/link-tracking/link-click-tracking-service.js",
+    "to": "packages/nql-string/src/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/link-tracking/post-link-repository.js",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/adapters/mpp-adapter.ts",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/adapters/mpp-adapter.ts",
+    "to": "ghost/core/server/services/settings-helpers/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/adapters/mpp-adapter.ts",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/adapters/mpp-adapter.ts",
+    "to": "ghost/core/shared/settings-cache/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/adapters/mpp-adapter.ts",
+    "to": "mppx/server"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/adapters/mpp-adapter.ts",
+    "to": "stripe"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/adapters/x402-adapter.ts",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/adapters/x402-adapter.ts",
+    "to": "@x402/core/server"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/adapters/x402-adapter.ts",
+    "to": "@x402/evm/exact/server"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/adapters/x402-adapter.ts",
+    "to": "@x402/hono"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/adapters/x402-adapter.ts",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/adapters/x402-adapter.ts",
+    "to": "hono"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/content-loader.ts",
+    "to": "ghost/core/server/models/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/eligibility.ts",
+    "to": "ghost/core/shared/machine-payments.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/service.ts",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/service.ts",
+    "to": "ghost/core/server/models/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/service.ts",
+    "to": "ghost/core/shared/labs.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/service.ts",
+    "to": "ghost/core/shared/settings-cache/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/stripe/deposit-address-store.ts",
+    "to": "ghost/core/server/models/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/stripe/deposit-address-store.ts",
+    "to": "ghost/core/server/services/settings-helpers/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/stripe/deposit-address-store.ts",
+    "to": "ghost/core/shared/settings-cache/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/stripe/deposit-address-store.ts",
+    "to": "stripe"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/stripe/payment-recorder.ts",
+    "to": "ghost/core/server/services/settings-helpers/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/stripe/payment-recorder.ts",
+    "to": "stripe"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/machine-payments/stripe/stripe-client-options.ts",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/members-events/last-seen-at-cache.js",
+    "to": "moment-timezone"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/members-events/last-seen-at-updater.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/members-events/last-seen-at-updater.js",
+    "to": "ghost/core/server/services/email-service/events/email-opened-event.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/members-events/last-seen-at-updater.js",
+    "to": "ghost/core/shared/events/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/members-events/last-seen-at-updater.js",
+    "to": "moment-timezone"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/milestones/service.js",
+    "to": "@tryghost/domain-events"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/milestones/service.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/milestones/service.js",
+    "to": "ghost/core/server/data/db/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/milestones/service.js",
+    "to": "ghost/core/server/models/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/milestones/service.js",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/milestones/service.js",
+    "to": "ghost/core/shared/settings-cache/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/milestones/slack-notifications/service.js",
+    "to": "@tryghost/domain-events"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/milestones/slack-notifications/service.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/milestones/slack-notifications/service.js",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/milestones/slack-notifications/service.js",
+    "to": "ghost/core/shared/url-utils.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/milestones/slack-notifications/slack-notifications.js",
+    "to": "@tryghost/validator"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/milestones/slack-notifications/slack-notifications.js",
+    "to": "@tryghost/version"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/milestones/slack-notifications/slack-notifications.js",
+    "to": "ghost/core/server/lib/request-external.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/milestones/slack-notifications/slack-notifications.js",
+    "to": "moment"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/notifications/notifications.js",
+    "to": "@tryghost/version"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/notifications/notifications.js",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/notifications/notifications.js",
+    "to": "moment-timezone"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/notifications/notifications.js",
+    "to": "semver"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/notifications/sanitize-notification-html.ts",
+    "to": "sanitize-html"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/oembed/extract-metadata.ts",
+    "to": "chrono-node"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/oembed/extract-metadata.ts",
+    "to": "entities"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/oembed/extract-metadata.ts",
+    "to": "jsonrepair"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/oembed/extract-metadata.ts",
+    "to": "tldts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/oembed/extract-oembed.ts",
+    "to": "@extractus/oembed-extractor"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/oembed/oembed-service.js",
+    "to": "@extractus/oembed-extractor"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/oembed/oembed-service.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/oembed/oembed-service.js",
+    "to": "iconv-lite"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/oembed/oembed-service.js",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/oembed/oembed-service.js",
+    "to": "packages/image-transform/src/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/oembed/service.js",
+    "to": "ghost/core/server/lib/request-external.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/oembed/service.js",
+    "to": "ghost/core/server/services/adapter-manager/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/oembed/service.js",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/oembed/twitter-oembed-provider.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/offers/application/offers-api.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/offers/domain/models/shared/value-object.js",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/offers/offer-bookshelf-repository.js",
+    "to": "@tryghost/domain-events"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/offers/offer-bookshelf-repository.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/offers/offer-bookshelf-repository.js",
+    "to": "ghost/core/shared/sentry.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/offers/offer-bookshelf-repository.js",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/offers/offers-module.js",
+    "to": "@tryghost/domain-events"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/offers/service.js",
+    "to": "ghost/core/server/models/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/offers/service.js",
+    "to": "ghost/core/server/web/shared/dynamic-redirect-manager.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/offers/service.js",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/offers/service.js",
+    "to": "ghost/core/shared/url-utils.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/permissions/actions-map-cache.js",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/permissions/can-this.js",
+    "to": "ghost/core/server/models/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/permissions/can-this.js",
+    "to": "ghost/core/server/models/role-utils.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/permissions/can-this.js",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/permissions/providers.js",
+    "to": "ghost/core/server/models/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/post-scheduling/post-scheduling.ts",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/post-scheduling/post-scheduling.ts",
+    "to": "ghost/core/server/adapters/scheduling/build-signed-job.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/post-scheduling/post-scheduling.ts",
+    "to": "ghost/core/server/adapters/scheduling/get-scheduler-idempotency-key.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/post-scheduling/post-scheduling.ts",
+    "to": "ghost/core/server/lib/common/events.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/post-scheduling/post-scheduling.ts",
+    "to": "ghost/core/server/models/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/post-scheduling/post-scheduling.ts",
+    "to": "moment"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/post-email-handler.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/post-email-handler.js",
+    "to": "ghost/core/server/services/email-service/email-service.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/post-scheduling.js",
+    "to": "ghost/core/server/api/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/post-scheduling.js",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/post-scheduling.js",
+    "to": "ghost/core/shared/url-utils.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/post-scheduling.js",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/post-scheduling.js",
+    "to": "moment"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/posts-exporter.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/posts-exporter.js",
+    "to": "stream"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/posts-service-instance.js",
+    "to": "ghost/core/server/api/endpoints/utils/serializers/output/utils/url.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/posts-service-instance.js",
+    "to": "ghost/core/server/models/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/posts-service-instance.js",
+    "to": "ghost/core/server/services/email-service/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/posts-service-instance.js",
+    "to": "ghost/core/server/services/settings-helpers/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/posts-service-instance.js",
+    "to": "ghost/core/shared/labs.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/posts-service-instance.js",
+    "to": "ghost/core/shared/settings-cache/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/posts-service-instance.js",
+    "to": "ghost/core/shared/url-utils.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/posts-service.js",
+    "to": "@tryghost/domain-events"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/posts-service.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/posts-service.js",
+    "to": "ghost/core/server/api/endpoints/utils/api-filter-utils.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/posts-service.js",
+    "to": "ghost/core/server/lib/after-commit.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/posts-service.js",
+    "to": "ghost/core/shared/events-ts/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/posts-service.js",
+    "to": "lodash/pick"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/posts/stats/post-stats.js",
+    "to": "ghost/core/server/data/db/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/remote-flags/remote-flags-service.ts",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/route-settings/dynamic-routing-service.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/route-settings/dynamic-routing-service.js",
+    "to": "ghost/core/bridge.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/route-settings/dynamic-routing-service.js",
+    "to": "ghost/core/server/services/url/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/route-settings/route-settings-parser.ts",
+    "to": "js-yaml"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/route-settings/yaml-parser.js",
+    "to": "js-yaml"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings-helpers/settings-helpers.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings-helpers/settings-helpers.js",
+    "to": "net"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-bread-service.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-bread-service.js",
+    "to": "ghost/core/server/services/stripe/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-bread-service.js",
+    "to": "ghost/core/shared/sentry.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-bread-service.js",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-service.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-service.js",
+    "to": "ghost/core/server/lib/common/events.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-service.js",
+    "to": "ghost/core/server/lib/mail/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-service.js",
+    "to": "ghost/core/server/lib/tracing/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-service.js",
+    "to": "ghost/core/server/models/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-service.js",
+    "to": "ghost/core/server/services/adapter-manager/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-service.js",
+    "to": "ghost/core/server/services/email-address/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-service.js",
+    "to": "ghost/core/server/services/limits.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-service.js",
+    "to": "ghost/core/server/services/members/single-use-token-provider.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-service.js",
+    "to": "ghost/core/server/services/settings-helpers/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-service.js",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-service.js",
+    "to": "ghost/core/shared/labs.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-service.js",
+    "to": "ghost/core/shared/settings-cache/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-service.js",
+    "to": "ghost/core/shared/url-utils.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-utils.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-utils.js",
+    "to": "@tryghost/validator"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/settings/settings-utils.js",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/activate.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/activation-bridge.js",
+    "to": "ghost/core/bridge.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/activation-bridge.js",
+    "to": "ghost/core/server/services/custom-theme-settings/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/installer.js",
+    "to": "@tryghost/request"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/installer.js",
+    "to": "fs-extra"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/installer.js",
+    "to": "ghost/core/server/services/limits.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/installer.js",
+    "to": "os"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/list.js",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/loader.js",
+    "to": "ghost/core/server/lib/package-json/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/loader.js",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/storage.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/storage.js",
+    "to": "fs-extra"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/storage.js",
+    "to": "ghost/core/server/services/custom-theme-settings/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/storage.js",
+    "to": "ghost/core/shared/settings-cache/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/theme-storage.js",
+    "to": "@tryghost/zip"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/theme-storage.js",
+    "to": "fs-extra"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/theme-storage.js",
+    "to": "ghost/core/server/adapters/storage/LocalStorageBase.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/theme-storage.js",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/theme-storage.js",
+    "to": "os"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/to-json.js",
+    "to": "ghost/core/bridge.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/to-json.js",
+    "to": "ghost/core/server/lib/package-json/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/to-json.js",
+    "to": "ghost/core/shared/settings-cache/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/to-json.js",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/upload-size-limit-reporter.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/upload-size-limit-reporter.js",
+    "to": "ghost/core/shared/sentry.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/validate.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/validate.js",
+    "to": "@tryghost/version"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/validate.js",
+    "to": "fs-extra"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/validate.js",
+    "to": "ghost/core/server/services/adapter-manager/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/validate.js",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/validate.js",
+    "to": "ghost/core/shared/labs.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/validate.js",
+    "to": "gscan"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/themes/validate.js",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/tinybird-sync/tinybird-sync-service.ts",
+    "to": "ghost/core/server/services/jobs-service/cron.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/tinybird/tinybird-service-wrapper.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/tinybird/tinybird-service-wrapper.js",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/tinybird/tinybird-service-wrapper.js",
+    "to": "ghost/core/shared/settings-cache/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/tinybird/tinybird-service.js",
+    "to": "jsonwebtoken"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/update-check/update-check-service.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/update-check/update-check-service.js",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/update-check/update-check-service.js",
+    "to": "moment"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/url/lazy-find-resource.ts",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/url/lazy-url-service.ts",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/url/lazy-url-service.ts",
+    "to": "ghost/core/shared/url-utils.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/url/permalink-matcher.ts",
+    "to": "path-match"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/url/routable-resources.js",
+    "to": "@tryghost/database-info"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/url/routable-resources.js",
+    "to": "ghost/core/server/data/schema/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/url/routable-resources.js",
+    "to": "ghost/core/server/models/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/url/router-filter.ts",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/verification-trigger.js",
+    "to": "@tryghost/domain-events"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/verification-trigger.js",
+    "to": "ghost/core/shared/events/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/verification/verification-webhook-service.ts",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/verification/verification-webhook-service.ts",
+    "to": "@tryghost/request"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/verification/verification-webhook-service.ts",
+    "to": "ghost/core/shared/config/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/webhooks/listen.js",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/webhooks/serialize.js",
+    "to": "ghost/core/server/api/index.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/webhooks/serialize.js",
+    "to": "ghost/core/server/services/members/utils.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/webhooks/serialize.js",
+    "to": "lodash"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/webhooks/serialize.js",
+    "to": "packages/api-framework/src/index.ts"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/webhooks/webhook-trigger.js",
+    "to": "@tryghost/logging"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/webhooks/webhook-trigger.js",
+    "to": "@tryghost/request"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/webhooks/webhook-trigger.js",
+    "to": "@tryghost/version"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/webhooks/webhook-trigger.js",
+    "to": "ghost/core/server/lib/request-external.js"
+  },
+  {
+    "rule": "service-dependencies",
+    "from": "ghost/core/server/services/webhooks/webhook-trigger.js",
+    "to": "ghost/core/shared/config/index.ts"
+  }
+]

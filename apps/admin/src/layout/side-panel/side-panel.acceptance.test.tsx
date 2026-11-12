@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 
 import {
+  allowUnhandledRequests,
   currentRoute,
   currentUserResponse,
   fakeAdminStats,
@@ -30,6 +31,8 @@ const panelState = () =>
   document.querySelector('[data-side-panel]')?.getAttribute('data-side-panel');
 const panelWidth = () =>
   document.querySelector('[data-side-panel]')?.getBoundingClientRect().width ?? 0;
+/** The width of the navigation, which the panel matches at its default size. */
+const NAVIGATION_WIDTH = 316;
 
 function sidePanel(): GhostSidePanelApi {
   const api = window.ghost?.sidePanel;
@@ -89,7 +92,7 @@ describe('Side panel', () => {
 
       await expect.element(panel()).toBeVisible();
       expect(panel().element().contains(frame.element)).toBe(true);
-      await expect.poll(panelWidth).toBe(380);
+      await expect.poll(panelWidth).toBe(NAVIGATION_WIDTH);
       const pageRight = sidebarScreen.shellMain().element().getBoundingClientRect().right;
       const panelBox = panel().element().getBoundingClientRect();
       expect(pageRight).toBeLessThanOrEqual(panelBox.left);
@@ -195,7 +198,7 @@ describe('Side panel', () => {
     await expect.poll(panelState).toBe('default');
 
     // Mid-collapse, the panel is still wider than the content it's shrinking to
-    expect(panelWidth()).toBeGreaterThan(380);
+    expect(panelWidth()).toBeGreaterThan(NAVIGATION_WIDTH);
     const contentRight = frame.element.getBoundingClientRect().right;
     expect(contentRight).toBeCloseTo(panelElement().getBoundingClientRect().right, 0);
   });
@@ -208,9 +211,9 @@ describe('Side panel', () => {
 
     handle?.setSize('full');
     await expect.poll(panelState).toBe('full');
-    await expect.poll(panelWidth).toBeGreaterThan(380);
+    await expect.poll(panelWidth).toBeGreaterThan(NAVIGATION_WIDTH);
     handle?.setSize('default');
-    await expect.poll(panelWidth).toBe(380);
+    await expect.poll(panelWidth).toBe(NAVIGATION_WIDTH);
     expect(frame.loads()).toBe(1);
 
     const other = hostFrame('Other');
@@ -244,6 +247,46 @@ describe('Side panel', () => {
     expect(panel().element().contains(frame.element)).toBe(true);
     expect(frame.loads()).toBe(1);
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('hides in Settings, which swaps the navigation for its own, and shows again on return', async () => {
+    // The settings app owns its request graph; this spec asserts only the panel.
+    allowUnhandledRequests();
+    await renderWithNavigation();
+    const frame = hostFrame();
+    const onClose = vi.fn();
+    sidePanel().open(frame.element, { onClose });
+    await expect.poll(frame.loads).toBe(1);
+
+    await sidebarScreen.navLink('Settings').click();
+    await expect.poll(currentRoute).toMatch(/^\/settings/);
+    await expect.poll(panelState).toBe('closed');
+    expect(sidePanel().isOpen()).toBe(true);
+    expect(sidePanel().open(hostFrame('Other').element)).toBeNull();
+
+    await sidebarScreen.shellNav().getByRole('button', { name: 'Back to app' }).click();
+    await expect.poll(panelState).toBe('default');
+    expect(panel().element().contains(frame.element)).toBe(true);
+    expect(frame.loads()).toBe(1);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('stays in Settings for editors, who keep the main navigation there', async () => {
+    // The settings app owns its request graph; this spec asserts only the panel.
+    allowUnhandledRequests();
+    fakeTags([]);
+    const me = currentUserResponse();
+    me.users[0].roles = [staffRole({ name: 'Editor' })];
+    await renderAdminApp('/tags', { boot: { browseMe: { response: me } } });
+    await expect.element(sidebarScreen.navLink('Tags')).toBeVisible();
+    sidePanel().open(hostFrame().element);
+    await expect.poll(panelState).toBe('default');
+
+    window.location.hash = '#/settings/staff';
+    await expect.poll(currentRoute).toMatch(/^\/settings\/staff/);
+
+    await expect.element(sidebarScreen.navLink('Tags')).toBeVisible();
+    expect(panelState()).toBe('default');
   });
 
   it('returns null for contributors, who have no navigation', async () => {

@@ -73,8 +73,11 @@ module.exports = function MembersAPI({
   emailAddressService,
   giftService,
   metafieldValues,
+  metafieldBindings,
+  tierRequirements,
   checkouts,
   tracking,
+  membersTracking,
 }) {
   const tokenService = new TokenService({
     signingKeys,
@@ -187,6 +190,16 @@ module.exports = function MembersAPI({
     checkouts,
   });
 
+  const account = new MemberAccountService({
+    memberBREADService,
+    members: memberRepository,
+    emailSuppressionList,
+    metafieldValues,
+    metafieldBindings,
+    requirements: tierRequirements,
+    labs: labsService,
+  });
+
   const memberController = new MemberController({
     memberRepository,
     productRepository,
@@ -196,6 +209,8 @@ module.exports = function MembersAPI({
     tokenService,
     sendEmailWithMagicLink,
     settingsCache,
+    account,
+    tracking: membersTracking,
   });
 
   const routerController = new RouterController({
@@ -362,13 +377,6 @@ module.exports = function MembersAPI({
   async function getMemberIdentityData(email) {
     return memberBREADService.read({ email }, { metafieldsFor: null });
   }
-
-  const account = new MemberAccountService({
-    memberBREADService,
-    members: users,
-    emailSuppressionList,
-    metafieldValues,
-  });
 
   async function getMemberIdentity(transientId) {
     if (!transientId) {

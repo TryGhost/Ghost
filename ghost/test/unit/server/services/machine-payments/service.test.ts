@@ -54,7 +54,12 @@ describe('Unit: server/services/machine-payments/service', function () {
       }),
     };
 
-    contentLoader = sinon.createStubInstance(ContentLoader);
+    // Sinon 22 createStubInstance uses a separate call counter. Supply stubs
+    // from the same sandbox as the adapters so callOrder remains reliable.
+    contentLoader = sinon.createStubInstance(ContentLoader, {
+      isPurchasable: sinon.stub(),
+      loadFullEntry: sinon.stub(),
+    });
     contentLoader.isPurchasable.resolves(true);
     contentLoader.loadFullEntry.resolves({
       id: 'post1',

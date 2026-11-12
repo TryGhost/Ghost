@@ -14,9 +14,13 @@ import {
 import { importMembersScreen } from './import-members.screen';
 import { membersScreen } from './members.screen';
 import { CUSTOM_FIELDS_FLAG } from '@/shared/member-custom-fields/availability';
-import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
+import {
+  type MemberCustomField,
+  userTypeForFieldType,
+} from '@tryghost/admin-x-framework/api/member-custom-fields';
 import { MetafieldDefinitionSchema } from '@tryghost/metafield-types';
 import { CUSTOM_NAMESPACE, KeySchema } from '@tryghost/metafield-types/identity';
+import { FIELDS_IN_DEVELOPMENT } from '@tryghost/metafield-types/test/fixtures';
 import { z } from 'zod';
 
 // Admin goes live before the servers it talks to, and a server that hasn't released custom
@@ -126,6 +130,16 @@ async function openCreateForm(column: string) {
   await importMembersScreen.addCustomFieldOption().click();
 }
 
+/** Opens the types a field made from a column can take, on a site with the given Labs flags. */
+async function openCreateFormTypes(labs: Record<string, boolean>) {
+  fakeCustomFieldsWorld();
+  await renderAdminApp('/members', { labs });
+  await openMappingStep();
+  await openCreateForm('nickname');
+  await createForm().getByRole('combobox', { name: 'Type' }).click();
+  await expect.element(importMembersScreen.option('Short text', { exact: true })).toBeVisible();
+}
+
 describe('Import members custom fields', () => {
   describe('a list made from a column', () => {
     const TOPICS_CSV =
@@ -176,6 +190,38 @@ describe('Import members custom fields', () => {
           ],
         });
       await expect.element(fieldSelect('topics')).toHaveTextContent('Topics');
+    });
+
+    // As in Settings: a refusal of something typed shows beside it, not as a failure of the form.
+    it('shows Ghost refusing one option on that option’s row', async () => {
+      fakeSiteCreatingLists();
+      fakeAdminEndpoint(
+        'POST',
+        '/members/metafields/custom/',
+        {
+          errors: [
+            {
+              type: 'ValidationError',
+              message: 'Validation error, cannot save members_metafield.',
+              context: 'Ghost refused this option.',
+              property: 'settings.options.1',
+            },
+          ],
+        },
+        { status: 422 },
+      );
+      await renderAdminApp('/members');
+      await openMappingStep(TOPICS_CSV);
+
+      await openCreateForm('topics');
+      const form = createForm();
+      await form.getByRole('button', { name: 'Save' }).click();
+
+      await expect.element(form.getByText('Ghost refused this option.')).toBeVisible();
+      await expect.element(form.getByLabelText('Option 2')).toHaveAttribute('aria-invalid', 'true');
+      expect(form.getByText('An unexpected error occurred, please try again.').all()).toHaveLength(
+        0,
+      );
     });
 
     it('suggests a column’s answers when its field is made a list, taking one answer when no cell holds several', async () => {
@@ -451,6 +497,24 @@ describe('Import members custom fields', () => {
     await expect.element(fieldSelect('nickname')).toHaveTextContent('Nickname');
   });
 
+  // A type still in development is offered only where its Labs flag is on, as in Settings.
+  it.each(FIELDS_IN_DEVELOPMENT)(
+    "doesn't offer $field.type while $flag is off",
+    async ({ field, flag }) => {
+      const { label } = userTypeForFieldType(field.type);
+      await openCreateFormTypes({ [flag]: false });
+
+      await expect(importMembersScreen.option(label, { exact: true })).toHaveCount(0);
+    },
+  );
+
+  it.each(FIELDS_IN_DEVELOPMENT)('offers $field.type once $flag is on', async ({ field, flag }) => {
+    const { label } = userTypeForFieldType(field.type);
+    await openCreateFormTypes({ [flag]: true });
+
+    await expect.element(importMembersScreen.option(label, { exact: true })).toBeVisible();
+  });
+
   // A composite spans several columns, so the form has nothing to say about which one this
   // is. It creates the field and hands the question back to the picker, filtered to what it
   // just made — the same question as any other mapping, asked where the others are.
@@ -598,6 +662,37 @@ describe('Import members custom fields', () => {
     await expect.element(createForm()).not.toBeInTheDocument();
   });
 
+  // Put away before its answer, the form would leave a refusal nowhere to show, and a second
+  // Enter would send a second create for the same name.
+  it('can be neither put away nor saved again from the moment it saves', async () => {
+    const fields: MemberCustomField[] = [];
+    fakeCustomFieldsWorld();
+    fakeMemberCustomFields(() => fields);
+    let release = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    // Released however the test ends, as a save left in flight would fail the tests after it.
+    onTestFinished(() => release());
+    const createApi = fakeAdminEndpoint('POST', '/members/metafields/custom/', async () => {
+      await held;
+      fields.push(NICKNAME_FIELD);
+      return { members_metafields: [NICKNAME_FIELD] };
+    });
+    await renderAdminApp('/members');
+    await openMappingStep();
+
+    await openCreateForm('nickname');
+    // Straight after Enter, before the request has said it is under way.
+    await userEvent.keyboard('{Enter}{Enter}{Escape}');
+    await expect.element(createForm().getByRole('button', { name: 'Saving' })).toBeDisabled();
+
+    release();
+    await expect.element(createForm()).not.toBeInTheDocument();
+    await expect.element(fieldSelect('nickname')).toHaveTextContent('Nickname');
+    expect(createApi.requests).toHaveLength(1);
+  });
+
   it('pins a name the site already uses to the name input', async () => {
     fakeCustomFieldsWorld();
     fakeAdminEndpoint(
@@ -606,7 +701,10 @@ describe('Import members custom fields', () => {
       {
         errors: [
           {
-            message: 'A custom field with this name already exists.',
+            // As Ghost serialises a refusal: a generic summary in `message`, the sentence in
+            // `context`.
+            message: 'Validation error, cannot save members_metafield.',
+            context: 'A custom field with this name already exists.',
             property: 'name',
             type: 'ValidationError',
           },
@@ -662,6 +760,69 @@ describe('Import members custom fields', () => {
     await expect.element(createForm().getByRole('button', { name: 'Save' })).toBeDisabled();
     await userEvent.fill(createForm().getByLabelText('Name'), 'Nick');
     await expect.element(createForm().getByText(/limited to 20 per site/)).toBeVisible();
+    await expect.element(createForm().getByRole('button', { name: 'Save' })).toBeDisabled();
+  });
+
+  // Only what the site deliberately says to publishers is shown as it says it. A fault's own
+  // wording is for whoever investigates it, not for the form.
+  it('says something clear when the site fails to save a field for a reason it did not expect', async () => {
+    fakeCustomFieldsWorld();
+    fakeAdminEndpoint(
+      'POST',
+      '/members/metafields/custom/',
+      {
+        errors: [
+          {
+            message: 'ER_LOCK_DEADLOCK: Deadlock found when trying to get lock',
+            type: 'InternalServerError',
+          },
+        ],
+      },
+      { status: 500 },
+    );
+    await renderAdminApp('/members');
+    await openMappingStep();
+
+    await openCreateForm('nickname');
+    await createForm().getByRole('button', { name: 'Save' }).click();
+
+    await expect
+      .element(createForm().getByRole('alert'))
+      .toHaveTextContent('An unexpected error occurred, please try again.');
+    expect(
+      createForm()
+        .getByText(/ER_LOCK_DEADLOCK/)
+        .all(),
+    ).toHaveLength(0);
+    // A fault can pass, so saving again stays on offer.
+    await expect.element(createForm().getByRole('button', { name: 'Save' })).toBeEnabled();
+  });
+
+  it('says a staff user without permission cannot add a field, and stops offering to retry', async () => {
+    fakeCustomFieldsWorld();
+    fakeAdminEndpoint(
+      'POST',
+      '/members/metafields/custom/',
+      {
+        errors: [
+          {
+            message: 'Permission error, cannot add members_metafield.',
+            context: 'You do not have permission to perform this action',
+            type: 'NoPermissionError',
+          },
+        ],
+      },
+      { status: 403 },
+    );
+    await renderAdminApp('/members');
+    await openMappingStep();
+
+    await openCreateForm('nickname');
+    await createForm().getByRole('button', { name: 'Save' }).click();
+
+    await expect
+      .element(createForm().getByRole('alert'))
+      .toHaveTextContent("You don't have permission to create custom fields.");
     await expect.element(createForm().getByRole('button', { name: 'Save' })).toBeDisabled();
   });
 
