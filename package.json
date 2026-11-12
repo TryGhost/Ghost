@@ -21,6 +21,7 @@
     "dev:analytics:local": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' ANALYTICS_PROXY_TARGET=${ANALYTICS_PROXY_TARGET:-127.0.0.1:3000} nx run ghost-monorepo:dev:host",
     "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' nx run ghost-monorepo:dev:host",
     "dev:stripe": "./docker/stripe/with-stripe.sh nx run ghost-monorepo:dev:host",
+    "dev:multi": "node tools/scripts/with-second-ghost.ts nx run ghost-monorepo:dev:host:multi",
     "dev:up": "node tools/gx/dev-up.ts",
     "dev:down": "node tools/gx/dev-down.ts",
     "dev:status": "node tools/gx/dev-status.ts",
@@ -237,6 +238,17 @@
               "@tryghost/admin-toolbar"
             ]
           }
+        ]
+      },
+      "dev:host:multi": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "ghost",
+          "command": "node ../tools/scripts/dev-wait-for-ghost.ts && GHOST_DEV_BACKEND_PORT=$GHOST_DEV_BACKEND_PORT_2 node ../tools/scripts/with-ghost-dev-env.ts nodemon index.js"
+        },
+        "dependsOn": [
+          "dev:host"
         ]
       },
       "dev:host:lexical": {

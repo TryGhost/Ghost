@@ -1,4 +1,4 @@
-module.exports = (model) => {
+module.exports = (model: { toJSON(): Record<string, unknown> }) => {
   const json = model.toJSON();
 
   return {
