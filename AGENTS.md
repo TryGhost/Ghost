@@ -70,6 +70,8 @@ migration, private feature flag, Shade component, or internal package.
   initialize on the first request.
   Before writing a record's relations or link tables outside `Model.edit`,
   read [row locking](docs/codebase/database.md#row-locking).
+- **Background jobs:** read the [jobs guide](docs/codebase/jobs.md) before
+  adding a job.
 - **Repository tooling:** read the [tooling ownership guide](tools/README.md)
   and the owning folder README before adding or relocating scripts.
 - **ESLint:** use the shared factories and dependency rules in the
