@@ -108,6 +108,12 @@ describe('word search', () => {
     expect(search('cofee', searched)).toEqual([]);
     expect(search('aa', searched)).toEqual([]);
   });
+
+  it('returns every match when limitPerField is omitted', () => {
+    const searched = itemsTitled(Array.from({ length: 150 }, (_, index) => `Post ${index}`));
+
+    expect(createWordSearch(searched).search('post')).toHaveLength(150);
+  });
 });
 
 describe('substring search', () => {
@@ -141,6 +147,12 @@ describe('substring search', () => {
       'shared one',
       'Other',
     ]);
+  });
+
+  it('returns every match when limitPerField is omitted', () => {
+    const searched = itemsTitled(Array.from({ length: 150 }, (_, index) => `Post ${index}`));
+
+    expect(createSubstringSearch(searched).search('post')).toHaveLength(150);
   });
 });
 

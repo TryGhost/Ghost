@@ -15,14 +15,15 @@ export interface TextSearchOptions {
   /**
    * How many matches to keep from each searchable field (`title`, then
    * `keywords`). Results are merged in that order and deduped by id, so the
-   * total can be up to twice this number when items have keywords.
+   * total can be up to twice this number when items have keywords. Omit it to
+   * keep every match.
    */
-  limitPerField: number;
+  limitPerField?: number;
 }
 
 /** Finds the items a term matches. Results are the items themselves. */
 export interface TextSearch<T extends Searchable> {
-  search(term: string, options: TextSearchOptions): T[];
+  search(term: string, options?: TextSearchOptions): T[];
 }
 
 const SEARCH_FIELDS = ['title', 'keywords'] as const;
@@ -46,7 +47,7 @@ export function createWordSearch<T extends Searchable>(items: readonly T[]): Tex
   const itemsById = new Map(items.map((item) => [item.id, item]));
 
   return {
-    search(term, { limitPerField }) {
+    search(term, { limitPerField = items.length } = {}) {
       const ids = new Set(
         index.search(term, limitPerField).flatMap((field) => field.result.map(String)),
       );
@@ -59,7 +60,7 @@ export function createWordSearch<T extends Searchable>(items: readonly T[]): Tex
 /** Matches the term as a case-insensitive substring, in item order. */
 export function createSubstringSearch<T extends Searchable>(items: readonly T[]): TextSearch<T> {
   return {
-    search(term, { limitPerField }) {
+    search(term, { limitPerField } = {}) {
       if (!term.trim()) {
         return [];
       }
@@ -68,7 +69,7 @@ export function createSubstringSearch<T extends Searchable>(items: readonly T[])
       const fieldMatches = SEARCH_FIELDS.map((field) => {
         const matches: T[] = [];
         for (const item of items) {
-          if (matches.length >= limitPerField) {
+          if (limitPerField !== undefined && matches.length >= limitPerField) {
             break;
           }
           const value = item[field];
