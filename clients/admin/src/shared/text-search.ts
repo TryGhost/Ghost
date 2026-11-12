@@ -96,11 +96,14 @@ export function createSubstringSearch<T extends Searchable>(items: readonly T[])
 }
 
 /** FlexSearch's word tokenizer only suits English; substring matching works for any language. */
+export function isWordSearchLocale(locale: string | null | undefined): boolean {
+  return locale?.toLowerCase().startsWith('en') ?? true;
+}
+
+/** Picks word or substring search from the site's locale. */
 export function createTextSearch<T extends Searchable>(
   items: readonly T[],
   locale: string | null | undefined,
 ): TextSearch<T> {
-  const isEnglish = locale?.toLowerCase().startsWith('en') ?? true;
-
-  return isEnglish ? createWordSearch(items) : createSubstringSearch(items);
+  return isWordSearchLocale(locale) ? createWordSearch(items) : createSubstringSearch(items);
 }
