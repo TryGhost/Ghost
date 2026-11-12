@@ -46,6 +46,7 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/link-replacer\\.js$', // HTML link rewriting with caller-owned callbacks; no retained state or application dependencies.
   '^ghost/core/server/lib/magic-link/magic-link\\.js$', // Magic-link constructor with caller-supplied transporter, token provider and content callbacks; no application instances.
   '^ghost/core/server/lib/case-keys\\.ts$', // camelCase and snake_case key conversion between models, rows and wire shapes.
+  '^ghost/core/server/lib/ensure-transaction\\.ts$', // Runs a callback in the caller's transaction or a new one on the supplied connection; no application instances.
   '^ghost/core/server/lib/parse-request\\.ts$', // Request body parsing into validation errors on the named property.
   '^ghost/core/server/lib/public-jwk\\.ts$', // Key conversion and thumbprints; includes memoization.
   '^ghost/core/server/lib/signed-webhook\\.ts$', // Request signing/formatting and URL sanitization; no running transport.
