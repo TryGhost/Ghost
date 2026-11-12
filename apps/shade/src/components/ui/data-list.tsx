@@ -33,7 +33,7 @@ const DataListHeader = React.forwardRef<HTMLDivElement, DataListHeaderProps>(
       <div
         ref={ref}
         className={cn(
-          'flex items-center justify-between gap-2 border-b p-2 text-xs font-medium tracking-wide text-muted-foreground uppercase',
+          'column-label flex items-center justify-between gap-2 border-b p-2 text-xs font-medium tracking-wide text-muted-foreground uppercase',
           className,
         )}
         {...props}

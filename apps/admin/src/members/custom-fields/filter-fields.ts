@@ -12,18 +12,25 @@ import {
   textSemantics,
 } from '@/shared/filters';
 import {
+  keysOf,
+  matchLeaf,
   matchShape,
   type FieldType,
   type Leaf,
   type LeafKind,
+  type TextLeaf,
 } from '@tryghost/metafield-types/structure';
+import { filterTextFor } from '@tryghost/metafield-types';
+import { phoneCountryOfLocales } from '@tryghost/metafield-types/phone';
 import type {
+  FilterTypeId,
   FieldDescriptor,
   FieldProvider,
   PresenceAddressing,
   ValueSemantics,
 } from '@/shared/filters';
 import type { OperatorId } from '@/shared/filters/filter-operators';
+import type { TextConfig } from '@/shared/filters/semantics/text';
 import type { MemberCustomField } from '@tryghost/admin-x-framework/api/member-custom-fields';
 
 type ScalarFilterBase = {
@@ -35,26 +42,50 @@ type ScalarFilterBase = {
 
 // How each leaf filters. Typed text is text; a choice picked from a list is a set, the way labels
 // and tiers are: "is any of" a choice of them.
-export type LeafFilterType = 'text' | 'set';
+// Each is a type the shared filter registry declares, so a custom field filters as that type does
+// on any other field, with its operators and its input.
+export const LEAF_FILTER = {
+  text: 'text',
+  choice: 'set',
+} as const satisfies { readonly [K in LeafKind]: FilterTypeId };
 
-export const LEAF_FILTER: { [K in LeafKind]: LeafFilterType } = { text: 'text', choice: 'set' };
+export type LeafFilterType = (typeof LEAF_FILTER)[LeafKind];
+
+/**
+ * A text leaf's filter reads what was typed as the leaf's field holds it, in the staff member's own
+ * country, so a phone field's filter finds a number however it was written.
+ */
+const textFilter = (leaf: TextLeaf): TextConfig => {
+  const country = phoneCountryOfLocales(navigator.languages);
+  return { normalise: (typed) => filterTextFor(leaf, typed, country) };
+};
 
 // Each entry builds its own descriptor so the compiler checks it against that filter type, which a
 // map to a union of filter types can't do.
-const SCALAR_FILTER: { [F in LeafFilterType]: (base: ScalarFilterBase) => FieldDescriptor } = {
-  text: (base) => ({ ...base, type: 'text' }),
+const SCALAR_FILTER: {
+  [F in LeafFilterType]: F extends 'text'
+    ? (base: ScalarFilterBase, leaf: TextLeaf) => FieldDescriptor
+    : (base: ScalarFilterBase) => FieldDescriptor;
+} = {
+  text: (base, leaf) => ({ ...base, type: 'text', valueConfig: textFilter(leaf) }),
   set: (base) => ({ ...base, type: 'set' }),
 };
 
-// Parse order: a plain string is text ("is"), and only a list is a set ("is any of").
-// Set semantics would also claim a plain string, so text has to be asked first.
-const LEAF_FILTER_TYPES: readonly LeafFilterType[] = ['text', 'set'];
-
-const LEAF_SEMANTICS: { [T in LeafFilterType]: () => ValueSemantics<string> } = {
-  text: () => textSemantics(),
+// How each filter type reads a filter's value back, and when it is asked to, lowest first: a plain
+// string is text ("is"), and only a list is a set ("is any of"). Set semantics would also claim a
+// plain string, so text has to be asked first. Keyed by filter type, so a new one has to say where
+// it is asked.
+const LEAF_SEMANTICS: {
+  [T in LeafFilterType]: { readonly order: number; semantics: () => ValueSemantics<string> };
+} = {
+  text: { order: 0, semantics: () => textSemantics() },
   // Quoted, as the text a sibling part holds is, so a code reads the same either way.
-  set: () => setSemantics({ quoteStrings: true }),
+  set: { order: 1, semantics: () => setSemantics({ quoteStrings: true }) },
 };
+
+const LEAF_FILTER_TYPES: readonly LeafFilterType[] = keysOf(LEAF_SEMANTICS).sort(
+  (a, b) => LEAF_SEMANTICS[a].order - LEAF_SEMANTICS[b].order,
+);
 
 const partNamed = (parts: Readonly<Record<string, Leaf>>, part: string): Leaf | undefined =>
   Object.entries(parts).find(([name]) => name === part)?.[1];
@@ -94,7 +125,7 @@ function usedFilterTypes(parts: Readonly<Record<string, Leaf>>): readonly LeafFi
 // operators of its own type, and moves an operator the part cannot use.
 export function customFieldSemantics(partTypes: readonly LeafFilterType[]): ValueSemantics<string> {
   const members = LEAF_FILTER_TYPES.filter((candidate) => partTypes.includes(candidate)).map(
-    (candidate) => LEAF_SEMANTICS[candidate](),
+    (candidate) => LEAF_SEMANTICS[candidate].semantics(),
   );
 
   return {
@@ -145,8 +176,8 @@ export type CustomFieldDefinition = Pick<MemberCustomField, 'namespace' | 'key' 
 
 export function customFieldDescriptor(definition: CustomFieldDefinition): FieldDescriptor {
   return matchShape<FieldDescriptor>(definition.type, {
-    scalar: ({ leaf }) =>
-      SCALAR_FILTER[LEAF_FILTER[leaf.leaf]]({
+    scalar: ({ leaf }) => {
+      const base: ScalarFilterBase = {
         key: metafieldFieldId(definition),
         icon: 'text',
         addressing: customFieldAddressing(definition),
@@ -154,7 +185,13 @@ export function customFieldDescriptor(definition: CustomFieldDefinition): FieldD
           label: definition.name,
           type: 'custom',
         },
-      }),
+      };
+      // Typed text filters as text, and a choice from a list as a set, as LEAF_FILTER has it.
+      return matchLeaf(leaf, {
+        text: (text) => SCALAR_FILTER[LEAF_FILTER.text](base, text),
+        choice: () => SCALAR_FILTER[LEAF_FILTER.choice](base),
+      });
+    },
     record: ({ parts }) =>
       domainField({
         key: metafieldFieldId(definition),

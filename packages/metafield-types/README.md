@@ -13,11 +13,17 @@ npm install @tryghost/metafield-types
 
 - `@tryghost/metafield-types/structure`: the type ids and what each type is composed
   of. A type is one leaf, a record of named leaves, or a set of options its field
-  offers, and a leaf is text of a size or a choice from a list, such as a country. A
+  offers, and a leaf is text of a format or a choice from a list, such as a country. A
   field of a set type is set up with its options, which a field carries as its
   `settings`. It depends on nothing.
 - `@tryghost/metafield-types/countries`: the two-letter country codes the list of
   countries offers. It depends on nothing.
+- `@tryghost/metafield-types/phone`: each country's calling code, and what a phone input
+  needs to sit beside a choice of country: the country a number is from, telling apart the
+  countries that share a code, such as the US and Canada, the number with the chosen country's
+  code in front, the country of the reader's language, and whether the input contains
+  only valid phone number characters. It depends on nothing, so a browser app can draw a phone
+  input without the rules.
 - `@tryghost/metafield-types/identity`: how a field is named everywhere: its
   namespace, its key, the parts of a record value, and the identity they make
   together (`custom.shipping_address.country`). Each is a type that only its
@@ -25,9 +31,10 @@ npm install @tryghost/metafield-types
   browser app can check identities without paying for the rest.
 - `@tryghost/metafield-types`: the structure above, plus `valueSchemaFor(field)`,
   the rule a value of a field must satisfy given its type and settings. The rules are built on
-  [zod](https://zod.dev), and only this entry point loads all of it, so an
-  integration that only draws inputs can use `./structure` and `./countries`
-  without loading zod at all.
+  [zod](https://zod.dev), and a phone number's on
+  [libphonenumber-js](https://gitlab.com/catamphetamine/libphonenumber-js). Only this
+  entry point loads all of zod or any of libphonenumber-js, so an integration that only
+  draws inputs can use `./structure` and `./countries` without loading either.
 
 ## Compatibility
 
@@ -35,12 +42,14 @@ An integration using this package talks to sites on many Ghost versions, so a ty
 never changes once it has shipped. It keeps what it is composed of: its shape, its
 leaves, and the names of any parts. New structure arrives as a new type. An integration
 should skip a type it doesn't recognise, which is what happens when a site is on a newer
-Ghost than the package the integration was built with.
+Ghost than the package the integration was built with. A type `FIELD_TYPE_FLAGS` lists is
+still in development: sites offer it only where its Labs flag is on, and it can still change
+until that flag is switched on for customers' sites.
 
 ## Develop
 
-This is a workspace package in the Ghost monorepo. Adding a field type to Ghost is
-covered in [`docs/adding-a-field-type.md`](docs/adding-a-field-type.md). From the repo
+This is a workspace package in the Ghost monorepo. Adding a field type to Ghost, and why
+types are built the way they are, is covered in [`docs/`](docs/README.md). From the repo
 root:
 
 ```bash

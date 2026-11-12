@@ -11,42 +11,37 @@ module.exports = {
 /**
  * @template PageMeta
  *
- * @param {{data: import('bookshelf').Model[], meta: PageMeta}} page
- * @param {APIConfig} _apiConfig
- * @param {Frame} frame
+ * @param {{data: Tier[], meta: PageMeta}} page
  *
  * @returns {{tiers: SerializedTier[], meta: PageMeta}}
  */
-function paginatedTiers(page, _apiConfig, frame) {
+function paginatedTiers(page) {
   return {
     tiers: page.data.map((model) => {
-      return serializeTier(model, frame.options);
+      return serializeTier(model);
     }),
     meta: page.meta,
   };
 }
 
 /**
- * @param {import('bookshelf').Model} model
- * @param {APIConfig} _apiConfig
- * @param {Frame} frame
+ * @param {Tier} model
  *
  * @returns {{tiers: SerializedTier[]}}
  */
-function singleTier(model, _apiConfig, frame) {
+function singleTier(model) {
   return {
-    tiers: [serializeTier(model, frame.options)],
+    tiers: [serializeTier(model)],
   };
 }
 
 /**
- * @param {import('bookshelf').Model} tier
- * @param {object} options
+ * @param {Tier} tier
  *
  * @returns {SerializedTier}
  */
-function serializeTier(tier, options) {
-  const json = tier.toJSON(options);
+function serializeTier(tier) {
+  const json = tier.toJSON();
 
   const serialized = {
     id: json.id,
@@ -68,6 +63,15 @@ function serializeTier(tier, options) {
 
   if (!Array.isArray(serialized.benefits)) {
     serialized.benefits = null;
+  }
+
+  // Only when read with the tier: other readers of tiers don't ask for them.
+  if (Array.isArray(json.requirements)) {
+    serialized.requirements = json.requirements.map(({ name, ports, countries }) => ({
+      name,
+      ports: Object.fromEntries(Object.entries(ports).map(([role, port]) => [role, { ...port }])),
+      ...(countries ? { countries: [...countries] } : {}),
+    }));
   }
 
   if (serialized.type === 'free') {
@@ -107,6 +111,13 @@ function createSerializer(debugString, serialize) {
  * @prop {Date} created_at
  * @prop {Date} updated_at
  * @prop {string[]} [benefits]
+ * @prop {SerializedRequirement[]} [requirements]
+ */
+
+/**
+ * What a tier's members must give, as tiers list it.
+ *
+ * @typedef {import('../../../../../services/tiers/requirements').TierRequirement} SerializedRequirement
  */
 
 /**
@@ -130,3 +141,4 @@ function createSerializer(debugString, serialize) {
  */
 
 /** @typedef {import('@tryghost/api-framework').Frame} Frame */
+/** @typedef {import('../../../../../services/tiers/tier')} Tier */

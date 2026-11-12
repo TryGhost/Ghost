@@ -14,6 +14,7 @@ import {
   getSubscriptionValidityLabel,
   groupSubscriptionsByTier,
 } from './member-subscription';
+import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { getSymbol } from '@tryghost/admin-x-framework';
 import type { Member, MemberSubscription } from '@tryghost/admin-x-framework/api/members';
 import type { SubscriptionKind } from './member-subscription';
@@ -107,6 +108,14 @@ const SubscriptionRow: React.FC<{
   const status = getSubscriptionStatusLabel(sub);
   const validity = getSubscriptionValidityLabel(sub);
   const priceLabel = getSubscriptionPriceLabel(sub);
+  // Gift subs get no action menu. Comp subs get their own menu with Remove
+  // complimentary; paid subs get Cancel/Continue + Stripe links.
+  const actions =
+    kind === 'paid' ? (
+      <MemberSubscriptionActions memberId={member.id} subscription={sub} />
+    ) : kind === 'complimentary' && sub.tier?.id ? (
+      <MemberSubscriptionCompActions member={member} tierId={sub.tier.id} />
+    ) : null;
 
   return (
     <div
@@ -120,7 +129,10 @@ const SubscriptionRow: React.FC<{
         <PriceBlock kind={kind} sub={sub} />
         <div className="min-w-0 flex-1 pt-2">
           <div className="flex items-center gap-2">
-            <span className="min-w-0 truncate font-semibold" data-testid="member-subscription-tier">
+            <span
+              className="min-w-0 truncate font-semibold in-data-[admin7-design=true]:text-md"
+              data-testid="member-subscription-tier"
+            >
               {sub.tier?.name ?? 'Subscription'}
             </span>
             <Badge
@@ -153,12 +165,11 @@ const SubscriptionRow: React.FC<{
           {showDetails && <SubscriptionDetails sub={sub} />}
         </div>
       </div>
-      {/* Gift subs get no action menu. Comp subs get their
-                own menu with Remove complimentary; paid subs get Cancel/Continue +
-                Stripe links. */}
-      {kind === 'paid' && <MemberSubscriptionActions memberId={member.id} subscription={sub} />}
-      {kind === 'complimentary' && sub.tier?.id && (
-        <MemberSubscriptionCompActions member={member} tierId={sub.tier.id} />
+      {/* Admin 7 centres the menu on the price block, so opening Details doesn't move it. */}
+      {actions && (
+        <div className="in-data-[admin7-design=true]:flex in-data-[admin7-design=true]:h-20 in-data-[admin7-design=true]:items-center">
+          {actions}
+        </div>
       )}
     </div>
   );
@@ -186,6 +197,7 @@ const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
   member,
   canAddComp,
 }) => {
+  const admin7Design = useFeatureFlag('admin7Design');
   const [showAddComp, setShowAddComp] = React.useState(false);
 
   // Create mode: no saved member yet, no subscriptions to enumerate, no
@@ -194,8 +206,8 @@ const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
   // SubscriptionRow / MemberAddCompModal props type-check without a cast.
   if (!member) {
     return (
-      <Card data-testid="member-subscriptions">
-        <CardContent className="pt-6">
+      <Card data-testid="member-subscriptions" variant={admin7Design ? 'ruled' : 'outline'}>
+        <CardContent className={admin7Design ? undefined : 'pt-6'}>
           <div className="flex flex-col items-center gap-3 py-4">
             <EmptyIndicator title="No subscriptions">
               <LucideIcon.CreditCard />
@@ -220,7 +232,11 @@ const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
   //   - As a footer under existing subs when the member has active paid subs but
   //     no comp tier yet — that's the "cancel Stripe and comp on top" flow.
   const addCompButton = isAddCompAllowed ? (
-    <Button data-testid="add-complimentary" variant="outline" onClick={() => setShowAddComp(true)}>
+    <Button
+      data-testid="add-complimentary"
+      variant={admin7Design ? 'secondary' : 'outline'}
+      onClick={() => setShowAddComp(true)}
+    >
       <LucideIcon.Plus className="mr-1" size={16} />
       Add complimentary subscription
     </Button>
@@ -228,8 +244,8 @@ const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
 
   return (
     <>
-      <Card data-testid="member-subscriptions">
-        <CardContent className="pt-6">
+      <Card data-testid="member-subscriptions" variant={admin7Design ? 'ruled' : 'outline'}>
+        <CardContent className={admin7Design ? undefined : 'pt-6'}>
           {hasSubscriptions ? (
             <>
               {groups.map((group) => (

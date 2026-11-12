@@ -1,20 +1,23 @@
 /**
  * What a field type is made of, with no opinion on what a valid value looks like.
  *
- * Every type is composed from a few building blocks. A leaf is one value: text of a size, or a
- * choice from a list. A type is a leaf on its own, a record of named leaves, or a set of options
- * its field offers. Everything that stores, exports, edits, filters or draws a value is written
+ * Every type is composed from a few building blocks. A leaf is one value: text of a format, a
+ * choice from a list. A type is a leaf on its own, a record of named leaves, or a set of options its
+ * field offers. Everything that stores, exports, edits, filters or draws a value is written
  * once per building block, so a type composed from existing blocks needs nothing beyond its entry
  * here.
  *
- * This half is separate from `./index` because that half is built out of zod, and zod is
- * sixty-odd kilobytes. Ghost's server enforces the rules and can afford them; Portal only draws
- * the inputs, and it loads on every page view of every themed site.
+ * This half is separate from `./index` because that half is built out of zod and libphonenumber-js,
+ * and together they are well over a hundred kilobytes. Ghost's server enforces the rules and can
+ * afford them; Portal only draws the inputs, and it loads on every page view of every themed site.
  */
 
-/** How much text a text leaf holds. Each size has its bound, and its message, in `./index`. */
-export const TEXT_SIZES = ['line', 'code', 'long'] as const;
-export type TextSize = (typeof TEXT_SIZES)[number];
+/**
+ * What a text leaf holds: a line of text, a short code, long text, or a phone number. Each format
+ * has its rule, and its messages, in `./index`, and its own input in Admin and Portal.
+ */
+export const TEXT_FORMATS = ['line', 'code', 'long', 'phone'] as const;
+export type TextFormat = (typeof TEXT_FORMATS)[number];
 
 /** The lists a choice can pick from. Each list says which keys it accepts in `./index`. */
 export const LIST_SOURCES = ['countries'] as const;
@@ -22,7 +25,7 @@ export type ListSource = (typeof LIST_SOURCES)[number];
 
 export interface TextLeaf {
   readonly leaf: 'text';
-  readonly size: TextSize;
+  readonly format: TextFormat;
 }
 
 export interface ChoiceLeaf {
@@ -30,11 +33,19 @@ export interface ChoiceLeaf {
   readonly from: ListSource;
 }
 
-/** One value, stored as one string. */
+/** One value. */
 export type Leaf = TextLeaf | ChoiceLeaf;
 export type LeafKind = Leaf['leaf'];
 
-export const text = <const S extends TextSize>(size: S) => ({ leaf: 'text', size }) as const;
+/** What a value of each kind of leaf is, as JSON carries it. */
+export interface LeafValues {
+  text: string;
+  choice: string;
+}
+
+export type LeafValue<L extends Leaf> = LeafValues[L['leaf']];
+
+export const text = <const F extends TextFormat>(format: F) => ({ leaf: 'text', format }) as const;
 export const choice = <const F extends ListSource>(from: F) => ({ leaf: 'choice', from }) as const;
 
 /** A country, as the two-letter code a list of countries offers. */
@@ -68,7 +79,7 @@ export type FieldStructure = ScalarStructure | RecordStructure | SetStructure;
 export type FieldShape = FieldStructure['shape'];
 
 /** The source for the union type, the zod enum and the `FIELD_STRUCTURES` keys alike. */
-export const FIELD_TYPE_IDS = ['short_text', 'long_text', 'list', 'address'] as const;
+export const FIELD_TYPE_IDS = ['short_text', 'long_text', 'list', 'address', 'phone'] as const;
 export type FieldType = (typeof FIELD_TYPE_IDS)[number];
 
 /**
@@ -95,7 +106,33 @@ export const FIELD_STRUCTURES = {
       country,
     },
   },
+  // One number as text, in E.164, such as `+442079460000`: one form for every number, whoever
+  // typed it, so a filter or an integration can rely on it.
+  phone: { shape: 'scalar', leaf: text('phone') },
 } as const satisfies Record<FieldType, FieldStructure>;
+
+/**
+ * The types still in development, each with the Labs flag it is developed behind, as in
+ * `number: 'customFieldTypeNumber'`. A site offers such a type only where its flag is on, which is
+ * off on every customer's site until Admin and Ghost can both handle the type, so it can be merged
+ * and tried out long before it is released. A type with no flag here is released: removing its
+ * entry releases it. `docs/how-to/add-a-field-type.md` and `docs/how-to/release-a-field-type.md`
+ * cover both steps.
+ */
+export const FIELD_TYPE_FLAGS: { readonly [T in FieldType]?: string } = {
+  phone: 'customFieldTypePhone',
+};
+
+/**
+ * Whether a field of `type` can be created where `isFlagOn` says which Labs flags are on. Creating
+ * a field is the only thing a type's flag holds back. While it is off no field of the type can be
+ * created, so reading, editing, exporting and filtering one need no flag of their own, and a field
+ * created while the flag was on keeps working if it is switched off again.
+ */
+export function isCreatableType(type: FieldType, isFlagOn: (flag: string) => boolean): boolean {
+  const flag = FIELD_TYPE_FLAGS[type];
+  return flag === undefined || isFlagOn(flag);
+}
 
 export type StructureOf<T extends FieldType> = (typeof FIELD_STRUCTURES)[T];
 export type ShapeOf<T extends FieldType> = StructureOf<T>['shape'];
@@ -115,8 +152,10 @@ export type PartsOf<T extends FieldType> = T extends FieldType
   : never;
 
 type ValueOfStructure<S extends FieldStructure> = {
-  scalar: string;
-  record: S extends { parts: infer P } ? { [K in keyof P]?: string } : never;
+  scalar: S extends { leaf: infer L extends Leaf } ? LeafValue<L> : never;
+  record: S extends { parts: infer P }
+    ? { [K in keyof P]?: P[K] extends Leaf ? LeafValue<P[K]> : never }
+    : never;
   set: string[];
 }[S['shape']];
 
@@ -129,6 +168,35 @@ type ValueOfStructure<S extends FieldStructure> = {
 export type ValueOf<T extends FieldType> = T extends FieldType
   ? ValueOfStructure<StructureOf<T>>
   : never;
+
+type WriteOfStructure<S extends FieldStructure> = {
+  scalar: ValueOfStructure<S>;
+  record: S extends { parts: infer P }
+    ? { [K in keyof P]?: (P[K] extends Leaf ? LeafValue<P[K]> : never) | null }
+    : never;
+  set: ValueOfStructure<S>;
+}[S['shape']];
+
+/**
+ * What a write gives a field of a type that still holds a value afterwards; `null` clears the
+ * whole field. As in JSON Merge Patch, a record's write names a part as `null` to clear it and
+ * leaves out a part to leave it alone, so a write is not a value: a value never holds `null`.
+ */
+export type WriteOf<T extends FieldType> = T extends FieldType
+  ? WriteOfStructure<StructureOf<T>>
+  : never;
+
+/**
+ * The keys a value has, typed as its type's keys rather than as strings, which is what
+ * `Object.keys` gives: a `for...in` over a value of a generic type gives each key as typed.
+ */
+export function keysOf<R extends object>(value: R): Extract<keyof R, string>[] {
+  const keys: Extract<keyof R, string>[] = [];
+  for (const key in value) {
+    keys.push(key);
+  }
+  return keys;
+}
 
 /**
  * What a field of a set type is set up with: the options it offers, in the order they are shown,
@@ -160,6 +228,17 @@ export const OPTION_SEPARATOR = '|';
  */
 export function optionText(option: string): string {
   return option.trim().normalize('NFC');
+}
+
+/**
+ * What two options are compared by to tell whether they are the same option: their text as
+ * `optionText` tidies it, without regard to case. A list offers each option once, so it can't
+ * offer both "Podcasts" and "podcasts". Lower-casing, upper-casing and lower-casing again also
+ * matches letters that one change of case keeps apart, such as "ß", "ẞ" and "SS", or a final "ς"
+ * and "σ", and does so the same way whatever the locale.
+ */
+export function optionKey(option: string): string {
+  return optionText(option).toLowerCase().toUpperCase().toLowerCase();
 }
 
 /** The answers among `held` that a set field offers, in the order it offers them. */

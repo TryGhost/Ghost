@@ -1,3 +1,4 @@
+import type { AppFailureCode } from '@tryghost/app-contracts';
 import errors from '@tryghost/errors';
 import type { GhostLogger } from '@tryghost/logging';
 import type { AppIcon } from '@tryghost/app-contracts/manifest';
@@ -7,8 +8,9 @@ import type { AppFetchFailure, FetchFromApp } from './fetch-from-app';
 // installations list on each page load.
 const ICON_MAX_BYTES = 16 * 1024;
 // Only image types, so the data URL is always drawn as an image: a browser shows an SVG
-// image without running its scripts or loading anything it references.
-const ICON_TYPES = new Set(['image/svg+xml', 'image/png', 'image/jpeg', 'image/gif', 'image/webp']);
+// image without running its scripts or loading anything it references. Admin draws an icon
+// in one colour from its transparency, so JPEG (none) and GIF (jagged 1-bit) are refused.
+const ICON_TYPES = new Set(['image/svg+xml', 'image/png', 'image/webp']);
 
 /** A copy of an app's own icon as a data URL, or null for a named icon. */
 export type FetchIcon = (icon: AppIcon) => Promise<string | null>;
@@ -17,7 +19,7 @@ export type FetchIcon = (icon: AppIcon) => Promise<string | null>;
 function invalidIcon(message: string) {
   return new errors.ValidationError({
     message: 'The app manifest is not valid.',
-    code: 'APP_MANIFEST_INVALID',
+    code: 'APP_MANIFEST_INVALID' satisfies AppFailureCode,
     context: `icon.url: ${message}`,
     errorDetails: [{ path: 'icon.url', message }],
   });
@@ -86,7 +88,7 @@ export function createIconFetcher({
     // Parameters such as `charset` are dropped: the data URL holds the bytes as they came.
     const type = fetched.contentType?.split(';')[0].trim().toLowerCase();
     if (!type || !ICON_TYPES.has(type)) {
-      throw invalidIcon('Expected an SVG, PNG, JPEG, GIF or WebP image');
+      throw invalidIcon('Expected an SVG, PNG or WebP image with a transparent background');
     }
     return `data:${type};base64,${fetched.body.toString('base64')}`;
   };

@@ -40,9 +40,10 @@ pins the line the package lives in, and npm holds the moving part.
 - `versioning: patch` pins `major.minor`. Each publish is the next patch in that
   line. The public apps use this.
 - `versioning: prerelease` pins `X.Y.Z-<tag>.0`. Each publish is the next
-  `X.Y.Z-<tag>.N`, under the `distTag` the entry names, never `latest`. Alpha
-  packages use this until they graduate to the changeset lane. Shade, the upgrade
-  adapter base and the app SDK publish this way under `alpha`.
+  `X.Y.Z-<tag>.N`, under the `distTag` the entry names. Alpha packages use this
+  until they graduate to the changeset lane. Shade and the app SDK publish this
+  way under `latest`, so a plain install gets their newest release, and the
+  upgrade adapter base under `alpha`.
 
 CI publishes only when the package really changed. The affected graph selects
 candidates; the job then builds each one at the live version, packs it, and

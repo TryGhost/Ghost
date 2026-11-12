@@ -6,6 +6,7 @@ import type {
   AutomationsRepository2,
   RunStepToInsert,
   RunToInsert,
+  TrackEmailClickedOptions,
 } from './automations-repository-2';
 import { StartAutomationsPollEvent } from './events/start-automations-poll-event';
 import { getReadyAtForAction } from './util/get-ready-at-for-action';
@@ -75,8 +76,12 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
       // TypeScript makes this impossible in theory, but in practice there are
       // untyped callers (and TypeScript doesn't have a sound type system
       // anyway). This check is defense-in-depth.
-      if (eventName !== 'membership_started' && eventName !== 'paid_subscription_changed') {
-        throw new errors.IncorrectUsageError({ message: 'Unsupported automation event.' });
+      switch (eventName) {
+        case 'membership_started':
+        case 'paid_subscription_changed':
+          break;
+        default:
+          throw new errors.IncorrectUsageError({ message: 'Unsupported automation event.' });
       }
 
       if (!labs.isSet('automations')) {
@@ -183,5 +188,37 @@ export const createAutomationsApi2 = <RepositoryTransaction>({
     },
 
     requestPoll,
+
+    trackEmailClicked: async (
+      {
+        automationActionRevisionId,
+        automationRunStepId,
+        memberId,
+        clickedAt,
+      }: TrackEmailClickedOptions,
+      { connection }: { connection: RepositoryTransaction },
+    ): Promise<void> => {
+      await repository.lockActionRevisions(connection, [automationActionRevisionId]);
+
+      const recipient = await repository.findEmailRecipientForClick(connection, {
+        automationActionRevisionId,
+        automationRunStepId,
+        memberId,
+      });
+      if (!recipient || recipient.clicked_at !== null) {
+        return;
+      }
+
+      const updated = await repository.setEmailRecipientClickedAt(
+        connection,
+        recipient.id,
+        clickedAt,
+      );
+      if (!updated) {
+        return;
+      }
+
+      await repository.incrementEmailClickedCount(connection, automationActionRevisionId);
+    },
   };
 };

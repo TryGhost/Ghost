@@ -107,6 +107,16 @@ External dependency versions are managed in the catalog in
 [`pnpm-workspace.yaml`](../../pnpm-workspace.yaml). Use `catalog:` in workspace
 manifests rather than adding the same version in several packages.
 
+[Knip](https://knip.dev/) checks that each workspace declares the dependencies
+it uses and uses the ones it declares. Run `pnpm lint:dependencies`, which is
+also part of `pnpm lint` and CI. When a dependency is used in a way Knip cannot
+trace, such as a name passed as a string or a file run by path, record it in
+[`knip.json`](../../knip.json) as an `entry` or `ignoreDependencies` item. Knip
+also fails on `knip.json` items it no longer needs.
+
+`pnpm knip` prints the full report, including unused files and exports. CI does
+not enforce those.
+
 ## Nx tasks
 
 Nx reads the package dependency graph and runs tasks in the required order. For

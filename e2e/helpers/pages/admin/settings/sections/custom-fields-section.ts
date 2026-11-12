@@ -8,9 +8,7 @@ import {
 } from '@tryghost/test-data/selectors/settings';
 
 /**
- * Settings -> Membership -> Custom fields. Defining fields is behind the
- * `membersCustomFields` flag, so a test using this section must enable that flag via
- * test.use({labs: {membersCustomFields: true}}).
+ * Settings -> Membership -> Custom fields.
  */
 export class CustomFieldsSection extends BasePage {
   readonly section: Locator;

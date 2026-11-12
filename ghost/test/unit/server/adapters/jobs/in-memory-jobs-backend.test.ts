@@ -19,6 +19,70 @@ describe('InMemoryJobsBackend', function () {
     assert.deepEqual(backend.requiredFns, ['start', 'enqueue', 'scheduleRecurring', 'shutdown']);
   });
 
+  describe('settlement', function () {
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    async function settle(processor: () => Promise<void>) {
+      const backend = new InMemoryJobsBackend();
+      const settlements: unknown[] = [];
+      const settled = Promise.withResolvers<void>();
+      backend.start({
+        processor,
+        onSettled: async (id, settlement) => {
+          settlements.push({ id, ...settlement });
+          settled.resolve();
+        },
+      });
+      backend.enqueue('d1', dispatch({ type: 'job', payload: '{}' }));
+      await settled.promise;
+      await backend.shutdown({ timeoutMs: 100 });
+      return settlements;
+    }
+
+    it('reports a job that succeeds as completed', async function () {
+      assert.deepEqual(await settle(async () => {}), [{ id: 'd1', status: 'completed' }]);
+    });
+
+    it('reports a job that fails as dead, since it never retries', async function () {
+      sinon.stub(logging, 'error');
+      const error = new Error('boom');
+
+      const settlements = await settle(async () => {
+        throw error;
+      });
+
+      assert.deepEqual(settlements, [{ id: 'd1', status: 'dead', error }]);
+    });
+
+    it('keeps delivering when reporting a settlement fails', async function () {
+      const error = sinon.stub(logging, 'error');
+      const backend = new InMemoryJobsBackend();
+      const delivered: string[] = [];
+      const second = Promise.withResolvers<void>();
+      backend.start({
+        processor: async (env) => {
+          delivered.push(env.type);
+          if (env.type === 'second') {
+            second.resolve();
+          }
+        },
+        onSettled: async () => {
+          throw new Error('settlement failed');
+        },
+      });
+
+      backend.enqueue('d1', dispatch({ type: 'first', payload: '{}' }));
+      backend.enqueue('d2', dispatch({ type: 'second', payload: '{}' }));
+      await second.promise;
+      await backend.shutdown({ timeoutMs: 100 });
+
+      assert.deepEqual(delivered, ['first', 'second']);
+      sinon.assert.calledWithMatch(error, /settle/);
+    });
+  });
+
   // Boot starts the jobs service before the web app is mounted or any
   // recurring job is scheduled, so a pre-start enqueue or schedule is a
   // boot-ordering bug.
@@ -438,6 +502,27 @@ describe('InMemoryJobsBackend', function () {
       assert.equal(received[0].type, 'tick');
     });
 
+    it('does not report settlement for a recurring tick, which was never enqueued', async function () {
+      clock = sinon.useFakeTimers({ now: Date.UTC(2020, 0, 1) });
+      let ticks = 0;
+      const onSettled = sinon.stub();
+      const backend = new InMemoryJobsBackend();
+      backend.start({
+        processor: async () => {
+          ticks += 1;
+        },
+        onSettled,
+      });
+
+      backend.scheduleRecurring(dispatch({ type: 'tick', payload: '{}' }), {
+        cron: '*/1 * * * * *',
+      });
+      await clock!.tickAsync(3000);
+
+      assert.ok(ticks >= 2);
+      sinon.assert.notCalled(onSettled);
+    });
+
     it('keeps the first schedule for a type and ignores re-registration', async function () {
       clock = sinon.useFakeTimers({ now: Date.UTC(2020, 0, 1) });
       const received: string[] = [];
@@ -471,7 +556,10 @@ describe('InMemoryJobsBackend', function () {
         const backend = new InMemoryJobsBackend();
         backend.start({ processor: async () => {} });
         const failure = new Error('enqueue failed');
-        const enqueue = sinon.stub(backend, 'enqueue').throws(failure);
+        // Ticks queue through the backend's internal push, not enqueue()
+        const enqueue = sinon
+          .stub(backend as unknown as { _push: () => void }, '_push')
+          .throws(failure);
 
         backend.scheduleRecurring(dispatch({ type: 'tick', payload: '{}' }), {
           cron: '*/1 * * * * *',

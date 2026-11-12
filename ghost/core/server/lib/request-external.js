@@ -171,13 +171,75 @@ async function disableRetries(options) {
 }
 
 /**
+ * Whether a hostname is a name under `.localhost`, such as `my-app.localhost`, which is
+ * always the machine itself (RFC 6761), with any number of trailing dots, as the URL
+ * parser keeps every one of them. The dots can only start after `.localhost`, so the test
+ * takes linear time however many there are.
+ *
+ * @param {string} hostname
+ */
+function isUnderLocalhost(hostname) {
+  return /\.localhost\.*$/i.test(hostname);
+}
+
+/**
+ * Wraps a DNS lookup so a name under `.localhost` the system doesn't know is looked up
+ * as `localhost`. Browsers send every such name to the machine, so a local server, such
+ * as an app in development, can use one as a host of its own. But Windows's resolver
+ * doesn't know them, nor do Linux's without systemd-resolved or nss-myhostname in its
+ * hosts lookup, nor slim container images', so Ghost couldn't reach the server there.
+ *
+ * The system is asked first, so a name it maps somewhere else, in a hosts file say,
+ * still goes there. Whatever error it gives, `localhost` is looked up next: offline, or
+ * in a container that can't reach its nameserver, the error is `EAI_AGAIN` rather than
+ * `ENOTFOUND`, yet `localhost` still resolves from the hosts file. Looking up `localhost`
+ * gives the machine's addresses in its own order, as a server listening on `localhost`
+ * listens on the first of them. If that fails too, the system's error is given, as it
+ * names the host that was asked for.
+ *
+ * @param {typeof dns.lookup} lookup
+ * @returns {typeof dns.lookup}
+ */
+function lookupLocalhostNames(lookup) {
+  return /** @type {typeof dns.lookup} */ (
+    function lookupWithLocalhostNames(hostname, options, callback) {
+      if (typeof options === 'function') {
+        callback = options;
+        options = {};
+      }
+      if (!isUnderLocalhost(hostname)) {
+        return lookup(hostname, options, callback);
+      }
+      lookup(hostname, options, (error, ...found) => {
+        if (!error) {
+          return callback(null, ...found);
+        }
+        lookup('localhost', options, (localhostError, ...onLocalhost) => {
+          if (localhostError) {
+            return callback(error);
+          }
+          callback(null, ...onLocalhost);
+        });
+      });
+    }
+  );
+}
+
+// Looks up through `dns.lookup` as it is when called, as Node's own requests do.
+const developmentLookup = lookupLocalhostNames((...args) => dns.lookup(...args));
+
+/**
  * Install a custom dnsLookup on the request options that validates the resolved
  * IP at connection time. This eliminates the DNS rebinding / TOCTOU gap between
  * the beforeRequest DNS check and the actual TCP connection: the IP validated
  * here is the same one Node's http module will connect to.
+ *
+ * Development checks no IP, but looks up names under `.localhost` the system doesn't
+ * know as `localhost`, so Ghost reaches local servers on them on every system.
  */
 function installSafeDnsLookup(options) {
   if (config.get('env') === 'development') {
+    options.dnsLookup = developmentLookup;
     return;
   }
 
@@ -309,5 +371,6 @@ const gotOpts = {
 const externalRequest = got.extend(gotOpts);
 externalRequest.isPrivateIp = isPrivateIp;
 externalRequest._installSafeDnsLookup = installSafeDnsLookup;
+externalRequest._lookupLocalhostNames = lookupLocalhostNames;
 externalRequest.fetch = createFetch(externalRequest);
 module.exports = externalRequest;

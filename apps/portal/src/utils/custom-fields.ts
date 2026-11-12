@@ -1,15 +1,12 @@
-import type { MetafieldDefinition, TypedSettings } from '@tryghost/metafield-types';
+import type { FieldWrite, MetafieldDefinition, TypedSettings } from '@tryghost/metafield-types';
+import { isFieldType, matchShape, type FieldShape } from '@tryghost/metafield-types/structure';
 import {
-  FIELD_STRUCTURES,
-  editableAnswers,
-  isFieldType,
-  isRecordValue,
-  matchField,
-  matchShape,
-  type FieldType,
-  type FieldTypeOfShape,
-  type ValueOf,
-} from '@tryghost/metafield-types/structure';
+  formTextOf,
+  formWrite,
+  heldTextOf,
+  shaped,
+  type ShapeText,
+} from '@tryghost/metafield-types/shapes';
 import { isPreviewMode } from './check-mode';
 import { hasCustomFieldsEnabled } from './helpers';
 
@@ -26,6 +23,22 @@ export type ListedCustomField = Pick<MetafieldDefinition, 'name' | 'access'> & {
 
 /** A listed field of a type this build knows, with the settings that type takes. */
 export type MemberCustomField = Omit<ListedCustomField, 'type' | 'settings'> & TypedSettings;
+
+/**
+ * Something a form asks a member for: the name its inputs are labelled with, the kind of answer it
+ * takes, and whether the member may change it or only see it.
+ */
+export type FieldInput = Pick<MemberCustomField, 'key' | 'name'> &
+  TypedSettings & {
+    readOnly: boolean;
+    /** The countries a member may choose from, when fewer than every country. */
+    countries?: readonly string[] | undefined;
+  };
+
+/** A field the publisher opened to members, as a form asks for it: theirs to change if they may write it. */
+export function fieldInput(field: MemberCustomField): FieldInput {
+  return { ...field, readOnly: field.access.member !== 'write' };
+}
 
 /**
  * Whether a listed field is of a type this build knows. Only the type is checked: the rest is read
@@ -79,72 +92,62 @@ export async function fetchMemberCustomFields({
   }
 }
 
-/** A value as the member holds it, laid out as its field's type keeps one, or undefined if none. */
-export type CustomFieldValue = ValueOf<FieldType> | undefined;
-
-/** What a composite holds: a string for any of its parts, and not every part need be filled in. */
-export type CompositeValue = ValueOf<FieldTypeOfShape<'record'>>;
+/**
+ * What a field's inputs hold, each leaf as text, which is all an input can hold. Made from what
+ * the member holds by `customFieldTexts`, and read back as a value by `changedCustomFields`, so
+ * an input never sees a held value of any other kind.
+ */
+export type CustomFieldValue = ShapeText[FieldShape] | undefined;
 
 /** A composite's parts read by name, whichever parts its type declares. */
 export type PartsByName = Readonly<Record<string, string | undefined>>;
 
 /**
- * Narrowed rather than asserted. Which shape a value has follows from its field's type,
- * which the compiler cannot see, so the value itself is asked instead.
+ * What each field's inputs start from: what its form can show of what the member holds, for a
+ * field they may write, and everything they hold, for one they may only see.
  */
-export const compositeValue = (value: CustomFieldValue): CompositeValue | undefined =>
-  isRecordValue(value) ? value : undefined;
+export function customFieldTexts(
+  fields: FieldInput[],
+  held: Record<string, unknown>,
+): Record<string, CustomFieldValue> {
+  return Object.fromEntries(
+    fields.map((field) => {
+      const textOf = field.readOnly ? heldTextOf : formTextOf;
+      return [field.key, textOf(shaped(field), held[field.key])];
+    }),
+  );
+}
+
+/**
+ * Narrowed rather than asserted. Which shape a field's text has follows from its field's type,
+ * which the compiler cannot see through the map of every field's text, so the text is asked.
+ */
+export const compositeValue = (value: CustomFieldValue): ShapeText['record'] | undefined =>
+  typeof value === 'object' && !Array.isArray(value) ? value : undefined;
 
 export const scalarValue = (value: CustomFieldValue): string =>
   typeof value === 'string' ? value : '';
 
 export const listValue = (value: CustomFieldValue): string[] => (Array.isArray(value) ? value : []);
 
-/** A part is changed when what the member has differs from what the site holds. */
-const changedParts = (
-  parts: readonly string[],
-  current: PartsByName,
-  original: PartsByName,
-): string[] => parts.filter((part) => (current[part] ?? '') !== (original[part] ?? ''));
-
 /**
  * What the member changed, in the shape the members API takes: only fields they may
- * write, since naming one they may only read refuses the whole save, and only the parts
- * of a composite they touched, since each part records who last wrote it. A list is sent as its
- * picker shows it, the answers `editableAnswers` gives, whenever those differ from what the site
- * holds. Saving therefore clears an answer the picker can't show, such as one to an option the
- * field no longer offers, though the member never touched the list.
+ * write, since naming one they may only read refuses the whole save, and for each the write its
+ * shape gives from what the site holds to what the form shows. That sends only the parts of a
+ * composite they touched, since each part records who last wrote it, and a list as its picker
+ * shows it, whenever that differs from what the site holds. Saving therefore clears an answer the
+ * picker can't show, such as one to an option the field no longer offers, though the member never
+ * touched the list.
  */
 export function changedCustomFields(
-  fields: MemberCustomField[],
+  fields: FieldInput[],
   values: Record<string, CustomFieldValue>,
-  original: Record<string, CustomFieldValue>,
-): { custom: Record<string, unknown> } | undefined {
-  const custom: Record<string, unknown> = {};
+  original: Record<string, unknown>,
+): { custom: Record<string, FieldWrite | null> } | undefined {
+  const custom: Record<string, FieldWrite | null> = {};
 
-  for (const field of fields.filter((f) => f.access.member === 'write')) {
-    const value = values[field.key];
-    const was = original[field.key];
-    const change = matchField<MemberCustomField, unknown>(field, {
-      scalar: () => (scalarValue(value) !== scalarValue(was) ? value : undefined),
-      // Only the parts that changed, emptied ones included. Naming the whole field would clear it,
-      // and this build only knows the parts it draws.
-      record: ({ type }) => {
-        const held: PartsByName = compositeValue(value) ?? {};
-        const { parts } = FIELD_STRUCTURES[type];
-        const changed = changedParts(Object.keys(parts), held, compositeValue(was) ?? {});
-        return changed.length === 0
-          ? undefined
-          : Object.fromEntries(changed.map((part) => [part, held[part] ?? '']));
-      },
-      // A list is written whole, so a change sends every answer the picker shows.
-      set: ({ settings }) => {
-        const shown = editableAnswers(settings, listValue(value));
-        const held = listValue(was);
-        const same = shown.length === held.length && shown.every((option) => held.includes(option));
-        return same ? undefined : shown;
-      },
-    });
+  for (const field of fields.filter((f) => !f.readOnly)) {
+    const change = formWrite(shaped(field), values[field.key], original[field.key]);
     if (change !== undefined) {
       custom[field.key] = change;
     }
@@ -160,7 +163,10 @@ export function changedCustomFields(
  * Marking an input that isn't on the page would hide the refusal, so the caller shows these in the
  * notification instead.
  */
-export function refusedInput(field: MemberCustomField, part: string): string | null {
+export function refusedInput(
+  field: Pick<FieldInput, 'key'> & TypedSettings,
+  part: string,
+): string | null {
   return matchShape<string | null>(field.type, {
     scalar: () => (part === '' ? `custom:${field.key}` : null),
     record: ({ parts }) =>

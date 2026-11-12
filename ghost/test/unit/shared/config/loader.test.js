@@ -61,27 +61,28 @@ describe('Config Loader', function () {
       sinon.restore();
     });
 
+    // not database:client, which the schema restricts
     it('env parameter is stronger than file', function () {
-      process.env.database__client = 'test';
+      process.env.database__connection__filename = '/from-env.db';
 
       customConfig = loader.loadNconf({
         baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
         customConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
       });
 
-      assert.equal(customConfig.get('database:client'), 'test');
+      assert.equal(customConfig.get('database:connection:filename'), '/from-env.db');
     });
 
     it('argv is stronger than env parameter', function () {
-      process.env.database__client = 'test';
-      process.argv[2] = '--database:client=stronger';
+      process.env.database__connection__filename = '/from-env.db';
+      process.argv[2] = '--database:connection:filename=/from-argv.db';
 
       customConfig = loader.loadNconf({
         baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
         customConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
       });
 
-      assert.equal(customConfig.get('database:client'), 'stronger');
+      assert.equal(customConfig.get('database:connection:filename'), '/from-argv.db');
     });
 
     it('secret file is stronger than file', function () {

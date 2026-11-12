@@ -80,6 +80,68 @@ describe('shape', () => {
     }
   });
 
+  it('rejects text that shows nothing, such as Hangul fillers or zero-width joiners', () => {
+    for (const value of [
+      '\u3164',
+      '\u115f\u1160',
+      '\uffa0 \u3164',
+      '\u2800\u2800',
+      '\u200d\u200c',
+      '\u3000\u3164\u00a0',
+      '\u3164\u0301',
+    ]) {
+      expect(errorsOf(manifest({ name: value })), JSON.stringify(value)).toEqual([
+        { path: 'name', message: 'Expected text' },
+      ]);
+      expect(errorsOf(manifest({ description: value }))).toEqual([
+        { path: 'description', message: 'Expected text' },
+      ]);
+      expect(errorsOf(manifest({ author: { name: value, url: 'https://example.com' } }))).toEqual([
+        { path: 'author.name', message: 'Expected text' },
+      ]);
+    }
+  });
+
+  it('takes what shows nothing off the ends, and leaves it between words and in emoji', () => {
+    expect(manifestOf(manifest({ name: '\u3164Podcast\u2800 \uffa0\u200d' })).name).toBe('Podcast');
+    expect(
+      manifestOf(manifest({ author: { name: '\u115fExample\u3164', url: 'https://example.com' } }))
+        .author.name,
+    ).toBe('Example');
+    expect(manifestOf(manifest({ name: 'Pod\u3164cast' })).name).toBe('Pod\u3164cast');
+    expect(manifestOf(manifest({ name: 'Podcast ❤️' })).name).toBe('Podcast ❤️');
+    expect(manifestOf(manifest({ name: '👨‍👩‍👧' })).name).toBe('👨‍👩‍👧');
+    expect(manifestOf(manifest({ name: ' \u{1f3fb}Podcast' })).name).toBe('\u{1f3fb}Podcast');
+    // A mark goes with the blank it sits on, or at the start, on nothing.
+    for (const name of [
+      '\nPodcast\t',
+      '\u0301Podcast \ufe0f',
+      '\u3164\u0301Podcast',
+      '\u2800\ufe0f\u2800\ufe0f\u3164Podcast',
+      'Podcast\u3164\u034f\u3164\u034f',
+      'Podcast\u2800\u0301',
+    ]) {
+      expect(manifestOf(manifest({ name })).name, JSON.stringify(name)).toBe('Podcast');
+    }
+  });
+
+  // A pattern anchored at the end would take minutes on the run between words, so a trim that
+  // isn't linear fails on the test's timeout rather than on a measured time.
+  it('takes a long run of blanks off the ends, or leaves one between words', () => {
+    for (const blank of [' ', '\u3164', '\u2800\ufe0f']) {
+      const blanks = blank.repeat(60_000);
+      expect(manifestOf(manifest({ name: `${blanks}a${blanks}` })).name).toBe('a');
+      expect(errorsOf(manifest({ name: `a${blanks}a` }))[0]?.path).toBe('name');
+    }
+  });
+
+  it('refuses what plain text refuses at the ends rather than taking it off', () => {
+    const scotland = '\u{1f3f4}\u{e0067}\u{e0062}\u{e0073}\u{e0063}\u{e0074}\u{e007f}';
+    expect(errorsOf(manifest({ name: `Podcast ${scotland}` }))).toEqual([
+      { path: 'name', message: 'Expected plain text on one line' },
+    ]);
+  });
+
   it('rejects a missing, empty, overlong or non-text description', () => {
     expect(errorsOf(manifest({ description: undefined }))[0]?.path).toBe('description');
     expect(errorsOf(manifest({ description: ' ' }))[0]?.path).toBe('description');
@@ -187,7 +249,7 @@ describe('development on localhost', () => {
 
   it.each([
     { author: { name: 'Example Audio', url: 'http://localhost:8787/about' } },
-    { manifest_url: 'http://localhost:8787/ghost-app.json' },
+    { manifest_url: 'http://127.0.0.1:8787/ghost-app.json' },
   ])('is required when a URL is on localhost: %o', (overrides) => {
     const input = manifest(overrides);
     const parseOptions = { ...devOptions, manifestUrl: input.manifest_url };
@@ -236,6 +298,18 @@ describe('AppManifestSchema', () => {
     const parsed = manifestOf(manifest());
     expect(z.encode(AppManifestSchema, parsed)).toEqual(parsed);
     expect(JSON.stringify(z.encode(AppManifestSchema, parsed))).toBe(JSON.stringify(parsed));
+  });
+
+  it('reads back text stored before blank text was refused', () => {
+    // Otherwise one such row would fail every read of the installations, uninstall included.
+    const parsed = manifestOf(manifest());
+    for (const stored of [
+      { ...parsed, name: '\u3164' },
+      { ...parsed, description: '\u3164' },
+      { ...parsed, author: { ...parsed.author, name: '\u3164' } },
+    ]) {
+      expect(AppManifestSchema.parse(stored)).toEqual(stored);
+    }
   });
 
   it('only accepts absolute URLs', () => {

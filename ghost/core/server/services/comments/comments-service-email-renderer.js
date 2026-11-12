@@ -22,6 +22,7 @@ class CommentsServiceEmailRenderer {
   async renderEmailTemplate(templateName, data) {
     const htmlTemplateSource = await this.readTemplate(templateName);
     const htmlTemplate = this.Handlebars.compile(htmlTemplateSource);
+    // oxlint-disable-next-line import/no-dynamic-require -- the template is chosen by name from this service's own folder
     const { renderText } = require(`./email-templates/${templateName}.txt`);
 
     const html = htmlTemplate(data);

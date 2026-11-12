@@ -41,7 +41,7 @@ TypeScript and validate runtime boundaries with Zod.
 | Editor content       | Remove Mobiledoc support in Ghost 7.0                | Planned          |
 | Self-hosting         | Deprecate Ghost-CLI in favour of Docker in Ghost 7.0 | Active migration |
 | Node.js runtime      | Keep pace with Node Current                          | Planned          |
-| Authentication       | Standards-based auth built on Better Auth            | Exploring        |
+| Authentication       | Standards-based auth built on Better Auth            | Active migration |
 | Linting              | ESLint to Oxlint                                     | Planned          |
 
 ## Architectural direction
@@ -66,7 +66,9 @@ that every migration path is settled:
   protocols and credential lifecycles, with Better Auth as the intended
   foundation. Existing staff, member, integration, and Content API mechanisms
   remain the current contract until replacements are implemented and migrated.
-  Follow the [authentication guide](authentication.md) for current behavior.
+  Follow the [authentication guide](authentication.md) for current behavior
+  and the [Better Auth migration plan](../plans/better-auth-migration.md) for
+  the phases.
 
 ## Guidance for new work
 

@@ -378,6 +378,63 @@ describe('Importer', function () {
         });
     });
 
+    it('does not grant the owner role when a role name is the owner role id', async function () {
+      const ownerRole = await models.Role.findOne({ name: 'Owner' });
+      const exportData = exportedBodyV2().db[0];
+
+      exportData.data.users[0] = testUtils.DataGenerator.forKnex.createUser();
+      exportData.data.roles = [testUtils.DataGenerator.forKnex.createRole({ name: ownerRole.id })];
+      exportData.data.roles_users = [
+        testUtils.DataGenerator.forKnex.createUsersRoles(
+          exportData.data.users[0].id,
+          exportData.data.roles[0].id,
+        ),
+      ];
+
+      await dataImporter.doImport(exportData, importOptions);
+
+      const importedUser = await models.User.findOne(
+        { email: exportData.data.users[0].email, status: 'all' },
+        { withRelated: ['roles'] },
+      );
+      assert.deepEqual(
+        importedUser.related('roles').map((role) => role.get('name')),
+        ['Author'],
+      );
+    });
+
+    it('validates roles supplied on the user record', async function () {
+      const ownerRole = await models.Role.findOne({ name: 'Owner' });
+      const exportData = exportedBodyV2().db[0];
+
+      exportData.data.users = [
+        testUtils.DataGenerator.forKnex.createUser({ email: 'role-id@example.com' }),
+        testUtils.DataGenerator.forKnex.createUser({ email: 'role-name@example.com' }),
+        testUtils.DataGenerator.forKnex.createUser({ email: 'role-owner@example.com' }),
+      ];
+      exportData.data.users[0].roles = [ownerRole.id];
+      exportData.data.users[1].roles = ['Editor'];
+      exportData.data.users[2].roles = ['Owner'];
+      exportData.data.roles = [];
+      exportData.data.roles_users = [];
+
+      await dataImporter.doImport(exportData, importOptions);
+
+      const roleNames = {};
+      for (const user of exportData.data.users) {
+        const importedUser = await models.User.findOne(
+          { email: user.email, status: 'all' },
+          { withRelated: ['roles'] },
+        );
+        roleNames[user.email] = importedUser.related('roles').map((role) => role.get('name'));
+      }
+      assert.deepEqual(roleNames, {
+        'role-id@example.com': ['Author'],
+        'role-name@example.com': ['Editor'],
+        'role-owner@example.com': ['Administrator'],
+      });
+    });
+
     it('imports comment_id correctly', function () {
       const exportData = exportedBodyV2().db[0];
 

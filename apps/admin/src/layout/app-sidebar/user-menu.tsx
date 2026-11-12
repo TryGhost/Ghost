@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import {
   DropdownMenu,
@@ -47,8 +47,9 @@ function UserMenuProfile() {
 }
 
 /** Help and Feedback, which Admin 7 moves here from the sidebar. */
-function UserMenuHelp() {
+function UserMenuHelp({ closeMenu }: { closeMenu: () => void }) {
   const { data: currentUser } = useCurrentUser();
+  const inAppSupport = useFeatureFlag('inAppSupport');
   const {
     isAvailable: featurebaseAvailable,
     openFeedbackWidget,
@@ -68,9 +69,16 @@ function UserMenuHelp() {
     <>
       <UserMenuItem onSelect={closeMobileSidebar}>
         <a
+          data-ghost-help={inAppSupport ? '' : undefined}
           href="https://ghost.org/help?utm_source=admin&utm_campaign=help"
           rel="noopener noreferrer"
           target="_blank"
+          onClick={(event) => {
+            // Radix doesn't close the menu when a host script cancels the click
+            if (event.defaultPrevented) {
+              closeMenu();
+            }
+          }}
         >
           <LucideIcon.HelpCircle />
           <UserMenuItem.Label>Help</UserMenuItem.Label>
@@ -171,9 +179,10 @@ function UserMenu(props: UserMenuProps) {
   const { hasNew } = useWhatsNew();
   const { showUpgradeBanner } = useUpgradeStatus();
   const admin7Design = useFeatureFlag('admin7Design');
+  const [open, setOpen] = useState(false);
 
   return (
-    <DropdownMenu {...props}>
+    <DropdownMenu {...props} open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <SidebarMenuButton
           aria-label="User menu"
@@ -232,7 +241,7 @@ function UserMenu(props: UserMenuProps) {
         </UserMenuItem>
         <UserMenuProfile />
         <DropdownMenuSeparator />
-        {admin7Design && <UserMenuHelp />}
+        {admin7Design && <UserMenuHelp closeMenu={() => setOpen(false)} />}
         <UserMenuItem>
           <a
             href="https://ghost.org/resources?utm_source=admin&utm_campaign=resources"

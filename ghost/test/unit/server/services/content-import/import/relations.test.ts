@@ -287,7 +287,7 @@ describe('BookshelfPostRelationsResolver', function () {
         { authorNames: 'New Contributor', authorEmails: 'new@example.com' },
         { importing: true },
       ),
-      failure,
+      (thrown) => thrown === failure,
     );
   });
 
@@ -300,7 +300,7 @@ describe('BookshelfPostRelationsResolver', function () {
 
     await assert.rejects(
       resolver.resolve(data, { authorNames: 'Missing Author' }, { importing: true }),
-      failure,
+      (thrown) => thrown === failure,
     );
   });
 
@@ -434,7 +434,7 @@ describe('BookshelfPostRelationsResolver', function () {
 
     await assert.rejects(
       resolver.resolve(data, { tagNames: 'Broken Tag' }, { importing: true }),
-      failure,
+      (thrown) => thrown === failure,
     );
     assert.equal(findTag.getCalls().filter((call) => call.args[1].forUpdate).length, 0);
   });
@@ -448,7 +448,7 @@ describe('BookshelfPostRelationsResolver', function () {
 
     await assert.rejects(
       resolver.resolve(data, { tagNames: 'Broken Tag' }, { importing: true }),
-      failure,
+      (thrown) => thrown === failure,
     );
   });
 
@@ -477,7 +477,7 @@ describe('BookshelfPostRelationsResolver', function () {
 
     await assert.rejects(
       resolver.resolve(data, { authorEmails: 'author@example.com' }, { importing: true }),
-      failure,
+      (thrown) => thrown === failure,
     );
   });
 });

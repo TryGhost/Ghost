@@ -32,8 +32,15 @@ export type { AppInstallationPreview, AppSession } from './service';
  */
 /** A config entry as an error shows it, which is logged, so without a URL's credentials. */
 function shown(entry: unknown): string {
-  const url = typeof entry === 'string' ? URL.parse(entry) : null;
-  if (url && (url.username || url.password)) {
+  if (typeof entry !== 'string') {
+    return JSON.stringify(entry);
+  }
+  const url = URL.parse(entry);
+  if (!url) {
+    // One the URL parser refuses can still start with credentials, up to an `@`.
+    return JSON.stringify(entry.replace(/^([^/?#]*\/\/)?[^/?#]*@/, '$1'));
+  }
+  if (url.username || url.password) {
     url.username = '';
     url.password = '';
     return JSON.stringify(url.href);
@@ -101,19 +108,16 @@ export default defineService(
       request: externalRequest,
       getLocalhostAlias: localhostAlias,
     });
+    // Read per use, not once at boot: it's config, which tests change.
+    const getManifestRules = () => ({
+      ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],
+      allowLocalhost: isDevelopment(),
+    });
 
     return new AppInstallationsService({
       knex,
       recordAction,
-      loadManifest: createManifestLoader({
-        fetchFromApp,
-        logging,
-        // Read per load, not once at boot: it's config, which tests change.
-        getManifestRules: () => ({
-          ghostUrls: [urlUtils.urlFor('home', true), urlUtils.urlFor('admin', true)],
-          allowLocalhost: isDevelopment(),
-        }),
-      }),
+      loadManifest: createManifestLoader({ fetchFromApp, logging, getManifestRules }),
       identity: createIdentityChecker({
         fetchFromApp,
         logging,
@@ -122,7 +126,7 @@ export default defineService(
           trustedOrigins: appsConfig().trustedOrigins,
           trustLoopback: isDevelopment(),
         }),
-        getAllowLocalhost: isDevelopment,
+        getManifestRules,
       }),
       fetchIcon: createIconFetcher({ fetchFromApp, logging }),
     });

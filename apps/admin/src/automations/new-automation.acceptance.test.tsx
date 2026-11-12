@@ -8,6 +8,7 @@ import {
   fakeAutomations,
   renderAdminApp,
   settingsResponse,
+  settleTransitions,
   unsavedChangesGuarded,
 } from '@test-utils/acceptance';
 import type { AutomationDetail } from '@tryghost/admin-x-framework/api/automations';
@@ -463,6 +464,9 @@ describe('New automation', () => {
       await button('Hide automation sidebar').click();
       await expect.element(button('Save')).toBeEnabled();
       expect(create.requests).toHaveLength(0);
+      // The canvas shifts while the sidebar collapses, and a click on a moving add-step button can
+      // press it and let go beside it, which opens nothing.
+      await settleTransitions();
       await addWait();
       await button('Save').click();
       await expect.poll(() => create.requests.length).toBe(1);
@@ -476,4 +480,22 @@ describe('New automation', () => {
       });
     });
   }
+
+  it('shows trigger chooser when lead magnets is enabled, even if Stripe is not', async () => {
+    fakeAutomations([]);
+    await renderAdminApp('/automations/new', {
+      labs: { ...labs, automationsLeadMagnets: true, automationsLifecycleTriggers: true },
+    });
+
+    await expect.element(page.getByText('Select a trigger', { exact: true })).toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: /^Free member signed up/ }))
+      .toBeVisible();
+    await expect
+      .element(page.getByRole('button', { name: /^Paid subscription started/ }))
+      .not.toBeInTheDocument();
+    await expect
+      .element(page.getByRole('button', { name: /^Paid subscription changed/ }))
+      .not.toBeInTheDocument();
+  });
 });

@@ -48,14 +48,21 @@ const SUBSCRIPTION_CHANGED_OPTION = [
 
 const TriggerPicker: React.FC<{
   automation: AutomationDetail;
+  stripeEnabled: boolean;
   // `cardTop`: where the card sits, so the editor can open with the trigger in the same place.
   onPick: (trigger: PickedTrigger, cardTop: number) => void;
-}> = ({ automation, onPick }) => {
+}> = ({ automation, stripeEnabled, onPick }) => {
   const { dialogProps } = useUnsavedChangesGuard({ when: true });
   const lifecycleTriggers = useFeatureFlag('automationsLifecycleTriggers');
-  const options = lifecycleTriggers
-    ? [...TRIGGER_OPTIONS, SUBSCRIPTION_CHANGED_OPTION]
-    : TRIGGER_OPTIONS;
+  const options: Array<(typeof TRIGGER_OPTIONS)[number] | typeof SUBSCRIPTION_CHANGED_OPTION> = [
+    TRIGGER_OPTIONS[0],
+  ];
+  if (stripeEnabled) {
+    options.push(TRIGGER_OPTIONS[1]);
+    if (lifecycleTriggers) {
+      options.push(SUBSCRIPTION_CHANGED_OPTION);
+    }
+  }
   const cardRef = React.useRef<HTMLDivElement>(null);
   // SHAPING PROTOTYPE ONLY — never merge.
   const chrome = useEditorChromeVariant();
@@ -155,6 +162,8 @@ const NewAutomationSession: React.FC<
     isStripeReady: boolean;
   }
 > = ({ children, automations, stripeEnabled, isStripeReady }) => {
+  const isLeadMagnetsEnabled = useFeatureFlag('automationsLeadMagnets');
+  const shouldShowChooser = stripeEnabled || isLeadMagnetsEnabled;
   const [initialAutomation, setInitialAutomation] = React.useState<AutomationDetail | null>(null);
   // Where the trigger was picked, once it has been.
   const [triggerTop, setTriggerTop] = React.useState<number | null>(null);
@@ -170,15 +179,16 @@ const NewAutomationSession: React.FC<
         updated_at: '',
         actions: [],
         edges: [],
-        trigger_rules: stripeEnabled ? [] : buildTriggerRules({ triggerType: 'free_signup' }),
+        trigger_rules: shouldShowChooser ? [] : buildTriggerRules({ triggerType: 'free_signup' }),
       });
     }
     return <NewAutomationLoading />;
   }
-  if (stripeEnabled && triggerTop === null) {
+  if (initialAutomation.trigger_rules.length === 0 && triggerTop === null) {
     return (
       <TriggerPicker
         automation={initialAutomation}
+        stripeEnabled={stripeEnabled}
         onPick={(trigger, cardTop) => {
           setTriggerTop(cardTop);
           setTriggerType(trigger);

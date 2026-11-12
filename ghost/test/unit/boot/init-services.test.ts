@@ -25,6 +25,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
   // Webhook listener registration is synchronous in production; boot awaits whatever it returns.
   const webhooks = sinon.stub();
   const register = sinon.stub();
+  const signingKeys = {};
   const start = sinon.stub().resolves();
   // Production init returns before its first poll. Poll behavior belongs to
   // the automations tests, not this boot orchestration harness.
@@ -78,6 +79,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
       './server/services/media-inliner': { default: { init: media, service: {} } },
       './server/services/post-scheduling': { default: { rescheduleAll: reschedule } },
       './server/services/jobs-service/register-job-handlers': { default: register },
+      './server/services/signing-keys': { default: { service: signingKeys } },
       './server/services/automations': { automationsService: { init: automations } },
     },
     { fallback: () => ({ ...genericService, default: genericService }) },
@@ -102,6 +104,7 @@ function createServicesHarness({ rescheduleOnBoot = true } = {}) {
     memberWelcomeEmails,
     webhooks,
     register,
+    signingKeys,
     start,
     automations,
     reschedule,
@@ -149,6 +152,13 @@ it('passes the eager email suppression list to email analytics before calling it
   assert.equal(boot.analytics.firstCall.args[0].emailSuppressionList, boot.emailSuppressionList);
   sinon.assert.calledOnce(boot.emailSuppressionList.init);
   sinon.assert.callOrder(boot.analytics, boot.emailSuppressionList.init);
+});
+
+it('passes the ready signing keys service to job registration', async function () {
+  const boot = createServicesHarness();
+  await boot.initServices();
+
+  assert.equal(boot.register.firstCall.args[0].signingKeys, boot.signingKeys);
 });
 
 it('does not reschedule posts when the scheduling adapter opts out', async function () {

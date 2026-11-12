@@ -14,7 +14,9 @@ with a unique static type and serializable payload, register its handler
 through `jobsService.handle(JobClass, handler)` in
 `ghost/core/server/services/jobs-service/register-job-handlers.ts`, which
 boot wires up before starting the service, and inject `JobsService` into the
-service that dispatches the job from boot. Handlers should only route the
+service that dispatches the job. Boot, or that service's root in its
+[`create` callback](../../ghost/core/server/services/README.md#initialization),
+passes in `JobsService` or a dispatch function. Handlers should only route the
 rehydrated payload to an initialized service method. The queue options below
 are part of this API.
 
@@ -36,8 +38,35 @@ Current examples include:
   as one handler run, continuation passes included, so a shutdown during a
   long fetch drains it up to `server:shutdownTimeout`.
 
-Prefer an existing job with similar lifecycle and failure requirements as the
-starting point for a new one.
+For recurring work, copy the gift reminders job above, scheduled in
+[`gifts/jobs/index.js`](../../ghost/core/server/services/gifts/jobs/index.js).
+For a job dispatched once, copy the
+[external media inliner job](../../ghost/core/server/services/media-inliner/external-media-inliner-job.ts),
+dispatched by `startInlining` in
+[`external-media-inliner.js`](../../ghost/core/server/services/media-inliner/external-media-inliner.js).
+Then check that:
+
+- The job class lives in a `*-job.ts` file. A test in
+  `register-job-handlers.test.ts` finds job classes by that name and fails if
+  one has no handler.
+- Its payload is small JSON, such as IDs or storage keys, not local file
+  paths. The content CSV import still passes a file path; don't copy that.
+- Import `jobs-service/index.ts` only from boot or a service root. API
+  endpoints and a service's other files get the jobs service, or a dispatch
+  function, passed in.
+- Its handler gets its service from boot through `registerJobHandlers`, not
+  from an import.
+- It has no `NODE_ENV` checks. Boot starts no schedules under test. A schedule
+  started later needs a `backgroundJobs` config key that both testing configs
+  in `ghost/core/shared/config/env/` set to `false`, as email analytics does.
+- It uses the shared default lane unless it can flood the shared workers, must
+  not wait behind other jobs, or must run one at a time. See [Queues](#queues).
+- Its handler is safe to run more than once. See [Scheduling](#scheduling) and
+  the jobs backend's
+  [delivery outcome](../../packages/adapters/jobs-base/README.md#delivery-outcome).
+- It has a unit test that rebuilds the job from its JSON, a handler case in
+  `register-job-handlers.test.ts`, and an integration test that dispatches it
+  and waits for its observable result. See [Testing](#testing).
 
 When adding a service which dispatches jobs, give it an explicit `init()` call
 from `ghost/core/boot.js`. Keep the wrapper's `init()` idempotent, but let
@@ -76,7 +105,12 @@ upload has been deleted. The importer's `site_content_import.completed` event
 records successful imports; generic job completion only records that the handler
 settled, which it also does for an import failure it reported. There are no
 automatic retries and no collection of uploads orphaned by a shutdown between
-dispatch and execution.
+dispatch and execution. The exception is a site with
+`services:jobs:outbox:keepUntilSettled` on: its outbox keeps each row until the
+job settles, so a job that a restart or crash cut short runs again, from the
+start, at the next boot. A job type with its own recovery opts out with
+`static replayAfterRestart = false`, and its rows are dropped at boot instead.
+Newsletter sends do this, because the newsletter boot scan recovers them.
 
 ## Scheduling
 

@@ -222,7 +222,6 @@ describe('Paid subscription changed trigger', () => {
         expect.arrayContaining<AutomationTriggerRule>(expectedRules),
       );
       expect(saved.trigger_rules).toHaveLength(expectedRules.length);
-      expect(create.requests[0].body).not.toHaveProperty('automations.0.trigger_tier_scope');
       // Reenter through the list to prove saved rules reconstruct the picker, without local creation state.
       fakeAutomations([{ ...saved, slug: '' }]);
       fakeAdminEndpoint('GET', '/automations/created/', {

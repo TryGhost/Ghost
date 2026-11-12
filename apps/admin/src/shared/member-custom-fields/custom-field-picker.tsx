@@ -1,11 +1,5 @@
+import { ArchivedBadge } from '@/shared/archived-badge';
 import CustomFieldIcon from '@/shared/member-custom-fields/custom-field-icon';
-import {
-  APIError,
-  HostLimitError,
-  JSONError,
-  ValidationError,
-  getErrorMessage,
-} from '@tryghost/admin-x-framework/errors';
 import {
   Combobox,
   ComboboxContent,
@@ -21,15 +15,13 @@ import {
 } from '@tryghost/shade/components';
 import { CreateCustomFieldPopover } from '@/shared/member-custom-fields/create-custom-field-popover';
 import { LucideIcon } from '@tryghost/shade/utils';
-import {
-  type MemberCustomField,
-  type NewMemberCustomField,
-  useCreateMemberCustomField,
-  userTypeForFieldType,
+import type {
+  CreatableMemberCustomFieldTypes,
+  MemberCustomField,
 } from '@tryghost/admin-x-framework/api/member-custom-fields';
-import type { FieldType } from '@tryghost/metafield-types/structure';
+import type { CustomFieldValues } from '@/shared/member-custom-fields/custom-field-values';
+import { useCustomFieldCreateAttempt } from '@/shared/member-custom-fields/use-custom-field-create-attempt';
 import { useRef, useState } from 'react';
-import { useHandleError } from '@tryghost/admin-x-framework/hooks';
 
 // cmdk scores an item's value and keywords as one joined string, and a match may run from
 // one into the other. Identity here is the field key; the name is the keyword, and only the
@@ -51,9 +43,12 @@ export interface CustomFieldPickerProps {
    * The types a field created from this picker may have: one entry pins the type, which the
    * create form still shows, disabled; several offer a choice among exactly these.
    * Keep it within the types `fields` is filtered by — a creation outside that range
-   * would make a field this picker then refuses to list. Omit to hide the create action.
+   * would make a field this picker then refuses to list. Only types the site can create a field
+   * with, narrowed with `creatableTypesAmong`. Omit, or leave empty, to hide the create action.
    */
-  createTypes?: FieldType[];
+  createTypes?: CreatableMemberCustomFieldTypes;
+  /** The name a field created from this picker starts with, when nothing was searched for. */
+  suggestedName?: string;
 }
 
 /**
@@ -66,9 +61,8 @@ export interface CustomFieldPickerProps {
  * signal the field does not exist yet.
  *
  * Creation opens the popover the CSV import opens, anchored to this picker and seeded from the
- * search text, with the types this place can use. The refusal handling follows the import
- * mapping's: a name problem lands on the input, a ceiling or permission problem lands below the
- * form and stops inviting retries.
+ * search text, with the types this place can use. It creates the field as the CSV import does,
+ * through `useCustomFieldCreateAttempt`, so both show a refusal the same way.
  */
 export function CustomFieldPicker({
   label,
@@ -77,6 +71,7 @@ export function CustomFieldPicker({
   invalid,
   onChange,
   createTypes,
+  suggestedName,
 }: CustomFieldPickerProps) {
   const [open, setOpen] = useState(false);
   // What the create popover hangs from.
@@ -100,28 +95,20 @@ export function CustomFieldPicker({
     setSearch('');
   };
 
-  // The create lives here rather than in the form, as the CSV import's does: what its answer
-  // means, choosing the new field or showing a refusal, is the picker's business. The form asks;
-  // this answers.
-  const { mutateAsync: createField } = useCreateMemberCustomField();
-  // Set as Save is pressed rather than read from the request, which reports itself pending only
-  // a moment later. Until then Escape, a click away or a second Save would still get through.
-  const [isCreating, setIsCreating] = useState(false);
-  const [nameError, setNameError] = useState<string | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [canRetry, setCanRetry] = useState(true);
-  const handleError = useHandleError();
-
-  const clearCreateErrors = () => {
-    setNameError(null);
-    setSaveError(null);
-    setCanRetry(true);
-  };
+  // What the create's answer means here, choosing the new field, is the picker's business. The
+  // form asks; this answers.
+  const {
+    attempt: createAttempt,
+    create,
+    reset: resetCreate,
+  } = useCustomFieldCreateAttempt({
+    createdUnusable: 'The field was created but could not be selected. Choose it from the list.',
+  });
 
   // Not while its save is under way, as in the CSV import: the save chooses the field it makes,
   // so leaving first would let it replace whatever is picked in the meantime.
   const leaveForm = () => {
-    if (!isCreating) {
+    if (createAttempt.state !== 'saving') {
       setCreating(false);
     }
   };
@@ -129,42 +116,11 @@ export function CustomFieldPicker({
   // The ordinary closed default. This picker only renders where the setting for opening a field
   // to members is also available, so a publisher who wants members to fill this in can say so;
   // nothing here has to guess on their behalf.
-  const createNewField = async (newField: NewMemberCustomField) => {
-    // Each save gets its own answer: the last attempt's refusal goes as the next one starts.
-    clearCreateErrors();
-    setIsCreating(true);
-    try {
-      const response = await createField(newField);
-      const field = response.members_metafields?.[0];
-      if (!field) {
-        setSaveError('The field was created but could not be selected. Choose it from the list.');
-        setCanRetry(false);
-        return;
-      }
+  const createNewField = async (values: CustomFieldValues) => {
+    const field = await create(values);
+    if (field) {
       setCreating(false);
       onChange(field.key);
-    } catch (error) {
-      const apiError = error instanceof JSONError ? error.data?.errors?.[0] : null;
-      if (error instanceof ValidationError && apiError?.property === 'name') {
-        setNameError(getErrorMessage(error, 'Invalid name'));
-        return;
-      }
-      // Shown inline below, so no toast — but still reported, the way the CSV import's
-      // picker does it, or unexpected failures on this path never reach error tracking.
-      if (!(error instanceof HostLimitError)) {
-        handleError(error, { withToast: false });
-      }
-      setSaveError(
-        getErrorMessage(
-          error,
-          error instanceof APIError
-            ? error.message
-            : 'Could not create the custom field, please try again.',
-        ),
-      );
-      setCanRetry(!(error instanceof HostLimitError) && apiError?.type !== 'NoPermissionError');
-    } finally {
-      setIsCreating(false);
     }
   };
 
@@ -190,6 +146,7 @@ export function CustomFieldPicker({
                 <span className="flex items-center gap-2">
                   <CustomFieldIcon className="size-4 shrink-0" type={selected.type} />
                   <span className="truncate">{selected.name}</span>
+                  {selected.status === 'archived' && <ArchivedBadge />}
                 </span>
               ) : (
                 'Select...'
@@ -233,6 +190,7 @@ export function CustomFieldPicker({
                       >
                         <CustomFieldIcon className="size-4" type={field.type} />
                         <span className="truncate">{field.name}</span>
+                        {field.status === 'archived' && <ArchivedBadge />}
                         {value === field.key && <CommandCheck />}
                       </CommandItem>
                     ))}
@@ -251,13 +209,13 @@ export function CustomFieldPicker({
                       forceMount
                       onSelect={() => {
                         // The create popover takes over from the list, keeping what was
-                        // searched for.
+                        // searched for, or starting from the suggested name when nothing was.
                         setCreateSession((session) => ({
                           id: session.id + 1,
-                          initialName: search.trim(),
+                          initialName: search.trim() || suggestedName || '',
                         }));
                         // The last form's refusal was about a name that has gone with it.
-                        clearCreateErrors();
+                        resetCreate();
                         openingCreate.current = true;
                         setCreating(true);
                         close();
@@ -277,17 +235,14 @@ export function CustomFieldPicker({
         <CreateCustomFieldPopover
           key={createSession.id}
           anchorRef={pickerRef}
-          canRetry={canRetry}
+          attempt={createAttempt}
           initialName={createSession.initialName}
-          isSaving={isCreating}
-          nameError={nameError}
           open={creating}
-          saveError={saveError}
           testId="custom-field-picker-create"
-          types={createTypes.map(userTypeForFieldType)}
+          types={createTypes}
           onCancel={leaveForm}
-          onEdit={clearCreateErrors}
-          onSubmit={(newField) => void createNewField(newField)}
+          onEdit={resetCreate}
+          onSubmit={(values) => void createNewField(values)}
         />
       ) : null}
     </>

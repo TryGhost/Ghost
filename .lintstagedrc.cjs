@@ -97,7 +97,10 @@ function buildOxfmtCommand(files) {
 
 function buildBoundaryCommand(files) {
   const relativeFiles = files.map((file) => normalize(path.relative(ROOT, file)));
-  return `pnpm exec depcruise --config .dependency-cruiser.cjs -- ${shellQuote(relativeFiles)}`;
+  // Not depcruise directly: the checker applies the known violations, so a
+  // file in a legacy service can be committed without adding a new one. Run it
+  // through pnpm, as CI does, so the scan reads TypeScript the same way.
+  return `pnpm lint:boundaries -- ${shellQuote(relativeFiles)}`;
 }
 
 function buildMarkdownCommands(files) {

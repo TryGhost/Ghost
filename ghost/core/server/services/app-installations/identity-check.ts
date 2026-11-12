@@ -1,3 +1,4 @@
+import type { AppFailureCode } from '@tryghost/app-contracts';
 import errors from '@tryghost/errors';
 import type { GhostLogger } from '@tryghost/logging';
 import {
@@ -7,7 +8,7 @@ import {
 } from '@tryghost/app-contracts/identity';
 import { isLocalhost, parseManifestUrl } from '@tryghost/app-contracts/manifest';
 import type { AppFetchFailure, FetchFromApp } from './fetch-from-app';
-import type { LoadedManifest } from './load-manifest';
+import type { LoadedManifest, ManifestRules } from './load-manifest';
 
 const ANSWER_MAX_BYTES = 4 * 1024;
 
@@ -95,7 +96,7 @@ function challengeUnreachable(
   logging.warn(failure.reason === 'unreachable' ? failure.cause : context);
   return new errors.ValidationError({
     message: 'Could not reach the app to confirm it comes from its developer.',
-    code: 'APP_CHALLENGE_UNREACHABLE',
+    code: 'APP_CHALLENGE_UNREACHABLE' satisfies AppFailureCode,
     context,
   });
 }
@@ -103,7 +104,7 @@ function challengeUnreachable(
 function challengeFailed(origin: string, why: string) {
   return new errors.ValidationError({
     message: 'Ghost couldn’t confirm the app comes from its developer.',
-    code: 'APP_CHALLENGE_FAILED',
+    code: 'APP_CHALLENGE_FAILED' satisfies AppFailureCode,
     context: `${origin}: ${why}`,
   });
 }
@@ -112,13 +113,13 @@ export function createIdentityChecker({
   fetchFromApp,
   logging,
   getTrustConfig,
-  getAllowLocalhost,
+  getManifestRules,
 }: {
   fetchFromApp: FetchFromApp;
   logging: Pick<GhostLogger, 'warn'>;
   getTrustConfig: () => TrustConfig;
-  /** Whether a manifest URL on localhost is one Ghost fetches, as the manifest rules say. */
-  getAllowLocalhost: () => boolean;
+  /** The rules that say which manifest URLs Ghost fetches. */
+  getManifestRules: () => ManifestRules;
 }): IdentityChecker {
   function isTrusted(origin: string) {
     const { trustedOrigins, trustLoopback } = getTrustConfig();
@@ -155,7 +156,7 @@ export function createIdentityChecker({
   function challenge(manifestUrl: string): StartedChallenge {
     // Only an address Ghost would fetch the manifest from gets a request. Loading the
     // manifest refuses the rest with its own error.
-    const address = parseManifestUrl(manifestUrl, getAllowLocalhost());
+    const address = parseManifestUrl(manifestUrl, getManifestRules());
     if (!address.success) {
       return { origin: null, outcome: Promise.resolve({ kind: 'skipped' }) };
     }
@@ -177,13 +178,13 @@ export function createIdentityChecker({
       // No detail: the publisher is told it isn't from the same developer, never about keys.
       throw new errors.ValidationError({
         message: 'This app doesn’t come from the same developer as the installed one.',
-        code: 'APP_IDENTITY_MISMATCH',
+        code: 'APP_IDENTITY_MISMATCH' satisfies AppFailureCode,
       });
     }
     if (pinned?.retiredBackendKeys.has(loaded.backendKeyThumbprint)) {
       throw new errors.ValidationError({
         message: 'Ghost couldn’t confirm the app comes from its developer.',
-        code: 'APP_BACKEND_KEY_RETIRED',
+        code: 'APP_BACKEND_KEY_RETIRED' satisfies AppFailureCode,
         context: 'backend_key has been replaced, and can’t be used again',
       });
     }

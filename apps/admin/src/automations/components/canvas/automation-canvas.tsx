@@ -659,9 +659,12 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
   const [sidebarAnimated, setSidebarAnimated] = useState(false);
   const sidebarResolved = sidebar.tab !== 'unknown' && Boolean(automation);
   useEffect(() => {
-    if (sidebarResolved) {
-      setSidebarAnimated(true);
+    if (!sidebarResolved) {
+      return;
     }
+    // A frame later, the sidebar has painted at its starting width.
+    const frame = requestAnimationFrame(() => setSidebarAnimated(true));
+    return () => cancelAnimationFrame(frame);
   }, [sidebarResolved]);
   const header = renderHeader({
     chrome,

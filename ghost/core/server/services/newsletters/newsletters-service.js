@@ -29,7 +29,7 @@ class NewslettersService {
    * @param {ILimitService} options.limitService
    * @param {Object} options.emailAddressService
    * @param {Object} options.labs
-   * @param {Object} options.logging
+   * @param {import('@tryghost/logging').GhostLogger} options.logging
    * @param {Object} options.sentry
    */
   constructor({

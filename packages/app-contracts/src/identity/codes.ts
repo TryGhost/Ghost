@@ -1,11 +1,7 @@
 /**
- * The codes Ghost fails with when it couldn't confirm an app is the one it says it is,
- * whether reviewing an install link or starting a session. They're kept apart from the
- * codes for an app that is down or broken, because the publisher should hear something
- * different: contact the developer, and don't install it again from a link, which is the
- * one way a different developer's key gets pinned.
- *
- * Free of jose and zod, so Admin reads it from the root entry point.
+ * Ghost couldn't confirm the app is the one it says it is. Kept apart from an app that's down
+ * or broken because the publisher should hear something different: contact the developer, and
+ * don't install it again from a link, the one way a different developer's key gets pinned.
  */
 export const UNCONFIRMED_APP_CODES = [
   /** The manifest names another address than the one it was fetched from. */

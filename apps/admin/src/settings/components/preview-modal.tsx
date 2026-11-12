@@ -283,7 +283,10 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
               <Inline align="center" className="max-h-[82px] px-7 py-6" gap="md" justify="between">
                 <Text
                   as={`h${titleHeadingLevel}` as TextElement}
-                  className={headingClasses[titleHeadingLevel]}
+                  className={cn(
+                    headingClasses[titleHeadingLevel],
+                    'in-data-[admin7-design=true]:font-title',
+                  )}
                   leading={headingLeading[titleHeadingLevel]}
                   size={headingSizes[titleHeadingLevel]}
                   tone={titleHeadingLevel === 6 ? 'secondary' : 'primary'}

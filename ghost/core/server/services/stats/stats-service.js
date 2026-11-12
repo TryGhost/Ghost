@@ -242,7 +242,7 @@ class StatsService {
    * @param {import('knex').Knex} deps.knex
    * @param {object} deps.urlService - URL service for resource lookups
    * @param {object} deps.urlUtils - URL helpers for absolute image URLs
-   * @param {object} deps.logging
+   * @param {import('@tryghost/logging').GhostLogger} deps.logging
    * @param {object|null} deps.tinybirdClient - Configured Tinybird client, when web analytics is enabled
    *
    * @returns {StatsService}

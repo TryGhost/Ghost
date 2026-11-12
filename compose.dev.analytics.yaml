@@ -39,10 +39,16 @@ services:
         condition: service_completed_successfully
 
   tinybird-local:
-    image: tinybirdco/tinybird-local:latest@sha256:d3ad055060f9c778f17d6cbf5a262299de48cc94dffbb176c4bebe6865351623
+    image: tinybirdco/tinybird-local:latest@sha256:17bf5d10c191e246dfe7daad775b83bae04a36113336a02761ba9f1cd57a9752
     container_name: ghost-dev-tinybird
     platform: linux/amd64
     stop_grace_period: 2s
+    environment:
+      - TB_LOCAL_CSV_WORKERS=1
+      # Ghost uses neither the MCP server nor Kafka connectors; skipping them
+      # saves ~350MB of idle memory.
+      - TB_LOCAL_MCP=false
+      - TB_LOCAL_KAFKA=false
     ports:
       - '7181:7181'
     volumes:

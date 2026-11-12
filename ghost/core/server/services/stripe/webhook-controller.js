@@ -1,3 +1,4 @@
+const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const StripeAPI = require('./stripe-api');
 
@@ -9,8 +10,12 @@ module.exports = class WebhookController {
    * @param {import('./services/webhook/subscription-event-service')} deps.subscriptionEventService
    * @param {import('./services/webhook/invoice-event-service')} deps.invoiceEventService
    * @param {import('./services/webhook/charge-refunded-event-service')} deps.chargeRefundedEventService
+   * @param {Pick<import('./tracking').StripeTracking, 'webhook'>} deps.tracking
+   * @param {{captureException(err: unknown): unknown}} deps.sentry
    */
   constructor(deps) {
+    this.tracking = deps.tracking;
+    this.sentry = deps.sentry;
     this.checkoutSessionEventService = deps.checkoutSessionEventService;
     this.subscriptionEventService = deps.subscriptionEventService;
     this.invoiceEventService = deps.invoiceEventService;
@@ -81,65 +86,65 @@ module.exports = class WebhookController {
       res.writeHead(400);
       return res.end();
     }
-    let event;
     try {
-      event = this.webhookManager.parseWebhook(req.body, req.headers['stripe-signature']);
-    } catch (err) {
-      logging.error({ event: { name: 'stripe.webhook.signature_invalid' }, err });
-      res.writeHead(401);
-      return res.end();
-    }
+      await this.tracking.webhook(async (attempt) => {
+        let event;
+        try {
+          event = this.webhookManager.parseWebhook(req.body, req.headers['stripe-signature']);
+        } catch (err) {
+          throw new errors.UnauthorizedError({
+            err,
+            message: "The webhook's signature doesn't show that Stripe sent it to this site.",
+          });
+        }
+        attempt.receiving(event.type);
 
-    // Stripe shapes each event for the API version of the URL it was sent to. A different
-    // version means this event did not come through the URL Ghost registered, and fields
-    // may not be where Ghost reads them.
-    if (event.api_version !== StripeAPI.API_VERSION) {
-      logging.error(
-        {
-          event: { name: 'stripe.webhook.api_version_mismatch' },
-          stripe_event_type: event.type,
-          api_version: event.api_version,
-          expected_api_version: StripeAPI.API_VERSION,
-        },
-        'Stripe sent a webhook rendered at a different API version than Ghost expects',
-      );
-    }
+        // Stripe shapes each event for the API version of the URL it was sent to. A different
+        // version means this event did not come through the URL Ghost registered, and fields
+        // may not be where Ghost reads them.
+        if (event.api_version !== StripeAPI.API_VERSION) {
+          logging.error(
+            {
+              event: { name: 'stripe.webhook.api_version_mismatch' },
+              stripe_event_type: event.type,
+              api_version: event.api_version,
+              expected_api_version: StripeAPI.API_VERSION,
+            },
+            'Stripe sent a webhook rendered at a different API version than Ghost expects',
+          );
+        }
 
-    const customerId = this.getEventCustomerId(event);
-    if (this.shouldIgnoreEvent(event, customerId)) {
-      logging.info(
-        {
-          event: { name: 'stripe.webhook.ignored' },
-          stripe_event_type: event.type,
-          customer_id: customerId,
-        },
-        'Ignored a Stripe webhook for a customer on stripeWebhookCustomerIgnoreList',
-      );
+        const customerId = this.getEventCustomerId(event);
+        if (this.shouldIgnoreEvent(event, customerId)) {
+          attempt.ignoring();
+          logging.info(
+            {
+              event: { name: 'stripe.webhook.ignored' },
+              stripe_event_type: event.type,
+              customer_id: customerId,
+            },
+            'Ignored a Stripe webhook for a customer on stripeWebhookCustomerIgnoreList',
+          );
+          return;
+        }
 
-      res.writeHead(200);
-      return res.end();
-    }
+        logging.info(
+          {
+            event: { name: 'stripe.webhook.received' },
+            stripe_event_type: event.type,
+            stripe_event_id: event.id,
+          },
+          'Handling a Stripe webhook',
+        );
 
-    logging.info(
-      {
-        event: { name: 'stripe.webhook.received' },
-        stripe_event_type: event.type,
-        stripe_event_id: event.id,
-      },
-      'Handling a Stripe webhook',
-    );
-
-    try {
-      await this.handleEvent(event);
+        await this.handleEvent(event);
+      });
       res.writeHead(200);
       res.end();
     } catch (err) {
-      logging.error({
-        event: { name: 'stripe.webhook.handle_failed' },
-        err,
-        stripe_event_type: event.type,
-        stripe_event_id: event.id,
-      });
+      // The span has logged the error. Sentry keeps only the unexpected ones, as Ghost's Sentry
+      // setup drops every Ghost error whose status isn't 500. Stripe sends the event again later.
+      this.sentry.captureException(err);
       res.writeHead(err.statusCode || 500);
       res.end();
     }

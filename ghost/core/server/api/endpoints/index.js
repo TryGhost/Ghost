@@ -368,10 +368,6 @@ module.exports = {
     return apiFramework.pipeline(require('./gifts'), localUtils);
   },
 
-  get supportRequests() {
-    return apiFramework.pipeline(require('./support-requests'), localUtils);
-  },
-
   get recommendationsPublic() {
     return apiFramework.pipeline(require('./recommendations-public'), localUtils, 'content');
   },

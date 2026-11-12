@@ -118,7 +118,7 @@ DialogHeader.displayName = 'DialogHeader';
 const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      'flex flex-col-reverse sm:flex-row sm:items-end sm:justify-end sm:gap-2 [&_button]:min-w-20',
+      'flex flex-col-reverse sm:flex-row sm:items-end sm:justify-end sm:gap-2',
       className,
     )}
     {...props}
@@ -132,7 +132,10 @@ const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn('text-xl leading-none font-semibold tracking-tight', className)}
+    className={cn(
+      'text-xl leading-none font-semibold tracking-tight in-data-[admin7-design=true]:font-title',
+      className,
+    )}
     {...props}
   />
 ));

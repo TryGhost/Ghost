@@ -10,7 +10,7 @@ export default defineService('Gift Links', () => {
   const { knex } = require('../../data/db');
   const models = require('../../models');
 
-  const recordAction: RecordGiftLinkAction = ({ context, verb, subject }) =>
-    recordGiftLinkAction({ Action: models.Action, logging, context, verb, subject });
+  const recordAction: RecordGiftLinkAction = (transacting, { context, verb, subject }) =>
+    recordGiftLinkAction({ Action: models.Action, logging, transacting, context, verb, subject });
   return new GiftLinksService({ knex, recordAction });
 });

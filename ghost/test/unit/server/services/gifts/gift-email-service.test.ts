@@ -760,7 +760,7 @@ describe('GiftEmailService', function () {
           duration: 1,
           expiresAt: new Date('2027-04-07'),
         }),
-        error,
+        (thrown) => thrown === error,
       );
       sinon.assert.notCalled(transactionalMailer.send);
     });

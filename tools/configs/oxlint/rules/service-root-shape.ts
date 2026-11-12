@@ -1,11 +1,23 @@
 import type { CreateRule, ESTree, Scope, Variable } from '@oxlint/plugins';
 
-/** Enforces the public source shape of migrated service roots. */
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { readLegacyServices, servicesRoot } from '../legacy-services.ts';
+
+const root = fileURLToPath(new URL('../../../../', import.meta.url));
+const serviceRoot = new RegExp(`^${servicesRoot}/([^/]+)/index\\.ts$`);
+// Read once per process, so every root in a run is checked against one list.
+let legacyServices: ReturnType<typeof readLegacyServices> | undefined;
+
+/**
+ * Enforces the public source shape of every service root, unless the service
+ * is listed in the legacy service inventory.
+ */
 export const serviceRootShape: CreateRule = {
   meta: {
     type: 'problem',
     docs: {
-      description: 'Keep migrated service roots limited to init, service and declared extras',
+      description: 'Keep service roots limited to init, service and declared extras',
     },
     schema: [
       {
@@ -31,6 +43,15 @@ export const serviceRootShape: CreateRule = {
     },
   },
   create(context) {
+    const filename = path.relative(root, context.filename).split(path.sep).join('/');
+    const service = serviceRoot.exec(filename)?.[1];
+    if (!service) {
+      return {};
+    }
+    legacyServices ??= readLegacyServices(root);
+    if (legacyServices.has(service)) {
+      return {};
+    }
     const sourceCode = context.sourceCode;
     const option = context.options[0];
     const helperImport =

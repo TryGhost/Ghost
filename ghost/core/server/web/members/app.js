@@ -60,8 +60,12 @@ module.exports = function setupMembersApp() {
   // A member's own account. Its routes and how they authenticate live together.
   membersApp.use('/api/member', accountRoutes());
 
-  membersApp.post('/api/member/email', bodyParser.json({ limit: '50mb' }), (req, res, next) =>
-    membersService.api.middleware.updateEmailAddress(req, res, next),
+  membersApp.post(
+    '/api/member/email',
+    bodyParser.json({ limit: '50mb' }),
+    middleware.loadIdentityTokenMember,
+    shared.middleware.rateLimiting.memberEmailUpdateLimiter,
+    (req, res, next) => membersService.api.middleware.updateEmailAddress(req, res, next),
   );
 
   // Member offers (retention etc.)
@@ -86,9 +90,9 @@ module.exports = function setupMembersApp() {
     bodyParser.json(),
     middleware.verifyIntegrityToken,
     // Prevent brute forcing email addresses (user enumeration)
-    shared.middleware.brute.membersAuthEnumeration,
+    shared.middleware.rateLimiting.membersAuthEnumeration,
     // Prevent brute forcing passwords for the same email address
-    shared.middleware.brute.membersAuth,
+    shared.middleware.rateLimiting.membersAuth,
     // NOTE: this is wrapped in a function to ensure we always go via the getter
     function lazySendMagicLinkMw(req, res, next) {
       return membersService.api.middleware.sendMagicLink(req, res, next);
@@ -98,8 +102,8 @@ module.exports = function setupMembersApp() {
     '/api/verify-otc',
     bodyParser.json(),
     middleware.verifyIntegrityToken,
-    shared.middleware.brute.otcVerificationEnumeration,
-    shared.middleware.brute.otcVerification,
+    shared.middleware.rateLimiting.otcVerificationEnumeration,
+    shared.middleware.rateLimiting.otcVerification,
     // NOTE: this is wrapped in a function to ensure we always go via the getter
     function lazyVerifyOTCMw(req, res, next) {
       return membersService.api.middleware.verifyOTC(req, res, next);
@@ -108,8 +112,8 @@ module.exports = function setupMembersApp() {
   membersApp.post(
     '/api/create-stripe-checkout-session',
     bodyParser.json(),
-    shared.middleware.brute.checkoutSessionGlobal,
-    shared.middleware.brute.checkoutSessionEmail,
+    shared.middleware.rateLimiting.checkoutSessionGlobal,
+    shared.middleware.rateLimiting.checkoutSessionEmail,
     function lazyCreateCheckoutSessionMw(req, res, next) {
       return membersService.api.middleware.createCheckoutSession(req, res, next);
     },

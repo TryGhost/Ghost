@@ -1,0 +1,38 @@
+{
+  "src/app.tsx": {
+    "react-hooks/immutability": {
+      "count": 1
+    },
+    "react-hooks/refs": {
+      "count": 2
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/components/content-box.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/components/content/forms/sorting-form.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/components/content/hooks/use-comment-navigation.ts": {
+    "react-hooks/immutability": {
+      "count": 1
+    }
+  },
+  "src/components/content/replies.tsx": {
+    "react-hooks/refs": {
+      "count": 1
+    }
+  },
+  "src/components/popup-box.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  }
+}

@@ -44,7 +44,7 @@ describe('Trial invitation admission', function () {
     vi.setSystemTime(new Date('2026-10-29T10:00:00Z'));
     config.set('hostSettings:subscription', { start: '2026-10-10T10:00:00Z' });
     await db.knex('settings').where('key', 'invite_emails_limit_usage').update({ value: null });
-    await dbUtils.truncate('brute');
+    await dbUtils.truncate('rate_limits');
     await dbUtils.truncate('actions');
     await dbUtils.truncate('invites');
     limits = {
@@ -145,27 +145,20 @@ describe('Trial invitation admission', function () {
     }
   });
 
-  it('allows brute cleanup while an invitation holds the shared lock', async function () {
-    const BruteKnex = require('@tryghost/brute-knex');
-    const store = new BruteKnex({ tablename: 'brute', createTable: false, knex: db.knex });
-    await db
-      .knex('brute')
-      .insert({ key: 'expired-test', firstRequest: 0, lastRequest: 0, lifetime: 0, count: 0 });
-    let read: Promise<unknown> | undefined;
+  it('allows rate limit cleanup while an invitation holds the shared lock', async function () {
+    const spamPrevention = require('../../../core/server/web/shared/middleware/api/spam-prevention');
+    await db.knex('rate_limits').insert({ key: 'expired-test', points: 1, expire: 0 });
+    let cleanup: Promise<unknown> | undefined;
     try {
       await limiter.run('cleanup@example.com', async () => {
-        read = new Promise((resolve, reject) => {
-          store.get('unrelated-login', (error: Error | null, value: unknown) =>
-            error ? reject(error) : resolve(value),
-          );
-        });
+        cleanup = spamPrevention.clearExpired();
         let timer: ReturnType<typeof setTimeout> | undefined;
         try {
           await Promise.race([
-            read,
+            cleanup,
             new Promise((_, reject) => {
               timer = setTimeout(
-                () => reject(new Error('Brute cleanup waited for the invitation lock')),
+                () => reject(new Error('Rate limit cleanup waited for the invitation lock')),
                 2000,
               );
             }),
@@ -175,9 +168,9 @@ describe('Trial invitation admission', function () {
         }
       });
     } finally {
-      await read;
+      await cleanup;
     }
-    assert.deepEqual(await db.knex('brute').select(), []);
+    assert.deepEqual(await db.knex('rate_limits').select(), []);
   });
 
   it('admits only fifteen concurrent email preparations even without the HTTP guard', async function () {

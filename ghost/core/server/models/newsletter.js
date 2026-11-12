@@ -84,6 +84,10 @@ const Newsletter = ghostBookshelf.Model.extend(
       }
     },
 
+    // Doesn't lock the members first, as `lockForUpdate` asks of relation
+    // writers: this only runs for a newsletter created in the same transaction,
+    // which no member edit can see yet, and locking every subscribed member
+    // would block member writes for the whole insert
     subscribeMembersById(memberIds, unfilteredOptions = {}) {
       const pivotRows = [];
       for (const memberId of memberIds) {

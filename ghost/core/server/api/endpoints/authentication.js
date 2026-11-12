@@ -195,9 +195,11 @@ const controller = {
         ip: frame.options.ip,
       });
 
+      // userLogin counts per IP, so clear this IP's failed sign-ins
       web.shared.middleware.api.spamPrevention
         .userLogin()
-        .reset(frame.options.ip, `${tokenParts.email}login`);
+        .reset({ ip: frame.options.ip })
+        .catch((err) => logging.error(err));
       return {};
     },
   },

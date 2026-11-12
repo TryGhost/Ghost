@@ -46,57 +46,54 @@ function useStoredIcon(app: AppIconSource): [string | null, () => void] {
 }
 
 /**
- * An app's icon on its accent colour: a named icon, or the copy of its own icon that Ghost
- * stored. Falls back to a default icon.
+ * An app's icon in `currentColor`, like the icons Admin ships: its named icon, or the copy
+ * of its own icon Ghost stored, or a default icon. A stored copy masks `currentColor` with
+ * its opaque pixels; inside the mask it's still an image, which can't run scripts.
  */
-export const AppIcon: React.FC<AppIconProps> = ({ app, size = 'md', className }) => {
-  const { icon, accent_color: color } = app.manifest;
-  const glyph = GLYPH_SIZES[size];
-
+const AppGlyph: React.FC<{ app: AppIconSource; className: string; strokeWidth?: number }> = ({
+  app,
+  className,
+  strokeWidth,
+}) => {
   const [stored, onError] = useStoredIcon(app);
-  let content: React.ReactNode;
-  if (stored) {
-    content = <img alt="" className={glyph} src={stored} onError={onError} />;
-  } else {
-    const Glyph = glyphFor(icon);
-    content = <Glyph className={glyph} strokeWidth={1.5} />;
+  const maskId = React.useId();
+  if (!stored) {
+    const Glyph = glyphFor(app.manifest.icon);
+    return (
+      <Glyph aria-hidden="true" className={cn('shrink-0', className)} strokeWidth={strokeWidth} />
+    );
   }
-
   return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        'flex shrink-0 items-center justify-center rounded-md text-white',
-        TILE_SIZES[size],
-        className,
-      )}
-      style={{ backgroundColor: color }}
-    >
-      {content}
-    </span>
+    <svg aria-hidden="true" className={cn('shrink-0', className)} viewBox="0 0 24 24">
+      <mask id={maskId} style={{ maskType: 'alpha' }}>
+        {/* React listens for `error` on an SVG `<image>` as it does on an `<img>`. */}
+        {/* eslint-disable-next-line react/no-unknown-property */}
+        <image height="24" href={stored} width="24" onError={onError} />
+      </mask>
+      <rect fill="currentColor" height="24" mask={`url(#${maskId})`} width="24" />
+    </svg>
   );
 };
 
-/**
- * An app's icon at sidebar size. A named icon is drawn bare so the sidebar colours it. An
- * app's own icon is made for its accent colour, so it keeps a small tile of it.
- */
-export const AppNavIcon: React.FC<{ app: AppIconSource }> = ({ app }) => {
-  const [stored, onError] = useStoredIcon(app);
-  if (stored) {
-    return (
-      <span
-        aria-hidden="true"
-        className="flex size-4 shrink-0 items-center justify-center rounded-[4px]"
-        style={{ backgroundColor: app.manifest.accent_color }}
-      >
-        <img alt="" className="size-3" src={stored} onError={onError} />
-      </span>
-    );
-  }
-  const Glyph = glyphFor(app.manifest.icon);
-  return <Glyph aria-hidden="true" />;
-};
+/** An app's icon in white on a tile of its accent colour. */
+export const AppIcon: React.FC<AppIconProps> = ({ app, size = 'md', className }) => (
+  <span
+    aria-hidden="true"
+    className={cn(
+      'flex shrink-0 items-center justify-center rounded-md text-white',
+      TILE_SIZES[size],
+      className,
+    )}
+    style={{ backgroundColor: app.manifest.accent_color }}
+  >
+    <AppGlyph app={app} className={GLYPH_SIZES[size]} strokeWidth={1.5} />
+  </span>
+);
+
+/** An app's icon at sidebar size, drawn bare so the sidebar colours it like its own icons. */
+export const AppNavIcon: React.FC<{ app: AppIconSource }> = ({ app }) => (
+  <AppGlyph app={app} className="size-4" />
+);
 
 /** The band an app's icon sits into at the top of the install screen, in its accent color. */
 export const AppBanner: React.FC<{ className?: string; color: string }> = ({

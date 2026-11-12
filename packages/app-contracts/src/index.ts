@@ -11,11 +11,18 @@
  */
 
 export {
+  APP_FAILURE_CODES,
+  OUTDATED_REVIEW_CODES,
+  isAppFailureCode,
+  isOutdatedReviewCode,
+  type AppFailureCode,
+} from './failure-codes.ts';
+export {
   UNCONFIRMED_APP_CODES,
   isUnconfirmedAppCode,
   type UnconfirmedAppCode,
 } from './identity/codes.ts';
-export { isGhostOrigin } from './manifest/ghost-origin.ts';
+export { isGhostHost } from './manifest/ghost-host.ts';
 export { APP_ID_MAX_LENGTH, isValidAppId } from './manifest/id.ts';
 export { URL_MAX_LENGTH } from './manifest/limits.ts';
 export { isLocalhost } from './manifest/localhost.ts';

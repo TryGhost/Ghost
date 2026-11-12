@@ -266,6 +266,8 @@ knowledge_base:
         applyTo: 'ghost/core/server/adapters/cache/**,ghost/core/server/adapters/lib/redis/**,ghost/core/server/**/*cache*.{js,ts},ghost/core/shared/config/**,packages/adapters/cache-base/**'
       - files: 'docs/codebase/jobs.md'
         applyTo: 'ghost/core/server/services/**'
+      - files: 'ghost/core/server/services/README.md'
+        applyTo: 'ghost/core/server/services/**'
       - files: 'packages/README.md'
         applyTo: 'packages/**'
       - files: 'apps/shade/AGENTS.md'

@@ -9,10 +9,16 @@ import sessionController from '../../../../core/server/api/endpoints/session';
 // @ts-expect-error This module lacks type definitions.
 import sessionServiceMiddleware = require('../../../../core/server/auth/session');
 
+const spamPrevention = require('../../../../core/server/web/shared/middleware/api/spam-prevention');
+
+/** Stubs the userLogin limiter's resetRequest, resolving or rejecting with `error`. */
+const stubLoginReset = (error?: Error) => {
+  const resetRequest = error ? sinon.stub().rejects(error) : sinon.stub().resolves();
+  sinon.stub(spamPrevention, 'userLogin').returns({ resetRequest });
+  return resetRequest;
+};
+
 type TestRequest = {
-  brute: {
-    reset: sinon.SinonStub;
-  };
   user?: unknown;
   skipVerification?: boolean;
 };
@@ -68,12 +74,9 @@ describe('Session controller', function () {
         );
     });
 
-    it('it returns a function that calls req.brute.reset, sets req.user and calls createSession if the check works', function () {
-      const fakeReq: TestRequest = {
-        brute: {
-          reset: sinon.stub().callsArg(0),
-        },
-      };
+    it('it returns a function that resets the login limiter for the request, sets req.user and calls createSession if the check works', function () {
+      const fakeReq: TestRequest = {};
+      const resetRequest = stubLoginReset();
       const fakeRes = {};
       const fakeNext = () => {};
       const fakeUser = models.User.forge({});
@@ -90,10 +93,10 @@ describe('Session controller', function () {
           },
         })
         .then((fn: SessionMiddleware) => {
-          fn(fakeReq, fakeRes, fakeNext);
+          return fn(fakeReq, fakeRes, fakeNext);
         })
         .then(function () {
-          sinon.assert.calledOnce(fakeReq.brute.reset);
+          sinon.assert.calledOnceWithExactly(resetRequest, fakeReq);
 
           const createSessionStubCall = createSessionStub.getCall(0);
           assert.equal(fakeReq.user, fakeUser);
@@ -103,13 +106,10 @@ describe('Session controller', function () {
         });
     });
 
-    it('it returns a function that calls req.brute.reset and calls next if reset errors', function () {
+    it('it returns a function that resets the login limiter for the request and calls next if reset errors', function () {
       const resetError = new Error();
-      const fakeReq: TestRequest = {
-        brute: {
-          reset: sinon.stub().callsArgWith(0, resetError),
-        },
-      };
+      const fakeReq: TestRequest = {};
+      const resetRequest = stubLoginReset(resetError);
       const fakeRes = {};
       const fakeNext = sinon.stub();
       const fakeUser = models.User.forge({});
@@ -126,21 +126,18 @@ describe('Session controller', function () {
           },
         })
         .then((fn: SessionMiddleware) => {
-          fn(fakeReq, fakeRes, fakeNext);
+          return fn(fakeReq, fakeRes, fakeNext);
         })
         .then(function () {
-          sinon.assert.calledOnce(fakeReq.brute.reset);
+          sinon.assert.calledOnceWithExactly(resetRequest, fakeReq);
           sinon.assert.calledOnce(fakeNext);
           assert.equal(fakeNext.args[0][0], resetError);
         });
     });
 
     it('it creates a verified session when the user has not logged in before', function () {
-      const fakeReq: TestRequest = {
-        brute: {
-          reset: sinon.stub().callsArg(0),
-        },
-      };
+      const fakeReq: TestRequest = {};
+      const resetRequest = stubLoginReset();
       const fakeRes = {};
       const fakeNext = () => {};
       const fakeUser = models.User.forge({});
@@ -157,10 +154,10 @@ describe('Session controller', function () {
           },
         })
         .then((fn: SessionMiddleware) => {
-          fn(fakeReq, fakeRes, fakeNext);
+          return fn(fakeReq, fakeRes, fakeNext);
         })
         .then(function () {
-          sinon.assert.calledOnce(fakeReq.brute.reset);
+          sinon.assert.calledOnceWithExactly(resetRequest, fakeReq);
 
           const createSessionStubCall = createSessionStub.getCall(0);
           assert.equal(fakeReq.user, fakeUser);
@@ -173,11 +170,8 @@ describe('Session controller', function () {
     });
 
     it('it creates a non-verified session when the user has logged in before', function () {
-      const fakeReq: TestRequest = {
-        brute: {
-          reset: sinon.stub().callsArg(0),
-        },
-      };
+      const fakeReq: TestRequest = {};
+      const resetRequest = stubLoginReset();
       const fakeRes = {};
       const fakeNext = () => {};
       const fakeUser = models.User.forge({ last_seen: new Date() });
@@ -194,10 +188,10 @@ describe('Session controller', function () {
           },
         })
         .then((fn: SessionMiddleware) => {
-          fn(fakeReq, fakeRes, fakeNext);
+          return fn(fakeReq, fakeRes, fakeNext);
         })
         .then(function () {
-          sinon.assert.calledOnce(fakeReq.brute.reset);
+          sinon.assert.calledOnceWithExactly(resetRequest, fakeReq);
 
           const createSessionStubCall = createSessionStub.getCall(0);
           assert.equal(fakeReq.user, fakeUser);
@@ -220,7 +214,7 @@ describe('Session controller', function () {
       return sessionController
         .delete()
         .then((fn: SessionMiddleware) => {
-          fn(fakeReq, fakeRes, fakeNext);
+          return fn(fakeReq, fakeRes, fakeNext);
         })
         .then(function () {
           const destroySessionStubCall = logoutSessionStub.getCall(0);

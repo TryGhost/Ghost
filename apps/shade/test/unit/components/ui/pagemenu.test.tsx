@@ -1,13 +1,28 @@
-import { useState } from 'react';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { type ReactElement, useState } from 'react';
+import { beforeAll, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { PageMenu, PageMenuItem } from '../../../../src/components/ui/pagemenu';
-import { render } from '../../utils/test-utils';
+import { render as baseRender } from '../../utils/test-utils';
+import { ShadeContext } from '../../../../src/providers/shade-context';
 
 const isActive = (name: string) =>
   screen.getByRole('button', { name }).getAttribute('data-state') === 'active';
 
-describe('PageMenu Component', () => {
+describe.each([false, true])('PageMenu with admin7Design=%s', (admin7Design) => {
+  const render = (ui: ReactElement) =>
+    baseRender(
+      <ShadeContext.Provider
+        value={{
+          admin7Design,
+          controlShape: 'pill',
+          darkMode: false,
+          isAnyTextFieldFocused: false,
+          setFocusState: () => {},
+        }}
+      >
+        {ui}
+      </ShadeContext.Provider>,
+    );
   it('highlights the item matching value', () => {
     render(
       <PageMenu value="second">
@@ -121,6 +136,38 @@ describe('PageMenu Component', () => {
       } as unknown as typeof ResizeObserver;
     });
 
+    it('uses the legacy fit threshold only with Admin 7 off', async () => {
+      const style = document.createElement('style');
+      style.textContent = '.gap-2 { column-gap: 8px; }';
+      document.head.append(style);
+      const width = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(122);
+      const rect = vi
+        .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+        .mockImplementation(function (this: HTMLElement) {
+          return new DOMRect(0, 0, this.hasAttribute('aria-haspopup') ? 80 : 50, 30);
+        });
+      onTestFinished(() => {
+        style.remove();
+        width.mockRestore();
+        rect.mockRestore();
+      });
+
+      render(
+        <PageMenu value="third" responsive>
+          <PageMenuItem value="first">First</PageMenuItem>
+          <PageMenuItem value="second">Second</PageMenuItem>
+          <PageMenuItem value="third">Third</PageMenuItem>
+        </PageMenu>,
+      );
+
+      await waitFor(() => expect(screen.getAllByRole('button')).toHaveLength(admin7Design ? 1 : 2));
+      if (admin7Design) {
+        expect(screen.queryByRole('button', { name: 'First' })).toBeNull();
+      } else {
+        expect(screen.getByRole('button', { name: 'First' })).toBeTruthy();
+      }
+    });
+
     // jsdom measures every element as 0px wide, so a responsive menu moves
     // all of its items into the overflow dropdown.
     const getOverflowTrigger = async () => {
@@ -145,7 +192,7 @@ describe('PageMenu Component', () => {
 
       const trigger = await getOverflowTrigger();
       expect(trigger.textContent).toBe('Second');
-      expect(trigger.className).toMatch(/bg-accent/);
+      expect(trigger.getAttribute('data-state')).toBe(admin7Design ? 'active' : 'closed');
 
       await openOverflow();
       expect(screen.getByRole('menuitem', { name: 'Second' }).className).toMatch(/bg-accent/);

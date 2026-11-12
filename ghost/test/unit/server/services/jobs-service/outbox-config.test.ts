@@ -14,10 +14,15 @@ describe('getOutboxConfig', function () {
   it('defaults to disabled with the documented timings when the slice is absent', function () {
     assert.deepEqual(getOutboxConfig(configWith(undefined)), {
       enabled: false,
+      keepUntilSettled: false,
       pollIntervalMs: 1000,
       submissionTimeoutMs: 10000,
       retryDelayMs: 30000,
     });
+  });
+
+  it('reads the flag that keeps rows until their job settles', function () {
+    assert.equal(getOutboxConfig(configWith({ keepUntilSettled: true })).keepUntilSettled, true);
   });
 
   it('reads an enabled flag and overridden timings', function () {
@@ -32,6 +37,7 @@ describe('getOutboxConfig', function () {
       ),
       {
         enabled: true,
+        keepUntilSettled: false,
         pollIntervalMs: 250,
         submissionTimeoutMs: 5000,
         retryDelayMs: 15000,
@@ -42,6 +48,7 @@ describe('getOutboxConfig', function () {
   it('keeps the defaults for any timing the config omits', function () {
     assert.deepEqual(getOutboxConfig(configWith({ enabled: true })), {
       enabled: true,
+      keepUntilSettled: false,
       pollIntervalMs: 1000,
       submissionTimeoutMs: 10000,
       retryDelayMs: 30000,

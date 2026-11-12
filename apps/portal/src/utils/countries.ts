@@ -66,3 +66,18 @@ export function countryOptions(stored?: string): CountryOption[] {
   }
   return [...options, { value: stored, label: name(stored) }];
 }
+
+/**
+ * Only these countries as options for a select, named and sorted as `countryOptions` gives them. A
+ * code the catalogue does not hold, such as one only Stripe ships to, is offered too, named where
+ * the browser can, after the rest.
+ */
+export function countryOptionsAmong(codes: readonly string[]): CountryOption[] {
+  const { options, name } = catalogue(i18n.language || 'en');
+  return [
+    ...options.filter(({ value }) => codes.includes(value)),
+    ...codes
+      .filter((code) => !options.some(({ value }) => value === code))
+      .map((code) => ({ value: code, label: name(code) })),
+  ];
+}

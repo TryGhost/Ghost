@@ -1,5 +1,6 @@
 import CustomFieldIcon from '@/shared/member-custom-fields/custom-field-icon';
-import CustomFieldModal from './custom-fields/custom-field-modal';
+import { AddCustomFieldModal } from './custom-fields/add-custom-field-modal';
+import { EditCustomFieldModal } from './custom-fields/edit-custom-field-modal';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import TopLevelGroup from '@/settings/components/top-level-group';
 import {
@@ -186,9 +187,7 @@ const FieldList: React.FC<{
 };
 
 /** The publisher's fields in their order, split by status, with dragging to reorder them. */
-const FieldLists: React.FC<{ openModal: (field?: MemberCustomField) => void }> = ({
-  openModal,
-}) => {
+const FieldLists: React.FC<{ openModal: (field: MemberCustomField) => void }> = ({ openModal }) => {
   // Settings is the one place that manages archived fields too, so it uses the
   // include-archived variant rather than the default active-only browse.
   const { data } = useBrowseMemberCustomFieldsIncludingArchived();
@@ -301,15 +300,17 @@ const FieldLists: React.FC<{ openModal: (field?: MemberCustomField) => void }> =
  * is offered in the host's own words where it gives some.
  */
 const CustomFields: React.FC<{ keywords: string[] }> = ({ keywords }) => {
-  const [editingField, setEditingField] = useState<{ field?: MemberCustomField } | null>(null);
-  const openModal = (field?: MemberCustomField) => setEditingField({ field });
+  const [modal, setModal] = useState<
+    { readonly kind: 'add' } | { readonly kind: 'edit'; readonly field: MemberCustomField } | null
+  >(null);
+  const closeModal = () => setModal(null);
   const hostMessage = useHostLimits()?.[CUSTOM_FIELDS_LIMIT]?.error;
 
   return (
     <TopLevelGroup
       customButtons={
         <HostLimitGate limit={CUSTOM_FIELDS_LIMIT}>
-          <Button size="sm" type="button" variant="ghost" onClick={() => openModal()}>
+          <Button size="sm" type="button" variant="ghost" onClick={() => setModal({ kind: 'add' })}>
             Add custom field
           </Button>
         </HostLimitGate>
@@ -328,10 +329,14 @@ const CustomFields: React.FC<{ keywords: string[] }> = ({ keywords }) => {
           </UpgradeNotice>
         }
       >
-        <FieldLists openModal={openModal} />
-        {editingField && (
+        <FieldLists openModal={(field) => setModal({ kind: 'edit', field })} />
+        {modal && (
           <DialogPortal>
-            <CustomFieldModal field={editingField.field} onClose={() => setEditingField(null)} />
+            {modal.kind === 'add' ? (
+              <AddCustomFieldModal onClose={closeModal} />
+            ) : (
+              <EditCustomFieldModal field={modal.field} onClose={closeModal} />
+            )}
           </DialogPortal>
         )}
       </HostLimitGate>

@@ -590,9 +590,10 @@ const restore = () => {
 
   mailService.GhostMailer.prototype.sendMail = originalMailServiceSendMail;
 
-  // Disable network again after restoring sinon
+  // Disable network again after restoring sinon. The webmention discovery
+  // mocks are left to the DB lane's setup, which re-registers them after every
+  // test: unit files call restore() too, and must not inherit them.
   disableNetwork();
-  mockWebmentionDiscoveryDomains();
 };
 
 module.exports = {

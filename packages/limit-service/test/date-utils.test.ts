@@ -18,6 +18,9 @@ describe('Date Utils', function () {
         });
 
         it('returns same date if current date is less than a period away from current date', async function () {
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date('2021-08-18T19:00:52Z'));
+
             const weekAgoDate = DateTime.now().toUTC().plus({weeks: -1});
             const weekAgoISO = weekAgoDate.toISO();
 
@@ -27,6 +30,10 @@ describe('Date Utils', function () {
         });
 
         it('returns beginning of last month\'s period', async function () {
+            // Mid-month, so going back a month never clamps to a shorter month
+            vi.useFakeTimers();
+            vi.setSystemTime(new Date('2021-08-18T19:00:52Z'));
+
             const weekAgoDate = DateTime.now().toUTC().plus({weeks: -1});
             const weekAgoISO = weekAgoDate.toISO();
 

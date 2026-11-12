@@ -12,6 +12,7 @@ const FormInput = ({ field, onChange, onBlur = () => {}, onKeyDown = () => {} })
         label={field.label}
         hideLabel={field.hideLabel}
         type={field.type}
+        autoComplete={field.autoComplete}
         name={field.name}
         hidden={field.hidden}
         placeholder={field.placeholder}

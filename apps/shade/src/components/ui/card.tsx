@@ -3,7 +3,7 @@ import { cardVariants } from '@/components/ui/card-variants';
 import { cn } from '@/lib/utils';
 import { cva } from 'class-variance-authority';
 
-type CardsVariant = 'outline' | 'plain';
+type CardsVariant = 'outline' | 'plain' | 'ruled';
 const CardsVariantContext = React.createContext<CardsVariant>('outline');
 
 export interface CardProps extends React.ComponentPropsWithoutRef<'div'> {
@@ -24,6 +24,7 @@ const cardHeaderVariants = cva('flex flex-col gap-y-1.5', {
     variant: {
       outline: 'p-6',
       plain: 'border-b border-border-default py-5',
+      ruled: 'pt-3',
     },
   },
   defaultVariants: {
@@ -62,6 +63,7 @@ const cardContentVariants = cva('', {
     variant: {
       outline: 'p-6 pt-0',
       plain: 'border-b border-border-default',
+      ruled: 'pt-5',
     },
   },
   defaultVariants: {
@@ -82,6 +84,7 @@ const cardFooterVariants = cva('flex w-full items-center', {
     variant: {
       outline: 'p-6 pt-0',
       plain: 'py-5',
+      ruled: 'pt-3',
     },
   },
   defaultVariants: {

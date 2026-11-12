@@ -85,7 +85,10 @@ function setup({
     fetchFromApp,
     logging,
     getTrustConfig: () => trust,
-    getAllowLocalhost: () => trust.trustLoopback,
+    getManifestRules: () => ({
+      ghostUrls: ['https://site.example.com'],
+      allowLocalhost: trust.trustLoopback,
+    }),
   });
   /** Challenges the manifest URL's origin, then checks the loaded manifest. */
   const checkIdentity = (manifest: LoadedManifest, pinned: PinnedIdentity | null) =>
@@ -127,6 +130,7 @@ describe('createIdentityChecker', function () {
         'not a url',
         'http://podcast.example.com/ghost-app.json',
         'http://localhost/a',
+        'https://site.example.com:8443/ghost-app.json',
       ]) {
         assert.deepEqual(await checker.challenge(url).outcome, { kind: 'skipped' });
       }

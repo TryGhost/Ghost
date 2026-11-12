@@ -46,6 +46,8 @@ const Banner = React.forwardRef<HTMLDivElement, BannerProps>((props, ref) => {
     <div
       ref={ref}
       className={cn(bannerVariants({ variant, size }), className)}
+      data-slot="banner"
+      data-variant={variant ?? 'default'}
       role={role}
       {...restProps}
     >

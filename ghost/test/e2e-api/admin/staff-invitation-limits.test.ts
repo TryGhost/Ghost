@@ -33,7 +33,7 @@ describe('Trial staff invitation limits', function () {
   beforeEach(async function () {
     clock = sinon.useFakeTimers({ now: Date.now(), toFake: ['Date'] });
     spamPrevention.reset();
-    await dbUtils.truncate('brute');
+    await dbUtils.truncate('rate_limits');
     await dbUtils.truncate('actions');
     await dbUtils.truncate('invites');
     await db.knex('settings').where('key', 'invite_emails_limit_usage').update({ value: null });

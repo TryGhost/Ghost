@@ -1,6 +1,7 @@
 /**
  * App identity: the signed manifest and the challenge, with what it takes to sign and
- * verify both. Ghost core verifies with these, and an app's tooling signs with them.
+ * verify both, and the limits Ghost reads a signed manifest with. Ghost core verifies with
+ * these, and an app's tooling signs with them.
  *
  * It loads jose and is for servers only. Admin never imports it: it acts on what the Admin
  * API reports about an app's identity.
@@ -19,6 +20,7 @@ export {
 } from './challenge.ts';
 export { UNCONFIRMED_APP_CODES, isUnconfirmedAppCode, type UnconfirmedAppCode } from './codes.ts';
 export { thumbprintOf, type PrivateKey } from './keys.ts';
+export { MANIFEST_MAX_BYTES, SIGNED_MANIFEST_MAX_BYTES, parseJsonText } from './loading.ts';
 export {
   SIGNED_MANIFEST_TYPE,
   readSignedManifest,

@@ -12,7 +12,7 @@ function createCoreHarness() {
   const i18n = { init: sinon.stub().resolves() };
   const giftLinks = { init: sinon.stub().resolves() };
   const integrations = { init: sinon.stub().resolves() };
-  const supportRequests = { init: sinon.stub().resolves() };
+  const stripeCheckoutConfig = { init: sinon.stub().resolves() };
   const initCore = loadBootFunction('initCore', {
     './server/services/adapter-manager': { default: { init() {} } },
     './server/lib/image/image-decoders': { restrictImageDecoders() {} },
@@ -33,8 +33,7 @@ function createCoreHarness() {
     './server/services/export-requests': { default: { init() {} } },
     './server/services/invites': { default: { init() {} } },
     './server/services/integrations': { default: integrations },
-    './server/services/support-requests': { default: supportRequests },
-    './server/services/stripe-checkout-config': { default: { init() {} } },
+    './server/services/stripe-checkout-config': { default: stripeCheckoutConfig },
   });
   return {
     init: (): Promise<void> => initCore({ config: { get: () => ({}) } }),
@@ -43,7 +42,7 @@ function createCoreHarness() {
     i18n,
     giftLinks,
     integrations,
-    supportRequests,
+    stripeCheckoutConfig,
   };
 }
 
@@ -155,7 +154,7 @@ it('waits for Integrations initialization before continuing or resolving initCor
   try {
     await setImmediate();
     sinon.assert.calledOnce(boot.integrations.init);
-    sinon.assert.notCalled(boot.supportRequests.init);
+    sinon.assert.notCalled(boot.stripeCheckoutConfig.init);
     assert.equal(completed, false);
   } finally {
     ready.resolve();
@@ -163,7 +162,7 @@ it('waits for Integrations initialization before continuing or resolving initCor
   }
   await startup;
 
-  sinon.assert.calledOnce(boot.supportRequests.init);
+  sinon.assert.calledOnce(boot.stripeCheckoutConfig.init);
   assert.equal(completed, true);
 });
 
@@ -175,5 +174,5 @@ it('propagates the original Integrations initialization error without continuing
   await assert.rejects(boot.init(), (error) => error === failure);
 
   sinon.assert.calledOnce(boot.integrations.init);
-  sinon.assert.notCalled(boot.supportRequests.init);
+  sinon.assert.notCalled(boot.stripeCheckoutConfig.init);
 });

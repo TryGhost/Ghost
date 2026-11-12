@@ -23,7 +23,7 @@ const bannerVariants = cva('relative block rounded-lg transition-all duration-30
       ],
       info: 'border border-state-info/40 bg-state-info/10',
       success: 'border border-state-success/40 bg-state-success/10',
-      warning: 'border border-state-warning/40 bg-state-warning/10',
+      warning: 'border border-state-warning-border bg-state-warning-surface',
       destructive: 'border border-state-danger/20 bg-state-danger/10',
     },
     size: {

@@ -49,7 +49,9 @@ const EmailPreviewModalContent = React.forwardRef<HTMLDivElement, EmailPreviewMo
       )}
     >
       <div className="sticky top-0 grid shrink-0 grid-cols-[1fr_auto] items-center rounded-t-xl bg-surface-elevated p-8">
-        <h3 className="min-w-0 pr-4 text-md font-medium">{title}</h3>
+        <h3 className="min-w-0 pr-4 text-md font-medium in-data-[admin7-design=true]:font-title">
+          {title}
+        </h3>
         <Inline gap="sm">{headerActions}</Inline>
         {headerBelow && <div className="col-span-2 mt-6">{headerBelow}</div>}
       </div>
@@ -408,8 +410,8 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
           >
             {mode === 'preview' && (
               <EmailPreviewEmailHeader className="border-x-0 border-t-0 border-b">
-                <Stack gap="sm">
-                  <div className="flex items-center py-1">
+                <Stack gap="none">
+                  <div className="flex items-center">
                     <div className="w-20 shrink-0 text-sm font-semibold">From:</div>
                     <div className="min-w-0 grow pr-4 text-sm">
                       <span className="flex gap-1 truncate whitespace-nowrap">
@@ -435,14 +437,14 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                     </Popover>
                   </div>
                   {hasDistinctReplyTo && (
-                    <Inline gap="none">
+                    <Inline className="py-1.5" gap="none">
                       <div className="w-20 shrink-0 text-sm font-semibold">Reply-to:</div>
                       <div className="grow text-sm text-muted-foreground">
                         {resolvedReplyToEmail}
                       </div>
                     </Inline>
                   )}
-                  <Inline gap="none">
+                  <Inline align="start" className="py-1.5" gap="none">
                     <div className="w-20 shrink-0 text-sm font-semibold">Subject:</div>
                     <div className="grow">
                       <span

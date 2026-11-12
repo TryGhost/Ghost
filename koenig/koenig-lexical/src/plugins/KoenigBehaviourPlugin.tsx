@@ -424,6 +424,17 @@ function useKoenigBehaviour({editor, containerElem, cursorDidExitAtTop, isNested
                         return true;
                     }
 
+                    // typing ` over selected text formats it as code, same as ctrl shift K
+                    const {altKey, ctrlKey, metaKey, isComposing, key} = event;
+                    if (key === '`' && !altKey && !ctrlKey && !metaKey && !isComposing) {
+                        const selection = $getSelection();
+                        if ($isRangeSelection(selection) && !selection.isCollapsed()) {
+                            event.preventDefault();
+                            editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'code');
+                            return true;
+                        }
+                    }
+
                     return false;
                 },
                 COMMAND_PRIORITY_LOW

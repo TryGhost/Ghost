@@ -119,3 +119,30 @@ For changing this structure, follow the
 schema definition, migration, exporter table lists, and integrity tests in sync.
 For initial data and settings defaults, see the
 [schema and default data guide](../../ghost/core/server/data/schema/README.md).
+
+## Row locking
+
+Inside a transaction (`options.transacting`), `Model.edit` and
+`Model.destroy` lock only the record's own row; without one they take no
+lock. Eager-loaded relations such as tags, authors, labels, tiers and
+newsletters are read without locks, because many records share them and
+locking them made concurrent edits of different records deadlock. A record's row lock is what
+serialises changes to its relations.
+
+Code that changes a record's relations without editing it must take that lock
+too. This includes writes to link tables like `posts_tags` or
+`members_labels`, `attach`/`detach`, and bulk tag, label or author changes:
+
+- Lock the parent rows first with `Model.lockForUpdate(ids, {transacting})`,
+  which locks them in id order so overlapping writers can't deadlock.
+- When the parents are found through the link table itself, such as the posts
+  of a tag being deleted, use `lockLinkedForUpdate(linkTable, foreignKey,
+  where, {transacting})` inside `Model.transactionLockingLinked(fn)`. It starts
+  the transaction again if a record is linked while it runs.
+- Once the locks are held, reads that decide what to write must be locking
+  reads (`.forUpdate()`). Plain reads come from the transaction's snapshot,
+  which can predate the lock. A caller passing its own transaction to `edit`
+  must lock the row before any plain read in it.
+- Take parent locks before link rows, and gift locks before member locks.
+- Keep transactions over large sets short by chunking them, as
+  `MemberRepository.bulkEdit` does.

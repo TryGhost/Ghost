@@ -5,7 +5,6 @@ export type { GiftCadence } from './gift-schema';
 
 export interface GiftCheckoutTier {
   status: string;
-  visibility: string;
   type: string;
   currency: string | null;
   monthlyPrice: number | null;
@@ -15,14 +14,12 @@ export interface GiftCheckoutTier {
 interface GiftDurationDefinition {
   cadence: GiftCadence;
   billingDuration: number;
-  portalPlan: 'monthly' | 'yearly';
   priceProperty: 'monthlyPrice' | 'yearlyPrice';
   multiplier: number;
 }
 
 export interface ResolvedGiftDuration extends GiftDurationDefinition {
   totalMonths: number;
-  isCadenceOnly: boolean;
 }
 
 export interface GiftCheckoutPlan {
@@ -40,7 +37,6 @@ const GIFT_DURATION_CATALOGUE = new Map<number, GiftDurationDefinition>([
     {
       cadence: 'month',
       billingDuration: 1,
-      portalPlan: 'monthly',
       priceProperty: 'monthlyPrice',
       multiplier: 1,
     },
@@ -50,7 +46,6 @@ const GIFT_DURATION_CATALOGUE = new Map<number, GiftDurationDefinition>([
     {
       cadence: 'month',
       billingDuration: 3,
-      portalPlan: 'monthly',
       priceProperty: 'monthlyPrice',
       multiplier: 3,
     },
@@ -60,7 +55,6 @@ const GIFT_DURATION_CATALOGUE = new Map<number, GiftDurationDefinition>([
     {
       cadence: 'month',
       billingDuration: 6,
-      portalPlan: 'monthly',
       priceProperty: 'monthlyPrice',
       multiplier: 6,
     },
@@ -70,7 +64,6 @@ const GIFT_DURATION_CATALOGUE = new Map<number, GiftDurationDefinition>([
     {
       cadence: 'year',
       billingDuration: 1,
-      portalPlan: 'yearly',
       priceProperty: 'yearlyPrice',
       multiplier: 1,
     },
@@ -120,29 +113,18 @@ export function resolveGiftDuration({
   return {
     ...offer,
     totalMonths,
-    isCadenceOnly: duration === undefined,
   };
 }
 
 export function validateGiftCheckoutOffer({
   tier,
-  portalPlans,
   offer,
 }: {
   tier: GiftCheckoutTier;
-  portalPlans: unknown;
   offer: ResolvedGiftDuration;
 }): GiftCheckoutPlan {
-  if (tier.status !== 'active' || tier.visibility !== 'public' || tier.type !== 'paid') {
+  if (tier.status !== 'active' || tier.type !== 'paid') {
     throw invalidGiftOffer('The requested tier is not available for gift purchases');
-  }
-
-  // legacy cadence-only requests predate the Portal plan gate, keep them working
-  if (
-    !offer.isCadenceOnly &&
-    (!Array.isArray(portalPlans) || !portalPlans.includes(offer.portalPlan))
-  ) {
-    throw invalidGiftOffer(`The ${offer.portalPlan} Portal plan is not available`);
   }
 
   const unitAmount = tier[offer.priceProperty];

@@ -12,6 +12,7 @@ import {
   createTestAutomationsRepository2,
   type TestAutomationsRepositoryConnection,
 } from './test-automations-repository-2';
+import { alphabeticalDescribe } from '../../../../utils/alphabetical-describe';
 
 describe('automations API', function () {
   const createTestDomainEvents = () => ({
@@ -49,7 +50,7 @@ describe('automations API', function () {
     });
   });
 
-  describe('getNumberOfAutomations', function () {
+  alphabeticalDescribe('getNumberOfAutomations', function () {
     it('returns the number of automations', async function () {
       const repository = createTestAutomationsRepository2({
         getNumberOfAutomations: () => 123,
@@ -60,20 +61,7 @@ describe('automations API', function () {
     });
   });
 
-  describe('requestPoll', function () {
-    it('dispatches a "start automations poll" event', function () {
-      const domainEvents = { dispatch: vi.fn<(event: unknown) => unknown>() };
-      const api = createApi({ domainEvents });
-
-      api.requestPoll();
-
-      expect(domainEvents.dispatch).toHaveBeenCalledExactlyOnceWith(
-        expect.any(StartAutomationsPollEvent),
-      );
-    });
-  });
-
-  describe('notify', function () {
+  alphabeticalDescribe('notify', function () {
     type Repository = AutomationsRepository2<TestAutomationsRepositoryConnection>;
     type FirstAction = Awaited<ReturnType<Repository['findFirstActionRevisions']>>[number];
 
@@ -450,6 +438,112 @@ describe('automations API', function () {
       await expect(api.notify(event)).rejects.toBe(failure);
 
       expect(domainEvents.dispatch).not.toHaveBeenCalled();
+    });
+  });
+
+  alphabeticalDescribe('requestPoll', function () {
+    it('dispatches a "start automations poll" event', function () {
+      const domainEvents = { dispatch: vi.fn<(event: unknown) => unknown>() };
+      const api = createApi({ domainEvents });
+
+      api.requestPoll();
+
+      expect(domainEvents.dispatch).toHaveBeenCalledExactlyOnceWith(
+        expect.any(StartAutomationsPollEvent),
+      );
+    });
+  });
+
+  alphabeticalDescribe('trackEmailClicked', function () {
+    const click = {
+      automationActionRevisionId: 'revision-id',
+      automationRunStepId: 'step-id',
+      memberId: 'member-id',
+      clickedAt: new Date('2026-01-02T03:04:05Z'),
+    };
+    let repository: ReturnType<typeof createTestAutomationsRepository2>;
+
+    beforeEach(function () {
+      repository = createTestAutomationsRepository2({
+        lockActionRevisions: noop,
+        findEmailRecipientForClick: () => ({ id: 'recipient-id', clicked_at: null }),
+        setEmailRecipientClickedAt: vi.fn().mockReturnValue(true),
+        incrementEmailClickedCount: vi.fn(),
+      });
+    });
+
+    const trackClick = () =>
+      repository.withConnection((connection) =>
+        createApi({ repository }).trackEmailClicked(click, { connection }),
+      );
+
+    it('records when a member first clicks an email and increases its click count', async function () {
+      await trackClick();
+
+      expect(repository.setEmailRecipientClickedAt).toHaveBeenCalledExactlyOnceWith(
+        expect.anything(),
+        'recipient-id',
+        click.clickedAt,
+      );
+      expect(repository.incrementEmailClickedCount).toHaveBeenCalledExactlyOnceWith(
+        expect.anything(),
+        click.automationActionRevisionId,
+      );
+    });
+
+    it('locks the email before looking up or recording its click', async function () {
+      const lock = vi.spyOn(repository, 'lockActionRevisions');
+      const find = vi.spyOn(repository, 'findEmailRecipientForClick');
+      const save = vi.spyOn(repository, 'setEmailRecipientClickedAt');
+      const increment = vi.spyOn(repository, 'incrementEmailClickedCount');
+
+      await trackClick();
+
+      expect(lock).toHaveBeenCalledOnce();
+      for (const operation of [find, save, increment]) {
+        expect(operation).toHaveBeenCalledOnce();
+        expect(lock.mock.invocationCallOrder[0]).toBeLessThan(
+          operation.mock.invocationCallOrder[0],
+        );
+      }
+    });
+
+    it('ignores clicks when no matching email has click tracking enabled', async function () {
+      repository.findEmailRecipientForClick = () => undefined;
+
+      await trackClick();
+
+      expect(repository.setEmailRecipientClickedAt).not.toHaveBeenCalled();
+      expect(repository.incrementEmailClickedCount).not.toHaveBeenCalled();
+    });
+
+    it('keeps the first click time and count when a member clicks again', async function () {
+      repository.findEmailRecipientForClick = () => ({
+        id: 'recipient-id',
+        clicked_at: click.clickedAt,
+      });
+
+      await trackClick();
+
+      expect(repository.setEmailRecipientClickedAt).not.toHaveBeenCalled();
+      expect(repository.incrementEmailClickedCount).not.toHaveBeenCalled();
+    });
+
+    it('does not count a click already recorded by another request', async function () {
+      vi.mocked(repository.setEmailRecipientClickedAt).mockReturnValue(false);
+
+      await trackClick();
+
+      expect(repository.incrementEmailClickedCount).not.toHaveBeenCalled();
+    });
+
+    it('reports an error when the click cannot be saved', async function () {
+      const error = new Error('Could not save email click');
+      vi.mocked(repository.setEmailRecipientClickedAt).mockRejectedValue(error);
+
+      await expect(trackClick()).rejects.toBe(error);
+
+      expect(repository.incrementEmailClickedCount).not.toHaveBeenCalled();
     });
   });
 });

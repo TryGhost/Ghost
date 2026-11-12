@@ -62,6 +62,10 @@
     - breezy-owls-help
     - empty-falcons-tan
     - nice-boats-push
+"@tryghost/adapter-base-scheduling@0.2.9":
+  dir: packages/adapters/scheduling-base
+  intents:
+    - framework-bump-errors-clone
 "@tryghost/adapter-base-sso@0.1.1":
   dir: packages/adapters/sso-base
   intents:
@@ -95,6 +99,10 @@
   intents:
     - breezy-owls-help
     - nice-boats-push
+"@tryghost/adapter-base-sso@0.1.8":
+  dir: packages/adapters/sso-base
+  intents:
+    - framework-bump-errors-clone
 "@tryghost/kg-card-factory@5.2.4":
   dir: koenig/kg-card-factory
   intents:
@@ -354,6 +362,10 @@
     - breezy-owls-help
     - funny-moons-travel
     - happy-knives-shake
+"@tryghost/kg-unsplash-selector@0.4.11":
+  dir: koenig/kg-unsplash-selector
+  intents:
+    - bump-playwright-1-65
 "@tryghost/kg-unsplash-selector@0.4.4":
   dir: koenig/kg-unsplash-selector
   intents:
@@ -502,6 +514,24 @@
     - selection-word-count-plugin
     - strong-snakes-lie
     - weak-spiders-complain
+"@tryghost/koenig-lexical@2.1.0":
+  dir: koenig/koenig-lexical
+  intents:
+    - video-thumbnail-frame-picker
+"@tryghost/koenig-lexical@2.2.0":
+  dir: koenig/koenig-lexical
+  intents:
+    - backtick-selection-code
+    - mighty-hounds-punch
+    - shiny-snails-explain
+    - sweet-ants-search
+"@tryghost/koenig-lexical@2.3.0":
+  dir: koenig/koenig-lexical
+  intents:
+    - bump-playwright-1-65
+    - chilly-lions-walk
+    - email-file-card
+    - koenig-video-tests-chrome
 "@tryghost/metafield-types@0.1.1":
   dir: packages/metafield-types
   intents:
@@ -528,6 +558,18 @@
     - proud-chairs-grin
     - refused-property
     - shared-field-definition
+"@tryghost/metafield-types@0.4.0":
+  dir: packages/metafield-types
+  intents:
+    - field-shapes-described-once
+    - repeated-option-refused-on-option
+"@tryghost/metafield-types@0.5.0":
+  dir: packages/metafield-types
+  intents:
+    - field-types-behind-labs-flags
+    - metafield-types-docs-moved
+    - phone-custom-fields
+    - text-leaf-format
 ghost-storage-base@3.0.0:
   dir: packages/adapters/storage-base
   intents:
