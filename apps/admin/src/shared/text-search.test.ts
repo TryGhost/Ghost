@@ -154,6 +154,20 @@ describe('substring search', () => {
 
     expect(createSubstringSearch(searched).search('post')).toHaveLength(150);
   });
+
+  it('keeps item order when limitPerField is omitted', () => {
+    const searched = [
+      { id: 'k1', title: 'Other', keywords: 'shared' },
+      { id: 't1', title: 'shared one' },
+      { id: 'k2', title: 'Else', keywords: 'shared' },
+    ];
+
+    expect(titles(createSubstringSearch(searched).search('shared'))).toEqual([
+      'Other',
+      'shared one',
+      'Else',
+    ]);
+  });
 });
 
 describe('createTextSearch', () => {

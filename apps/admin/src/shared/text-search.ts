@@ -16,7 +16,7 @@ export interface TextSearchOptions {
    * How many matches to keep from each searchable field (`title`, then
    * `keywords`). Results are merged in that order and deduped by id, so the
    * total can be up to twice this number when items have keywords. Omit it to
-   * keep every match.
+   * keep every match in item order.
    */
   limitPerField?: number;
 }
@@ -57,7 +57,7 @@ export function createWordSearch<T extends Searchable>(items: readonly T[]): Tex
   };
 }
 
-/** Matches the term as a case-insensitive substring, in item order. */
+/** Matches the term as a case-insensitive substring. */
 export function createSubstringSearch<T extends Searchable>(items: readonly T[]): TextSearch<T> {
   return {
     search(term, { limitPerField } = {}) {
@@ -66,14 +66,24 @@ export function createSubstringSearch<T extends Searchable>(items: readonly T[])
       }
 
       const needle = term.toLowerCase();
+      const matchesField = (item: T, field: (typeof SEARCH_FIELDS)[number]) => {
+        const value = item[field];
+        return typeof value === 'string' && value.toLowerCase().includes(needle);
+      };
+
+      // No early cut: keep source order, whether the hit was on title or keywords.
+      if (limitPerField === undefined) {
+        return items.filter((item) => SEARCH_FIELDS.some((field) => matchesField(item, field)));
+      }
+
+      // Per-field caps merge title matches first, then keyword-only matches.
       const fieldMatches = SEARCH_FIELDS.map((field) => {
         const matches: T[] = [];
         for (const item of items) {
-          if (limitPerField !== undefined && matches.length >= limitPerField) {
+          if (matches.length >= limitPerField) {
             break;
           }
-          const value = item[field];
-          if (typeof value === 'string' && value.toLowerCase().includes(needle)) {
+          if (matchesField(item, field)) {
             matches.push(item);
           }
         }
