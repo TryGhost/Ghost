@@ -320,7 +320,7 @@ overrides:
   # the final dependency list
   'consolidate@0.15.1': ^1.0.4
   supports-color: '10.2.2'
-  'trim@<0.0.3': ^0.0.3
+  'trim@<0.0.3': ^1.0.0
   # Security patches within the same major for dev, build and test tooling
   # micromark-extension-math asks for ^0.16; markdownlint never loads its katex renderer
   'katex@>=0.11.0 <0.18.2': ^0.18.2
