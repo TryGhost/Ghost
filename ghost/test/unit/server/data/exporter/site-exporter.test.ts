@@ -124,6 +124,20 @@ describe('SiteExporter', function () {
     assert.deepEqual(zip.files, ['export.json', 'redirects.yaml', 'routes.yaml']);
   });
 
+  it('writes the content export as JSON', async function () {
+    const posts = Array.from({ length: 2000 }, (_, i) => ({
+      id: String(i),
+      html: 'x'.repeat(100),
+    }));
+    const content = { db: [{ meta: { version: '6.0.0' }, data: { posts } }] };
+    const exporter = new SiteExporter(buildDeps({ exportContent: async () => content }));
+    const archive = exporter.createArchive(['content']);
+
+    const zip = await readZip(await collectArchive(archive));
+
+    assert.equal(await zip.read('export.json'), JSON.stringify(content));
+  });
+
   it('skips a component that fails to acquire and completes the zip', async function () {
     const exporter = new SiteExporter(
       buildDeps({

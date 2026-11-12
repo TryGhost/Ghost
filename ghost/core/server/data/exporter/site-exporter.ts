@@ -2,12 +2,13 @@ import type { Archiver } from 'archiver';
 import * as errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import { SYNC_EXPORT_COMPONENTS } from './export-components';
+import { createJsonStream } from './json-stream';
 
 type SyncExportComponent = (typeof SYNC_EXPORT_COMPONENTS)[number];
 
 export interface SiteExporterDeps {
   /** Full site JSON in the same shape the `/db/` download produces. */
-  exportContent(): Promise<unknown>;
+  exportContent(): Promise<object>;
   /** Members CSV as a text stream (rows already serialized). */
   exportMembersCSV(): Promise<NodeJS.ReadableStream>;
   /** Post analytics CSV as a text stream (rows already serialized). */
@@ -101,8 +102,12 @@ export class SiteExporter {
     try {
       switch (component) {
         case 'content': {
-          const data = await this.#deps.exportContent();
-          archive.append(JSON.stringify(data), { name: 'export.json' });
+          // Streamed because a large site's export can exceed V8's maximum string length
+          this.#appendStream(
+            archive,
+            createJsonStream(await this.#deps.exportContent()),
+            'export.json',
+          );
           break;
         }
         case 'members':
