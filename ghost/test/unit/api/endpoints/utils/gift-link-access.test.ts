@@ -20,6 +20,8 @@ function frameWithGift(giftToken?: string) {
 describe('Gift link access', function () {
   beforeAll(async function () {
     await require('../../../../../core/server/services/posts-public').default.init();
+    // Boot initializes the actions service before gift links, which reads it while created.
+    await require('../../../../../core/server/services/actions').default.init();
   });
 
   let getPostByTokenStub: sinon.SinonStub;
