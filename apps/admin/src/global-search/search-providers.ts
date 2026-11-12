@@ -6,6 +6,7 @@ import {
   type TextSearchOptions,
   createSubstringSearch,
   createWordSearch,
+  isWordSearchLocale,
 } from '@/shared/text-search';
 import type { SearchItem, SearchResultGroup, SearchSource } from './search-source';
 
@@ -61,7 +62,7 @@ export function createSearchProvider(
   sources: readonly SearchSource[],
   locale: string | null | undefined,
 ): SearchProvider {
-  const isEnglish = locale?.toLowerCase().startsWith('en') ?? true;
-
-  return isEnglish ? createFlexSearchProvider(sources) : createBasicSearchProvider(sources);
+  return isWordSearchLocale(locale)
+    ? createFlexSearchProvider(sources)
+    : createBasicSearchProvider(sources);
 }
