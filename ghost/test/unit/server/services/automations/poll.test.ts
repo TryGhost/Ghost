@@ -31,7 +31,7 @@ type StubbedFunction<TFunction extends (..._args: never[]) => unknown> = sinon.S
 
 type AutomationsApiStubs = {
   [Method in keyof PollOptions['automationsApi']]: StubbedFunction<
-    PollOptions['automationsApi'][Method]
+    NonNullable<PollOptions['automationsApi'][Method]>
   >;
 };
 
@@ -179,6 +179,43 @@ describe('automations poll', function () {
     sinon.restore();
   });
 
+  it('falls back to finishing accepted steps individually after a grouped write fails', async function () {
+    const steps = [buildEmailStep(), buildEmailStep(), buildEmailStep()];
+    automationsApi.fetchAndLockSteps.resolves({ steps, nextStepReadyAt: null });
+    const sendBatch = fake<
+      NonNullable<PollOptions['memberWelcomeEmailService']['sendAutomationEmails']>
+    >().resolves([
+      { status: 'fulfilled', value: { id: '<one@example.com>' } },
+      { status: 'rejected', reason: new Error('Provider error') },
+      { status: 'fulfilled', value: { id: '<three@example.com>' } },
+    ]);
+    memberWelcomeEmailService.sendAutomationEmails = sendBatch;
+    const recordBatch = fake<NonNullable<AutomationsApi['recordEmailsSent']>>().resolves();
+    automationsApi.recordEmailsSent = recordBatch;
+    const completeBatch = fake<NonNullable<AutomationsApi['finishStepsAndEnqueueNext']>>().rejects(
+      new Error('Database error'),
+    );
+    automationsApi.finishStepsAndEnqueueNext = completeBatch;
+
+    await poll(options);
+
+    sinon.assert.calledOnce(sendBatch);
+    sinon.assert.notCalled(memberWelcomeEmailService.sendAutomationEmail);
+    sinon.assert.notCalled(automationsApi.recordEmailSent);
+    sinon.assert.calledOnce(recordBatch);
+    assert.deepEqual(
+      recordBatch.firstCall.args[0].map((record) => record.automationRunStepId),
+      [steps[0].id, steps[2].id],
+    );
+    sinon.assert.calledOnceWithExactly(completeBatch, [steps[0], steps[2]]);
+    assert.deepEqual(
+      automationsApi.finishStepAndEnqueueNext.args.map(([step]) => step.id),
+      [steps[0].id, steps[2].id],
+    );
+    sinon.assert.calledOnce(automationsApi.retryStep);
+    assert.equal(automationsApi.retryStep.firstCall.args[0], steps[1]);
+  });
+
   it('does nothing when no steps are ready', async function () {
     await poll(options);
 
@@ -193,6 +230,20 @@ describe('automations poll', function () {
     await poll(options);
 
     sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextStepReadyAt);
+  });
+
+  it('keeps the earliest successor when concurrent completions return different times', async function () {
+    const first = buildWaitStep();
+    const second = buildWaitStep();
+    const earlier = new Date(Date.now() + 1000);
+    const later = new Date(Date.now() + 2000);
+    automationsApi.fetchAndLockSteps.resolves({ steps: [first, second], nextStepReadyAt: null });
+    automationsApi.finishStepAndEnqueueNext.withArgs(first).resolves(earlier);
+    automationsApi.finishStepAndEnqueueNext.withArgs(second).resolves(later);
+
+    await poll(options);
+
+    sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, earlier);
   });
 
   it('keeps processing other steps if one step execution fails', async function () {

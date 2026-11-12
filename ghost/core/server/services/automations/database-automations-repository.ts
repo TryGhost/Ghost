@@ -36,6 +36,8 @@ import type {
   AutomationStepToRun,
   AutomationsRepository,
   Page,
+  RecordEmailSentOptions,
+  StepToFinish,
 } from './automations-repository';
 import type { ActionToInsert, EdgeRow, AutomationsRepository2 } from './automations-repository-2';
 import type { EditAutomationData } from './automations-schemas';
@@ -506,12 +508,21 @@ export function createDatabaseAutomationsRepository({
       return await knex.transaction((trx) => fetchAndLockSteps(trx, limit));
     },
 
-    async finishStepAndEnqueueNext(step: AutomationStepToRun): Promise<Date | null> {
+    async finishStepAndEnqueueNext(step: StepToFinish): Promise<Date | null> {
       return await knex.transaction((trx) =>
         finishStepAndEnqueueNext(repository2, trx, {
           step,
           fakeWaitHoursMultiplier,
         }),
+      );
+    },
+
+    async finishStepsAndEnqueueNext(steps) {
+      if (!steps.length) {
+        return null;
+      }
+      return await knex.transaction((trx) =>
+        finishStepsAndEnqueueNext({ repository2, trx, steps, fakeWaitHoursMultiplier }),
       );
     },
 
@@ -526,30 +537,35 @@ export function createDatabaseAutomationsRepository({
       return await knex.transaction((trx) => retryStep(repository2, trx, step, retryAt));
     },
 
-    async recordEmailSent(options): Promise<void> {
-      await knex.transaction(async (trx) => {
-        await trx('automation_action_revisions')
-          .where('id', options.automationActionRevisionId)
-          .update({
-            email_sent_count: trx.raw('COALESCE(??, 0) + ?', ['email_sent_count', 1]),
-          });
+    async recordEmailSent(options) {
+      await persistEmailRecipients({ knex, recipients: [buildEmailRecipient(options)] });
+    },
 
-        const now = toDatabaseDate(new Date());
-        await trx('automated_email_recipients').insert({
-          id: ObjectId().toHexString(),
-          member_id: options.memberId,
-          member_uuid: options.memberUuid,
-          member_email: options.memberEmail,
-          member_name: options.memberName,
-          automation_action_revision_id: options.automationActionRevisionId,
-          automation_run_step_id: options.automationRunStepId,
-          ...(options.mailgunMessageId ? { mailgun_message_id: options.mailgunMessageId } : {}),
-          track_clicks: options.trackClicks,
-          track_opens: options.trackOpens,
-          created_at: now,
-          updated_at: now,
-        });
-      });
+    async recordEmailsSent(records) {
+      const groups = new AutoFillingMap<string, EmailRecipient[]>(() => []);
+      for (const record of records) {
+        groups.get(record.automationActionRevisionId).push(buildEmailRecipient(record));
+      }
+      const results = await Promise.allSettled(
+        [...groups.values()].map(async (recipients) => {
+          try {
+            await persistEmailRecipients({ knex, recipients });
+          } catch (err) {
+            if (recipients.length === 1) {
+              throw err;
+            }
+            // Isolate a bad row without counting a committed recipient twice if the
+            // connection was lost while acknowledging the original transaction.
+            const retries = await Promise.allSettled(
+              recipients.map((recipient) =>
+                persistEmailRecipients({ knex, recipients: [recipient], checkForExisting: true }),
+              ),
+            );
+            throwOnRecipientWriteFailures(retries);
+          }
+        }),
+      );
+      throwOnRecipientWriteFailures(results);
     },
 
     async getAutomatedEmailRecipientsByMailgunIds(mailgunMessageIds) {
@@ -627,6 +643,67 @@ export function createDatabaseAutomationsRepository({
       });
     },
   };
+}
+
+function buildEmailRecipient(options: RecordEmailSentOptions) {
+  const now = toDatabaseDate(new Date());
+  return {
+    id: ObjectId().toHexString(),
+    member_id: options.memberId,
+    member_uuid: options.memberUuid,
+    member_email: options.memberEmail,
+    member_name: options.memberName,
+    automation_action_revision_id: options.automationActionRevisionId,
+    automation_run_step_id: options.automationRunStepId,
+    mailgun_message_id: options.mailgunMessageId ?? null,
+    track_clicks: options.trackClicks,
+    track_opens: options.trackOpens,
+    created_at: now,
+    updated_at: now,
+  };
+}
+
+type EmailRecipient = ReturnType<typeof buildEmailRecipient>;
+
+function throwOnRecipientWriteFailures(results: PromiseSettledResult<void>[]) {
+  const failures = results.flatMap((result) =>
+    result.status === 'rejected' ? [result.reason] : [],
+  );
+  if (failures.length) {
+    // AggregateError is a native error and requires the list of failures as its first argument.
+    // oxlint-disable-next-line ghost/ghost-custom/ghost-error-usage
+    throw new AggregateError(failures, 'Failed to record sent automation emails');
+  }
+}
+
+async function persistEmailRecipients({
+  knex,
+  recipients,
+  checkForExisting = false,
+}: {
+  knex: Knex;
+  recipients: EmailRecipient[];
+  checkForExisting?: boolean;
+}) {
+  const [first] = recipients;
+  if (!first) {
+    return;
+  }
+  const revisionId = first.automation_action_revision_id;
+  await knex.transaction(async (trx) => {
+    const revision = trx('automation_action_revisions').where('id', revisionId);
+    if (checkForExisting) {
+      await revision.clone().forUpdate().first('id');
+      const existing = await trx('automated_email_recipients').where('id', first.id).first('id');
+      if (existing) {
+        return;
+      }
+    }
+    await revision.update({
+      email_sent_count: trx.raw('COALESCE(??, 0) + ?', ['email_sent_count', recipients.length]),
+    });
+    await trx('automated_email_recipients').insert(recipients);
+  });
 }
 
 async function loadRunHistory(
@@ -1143,7 +1220,7 @@ async function finishStepAndEnqueueNext(
   repository2: AutomationsRepository2<Knex | Knex.Transaction>,
   trx: Knex.Transaction,
   options: Readonly<{
-    step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>;
+    step: StepToFinish;
     fakeWaitHoursMultiplier: number | null;
   }>,
 ): Promise<Date | null> {
@@ -1179,6 +1256,90 @@ async function finishStepAndEnqueueNext(
   ]);
 
   return nextReadyAt;
+}
+
+async function finishStepsAndEnqueueNext({
+  repository2,
+  trx,
+  steps,
+  fakeWaitHoursMultiplier,
+}: {
+  repository2: AutomationsRepository2<Knex | Knex.Transaction>;
+  trx: Knex.Transaction;
+  steps: readonly StepToFinish[];
+  fakeWaitHoursMultiplier: number | null;
+}): Promise<Date | null> {
+  // A stale worker may still hold a step object after another worker has
+  // reclaimed it. Only finish rows whose current claim still matches.
+  const stepsById = new Map(steps.map((step) => [step.id, step]));
+  const claimed: { id: string }[] = await trx('automation_run_steps')
+    .where('status', 'pending')
+    .whereIn(
+      ['id', 'locked_by'],
+      [...stepsById.values()].map((step) => [step.id, step.locked_by]),
+    )
+    .orderBy('id')
+    .forUpdate()
+    .select('id');
+  if (!claimed.length) {
+    return null;
+  }
+
+  const now = new Date();
+  const nowString = toDatabaseDate(now);
+  await trx('automation_run_steps')
+    .whereIn(
+      'id',
+      claimed.map(({ id }) => id),
+    )
+    .update({
+      status: 'finished',
+      finished_at: nowString,
+      updated_at: nowString,
+      locked_by: null,
+      locked_at: null,
+    });
+
+  const finished = claimed.map(({ id }) => stepsById.get(id)!);
+  const activeRunIds: string[] = await trx('automation_runs as run')
+    .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
+    .where('automation.status', 'active')
+    .whereIn(
+      'run.id',
+      finished.map((step) => step.automation_run_id),
+    )
+    .pluck('run.id');
+  const activeRuns = new Set(activeRunIds);
+  const groups = new AutoFillingMap<string, StepToFinish[]>(() => []);
+  for (const step of finished) {
+    if (activeRuns.has(step.automation_run_id)) {
+      groups.get(step.action_id).push(step);
+    }
+  }
+  const nextSteps = [];
+  let earliestReadyAt: Date | null = null;
+  for (const [actionId, group] of groups) {
+    const next = await findNextActionRevision(trx, actionId);
+    if (!next) {
+      continue;
+    }
+    const readyAt = getReadyAtForAction(next, now, fakeWaitHoursMultiplier);
+    if (!earliestReadyAt || readyAt < earliestReadyAt) {
+      earliestReadyAt = readyAt;
+    }
+    for (const step of group) {
+      nextSteps.push({
+        id: ObjectId().toHexString(),
+        created_at: now,
+        updated_at: now,
+        automation_run_id: step.automation_run_id,
+        automation_action_revision_id: next.automation_action_revision_id,
+        ready_at: readyAt,
+      });
+    }
+  }
+  await repository2.insertRunSteps(trx, nextSteps);
+  return earliestReadyAt;
 }
 
 async function findNextActionRevision(

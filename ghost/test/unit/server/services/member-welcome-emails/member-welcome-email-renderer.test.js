@@ -11,6 +11,10 @@ const {
   registerHelpers,
 } = require('../../../../../core/server/services/email-service/helpers/register-helpers');
 const MemberWelcomeEmailRenderer = require('../../../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');
+const {
+  personalizeFirstNameTemplate,
+} = require('../../../../../core/server/services/member-welcome-emails/automation-first-name-template');
+const { memoize } = require('../../../../../core/shared/memoize');
 const { readTemplate } = require('../../../../utils/member-welcome-email-templates');
 const { malformedCssCases } = require('../../../../utils/fixtures/email-service/malformed-css');
 
@@ -50,10 +54,61 @@ describe('MemberWelcomeEmailRenderer', function () {
         addAutomationTrackingToUrl: sinon.stub().rejects(new Error('Link tracking not expected')),
       },
       renderLexical: (lexical, renderOptions) => lexicalLib.render(lexical, renderOptions),
+      memoize,
       readTemplate,
       ...options,
     });
   }
+
+  describe('first-name batch template', function () {
+    const options = {
+      lexical: '{}',
+      subject: 'Welcome!',
+      siteSettings: defaultSiteSettings,
+      unsubscribeUrl: 'https://example.com/unsubscribe/?uuid=first&key=one',
+    };
+
+    it('preserves individual rendering for an escaped name and a fallback', async function () {
+      lexicalRenderStub.resolves('<p>Hi {first_name, "friend"}, meet {first_name, "reader"}.</p>');
+      const renderer = createRenderer();
+      const template = await renderer.renderFirstNameTemplate(options);
+      assert(template);
+      sinon.assert.calledOnce(lexicalRenderStub);
+
+      const resolveVariables = (body, variables) =>
+        body.replace(/%recipient\.([^%]+)%/g, (_, key) => variables[key]);
+      for (const name of ['A&B<Example> Smith', null]) {
+        const original = await renderer.render({ ...options, member: { name } });
+        const prepared = personalizeFirstNameTemplate({
+          template,
+          name,
+          unsubscribeUrl: options.unsubscribeUrl,
+        });
+        assert(prepared);
+        assert.equal(prepared.text, original.text);
+        assert.equal(prepared.subject, original.subject);
+        const { html, text, variables } = prepared.batchBody;
+        assert.equal(resolveVariables(text, variables), original.text);
+        const $ = cheerio.load(resolveVariables(html, variables));
+        const expected = cheerio.load(original.html);
+        assert.equal($('.post-content-row').text(), expected('.post-content-row').text());
+        assert.equal($('a:contains("Unsubscribe")').attr('href'), options.unsubscribeUrl);
+        assert.equal($('example').length, 0);
+      }
+    });
+
+    it('falls back when the first-name token is in a URL or the subject, or a link needs tracking', async function () {
+      const renderer = createRenderer();
+      lexicalRenderStub.resolves('<p>Hi {first_name}, visit <a href="/{first_name}">here</a>.</p>');
+      assert.equal(await renderer.renderFirstNameTemplate(options), null);
+      lexicalRenderStub.resolves('<p>Hi {first_name}, visit <a href="/post">here</a>.</p>');
+      assert.equal(
+        await renderer.renderFirstNameTemplate({ ...options, subject: 'Hi {first_name}' }),
+        null,
+      );
+      assert.equal(await renderer.renderFirstNameTemplate({ ...options, trackClicks: true }), null);
+    });
+  });
 
   describe('render', function () {
     it('renders Lexical content to HTML via lexicalLib.render', async function () {
@@ -348,6 +403,29 @@ describe('MemberWelcomeEmailRenderer', function () {
         'Unsubscribe',
       );
       assert.equal($('a:contains("Manage your preferences")').length, 0);
+    });
+
+    it('renders different unsubscribe links', async function () {
+      lexicalRenderStub.resolves('<p>Content</p>');
+      const renderer = createRenderer();
+      const options = {
+        lexical: '{}',
+        subject: 'Test Subject',
+        member: { name: 'John', email: 'john@example.com' },
+        siteSettings: defaultSiteSettings,
+      };
+      const firstUrl = 'https://example.com/$&/unsubscribe/?uuid=first&key=one';
+      const secondUrl = 'https://example.com/$&/unsubscribe/?uuid=second&key=two';
+
+      const first = await renderer.render({ ...options, unsubscribeUrl: firstUrl });
+      const second = await renderer.render({ ...options, unsubscribeUrl: secondUrl });
+
+      assert.equal(cheerio.load(first.html)('a:contains("Unsubscribe")').attr('href'), firstUrl);
+      assert.equal(cheerio.load(second.html)('a:contains("Unsubscribe")').attr('href'), secondUrl);
+      assert(!second.html.includes(firstUrl));
+      assert(first.text.includes(firstUrl));
+      assert(second.text.includes(secondUrl));
+      assert(!second.text.includes(firstUrl));
     });
 
     it('preserves multiline code block whitespace in the shared email wrapper', async function () {

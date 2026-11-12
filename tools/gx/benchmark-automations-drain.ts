@@ -2,13 +2,23 @@
 import { randomUUID } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { parseArgs } from 'node:util';
+import { setTimeout as delay } from 'node:timers/promises';
 import ObjectIdPackage from 'bson-objectid';
 import type { Knex } from 'knex';
+import {
+  makeSmokeMailer,
+  profileSmokeDrain,
+  smokeAddress,
+  maxSmokeRecipients,
+  withSmokeDatabase,
+  verifySmokeInbox,
+  type SmokeMode,
+} from './automations-bulk-smoke.ts';
 
 const ObjectId = ObjectIdPackage.default;
 const BATCH_SIZE = 500;
 const usage =
-  'Usage: pnpm gx benchmark automations-drain --numberOfRuns <positive safe integer> --steps wait,send_email';
+  'Usage: pnpm gx benchmark automations-drain --numberOfRuns <positive safe integer> --steps wait,send_email [--bulkSmoke baseline|batch|worker]';
 
 type StepType = 'wait' | 'send_email';
 type Action = { id: string; revisionId: string; type: StepType };
@@ -52,6 +62,7 @@ export function parseOptions(args: string[]) {
     options: {
       numberOfRuns: { type: 'string' },
       steps: { type: 'string' },
+      bulkSmoke: { type: 'string' },
       help: { type: 'boolean', short: 'h' },
     },
     allowPositionals: true,
@@ -72,7 +83,24 @@ export function parseOptions(args: string[]) {
   ) {
     throw new Error(usage);
   }
-  return { numberOfRuns, steps: steps as StepType[] };
+  const smoke = values.bulkSmoke;
+  if (
+    smoke !== undefined &&
+    ((smoke !== 'baseline' && smoke !== 'batch' && smoke !== 'worker') ||
+      (smoke === 'worker' && numberOfRuns !== 2) ||
+      numberOfRuns < 2 ||
+      numberOfRuns > maxSmokeRecipients ||
+      steps.join(',') !== 'send_email')
+  ) {
+    throw new Error(
+      `Bulk smoke requires one send_email step. Worker mode requires exactly 2 runs. Baseline and batch accept 2 to ${maxSmokeRecipients} runs.`,
+    );
+  }
+  return {
+    numberOfRuns,
+    steps: steps as StepType[],
+    ...(smoke ? { smoke: smoke as SmokeMode } : {}),
+  };
 }
 
 function assertCorrectNodeEnv() {
@@ -100,9 +128,16 @@ async function loadRuntime() {
   const { poll } = await import('../../ghost/core/server/services/automations/poll.ts');
   const { toDatabaseDate } = await import('../../ghost/core/server/lib/db-types/date.ts');
   const require = createRequire(import.meta.url);
+  type SendEmail = Parameters<typeof poll>[0]['memberWelcomeEmailService']['sendAutomationEmail'];
+  type Service = {
+    sendAutomationEmail: (
+      options: Parameters<SendEmail>[0],
+      mailer?: Pick<ReturnType<typeof makeSmokeMailer>, 'send'>,
+    ) => ReturnType<SendEmail>;
+  };
   const welcomeEmailsModule = require('../../ghost/core/server/services/member-welcome-emails') as {
-    default?: { service: Parameters<typeof poll>[0]['memberWelcomeEmailService'] };
-    service: Parameters<typeof poll>[0]['memberWelcomeEmailService'];
+    default?: { service: Service };
+    service: Service;
   };
   const welcomeEmails = welcomeEmailsModule.default ?? welcomeEmailsModule;
   const repository = createDatabaseAutomationsRepository({ knex, fakeWaitHoursMultiplier: 1 });
@@ -112,12 +147,17 @@ async function loadRuntime() {
 
 type Runtime = Awaited<ReturnType<typeof loadRuntime>>;
 
-async function createMembers(
-  knex: Knex,
-  numberOfRuns: number,
-  automationId: string,
-  createdAt: string,
-) {
+async function createMembers({
+  knex,
+  numberOfRuns,
+  createdAt,
+  address,
+}: {
+  knex: Knex;
+  numberOfRuns: number;
+  createdAt: string;
+  address: (index: number) => string;
+}) {
   process.stdout.write('Creating ' + numberOfRuns + ' members...');
   for (let offset = 0; offset < numberOfRuns; offset += BATCH_SIZE) {
     const members = Array.from(
@@ -126,7 +166,7 @@ async function createMembers(
         id: id(),
         uuid: randomUUID(),
         transient_id: randomUUID(),
-        email: 'benchmark-' + automationId + '-' + (offset + index) + '@example.com',
+        email: address(offset + index),
         status: 'free',
         enable_updates_and_announcements: true,
         created_at: createdAt,
@@ -138,12 +178,19 @@ async function createMembers(
   process.stdout.write('done.\n');
 }
 
-async function createAutomation(
-  { knex }: Runtime,
-  automationId: string,
-  steps: StepType[],
-  createdAt: string,
-): Promise<Action[]> {
+async function createAutomation({
+  runtime: { knex },
+  automationId,
+  steps,
+  createdAt,
+  subject,
+}: {
+  runtime: Runtime;
+  automationId: string;
+  steps: StepType[];
+  createdAt: string;
+  subject: string;
+}): Promise<Action[]> {
   const actions = steps.map((type) => ({ id: id(), revisionId: id(), type }));
   process.stdout.write('Creating 1 automation with ' + actions.length + ' steps...');
   await knex('automations').insert({
@@ -178,7 +225,7 @@ async function createAutomation(
       action_id: action.id,
       created_at: createdAt,
       wait_hours: action.type === 'wait' ? 1 : null,
-      email_subject: action.type === 'send_email' ? 'Automation benchmark' : null,
+      email_subject: action.type === 'send_email' ? subject : null,
       email_lexical: action.type === 'send_email' ? lexical : null,
       email_design_setting_id: null,
     })),
@@ -195,20 +242,29 @@ async function createAutomation(
   return actions;
 }
 
-async function createPendingRuns(
-  knex: Knex,
-  numberOfRuns: number,
-  automationId: string,
-  firstActionRevisionId: string,
-  createdAt: string,
-  future: string,
-) {
+async function createPendingRuns({
+  knex,
+  numberOfRuns,
+  automationId,
+  firstActionRevisionId,
+  createdAt,
+  future,
+  memberPattern,
+}: {
+  knex: Knex;
+  numberOfRuns: number;
+  automationId: string;
+  firstActionRevisionId: string;
+  createdAt: string;
+  future: string;
+  memberPattern: string;
+}) {
   process.stdout.write('Creating ' + numberOfRuns + ' pending automation runs...');
   let lastMemberId = '';
   for (let offset = 0; offset < numberOfRuns; offset += BATCH_SIZE) {
     const memberRows: Array<{ id: string; email: string }> = await knex('members')
       .select('id', 'email')
-      .where('email', 'like', 'benchmark-' + automationId + '-%@example.com')
+      .where('email', 'like', memberPattern)
       .where('id', '>', lastMemberId)
       .orderBy('id')
       .limit(BATCH_SIZE);
@@ -273,11 +329,17 @@ async function assertRunsHealthy(knex: Knex, automationId: string, completedStep
   return false;
 }
 
-async function drainQueue(
-  { knex, poll, repository, welcomeEmails, toDatabaseDate }: Runtime,
-  automationId: string,
-  expectedStepCount: number,
-) {
+async function drainQueue({
+  runtime: { knex, poll, repository, welcomeEmails, toDatabaseDate },
+  automationId,
+  expectedStepCount,
+  smokeMailer,
+}: {
+  runtime: Runtime;
+  automationId: string;
+  expectedStepCount: number;
+  smokeMailer?: ReturnType<typeof makeSmokeMailer>;
+}) {
   process.stdout.write('Draining automations queue...');
   await knex('automation_run_steps')
     .whereIn(
@@ -286,21 +348,51 @@ async function drainQueue(
     )
     .update({ ready_at: toDatabaseDate(new Date()) });
   const start = performance.now();
+  let smokeStepsRemaining = expectedStepCount;
+  const automationsApi = smokeMailer
+    ? {
+        ...repository,
+        async fetchAndLockSteps(limit: number) {
+          const result = await repository.fetchAndLockSteps(limit);
+          if (result.steps.length !== Math.min(limit, smokeStepsRemaining)) {
+            throw new Error('The smoke test did not claim the expected number of ready steps.');
+          }
+          smokeStepsRemaining -= result.steps.length;
+          return result;
+        },
+      }
+    : repository;
   while (true) {
     const nextPoll = { at: null as Date | null };
     await poll({
-      automationsApi: repository,
-      memberWelcomeEmailService: welcomeEmails.service,
+      automationsApi,
+      memberWelcomeEmailService: smokeMailer
+        ? {
+            sendAutomationEmail: (options) =>
+              welcomeEmails.service.sendAutomationEmail(options, smokeMailer),
+          }
+        : welcomeEmails.service,
       scheduleAutomationEmailAnalyticsJob: async () => {},
       enqueueAnotherPollAt: (date) => {
         if (!nextPoll.at || date < nextPoll.at) nextPoll.at = date;
       },
     });
-    if (await assertRunsHealthy(knex, automationId, expectedStepCount)) break;
+    if (smokeMailer) {
+      // All fixture steps start ready. Verify once to avoid rescanning a large cohort after every poll.
+      if (smokeStepsRemaining === 0) break;
+      const processed = expectedStepCount - smokeStepsRemaining;
+      if (processed % 10_000 === 0)
+        process.stdout.write(`\nProcessed ${processed} fixture steps.\n`);
+    } else if (await assertRunsHealthy(knex, automationId, expectedStepCount)) {
+      break;
+    }
     const delay = Math.max(0, Math.min(1000, (nextPoll.at?.getTime() ?? Date.now()) - Date.now()));
     if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
   }
   const seconds = (performance.now() - start) / 1000;
+  if (smokeMailer && !(await assertRunsHealthy(knex, automationId, expectedStepCount))) {
+    throw new Error('The smoke test finished polling with incomplete runs.');
+  }
   process.stdout.write('done.\n');
   return seconds;
 }
@@ -331,6 +423,135 @@ function printResult(numberOfRuns: number, seconds: number) {
   );
 }
 
+// Dispatch the regular poll event after both steps are ready in the disposable database.
+async function runWorkerSmoke({
+  runtime,
+  automationId,
+  subject,
+}: {
+  runtime: Runtime;
+  automationId: string;
+  subject: string;
+}) {
+  const { knex, toDatabaseDate } = runtime;
+  const require = createRequire(import.meta.url);
+  const { automationsService } =
+    require('../../ghost/core/server/services/automations/index.ts') as {
+      automationsService: { rescheduleAll: () => Promise<void> };
+    };
+  const runIds = () => knex('automation_runs').select('id').where('automation_id', automationId);
+  await knex('automation_run_steps')
+    .whereIn('automation_run_id', runIds())
+    .update({ ready_at: toDatabaseDate(new Date()) });
+  await automationsService.rescheduleAll();
+
+  const deadline = performance.now() + 15_000;
+  let finished = false;
+  while (performance.now() < deadline) {
+    const steps = await knex('automation_run_steps')
+      .whereIn('automation_run_id', runIds())
+      .select('status');
+    if (steps.length === 2 && steps.every(({ status }) => status === 'finished')) {
+      finished = true;
+      break;
+    }
+    await delay(100);
+  }
+  if (!finished) throw new Error('The normal automation worker did not finish both steps.');
+
+  const recipients = await knex('automated_email_recipients')
+    .whereIn(
+      'automation_run_step_id',
+      knex('automation_run_steps').select('id').whereIn('automation_run_id', runIds()),
+    )
+    .select('member_email', 'automation_run_step_id', 'mailgun_message_id');
+  if (
+    recipients.length !== 2 ||
+    !recipients.every((row) => row.mailgun_message_id?.startsWith(row.automation_run_step_id + '.'))
+  ) {
+    throw new Error('The normal automation worker did not record both per-recipient Mailgun IDs.');
+  }
+  const messagesInMailpit = await verifySmokeInbox({
+    automationId,
+    recipients: new Set([smokeAddress(automationId, 0), smokeAddress(automationId, 1)]),
+  });
+  process.stdout.write(
+    JSON.stringify({ mode: 'worker', subject, messagesInMailpit, recipients }) + '\n',
+  );
+}
+
+async function runBenchmark(options: Options, smokeDatabase?: string) {
+  const runtime = await loadRuntime();
+  if (smokeDatabase && runtime.knex.client.database() !== smokeDatabase) {
+    throw new Error('The smoke test must use its disposable database.');
+  }
+  const automationId = id();
+  const createdAt = runtime.toDatabaseDate(new Date());
+  const future = runtime.toDatabaseDate(new Date(Date.now() + 86400000));
+  const { numberOfRuns, steps, smoke } = options;
+  const smokeMailer =
+    smoke && smoke !== 'worker'
+      ? makeSmokeMailer({ automationId, mode: smoke, recipientCount: numberOfRuns })
+      : undefined;
+  const address = (index: number) =>
+    smoke ? smokeAddress(automationId, index) : `benchmark-${automationId}-${index}@example.com`;
+  const subject = smoke
+    ? `Automation batching smoke: ${smoke} ${automationId}`
+    : 'Automation benchmark';
+
+  try {
+    await createMembers({ knex: runtime.knex, numberOfRuns, createdAt, address });
+    const actions = await createAutomation({ runtime, automationId, steps, createdAt, subject });
+    await createPendingRuns({
+      knex: runtime.knex,
+      numberOfRuns,
+      automationId,
+      firstActionRevisionId: actions[0]!.revisionId,
+      createdAt,
+      future,
+      memberPattern: address(0).replace(/-0@/, '-%@'),
+    });
+    if (smoke === 'worker') {
+      await runWorkerSmoke({ runtime, automationId, subject });
+      return;
+    }
+    const drain = () =>
+      drainQueue({
+        runtime,
+        automationId,
+        expectedStepCount: numberOfRuns * actions.length,
+        smokeMailer,
+      });
+    if (smokeMailer) {
+      const {
+        result: seconds,
+        rendering,
+        database,
+      } = await profileSmokeDrain({ knex: runtime.knex, run: drain });
+      const provider = smokeMailer.providerTiming();
+      process.stdout.write(
+        `Checking Mailpit for ${numberOfRuns} messages with subject "${subject}".\n`,
+      );
+      const result = await smokeMailer.verifyInbox();
+      process.stdout.write(
+        JSON.stringify({
+          mode: smoke,
+          subject,
+          drainMs: seconds * 1000,
+          ...result,
+          rendering,
+          database,
+          provider,
+        }) + '\n',
+      );
+    } else {
+      printResult(numberOfRuns, await drain());
+    }
+  } finally {
+    if (!smoke) await cleanupRuns(runtime.knex, automationId);
+  }
+}
+
 async function main() {
   let options: Options | null;
   try {
@@ -347,27 +568,12 @@ async function main() {
 
   assertCorrectNodeEnv();
   setEnvironmentVariables();
-  const runtime = await loadRuntime();
-  const automationId = id();
-  const createdAt = runtime.toDatabaseDate(new Date());
-  const future = runtime.toDatabaseDate(new Date(Date.now() + 86400000));
-
-  try {
-    await createMembers(runtime.knex, options.numberOfRuns, automationId, createdAt);
-    const actions = await createAutomation(runtime, automationId, options.steps, createdAt);
-    await createPendingRuns(
-      runtime.knex,
-      options.numberOfRuns,
-      automationId,
-      actions[0]!.revisionId,
-      createdAt,
-      future,
-    );
-    const seconds = await drainQueue(runtime, automationId, options.numberOfRuns * actions.length);
-    printResult(options.numberOfRuns, seconds);
-  } finally {
-    await cleanupRuns(runtime.knex, automationId);
-  }
+  if (options.smoke)
+    await withSmokeDatabase({
+      run: (database) => runBenchmark(options, database),
+      mode: options.smoke,
+    });
+  else await runBenchmark(options);
   // Boot starts background jobs; this one-shot CLI must stop them on completion.
   process.exit(0);
 }
