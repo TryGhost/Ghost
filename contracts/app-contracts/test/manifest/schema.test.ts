@@ -187,6 +187,10 @@ describe('author', () => {
     );
     expect(accepted.author.url).toBe('mailto:support@example.com');
     expect(AppManifestSchema.parse(accepted).author.url).toBe('mailto:support@example.com');
+    expect(
+      manifestOf(manifest({ author: { name: 'A', url: 'mailto:josé+apps@example.co.uk' } })).author
+        .url,
+    ).toBe('mailto:jos%C3%A9+apps@example.co.uk');
 
     for (const url of [
       'mailto:',
@@ -195,6 +199,18 @@ describe('author', () => {
       'mailto:support@example.com?subject=Hi',
       'mailto:support@example.com?cc=other@example.com',
       'mailto:support@example.com#x',
+      'mailto:support@example.com?',
+      'mailto:support@example.com#',
+      'mailto:a%40example.com%2Cb@example.com',
+      'mailto:support@example.com%3Fsubject%3DHi',
+      'mailto:%20support@example.com',
+      'mailto:support%ZZ@example.com',
+      'mailto://first@example.com,/second@example.com',
+      'mailto://first@example.com%2C/second@example.com',
+      'mailto://support@example.com',
+      'mailto:support@example.com%00',
+      'mailto:sup%01port@example.com',
+      'mailto:support@example.com%E2%80%AE',
     ]) {
       expect(errorsOf(manifest({ author: { name: 'A', url } }))).toEqual([
         { path: 'author.url', message: 'Expected a mailto: link to one email address' },

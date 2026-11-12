@@ -577,6 +577,13 @@ describe('Managing apps', () => {
     await expect.element(appsScreen.unavailable()).toHaveTextContent('APP_IDENTITY_MISMATCH');
     await expect.element(appsScreen.frame()).not.toBeInTheDocument();
     await expect.element(page.getByRole('button', { name: 'Uninstall' })).not.toBeInTheDocument();
+    // The developer's link may be on the very origin Ghost couldn't confirm.
+    await expect
+      .element(appsScreen.unavailable().getByRole('link', { name: 'Back to Apps' }))
+      .toBeVisible();
+    await expect
+      .element(appsScreen.unavailable().getByRole('link', { name: 'Contact support' }))
+      .not.toBeInTheDocument();
 
     sessionsApi.set(installation());
     await page.getByRole('button', { name: 'Try again' }).click();
@@ -1491,6 +1498,22 @@ describe('Managing apps', () => {
       .element(appsScreen.historyEntries().nth(2))
       .toHaveTextContent('Installed by Jamie Larson');
     expect(new URL(readApi.requests[0].url).searchParams.get('include')).toBe('history');
+  });
+
+  it('opens an email to the developer from an app’s details when their link is an email address', async () => {
+    fakeDetails(
+      installation({
+        manifest: manifest({
+          author: { name: 'Example Audio', url: 'mailto:support@example.com' },
+        }),
+      }),
+    );
+
+    await renderAdminApp(DETAILS_ROUTE, { labs });
+
+    const developer = appsScreen.details().getByRole('link', { name: 'Example Audio' });
+    await expect.element(developer).toHaveAttribute('href', 'mailto:support@example.com');
+    await expect.element(developer).not.toHaveAttribute('target');
   });
 
   // The icon URL isn't faked, so a request to it would fail the test.

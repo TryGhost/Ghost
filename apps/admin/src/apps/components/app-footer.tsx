@@ -64,7 +64,7 @@ export const WithAppFooter: React.FC<{ app: AppIconSource; children: React.React
   children,
 }) => (
   <Stack className="size-full" gap="none">
-    <Box className="min-h-0 flex-1">{children}</Box>
+    <Box className="min-h-0 flex-1 overflow-auto">{children}</Box>
     <AppFooter app={app} />
   </Stack>
 );
