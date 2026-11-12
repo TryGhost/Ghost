@@ -55,9 +55,9 @@ An app describes itself to Ghost in a JSON manifest, which it serves as a
   made the app; `identity_key` does.
 - `name`, `description` and `author` are all required. The author's `url` is
   where publishers reach the developer for support: an `https` page or a
-  `mailto:` link to one address, with no query. It is only ever linked to, and
-  nothing checks who the author is, so Admin's install review and app details
-  mark them as an unverified developer.
+  `mailto:` link to one address, with no query or fragment. It is only ever
+  linked to, and nothing checks who the author is, so Admin's install review
+  and app details mark them as an unverified developer.
 - Text is one line of plain text. Characters that show nothing, as a reader sees
   them, are taken off both ends, such as spaces, Hangul fillers and the blank
   Braille pattern standing alone, with any marks on them. Text with nothing

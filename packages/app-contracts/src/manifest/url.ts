@@ -118,12 +118,29 @@ export function urlField({ allowLocalhost, base }: UrlRules, linkOnly = false) {
 }
 
 const MAILTO_PROBLEM = 'Expected a mailto: link to one email address';
-const EMAIL_ADDRESS = /^[^\s@,;:<>()[\]\\"]+@[^\s@,;:<>()[\]\\"]+\.[^\s@,;:<>()[\]\\"]+$/;
+// No separators, and no control or format characters, which could hide or reorder what the mail
+// client shows in its To field.
+const EMAIL_ADDRESS =
+  /^[^\s\p{Cc}\p{Cf}@,;:<>()[\]\\"?#%/]+@[^\s\p{Cc}\p{Cf}@,;:<>()[\]\\"?#%/]+\.[^\s\p{Cc}\p{Cf}@,;:<>()[\]\\"?#%/]+$/u;
+
+/**
+ * Everything after a `mailto:` link's scheme, decoded as a mail client decodes it. That's the
+ * whole recipient list, query and fragment included: a mail client doesn't read `//` as an
+ * authority, so the URL's `pathname` alone can miss a recipient.
+ */
+function mailtoRecipients(link: URL): string | null {
+  try {
+    return decodeURIComponent(link.href.slice('mailto:'.length));
+  } catch {
+    return null;
+  }
+}
 
 /**
  * A link to an app's developer: a URL as `url(true)` holds it, or a `mailto:` link to one email
- * address. Ghost only ever links to it. A `mailto:` link takes no query or fragment, so it can't
- * prefill a message or add recipients.
+ * address. Ghost only ever links to it. A `mailto:` link takes no query or fragment, not even an
+ * empty one, so it can't prefill a message or add recipients. The address is checked as a mail
+ * client decodes it, so an escaped `,` can't add a second one.
  */
 export function contactField(url: UrlField) {
   const web = url(true);
@@ -139,12 +156,12 @@ export function contactField(url: UrlField) {
       return result.data;
     }
     const link = URL.parse(value);
+    const recipients = link && mailtoRecipients(link);
     if (
       !link ||
-      link.search !== '' ||
-      link.hash !== '' ||
+      !recipients ||
       link.href.length > URL_MAX_LENGTH ||
-      !EMAIL_ADDRESS.test(link.pathname)
+      !EMAIL_ADDRESS.test(recipients)
     ) {
       ctx.addIssue({ code: 'custom', message: MAILTO_PROBLEM });
       return z.NEVER;

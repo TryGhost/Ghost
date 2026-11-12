@@ -113,15 +113,19 @@ const NotResponding: React.FC<{
  * There's no Uninstall here. When Ghost couldn't confirm the app, uninstalling it and installing
  * it again from a link is the one way another developer's key gets pinned, so the screen sends the
  * publisher to the developer instead. Uninstall stays on the app's details page.
+ *
+ * Nor is there a Contact support link then. The developer's link often lives on the app's own
+ * origin, which is the one Ghost couldn't confirm, so the screen offers Back to Apps.
  */
 const Unavailable: React.FC<{
   installationId: string;
   failure: SessionFailure;
   onRetry: () => void;
 }> = ({ installationId, failure, onRetry }) => {
-  const { data } = useBrowseAppInstallations({ defaultErrorHandler: false });
+  const { data, isLoading } = useBrowseAppInstallations({ defaultErrorHandler: false });
   const installation = data?.app_installations.find(({ id }) => id === installationId);
   const name = installation?.manifest.name ?? 'This app';
+  const offersSupport = !failure.unconfirmed;
   const at = installation ? ` at ${servedFrom(installation.manifest)}` : '';
   const explanation = failure.unconfirmed
     ? `Ghost couldn’t confirm the app${at} is the one you installed. Contact its developer, and don’t install it again from a link until they’ve fixed it. Your site isn’t affected.`
@@ -131,7 +135,12 @@ const Unavailable: React.FC<{
       <EmptyIndicator
         actions={
           <>
-            {installation ? (
+            {/* Held in place until the list arrives, so no button changes or moves under the cursor. */}
+            {offersSupport && isLoading ? (
+              <Button className="invisible" tabIndex={-1} variant="outline" aria-hidden>
+                Contact support
+              </Button>
+            ) : offersSupport && installation ? (
               <ContactSupport manifest={installation.manifest} />
             ) : (
               <Button variant="outline" asChild>
