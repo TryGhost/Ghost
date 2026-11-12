@@ -91,7 +91,10 @@ export function compareKnownViolations(
 
 // Lint and contributor reports use this single scan and known-violations file.
 // Reports retain all findings; only lint uses the comparison to decide success.
-export function readDependencyBoundaries(repository: string) {
+// Given files, only they and what they import are scanned, as the commit hook
+// does. A partial scan cannot tell whether a known violation is gone, so it
+// reports none as stale.
+export function readDependencyBoundaries(repository: string, files: string[] = []) {
   const legacy = readLegacyServices(repository);
   const known = readKnownViolations(repository, legacy);
   const manifest = findPackageJSON('dependency-cruiser', import.meta.url);
@@ -104,7 +107,14 @@ export function readDependencyBoundaries(repository: string) {
   const cli = path.join(path.dirname(manifest), bin.depcruise);
   const result = spawnSync(
     process.execPath,
-    [cli, 'ghost/core', 'apps', '--config', '.dependency-cruiser.cjs', '--output-type', 'json'],
+    [
+      cli,
+      ...(files.length ? files : ['ghost/core', 'apps']),
+      '--config',
+      '.dependency-cruiser.cjs',
+      '--output-type',
+      'json',
+    ],
     {
       cwd: repository,
       encoding: 'utf8',
@@ -121,8 +131,14 @@ export function readDependencyBoundaries(repository: string) {
     process.stderr.write(result.stderr);
   }
   const graph: ICruiseResult = JSON.parse(result.stdout);
-  if (!graph.modules?.length || !Array.isArray(graph.summary?.violations)) {
-    throw new Error('Dependency analysis returned no modules or an invalid report.');
+  // The full scan must find modules. A file list can be empty of them, when
+  // every file given is one the scan skips.
+  if (!Array.isArray(graph.modules) || !Array.isArray(graph.summary?.violations)) {
+    throw new Error('Dependency analysis returned an invalid report.');
   }
-  return { graph, ...compareKnownViolations(graph, known, legacy) };
+  if (!files.length && !graph.modules.length) {
+    throw new Error('Dependency analysis returned no modules.');
+  }
+  const comparison = compareKnownViolations(graph, known, legacy);
+  return { graph, ...comparison, stale: files.length ? [] : comparison.stale };
 }
