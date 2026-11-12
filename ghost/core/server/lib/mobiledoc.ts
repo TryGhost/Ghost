@@ -1,11 +1,13 @@
-const path = require('path');
-const config = require('../../shared/config');
-const adapterManager = require('../services/adapter-manager').default;
+import path from 'path';
+import { CardFactory } from '@tryghost/kg-card-factory';
+import { cards as defaultCards } from '@tryghost/kg-default-cards';
+import * as imageTransform from '@tryghost/image-transform';
+import config from '../../shared/config';
+import adapterManager from '../services/adapter-manager';
 
-let cardFactory;
-let cards;
+let cards: ReturnType<CardFactory['createCard']>[] | null = null;
 
-module.exports = {
+export const mobiledoc = {
   get blankDocument() {
     return {
       version: '0.3.1',
@@ -19,15 +21,11 @@ module.exports = {
 
   get cards() {
     if (!cards) {
-      const { CardFactory } = require('@tryghost/kg-card-factory');
-      const { cards: defaultCards } = require('@tryghost/kg-default-cards');
-
-      cardFactory = new CardFactory({
+      const cardFactory = new CardFactory({
         siteUrl: config.get('url'),
         imageBaseUrl: config.get('urls:image') || '',
         imageOptimization: config.get('imageOptimization'),
-        canTransformImage(storagePath) {
-          const imageTransform = require('@tryghost/image-transform');
+        canTransformImage(storagePath: string) {
           const { ext } = path.parse(storagePath);
 
           // NOTE: the "saveRaw" check is smelly
@@ -49,7 +47,6 @@ module.exports = {
 
   // allow config changes to be picked up - useful in tests
   reload() {
-    cardFactory = null;
     cards = null;
   },
 };

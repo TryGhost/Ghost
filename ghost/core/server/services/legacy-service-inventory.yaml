@@ -307,7 +307,7 @@ services:
           - core/boot.js
           - core/server/lib/image/index.js
           - core/server/lib/lexical.js
-          - core/server/lib/mobiledoc.js
+          - core/server/lib/mobiledoc.ts
           - core/server/api/endpoints/authentication.js
           - core/server/api/endpoints/images.js
           - core/server/api/endpoints/media.js
