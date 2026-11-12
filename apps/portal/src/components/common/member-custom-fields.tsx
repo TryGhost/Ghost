@@ -215,7 +215,13 @@ function PhoneInput({
   const disabled = hasMode(['preview']) || isCookiesDisabled();
   const options = useMemo(() => phoneCountryOptions(countryOptions()), []);
   const phoneRef = useRef<HTMLDivElement>(null);
-  const [entry, setEntry] = useState(() => startPhoneEntry(value, navigator.languages ?? []));
+  const [entry, setEntry] = useState(() =>
+    startPhoneEntry(
+      value,
+      navigator.languages ?? [],
+      Intl.DateTimeFormat().resolvedOptions().timeZone,
+    ),
+  );
   // What this input last sent. A value that differs came from the site, such as the number it
   // kept after a save, and replaces what was typed.
   const sent = useRef(value);

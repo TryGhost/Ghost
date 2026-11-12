@@ -970,10 +970,16 @@ function showHeld(held: string, otherwise: PhoneCountry | undefined): PhoneEntry
 /**
  * A phone input as it opens on the number a field holds: the country that number is from, so
  * rewriting it as it is dialled at home keeps its country, and for a field holding none, the
- * country of the reader's language.
+ * country of the reader's `timeZone` where it names one, as it says where they are, else of their
+ * language.
  */
-export function startPhoneEntry(held: string, locales: readonly string[]): PhoneEntry {
-  return showHeld(held, phoneCountryOfLocales(locales));
+export function startPhoneEntry(
+  held: string,
+  locales: readonly string[],
+  timeZone?: string,
+): PhoneEntry {
+  const ofLocales = phoneCountryOfLocales(locales);
+  return showHeld(held, (!held && phoneCountryOfTimeZone(timeZone, ofLocales)) || ofLocales);
 }
 
 /**
@@ -1002,6 +1008,42 @@ export function pickCountry(
   const read = written === undefined ? undefined : readCallingCode(written);
   const typed = read ? `+${CALLING_CODES[country]} ${read.rest}` : entry.typed;
   return { entry: { typed, picked: country }, number: withCallingCode(typed, country) };
+}
+
+/** The time zones of a country, from the browser's own data: none where it has no such data. */
+function timeZonesOf(country: PhoneCountry): string[] {
+  try {
+    // `getTimeZones()`, or a `timeZones` getter in browsers that shipped it as one.
+    const locale = new Intl.Locale(`und-${country}`) as Intl.Locale & {
+      getTimeZones?: () => string[];
+      timeZones?: string[];
+    };
+    return locale.getTimeZones?.() ?? locale.timeZones ?? [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * The country a time zone is in, such as Portugal for `Europe/Lisbon`, from the browser's own time
+ * zone data: none for a zone no country has, such as `Etc/UTC`, or where the browser has no such
+ * data. The `likely` country is tried first, as reading every country's zones takes a moment.
+ * Safari names some zones newer than its own data does, such as `Asia/Kolkata`, and finds none.
+ */
+export function phoneCountryOfTimeZone(
+  timeZone: string | undefined,
+  likely?: PhoneCountry,
+): PhoneCountry | undefined {
+  // No country has UTC or an `Etc/` zone, so there's no need to read any country's zones.
+  if (!timeZone || timeZone === 'UTC' || timeZone.startsWith('Etc/')) {
+    return undefined;
+  }
+  if (likely && timeZonesOf(likely).includes(timeZone)) {
+    return likely;
+  }
+  return (Object.keys(CALLING_CODES) as PhoneCountry[]).find((country) =>
+    timeZonesOf(country).includes(timeZone),
+  );
 }
 
 /**
