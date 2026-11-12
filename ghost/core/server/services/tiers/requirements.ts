@@ -83,8 +83,8 @@ type ReadRow = z.infer<typeof ReadRow>;
  * field it names, or null when it names none.
  */
 type BoundPorts = (
-  db: Knex,
   ports: readonly string[],
+  executor: Knex,
 ) => Promise<ReadonlyMap<string, string | null>>;
 
 /**
@@ -113,17 +113,15 @@ export class TierRequirements {
 
   /**
    * What each of these tiers' members must give, by tier, as checkouts would ask for it: a
-   * requirement is left out while one of its ports is bound to no custom field.
+   * requirement is left out while one of its ports is bound to no custom field. Given a
+   * transaction as `executor` it reads inside that transaction.
    */
   async forTiers(
     tiers: ReadonlyArray<{ id: string; type: string }>,
+    executor: Knex = this.knex,
   ): Promise<Map<string, TierRequirement[]>> {
-    // Only paid tiers have requirements, so nothing is read for the others. Read in one
-    // transaction, as the bindings are a second query, so a save committing in between can't
-    // pair one save's requirements with another's bindings.
-    const listed = tiers.some(({ type }) => type === 'paid')
-      ? await this.knex.transaction((trx) => this.browse({ transacting: trx }))
-      : [];
+    // Only paid tiers have requirements, so nothing is read for the others.
+    const listed = tiers.some(({ type }) => type === 'paid') ? await this.browse(executor) : [];
 
     return new Map(
       tiers.map((tier): [string, TierRequirement[]] => [
@@ -141,22 +139,26 @@ export class TierRequirements {
    * Every requirement as tiers list it, with the paid tiers it covers: one is left out while one
    * of its ports is bound to no custom field. A port whose field is archived still counts, as
    * checkouts still ask for it and drop the answer.
+   *
+   * Read in one transaction, as the bindings are a second query, so a save committing in between
+   * can't pair one save's requirements with another's bindings. Given a transaction as `executor`
+   * it reads inside that transaction; given a plain connection it opens its own.
    */
-  async browse({
-    transacting,
-  }: {
-    transacting: Knex.Transaction;
-  }): Promise<Array<TierRequirement & { tierIds: RequiredTiers }>> {
-    const required = await this.readRequired(transacting);
-    const bound = await this.boundPorts(
-      transacting,
-      required.flatMap(({ name }) => portsOf(name)),
-    );
-    return required.flatMap((requirement) =>
-      portsOf(requirement.name).every((port) => bound.has(port))
-        ? [listedAs(requirement, bound)]
-        : [],
-    );
+  async browse(
+    executor: Knex = this.knex,
+  ): Promise<Array<TierRequirement & { tierIds: RequiredTiers }>> {
+    return ensureTransaction(executor, async (trx) => {
+      const required = await this.readRequired(trx);
+      const bound = await this.boundPorts(
+        required.flatMap(({ name }) => portsOf(name)),
+        trx,
+      );
+      return required.flatMap((requirement) =>
+        portsOf(requirement.name).every((port) => bound.has(port))
+          ? [listedAs(requirement, bound)]
+          : [],
+      );
+    });
   }
 
   /**

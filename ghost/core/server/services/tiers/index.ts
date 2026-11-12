@@ -19,7 +19,7 @@ export default defineService('Tiers', async () => {
   // themselves stay cached.
   const requirements = new TierRequirements({
     knex,
-    boundPorts: (db, ports) => bindings.boundPorts(db, ports),
+    boundPorts: (ports, executor) => bindings.boundPorts(ports, executor),
     logging,
   });
 

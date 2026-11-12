@@ -304,9 +304,13 @@ export class StripeCheckoutConfigService {
    *
    * A collected part is on while tiers list its requirement. Any of its fields being deleted
    * takes its binding with it, which reads as off.
+   *
+   * Read in one transaction, as the requirements are a second query, so a save committing in
+   * between can't pair one save's bindings with another's requirements. Given a transaction as
+   * `executor` it reads inside that transaction; given a plain connection it opens its own.
    */
-  async read(): Promise<StripeCheckoutConfig> {
-    return this.readSaved();
+  async read(executor: Knex = this.knex): Promise<StripeCheckoutConfig> {
+    return ensureTransaction(executor, (trx) => this.readSaved(trx));
   }
 
   /**
@@ -315,16 +319,21 @@ export class StripeCheckoutConfigService {
    *
    * Parts given unsaved take the place of the saved ones, refused as saving them would be, so a
    * preview asks for each part exactly as checkouts would once it was saved. Nothing is written.
+   * Given a transaction as `executor` it reads inside that transaction; given a plain connection
+   * it opens its own.
    */
-  async readForCheckout(unsaved: RequestedParts = {}): Promise<CheckoutSessionConfig> {
+  async readForCheckout(
+    unsaved: RequestedParts = {},
+    executor: Knex = this.knex,
+  ): Promise<CheckoutSessionConfig> {
     const changes = changesOf(unsaved);
     // Checked in the same transaction as the read, so both see the same tiers and fields.
-    const saved = changes.length
-      ? await this.knex.transaction(async (trx) => {
-          await assertTargets(trx, changes, this.fields);
-          return this.readSaved(trx);
-        })
-      : await this.readSaved();
+    const saved = await ensureTransaction(executor, async (trx) => {
+      if (changes.length) {
+        await assertTargets(trx, changes, this.fields);
+      }
+      return this.readSaved(trx);
+    });
     const config = { ...saved, ...unsaved };
     return {
       design: config.design,
@@ -338,13 +347,9 @@ export class StripeCheckoutConfigService {
 
   /**
    * The config as saved, with the paid tiers each part is required on, and the custom field each
-   * port is bound to. Read in one transaction, as the requirements are a second query, so a save
-   * committing in between can't pair one save's bindings with another's requirements.
+   * port is bound to.
    */
-  private async readSaved(db?: Knex.Transaction): Promise<StripeCheckoutConfig> {
-    if (!db) {
-      return this.knex.transaction((trx) => this.readSaved(trx));
-    }
+  private async readSaved(db: Knex.Transaction): Promise<StripeCheckoutConfig> {
     const rows = z.array(ReadRow).parse(
       await db(`${CONFIG_TABLE} as config`)
         // Every port in one join, so the rows grow with the ports rather than with a join per
@@ -369,7 +374,7 @@ export class StripeCheckoutConfigService {
     }
     // A part is on only while tiers list its requirement, so checkouts never ask for more than
     // tiers say their members must give.
-    const listed = await this.requirements().browse({ transacting: db });
+    const listed = await this.requirements().browse(db);
     const { design } = z.decode(this.configRow, first);
     return {
       design,
@@ -411,7 +416,7 @@ export class StripeCheckoutConfigService {
 
     return ensureTransaction(executor, async (trx) => {
       await assertTargets(trx, changes, this.fields);
-      const before = await this.requirements().browse({ transacting: trx });
+      const before = await this.requirements().browse(trx);
 
       await trx(CONFIG_TABLE)
         .insert({
@@ -436,10 +441,7 @@ export class StripeCheckoutConfigService {
       }
       await this.recordAction(trx, { context, subject: saved.id });
       return {
-        changedRequirements: !isDeepStrictEqual(
-          before,
-          await this.requirements().browse({ transacting: trx }),
-        ),
+        changedRequirements: !isDeepStrictEqual(before, await this.requirements().browse(trx)),
       };
     });
   }
