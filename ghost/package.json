@@ -266,7 +266,6 @@
     "@types/supertest": "catalog:",
     "@typescript/native": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "chai": "catalog:",
     "cssnano": "7.1.9",
     "esbuild": "catalog:",
     "eslint": "catalog:",
