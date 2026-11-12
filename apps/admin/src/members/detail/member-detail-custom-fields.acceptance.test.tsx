@@ -281,7 +281,7 @@ describe('Member detail custom fields', () => {
     const listWidth = list.element().getBoundingClientRect().width;
     expect(Math.abs(listWidth - (phoneInputWidth ?? 0))).toBeLessThanOrEqual(2);
     await page.getByPlaceholder('Search countries...').fill('United Kingdom');
-    await page.getByRole('option', { name: 'United Kingdom +44' }).click();
+    await page.getByRole('option', { name: 'United Kingdom (+44)' }).click();
     await expect
       .element(modal().getByRole('combobox', { name: 'Country code' }))
       .toHaveTextContent('+44');
