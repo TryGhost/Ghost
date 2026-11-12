@@ -40,6 +40,10 @@ export default defineService('Better Auth', async (): Promise<GhostAuth> => {
       const token = await passwordreset.generateToken(email, api.settings);
       await passwordreset.sendResetNotification(token, api.mail);
     },
+    // Only `true` turns it on, as in `auth/session`
+    isStaffDeviceVerificationEnabled: () => config.get('security:staffDeviceVerification') === true,
+    getRequestOrigin: (headers) =>
+      require('../session').default.getOriginOfRequest({ headers: Object.fromEntries(headers) }),
   });
   // betterAuth() defers its setup to this promise; awaiting it fails boot, not the first request
   await auth.$context;

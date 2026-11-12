@@ -40,6 +40,8 @@ function betterAuth() {
     logger: { debug() {}, info() {}, warn() {}, error() {} },
     limiters: { globalBlock: allow, globalReset: allow, userLogin: allow, userReset: allow },
     sendPasswordResetEmail: async () => {},
+    isStaffDeviceVerificationEnabled: () => false,
+    getRequestOrigin: (headers) => headers.get('origin'),
   });
   const origin = urlUtils.getAdminOrigin();
 
