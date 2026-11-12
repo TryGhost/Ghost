@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const SessionStore = require('../../../../../core/server/auth/session/session-store');
+const SessionStore = require('../../../../../core/server/auth/session/session-store').default;
 const { Session } = require('../../../../../core/server/models/session');
 const EventEmitter = require('events');
 const { Store } = require('express-session');
