@@ -10,7 +10,7 @@ The member code notifies the automations API of an event. Matching automations e
 
 Ghost's boot process starts `AutomationsService`. It responds to poll requests and keeps processing scheduled with an in-memory timer and external scheduler callbacks. The poller runs inside the Ghost process, not as a separate worker process.
 
-The poller claims ready steps, checks current member eligibility, and executes the actions. It records outcomes through the API and requests another poll when needed. Disabled automations and ineligible members stop progressing. Older welcome-email runs still have a separate poller.
+The poller claims ready steps, checks current member eligibility, and executes the actions. It records outcomes through the API and requests another poll when needed. Disabled automations and ineligible members stop progressing, but disabling does not cancel freshly claimed steps, which may still execute. Older welcome-email runs still have a separate poller.
 
 ## Responsibilities
 
