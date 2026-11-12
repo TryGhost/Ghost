@@ -10,7 +10,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'With admin7Design on, standard tabs share a pill shape, primary selected fill, and gray inactive fill with dark text. Compact variants retain their smaller size. With the flag off, each variant keeps its previous appearance. KPI tabs retain their chart-card layout.',
+          'Tabs default to underline with admin7Design on and segmented with it off. Explicit variants keep their own appearance. Button tabs, including Settings previews, share PageMenu’s muted active fill, outlined inactive items, stable active hover, and ghost-button pressed background. KPI tabs retain their chart-card layout.',
       },
     },
   },
@@ -29,9 +29,8 @@ type Story = StoryObj<typeof Tabs>;
 export const Default: Story = {
   args: {
     defaultValue: 'account',
-    variant: 'button',
     children: [
-      <TabsList key="list" className="grid w-full grid-cols-2">
+      <TabsList key="list">
         <TabsTrigger value="account">Account</TabsTrigger>
         <TabsTrigger value="password">Password</TabsTrigger>
       </TabsList>,
@@ -49,7 +48,7 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          'Admin 7 button tabs use a primary selected fill with contrasting text and a gray inactive fill. Tabs and PageMenu share the same color treatment.',
+          'Default tabs use underline styling in Admin 7. Turn the design flag off to compare the previous segmented default.',
       },
     },
   },
@@ -82,7 +81,8 @@ export const StableSelectionWidth: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Button tabs keep the same font weight and width when the active tab changes.',
+        story:
+          'Use button tabs for preview navigation, as in Theme, Design, and Portal settings. Selection uses a muted fill and inactive tabs have outlines in Admin 7; widths stay stable when switching.',
       },
     },
   },
@@ -141,7 +141,7 @@ export const Segmented: Story = {
     docs: {
       description: {
         story:
-          'Segmented tabs become separate pills in Admin 7. Turn the design flag off to compare the previous segmented appearance.',
+          'Use segmented tabs for a control with a shared background and a distinct selected segment.',
       },
     },
   },
@@ -188,7 +188,48 @@ export const Underline: Story = {
     docs: {
       description: {
         story:
-          'Underline tabs become pills in Admin 7. Turn the design flag off to compare the previous underline appearance.',
+          'Use underline tabs to switch sections within a page or panel. In Admin 7, 14px labels have 10px vertical padding, regular inactive text and semibold selected text. Hidden semibold label copies reserve width without duplicating count badges. The 1px indicator overlaps the divider with no vertical scrolling. Flag-off styling is preserved.',
+      },
+    },
+  },
+};
+
+export const UnderlineStableSelectionWidth: Story = {
+  args: {
+    ...StableSelectionWidth.args,
+    variant: 'underline',
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Switch between long underline labels: the selected text becomes semibold while all tab widths and positions remain fixed in Admin 7.',
+      },
+    },
+  },
+};
+
+export const UnderlineRichLabels: Story = {
+  render: () => (
+    <Tabs defaultValue="order" variant="underline">
+      <TabsList>
+        <TabsTrigger value="order">
+          <span data-testid="rich-tab-label">
+            Order <strong>details</strong>
+          </span>
+        </TabsTrigger>
+        <TabsTrigger data-testid="direct-rich-tab-label" value="direct">
+          Order <strong>details</strong>
+        </TabsTrigger>
+        <TabsTrigger value="shipping">Shipping details</TabsTrigger>
+      </TabsList>
+    </Tabs>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Inline formatting keeps the space between words when underline labels reserve their selected width.',
       },
     },
   },

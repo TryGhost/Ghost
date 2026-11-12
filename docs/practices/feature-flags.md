@@ -119,10 +119,22 @@ Test the flag boundary and preserve existing behavioral coverage. Styling-only
 changes need visual review, not tests that assert appearance. Keep permanent
 permission and backend capability checks independent of the temporary flag.
 
-With `admin7Design` on, Shade's standard `Tabs` and route-based `PageMenu`
-share pill styling and selected, inactive, and hover colors. Compact tabs keep
-their smaller size, and KPI tabs keep their chart-card layout. Screens do not
-need their own flag branch for this appearance.
+With `admin7Design` on, Shade's `Tabs` defaults to underline and respects
+explicit variants. Button tabs, including Settings previews, and route-based
+`PageMenu` use the previous inactive fill for selection, while inactive items
+have a transparent surface and an outline matching the header divider
+(`border-border`). The active fill stays unchanged on hover; pressed and
+expanded items use the ghost-button background. Compact button tabs keep their
+smaller size, and KPI tabs keep their chart-card layout. With the flag off,
+the default remains segmented and explicit underline tabs keep their previous
+styling. Only the enabled design uses a 1px indicator aligned with the divider
+and prevents vertical scrolling within the tab row. Underline tabs use 14px
+labels and 10px vertical padding, with regular inactive text and semibold
+selected text. Hidden semibold label copies reserve the selected width, so
+switching tabs does not move adjacent tabs. Copies are hidden from assistive
+technology, and count badges and icons are rendered only once. Shared field surfaces are
+flat; the enabled design no longer adds a resting shadow. Screens do not need
+their own flag branch for these shared appearances.
 
 The pill-controls milestone is generally available in Admin. Standalone
 ActivityPub uses Shade's current default.
@@ -150,7 +162,12 @@ preserves the docked sidebar and the separate Settings sidebar.
 
 The `admin7Design` milestone also sets column headers in a small uppercase label
 style. Section headings on member details, tag details and Settings share one
-style, and member stats and list text follow the prototype.
+style, and member stats and list text follow the prototype. Settings sidebar
+group labels and content headings refine this through `settings-heading`:
+`--font-weight-settings-heading` is 540 and `--tracking-settings-heading` is
+-0.01em. These tokens apply only with the flag on, in both light and dark mode;
+member and tag headings keep their existing size and weight, with slightly
+looser letter spacing through `--tracking-section-heading` at -0.01em.
 
 The `admin7Design` milestone also gives text-entry fields 4px corners and 14px
 text. Checkboxes, radios, Filter bar items and Koenig keep their current look.
@@ -173,9 +190,9 @@ between their desktop columns, hidden when the columns stack.
 Meta data has no helper description under its heading. At desktop widths, the metadata
 column is 400px wide to accommodate previews, with the same 80px gap as member
 details. The columns stack below the sidebarlg breakpoint, with 32px between them.
-Metadata navigation uses pill-shaped button tabs. Button and button-small tabs
-use a primary selected fill with contrasting text, and muted inactive fills with
-foreground text. Metadata fields and previews sit directly on the page without
+Metadata navigation uses underline tabs. Button and button-small tabs
+use a muted selected fill and outlined inactive items with foreground text,
+matching page navigation and Settings preview controls. Metadata fields and previews sit directly on the page without
 an inset background or padding. The flag-off design keeps its underline tabs and
 outlined cards; tag editing, uploads, previews and saving use the same behavior
 in both designs.

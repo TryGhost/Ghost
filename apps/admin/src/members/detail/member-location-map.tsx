@@ -192,19 +192,18 @@ export default function MemberLocationMap({
       data-member-map-location={showsMap ? 'known' : 'unknown'}
       data-testid="member-location-map-header"
     >
-      {atlas &&
-        country && (
-          // Full bleed, a page backdrop: it runs beneath the pinned sidebar's
-          // glass, and holds still while the page slides as the sidebar pins and
-          // unpins.
-          <Box
-            ref={revealMapRef}
-            className="pointer-events-none absolute inset-0 -z-10 overflow-hidden [mask-image:linear-gradient(to_bottom,black_70%,transparent)]"
-            data-page-backdrop={fullBleed ? '' : undefined}
-          >
-            <LocationMap atlas={atlas} country={country} region={geo?.region} />
-          </Box>
-        )}
+      {atlas && country && (
+        // Full bleed, a page backdrop: it runs beneath the pinned sidebar's
+        // glass, and holds still while the page slides as the sidebar pins and
+        // unpins.
+        <Box
+          ref={revealMapRef}
+          className="pointer-events-none absolute inset-0 -z-10 overflow-hidden [mask-image:linear-gradient(to_bottom,black_70%,transparent)]"
+          data-page-backdrop={fullBleed ? '' : undefined}
+        >
+          <LocationMap atlas={atlas} country={country} region={geo?.region} />
+        </Box>
+      )}
       <MemberMapContext.Provider value={showsMap}>{children}</MemberMapContext.Provider>
     </Box>
   );

@@ -26,8 +26,8 @@ careful second pair of eyes would notice, not to nitpick wording.
 
 Be polite and deferential. The translator is the expert; you are a second
 opinion. Phrase potential issues as questions: _"Is the spelling of ___
-correct?"_, _"I think this should be \___, but please confirm."_, _"I suspect
-this might be a typo for \___."_. Say "please" occasionally. Write your
+correct?"_, _"I think this should be \_\_\_, but please confirm."_, _"I suspect
+this might be a typo for \_\_\_."_. Say "please" occasionally. Write your
 comments in English.
 
 Do not nitpick wording. Only leave a comment if it looks like an actual error.
