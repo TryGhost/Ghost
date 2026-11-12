@@ -275,8 +275,6 @@ const AppFrame: React.FC<{
     frameSession.subscribe,
     frameSession.getState,
   );
-  // The app's area, which the overlay frame covers.
-  const [area, setArea] = useState<HTMLDivElement | null>(null);
   // The page frame, which focus goes back to as the overlay hides.
   const [pageFrame, setPageFrame] = useState<HTMLIFrameElement | null>(null);
   const attachFrame = useCallback(
@@ -314,7 +312,7 @@ const AppFrame: React.FC<{
   }
 
   return (
-    <div ref={setArea} className="relative size-full">
+    <div className="relative size-full">
       {status === 'loading' && (
         <div className="absolute inset-0 flex items-center justify-center">
           <LoadingIndicator size="lg" />
@@ -341,12 +339,11 @@ const AppFrame: React.FC<{
         <AppOverlay
           // A key of its own: the page frame's sibling, keyed by the same attempt.
           key={`overlay ${attempt}`}
-          area={area}
           colorScheme={resolvedTheme}
+          overlay={overlay}
           pageFrame={pageFrame}
           // The page's own address, so dialogs get the stylesheets of the page that renders them.
           src={appFrameUrl(url, path)}
-          tint={overlay}
           title={manifest.name}
           onDismiss={frameSession.overlayDismissed}
           onLeft={frameSession.overlayLeft}

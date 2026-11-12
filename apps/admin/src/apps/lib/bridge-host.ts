@@ -32,9 +32,9 @@ export interface AppFrameHandlers {
   /** Takes the publisher to `place`, and returns whether Admin navigated there. */
   open(place: Place): boolean;
   /**
-   * Shows the overlay frame and Admin's tint, or changes the tint of one already shown, and
-   * returns whether Admin did. Admin shows it only while the app is started, and only when the
-   * publisher has just clicked or typed in it.
+   * Shows the overlay frame and Admin's tint, or changes the tint or width of one already shown,
+   * and returns whether Admin did. Admin shows it only while the app is started, and only when
+   * the publisher has just clicked or typed in it.
    */
   overlayShown(options: OverlayOptions): boolean;
   /** Hides the overlay frame and Admin's tint. */

@@ -8,16 +8,29 @@ describe('the overlay options', () => {
     expectTypeOf<z.output<typeof OverlayOptionsSchema>>().toEqualTypeOf<OverlayOptions>();
   });
 
-  it('name a dialog’s tint or a sheet’s', () => {
-    expect(OverlayOptionsSchema.parse({ tint: 'dialog' })).toEqual({ tint: 'dialog' });
-    expect(OverlayOptionsSchema.parse({ tint: 'sheet' })).toEqual({ tint: 'sheet' });
+  it('name a dialog’s tint or a sheet’s, and its width', () => {
+    expect(OverlayOptionsSchema.parse({ tint: 'dialog', width: 512 })).toEqual({
+      tint: 'dialog',
+      width: 512,
+    });
+    expect(OverlayOptionsSchema.parse({ tint: 'sheet', width: 384 })).toEqual({
+      tint: 'sheet',
+      width: 384,
+    });
   });
 
-  it('refuse a tint Admin doesn’t know, and a size or position, which Admin decides', () => {
+  it('refuse a tint Admin doesn’t know, a width that isn’t whole pixels, and a position', () => {
     for (const options of [
-      { tint: 'none' },
-      {},
+      { tint: 'none', width: 512 },
+      { tint: 'dialog' },
+      { tint: 'dialog', width: 0 },
+      { tint: 'dialog', width: -512 },
+      { tint: 'dialog', width: 512.5 },
+      { tint: 'dialog', width: '512' },
+      { tint: 'dialog', width: Number.POSITIVE_INFINITY },
+      { tint: 'dialog', width: 512, left: 0 },
       { tint: 'dialog', rect: { x: 0, y: 0, width: 100, height: 100 } },
+      {},
       'dialog',
       null,
     ]) {

@@ -172,6 +172,23 @@ describe('a dialog in an app’s overlay', () => {
     expect(fake.holds[0].tint).toBe('sheet');
   });
 
+  it('leaves a sheet on any side but the right in the page, where Admin can’t show it', async () => {
+    render(
+      <ShadeApp darkMode={false} overlay={fake.overlay}>
+        <Sheet open>
+          <SheetContent data-testid="sheet" side="left">
+            <SheetTitle>Settings</SheetTitle>
+            <SheetDescription>Description</SheetDescription>
+          </SheetContent>
+        </Sheet>
+      </ShadeApp>,
+    );
+
+    const sheet = await screen.findByTestId('sheet');
+    expect(fake.container.contains(sheet)).toBe(false);
+    expect(fake.holds.length).toBe(0);
+  });
+
   it('leaves a non-modal dialog in the page, which stays usable around it', async () => {
     render(
       <ShadeApp darkMode={false} overlay={fake.overlay}>

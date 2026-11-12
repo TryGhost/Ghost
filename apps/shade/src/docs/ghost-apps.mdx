@@ -99,7 +99,7 @@ import {ShadeApp} from '@tryghost/shade/app';
 </ShadeApp>
 ```
 
-Pass the app SDK's `ghost.overlay` as `overlay`. Shade's dialogs, alert dialogs and sheets then cover all of Admin, as Admin's own do, rather than only the app's page, and the menus, popovers, selects and tooltips inside them follow. Without it they render in the page.
+Pass the app SDK's `ghost.overlay` as `overlay`. Shade's dialogs, alert dialogs and sheets then cover all of Admin, as Admin's own do, rather than only the app's page, and the menus, popovers, selects and tooltips inside them follow. They sit where Admin's own would: a dialog centred on the window, whichever way Admin's sidebar is, and a sheet against the window's right edge. Admin shows only the part of the window the dialog or sheet on top fills, so keep a dialog's content, and anything it opens, within its panel's width. A sheet on another side, and anything without `overlay`, renders in the page.
 
 `ShadeApp` also renders the toaster. Show toasts with `toast` from `@tryghost/shade/components`, such as `toast.success('Saved')`. Don't add `sonner` as a dependency: a second copy of it shows nothing.
 
