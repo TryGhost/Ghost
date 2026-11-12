@@ -142,7 +142,6 @@ catalog:
   better-sqlite3: 12.11.1
   body-parser: 1.20.9
   bson-objectid: 2.0.4
-  chai: 4.5.0
   chalk: 4.1.2
   cheerio: 1.2.0
   chrono-node: 2.10.3
