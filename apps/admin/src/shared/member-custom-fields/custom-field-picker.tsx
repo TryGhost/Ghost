@@ -1,3 +1,4 @@
+import { ArchivedBadge } from '@/shared/archived-badge';
 import CustomFieldIcon from '@/shared/member-custom-fields/custom-field-icon';
 import {
   Combobox,
@@ -145,6 +146,7 @@ export function CustomFieldPicker({
                 <span className="flex items-center gap-2">
                   <CustomFieldIcon className="size-4 shrink-0" type={selected.type} />
                   <span className="truncate">{selected.name}</span>
+                  {selected.status === 'archived' && <ArchivedBadge />}
                 </span>
               ) : (
                 'Select...'
@@ -188,6 +190,7 @@ export function CustomFieldPicker({
                       >
                         <CustomFieldIcon className="size-4" type={field.type} />
                         <span className="truncate">{field.name}</span>
+                        {field.status === 'archived' && <ArchivedBadge />}
                         {value === field.key && <CommandCheck />}
                       </CommandItem>
                     ))}
