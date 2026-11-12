@@ -41,10 +41,26 @@ describe('Backup', function () {
     assert.equal(await fs.readFile(filePath, 'utf8'), JSON.stringify(exportData));
   });
 
-  it('should read back a backup it wrote', async function () {
+  it('should stream back a backup it wrote', async function () {
     await dbBackup.backup();
 
-    assert.deepEqual(await dbBackup.readBackup('test.json'), exportData);
+    const stream = await dbBackup.readBackupStream('test.json');
+    const chunks = [];
+    for await (const chunk of stream) {
+      chunks.push(chunk);
+    }
+
+    assert.deepEqual(JSON.parse(Buffer.concat(chunks).toString('utf8')), exportData);
+  });
+
+  it('should only read backups from the data directory', async function () {
+    await dbBackup.backup();
+
+    const stream = await dbBackup.readBackupStream('../data/test.json');
+    assert.ok(stream, 'path segments are ignored');
+    stream.destroy();
+
+    assert.equal(await dbBackup.readBackupStream('missing.json'), null);
   });
 
   it('should remove a partially written file when serialization fails', async function () {

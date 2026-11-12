@@ -58,7 +58,7 @@ const controller = {
     // oxlint-disable-next-line ghost/ghost-custom/max-api-complexity
     async query(frame) {
       if (frame.options.filename) {
-        const backup = await dbBackup.readBackup(frame.options.filename);
+        const backup = await dbBackup.readBackupStream(frame.options.filename);
 
         if (!backup) {
           throw new errors.NotFoundError();
