@@ -1,6 +1,6 @@
 const ghostBookshelf = require('./base');
 const urlUtils = require('../../shared/url-utils').default;
-const mobiledocLib = require('../lib/mobiledoc');
+const { mobiledoc: mobiledocLib } = require('../lib/mobiledoc');
 const lexicalLib = require('../lib/lexical');
 const _ = require('lodash');
 
