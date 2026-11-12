@@ -23,7 +23,6 @@ export const appUnverifiedDeveloperBadge = 'app-unverified-developer-badge';
 export const appPage = 'app-page';
 export const appFrame = 'app-frame';
 export const appFooter = 'app-footer';
-export const appDevelopmentBanner = 'app-development-banner';
 export const appNotResponding = 'app-not-responding';
 export const appUnavailable = 'app-unavailable';
 export const appNotInstalled = 'app-not-installed';
