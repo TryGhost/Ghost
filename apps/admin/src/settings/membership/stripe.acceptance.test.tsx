@@ -71,6 +71,44 @@ describe('Stripe settings', () => {
     });
   });
 
+  it('stays connected and shows the error when setting the tier prices fails', async () => {
+    fakeSettingsScreens();
+    fakeTiers([freeTier]);
+    const settingsApi = fakeAdminEndpoint('PUT', '/settings/', ({ body }) => {
+      const request = body as { settings: Array<{ key: string; value: string }> };
+      return settingsResponse({
+        settings: {
+          stripe_connect_display_name: 'Dummy',
+          stripe_connect_livemode: false,
+          stripe_connect_account_id: 'acct_123',
+          stripe_connect_publishable_key: 'pk_test_123',
+          stripe_connect_secret_key: 'sk_test_123',
+          ...Object.fromEntries(request.settings.map(({ key, value }) => [key, value])),
+        },
+      });
+    });
+    fakeAdminEndpoint(
+      'PUT',
+      /^\/tiers\/[^/]+\/$/,
+      { errors: [{ message: 'Tier prices could not be saved.' }] },
+      { status: 500 },
+    );
+    startConnectionInThisTab();
+    await renderAdminApp(
+      `/settings/stripe-connect?${new URLSearchParams({ secure_key: accountKey })}`,
+      { labs, boot: bridgeConfig() },
+    );
+
+    // The toast comes first: the prices fail before Portal's plans are saved.
+    await expect.element(settingsScreen.errorToast()).toBeVisible();
+    const modal = settingsScreen.stripeModal();
+    await expect.element(modal.getByText(/You are connected with Stripe!/)).toBeVisible();
+    expect(settingsApi.requests.map((request) => request.body)).toEqual([
+      { settings: [{ key: 'stripe_connect_integration_token', value: accountKey }] },
+      { settings: [{ key: 'portal_plans', value: '["free","monthly","yearly"]' }] },
+    ]);
+  });
+
   it('shows a rejected secure key as an error with the Connect button, and has no paste box', async () => {
     fakeSettingsScreens();
     fakeTiers([freeTier]);
@@ -205,7 +243,10 @@ describe('Stripe settings', () => {
     expect(settingsApi.requests).toHaveLength(0);
   });
 
-  it('with an older Ghost Core, connects Stripe with a pasted secure key even with the lab on', async () => {
+  it.each([
+    ['an older Ghost Core, even with the lab on', undefined],
+    ['a Ghost Core with the lab off', false],
+  ])('with %s, connects Stripe with a pasted secure key', async (_core, stripeConnectBridge) => {
     fakeSettingsScreens();
     fakeTiers([freeTier]);
     const settingsApi = fakeAdminEndpoint('PUT', '/settings/', ({ body }) => {
@@ -227,11 +268,17 @@ describe('Stripe settings', () => {
       });
     });
     fakeAdminEndpoint('PUT', /^\/tiers\/[^/]+\/$/, ({ body }) => body);
-    // An older Core leaves stripeConnectBridge out and sends connections to
-    // stripe.ghost.org's paste page, so a key in the address is ignored.
+    // An older Core leaves stripeConnectBridge out, and a newer one with the
+    // lab off says false. Either way connections go to stripe.ghost.org's
+    // paste page, so a key in the address is ignored.
+    const response = configResponse();
+    response.config.stripeConnectBridge = stripeConnectBridge;
     await renderAdminApp(
       `/settings/stripe-connect?${new URLSearchParams({ secure_key: accountKey })}`,
-      { labs },
+      {
+        labs: { oauthBridge: stripeConnectBridge === undefined },
+        boot: { browseConfig: { response } },
+      },
     );
 
     const modal = settingsScreen.stripeModal();
