@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import { AppManifestSchema } from '../../src/manifest/index.ts';
+import { URL_MAX_LENGTH } from '../../src/manifest/limits.ts';
 import { devManifest, devOptions, errorsOf, manifest, manifestOf } from './helpers.ts';
 
 describe('shape', () => {
@@ -211,6 +212,9 @@ describe('author', () => {
       'mailto:support@example.com%00',
       'mailto:sup%01port@example.com',
       'mailto:support@example.com%E2%80%AE',
+      'mailto:support@example.com%E1%85%9F',
+      'mailto:sup%E2%A0%80port@example.com',
+      `mailto:${'a'.repeat(URL_MAX_LENGTH)}@example.com`,
     ]) {
       expect(errorsOf(manifest({ author: { name: 'A', url } }))).toEqual([
         { path: 'author.url', message: 'Expected a mailto: link to one email address' },

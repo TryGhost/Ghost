@@ -70,10 +70,12 @@ const pageChromeClassName = [
  * footprint, whichever is further right, so centred content with room to
  * spare is unaffected and narrower viewports get symmetric padding that keeps
  * it centred. Below the desktop breakpoint the mobile layout takes over.
+ * An app page's footer drops the margin that evens it up beside a pinned nav.
  */
 const compactPageChromeClassName = [
   '[--compact-page-padding:max(0px,calc(var(--floating-sidebar-footprint)_-_var(--page-gutter)))]',
   'px-(--compact-page-padding)',
+  '[&_[data-app-footer]]:mr-0',
   '[--page-bleed-start:var(--compact-page-padding)]',
   '[--page-bleed-end:var(--compact-page-padding)]',
 ].join(' ');

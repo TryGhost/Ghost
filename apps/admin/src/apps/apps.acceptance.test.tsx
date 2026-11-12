@@ -650,9 +650,37 @@ describe('Managing apps', () => {
 
       await expect.element(appsScreen.frame()).toBeVisible();
       const nav = document.querySelector('[data-sidebar=sidebar]')!.getBoundingClientRect();
-      const footer = appsScreen.footer().element().getBoundingClientRect();
-      expect(footer.left - nav.right).toBe(window.innerWidth - footer.right);
-      expect(footer.left - nav.right).toBeGreaterThan(0);
+      const footer = appsScreen.footer().element();
+      await expect
+        .poll(() => footer.getBoundingClientRect().left - nav.right)
+        .toBe(window.innerWidth - footer.getBoundingClientRect().right);
+      expect(footer.getBoundingClientRect().left - nav.right).toBeGreaterThan(0);
+    });
+
+    it('keeps the footer under the frame beside Admin 7’s unpinned nav', async () => {
+      allowUnhandledRequests();
+      await fakeAppPage(installation());
+      const me = currentUserResponse();
+      me.users[0].accessibility = JSON.stringify({
+        navigation: {
+          expanded: { posts: true, members: true },
+          menu: { visible: true, mode: 'compact' },
+        },
+      });
+
+      await renderAdminApp(APP_ROUTE, {
+        labs: { ...labs, admin7Design: true },
+        boot: { browseMe: { response: me } },
+      });
+
+      await expect.element(appsScreen.frame()).toBeVisible();
+      // Admin pads the page evenly beside the unpinned nav, so the footer runs as wide as the frame.
+      const frame = appsScreen.frame().element();
+      const footer = appsScreen.footer().element();
+      await expect
+        .poll(() => footer.getBoundingClientRect().right)
+        .toBe(frame.getBoundingClientRect().right);
+      expect(footer.getBoundingClientRect().left).toBe(frame.getBoundingClientRect().left);
     });
 
     it('keeps the footer beside Admin 7’s pinned nav, with the same space at both ends', async () => {
@@ -721,6 +749,19 @@ describe('Managing apps', () => {
 
       await expect.element(appsScreen.needsApproval()).toBeInTheDocument();
       await expect.element(appsScreen.footer()).toHaveTextContent('Podcast by Example Audio');
+      // Content taller than the page scrolls above the footer, which stays in view.
+      await page.viewport(1280, 360);
+      try {
+        await expect
+          .poll(() => appsScreen.footer().element().getBoundingClientRect().bottom)
+          .toBeLessThanOrEqual(window.innerHeight);
+        const content = appsScreen.footer().element().parentElement!.previousElementSibling!;
+        expect(content.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+          appsScreen.footer().element().getBoundingClientRect().top,
+        );
+      } finally {
+        await page.viewport(1280, 800);
+      }
     });
 
     it('offers support in place of the footer when Ghost can’t use the app’s manifest', async () => {

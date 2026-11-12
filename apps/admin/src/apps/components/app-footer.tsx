@@ -9,10 +9,14 @@ import { type AppIconSource, AppNavIcon } from './app-icon';
  * The footer's text keeps the gutter of Shade's page templates, so it lines up with the app's own
  * content. Beside the nav, Admin's page area starts 8px further from the nav than it ends from the
  * window's right edge, with either layout, so the footer stops 8px short of that edge to leave the
- * same space on both sides. Without the nav, it runs edge to edge.
+ * same space on both sides. Admin's layout drops that margin where it pads the page evenly, as beside
+ * Admin 7's unpinned nav. Without the nav, it runs edge to edge.
+ *
+ * The gutter follows the width of the footer's own container, not the page's: a container on the
+ * page would hold any fixed-position element inside it to the page area.
  */
 const FOOTER_CLASS_NAME =
-  'shrink-0 border-t border-border-default bg-background p-4 sidebar:mr-2 @min-[1024px]/app-page:px-6';
+  'border-t border-border-default bg-background p-4 sidebar:mr-2 @min-[1024px]/app-footer:px-6';
 
 /*
  * A development build, one the developer is running on their own machine, gets a striped band so
@@ -35,6 +39,7 @@ const AppFooter: React.FC<{ app: AppIconSource }> = ({ app }) => {
   return (
     <footer
       className={cn(FOOTER_CLASS_NAME, development && DEVELOPMENT_CLASS_NAME)}
+      data-app-footer=""
       data-development={development ? '' : undefined}
       data-testid="app-footer"
     >
@@ -65,6 +70,8 @@ export const WithAppFooter: React.FC<{ app: AppIconSource; children: React.React
 }) => (
   <Stack className="size-full" gap="none">
     <Box className="min-h-0 flex-1 overflow-auto">{children}</Box>
-    <AppFooter app={app} />
+    <div className="@container/app-footer shrink-0">
+      <AppFooter app={app} />
+    </div>
   </Stack>
 );
