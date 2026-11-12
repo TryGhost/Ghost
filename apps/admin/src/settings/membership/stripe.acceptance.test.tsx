@@ -103,10 +103,13 @@ describe('Stripe settings', () => {
     await expect.element(settingsScreen.errorToast()).toBeVisible();
     const modal = settingsScreen.stripeModal();
     await expect.element(modal.getByText(/You are connected with Stripe!/)).toBeVisible();
-    expect(settingsApi.requests.map((request) => request.body)).toEqual([
-      { settings: [{ key: 'stripe_connect_integration_token', value: accountKey }] },
-      { settings: [{ key: 'portal_plans', value: '["free","monthly","yearly"]' }] },
-    ]);
+    // Stripe shows as connected once its keys are saved; Portal's plans follow.
+    await expect
+      .poll(() => settingsApi.requests.map((request) => request.body), { timeout: 5000 })
+      .toEqual([
+        { settings: [{ key: 'stripe_connect_integration_token', value: accountKey }] },
+        { settings: [{ key: 'portal_plans', value: '["free","monthly","yearly"]' }] },
+      ]);
   });
 
   it('shows a rejected secure key as an error with the Connect button, and has no paste box', async () => {
