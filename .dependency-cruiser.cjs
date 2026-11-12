@@ -1,24 +1,13 @@
 'use strict';
 
-const { readFileSync } = require('node:fs');
-const path = require('node:path');
-const yaml = require('js-yaml');
 const { sourceExclusions } = require('./tools/scripts/ci/service-dependency-resolver.mjs');
 
-// Keep service policy here. The audit applies it to every service; normal lint
-// applies it only to entries marked migrated in the inventory.
+// Service policy applies independently of inventory and migration status.
 const servicesRoot = 'ghost/core/server/services';
-const auditServices = process.env.GHOST_SERVICE_DEPENDENCY_AUDIT === '1';
-const { services } = yaml.load(
-  readFileSync(path.join(__dirname, servicesRoot, 'service-inventory.yaml'), 'utf8'),
-);
-const migratedServices = Object.entries(services)
-  .filter(([, entry]) => entry.migrated === true)
-  .map(([name]) => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-  .join('|');
 const serviceImplementations = {
-  path: `^${servicesRoot}/(${auditServices ? '[^/]+' : migratedServices || '(?!)'})(?:/|$)`,
-  pathNot: `^${servicesRoot}/[^/]+/index\\.${auditServices ? '(?:js|ts)' : 'ts'}$`,
+  path: `^${servicesRoot}/([^/]+)(?:/|$)`,
+  // Legacy JS roots remain wiring candidates; nested indexes are implementations.
+  pathNot: `^${servicesRoot}/[^/]+/index\\.(?:js|ts)$`,
 };
 
 // Explicit code-library and contract allowances, not application instances.
@@ -57,6 +46,7 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/link-replacer\\.js$', // HTML link rewriting with caller-owned callbacks; no retained state or application dependencies.
   '^ghost/core/server/lib/magic-link/magic-link\\.js$', // Magic-link constructor with caller-supplied transporter, token provider and content callbacks; no application instances.
   '^ghost/core/server/lib/case-keys\\.ts$', // camelCase and snake_case key conversion between models, rows and wire shapes.
+  '^ghost/core/server/lib/ensure-transaction\\.ts$', // Runs a callback in the caller's transaction or a new one on the supplied connection; no application instances.
   '^ghost/core/server/lib/parse-request\\.ts$', // Request body parsing into validation errors on the named property.
   '^ghost/core/server/lib/public-jwk\\.ts$', // Key conversion and thumbprints; includes memoization.
   '^ghost/core/server/lib/signed-webhook\\.ts$', // Request signing/formatting and URL sanitization; no running transport.
@@ -351,9 +341,17 @@ module.exports = {
   ],
   options: {
     // Resolve public package exports to authored workspace source when available.
+    // `pnpm gx services verify` also resolves them to built output, the files Ghost
+    // loads at runtime, so an allowance must hold for both.
     enhancedResolveOptions: {
       exportsFields: ['exports'],
-      conditionNames: ['source', 'import', 'require', 'node', 'default'],
+      conditionNames: [
+        ...(process.env.GHOST_DEPENDENCY_RESOLUTION === 'built' ? [] : ['source']),
+        'import',
+        'require',
+        'node',
+        'default',
+      ],
     },
     reporterOptions: {
       err: { showExternalModulesUnresolved: true },
@@ -364,12 +362,10 @@ module.exports = {
     webpackConfig: { fileName: './tools/scripts/ci/service-dependency-resolver.mjs' },
     // Keep incoming edges to built packages visible without scanning their output.
     doNotFollow: {
-      path: auditServices
-        ? `^(?!${servicesRoot}/)`
-        : [
-            'node_modules',
-            '^(?!ghost/core/server/services/)(apps|ghost|packages|koenig)/.*/(build|built|dist)/',
-          ],
+      path: [
+        'node_modules',
+        '^(?!ghost/core/server/services/)(apps|ghost|packages|koenig)/.*/(build|built|dist)/',
+      ],
     },
     // Skip our own tests and emitted companions. All source inside services stays visible:
     // a nested directory name must not hide a production dependency.

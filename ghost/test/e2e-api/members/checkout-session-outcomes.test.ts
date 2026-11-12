@@ -116,6 +116,60 @@ describe('Checkout session outcomes', function () {
     ]);
   });
 
+  it('records who the buyer of each checkout is to the site', async function () {
+    const membersService = require('../../../core/server/services/members');
+    const member = await models.Member.findOne({ email: 'member1@test.com' });
+    const identity = await membersService.api.getMemberIdentityToken(member.get('transient_id'));
+    for (const buyer of [{}, { identity }, { customerEmail: 'member1@test.com' }]) {
+      await membersAgent
+        .post('/api/create-stripe-checkout-session/')
+        .body({ tierId: paidTierId, cadence: 'month', ...buyer })
+        .expectStatus(200);
+    }
+
+    expect(checkouts()).toMatchObject([
+      { event: { outcome: 'success' }, labels: { member: 'new' } },
+      { event: { outcome: 'success' }, labels: { member: 'signed_in' } },
+      { event: { outcome: 'success' }, labels: { member: 'unverified' } },
+    ]);
+  });
+
+  it('records each checkout event by the kind of checkout it completes, and none when it completes nothing', async function () {
+    mockManager.mockMail();
+    const payment = (metadata: Record<string, unknown>, paymentStatus = 'paid') => ({
+      mode: 'payment',
+      payment_status: paymentStatus,
+      amount_total: 500,
+      currency: 'usd',
+      customer: null,
+      customer_details: { name: 'A reader', email: 'reader@example.com' },
+      metadata,
+    });
+
+    await stripeMocker.sendWebhook({
+      type: 'checkout.session.completed',
+      data: { object: payment({ ghost_donation: true }) },
+    });
+    // A gift paid with a method that settles later completes once Stripe says it has
+    await stripeMocker.sendWebhook({
+      type: 'checkout.session.completed',
+      data: { object: payment({ ghost_gift: true }, 'unpaid') },
+    });
+    await stripeMocker.sendWebhook({
+      type: 'checkout.session.async_payment_failed',
+      data: { object: payment({ ghost_gift: true }, 'unpaid') },
+    });
+
+    assert.deepEqual(
+      metrics.tracked('stripe_checkout.complete').map(({ labels }) => labels),
+      [
+        { type: 'donation', shipping: 'none', phone: 'none' },
+        { shipping: 'none', phone: 'none' },
+        { shipping: 'none', phone: 'none' },
+      ],
+    );
+  });
+
   it('records a checkout Ghost refused under its refusal, with no session', async function () {
     await membersAgent
       .post('/api/create-stripe-checkout-session/')

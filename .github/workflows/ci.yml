@@ -15,7 +15,7 @@ on:
 env:
   FORCE_COLOR: 1
   HEAD_COMMIT: ${{ github.sha }}
-  NODE_VERSION: 22.23.4
+  NODE_VERSION: 22.23.5
   # Disable v8-compile-cache to prevent intermittent V8 deserializer crashes
   # when multiple parallel Nx workers race to read/write shared bytecode cache
   # files. The cache lives in /tmp and is discarded after each run anyway,
@@ -168,18 +168,6 @@ jobs:
               - '.github/actions/**'
               - '.github/scripts/**'
               - 'tools/scripts/**'
-            docs:
-              - 'ghost/core/server/services/service-inventory.yaml'
-              - '**/*.md'
-              - '**/*.mdx'
-              - '.agents/**'
-              - '.claude/**'
-              - '.github/workflows/ci.yml'
-              - 'package.json'
-              - 'tools/scripts/ci/check-agent-skill-links.ts'
-              - 'tools/scripts/test/check-agent-skill-links.test.ts'
-              - 'tools/scripts/ci/check-agent-guidance.ts'
-              - 'tools/scripts/test/check-agent-guidance.test.ts'
             service-inventory:
               - 'ghost/core/server/services/service-inventory.yaml'
               - 'ghost/test/unit/server/services/service-inventory.test.ts'
@@ -268,7 +256,7 @@ jobs:
         # test:unit's Nx cache is keyed on `node -v` (nx.json) so each leg runs.
         id: node_matrix
         run: |
-          echo "matrix=[\"${NODE_VERSION}\", \"24.22.1\"]" >> $GITHUB_OUTPUT
+          echo "matrix=[\"${NODE_VERSION}\", \"24.22.3\"]" >> $GITHUB_OUTPUT
 
       - name: Start Nx Cloud CI run
         if: github.repository == 'TryGhost/Ghost'
@@ -383,7 +371,6 @@ jobs:
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
-      changed_docs: ${{ steps.changed.outputs.docs }}
       changed_service_inventory: ${{ steps.changed.outputs.service-inventory }}
       changed_package_standards: ${{ steps.changed.outputs.package-standards }}
       changed_tb_cli: ${{ steps.changed.outputs.tb-cli }}
@@ -516,6 +503,9 @@ jobs:
       - name: Lint boundaries
         run: pnpm nx run ghost-monorepo:lint:boundaries
 
+      - name: Lint dependencies
+        run: pnpm lint:dependencies
+
       - name: Check formatting
         run: pnpm format:check
 
@@ -530,19 +520,24 @@ jobs:
     name: Lint docs
     runs-on: ubuntu-slim
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_docs == 'true'
+    # No path filter: a link breaks when its target is removed or renamed, and
+    # the target can be any file in the repository.
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
+          trust-lockfile: 'true'
+          # The Markdown and link checkers are dependencies of the root package.
+          install-args: --filter ghost-monorepo --ignore-scripts
+          store-cache: 'false'
 
-      - name: Lint documentation guidance
-        run: |
-          node --test tools/scripts/test/check-agent-guidance.test.ts
-          node tools/scripts/ci/check-agent-skill-links.ts
-          node tools/scripts/ci/check-agent-guidance.ts
+      - name: Test documentation guidance checker
+        run: node --test tools/scripts/test/check-agent-guidance.test.ts
+
+      - name: Lint documentation
+        run: pnpm lint:docs
 
   job_service_inventory:
     name: Validate service inventory
@@ -812,6 +807,13 @@ jobs:
         #
         # Non-primary Node legs skip browser-only projects (see
         # unit_test_node_projects_str in job_setup).
+        #
+        # ghost's unit suite runs in a shuffled order seeded by
+        # GHOST_UNIT_TEST_SEED (see ghost/vitest.config.ts), so a test that
+        # only passes after another one fails here. Every attempt reuses the
+        # run's seed, so a retry can't hide that behind a different order.
+        # Vitest prints it as `Running tests with seed "<seed>"`;
+        # docs/contributing/testing.md covers rerunning that order locally.
         run: |
           if [ "${{ matrix.node }}" = "${{ needs.job_setup.outputs.node_version }}" ]; then
             PROJECTS="${{ needs.job_setup.outputs.unit_test_projects_str }}"
@@ -846,6 +848,7 @@ jobs:
           FORCE_COLOR: 0
           NX_SKIP_LOG_GROUPING: true
           logging__level: fatal
+          GHOST_UNIT_TEST_SEED: ${{ github.run_id }}
 
       - name: Check for unexpected file changes
         run: |
@@ -1133,8 +1136,8 @@ jobs:
 
       # Cache the msttcorefonts .ttf files so only a cache miss hits the
       # SourceForge download that regularly hangs the koenig-lexical job. Save
-      # is a separate step right after the fonts are in place, so a later codec
-      # or test failure on a cache-miss run still populates the cache.
+      # is a separate step right after the fonts are in place, so a later test
+      # failure on a cache-miss run still populates the cache.
       - name: Restore MS core fonts cache
         if: matrix.app == '@tryghost/koenig-lexical'
         id: mscorefonts-cache
@@ -1180,28 +1183,6 @@ jobs:
         with:
           path: ~/.cache/msttcorefonts
           key: msttcorefonts-ttf-v1
-      - name: Install Koenig editor test media codecs
-        if: matrix.app == '@tryghost/koenig-lexical'
-        timeout-minutes: 10
-        env:
-          DEBIAN_FRONTEND: noninteractive
-        # The runner image already has Firefox's other libraries; `playwright install-deps`
-        # also pulls ~20MB of fonts the video-card tests don't use.
-        # The package name tracks the image's FFmpeg (libavcodec60 on 24.04, libavcodec62 on 26.04).
-        # Worst case 3 × (65 + 125 + 5) = 585s stays inside timeout-minutes.
-        run: |
-          for i in 1 2 3; do
-            if sudo timeout -k 5 60 apt-get update -yq \
-                 -o Acquire::Retries=3 -o Acquire::http::Timeout=30 &&
-               codec=$(apt-cache pkgnames libavcodec | grep -m1 -xE 'libavcodec[0-9]+') &&
-               sudo timeout -k 5 120 apt-get install -yq --no-install-recommends \
-                 -o Acquire::Retries=3 -o Acquire::http::Timeout=30 "$codec"; then
-              exit 0
-            fi
-            echo "libavcodec attempt $i failed/stuck, retrying..."; sleep 5
-          done
-          echo "libavcodec failed after 3 attempts"; exit 1
-
       - name: Run Playwright tests
         run: pnpm nx run ${{ matrix.app }}:test:acceptance --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 

@@ -6,8 +6,11 @@ import _ from 'lodash';
 import { registerHelper, shouldCompileToExpected } from './utils/handlebars';
 // @ts-expect-error This module lacks type definitions.
 import { SafeString } from 'express-hbs';
+import { restoreHandlebarsAfterSuite } from '../../../utils/handlebars-state';
 
 describe('Match helper', function () {
+  restoreHandlebarsAfterSuite();
+
   beforeAll(function () {
     registerHelper('match');
     registerHelper('title');

@@ -65,10 +65,22 @@ function makeLogger() {
   return { logging, calls };
 }
 
-function makeOutbox() {
+type Row = { id: string; type: string | null };
+
+function makeOutbox({ released = [] as Row[], dropped = [] as Row[], tracked = true } = {}) {
+  const replayChecks: ((type: string) => boolean)[] = [];
   const inserts: { id: string; envelope: DispatchEnvelope; transacting?: unknown }[] = [];
   const relayCalls: string[] = [];
   const store = {
+    async releaseSubmitted({
+      replays,
+    }: {
+      replays: (type: string) => boolean;
+    }): Promise<{ released: Row[]; dropped: Row[] }> {
+      relayCalls.push('release');
+      replayChecks.push(replays);
+      return { released, dropped };
+    },
     async insert(
       entry: { id: string; envelope: DispatchEnvelope },
       options?: { transacting?: unknown },
@@ -84,7 +96,8 @@ function makeOutbox() {
       relayCalls.push('stop');
     },
   };
-  return { inserts, relayCalls, store, relay };
+  const tracker = tracked ? { onSettled: async (): Promise<void> => {} } : undefined;
+  return { inserts, relayCalls, replayChecks, store, relay, tracker };
 }
 
 // Lets an after-commit hand-off registered on the transaction run.
@@ -132,7 +145,11 @@ describe('JobsService', function () {
       logging: logger.logging,
       sentry: overrides.sentry,
       outbox: overrides.outbox
-        ? { store: overrides.outbox.store, relay: overrides.outbox.relay }
+        ? {
+            store: overrides.outbox.store,
+            relay: overrides.outbox.relay,
+            tracker: overrides.outbox.tracker,
+          }
         : undefined,
       logOutboxUnavailable: overrides.logOutboxUnavailable,
     });
@@ -396,16 +413,123 @@ describe('JobsService', function () {
       assert.equal(logger.calls.error.length, 0, 'the caller gets the error, nothing is logged');
     });
 
+    it('active: has the backend report settlements to the outbox tracker', async function () {
+      const outbox = makeOutbox();
+      const service = makeService({ outbox });
+
+      await service.start();
+
+      assert.equal(backend.startOptions?.onSettled, outbox.tracker?.onSettled);
+    });
+
+    it('active without a tracker: still releases rows at start but asks for no settlements', async function () {
+      const outbox = makeOutbox({ tracked: false });
+
+      await makeService({ outbox }).start();
+
+      assert.deepEqual(outbox.relayCalls, ['release', 'start']);
+      assert.equal(backend.startOptions?.onSettled, undefined);
+    });
+
+    it('inactive: asks the backend for no settlements', async function () {
+      const service = makeService();
+
+      await service.start();
+
+      assert.equal(backend.startOptions?.onSettled, undefined);
+    });
+
     it('active: starts the relay after the backend and stops it before the backend', async function () {
       const outbox = makeOutbox();
       const service = makeService({ outbox });
 
       await service.start();
-      assert.deepEqual(outbox.relayCalls, ['start']);
+      assert.deepEqual(outbox.relayCalls, ['release', 'start']);
 
       await service.shutdown();
-      assert.deepEqual(outbox.relayCalls, ['start', 'stop']);
+      assert.deepEqual(outbox.relayCalls, ['release', 'start', 'stop']);
       assert.equal(backend.shutdownCalls.length, 1);
+    });
+
+    it('logs at start which submitted rows it released to hand over again', async function () {
+      const released = [
+        { id: 'a', type: 'send-email' },
+        { id: 'b', type: null },
+      ];
+      await makeService({ outbox: makeOutbox({ released }) }).start();
+
+      const [event, message] = logger.calls.info[0] as [
+        { system: { event: string; count: number } },
+        string,
+      ];
+      assert.deepEqual(event, {
+        system: { event: 'jobs_outbox.released', count: 2, rows: released },
+      });
+      assert.equal(message, '[Jobs Outbox] Released 2 submitted rows to hand over again');
+    });
+
+    it('asks the store to drop rows of job types that are not replayed after a restart', async function () {
+      class OwnRecoveryJob extends Job {
+        static type = 'own-recovery';
+        static replayAfterRestart = false;
+      }
+      const outbox = makeOutbox();
+      const service = makeService({ outbox });
+      service.handle(OwnRecoveryJob, async () => {});
+      service.handle(GreetJob, async () => {});
+
+      await service.start();
+
+      const [replays] = outbox.replayChecks;
+      assert.equal(replays('own-recovery'), false);
+      assert.equal(replays(GreetJob.type), true);
+      assert.equal(replays('unregistered'), true);
+    });
+
+    it('forgets which job types are not replayed when handlers are cleared', async function () {
+      class OwnRecoveryJob extends Job {
+        static type = 'own-recovery';
+        static replayAfterRestart = false;
+      }
+      class ReplayedJob extends Job {
+        static type = 'own-recovery';
+      }
+      const outbox = makeOutbox();
+      const service = makeService({ outbox });
+      service.handle(OwnRecoveryJob, async () => {});
+      service.clearHandlers();
+      service.handle(ReplayedJob, async () => {});
+
+      await service.start();
+
+      assert.equal(outbox.replayChecks[0]('own-recovery'), true);
+    });
+
+    it('logs at start which submitted rows it dropped', async function () {
+      const dropped = [{ id: 'c', type: 'own-recovery' }];
+      await makeService({ outbox: makeOutbox({ dropped }) }).start();
+
+      const [event, message] = logger.calls.info[0] as [
+        { system: { event: string; count: number } },
+        string,
+      ];
+      assert.deepEqual(event, {
+        system: { event: 'jobs_outbox.dropped', count: 1, rows: dropped },
+      });
+      assert.equal(
+        message,
+        '[Jobs Outbox] Dropped 1 submitted rows whose job types recover on their own',
+      );
+    });
+
+    it('logs no release when there was nothing to release', async function () {
+      await makeService({ outbox: makeOutbox({ released: [] }) }).start();
+
+      assert.ok(
+        !logger.calls.info.some(([event]) =>
+          JSON.stringify(event).includes('jobs_outbox.released'),
+        ),
+      );
     });
 
     it('logs at start which backend runs jobs and whether the outbox is on', async function () {

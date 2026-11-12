@@ -135,7 +135,7 @@ describe('Account Profile Page', () => {
       const input = getByLabelText('Mobile');
       expect(input).toHaveAttribute('type', 'tel');
       expect(input).toHaveAttribute('autocomplete', 'tel');
-      expect(getByLabelText('Country code')).toHaveTextContent('🇬🇧 +44');
+      expect(getByLabelText('Country code')).toHaveTextContent(/^\+44$/);
       expect(input).toHaveValue('2079460000');
     });
 
@@ -149,9 +149,9 @@ describe('Account Profile Page', () => {
         customFields: [mobile],
       });
 
-      expect(getByLabelText('Country code')).toHaveTextContent('🇫🇷 +33');
+      expect(getByLabelText('Country code')).toHaveTextContent(/^\+33$/);
       fireEvent.change(getByLabelText('Mobile'), { target: { value: '06 12 34 56 79' } });
-      expect(getByLabelText('Country code')).toHaveTextContent('🇫🇷 +33');
+      expect(getByLabelText('Country code')).toHaveTextContent(/^\+33$/);
     });
 
     describe("a phone number's country", () => {
@@ -174,12 +174,12 @@ describe('Account Profile Page', () => {
         fireEvent.click(picker(utils, 'Country code'));
         expect(searchBox(utils, 'Country code')).toHaveFocus();
         fireEvent.change(searchBox(utils, 'Country code'), { target: { value: 'germ' } });
-        expect(offered()).toEqual(['Germany +49']);
+        expect(offered()).toEqual(['Germany (+49)']);
         fireEvent.change(searchBox(utils, 'Country code'), { target: { value: '+33' } });
-        expect(offered()).toEqual(['France +33']);
+        expect(offered()).toEqual(['France (+33)']);
         fireEvent.keyDown(searchBox(utils, 'Country code'), { key: 'Enter' });
 
-        expect(picker(utils, 'Country code')).toHaveTextContent('🇫🇷 +33');
+        expect(picker(utils, 'Country code')).toHaveTextContent(/^\+33$/);
         fireEvent.click(utils.saveBtn);
         expect(utils.mockDoActionFn).toHaveBeenCalledWith(
           'updateProfile',
@@ -204,10 +204,10 @@ describe('Account Profile Page', () => {
       });
 
       // Shown as the number's is, read-only rather than disabled, with nothing to pick from.
-      test('is shown as its flag and code, with nothing to pick, where the member may only read the number', () => {
+      test('is shown as its code, with nothing to pick, where the member may only read the number', () => {
         const utils = holdingMobile('read');
 
-        expect(utils.getByRole('group', { name: 'Country code' })).toHaveTextContent('🇬🇧 +44');
+        expect(utils.getByRole('group', { name: 'Country code' })).toHaveTextContent(/^\+44$/);
         expect(utils.queryByRole('combobox', { name: 'Country code' })).not.toBeInTheDocument();
         expect(utils.getByLabelText('Mobile')).toHaveAttribute('readonly');
       });
@@ -236,6 +236,33 @@ describe('Account Profile Page', () => {
       const country = getByLabelText('Country code');
       expect(country).toHaveAttribute('aria-invalid', 'true');
       expect(country).toHaveAttribute('aria-describedby', reason.id);
+    });
+
+    // A letter is never valid in a phone number, so the member sees the error while typing, in
+    // place of the server's error about the last number sent.
+    test('shows an error while typing an invalid character in a phone number', () => {
+      const mistyped = 'Enter the phone number using only digits, spaces and symbols like + - ( ).';
+      const refused = 'Enter a valid phone number, like +44 20 7946 0000.';
+      const mobile = { key: 'mobile', name: 'Mobile', type: 'phone', access: { member: 'write' } };
+      const { getByLabelText, getByText, queryByText } = setup({
+        site,
+        member,
+        customFields: [mobile],
+        fieldErrors: { 'custom:mobile': refused },
+      });
+      const input = getByLabelText('Mobile');
+
+      fireEvent.change(input, { target: { value: '+44 20 7946 000o' } });
+      expect(input).toHaveValue('+44 20 7946 000o');
+      expect(input).toHaveAttribute('aria-invalid', 'true');
+      expect(input).toHaveAttribute('aria-describedby', getByText(mistyped).closest('ul').id);
+      // Focus is in the input, so only a live region gets the error announced.
+      expect(getByText(mistyped).closest('[aria-live]')).toHaveAttribute('aria-live', 'polite');
+      expect(queryByText(refused)).not.toBeInTheDocument();
+
+      fireEvent.change(input, { target: { value: '+44 (20) 7946-0000' } });
+      expect(queryByText(mistyped)).not.toBeInTheDocument();
+      expect(getByText(refused)).toBeInTheDocument();
     });
 
     test('saves only the writable fields the member changed', () => {

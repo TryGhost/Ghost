@@ -8,6 +8,9 @@
       }
     }
   },
+  "backgroundJobs": {
+    "emailAnalytics": false
+  },
   "database": {
     "client": "better-sqlite3",
     "connection": {

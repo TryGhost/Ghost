@@ -16,6 +16,17 @@ if [ $lintStatus -ne 0 ]; then
     exit 1
 fi
 
+# lint-staged is only given added and modified files, so it cannot tell that a
+# removed or renamed file is still the target of a link in a document.
+if [ -n "$(git diff --cached --name-only --no-renames --diff-filter=D)" ]; then
+    echo -e "Checking documentation links ${grey}(pre-commit hook)${no_color} "
+
+    if ! pnpm --silent lint:doc-links; then
+        echo -e "${red}❌ Documentation link check failed${no_color}"
+        exit 1
+    fi
+fi
+
 ##
 ## 1) Scan staged text files for secrets
 ##

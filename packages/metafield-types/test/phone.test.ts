@@ -7,15 +7,16 @@ import {
   parsePhoneNumber,
 } from 'libphonenumber-js';
 import examples from 'libphonenumber-js/mobile/examples';
-import { valueSchemaFor } from '../src/index.ts';
+import { phoneNumberIn, valueSchemaFor } from '../src/index.ts';
 import {
   CALLING_CODES,
   INTERNATIONAL_PREFIXES,
   SHARED_CODES,
-  flagOf,
+  hasOnlyPhoneCharacters,
   holdNumber,
   isPhoneCountry,
   phoneCountryOfLocales,
+  phoneCountryOfTimeZone,
   phoneCountryOptions,
   pickCountry,
   readCallingCode,
@@ -121,7 +122,7 @@ describe('phone numbers in a browser', function () {
         { value: 'AQ', label: 'Antarctica' },
         { value: 'GB', label: 'United Kingdom' },
       ]),
-      [{ value: 'GB', label: 'United Kingdom +44' }],
+      [{ value: 'GB', label: 'United Kingdom (+44)' }],
     );
   });
 
@@ -177,6 +178,41 @@ describe('phone numbers in a browser', function () {
     assert.equal(startPhoneEntry('+1 999', ['en-GB']).picked, 'US');
     const rewritten = typeNumber(startPhoneEntry('+447400123456', ['en-US']), '07400 123457');
     assert.equal(rewritten.number, '+44 07400 123457');
+  });
+
+  // A time zone says where the reader is, where a language often doesn't: `en-US` is many
+  // browsers' language wherever they are.
+  it("starts with no number held from the country of the reader's time zone", function () {
+    assert.deepEqual(startPhoneEntry('', ['en-US'], 'Europe/Lisbon'), { typed: '', picked: 'PT' });
+    assert.equal(startPhoneEntry('', ['pt'], 'America/Toronto').picked, 'CA');
+    // A zone no country has, or none, leaves it to the reader's language.
+    assert.equal(startPhoneEntry('', ['en-GB'], 'Etc/UTC').picked, 'GB');
+    assert.equal(startPhoneEntry('', ['en-GB']).picked, 'GB');
+    // A number held still shows its own country, and the time zone plays no part in it.
+    assert.equal(startPhoneEntry('+447400123456', ['en-US'], 'Europe/Lisbon').picked, 'GB');
+    assert.equal(startPhoneEntry('+1 999', ['en-US'], 'America/Toronto').picked, 'US');
+  });
+
+  it('knows the country of a time zone', function () {
+    assert.equal(phoneCountryOfTimeZone('Europe/London'), 'GB');
+    assert.equal(phoneCountryOfTimeZone('America/Sao_Paulo'), 'BR');
+    assert.equal(phoneCountryOfTimeZone('Etc/UTC'), undefined);
+    assert.equal(phoneCountryOfTimeZone('UTC'), undefined);
+    assert.equal(phoneCountryOfTimeZone('Not/A_Zone'), undefined);
+    assert.equal(phoneCountryOfTimeZone(undefined), undefined);
+    // The likely country, where the zone is its own, and every country's otherwise.
+    assert.equal(phoneCountryOfTimeZone('Europe/London', 'GB'), 'GB');
+    assert.equal(phoneCountryOfTimeZone('Europe/Lisbon', 'US'), 'PT');
+  });
+
+  it('finds no country of a time zone where the browser has no Intl.Locale', function () {
+    const { Locale } = Intl;
+    try {
+      Object.defineProperty(Intl, 'Locale', { value: undefined, configurable: true });
+      assert.equal(phoneCountryOfTimeZone('Europe/Lisbon'), undefined);
+    } finally {
+      Object.defineProperty(Intl, 'Locale', { value: Locale, configurable: true });
+    }
   });
 
   // Such as the number the site kept after a save, which says which country it is from.
@@ -274,8 +310,46 @@ describe('phone numbers in a browser', function () {
     }
   });
 
-  it("draws a country's flag", function () {
-    assert.equal(flagOf('GB'), '🇬🇧');
+  it('tells whether text contains only valid phone number characters', function () {
+    for (const written of [
+      '',
+      '+44 20 7946 0000',
+      ' (415) 555-0100 ',
+      '06.12.34.56.78',
+      '030/123456',
+      '+44 [20] 7946~0000',
+      '+٤٤ ٢٠ ٧٩٤٦ ٠٠٠٠',
+    ]) {
+      assert.equal(hasOnlyPhoneCharacters(written), true, written);
+    }
+    for (const written of [
+      'asdsadasdd1213213123',
+      '+1 800 FLOWERS',
+      '+44 20 7946 0000 x3',
+      '+44 20 7946 0000 #3',
+      '+44 20 7946*0000',
+      '+44\t20 7946 0000',
+    ]) {
+      assert.equal(hasOnlyPhoneCharacters(written), false, written);
+    }
+  });
+
+  // A phone input shows an error as soon as an invalid character is typed, so it must allow every
+  // character the server accepts in a number, wherever in the number the character appears.
+  it('allows every character the server accepts in a number', { timeout: 30_000 }, function () {
+    for (let code = 0; code < 0x10000; code++) {
+      const character = String.fromCharCode(code);
+      for (const written of [
+        `${character}+44 20 7946 0000`,
+        `+44${character}20 7946 0000`,
+        `+44 20 7946${character}0000`,
+        `+44 20 7946 0000${character}`,
+      ]) {
+        if (phoneNumberIn(written, undefined) !== undefined) {
+          assert.equal(hasOnlyPhoneCharacters(written), true, JSON.stringify(written));
+        }
+      }
+    }
   });
 
   it('knows a country no number belongs to', function () {

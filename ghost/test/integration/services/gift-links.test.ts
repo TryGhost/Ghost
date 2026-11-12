@@ -1,11 +1,12 @@
 import { afterAll, afterEach, beforeAll, describe, it } from 'vitest';
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import logging from '@tryghost/logging';
+import type { Knex } from 'knex';
 import { GiftLinksService } from '../../../core/server/services/gift-links/service';
 import { ActionLog } from '../../../core/server/lib/action-log/action-log';
 import type { RequestContext } from '../../../core/server/lib/actor';
 import type { GiftLink } from '../../../core/server/services/gift-links/models';
+import { createLoggingFake } from '../../utils/logging-utils';
 
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
@@ -21,6 +22,7 @@ describe('GiftLinksService (integration)', function () {
   let postId: string;
   let otherPostId: string;
   let service: GiftLinksService;
+  const logging = createLoggingFake();
 
   const liveLinks = async (id: string): Promise<GiftLink[]> =>
     (await service.getPost(id)).giftLinks;
@@ -151,10 +153,27 @@ describe('GiftLinksService (integration)', function () {
     });
   }
 
+  it('ensure returns a link minted after the transaction it joined first read', async function () {
+    await models.Base.knex.transaction(async (trx: Knex.Transaction) => {
+      // On MySQL a transaction's plain reads all see the database as it was at its first one.
+      await trx('posts').where('id', postId).first('id');
+      const minted = await service.ensure(CTX, postId);
+
+      const joined = await service.ensure(CTX, postId, trx);
+
+      assert.equal(joined.giftLinks[0]?.token, minted.giftLinks[0]?.token);
+    });
+    assert.equal((await liveLinks(postId)).length, 1);
+  });
+
   it('fails the command and keeps no link when recording the action throws', async function () {
     // The action is part of the change, so a failed insert inside the command's transaction
     // rolls the link back with it.
-    const errorLog = sinon.stub(logging, 'error');
+    const failingLogging = createLoggingFake();
+    const failing = new GiftLinksService({
+      knex: models.Base.knex,
+      actionLog: new ActionLog({ logging: failingLogging }),
+    });
     const linksBefore = await liveLinks(postId);
     const actionsBefore = (await giftLinkActions()).length;
     await models.Base.knex.raw(`
@@ -163,13 +182,20 @@ describe('GiftLinksService (integration)', function () {
       SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'action write failed'
     `);
     try {
-      await assert.rejects(service.create(CTX, postId), /action write failed/);
+      await assert.rejects(failing.create(CTX, postId), /action write failed/);
     } finally {
       await models.Base.knex.raw('DROP TRIGGER fail_gift_link_action');
     }
 
-    sinon.assert.notCalled(errorLog);
+    sinon.assert.notCalled(failingLogging.error);
     assert.deepEqual(await liveLinks(postId), linksBefore, 'the gift link is rolled back');
     assert.equal((await giftLinkActions()).length, actionsBefore);
+  });
+
+  it('writes no staff history entry for a command with no actor', async function () {
+    await service.create({ actor: null }, postId);
+
+    assert.equal((await liveLinks(postId)).length, 1);
+    assert.deepEqual(await models.Base.knex('actions').where('resource_type', 'gift_link'), []);
   });
 });

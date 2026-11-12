@@ -21,25 +21,11 @@ describe('gift jobs: cleanup scheduling', function () {
     sinon.restore();
   });
 
-  it('does not schedule gift cleanup under the test environment', async function () {
-    await giftJobs.scheduleGiftCleanupJob(jobsService);
-
-    assert.ok(
-      jobsService.scheduleRecurring.notCalled,
-      'clean-gifts must not be scheduled under NODE_ENV=test*',
-    );
-  });
-
-  it('schedules a single daily off-peak clean-gifts job outside the test environment', async function () {
-    const originalEnv = process.env.NODE_ENV;
+  it('schedules a single daily off-peak clean-gifts job', async function () {
     sinon.stub(logging, 'info');
-    process.env.NODE_ENV = 'production';
-    try {
-      await giftJobs.scheduleGiftCleanupJob(jobsService);
-      await giftJobs.scheduleGiftCleanupJob(jobsService);
-    } finally {
-      process.env.NODE_ENV = originalEnv;
-    }
+
+    await giftJobs.scheduleGiftCleanupJob(jobsService);
+    await giftJobs.scheduleGiftCleanupJob(jobsService);
 
     assert.ok(
       jobsService.scheduleRecurring.calledOnce,

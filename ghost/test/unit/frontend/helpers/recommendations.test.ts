@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
-import type { SinonFakeTimers, SinonStub } from 'sinon';
+import type { GhostLogger } from '@tryghost/logging';
+import type { SinonFakeTimers, SinonStub, SinonStubbedInstance } from 'sinon';
 // @ts-expect-error This module lacks type definitions.
 import { endpoints as api } from '../../../../core/server/api';
 // @ts-expect-error This module lacks type definitions.
 import handlebarsService from '../../../../core/frontend/services/handlebars';
 import configUtils from '../../../utils/config-utils';
+import { restoreHandlebarsAfterSuite } from '../../../utils/handlebars-state';
 import { html } from 'common-tags';
 import loggingLib from '@tryghost/logging';
 // @ts-expect-error This module lacks type definitions.
@@ -27,9 +29,12 @@ function trimSpaces(string: string) {
 }
 
 describe('{{#recommendations}} helper', function () {
-  let logging: { error: SinonStub; warn: SinonStub };
+  let logging: Pick<SinonStubbedInstance<GhostLogger>, 'error' | 'warn'>;
   /** @type {sinon.SinonStub} */
   let settingsCacheGetStub: SinonStub;
+  let recommendationsApiStub: SinonStub;
+
+  restoreHandlebarsAfterSuite();
 
   beforeAll(async function () {
     hbs.express4({
@@ -42,14 +47,18 @@ describe('{{#recommendations}} helper', function () {
     // The recommendation template expects this helper
     hbs.registerHelper('foreach', foreach);
     hbs.registerHelper('readable_url', readable_url);
+  });
 
+  // Every test starts from enabled recommendations and two results; nested
+  // blocks change that in their own beforeEach, which runs after this one
+  beforeEach(function () {
     // Stub settings cache
     settingsCacheGetStub = sinon.stub(settingsCache, 'get');
     settingsCacheGetStub.withArgs('recommendations_enabled').returns(true);
 
     // Stub Recommendation Content API
     const meta = { pagination: {} };
-    sinon.stub(api, 'recommendationsPublic').get(() => {
+    recommendationsApiStub = sinon.stub(api, 'recommendationsPublic').get(() => {
       return {
         browse: sinon.stub().resolves({
           recommendations: [
@@ -80,7 +89,7 @@ describe('{{#recommendations}} helper', function () {
     };
   });
 
-  afterAll(function () {
+  afterEach(function () {
     sinon.restore();
   });
 
@@ -125,8 +134,8 @@ describe('{{#recommendations}} helper', function () {
   });
 
   describe('when there are no recommendations', function () {
-    beforeAll(function () {
-      sinon.stub(api, 'recommendationsPublic').get(() => {
+    beforeEach(function () {
+      recommendationsApiStub.get(() => {
         return {
           browse: () => {
             return new Promise((resolve) => {
@@ -149,24 +158,23 @@ describe('{{#recommendations}} helper', function () {
   });
 
   describe('when recommendations_enabled is false', function () {
-    beforeAll(function () {
-      settingsCacheGetStub.withArgs('recommendations_enabled').returns(true);
+    beforeEach(function () {
+      settingsCacheGetStub.withArgs('recommendations_enabled').returns(false);
     });
 
     it('renders nothing', async function () {
       const response = await recommendations.call('recommendations');
 
-      // No HTML is rendered
-      assert(response !== null && typeof response === 'object');
-      assert.equal(response.string, '');
+      // The helper returns before fetching recommendations or rendering anything
+      assert.equal(response, undefined);
     });
   });
 
   describe('when timeout is exceeded', function () {
     let clock: SinonFakeTimers;
 
-    beforeAll(function () {
-      sinon.stub(api, 'recommendationsPublic').get(() => {
+    beforeEach(function () {
+      recommendationsApiStub.get(() => {
         return {
           browse: () => {
             return new Promise((resolve) => {
@@ -187,11 +195,8 @@ describe('{{#recommendations}} helper', function () {
       clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     });
 
-    afterEach(function () {
+    afterEach(async function () {
       clock.restore();
-    });
-
-    afterAll(async function () {
       await configUtils.restore();
     });
 

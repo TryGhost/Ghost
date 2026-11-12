@@ -528,5 +528,86 @@ describe('Member answers by port', function () {
         ],
       ]);
     });
+
+    describe('as recorded for dashboards', function () {
+      let metrics: { tracked: (_name: string) => Record<string, unknown>[] };
+      const tierChanges = () => metrics.tracked('members.tier_change');
+
+      beforeEach(function () {
+        metrics = mockManager.mockMetrics();
+      });
+
+      it('records a change of tier without answers, with no requirement', async function () {
+        await changeTier(toTierId, 204);
+
+        expect(tierChanges()).toEqual([
+          expect.objectContaining({
+            event: expect.objectContaining({ outcome: 'success' }),
+            labels: { answers: 'none' },
+          }),
+        ]);
+      });
+
+      it("records each requirement's answers as saved with the change", async function () {
+        await changeTier(toTierId, 204, ANSWERED);
+
+        expect(tierChanges()).toMatchObject([
+          {
+            event: { outcome: 'success' },
+            labels: { answers: 'given', shipping: 'saved', phone: 'saved' },
+          },
+        ]);
+      });
+
+      it('records a requirement left out, and one whose field is archived', async function () {
+        await editField(phoneKey, { status: 'archived' });
+
+        await changeTier(toTierId, 204, {
+          'checkout.phone': ANSWERED['checkout.phone'],
+        });
+
+        expect(tierChanges()).toMatchObject([
+          { event: { outcome: 'success' }, labels: { shipping: 'none', phone: 'dropped' } },
+        ]);
+      });
+
+      it('records a change refused for its answers', async function () {
+        await collect([toTierId], ['US']);
+
+        await changeTier(toTierId, 422, ANSWERED);
+
+        expect(tierChanges()).toMatchObject([
+          {
+            event: { outcome: 'failure' },
+            error: { type: 'AnswersRefused' },
+            labels: { answers: 'given', shipping: 'given', phone: 'given' },
+          },
+        ]);
+      });
+
+      it('records a requirement as partly saved while one of its fields is archived', async function () {
+        await editField(recipientKey, { status: 'archived' });
+
+        await changeTier(toTierId, 204, ANSWERED);
+
+        expect(tierChanges()).toMatchObject([
+          { event: { outcome: 'success' }, labels: { shipping: 'partly_saved', phone: 'saved' } },
+        ]);
+      });
+
+      it('records answers that failed to save once the tier changed', async function () {
+        const membersService = require('../../../core/server/services/members');
+        sinon
+          .stub(membersService.api.memberBREADService, 'updateWithMetafields')
+          .rejects(new Error('The database went away.'));
+        sinon.stub(logging, 'error');
+
+        await changeTier(toTierId, 204, ANSWERED);
+
+        expect(tierChanges()).toMatchObject([
+          { event: { outcome: 'success' }, labels: { shipping: 'failed', phone: 'failed' } },
+        ]);
+      });
+    });
   });
 });

@@ -219,7 +219,7 @@ describe('MembersAPI', function () {
 
     await assert.rejects(
       () => membersAPI.getMemberDataFromMagicLinkToken('magic-token'),
-      redemptionError,
+      (thrown) => thrown === redemptionError,
     );
 
     sinon.assert.notCalled(memberLoginEvent.add);

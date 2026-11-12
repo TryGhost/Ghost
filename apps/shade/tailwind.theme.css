@@ -136,6 +136,9 @@
   --font-mono: Consolas, Liberation Mono, Menlo, Courier, monospace;
   --font-inherit: inherit;
   --font-weight-title: 540;
+  --font-weight-settings-heading: 540;
+  --tracking-section-heading: -0.01em;
+  --tracking-settings-heading: -0.01em;
   --tracking-tightest: -0.05em;
   --tracking-tighter: -0.025em;
   --tracking-tight: -0.01em;

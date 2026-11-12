@@ -17,7 +17,11 @@ const automatedEmails = require('../../../../../core/server/api/endpoints/automa
 const automationEmailPreviews = require('../../../../../core/server/api/endpoints/automation-email-previews');
 const constants = require('../../../../../core/server/services/member-welcome-emails/constants');
 const MemberWelcomeEmailService = require('../../../../../core/server/services/member-welcome-emails/member-welcome-email-service');
-const root = require('../../../../../core/server/services/member-welcome-emails').default;
+// The API endpoints hold this instance, so the consumer suite stubs it rather than a fresh root
+const sharedRoot = require('../../../../../core/server/services/member-welcome-emails').default;
+const ROOT_PATH = require.resolve('../../../../../core/server/services/member-welcome-emails');
+
+type Root = (typeof import('../../../../../core/server/services/member-welcome-emails'))['default'];
 
 const { MESSAGES } = constants;
 
@@ -92,19 +96,24 @@ const automationEmail = {
   automationRunStepId: 'step-id',
 };
 
-// The root retains one instance for the process. The initialization suite boots it first, and
-// later suites boot it themselves when run alone, always through a stubbed emitter so the shared
-// bus never gets a listener from this file. They reload it to reset the caches they exercise.
+// The root retains one instance for the process, so each test loads a fresh copy and boots it
+// itself, always through a stubbed emitter so the shared bus never gets a listener from this file.
+// The cached module is put back afterwards, so no ready instance outlives this file.
 describe('Member welcome emails root', function () {
   const settings: Attributes = {};
   let sendTransactional: sinon.SinonStub;
-  let localeListener: (model: { get: (key: string) => string }) => unknown;
+  let cachedRoot: NodeJS.Module | undefined;
+  let root: Root;
 
   beforeAll(function () {
     emailAddressService.init();
   });
 
   beforeEach(function () {
+    cachedRoot = require.cache[ROOT_PATH];
+    delete require.cache[ROOT_PATH];
+    root = require(ROOT_PATH).default;
+
     Object.assign(settings, { title: 'Test Site', locale: 'en', accent_color: '#15212A' });
     sinon.stub(settingsCache, 'get').callsFake((key) => settings[key as string]);
     sinon.stub(logging, 'info');
@@ -114,13 +123,16 @@ describe('Member welcome emails root', function () {
   });
 
   afterEach(function () {
+    delete require.cache[ROOT_PATH];
+    if (cachedRoot) {
+      require.cache[ROOT_PATH] = cachedRoot;
+    }
     sinon.restore();
     for (const key of Object.keys(settings)) {
       delete settings[key];
     }
   });
 
-  // init is idempotent, so after the initialization suite this only returns the retained instance.
   async function initRoot() {
     const on = sinon.stub(events, 'on');
     sinon.define(linkTracking, 'service', { addAutomationTrackingToUrl: sinon.stub() });
@@ -158,11 +170,11 @@ describe('Member welcome emails root', function () {
       await root.init();
 
       sinon.assert.calledOnceWithExactly(on, 'settings.locale.edited', sinon.match.func);
-      localeListener = on.firstCall.args[1];
       assert.ok(root.service instanceof MemberWelcomeEmailService);
     });
 
     it('retains the same instance and listener across repeated init', async function () {
+      await initRoot();
       const on = sinon.stub(events, 'on');
       const service = root.service;
 
@@ -174,6 +186,7 @@ describe('Member welcome emails root', function () {
     });
 
     it('has no welcome content to send until loadMemberWelcomeEmails runs', async function () {
+      await initRoot();
       const findAutomation = sinon.stub(models.Automation, 'findOne').resolves(welcomeRow());
 
       await assert.rejects(root.service.send({ member, memberStatus: 'free' }), {
@@ -185,6 +198,12 @@ describe('Member welcome emails root', function () {
     });
 
     it('renders with the translator it built for the configured locale and follows locale edits', async function () {
+      settings.locale = 'fr';
+      sinon.define(linkTracking, 'service', { addAutomationTrackingToUrl: sinon.stub() });
+      const on = sinon.stub(events, 'on');
+      await root.init();
+      const localeListener: (model: { get: (key: string) => string }) => unknown =
+        on.firstCall.args[1];
       sinon.stub(models.Newsletter, 'getDefaultNewsletter').resolves(newsletter('First'));
       sinon.stub(models.Automation, 'findOne').resolves(welcomeRow());
       await root.service.loadMemberWelcomeEmails();
@@ -214,7 +233,7 @@ describe('Member welcome emails root', function () {
         previewAutomationEmail: sinon.stub().resolves({ html: '<p>Preview</p>' }),
         sendTestAutomationEmail: sinon.stub().resolves(),
       };
-      sinon.stub(root, 'service').get(() => api);
+      sinon.stub(sharedRoot, 'service').get(() => api);
       sinon.stub(models.EmailDesignSetting, 'findOne').resolves(designSettings);
     });
 

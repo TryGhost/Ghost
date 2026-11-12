@@ -872,13 +872,13 @@ function international(text: string, country: PhoneCountry | undefined): string 
 
 /**
  * The countries a phone number can be from, out of `countries` as an app names them, each named
- * with its code, such as `United Kingdom +44`, in the order given.
+ * with its code, such as `United Kingdom (+44)`, in the order given.
  */
 export function phoneCountryOptions(
   countries: readonly { value: string; label: string }[],
 ): { value: PhoneCountry; label: string }[] {
   return countries.flatMap(({ value, label }) =>
-    isPhoneCountry(value) ? [{ value, label: `${label} +${CALLING_CODES[value]}` }] : [],
+    isPhoneCountry(value) ? [{ value, label: `${label} (+${CALLING_CODES[value]})` }] : [],
   );
 }
 
@@ -929,6 +929,27 @@ export function withCallingCode(text: string, country: PhoneCountry | undefined)
   return `+${CALLING_CODES[country]} ${typed}`;
 }
 
+/**
+ * Every character libphonenumber-js accepts in a phone number, in every script it supports:
+ * digits, +, spaces, and the dashes, dots, slashes, brackets and tildes used to group a number.
+ * Copied from the library's own lists. The package's tests check that adding any character
+ * outside this set to a valid number makes the server reject the number too.
+ */
+const PHONE_CHARACTERS =
+  /^[0-9\uFF10-\uFF19\u0660-\u0669\u06F0-\u06F9+\uFF0B\-\u2010-\u2015\u2212\u30FC\uFF0D/\uFF0F.\uFF0E \u00A0\u00AD\u200B\u2060\u3000()\uFF08\uFF09[\]\uFF3B\uFF3D~\u2053\u223C\uFF5E]*$/;
+
+/**
+ * Whether `text` contains only characters that are valid in a phone number, so a phone input can
+ * flag an invalid character, such as a letter, while typing and without loading
+ * libphonenumber-js. It doesn't check that the text is a valid number: the server does that.
+ * Surrounding whitespace is ignored, as the server trims it. The one input this flags that the
+ * server accepts is an RFC 3966 `tel:` URI, such as `tel:2079460000;phone-context=+44`, which
+ * libphonenumber-js can read a number from.
+ */
+export function hasOnlyPhoneCharacters(text: string): boolean {
+  return PHONE_CHARACTERS.test(text.trim());
+}
+
 /** What a phone input holds while someone edits it: what they typed, and the country picked. */
 export interface PhoneEntry {
   readonly typed: string;
@@ -970,10 +991,16 @@ function showHeld(held: string, otherwise: PhoneCountry | undefined): PhoneEntry
 /**
  * A phone input as it opens on the number a field holds: the country that number is from, so
  * rewriting it as it is dialled at home keeps its country, and for a field holding none, the
- * country of the reader's language.
+ * country of the reader's `timeZone` where it names one, as it says where they are, else of their
+ * language.
  */
-export function startPhoneEntry(held: string, locales: readonly string[]): PhoneEntry {
-  return showHeld(held, phoneCountryOfLocales(locales));
+export function startPhoneEntry(
+  held: string,
+  locales: readonly string[],
+  timeZone?: string,
+): PhoneEntry {
+  const ofLocales = phoneCountryOfLocales(locales);
+  return showHeld(held, (!held && phoneCountryOfTimeZone(timeZone, ofLocales)) || ofLocales);
 }
 
 /**
@@ -1004,9 +1031,40 @@ export function pickCountry(
   return { entry: { typed, picked: country }, number: withCallingCode(typed, country) };
 }
 
-/** A country's flag, drawn from its two letters, as phones show the country of a calling code. */
-export function flagOf(country: PhoneCountry): string {
-  return String.fromCodePoint(...[...country].map((letter) => 0x1f1a5 + letter.charCodeAt(0)));
+/** The time zones of a country, from the browser's own data: none where it has no such data. */
+function timeZonesOf(country: PhoneCountry): string[] {
+  try {
+    // `getTimeZones()`, or a `timeZones` getter in browsers that shipped it as one.
+    const locale = new Intl.Locale(`und-${country}`) as Intl.Locale & {
+      getTimeZones?: () => string[];
+      timeZones?: string[];
+    };
+    return locale.getTimeZones?.() ?? locale.timeZones ?? [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * The country a time zone is in, such as Portugal for `Europe/Lisbon`, from the browser's own time
+ * zone data: none for a zone no country has, such as `Etc/UTC`, or where the browser has no such
+ * data. The `likely` country is tried first, as reading every country's zones takes a moment.
+ * Safari names some zones newer than its own data does, such as `Asia/Kolkata`, and finds none.
+ */
+export function phoneCountryOfTimeZone(
+  timeZone: string | undefined,
+  likely?: PhoneCountry,
+): PhoneCountry | undefined {
+  // No country has UTC or an `Etc/` zone, so there's no need to read any country's zones.
+  if (!timeZone || timeZone === 'UTC' || timeZone.startsWith('Etc/')) {
+    return undefined;
+  }
+  if (likely && timeZonesOf(likely).includes(timeZone)) {
+    return likely;
+  }
+  return (Object.keys(CALLING_CODES) as PhoneCountry[]).find((country) =>
+    timeZonesOf(country).includes(timeZone),
+  );
 }
 
 /**

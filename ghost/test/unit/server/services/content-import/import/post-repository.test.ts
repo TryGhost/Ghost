@@ -398,7 +398,7 @@ describe('BookshelfPostsRepository', function () {
 
     await assert.rejects(
       h.repository.write(data, { importing: true, context: { internal: true } }),
-      failure,
+      (thrown) => thrown === failure,
     );
 
     sinon.assert.notCalled(h.add);
@@ -414,7 +414,7 @@ describe('BookshelfPostsRepository', function () {
         { ...data, comment_id: 'source-123' },
         { importing: true, context: { internal: true } },
       ),
-      failure,
+      (thrown) => thrown === failure,
     );
 
     sinon.assert.calledOnce(h.findOne);
@@ -428,7 +428,7 @@ describe('BookshelfPostsRepository', function () {
 
     await assert.rejects(
       h.repository.write(data, { importing: true, context: { internal: true } }),
-      failure,
+      (thrown) => thrown === failure,
     );
   });
 
@@ -443,7 +443,7 @@ describe('BookshelfPostsRepository', function () {
         authorNames: 'New Contributor',
         authorEmails: 'new@example.com',
       }),
-      failure,
+      (thrown) => thrown === failure,
     );
 
     sinon.assert.calledWithExactly(
@@ -467,7 +467,10 @@ describe('BookshelfPostsRepository', function () {
     h.add.rejects(failure);
     const options = { importing: true, context: { internal: true } };
 
-    await assert.rejects(h.repository.write(data, options, { tagNames: 'New Tag' }), failure);
+    await assert.rejects(
+      h.repository.write(data, options, { tagNames: 'New Tag' }),
+      (thrown) => thrown === failure,
+    );
 
     sinon.assert.calledWithExactly(
       h.addTag,
@@ -487,7 +490,7 @@ describe('BookshelfPostsRepository', function () {
 
     await assert.rejects(
       h.repository.write(data, { importing: true }, { tagNames: 'New Tag' }),
-      failure,
+      (thrown) => thrown === failure,
     );
 
     sinon.assert.notCalled(h.add);
@@ -505,7 +508,7 @@ describe('BookshelfPostsRepository', function () {
         { importing: true },
         { authorNames: 'New Contributor', authorEmails: 'new@example.com' },
       ),
-      failure,
+      (thrown) => thrown === failure,
     );
 
     sinon.assert.notCalled(h.add);
@@ -519,7 +522,7 @@ describe('BookshelfPostsRepository', function () {
 
     await assert.rejects(
       h.repository.write(data, { importing: true }, { authorEmails: 'author@example.com' }),
-      failure,
+      (thrown) => thrown === failure,
     );
 
     sinon.assert.notCalled(h.add);
@@ -538,7 +541,7 @@ describe('BookshelfPostsRepository', function () {
         { importing: true },
         { sourceUpdatedAt: '2025-02-01T00:00:00.000Z' },
       ),
-      failure,
+      (thrown) => thrown === failure,
     );
 
     sinon.assert.notCalled(h.add);
@@ -557,7 +560,7 @@ describe('BookshelfPostsRepository', function () {
         { importing: true },
         { sourceUpdatedAt: '2025-02-01T00:00:00.000Z' },
       ),
-      failure,
+      (thrown) => thrown === failure,
     );
 
     sinon.assert.calledTwice(h.edit);
@@ -571,7 +574,7 @@ describe('BookshelfPostsRepository', function () {
 
     await assert.rejects(
       h.repository.write(data, { importing: true, context: { internal: true } }),
-      failure,
+      (thrown) => thrown === failure,
     );
 
     sinon.assert.notCalled(h.findOne);

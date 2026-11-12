@@ -1,7 +1,7 @@
 import type { ActionRow } from '../../lib/action-log/action-log';
 import type { MemberAccess } from './access';
 
-type FieldAction = Extract<ActionRow, { resourceType: 'member_custom_field' }>;
+export type FieldAction = Extract<ActionRow, { resourceType: 'member_custom_field' }>;
 
 // Field-definition changes map to activity-feed events. A field's timeline reads
 // added -> edited -> archived -> restored, and a permanent delete (only from the

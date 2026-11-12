@@ -1,4 +1,4 @@
-import { isUnconfirmedAppCode } from '@tryghost/app-contracts';
+import { type AppFailureCode, isAppFailureCode } from '@tryghost/app-contracts';
 import { JSONError, getErrorMessage } from '@tryghost/admin-x-framework/errors';
 
 /** Something the app's developer has to fix, with what Ghost said about it. */
@@ -47,63 +47,61 @@ function problemsOf(details: unknown): InstallProblem[] {
   });
 }
 
+/** Undefined leaves the screen to show Ghost's own message. */
+type Reading = (detail: string, details: unknown) => InstallFailure | undefined;
+
+const unreachable: Reading = (detail) => ({ kind: 'unreachable', detail });
+const unconfirmed: Reading = (detail) => ({ kind: 'unconfirmed', detail });
+const problem =
+  (title: string): Reading =>
+  (detail) => ({ kind: 'problems', problems: [{ title, detail }] });
+const notExplained: Reading = () => undefined;
+
+/** Keyed by every code, so a new one fails the type-check until this screen decides on it. */
+const READINGS: Record<AppFailureCode, Reading> = {
+  APP_MANIFEST_UNREACHABLE: unreachable,
+  APP_CHALLENGE_UNREACHABLE: unreachable,
+
+  // The installed app came first, so the link is refused as another developer's, without
+  // details. A session shows it as unconfirmed.
+  APP_IDENTITY_MISMATCH: () => ({ kind: 'another-developer' }),
+  APP_MANIFEST_SIGNATURE_INVALID: unconfirmed,
+  APP_BACKEND_KEY_RETIRED: unconfirmed,
+  APP_CHALLENGE_FAILED: unconfirmed,
+  // Refused before the signature is checked, so it's a manifest problem for the developer.
+  // A session shows it as unconfirmed.
+  APP_MANIFEST_URL_MISMATCH: problem('The app’s details are for another install link'),
+
+  APP_MANIFEST_UNSIGNED: problem('The app’s details aren’t signed'),
+  APP_MANIFEST_URL_INVALID: problem('The install link isn’t valid'),
+  APP_MANIFEST_REDIRECTED: problem('The app’s details redirect to another site'),
+  APP_MANIFEST_NOT_JSON: problem('The app’s details aren’t in the expected format'),
+  APP_MANIFEST_TOO_LARGE: problem('The app’s details are too large'),
+  APP_MANIFEST_OTHER_APP: problem('This install link is for a different app'),
+  APP_MANIFEST_INVALID: (detail, details) => {
+    const problems = problemsOf(details);
+    return {
+      kind: 'problems',
+      problems: problems.length ? problems : [{ title: 'The app’s details aren’t valid', detail }],
+    };
+  },
+
+  // The install dialog handles these itself.
+  APP_MANIFEST_CHANGED: notExplained,
+  APP_INSTALLATION_CHANGED: notExplained,
+  APP_ALREADY_INSTALLED: notExplained,
+  APP_INSTALLATION_UNINSTALLED: notExplained,
+  // Never the answer to a review.
+  APP_NOT_INSTALLED: notExplained,
+  APP_UNAVAILABLE: notExplained,
+};
+
 /** Turns an error from previewing, installing or approving into what the screen shows. */
 export function installFailureOf(error: unknown): InstallFailure {
   const apiError = apiErrorOf(error);
-  const detail = apiError?.context ?? '';
-
-  switch (apiError?.code) {
-    case 'APP_MANIFEST_UNREACHABLE':
-    case 'APP_CHALLENGE_UNREACHABLE':
-      return { kind: 'unreachable', detail };
-    case 'APP_IDENTITY_MISMATCH':
-      return { kind: 'another-developer' };
-    case 'APP_MANIFEST_UNSIGNED':
-      return {
-        kind: 'problems',
-        problems: [{ title: 'The app’s details aren’t signed', detail }],
-      };
-    case 'APP_MANIFEST_URL_MISMATCH':
-      return {
-        kind: 'problems',
-        problems: [{ title: 'The app’s details are for another install link', detail }],
-      };
-    case 'APP_MANIFEST_URL_INVALID':
-      return { kind: 'problems', problems: [{ title: 'The install link isn’t valid', detail }] };
-    case 'APP_MANIFEST_REDIRECTED':
-      return {
-        kind: 'problems',
-        problems: [{ title: 'The app’s details redirect to another site', detail }],
-      };
-    case 'APP_MANIFEST_NOT_JSON':
-      return {
-        kind: 'problems',
-        problems: [{ title: 'The app’s details aren’t in the expected format', detail }],
-      };
-    case 'APP_MANIFEST_TOO_LARGE':
-      return {
-        kind: 'problems',
-        problems: [{ title: 'The app’s details are too large', detail }],
-      };
-    case 'APP_MANIFEST_OTHER_APP':
-      return {
-        kind: 'problems',
-        problems: [{ title: 'This install link is for a different app', detail }],
-      };
-    case 'APP_MANIFEST_INVALID': {
-      const problems = problemsOf((apiError as { details?: unknown }).details);
-      return {
-        kind: 'problems',
-        problems: problems.length
-          ? problems
-          : [{ title: 'The app’s details aren’t valid', detail }],
-      };
-    }
-    default:
-      // A bad signature, a failed challenge, or a backend key a newer manifest replaced.
-      if (isUnconfirmedAppCode(apiError?.code)) {
-        return { kind: 'unconfirmed', detail };
-      }
-      return { kind: 'error', message: getErrorMessage(error, FALLBACK_MESSAGE) };
-  }
+  const code = apiError?.code;
+  const failure = isAppFailureCode(code)
+    ? READINGS[code](apiError?.context ?? '', apiError?.details)
+    : undefined;
+  return failure ?? { kind: 'error', message: getErrorMessage(error, FALLBACK_MESSAGE) };
 }

@@ -11,11 +11,8 @@ export interface AppInstallation {
   id: string;
   app_id: string;
   status: AppInstallationStatus;
-  /**
-   * Increments with every change to the installation, so a session can tell it has ended. Missing
-   * on Ghost versions from before app sessions.
-   */
-  revision?: number;
+  /** Increments with every change to the installation, so a session can tell it has ended. */
+  revision: number;
   manifest_url: string;
   manifest: AppManifest;
   icon_data_url: string | null;
@@ -59,8 +56,7 @@ export interface AppInstallationPreview {
    * The app's origin, if the site's configuration trusts it, so Ghost didn't ask it to prove it
    * holds the app's key. Empty when it proved it. An app is one origin, so there's at most one.
    */
-  /** Missing from a Ghost from before the identity check, which trusted no origin. */
-  trusted_origins?: string[];
+  trusted_origins: string[];
   /**
    * The site's installation of the same app, if it has one: the manifest it was approved
    * with and where that was read from, and what would change.
@@ -114,27 +110,14 @@ export const useBrowseAppInstallations = createQuery<AppInstallationsResponseTyp
   path: '/apps/installations/',
 });
 
-/** The Admin API path for reading one installation, for reads that don't use the hook. */
-export const appInstallationPath = (id: string) => `/apps/installations/${id}/`;
-
 /**
  * Unlike `useBrowseAppInstallations`, this also returns uninstalled apps.
  * That way their details page still loads.
  */
 export const useReadAppInstallation = createQueryWithId<AppInstallationsResponseType>({
   dataType,
-  path: appInstallationPath,
+  path: (id) => `/apps/installations/${id}/`,
   defaultSearchParams: { include: 'history' },
-});
-
-/** Has Ghost fetch and check an app's manifest. Stores nothing, so nothing is invalidated. */
-export const usePreviewAppInstallation = createMutation<
-  AppInstallationPreviewsResponseType,
-  string
->({
-  method: 'POST',
-  path: () => '/apps/installations/preview/',
-  body: (manifestUrl) => ({ app_installation_previews: [{ manifest_url: manifestUrl }] }),
 });
 
 /**
@@ -143,7 +126,6 @@ export const usePreviewAppInstallation = createMutation<
  * the app. Ghost then returns the current installation, and only that response decides whether the
  * app loads. The session ends when the installation's revision changes from the one in the
  * response. For an app that isn't installed, Ghost returns 404 with the code `APP_NOT_INSTALLED`.
- * Ghost versions from before app sessions return a plain 404.
  */
 export const useStartAppSession = createMutation<AppSessionsResponseType, string>({
   method: 'POST',

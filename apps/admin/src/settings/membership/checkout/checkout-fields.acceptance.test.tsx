@@ -50,9 +50,10 @@ async function openCheckoutFields(
   config: StripeCheckoutConfig,
   fields: Parameters<typeof fakeMemberCustomFields>[0] = [phoneField],
   hostSettings?: HostSettings,
+  tiers = [freeTier, paidTier],
 ) {
   fakeSettingsScreens();
-  fakeTiers([freeTier, paidTier]);
+  fakeTiers(tiers);
   fakeMemberCustomFields(fields);
   fakeAdminEndpoint('GET', '/stripe/checkout/config/', { checkout_config: [config] });
   fakeAdminEndpoint('GET', '/custom_theme_settings/', { custom_theme_settings: [] });
@@ -233,6 +234,176 @@ describe('Checkout settings', () => {
     });
     await expect.element(type).toHaveTextContent('Phone');
     await expect.element(type).toBeDisabled();
+  });
+
+  // Each of these pickers only ever makes one kind of field, so its form starts from the name
+  // that field almost always has. A name searched for is still the one the publisher meant.
+  it('starts a new field with the name it usually has, unless one was searched for', async () => {
+    const { modal } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+    });
+    await modal.getByRole('switch', { name: 'Shipping address' }).click();
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    const form = page.getByRole('dialog', { name: 'New custom field' });
+
+    for (const [picker, name] of [
+      ['Save address as', 'Shipping Address'],
+      ['Save name as', 'Recipient Name'],
+      ['Save phone as', 'Phone'],
+    ]) {
+      await modal.getByRole('combobox', { name: picker }).click();
+      await page.getByRole('option', { name: 'Add custom field' }).click();
+      await expect.element(form.getByLabelText('Name')).toHaveValue(name);
+      await userEvent.keyboard('{Escape}');
+      await expect.element(form).not.toBeInTheDocument();
+    }
+
+    await modal.getByRole('combobox', { name: 'Save phone as' }).click();
+    await userEvent.fill(page.getByPlaceholder('Search fields...'), 'Mobile');
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    await expect.element(form.getByLabelText('Name')).toHaveValue('Mobile');
+  });
+
+  // Ghost refuses a name another field has, whatever its type, case or status, so a taken name
+  // would only be refused on save.
+  it("doesn't suggest a name another field already has", async () => {
+    const archivedPhone = {
+      ...phoneField,
+      key: KeySchema.parse('phone'),
+      name: 'phone',
+      type: 'short_text',
+      status: 'archived',
+    } satisfies MemberCustomField;
+    const { modal } = await openCheckoutFields(
+      { design: { customize: false }, shipping: { collect: false }, phone: { collect: false } },
+      [phoneField, archivedPhone],
+    );
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+
+    await modal.getByRole('combobox', { name: 'Save phone as' }).click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    await expect
+      .element(page.getByRole('dialog', { name: 'New custom field' }).getByLabelText('Name'))
+      .toHaveValue('');
+  });
+
+  // Once a field is saved with the suggested name, that name is taken, so the next new field
+  // starts empty rather than with a name that would be refused.
+  it('stops suggesting a name once a field has been saved with it', async () => {
+    const savedPhone = {
+      ...phoneField,
+      key: KeySchema.parse('phone'),
+      name: 'Phone',
+    } satisfies MemberCustomField;
+    const fields = [phoneField];
+    fakeAdminEndpoint('POST', '/members/metafields/custom/', () => {
+      fields.push(savedPhone);
+      return { members_metafields: [savedPhone] };
+    });
+    const { modal } = await openCheckoutFields(
+      { design: { customize: false }, shipping: { collect: false }, phone: { collect: false } },
+      () => fields,
+    );
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    const picker = modal.getByRole('combobox', { name: 'Save phone as' });
+    const form = page.getByRole('dialog', { name: 'New custom field' });
+
+    await picker.click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    await expect.element(form.getByLabelText('Name')).toHaveValue('Phone');
+    await form.getByRole('button', { name: 'Save' }).click();
+    await expect.element(picker).toHaveTextContent('Phone');
+
+    await picker.click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    await expect.element(form.getByLabelText('Name')).toHaveValue('');
+  });
+
+  // Archiving a field doesn't stop checkout asking for it, only saving the answers, so a chosen
+  // field that's archived says so rather than looking as if it works.
+  describe('with a chosen field or tier archived', () => {
+    const legacyTier = tier({ id: '645453f4d254799990dd0e23', name: 'Legacy', active: false });
+
+    async function openWithPhone(tierIds: string[], tiers = [freeTier, paidTier, legacyTier]) {
+      return openCheckoutFields(
+        {
+          design: { customize: false },
+          shipping: { collect: false },
+          phone: { collect: true, tier_ids: tierIds, custom_field_key: 'contact_phone' },
+        },
+        [{ ...phoneField, status: 'archived' }],
+        undefined,
+        tiers,
+      );
+    }
+
+    it('marks the field as archived on the picker and in its list', async () => {
+      const { modal } = await openWithPhone([paidTier.id]);
+
+      const field = modal.getByRole('combobox', { name: 'Save phone as' });
+      await expect.element(field.getByText('Archived', { exact: true })).toBeVisible();
+      await field.click();
+      await expect
+        .element(page.getByRole('option', { name: 'Contact phone Archived', exact: true }))
+        .toBeVisible();
+    });
+
+    // The chosen tiers are one line, cut off when long, so they share one badge at its end,
+    // which always shows, and the list marks which are archived.
+    it('marks archived tiers with one badge on the picker and their own in the list', async () => {
+      const { modal } = await openWithPhone([paidTier.id, legacyTier.id]);
+
+      const tiers = modal.getByRole('combobox', { name: 'Collect for' });
+      await expect.element(tiers.getByText('Legacy, Supporter', { exact: true })).toBeVisible();
+      await expect.element(tiers.getByText('1 archived', { exact: true })).toBeVisible();
+      await tiers.click();
+      await expect
+        .element(page.getByRole('option', { name: 'Legacy Archived', exact: true }))
+        .toBeVisible();
+      await expect
+        .element(page.getByRole('option', { name: 'Supporter', exact: true }))
+        .toBeVisible();
+
+      // Found by what it is, as it was when "(archived)" was part of its name.
+      await userEvent.fill(page.getByPlaceholder('Search tiers...'), 'archived');
+      await expect
+        .element(page.getByRole('option', { name: 'Legacy Archived', exact: true }))
+        .toBeVisible();
+      await expect
+        .element(page.getByRole('option', { name: 'Supporter', exact: true }))
+        .not.toBeInTheDocument();
+    });
+
+    it('says only "Archived" when the one tier chosen is archived', async () => {
+      const { modal } = await openWithPhone([legacyTier.id]);
+
+      const tiers = modal.getByRole('combobox', { name: 'Collect for' });
+      await expect.element(tiers.getByText('Legacy', { exact: true })).toBeVisible();
+      await expect.element(tiers.getByText('Archived', { exact: true })).toBeVisible();
+    });
+
+    // A tier archived and replaced by one with the same name is a row of its own, which the
+    // keyboard can move past and pick.
+    it('tells an archived tier from an active one with the same name', async () => {
+      const newLegacy = tier({ id: '645453f4d254799990dd0e24', name: 'Legacy' });
+      const { modal, saveApi } = await openWithPhone(
+        [legacyTier.id],
+        [freeTier, paidTier, legacyTier, newLegacy],
+      );
+
+      await modal.getByRole('combobox', { name: 'Collect for' }).click();
+      await userEvent.fill(page.getByPlaceholder('Search tiers...'), 'Legacy');
+      await userEvent.keyboard('{ArrowDown}{Enter}{Escape}');
+      await modal.getByRole('button', { name: 'Save' }).click();
+
+      await expect
+        .poll(() => saveApi.lastRequest?.body)
+        .toMatchObject({
+          checkout_config: [{ phone: { tier_ids: [legacyTier.id, newLegacy.id] } }],
+        });
+    });
   });
 
   // A site keeps its Stripe connection when the host switches its custom fields off, so it
@@ -560,6 +731,21 @@ describe('Checkout settings', () => {
         ],
       );
     }
+
+    // Nothing chosen is archived, so nothing says so, and the countries list is searched as before.
+    it('shows no archived badge when nothing chosen is archived', async () => {
+      const { modal } = await openEverySetting();
+      await expect.element(modal.getByText(/archived/i)).not.toBeInTheDocument();
+
+      await modal.getByRole('combobox', { name: 'Countries' }).click();
+      await userEvent.fill(page.getByPlaceholder('Search countries...'), 'United St');
+      await expect
+        .element(page.getByRole('option', { name: 'United States', exact: true }))
+        .toBeVisible();
+      await expect
+        .element(page.getByRole('listbox').getByText(/archived/i))
+        .not.toBeInTheDocument();
+    });
 
     it("opens a setting's dropdown from the dropdown only, never from its name", async () => {
       const { modal } = await openEverySetting();

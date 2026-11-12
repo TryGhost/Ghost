@@ -95,27 +95,6 @@ const apiError = (status: number, message: string, code?: string) =>
     headers: { 'content-type': 'application/json' },
   });
 
-/** What Ghost returns for a request to an Admin API route it doesn't have. */
-const routeNotFound = () =>
-  new Response(
-    JSON.stringify({
-      errors: [
-        {
-          message: 'Resource not found',
-          context: null,
-          type: 'NotFoundError',
-          details: null,
-          property: null,
-          help: null,
-          code: null,
-          id: 'b1e2c3d4-0000-4000-8000-000000000000',
-          ghostErrorCode: null,
-        },
-      ],
-    }),
-    { status: 404, headers: { 'content-type': 'application/json' } },
-  );
-
 /**
  * Sets `appFrameTimeouts.ready` to `ms` while `run` runs, or until `run` calls `restore` to give
  * the rest of the spec the usual timeout.
@@ -549,24 +528,6 @@ describe('Managing apps', () => {
     expect(reinstalledSessionsApi.requests).toHaveLength(1);
   });
 
-  it('doesn’t load an uninstalled app on a Ghost version without app sessions', async () => {
-    // A current Ghost refuses to start a session of an uninstalled app, as the next spec shows. A
-    // Ghost from before app sessions returns a plain 404 to the session start, and returns the app
-    // to the read.
-    const older = installation({ status: 'uninstalled' });
-    delete older.revision;
-    fakeSessionStart('installation-1', routeNotFound());
-    const readApi = fakeAdminEndpoint('GET', readPath('installation-1'), {
-      app_installations: [older],
-    });
-
-    await renderAdminApp(APP_ROUTE, { labs });
-
-    await expect.element(appsScreen.notInstalled()).toHaveTextContent('This app isn’t installed');
-    await expect.element(appsScreen.frame()).not.toBeInTheDocument();
-    expect(readApi.requests).toHaveLength(1);
-  });
-
   it('says the app isn’t installed when it was uninstalled or never installed', async () => {
     const id = 'abcdefabcdefabcdefabcdef';
     fakeSessionStart(id, apiError(404, 'This app is not installed.', 'APP_NOT_INSTALLED'));
@@ -674,28 +635,6 @@ describe('Managing apps', () => {
 
     await expect.element(appsScreen.frame()).toBeVisible();
     expect(sessionsApi.requests).toHaveLength(2);
-  });
-
-  it('opens an app without a re-check on a Ghost version without app sessions', async () => {
-    // Admin and Core deploy independently. A Ghost from before app sessions returns a plain 404
-    // when Admin starts a session, and its installations have no revision.
-    const older = installation();
-    delete older.revision;
-    const { sessionsApi, readApi, set } = await fakeAppPage(installation());
-    set(older);
-    sessionsApi.set(routeNotFound());
-
-    const { queryClient } = await renderAdminApp(APP_ROUTE, { labs });
-
-    await expect.element(appsScreen.frame()).toBeVisible();
-    expect((await appState()).context?.session).toEqual({ revision: 0 });
-    expect(sessionsApi.requests).toHaveLength(1);
-    // The installation is read once to open the app, without a re-check. It isn't read again to
-    // detect the session's end, even when the publisher comes back to the tab, because a missing
-    // revision never changes.
-    window.dispatchEvent(new Event('visibilitychange'));
-    await expect.poll(() => queryClient.isFetching()).toBe(0);
-    expect(readApi.requests).toHaveLength(1);
   });
 
   it('ends the session when the installation’s revision increases, and starts a new one', async () => {

@@ -21,6 +21,9 @@ const MAIN_DATABASE = 'ghost_dev';
 // Linked worktrees get a (front door, Ghost) port pair from this range
 const FIRST_PORT = 2400;
 const SLOTS = 300;
+// `pnpm dev:multi`'s second Ghost runs this far above the first, clear of every pair above.
+// Worked out rather than stored, so `pnpm dev` never sees it.
+const SECOND_GHOST_OFFSET = 1000;
 
 export const checkoutRoot = realpathSync(fileURLToPath(new URL('../../..', import.meta.url)));
 const checkoutHash = createHash('sha1').update(checkoutRoot).digest('hex');
@@ -52,6 +55,25 @@ function toEnv(name: string, port: number, database: string): GhostDevEnv {
     GHOST_DEV_BACKEND_PORT: String(port + 1),
     GHOST_DEV_DATABASE: database,
   };
+}
+
+export function secondGhostPort(backendPort: string): number {
+  return Number(backendPort) + SECOND_GHOST_OFFSET;
+}
+
+export function isListening(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const socket = net.connect({ host: 'localhost', port, timeout: 1000 });
+    socket.once('connect', () => {
+      socket.destroy();
+      resolve(true);
+    });
+    socket.once('timeout', () => {
+      socket.destroy();
+      resolve(false);
+    });
+    socket.once('error', () => resolve(false));
+  });
 }
 
 function isFree(port: number): Promise<boolean> {

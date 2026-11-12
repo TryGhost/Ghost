@@ -31,7 +31,7 @@ authorization middleware:
 
 Start with:
 
-- [`auth/authenticate.js`](../../ghost/core/server/auth/authenticate.js)
+- [`auth/authenticate.ts`](../../ghost/core/server/auth/authenticate.ts)
   for the authentication middleware assembled for each API.
 - [`auth/authorize.js`](../../ghost/core/server/auth/authorize.js)
   for the identity checks after authentication.

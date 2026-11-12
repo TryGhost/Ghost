@@ -61,8 +61,9 @@ pnpm gx generate service delivery-receipts
 
 It creates a `defineService` root, a separate implementation with typed logging
 injection, and a starter root test. It adds `migrated: true` to the service
-inventory and registers the root in Oxlint, enabling root and dependency checks
-immediately. Existing service files, directories and tests are never overwritten.
+inventory and registers the root in Oxlint for root-shape checks. Dependency
+checks already apply to every service implementation. Existing service files,
+directories and tests are never overwritten.
 
 The command prints the remaining steps, including choosing the right place for
 `init()` in boot. See [creating a service](../../ghost/core/server/services/README.md#creating-a-service)
@@ -157,6 +158,7 @@ Dependency Cruiser audit. Run them from the repository root:
 | `pnpm gx services report email-address` | One entry's notes, assessments, blockers and offending imports |
 | `pnpm gx services dependencies`         | Disallowed dependencies ranked by distinct importing files     |
 | `pnpm gx services audit`                | Dependency Cruiser's full native report                        |
+| `pnpm gx services verify email-address` | Pass or fail checks on a committed service change              |
 
 List a group with `list --group <group>`. Report tables show group IDs;
 `list --help` lists all groups. For example:
@@ -174,6 +176,19 @@ pnpm gx services list --group migrated --json
 `--output-type markdown` and `--output-type json --output-to /tmp/service-dependencies.json`.
 It replaces `pnpm audit:services`; `services dependencies` replaces
 `pnpm audit:services:summary` without requiring `jq`.
+
+`services verify` needs a clean tree on a branch that contains the fetched base.
+It checks new files, audit SHAs, formatting, lint, types and boundaries. It runs
+dependency-cruiser twice, resolving workspace packages to authored source and then
+to the built output Ghost loads. Built output must add no service rule violation,
+every part of an added allowance must match an import from a service, and each file
+an added allowance admits must be named in a boundary regression. It then runs the
+full unit suite, runs the changed unit tests shuffled and each one alone and, for a migrated service, confirms a boot test fails when boot stops waiting
+for its `init()` but still sees it reject.
+`--static` skips lint, types and tests. `review` lines are other inventory entries
+that mention the service, for the
+[verify-service-change skill](../../.agents/skills/verify-service-change/SKILL.md)
+to confirm. Run it again after every rebase or fix.
 
 ### Interpreting the reports
 
@@ -223,8 +238,13 @@ importing implementation files per target, largest first; it excludes unresolved
 and own-root findings. The native `audit` counts rule violations, so one import
 can appear under more than one rule.
 
-The audit checks all entries and returns success when it finds violations.
-`pnpm lint:boundaries` enforces the same rules for migrated services in CI.
+All service commands use the same full dependency-cruiser scan and
+known-violations file as `pnpm lint:boundaries`. Reports retain known and new
+findings and return success when violations are found; boundary lint fails on
+new violations or stale entries. Invalid known-violations files fail both.
+Violations in services with deferred enforcement appear in reports but do not
+fail boundary lint.
+The native `audit` output includes Core and app boundaries as well as services.
 Legacy root `index.js` files are treated as wiring candidates. Computed paths
 such as `require(name)` cannot be resolved by the static audit. No violations
 does not mean ready to migrate: recorded blockers, runtime behavior and test

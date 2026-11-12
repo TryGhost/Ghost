@@ -3,6 +3,7 @@ const StripeService = require('./stripe-service');
 const logging = require('@tryghost/logging');
 const { tracer, meter } = require('../../lib/tracing');
 const { stripeTracking } = require('./tracking');
+const sentry = require('../../../shared/sentry');
 const membersService = require('../members');
 const config = require('../../../shared/config');
 const settings = require('../../../shared/settings-cache');
@@ -42,6 +43,7 @@ const debouncedConfigureApi = _.debounce(() => {
 module.exports = new StripeService({
   labs,
   tracking: stripeTracking({ tracer, meter }),
+  sentry,
   membersService,
   models: _.pick(models, [
     'Product',

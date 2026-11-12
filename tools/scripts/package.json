@@ -40,7 +40,9 @@
   "nx": {
     "namedInputs": {
       "serviceDependencyContracts": [
-        "{workspaceRoot}/.dependency-cruiser.cjs"
+        "{workspaceRoot}/.dependency-cruiser.cjs",
+        "{workspaceRoot}/.dependency-cruiser-known-violations.json",
+        "{workspaceRoot}/ghost/core/server/services/service-inventory.yaml"
       ],
       "adminTestContracts": [
         "{workspaceRoot}/apps/admin/package.json",

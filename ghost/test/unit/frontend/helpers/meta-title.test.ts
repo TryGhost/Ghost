@@ -154,14 +154,7 @@ describe('{{meta_title}} helper', function () {
   });
 
   describe('with meta_title', function () {
-    // The first test below stubs settingsCache.get and the rest of this
-    // block relies on that stub staying in place; restore it when the
-    // block finishes so the stub does not leak into other test files.
-    afterAll(function () {
-      sinon.restore();
-    });
-
-    it('returns correct title for homepage when meta_title is defined', function () {
+    beforeEach(function () {
       sinon.stub(settingsCache, 'get').callsFake(function (key: string) {
         const settings: Record<string, string> = {
           title: 'Ghost',
@@ -169,7 +162,13 @@ describe('{{meta_title}} helper', function () {
         };
         return settings[key];
       });
+    });
 
+    afterEach(function () {
+      sinon.restore();
+    });
+
+    it('returns correct title for homepage when meta_title is defined', function () {
       const rendered = meta_title.call({}, { data: { root: { context: ['home'] } } });
 
       assertExists(rendered);
