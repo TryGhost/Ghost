@@ -30,7 +30,6 @@ export const createTestAutomationsRepository2 = (
       'insertRunSteps',
       'insertRuns',
       'insertTriggerRules',
-      'isAutomationActiveForRun',
       'isAutomationActiveForRunStep',
       'loadEdgeRows',
       'lockActionRevisions',

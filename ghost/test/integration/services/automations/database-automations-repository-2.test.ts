@@ -848,33 +848,6 @@ describe('database automations repository', function () {
     });
   });
 
-  alphabeticalDescribe('isAutomationActiveForRun', function () {
-    const isAutomationActiveForRun = async (status: string) => {
-      const repository = createDatabaseAutomationsRepository2({ knex });
-
-      const automation = { ...createAutomation(), status };
-      const member = createMember(ObjectId().toHexString());
-      const run = createRun(automation.id, member.id);
-
-      await knex('automations').insert(automation);
-      await knex('members').insert(member);
-      await repository.insertRuns(knex, [run]);
-
-      return await repository.isAutomationActiveForRun(knex, run.id);
-    };
-
-    it('resolves with true if the associated automation is active', async function () {
-      await expect(isAutomationActiveForRun('active')).resolves.toBe(true);
-    });
-
-    it.each(['inactive', 'archived'])(
-      'resolves with false if the associated automation is %s',
-      async function (status) {
-        await expect(isAutomationActiveForRun(status)).resolves.toBe(false);
-      },
-    );
-  });
-
   alphabeticalDescribe('isAutomationActiveForRunStep', function () {
     const isAutomationActiveForRunStep = async (status: string) => {
       const repository = createDatabaseAutomationsRepository2({ knex });
