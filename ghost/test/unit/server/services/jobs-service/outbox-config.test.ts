@@ -15,7 +15,7 @@ describe('getOutboxConfig', function () {
     assert.deepEqual(getOutboxConfig(configWith(undefined)), {
       enabled: false,
       keepUntilSettled: false,
-      pollIntervalMs: 1000,
+      pollIntervalMs: 30000,
       submissionTimeoutMs: 10000,
       retryDelayMs: 30000,
     });
@@ -49,7 +49,7 @@ describe('getOutboxConfig', function () {
     assert.deepEqual(getOutboxConfig(configWith({ enabled: true })), {
       enabled: true,
       keepUntilSettled: false,
-      pollIntervalMs: 1000,
+      pollIntervalMs: 30000,
       submissionTimeoutMs: 10000,
       retryDelayMs: 30000,
     });
