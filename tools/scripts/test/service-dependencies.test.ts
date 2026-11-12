@@ -91,11 +91,15 @@ function fixture(t: TestContext, files: Record<string, string>) {
     write,
     run,
     root,
-    lint() {
-      return spawnSync(process.execPath, ['tools/scripts/ci/check-boundaries.ts'], {
-        cwd: root,
-        encoding: 'utf8',
-      });
+    lint(staged: string[] = []) {
+      return spawnSync(
+        process.execPath,
+        ['tools/scripts/ci/check-boundaries.ts', ...(staged.length ? ['--', ...staged] : [])],
+        {
+          cwd: root,
+          encoding: 'utf8',
+        },
+      );
     },
     link(source: string, destination: string) {
       mkdirSync(path.dirname(path.join(root, destination)), { recursive: true });
@@ -176,6 +180,35 @@ it('rejects new and moved dependencies and stale entries through the boundary li
   assert.match(fixed.stderr, /Remove it from .dependency-cruiser-known-violations.json/);
   f.write('.dependency-cruiser-known-violations.json', '[]');
   assert.equal(f.lint().status, 0);
+});
+
+it('applies the known violations when the commit hook checks only the staged files', (t) => {
+  const from = `${services}/legacy/implementation.js`;
+  const other = `${services}/legacy/other.js`;
+  const f = fixture(t, {
+    [from]: "require('../../../shared/config');",
+    [other]: "require('../../../shared/config');",
+    '.dependency-cruiser-known-violations.json': JSON.stringify(
+      [from, other].map((file) => ({ rule: 'service-dependencies', from: file, to: config })),
+    ),
+  });
+  // A file with a known violation can be committed.
+  const known = f.lint([from]);
+  assert.equal(known.status, 0, known.stderr);
+  // The other file is not scanned, so its entry is not reported as stale.
+  f.write(other, '');
+  const partial = f.lint([from]);
+  assert.equal(partial.status, 0, partial.stderr);
+  assert.equal(f.lint().status, 1);
+  // A new violation in a staged file still fails.
+  f.write(`${services}/legacy/new.js`, "require('../../../shared/config');");
+  const added = f.lint([`${services}/legacy/new.js`]);
+  assert.equal(added.status, 1, added.stderr);
+  assert.match(added.stderr, /error service-dependencies:.*legacy\/new.js/);
+  // A file the scan skips leaves nothing to check.
+  f.write('ghost/core/test/unit/skipped.js', "require('../../shared/config');");
+  const skipped = f.lint(['ghost/core/test/unit/skipped.js']);
+  assert.equal(skipped.status, 0, skipped.stderr);
 });
 
 it('rejects known violations for migrated services, duplicates and non-service rules', (t) => {

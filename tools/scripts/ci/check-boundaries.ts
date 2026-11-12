@@ -5,9 +5,14 @@ import {
   readDependencyBoundaries,
 } from '../lib/dependency-boundaries.ts';
 
+// With no arguments this scans everything. The commit hook passes the staged
+// files after `--`, so the same known violations apply there as in CI.
+const files = process.argv.slice(2).filter((argument) => argument !== '--');
+
 try {
   const { graph, newViolations, stale, deferred } = readDependencyBoundaries(
     path.resolve(import.meta.dirname, '../../..'),
+    files,
   );
   for (const violation of newViolations) {
     const { rule, from, to } = dependencyIdentity(violation);

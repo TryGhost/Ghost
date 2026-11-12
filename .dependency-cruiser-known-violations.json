@@ -602,11 +602,6 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
-    "to": "ghost/core/server/services/content-import/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
     "to": "ghost/core/server/services/content-import/jobs/content-csv-import-job.ts"
   },
   {
@@ -677,17 +672,7 @@
   {
     "rule": "service-dependencies",
     "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
-    "to": "ghost/core/server/services/signing-keys/index.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
     "to": "ghost/core/server/services/tinybird-sync/jobs/tinybird-sync-job.ts"
-  },
-  {
-    "rule": "service-dependencies",
-    "from": "ghost/core/server/services/jobs-service/register-job-handlers.ts",
-    "to": "ghost/core/server/services/update-check/index.js"
   },
   {
     "rule": "service-dependencies",
