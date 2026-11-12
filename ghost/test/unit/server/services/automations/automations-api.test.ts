@@ -5,8 +5,6 @@ import { vi } from 'vitest';
 // @ts-expect-error @tryghost/domain-events currently lacks type declarations.
 import domainEvents from '@tryghost/domain-events';
 
-import * as automationsApi from '../../../../../core/server/services/automations/automations-api';
-import { StartAutomationsPollEvent } from '../../../../../core/server/services/automations/events/start-automations-poll-event';
 import {
   EMPTY_EMAIL_LEXICAL,
   NON_EMPTY_EMAIL_LEXICAL,
@@ -72,6 +70,19 @@ const buildEdge = (source: Readonly<{ id: string }>, target: Readonly<{ id: stri
 });
 
 describe('automations API', function () {
+  let automationsApi: typeof import('../../../../../core/server/services/automations/automations-api');
+  let StartAutomationsPollEvent: (typeof import('../../../../../core/server/services/automations/events/start-automations-poll-event'))['StartAutomationsPollEvent'];
+
+  beforeAll(async function () {
+    // vi.mock only reaches modules loaded after it, and another file in this
+    // worker may already have loaded the API with its real repositories
+    vi.resetModules();
+    automationsApi =
+      await import('../../../../../core/server/services/automations/automations-api');
+    ({ StartAutomationsPollEvent } =
+      await import('../../../../../core/server/services/automations/events/start-automations-poll-event'));
+  });
+
   afterAll(function () {
     // Unit files share a worker module cache. Do not leave repositories imported
     // with these mocked dependencies for subsequent repository tests.
