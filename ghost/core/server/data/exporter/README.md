@@ -12,6 +12,10 @@ instance or initialization hook.
   `SiteExporterDeps` type. The [exports endpoint](../../api/endpoints/exports.js)
   constructs it for each download, supplying content, CSV, theme and routing
   callbacks. Construction retains the callbacks without invoking them.
+- [json-stream.ts](json-stream.ts) exports `createJsonStream`, which serializes
+  an export as a stream of JSON text identical to `JSON.stringify`. The
+  [backup writer](../db/backup.js) and the archive's `export.json` use it
+  because a large site's export can exceed V8's maximum string length.
 - [export-components.ts](export-components.ts) defines the synchronous and
   asynchronous component lists. The exports endpoint and
   [export requests](../../services/export-requests/export-requests-service.ts)

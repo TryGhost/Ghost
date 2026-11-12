@@ -3,10 +3,12 @@
 const fs = require('fs-extra');
 
 const path = require('path');
+const { pipeline } = require('stream/promises');
 const config = require('../../../shared/config');
 const logging = require('@tryghost/logging');
 const urlUtils = require('../../../shared/url-utils').default;
 const exporter = require('../exporter');
+const { createJsonStream } = require('../exporter/json-stream');
 
 /**
  * @param {object} exportResult
@@ -18,7 +20,15 @@ const writeExportFile = async (exportResult) => {
     urlUtils.urlJoin(config.get('paths').contentPath, 'data', exportResult.filename),
   );
 
-  await fs.writeFile(filename, JSON.stringify(exportResult.data));
+  // Streamed because a large site's export can exceed V8's maximum string length
+  try {
+    await pipeline(createJsonStream(exportResult.data), fs.createWriteStream(filename));
+  } catch (err) {
+    // A partial file would be served later as a corrupt backup
+    await fs.remove(filename).catch(() => {});
+    throw err;
+  }
+
   return filename;
 };
 
