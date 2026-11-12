@@ -31,7 +31,8 @@ function fixture(t: TestContext, base: string, file = legacyInventoryFile) {
   };
   const commit = (message: string) => {
     git('add', '--all');
-    git('commit', '--quiet', '--allow-empty', '-m', message);
+    // A developer's signing setup can fail when many fixtures commit at once.
+    git('commit', '--quiet', '--allow-empty', '--no-gpg-sign', '-m', message);
     return git('rev-parse', 'HEAD');
   };
   git('init', '--quiet', '--initial-branch', 'main', '.');
@@ -91,7 +92,7 @@ it('compares with the fork point, not with the tip of the base branch', (t) => {
   assert.equal(result.mergeBase, f.forkPoint);
   assert.deepEqual(result.added, []);
   // After merging main, the fork point moves and the stale entry must go.
-  f.git('merge', '--quiet', '--no-edit', '-X', 'ours', 'main');
+  f.git('merge', '--quiet', '--no-edit', '--no-gpg-sign', '-X', 'ours', 'main');
   f.write(inventory({ alpha: {}, beta: {} }));
   assert.deepEqual(f.compare().added, ['beta']);
 });
