@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const fs = require('fs-extra');
 const path = require('path');
 const errors = require('@tryghost/errors');
+const express = require('../../../shared/express');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils').default;
 const tpl = require('@tryghost/tpl');
@@ -152,36 +153,18 @@ function servePublicFile(location, file, type, maxAge) {
 }
 
 /**
- * A country's flag, for Portal's phone input, as Admin draws it: one SVG per country a phone
- * number can be from, from the country-flag-icons version Shade uses. Served rather than bundled
- * into Portal, so a reader downloads only the flag they're shown. A country is its two capital
- * letters, so nothing else in the folder can be asked for.
+ * Country flags for Portal's phone input, as Admin draws them: one SVG per country a phone number
+ * can be from, from the country-flag-icons version Shade uses. Served rather than bundled into
+ * Portal, so a reader downloads only the flag they're shown.
  */
-function serveFlag(req, res, next) {
-  const { country } = req.params;
-  if (!/^[A-Z]{2}$/.test(country)) {
-    return next();
-  }
-
-  res.sendFile(
-    path.join(config.get('paths').publicFilePath, 'flags', `${country}.svg`),
-    { maxAge: config.get('caching:publicAssets:maxAge') * 1000 },
-    (err) => {
-      if (err && err.status === 404) {
-        return next(
-          new errors.NotFoundError({
-            message: tpl(messages.imageNotFound),
-            code: 'STATIC_FILE_NOT_FOUND',
-            property: err.path,
-          }),
-        );
-      }
-
-      if (err) {
-        return next(err);
-      }
-    },
-  );
+function serveFlags() {
+  return express.serveStatic(path.join(config.get('paths').publicFilePath, 'flags'), {
+    // In milliseconds; the config is in seconds.
+    maxAge: config.get('caching:publicAssets:maxAge') * 1000,
+    immutable: true,
+    index: false,
+    fallthrough: false,
+  });
 }
 
 // Handles requests to public static files served by Ghost
@@ -217,7 +200,7 @@ function servePublicFiles(siteApp) {
     ),
   );
 
-  siteApp.get('/public/flags/:country.svg', serveFlag);
+  siteApp.use('/public/flags', serveFlags());
 
   // Traffic analytics tracking script
   siteApp.get(
@@ -310,4 +293,4 @@ function servePublicFiles(siteApp) {
 module.exports = servePublicFiles;
 module.exports.servePublicFile = servePublicFile;
 module.exports.createPublicFileMiddleware = createPublicFileMiddleware;
-module.exports.serveFlag = serveFlag;
+module.exports.serveFlags = serveFlags;

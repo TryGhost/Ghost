@@ -6,7 +6,7 @@ const fs = require('fs-extra');
 const config = require('../../../../../core/shared/config');
 const {
   servePublicFile,
-  serveFlag,
+  serveFlags,
 } = require('../../../../../core/frontend/web/routers/serve-public-file');
 
 describe('servePublicFile', function () {
@@ -197,17 +197,14 @@ describe('servePublicFile', function () {
 
 // Portal's phone input shows a country's flag from here, one small file per country, so a reader
 // downloads only the flag they see.
-describe('serveFlag', function () {
+describe('serveFlags', function () {
   function createApp() {
     const app = express();
-    app.get('/public/flags/:country.svg', serveFlag);
-    app.use((_req, res) => {
-      res.status(418).send('next');
-    });
+    app.use('/public/flags', serveFlags());
     app.use((err, _req, res, _next) => {
       void _next;
 
-      res.status(err.statusCode || 500).json({ code: err.code });
+      res.status(err.statusCode || err.status || 500).end();
     });
     return app;
   }
@@ -226,21 +223,19 @@ describe('serveFlag', function () {
     assert.match(headers['content-type'], /^image\/svg\+xml/);
     assert.equal(
       headers['cache-control'],
-      `public, max-age=${config.get('caching:publicAssets:maxAge')}`,
+      `public, max-age=${config.get('caching:publicAssets:maxAge')}, immutable`,
     );
     assert.match(body, /^<svg /);
   });
 
   it('sends 404 for a country it has no flag for', async function () {
-    const { body } = await request(createApp()).get('/public/flags/ZZ.svg').expect(404);
-
-    assert.equal(body.code, 'STATIC_FILE_NOT_FOUND');
+    await request(createApp()).get('/public/flags/ZZ.svg').expect(404);
   });
 
-  // A country is two capital letters, so nothing else in the folder, or outside it, is reachable.
-  it('passes on anything that is not a country', async function () {
-    await request(createApp()).get('/public/flags/gb.svg').expect(418);
-    await request(createApp()).get('/public/flags/GBR.svg').expect(418);
-    await request(createApp()).get('/public/flags/%2E%2E%2Frobots.svg').expect(418);
+  // Nothing outside the folder is reachable.
+  it('refuses a path that leaves the folder', async function () {
+    const { status } = await request(createApp()).get('/public/flags/%2E%2E%2Frobots.txt');
+
+    assert.ok(status === 403 || status === 404, `expected 403 or 404, got ${status}`);
   });
 });
