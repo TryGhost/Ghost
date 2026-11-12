@@ -234,7 +234,7 @@ describe('Account Plan Page', () => {
     const recipient = await findByLabelText('Recipient name');
     expect(recipient).toHaveValue('Ada Lovelace');
     // Shown after the country its code names, as the phone input shows a number held.
-    expect(getByLabelText('Country code')).toHaveTextContent('🇬🇧 +44');
+    expect(getByLabelText('Country code')).toHaveTextContent(/^\+44$/);
     expect(getByLabelText('Phone number')).toHaveValue('7400 123456');
     // Shipping first, then the phone number, whatever order the tier lists them in.
     expect(
@@ -277,7 +277,7 @@ describe('Account Plan Page', () => {
 
       const number = await findByLabelText('Phone number');
       expect(number).toHaveValue('');
-      expect(getByLabelText('Country code')).toHaveTextContent('🇬🇧 +44');
+      expect(getByLabelText('Country code')).toHaveTextContent(/^\+44$/);
       const confirm = getByRole('button', { name: 'Confirm' });
       expect(confirm).toBeDisabled();
 

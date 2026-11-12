@@ -135,7 +135,7 @@ describe('Account Profile Page', () => {
       const input = getByLabelText('Mobile');
       expect(input).toHaveAttribute('type', 'tel');
       expect(input).toHaveAttribute('autocomplete', 'tel');
-      expect(getByLabelText('Country code')).toHaveTextContent('🇬🇧 +44');
+      expect(getByLabelText('Country code')).toHaveTextContent(/^\+44$/);
       expect(input).toHaveValue('2079460000');
     });
 
@@ -149,9 +149,9 @@ describe('Account Profile Page', () => {
         customFields: [mobile],
       });
 
-      expect(getByLabelText('Country code')).toHaveTextContent('🇫🇷 +33');
+      expect(getByLabelText('Country code')).toHaveTextContent(/^\+33$/);
       fireEvent.change(getByLabelText('Mobile'), { target: { value: '06 12 34 56 79' } });
-      expect(getByLabelText('Country code')).toHaveTextContent('🇫🇷 +33');
+      expect(getByLabelText('Country code')).toHaveTextContent(/^\+33$/);
     });
 
     describe("a phone number's country", () => {
@@ -179,7 +179,7 @@ describe('Account Profile Page', () => {
         expect(offered()).toEqual(['France (+33)']);
         fireEvent.keyDown(searchBox(utils, 'Country code'), { key: 'Enter' });
 
-        expect(picker(utils, 'Country code')).toHaveTextContent('🇫🇷 +33');
+        expect(picker(utils, 'Country code')).toHaveTextContent(/^\+33$/);
         fireEvent.click(utils.saveBtn);
         expect(utils.mockDoActionFn).toHaveBeenCalledWith(
           'updateProfile',
@@ -204,10 +204,10 @@ describe('Account Profile Page', () => {
       });
 
       // Shown as the number's is, read-only rather than disabled, with nothing to pick from.
-      test('is shown as its flag and code, with nothing to pick, where the member may only read the number', () => {
+      test('is shown as its code, with nothing to pick, where the member may only read the number', () => {
         const utils = holdingMobile('read');
 
-        expect(utils.getByRole('group', { name: 'Country code' })).toHaveTextContent('🇬🇧 +44');
+        expect(utils.getByRole('group', { name: 'Country code' })).toHaveTextContent(/^\+44$/);
         expect(utils.queryByRole('combobox', { name: 'Country code' })).not.toBeInTheDocument();
         expect(utils.getByLabelText('Mobile')).toHaveAttribute('readonly');
       });
