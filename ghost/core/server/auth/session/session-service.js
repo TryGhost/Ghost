@@ -138,8 +138,7 @@ module.exports = function createSessionService({
   // Reject any request whose origin isn't the admin site. This check is
   // used to prevent cross-origin logins (login CSRF).
   function assertRequestFromAdminOrigin(origin) {
-    const adminUrl = urlUtils.getAdminUrl() || urlUtils.getSiteUrl();
-    const adminOrigin = new URL(adminUrl).origin;
+    const adminOrigin = urlUtils.getAdminOrigin();
 
     if (origin !== adminOrigin) {
       throw new BadRequestError({
