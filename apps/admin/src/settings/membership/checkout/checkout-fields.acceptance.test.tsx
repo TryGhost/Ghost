@@ -235,6 +235,59 @@ describe('Checkout settings', () => {
     await expect.element(type).toBeDisabled();
   });
 
+  // Each of these pickers only ever makes one kind of field, so its form starts from the name
+  // that field almost always has. A name searched for is still the one the publisher meant.
+  it('starts a new field with the name it usually has, unless one was searched for', async () => {
+    const { modal } = await openCheckoutFields({
+      design: { customize: false },
+      shipping: { collect: false },
+      phone: { collect: false },
+    });
+    await modal.getByRole('switch', { name: 'Shipping address' }).click();
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    const form = page.getByRole('dialog', { name: 'New custom field' });
+
+    for (const [picker, name] of [
+      ['Save address as', 'Shipping Address'],
+      ['Save name as', 'Recipient Name'],
+      ['Save phone as', 'Phone'],
+    ]) {
+      await modal.getByRole('combobox', { name: picker }).click();
+      await page.getByRole('option', { name: 'Add custom field' }).click();
+      await expect.element(form.getByLabelText('Name')).toHaveValue(name);
+      await userEvent.keyboard('{Escape}');
+      await expect.element(form).not.toBeInTheDocument();
+    }
+
+    await modal.getByRole('combobox', { name: 'Save phone as' }).click();
+    await userEvent.fill(page.getByPlaceholder('Search fields...'), 'Mobile');
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    await expect.element(form.getByLabelText('Name')).toHaveValue('Mobile');
+  });
+
+  // Ghost refuses a name another field has, whatever its type, case or status, so a taken name
+  // would only be refused on save.
+  it("doesn't suggest a name another field already has", async () => {
+    const archivedPhone = {
+      ...phoneField,
+      key: KeySchema.parse('phone'),
+      name: 'phone',
+      type: 'short_text',
+      status: 'archived',
+    } satisfies MemberCustomField;
+    const { modal } = await openCheckoutFields(
+      { design: { customize: false }, shipping: { collect: false }, phone: { collect: false } },
+      [phoneField, archivedPhone],
+    );
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+
+    await modal.getByRole('combobox', { name: 'Save phone as' }).click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    await expect
+      .element(page.getByRole('dialog', { name: 'New custom field' }).getByLabelText('Name'))
+      .toHaveValue('');
+  });
+
   // A site keeps its Stripe connection when the host switches its custom fields off, so it
   // can still reach these settings. Its fields read as archived, and the server refuses a new
   // one with the host's sentence.
