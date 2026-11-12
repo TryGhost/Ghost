@@ -117,6 +117,42 @@ export function urlField({ allowLocalhost, base }: UrlRules, linkOnly = false) {
   });
 }
 
+const MAILTO_PROBLEM = 'Expected a mailto: link to one email address';
+const EMAIL_ADDRESS = /^[^\s@,;:<>()[\]\\"]+@[^\s@,;:<>()[\]\\"]+\.[^\s@,;:<>()[\]\\"]+$/;
+
+/**
+ * A link to an app's developer: a URL as `url(true)` holds it, or a `mailto:` link to one email
+ * address. Ghost only ever links to it. A `mailto:` link takes no query or fragment, so it can't
+ * prefill a message or add recipients.
+ */
+export function contactField(url: UrlField) {
+  const web = url(true);
+  return z.string('Expected an absolute URL').transform((value, ctx) => {
+    if (!/^mailto:/i.test(value)) {
+      const result = web.safeParse(value);
+      if (!result.success) {
+        for (const issue of result.error.issues) {
+          ctx.addIssue({ code: 'custom', message: issue.message });
+        }
+        return z.NEVER;
+      }
+      return result.data;
+    }
+    const link = URL.parse(value);
+    if (
+      !link ||
+      link.search !== '' ||
+      link.hash !== '' ||
+      link.href.length > URL_MAX_LENGTH ||
+      !EMAIL_ADDRESS.test(link.pathname)
+    ) {
+      ctx.addIssue({ code: 'custom', message: MAILTO_PROBLEM });
+      return z.NEVER;
+    }
+    return link.href;
+  });
+}
+
 /**
  * A URL as a manifest holds it once `parseManifest` has accepted it: absolute, and
  * already checked. Nothing is resolved or checked again, so a manifest accepted before the

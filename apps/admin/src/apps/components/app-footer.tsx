@@ -1,34 +1,60 @@
 import React from 'react';
-import { Link } from '@tryghost/shade/components';
-import { Inline, Stack, Text } from '@tryghost/shade/primitives';
-import { supportUrl } from '@/apps/lib/developer';
+import { Badge, Link } from '@tryghost/shade/components';
+import { Box, Inline, Stack, Text } from '@tryghost/shade/primitives';
+import { cn } from '@tryghost/shade/utils';
+import { supportLink } from '@/apps/lib/developer';
 import { type AppIconSource, AppNavIcon } from './app-icon';
 
+/*
+ * The footer's text keeps the gutter of Shade's page templates, so it lines up with the app's own
+ * content. Beside the nav, Admin's page area starts 8px further from the nav than it ends from the
+ * window's right edge, with either layout, so the footer stops 8px short of that edge to leave the
+ * same space on both sides. Without the nav, it runs edge to edge.
+ */
+const FOOTER_CLASS_NAME =
+  'shrink-0 border-t border-border-default bg-background p-4 sidebar:mr-2 @min-[1024px]/app-page:px-6';
+
+/*
+ * A development build, one the developer is running on their own machine, gets a striped band so
+ * it's never mistaken for the app the site runs. The stripes sit behind the footer's content and
+ * fade out over 24px at each end; the hairline above them runs the full width.
+ */
+const DEVELOPMENT_CLASS_NAME = cn(
+  'relative isolate before:absolute before:inset-0 before:-z-10',
+  'before:bg-[repeating-linear-gradient(-45deg,var(--background)_0_10px,color-mix(in_oklab,var(--border-default)_35%,var(--background))_10px_20px)]',
+  'before:[mask-image:linear-gradient(to_right,transparent,black_24px,black_calc(100%-24px),transparent)]',
+);
+
 /**
- * Admin's line under an app's page, saying whose app it is and where to get help. It wraps rather
- * than cutting a name short, and its gutter lines up with Shade's page templates inside the frame.
+ * Says which app the page comes from: its icon, its name and its developer, who links to wherever
+ * the developer takes support. It wraps rather than cutting a name short.
  */
 const AppFooter: React.FC<{ app: AppIconSource }> = ({ app }) => {
-  const { name, author } = app.manifest;
+  const { name, author, development } = app.manifest;
+  const support = supportLink(app.manifest);
   return (
-    <Inline
-      align="start"
-      as="footer"
-      className="mx-4 min-h-10 shrink-0 border-t border-border-default bg-background py-2.5 text-text-secondary @min-[1024px]/app-page:mx-6"
+    <footer
+      className={cn(FOOTER_CLASS_NAME, development && DEVELOPMENT_CLASS_NAME)}
+      data-development={development ? '' : undefined}
       data-testid="app-footer"
-      gap="sm"
     >
-      <span className="mt-0.5 flex shrink-0">
-        <AppNavIcon app={app} />
-      </span>
-      <Text as="p" className="min-w-0 break-words" size="sm" tone="secondary">
-        {name} by {author.name}.{' '}
-        <Link href={supportUrl(app.manifest)} external>
-          Contact support
-        </Link>
-        .
-      </Text>
-    </Inline>
+      <Inline align="center" className="min-w-0" gap="sm" justify="between">
+        <Inline align="center" className="min-w-0" gap="sm">
+          <AppNavIcon app={app} />
+          <Text as="p" className="min-w-0 break-words" size="sm" tone="secondary">
+            {name} by{' '}
+            <Link external={support.opensPage} href={support.href}>
+              {author.name}
+            </Link>
+          </Text>
+        </Inline>
+        {development && (
+          <Badge className="shrink-0" data-testid="app-development-badge" variant="default">
+            Development
+          </Badge>
+        )}
+      </Inline>
+    </footer>
   );
 };
 
@@ -38,7 +64,7 @@ export const WithAppFooter: React.FC<{ app: AppIconSource; children: React.React
   children,
 }) => (
   <Stack className="size-full" gap="none">
-    <div className="min-h-0 flex-1">{children}</div>
+    <Box className="min-h-0 flex-1">{children}</Box>
     <AppFooter app={app} />
   </Stack>
 );

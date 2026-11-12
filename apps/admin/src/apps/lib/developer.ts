@@ -9,9 +9,11 @@ export function isVerifiedDeveloper(_manifest: AppManifest): boolean {
 }
 
 /**
- * Where a publisher goes for help with an app. Manifests only name the developer's site for now.
- * The one place that changes once they include an email address.
+ * Where a publisher reaches an app's developer for support: the author's link in its manifest, a
+ * web page or a `mailto:` link. A page opens in a new tab; an email address opens the publisher's
+ * email client.
  */
-export function supportUrl(manifest: AppManifest): string {
-  return manifest.author.url;
+export function supportLink(manifest: AppManifest): { href: string; opensPage: boolean } {
+  const href = manifest.author.url;
+  return { href, opensPage: !/^mailto:/i.test(href) };
 }

@@ -181,6 +181,35 @@ describe('author', () => {
     ).toBe('author.url');
   });
 
+  it('may be a mailto: link to one address, which reads back as it was accepted', () => {
+    const accepted = manifestOf(
+      manifest({ author: { name: 'A', url: 'MAILTO:support@example.com' } }),
+    );
+    expect(accepted.author.url).toBe('mailto:support@example.com');
+    expect(AppManifestSchema.parse(accepted).author.url).toBe('mailto:support@example.com');
+
+    for (const url of [
+      'mailto:',
+      'mailto:support',
+      'mailto:support@example.com,other@example.com',
+      'mailto:support@example.com?subject=Hi',
+      'mailto:support@example.com?cc=other@example.com',
+      'mailto:support@example.com#x',
+    ]) {
+      expect(errorsOf(manifest({ author: { name: 'A', url } }))).toEqual([
+        { path: 'author.url', message: 'Expected a mailto: link to one email address' },
+      ]);
+    }
+  });
+
+  it('keeps mailto: to the author, never the manifest URL', () => {
+    expect(
+      errorsOf(manifest({ manifest_url: 'mailto:support@example.com' })).some(
+        ({ path }) => path === 'manifest_url',
+      ),
+    ).toBe(true);
+  });
+
   it('may link to the site itself, since the link is never loaded by Ghost', () => {
     expect(
       manifestOf(manifest({ author: { name: 'A', url: 'https://site.example.com/about/' } })).author
