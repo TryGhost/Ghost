@@ -45,8 +45,7 @@ describe('SessionService', function () {
     getSettingsCache.withArgs('title').returns('Test Title');
     getSettingsCache.withArgs('admin_session_secret').returns('secret-key');
     urlUtils = {
-      getAdminUrl: sinon.stub().returns('https://admin.example.com'),
-      getSiteUrl: sinon.stub().returns('https://example.com'),
+      getAdminOrigin: sinon.stub().returns('https://admin.example.com'),
       urlFor: sinon.stub().returns('https://example.com'),
     };
   });
@@ -981,8 +980,7 @@ describe('SessionService', function () {
 
     const getBlogLogo = sinon.stub().returns('logo.png');
     const localUrlUtils = {
-      getAdminUrl: sinon.stub().returns('https://admin.example.com'),
-      getSiteUrl: sinon.stub().returns('https://example.com'),
+      getAdminOrigin: sinon.stub().returns('https://admin.example.com'),
       urlFor: sinon.stub().returns('https://example.com'),
     };
 
@@ -1120,8 +1118,7 @@ describe('SessionService', function () {
 
     const getBlogLogo = sinon.stub().returns('logo.png');
     const localUrlUtils = {
-      getAdminUrl: sinon.stub().returns('https://admin.example.com'),
-      getSiteUrl: sinon.stub().returns('https://example.com'),
+      getAdminOrigin: sinon.stub().returns('https://admin.example.com'),
       urlFor: sinon.stub().returns('https://example.com'),
     };
 
@@ -1216,8 +1213,7 @@ describe('SessionService', function () {
 
     const getBlogLogo = sinon.stub().returns('logo.png');
     const localUrlUtils = {
-      getAdminUrl: sinon.stub().returns('https://admin.example.com'),
-      getSiteUrl: sinon.stub().returns('https://example.com'),
+      getAdminOrigin: sinon.stub().returns('https://admin.example.com'),
       urlFor: sinon.stub().returns('https://example.com'),
     };
 
@@ -1352,7 +1348,7 @@ describe('SessionService', function () {
     assert.equal(mailer.send.callCount, 0, 'No email should be sent');
   });
 
-  it('Falls back to site URL when no admin URL is configured', async function () {
+  it('Accepts the site origin when it is the admin origin', async function () {
     const getSession = async (req) => {
       if (req.session) {
         return req.session;
@@ -1367,8 +1363,7 @@ describe('SessionService', function () {
     const findUserById = sinon.spy(async ({ id }) => ({ id }));
     const getOriginOfRequest = sinon.stub().returns('https://example.com');
     const siteOnlyUrlUtils = {
-      getAdminUrl: sinon.stub().returns(null),
-      getSiteUrl: sinon.stub().returns('https://example.com'),
+      getAdminOrigin: sinon.stub().returns('https://example.com'),
       urlFor: sinon.stub().returns('https://example.com'),
     };
 
