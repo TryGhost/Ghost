@@ -24,7 +24,7 @@ export const EditableWaitCard: React.FC<
     <AutomationCard
       aria-label={`Wait: ${formatWait(wait.hours)}`}
       className={cn(
-        'nodrag nopan w-[400px] text-left',
+        'nodrag nopan w-[400px] pb-3 text-left',
         isNew && 'animate-in duration-250 ease-out fade-in-0 zoom-in-90 motion-reduce:animate-none',
       )}
       gap="xl"

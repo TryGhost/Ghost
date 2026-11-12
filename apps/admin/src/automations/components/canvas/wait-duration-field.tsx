@@ -9,11 +9,11 @@ import {
   InputGroupAddon,
   InputGroupButton,
 } from '@tryghost/shade/components';
-import { Stack } from '@tryghost/shade/primitives';
+import { Box, Stack } from '@tryghost/shade/primitives';
 import { LucideIcon, formatNumber } from '@tryghost/shade/utils';
 
 const MAX_WAIT_DAYS = 30;
-const WAIT_VALIDATION_MESSAGE = 'Enter a wait up to 30 days';
+const WAIT_VALIDATION_MESSAGE = `Enter a wait up to ${formatNumber(MAX_WAIT_DAYS)} days`;
 const WHOLE_NUMBER_PATTERN = /^\d+$/;
 const NON_DIGITS_PATTERN = /\D/g;
 const LEADING_ZEROS_PATTERN = /^0+/;
@@ -153,9 +153,13 @@ export const WaitDurationField: React.FC<{
             </InputGroupAddon>
           </InputGroup>
         )}
-        {inline && isInlineErrorVisible && (
-          <FieldError id={errorId}>{WAIT_VALIDATION_MESSAGE}</FieldError>
-        )}
+        {/* Reserve an error line so blur can't move another canvas control during a click. */}
+        {inline &&
+          (isInlineErrorVisible ? (
+            <FieldError id={errorId}>{WAIT_VALIDATION_MESSAGE}</FieldError>
+          ) : (
+            <Box aria-hidden="true" className="h-lh text-control" />
+          ))}
         {!inline && showValidationError && (
           <FieldError className="text-xs" id={errorId}>
             Enter a delay between 1 and {formatNumber(MAX_WAIT_DAYS)} days

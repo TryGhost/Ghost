@@ -110,11 +110,16 @@ export const EditableEmailCard: React.FC<
     email.suppressWarning && !errorMessage ? undefined : getEmailWarning(email, errorMessage);
   const text = useMemo(() => emailTextExcerpt(email.lexical), [email.lexical]);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
-  // A blocked Save or Publish brings a card with an error back to its email view.
-  const [seenAttempt, setSeenAttempt] = useState(email.validationAttempt);
-  if (email.validationAttempt !== seenAttempt) {
-    setSeenAttempt(email.validationAttempt);
-    if (errorMessage) {
+  // Reveal a new field error and return to it on every blocked Publish.
+  const [seenValidation, setSeenValidation] = useState({
+    attempt: email.validationAttempt,
+    warning,
+  });
+  if (email.validationAttempt !== seenValidation.attempt || warning !== seenValidation.warning) {
+    const hasNewWarning = warning && warning !== seenValidation.warning;
+    const hasBlockedValidation = errorMessage && email.validationAttempt !== seenValidation.attempt;
+    setSeenValidation({ attempt: email.validationAttempt, warning });
+    if (hasNewWarning || hasBlockedValidation) {
       setAnalyticsOpen(false);
     }
   }

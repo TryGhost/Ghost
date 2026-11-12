@@ -78,6 +78,26 @@ describe('Inline wait editing', () => {
     }
   });
 
+  it('opens the next step picker on the click that blurs an invalid wait', async () => {
+    await page.viewport(1280, 1200);
+    try {
+      serve();
+      await renderAdminApp('/automations/first', flags);
+      const first = waits().first().getByRole('textbox', { name: 'Wait for' });
+      const insert = page.getByTestId('add-step-button-draft-wait-second-wait');
+      await first.fill('31');
+      await expect.element(first).toHaveFocus();
+
+      // Keep the pointer down across a canvas layout frame after the input blurs.
+      await insert.click({ delay: 125 });
+
+      await expect.element(waits().first().getByRole('alert')).toBeVisible();
+      await expect.element(insert).toHaveAttribute('aria-expanded', 'true');
+    } finally {
+      await page.viewport(1280, 800);
+    }
+  });
+
   it('labels the unit inline and keeps non-digits and leading zeros out of the field', async () => {
     const save = serve();
     await renderAdminApp('/automations/first', flags);
