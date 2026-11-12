@@ -9,14 +9,11 @@ import { Frame } from '@tryghost/api-framework';
 
 // @ts-expect-error @tryghost/domain-events currently lacks type declarations.
 import domainEvents from '@tryghost/domain-events';
-import { controller as automationsController } from '../../../../core/server/api/endpoints/automations';
-import { StartAutomationsPollEvent } from '../../../../core/server/services/automations/events/start-automations-poll-event';
-import * as automationsApi from '../../../../core/server/services/automations/automations-api';
-// @ts-expect-error This module lacks type definitions.
-import labs from '../../../../core/shared/labs';
+
+type AutomationsApi = typeof import('../../../../core/server/services/automations/automations-api');
 
 vi.mock('../../../../core/server/services/automations/automations-api', async (importOriginal) => {
-  const actual = await importOriginal<typeof automationsApi>();
+  const actual = await importOriginal<AutomationsApi>();
   return {
     ...actual,
     browse: vi.fn(),
@@ -29,6 +26,29 @@ vi.mock('../../../../core/server/services/automations/automations-api', async (i
 
 describe('Automations controller', function () {
   let dispatchStub: sinon.SinonStub;
+  let automationsController: (typeof import('../../../../core/server/api/endpoints/automations'))['controller'];
+  let StartAutomationsPollEvent: (typeof import('../../../../core/server/services/automations/events/start-automations-poll-event'))['StartAutomationsPollEvent'];
+  let automationsApi: AutomationsApi;
+  let labs: { isSet: (flag: string) => boolean };
+
+  beforeAll(async function () {
+    // vi.mock only reaches modules loaded after it, and another file in this
+    // worker may already have loaded the controller with the real API
+    vi.resetModules();
+    ({ controller: automationsController } =
+      await import('../../../../core/server/api/endpoints/automations'));
+    ({ StartAutomationsPollEvent } =
+      await import('../../../../core/server/services/automations/events/start-automations-poll-event'));
+    automationsApi = await import('../../../../core/server/services/automations/automations-api');
+    // @ts-expect-error This module lacks type definitions.
+    labs = (await import('../../../../core/shared/labs')).default;
+  });
+
+  afterAll(function () {
+    // Don't leave modules loaded against the mocked API for later files
+    vi.doUnmock('../../../../core/server/services/automations/automations-api');
+    vi.resetModules();
+  });
 
   beforeEach(function () {
     dispatchStub = sinon.stub(domainEvents, 'dispatch');

@@ -8,8 +8,11 @@ import price from '../../../../core/frontend/helpers/price';
 import { registerHelper, shouldCompileToExpected } from './utils/handlebars';
 
 import logging from '@tryghost/logging';
+import { restoreHandlebarsAfterSuite } from '../../../utils/handlebars-state';
 
 describe('{{price}} helper', function () {
+  restoreHandlebarsAfterSuite();
+
   let logWarnStub: SinonStub;
 
   beforeEach(function () {

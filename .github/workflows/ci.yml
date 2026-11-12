@@ -812,6 +812,13 @@ jobs:
         #
         # Non-primary Node legs skip browser-only projects (see
         # unit_test_node_projects_str in job_setup).
+        #
+        # ghost's unit suite runs in a shuffled order seeded by
+        # GHOST_UNIT_TEST_SEED (see ghost/vitest.config.ts), so a test that
+        # only passes after another one fails here. Every attempt reuses the
+        # run's seed, so a retry can't hide that behind a different order.
+        # Vitest prints it as `Running tests with seed "<seed>"`;
+        # docs/contributing/testing.md covers rerunning that order locally.
         run: |
           if [ "${{ matrix.node }}" = "${{ needs.job_setup.outputs.node_version }}" ]; then
             PROJECTS="${{ needs.job_setup.outputs.unit_test_projects_str }}"
@@ -846,6 +853,7 @@ jobs:
           FORCE_COLOR: 0
           NX_SKIP_LOG_GROUPING: true
           logging__level: fatal
+          GHOST_UNIT_TEST_SEED: ${{ github.run_id }}
 
       - name: Check for unexpected file changes
         run: |
