@@ -41,6 +41,7 @@ import {
 import { CONFIG_SLUG, CONFIG_TABLE, DbConfigParts } from './schema';
 import { parseRequest } from '../../lib/parse-request';
 import { CheckoutConfigInput } from './serializers';
+import { ensureTransaction } from '../../lib/ensure-transaction';
 
 // A `custom_field_key` is a key in the publisher's `custom` namespace, so the config reads and
 // checks only the bindings and fields there.
@@ -392,8 +393,15 @@ export class StripeCheckoutConfigService {
    *
    * Says whether it changed what tiers list to anyone: a requirement, whether each of its ports is
    * bound, or the field a port names.
+   *
+   * Given a transaction as `executor` it joins that transaction; given a plain connection it
+   * opens its own.
    */
-  async edit(context: RequestContext, input: unknown): Promise<{ changedRequirements: boolean }> {
+  async edit(
+    context: RequestContext,
+    input: unknown,
+    executor: Knex = this.knex,
+  ): Promise<{ changedRequirements: boolean }> {
     const { design, ...requested } = parseRequest(CheckoutConfigInput, input, 'checkout_config');
     // Only the parts in the request are written, so saving one part never overwrites another.
     const changes = changesOf(requested);
@@ -401,8 +409,7 @@ export class StripeCheckoutConfigService {
     const at = new Date();
     const now = toDatabaseDate(at);
 
-    let changedRequirements = false;
-    await this.knex.transaction(async (trx) => {
+    return ensureTransaction(executor, async (trx) => {
       await assertTargets(trx, changes, this.fields);
       const before = await this.requirements().browse({ transacting: trx });
 
@@ -420,21 +427,21 @@ export class StripeCheckoutConfigService {
       for (const change of changes) {
         await this.writeTargets(trx, change, at);
       }
-      changedRequirements = !isDeepStrictEqual(
-        before,
-        await this.requirements().browse({ transacting: trx }),
-      );
+      // An existing row keeps its id, so read the id back for the history entry.
+      const saved = await trx(CONFIG_TABLE).where('slug', CONFIG_SLUG).first('id');
+      if (!saved) {
+        throw new errors.InternalServerError({
+          message: 'The Stripe Checkout config was not found right after saving it.',
+        });
+      }
+      await this.recordAction(trx, { context, subject: saved.id });
+      return {
+        changedRequirements: !isDeepStrictEqual(
+          before,
+          await this.requirements().browse({ transacting: trx }),
+        ),
+      };
     });
-
-    // An existing row keeps its id, so read the id back for the history entry.
-    const saved = await this.knex(CONFIG_TABLE).where('slug', CONFIG_SLUG).first('id');
-    if (!saved) {
-      throw new errors.InternalServerError({
-        message: 'The Stripe Checkout config was not found right after saving it.',
-      });
-    }
-    await this.recordAction({ context, subject: saved.id });
-    return { changedRequirements };
   }
 
   /**
