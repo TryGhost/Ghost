@@ -9,6 +9,7 @@ export interface ContentCSVImportJobData {
   mapping?: Record<string, string>;
   importTagNames: string[];
   emailRecipient: string;
+  total?: number;
 }
 
 export default class ContentCSVImportJob extends Job {
@@ -18,6 +19,7 @@ export default class ContentCSVImportJob extends Job {
   readonly mapping?: Record<string, string>;
   readonly importTagNames: string[];
   readonly emailRecipient: string;
+  readonly total: number;
 
   constructor(data: ContentCSVImportJobData) {
     super();
@@ -26,5 +28,6 @@ export default class ContentCSVImportJob extends Job {
     this.mapping = data.mapping;
     this.importTagNames = data.importTagNames;
     this.emailRecipient = data.emailRecipient;
+    this.total = data.total ?? 0;
   }
 }

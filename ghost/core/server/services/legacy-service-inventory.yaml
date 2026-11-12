@@ -823,17 +823,17 @@ services:
     contracts:
       exports:
         summary: >-
-          The TypeScript root exports synchronous init and Promise-returning importCSV,
-          handleJob and allSettled functions. importCSV and handleJob throw synchronously
+          The TypeScript root exports synchronous init and Promise-returning importCSV and
+          handleJob functions. importCSV and handleJob throw synchronously
           before initialization; request-schema errors also throw synchronously, whereas
-          accepted import preparation and handler failures reject promises. allSettled before
-          init resolves. The deep ContentCSVImportJob class carries serializable upload,
-          mapping, recipient and run metadata; it is a job definition, not another root.
-          Units assert the pre-init handler/drain path and injected job serialization. A
+          accepted import preparation and handler failures reject promises.
+          The deep ContentCSVImportJob class carries serializable upload,
+          mapping, recipient, row count and run metadata; it is a job definition, not another root.
+          Units assert the pre-init handler path and injected job serialization. A
           separately imported root in HTTP tests checks pre-init import, two successful init
           calls, schema errors and asynchronous unreadable-file rejection. Root units also
-          assert pre-init request/job errors, harmless pre-init draining, validation before
-          forwarding and retained request/job/drain receivers.
+          assert pre-init request/job errors, validation before
+          forwarding and retained request/job receivers.
         sources:
           - core/server/services/content-import/index.ts
           - core/server/services/content-import/import/schema.ts
@@ -873,11 +873,10 @@ services:
           metadata/mapping and the current user's email, and returns HTTP 202 with import_id
           and total after staging, preflight and dispatch. Authentication, feature flag,
           upload validation and content-import permission belong to HTTP/API layers. Jobs
-          registration awaits root handleJob for content-csv-import; the separate
-          site-content-import job is outside this root. Production shutdown does not call
-          its test-facing allSettled. Real booted HTTP tests assert role/flag gates, report
+          registration, given the root by boot, awaits handleJob for content-csv-import; the separate
+          site-content-import job is outside this root. Real booted HTTP tests assert role/flag gates, report
           mail through a mocked transport, persisted posts/relations and intercepted remote
-          media. The handler unit only reaches the real root's pre-init error. Webhook tests
+          media. The handler unit uses a stub root to assert forwarding and rejection. Webhook tests
           include a normal-publish control, then assert two imported rows including an
           update, two completion emails, no Email rows and bounded webhook silence.
         sources:
@@ -899,7 +898,7 @@ services:
           dispatch and processing require them later. The request needs owner lookup when
           no caller email exists, readable local staging and settings for batch tags; jobs
           additionally need converters, models/storage and optional URL lookup. Real HTTP
-          tests establish selected normal boot-to-job outcomes, while root/handler units
+          tests establish selected normal boot-to-job outcomes, while root units
           establish early errors. Root units additionally assert late dependency acquisition
           and failed-construction retry; held boot readiness and same-process boot contracts
           remain outside their coverage.
@@ -910,22 +909,19 @@ services:
           - core/server/services/jobs-service/register-job-handlers.ts
         tests:
           - test/unit/server/services/content-import/index.test.ts
-          - test/unit/server/services/jobs-service/register-job-handlers.test.ts
           - test/e2e-api/admin/posts-importer.test.js
       lifetime:
         summary: >-
           There is no reset, stop, abort or public implementation accessor. The module retains
-          its graph across init calls; run records are mutable, in memory and normally
-          released after completion email. finish/fail alone do not settle waiters; release
-          resolves them when the map becomes empty. Lazy age/count eviction excludes running
-          runs. Media promises, including failed results, are cached by exact URL within one
-          job, not across jobs. Store units assert retention/eviction and two-run release
-          waiting; media units hold an import to prove sharing, and assert separate-instance
-          isolation. Root units retain the same request/job/drain receiver and call handleJob
+          its graph across init calls; run records are mutable, in memory, created when the
+          job starts and released after its completion email.
+          Media promises, including failed results, are cached by exact URL within one
+          job, not across jobs. Store units assert finished runs stay regardless of age or count;
+          media units hold an import to prove sharing, and assert separate-instance
+          isolation. Root units retain the same request/job receiver and call handleJob
           directly after repeated init. Dispatch is stubbed; the jobs backend queue is not
           exercised. Duplicate/concurrent job handling and late admissions during shutdown
-          remain source-only. The importer drain test awaits handle before
-          checking settlement, so it cannot establish the final cleanup boundary.
+          remain source-only.
         sources:
           - core/server/services/content-import/index.ts
           - core/server/services/content-import/import/store.ts
@@ -971,7 +967,7 @@ services:
           stored assets/media are not compensated for later row or mail failures. Posts use
           individual DB transactions, not one import transaction. Handler finally awaits
           extracted-source cleanup and best-effort mail, releases the run, then awaits staged
-          deletion: allSettled can finish before that last deletion. Units and filesystem
+          deletion: a test that waits for the mail can finish first. Units and filesystem
           integration assert selected cleanup, asset rollback and cache behavior; real HTTP
           tests assert file removal under injected storage failures and contributor/tag DB
           rollback under a rejected post write. They do not prove root/job shutdown drains
@@ -995,7 +991,7 @@ services:
       failures:
         summary: >-
           Owner lookup fails before staging; invalid/staging/parser/cap failures reject before
-          dispatch, and dispatch failure releases the run with best-effort staged cleanup.
+          dispatch, and dispatch failure removes the staged file best-effort.
           Expected row validation, media and DB write failures are recorded and later rows
           continue. All attempted writes failing reports an aggregate but still marks the
           run complete; unexpected preparation/converter/media failures reject the handler.
@@ -1028,7 +1024,7 @@ services:
       - >-
         Characterize the release-before-staged-deletion drain boundary with a held cleanup,
         then define root/job ownership for admission, cancellation, mail and filesystem drain.
-        Existing allSettled coverage does not prove complete handler settlement or restart.
+        Waiting for the completion mail does not prove complete handler settlement or restart.
       - >-
         Preserve staged-file ownership when storage changes between stage/remove; cover
         cleanup failure masking, orphan recovery and bounded CSV/archive resources. The row
@@ -1581,7 +1577,7 @@ services:
           Wrappers expose service plus startFetch and individual count-returning fetch methods;
           service exposes mutable status references, scheduling/cancellation and detailed fetch
           results. The CommonJS jobs entry exports three receiver-independent async scheduling
-          functions, all no-ops in test environments. Root units substitute wrapper constructors
+          functions, all no-ops under the testing configs. Root units substitute wrapper constructors
           and assert pre-init guards, distinct identities, constructor arguments and repeated
           init retention. Admin HTTP snapshots assert initial newsletter status, not scheduling
           or cancellation completion. Exact return/receiver behavior is otherwise source-only.
@@ -2576,7 +2572,7 @@ services:
           incomplete graph. Scheduler sets, renderer template/partial promises including rejected
           promises, mail transport and recurring-job flags survive same-process stop. Flags are
           set only after successful scheduling, without an in-flight guard. Job tests assert
-          sequential scheduling once, test skipping and cron hour shape; they do not exercise
+          sequential scheduling once and cron hour shape; they do not exercise
           concurrent calls, failed scheduling or backend replacement. Durable gifts/deliveries
           survive separately: real database tests assert single winners for concurrent pending
           and stale claims and sequential outcome precedence, not process restart or lease renewal.
@@ -2920,8 +2916,8 @@ services:
         complexity: complex
         reason: >-
           Queue/backend, logging, reporting and outbox dependencies are mostly injected, but
-          register-job-handlers imports job classes across services and directly reaches Content
-          Import, Update Check and Signing Keys. It is application composition inside the queue
+          register-job-handlers imports job classes across services and receives every handler's
+          service from boot. It is application composition inside the queue
           implementation, and registration must occur after its service dependencies exist.
         preparation:
           - >-
@@ -3003,7 +2999,7 @@ services:
       consumers:
         summary: >-
           Source inspection establishes these callers: boot injects the instance into
-          retained mentions and email consumers and a fresh site importer. Members, content CSV imports, the media API and email analytics
+          retained mentions and email consumers and a fresh site importer. Members, content CSV imports, the media inliner and email analytics
           resolve it when dispatching or scheduling. Gift/member cleanup, signing keys,
           update checks and Tinybird schedule through boot-supplied references. The default
           backend runs jobs in-process; registered handlers call initialized domain services.
@@ -3020,7 +3016,7 @@ services:
           - core/server/data/importer/index.js
           - core/server/services/members/service.js
           - core/server/services/content-import/index.ts
-          - core/server/api/endpoints/db.js
+          - core/server/services/media-inliner/index.ts
           - core/server/services/email-analytics/jobs/index.js
           - core/server/services/email-analytics/jobs/email-analytics-job-scheduler.ts
           - core/server/services/gifts/jobs/index.js
@@ -4099,8 +4095,7 @@ services:
           dependencies. Cleanup task closures and successful schedule flags persist
           independently; concurrent scheduling is not promise-coalesced. Repeat migration tests
           pin database-run guards, not these identities. Expired-comped scheduling units assert
-          two sequential calls schedule once; token scheduling only checks a single production
-          call and test suppression.
+          two sequential calls schedule once; token scheduling only checks a single call.
           Historical evidence removed after auditedAt: [Members migration tests](https://github.com/TryGhost/Ghost/blob/bf6a3ea2e32b7b551980c02c745e3c9b74e3ea0e/ghost/core/test/e2e-server/services/members-migrations.test.ts).
         sources:
           - core/server/services/members/service.js
@@ -8777,8 +8772,8 @@ services:
         tests: []
       consumers:
         summary: >-
-          Boot calls scheduleJobs and centrally registers UpdateCheckJob with a handler that
-          awaits the root with rethrowErrors true on the shared default jobs lane. The current
+          Boot calls scheduleJobs and passes the root to the central UpdateCheckJob handler, which
+          awaits it with rethrowErrors true on the shared default jobs lane. The current
           in-memory backend invokes that handler in-process; no separate update-check worker,
           CLI or HTTP consumer was found. The checker itself calls API pipelines with internal
           context to read/write the due date, resolve active Owner/Administrator recipients

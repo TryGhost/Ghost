@@ -135,13 +135,3 @@ export function handleJob(job: ContentCSVImportJob): Promise<void> {
 
   return importer.handle(job);
 }
-
-// Test-facing parity with the legacy inline queue while the import run store
-// remains in memory. M8 removes this together with that store.
-export function allSettled(): Promise<void> {
-  if (!importer) {
-    return Promise.resolve();
-  }
-
-  return importer.allSettled();
-}
