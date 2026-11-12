@@ -58,6 +58,11 @@ interface NavMenuCollapsibleItemProps {
 
 function NavMenuCollapsibleItem({ ariaLabel, children }: NavMenuCollapsibleItemProps) {
   const { expanded, id, onExpandedChange } = useNavMenuCollapsibleContext();
+  const admin7Design = useFeatureFlag('admin7Design');
+
+  if (admin7Design) {
+    return <NavMenuItem>{children}</NavMenuItem>;
+  }
 
   return (
     <NavMenuItem>
@@ -260,7 +265,11 @@ function NavSubmenuItem({ children, className, ...props }: NavSubmenuItemProps) 
     >
       <div className="min-w-0 pl-7">
         <NavMenuItem.Link
-          className={cn('w-full min-w-0 pl-2 focus-visible:ring-inset', className)}
+          className={cn(
+            'w-full min-w-0 pl-2 focus-visible:ring-inset',
+            admin7Design && 'font-[450]',
+            className,
+          )}
           {...props}
         >
           {children}

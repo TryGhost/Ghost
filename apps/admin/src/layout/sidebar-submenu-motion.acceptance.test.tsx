@@ -1,75 +1,141 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  currentRoute,
   currentUserResponse,
+  fakeAdminEndpoint,
   fakeAdminStats,
+  fakeMembers,
+  fakePosts,
+  fakePostsListScreen,
   fakeTags,
   renderAdminApp,
+  settingsResponse,
 } from '@test-utils/acceptance';
 import { sidebarScreen } from './sidebar.screen';
 
-// Trigger in this browser task so the assertions can sample the closing transition.
-function clickPostsToggle() {
-  const button = sidebarScreen.postsToggle().element();
-  if (!(button instanceof HTMLButtonElement)) {
-    throw new Error('Expected the Posts toggle button');
+// Navigate in this browser task so assertions can sample the submenu transitions.
+function navigateTo(label: string) {
+  const link = sidebarScreen.navLink(label).element();
+  if (!(link instanceof HTMLAnchorElement)) {
+    throw new Error(`Expected the ${label} navigation link`);
   }
-  button.click();
+  link.click();
 }
 
-async function renderSidebar(postsExpanded: boolean) {
+function submenu(id: 'posts' | 'members') {
+  const menu = document.getElementById(`${id}-submenu`);
+  if (!menu) {
+    throw new Error(`Expected the ${id} submenu`);
+  }
+  return menu;
+}
+
+async function renderSidebar(route: string) {
   const me = currentUserResponse();
   me.users[0].accessibility = JSON.stringify({
+    whatsNew: { lastSeenDate: '2025-01-01T00:00:00.000Z' },
     navigation: {
-      expanded: { posts: postsExpanded, members: true },
+      expanded: { posts: false, members: false },
       menu: { visible: true, mode: 'full' },
     },
   });
   fakeTags([]);
-  await renderAdminApp('/tags', {
+  fakePostsListScreen();
+  fakePosts([]);
+  fakeMembers([]);
+  const preferences = fakeAdminEndpoint('PUT', /^\/users\/\w+\//, ({ body }) => body);
+  await renderAdminApp(route, {
     labs: { admin7Design: true },
-    boot: { browseMe: { response: me } },
+    boot: {
+      browseMe: { response: me },
+      browseSettings: {
+        response: settingsResponse({
+          settings: {
+            shared_views: JSON.stringify([
+              { name: 'VIPs', route: 'members', filter: { filter: 'label:[VIP]' } },
+            ]),
+          },
+        }),
+      },
+    },
   });
   await expect.poll(sidebarScreen.floatingState).toBe('pinned');
-  await expect
-    .element(sidebarScreen.postsToggle())
-    .toHaveAttribute('aria-expanded', String(postsExpanded));
-  const submenu = document.getElementById('posts-submenu');
-  if (!submenu) {
-    throw new Error('Expected the Posts submenu');
-  }
-  return submenu;
+  await expect.element(sidebarScreen.navLink('Tags')).toBeVisible();
+  return preferences;
 }
 
-describe('Admin 7 sidebar submenu motion', () => {
+describe('Admin 7 sidebar submenu navigation and motion', () => {
   beforeEach(() => {
     fakeAdminStats.memberCount();
     fakeAdminStats.mrr();
   });
 
-  it('keeps the closing rows visible while immediately removing them from keyboard and accessibility navigation', async () => {
-    const submenu = await renderSidebar(true);
-    expect(submenu.getBoundingClientRect().height).toBeGreaterThan(0);
+  it('opens the current section, closes the others, and follows history without saving expansion preferences', async () => {
+    const preferences = await renderSidebar('/posts');
+    await expect.poll(() => submenu('posts').inert).toBe(false);
+    expect(submenu('members').inert).toBe(true);
+    await expect(sidebarScreen.postsToggle()).toHaveCount(0);
+    await expect(
+      sidebarScreen.shellNav().getByRole('button', { name: 'Toggle member views' }),
+    ).toHaveCount(0);
 
-    clickPostsToggle();
-    await expect.element(sidebarScreen.postsToggle()).toHaveAttribute('aria-expanded', 'false');
+    navigateTo('Members');
+    await expect.poll(currentRoute).toBe('/members');
+    await expect.poll(() => submenu('members').inert).toBe(false);
+    expect(submenu('posts').inert).toBe(true);
 
-    expect(submenu.querySelectorAll('a').length).toBeGreaterThan(0);
-    expect(submenu.getBoundingClientRect().height).toBeGreaterThan(0);
-    expect(submenu).toHaveAttribute('aria-hidden', 'true');
-    expect(submenu.inert).toBe(true);
-    await expect.poll(() => submenu.getBoundingClientRect().height).toBe(0);
+    navigateTo('Tags');
+    await expect.poll(() => submenu('members').inert).toBe(true);
+    expect(submenu('posts').inert).toBe(true);
+
+    window.history.back();
+    await expect.poll(() => submenu('members').inert).toBe(false);
+    expect(submenu('posts').inert).toBe(true);
+    expect(preferences.requests).toHaveLength(0);
   });
 
-  it('reveals submenu entries in order and survives a close followed immediately by reopening', async () => {
-    const submenu = await renderSidebar(false);
-    const toggle = sidebarScreen.postsToggle();
-    clickPostsToggle();
-    await expect.element(toggle).toHaveAttribute('aria-expanded', 'true');
+  it.each([
+    { route: '/posts?type=scheduled', section: 'posts', parent: 'Posts', child: 'Scheduled' },
+    {
+      route: '/members?filter=label%3A%5BVIP%5D',
+      section: 'members',
+      parent: 'Members',
+      child: 'VIPs',
+    },
+  ] as const)(
+    'opens $parent on a direct filtered route and keeps the matching child selected',
+    async ({ route, section, parent, child }) => {
+      await renderSidebar(route);
+      await expect.poll(() => submenu(section).inert).toBe(false);
+      await expect.element(sidebarScreen.navLink(child)).toHaveAttribute('aria-current', 'page');
+      await expect.element(sidebarScreen.navLink(parent)).not.toHaveAttribute('aria-current');
+    },
+  );
+
+  it('keeps closing rows visible while immediately removing them from keyboard and accessibility navigation', async () => {
+    await renderSidebar('/posts');
+    const menu = submenu('posts');
+    await expect.poll(() => menu.getBoundingClientRect().height).toBeGreaterThan(0);
+
+    navigateTo('Tags');
+    await expect.poll(() => menu.inert).toBe(true);
+
+    expect(menu.querySelectorAll('a').length).toBeGreaterThan(0);
+    expect(menu.getBoundingClientRect().height).toBeGreaterThan(0);
+    expect(menu).toHaveAttribute('aria-hidden', 'true');
+    await expect.poll(() => menu.getBoundingClientRect().height).toBe(0);
+  });
+
+  it('reveals entries in order and survives leaving and immediately reopening a section', async () => {
+    await renderSidebar('/tags');
+    const menu = submenu('posts');
+    navigateTo('Posts');
+    await expect.poll(() => menu.inert).toBe(false);
 
     await expect
       .poll(() => {
-        const rows = Array.from(submenu.querySelectorAll<HTMLElement>('[data-sidebar=menu-item]'));
+        const rows = Array.from(menu.querySelectorAll<HTMLElement>('[data-sidebar=menu-item]'));
         if (rows.length < 2) {
           return false;
         }
@@ -79,14 +145,12 @@ describe('Admin 7 sidebar submenu motion', () => {
       })
       .toBe(true);
 
-    clickPostsToggle();
-    await expect.element(toggle).toHaveAttribute('aria-expanded', 'false');
-    clickPostsToggle();
-    await expect.element(toggle).toHaveAttribute('aria-expanded', 'true');
-
-    await expect.poll(() => submenu.inert).toBe(false);
+    navigateTo('Tags');
+    await expect.poll(() => menu.inert).toBe(true);
+    navigateTo('Posts');
+    await expect.poll(() => menu.inert).toBe(false);
     await expect
-      .poll(() => Array.from(submenu.querySelectorAll('a')).every((link) => link.checkVisibility()))
+      .poll(() => Array.from(menu.querySelectorAll('a')).every((link) => link.checkVisibility()))
       .toBe(true);
   });
 });

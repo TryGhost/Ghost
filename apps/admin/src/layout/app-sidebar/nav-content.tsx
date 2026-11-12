@@ -32,7 +32,12 @@ function PostsNavItemContent({ isActive, to }: { isActive: boolean; to: string }
   return (
     <>
       <NavMenuItem.Link isActive={isActive} to={to}>
-        <LucideIcon.PenLine className="pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0" />
+        <LucideIcon.PenLine
+          className={cn(
+            !admin7Design &&
+              'pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0',
+          )}
+        />
         <NavMenuItem.Label>Posts</NavMenuItem.Label>
       </NavMenuItem.Link>
       <AdminLink
@@ -110,9 +115,13 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const showComments = !!showMembers && commentsEnabled !== 'off';
   const postViews = [...postNavigation.defaultViews, ...postNavigation.customViews];
   const hasActivePostChild = postViews.some((view) => view.isActive);
-  const postsExpanded = savedPostsExpanded;
+  const postsExpanded = admin7Design
+    ? postNavigation.isMainActive || hasActivePostChild
+    : savedPostsExpanded;
   const hasActiveMemberView = hasMemberViews && memberViews.some((view) => view.isActive);
-  const membersExpanded = savedMembersExpanded;
+  const membersExpanded = admin7Design
+    ? isMembersRouteActive || isMemberActivityActive
+    : savedMembersExpanded;
   const membersNavActive = isMembersRouteActive
     ? !hasActiveMemberView || !membersExpanded
     : isMemberActivityActive;
@@ -166,7 +175,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
             >
               <NavMenuItem.CollapsibleItem ariaLabel="Toggle member views">
                 <MembersNavItemContent
-                  collapsible={true}
+                  collapsible={!admin7Design}
                   isActive={membersNavActive}
                   showCount={!admin7Design}
                   to="members"
