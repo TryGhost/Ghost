@@ -1,7 +1,7 @@
 # Legacy service inventory. See README.md before updating.
 # Every service check applies to every service that is not listed under `services`.
 # That list only shrinks: migrating a service deletes its entry.
-# `standard` records what is still open for services that already use defineService.
+# `followUps` records what is still open for services that already use defineService.
 # Entry points are relative to this directory; evidence paths are relative to ghost.
 # An unverified facet is an open audit question, not an empty/no-op contract.
 services:
@@ -9894,7 +9894,7 @@ services:
       - >-
         Cover synchronous/post-preparation exceptions and concurrent duplicate creation. Define delivery/replay and disposal ownership
         before adding a lifecycle; existing code has no durable queue or drain.
-standard:
+followUps:
   app-installations:
     extras:
       actingContext:

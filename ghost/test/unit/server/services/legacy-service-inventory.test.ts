@@ -9,9 +9,8 @@ const coreRoot = path.resolve(__dirname, '../../../..');
 const servicesRoot = path.join(coreRoot, 'core/server/services');
 const inventoryFile = 'legacy-service-inventory.yaml';
 const metadata = ['README.md', inventoryFile];
-// Working name of the section for standard services that still have something
-// open. Rename it here and in the inventory file.
-const standardSection = 'standard';
+// The section for standard services that still have something open.
+const followUpsSection = 'followUps';
 const facets = [
   'exports',
   'construction',
@@ -82,8 +81,8 @@ const legacyEntry = z
   .strict();
 // What is still open for a service that already meets the standard. A test
 // below rejects any other field, so the failure names the entry.
-const standardFields = ['extras', 'futureHome', 'lifecycle'];
-const standardEntry = z.object({
+const followUpFields = ['extras', 'futureHome', 'lifecycle'];
+const followUpEntry = z.object({
   extras: z.record(description, extraSchema).optional(),
   futureHome: description.optional(),
   lifecycle: z.array(description).min(1).optional(),
@@ -91,7 +90,7 @@ const standardEntry = z.object({
 const inventorySchema = z
   .object({
     services: z.record(description, legacyEntry),
-    [standardSection]: z.record(description, standardEntry),
+    [followUpsSection]: z.record(description, followUpEntry),
   })
   .strict();
 
@@ -180,7 +179,7 @@ describe('legacy service inventory', function () {
   const raw = yaml.load(readFileSync(path.join(servicesRoot, inventoryFile), 'utf8'));
   const inventory = inventorySchema.parse(raw);
   const legacy = inventory.services;
-  const open = inventory[standardSection];
+  const open = inventory[followUpsSection];
   const onDisk = readdirSync(servicesRoot, { withFileTypes: true }).filter(
     (item) => !metadata.includes(item.name),
   );
@@ -220,22 +219,22 @@ describe('legacy service inventory', function () {
     }
   });
 
-  it(`records open items in ${standardSection} only for services that are not legacy`, function () {
+  it(`records open items in ${followUpsSection} only for services that are not legacy`, function () {
     for (const name of Object.keys(open)) {
       assert.ok(!legacy[name], `${name} is a legacy entry; record its open items there`);
       assert.ok(standard.includes(name), `${name} is not a service directory`);
     }
   });
 
-  it(`allows only ${standardFields.join(', ')} in ${standardSection}`, function () {
-    const entries = (raw as Record<string, Record<string, object>>)[standardSection]!;
+  it(`allows only ${followUpFields.join(', ')} in ${followUpsSection}`, function () {
+    const entries = (raw as Record<string, Record<string, object>>)[followUpsSection]!;
     for (const [name, fields] of Object.entries(entries)) {
       const keys = Object.keys(fields);
       assert.ok(keys.length > 0, `${name} has nothing open; remove the entry`);
       assert.deepEqual(
-        keys.filter((key) => !standardFields.includes(key)),
+        keys.filter((key) => !followUpFields.includes(key)),
         [],
-        `${name} has fields that do not belong in ${standardSection}`,
+        `${name} has fields that do not belong in ${followUpsSection}`,
       );
     }
   });

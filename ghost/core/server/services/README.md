@@ -130,7 +130,7 @@ The inventory is temporary and boot never reads it. It has two sections:
 - `services` lists the legacy services with their audit record and migration
   assessment. It includes standalone files and supporting modules still awaiting
   relocation. This list only shrinks: CI rejects a pull request that adds a name.
-- `standard` records what is still open for services that already meet the
+- `followUps` records what is still open for services that already meet the
   standard. An entry can have only `extras` (the catalogue described in the
   [standard root contract](#standard-root-contract)), `futureHome` and
   `lifecycle`, a list of notes on what `defineService` does not do for the
@@ -447,8 +447,8 @@ Availability, request identity conversion and later background activation have
 different callers and timing requirements; putting them in one object does not
 change their behaviour or ownership.
 
-Catalogue every member under the service's `extras` in the inventory's section
-for standard services, recording:
+Catalogue every member under the service's `extras` in the inventory's
+`followUps` section, recording:
 
 - `purpose` and production `callers` (paths relative to `ghost`).
 - `timing`, including whether a ready instance is needed and whether configuration

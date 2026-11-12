@@ -157,7 +157,7 @@ A migrated service is no longer legacy:
 - Delete all its entries from `.dependency-cruiser-known-violations.json`. A
   service that is not legacy cannot have any.
 - If the root declares extras, move their catalogue to the service's entry in
-  the inventory's section for standard services. A suggested future home, and
+  the inventory's `followUps` section. A suggested future home, and
   notes on what `defineService` does not do for the service yet, go there too.
   That entry holds nothing else; leave it out when nothing is open.
 - Repair affected file references and startup-order descriptions in other
