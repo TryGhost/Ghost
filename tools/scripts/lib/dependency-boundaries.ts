@@ -98,6 +98,30 @@ export function compareKnownViolations(
   };
 }
 
+// The scan treats a JavaScript file beside a TypeScript file of the same name as
+// build output: it skips the JavaScript and reads the TypeScript. Node loads the
+// JavaScript, so a committed one would run without being checked. Build output
+// is never committed, so every tracked pair is an error. Outside a Git
+// repository nothing is committed and there is nothing to report.
+export function committedBuildOutput(repository: string) {
+  const result = spawnSync('git', ['ls-files', '-z', '--', 'ghost/core'], {
+    cwd: repository,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
+  if (result.error || result.status !== 0) {
+    return [];
+  }
+  const tracked = new Set(result.stdout.split('\0'));
+  return [...tracked].flatMap((file) => {
+    const match = /^(.*)\.([cm]?)js$/.exec(file);
+    const source =
+      match &&
+      [`${match[1]}.${match[2]}ts`, `${match[1]}.tsx`].find((candidate) => tracked.has(candidate));
+    return source ? [{ file, source }] : [];
+  });
+}
+
 // Lint and contributor reports use this single scan and known-violations file.
 // Reports retain all findings; only lint uses the comparison to decide success.
 // Given files, only they and what they import are scanned, as the commit hook
@@ -149,5 +173,10 @@ export function readDependencyBoundaries(repository: string, files: string[] = [
     throw new Error('Dependency analysis returned no modules.');
   }
   const comparison = compareKnownViolations(graph, known, legacy);
-  return { graph, ...comparison, stale: files.length ? [] : comparison.stale };
+  return {
+    graph,
+    ...comparison,
+    stale: files.length ? [] : comparison.stale,
+    buildOutput: committedBuildOutput(repository),
+  };
 }

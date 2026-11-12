@@ -246,7 +246,8 @@ types may not contain `any`.
 Where JavaScript has a matching TypeScript sibling, the audit and boundary
 checks inspect the TypeScript source and resolve imports back to it. This keeps
 adjacent `build:tsc` output out of the report; ordinary JavaScript implementations
-remain checked. Package exports resolve through their `source` condition when
+remain checked. Node loads the JavaScript file of such a pair, so boundary lint
+rejects one that is committed. Package exports resolve through their `source` condition when
 available, so workspace contracts are checked without relying on build output.
 
 `pnpm lint:boundaries`, also run by `pnpm check` and CI, checks all service

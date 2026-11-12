@@ -1315,6 +1315,40 @@ it('preserves source edges and violations after adjacent TypeScript emission', (
   assert.deepEqual(violations(after), violations(before));
 });
 
+it('rejects committed JavaScript beside TypeScript of the same name, which the scan skips as build output', (t) => {
+  const f = fixture(t, {
+    [`${alpha}/index.ts`]: 'export {};',
+    [`${alpha}/implementation.ts`]: 'export {};',
+    // Node loads these instead of the TypeScript beside them.
+    [`${alpha}/index.js`]: "require('../../../shared/config');",
+    [`${alpha}/implementation.js`]: "require('../../../shared/config');",
+  });
+  const git = (...args: string[]) => {
+    const result = spawnSync('git', args, { cwd: f.root, encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+  };
+  // The scan skips both files, so it reports no violation.
+  assert.deepEqual(violations(f.graph()), []);
+  // Uncommitted build output is expected and passes.
+  const built = f.lint();
+  assert.equal(built.status, 0, built.stderr);
+  git('init', '-q');
+  git('add', 'ghost');
+  const committed = f.lint();
+  assert.equal(committed.status, 1, committed.stderr);
+  for (const file of ['index', 'implementation']) {
+    assert.match(
+      committed.stderr,
+      new RegExp(`committed build output: ${alpha}/${file}\\.js sits beside ${alpha}/${file}\\.ts`),
+    );
+  }
+  // The commit hook passes only the staged files and still reports it.
+  const staged = f.lint([`${alpha}/implementation.js`]);
+  assert.equal(staged.status, 1, staged.stderr);
+  git('rm', '-q', '--cached', `${alpha}/index.js`, `${alpha}/implementation.js`);
+  assert.equal(f.lint().status, 0);
+});
+
 it('resolves the approved workspace export to source without a build and keeps other exports restricted', (t) => {
   const contract = 'packages/app-contracts';
   const manifest = `${contract}/src/manifest/index.ts`;
