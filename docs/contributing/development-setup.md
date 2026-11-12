@@ -260,7 +260,6 @@ Redis, and Mailpit, keep running after `Ctrl+C` until `pnpm dev:down --all`:
 | `pnpm dev:fake-mailgun`    | Capture newsletters and bulk email in Mailpit through a fake Mailgun API; see [email testing](testing-email.md) |
 | `pnpm dev:fake-upgrades`   | Ghost updates in Settings → About against a fake host; see [testing Ghost updates](testing-ghost-updates.md)    |
 | `pnpm dev:full`            | Public app watchers plus analytics, storage, and Stripe                                                         |
-| `pnpm dev:multi`           | Behaviour that assumes one Ghost process; see [testing with two Ghosts](testing-two-ghosts.md)                  |
 
 Copy [`.env.example`](../../.env.example) to `.env` only when you need an
 optional integration. Never commit credentials or the local `.env` file.
