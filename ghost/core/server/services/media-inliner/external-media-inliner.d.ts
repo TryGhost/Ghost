@@ -6,6 +6,7 @@ declare class ExternalMediaInliner {
 
   getMediaStorage: ExternalMediaInlinerDependencies['getMediaStorage'];
 
+  startInlining(domains?: string[]): Promise<void>;
   importUrl(
     sourceUrl: string,
     options?: { originSchemes?: OriginSchemes },
