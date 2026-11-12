@@ -236,11 +236,21 @@ export class JobsService {
     }
 
     const backend = this.#backend.constructor.name;
-    const outboxEnabled = this.#outbox !== undefined;
+    const outboxMode = this.#outboxMode();
+    const described =
+      outboxMode === 'retain' ? 'on, keeping rows until their job settles' : outboxMode;
     this.#logging.info(
-      { system: { event: 'jobs.started', backend, outbox_enabled: outboxEnabled } },
-      `[Jobs] Started on ${backend} with the outbox ${outboxEnabled ? 'on' : 'off'}`,
+      { system: { event: 'jobs.started', backend, outbox_mode: outboxMode } },
+      `[Jobs] Started on ${backend} with the outbox ${described}`,
     );
+  }
+
+  // Only the store that keeps rows until settlement gets a tracker
+  #outboxMode(): 'off' | 'on' | 'retain' {
+    if (!this.#outbox) {
+      return 'off';
+    }
+    return this.#outbox.tracker ? 'retain' : 'on';
   }
 
   // Rows submitted before this start belong to a process that has gone, so

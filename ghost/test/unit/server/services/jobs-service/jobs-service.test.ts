@@ -532,24 +532,29 @@ describe('JobsService', function () {
       );
     });
 
-    it('logs at start which backend runs jobs and whether the outbox is on', async function () {
+    it('logs at start which backend runs jobs and which outbox mode it is in', async function () {
       await makeService({ outbox: makeOutbox() }).start();
+      await makeService({ outbox: makeOutbox({ tracked: false }) }).start();
       await makeService().start();
 
       const started = logger.calls.info.map(
         ([event, message]) =>
           [event, message] as [
-            { system: { event: string; backend: string; outbox_enabled: boolean } },
+            { system: { event: string; backend: string; outbox_mode: string } },
             string,
           ],
       );
       assert.deepEqual(started, [
         [
-          { system: { event: 'jobs.started', backend: 'FakeBackend', outbox_enabled: true } },
+          { system: { event: 'jobs.started', backend: 'FakeBackend', outbox_mode: 'retain' } },
+          '[Jobs] Started on FakeBackend with the outbox on, keeping rows until their job settles',
+        ],
+        [
+          { system: { event: 'jobs.started', backend: 'FakeBackend', outbox_mode: 'on' } },
           '[Jobs] Started on FakeBackend with the outbox on',
         ],
         [
-          { system: { event: 'jobs.started', backend: 'FakeBackend', outbox_enabled: false } },
+          { system: { event: 'jobs.started', backend: 'FakeBackend', outbox_mode: 'off' } },
           '[Jobs] Started on FakeBackend with the outbox off',
         ],
       ]);
