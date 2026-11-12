@@ -1,4 +1,4 @@
-const config = require('../shared/config');
+import config from './config';
 
 // Prior to Ghost 6.x we allowed any limit value, including 'all', but as sites
 // grew in size it led to performance issues and mis-use of the API.
@@ -6,7 +6,7 @@ const config = require('../shared/config');
 // After Ghost 6.x we only allow a max limit of 100. This shared module provides
 // the core limit capping logic that can be used by both middleware and helpers.
 
-const limitConfig = {
+export const limitConfig = {
   get allowLimitAll() {
     return config.get('optimization:allowLimitAll') || false;
   },
@@ -22,12 +22,13 @@ const limitConfig = {
 
 /**
  * Apply limit capping logic to a limit value
- * @param {string|number} limit - The limit value to cap
- * @param {Object} options - Optional settings
- * @param {string} [options.url] - URL to check against exception endpoints (for middleware)
- * @returns {string|number} The capped limit value
+ * @param limit - The limit value to cap
+ * @param options - Optional settings, including a URL to check against exception endpoints
  */
-function applyLimitCap(limit, options = {}) {
+export function applyLimitCap(
+  limit: string | number | null | undefined,
+  options: { url?: string } = {},
+) {
   if (!limit) {
     return limit;
   }
@@ -38,10 +39,8 @@ function applyLimitCap(limit, options = {}) {
   }
 
   // Check exception endpoints - they bypass all limits (HTTP-specific)
-  if (
-    options.url &&
-    limitConfig.exceptionEndpoints.some((endpoint) => options.url.startsWith(endpoint))
-  ) {
+  const { url } = options;
+  if (url && limitConfig.exceptionEndpoints.some((endpoint) => url.startsWith(endpoint))) {
     return limit;
   }
 
@@ -61,8 +60,3 @@ function applyLimitCap(limit, options = {}) {
   // Return the original limit if it's within bounds
   return limit;
 }
-
-module.exports = {
-  applyLimitCap,
-  limitConfig,
-};
