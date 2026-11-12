@@ -1,14 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import {
-  cpSync,
-  mkdtempSync,
-  mkdirSync,
-  readFileSync,
-  rmSync,
-  symlinkSync,
-  writeFileSync,
-} from 'node:fs';
+import { cpSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -57,8 +49,6 @@ function lint(
       mkdirSync(path.dirname(path.join(cwd, legacyInventoryFile)), { recursive: true });
       writeFileSync(path.join(cwd, legacyInventoryFile), inventory);
     }
-    mkdirSync(path.join(cwd, 'node_modules'), { recursive: true });
-    symlinkSync(path.join(root, 'node_modules/js-yaml'), path.join(cwd, 'node_modules/js-yaml'));
     for (const plugin of localConfig.jsPlugins) {
       plugin.specifier = `./tools/configs/oxlint/${path.basename(plugin.specifier)}`;
     }

@@ -890,9 +890,6 @@ importers:
       husky:
         specifier: 9.1.7
         version: 9.1.7
-      js-yaml:
-        specifier: 'catalog:'
-        version: 4.3.2
       knip:
         specifier: 'catalog:'
         version: 6.44.2

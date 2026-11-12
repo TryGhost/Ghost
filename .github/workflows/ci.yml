@@ -168,17 +168,6 @@ jobs:
               - '.github/actions/**'
               - '.github/scripts/**'
               - 'tools/scripts/**'
-            docs:
-              - '**/*.md'
-              - '**/*.mdx'
-              - '.agents/**'
-              - '.claude/**'
-              - '.github/workflows/ci.yml'
-              - 'package.json'
-              - 'tools/scripts/ci/check-agent-skill-links.ts'
-              - 'tools/scripts/test/check-agent-skill-links.test.ts'
-              - 'tools/scripts/ci/check-agent-guidance.ts'
-              - 'tools/scripts/test/check-agent-guidance.test.ts'
             service-inventory:
               - 'ghost/core/server/services/legacy-service-inventory.yaml'
               - 'ghost/test/unit/server/services/legacy-service-inventory.test.ts'
@@ -385,7 +374,6 @@ jobs:
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
-      changed_docs: ${{ steps.changed.outputs.docs }}
       changed_service_inventory: ${{ steps.changed.outputs.service-inventory }}
       changed_package_standards: ${{ steps.changed.outputs.package-standards }}
       changed_tb_cli: ${{ steps.changed.outputs.tb-cli }}
@@ -518,6 +506,9 @@ jobs:
       - name: Lint boundaries
         run: pnpm nx run ghost-monorepo:lint:boundaries
 
+      - name: Lint dependencies
+        run: pnpm lint:dependencies
+
       - name: Check formatting
         run: pnpm format:check
 
@@ -532,19 +523,24 @@ jobs:
     name: Lint docs
     runs-on: ubuntu-slim
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_docs == 'true'
+    # No path filter: a link breaks when its target is removed or renamed, and
+    # the target can be any file in the repository.
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      - uses: ./.github/actions/setup-node-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
+          trust-lockfile: 'true'
+          # The Markdown and link checkers are dependencies of the root package.
+          install-args: --filter ghost-monorepo --ignore-scripts
+          store-cache: 'false'
 
-      - name: Lint documentation guidance
-        run: |
-          node --test tools/scripts/test/check-agent-guidance.test.ts
-          node tools/scripts/ci/check-agent-skill-links.ts
-          node tools/scripts/ci/check-agent-guidance.ts
+      - name: Test documentation guidance checker
+        run: node --test tools/scripts/test/check-agent-guidance.test.ts
+
+      - name: Lint documentation
+        run: pnpm lint:docs
 
   job_service_inventory:
     name: Validate service inventory
