@@ -703,11 +703,17 @@ module.exports = class MemberBREADService {
       const model = await this.memberRepository.update(data, { ...options, transacting });
       const memberUnchanged = !model._changed || Object.keys(model._changed).length === 0;
 
-      const before = await this.readMetafieldsForMember(model.id, ADMIN, { transacting });
+      // Each write says what the member's metafields were before it and after it. A plan with
+      // nothing to write says nothing.
+      const written = [];
       for (const { writes, origin } of plans) {
-        await this.metafieldValues.applyWrite(model.id, writes, origin, transacting);
+        const values = await this.metafieldValues.applyWrite(model.id, writes, origin, transacting);
+        if (values) {
+          written.push(values);
+        }
       }
-      const after = await this.readMetafieldsForMember(model.id, ADMIN, { transacting });
+      const before = written[0].previous;
+      const after = written[written.length - 1].next;
       if (!_.isEqual(before, after)) {
         // Metafields aren't member columns, so the model doesn't keep their old values.
         model._previousMetafields = before;
