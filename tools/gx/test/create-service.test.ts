@@ -262,6 +262,7 @@ test('the boot call the generator prints and the guides show is the one services
   for (const [guide, service] of [
     ['ghost/core/server/services/README.md', name],
     ['ghost/core/kernel/README.md', 'example'],
+    ['.agents/skills/add-service/SKILL.md', name],
   ] as const) {
     const source = readFileSync(path.join(repo, guide), 'utf8');
     assert.doesNotMatch(source, inline, guide);
@@ -385,14 +386,25 @@ test('generated output passes real lint, boundary and inventory checks with no r
         violation.from === implementation && violation.rule.name === 'service-dependencies',
     ),
   );
-  // The inventory test requires an index.ts root from anything that is not legacy.
-  renameSync(path.join(root, rootFile), path.join(root, source, 'index.js'));
-  const invalidInventory = run(path.join(root, 'ghost'), vitest, [
+  // The inventory test rejects a standalone file that is not a legacy entry.
+  const inventoryTest = [
     'run',
     '--config',
     'vitest.config.mts',
     'legacy-service-inventory.test.ts',
-  ]);
+  ];
+  writeFileSync(path.join(root, services, 'standalone.ts'), 'export {};\n');
+  const standalone = run(path.join(root, 'ghost'), vitest, inventoryTest);
+  assert.equal(standalone.status, 1);
+  assert.match(
+    standalone.stdout + standalone.stderr,
+    /standalone\.ts is not a legacy entry, so it must be a directory with an index\.ts root/,
+  );
+  rmSync(path.join(root, services, 'standalone.ts'));
+  success(run(path.join(root, 'ghost'), vitest, inventoryTest));
+  // The inventory test requires an index.ts root from anything that is not legacy.
+  renameSync(path.join(root, rootFile), path.join(root, source, 'index.js'));
+  const invalidInventory = run(path.join(root, 'ghost'), vitest, inventoryTest);
   assert.equal(invalidInventory.status, 1);
   assert.match(
     invalidInventory.stdout + invalidInventory.stderr,
