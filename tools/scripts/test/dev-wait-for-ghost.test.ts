@@ -21,7 +21,7 @@ describe('dev-wait-for-ghost', { skip: process.platform === 'win32' }, () => {
     const nx = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' });
     t.after(() => nx.kill('SIGKILL'));
     const wait = spawn(process.execPath, [join(root, 'tools/scripts/dev-wait-for-ghost.ts')], {
-      stdio: 'ignore',
+      stdio: ['ignore', 'pipe', 'inherit'],
       env: {
         ...process.env,
         NX_INVOCATION_ROOT_PID: String(nx.pid),
@@ -30,6 +30,8 @@ describe('dev-wait-for-ghost', { skip: process.platform === 'win32' }, () => {
       },
     });
     t.after(() => wait.kill('SIGKILL'));
+    const [output] = (await once(wait.stdout, 'data')) as [Buffer];
+    assert.match(String(output), /^Waiting for the first Ghost/);
 
     const exit = once(wait, 'exit');
     nx.kill('SIGKILL');

@@ -36,7 +36,7 @@ async function main() {
   const assigned = await resolveGhostDevEnv();
   const frontDoorPort = process.env.GHOST_DEV_PORT ?? assigned.GHOST_DEV_PORT;
   const backendPort = process.env.GHOST_DEV_BACKEND_PORT ?? assigned.GHOST_DEV_BACKEND_PORT;
-  const env = secondGhostEnv(assigned.GHOST_DEV_NAME, backendPort);
+  const env = { ...secondGhostEnv(assigned.GHOST_DEV_NAME, backendPort), ...process.env };
   const second = env.GHOST_DEV_BACKEND_PORT_2;
   // Nx would join a `pnpm dev` already running here instead of starting the front door again
   for (const port of [frontDoorPort, backendPort, second].map(Number)) {
@@ -50,7 +50,7 @@ async function main() {
   }
 
   console.log(`Running two Ghosts, on ports ${backendPort} and ${second}`);
-  const child = spawn(command, args, { stdio: 'inherit', env: { ...env, ...process.env } });
+  const child = spawn(command, args, { stdio: 'inherit', env });
   for (const signal of ['SIGINT', 'SIGTERM'] as const) {
     process.on(signal, () => child.kill(signal));
   }

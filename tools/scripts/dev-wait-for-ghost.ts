@@ -28,6 +28,7 @@ const nxExited = () => {
     return true;
   }
 };
+console.log(`Waiting for the first Ghost, on port ${port}`);
 while (!(await isUp())) {
   if (nx && nxExited()) {
     process.exit(1);
