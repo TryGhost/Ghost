@@ -1,5 +1,4 @@
 import errors from '@tryghost/errors';
-import logging from '@tryghost/logging';
 import { ActionLog } from '../../lib/action-log/action-log';
 import { limitService } from '../limits';
 import { MetafieldDefinitionsService } from './definitions-service';
@@ -94,7 +93,7 @@ export function init(): void {
   definitions = new MetafieldDefinitionsService({
     knex,
     fields,
-    actionLog: new ActionLog({ logging }),
+    actionLog: new ActionLog(),
     namespaces,
     tracking,
     labs,

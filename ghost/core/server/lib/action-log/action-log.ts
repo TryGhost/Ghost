@@ -1,6 +1,5 @@
 import ObjectID from 'bson-objectid';
 import type { Knex } from 'knex';
-import type { GhostLogger } from '@tryghost/logging';
 import type { RequestContext } from '../actor';
 import { toDatabaseDate } from '../db-types/date';
 import type { ActionKind, ActionVerb } from './kinds';
@@ -47,25 +46,17 @@ export type ActionRow = {
 /**
  * Logs staff actions to the `actions` table, which Admin's History page reads.
  *
- * Call it from the command that makes the change, with the command's transaction where it has
- * one, so the action is only kept if the change is. Inside a transaction the action is part of
- * the change: a failed write fails the command, and its change rolls back. Outside one, logging
- * is best-effort: a failed write is logged and the change stands.
+ * An action is part of the change it records, so it's written in the command's transaction: it's
+ * kept when the change is kept and never without it. A failed write fails the command, and its
+ * change rolls back.
  */
 export class ActionLog {
-  private logging: Pick<GhostLogger, 'error'>;
-
-  constructor({ logging }: { logging: Pick<GhostLogger, 'error'> }) {
-    this.logging = logging;
-  }
-
   /**
-   * Logs an action by whoever `context` says is acting, through `db`: the command's transaction,
-   * or the database itself for a change that commits on its own. Nothing is logged when nobody
-   * is acting.
+   * Logs an action by whoever `context` says is acting, in the command's transaction. Nothing is
+   * logged when nobody is acting.
    */
   async record(
-    db: Knex | Knex.Transaction,
+    transacting: Knex.Transaction,
     context: RequestContext,
     row: ActionRow,
   ): Promise<void> {
@@ -73,38 +64,17 @@ export class ActionLog {
     if (!actor) {
       return;
     }
-    try {
-      await db('actions').insert({
-        // ObjectIds increase over time, which readers rely on to order actions within a second.
-        id: new ObjectID().toHexString(),
-        resource_id: row.resourceId,
-        resource_type: row.resourceType,
-        actor_id: actor.id,
-        actor_type: actor.type,
-        event: row.event,
-        context: contextOf(row),
-        created_at: toDatabaseDate(new Date()),
-      });
-    } catch (err) {
-      if (db.isTransaction) {
-        throw err;
-      }
-      this.logging.error(
-        {
-          event: { name: 'action_log.write_failed' },
-          err,
-          // Nested, as `event` is the log entry's own name.
-          action: {
-            resource_type: row.resourceType,
-            event: row.event,
-            resource_id: row.resourceId,
-            actor_type: actor.type,
-            actor_id: actor.id,
-          },
-        },
-        'Failed to log an action',
-      );
-    }
+    await transacting('actions').insert({
+      // ObjectIds increase over time, which readers rely on to order actions within a second.
+      id: new ObjectID().toHexString(),
+      resource_id: row.resourceId,
+      resource_type: row.resourceType,
+      actor_id: actor.id,
+      actor_type: actor.type,
+      event: row.event,
+      context: contextOf(row),
+      created_at: toDatabaseDate(new Date()),
+    });
   }
 }
 
