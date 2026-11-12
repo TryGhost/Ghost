@@ -150,12 +150,21 @@ const PaidMembersTooltipContent = ({
 
 const GrowthKPIs: React.FC<{
   chartData: ChartDataItem[];
+  mrrChartData: ChartDataItem[];
   totals: Totals;
   initialTab?: string;
   currencySymbol: string;
   isLoading: boolean;
   onTabChange?: (tab: KpiTab) => void;
-}> = ({ chartData: allChartData, totals, initialTab, currencySymbol, isLoading, onTabChange }) => {
+}> = ({
+  chartData: memberChartData,
+  mrrChartData,
+  totals,
+  initialTab,
+  currencySymbol,
+  isLoading,
+  onTabChange,
+}) => {
   const validatedInitialTab = isValidTab(initialTab) ? initialTab : 'total-members';
   const [currentTab, setCurrentTab] = useState<KpiTab>(validatedInitialTab);
   const { range } = useAnalytics();
@@ -183,6 +192,7 @@ const GrowthKPIs: React.FC<{
   const { totalMembers, freeMembers, paidMembers, mrr, percentChanges, directions } = totals;
 
   // Create chart data based on selected tab
+  const allChartData = currentTab === 'mrr' ? mrrChartData : memberChartData;
   const { chartData, chartRange } = useMemo(() => {
     if (!allChartData || allChartData.length === 0) {
       return { chartData: [], chartRange: range };

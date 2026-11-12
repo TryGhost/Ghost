@@ -233,7 +233,12 @@ export const useGrowthStats = (range: number) => {
     };
   }, [rawMemberData, todayEnd, dateFrom, openingBalanceDate]);
 
-  const { mrrData, openingMrr, selectedCurrency } = useMemo(() => {
+  const {
+    mrrData: dailyMrrData,
+    todayMrrData: exactTodayMrrData,
+    openingMrr: dailyOpeningMrr,
+    selectedCurrency,
+  } = useMemo(() => {
     const dateFromMoment = moment(dateFrom);
     // For "Today" range (1 day), use end of today to match visitor data behavior
     const dateToMoment = range === 1 ? moment().endOf('day') : moment().startOf('day');
@@ -256,6 +261,13 @@ export const useGrowthStats = (range: number) => {
       const openingAtStart = todayEnd
         ? mrrHistoryResponse.meta.opening_totals?.find((total) => total.currency === useCurrency)
         : undefined;
+      const todayMrrData =
+        todayEnd && openingAtStart
+          ? [
+              { ...openingAtStart, date: dateFrom },
+              { ...currentMax, date: todayEnd },
+            ]
+          : undefined;
 
       // Filter MRR data to only include the selected currency
       const currencyFilteredData = mrrHistoryResponse.stats.filter(
@@ -265,17 +277,15 @@ export const useGrowthStats = (range: number) => {
       const allData = [...currencyFilteredData].sort(
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
       );
-      // Older Core versions ignore start_at and return the opening balance in the history rows.
-      const openingPoint =
-        openingAtStart ?? allData.find((item) => item.date < dateFrom) ?? allData.at(-1);
+      const openingPoint = allData.find((item) => item.date < dateFrom) ?? allData.at(-1);
       const latestPoint = allData[0];
-      if (todayEnd && openingPoint && (openingAtStart || latestPoint.date >= dateFrom)) {
-        // Plot the closing value at the end of Today, alongside the member totals.
+      if (todayEnd && openingPoint && latestPoint.date >= dateFrom) {
         return {
           mrrData: [
             { ...openingPoint, date: dateFrom },
-            { ...(openingAtStart ? currentMax : latestPoint), date: todayEnd },
+            { ...latestPoint, date: todayEnd },
           ],
+          todayMrrData,
           openingMrr: openingPoint.mrr,
           selectedCurrency: useCurrency,
         };
@@ -313,12 +323,15 @@ export const useGrowthStats = (range: number) => {
 
       return {
         mrrData: finalResult,
+        todayMrrData,
         openingMrr: openingPoint?.mrr,
         selectedCurrency: useCurrency,
       };
     }
     return { mrrData: [], selectedCurrency: 'usd' };
   }, [mrrHistoryResponse, dateFrom, range, todayEnd]);
+  const mrrData = exactTodayMrrData ?? dailyMrrData;
+  const openingMrr = exactTodayMrrData?.[0].mrr ?? dailyOpeningMrr;
 
   // Calculate totals
   const totalsData = useMemo(
@@ -333,8 +346,15 @@ export const useGrowthStats = (range: number) => {
     [memberData, mrrData, openingMember, openingMrr, memberCountResponse?.meta?.totals],
   );
 
-  // Format chart data
-  const chartData = useMemo(() => formatChartData(memberData, mrrData), [memberData, mrrData]);
+  const chartData = useMemo(
+    () => formatChartData(memberData, dailyMrrData),
+    [memberData, dailyMrrData],
+  );
+  // UTC member rows can precede local Today. The exact MRR chart has its own two endpoints.
+  const mrrChartData = useMemo(
+    () => (exactTodayMrrData ? formatChartData([], exactTodayMrrData) : chartData),
+    [chartData, exactTodayMrrData],
+  );
 
   // Get currency symbol
   const currencySymbol = useMemo(() => {
@@ -395,6 +415,7 @@ export const useGrowthStats = (range: number) => {
     endDate,
     totals: totalsData,
     chartData,
+    mrrChartData,
     // Today’s event counts belong to the API dates, before shifting the line chart points.
     memberChangeData: range === 1 ? rawMemberData : chartData,
     subscriptionData,

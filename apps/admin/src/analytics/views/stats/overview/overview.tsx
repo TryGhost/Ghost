@@ -90,6 +90,7 @@ const Overview: React.FC = () => {
   const {
     isLoading: isGrowthStatsLoading,
     chartData: growthChartData,
+    mrrChartData: mrrHistoryChartData,
     totals: growthTotals,
     currencySymbol,
   } = useGrowthStats(range);
@@ -198,7 +199,7 @@ const Overview: React.FC = () => {
     /* ---------------------------------------------------------------------- */
   // Create chart data based on selected tab
   const mrrChartData = useMemo(() => {
-    if (!paidMembersEnabled || !growthChartData || growthChartData.length === 0) {
+    if (!paidMembersEnabled || !mrrHistoryChartData.length) {
       return [];
     }
 
@@ -206,7 +207,7 @@ const Overview: React.FC = () => {
     const fieldName: keyof GrowthChartDataItem = 'mrr';
 
     sanitizedData = sanitizeChartData<GrowthChartDataItem>(
-      growthChartData,
+      mrrHistoryChartData,
       range,
       fieldName,
       'exact',
@@ -221,7 +222,7 @@ const Overview: React.FC = () => {
     }));
 
     return processedData;
-  }, [growthChartData, range, currencySymbol, paidMembersEnabled]);
+  }, [mrrHistoryChartData, range, currencySymbol, paidMembersEnabled]);
 
   /* Calculate KPI values
     /* ---------------------------------------------------------------------- */

@@ -498,7 +498,7 @@ describe('useGrowthStats', () => {
 
         const { result } = renderHook(() => useGrowthStats(STATS_RANGES.today.value));
 
-        expect(result.current.chartData.map(({ date, mrr }) => ({ date, mrr }))).toEqual([
+        expect(result.current.mrrChartData.map(({ date, mrr }) => ({ date, mrr }))).toEqual([
           { date: '2024-06-27', mrr: opening },
           { date: '2024-06-28', mrr: closing },
         ]);
@@ -507,6 +507,33 @@ describe('useGrowthStats', () => {
         expect(result.current.totals.directions.mrr).toBe(direction);
       },
     );
+
+    it('keeps the MRR chart on local Today when member history ends on the previous UTC date', () => {
+      const startDate = moment.parseZone('2024-06-27T00:00:00+05:30');
+      mockedGetRangeDates.mockReturnValue({ startDate, endDate: startDate.clone().endOf('day') });
+      const member = mockMemberData[1];
+      mockSuccess(mockedUseMemberCountHistory, { stats: [member], meta: { totals: member } });
+      const opening = { currency: 'usd', mrr: 10000 };
+      const closing = { currency: 'usd', mrr: 11000 };
+      mockSuccess(mockedUseMrrHistory, {
+        stats: [
+          { ...opening, date: '2024-06-25' },
+          { ...closing, date: '2024-06-26' },
+        ],
+        meta: { totals: [closing], opening_totals: [opening] },
+      });
+
+      const { result } = renderHook(() => useGrowthStats(STATS_RANGES.today.value));
+
+      expect(result.current.mrrChartData.map(({ date, mrr }) => ({ date, mrr }))).toEqual([
+        { date: '2024-06-27', mrr: 10000 },
+        { date: '2024-06-28', mrr: 11000 },
+      ]);
+      expect(result.current.chartData.map(({ date, free }) => ({ date, free }))).toEqual([
+        { date: '2024-06-26', free: member.free },
+        { date: '2024-06-27', free: member.free },
+      ]);
+    });
   });
 
   describe('currency symbol handling', () => {
