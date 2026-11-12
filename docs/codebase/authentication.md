@@ -54,7 +54,7 @@ Creating a session and authenticating later requests are separate steps:
   checks the credentials and begins the session.
 - [`auth/session/`](../../ghost/core/server/auth/session/)
   creates, verifies, reads, and destroys Admin sessions.
-- [`auth/session/express-session.js`](../../ghost/core/server/auth/session/express-session.js)
+- [`auth/session/express-session.ts`](../../ghost/core/server/auth/session/express-session.ts)
   defines the cookie and session store.
 
 Cookie-authenticated requests are protected by origin checks. Do not bypass the
@@ -81,9 +81,9 @@ new challenge and budget. The separate per-IP verification and resend limits sti
 apply.
 
 The current flow lives in
-[`auth/session/session-service.js`](../../ghost/core/server/auth/session/session-service.js),
+[`auth/session/session-service.ts`](../../ghost/core/server/auth/session/session-service.ts),
 with request middleware in
-[`auth/session/middleware.js`](../../ghost/core/server/auth/session/middleware.js).
+[`auth/session/middleware.ts`](../../ghost/core/server/auth/session/middleware.ts).
 
 ### Staff Access Tokens
 

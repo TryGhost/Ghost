@@ -8,7 +8,7 @@ module.exports = {
   },
 
   get session() {
-    return require('./session');
+    return require('./session').default;
   },
 
   get setup() {

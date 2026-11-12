@@ -1,7 +1,12 @@
-const errors = require('@tryghost/errors');
+import type { NextFunction, Response } from 'express';
+import * as errors from '@tryghost/errors';
+import type { Req, SessionService, User } from './session-service';
 
-function SessionMiddleware({ sessionService }) {
-  async function createSession(req, res, next) {
+type SessionRequest = Req & { user?: User; skipVerification?: boolean };
+type LoginRequest = SessionRequest & { user: User };
+
+export default function SessionMiddleware({ sessionService }: { sessionService: SessionService }) {
+  async function createSession(req: LoginRequest, res: Response, next: NextFunction) {
     try {
       if (req.skipVerification) {
         await sessionService.createVerifiedSessionForUser(req, res, req.user);
@@ -29,20 +34,20 @@ function SessionMiddleware({ sessionService }) {
     }
   }
 
-  async function logout(req, res, next) {
+  async function logout(req: Req, res: Response, next: NextFunction) {
     try {
       await sessionService.removeUserForSession(req, res);
       res.sendStatus(204);
     } catch (err) {
-      if (errors.utils.isGhostError(err)) {
+      if (errors.utils.isGhostError(err as Error)) {
         next(err);
       } else {
-        next(new errors.InternalServerError({ err }));
+        next(new errors.InternalServerError({ err: err as Error }));
       }
     }
   }
 
-  async function authenticate(req, res, next) {
+  async function authenticate(req: SessionRequest, res: Response, next: NextFunction) {
     try {
       const user = await sessionService.getUserForSession(req, res);
       if (user) {
@@ -61,7 +66,7 @@ function SessionMiddleware({ sessionService }) {
     }
   }
 
-  async function sendAuthCode(req, res, next) {
+  async function sendAuthCode(req: Req, res: Response, next: NextFunction) {
     try {
       await sessionService.sendAuthCodeToUser(req, res);
 
@@ -71,7 +76,7 @@ function SessionMiddleware({ sessionService }) {
     }
   }
 
-  async function verifyAuthCode(req, res, next) {
+  async function verifyAuthCode(req: Req, res: Response, next: NextFunction) {
     try {
       const verified = await sessionService.verifyAuthCodeForUser(req, res);
 
@@ -94,5 +99,3 @@ function SessionMiddleware({ sessionService }) {
     verifyAuthCode: verifyAuthCode,
   };
 }
-
-module.exports = SessionMiddleware;

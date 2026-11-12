@@ -2,7 +2,7 @@ import type { Knex } from 'knex';
 import type { InternalApiKey, InternalKeys } from '../services/internal-keys';
 import internalKeysDefault from '../services/internal-keys';
 const modelsDefault = require('../models');
-const { deleteAllSessions: deleteAllSessionsDefault } = require('./session');
+const { deleteAllSessions: deleteAllSessionsDefault } = require('./session').default;
 
 interface ResetAuthenticationArgs {
   schedulerAdapter: { rescheduleAll(opts: { previousKey?: InternalApiKey }): Promise<unknown> };

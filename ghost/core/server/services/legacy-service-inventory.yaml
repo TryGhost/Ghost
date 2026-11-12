@@ -321,7 +321,7 @@ services:
           - core/server/services/tags-public/index.ts
           - core/server/services/link-redirection/index.ts
           - core/server/services/post-scheduling/index.ts
-          - core/server/auth/session/index.js
+          - core/server/auth/session/index.ts
           - core/server/services/route-settings/index.js
           - core/server/services/custom-redirects/index.js
           - core/server/services/media-inliner/index.ts

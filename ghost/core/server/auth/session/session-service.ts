@@ -1,72 +1,87 @@
-const { BadRequestError } = require('@tryghost/errors');
-const errors = require('@tryghost/errors');
-const crypto = require('crypto');
+import type { Request, Response } from 'express';
+import * as errors from '@tryghost/errors';
+import crypto from 'node:crypto';
+import type urlUtilsInstance from '../../../shared/url-utils';
+import * as totp from '../totp';
+
+const { BadRequestError } = errors;
 const emailTemplate = require('./emails/signin');
+// ua-parser-js ships no types; got is ESM-only
 const UAParser = require('ua-parser-js');
 const got = require('got').default;
-const totp = require('../totp');
 const IPV4_REGEX =
   /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 const IPV6_REGEX = /^(?:[A-F0-9]{1,4}:){7}[A-F0-9]{1,4}$/i;
 const AUTH_CODE_VALIDITY_MS = 5 * 60 * 1000;
 const AUTH_CODE_CHALLENGE_BYTES = 16;
 
-/**
- * @typedef {object} User
- * @prop {string} id
- * @prop {(attr: string) => string} get
- */
+export interface User {
+  id: string;
+  get(attr: string): string;
+}
 
-/**
- * @typedef {object} Session
- * @prop {(cb: (err: Error | null) => any) => void} destroy
- * @prop {string} user_id
- * @prop {string} origin
- * @prop {string} user_agent
- * @prop {string} ip
- * @prop {boolean} verified
- * @prop {string} [verified_user_id]
- * @prop {string} [auth_code_challenge]
- * @prop {number} [auth_code_generated_at]
- */
+// Only the id is read when assigning a user to a session
+type SessionUser = Pick<User, 'id'>;
 
-/**
- * @typedef {import('express').Request} Req
- * @typedef {import('express').Response} Res
- */
+export interface Session {
+  regenerate(cb: (err?: unknown) => void): void;
+  user_id?: string;
+  origin?: string;
+  user_agent?: string;
+  ip?: string;
+  verified?: boolean;
+  verified_user_id?: string;
+  auth_code_challenge?: string;
+  auth_code_generated_at?: number;
+}
 
-/**
- * @typedef {object} SessionService
- * @prop {(req: Req, res: Res) => Promise<User | null>} getUserForSession
- * @prop {(req: Req, res: Res) => Promise<void>} removeUserForSession
- * @prop {(req: Req, res: Res, user: User) => Promise<void>} createSessionForUser
- * @prop {(req: Req, res: Res) => Promise<void>} createVerifiedSessionForUser
- * @prop {(options: {session: Session, user: User, origin: string, userAgent?: string, ip?: string}) => Promise<void>} assignVerifiedUserToSession
- * @prop {(req: Req, res: Res) => Promise<void>} verifySession
- * @prop {(req: Req, res: Res) => Promise<void>} sendAuthCodeToUser
- * @prop {(req: Req, res: Res) => Promise<boolean>} verifyAuthCodeForUser
- * @prop {(req: Req, res: Res) => Promise<boolean>} isVerifiedSession
- * @prop {() => boolean} isVerificationRequired
- */
+export type Req = Request & { session: Session };
+type Res = Response;
 
-/**
- * @param {object} deps
- * @param {(req: Req, res: Res) => Promise<Session>} deps.getSession
- * @param {(data: {id: string}) => Promise<User>} deps.findUserById
- * @param {(req: Req) => string} deps.getOriginOfRequest
- * @param {((key: 'require_email_mfa') => boolean) & ((key: 'admin_session_secret' | 'title') => string)} deps.getSettingsCache
- * @param {() => string} deps.getBlogLogo
- * @param {import('../../lib/mail').GhostMailer} deps.mailer
- * @param {import('../../../shared/i18n').t} deps.t
- * @param {import('../../../shared/url-utils').default} deps.urlUtils
- * @param {() => boolean} deps.isStaffDeviceVerificationDisabled
- * @param {(userId: string) => Promise<void>} deps.limitVerificationEmailForUser
- * @param {(userId: string) => Promise<void>} deps.resetVerificationEmailForUser
- * @param {(challenge: string) => Promise<void>} deps.consumeAuthCodeAttempt
- * @returns {SessionService}
- */
+export interface SessionServiceDeps {
+  getSession: (req: Req, res: Res) => Promise<Session>;
+  findUserById: (data: { id: string }) => Promise<User>;
+  getOriginOfRequest: (req: Req) => string | null;
+  getSettingsCache: ((key: 'require_email_mfa') => boolean) &
+    ((key: 'admin_session_secret' | 'title') => string);
+  getBlogLogo: () => string;
+  mailer: { send(message: { to: string; subject: string; html: string }): Promise<unknown> };
+  t: (key: string, options?: Record<string, unknown>) => string;
+  urlUtils: typeof urlUtilsInstance;
+  isStaffDeviceVerificationDisabled: () => boolean;
+  limitVerificationEmailForUser: (userId: string) => Promise<void>;
+  resetVerificationEmailForUser: (userId: string) => Promise<unknown>;
+  consumeAuthCodeAttempt: (challenge: string) => Promise<void>;
+}
 
-module.exports = function createSessionService({
+type SessionOptions = {
+  session: Session;
+  user: SessionUser;
+  origin: string | null;
+  userAgent?: string;
+  ip?: string;
+};
+
+export interface SessionService {
+  getUserForSession(req: Req, res: Res): Promise<User | null>;
+  createSessionForUser(req: Req, res: Res, user: SessionUser): Promise<void>;
+  createVerifiedSessionForUser(req: Req, res: Res, user: SessionUser): Promise<void>;
+  assignVerifiedUserToSession(options: SessionOptions): Promise<void>;
+  rotateAndAssignVerifiedUserToSession(options: {
+    req: Req;
+    user: SessionUser;
+    ip?: string;
+  }): Promise<void>;
+  removeUserForSession(req: Req, res: Res): Promise<void>;
+  verifySession(req: Req, res: Res): Promise<void>;
+  isVerifiedSession(req: Req, res: Res): Promise<boolean>;
+  sendAuthCodeToUser(req: Req, res: Res): Promise<void>;
+  verifyAuthCodeForUser(req: Req, res: Res): Promise<boolean>;
+  generateAuthCodeForUser(req: Req, res: Res): Promise<string>;
+  isVerificationRequired(): boolean;
+}
+
+export default function createSessionService({
   getSession,
   findUserById,
   getOriginOfRequest,
@@ -79,10 +94,10 @@ module.exports = function createSessionService({
   resetVerificationEmailForUser,
   consumeAuthCodeAttempt,
   t,
-}) {
+}: SessionServiceDeps): SessionService {
   // Await the reset so the next sign-in starts with a fresh email budget.
   // Store failures must not prevent a successfully verified user from signing in.
-  async function clearVerificationEmailLimit(userId) {
+  async function clearVerificationEmailLimit(userId: string) {
     try {
       await resetVerificationEmailForUser(userId);
     } catch (err) {
@@ -93,24 +108,26 @@ module.exports = function createSessionService({
     return crypto.randomBytes(AUTH_CODE_CHALLENGE_BYTES).toString('hex');
   }
 
-  function rotateAuthCodeChallenge(session) {
+  function rotateAuthCodeChallenge(session: Session) {
     session.auth_code_challenge = createAuthCodeChallenge();
     session.auth_code_generated_at = Date.now();
   }
 
-  function ensureAuthCodeChallenge(session) {
+  function ensureAuthCodeChallenge(session: Session) {
     if (!session.auth_code_challenge) {
       rotateAuthCodeChallenge(session);
     }
     return session.auth_code_challenge;
   }
 
-  function invalidateAuthCodeChallenge(session) {
+  function invalidateAuthCodeChallenge(session: Session) {
     session.auth_code_challenge = undefined;
     session.auth_code_generated_at = undefined;
   }
 
-  function hasValidAuthCodeChallenge(session) {
+  function hasValidAuthCodeChallenge(
+    session: Session,
+  ): session is Session & { auth_code_challenge: string; auth_code_generated_at: number } {
     if (!session.auth_code_challenge || !session.auth_code_generated_at) {
       return false;
     }
@@ -118,7 +135,7 @@ module.exports = function createSessionService({
     return Date.now() - session.auth_code_generated_at <= AUTH_CODE_VALIDITY_MS;
   }
 
-  async function verifyAuthCode(session, token, secret) {
+  async function verifyAuthCode(session: Session, token: string | undefined, secret: string) {
     if (!token || !session.user_id || !hasValidAuthCodeChallenge(session)) {
       return false;
     }
@@ -137,7 +154,7 @@ module.exports = function createSessionService({
 
   // Reject any request whose origin isn't the admin site. This check is
   // used to prevent cross-origin logins (login CSRF).
-  function assertRequestFromAdminOrigin(origin) {
+  function assertRequestFromAdminOrigin(origin: string | null) {
     const adminOrigin = urlUtils.getAdminOrigin();
 
     if (origin !== adminOrigin) {
@@ -147,14 +164,7 @@ module.exports = function createSessionService({
     }
   }
 
-  /**
-   * cookieCsrfProtection
-   *
-   * @param {Req} req
-   * @param {Session} session
-   * @returns {Promise<void>}
-   */
-  function cookieCsrfProtection(req, session) {
+  function cookieCsrfProtection(req: Req, session: Session) {
     const origin = getOriginOfRequest(req);
 
     // Check that the origin matches the admin URL to prevent cross-origin
@@ -177,13 +187,19 @@ module.exports = function createSessionService({
   /**
    * isVerificationRequired
    * Determines if 2FA verification is required based on site settings
-   * @returns {boolean}
    */
   function isVerificationRequired() {
     return getSettingsCache('require_email_mfa') === true;
   }
 
-  async function assignUserToSession({ session, user, origin, userAgent, ip, verificationToken }) {
+  async function assignUserToSession({
+    session,
+    user,
+    origin,
+    userAgent,
+    ip,
+    verificationToken,
+  }: SessionOptions & { verificationToken?: string }) {
     if (!origin) {
       throw new BadRequestError({
         message:
@@ -223,15 +239,7 @@ module.exports = function createSessionService({
     }
   }
 
-  /**
-   * createSessionForUser
-   *
-   * @param {Req} req
-   * @param {Res} res
-   * @param {User} user
-   * @returns {Promise<void>}
-   */
-  async function createSessionForUser(req, res, user) {
+  async function createSessionForUser(req: Req, res: Res, user: SessionUser) {
     const previousSession = await getSession(req, res);
 
     // Carried over to the new session so verification state survives login
@@ -244,7 +252,7 @@ module.exports = function createSessionService({
     } = previousSession;
 
     // Ensure a new session is always created
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       req.session.regenerate((err) => {
         if (err) {
           reject(err);
@@ -275,26 +283,18 @@ module.exports = function createSessionService({
     });
   }
 
-  /**
-   * createVerifiedSessionForUser
-   *
-   * @param {Req} req
-   * @param {Res} res
-   * @param {User} user
-   * @returns {Promise<void>}
-   */
-  async function createVerifiedSessionForUser(req, res, user) {
+  async function createVerifiedSessionForUser(req: Req, res: Res, user: SessionUser) {
     await createSessionForUser(req, res, user);
     await verifySession(req, res);
   }
 
-  /**
-   * assignVerifiedUserToSession
-   *
-   * @param {{session: Session, user: User, origin: string, userAgent?: string, ip?: string}} options
-   * @returns {Promise<void>}
-   */
-  async function assignVerifiedUserToSession({ session, user, origin, userAgent, ip }) {
+  async function assignVerifiedUserToSession({
+    session,
+    user,
+    origin,
+    userAgent,
+    ip,
+  }: SessionOptions) {
     await assignUserToSession({
       session,
       user,
@@ -314,12 +314,17 @@ module.exports = function createSessionService({
    * assigns the verified user to the new session. Used after a password
    * change or reset so that any cloned or stolen copy of the pre-change
    * cookie is rejected on its next request.
-   *
-   * @param {{req: Req, user: User, ip?: string}} options
-   * @returns {Promise<void>}
    */
-  async function rotateAndAssignVerifiedUserToSession({ req, user, ip }) {
-    await new Promise((resolve, reject) => {
+  async function rotateAndAssignVerifiedUserToSession({
+    req,
+    user,
+    ip,
+  }: {
+    req: Req;
+    user: SessionUser;
+    ip?: string;
+  }) {
+    await new Promise<void>((resolve, reject) => {
       req.session.regenerate((err) => {
         if (err) {
           reject(err);
@@ -336,28 +341,14 @@ module.exports = function createSessionService({
     });
   }
 
-  /**
-   * generateAuthCodeForUser
-   *
-   * @param {Req} req
-   * @param {Res} res
-   * @returns {Promise<string>}
-   */
-  async function generateAuthCodeForUser(req, res) {
+  async function generateAuthCodeForUser(req: Req, res: Res) {
     const session = await getSession(req, res);
     const secret = getSettingsCache('admin_session_secret');
     const challenge = ensureAuthCodeChallenge(session);
-    return totp.generate(session.user_id, secret, challenge);
+    return totp.generate(session.user_id as string, secret, challenge);
   }
 
-  /**
-   * verifyAuthCodeForUser
-   *
-   * @param {Req} req
-   * @param {Res} res
-   * @returns {Promise<boolean>}
-   */
-  async function verifyAuthCodeForUser(req, res) {
+  async function verifyAuthCodeForUser(req: Req, res: Res) {
     const session = await getSession(req, res);
     cookieCsrfProtection(req, session);
 
@@ -379,15 +370,13 @@ module.exports = function createSessionService({
 
   /**
    * Get a readable location string from an IP address.
-   * @param {string} ip - The IP address to look up.
-   * @returns {Promise<string>} - A readable location string or 'Unknown'.
    */
-  async function getGeolocationFromIP(ip) {
+  async function getGeolocationFromIP(ip: string | undefined) {
     if (!ip || (!IPV4_REGEX.test(ip) && !IPV6_REGEX.test(ip))) {
       return 'Unknown';
     }
 
-    const gotOpts = {
+    const gotOpts: { timeout: { request: number }; retry?: { limit: number } } = {
       timeout: {
         request: 500,
       },
@@ -402,7 +391,10 @@ module.exports = function createSessionService({
     const geojsUrl = `https://get.geojs.io/v1/ip/geo/${encodeURIComponent(ip)}.json`;
 
     try {
-      const response = await got(geojsUrl, gotOpts).json();
+      const response: { city?: string; region?: string; country?: string } | undefined = await got(
+        geojsUrl,
+        gotOpts,
+      ).json();
 
       const { city, region, country } = response || {};
 
@@ -416,7 +408,7 @@ module.exports = function createSessionService({
     }
   }
 
-  async function getDeviceDetails(userAgent, ip) {
+  async function getDeviceDetails(userAgent: string | undefined, ip: string | undefined) {
     const parser = new UAParser();
     parser.setUA(userAgent);
     const result = parser.getResult();
@@ -429,14 +421,7 @@ module.exports = function createSessionService({
     };
   }
 
-  /**
-   * sendAuthCodeToUser
-   *
-   * @param {Req} req
-   * @param {Res} res
-   * @returns {Promise<void>}
-   */
-  async function sendAuthCodeToUser(req, res) {
+  async function sendAuthCodeToUser(req: Req, res: Res) {
     const session = await getSession(req, res);
     cookieCsrfProtection(req, session);
 
@@ -492,33 +477,21 @@ module.exports = function createSessionService({
       });
     } catch (error) {
       throw new errors.EmailError({
-        ...error,
+        ...(error as object),
         message: 'Failed to send email. Please check your site configuration and try again.',
       });
     }
   }
 
-  /**
-   * verifySession
-   *
-   * @param {Req} req
-   * @param {Res} res
-   */
-  async function verifySession(req, res) {
+  async function verifySession(req: Req, res: Res) {
     const session = await getSession(req, res);
     session.verified = true;
     session.verified_user_id = session.user_id;
     invalidateAuthCodeChallenge(session);
-    await clearVerificationEmailLimit(session.user_id);
+    await clearVerificationEmailLimit(session.user_id as string);
   }
 
-  /**
-   * isVerifiedSession
-   *
-   * @param {Req} req
-   * @param {Res} res
-   */
-  async function isVerifiedSession(req, res) {
+  async function isVerifiedSession(req: Req, res: Res) {
     const session = await getSession(req, res);
     // Verification is bound to a user; a session with no verified_user_id
     // (e.g. logged out, or predating this field) fails closed rather than
@@ -530,14 +503,7 @@ module.exports = function createSessionService({
     );
   }
 
-  /**
-   * removeUserForSession
-   *
-   * @param {Req} req
-   * @param {Res} res
-   * @returns {Promise<void>}
-   */
-  async function removeUserForSession(req, res) {
+  async function removeUserForSession(req: Req, res: Res) {
     const session = await getSession(req, res);
 
     if (isVerificationRequired()) {
@@ -549,14 +515,7 @@ module.exports = function createSessionService({
     session.user_id = undefined;
   }
 
-  /**
-   * getUserForSession
-   *
-   * @param {Req} req
-   * @param {Res} res
-   * @returns {Promise<User | null>}
-   */
-  async function getUserForSession(req, res) {
+  async function getUserForSession(req: Req, res: Res): Promise<User | null> {
     // CASE: we don't have a cookie header so allow fallthrough to other
     // auth middleware or final "ensure authenticated" check
     if (!req.headers || !req.headers.cookie) {
@@ -595,4 +554,4 @@ module.exports = function createSessionService({
     generateAuthCodeForUser,
     isVerificationRequired,
   };
-};
+}

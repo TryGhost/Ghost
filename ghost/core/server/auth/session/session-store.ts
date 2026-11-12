@@ -1,12 +1,24 @@
+// express-session ships no types
 const { Store } = require('express-session');
 
-module.exports = class SessionStore extends Store {
-  constructor(SessionModel) {
+type Callback = (err: unknown, data?: unknown) => void;
+
+export interface SessionModel {
+  destroy(filter: { session_id: string }): Promise<unknown>;
+  findOne(filter: { session_id: string }): Promise<{ get(key: 'session_data'): unknown } | null>;
+  upsert(data: { session_data: unknown }, filter: { session_id: string }): Promise<unknown>;
+  destroyAll(): Promise<unknown>;
+}
+
+export default class SessionStore extends Store {
+  SessionModel: SessionModel;
+
+  constructor(SessionModel: SessionModel) {
     super();
     this.SessionModel = SessionModel;
   }
 
-  destroy(sid, callback) {
+  destroy(sid: string, callback: Callback) {
     this.SessionModel.destroy({ session_id: sid })
       .then(() => {
         callback(null);
@@ -14,7 +26,7 @@ module.exports = class SessionStore extends Store {
       .catch(callback);
   }
 
-  get(sid, callback) {
+  get(sid: string, callback: Callback) {
     this.SessionModel.findOne({ session_id: sid })
       .then((model) => {
         if (!model) {
@@ -25,7 +37,7 @@ module.exports = class SessionStore extends Store {
       .catch(callback);
   }
 
-  set(sid, sessionData, callback) {
+  set(sid: string, sessionData: unknown, callback: Callback) {
     this.SessionModel.upsert({ session_data: sessionData }, { session_id: sid })
       .then(() => {
         callback(null);
@@ -33,11 +45,11 @@ module.exports = class SessionStore extends Store {
       .catch(callback);
   }
 
-  clear(callback) {
+  clear(callback: Callback) {
     this.SessionModel.destroyAll()
       .then(() => {
         callback(null);
       })
       .catch(callback);
   }
-};
+}

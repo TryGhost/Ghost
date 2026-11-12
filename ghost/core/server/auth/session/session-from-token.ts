@@ -15,7 +15,7 @@ export const sessionFromToken =
   }: Readonly<{
     getTokenFromRequest: (req: express.Request) => Promise<Token>;
     getLookupFromToken: (token: Token) => Promise<Lookup>;
-    findUserByLookup: (lookup: Lookup) => Promise<User>;
+    findUserByLookup: (lookup: Lookup) => Promise<User | null>;
     createSession: (req: express.Request, res: express.Response, user: User) => Promise<void>;
     callNextWithError: boolean;
   }>): ((

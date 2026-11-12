@@ -6,9 +6,11 @@ import { UnauthorizedError } from '@tryghost/errors';
 import models = require('../../../../core/server/models');
 // @ts-expect-error This module lacks type definitions.
 import sessionController from '../../../../core/server/api/endpoints/session';
-// @ts-expect-error This module lacks type definitions.
-import sessionServiceMiddleware = require('../../../../core/server/auth/session');
+import type sessionMiddlewareType from '../../../../core/server/auth/session';
 
+// require(), not import: the stubs must patch the instance the controller loads
+const sessionServiceMiddleware: typeof sessionMiddlewareType =
+  require('../../../../core/server/auth/session').default;
 const spamPrevention = require('../../../../core/server/web/shared/middleware/api/spam-prevention');
 
 /** Stubs the userLogin limiter's resetRequest, resolving or rejecting with `error`. */
