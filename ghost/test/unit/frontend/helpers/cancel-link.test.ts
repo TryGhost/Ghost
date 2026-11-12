@@ -11,11 +11,14 @@ import proxy from '../../../../core/frontend/services/proxy';
 import configUtils from '../../../utils/config-utils';
 import logging from '@tryghost/logging';
 import { promisify } from 'node:util';
+import { restoreHandlebarsAfterSuite } from '../../../utils/handlebars-state';
 
 const { labs } = proxy;
 const { hbs } = handlebarsService;
 
 describe('{{cancel_link}} helper', function () {
+  restoreHandlebarsAfterSuite();
+
   let labsStub: SinonStub;
   beforeAll(async function () {
     hbs.express4({ partialsDir: [configUtils.config.get('paths').helperTemplates] });

@@ -1,8 +1,11 @@
 import sinon from 'sinon';
 // @ts-expect-error This module lacks type definitions.
 import { registerHelper, shouldCompileToExpected } from './utils/handlebars';
+import { restoreHandlebarsAfterSuite } from '../../../utils/handlebars-state';
 
 describe('Search helper', function () {
+  restoreHandlebarsAfterSuite();
+
   beforeAll(function () {
     registerHelper('search');
   });
