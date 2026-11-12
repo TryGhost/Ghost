@@ -396,7 +396,7 @@ type AnswerCount<V extends string> =
       /**
        * The text the field shows for the answer it holds, where that isn't the option's label,
        * whether the member may change it or only read it: a phone number's country shows as its
-       * flag and calling code, and the list names it in full.
+       * calling code, and the list names it in full.
        */
       answerText?: ((answer: V) => string) | undefined;
     };
@@ -749,7 +749,7 @@ export default function ListPicker<V extends string>({
     fieldText = (answerText ?? labelOf)(value[0]);
   }
   // A field that takes one answer and says how to show it shows that text, as it does when the
-  // answer can be changed, such as a phone number's country as its flag and code, or the
+  // answer can be changed, such as a phone number's country as its calling code, or the
   // placeholder while it holds none. Otherwise every answer is a chip, one or several, since an
   // option's text can hold a comma.
   if (readOnly) {

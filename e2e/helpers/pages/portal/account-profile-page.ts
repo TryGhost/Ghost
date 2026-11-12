@@ -25,7 +25,7 @@ export class PortalAccountProfilePage extends PortalPage {
 
   /**
    * The button beside a phone field's number that shows the country the number is from, as its
-   * flag and calling code, and opens the list of countries to pick from.
+   * calling code, and opens the list of countries to pick from.
    */
   phoneCountry(key: string): Locator {
     return this.portalFrame.locator(`[data-test-input="input-custom:${key}-country"]`);

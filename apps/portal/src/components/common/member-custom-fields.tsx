@@ -17,7 +17,6 @@ import {
 import type { ShapeText } from '@tryghost/metafield-types/shapes';
 import {
   CALLING_CODES,
-  flagOf,
   holdNumber,
   phoneCountryOptions,
   pickCountry,
@@ -61,7 +60,7 @@ export const MemberCustomFieldsStyles = `
         min-width: 0;
     }
 
-    /* The country, shown as its flag and calling code, takes only the room those need. */
+    /* The country, shown as its calling code, takes only the room it needs. */
     .gh-portal-input-group-row .gh-portal-input-section.gh-portal-phone-country {
         flex: 0 0 auto;
     }
@@ -198,7 +197,7 @@ function FieldErrors({ id, messages }: { id: string; messages: string[] }) {
 
 /**
  * A phone number, written beside the country it is from, as Stripe Checkout asks for one: the
- * country as its flag and code, picked from a list of every country that can be searched by name or
+ * country as its calling code, picked from a list of every country that can be searched by name or
  * by code, and the number. The list opens across the whole input. A member writes the number as
  * they would at home and the country's code goes in front, or writes it with its code, and the
  * country shown follows. The site keeps it in one international form.
@@ -239,7 +238,8 @@ function PhoneInput({
       <div className="gh-portal-input-section gh-portal-phone-country">
         <ListPicker
           alignTo={phoneRef}
-          answerText={(code) => `${flagOf(code)} +${CALLING_CODES[code]}`}
+          // The code alone: an emoji flag shows as two letters in Chrome and Edge on Windows.
+          answerText={(code) => `+${CALLING_CODES[code]}`}
           clearable={false}
           // A number is refused as a whole, and its country is often what puts it right.
           describedBy={input.describedBy}
