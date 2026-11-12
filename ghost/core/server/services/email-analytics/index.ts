@@ -176,6 +176,7 @@ export const init = ({
     createEventProcessor: () =>
       new AutomationEmailAnalyticsBatchProcessor({
         automationsApi,
+        domainEvents,
       }),
   });
 

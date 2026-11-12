@@ -1,4 +1,5 @@
 import { normalizeMailgunMessageId } from '../../lib/mailgun/mailgun-message-id';
+import { AutomationEmailOpenedEvent } from '../email-service/events/automation-email-opened-event';
 import type * as automationsApi from '../automations/automations-api';
 import type {
   AutomatedEmailEvents,
@@ -62,9 +63,17 @@ const trackEarliest = (
 
 export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcessor {
   #automationsApi;
+  #domainEvents;
 
-  constructor({ automationsApi }: { automationsApi: AutomationsApi }) {
+  constructor({
+    automationsApi,
+    domainEvents,
+  }: {
+    automationsApi: AutomationsApi;
+    domainEvents: { dispatch: (event: AutomationEmailOpenedEvent) => void };
+  }) {
     this.#automationsApi = automationsApi;
+    this.#domainEvents = domainEvents;
   }
 
   async processBatch(
@@ -82,6 +91,7 @@ export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcess
       getAutomatedEmailRecipientsByMessageId(automatedEmailRecipients);
 
     const eventsByAutomatedEmailRecipientId = new Map<string, AutomatedEmailEvents>();
+    const openedEvents: AutomationEmailOpenedEvent[] = [];
 
     for (const event of events) {
       if (!fetchData.lastEventTimestamp || event.timestamp > fetchData.lastEventTimestamp) {
@@ -114,6 +124,14 @@ export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcess
         case 'opened': {
           const recipient = getRecipient();
           if (recipient) {
+            // Keep every open for member activity, even when analytics retain only the first.
+            openedEvents.push(
+              AutomationEmailOpenedEvent.create({
+                memberId: recipient.member_id,
+                emailRecipientId: recipient.id,
+                timestamp: event.timestamp,
+              }),
+            );
             trackEarliest(
               eventsByAutomatedEmailRecipientId,
               recipient,
@@ -135,5 +153,8 @@ export class AutomationEmailAnalyticsBatchProcessor implements BatchEventProcess
     }
 
     await this.#automationsApi.trackEmailDeliveredAndOpened(eventsByAutomatedEmailRecipientId);
+    for (const event of openedEvents) {
+      this.#domainEvents.dispatch(event);
+    }
   }
 }
