@@ -4995,7 +4995,7 @@ services:
           - core/server/api/endpoints/integrations.js
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/api/endpoints/utils/serializers/input/integrations.js
-          - core/server/api/endpoints/utils/serializers/output/mappers/integrations.js
+          - core/server/api/endpoints/utils/serializers/output/mappers/integrations.ts
           - core/server/models/integration.js
         tests:
           - test/e2e-api/admin/integrations.test.js
@@ -5066,7 +5066,7 @@ services:
           - core/server/services/integrations/integrations-service.js
           - core/server/api/endpoints/integrations.js
           - core/server/api/endpoints/utils/serializers/input/integrations.js
-          - core/server/api/endpoints/utils/serializers/output/mappers/integrations.js
+          - core/server/api/endpoints/utils/serializers/output/mappers/integrations.ts
           - core/server/models/api-key.js
         tests:
           - test/e2e-api/admin/integrations.test.js
@@ -8779,7 +8779,7 @@ services:
           - core/server/services/mentions/index.ts
           - core/server/api/endpoints/mentions.js
           - core/server/api/endpoints/utils/serializers/input/mentions.js
-          - core/server/api/endpoints/utils/serializers/output/mappers/mentions.js
+          - core/server/api/endpoints/utils/serializers/output/mappers/mentions.ts
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/web/webmentions/routes.js
           - core/server/services/mentions/mention-controller.js

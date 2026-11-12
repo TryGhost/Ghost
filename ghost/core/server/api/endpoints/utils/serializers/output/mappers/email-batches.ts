@@ -1,4 +1,4 @@
-const _ = require('lodash');
+import _ from 'lodash';
 
 const batchFields = [
   'id',
@@ -14,7 +14,10 @@ const batchFields = [
 
 const countFields = ['recipients'];
 
-const batchMapper = (model, frame) => {
+const batchMapper = (
+  model: { toJSON?: (options: unknown) => Record<string, unknown>; [key: string]: unknown },
+  frame: { options?: unknown },
+) => {
   const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
 
   const response = _.pick(jsonModel, batchFields);

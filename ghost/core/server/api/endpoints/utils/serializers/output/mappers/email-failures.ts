@@ -1,4 +1,4 @@
-const _ = require('lodash');
+import _ from 'lodash';
 
 const memberFields = ['id', 'uuid', 'name', 'email', 'avatar_image'];
 
@@ -24,7 +24,10 @@ const emailRecipientFields = [
   'member_name',
 ];
 
-const failureMapper = (model, frame) => {
+const failureMapper = (
+  model: { toJSON?: (options: unknown) => Record<string, unknown>; [key: string]: unknown },
+  frame: { options?: unknown },
+) => {
   const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
 
   const response = _.pick(jsonModel, failureFields);
