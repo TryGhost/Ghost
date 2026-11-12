@@ -2701,6 +2701,9 @@ importers:
       chai:
         specifier: 'catalog:'
         version: 4.5.0
+      country-flag-icons:
+        specifier: 'catalog:'
+        version: 1.6.20(@types/react@18.3.31)(react@18.3.1)
       cssnano:
         specifier: 7.1.9
         version: 7.1.9(postcss@8.5.32)

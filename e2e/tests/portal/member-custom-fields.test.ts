@@ -283,7 +283,18 @@ test.describe('Portal - member custom fields', () => {
         await profile.phoneCountry(key).click();
         await profile.listSearch('Country code').fill('+44');
         await profile.listOption('United Kingdom (+44)').click();
-        await expect(profile.phoneCountry(key)).toHaveText('🇬🇧 +44');
+        await expect(profile.phoneCountry(key)).toHaveText('+44');
+        // Its flag, served by the site, named for screen readers by its country.
+        const flag = profile.phoneCountry(key).getByRole('img', { name: 'United Kingdom' });
+        const flagUrl = await flag.evaluate((element) =>
+          (element as HTMLElement).style
+            .getPropertyValue('--flag')
+            .replace(/^url\("(.*)"\)$/, '$1'),
+        );
+        expect(flagUrl).toMatch(/\/public\/flags\/GB\.svg$/);
+        const served = await memberPage.request.get(flagUrl);
+        expect(served.status()).toBe(200);
+        expect(served.headers()['content-type']).toContain('image/svg+xml');
 
         // One the country has no number like is refused, with the reason under the input.
         await profile.fieldInput(key).fill('020 7946 000');
@@ -303,7 +314,7 @@ test.describe('Portal - member custom fields', () => {
         // Shown after the country that gives its code, as it was typed.
         await accountHome.portalFrame.locator('[data-test-button="edit-profile"]').click();
         await expect(profile.title).toBeVisible();
-        await expect(profile.phoneCountry(key)).toHaveText('🇬🇧 +44');
+        await expect(profile.phoneCountry(key)).toHaveText('+44');
         await expect(profile.fieldInput(key)).toHaveValue('2079460000');
       } finally {
         await context.close();

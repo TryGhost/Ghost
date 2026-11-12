@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   FIELD_STRUCTURES,
   editableAnswers,
@@ -17,7 +17,6 @@ import {
 import type { ShapeText } from '@tryghost/metafield-types/shapes';
 import {
   CALLING_CODES,
-  flagOf,
   holdNumber,
   phoneCountryOptions,
   pickCountry,
@@ -27,6 +26,7 @@ import {
   type PhoneEntry,
 } from '@tryghost/metafield-types/phone';
 
+import AppContext from '../../app-context';
 import InputForm from './input-form';
 import ListPicker from './list-picker';
 import { countryOptions, countryOptionsAmong } from '../../utils/countries';
@@ -69,6 +69,17 @@ export const MemberCustomFieldsStyles = `
     .gh-portal-phone-country .gh-portal-listpicker-trigger {
         flex: 0 0 auto;
         min-width: 0;
+    }
+
+    .gh-portal-phone-flag {
+        display: inline-block;
+        width: 21px;
+        height: 14px;
+        margin-right: 6px;
+        border-radius: 2px;
+        vertical-align: -2px;
+        background-image: var(--flag, none), linear-gradient(135deg, var(--grey12), var(--grey11));
+        background-size: cover;
     }
 
     /* Lifted while in use, above the number even when the number is focused or refused, which
@@ -215,6 +226,25 @@ function PhoneInput({
 }) {
   const disabled = hasMode(['preview']) || isCookiesDisabled();
   const options = useMemo(() => phoneCountryOptions(countryOptions()), []);
+  // The site serves each country's flag as Admin draws it, so only the flag shown is downloaded,
+  // and it looks the same in every browser, where an emoji flag shows as two letters on Windows.
+  const { site } = useContext(AppContext) as { site?: { url?: string } };
+  const flags = `${(site?.url ?? '').replace(/\/$/, '')}/public/flags`;
+  // Drawn over a soft grey (.gh-portal-phone-flag), which is all that shows before a country is
+  // known, while its flag loads, including after the country changes, and where the site doesn't
+  // serve flags yet. A flag is 3:2, as the grey is, so it covers it whole. Named by its country for
+  // screen readers.
+  const flag = (code?: string) =>
+    code ? (
+      <span
+        aria-label={countryOptions().find((option) => option.value === code)?.label ?? code}
+        className="gh-portal-phone-flag"
+        role="img"
+        style={{ '--flag': `url("${flags}/${code}.svg")` } as React.CSSProperties}
+      />
+    ) : (
+      <span aria-hidden="true" className="gh-portal-phone-flag" />
+    );
   const phoneRef = useRef<HTMLDivElement>(null);
   const [entry, setEntry] = useState(() => startPhoneEntry(value, navigator.languages ?? []));
   // What this input last sent. A value that differs came from the site, such as the number it
@@ -239,7 +269,11 @@ function PhoneInput({
       <div className="gh-portal-input-section gh-portal-phone-country">
         <ListPicker
           alignTo={phoneRef}
-          answerText={(code) => `${flagOf(code)} +${CALLING_CODES[code]}`}
+          answerText={(code) => (
+            <>
+              {flag(code)}+{CALLING_CODES[code]}
+            </>
+          )}
           clearable={false}
           // A number is refused as a whole, and its country is often what puts it right.
           describedBy={input.describedBy}
@@ -249,7 +283,7 @@ function PhoneInput({
           label={t('Country code')}
           multiple={false}
           options={options}
-          placeholder="+"
+          placeholder={<>{flag()}+</>}
           readOnly={readOnly ?? false}
           value={country ? [country] : []}
           // The country shown, picked again, changes nothing, as a select's own option doesn't.

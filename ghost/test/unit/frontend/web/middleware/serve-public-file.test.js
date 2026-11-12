@@ -4,7 +4,10 @@ const request = require('supertest');
 const express = require('express');
 const fs = require('fs-extra');
 const config = require('../../../../../core/shared/config');
-const { servePublicFile } = require('../../../../../core/frontend/web/routers/serve-public-file');
+const {
+  servePublicFile,
+  serveFlag,
+} = require('../../../../../core/frontend/web/routers/serve-public-file');
 
 describe('servePublicFile', function () {
   afterEach(function () {
@@ -189,5 +192,55 @@ describe('servePublicFile', function () {
 
     assert.equal(text, body);
     assert(fileStub.firstCall.args[0].endsWith('core/frontend/public/private.min.js'));
+  });
+});
+
+// Portal's phone input shows a country's flag from here, one small file per country, so a reader
+// downloads only the flag they see.
+describe('serveFlag', function () {
+  function createApp() {
+    const app = express();
+    app.get('/public/flags/:country.svg', serveFlag);
+    app.use((_req, res) => {
+      res.status(418).send('next');
+    });
+    app.use((err, _req, res, _next) => {
+      void _next;
+
+      res.status(err.statusCode || 500).json({ code: err.code });
+    });
+    return app;
+  }
+
+  it("sends a country's flag as an SVG, cached as Ghost's other public assets are", async function () {
+    const { headers, body } = await request(createApp())
+      .get('/public/flags/GB.svg')
+      .buffer(true)
+      .parse((res, done) => {
+        const chunks = [];
+        res.on('data', (chunk) => chunks.push(chunk));
+        res.on('end', () => done(null, Buffer.concat(chunks).toString()));
+      })
+      .expect(200);
+
+    assert.match(headers['content-type'], /^image\/svg\+xml/);
+    assert.equal(
+      headers['cache-control'],
+      `public, max-age=${config.get('caching:publicAssets:maxAge')}`,
+    );
+    assert.match(body, /^<svg /);
+  });
+
+  it('sends 404 for a country it has no flag for', async function () {
+    const { body } = await request(createApp()).get('/public/flags/ZZ.svg').expect(404);
+
+    assert.equal(body.code, 'STATIC_FILE_NOT_FOUND');
+  });
+
+  // A country is two capital letters, so nothing else in the folder, or outside it, is reachable.
+  it('passes on anything that is not a country', async function () {
+    await request(createApp()).get('/public/flags/gb.svg').expect(418);
+    await request(createApp()).get('/public/flags/GBR.svg').expect(418);
+    await request(createApp()).get('/public/flags/%2E%2E%2Frobots.svg').expect(418);
   });
 });

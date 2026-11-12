@@ -135,8 +135,29 @@ describe('Account Profile Page', () => {
       const input = getByLabelText('Mobile');
       expect(input).toHaveAttribute('type', 'tel');
       expect(input).toHaveAttribute('autocomplete', 'tel');
-      expect(getByLabelText('Country code')).toHaveTextContent('🇬🇧 +44');
+      expect(getByLabelText('Country code')).toHaveTextContent(/^\+44$/);
+      // Its flag, as the site serves it, named by its country for a screen reader.
+      expect(
+        within(getByLabelText('Country code'))
+          .getByRole('img', { name: 'United Kingdom' })
+          .style.getPropertyValue('--flag'),
+      ).toBe('url("https://portal.localhost/public/flags/GB.svg")');
       expect(input).toHaveValue('2079460000');
+    });
+
+    // A number started with + has no country yet, so only the grey a flag sits on holds its place,
+    // and nothing is fetched until there's a country to show.
+    test("holds the flag's place with no flag while a number has no country yet", () => {
+      const mobile = { key: 'mobile', name: 'Mobile', type: 'phone', access: { member: 'write' } };
+      const { getByLabelText, container } = setup({ site, member, customFields: [mobile] });
+
+      fireEvent.change(getByLabelText('Mobile'), { target: { value: '+' } });
+
+      const country = getByLabelText('Country code');
+      expect(country).toHaveTextContent(/^\+$/);
+      expect(within(country).queryByRole('img')).not.toBeInTheDocument();
+      expect(country.querySelector('.gh-portal-phone-flag')).toBeInTheDocument();
+      expect(container.querySelector('[style*="--flag"]')).not.toBeInTheDocument();
     });
 
     // A member rewriting the number they hold as they dial it at home keeps its country, whatever
@@ -149,9 +170,9 @@ describe('Account Profile Page', () => {
         customFields: [mobile],
       });
 
-      expect(getByLabelText('Country code')).toHaveTextContent('🇫🇷 +33');
+      expect(getByLabelText('Country code')).toHaveTextContent(/^\+33$/);
       fireEvent.change(getByLabelText('Mobile'), { target: { value: '06 12 34 56 79' } });
-      expect(getByLabelText('Country code')).toHaveTextContent('🇫🇷 +33');
+      expect(getByLabelText('Country code')).toHaveTextContent(/^\+33$/);
     });
 
     describe("a phone number's country", () => {
@@ -179,7 +200,7 @@ describe('Account Profile Page', () => {
         expect(offered()).toEqual(['France (+33)']);
         fireEvent.keyDown(searchBox(utils, 'Country code'), { key: 'Enter' });
 
-        expect(picker(utils, 'Country code')).toHaveTextContent('🇫🇷 +33');
+        expect(picker(utils, 'Country code')).toHaveTextContent(/^\+33$/);
         fireEvent.click(utils.saveBtn);
         expect(utils.mockDoActionFn).toHaveBeenCalledWith(
           'updateProfile',
@@ -207,7 +228,13 @@ describe('Account Profile Page', () => {
       test('is shown as its flag and code, with nothing to pick, where the member may only read the number', () => {
         const utils = holdingMobile('read');
 
-        expect(utils.getByRole('group', { name: 'Country code' })).toHaveTextContent('🇬🇧 +44');
+        const shown = utils.getByRole('group', { name: 'Country code' });
+        expect(shown).toHaveTextContent(/^\+44$/);
+        expect(
+          within(shown)
+            .getByRole('img', { name: 'United Kingdom' })
+            .style.getPropertyValue('--flag'),
+        ).toBe('url("https://portal.localhost/public/flags/GB.svg")');
         expect(utils.queryByRole('combobox', { name: 'Country code' })).not.toBeInTheDocument();
         expect(utils.getByLabelText('Mobile')).toHaveAttribute('readonly');
       });

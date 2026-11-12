@@ -403,7 +403,7 @@ type AnswerCount<V extends string> =
        * whether the member may change it or only read it: a phone number's country shows as its
        * flag and calling code, and the list names it in full.
        */
-      answerText?: ((answer: V) => string) | undefined;
+      answerText?: ((answer: V) => React.ReactNode) | undefined;
     };
 
 type ListPickerProps<V extends string> = AnswerCount<V> & {
@@ -426,7 +426,7 @@ type ListPickerProps<V extends string> = AnswerCount<V> & {
    * part of, such as a phone number's input with its country.
    */
   alignTo?: React.RefObject<HTMLElement> | undefined;
-  placeholder: string;
+  placeholder: React.ReactNode;
   invalid?: boolean;
   disabled?: boolean;
   /**
@@ -748,7 +748,7 @@ export default function ListPicker<V extends string>({
     <div className="gh-portal-listpicker-empty">{t('No options found')}</div>
   );
 
-  let fieldText = placeholder;
+  let fieldText: React.ReactNode = placeholder;
   if (multiple && value.length > 0) {
     fieldText = '';
   } else if (value[0] !== undefined) {
