@@ -433,7 +433,7 @@ it('allows the exact libraries required by Member Attribution without allowing s
     [`${alpha}/approved.js`]: approved.map((name) => `require('${name}');`).join('\n'),
     [`${alpha}/rejected.ts`]: rejected.map((name) => `import '${name}';`).join('\n'),
     'ghost/core/server/lib/common/to-plain.ts': 'export const toPlain = (value) => value;',
-    'ghost/core/server/lib/link-replacer.js': 'module.exports = {};',
+    'ghost/core/server/lib/link-replacer.ts': 'export {};',
     'ghost/core/server/lib/common/to-plain-extra.ts': 'export {};',
     'ghost/core/server/lib/link-replacer-extra.js': 'module.exports = {};',
   });
