@@ -1,13 +1,15 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { page, userEvent } from 'vitest/browser';
 
 import {
   allowUnhandledRequests,
+  changelogEntry,
   configResponse,
   currentRoute,
   currentUserResponse,
   fakeAdminEndpoint,
   fakeAdminStats,
+  fakeEndpoint,
   fakeTags,
   renderAdminApp,
   type RenderAdminAppOptions,
@@ -53,6 +55,53 @@ describe('Floating sidebar (admin7Design)', () => {
   beforeEach(() => {
     fakeAdminStats.memberCount();
     fakeAdminStats.mrr();
+  });
+
+  it('keeps the banner and account usable while the navigation scrolls in a short viewport', async () => {
+    await page.viewport(1280, 420);
+    fakeTags([]);
+    fakeEndpoint('GET', 'https://ghost.org/changelog.json', {
+      posts: [changelogEntry({ published_at: '2025-06-01T00:00:00.000Z' })],
+    });
+    const options = floatingSidebar();
+    const me = currentUserResponse();
+    me.users[0].accessibility = JSON.stringify({
+      whatsNew: { lastSeenDate: '2025-01-01T00:00:00.000Z' },
+      navigation: { expanded: { posts: true, members: true } },
+    });
+    try {
+      await renderAdminApp('/tags', {
+        ...options,
+        boot: { browseMe: { response: me } },
+      });
+      await expect.poll(sidebarScreen.floatingState).toBe('pinned');
+      const banner = page.getByTestId('whats-new-banner');
+      await expect.element(banner).toBeVisible();
+      await expect.element(sidebarScreen.userMenuTrigger()).toBeVisible();
+      await expect
+        .poll(
+          () =>
+            banner.element().getBoundingClientRect().bottom <=
+            sidebarScreen.userMenuTrigger().element().getBoundingClientRect().top,
+        )
+        .toBe(true);
+
+      const nav = sidebarScreen.shellNav().element().querySelector('[data-sidebar=content]');
+      if (!(nav instanceof HTMLElement)) {
+        throw new Error('Expected scrollable sidebar navigation');
+      }
+      await expect.poll(() => nav.scrollHeight > nav.clientHeight).toBe(true);
+      const bannerTop = banner.element().getBoundingClientRect().top;
+      nav.scrollTop = nav.scrollHeight;
+
+      expect(banner.element().getBoundingClientRect().top).toBe(bannerTop);
+      await expect.element(sidebarScreen.navLink('Settings')).toBeVisible();
+      await expect.element(banner).toBeVisible();
+      await sidebarScreen.userMenuTrigger().click();
+      await expect.element(sidebarScreen.profileMenuItem()).toBeVisible();
+    } finally {
+      await page.viewport(1280, 800);
+    }
   });
 
   it.each([

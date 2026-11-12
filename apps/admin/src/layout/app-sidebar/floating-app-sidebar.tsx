@@ -6,6 +6,7 @@ import { useBrowseSite } from '@tryghost/admin-x-framework/api/site';
 
 import AppSidebarFooter from './app-sidebar-footer';
 import AppSidebarContent from './app-sidebar-content';
+import AppSidebarBanner from './app-sidebar-banner';
 import { SidebarBodySwap } from './sidebar-body-swap';
 import { SidebarSiteIcon, SidebarSiteIdentity } from './sidebar-site-identity';
 
@@ -56,7 +57,8 @@ const FloatingAppSidebar = React.forwardRef<HTMLDivElement, FloatingAppSidebarPr
       () => (
         <SidebarBodySwap settings={settingsNavigation} settingsSlotRef={settingsNavigationRef}>
           <AppSidebarContent floating />
-          <AppSidebarFooter className="gap-0 p-0 [&_[data-sidebar=group]]:px-0 [&_[data-sidebar=group]]:pb-0" />
+          <AppSidebarBanner className="min-h-0 shrink overflow-y-auto" />
+          <AppSidebarFooter className="shrink-0 gap-0 p-0 [&_[data-sidebar=group]]:px-0 [&_[data-sidebar=group]]:pb-0" />
         </SidebarBodySwap>
       ),
       [settingsNavigation, settingsNavigationRef],
