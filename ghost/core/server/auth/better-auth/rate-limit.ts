@@ -1,4 +1,5 @@
 import type { BetterAuthRateLimitOptions } from 'better-auth';
+import { ROUTES } from './routes';
 
 type RateLimitStorage = NonNullable<BetterAuthRateLimitOptions['customStorage']>;
 
@@ -25,16 +26,16 @@ const PASSWORD_RESET = '/authentication/password_reset/';
 // Each native credential route counts against its compatibility route's limiters
 const ROUTE_LIMITERS: Record<string, { route: string; limiters: LimiterName[] }> = {
   // POST /session
-  '/sign-in/email': { route: SESSION, limiters: ['globalBlock', 'userLogin'] },
+  [ROUTES.signInEmail]: { route: SESSION, limiters: ['globalBlock', 'userLogin'] },
   // Sends an email per request, like POST /authentication/password_reset
-  '/sign-in/magic-link': { route: PASSWORD_RESET, limiters: ['globalReset', 'userReset'] },
+  [ROUTES.signInMagicLink]: { route: PASSWORD_RESET, limiters: ['globalReset', 'userReset'] },
   // POST /authentication/password_reset
-  '/request-password-reset': { route: PASSWORD_RESET, limiters: ['globalReset', 'userReset'] },
+  [ROUTES.requestPasswordReset]: { route: PASSWORD_RESET, limiters: ['globalReset', 'userReset'] },
   // PUT /authentication/password_reset
-  '/reset-password': { route: PASSWORD_RESET, limiters: ['globalBlock'] },
+  [ROUTES.resetPassword]: { route: PASSWORD_RESET, limiters: ['globalBlock'] },
   // Check the current password; PUT /users/password has no limit, so these get their own
-  '/change-password': { route: '/change-password', limiters: ['globalBlock'] },
-  '/verify-password': { route: '/verify-password', limiters: ['globalBlock'] },
+  [ROUTES.changePassword]: { route: ROUTES.changePassword, limiters: ['globalBlock'] },
+  [ROUTES.verifyPassword]: { route: ROUTES.verifyPassword, limiters: ['globalBlock'] },
 };
 
 // Their Express middleware keys these on `req.path`, as Admin calls it

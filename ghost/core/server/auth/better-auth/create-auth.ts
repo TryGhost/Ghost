@@ -7,6 +7,8 @@ import type { Knex } from 'knex';
 import { CLIENT_IP_HEADER } from './client-ip';
 import { createKnexAdapter } from './knex-adapter';
 import { rateLimitStorage, type Limiters } from './rate-limit';
+import { ghostStaffLifecycle } from './plugins/staff-lifecycle';
+import { ROUTES } from './routes';
 import {
   generateGhostId,
   ghostCreateDefaults,
@@ -37,6 +39,8 @@ export type CreateAuthDeps = {
   logger: Logger;
   /** Ghost's `spam` limiters, which also back the compatibility routes */
   limiters: Limiters;
+  /** Emails a legacy password reset link; a locked user's sign-in sends one */
+  sendPasswordResetEmail(email: string): Promise<void>;
 };
 
 /**
@@ -72,6 +76,8 @@ export function assertDatabaseSupported({
     });
   }
 }
+
+const CLEARS_FAILED_SIGN_INS: string[] = [ROUTES.signInEmail, ROUTES.resetPassword];
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && Object.getPrototypeOf(value) === Object.prototype;
@@ -160,11 +166,11 @@ export function createAuth(deps: CreateAuthDeps) {
     // On by default in production only
     rateLimit: { enabled: true, customStorage: rateLimitStorage(deps.limiters) },
     disabledPaths: [
-      '/sign-up/email',
-      '/update-user',
-      '/change-email',
-      '/delete-user',
-      '/sign-in/social',
+      ROUTES.signUpEmail,
+      ROUTES.updateUser,
+      ROUTES.changeEmail,
+      ROUTES.deleteUser,
+      ROUTES.signInSocial,
     ],
     hooks: {
       after: createAuthMiddleware(async (ctx) => {
@@ -175,7 +181,7 @@ export function createAuth(deps: CreateAuthDeps) {
         const returned = ctx.context.returned;
 
         // Clears this IP's failed sign-ins, as the compatibility routes do
-        if (['/sign-in/email', '/reset-password'].includes(ctx.path) && !isAPIError(returned)) {
+        if (CLEARS_FAILED_SIGN_INS.includes(ctx.path) && !isAPIError(returned)) {
           const ip = ctx.request.headers.get(CLIENT_IP_HEADER) ?? undefined;
           // Awaited, so the next request sees the cleared count
           await deps.limiters
@@ -189,6 +195,7 @@ export function createAuth(deps: CreateAuthDeps) {
         }
       }),
     },
+    plugins: [ghostStaffLifecycle({ sendPasswordResetEmail: deps.sendPasswordResetEmail })],
     telemetry: { enabled: false },
     logger: {
       log: (level, message, ...args) => deps.logger[level](message, ...args),
