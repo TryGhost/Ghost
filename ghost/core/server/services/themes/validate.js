@@ -85,11 +85,15 @@ const check = async function check(themeName, theme, options = {}) {
   }
 
   // Cache warnings and errors
-  try {
-    await gscanCacheStore.set(themeName, getErrorsFromCheckedTheme(checkedTheme));
-  } catch (err) {
-    logging.error('Failed to cache gscan result');
-    logging.error(err);
+  // A zip that fails validation is never installed, so its results must not
+  // replace those of the installed theme with the same name
+  if (!options.isZip || canActivate(checkedTheme)) {
+    try {
+      await gscanCacheStore.set(themeName, getErrorsFromCheckedTheme(checkedTheme));
+    } catch (err) {
+      logging.error('Failed to cache gscan result');
+      logging.error(err);
+    }
   }
 
   debug('End: Check');
