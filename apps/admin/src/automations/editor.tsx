@@ -120,6 +120,7 @@ const AutomationEditorContent: React.FC<{
   const editMutation = useEditAutomation();
   const [validationFeedback, setValidationFeedback] =
     React.useState<AutomationValidationAction | null>(null);
+  const [validationAttempt, setValidationAttempt] = React.useState(0);
   const [editState, setEditState] = React.useState<AutomationEditState>({ phase: 'idle' });
   const [selectedRunId, setSelectedRunId] = React.useState<string | null>(null);
   // Invalid text stays in the input, outside the API-ready draft, but must block saving it.
@@ -225,6 +226,7 @@ const AutomationEditorContent: React.FC<{
       setActionErrors(nextActionErrors);
       setEditState({ phase: 'idle' });
       setValidationFeedback(action);
+      setValidationAttempt((attempt) => attempt + 1);
       return false;
     }
 
@@ -550,6 +552,7 @@ const AutomationEditorContent: React.FC<{
         savedTriggerTierIds={savedTriggerTierIds}
         selectedRunId={selectedRunId}
         triggerType={triggerType}
+        validationAttempt={validationAttempt}
         onChange={onDraftChange}
         onSelectRun={setSelectedRunId}
         onWaitValidityChange={onWaitValidityChange}

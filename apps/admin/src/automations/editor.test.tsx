@@ -423,13 +423,16 @@ const withEmptyEmailBodies = (fixture: AutomationDetail): AutomationDetail => ({
   ),
 });
 
-const mockAutomationWithEmailStats = (statsOverrides: Partial<AutomationEmailStats> = {}) => {
+const mockAutomationWithEmailStats = (
+  statsOverrides: Partial<AutomationEmailStats> = {},
+  fixture: AutomationDetail = automationDetail,
+) => {
   mockUseReadAutomation.mockReturnValue({
     data: {
       automations: [
         {
-          ...automationDetail,
-          actions: automationDetail.actions.map((action) =>
+          ...fixture,
+          actions: fixture.actions.map((action) =>
             action.type === 'send_email'
               ? {
                   ...action,
@@ -1972,6 +1975,28 @@ describe('AutomationEditor', () => {
 
     const emailStep = screen.getByRole('article', { name: 'Send email: Welcome to The Blueprint' });
     expect(within(emailStep).getByRole('alert')).toBeInTheDocument();
+  });
+
+  it('brings an email card back from analytics when publishing is blocked', () => {
+    mockAutomationWithEmailStats(
+      {},
+      withEmptyEmailBodies({ ...automationDetail, status: 'inactive' }),
+    );
+
+    renderEditor();
+
+    fireEvent.click(analyticsToggle());
+    expect(analyticsToggle()).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+
+    expect(analyticsToggle()).toHaveAttribute('aria-pressed', 'false');
+    expect(within(welcomeEmailCard()).getByText('Add a message')).toBeInTheDocument();
+
+    fireEvent.click(analyticsToggle());
+    expect(analyticsToggle()).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
+    expect(analyticsToggle()).toHaveAttribute('aria-pressed', 'false');
   });
 
   it.each([

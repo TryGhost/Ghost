@@ -21,6 +21,7 @@ export type EditableEmailData = {
   subject: string;
   lexical: string;
   suppressWarning: boolean;
+  validationAttempt: number;
   onInteract: () => void;
   onEditContent: () => void;
 };
@@ -109,6 +110,14 @@ export const EditableEmailCard: React.FC<
     email.suppressWarning && !errorMessage ? undefined : getEmailWarning(email, errorMessage);
   const text = useMemo(() => emailTextExcerpt(email.lexical), [email.lexical]);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  // A blocked Save or Publish brings a card with an error back to its email view.
+  const [seenAttempt, setSeenAttempt] = useState(email.validationAttempt);
+  if (email.validationAttempt !== seenAttempt) {
+    setSeenAttempt(email.validationAttempt);
+    if (errorMessage) {
+      setAnalyticsOpen(false);
+    }
+  }
   const showAnalytics = analyticsOpen && Boolean(analytics);
   const emailView = useEmailViewHeight(showAnalytics);
   const previewTextId = useId();
