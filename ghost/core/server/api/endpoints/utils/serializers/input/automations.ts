@@ -61,7 +61,16 @@ function parseEditAutomation(data: unknown): EditAutomationData {
   return result.data;
 }
 
-function validateLifecycleTriggers(data: Pick<EditAutomationData, 'trigger_rules'>) {
+function validateTriggerFlags(data: Pick<EditAutomationData, 'trigger_rules'>) {
+  if (
+    !labs.isSet('automationsLeadMagnets') &&
+    data.trigger_rules?.some((rule) => rule.trigger_type === 'label_added')
+  ) {
+    throw new errors.ValidationError({
+      message: 'Label added triggers require automationsLeadMagnets to be enabled.',
+      property: 'trigger_rules',
+    });
+  }
   if (
     !labs.isSet('automationsLifecycleTriggers') &&
     data.trigger_rules?.some((rule) => rule.trigger_type === 'paid_subscription_changed')
@@ -77,13 +86,13 @@ function validateLifecycleTriggers(data: Pick<EditAutomationData, 'trigger_rules
 export function add(_apiConfig: unknown, frame: Frame) {
   const automations = frame.data.automations;
   const data = parseAddAutomation(Array.isArray(automations) ? automations[0] : undefined);
-  validateLifecycleTriggers(data);
+  validateTriggerFlags(data);
   frame.data = data;
 }
 
 export function edit(_apiConfig: unknown, frame: Frame) {
   const automations = frame.data.automations;
   const data = parseEditAutomation(Array.isArray(automations) ? automations[0] : undefined);
-  validateLifecycleTriggers(data);
+  validateTriggerFlags(data);
   frame.data = data;
 }

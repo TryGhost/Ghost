@@ -66,6 +66,9 @@ const getFreeOrPaidForTriggerRule = (
       return 'paid';
     case 'paid_subscription_changed':
       return rule.scope === 'free' ? 'free' : 'paid';
+    case 'label_added':
+      // TODO(NY-1792): Implement this.
+      throw new errors.InternalServerError({ message: 'label_added automations not implemented' });
     default: {
       const _exhaustive: never = triggerType;
       throw new errors.InternalServerError({
