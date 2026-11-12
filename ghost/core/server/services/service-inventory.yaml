@@ -8447,7 +8447,7 @@ services:
           namespace as archived. Service
           bindings are undefined before init; class methods depend on their receiver. Namespaces
           resolves a namespace's policy (owner and limits) and refuses what it doesn't allow. Definitions
-          exposes asynchronous CRUD/reorder and a find helper; values
+          exposes asynchronous CRUD/reorder; values
           exposes synchronous unwrapWire plus asynchronous read/plan/apply/feed methods; bindings exposes asynchronous
           bind/remove/planning, which of a set of ports are bound and the field each names, and
           whether any port writes into a field. HTTP tests assert selected serialized definitions, values, access
@@ -8588,11 +8588,11 @@ services:
       resources:
         summary: >-
           The root owns no timers, subscriptions, queue, transport or database pool; it borrows
-          shared Knex. Definition add/reorder use transactions; value applyWrite joins
-          a supplied transaction or opens one, while bind/remove use the supplied executor.
+          shared Knex. Every command runs in one transaction, joining a supplied transaction or
+          opening one.
           Value changes and their history rows share a transaction; the members service
           composes larger writes around it, and CSV import uses per-row transactions. Definition actions
-          are separate post-write work. Real HTTP proves batch rollback on a later name conflict,
+          are written inside the command's transaction. Real HTTP proves batch rollback on a later name conflict,
           successful value/history writes and cascades; validation refusals do not prove rollback
           after a value/history write fails. Import failure units use fake commit/rollback.
         sources:
@@ -8614,11 +8614,11 @@ services:
           Invalid plans reject before writes; malformed value leaves are logged/omitted and
           malformed history field lists become empty, while invalid definition decoding rejects
           the read. Bindings skip unresolved/invalid rows, and return the plans for the values
-          accepted, one per writer, beside every refusal named by port; a failed lookup rejects. Definition action failures are logged after data writes. Multi-property definition edits are not atomic; limit
+          accepted, one per writer, beside every refusal named by port; a failed lookup rejects. Definition action failures are logged and fail the command, rolling its writes back. Multi-property definition edits are atomic; limit
           counting deliberately permits concurrent overshoot, and applying a plan does not
           revalidate its captured definition. HTTP asserts selected refusals/corrupt reads and
           successful actions; webhook HTTP and fake import tests assert continuation/reporting.
-          Action failure, partial edits, stale plans and concurrency guarantees remain untested.
+          Action failure, stale plans and concurrency guarantees remain untested.
         sources:
           - core/server/services/members-metafields/definitions-service.ts
           - core/server/services/members-metafields/values-service.ts
@@ -8639,14 +8639,14 @@ services:
         constructor units and successful HTTP boot do not establish those lifecycle contracts.
       - >-
         Add real database failure assertions for member/value/history writes after
-        work has begun, and for post-write action-log failure. Preserve the narrower existing
+        work has begun, and for action-log failure. Preserve the narrower existing
         definition-batch rollback evidence; prevalidation refusals and fake transaction tests
         do not establish these outcomes or event delivery relative to commit/rollback.
       - >-
         Characterize concurrent definition edits/deletion, deliberately approximate limit
         enforcement, and plans applied after definition access/status changes. Multi-property
-        edits can retain earlier writes after later failure, and feed rows/count use separate
-        reads; no atomicity or snapshot guarantee should be introduced by the migration.
+        edits run in one transaction under a lock on the field, while feed rows/count use separate
+        reads; no further atomicity or snapshot guarantee should be introduced by the migration.
       - >-
         Characterize binding resolution against real archived/malformed rows before retaining
         or changing that API during migration. Existing binding units use fake query/value

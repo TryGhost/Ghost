@@ -519,7 +519,7 @@ module.exports = class MemberBREADService {
   async createWithMetafields(data, options, { writes, origin }) {
     return this.transaction(async (transacting) => {
       const model = await this.memberRepository.create(data, { ...options, transacting });
-      await this.metafieldValues.applyWrite(model.id, writes, { ...origin, executor: transacting });
+      await this.metafieldValues.applyWrite(model.id, writes, origin, transacting);
       return model;
     });
   }
@@ -705,10 +705,7 @@ module.exports = class MemberBREADService {
 
       const before = await this.readMetafieldsForMember(model.id, ADMIN, { transacting });
       for (const { writes, origin } of plans) {
-        await this.metafieldValues.applyWrite(model.id, writes, {
-          ...origin,
-          executor: transacting,
-        });
+        await this.metafieldValues.applyWrite(model.id, writes, origin, transacting);
       }
       const after = await this.readMetafieldsForMember(model.id, ADMIN, { transacting });
       if (!_.isEqual(before, after)) {
