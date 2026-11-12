@@ -237,7 +237,8 @@ describe('AttributionBuilder', function () {
   });
 
   it('Returns null referrer attribution', async function () {
-    attributionBuilder = new AttributionBuilder({
+    // A builder of its own, so the shared one keeps its referrer translator
+    const nullReferrerBuilder = new AttributionBuilder({
       urlTranslator,
       referrerTranslator: {
         getReferrerDetails() {
@@ -250,7 +251,7 @@ describe('AttributionBuilder', function () {
       { id: '123', type: 'post', time: now + 124 },
       { path: '/dir/unknown-page', time: now + 125 },
     ]);
-    assertObjectMatches(await attributionBuilder.getAttribution(history), {
+    assertObjectMatches(await nullReferrerBuilder.getAttribution(history), {
       referrerSource: null,
       referrerMedium: null,
       referrerUrl: null,

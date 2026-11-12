@@ -66,6 +66,8 @@ describe('MailgunClient', function () {
 
   afterEach(function () {
     sinon.restore();
+    // Interceptors a test registered but never hit would answer the next test's requests
+    nock.cleanAll();
   });
 
   describe('getBatchSize', function () {

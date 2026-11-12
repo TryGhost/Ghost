@@ -10,7 +10,8 @@ describe('TiersAPI', function () {
   /** @type {TiersAPI} */
   let api;
 
-  beforeAll(function () {
+  // A fresh repository per test, so each test sees only the tiers it adds
+  beforeEach(function () {
     repository = new InMemoryTierRepository();
     api = new TiersAPI({
       repository,
@@ -83,7 +84,21 @@ describe('TiersAPI', function () {
     assert(updated.status === 'archived');
   });
 
+  function addPaidTier(name = 'My testing Tier') {
+    return api.add({
+      name,
+      type: 'paid',
+      monthlyPrice: 5000,
+      yearlyPrice: 50000,
+      currency: 'usd',
+    });
+  }
+
   it('Can browse tiers', async function () {
+    await addPaidTier();
+    await addPaidTier();
+    await addPaidTier();
+
     const page = await api.browse();
 
     assert(page.data.length === 3);
@@ -91,6 +106,10 @@ describe('TiersAPI', function () {
   });
 
   it('Can read a default tier', async function () {
+    const archived = await addPaidTier('Archived Tier');
+    await api.edit(archived.id.toHexString(), { status: 'archived' });
+    await addPaidTier();
+
     const defaultTier = await api.readDefaultTier();
 
     assert.equal(defaultTier?.name, 'My testing Tier');
