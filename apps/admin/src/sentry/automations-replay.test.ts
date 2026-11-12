@@ -151,6 +151,11 @@ describe('createAutomationsReplay', () => {
 
   it('masks a body that appears before the deferred recording starts', async () => {
     const replay = fakeReplay();
+    // The full recording's first snapshot must already see the mask
+    let maskWhenRecordingStarted: string | null = null;
+    replay.start.mockImplementation(() => {
+      maskWhenRecordingStarted = document.body.getAttribute(MASK);
+    });
     const body = document.body;
     body.remove();
 
@@ -163,7 +168,7 @@ describe('createAutomationsReplay', () => {
 
     await vi.runAllTimersAsync();
 
-    expect(document.body.getAttribute(MASK)).toBe('true');
     expect(replay.start).toHaveBeenCalledTimes(1);
+    expect(maskWhenRecordingStarted).toBe('true');
   });
 });
