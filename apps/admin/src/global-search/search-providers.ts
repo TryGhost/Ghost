@@ -3,8 +3,8 @@
 // eslint-disable-next-line no-restricted-imports -- see comment above
 import {
   type TextSearch,
+  type TextSearchOptions,
   createSubstringSearch,
-  createTextSearch,
   createWordSearch,
 } from '@/shared/text-search';
 import type { SearchItem, SearchResultGroup, SearchSource } from './search-source';
@@ -34,25 +34,25 @@ function groupResults(
 function createProvider(
   sources: readonly SearchSource[],
   createSearch: (items: readonly SearchItem[]) => TextSearch<SearchItem>,
+  searchOptions: TextSearchOptions = {},
 ): SearchProvider {
   const searches = sources.map((source) => createSearch(source.items));
 
   return {
     search(term) {
-      return groupResults(sources, (_source, index) =>
-        searches[index].search(term, { limitPerField: RESULT_LIMIT }),
-      );
+      return groupResults(sources, (_source, index) => searches[index].search(term, searchOptions));
     },
   };
 }
 
 /** Groups each source's word-prefix matches. */
 export function createFlexSearchProvider(sources: readonly SearchSource[]): SearchProvider {
-  return createProvider(sources, createWordSearch);
+  return createProvider(sources, createWordSearch, { limitPerField: RESULT_LIMIT });
 }
 
 /** Groups each source's substring matches. */
 export function createBasicSearchProvider(sources: readonly SearchSource[]): SearchProvider {
+  // No early cut: every match reaches the status sort, then groupResults caps.
   return createProvider(sources, createSubstringSearch);
 }
 
@@ -61,5 +61,7 @@ export function createSearchProvider(
   sources: readonly SearchSource[],
   locale: string | null | undefined,
 ): SearchProvider {
-  return createProvider(sources, (items) => createTextSearch(items, locale));
+  const isEnglish = locale?.toLowerCase().startsWith('en') ?? true;
+
+  return isEnglish ? createFlexSearchProvider(sources) : createBasicSearchProvider(sources);
 }
