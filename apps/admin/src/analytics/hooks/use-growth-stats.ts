@@ -192,7 +192,7 @@ export const useGrowthStats = (range: number) => {
 
   const { data: mrrHistoryResponse, isLoading: isMrrLoading } = useMrrHistory({
     searchParams: {
-      date_from: dateFrom,
+      date_from: range === 1 ? openingBalanceDate : dateFrom,
     },
   });
 
@@ -297,7 +297,13 @@ export const useGrowthStats = (range: number) => {
 
       return {
         mrrData: finalResult,
-        openingMrr: openingPoint?.mrr,
+        // Today uses the displayed UTC-day series until Core can supply the local opening balance.
+        openingMrr:
+          range === 1
+            ? finalResult.length > 1
+              ? finalResult[0].mrr
+              : undefined
+            : openingPoint?.mrr,
         selectedCurrency: useCurrency,
       };
     }
