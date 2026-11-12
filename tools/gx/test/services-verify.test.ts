@@ -22,10 +22,9 @@ import {
   type ServiceRule,
 } from '../services-verify.ts';
 
-const inventoryPath = 'ghost/core/server/services/service-inventory.yaml';
+const inventoryPath = 'ghost/core/server/services/legacy-service-inventory.yaml';
+// Staff is standard: it exists and the inventory does not list it.
 const inventory = `services:
-  staff:
-    migrated: true
   other:
     disposition: migrate
 `;
@@ -77,6 +76,7 @@ async function fixture(t: TestContext) {
   };
   git('init', '-q');
   await write(inventoryPath, inventory);
+  await write('ghost/core/server/services/staff/index.ts', 'export {};\n');
   await write('ghost/core/boot.js', boot);
   const base = commit('base');
   const calls: string[] = [];
@@ -391,7 +391,7 @@ test('other inventory entries that mention the service are returned for review',
   f.commit('note');
   const check = f.verify().find((item) => item.name === 'inventory-references');
   assert.equal(check?.status, 'review');
-  assert.match(check?.details[0] ?? '', /:5 \(other\): notes: staff is initialized on demand/);
+  assert.match(check?.details[0] ?? '', /:3 \(other\): notes: staff is initialized on demand/);
 });
 
 test('unknown services are rejected', async (t) => {

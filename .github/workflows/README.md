@@ -104,17 +104,31 @@ deployments record the commit that was actually deployed.
 
 ## Documentation changes
 
-CI treats `ghost/core/server/services/service-inventory.yaml` as documentation
-for runtime checks. Inventory edits still run the required **Validate service
-inventory** job, which runs the existing metadata tests without Ghost runtime
-setup or workspace builds. The same job runs when its test or configuration changes.
+Changes confined to documentation skip the full code and E2E jobs. Mixed runtime
+changes retain their normal checks.
 
-Changes confined to inventory and documentation skip the full code and E2E jobs.
-Validator changes still run code checks, and mixed runtime changes retain their
-normal checks.
+## Legacy service inventory changes
 
-Run the focused validation locally with:
+Boot never reads `ghost/core/server/services/legacy-service-inventory.yaml`, so a
+change confined to it skips the acceptance, legacy and E2E jobs. Lint decides
+which services to check from it, so it still runs lint and the affected unit
+tests and type checks.
+
+It also runs two required jobs:
+
+- **Validate service inventory** runs the metadata tests without Ghost runtime
+  setup or workspace builds. It also runs when its test or configuration changes.
+- **Check legacy services** runs on pull requests. It fails when the branch adds
+  a legacy service, or defers dependency checks for one, compared with the
+  commit it forked from.
+
+Run both locally with:
 
 ```sh
 pnpm --filter ghost exec vitest run --config vitest.config.inventory.ts
+pnpm lint:legacy-services
 ```
+
+`pnpm lint:legacy-services` compares with `origin/main` and fails if that branch
+has not been fetched. `pnpm lint` does not run it, because a checkout does not
+always have its base branch.

@@ -7,7 +7,10 @@ import ts from 'typescript';
 
 const coreRoot = path.resolve(__dirname, '../../../..');
 const servicesRoot = path.join(coreRoot, 'core/server/services');
-const metadata = ['README.md', 'service-inventory.yaml'];
+const inventoryFile = 'legacy-service-inventory.yaml';
+const metadata = ['README.md', inventoryFile];
+// The section for standard services that still have something open.
+const followUpsSection = 'followUps';
 const facets = [
   'exports',
   'construction',
@@ -40,7 +43,7 @@ const migration = z
   .object({
     complexity: z.enum(['straightforward', 'complex', 'not-applicable']),
     modelImpact: z.enum(['fits', 'may-change', 'not-applicable']),
-    dependencies: dependencyAssessment.optional(),
+    dependencies: dependencyAssessment,
     reason: description,
     reviewedAt: z.string().regex(/^[0-9a-f]{40}$/),
     sources: z.array(description).min(1),
@@ -56,14 +59,14 @@ const extraSchema = z
     destination: description,
   })
   .strict();
-const entry = z
+const legacyEntry = z
   .object({
     kind: z.enum(['directory', 'file']),
     disposition: z.enum(['migrate', 'relocate', 'split', 'review']),
+    // Boundary lint reports this service's violations without failing on them.
+    dependencyChecks: z.literal('deferred').optional(),
     futureHome: description.optional(),
     status: z.enum(['pending', 'auditing', 'audited']),
-    migrated: z.literal(true).optional(),
-    extras: z.record(description, extraSchema).optional(),
     auditedAt: z
       .string()
       .regex(/^[0-9a-f]{40}$/)
@@ -76,10 +79,18 @@ const entry = z
     blockers: z.array(description),
   })
   .strict();
+// What is still open for a service that already meets the standard. A test
+// below rejects any other field, so the failure names the entry.
+const followUpFields = ['extras', 'futureHome', 'lifecycle'];
+const followUpEntry = z.object({
+  extras: z.record(description, extraSchema).optional(),
+  futureHome: description.optional(),
+  lifecycle: z.array(description).min(1).optional(),
+});
 const inventorySchema = z
   .object({
-    exemplaryMigration: description,
-    services: z.record(description, entry),
+    services: z.record(description, legacyEntry),
+    [followUpsSection]: z.record(description, followUpEntry),
   })
   .strict();
 
@@ -162,52 +173,89 @@ function declaredExtras(fileName: string): string[] {
     .sort();
 }
 
-describe('service migration inventory', function () {
-  // Read metadata and source only: importing the catalogue could construct resources or
-  // require a database before a service's real owner has initialized it.
-  const inventory = inventorySchema.parse(
-    yaml.load(readFileSync(path.join(servicesRoot, 'service-inventory.yaml'), 'utf8')),
+describe('legacy service inventory', function () {
+  // Read metadata and source only: importing a service could construct resources or
+  // require a database before its real owner has initialized it.
+  const raw = yaml.load(readFileSync(path.join(servicesRoot, inventoryFile), 'utf8'));
+  const inventory = inventorySchema.parse(raw);
+  const legacy = inventory.services;
+  const open = inventory[followUpsSection];
+  const onDisk = readdirSync(servicesRoot, { withFileTypes: true }).filter(
+    (item) => !metadata.includes(item.name),
   );
+  const isFile = (file: string) => statSync(file, { throwIfNoEntry: false })?.isFile() === true;
+  // A service that is not listed as legacy must meet the standard.
+  const standard = onDisk
+    .filter(
+      (item) =>
+        !legacy[item.name] &&
+        item.isDirectory() &&
+        isFile(path.join(servicesRoot, item.name, 'index.ts')),
+    )
+    .map((item) => item.name);
 
-  it('identifies a migrated service as the example to follow', function () {
-    const example = inventory.services[inventory.exemplaryMigration];
-    assert.ok(example, 'The exemplary migration must exist in the inventory');
-    assert.equal(example.migrated, true, 'The example must use defineService');
-  });
-
-  it('accounts for every service directory and standalone file', function () {
+  it('requires everything that is not a legacy entry to be a directory with an index.ts root', function () {
     for (const name of metadata) {
       assertFileWithin(servicesRoot, name);
     }
-    const actual = readdirSync(servicesRoot, { withFileTypes: true })
-      .filter((item) => !metadata.includes(item.name))
-      .map((item) => {
-        assert.ok(item.isDirectory() || item.isFile(), `Unexpected entry kind: ${item.name}`);
-        return [item.name, item.isDirectory() ? 'directory' : 'file'];
-      })
-      .sort(([a], [b]) => a.localeCompare(b));
-    const expected = Object.entries(inventory.services)
-      .map(([name, service]) => [name, service.kind])
-      .sort(([a], [b]) => a.localeCompare(b));
-
-    assert.deepEqual(actual, expected, 'Update the inventory when a service entry changes');
+    for (const item of onDisk) {
+      assert.ok(
+        legacy[item.name] || standard.includes(item.name),
+        `${item.name} is not a legacy entry, so it must be a directory with an index.ts root`,
+      );
+    }
   });
 
-  for (const [name, service] of Object.entries(inventory.services)) {
-    if (service.migrated) {
-      it(`${name} has exactly the catalogued extras`, function () {
-        const rootFile = path.join(
-          servicesRoot,
-          service.kind === 'directory' ? `${name}/index.ts` : name,
-        );
-        const actual = declaredExtras(rootFile);
-        assert.deepEqual(
-          actual,
-          Object.keys(service.extras ?? {}).sort(),
-          'Catalogue every extra and remove stale catalogue entries',
-        );
-      });
+  it('lists only legacy entries that exist', function () {
+    const kinds = new Map(
+      onDisk.map((item) => [item.name, item.isDirectory() ? 'directory' : 'file']),
+    );
+    for (const [name, service] of Object.entries(legacy)) {
+      assert.equal(
+        kinds.get(name),
+        service.kind,
+        `Remove the legacy entry for ${name} or correct its kind`,
+      );
     }
+  });
+
+  it(`records open items in ${followUpsSection} only for services that are not legacy`, function () {
+    for (const name of Object.keys(open)) {
+      assert.ok(!legacy[name], `${name} is a legacy entry; record its open items there`);
+      assert.ok(standard.includes(name), `${name} is not a service directory`);
+    }
+  });
+
+  it(`allows only ${followUpFields.join(', ')} in ${followUpsSection}`, function () {
+    const entries = (raw as Record<string, Record<string, object>>)[followUpsSection]!;
+    for (const [name, fields] of Object.entries(entries)) {
+      const keys = Object.keys(fields);
+      assert.ok(keys.length > 0, `${name} has nothing open; remove the entry`);
+      assert.deepEqual(
+        keys.filter((key) => !followUpFields.includes(key)),
+        [],
+        `${name} has fields that do not belong in ${followUpsSection}`,
+      );
+    }
+  });
+
+  for (const name of standard) {
+    it(`${name} has exactly the catalogued extras`, function () {
+      const extras = open[name]?.extras ?? {};
+      assert.deepEqual(
+        declaredExtras(path.join(servicesRoot, name, 'index.ts')),
+        Object.keys(extras).sort(),
+        'Catalogue every extra and remove stale catalogue entries',
+      );
+      for (const extra of Object.values(extras)) {
+        for (const caller of extra.callers) {
+          assertFileWithin(coreRoot, caller);
+        }
+      }
+    });
+  }
+
+  for (const [name, service] of Object.entries(legacy)) {
     it(`${name} has valid evidence, migration assessment and explicit audit gaps`, function () {
       assert.equal(
         service.migration.complexity === 'not-applicable',
@@ -228,38 +276,16 @@ describe('service migration inventory', function () {
           'An open model question requires a complex migration assessment',
         );
       }
-      if (service.migrated) {
-        assert.notEqual(
-          service.disposition,
-          'relocate',
-          'A migrated service cannot be marked for relocation',
-        );
-        assert.notEqual(
+      const dependencies = service.migration.dependencies;
+      if (dependencies.complexity === 'not-applicable') {
+        assert.equal(
           service.migration.complexity,
           'not-applicable',
-          'A migrated service cannot be classified as a non-service',
+          'Only confirmed non-services can skip dependency migration assessment',
         );
       }
-      const dependencies = service.migration.dependencies;
-      if (!service.migrated) {
-        assert.ok(dependencies, 'Unmigrated entries need a dependency assessment');
-      }
-      if (dependencies) {
-        if (dependencies.complexity === 'not-applicable') {
-          assert.equal(
-            service.migration.complexity,
-            'not-applicable',
-            'Only confirmed non-services can skip dependency migration assessment',
-          );
-        }
-        for (const source of dependencies.sources) {
-          assertFileWithin(coreRoot, source);
-        }
-      }
-      for (const extra of Object.values(service.extras ?? {})) {
-        for (const caller of extra.callers) {
-          assertFileWithin(coreRoot, caller);
-        }
+      for (const source of dependencies.sources) {
+        assertFileWithin(coreRoot, source);
       }
       for (const source of service.migration.sources) {
         assertFileWithin(coreRoot, source);
