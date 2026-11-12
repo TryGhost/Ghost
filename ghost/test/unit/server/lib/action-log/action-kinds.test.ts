@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { ActionKind } from '../../../../../core/server/lib/action-log/action-log';
-import { createLoggingFake } from '../../../../utils/logging-utils';
 
 const schema = require('../../../../../core/server/data/schema/schema');
 const models = require('../../../../../core/server/models');
@@ -85,7 +84,7 @@ describe('Unit: action kinds declared by services', function () {
   });
 
   it('gives the Action model a read model for every kind logged through', function () {
-    const actionLog = new ActionLog({ logging: createLoggingFake() });
+    const actionLog = new ActionLog();
     for (const { kind } of declared) {
       actionLog.for(kind);
     }
@@ -100,7 +99,7 @@ describe('Unit: action kinds declared by services', function () {
   });
 
   it('refuses a second declaration of a resource type pointing elsewhere', function () {
-    const actionLog = new ActionLog({ logging: createLoggingFake() });
+    const actionLog = new ActionLog();
     const [{ kind }] = declared;
     actionLog.for(kind);
 

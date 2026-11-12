@@ -191,8 +191,8 @@ export class AppInstallationsRepository {
   }
 
   /** An installation by ID, uninstalled or not. */
-  async find(id: string): Promise<Installation | undefined> {
-    const row = await this.withApprovedManifest()
+  async find(id: string, executor: Knex = this.knex): Promise<Installation | undefined> {
+    const row = await this.withApprovedManifest(executor)
       .where('installation.id', id)
       .first<z.input<typeof InstallationRow> | undefined>(INSTALLATION_COLUMNS);
     return row ? z.decode(InstallationRow, row) : undefined;
@@ -402,21 +402,24 @@ export class AppInstallationsRepository {
   }
 
   /** Returns false if it was already uninstalled. */
-  async uninstall(id: string): Promise<boolean> {
-    const ended = await this.knex(INSTALLATIONS)
+  async uninstall(
+    id: string,
+    { transacting }: { transacting: Knex.Transaction },
+  ): Promise<boolean> {
+    const ended = await transacting(INSTALLATIONS)
       .where({ id })
       .whereNot('status', 'uninstalled')
       .update({
         // In the same update as `status`, so the two always agree.
         current_app_id: null,
         status: 'uninstalled',
-        ...nextRevision(this.knex),
+        ...nextRevision(transacting),
       });
     return ended > 0;
   }
 
-  private withApprovedManifest() {
-    return this.knex(`${INSTALLATIONS} as installation`).join(
+  private withApprovedManifest(executor: Knex = this.knex) {
+    return executor(`${INSTALLATIONS} as installation`).join(
       `${MANIFESTS} as approved`,
       'approved.id',
       'installation.manifest_id',

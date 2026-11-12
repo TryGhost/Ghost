@@ -1,7 +1,6 @@
 import ObjectID from 'bson-objectid';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
-import type { GhostLogger } from '@tryghost/logging';
 import type { RequestContext } from '../actor';
 import { toDatabaseDate } from '../db-types/date';
 
@@ -80,46 +79,36 @@ export type ActionRow<K extends ActionKind> = ActionChange<K> &
  * builds one and scopes it to the service's kind with `for`.
  */
 export class ActionLog {
-  private logging: Pick<GhostLogger, 'error'>;
-
-  constructor({ logging }: { logging: Pick<GhostLogger, 'error'> }) {
-    this.logging = logging;
-  }
-
   /**
    * The action log for one kind's resource type. It also gives the `Action` model a read model
    * for the kind's table, so call it at boot.
    */
   for<K extends ActionKind>(kind: K): ResourceActionLog<K> {
     register(kind);
-    return new ResourceActionLog(kind, this.logging);
+    return new ResourceActionLog(kind);
   }
 }
 
 /**
  * Logs the actions on one resource type, as its kind declares them.
  *
- * Call it from the command that makes the change, with the command's transaction where it has
- * one, so the action is only kept if the change is. Inside a transaction the action is part of
- * the change: a failed write fails the command, and its change rolls back. Outside one, logging
- * is best-effort: a failed write is logged and the change stands.
+ * An action is part of the change it records, so it's written in the command's transaction: it's
+ * kept when the change is kept and never without it. A failed write fails the command, and its
+ * change rolls back.
  */
 export class ResourceActionLog<K extends ActionKind> {
   private kind: K;
-  private logging: Pick<GhostLogger, 'error'>;
 
-  constructor(kind: K, logging: Pick<GhostLogger, 'error'>) {
+  constructor(kind: K) {
     this.kind = kind;
-    this.logging = logging;
   }
 
   /**
-   * Logs an action by whoever `context` says is acting, through `db`: the command's transaction,
-   * or the database itself for a change that commits on its own. Nothing is logged when nobody
-   * is acting.
+   * Logs an action by whoever `context` says is acting, in the command's transaction. Nothing is
+   * logged when nobody is acting.
    */
   async record(
-    db: Knex | Knex.Transaction,
+    transacting: Knex.Transaction,
     context: RequestContext,
     row: ActionRow<K>,
   ): Promise<void> {
@@ -128,38 +117,17 @@ export class ResourceActionLog<K extends ActionKind> {
       return;
     }
     const event = row.actionName === undefined ? row.event : this.kind.actionNames[row.actionName];
-    try {
-      await db('actions').insert({
-        // ObjectIds increase over time, which readers rely on to order actions within a second.
-        id: new ObjectID().toHexString(),
-        resource_id: row.resourceId,
-        resource_type: this.kind.resourceType,
-        actor_id: actor.id,
-        actor_type: actor.type,
-        event,
-        context: contextOf(row),
-        created_at: toDatabaseDate(new Date()),
-      });
-    } catch (err) {
-      if (db.isTransaction) {
-        throw err;
-      }
-      this.logging.error(
-        {
-          event: { name: 'action_log.write_failed' },
-          err,
-          // Nested, as `event` is the log entry's own name.
-          action: {
-            resource_type: this.kind.resourceType,
-            event,
-            resource_id: row.resourceId,
-            actor_type: actor.type,
-            actor_id: actor.id,
-          },
-        },
-        'Failed to log an action',
-      );
-    }
+    await transacting('actions').insert({
+      // ObjectIds increase over time, which readers rely on to order actions within a second.
+      id: new ObjectID().toHexString(),
+      resource_id: row.resourceId,
+      resource_type: this.kind.resourceType,
+      actor_id: actor.id,
+      actor_type: actor.type,
+      event,
+      context: contextOf(row),
+      created_at: toDatabaseDate(new Date()),
+    });
   }
 }
 

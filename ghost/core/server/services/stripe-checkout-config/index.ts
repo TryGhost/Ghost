@@ -50,7 +50,7 @@ export default defineService('Stripe Checkout Config', (): StripeCheckoutService
 
   const config = new StripeCheckoutConfigService({
     knex,
-    actionLog: new ActionLog({ logging }).for(stripeCheckoutConfigActions),
+    actionLog: new ActionLog().for(stripeCheckoutConfigActions),
     bindings: metafields.bindings,
     fields: metafields.fields,
     // Looked up on each use: tiers are set up later in boot, and throw if they aren't.

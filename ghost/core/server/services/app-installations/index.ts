@@ -104,7 +104,7 @@ export default defineService('App Installations', () => {
 
   return new AppInstallationsService({
     knex,
-    actionLog: new ActionLog({ logging }).for(appInstallationActions),
+    actionLog: new ActionLog().for(appInstallationActions),
     loadManifest: createManifestLoader({ fetchFromApp, logging, getManifestRules }),
     identity: createIdentityChecker({
       fetchFromApp,
