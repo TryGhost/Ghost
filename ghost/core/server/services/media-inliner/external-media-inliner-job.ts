@@ -2,6 +2,7 @@ import { Job } from '../jobs-service/job';
 
 export default class ExternalMediaInlinerJob extends Job {
   static type = 'external-media-inliner';
+  static replayAfterRestart = true;
 
   readonly domains: string[];
 

@@ -468,31 +468,37 @@ describe('JobsService', function () {
       assert.equal(message, '[Jobs Outbox] Released 2 submitted rows to hand over again');
     });
 
-    it('asks the store to drop rows of job types that are not replayed after a restart', async function () {
+    it('asks the store to drop rows of job types that have not opted in to replay after a restart', async function () {
+      class ReplayedJob extends Job {
+        static type = 'replayed';
+        static replayAfterRestart = true;
+      }
       class OwnRecoveryJob extends Job {
         static type = 'own-recovery';
         static replayAfterRestart = false;
       }
       const outbox = makeOutbox();
       const service = makeService({ outbox });
+      service.handle(ReplayedJob, async () => {});
       service.handle(OwnRecoveryJob, async () => {});
       service.handle(GreetJob, async () => {});
 
       await service.start();
 
       const [replays] = outbox.replayChecks;
+      assert.equal(replays('replayed'), true);
       assert.equal(replays('own-recovery'), false);
-      assert.equal(replays(GreetJob.type), true);
+      assert.equal(replays(GreetJob.type), false);
       assert.equal(replays('unregistered'), true);
     });
 
     it('forgets which job types are not replayed when handlers are cleared', async function () {
       class OwnRecoveryJob extends Job {
         static type = 'own-recovery';
-        static replayAfterRestart = false;
       }
       class ReplayedJob extends Job {
         static type = 'own-recovery';
+        static replayAfterRestart = true;
       }
       const outbox = makeOutbox();
       const service = makeService({ outbox });

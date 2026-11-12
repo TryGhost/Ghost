@@ -56,6 +56,7 @@ function makeBackend() {
 
 class GreetJob extends Job {
   static type = 'e2e-greet';
+  static replayAfterRestart = true;
   name: string;
   constructor(data: { name: string }) {
     super();
