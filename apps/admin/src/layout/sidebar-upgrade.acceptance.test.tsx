@@ -20,16 +20,18 @@ afterEach(async () => {
 });
 
 it.each([
-  { appearance: 'light', customMessage: undefined },
-  { appearance: 'dark', customMessage: undefined },
+  { appearance: 'light', customMessage: undefined, target: 'cta' },
+  { appearance: 'dark', customMessage: undefined, target: 'cta' },
   {
     appearance: 'light',
     customMessage:
       'This hosting plan includes the full publishing workspace. Choose a plan when you are ready to launch, and contact our team if you need help selecting the right option for your publication.',
+    target: 'cta',
   },
+  { appearance: 'light', customMessage: undefined, target: 'title' },
 ])(
-  'keeps the upgrade action in view and usable in a short $appearance sidebar with custom copy: $customMessage',
-  async ({ appearance, customMessage }) => {
+  'keeps the upgrade $target action usable in a short $appearance sidebar with custom copy: $customMessage',
+  async ({ appearance, customMessage, target }) => {
     await page.viewport(1280, 420);
     fakeTags([]);
     fakeAdminStats.memberCount();
@@ -113,7 +115,27 @@ it.each([
     // The billing app owns its request graph; this spec checks the sidebar's entry point.
     allowUnhandledRequests();
     await fakeFrameOrigin('https://billing.example.com', '<html><body>Billing</body></html>');
-    await upgrade.click();
+    if (target === 'title') {
+      scroller.scrollTop = 0;
+      const banner = sidebarScreen
+        .shellNav()
+        .getByRole('status')
+        .filter({ hasText: 'Unlock every feature' });
+      const titleRect = page
+        .getByText('Unlock every feature', { exact: true })
+        .element()
+        .getBoundingClientRect();
+      const bannerRect = banner.element().getBoundingClientRect();
+      // Click the card at the title's position; its stretched link intentionally covers the text.
+      await banner.click({
+        position: {
+          x: titleRect.left - bannerRect.left + 2,
+          y: titleRect.top - bannerRect.top + 2,
+        },
+      });
+    } else {
+      await upgrade.click();
+    }
     await expect.poll(currentRoute).toBe('/pro/billing/plans');
   },
 );

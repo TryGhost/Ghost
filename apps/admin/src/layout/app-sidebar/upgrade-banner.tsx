@@ -24,6 +24,7 @@ function UpgradeBanner({ trialDaysRemaining }: { trialDaysRemaining: number }) {
 
   const logo = bannerConfig?.logo || ghostProLogo;
   const logoDark = bannerConfig?.logoDark || bannerConfig?.logo || ghostProLogoDark;
+  const upgradeUrl = bannerConfig?.upgradeUrl || DEFAULT_UPGRADE_URL;
   // A host's own logo is not the Ghost(Pro) logo, so fall back to decorative rather than mislabelling it
   const logoAlt =
     bannerConfig?.logoAlt ?? (bannerConfig?.logo || bannerConfig?.logoDark ? '' : DEFAULT_LOGO_ALT);
@@ -48,11 +49,7 @@ function UpgradeBanner({ trialDaysRemaining }: { trialDaysRemaining: number }) {
   ));
   const upgradeLink = (
     <Button className={admin7Design ? 'w-full' : undefined} asChild>
-      {/* The link stretches over the whole card, which looks and behaves as one clickable box */}
-      <a
-        className="after:absolute after:inset-0"
-        href={bannerConfig?.upgradeUrl || DEFAULT_UPGRADE_URL}
-      >
+      <a className={admin7Design ? undefined : 'after:absolute after:inset-0'} href={upgradeUrl}>
         Upgrade now
       </a>
     </Button>
@@ -68,6 +65,10 @@ function UpgradeBanner({ trialDaysRemaining }: { trialDaysRemaining: number }) {
       size="lg"
       variant={admin7Design ? 'default' : 'gradient'}
     >
+      {/* Separate the card's pointer target from the sticky action's containing block. */}
+      {admin7Design && (
+        <a aria-hidden="true" className="absolute inset-0" href={upgradeUrl} tabIndex={-1} />
+      )}
       {admin7Design ? (
         <Stack gap="sm">
           {branding}
@@ -80,7 +81,7 @@ function UpgradeBanner({ trialDaysRemaining }: { trialDaysRemaining: number }) {
             </Text>
           </Stack>
           {/* Keep the action above scrolling copy when the footer has little height. */}
-          <Box className="bg-surface-panel [@media(max-height:600px)]:sticky [@media(max-height:600px)]:bottom-0">
+          <Box className="relative z-10 bg-surface-panel [@media(max-height:600px)]:sticky [@media(max-height:600px)]:bottom-0">
             {upgradeLink}
           </Box>
         </Stack>
