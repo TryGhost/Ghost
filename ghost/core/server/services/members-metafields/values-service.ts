@@ -224,6 +224,7 @@ export class MetafieldValuesService {
   // afterwards would let a member tell a hidden field from an undefined one by the
   // reply they got.
   private async allowedFieldsByIdentity(
+    executor: Knex,
     identities: string[],
     audience: Audience,
   ): Promise<Map<string, AllowedField>> {
@@ -240,7 +241,7 @@ export class MetafieldValuesService {
       return new Map();
     }
     const rows = await this.fields
-      .definitions(this.knex, { audience, status: ACTIVE_ONLY })
+      .definitions(executor, { audience, status: ACTIVE_ONLY })
       .read.where((query) => {
         for (const [namespace, keys] of keysByNamespace) {
           query.orWhere((inNamespace) =>
@@ -440,8 +441,12 @@ export class MetafieldValuesService {
    * the same plan without re-resolving it. A value the site won't accept refuses the whole
    * write, with every refusal at once.
    */
-  async planWrite(input: unknown, audience: Audience): Promise<PlannedWrite[]> {
-    const { writes, refusals } = await this.planOrRefuse(input, audience);
+  async planWrite(
+    input: unknown,
+    audience: Audience,
+    executor: Knex = this.knex,
+  ): Promise<PlannedWrite[]> {
+    const { writes, refusals } = await this.planOrRefuse(input, audience, undefined, executor);
     const [first, ...rest] = refusals;
     if (first) {
       throw refusalError(first, rest);
@@ -465,6 +470,7 @@ export class MetafieldValuesService {
     input: unknown,
     audience: Audience,
     named?: (identity: string) => string,
+    executor: Knex = this.knex,
   ): Promise<{ writes: PlannedWrite[]; refusals: Refusal[] }> {
     const propertyOf = named ?? wireProperty;
     const nameOf = named ?? ((identity: string) => identity);
@@ -481,7 +487,7 @@ export class MetafieldValuesService {
       });
     }
 
-    const byIdentity = await this.allowedFieldsByIdentity(identities, audience);
+    const byIdentity = await this.allowedFieldsByIdentity(executor, identities, audience);
     const writes: PlannedWrite[] = [];
     // Gathered rather than thrown as they are found. A write names several values, and
     // a composite is several again, so refusing at the first leaves someone correcting
@@ -749,9 +755,9 @@ export class MetafieldValuesService {
    * Read from the table's key: each option a field has been answered with is one path, and every row
    * under a path holds the same text, so one row is read for each.
    */
-  async heldValues(field: FieldIdentity): Promise<string[]> {
+  async heldValues(field: FieldIdentity, executor: Knex = this.knex): Promise<string[]> {
     const [row] = await this.fields
-      .definitions(this.knex, { audience: ADMIN, status: ACTIVE_ONLY, field })
+      .definitions(executor, { audience: ADMIN, status: ACTIVE_ONLY, field })
       .read.select(...TYPED_FIELD_COLUMNS);
     // A field that can't be read even with its type's defaults is treated as missing, as the
     // definitions read treats it.
@@ -772,12 +778,12 @@ export class MetafieldValuesService {
       scalar: notAList,
       record: notAList,
       set: async () => {
-        const held = this.knex(VALUES_TABLE)
+        const held = executor(VALUES_TABLE)
           .distinct('path')
           .where(fieldReference(field))
           .as('held');
-        const rows = await this.knex.from(held).select('held.path', {
-          value_text: this.knex(VALUES_TABLE)
+        const rows = await executor.from(held).select('held.path', {
+          value_text: executor(VALUES_TABLE)
             .select('value_text')
             .where(fieldReference(field))
             .whereRaw('?? = ??', [`${VALUES_TABLE}.path`, 'held.path'])
@@ -795,16 +801,19 @@ export class MetafieldValuesService {
    * `filter` is a parsed NQL filter over this table's own columns: mapping the feed's
    * names onto them is the feed's business, and applying them is this table's.
    */
-  async browseChangeEvents({
-    limit,
-    filter,
-  }: {
-    /** Absent for every entry, as the feed asks for when paging is off. */
-    limit?: number;
-    filter?: object;
-  }): Promise<{ events: MetafieldChangeEvent[]; total: number }> {
+  async browseChangeEvents(
+    {
+      limit,
+      filter,
+    }: {
+      /** Absent for every entry, as the feed asks for when paging is off. */
+      limit?: number;
+      filter?: object;
+    },
+    executor: Knex = this.knex,
+  ): Promise<{ events: MetafieldChangeEvent[]; total: number }> {
     const filtered = () => {
-      const query = this.knex(CHANGE_EVENTS_TABLE);
+      const query = executor(CHANGE_EVENTS_TABLE);
       return filter ? knexify(query, filter, { tableName: CHANGE_EVENTS_TABLE }) : query;
     };
 

@@ -118,19 +118,22 @@ export class MetafieldBindingsService {
    * nothing they can read. Deleting a field deletes its bindings, so a port bound here always has
    * one.
    */
-  async boundPorts(db: Knex, ports: readonly string[]): Promise<Map<string, string | null>> {
+  async boundPorts(
+    ports: readonly string[],
+    executor: Knex = this.knex,
+  ): Promise<Map<string, string | null>> {
     if (!ports.length) {
       return new Map();
     }
 
     const binding = z
       .array(z.string())
-      .parse(await db(BINDINGS_TABLE).whereIn('port', ports).pluck('port'));
+      .parse(await executor(BINDINGS_TABLE).whereIn('port', ports).pluck('port'));
     const bound = new Map<string, string | null>(binding.map((port) => [port, null]));
     // Read the way a member's own reads ask for fields, so a port names exactly the fields their
     // record holds values for.
     const named = await this.fields
-      .definitions(db, { audience: MEMBERS, status: ACTIVE_ONLY })
+      .definitions(executor, { audience: MEMBERS, status: ACTIVE_ONLY })
       .read.join(BINDINGS_TABLE, onField(FIELDS_TABLE, BINDINGS_TABLE))
       .whereIn(`${BINDINGS_TABLE}.port`, ports)
       .select(`${BINDINGS_TABLE}.port`, `${FIELDS_TABLE}.namespace`, `${FIELDS_TABLE}.key`);
@@ -144,8 +147,8 @@ export class MetafieldBindingsService {
   }
 
   /** Whether any port writes into this field. */
-  async isBound(field: FieldIdentity): Promise<boolean> {
-    return (await this.knex(BINDINGS_TABLE).where(fieldReference(field)).first('id')) !== undefined;
+  async isBound(field: FieldIdentity, executor: Knex = this.knex): Promise<boolean> {
+    return (await executor(BINDINGS_TABLE).where(fieldReference(field)).first('id')) !== undefined;
   }
 
   /**
@@ -178,8 +181,12 @@ export class MetafieldBindingsService {
   async planThrough(
     values: Array<{ port: string; value: unknown }>,
     writer: PortWriter,
+    executor: Knex = this.knex,
   ): Promise<RoutedPlans> {
-    const fields = await this.fieldsFor(values.map(({ port }) => port));
+    const fields = await this.fieldsFor(
+      executor,
+      values.map(({ port }) => port),
+    );
     const input: Record<string, unknown> = {};
     const routed = new Map<string, { port: string; field: BoundField }>();
     for (const { port, value } of values) {
@@ -199,6 +206,7 @@ export class MetafieldBindingsService {
       INTERNAL,
       // Every value planned came through a port, so each refusal names one.
       (identity) => routed.get(identity)?.port ?? identity,
+      executor,
     );
 
     // One plan for each writer, so a member's answers are one change and each binding's value is
@@ -222,14 +230,17 @@ export class MetafieldBindingsService {
    * The field each of these ports writes into, by port, leaving out a port bound nowhere or into
    * an archived field, as nothing can be saved into one there.
    */
-  private async fieldsFor(ports: readonly string[]): Promise<Map<string, BoundField>> {
+  private async fieldsFor(
+    executor: Knex,
+    ports: readonly string[],
+  ): Promise<Map<string, BoundField>> {
     const fields = new Map<string, BoundField>();
     if (!ports.length) {
       return fields;
     }
 
-    const rows = await this.knex(BINDINGS_TABLE)
-      .join(this.fields.table(this.knex), onField(FIELDS_TABLE, BINDINGS_TABLE))
+    const rows = await executor(BINDINGS_TABLE)
+      .join(this.fields.table(executor), onField(FIELDS_TABLE, BINDINGS_TABLE))
       .whereIn(`${BINDINGS_TABLE}.port`, ports)
       // An archived field is still where a port points, and still not somewhere a value can
       // land, so it's left out rather than waited for.

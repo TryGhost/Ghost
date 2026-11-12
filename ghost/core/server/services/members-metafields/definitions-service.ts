@@ -168,6 +168,7 @@ export class MetafieldDefinitionsService {
   async browse(
     options: { namespace: Namespace; filter?: string },
     audience: Audience,
+    executor: Knex = this.knex,
   ): Promise<Metafield[]> {
     // Whichever set comes back, it comes back in the publisher's order: filtering
     // narrows the list, it never reorders it.
@@ -179,7 +180,7 @@ export class MetafieldDefinitionsService {
       // scope as an unfiltered read.
       const parsed = parseFilter(filter);
       return this.list(
-        this.fields.definitions(this.knex, {
+        this.fields.definitions(executor, {
           audience,
           status: filterReferencesStatus(parsed) ? ANY_STATUS : ACTIVE_ONLY,
           namespace,
@@ -188,7 +189,7 @@ export class MetafieldDefinitionsService {
       );
     }
     return this.list(
-      this.fields.definitions(this.knex, { audience, status: ACTIVE_ONLY, namespace }),
+      this.fields.definitions(executor, { audience, status: ACTIVE_ONLY, namespace }),
     );
   }
 
@@ -206,18 +207,14 @@ export class MetafieldDefinitionsService {
     );
   }
 
-  async read(namespace: Namespace, key: Key, audience: Audience): Promise<Metafield> {
-    return this.readOn(this.knex, namespace, key, audience);
-  }
-
-  private async readOn(
-    db: Knex,
+  async read(
     namespace: Namespace,
     key: Key,
     audience: Audience,
+    executor: Knex = this.knex,
   ): Promise<Metafield> {
     const [field] = await this.list(
-      this.fields.definitions(db, {
+      this.fields.definitions(executor, {
         audience,
         status: ANY_STATUS,
         field: { namespace, key },
@@ -706,7 +703,7 @@ export class MetafieldDefinitionsService {
 
         await this.record(trx, recorded);
         return {
-          field: await this.readOn(trx, namespace, key, ADMIN),
+          field: await this.read(namespace, key, ADMIN, trx),
           changedForMembers:
             (await this.isReadByMembers(trx, { namespace, key })) !== readByMembers,
         };

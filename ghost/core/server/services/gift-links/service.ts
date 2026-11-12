@@ -46,8 +46,8 @@ export class GiftLinksService {
     return { id: postId, giftLinks };
   }
 
-  async getPostByToken(token: string): Promise<Post | null> {
-    const row = await this.knex('post_gift_links')
+  async getPostByToken(token: string, executor: Knex = this.knex): Promise<Post | null> {
+    const row = await executor('post_gift_links')
       .join('gift_links', 'gift_links.token', 'post_gift_links.gift_link_token')
       .where('gift_links.token', token)
       .first<z.input<typeof GiftLinkRow> & { post_id: string }>([
