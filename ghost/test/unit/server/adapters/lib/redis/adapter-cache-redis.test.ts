@@ -1,14 +1,24 @@
-const assert = require('node:assert/strict');
-const _ = require('lodash');
-const sinon = require('sinon');
-const errors = require('@tryghost/errors');
-const logging = require('@tryghost/logging');
-const metrics = require('@tryghost/metrics');
-const RedisCache = require('../../../../../../core/server/adapters/lib/redis/AdapterCacheRedis');
-const redisStoreFactory = require('../../../../../../core/server/adapters/lib/redis/redis-store-factory');
-const cacheManager = require('cache-manager');
+import assert from 'node:assert/strict';
+import _ from 'lodash';
+import sinon from 'sinon';
+import * as errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
+import metrics from '@tryghost/metrics';
+import RedisCache from '../../../../../../core/server/adapters/lib/redis/AdapterCacheRedis';
+import redisStoreFactory from '../../../../../../core/server/adapters/lib/redis/redis-store-factory';
+import cacheManager from 'cache-manager';
 
 const PREFIX_HASH = 'mock-prefix-hash';
+
+/** The live ioredis client behind a cache built without a stub. */
+interface IORedisClient {
+  options: Record<string, any>;
+  disconnect(): void;
+}
+
+function liveClient(cache: RedisCache) {
+  return cache.redisClient as unknown as IORedisClient;
+}
 
 /**
  * Build a stub for the cache-manager instance, including a stubbed
@@ -36,10 +46,11 @@ function createCacheStub({ keyPrefix = '' } = {}) {
 }
 
 describe('Adapter Cache Redis', function () {
-  let metricStub;
+  let metricStub: sinon.SinonStub;
+  let loggingErrorStub: sinon.SinonStub;
 
   beforeEach(function () {
-    sinon.stub(logging, 'error');
+    loggingErrorStub = sinon.stub(logging, 'error');
     metricStub = sinon.stub(metrics, 'metric');
   });
 
@@ -47,8 +58,14 @@ describe('Adapter Cache Redis', function () {
     sinon.restore();
   });
 
-  function metricCall(name) {
+  function metricCall(name: string) {
     return metricStub.getCalls().find((c) => c.args[0] === name);
+  }
+
+  function emitted(name: string) {
+    const call = metricCall(name);
+    assert.ok(call, `no ${name} metric`);
+    return call;
   }
 
   function flushMicrotasks() {
@@ -72,16 +89,12 @@ describe('Adapter Cache Redis', function () {
       reuseConnection: false,
     });
     assert.ok(cache);
-    assert.equal(cache.redisClient.options.username, 'myusername');
-    assert.equal(cache.redisClient.options.retryStrategy, false);
+    assert.equal(liveClient(cache).options.username, 'myusername');
+    assert.equal(liveClient(cache).options.retryStrategy, false);
   });
 
   describe('clusterConfig', function () {
-    // resolveAdapterOptions hands the adapter its slice of Ghost config by
-    // reference, so folding ttl into clusterConfig in place wrote through to
-    // every later reader of `adapters:...`. These freeze their input: the
-    // mutation is silent otherwise, since this file is sloppy-mode CommonJS.
-    function buildWith(adapterConfig) {
+    function buildWith(adapterConfig: object) {
       const getRedisStore = sinon
         .stub(redisStoreFactory, 'getRedisStore')
         .returns({ name: 'stub-store' });
@@ -91,42 +104,105 @@ describe('Adapter Cache Redis', function () {
 
       new RedisCache(adapterConfig);
 
-      return getRedisStore.firstCall.args[0];
+      return getRedisStore.firstCall.args[0] as Record<string, any>;
     }
 
-    it('folds ttl into a derived clusterConfig without touching the config it was given', function () {
-      const clusterConfig = Object.freeze({ nodes: Object.freeze([]) });
-      const adapterConfig = Object.freeze({ ttl: 600, clusterConfig, reuseConnection: false });
+    // writes pass their ttl per call, so the cluster options need no ttl of their own
+    for (const ttl of [undefined, 600]) {
+      it(`passes the cluster config straight through with ttl ${ttl}`, function () {
+        const clusterConfig = Object.freeze({ nodes: Object.freeze([]) });
 
-      const storeOptions = buildWith(adapterConfig);
+        const storeOptions = buildWith(
+          Object.freeze({ ttl, clusterConfig, reuseConnection: false }),
+        );
 
-      assert.equal(storeOptions.clusterConfig.options.ttl, 600);
-      assert.notEqual(storeOptions.clusterConfig, clusterConfig);
-      assert.equal(clusterConfig.options, undefined);
+        assert.equal(storeOptions.clusterConfig, clusterConfig);
+      });
+    }
+  });
+
+  describe('config', function () {
+    function storeOptionsFor(adapterConfig: object) {
+      const getRedisStore = sinon
+        .stub(redisStoreFactory, 'getRedisStore')
+        .returns({ name: 'stub-store' });
+      sinon.stub(cacheManager, 'caching').returns(createCacheStub());
+
+      new RedisCache(adapterConfig);
+
+      return getRedisStore.firstCall.args[0] as Record<string, any>;
+    }
+
+    it('passes connection keys and other ioredis options to the store, but not cache options', function () {
+      const storeOptions = storeOptionsFor({
+        host: 'redis',
+        port: '6380',
+        password: null,
+        db: 2,
+        tls: true,
+        keyPrefix: 'site:',
+        featureName: 'postsPublic',
+        refreshAheadFactor: 0.8,
+        getTimeoutMilliseconds: 50,
+        connectTimeout: 1000,
+      });
+
+      assert.equal(storeOptions.host, 'redis');
+      assert.equal(storeOptions.port, 6380);
+      assert.equal(storeOptions.password, undefined);
+      assert.equal(storeOptions.db, 2);
+      assert.deepEqual(storeOptions.tls, {});
+      assert.equal(storeOptions.connectTimeout, 1000);
+      for (const key of [
+        'keyPrefix',
+        'featureName',
+        'refreshAheadFactor',
+        'getTimeoutMilliseconds',
+      ]) {
+        assert.equal(key in storeOptions, false, key);
+      }
     });
 
-    it('keeps the existing cluster options alongside the ttl', function () {
-      const clusterConfig = Object.freeze({
-        nodes: Object.freeze([]),
-        options: Object.freeze({ slotsRefreshTimeout: 2000 }),
+    it('lets storeConfig override the connection keys, checked the same way', function () {
+      const storeOptions = storeOptionsFor({
+        host: 'redis',
+        storeConfig: { host: 'other', port: '6380' },
       });
-      const adapterConfig = Object.freeze({ ttl: 600, clusterConfig, reuseConnection: false });
 
-      const storeOptions = buildWith(adapterConfig);
-
-      assert.deepEqual(storeOptions.clusterConfig.options, {
-        slotsRefreshTimeout: 2000,
-        ttl: 600,
-      });
-      assert.deepEqual(clusterConfig.options, { slotsRefreshTimeout: 2000 });
+      assert.equal(storeOptions.host, 'other');
+      assert.equal(storeOptions.port, 6380);
     });
 
-    it('passes the cluster config straight through when no ttl is configured', function () {
-      const clusterConfig = Object.freeze({ nodes: Object.freeze([]) });
+    for (const [adapterConfig, path] of [
+      [{ port: 'abc' }, 'port'],
+      [{ host: '' }, 'host'],
+      [{ ttl: -1 }, 'ttl'],
+      [{ ttl: '60' }, 'ttl'],
+      [{ refreshAheadFactor: 1.5 }, 'refreshAheadFactor'],
+      [{ getTimeoutMilliseconds: -1 }, 'getTimeoutMilliseconds'],
+      [{ keyPrefix: 2368 }, 'keyPrefix'],
+      [{ reuseConnection: 'yes' }, 'reuseConnection'],
+      [{ clusterConfig: [] }, 'clusterConfig'],
+      [{ storeConfig: { retryConnectSeconds: 0 } }, 'storeConfig.retryConnectSeconds'],
+      [{ storeConfig: { port: 'abc' } }, 'storeConfig.port'],
+      [{ cache: {} }, 'cache'],
+    ] as Array<[object, string]>) {
+      it(`rejects ${JSON.stringify(adapterConfig)}, naming ${path}`, function () {
+        for (const check of [
+          () => RedisCache.validate(adapterConfig),
+          () => new RedisCache(adapterConfig),
+        ]) {
+          assert.throws(
+            check,
+            (err) =>
+              err instanceof errors.IncorrectUsageError && err.message.startsWith(`${path}: `),
+          );
+        }
+      });
+    }
 
-      const storeOptions = buildWith(Object.freeze({ clusterConfig, reuseConnection: false }));
-
-      assert.equal(storeOptions.clusterConfig, clusterConfig);
+    it('validates an unset config', function () {
+      assert.doesNotThrow(() => RedisCache.validate(undefined));
     });
   });
 
@@ -137,9 +213,9 @@ describe('Adapter Cache Redis', function () {
       });
       // retryStrategy is invoked by ioredis whenever Redis becomes unavailable.
       // It must not crash even when storeConfig is omitted from the adapter config.
-      assert.doesNotThrow(() => cache.redisClient.options.retryStrategy(1));
-      assert.equal(cache.redisClient.options.retryStrategy(1), 10000);
-      cache.redisClient.disconnect();
+      assert.doesNotThrow(() => liveClient(cache).options.retryStrategy(1));
+      assert.equal(liveClient(cache).options.retryStrategy(1), 10000);
+      liveClient(cache).disconnect();
     });
 
     it('defaults to 10 seconds when retryConnectSeconds is not set in storeConfig', function () {
@@ -149,7 +225,7 @@ describe('Adapter Cache Redis', function () {
         },
         reuseConnection: false,
       });
-      assert.equal(cache.redisClient.options.retryStrategy(1), 10000);
+      assert.equal(liveClient(cache).options.retryStrategy(1), 10000);
     });
 
     it('uses retryConnectSeconds from storeConfig when provided', function () {
@@ -160,7 +236,7 @@ describe('Adapter Cache Redis', function () {
         },
         reuseConnection: false,
       });
-      assert.equal(cache.redisClient.options.retryStrategy(1), 5000);
+      assert.equal(liveClient(cache).options.retryStrategy(1), 5000);
     });
   });
 
@@ -194,7 +270,7 @@ describe('Adapter Cache Redis', function () {
 
     it('can update the cache in the case of a cache miss', async function () {
       const KEY = 'update-cache-on-miss';
-      let cachedValue = null;
+      let cachedValue: unknown = null;
       const cacheStub = createCacheStub();
       cacheStub.get.callsFake(async (key) => {
         if (key === PREFIX_HASH + KEY) {
@@ -230,11 +306,11 @@ describe('Adapter Cache Redis', function () {
 
       assert.equal(value, undefined);
       sinon.assert.calledOnce(fetchData);
-      sinon.assert.calledOnce(logging.error);
+      sinon.assert.calledOnce(loggingErrorStub);
     });
 
     it('retries fetchData on next call after a previous fetchData rejection', async function () {
-      let cachedValue = null;
+      let cachedValue: unknown = null;
       const cacheStub = createCacheStub();
       cacheStub.get.callsFake(async () => cachedValue);
       cacheStub.set.callsFake(async (_key, value) => {
@@ -274,7 +350,7 @@ describe('Adapter Cache Redis', function () {
 
       assert.equal(value, undefined);
       assert.equal(fetchData.callCount, 0);
-      sinon.assert.calledOnce(logging.error);
+      sinon.assert.calledOnce(loggingErrorStub);
     });
 
     describe('concurrent cache miss coalescing', function () {
@@ -312,12 +388,12 @@ describe('Adapter Cache Redis', function () {
         assert.equal(fetchData.callCount, 1);
         assert.equal(v1, undefined);
         assert.equal(v2, undefined);
-        sinon.assert.calledOnce(logging.error);
+        sinon.assert.calledOnce(loggingErrorStub);
       });
 
       it('allows retry after a coalesced fetch rejection', async function () {
         const KEY = 'concurrent-miss-retry';
-        let cachedValue = null;
+        let cachedValue: unknown = null;
         const cacheStub = createCacheStub();
         cacheStub.get.callsFake(async () => cachedValue);
         cacheStub.set.callsFake(async (_key, value) => {
@@ -360,7 +436,7 @@ describe('Adapter Cache Redis', function () {
         };
         const cache = new RedisCache({ cache: cacheInstance });
 
-        let resolveSlow;
+        let resolveSlow!: (value: unknown) => void;
         const slowFetch = sinon.stub().returns(
           new Promise((resolve) => {
             resolveSlow = resolve;
@@ -418,7 +494,7 @@ describe('Adapter Cache Redis', function () {
 
     it('returns the cached value when background refresh fails', async function () {
       const KEY = 'bg-refresh-error';
-      let cachedValue = null;
+      let cachedValue: unknown = null;
 
       const cacheStub = createCacheStub();
       cacheStub.get.callsFake(async (key) => {
@@ -457,17 +533,17 @@ describe('Adapter Cache Redis', function () {
       await new Promise((resolve) => {
         setTimeout(resolve, 10);
       });
-      sinon.assert.calledOnce(logging.error);
+      sinon.assert.calledOnce(loggingErrorStub);
       assert.equal(
-        logging.error.firstCall.args[0].message,
+        loggingErrorStub.firstCall.args[0].message,
         'There was an error refreshing cache data in the background',
       );
-      assert.equal(logging.error.firstCall.args[0].error.message, 'refresh failed');
+      assert.equal(loggingErrorStub.firstCall.args[0].error.message, 'refresh failed');
     });
 
     it('Can do a background update of the cache', async function () {
       const KEY = 'update-cache-in-background';
-      let cachedValue = null;
+      let cachedValue: unknown = null;
       let remainingTTL = 100;
 
       const cacheStub = createCacheStub();
@@ -558,7 +634,7 @@ describe('Adapter Cache Redis', function () {
       const value = await cache.set('key-here', 'new value');
 
       assert.equal(value, undefined);
-      sinon.assert.calledOnce(logging.error);
+      sinon.assert.calledOnce(loggingErrorStub);
     });
 
     it('sets a key based on keyPrefix', async function () {
@@ -699,7 +775,7 @@ describe('Adapter Cache Redis', function () {
 
       await cache.get('k');
 
-      assert.equal('feature' in metricCall('cache-hit').args[1], false);
+      assert.equal('feature' in emitted('cache-hit').args[1], false);
     });
 
     it('emits cache-timeout (but not cache-miss) when the get exceeds the timeout', async function () {
@@ -728,7 +804,7 @@ describe('Adapter Cache Redis', function () {
       // If the timer fires first and the underlying redis read rejects
       // afterwards, we should count the request once (as a timeout),
       // not both as a timeout and as an error.
-      let rejectLookup;
+      let rejectLookup!: (error: Error) => void;
       const cacheStub = createCacheStub();
       cacheStub.get.callsFake(
         () =>
@@ -842,8 +918,8 @@ describe('Adapter Cache Redis', function () {
 
       assert.ok(metricCall('cache-background-refresh-triggered'));
       assert.ok(metricCall('cache-background-refresh-succeeded'));
-      assert.equal(metricCall('cache-background-refresh-triggered').args[1].feature, 'postsPublic');
-      assert.equal(typeof metricCall('cache-background-refresh-succeeded').args[1].value, 'number');
+      assert.equal(emitted('cache-background-refresh-triggered').args[1].feature, 'postsPublic');
+      assert.equal(typeof emitted('cache-background-refresh-succeeded').args[1].value, 'number');
       assert.equal(metricCall('cache-background-refresh-failed'), undefined);
     });
 
@@ -916,7 +992,7 @@ describe('Adapter Cache Redis', function () {
       await cloned.get('k');
 
       assert.ok(metricCall('cache-hit'), 'cache-hit was emitted on clone');
-      assert.equal(metricCall('cache-hit').args[1].feature, 'postsPublic');
+      assert.equal(emitted('cache-hit').args[1].feature, 'postsPublic');
     });
   });
 

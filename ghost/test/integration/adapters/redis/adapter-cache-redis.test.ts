@@ -1,14 +1,14 @@
-const assert = require('node:assert/strict');
-const crypto = require('node:crypto');
-const _ = require('lodash');
-const sinon = require('sinon');
-const config = require('../../../../core/shared/config');
-const RedisCache = require('../../../../core/server/adapters/lib/redis/AdapterCacheRedis');
+import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
+import _ from 'lodash';
+import sinon from 'sinon';
+import config from '../../../../core/shared/config';
+import RedisCache from '../../../../core/server/adapters/lib/redis/AdapterCacheRedis';
 
 const REDIS_HOST = config.get('adapters:Redis:host');
 const REDIS_PORT = config.get('adapters:Redis:port');
 
-function buildCache(prefix, extra = {}) {
+function buildCache(prefix?: string, extra: object = {}) {
   return new RedisCache({
     host: REDIS_HOST,
     port: REDIS_PORT,
@@ -26,8 +26,8 @@ function buildCache(prefix, extra = {}) {
 // adapter alongside them); the cloned scenario protects against the
 // adapter caching non-cloneable state on `this`.
 const SCENARIOS = [
-  { label: 'fresh instance', wrap: (c) => c },
-  { label: 'deep-cloned instance', wrap: (c) => _.cloneDeep(c) },
+  { label: 'fresh instance', wrap: (c: RedisCache) => c },
+  { label: 'deep-cloned instance', wrap: (c: RedisCache) => _.cloneDeep(c) },
 ];
 
 // Skip the whole parameterised set when Redis is unreachable. The flag is set by
@@ -37,15 +37,15 @@ SCENARIOS.forEach(({ label, wrap }) => {
   describe.skipIf(process.env.GHOST_TEST_REDIS_AVAILABLE !== '1')(
     `Integration: AdapterCacheRedis on a ${label}`,
     function () {
-      const caches = [];
+      const caches: RedisCache[] = [];
 
       afterEach(async function () {
         while (caches.length) {
-          await caches.pop().redisClient.quit();
+          await (caches.pop()!.redisClient as unknown as { quit(): Promise<unknown> }).quit();
         }
       });
 
-      function createCache(extra) {
+      function createCache(extra?: object) {
         const cache = buildCache(crypto.randomBytes(8).toString('hex') + ':', extra);
         caches.push(cache);
         return wrap(cache);
@@ -232,7 +232,7 @@ SCENARIOS.forEach(({ label, wrap }) => {
           await cache.set('slow', 'value');
 
           const original = cache.cache.get.bind(cache.cache);
-          cache.cache.get = (k) =>
+          cache.cache.get = (k: string) =>
             new Promise((resolve) => {
               // This delayed fetch is deliberately orphaned (cache.get
               // resolves null at the 1ms timeout first); swallow its
@@ -256,7 +256,7 @@ SCENARIOS.forEach(({ label, wrap }) => {
           await cache.set('foo', 'value');
 
           const original = cache.redisClient.get.bind(cache.redisClient);
-          cache.redisClient.get = (k) =>
+          cache.redisClient.get = (k: string) =>
             new Promise((resolve) => {
               // Orphaned delayed fetch (see the prior test) — swallow its
               // rejection so it doesn't become an unhandled error after the
