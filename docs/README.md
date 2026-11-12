@@ -106,6 +106,7 @@ Practice and contributor guides explain how to make and verify changes:
 - [Testing Ghost updates](contributing/testing-ghost-updates.md)
 - [Test data](contributing/test-data.md)
 - [Testing development URLs and devices](contributing/testing-development-urls.md)
+- [Testing with two Ghosts](contributing/testing-two-ghosts.md)
 
 Reference guides provide tables and other information to look up while working
 on Ghost:
