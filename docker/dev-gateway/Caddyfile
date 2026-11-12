@@ -76,6 +76,14 @@
 		}
 	}
 
+	# atproto DID - lets the site's domain be its Bluesky handle
+	handle /.well-known/atproto-did {
+		reverse_proxy {env.ACTIVITYPUB_PROXY_TARGET} {
+			header_up Host {host}
+			header_up X-Real-IP {remote_host}
+		}
+	}
+
 	# Public app dev server assets - must come BEFORE general /ghost/* handler
 	# Ghost is configured to load these from /ghost/assets/* via compose.dev.yaml
 	handle /ghost/assets/* {

@@ -43,7 +43,10 @@ export function ghostFrontDoorPlugin(backend: string, devBase: string): Plugin {
       // Without a listener, answer 404 so Ghost treats the site as having no
       // ActivityPub service routed.
       const activityPub = process.env.ACTIVITYPUB_PROXY_TARGET ?? '127.0.0.1:8080';
-      for (const route of ['^/\\.ghost/activitypub/', '^/\\.well-known/(webfinger|nodeinfo)']) {
+      for (const route of [
+        '^/\\.ghost/activitypub/',
+        '^/\\.well-known/(webfinger|nodeinfo|atproto-did)',
+      ]) {
         proxy[route] = {
           target: `http://${activityPub}`,
           configure: (p) =>
