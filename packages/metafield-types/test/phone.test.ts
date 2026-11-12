@@ -121,7 +121,7 @@ describe('phone numbers in a browser', function () {
         { value: 'AQ', label: 'Antarctica' },
         { value: 'GB', label: 'United Kingdom' },
       ]),
-      [{ value: 'GB', label: 'United Kingdom +44' }],
+      [{ value: 'GB', label: 'United Kingdom (+44)' }],
     );
   });
 

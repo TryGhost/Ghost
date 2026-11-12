@@ -174,9 +174,9 @@ describe('Account Profile Page', () => {
         fireEvent.click(picker(utils, 'Country code'));
         expect(searchBox(utils, 'Country code')).toHaveFocus();
         fireEvent.change(searchBox(utils, 'Country code'), { target: { value: 'germ' } });
-        expect(offered()).toEqual(['Germany +49']);
+        expect(offered()).toEqual(['Germany (+49)']);
         fireEvent.change(searchBox(utils, 'Country code'), { target: { value: '+33' } });
-        expect(offered()).toEqual(['France +33']);
+        expect(offered()).toEqual(['France (+33)']);
         fireEvent.keyDown(searchBox(utils, 'Country code'), { key: 'Enter' });
 
         expect(picker(utils, 'Country code')).toHaveTextContent('🇫🇷 +33');

@@ -872,13 +872,13 @@ function international(text: string, country: PhoneCountry | undefined): string 
 
 /**
  * The countries a phone number can be from, out of `countries` as an app names them, each named
- * with its code, such as `United Kingdom +44`, in the order given.
+ * with its code, such as `United Kingdom (+44)`, in the order given.
  */
 export function phoneCountryOptions(
   countries: readonly { value: string; label: string }[],
 ): { value: PhoneCountry; label: string }[] {
   return countries.flatMap(({ value, label }) =>
-    isPhoneCountry(value) ? [{ value, label: `${label} +${CALLING_CODES[value]}` }] : [],
+    isPhoneCountry(value) ? [{ value, label: `${label} (+${CALLING_CODES[value]})` }] : [],
   );
 }
 

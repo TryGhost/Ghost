@@ -282,7 +282,7 @@ test.describe('Portal - member custom fields', () => {
         // Found by its code, which three other countries share.
         await profile.phoneCountry(key).click();
         await profile.listSearch('Country code').fill('+44');
-        await profile.listOption('United Kingdom +44').click();
+        await profile.listOption('United Kingdom (+44)').click();
         await expect(profile.phoneCountry(key)).toHaveText('🇬🇧 +44');
 
         // One the country has no number like is refused, with the reason under the input.
