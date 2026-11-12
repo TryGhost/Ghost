@@ -36,6 +36,7 @@ inventory is a reporting tool, although contributors can run it locally.
 | [check-agent-skill-links.ts](./ci/check-agent-skill-links.ts)           | Validate repository skill discovery and Claude symlinks                 | pnpm lint:agent-skills                                    |
 | [check-app-version-bump.ts](./ci/check-app-version-bump.ts)             | Check CDN app version lines against Core defaults                       | PR CI                                                     |
 | [check-internal-packages.ts](./ci/check-internal-packages.ts)           | Validate internal package layout, exports and template conventions      | pnpm lint:packages                                        |
+| [check-legacy-services.ts](./ci/check-legacy-services.ts)               | Reject new legacy services and new dependency-check deferrals           | pnpm lint:legacy-services / PR CI                         |
 | [check-migration-integrity.ts](./ci/check-migration-integrity.ts)       | Reject invalid changes to released or incorrectly versioned migrations  | PR CI                                                     |
 | [check-versioning-ignore.ts](./ci/check-versioning-ignore.ts)           | Check workspace versioning exclusions and externally versioned packages | pnpm lint:versioning                                      |
 | [compare-image-report.ts](./ci/compare-image-report.ts)                 | Compare production image file/size reports for CI summaries             | Image-report CI step                                      |
@@ -165,6 +166,18 @@ The checker rejects new violations and stale entries; reports retain all finding
 The resolver adapter in `ci/` keeps authored source resolution consistent. The
 [services guide](../../ghost/core/server/services/README.md#dependency-boundaries)
 defines the policy.
+
+[`legacy-services.ts`](../configs/oxlint/legacy-services.ts) in the Oxlint
+configuration reads the legacy service inventory. Boundary lint, the
+`ghost/service-root-shape` Oxlint rule, the service generator and the reports all
+use it, so there is one definition of a legacy service.
+
+`ci/check-legacy-services.ts` (`pnpm lint:legacy-services`) fails when the
+checkout lists a legacy service, or defers dependency checks for one, that the
+commit it forked from `origin/main` does not. CI runs it on pull requests that
+change the inventory. It fails rather than skips when the base branch has not
+been fetched, so `pnpm lint` does not include it. Its comparison with the fork
+point is private to the check, in `ci/legacy-services-base.ts`.
 
 ## TypeScript inventory
 

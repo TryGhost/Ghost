@@ -257,7 +257,6 @@ describe('Member Welcome Emails Integration', function () {
           name: 'Automation Member',
           uuid: '99999999-9999-4999-8999-999999999999',
         },
-        memberStatus: 'free',
         trackOpens,
       });
     }

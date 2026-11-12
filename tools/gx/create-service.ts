@@ -1,29 +1,22 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
-import { lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { lstatSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import yaml from 'js-yaml';
-import { z } from 'zod';
+import {
+  legacyInventoryFile,
+  readLegacyServices,
+  servicesRoot as SERVICES,
+} from '../configs/oxlint/legacy-services.ts';
 
-const SERVICES = 'ghost/core/server/services';
 const TESTS = 'ghost/test/unit/server/services';
-const INVENTORY = `${SERVICES}/service-inventory.yaml`;
-const ROOT_RULE = 'ghost/service-root-shape';
 const FORMATTER = fileURLToPath(new URL('./bin/oxfmt', import.meta.resolve('oxfmt/package.json')));
 const USAGE = `Usage: pnpm gx generate service <name>
 
 Create a boot-owned TypeScript service and starter root test.
 Use lowercase kebab-case beginning with a letter, e.g. delivery-receipts.
 `;
-
-const inventorySchema = z.object({ services: z.record(z.string(), z.unknown()) });
-const lintSchema = z.object({
-  overrides: z.array(
-    z.object({ files: z.array(z.string()), rules: z.record(z.string(), z.unknown()) }),
-  ),
-});
 
 function templates(name: string) {
   const className = `${name
@@ -117,89 +110,6 @@ describe('${className} root', function () {
   };
 }
 
-function addInventoryEntry(text: string, name: string, revision: string) {
-  const inventory = inventorySchema.parse(yaml.load(text));
-  if (Object.keys(inventory.services).some((key) => key.replace(/\.[^.]+$/, '') === name)) {
-    throw new Error(`Service already inventoried: ${name}`);
-  }
-  const entry = {
-    kind: 'directory',
-    disposition: 'migrate',
-    status: 'pending',
-    migrated: true,
-    migration: {
-      complexity: 'straightforward',
-      modelImpact: 'fits',
-      reason:
-        'Generated with defineService; no legacy migration needed. reviewedAt is the generator checkout revision, not an audit of the new service.',
-      reviewedAt: revision,
-      sources: [`core/server/services/${name}/index.ts`],
-    },
-    entryPoints: [`${name}/index.ts`],
-    notes:
-      'Generated scaffold. Review ownership, wire boot initialization, and record the implemented contracts.',
-    contracts: {},
-    unverified: [
-      'exports',
-      'construction',
-      'consumers',
-      'startup',
-      'lifetime',
-      'configuration',
-      'resources',
-      'failures',
-    ],
-    blockers: ['Implement the capability and add its init() call to boot before use.'],
-  };
-  const fragment =
-    yaml
-      .dump({ [name]: entry }, { lineWidth: 100, noRefs: true })
-      .trimEnd()
-      .split('\n')
-      .map((line) => `  ${line}`)
-      .join('\n') + '\n';
-  // Insert without reserializing existing audit evidence or losing its comments.
-  const next = Object.keys(inventory.services).find((key) => key > name);
-  const anchor = next ? `  ${next}:\n` : undefined;
-  const offset = anchor ? text.indexOf(anchor) : text.length;
-  if (offset < 0 || !/^services:\n/m.test(text) || !text.endsWith('\n')) {
-    throw new Error('Unrecognized service inventory layout; no files created.');
-  }
-  const result = text.slice(0, offset) + fragment + text.slice(offset);
-  const updated = inventorySchema.parse(yaml.load(result));
-  if (!Object.hasOwn(updated.services, name)) {
-    throw new Error('Could not add the service inventory entry; no files created.');
-  }
-  return result;
-}
-
-function addLintRoot(text: string, name: string) {
-  const config = lintSchema.parse(JSON.parse(text));
-  const overrides = config.overrides.filter((override) => Object.hasOwn(override.rules, ROOT_RULE));
-  const override = overrides[0];
-  const rule = override?.rules[ROOT_RULE];
-  if (
-    overrides.length !== 1 ||
-    !override?.files.length ||
-    !Array.isArray(rule) ||
-    rule[0] !== 'error' ||
-    rule[1]?.helperImport !== '../../../kernel/define-service'
-  ) {
-    throw new Error('Unrecognized service root lint configuration; no files created.');
-  }
-  const root = `${SERVICES}/${name}/index.ts`;
-  if (override.files.includes(root)) {
-    throw new Error(`Service root already configured: ${root}`);
-  }
-  // Edit the original object, preserving every unrelated configuration field.
-  const original = JSON.parse(text);
-  const index = config.overrides.indexOf(override);
-  const files: string[] = original.overrides[index].files;
-  const next = files.findIndex((file) => file > root);
-  files.splice(next < 0 ? files.length : next, 0, root);
-  return JSON.stringify(original);
-}
-
 function formatSource(rootDir: string, file: string, source: string) {
   return execFileSync(
     process.execPath,
@@ -231,22 +141,12 @@ export function createService({ name, rootDir }: { name: string; rootDir: string
   if (existing || lstatSync(testDir, { throwIfNoEntry: false })) {
     throw new Error(`Service or test path already exists: ${name}`);
   }
-  const revision = execFileSync('git', ['rev-parse', 'HEAD'], {
-    cwd: rootDir,
-    encoding: 'utf8',
-  }).trim();
-  const inventoryPath = path.join(rootDir, INVENTORY);
-  const lintPath = path.join(rootDir, '.oxlintrc.json');
-  const inventory = readFileSync(inventoryPath, 'utf8');
-  const lint = readFileSync(lintPath, 'utf8');
-  const updates = [
-    { file: inventoryPath, before: inventory, after: addInventoryEntry(inventory, name, revision) },
-    {
-      file: lintPath,
-      before: lint,
-      after: formatSource(rootDir, '.oxlintrc.json', addLintRoot(lint, name)),
-    },
-  ];
+  // A new service is standard: it is checked because it is not listed as legacy.
+  // A leftover legacy entry with this name would exempt it, so refuse.
+  const legacy = [...readLegacyServices(rootDir).keys()];
+  if (legacy.some((key) => key.replace(/\.[^.]+$/, '') === name)) {
+    throw new Error(`Service is listed in ${legacyInventoryFile}: ${name}`);
+  }
   // Format before writing so any template or formatter failure leaves the checkout untouched.
   const files = Object.fromEntries(
     Object.entries(templates(name)).map(([file, content]) => [
@@ -255,7 +155,6 @@ export function createService({ name, rootDir }: { name: string; rootDir: string
     ]),
   );
   const created: string[] = [];
-  const changed: typeof updates = [];
   try {
     for (const dir of [serviceDir, testDir]) {
       mkdirSync(dir);
@@ -264,14 +163,7 @@ export function createService({ name, rootDir }: { name: string; rootDir: string
     for (const [file, content] of Object.entries(files)) {
       writeFileSync(path.join(rootDir, file), content, { flag: 'wx' });
     }
-    for (const update of updates) {
-      changed.push(update);
-      writeFileSync(update.file, update.after);
-    }
   } catch (error) {
-    for (const update of changed.reverse()) {
-      writeFileSync(update.file, update.before);
-    }
     for (const dir of created.reverse()) {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -298,14 +190,16 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
         rootDir: fileURLToPath(new URL('../..', import.meta.url)),
       });
       process.stdout.write(`Created:\n${files.map((file) => `  ${file}`).join('\n')}\n
-Updated ${INVENTORY} and .oxlintrc.json.
+Lint, boundary lint and the inventory test already check it: a service needs
+no inventory entry or lint registration.
 
 Next steps:
   1. Implement the capability and inject its application dependencies in index.ts.
   2. Add await require('./server/services/${name}').default.init() in ghost/core/boot.js,
      after its dependencies are ready and before its consumers run. Document that order.
   3. Add startup failure cleanup and shutdown wiring if the service owns resources.
-  4. Extend the root test and update inventory contracts, audit gaps and blockers.
+  4. Extend the root test. If the root declares extras, catalogue them in
+     ${legacyInventoryFile}.
   5. Run pnpm nx run ghost:test:unit test/unit/server/services/${name}/index.test.ts
      and pnpm check.
 

@@ -3,10 +3,12 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
-import yaml from 'js-yaml';
+import {
+  legacyInventoryFile as inventoryPath,
+  parseLegacyServices,
+  servicesRoot,
+} from '../configs/oxlint/legacy-services.ts';
 
-const servicesRoot = 'ghost/core/server/services';
-const inventoryPath = `${servicesRoot}/service-inventory.yaml`;
 const bootPath = 'ghost/core/boot.js';
 const allowlistPath = '.dependency-cruiser.cjs';
 const allowanceTestPath = 'tools/scripts/test/service-dependencies.test.ts';
@@ -115,7 +117,7 @@ export function builtOnlyViolations(source: Cruise, built: Cruise) {
     .map(({ from, to, rule }) => `${from} → ${to} breaks ${rule.name}.`);
 }
 
-// Checks added allowances against the imports dependency-cruiser resolved from migrated
+// Checks added allowances against the imports dependency-cruiser resolved from
 // services, in both the authored-source and built-output runs.
 export function allowanceProblems({
   allowances,
@@ -221,11 +223,9 @@ export function verifyService({
   const lines = (output: string) => output.split('\n').filter(Boolean);
   const read = (file: string) => readFileSync(path.join(repository, file), 'utf8');
   const inventory = read(inventoryPath);
-  const { services } = yaml.load(inventory) as {
-    services: Record<string, { migrated?: boolean }>;
-  };
-  const entry = services[service];
-  if (!entry) {
+  // A service that the legacy service inventory does not list is standard.
+  const standard = !parseLegacyServices(inventory).has(service);
+  if (standard && !existsSync(path.join(repository, servicesRoot, service))) {
     throw new Error(`Unknown service: ${service}`);
   }
 
@@ -379,7 +379,7 @@ export function verifyService({
     record(name, result.status === 0 ? 'pass' : 'fail', failureOutput(result));
   }
 
-  if (entry.migrated) {
+  if (standard) {
     const absolute = path.join(repository, bootPath);
     const original = readFileSync(absolute, 'utf8');
     const mutated = mutateBootInit(original, service);

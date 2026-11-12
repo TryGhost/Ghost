@@ -169,9 +169,12 @@ jobs:
               - '.github/scripts/**'
               - 'tools/scripts/**'
             service-inventory:
-              - 'ghost/core/server/services/service-inventory.yaml'
-              - 'ghost/test/unit/server/services/service-inventory.test.ts'
+              - 'ghost/core/server/services/legacy-service-inventory.yaml'
+              - 'ghost/test/unit/server/services/legacy-service-inventory.test.ts'
               - 'ghost/vitest.config.inventory.ts'
+              - 'tools/scripts/ci/check-legacy-services.ts'
+              - 'tools/scripts/ci/legacy-services-base.ts'
+              - 'tools/configs/oxlint/legacy-services.ts'
               - '.github/workflows/ci.yml'
             package-standards:
               - 'packages/**'
@@ -205,8 +208,9 @@ jobs:
               # positive pattern so micromatch cannot add docs files back.
               - '!**/*.md'
               - '!**/*.mdx'
-              # Migration metadata is documentation; boot never reads it.
-              - '!ghost/core/server/services/service-inventory.yaml'
+              # Boot never reads the legacy service inventory. Lint does, so it
+              # still counts as code in any-code below.
+              - '!ghost/core/server/services/legacy-service-inventory.yaml'
               - '!ghost/vitest.config.inventory.ts'
             unit-test-globals:
               - 'vitest.config.mjs'
@@ -214,7 +218,6 @@ jobs:
               - 'ghost/vitest.config.ts'
               - 'ghost/test/utils/vitest-*.ts'
             any-code:
-              - '!ghost/core/server/services/service-inventory.yaml'
               - '!**/*.md'
               - '!**/*.mdx'
               - '!.github/CODEOWNERS'
@@ -228,7 +231,7 @@ jobs:
             # React Admin tests still run through the affected unit, acceptance,
             # lint and typecheck targets; only the build + E2E lane is skipped.
             e2e:
-              - '!ghost/core/server/services/service-inventory.yaml'
+              - '!ghost/core/server/services/legacy-service-inventory.yaml'
               - '!**/*.md'
               - '!**/*.mdx'
               - '!.github/CODEOWNERS'
@@ -557,6 +560,44 @@ jobs:
 
       - name: Validate service inventory
         run: pnpm --filter ghost exec vitest run --config vitest.config.inventory.ts
+
+  # The legacy services only shrink. A pull request is the only place a name can
+  # be added, so this compares the branch with the commit it forked from.
+  job_legacy_services:
+    name: Check legacy services
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [job_setup]
+    if: github.event_name == 'pull_request' && needs.job_setup.outputs.changed_service_inventory == 'true'
+    steps:
+      - name: Checkout PR head commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Fetch PR base branch
+        # Through env, never interpolated into the script: a branch name can
+        # carry shell metacharacters, and template expansion happens before the
+        # shell parses the command.
+        env:
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: git fetch --no-tags origin "+refs/heads/${PR_BASE_REF}:refs/remotes/origin/${PR_BASE_REF}"
+
+      - uses: ./.github/actions/setup-node-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          trust-lockfile: 'true'
+          # The check and the inventory reader each read YAML with their own
+          # workspace's parser.
+          install-args: --filter @internal/scripts --filter @internal/cfg-oxlint --ignore-scripts
+          store-cache: 'false'
+
+      - name: Check legacy services only shrink
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: node tools/scripts/ci/check-legacy-services.ts
 
   job_lint_packages:
     name: Lint packages
@@ -2603,6 +2644,7 @@ jobs:
         job_lint,
         job_lint_docs,
         job_service_inventory,
+        job_legacy_services,
         job_lint_packages,
         job_stripe_fixtures,
         job_i18n,

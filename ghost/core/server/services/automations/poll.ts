@@ -22,7 +22,6 @@ type MemberWelcomeEmailService = {
       name: string | null;
       uuid: string;
     };
-    memberStatus: 'free' | 'paid';
     trackOpens: boolean;
     trackClicks: boolean;
     automationActionRevisionId: string;
@@ -269,7 +268,6 @@ const processStep = async ({
     return null;
   }
 
-  const memberStatus = getFreeOrPaidForTriggerRule(matchingRule);
   let nextReadyAt: Date | null = null;
 
   try {
@@ -295,7 +293,6 @@ const processStep = async ({
             name: member.get('name'),
             uuid: member.get('uuid'),
           },
-          memberStatus,
           trackOpens,
           trackClicks,
           automationActionRevisionId: step.automation_action_revision_id,

@@ -3,36 +3,30 @@ import { readFileSync } from 'node:fs';
 import { findPackageJSON } from 'node:module';
 import path from 'node:path';
 import type { ICruiseResult, IViolation } from 'dependency-cruiser';
-import yaml from 'js-yaml';
 import { z } from 'zod';
+import {
+  type LegacyService,
+  readLegacyServices,
+  servicesRoot,
+} from '../../configs/oxlint/legacy-services.ts';
 
 export const knownViolationsFile = '.dependency-cruiser-known-violations.json';
-const servicesRoot = 'ghost/core/server/services/';
+const servicePrefix = `${servicesRoot}/`;
 const knownViolationSchema = z.strictObject({
   rule: z.enum(['service-dependencies', 'service-own-root', 'service-unresolved']),
-  from: z.string().startsWith(servicesRoot),
+  from: z.string().startsWith(servicePrefix),
   to: z.string().min(1),
 });
-const inventorySchema = z.object({
-  services: z.record(z.string(), z.object({ migrated: z.boolean().optional() })),
-});
 type KnownViolation = z.infer<typeof knownViolationSchema>;
+type LegacyServices = Map<string, LegacyService>;
 
-// Unmigrated services that change too often for a file-level list to hold: it
-// would go stale between a pull request opening and merging. Their findings
-// stay in reports but neither fail lint nor appear in the known-violations
-// file. Remove a name when its service is migrated. This list should only
-// shrink; a service that is not named here is checked from its first commit.
-export const deferredServices: readonly string[] = [
-  'automations',
-  'members',
-  'members-metafields',
-  'stripe',
-];
-
-const serviceName = (file: string) => file.slice(servicesRoot.length).split('/')[0]!;
-const isDeferred = (file: string) =>
-  file.startsWith(servicesRoot) && deferredServices.includes(serviceName(file));
+const serviceName = (file: string) => file.slice(servicePrefix.length).split('/')[0]!;
+// Some legacy services change too often for a file-level list to hold: it would
+// go stale between a pull request opening and merging. Their inventory entry
+// says `dependencyChecks: deferred`. Their findings stay in reports but neither
+// fail lint nor appear in the known-violations file.
+const isDeferred = (file: string, legacy: LegacyServices) =>
+  file.startsWith(servicePrefix) && legacy.get(serviceName(file))?.deferred === true;
 
 // External package locations vary between pnpm stores and CI. Keep their exact
 // import specifier (including subpaths); local and workspace targets stay resolved
@@ -51,31 +45,25 @@ export function dependencyIdentity(violation: IViolation) {
 const key = ({ rule, from, to }: { rule: string; from: string; to: string }) =>
   JSON.stringify([rule, from, to]);
 
-export function readKnownViolations(repository: string): KnownViolation[] {
+// Only a legacy service can have known violations. A service that is not
+// listed in the legacy service inventory is checked from its first commit.
+export function readKnownViolations(
+  repository: string,
+  legacy: LegacyServices = readLegacyServices(repository),
+): KnownViolation[] {
   const known = z
     .array(knownViolationSchema)
     .parse(JSON.parse(readFileSync(path.join(repository, knownViolationsFile), 'utf8')));
-  const { services } = inventorySchema.parse(
-    yaml.load(readFileSync(path.join(repository, servicesRoot, 'service-inventory.yaml'), 'utf8')),
-  );
-  for (const name of deferredServices) {
-    if (services[name]?.migrated) {
-      throw new Error(
-        `${name} is migrated, so its dependencies are enforced. Remove it from deferredServices.`,
-      );
-    }
-  }
   const seen = new Set<string>();
   for (const item of known) {
-    const name = serviceName(item.from);
-    if (isDeferred(item.from)) {
+    if (isDeferred(item.from, legacy)) {
       throw new Error(
         `${knownViolationsFile}: ${item.from} belongs to a service with deferred enforcement. Remove the entry.`,
       );
     }
-    if (!services[name] || services[name].migrated) {
+    if (!legacy.has(serviceName(item.from))) {
       throw new Error(
-        `${knownViolationsFile}: ${item.from} must belong to an unmigrated inventory entry.`,
+        `${knownViolationsFile}: ${item.from} does not belong to a legacy service. Remove the entry.`,
       );
     }
     if (seen.has(key(item))) {
@@ -88,13 +76,17 @@ export function readKnownViolations(repository: string): KnownViolation[] {
   return known;
 }
 
-export function compareKnownViolations(graph: ICruiseResult, known: KnownViolation[]) {
+export function compareKnownViolations(
+  graph: ICruiseResult,
+  known: KnownViolation[],
+  legacy: LegacyServices,
+) {
   const current = new Set(graph.summary.violations.map((item) => key(dependencyIdentity(item))));
   const accepted = new Set(known.map(key));
-  const deferred = graph.summary.violations.filter((item) => isDeferred(item.from));
+  const deferred = graph.summary.violations.filter((item) => isDeferred(item.from, legacy));
   return {
     newViolations: graph.summary.violations.filter(
-      (item) => !isDeferred(item.from) && !accepted.has(key(dependencyIdentity(item))),
+      (item) => !isDeferred(item.from, legacy) && !accepted.has(key(dependencyIdentity(item))),
     ),
     stale: known.filter((item) => !current.has(key(item))),
     deferred,
@@ -107,7 +99,8 @@ export function compareKnownViolations(graph: ICruiseResult, known: KnownViolati
 // does. A partial scan cannot tell whether a known violation is gone, so it
 // reports none as stale.
 export function readDependencyBoundaries(repository: string, files: string[] = []) {
-  const known = readKnownViolations(repository);
+  const legacy = readLegacyServices(repository);
+  const known = readKnownViolations(repository, legacy);
   const manifest = findPackageJSON('dependency-cruiser', import.meta.url);
   if (!manifest) {
     throw new Error('dependency-cruiser is not installed.');
@@ -150,6 +143,6 @@ export function readDependencyBoundaries(repository: string, files: string[] = [
   if (!files.length && !graph.modules.length) {
     throw new Error('Dependency analysis returned no modules.');
   }
-  const comparison = compareKnownViolations(graph, known);
+  const comparison = compareKnownViolations(graph, known, legacy);
   return { graph, ...comparison, stale: files.length ? [] : comparison.stale };
 }

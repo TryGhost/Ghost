@@ -49,7 +49,10 @@
     },
     "tools/gx": {
       "entry": ["*.ts"],
-      "ignoreDependencies": ["@internal/scripts"]
+      "ignoreDependencies": ["@internal/cfg-oxlint", "@internal/scripts"]
+    },
+    "tools/scripts": {
+      "ignoreDependencies": ["@internal/cfg-oxlint"]
     }
   }
 }

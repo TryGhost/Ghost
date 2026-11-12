@@ -8,9 +8,13 @@
   "scripts": {
     "test:types": "tsc6 --noEmit"
   },
+  "dependencies": {
+    "js-yaml": "catalog:"
+  },
   "devDependencies": {
     "@internal/cfg-typescript": "workspace:*",
     "@oxlint/plugins": "catalog:",
+    "@types/js-yaml": "catalog:",
     "@types/node": "catalog:",
     "typescript": "catalog:"
   },
