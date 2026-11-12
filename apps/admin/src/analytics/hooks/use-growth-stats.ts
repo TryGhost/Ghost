@@ -182,6 +182,7 @@ export const useGrowthStats = (range: number) => {
   const { startDate, endDate } = useMemo(() => getRangeDates(range), [range]);
   const dateFrom = formatQueryDate(startDate);
   const openingBalanceDate = formatQueryDate(startDate.clone().subtract(1, 'day'));
+  const todayEnd = range === 1 ? formatQueryDate(startDate.clone().add(1, 'day')) : undefined;
 
   // Member history starts at date_from and each row contains closing balances.
   const { data: memberCountResponse, isLoading: isMemberCountLoading } = useMemberCountHistory({
@@ -192,7 +193,7 @@ export const useGrowthStats = (range: number) => {
 
   const { data: mrrHistoryResponse, isLoading: isMrrLoading } = useMrrHistory({
     searchParams: {
-      date_from: range === 1 ? openingBalanceDate : dateFrom,
+      date_from: dateFrom,
     },
   });
 
@@ -208,19 +209,18 @@ export const useGrowthStats = (range: number) => {
   }, [memberCountResponse]);
 
   const { memberData, openingMember } = useMemo(() => {
-    if (range === 1) {
+    if (todayEnd) {
       if (rawMemberData.length < 2) {
         return { memberData: rawMemberData };
       }
 
       // Draw Today's line from its opening balance to its closing balance.
       const [yesterdayData, todayData] = rawMemberData.slice(-2);
-      const tomorrow = moment(dateFrom).add(1, 'day').format('YYYY-MM-DD');
       return {
         openingMember: yesterdayData,
         memberData: [
           { ...yesterdayData, date: dateFrom },
-          { ...todayData, date: tomorrow },
+          { ...todayData, date: todayEnd },
         ],
       };
     }
@@ -229,7 +229,7 @@ export const useGrowthStats = (range: number) => {
       memberData: rawMemberData.filter((item) => item.date >= dateFrom),
       openingMember: rawMemberData.find((item) => item.date === openingBalanceDate),
     };
-  }, [rawMemberData, range, dateFrom, openingBalanceDate]);
+  }, [rawMemberData, todayEnd, dateFrom, openingBalanceDate]);
 
   const { mrrData, openingMrr, selectedCurrency } = useMemo(() => {
     const dateFromMoment = moment(dateFrom);
@@ -257,17 +257,28 @@ export const useGrowthStats = (range: number) => {
         (d) => d.currency === useCurrency,
       );
 
-      const filteredData = currencyFilteredData.filter((item) => {
-        return moment(item.date).isSameOrAfter(dateFromMoment);
-      });
-
       const allData = [...currencyFilteredData].sort(
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
       );
       // The API dates its opening balance just before the first change. For
       // sparse history that date can fall inside the selected range.
       const openingPoint = allData.find((item) => item.date < dateFrom) ?? allData.at(-1);
-      const result = [...filteredData];
+      const latestPoint = allData[0];
+      if (todayEnd && openingPoint && latestPoint.date >= dateFrom) {
+        // Plot the closing value at the end of Today, alongside the member totals.
+        return {
+          mrrData: [
+            { ...openingPoint, date: dateFrom },
+            { ...latestPoint, date: todayEnd },
+          ],
+          openingMrr: openingPoint.mrr,
+          selectedCurrency: useCurrency,
+        };
+      }
+
+      const result = currencyFilteredData.filter((item) => {
+        return moment(item.date).isSameOrAfter(dateFromMoment);
+      });
 
       // Always ensure we have a data point at the start of the range
       const hasStartPoint = result.some((item) => moment(item.date).isSame(dateFromMoment, 'day'));
@@ -297,18 +308,12 @@ export const useGrowthStats = (range: number) => {
 
       return {
         mrrData: finalResult,
-        // Today uses the displayed UTC-day series until Core can supply the local opening balance.
-        openingMrr:
-          range === 1
-            ? finalResult.length > 1
-              ? finalResult[0].mrr
-              : undefined
-            : openingPoint?.mrr,
+        openingMrr: openingPoint?.mrr,
         selectedCurrency: useCurrency,
       };
     }
     return { mrrData: [], selectedCurrency: 'usd' };
-  }, [mrrHistoryResponse, dateFrom, range]);
+  }, [mrrHistoryResponse, dateFrom, range, todayEnd]);
 
   // Calculate totals
   const totalsData = useMemo(

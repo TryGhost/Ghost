@@ -422,7 +422,7 @@ describe('useGrowthStats', () => {
       expect(result.current.mrrData[0].mrr).toBe(17286);
     });
 
-    it('retains the date-based MRR request and trend for Today', () => {
+    it('plots and reports a decline in MRR for Today', () => {
       const today = { date: '2024-06-27', mrr: 9500, currency: 'usd' };
       mockSuccess(mockedUseMrrHistory, {
         stats: [{ ...today, date: '2024-06-26', mrr: 10000 }, today],
@@ -431,12 +431,13 @@ describe('useGrowthStats', () => {
 
       const { result } = renderHook(() => useGrowthStats(STATS_RANGES.today.value));
 
-      expect(mockedUseMrrHistory).toHaveBeenCalledWith({
-        searchParams: { date_from: '2024-06-26' },
-      });
-      expect(result.current.mrrData).toEqual([today]);
-      expect(result.current.totals.percentChanges.mrr).toBe('0%');
-      expect(result.current.totals.directions.mrr).toBe('same');
+      expect(result.current.chartData.map(({ date, mrr }) => ({ date, mrr }))).toEqual([
+        { date: '2024-06-27', mrr: 10000 },
+        { date: '2024-06-28', mrr: 9500 },
+      ]);
+      expect(result.current.totals.mrr).toBe(9500);
+      expect(Number.parseFloat(result.current.totals.percentChanges.mrr)).toBe(-5);
+      expect(result.current.totals.directions.mrr).toBe('down');
     });
   });
 
