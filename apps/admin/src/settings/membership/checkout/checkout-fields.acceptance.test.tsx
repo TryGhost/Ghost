@@ -288,6 +288,38 @@ describe('Checkout settings', () => {
       .toHaveValue('');
   });
 
+  // Once a field is saved with the suggested name, that name is taken, so the next new field
+  // starts empty rather than with a name that would be refused.
+  it('stops suggesting a name once a field has been saved with it', async () => {
+    const savedPhone = {
+      ...phoneField,
+      key: KeySchema.parse('phone'),
+      name: 'Phone',
+    } satisfies MemberCustomField;
+    const fields = [phoneField];
+    fakeAdminEndpoint('POST', '/members/metafields/custom/', () => {
+      fields.push(savedPhone);
+      return { members_metafields: [savedPhone] };
+    });
+    const { modal } = await openCheckoutFields(
+      { design: { customize: false }, shipping: { collect: false }, phone: { collect: false } },
+      () => fields,
+    );
+    await modal.getByRole('switch', { name: 'Phone' }).click();
+    const picker = modal.getByRole('combobox', { name: 'Save phone as' });
+    const form = page.getByRole('dialog', { name: 'New custom field' });
+
+    await picker.click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    await expect.element(form.getByLabelText('Name')).toHaveValue('Phone');
+    await form.getByRole('button', { name: 'Save' }).click();
+    await expect.element(picker).toHaveTextContent('Phone');
+
+    await picker.click();
+    await page.getByRole('option', { name: 'Add custom field' }).click();
+    await expect.element(form.getByLabelText('Name')).toHaveValue('');
+  });
+
   // A site keeps its Stripe connection when the host switches its custom fields off, so it
   // can still reach these settings. Its fields read as archived, and the server refuses a new
   // one with the host's sentence.
