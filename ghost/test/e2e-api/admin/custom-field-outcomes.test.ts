@@ -364,11 +364,12 @@ describe('Custom field outcomes', function () {
 
       await assert.rejects(
         models.Base.knex.transaction(async (transacting: Knex.Transaction) => {
-          await values.applyWrite(id, planned, {
-            writtenBy: { type: 'user', id: '1' },
-            source: 'admin',
-            executor: transacting,
-          });
+          await values.applyWrite(
+            id,
+            planned,
+            { writtenBy: { type: 'user', id: '1' }, source: 'admin' },
+            transacting,
+          );
           throw new Error('The member save failed');
         }),
         /The member save failed/,

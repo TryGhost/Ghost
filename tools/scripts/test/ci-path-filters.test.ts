@@ -19,7 +19,7 @@ interface Job {
 }
 
 interface Workflow {
-  jobs: Record<'job_setup' | 'job_service_inventory' | 'job_required_tests', Job>;
+  jobs: Record<'job_setup' | 'job_lint_docs' | 'job_service_inventory' | 'job_required_tests', Job>;
 }
 
 async function loadWorkflow(): Promise<Workflow> {
@@ -73,22 +73,31 @@ describe('CI path filters', () => {
   });
 
   it('treats Markdown and MDX as documentation rather than code', async () => {
-    const docs = await getFilterPatterns('docs');
     const anyCode = await getFilterPatterns('any-code');
     const e2e = await getFilterPatterns('e2e');
 
-    assert.ok(docs.includes('**/*.md'));
-    assert.ok(docs.includes('**/*.mdx'));
     assert.ok(anyCode.includes('!**/*.md'));
     assert.ok(anyCode.includes('!**/*.mdx'));
     assert.ok(e2e.includes('!**/*.md'));
     assert.ok(e2e.includes('!**/*.mdx'));
   });
 
-  it('treats the service inventory as docs and keeps code checks for mixed changes', async () => {
+  it('lints documentation on every run', async () => {
+    const workflow = await loadWorkflow();
+    const job = workflow.jobs.job_lint_docs;
+
+    // A link target can be any file, so no path filter can safely skip this job.
+    assert.deepStrictEqual(job.needs, ['job_setup']);
+    assert.strictEqual(job.if, undefined);
+    assert.ok(job.steps.some((step) => step.run === 'pnpm lint:docs'));
+    assert.ok(
+      workflow.jobs.job_required_tests.needs.includes('job_lint_docs'),
+      'Documentation lint failures must block the required-tests gate',
+    );
+  });
+
+  it('treats the service inventory as metadata and keeps code checks for mixed changes', async () => {
     const inventory = 'ghost/core/server/services/service-inventory.yaml';
-    const docs = await getFilterPatterns('docs');
-    assert.ok(docs.some((pattern) => picomatch(pattern, { dot: true })(inventory)));
 
     for (const filterName of ['core', 'any-code', 'e2e']) {
       const patterns = await getFilterPatterns(filterName);

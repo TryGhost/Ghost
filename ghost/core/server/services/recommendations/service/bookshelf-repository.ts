@@ -40,9 +40,9 @@ type OptionalPropertyOf<T extends object> = Exclude<
   undefined
 >;
 
-export type OrderOption<T extends Entity<any> = any> = Order<T>[];
-export type IncludeOption<T extends Entity<any> = any> = OptionalPropertyOf<T>[];
-export type AllOptions<T extends Entity<any> = any> = {
+export type OrderOption<T extends Entity<unknown> = Entity<unknown>> = Order<T>[];
+export type IncludeOption<T extends Entity<unknown> = Entity<unknown>> = OptionalPropertyOf<T>[];
+export type AllOptions<T extends Entity<unknown> = Entity<unknown>> = {
   filter?: string;
   order?: OrderOption<T>;
   page?: number;

@@ -282,14 +282,14 @@ test.describe('Portal - member custom fields', () => {
         // Found by its code, which three other countries share.
         await profile.phoneCountry(key).click();
         await profile.listSearch('Country code').fill('+44');
-        await profile.listOption('United Kingdom +44').click();
-        await expect(profile.phoneCountry(key)).toHaveText('🇬🇧 +44');
+        await profile.listOption('United Kingdom (+44)').click();
+        await expect(profile.phoneCountry(key)).toHaveText('+44');
 
         // One the country has no number like is refused, with the reason under the input.
         await profile.fieldInput(key).fill('020 7946 000');
         await profile.save();
         await expect(
-          profile.portalFrame.getByText('Enter a valid phone number, like +44 20 7946 0000.'),
+          profile.portalFrame.getByText('Enter a valid phone number, like +44 7400 123456.'),
         ).toBeVisible();
 
         // Portal names the button Retry once a save has been refused.
@@ -303,7 +303,7 @@ test.describe('Portal - member custom fields', () => {
         // Shown after the country that gives its code, as it was typed.
         await accountHome.portalFrame.locator('[data-test-button="edit-profile"]').click();
         await expect(profile.title).toBeVisible();
-        await expect(profile.phoneCountry(key)).toHaveText('🇬🇧 +44');
+        await expect(profile.phoneCountry(key)).toHaveText('+44');
         await expect(profile.fieldInput(key)).toHaveValue('2079460000');
       } finally {
         await context.close();

@@ -400,7 +400,7 @@ describe('BackoffLimiter', function () {
     });
 
     await request(limiter);
-    await assert.rejects(request(limiter), failure);
+    await assert.rejects(request(limiter), (thrown) => thrown === failure);
   });
 
   it('treats a lifetime of 0 as 1 second rather than never expiring', function () {

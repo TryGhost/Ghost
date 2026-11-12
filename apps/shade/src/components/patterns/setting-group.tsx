@@ -56,7 +56,7 @@ const SettingGroupTitle = React.forwardRef<
   <Text
     ref={ref}
     as="h5"
-    className={cn('section-heading md:text-lg', className)}
+    className={cn('section-heading settings-heading md:text-lg', className)}
     leading="supertight"
     weight="semibold"
     {...props}

@@ -1,3 +1,4 @@
+import type { AppFailureCode } from '@tryghost/app-contracts';
 import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
 import type { Knex } from 'knex';
@@ -168,7 +169,7 @@ class LockedInstallation {
 export function alreadyInstalled(appId: string) {
   return new errors.ConflictError({
     message: `The app ${appId} is already installed.`,
-    code: 'APP_ALREADY_INSTALLED',
+    code: 'APP_ALREADY_INSTALLED' satisfies AppFailureCode,
   });
 }
 

@@ -74,7 +74,8 @@ belong. Import allowlisted libraries directly in the implementation; use
 `GhostLogger` for its injected logging type.
 
 The inventory entry uses `migrated: true`, and the root is added to Oxlint's
-configured paths, so both root-shape and dependency checks apply immediately.
+configured paths for root-shape checks. Dependency checks apply to every service
+implementation independently of the marker.
 Its audit remains `pending`: the scaffold does not establish the capability's
 contracts. The initial `migration.reviewedAt` records the generator checkout
 revision, as its reason explains; review the implemented source before recording
@@ -125,10 +126,11 @@ lifecycle work.
 
 ### Dependency boundaries
 
-For migrated services, the root `index.ts` wires runtime dependencies and passes
-them to the implementation. Other files in that service may import:
+The root `index.ts` wires runtime dependencies and passes them to the
+implementation. Dependency rules apply to every service, regardless of its
+`migrated` marker or presence in the inventory. Implementation files may import:
 
-- Files within the same service, except its root `index.ts`.
+- Files within the same service, except its root `index.ts` or `index.js`.
 - Types, using explicit type-only imports.
 - The libraries and individual shared files in the
   [dependency-cruiser config](../../../../.dependency-cruiser.cjs).
@@ -143,7 +145,7 @@ root is fine, including validating configuration with Zod and passing computed
 values such as `getUnixTime()`.
 
 `pnpm lint:oxlint` enforces direct constructor wiring with
-`ghost/no-injected-service-libraries`. In migrated root `index.ts` files, it
+`ghost/no-injected-service-libraries`. In root `index.ts` files, it
 rejects allowlisted imports and `const require()` bindings passed to constructors
 imported from within that service, including values in literal options objects
 and arrays. It reads the same allowlist and service scope as the boundary rule.
@@ -154,7 +156,9 @@ Logging, config, settings, models, event buses and other service instances
 belong in the root wiring. Nested `index.ts` files are implementation files, not
 extra wiring roots. The rule covers static imports, `require()`, literal dynamic
 imports and re-exports. All implementation source inside a service is checked, including
-nested folders named `test` or `fixtures`.
+nested folders named `test` or `fixtures`. The scan cannot follow a computed
+`require()` or `import()` argument, so `import/no-dynamic-require` rejects those
+in every service file.
 
 Some dependencies look like libraries but are treated as instances:
 
@@ -184,9 +188,12 @@ has got. Keep each dependency's existing timing:
 Type injected logging as `GhostLogger`, or a `Pick<GhostLogger, ...>` of the
 methods used, with `import type { GhostLogger } from '@tryghost/logging'`. In
 JSDoc, use `import('@tryghost/logging').GhostLogger`. Do not hand-write a logger
-shape; `ghost/prefer-canonical-types` rejects one in Ghost Core whatever it is
-named. Class tests pass `createLoggingFake()` from `ghost/test/utils/logging-utils`
-and assert on its stubs instead of stubbing the global logger.
+shape; `ghost/prefer-canonical-types` rejects one in Ghost Core and its tests
+whatever it is named, and rejects `object` or `any` on an injected logger. Class
+tests pass `createLoggingFake()` from `ghost/test/utils/logging-utils` and assert
+on its stubs instead of stubbing the global logger;
+`ghost/no-real-logger-injection` rejects passing the real one. Exported service
+types may not contain `any`.
 
 Where JavaScript has a matching TypeScript sibling, the audit and boundary
 checks inspect the TypeScript source and resolve imports back to it. This keeps
@@ -194,10 +201,41 @@ adjacent `build:tsc` output out of the report; ordinary JavaScript implementatio
 remain checked. Package exports resolve through their `source` condition when
 available, so workspace contracts are checked without relying on build output.
 
-`pnpm lint:boundaries`, also run by `pnpm check` and CI, enforces these rules as
-errors for every entry marked `migrated: true`. New implementation files inherit
-the same rules. Marking a service migrated opts it into enforcement; review
-changes to that marker as part of the migration.
+`pnpm lint:boundaries`, also run by `pnpm check` and CI, checks all service
+implementations in the same dependency-cruiser scan as Core and app boundaries.
+Top-level `index.ts` and legacy `index.js` files are wiring roots and exempt;
+nested indexes and standalone service files are checked. This preserves the
+legacy audit's wiring exemption without making migration status an enforcement
+switch.
+
+Existing violations are recorded in
+[the known-violations file](../../../../.dependency-cruiser-known-violations.json).
+Each entry names one rule, importing file and dependency. External packages use
+the exact import specifier, including subpaths, so pnpm store locations do not
+change the baseline. Local and workspace dependencies use resolved source paths.
+Moving either file or adding a new import cannot inherit another entry's exception.
+
+CI rejects new violations, stale entries, duplicate entries and entries for
+migrated services. When fixing a violation, remove its entry in the same change;
+when marking a service migrated, remove all its entries. Do not regenerate the
+file to accept new violations. The file should only shrink. Any exceptional
+addition or move needs explicit review; CODEOWNERS covers it and the rule config.
+
+A few unmigrated services change too often for a file-level list to hold: it
+would go stale between a pull request opening and merging. The checker's
+[`deferredServices`](../../../../tools/scripts/lib/dependency-boundaries.ts) list
+names them. Their violations stay in reports and in the lint summary count, but
+do not fail lint and have no entries in the file. In those services, still pass
+new dependencies in through whatever file already composes the service. A
+service leaves the list when it is migrated. The list should only shrink, and a
+service that is not named is checked from its first commit.
+
+The shared [boundary checker](../../../../tools/scripts/lib/dependency-boundaries.ts)
+compares the current graph with this file. Native dependency-cruiser baselines
+match resolved paths and silently retain stale entries, so they cannot enforce
+this contract on their own. `gx services report` and `gx services audit` use the
+same scan and file, retaining all current findings so migration reports still
+show the remaining work.
 
 The allowlist names individual packages or files, with a reason for each.
 Review additions individually; do not allow whole shared directories or all
@@ -229,7 +267,8 @@ Each entry also has a source-based `migration` assessment:
   Non-services use `not-applicable` for both dimensions.
 - `reason` explains the decision; `sources` points to existing source or test files
   relative to `ghost`. `reviewedAt` records the full source commit inspected for
-  this assessment, independently of the contract audit's `auditedAt`.
+  this assessment, independently of the contract audit's `auditedAt`. Like every
+  audit revision, it is a commit on main (see [Audit revisions](#audit-revisions)).
 
 These are migration estimates, not proof that the kernel must change or permission
 to redesign a service. Recheck the evidence before implementation. An assessment
@@ -253,7 +292,7 @@ earlier overall migration assessment above:
   an empty list means no separate preparation was identified. These are not
   implemented changes or permission to redesign the capability.
 - `sources` lists evidence relative to `ghost`. `reviewedAt` identifies the
-  source revision inspected for this assessment independently of the overall
+  commit on main inspected for this assessment, independently of the overall
   assessment and `auditedAt`.
 
 Use the full dependency audit and inspect source, root wiring and consumers.
@@ -304,19 +343,28 @@ test evidence. It describes audit completeness, not test coverage or migration
 readiness. An audited entry can still have test gaps or known bugs in `blockers`.
 The `notes` describe audit priorities and intended changes, not verified contracts.
 
-`auditedAt` is the full source commit SHA the record was last checked
+`auditedAt` is the full SHA of the commit on main the record was last checked
 against. Add it when completing or refreshing an audit; older records may
 omit it. Advance it only after reviewing relevant changes, not merely
-rebasing. Recorded contracts describe that revision. Preserve them and recheck
-relevant changes when work on that service begins. If cited evidence has since
-been deleted, keep a link to the file at the audited revision in the summary;
-`sources` and `tests` list files that still exist, without implying freshness.
+rebasing. Preserve recorded contracts and recheck relevant changes when work
+on that service begins. If cited evidence has since been deleted, keep a link
+to the file at the audited revision in the summary; `sources` and `tests` list
+files that still exist, without implying freshness.
+
+#### Audit revisions
+
+Every `reviewedAt` and `auditedAt` is a commit on main. A branch commit
+disappears when its pull request is squash merged, so use the main commit the
+branch is based on. Recorded contracts describe that revision plus the changes
+in the pull request that last edited the record, which `git log` on the
+inventory identifies.
 
 Before relying on a record, compare its service directory and cited
 source/test paths with that revision, and check for new callers. Changed
-files flag a recheck; the reference does not prove tests ran at that
-revision. Inventory validation checks its format without requiring Git
-history.
+files flag a recheck, apart from changes the recording pull request made. The
+reference does not prove tests ran at that revision. Inventory validation
+checks its format without requiring Git history; `pnpm gx services verify`
+checks that changed revisions are on main.
 
 The `unverified` facets are open questions:
 

@@ -38,12 +38,12 @@ import {
   type FieldSource,
 } from './queries';
 import { mintableKey } from './key';
-import { parseRequest } from '../../lib/parse-request';
-import type { RequestContext } from '../../lib/actor';
 import type { ResourceActionLog } from '../../lib/action-log/action-log';
 import type { customFieldActions } from './actions';
-import { fieldAction, reorderAction } from './field-actions';
+import type { RequestContext } from '../../lib/actor';
+import { fieldAction, reorderAction, type FieldAction } from './field-actions';
 import type { MetafieldsTracking } from './tracking';
+import { ensureTransaction } from '../../lib/ensure-transaction';
 
 // Column limits come from the canonical schema — the same source the migration and
 // Bookshelf models read — so the service can never drift from the database. The
@@ -171,6 +171,7 @@ export class MetafieldDefinitionsService {
   async browse(
     options: { namespace: Namespace; filter?: string },
     audience: Audience,
+    executor: Knex = this.knex,
   ): Promise<Metafield[]> {
     // Whichever set comes back, it comes back in the publisher's order: filtering
     // narrows the list, it never reorders it.
@@ -182,7 +183,7 @@ export class MetafieldDefinitionsService {
       // scope as an unfiltered read.
       const parsed = parseFilter(filter);
       return this.list(
-        this.fields.definitions(this.knex, {
+        this.fields.definitions(executor, {
           audience,
           status: filterReferencesStatus(parsed) ? ANY_STATUS : ACTIVE_ONLY,
           namespace,
@@ -191,7 +192,7 @@ export class MetafieldDefinitionsService {
       );
     }
     return this.list(
-      this.fields.definitions(this.knex, { audience, status: ACTIVE_ONLY, namespace }),
+      this.fields.definitions(executor, { audience, status: ACTIVE_ONLY, namespace }),
     );
   }
 
@@ -209,9 +210,14 @@ export class MetafieldDefinitionsService {
     );
   }
 
-  async read(namespace: Namespace, key: Key, audience: Audience): Promise<Metafield> {
+  async read(
+    namespace: Namespace,
+    key: Key,
+    audience: Audience,
+    executor: Knex = this.knex,
+  ): Promise<Metafield> {
     const [field] = await this.list(
-      this.fields.definitions(this.knex, {
+      this.fields.definitions(executor, {
         audience,
         status: ANY_STATUS,
         field: { namespace, key },
@@ -232,8 +238,16 @@ export class MetafieldDefinitionsService {
    * `assertNameAvailable` and `mintKey` see the rows inserted earlier in the same
    * batch, so two items sharing a name are caught and two items deriving the same
    * key get distinct ones, exactly as if they had arrived as separate requests.
+   *
+   * Given a transaction as `executor` it joins that transaction; given a plain connection it
+   * opens its own.
    */
-  async add(context: RequestContext, namespace: Namespace, input: unknown): Promise<Metafield[]> {
+  async add(
+    context: RequestContext,
+    namespace: Namespace,
+    input: unknown,
+    executor: Knex = this.knex,
+  ): Promise<Metafield[]> {
     return this.tracking.definition('create', async (attempt) => {
       await this.namespaces.assertChangeable(namespace);
       const requestedCount = Array.isArray(input) ? input.length : 0;
@@ -270,7 +284,7 @@ export class MetafieldDefinitionsService {
 
       let created: Metafield[];
       try {
-        created = await this.knex.transaction(async (trx) => {
+        created = await ensureTransaction(executor, async (trx) => {
           await this.assertRoom(trx, namespace, fields.length);
 
           // Read once, before the loop: a batch appends as consecutive ranks, so
@@ -293,9 +307,11 @@ export class MetafieldDefinitionsService {
             keys.push(key);
           }
           const added = await this.readMany(trx, namespace, keys);
-          for (const field of added) {
-            await this.actionLog.record(trx, context, fieldAction('create', field));
-          }
+          await this.record(
+            trx,
+            context,
+            added.map((field) => fieldAction('create', field)),
+          );
           return added;
         });
       } catch (err) {
@@ -315,48 +331,6 @@ export class MetafieldDefinitionsService {
   }
 
   /**
-   * Given an executor it joins that transaction; given none it opens its own. Unlike
-   * `add`, the key is stated rather than minted from the name, and nothing about it is
-   * worked around: a caller states a key because something else already names that key,
-   * so a variant of it would be a field nothing points at.
-   */
-  async addOne(
-    namespace: Namespace,
-    wanted: {
-      key: string;
-      name: string;
-      access: z.infer<typeof FieldAccess>;
-    } & TypedSettings,
-    { executor = this.knex }: { executor?: Knex } = {},
-  ): Promise<Metafield> {
-    await this.namespaces.assertChangeable(namespace);
-    this.assertCreatable(wanted.type);
-    // Before any database access, the way `add` mints before opening its transaction:
-    // an unusable key is a payload problem worth reporting on its own terms.
-    const key = usableKey(wanted.key);
-
-    const write = async (db: Knex) => {
-      await this.assertRoom(db, namespace, 1);
-      await this.assertKeyAvailable(db, { namespace, key });
-      await this.assertNameAvailable(db, namespace, wanted.name);
-
-      await this.insertField(db, {
-        namespace,
-        key,
-        name: wanted.name,
-        typed: wanted,
-        memberAccess: wanted.access.member,
-        sortOrder: await this.nextSortOrder(db, namespace),
-      });
-      const [created] = await this.readMany(db, namespace, [key]);
-      return created;
-    };
-
-    // knex's marker for a transactor: join it rather than nesting a savepoint under it.
-    return executor.isTransaction ? write(executor) : executor.transaction(write);
-  }
-
-  /**
    * Refuses a type this site doesn't offer yet: one still in development, whose Labs flag is
    * off here. Asked of every create, whoever makes it, so the API refuses what Admin doesn't
    * offer.
@@ -367,22 +341,6 @@ export class MetafieldDefinitionsService {
         message: `Custom fields of the type ${type} are not available on this site.`,
         property: 'type',
         context,
-      });
-    }
-  }
-
-  /**
-   * Only for a stated key. Minting picks a free one instead, so this reads as a clean 422
-   * where the unique index would read as a 500.
-   */
-  private async assertKeyAvailable(db: Knex, field: FieldIdentity): Promise<void> {
-    const taken = await db(FIELDS_TABLE)
-      .where({ namespace: field.namespace, key: field.key })
-      .first();
-    if (taken) {
-      throw new errors.ValidationError({
-        message: 'A custom field with this key already exists.',
-        property: 'key',
       });
     }
   }
@@ -411,18 +369,17 @@ export class MetafieldDefinitionsService {
   }
 
   /**
-   * The field as stored, whatever the reader, for a caller deciding about the stored row rather
-   * than serving it: absent is an answer. Whether a field can take a value is asked through the
-   * field source instead.
+   * Writes the staff history entries for a command, inside the command's transaction, so they are
+   * saved when the change is saved and never without it.
    */
-  async find(
-    field: FieldIdentity,
-    { executor = this.knex }: { executor?: Knex } = {},
-  ): Promise<Metafield | null> {
-    const row = await executor(FIELDS_TABLE)
-      .where({ namespace: field.namespace, key: field.key })
-      .first();
-    return row ? this.readField(row) : null;
+  private async record(
+    trx: Knex.Transaction,
+    context: RequestContext,
+    actions: FieldAction[],
+  ): Promise<void> {
+    for (const action of actions) {
+      await this.actionLog.record(trx, context, action);
+    }
   }
 
   /**
@@ -442,11 +399,15 @@ export class MetafieldDefinitionsService {
    * Set the order of the whole list, stated rather than adjusted: every row gets a
    * fresh rank, so a move is well-defined even where every rank is still the default.
    * Returns every definition, archived included, matching what the request named.
+   *
+   * Given a transaction as `executor` it joins that transaction; given a plain connection it
+   * opens its own.
    */
   async reorder(
     context: RequestContext,
     namespace: Namespace,
     input: unknown,
+    executor: Knex = this.knex,
   ): Promise<Metafield[]> {
     return this.tracking.definition('reorder', async () => {
       await this.namespaces.assertChangeable(namespace);
@@ -460,7 +421,7 @@ export class MetafieldDefinitionsService {
       }
       const keys = parsed.data.map((item) => item.key);
 
-      const ordered = await this.knex.transaction(async (trx) => {
+      return ensureTransaction(executor, async (trx) => {
         await this.assertNamesEveryField(trx, namespace, keys);
 
         // Ranks come from the request's order; the statements go out in key order, so
@@ -475,14 +436,12 @@ export class MetafieldDefinitionsService {
         }
 
         // An order covers the whole list, archived definitions included.
-        const list = await this.list(
+        const ordered = await this.list(
           this.fields.definitions(trx, { audience: ADMIN, status: ANY_STATUS, namespace }),
         );
-        await this.actionLog.record(trx, context, reorderAction(list.length));
-        return list;
+        await this.record(trx, context, [reorderAction(ordered.length)]);
+        return ordered;
       });
-
-      return ordered;
     });
   }
 
@@ -613,6 +572,7 @@ export class MetafieldDefinitionsService {
     namespace: Namespace,
     key: Key,
     input: unknown,
+    executor: Knex = this.knex,
   ): Promise<EditedField> {
     return this.tracking.definition('edit', async (attempt) => {
       await this.namespaces.assertChangeable(namespace);
@@ -625,132 +585,134 @@ export class MetafieldDefinitionsService {
       }
       const patch = parsed.data;
 
-      // As stored rather than through the field source, since the patch is compared with what
-      // the write would change.
-      const existing = await this.find({ namespace, key });
-      if (!existing) {
-        throw new errors.NotFoundError({ message: 'Custom field not found.' });
-      }
-      attempt.fields([existing]);
-      const readByMembers = await this.isReadByMembers({ namespace, key });
-
-      // Key and type are immutable after creation: values are addressed by namespace and key
-      // and interpreted by type, so changing either would silently orphan or
-      // corrupt stored values. Reject a differing value rather than ignore it.
-      if (patch.key !== undefined && patch.key !== existing.key) {
-        throw new errors.ValidationError({
-          message: 'Custom field keys cannot be changed once created.',
-          property: 'key',
-        });
-      }
-      if (patch.type !== undefined && patch.type !== existing.type) {
-        throw new errors.ValidationError({
-          message: 'Custom field types cannot be changed once created.',
-          property: 'type',
-        });
-      }
-
-      // Checked before anything is written, so an edit refused for its settings changes nothing.
-      const settings =
-        patch.settings === undefined
-          ? undefined
-          : TypedSettingsInputSchema.safeParse({ type: existing.type, settings: patch.settings });
-      if (settings && !settings.success) {
-        throw new errors.ValidationError({
-          message: settings.error.issues[0].message,
-          property: propertyOf(settings.error.issues[0].path),
-        });
-      }
-
-      // Only write (and log a rename) when the name actually changes, so
-      // re-saving an unchanged field is a no-op rather than a spurious edit.
-      if (patch.name !== undefined && patch.name !== existing.name) {
-        attempt.changing('rename');
-        await this.assertNameAvailable(this.knex, namespace, patch.name, key);
-        try {
-          await this.knex(FIELDS_TABLE)
-            .where({ namespace, key })
-            .update({ name: patch.name, updated_at: new Date() });
-        } catch (err) {
-          if (isUniqueConstraintViolation(err)) {
-            throw new errors.ConflictError({
-              message: 'Could not rename the custom field, please try again.',
-            });
-          }
-          throw err;
+      return ensureTransaction(executor, async (trx) => {
+        const existing = await this.lockedField(trx, { namespace, key });
+        if (!existing) {
+          throw new errors.NotFoundError({ message: 'Custom field not found.' });
         }
-        await this.actionLog.record(
-          this.knex,
-          context,
-          fieldAction(
-            'rename',
-            { id: existing.id, name: patch.name, key },
-            { previous_name: existing.name },
-          ),
-        );
-      }
+        attempt.fields([existing]);
+        const readByMembers = await this.isReadByMembers(trx, { namespace, key });
 
-      // Only a change is written and logged, so re-saving the same options is a no-op.
-      if (settings && !isDeepStrictEqual(settings.data.settings, existing.settings)) {
-        attempt.changing('changeSettings');
-        await this.knex(FIELDS_TABLE)
-          .where({ namespace, key })
-          .update({ ...z.encode(DbTypedSettings, settings.data), updated_at: new Date() });
-        await this.actionLog.record(
-          this.knex,
-          context,
-          fieldAction('changeSettings', {
-            id: existing.id,
-            name: patch.name ?? existing.name,
-            key,
-          }),
-        );
-      }
+        // Key and type are immutable after creation: values are addressed by namespace and key
+        // and interpreted by type, so changing either would silently orphan or
+        // corrupt stored values. Reject a differing value rather than ignore it.
+        if (patch.key !== undefined && patch.key !== existing.key) {
+          throw new errors.ValidationError({
+            message: 'Custom field keys cannot be changed once created.',
+            property: 'key',
+          });
+        }
+        if (patch.type !== undefined && patch.type !== existing.type) {
+          throw new errors.ValidationError({
+            message: 'Custom field types cannot be changed once created.',
+            property: 'type',
+          });
+        }
 
-      if (patch.access !== undefined && patch.access.member !== existing.access.member) {
-        attempt.changing('changeAccess');
-        await this.knex(FIELDS_TABLE)
-          .where({ namespace, key })
-          .update({ member_access: patch.access.member, updated_at: new Date() });
-        await this.actionLog.record(
-          this.knex,
-          context,
-          fieldAction(
-            'changeAccess',
-            { id: existing.id, name: patch.name ?? existing.name, key },
-            {
-              member_access: patch.access.member,
-              previous_member_access: existing.access.member,
-            },
-          ),
-        );
-      }
+        const settings =
+          patch.settings === undefined
+            ? undefined
+            : TypedSettingsInputSchema.safeParse({ type: existing.type, settings: patch.settings });
+        if (settings && !settings.success) {
+          throw new errors.ValidationError({
+            message: settings.error.issues[0].message,
+            property: propertyOf(settings.error.issues[0].path),
+          });
+        }
 
-      // A status change is the archive/restore transition. Only write (and log)
-      // when it actually flips, so re-sending the current status is a no-op.
-      if (patch.status !== undefined && patch.status !== existing.status) {
-        const verb = patch.status === FIELD_STATUS.archived ? 'archive' : 'restore';
-        attempt.changing(verb);
-        await this.knex(FIELDS_TABLE)
-          .where({ namespace, key })
-          .update({ status: patch.status, updated_at: new Date() });
-        await this.actionLog.record(
-          this.knex,
-          context,
-          fieldAction(verb, { id: existing.id, name: patch.name ?? existing.name, key }),
-        );
-      }
+        // Only what actually changes is written and logged, so re-saving an unchanged field is a
+        // no-op rather than a spurious edit.
+        const recorded: FieldAction[] = [];
+        const name = patch.name ?? existing.name;
 
-      return {
-        field: await this.read(namespace, key, ADMIN),
-        changedForMembers: (await this.isReadByMembers({ namespace, key })) !== readByMembers,
-      };
+        if (patch.name !== undefined && patch.name !== existing.name) {
+          attempt.changing('rename');
+          await this.assertNameAvailable(trx, namespace, patch.name, key);
+          try {
+            await trx(FIELDS_TABLE)
+              .where({ namespace, key })
+              .update({ name: patch.name, updated_at: new Date() });
+          } catch (err) {
+            if (isUniqueConstraintViolation(err)) {
+              throw new errors.ConflictError({
+                message: 'Could not rename the custom field, please try again.',
+              });
+            }
+            throw err;
+          }
+          recorded.push(
+            fieldAction(
+              'rename',
+              { id: existing.id, name: patch.name, key },
+              { previous_name: existing.name },
+            ),
+          );
+        }
+
+        if (settings && !isDeepStrictEqual(settings.data.settings, existing.settings)) {
+          attempt.changing('changeSettings');
+          await trx(FIELDS_TABLE)
+            .where({ namespace, key })
+            .update({ ...z.encode(DbTypedSettings, settings.data), updated_at: new Date() });
+          recorded.push(fieldAction('changeSettings', { id: existing.id, name, key }));
+        }
+
+        if (patch.access !== undefined && patch.access.member !== existing.access.member) {
+          attempt.changing('changeAccess');
+          await trx(FIELDS_TABLE)
+            .where({ namespace, key })
+            .update({ member_access: patch.access.member, updated_at: new Date() });
+          recorded.push(
+            fieldAction(
+              'changeAccess',
+              { id: existing.id, name, key },
+              {
+                member_access: patch.access.member,
+                previous_member_access: existing.access.member,
+              },
+            ),
+          );
+        }
+
+        // A status change is the archive/restore transition.
+        if (patch.status !== undefined && patch.status !== existing.status) {
+          const verb = patch.status === FIELD_STATUS.archived ? 'archive' : 'restore';
+          attempt.changing(verb);
+          await trx(FIELDS_TABLE)
+            .where({ namespace, key })
+            .update({ status: patch.status, updated_at: new Date() });
+          recorded.push(fieldAction(verb, { id: existing.id, name, key }));
+        }
+
+        await this.record(trx, context, recorded);
+        return {
+          field: await this.read(namespace, key, ADMIN, trx),
+          changedForMembers:
+            (await this.isReadByMembers(trx, { namespace, key })) !== readByMembers,
+        };
+      });
     });
   }
 
+  /**
+   * The field as stored, with its row locked until `trx` ends, so two edits of one field take
+   * turns and each is compared with what the other saved. Returns null for a field that does not
+   * exist, or one that cannot be read even with its type's defaults.
+   */
+  private async lockedField(
+    trx: Knex.Transaction,
+    field: FieldIdentity,
+  ): Promise<Metafield | null> {
+    const row = await trx(FIELDS_TABLE)
+      .where({ namespace: field.namespace, key: field.key })
+      .forUpdate()
+      .first();
+    return row ? this.readField(row) : null;
+  }
+
   /** Whether members can read this field, asked the way their own reads ask. */
-  private async isReadByMembers(field: FieldIdentity): Promise<boolean> {
-    const read = this.fields.definitions(this.knex, {
+  private async isReadByMembers(db: Knex, field: FieldIdentity): Promise<boolean> {
+    const read = this.fields.definitions(db, {
       audience: MEMBERS,
       status: ACTIVE_ONLY,
       field,
@@ -765,53 +727,34 @@ export class MetafieldDefinitionsService {
    * which makes accidental data loss a deliberate two-step. Archiving is the
    * reversible soft state (see `edit` with a status change).
    */
-  async destroy(context: RequestContext, namespace: Namespace, key: Key): Promise<void> {
+  async destroy(
+    context: RequestContext,
+    namespace: Namespace,
+    key: Key,
+    executor: Knex = this.knex,
+  ): Promise<void> {
     return this.tracking.definition('delete', async (attempt) => {
       await this.namespaces.assertChangeable(namespace);
-      const field = await this.knex(FIELDS_TABLE).where({ namespace, key }).first();
-      if (!field) {
-        throw new errors.NotFoundError({ message: 'Custom field not found.' });
-      }
-      attempt.fields([field]);
-      if (field.status !== FIELD_STATUS.archived) {
-        throw new errors.ValidationError({
-          message: 'Only archived custom fields can be deleted. Archive the field first.',
-        });
-      }
-      await this.knex(FIELDS_TABLE).where({ namespace, key }).del();
-      await this.actionLog.record(
-        this.knex,
-        context,
-        fieldAction('delete', { id: field.id, name: field.name, key }),
-      );
+      await ensureTransaction(executor, async (trx) => {
+        // Locked, so a restore that lands between this check and the delete waits, rather than
+        // having the field it just restored deleted.
+        const stored = await trx(FIELDS_TABLE).where({ namespace, key }).forUpdate().first();
+        if (!stored) {
+          throw new errors.NotFoundError({ message: 'Custom field not found.' });
+        }
+        attempt.fields([stored]);
+        if (stored.status !== FIELD_STATUS.archived) {
+          throw new errors.ValidationError({
+            message: 'Only archived custom fields can be deleted. Archive the field first.',
+          });
+        }
+        await trx(FIELDS_TABLE).where({ namespace, key }).del();
+        await this.record(trx, context, [
+          fieldAction('delete', { id: stored.id, name: stored.name, key }),
+        ]);
+      });
     });
   }
-}
-
-/**
- * A stated key, checked: made of the characters every key is, no longer than its column, and
- * not a name every object already has. Minting derives keys that are all three by
- * construction; a caller stating its own has said nothing about any of them.
- *
- * The length bound is the column's own, not `mintKey`'s: that one holds back room for a
- * `_<n>` collision suffix, and a stated key is written exactly as given and never
- * suffixed, so the whole column is available to it.
- */
-function usableKey(stated: string): Key {
-  const key = parseRequest(KeySchema, stated, 'key');
-  if (key.length > MAX_KEY_LENGTH) {
-    throw new errors.ValidationError({
-      message: `A custom field key can be at most ${MAX_KEY_LENGTH} characters.`,
-      property: 'key',
-    });
-  }
-  if (RESERVED_KEYS.includes(key)) {
-    throw new errors.ValidationError({
-      message: `${key} cannot be used as a custom field key.`,
-      property: 'key',
-    });
-  }
-  return key;
 }
 
 // What a zod issue points at within one field, by its path, such as `name` or

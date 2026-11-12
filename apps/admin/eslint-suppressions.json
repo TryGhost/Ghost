@@ -1,0 +1,652 @@
+{
+  "src/analytics/views/stats/growth/components/growth-kpis.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/analytics/views/stats/growth/components/paid-subscription-change-chart.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/analytics/views/stats/growth/growth.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/analytics/views/stats/newsletters/components/newsletters-kpis.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/apps/app-page.tsx": {
+    "react-hooks/refs": {
+      "count": 3
+    }
+  },
+  "src/apps/components/app-icon.tsx": {
+    "react-hooks/static-components": {
+      "count": 1
+    }
+  },
+  "src/automations/components/canvas/automation-canvas.tsx": {
+    "react-hooks/refs": {
+      "count": 4
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/automations/components/canvas/editable-email-card.tsx": {
+    "react-hooks/refs": {
+      "count": 3
+    }
+  },
+  "src/automations/components/canvas/run-list.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/automations/components/canvas/tier-scope-picker.tsx": {
+    "react-hooks/refs": {
+      "count": 1
+    }
+  },
+  "src/automations/components/canvas/use-sticky-run-summary.ts": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/automations/components/email-modal/email-editor.tsx": {
+    "react-hooks/refs": {
+      "count": 1
+    }
+  },
+  "src/automations/components/email-modal/preview-frame.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/automations/components/email-modal/test-email-dropdown.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/automations/editor.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/billing/billing-frame.tsx": {
+    "react-hooks/refs": {
+      "count": 5
+    }
+  },
+  "src/comments/components/comments-list.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/editor/editor-header-actions.tsx": {
+    "react-hooks/refs": {
+      "count": 2
+    }
+  },
+  "src/editor/preview/browser-preview.tsx": {
+    "react-hooks/refs": {
+      "count": 1
+    }
+  },
+  "src/editor/preview/post-preview-modal.tsx": {
+    "react-hooks/refs": {
+      "count": 2
+    }
+  },
+  "src/editor/publish/update-flow-modal.tsx": {
+    "react-hooks/refs": {
+      "count": 7
+    }
+  },
+  "src/editor/publish/use-draft-newsletter.ts": {
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "src/editor/publish/use-publish-flow.ts": {
+    "react-hooks/refs": {
+      "count": 13
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/editor/publish/use-publish-limits.ts": {
+    "react-hooks/refs": {
+      "count": 1
+    }
+  },
+  "src/editor/session/feature-image-binding.ts": {
+    "react-hooks/refs": {
+      "count": 2
+    }
+  },
+  "src/editor/session/use-editor-session.ts": {
+    "react-hooks/refs": {
+      "count": 1
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/editor/session/use-leave-guard.ts": {
+    "react-hooks/refs": {
+      "count": 2
+    }
+  },
+  "src/editor/settings/meta-data-tabs-section.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "src/editor/settings/post-settings-sidebar.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "src/editor/settings/publish-date-section.tsx": {
+    "react-hooks/purity": {
+      "count": 1
+    }
+  },
+  "src/editor/unsplash-picker.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/editor/use-editor-shortcuts.ts": {
+    "react-hooks/refs": {
+      "count": 2
+    }
+  },
+  "src/editor/use-post-card-config.ts": {
+    "react-hooks/refs": {
+      "count": 1
+    }
+  },
+  "src/editor/use-save-feedback.tsx": {
+    "react-hooks/refs": {
+      "count": 1
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/global-search/global-search-provider.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/hooks/use-hash-link-navigation-guard.ts": {
+    "react-hooks/refs": {
+      "count": 2
+    }
+  },
+  "src/hooks/use-history-pop-navigation-guard.ts": {
+    "react-hooks/refs": {
+      "count": 3
+    }
+  },
+  "src/hooks/use-pintura-editor.ts": {
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "src/hooks/use-theme.ts": {
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "src/hooks/use-unsaved-changes-guard.test.tsx": {
+    "react-hooks/globals": {
+      "count": 4
+    },
+    "react-hooks/immutability": {
+      "count": 1
+    }
+  },
+  "src/hooks/use-unsaved-changes-guard.ts": {
+    "react-hooks/refs": {
+      "count": 24
+    }
+  },
+  "src/layout/admin-layout.tsx": {
+    "react-hooks/refs": {
+      "count": 2
+    }
+  },
+  "src/layout/app-sidebar/hooks/use-navigation-preferences.ts": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/layout/app-sidebar/hooks/use-upgrade-status.ts": {
+    "react-hooks/purity": {
+      "count": 1
+    }
+  },
+  "src/layout/floating-sidebar-content-sync.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/layout/screen-transition-provider.tsx": {
+    "react-hooks/refs": {
+      "count": 2
+    }
+  },
+  "src/layout/skip-link.tsx": {
+    "react-hooks/immutability": {
+      "count": 1
+    }
+  },
+  "src/members/components/bulk-action-modals/import-members/import-members-modal.tsx": {
+    "react-hooks/immutability": {
+      "count": 2
+    }
+  },
+  "src/members/components/bulk-action-modals/unsubscribe-modal.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/members/detail/member-add-comp-modal.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/members/detail/member-delete-modal.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/members/detail/member-detail.tsx": {
+    "react-hooks/refs": {
+      "count": 3
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 3
+    }
+  },
+  "src/members/detail/member-disable-commenting-modal.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/members/detail/member-impersonate-modal.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/members/detail/member-labels-field.tsx": {
+    "react-hooks/refs": {
+      "count": 3
+    }
+  },
+  "src/members/hooks/use-label-picker.ts": {
+    "react-hooks/refs": {
+      "count": 1
+    }
+  },
+  "src/members/hooks/use-multiple-active-subscriptions-banner.ts": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/members/label-picker/label-picker.tsx": {
+    "react-hooks/refs": {
+      "count": 1
+    }
+  },
+  "src/members/members.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/onboarding/onboarding-route.tsx": {
+    "react-hooks/refs": {
+      "count": 1
+    }
+  },
+  "src/posts/analytics/email-sending-status/email-sending-status-provider.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/posts/analytics/modals/gift-link-modal.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/posts/analytics/overview/overview.tsx": {
+    "react-hooks/preserve-manual-memoization": {
+      "count": 1
+    }
+  },
+  "src/posts/list/components/post-list-row-email-status.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/posts/list/hooks/use-post-selection.ts": {
+    "react-hooks/refs": {
+      "count": 1
+    }
+  },
+  "src/posts/list/posts-list-screen.tsx": {
+    "react-hooks/refs": {
+      "count": 2
+    }
+  },
+  "src/settings/advanced/history-modal.tsx": {
+    "react-hooks/refs": {
+      "count": 1
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "src/settings/advanced/integrations/first-promoter-modal.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/advanced/integrations/pintura-modal.tsx": {
+    "react-hooks/immutability": {
+      "count": 1
+    }
+  },
+  "src/settings/advanced/integrations/transistor-modal.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/advanced/integrations/unsplash-modal.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/components/color-picker-field.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/components/top-level-group.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/email/default-recipients.tsx": {
+    "react-hooks/refs": {
+      "count": 2
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "src/settings/email/emails.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/email/newsletters/add-newsletter-modal.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/email/newsletters/newsletter-detail-modal.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/email/use-newsletter-reorder.ts": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/general/ghost-updates/ghost-updates.tsx": {
+    "react-hooks/purity": {
+      "count": 2
+    }
+  },
+  "src/settings/general/publication-language.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/general/social-accounts.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "src/settings/general/user-detail-modal.tsx": {
+    "react-hooks/refs": {
+      "count": 3
+    }
+  },
+  "src/settings/general/users.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/growth/embed-signup/embed-signup-form-modal.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/growth/embed-signup/embed-signup-preview.tsx": {
+    "react-hooks/refs": {
+      "count": 2
+    }
+  },
+  "src/settings/growth/embed-signup/embed-signup-sidebar.tsx": {
+    "react-hooks/refs": {
+      "count": 2
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/growth/offers/add-offer-modal.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/growth/offers/edit-offer-modal.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "src/settings/growth/offers/edit-retention-offer-modal.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 4
+    }
+  },
+  "src/settings/growth/offers/offer-success.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/growth/recommendations/add-recommendation-modal.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/growth/tips-and-donations.tsx": {
+    "react-hooks/immutability": {
+      "count": 1
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/hooks/scroll-section-provider.tsx": {
+    "react-hooks/refs": {
+      "count": 1
+    }
+  },
+  "src/settings/hooks/use-pintura-editor.ts": {
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "src/settings/layout/app.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    },
+    "react-hooks/static-components": {
+      "count": 1
+    }
+  },
+  "src/settings/membership/analytics.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/membership/member-emails/member-email-editor.tsx": {
+    "react-hooks/refs": {
+      "count": 1
+    }
+  },
+  "src/settings/membership/member-emails/test-email-dropdown.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/membership/member-emails/welcome-email-customize-modal.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "src/settings/membership/member-emails/welcome-email-preview-frame.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/membership/portal/account-page.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/membership/portal/portal-links.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/membership/portal/signup-options.tsx": {
+    "react-hooks/preserve-manual-memoization": {
+      "count": 1
+    }
+  },
+  "src/settings/membership/tiers.tsx": {
+    "react-hooks/immutability": {
+      "count": 1
+    }
+  },
+  "src/settings/membership/tiers/tier-detail-modal.tsx": {
+    "react-hooks/refs": {
+      "count": 1
+    }
+  },
+  "src/settings/providers/global-data-provider.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/settings-route.tsx": {
+    "react-hooks/static-components": {
+      "count": 1
+    }
+  },
+  "src/settings/site/announcement-bar/announcement-bar-preview.tsx": {
+    "react-hooks/use-memo": {
+      "count": 1
+    }
+  },
+  "src/settings/site/design-and-branding/theme-preview.tsx": {
+    "react-hooks/refs": {
+      "count": 1
+    }
+  },
+  "src/settings/site/design-and-branding/theme-setting.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/site/design-and-theme-modal.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 2
+    }
+  },
+  "src/settings/site/design-panel.tsx": {
+    "react-hooks/refs": {
+      "count": 2
+    }
+  },
+  "src/settings/site/theme-modal.tsx": {
+    "react-hooks/immutability": {
+      "count": 1
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/site/theme/theme-code-editor-modal.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/settings/utils/iframe-buffering.tsx": {
+    "react-hooks/refs": {
+      "count": 1
+    }
+  },
+  "src/settings/utils/search.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/shared/fading-text.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/shared/filters/relative-date-filter.tsx": {
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/shared/pickers/chip-picker.tsx": {
+    "react-hooks/refs": {
+      "count": 2
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/tags/detail/tag-detail.tsx": {
+    "react-hooks/refs": {
+      "count": 5
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  },
+  "src/tags/detail/tag-image-field.tsx": {
+    "react-hooks/refs": {
+      "count": 2
+    },
+    "react-hooks/set-state-in-effect": {
+      "count": 1
+    }
+  }
+}

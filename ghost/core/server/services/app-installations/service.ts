@@ -1,3 +1,4 @@
+import type { AppFailureCode } from '@tryghost/app-contracts';
 import errors from '@tryghost/errors';
 import type { Knex } from 'knex';
 import type { AppManifest } from '@tryghost/app-contracts/manifest';
@@ -79,7 +80,7 @@ function notFound() {
 function notInstalled() {
   return new errors.NotFoundError({
     message: 'This app is not installed.',
-    code: 'APP_NOT_INSTALLED',
+    code: 'APP_NOT_INSTALLED' satisfies AppFailureCode,
   });
 }
 
@@ -87,7 +88,7 @@ function notInstalled() {
 function uninstalled() {
   return new errors.ConflictError({
     message: 'This app has been uninstalled.',
-    code: 'APP_INSTALLATION_UNINSTALLED',
+    code: 'APP_INSTALLATION_UNINSTALLED' satisfies AppFailureCode,
   });
 }
 
@@ -117,7 +118,7 @@ interface CheckedManifest {
 function forAnotherApp(appId: string) {
   return new errors.ValidationError({
     message: `The reviewed manifest is for ${appId}, not the app that is installed.`,
-    code: 'APP_MANIFEST_OTHER_APP',
+    code: 'APP_MANIFEST_OTHER_APP' satisfies AppFailureCode,
   });
 }
 
@@ -473,7 +474,7 @@ export class AppInstallationsService {
     if (loaded.digest !== digest) {
       throw new errors.ConflictError({
         message: 'The app changed while it was being reviewed.',
-        code: 'APP_MANIFEST_CHANGED',
+        code: 'APP_MANIFEST_CHANGED' satisfies AppFailureCode,
         errorDetails: await this.previewOf(checked),
       });
     }
@@ -491,7 +492,7 @@ export class AppInstallationsService {
     }
     return new errors.ConflictError({
       message: 'The installation changed while the app was being reviewed.',
-      code: 'APP_INSTALLATION_CHANGED',
+      code: 'APP_INSTALLATION_CHANGED' satisfies AppFailureCode,
       errorDetails: await this.previewOf({ ...checked, installation }),
     });
   }
@@ -596,7 +597,7 @@ export class AppInstallationsService {
       if (loaded.manifest.id !== before.app_id) {
         throw new errors.ValidationError({
           message: `${before.manifest_url} now serves ${loaded.manifest.id}.`,
-          code: 'APP_MANIFEST_OTHER_APP',
+          code: 'APP_MANIFEST_OTHER_APP' satisfies AppFailureCode,
         });
       }
       await this.identity.check(loaded, pinned, fetched.started);

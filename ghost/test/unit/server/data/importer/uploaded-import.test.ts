@@ -291,7 +291,7 @@ describe('Uploaded site imports', function () {
       }
       await assert.rejects(
         manager.importFromFile(file, { user: { email: 'owner@example.com' } }),
-        failure,
+        (thrown) => thrown === failure,
       );
       sinon.assert.calledOnce(saved);
       sinon.assert.notCalled(deps.mailer.send);
@@ -307,7 +307,7 @@ describe('Uploaded site imports', function () {
       manager.importFromFile(await archive({ 'data.json': json }), {
         user: { email: 'owner@example.com' },
       }),
-      failure,
+      (thrown) => thrown === failure,
     );
     sinon.assert.calledOnce(deps.logging.error);
     sinon.assert.notCalled(deps.mailer.send);
@@ -447,7 +447,7 @@ describe('Uploaded site imports', function () {
     const downloads = sinon.spy(fs, 'mkdtemp');
     const failure = new Error('email failed');
     deps.mailer.send.rejects(failure);
-    await assert.rejects(manager.executeImport(job), failure);
+    await assert.rejects(manager.executeImport(job), (thrown) => thrown === failure);
     sinon.assert.calledOnce(deps.mailer.send);
     assert.deepEqual(await fs.readdir(storage.storagePath), []);
     assert.equal(

@@ -92,6 +92,7 @@ const ShippingSettings: React.FC<{
         error={errors.shippingAddressField}
         fields={fields}
         label="Save address as"
+        suggestedName="Shipping Address"
         type={PORT_FIELD[CHECKOUT_PORT.shippingAddress].type}
         value={state.addressFieldKey}
         onChange={(addressFieldKey) => set({ addressFieldKey })}
@@ -101,6 +102,7 @@ const ShippingSettings: React.FC<{
         error={errors.shippingNameField}
         fields={fields}
         label="Save name as"
+        suggestedName="Recipient Name"
         type={PORT_FIELD[CHECKOUT_PORT.shippingName].type}
         value={state.nameFieldKey}
         onChange={(nameFieldKey) => set({ nameFieldKey })}

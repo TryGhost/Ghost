@@ -15,6 +15,8 @@ export const GHOST_URL = process.env.GHOST_URL ?? 'http://localhost:2368/';
 
 // Ghost's port when it runs on the host behind this dev server
 const GHOST_DEV_BACKEND_PORT = process.env.GHOST_DEV_BACKEND_PORT;
+// `pnpm dev:multi`'s second Ghost
+const GHOST_DEV_BACKEND_PORT_2 = process.env.GHOST_DEV_BACKEND_PORT_2;
 
 // `pnpm dev:lexical` rebuilds koenig-lexical's dist; serving it unbundled picks up each rebuild
 const KOENIG_WATCH = Boolean(process.env.GHOST_DEV_KOENIG_WATCH);
@@ -115,6 +117,9 @@ export default defineConfig(({ command, mode }) => ({
             ? ghostFrontDoorPlugin(
                 `http://127.0.0.1:${GHOST_DEV_BACKEND_PORT}`,
                 `${getSubdir()}${DEV_BASE}`,
+                GHOST_DEV_BACKEND_PORT_2
+                  ? `http://127.0.0.1:${GHOST_DEV_BACKEND_PORT_2}`
+                  : undefined,
               )
             : ghostBackendProxyPlugin(),
           ipv6LoopbackPlugin(),
@@ -148,9 +153,15 @@ export default defineConfig(({ command, mode }) => ({
   resolve: sharedResolve,
   test: {
     environment: 'jsdom',
+    // Reuses workers and isolates each file in a VM context, skipping the
+    // per-file jsdom and module reload that dominated the forks pool
+    pool: 'vmThreads',
+    // VM contexts accumulate memory until a worker recycles; 1GB keeps peak
+    // RSS ~5GB at 4 workers without slowing the run
+    vmMemoryLimit: '1GB',
     globals: true,
     setupFiles: ['./test-utils/setup.ts'],
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'test-utils/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'test-utils/**/*.test.ts', 'vite-*.test.ts'],
     // Acceptance and component tests run in a real browser via
     // vitest.acceptance.config.ts
     exclude: [

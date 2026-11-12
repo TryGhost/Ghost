@@ -83,7 +83,7 @@ const NavSection: React.FC<NavSectionProps> = ({ children, isVisible, title }) =
     <>
       <Text
         as="h2"
-        className="section-heading mb-4 ml-2 tracking-normal"
+        className="section-heading settings-heading mb-4 ml-2 tracking-normal"
         size="md"
         weight="semibold"
         data-nav-row

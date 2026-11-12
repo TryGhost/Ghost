@@ -1,0 +1,7 @@
+{
+  "src/app.tsx": {
+    "react-hooks/immutability": {
+      "count": 3
+    }
+  }
+}

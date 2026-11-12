@@ -3,6 +3,15 @@ const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 
 const CheckoutSessionEventService = require('../../../../../../../core/server/services/stripe/services/webhook/checkout-session-event-service');
+const { createTracer } = require('../../../../../../../core/server/lib/tracing/create-tracer');
+const { createMeter } = require('../../../../../../../core/server/lib/tracing/create-meter');
+const { stripeTracking } = require('../../../../../../../core/server/services/stripe/tracking');
+
+const shipNothing = { transport: { metric: async () => null }, logging: { error() {} } };
+const tracking = stripeTracking({
+  tracer: createTracer(shipNothing),
+  meter: createMeter(shipNothing),
+});
 
 describe('CheckoutSessionEventService', function () {
   let api,
@@ -52,6 +61,7 @@ describe('CheckoutSessionEventService', function () {
   function createService(deps = {}) {
     return new CheckoutSessionEventService({
       api,
+      tracking,
       memberRepository,
       donationRepository,
       giftService,
@@ -945,7 +955,7 @@ describe('CheckoutSessionEventService', function () {
     });
   });
 
-  describe('handleSubscriptionEvent', function () {
+  describe('handleEvent for a subscription', function () {
     let service;
     let session;
     let customer;
@@ -954,6 +964,7 @@ describe('CheckoutSessionEventService', function () {
     beforeEach(function () {
       service = createService();
       session = {
+        mode: 'subscription',
         customer: 'cust_123',
         metadata: {
           name: 'Metadata Name',
@@ -993,7 +1004,7 @@ describe('CheckoutSessionEventService', function () {
       api.getCustomer.resolves(customer);
       memberRepository.get.resolves(member);
 
-      await service.handleSubscriptionEvent(session);
+      await service.handleEvent(session);
 
       sinon.assert.calledWith(api.getCustomer, 'cust_123', {
         expand: ['subscriptions.data.default_payment_method'],
@@ -1005,7 +1016,7 @@ describe('CheckoutSessionEventService', function () {
       api.getCustomer.resolves(customer);
       memberRepository.get.resolves(null);
 
-      await service.handleSubscriptionEvent(session);
+      await service.handleEvent(session);
 
       sinon.assert.calledOnce(memberRepository.create);
       const memberData = memberRepository.create.getCall(0).args[0];
@@ -1029,7 +1040,7 @@ describe('CheckoutSessionEventService', function () {
       memberRepository.get.resolves(null);
       session.metadata.name = 'Session Name';
 
-      await service.handleSubscriptionEvent(session);
+      await service.handleEvent(session);
 
       sinon.assert.calledOnce(memberRepository.create);
       const memberData = memberRepository.create.getCall(0).args[0];
@@ -1046,7 +1057,7 @@ describe('CheckoutSessionEventService', function () {
       memberRepository.get.resolves(null);
       session.metadata.newsletters = 'invalid';
 
-      await service.handleSubscriptionEvent(session);
+      await service.handleEvent(session);
 
       const memberData = memberRepository.create.getCall(0).args[0];
       assert.equal(memberData.email, 'customer@example.com');
@@ -1061,7 +1072,7 @@ describe('CheckoutSessionEventService', function () {
       // change member name
       customer.subscriptions.data[0].default_payment_method.billing_details.name =
         'New Customer Name';
-      await service.handleSubscriptionEvent(session);
+      await service.handleEvent(session);
 
       sinon.assert.calledOnce(memberRepository.update);
       const memberData = memberRepository.update.getCall(0).args[0];
@@ -1076,7 +1087,7 @@ describe('CheckoutSessionEventService', function () {
       // change member name
       customer.subscriptions.data[0].default_payment_method.billing_details.name =
         'New Customer Name';
-      await service.handleSubscriptionEvent(session);
+      await service.handleEvent(session);
 
       sinon.assert.calledOnce(memberRepository.update);
       const memberData = memberRepository.update.getCall(0).args[0];
@@ -1091,7 +1102,7 @@ describe('CheckoutSessionEventService', function () {
       // change member name
       customer.subscriptions.data[0].default_payment_method.billing_details.name =
         'New Customer Name';
-      await service.handleSubscriptionEvent(session);
+      await service.handleEvent(session);
 
       sinon.assert.calledOnce(memberRepository.update);
       const memberData = memberRepository.update.getCall(0).args[0];
@@ -1103,7 +1114,7 @@ describe('CheckoutSessionEventService', function () {
       memberRepository.get.resolves(member);
       session.metadata.ghostSignupContext = 'needs_magic_link_email';
 
-      await service.handleSubscriptionEvent(session);
+      await service.handleEvent(session);
 
       sinon.assert.notCalled(memberRepository.update);
       sinon.assert.calledOnce(memberRepository.linkSubscription);
@@ -1117,7 +1128,7 @@ describe('CheckoutSessionEventService', function () {
       member.get.withArgs('id').returns('member_123');
       memberRepository.get.resolves(member);
 
-      await service.handleSubscriptionEvent(session);
+      await service.handleEvent(session);
 
       sinon.assert.calledOnceWithExactly(
         memberRepository.update,
@@ -1133,7 +1144,7 @@ describe('CheckoutSessionEventService', function () {
         session.metadata.ghostSignupContext = 'needs_magic_link_email';
         isPaidWelcomeEmailActive.resolves(true);
 
-        await service.handleSubscriptionEvent(session);
+        await service.handleEvent(session);
 
         sinon.assert.calledOnce(sendSignupEmail);
         sinon.assert.calledWith(sendSignupEmail, 'customer@example.com');
@@ -1146,7 +1157,7 @@ describe('CheckoutSessionEventService', function () {
         session.metadata.ghostSignupContext = 'has_precheckout_magic_link';
         isPaidWelcomeEmailActive.resolves(false);
 
-        await service.handleSubscriptionEvent(session);
+        await service.handleEvent(session);
 
         sinon.assert.calledOnce(sendSignupEmail);
         sinon.assert.calledWith(sendSignupEmail, 'customer@example.com');
@@ -1158,7 +1169,7 @@ describe('CheckoutSessionEventService', function () {
         session.metadata.ghostSignupContext = 'has_precheckout_magic_link';
         isPaidWelcomeEmailActive.resolves(true);
 
-        await service.handleSubscriptionEvent(session);
+        await service.handleEvent(session);
 
         sinon.assert.notCalled(sendSignupEmail);
       });
@@ -1169,7 +1180,7 @@ describe('CheckoutSessionEventService', function () {
         session.metadata.ghostSignupContext = 'already_authenticated';
         isPaidWelcomeEmailActive.resolves(false);
 
-        await service.handleSubscriptionEvent(session);
+        await service.handleEvent(session);
 
         sinon.assert.calledOnce(sendSignupEmail);
         sinon.assert.calledWith(sendSignupEmail, 'customer@example.com');
@@ -1181,7 +1192,7 @@ describe('CheckoutSessionEventService', function () {
         session.metadata.ghostSignupContext = 'already_authenticated';
         isPaidWelcomeEmailActive.resolves(true);
 
-        await service.handleSubscriptionEvent(session);
+        await service.handleEvent(session);
 
         sinon.assert.notCalled(sendSignupEmail);
       });
@@ -1192,7 +1203,7 @@ describe('CheckoutSessionEventService', function () {
         delete session.metadata.ghostSignupContext;
         isPaidWelcomeEmailActive.resolves(true);
 
-        await service.handleSubscriptionEvent(session);
+        await service.handleEvent(session);
 
         sinon.assert.calledOnce(sendSignupEmail);
         sinon.assert.calledWith(sendSignupEmail, 'customer@example.com');
@@ -1206,7 +1217,7 @@ describe('CheckoutSessionEventService', function () {
         session.metadata.ghostSignupContext = 'has_precheckout_magic_link';
         isPaidWelcomeEmailActive.resolves(false);
 
-        await service.handleSubscriptionEvent(session);
+        await service.handleEvent(session);
 
         sinon.assert.notCalled(sendSignupEmail);
       });

@@ -16,6 +16,7 @@ import {
 } from './queries';
 import { DbBoundField, DbNamedBinding, FIELD_STATUS } from './schema';
 import type { MetafieldPlan, MetafieldValuesService } from './values-service';
+import { ensureTransaction } from '../../lib/ensure-transaction';
 
 const BINDINGS_TABLE = 'members_metafield_bindings';
 
@@ -73,25 +74,40 @@ export class MetafieldBindingsService {
     this.values = values;
   }
 
-  async bind(db: Knex, port: string, field: FieldIdentity, now: Date): Promise<string> {
-    const existing = await db(BINDINGS_TABLE).where({ port }).first();
-    if (existing?.metafield_namespace === field.namespace && existing.metafield_key === field.key) {
-      await db(BINDINGS_TABLE).where('id', existing.id).update({ updated_at: now });
-      return existing.id;
-    }
-    if (existing) {
-      await db(BINDINGS_TABLE).where('id', existing.id).del();
-    }
+  /**
+   * Points a port at a field, in place of whichever field the port wrote into before, and returns
+   * the binding's id. Given a transaction as `executor` it joins that transaction; given a plain
+   * connection it opens its own.
+   */
+  async bind(
+    port: string,
+    field: FieldIdentity,
+    now: Date,
+    executor: Knex = this.knex,
+  ): Promise<string> {
+    return ensureTransaction(executor, async (trx) => {
+      const existing = await trx(BINDINGS_TABLE).where({ port }).first();
+      if (
+        existing?.metafield_namespace === field.namespace &&
+        existing.metafield_key === field.key
+      ) {
+        await trx(BINDINGS_TABLE).where('id', existing.id).update({ updated_at: now });
+        return existing.id;
+      }
+      if (existing) {
+        await trx(BINDINGS_TABLE).where('id', existing.id).del();
+      }
 
-    const bindingId = new ObjectID().toHexString();
-    await db(BINDINGS_TABLE).insert({
-      id: bindingId,
-      port,
-      ...fieldReference(field),
-      created_at: now,
-      updated_at: now,
+      const bindingId = new ObjectID().toHexString();
+      await trx(BINDINGS_TABLE).insert({
+        id: bindingId,
+        port,
+        ...fieldReference(field),
+        created_at: now,
+        updated_at: now,
+      });
+      return bindingId;
     });
-    return bindingId;
   }
 
   /**
@@ -102,19 +118,22 @@ export class MetafieldBindingsService {
    * nothing they can read. Deleting a field deletes its bindings, so a port bound here always has
    * one.
    */
-  async boundPorts(db: Knex, ports: readonly string[]): Promise<Map<string, string | null>> {
+  async boundPorts(
+    ports: readonly string[],
+    executor: Knex = this.knex,
+  ): Promise<Map<string, string | null>> {
     if (!ports.length) {
       return new Map();
     }
 
     const binding = z
       .array(z.string())
-      .parse(await db(BINDINGS_TABLE).whereIn('port', ports).pluck('port'));
+      .parse(await executor(BINDINGS_TABLE).whereIn('port', ports).pluck('port'));
     const bound = new Map<string, string | null>(binding.map((port) => [port, null]));
     // Read the way a member's own reads ask for fields, so a port names exactly the fields their
     // record holds values for.
     const named = await this.fields
-      .definitions(db, { audience: MEMBERS, status: ACTIVE_ONLY })
+      .definitions(executor, { audience: MEMBERS, status: ACTIVE_ONLY })
       .read.join(BINDINGS_TABLE, onField(FIELDS_TABLE, BINDINGS_TABLE))
       .whereIn(`${BINDINGS_TABLE}.port`, ports)
       .select(`${BINDINGS_TABLE}.port`, `${FIELDS_TABLE}.namespace`, `${FIELDS_TABLE}.key`);
@@ -128,13 +147,16 @@ export class MetafieldBindingsService {
   }
 
   /** Whether any port writes into this field. */
-  async isBound(field: FieldIdentity): Promise<boolean> {
-    return (await this.knex(BINDINGS_TABLE).where(fieldReference(field)).first('id')) !== undefined;
+  async isBound(field: FieldIdentity, executor: Knex = this.knex): Promise<boolean> {
+    return (await executor(BINDINGS_TABLE).where(fieldReference(field)).first('id')) !== undefined;
   }
 
-  /** Stops the writing. Whatever hangs off the binding cascades with it. */
-  async remove(db: Knex, port: string): Promise<void> {
-    await db(BINDINGS_TABLE).where({ port }).del();
+  /**
+   * Stops the writing. Whatever hangs off the binding cascades with it. Given a transaction as
+   * `executor` it joins that transaction; given a plain connection it opens its own.
+   */
+  async remove(port: string, executor: Knex = this.knex): Promise<void> {
+    await ensureTransaction(executor, (trx) => trx(BINDINGS_TABLE).where({ port }).del());
   }
 
   /**
@@ -159,8 +181,12 @@ export class MetafieldBindingsService {
   async planThrough(
     values: Array<{ port: string; value: unknown }>,
     writer: PortWriter,
+    executor: Knex = this.knex,
   ): Promise<RoutedPlans> {
-    const fields = await this.fieldsFor(values.map(({ port }) => port));
+    const fields = await this.fieldsFor(
+      executor,
+      values.map(({ port }) => port),
+    );
     const input: Record<string, unknown> = {};
     const routed = new Map<string, { port: string; field: BoundField }>();
     for (const { port, value } of values) {
@@ -180,6 +206,7 @@ export class MetafieldBindingsService {
       INTERNAL,
       // Every value planned came through a port, so each refusal names one.
       (identity) => routed.get(identity)?.port ?? identity,
+      executor,
     );
 
     // One plan for each writer, so a member's answers are one change and each binding's value is
@@ -203,14 +230,17 @@ export class MetafieldBindingsService {
    * The field each of these ports writes into, by port, leaving out a port bound nowhere or into
    * an archived field, as nothing can be saved into one there.
    */
-  private async fieldsFor(ports: readonly string[]): Promise<Map<string, BoundField>> {
+  private async fieldsFor(
+    executor: Knex,
+    ports: readonly string[],
+  ): Promise<Map<string, BoundField>> {
     const fields = new Map<string, BoundField>();
     if (!ports.length) {
       return fields;
     }
 
-    const rows = await this.knex(BINDINGS_TABLE)
-      .join(this.fields.table(this.knex), onField(FIELDS_TABLE, BINDINGS_TABLE))
+    const rows = await executor(BINDINGS_TABLE)
+      .join(this.fields.table(executor), onField(FIELDS_TABLE, BINDINGS_TABLE))
       .whereIn(`${BINDINGS_TABLE}.port`, ports)
       // An archived field is still where a port points, and still not somewhere a value can
       // land, so it's left out rather than waited for.

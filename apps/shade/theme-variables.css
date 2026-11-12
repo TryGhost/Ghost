@@ -167,12 +167,12 @@
   --control-border: color-mix(in oklab, var(--color-gray-200), var(--color-gray-300));
   --text-section-heading: 1.6rem;
   --text-section-heading-lg: 2.1rem;
-  /* Text-entry fields have a defined outline and a small resting shadow. */
+  /* Text-entry fields have a defined outline and a flat surface. */
   --field-surface: var(--control-surface);
   --field-readonly-surface: var(--control-readonly-surface);
   --field-disabled-surface: var(--control-disabled-surface);
   --field-border: var(--color-gray-400);
-  --field-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  --field-shadow: 0 0 #0000;
   --field-chip-surface: var(--secondary);
   --field-chip-internal-surface: transparent;
   --field-chip-internal-border: var(--field-chip-surface);
@@ -393,7 +393,7 @@
   --control-disabled-surface: var(--color-gray-950);
   --control-border: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
   --field-border: var(--color-gray-900);
-  --field-shadow: 0 1px 2px rgb(0 0 0 / 0.16);
+  --field-shadow: 0 0 #0000;
   --control-pressed-shadow: lch(0 0 0 / 0.07) 0px 1px 2px 0px inset;
   --control-outline-shadow:
     lch(0 0 0 / 0.1) 0px 0px 0px 0.5px, lch(0 0 0 / 0.02) 0px 3px 6px -2px,

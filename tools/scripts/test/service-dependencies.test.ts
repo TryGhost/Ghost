@@ -1,20 +1,39 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
+import { findPackageJSON } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { it, type TestContext } from 'node:test';
-import { fileURLToPath } from 'node:url';
 import type { ICruiseResult } from 'dependency-cruiser';
+import yaml from 'js-yaml';
 import ts from 'typescript';
+import {
+  deferredServices,
+  dependencyIdentity,
+  readKnownViolations,
+} from '../lib/dependency-boundaries.ts';
 
 const repository = path.resolve(import.meta.dirname, '../../..');
 const services = 'ghost/core/server/services';
 const alpha = `${services}/alpha`;
 const config = 'ghost/core/shared/config.ts';
 const resolver = 'tools/scripts/ci/service-dependency-resolver.mjs';
-const cli = fileURLToPath(
-  new URL('../../bin/dependency-cruise.mjs', import.meta.resolve('dependency-cruiser')),
+const depcruiseManifest =
+  findPackageJSON('dependency-cruiser', import.meta.url) ??
+  assert.fail('dependency-cruiser is not installed');
+const cli = path.join(
+  path.dirname(depcruiseManifest),
+  (JSON.parse(readFileSync(depcruiseManifest, 'utf8')) as { bin: { depcruise: string } }).bin
+    .depcruise,
 );
 
 function fixture(t: TestContext, files: Record<string, string>) {
@@ -36,23 +55,32 @@ function fixture(t: TestContext, files: Record<string, string>) {
         legacy: { kind: 'directory', disposition: 'migrate' },
       },
     }),
+    'tools/scripts/package.json': '{"type":"module"}',
+    '.dependency-cruiser-known-violations.json': '[]',
+    'apps/empty.ts': 'export {};',
     [config]: 'export const enabled = true; export interface Config {}',
     ...files,
   })) {
     write(file, source);
   }
-  for (const file of [resolver, 'node_modules/js-yaml']) {
+  for (const file of [
+    'tools/scripts/lib/dependency-boundaries.ts',
+    'tools/scripts/ci/check-boundaries.ts',
+  ]) {
+    mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+    cpSync(path.join(repository, file), path.join(root, file));
+  }
+  for (const file of [resolver, 'tools/scripts/node_modules']) {
     mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
     symlinkSync(path.join(repository, file), path.join(root, file));
   }
-  const run = (output = 'json', audit = false, input = services) => {
+  const run = (output = 'json', input = services, args: string[] = []) => {
     const result = spawnSync(
       process.execPath,
-      [cli, input, '--config', '.dependency-cruiser.cjs', '--output-type', output],
+      [cli, input, '--config', '.dependency-cruiser.cjs', '--output-type', output, ...args],
       {
         cwd: root,
         encoding: 'utf8',
-        env: { ...process.env, GHOST_SERVICE_DEPENDENCY_AUDIT: audit ? '1' : '' },
       },
     );
     assert.ifError(result.error);
@@ -62,12 +90,23 @@ function fixture(t: TestContext, files: Record<string, string>) {
   return {
     write,
     run,
+    root,
+    lint(staged: string[] = []) {
+      return spawnSync(
+        process.execPath,
+        ['tools/scripts/ci/check-boundaries.ts', ...(staged.length ? ['--', ...staged] : [])],
+        {
+          cwd: root,
+          encoding: 'utf8',
+        },
+      );
+    },
     link(source: string, destination: string) {
       mkdirSync(path.dirname(path.join(root, destination)), { recursive: true });
       symlinkSync(path.join(root, source), path.join(root, destination));
     },
-    graph(audit = false, input = services): ICruiseResult {
-      const result = run('json', audit, input);
+    graph(input = services): ICruiseResult {
+      const result = run('json', input);
       assert.equal(result.status, 0, result.stderr);
       const graph: ICruiseResult = JSON.parse(result.stdout);
       assert.ok(graph.modules.length > 0, 'The fixture must actually be analyzed');
@@ -85,7 +124,7 @@ const edges = (graph: ICruiseResult) =>
     )
     .sort();
 
-it('enforces migrated services and reports all services through native Markdown and JSON audit output', (t) => {
+it('enforces every implementation independently of inventory and migration markers', (t) => {
   const f = fixture(t, {
     [`${alpha}/implementation.ts`]: "import '../../../shared/config';",
     [`${alpha}/index.js`]: "require('../../../shared/config');",
@@ -94,47 +133,193 @@ it('enforces migrated services and reports all services through native Markdown 
     [`${services}/unlisted/helper.ts`]: "import '../../../shared/config';",
     [`${services}/unlisted.ts`]: "import '../../shared/config';",
   });
+  const expected = [
+    `${alpha}/implementation.ts`,
+    `${services}/legacy/implementation.js`,
+    `${services}/unlisted.ts`,
+    `${services}/unlisted/helper.ts`,
+  ].sort();
   assert.deepEqual(
     violations(f.graph()).map(([, from]) => from),
-    [`${alpha}/implementation.ts`, `${alpha}/index.js`],
+    expected,
   );
-  assert.equal(f.run('err').status, 2, 'The native error reporter returns the violation count');
-  const audit = f.graph(true);
-  assert.deepEqual(
-    violations(audit).map(([, from]) => from),
-    [
-      `${alpha}/implementation.ts`,
-      `${services}/legacy/implementation.js`,
-      `${services}/unlisted.ts`,
-      `${services}/unlisted/helper.ts`,
-    ].sort(),
-  );
-  const markdown = f.run('markdown', true);
+  assert.equal(f.run('err').status, 4);
+  const markdown = f.run('markdown');
   assert.equal(markdown.status, 0);
   assert.ok(markdown.stdout.includes(`${services}/unlisted/helper.ts`));
-  assert.ok(markdown.stdout.includes('service-dependencies'));
-  for (const migrated of [false, true]) {
-    f.write(
-      `${services}/service-inventory.yaml`,
-      JSON.stringify({
-        services: {
-          alpha: { kind: 'directory', disposition: 'migrate' },
-          legacy: {
-            kind: 'directory',
-            disposition: 'migrate',
-            ...(migrated ? { migrated: true } : {}),
-          },
-        },
-      }),
-    );
+  for (const entries of [{ alpha: {} }, {}]) {
+    f.write(`${services}/service-inventory.yaml`, JSON.stringify({ services: entries }));
     assert.deepEqual(
       violations(f.graph()).map(([, from]) => from),
-      migrated ? [`${services}/legacy/implementation.js`, `${services}/legacy/index.js`] : [],
+      expected,
     );
-    if (!migrated) {
-      assert.equal(f.run('err').status, 0, 'An empty migration set leaves legacy services alone');
-    }
   }
+});
+
+it('rejects new and moved dependencies and stale entries through the boundary lint command', (t) => {
+  const from = `${services}/legacy/implementation.js`;
+  const known = { rule: 'service-dependencies', from, to: config };
+  const f = fixture(t, {
+    [from]: "require('../../../shared/config');",
+    '.dependency-cruiser-known-violations.json': JSON.stringify([known]),
+  });
+  const initial = f.lint();
+  assert.equal(initial.status, 0, initial.stderr);
+  f.write(`${services}/legacy/new.js`, "require('../../../shared/config');");
+  const added = f.lint();
+  assert.equal(added.status, 1, added.stderr);
+  assert.match(added.stderr, /legacy\/new.js/);
+  f.write(from, '');
+  const moved = f.lint();
+  assert.equal(moved.status, 1, moved.stderr);
+  assert.match(moved.stderr, /error service-dependencies:.*legacy\/new.js/);
+  assert.match(moved.stderr, /stale known violation:.*legacy\/implementation.js/);
+  f.write(`${services}/legacy/new.js`, '');
+  const fixed = f.lint();
+  assert.equal(fixed.status, 1, fixed.stderr);
+  assert.match(fixed.stderr, /Remove it from .dependency-cruiser-known-violations.json/);
+  f.write('.dependency-cruiser-known-violations.json', '[]');
+  assert.equal(f.lint().status, 0);
+});
+
+it('applies the known violations when the commit hook checks only the staged files', (t) => {
+  const from = `${services}/legacy/implementation.js`;
+  const other = `${services}/legacy/other.js`;
+  const f = fixture(t, {
+    [from]: "require('../../../shared/config');",
+    [other]: "require('../../../shared/config');",
+    '.dependency-cruiser-known-violations.json': JSON.stringify(
+      [from, other].map((file) => ({ rule: 'service-dependencies', from: file, to: config })),
+    ),
+  });
+  // A file with a known violation can be committed.
+  const known = f.lint([from]);
+  assert.equal(known.status, 0, known.stderr);
+  // The other file is not scanned, so its entry is not reported as stale.
+  f.write(other, '');
+  const partial = f.lint([from]);
+  assert.equal(partial.status, 0, partial.stderr);
+  assert.equal(f.lint().status, 1);
+  // A new violation in a staged file still fails.
+  f.write(`${services}/legacy/new.js`, "require('../../../shared/config');");
+  const added = f.lint([`${services}/legacy/new.js`]);
+  assert.equal(added.status, 1, added.stderr);
+  assert.match(added.stderr, /error service-dependencies:.*legacy\/new.js/);
+  // A file the scan skips leaves nothing to check.
+  f.write('ghost/core/test/unit/skipped.js', "require('../../shared/config');");
+  const skipped = f.lint(['ghost/core/test/unit/skipped.js']);
+  assert.equal(skipped.status, 0, skipped.stderr);
+});
+
+it('rejects known violations for migrated services, duplicates and non-service rules', (t) => {
+  const known = { rule: 'service-dependencies', from: `${alpha}/implementation.ts`, to: config };
+  const f = fixture(t, { '.dependency-cruiser-known-violations.json': JSON.stringify([known]) });
+  assert.throws(() => readKnownViolations(f.root), /unmigrated inventory entry/);
+  f.write(`${services}/service-inventory.yaml`, JSON.stringify({ services: { alpha: {} } }));
+  f.write('.dependency-cruiser-known-violations.json', JSON.stringify([known, known]));
+  assert.throws(() => readKnownViolations(f.root), /duplicate entry/);
+  f.write(
+    '.dependency-cruiser-known-violations.json',
+    JSON.stringify([{ ...known, rule: 'kernel-not-application' }]),
+  );
+  assert.throws(() => readKnownViolations(f.root));
+});
+
+it('keeps the checked-in known violations limited to unmigrated services', () => {
+  assert.doesNotThrow(() => readKnownViolations(repository));
+});
+
+it('reports but does not gate services with deferred enforcement', (t) => {
+  const [deferred] = deferredServices;
+  assert.ok(deferred);
+  const from = `${services}/${deferred}/implementation.js`;
+  const f = fixture(t, { [from]: "require('../../../shared/config');" });
+  const added = f.lint();
+  assert.equal(added.status, 0, added.stderr);
+  assert.match(added.stdout, /0 known violations, 1 in services with deferred enforcement/);
+  assert.deepEqual(violations(f.graph()), [['service-dependencies', from, config]]);
+
+  // A sibling that is not named is still gated from its first file.
+  f.write(`${services}/${deferred}-extra/implementation.js`, "require('../../../shared/config');");
+  const sibling = f.lint();
+  assert.equal(sibling.status, 1, sibling.stderr);
+  assert.match(sibling.stderr, new RegExp(`${deferred}-extra/implementation.js`));
+  f.write(`${services}/${deferred}-extra/implementation.js`, '');
+
+  // Deferred services keep no entries, so the file cannot hide what they add.
+  f.write(
+    '.dependency-cruiser-known-violations.json',
+    JSON.stringify([{ rule: 'service-dependencies', from, to: config }]),
+  );
+  assert.throws(() => readKnownViolations(f.root), /deferred enforcement/);
+  const listed = f.lint();
+  assert.equal(listed.status, 1, listed.stderr);
+
+  // Migrating a deferred service ends its deferral.
+  f.write('.dependency-cruiser-known-violations.json', '[]');
+  f.write(
+    `${services}/service-inventory.yaml`,
+    JSON.stringify({ services: { [deferred]: { migrated: true } } }),
+  );
+  assert.throws(() => readKnownViolations(f.root), /Remove it from deferredServices/);
+});
+
+it('defers enforcement only for unmigrated services in the inventory', () => {
+  const inventory = yaml.load(
+    readFileSync(path.join(repository, services, 'service-inventory.yaml'), 'utf8'),
+  ) as { services: Record<string, { migrated?: boolean }> };
+  assert.deepEqual([...deferredServices], [...deferredServices].sort());
+  for (const name of deferredServices) {
+    assert.ok(inventory.services[name], `${name} is not in the service inventory`);
+    assert.notEqual(inventory.services[name].migrated, true, `${name} is migrated`);
+  }
+});
+
+it('matches external packages across stores without merging subpaths or workspace targets', () => {
+  const violation = {
+    rule: { name: 'service-dependencies', severity: 'error' as const },
+    from: `${alpha}/implementation.ts`,
+    to: '/store/one/node_modules/client/index.js',
+    unresolvedTo: 'client',
+  };
+  const identity = dependencyIdentity(violation);
+  assert.deepEqual(
+    dependencyIdentity({ ...violation, to: '/store/two/node_modules/client/index.js' }),
+    identity,
+  );
+  assert.notDeepEqual(
+    dependencyIdentity({ ...violation, unresolvedTo: 'client/private' }),
+    identity,
+  );
+  assert.notDeepEqual(dependencyIdentity({ ...violation, from: `${alpha}/moved.ts` }), identity);
+  assert.equal(
+    dependencyIdentity({ ...violation, to: 'packages/client/src/index.ts' }).to,
+    'packages/client/src/index.ts',
+  );
+  assert.notDeepEqual(
+    dependencyIdentity({ ...violation, to: 'packages/client/src/index.ts' }),
+    dependencyIdentity({ ...violation, to: 'packages/client/src/moved.ts' }),
+  );
+});
+
+it('continues enforcing non-service boundaries in the same scan', (t) => {
+  const f = fixture(t, {
+    'ghost/core/kernel/forbidden.ts': "import '../shared/config';",
+  });
+  const result = f.lint();
+  assert.equal(result.status, 1, result.stderr);
+  assert.match(result.stderr, /kernel-not-application/);
+});
+
+it('keeps native ignore-known behavior documented: moves fail but stale entries are accepted', (t) => {
+  const from = `${services}/legacy/implementation.js`;
+  const f = fixture(t, { [from]: "require('../../../shared/config');" });
+  f.write('native-baseline.json', JSON.stringify(f.graph().summary.violations));
+  assert.equal(f.run('err', services, ['--ignore-known', 'native-baseline.json']).status, 0);
+  f.write(from, '');
+  assert.equal(f.run('err', services, ['--ignore-known', 'native-baseline.json']).status, 0);
+  f.write(`${services}/legacy/moved.js`, "require('../../../shared/config');");
+  assert.equal(f.run('err', services, ['--ignore-known', 'native-baseline.json']).status, 1);
 });
 
 it('allows same-service code, explicit types, approved libraries and root wiring', (t) => {
@@ -816,7 +1001,7 @@ it('preserves app boundaries and the test-selector allowance after workspace exp
     f.link(directory, `node_modules/${name}`);
   }
   f.write('packages/testing/test-data/src/selectors/member.ts', 'export const member = "member";');
-  const graph = f.graph(false, 'apps');
+  const graph = f.graph('apps');
   const expected = [
     [
       'framework-not-feature-apps',
@@ -844,7 +1029,7 @@ it('preserves app boundaries and the test-selector allowance after workspace exp
   f.write(output, "import '../../../packages/output-only/index.js';");
   f.write('apps/activitypub/dist/unreferenced.js', 'export {};');
   f.write('packages/output-only/index.js', 'export {};');
-  const built = f.graph(false, 'apps');
+  const built = f.graph('apps');
   assert.deepEqual(
     violations(built),
     expected.map(([rule, from, to]) => [rule, from, to === '@tryghost/activitypub' ? output : to]),
@@ -867,9 +1052,19 @@ it('preserves app boundaries and the test-selector allowance after workspace exp
 it('invalidates cached boundary checks and fixture tests when their configuration changes', () => {
   const root = JSON.parse(readFileSync(path.join(repository, 'package.json'), 'utf8'));
   assert.ok(root.nx.targets['lint:boundaries'].inputs.includes(`{workspaceRoot}/${resolver}`));
-  for (const input of ['ghost/core/**/*', 'ghost/package.json', 'packages/**/*', 'koenig/**/*']) {
+  for (const input of [
+    'ghost/core/**/*',
+    'ghost/package.json',
+    'packages/**/*',
+    'koenig/**/*',
+    '.dependency-cruiser-known-violations.json',
+    'tools/scripts/lib/dependency-boundaries.ts',
+    'tools/scripts/ci/check-boundaries.ts',
+  ]) {
     assert.ok(root.nx.targets['lint:boundaries'].inputs.includes(`{workspaceRoot}/${input}`));
   }
+  assert.equal(root.scripts['lint:boundaries'], 'node tools/scripts/ci/check-boundaries.ts');
+  assert.equal(root.nx.targets['lint:boundaries'].options.command, root.scripts['lint:boundaries']);
   const scripts = JSON.parse(
     readFileSync(path.join(repository, 'tools/scripts/package.json'), 'utf8'),
   );

@@ -1235,6 +1235,15 @@ describe('Unit: models/user', function () {
   });
 
   describe('ownerIdCache', function () {
+    // The cache lives on the shared User model, so start and end each test empty
+    beforeEach(function () {
+      models.User.ownerIdCache.clear();
+    });
+
+    afterEach(function () {
+      models.User.ownerIdCache.clear();
+    });
+
     it('should return null initially', function () {
       assert.equal(models.User.ownerIdCache.get(), null);
     });

@@ -9,6 +9,7 @@ const { CHECKOUT_PORT } = require('@tryghost/checkout');
 const { collectedFrom } = require('../checkout/completed-session');
 const { COLLECTION_FLAG } = require('../../../stripe-checkout-config/models');
 /** @typedef {import('../../../../lib/member-signup-contexts').SignupContext} SignupContext */
+/** @typedef {import('../../tracking').CheckoutCompletionAttempt} CheckoutCompletionAttempt */
 
 function isStripeMetadataTrue(value) {
   return value === true || value === 'true';
@@ -121,7 +122,7 @@ module.exports = class CheckoutSessionEventService {
   /**
    * @param {object} deps
    * @param {import('../../stripe-api')} deps.api
-   * @param {Pick<import('../../tracking').StripeTracking, 'collectedPhone'>} deps.tracking
+   * @param {Pick<import('../../tracking').StripeTracking, 'checkoutCompletion' | 'collectedPhone'>} deps.tracking
    * @param {object} deps.memberRepository
    * @param {object} deps.donationRepository
    * @param {object} deps.giftService
@@ -144,28 +145,32 @@ module.exports = class CheckoutSessionEventService {
    * @param {import('stripe').Stripe.Event.Type} [eventType]
    */
   async handleEvent(session, eventType = 'checkout.session.completed') {
-    if (eventType === 'checkout.session.async_payment_failed') {
-      return;
-    }
-
-    if (eventType === 'checkout.session.async_payment_succeeded') {
-      if (session.mode === 'payment' && isGiftCheckoutSession(session)) {
-        await this.handlePaymentEvent(session);
+    return this.deps.tracking.checkoutCompletion(async (attempt) => {
+      if (eventType === 'checkout.session.async_payment_failed') {
+        return;
       }
-      return;
-    }
 
-    if (session.mode === 'setup') {
-      await this.handleSetupEvent(session);
-    }
+      if (eventType === 'checkout.session.async_payment_succeeded') {
+        if (session.mode === 'payment' && isGiftCheckoutSession(session)) {
+          await this.handlePaymentEvent(session, attempt);
+        }
+        return;
+      }
 
-    if (session.mode === 'subscription') {
-      await this.handleSubscriptionEvent(session);
-    }
+      if (session.mode === 'setup') {
+        attempt.completing('setup');
+        await this.handleSetupEvent(session);
+      }
 
-    if (session.mode === 'payment') {
-      await this.handlePaymentEvent(session);
-    }
+      if (session.mode === 'subscription') {
+        attempt.completing('subscription');
+        await this.handleSubscriptionEvent(session, attempt);
+      }
+
+      if (session.mode === 'payment') {
+        await this.handlePaymentEvent(session, attempt);
+      }
+    });
   }
 
   /**
@@ -174,8 +179,9 @@ module.exports = class CheckoutSessionEventService {
    * session as paid, whichever event carried it.
    *
    * @param {import('stripe').Stripe.Checkout.Session} session
+   * @param {CheckoutCompletionAttempt} attempt
    */
-  async handlePaymentEvent(session) {
+  async handlePaymentEvent(session, attempt) {
     if (hasConflictingCheckoutFlowMetadata(session)) {
       logging.warn(
         {
@@ -191,11 +197,13 @@ module.exports = class CheckoutSessionEventService {
       if (session.payment_status !== 'paid') {
         return;
       }
+      attempt.completing('gift');
       await this.handleGiftEvent(session);
       return;
     }
 
     if (isDonationCheckoutSession(session)) {
+      attempt.completing('donation');
       await this.handleDonationEvent(session);
     }
   }
@@ -376,8 +384,9 @@ module.exports = class CheckoutSessionEventService {
   /**
    * Handles a `checkout.session.completed` event for a subscription
    * @param {import('stripe').Stripe.Checkout.Session} session
+   * @param {CheckoutCompletionAttempt} attempt
    */
-  async handleSubscriptionEvent(session) {
+  async handleSubscriptionEvent(session, attempt) {
     const customer = await this.api.getCustomer(session.customer, {
       expand: ['subscriptions.data.default_payment_method'],
     });
@@ -399,6 +408,7 @@ module.exports = class CheckoutSessionEventService {
     const canUpdateMember =
       !memberPreexisted ||
       session.metadata?.ghostSignupContext === SIGNUP_CONTEXTS.ALREADY_AUTHENTICATED;
+    attempt.buying({ existing: memberPreexisted, verified: canUpdateMember });
 
     if (!member) {
       const metadataName = _.get(session, 'metadata.name');
@@ -496,6 +506,7 @@ module.exports = class CheckoutSessionEventService {
     await this.saveCollected(member.id, session, {
       canUpdateMember,
       wallet: walletOf(customer, session),
+      attempt,
     });
 
     if (checkoutType !== 'upgrade') {
@@ -527,8 +538,9 @@ module.exports = class CheckoutSessionEventService {
    * @param {object} options
    * @param {boolean} options.canUpdateMember Whether this checkout may write to the member's record
    * @param {import('../../tracking').CheckoutWallet} options.wallet The wallet the buyer paid with
+   * @param {CheckoutCompletionAttempt} options.attempt
    */
-  async saveCollected(memberId, session, { canUpdateMember, wallet }) {
+  async saveCollected(memberId, session, { canUpdateMember, wallet, attempt }) {
     try {
       if (!this.deps.labs.isSet(COLLECTION_FLAG)) {
         return;
@@ -537,6 +549,7 @@ module.exports = class CheckoutSessionEventService {
       if (collected.length === 0) {
         return;
       }
+      attempt.collecting(collected);
       // Counted so how often a wallet's number needs a country to be read, and what then becomes
       // of it, can be watched.
       /** @param {import('../../tracking').CollectedPhoneOutcome} outcome */
@@ -547,6 +560,7 @@ module.exports = class CheckoutSessionEventService {
       };
 
       if (!canUpdateMember) {
+        attempt.skipping();
         logging.warn(
           {
             event: { name: 'stripe_checkout.collection.save_skipped' },
@@ -564,6 +578,7 @@ module.exports = class CheckoutSessionEventService {
       const { plans, refused, kept } = await this.deps.metafieldBindings.planThrough(collected, {
         type: 'binding',
       });
+      attempt.saving({ kept, refused });
       if (plans.length > 0) {
         // Through the members service, like any other edit, so the change reaches webhooks.
         await this.deps.memberBREADService.updateWithMetafields({}, { id: memberId }, plans);
@@ -593,6 +608,7 @@ module.exports = class CheckoutSessionEventService {
       }
       countPhone(phoneOutcome(kept, refused));
     } catch (err) {
+      attempt.failing();
       logging.error(
         {
           event: { name: 'stripe_checkout.collection.save_failed' },

@@ -21,6 +21,7 @@ export interface ParseManifestOptions {
   allowLocalhost?: boolean;
 }
 
+/** One problem with a manifest. */
 export interface ManifestError {
   /** Where in the manifest the problem is, e.g. `surfaces[0].url`. Empty for the whole. */
   path: string;

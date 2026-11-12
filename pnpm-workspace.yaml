@@ -37,7 +37,7 @@ allowBuilds:
   'better-sqlite3@12.11.1': true
   'esbuild@0.25.12 || 0.28.2': true
   'fsevents@2.3.3': true
-  'nx@23.3.1': true
+  'nx@24.0.5': true
   'sharp@0.35.5': true
   # result of build step not used
   msw: false
@@ -81,11 +81,11 @@ catalog:
   '@sentry/bundler-plugin-core': 5.3.0
   '@sentry/react': 7.120.4
   '@sentry/vite-plugin': 5.4.1
-  '@storybook/addon-docs': 10.6.5
-  '@storybook/addon-links': 10.6.5
-  '@storybook/preact-vite': 10.6.5
-  '@storybook/react': 10.6.5
-  '@storybook/react-vite': 10.6.5
+  '@storybook/addon-docs': 10.6.6
+  '@storybook/addon-links': 10.6.6
+  '@storybook/preact-vite': 10.6.6
+  '@storybook/react': 10.6.6
+  '@storybook/react-vite': 10.6.6
   '@tailwindcss/postcss': 4.3.3
   '@tailwindcss/vite': 4.3.3
   '@tanstack/react-query': 5.105.1
@@ -96,23 +96,23 @@ catalog:
   '@testing-library/react': 16.3.3
   '@tryghost/color-utils': 0.2.23
   '@tryghost/custom-fonts': 1.0.14
-  '@tryghost/debug': 2.3.20
-  '@tryghost/domain-events': 3.3.22
-  '@tryghost/errors': 3.4.6
+  '@tryghost/debug': 2.3.21
+  '@tryghost/domain-events': 3.3.23
+  '@tryghost/errors': 3.4.7
   '@tryghost/helpers': 1.1.109
-  '@tryghost/logging': 6.0.3
+  '@tryghost/logging': 6.0.4
   '@tryghost/mg-clean-html': 0.12.7
-  '@tryghost/metrics': 3.7.3
+  '@tryghost/metrics': 3.7.4
   '@tryghost/mongo-knex': 0.11.2
-  '@tryghost/nql': 0.13.4
-  '@tryghost/nql-lang': 0.7.0
-  '@tryghost/pretty-cli': 3.4.2
-  '@tryghost/promise': 2.3.20
-  '@tryghost/request': 4.0.14
-  '@tryghost/security': 4.0.2
+  '@tryghost/nql': 0.13.5
+  '@tryghost/nql-lang': 0.7.1
+  '@tryghost/pretty-cli': 3.4.3
+  '@tryghost/promise': 2.3.21
+  '@tryghost/request': 4.0.15
+  '@tryghost/security': 4.0.3
   '@tryghost/string': 0.3.8
   '@tryghost/timezone-data': 1.0.3
-  '@tryghost/tpl': 2.3.20
+  '@tryghost/tpl': 2.3.21
   '@tryghost/url-utils': 5.4.1
   '@types/csso': 5.0.5
   '@types/express': 4.17.25
@@ -142,7 +142,6 @@ catalog:
   better-sqlite3: 12.11.1
   body-parser: 1.20.9
   bson-objectid: 2.0.4
-  chai: 4.5.0
   chalk: 4.1.2
   cheerio: 1.2.0
   chrono-node: 2.10.3
@@ -161,9 +160,9 @@ catalog:
   eslint: 9.39.5
   eslint-plugin-ghost: 4.0.1
   eslint-plugin-react: 7.37.5
-  eslint-plugin-react-hooks: 5.2.0
+  eslint-plugin-react-hooks: 7.1.1
   eslint-plugin-react-refresh: 0.5.7
-  eslint-plugin-storybook: 10.6.5
+  eslint-plugin-storybook: 10.6.6
   eslint-plugin-tailwindcss: 4.4.0
   express: 4.22.3
   flexsearch: 0.7.43
@@ -171,7 +170,7 @@ catalog:
   glob: 14.0.4
   globals: 17.14.0
   got: 16.0.0
-  html-minifier-next: 8.10.7
+  html-minifier-next: 8.11.0
   html-to-text: 10.0.1
   ipaddr.js: 2.5.0
   jiti: 2.7.0
@@ -196,9 +195,9 @@ catalog:
   msw: 2.14.6
   nock: 14.0.17
   node-html-markdown: 2.0.0
-  oxfmt: 0.63.0
-  '@oxlint/plugins': 1.86.0
-  oxlint: 1.86.0
+  oxfmt: 0.77.0
+  '@oxlint/plugins': 1.92.0
+  oxlint: 1.92.0
   postcss: 8.5.32
   preact: ^10.29.2
   prettier: 3.9.10
@@ -214,9 +213,9 @@ catalog:
   sirv: 3.0.2
   snakecase-keys: 9.0.2
   sonner: 2.0.8
-  storybook: 10.6.5
-  stylelint: 17.14.1
-  supertest: 7.3.1
+  storybook: 10.6.6
+  stylelint: 18.0.0
+  supertest: 7.3.2
   tailwindcss: 4.3.3
   temporal-polyfill: 0.3.2
   tldts: ^7.4.4
@@ -232,7 +231,7 @@ catalog:
   # `typescript: <7.x>` entry once typescript-eslint supports the TS7.1 API.
   typescript: 'npm:@typescript/typescript6@6.0.2'
   '@typescript/native': 'npm:typescript@7.0.2'
-  typescript-eslint: 8.71.1
+  typescript-eslint: 8.72.1
   undici: 8.12.3
   validator: 13.15.35
   vite: 8.1.6
@@ -256,11 +255,11 @@ catalog:
   '@octokit/core': 7.0.8
   '@octokit/plugin-retry': 8.1.1
   '@octokit/plugin-throttling': 11.0.5
-  '@secretlint/secretlint-rule-pattern': 13.0.7
-  '@secretlint/secretlint-rule-preset-recommend': 13.0.7
-  knip: 6.32.1
-  lint-staged: 17.3.0
-  secretlint: 13.0.7
+  '@secretlint/secretlint-rule-pattern': 13.1.0
+  '@secretlint/secretlint-rule-preset-recommend': 13.1.0
+  knip: 6.44.2
+  lint-staged: 17.6.0
+  secretlint: 13.1.0
   '@pnpm/releasing.versioning': 1100.3.8
   '@pnpm/workspace.workspace-manifest-reader': 1100.3.2
   execa: 10.2.1
@@ -275,7 +274,7 @@ catalog:
   cron-validate: 1.5.3
   '@types/stoppable': 1.1.3
   '@types/supertest': 7.2.1
-  '@tryghost/validator': 3.2.21
+  '@tryghost/validator': 3.2.22
   '@types/probability-distributions': 0.1.3
   d3-geo: 3.1.2
   rate-limiter-flexible: 11.2.3
@@ -292,7 +291,6 @@ catalogs:
     eslint-plugin-tailwindcss: 3.18.3
 
 overrides:
-  cron-validate: 1.5.3
   '@tryghost/errors': 'catalog:'
   '@tryghost/logging': 'catalog:'
   '@tryghost/nql': 'catalog:'
@@ -316,40 +314,28 @@ overrides:
   # with. The override is global rather than scoped to mg-utils so the component
   # tarball override that pack.mjs writes under the same key replaces it.
   '@tryghost/kg-default-cards': 'workspace:*'
-  '@babel/runtime@<7.26.10': ^7.26.10
-  'braces@<3.0.3': ^3.0.3
+  '@tryghost/mg-utils>fast-xml-parser': '^5.12.0'
   # consolidate 0.15 pulls in a bunch of legacy dependencies that ultimately
   # make their way into the Ghost docker image, forcing a 1.x upgrade trims
   # the final dependency list
   'consolidate@0.15.1': ^1.0.4
-  'debug@<2.6.9': ^2.6.9
-  'esbuild@>=0.28.0': 'catalog:'
-  # gscan pins handlebars exactly; lift every copy past the 4.7.10 security fixes
-  'handlebars@<4.7.10': ^4.7.10
-  'minimatch@<3.1.4': ^3.1.4
-  'smol-toml@<1.9.0': ^1.9.0
   supports-color: '10.2.2'
   'trim@<0.0.3': ^0.0.3
-  'underscore@>=1.3.2 <1.12.1': ^1.12.1
   # Security patches within the same major for dev, build and test tooling
-  'axios@>=1.0.0 <1.20.0': ^1.20.0
-  'brace-expansion@>=5.0.0 <5.0.12': ^5.0.12
-  'http-cache-semantics@<4.3.0': ^4.3.0
   # micromark-extension-math asks for ^0.16; markdownlint never loads its katex renderer
   'katex@>=0.11.0 <0.18.2': ^0.18.2
-  'markdown-it@>=14.0.0 <14.3.1': ^14.3.1
-  'postcss-selector-parser@>=7.0.0 <7.1.6': ^7.1.6
-  'proxy-addr@<2.0.8': ^2.0.8
   're2js@>=2.2.0 <2.8.7': ^2.8.7
-  'shell-quote@>=1.8.4 <1.11.0': ^1.11.0
-  'source-map-js@<1.2.2': ^1.2.2
   'tinypool@<2.1.2': ^2.1.2
+  # GHSA-3g3m-2fjr-6pw4 has no 10.x/13.x fix; the remaining consumers are dev
+  # tooling that only call glob/globSync with options 14 keeps
+  'glob@>=9.0.0 <=14.0.1': ^14.0.2
   # nx 23.3.1 pins undici before the 7.30.1 security fixes
   'nx>undici': 7.30.1
   # routing-related dependencies
   body-parser: 'catalog:'
   express: 'catalog:'
   qs: 'catalog:'
+  readdir-glob: '^4.0.0'
 
 packageExtensions:
   # These import packages they don't declare.
@@ -445,10 +431,7 @@ minimumReleaseAgeExclude:
   # nx pins its platform binaries to its own exact version, so the release age
   # of nx itself still gates them
   - '@nx/nx-*'
-  # Renovate security update: markdown-it@14.3.3
-  - markdown-it@14.3.3
-  # Renovate security update: glob@14.0.2
-  - glob@14.0.2
+  - 'readdir-glob@4.0.0' # audit fix bump
 
 # configuration for pnpm's native versioning (changesets). Private packages opt out
 # by carrying the non-semver placeholder version "private", so only published
