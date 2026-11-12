@@ -95,6 +95,9 @@ function makeOutbox({ released = [] as Row[], dropped = [] as Row[], tracked = t
     async stop(): Promise<void> {
       relayCalls.push('stop');
     },
+    wake(): void {
+      relayCalls.push('wake');
+    },
   };
   const tracker = tracked ? { onSettled: async (): Promise<void> => {} } : undefined;
   return { inserts, relayCalls, replayChecks, store, relay, tracker };
@@ -343,6 +346,43 @@ describe('JobsService', function () {
         await service.dispatch(new GreetJob({ name: 'Ada' }), { transacting: trx });
         assert.equal(outbox.inserts[0].transacting, trx);
       });
+    });
+
+    it('active: wakes the relay once the row is written', async function () {
+      const outbox = makeOutbox();
+      const service = makeService({ outbox });
+
+      await service.dispatch(new GreetJob({ name: 'Ada' }));
+
+      assert.deepEqual(outbox.relayCalls, ['wake']);
+    });
+
+    it('active: wakes the relay only once the caller transaction commits', async function () {
+      const outbox = makeOutbox();
+      const service = makeService({ outbox });
+
+      await db.transaction(async (trx) => {
+        await service.dispatch(new GreetJob({ name: 'Ada' }), { transacting: trx });
+        assert.deepEqual(outbox.relayCalls, [], 'not before the row is visible');
+      });
+      await settle();
+
+      assert.deepEqual(outbox.relayCalls, ['wake']);
+    });
+
+    it('active: leaves the relay asleep when the caller transaction rolls back', async function () {
+      const outbox = makeOutbox();
+      const service = makeService({ outbox });
+
+      await assert.rejects(
+        db.transaction(async (trx) => {
+          await service.dispatch(new GreetJob({ name: 'Ada' }), { transacting: trx });
+          throw new Error('roll back');
+        }),
+      );
+      await settle();
+
+      assert.deepEqual(outbox.relayCalls, []);
     });
 
     it('inactive: dispatches directly to the backend', async function () {

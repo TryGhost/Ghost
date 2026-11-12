@@ -36,6 +36,7 @@ export interface OutboxStore {
 export interface OutboxRelayLike {
   start(): void;
   stop(): Promise<void>;
+  wake(): void;
 }
 
 export interface OutboxTrackerLike {
@@ -167,7 +168,15 @@ export class JobsService {
     const id = new ObjectID().toHexString();
 
     if (this.#outbox) {
-      await this.#outbox.store.insert({ id, envelope }, { transacting });
+      const { store, relay } = this.#outbox;
+      await store.insert({ id, envelope }, { transacting });
+      // The relay's poll is only a fallback; this process wakes it for its
+      // own rows once they are visible.
+      afterCommit(
+        transacting,
+        () => relay.wake(),
+        () => {}, // Rolled back: there is no row to deliver.
+      );
       return;
     }
 

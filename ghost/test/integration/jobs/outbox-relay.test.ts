@@ -691,7 +691,13 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
       queue,
       failFirst = false,
       run = async () => {},
-    }: { queue?: string; failFirst?: boolean; run?: (job: GreetJob) => Promise<void> } = {}) {
+      pollIntervalMs = TIMINGS.pollIntervalMs,
+    }: {
+      queue?: string;
+      failFirst?: boolean;
+      run?: (job: GreetJob) => Promise<void>;
+      pollIntervalMs?: number;
+    } = {}) {
       const backend = new RecordingBackend({ failFirst });
       const store = new JobsOutbox({ knex, keepUntilSettled: true });
       const relay = new OutboxRelay({
@@ -700,6 +706,7 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
         logging: silentLogger,
         sentry: noopSentry,
         ...TIMINGS,
+        pollIntervalMs,
       });
       const tracker = new OutboxTracker({ store, logging: silentLogger });
       const service = new JobsService({
@@ -824,6 +831,18 @@ describe.runIf(isMySQL)('Jobs outbox + relay (MySQL)', function () {
 
       assert.ok(await waitFor(() => delivered.length === 1), 'a committed dispatch is delivered');
       assert.equal(delivered[0].name, 'Committed');
+    });
+
+    it('delivers a committed dispatch without waiting for the poll', async function () {
+      const { service, delivered } = buildActiveService({ pollIntervalMs: 60_000 });
+      await service.start();
+
+      await service.dispatch(new GreetJob({ name: 'Plain' }));
+      await knex.transaction(async (trx: Knex.Transaction) => {
+        await service.dispatch(new GreetJob({ name: 'Committed' }), { transacting: trx });
+      });
+
+      assert.ok(await waitFor(() => delivered.length === 2), 'both dispatches are delivered');
     });
 
     it('preserves the default lane end-to-end (no routing in the forwarded envelope)', async function () {
