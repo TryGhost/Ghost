@@ -3971,8 +3971,8 @@ services:
           without changing transactions or introducing service dependencies.
         preparation:
           - >-
-            Supply logging to the action recorder through the root while preserving best-effort
-            action failures.
+            Supply logging to the action recorder through the root while keeping action failures
+            logged.
           - >-
             Use explicit field mapping for the small codec/serializer shapes, or separately review
             an exact-file case-keys allowance; do not make importable serializers depend on an
@@ -4018,7 +4018,7 @@ services:
       construction:
         summary: >-
           Import declares the initializer without constructing a service. Its factory reads the
-          shared database knex and models, partially applies the best-effort action recorder with
+          shared database knex and models, partially applies the action recorder with
           root-supplied logging and returns one GiftLinksService retaining knex and the callback.
           The recorder still reads models.Action per invocation. Later init calls preserve it.
           No separate production deep construction was found. The constructor validates neither
@@ -4096,7 +4096,7 @@ services:
           Service and captured knex survive repeated init; no reset/stop/rebinding exists. Reads
           query persisted state without a service cache. Mint inserts token history and upserts
           one live association in a transaction; create replaces access while keeping history,
-          ensure returns an existing link or mints after a separate read, and removeAll deletes
+          ensure returns an existing link or mints under a lock on the post, and removeAll deletes
           every live association but keeps history. Unique post_id enforces at most one live
           link, not concurrent ensure returning the same token. Tests pin sequential ensure,
           replaced-token rejection, removal scope/count and uniqueness. Concurrent Admin ensures
@@ -4144,8 +4144,8 @@ services:
       resources:
         summary: >-
           No owned client, timer, worker, listener or memory cache. The service borrows the shared
-          knex pool and owns per-mint transaction work; action history is a separate awaited model
-          write after the command's database change. Database rows carry token history/live state,
+          knex pool and owns per-command transaction work; action history is a model write inside
+          the command's transaction. Database rows carry token history/live state,
           with foreign-key cascade deletion and no scheduled pruning here. The public response cache
           belongs to posts-public, and rendering/analytics belong to frontend consumers. There is no
           root drain or cleanup registration; shutdown depends on shared HTTP/database ownership.
@@ -4170,9 +4170,9 @@ services:
           random generation and transaction errors propagate, without retries. Factory rejection
           leaves service unavailable and boot fails; the shared initializer permits an explicit
           retry, without service-specific failure/retry coverage. Action writes run
-          after persistence and the production recorder logs/swallows failures, skipping writes when
-          actor is absent. That boundary is enforced by action units and a real-DB deep-service test
-          with a failing recorder. Gift access refuses missing key-resolution setup and rejects
+          inside the command's transaction and the production recorder logs and rethrows failures,
+          skipping writes when actor is absent. That boundary is enforced by real-DB deep-service
+          tests with a failing recorder and with no actor. Gift access refuses missing key-resolution setup and rejects
           mismatched tokens; frontend strips invalid gifts with a 301 while other failures reach
           normal error handling. Product lookup failure logs and grants a paid shim with no tiers.
           Units pin those helpers and root query-error propagation. Real DB tests pin mint rollback
@@ -4190,7 +4190,6 @@ services:
           - core/frontend/services/routing/controllers/entry/gift-links.ts
           - core/server/services/members/create-paid-member-shim.ts
         tests:
-          - test/unit/server/services/gift-links/actions.test.ts
           - test/integration/services/gift-links.test.ts
           - test/e2e-api/admin/gift-links.test.ts
           - test/unit/api/endpoints/utils/gift-link-access.test.ts

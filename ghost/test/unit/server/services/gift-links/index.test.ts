@@ -47,7 +47,11 @@ describe('gift-links root with its API consumers', function () {
       delete require.cache[path];
     }
     query = queryBuilder(sandbox);
-    knex = sandbox.stub<[string], typeof query>().returns(query);
+    const table = sandbox.stub<[string], typeof query>().returns(query);
+    // A command opens a transaction on the connection it is given and writes through it.
+    knex = Object.assign(table, {
+      transaction: <T>(work: (trx: typeof table) => Promise<T>) => work(table),
+    });
     currentKnex = knex;
     getKnex = sandbox.spy(() => currentKnex);
     sandbox.stub(db, 'knex').get(getKnex);
@@ -153,7 +157,7 @@ describe('gift-links root with its API consumers', function () {
         actor_type: 'user',
         actor_id: 'actor-id',
       },
-      { autoRefresh: false },
+      { transacting: knex, autoRefresh: false },
     );
   });
 });
