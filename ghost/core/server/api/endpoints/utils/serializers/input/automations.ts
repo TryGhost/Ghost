@@ -71,16 +71,6 @@ function validateTriggerFlags(data: Pick<EditAutomationData, 'trigger_rules'>) {
       property: 'trigger_rules',
     });
   }
-  if (
-    !labs.isSet('automationsLifecycleTriggers') &&
-    data.trigger_rules?.some((rule) => rule.trigger_type === 'paid_subscription_changed')
-  ) {
-    throw new errors.ValidationError({
-      message:
-        'Paid subscription changed triggers require automationsLifecycleTriggers to be enabled.',
-      property: 'trigger_rules',
-    });
-  }
 }
 
 export function add(_apiConfig: unknown, frame: Frame) {
