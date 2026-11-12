@@ -1,3 +1,5 @@
+import type { Frame } from '@tryghost/api-framework';
+
 module.exports = (
   snippet: {
     toJSON(options: unknown): {
@@ -9,7 +11,7 @@ module.exports = (
       updated_at: string;
     };
   },
-  frame: { options?: unknown },
+  frame: Frame,
 ) => {
   const json = snippet.toJSON(frame.options);
 

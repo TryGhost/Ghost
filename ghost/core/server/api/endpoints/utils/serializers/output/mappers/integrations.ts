@@ -1,3 +1,5 @@
+import type { Frame } from '@tryghost/api-framework';
+
 module.exports = (
   model: {
     toJSON(options: unknown): {
@@ -5,7 +7,7 @@ module.exports = (
       [key: string]: unknown;
     };
   },
-  frame: { options?: unknown },
+  frame: Frame,
 ) => {
   const jsonModel = model.toJSON(frame.options);
 

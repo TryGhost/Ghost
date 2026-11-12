@@ -1,3 +1,4 @@
+import type { Frame } from '@tryghost/api-framework';
 import _ from 'lodash';
 
 const memberFields = ['id', 'uuid', 'name', 'email', 'avatar_image'];
@@ -26,7 +27,7 @@ const emailRecipientFields = [
 
 const failureMapper = (
   model: { toJSON?: (options: unknown) => Record<string, unknown>; [key: string]: unknown },
-  frame: { options?: unknown },
+  frame: Frame,
 ) => {
   const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
 
