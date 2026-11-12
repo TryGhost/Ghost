@@ -286,7 +286,7 @@ describe('App installations composition root', function () {
         { actor: { id: 'staff-id', type: 'user' } },
         { manifestUrl, digest: preview.digest },
       ),
-      failure,
+      (thrown) => thrown === failure,
     );
 
     sinon.assert.calledTwice(insert);
