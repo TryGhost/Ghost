@@ -78,6 +78,26 @@ describe('Inline wait editing', () => {
     }
   });
 
+  it('opens the next step picker on the click that blurs an invalid wait', async () => {
+    await page.viewport(1280, 1200);
+    try {
+      serve();
+      await renderAdminApp('/automations/first', flags);
+      const first = waits().first().getByRole('textbox', { name: 'Wait for' });
+      const insert = page.getByTestId('add-step-button-draft-wait-second-wait');
+      await first.fill('31');
+      await expect.element(first).toHaveFocus();
+
+      // Keep the pointer down across a canvas layout frame after the input blurs.
+      await insert.click({ delay: 125 });
+
+      await expect.element(waits().first().getByRole('alert')).toBeVisible();
+      await expect.element(insert).toHaveAttribute('aria-expanded', 'true');
+    } finally {
+      await page.viewport(1280, 800);
+    }
+  });
+
   it('labels the unit inline and keeps non-digits and leading zeros out of the field', async () => {
     const save = serve();
     await renderAdminApp('/automations/first', flags);
@@ -109,32 +129,32 @@ describe('Inline wait editing', () => {
     ).toEqual({ wait_hours: 240 });
   });
 
-  it('holds the warning until the field is left, then keeps it until the value is valid', async () => {
+  it('holds the error until the field is left, then keeps it until the value is valid', async () => {
     const save = serve();
     await renderAdminApp('/automations/first', flags);
     const card = waits().nth(0);
     const first = card.getByRole('textbox', { name: 'Wait for' });
-    const warning = card.getByRole('button', { name: 'Why this step needs attention' });
+    const error = card.getByText('Enter a wait up to 30 days', { exact: true });
     await first.click();
     await first.fill('');
     await expect.element(first).toHaveFocus();
-    await expect.element(warning).not.toBeInTheDocument();
+    await expect.element(error).not.toBeInTheDocument();
     await expect.element(first).not.toHaveAttribute('aria-invalid', 'true');
     await userEvent.tab();
-    await expect.element(warning).toBeVisible();
+    await expect.element(error).toBeVisible();
     await expect.element(first).toHaveAttribute('aria-invalid', 'true');
     await first.click();
-    await expect.element(warning).toBeVisible();
+    await expect.element(error).toBeVisible();
     await first.fill('31');
-    await expect.element(warning).toBeVisible();
+    await expect.element(error).toBeVisible();
     await first.fill('4');
-    await expect.element(warning).not.toBeInTheDocument();
+    await expect.element(error).not.toBeInTheDocument();
     // Fixed once, so the next invalid edit waits for the field to be left again.
     await first.fill('');
-    await expect.element(warning).not.toBeInTheDocument();
+    await expect.element(error).not.toBeInTheDocument();
     // Saving is blocked the whole time, shown or not.
     await page.getByRole('button', { name: 'Save', exact: true }).click();
-    await expect.element(warning).toBeVisible();
+    await expect.element(error).toBeVisible();
     expect(save.requests).toHaveLength(0);
   });
 
@@ -147,11 +167,9 @@ describe('Inline wait editing', () => {
       await first.fill(value);
       await userEvent.tab();
       await expect.element(first).toHaveValue(value);
-      await waits().nth(0).getByRole('button', { name: 'Why this step needs attention' }).click();
       await expect
-        .element(page.getByText('Enter a wait between 1 and 30 days.', { exact: true }).last())
+        .element(waits().nth(0).getByText('Enter a wait up to 30 days', { exact: true }))
         .toBeVisible();
-      await userEvent.keyboard('{Escape}');
       await page.getByRole('button', { name: 'Save', exact: true }).click();
       await page.getByRole('button', { name: 'Publish', exact: true }).click();
       await expect.element(page.getByRole('alertdialog')).not.toBeInTheDocument();
@@ -160,7 +178,7 @@ describe('Inline wait editing', () => {
     await first.click();
     await first.fill('2');
     await expect
-      .element(waits().nth(0).getByRole('button', { name: 'Why this step needs attention' }))
+      .element(waits().nth(0).getByText('Enter a wait up to 30 days', { exact: true }))
       .not.toBeInTheDocument();
     await page.getByRole('button', { name: 'Save', exact: true }).click();
     await expect.poll(() => save.requests.length).toBe(1);

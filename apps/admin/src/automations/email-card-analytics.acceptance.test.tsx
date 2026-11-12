@@ -267,6 +267,30 @@ describe('Email card analytics', () => {
     await expect.element(toggle()).not.toBeInTheDocument();
   });
 
+  it('returns to the email preview when an edit from analytics introduces a field error', async () => {
+    prepare();
+    fakeAdminEndpoint('GET', linksPath(), { automation_action_links: links(1) });
+    fakeEmailEditorData();
+    await boot();
+    await show();
+
+    await card().getByRole('button', { name: 'Email actions' }).click();
+    await page.getByRole('menuitem', { name: 'Edit email body' }).click();
+    await emailEditor().getByRole('textbox', { name: 'Subject line' }).fill('');
+    await minimizeEmailEditor();
+
+    const editedCard = editingCanvas().getByRole('article', { name: 'Send email', exact: true });
+    const analytics = editedCard.getByRole('button', { name: 'Email analytics' });
+    await expect.element(analytics).toHaveAttribute('aria-pressed', 'false');
+    await expect.element(editedCard.getByRole('alert')).toHaveTextContent('Add a subject');
+    await expect
+      .element(editedCard.getByRole('button', { name: 'Edit email content' }))
+      .toHaveAccessibleDescription(/Add a subject/);
+
+    await analytics.click();
+    await expect.element(analytics).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('keeps the workflow visible after saving with analytics open', async () => {
     prepare();
     fakeAdminEndpoint('GET', linksPath(), { automation_action_links: links(1) });
