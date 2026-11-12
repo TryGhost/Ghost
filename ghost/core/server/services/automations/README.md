@@ -4,13 +4,16 @@ Automations run a series of actions for a member after signup. Each automation i
 
 ## API and repository boundaries
 
-Automations is migrating to an API that owns workflow logic and a repository
-that provides data access. The `-2` files define the target pattern for new and
-migrated operations:
+Automations separates application operations, background execution, process
+lifetime coordination, and data access. The repository migration moves
+operation-level logic out of the database repository, not all orchestration
+into the API. The `-2` files define the target pattern for new and migrated
+API and repository operations:
 
-- [`automations-api-2.ts`](automations-api-2.ts) composes operations through an
-  injected repository. It owns workflow decisions, domain validation, IDs and
-  timestamps, scheduling calculations, response assembly, and event dispatch.
+- [`automations-api-2.ts`](automations-api-2.ts) composes application operations
+  through an injected repository. It owns enrollment and mutation decisions,
+  operation-level domain validation, IDs and timestamps, action ready-time
+  calculations, response assembly, and event dispatch.
 - [`automations-repository-2.ts`](automations-repository-2.ts) defines the
   connection-generic data-access contract. Each query operation takes its
   connection explicitly and roughly corresponds to one database query.
@@ -20,10 +23,43 @@ migrated operations:
 
 A repository can express complex selection criteria in SQL, as
 `findFirstActionRevisions` does. Returning typed rows, normalizing database
-values, and guarding an empty insert are data-access concerns. Deciding which
-operation to perform next, constructing domain payloads, or coordinating several
-queries belongs in the API or its private helpers. Do not split a query into
-extra round trips just to make its SQL simpler.
+values, and guarding an empty insert are data-access concerns. Constructing domain
+payloads or coordinating queries within an application operation belongs in the
+API or its private helpers. Do not split a query into extra round trips just to
+make its SQL simpler.
+
+### Service and worker ownership
+
+The API is an internal application interface, not the HTTP layer. Admin endpoints,
+member code, email analytics, and the background worker call it. Operations such
+as enrollment, click tracking, and step completion do not manage timers or keep
+a polling loop running.
+
+[`AutomationsService`](service.ts), constructed in [`index.ts`](index.ts) and
+initialized by Ghost's boot process, owns process-lifetime coordination. It
+subscribes to poll events, wires the current and legacy welcome-email workers,
+serializes invocations of each worker with `oneAtATime`, and manages in-memory
+timers and signed scheduler callbacks. It also re-arms polling through
+`rescheduleAll`. It does not implement enrollment or step execution rules.
+
+[`poll.ts`](poll.ts) owns execution of claimed steps: checking current member
+eligibility, sending email through the welcome-email service, applying retry
+policy, and deciding when another poll is needed. It calls API operations to
+claim steps and persist outcomes, then passes the next poll time to the service's
+injected scheduling callback. Execution decisions stay in the worker; atomic
+database transitions stay behind API operations.
+
+For example, `notify` commits new runs and their first steps, then dispatches
+`StartAutomationsPollEvent`. The service receives that event and invokes the
+worker. The worker executes steps through its collaborators and calls the API
+to record their outcomes. Calculating an action's `ready_at` is part of preparing
+that operation's data; maintaining timers and scheduler wake-ups is the service's
+responsibility.
+
+Service scheduling tests live in
+[`service.test.ts`](../../../../test/unit/server/services/automations/service.test.ts),
+and step execution tests live in
+[`poll.test.ts`](../../../../test/unit/server/services/automations/poll.test.ts).
 
 ### Transaction ownership
 
