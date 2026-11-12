@@ -60,10 +60,6 @@ const commonTests = (method: 'add' | 'edit') => {
     const fromAny = rule('any_paid_tier', 'from');
     const toFree = rule('free', 'to');
 
-    beforeEach(() => {
-      sinon.stub(labs, 'isSet').withArgs('automationsLifecycleTriggers').returns(true);
-    });
-
     afterEach(() => sinon.restore());
 
     it.each([
@@ -105,52 +101,6 @@ const commonTests = (method: 'add' | 'edit') => {
     });
   });
 
-  describe('lifecycle trigger feature flag', () => {
-    let isSet: sinon.SinonStub;
-    const changedRules = [
-      {
-        trigger_type: 'paid_subscription_changed',
-        scope: 'any_paid_tier',
-        direction: 'from',
-        product_id: null,
-      },
-      {
-        trigger_type: 'paid_subscription_changed',
-        scope: 'free',
-        direction: 'to',
-        product_id: null,
-      },
-    ];
-
-    beforeEach(() => {
-      isSet = sinon.stub(labs, 'isSet').withArgs('automationsLifecycleTriggers').returns(false);
-    });
-
-    afterEach(() => sinon.restore());
-
-    it('rejects changed triggers when lifecycle triggers are disabled', async () => {
-      await expect(
-        serializeInput(method, { ...payload, trigger_rules: changedRules }),
-      ).rejects.toMatchObject({
-        errorType: 'ValidationError',
-        statusCode: 422,
-        property: 'trigger_rules',
-        message:
-          'Paid subscription changed triggers require automationsLifecycleTriggers to be enabled.',
-      });
-    });
-
-    it('accepts changed triggers when lifecycle triggers are enabled', async () => {
-      isSet.withArgs('automationsLifecycleTriggers').returns(true);
-      const request = { ...payload, trigger_rules: changedRules };
-      await expect(serializeInput(method, request)).resolves.toEqual(request);
-    });
-
-    it('accepts valid free signup rules when lifecycle triggers are disabled', async () => {
-      await expect(serializeInput(method, payload)).resolves.toEqual(payload);
-    });
-  });
-
   describe('label added triggers', () => {
     const rule = {
       trigger_type: 'label_added',
@@ -164,7 +114,6 @@ const commonTests = (method: 'add' | 'edit') => {
     beforeEach(() => {
       isSet = sinon.stub(labs, 'isSet');
       isSet.withArgs('automationsLeadMagnets').returns(true);
-      isSet.withArgs('automationsLifecycleTriggers').returns(true);
     });
 
     afterEach(() => {
