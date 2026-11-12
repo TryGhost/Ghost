@@ -1110,31 +1110,32 @@ describe('database automations repository', function () {
 
     it('locks unopened recipients until the transaction ends', async function () {
       const trx = await knex.transaction();
-      onTestFinished(async () => {
-        await trx.rollback();
-      });
       const recipientIds = [ids.unopened, ids.other];
 
-      expect(await repository.lockNotYetOpenedEmailRecipients(trx, recipientIds)).toEqual(
-        new Set(recipientIds),
-      );
+      try {
+        expect(await repository.lockNotYetOpenedEmailRecipients(trx, recipientIds)).toEqual(
+          new Set(recipientIds),
+        );
 
-      for (const id of recipientIds) {
-        await repository.withTransaction(async (otherTrx) => {
-          await expect(
-            otherTrx('automated_email_recipients').where({ id }).forUpdate().noWait().first(),
-          ).rejects.toMatchObject({ code: 'ER_LOCK_NOWAIT' });
-        });
-      }
+        for (const id of recipientIds) {
+          await repository.withTransaction(async (otherTrx) => {
+            await expect(
+              otherTrx('automated_email_recipients').where({ id }).forUpdate().noWait().first(),
+            ).rejects.toMatchObject({ code: 'ER_LOCK_NOWAIT' });
+          });
+        }
 
-      await trx.commit();
+        await trx.commit();
 
-      for (const id of recipientIds) {
-        await repository.withTransaction(async (otherTrx) => {
-          await expect(
-            otherTrx('automated_email_recipients').where({ id }).forUpdate().noWait().first(),
-          ).resolves.toMatchObject({ id });
-        });
+        for (const id of recipientIds) {
+          await repository.withTransaction(async (otherTrx) => {
+            await expect(
+              otherTrx('automated_email_recipients').where({ id }).forUpdate().noWait().first(),
+            ).resolves.toMatchObject({ id });
+          });
+        }
+      } finally {
+        await trx.rollback();
       }
     });
   });

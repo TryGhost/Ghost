@@ -623,6 +623,31 @@ describe('automations API', function () {
       );
     });
 
+    it('waits for revision locks before locking recipients', async function () {
+      let releaseRevisions!: () => void;
+      vi.mocked(repository.lockActionRevisions).mockImplementation(
+        () =>
+          new Promise<void>((resolve) => {
+            releaseRevisions = resolve;
+          }),
+      );
+
+      const pending = track([
+        ['recipient-1', { automationActionRevisionId: 'revision-1', openedAt }],
+      ]);
+      try {
+        await new Promise<void>((resolve) => {
+          setImmediate(resolve);
+        });
+        expect(repository.lockActionRevisions).toHaveBeenCalledOnce();
+        expect(repository.lockNotYetOpenedEmailRecipients).not.toHaveBeenCalled();
+      } finally {
+        releaseRevisions();
+        await pending;
+      }
+      expect(repository.lockNotYetOpenedEmailRecipients).toHaveBeenCalledOnce();
+    });
+
     it('counts first opens for each email version', async function () {
       await track([
         ['recipient-1', { automationActionRevisionId: 'revision-1', openedAt }],
