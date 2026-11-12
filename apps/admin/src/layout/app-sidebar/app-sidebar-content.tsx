@@ -38,8 +38,7 @@ function AppSidebarContent({ floating = false }: AppSidebarContentProps) {
       <Stack
         className={cn(
           !admin7Design && groupGap,
-          admin7Design &&
-            '[&>[data-sidebar=group]+[data-sidebar=group]]:border-t [&>[data-sidebar=group]+[data-sidebar=group]]:border-border-default [&>[data-sidebar=group]+[data-sidebar=group]]:pt-4',
+          admin7Design && '[&>[data-sidebar=group]+[data-sidebar=group]]:pt-4',
         )}
         gap="sm"
       >

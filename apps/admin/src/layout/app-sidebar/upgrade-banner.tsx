@@ -47,7 +47,7 @@ function UpgradeBanner({ trialDaysRemaining }: { trialDaysRemaining: number }) {
     </Fragment>
   ));
   const upgradeLink = (
-    <Button asChild>
+    <Button className={admin7Design ? 'w-full' : undefined} asChild>
       {/* The link stretches over the whole card, which looks and behaves as one clickable box */}
       <a
         className="after:absolute after:inset-0"
@@ -69,29 +69,20 @@ function UpgradeBanner({ trialDaysRemaining }: { trialDaysRemaining: number }) {
       variant={admin7Design ? 'default' : 'gradient'}
     >
       {admin7Design ? (
-        // Short windows prioritize the upgrade action; the full message stays accessible.
-        <Stack className="[@media(max-height:600px)]:gap-2" gap="md">
+        <Stack gap="sm">
           {branding}
           <Stack gap="sm">
-            <Text
-              className="text-base tracking-tight [@media(max-height:600px)]:line-clamp-1"
-              weight="bold"
-            >
+            <Text className="text-base tracking-tight" weight="bold">
               {bannerConfig?.title || DEFAULT_TITLE}
             </Text>
-            <Text className="[@media(max-height:600px)]:sr-only" size="sm" tone="secondary">
+            <Text size="sm" tone="secondary">
               {message}
             </Text>
-            <Text
-              aria-hidden={messageParts.length > 1}
-              className="hidden [@media(max-height:600px)]:block"
-              size="sm"
-              tone="secondary"
-            >
-              {formatNumber(trialDaysRemaining)} days free trial remaining.
-            </Text>
           </Stack>
-          {upgradeLink}
+          {/* Keep the action above scrolling copy when the footer has little height. */}
+          <Box className="bg-surface-panel [@media(max-height:600px)]:sticky [@media(max-height:600px)]:bottom-0">
+            {upgradeLink}
+          </Box>
         </Stack>
       ) : (
         <>

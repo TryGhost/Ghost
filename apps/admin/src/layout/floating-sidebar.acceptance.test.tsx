@@ -15,6 +15,7 @@ import {
   type RenderAdminAppOptions,
 } from '@test-utils/acceptance';
 import { sidebarScreen } from './sidebar.screen';
+import { whatsNewScreen } from '@/whats-new/whats-new.screen';
 
 // The floating sidebar's closed circle is named after the site (the site fixture's title).
 const SITE_TITLE = 'Test Site';
@@ -75,7 +76,7 @@ describe('Floating sidebar (admin7Design)', () => {
         boot: { browseMe: { response: me } },
       });
       await expect.poll(sidebarScreen.floatingState).toBe('pinned');
-      const banner = page.getByTestId('whats-new-banner');
+      const banner = whatsNewScreen.banner();
       await expect.element(banner).toBeVisible();
       await expect.element(sidebarScreen.userMenuTrigger()).toBeVisible();
       await expect
