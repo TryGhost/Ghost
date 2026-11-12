@@ -210,8 +210,8 @@ export const formatDisplayTime = (dateString: string, timezone: string): string 
 
 /**
  * Formats a date based on the range, in the browser's time zone
- * - For ranges above 365 days: shows month and year (e.g. "Apr 2025")
- * - For ranges of 91 days or more: shows "Week of [date]"
+ * - For ranges of 365 days or more: shows month and year (e.g. "Apr 2025")
+ * - For ranges of 90 days or more: shows "Week of [date]"
  * - For other ranges: shows the date in the same format as formatDisplayDate
  */
 export const formatDisplayDateWithRange = (
@@ -234,9 +234,9 @@ export const formatDisplayDateWithRange = (
     return formatTime(parts);
   } else if (range === 1 && showHours) {
     return `${MONTHS[parts.month]} ${parts.day}, ${formatTime(parts)}`;
-  } else if (range > 365) {
+  } else if (range >= 365) {
     return `${MONTHS[parts.month]} ${parts.year}`;
-  } else if (range >= 91) {
+  } else if (range >= 90) {
     return `Week of ${formatDate(parts)}`;
   }
   return formatDate(parts);
