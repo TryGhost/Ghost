@@ -94,12 +94,12 @@ catalog:
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/preact': 3.2.6
   '@testing-library/react': 16.3.3
-  '@tryghost/color-utils': 0.2.23
-  '@tryghost/custom-fonts': 1.0.14
+  '@tryghost/color-utils': 0.2.24
+  '@tryghost/custom-fonts': 1.0.15
   '@tryghost/debug': 2.3.21
   '@tryghost/domain-events': 3.3.23
   '@tryghost/errors': 3.4.7
-  '@tryghost/helpers': 1.1.109
+  '@tryghost/helpers': 1.1.110
   '@tryghost/logging': 6.0.4
   '@tryghost/mg-clean-html': 0.12.7
   '@tryghost/metrics': 3.7.4
@@ -110,10 +110,10 @@ catalog:
   '@tryghost/promise': 2.3.21
   '@tryghost/request': 4.0.15
   '@tryghost/security': 4.0.3
-  '@tryghost/string': 0.3.8
-  '@tryghost/timezone-data': 1.0.3
+  '@tryghost/string': 0.3.9
+  '@tryghost/timezone-data': 1.0.4
   '@tryghost/tpl': 2.3.21
-  '@tryghost/url-utils': 5.4.1
+  '@tryghost/url-utils': 5.5.0
   '@types/csso': 5.0.5
   '@types/express': 4.17.25
   '@types/lodash': 4.17.27
