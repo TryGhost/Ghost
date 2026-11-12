@@ -1,9 +1,11 @@
 import type { GhostLogger } from '@tryghost/logging';
 import type { GiftLinkReactions } from '../gift-links/changes';
 import type { CustomFieldReactions } from '../members-metafields/changes';
+import type { StripeCheckoutConfigReactions } from '../stripe-checkout-config/changes';
 import { ActionLog } from './action-log';
 import { customFieldActions } from './custom-fields';
 import { giftLinkActions } from './gift-links';
+import { stripeCheckoutConfigActions } from './stripe-checkout-config';
 
 interface ActionsServiceDeps {
   logging: GhostLogger;
@@ -25,11 +27,14 @@ export class ActionsService {
   readonly giftLinks: GiftLinkReactions;
   /** Logs the changes the custom field definitions service makes. */
   readonly customFields: CustomFieldReactions;
+  /** Logs the saves the Stripe Checkout config service makes. */
+  readonly stripeCheckoutConfig: StripeCheckoutConfigReactions;
 
   constructor({ logging }: ActionsServiceDeps) {
     this.logging = logging;
     const actionLog = new ActionLog({ logging });
     this.giftLinks = giftLinkActions(actionLog);
     this.customFields = customFieldActions(actionLog);
+    this.stripeCheckoutConfig = stripeCheckoutConfigActions(actionLog);
   }
 }

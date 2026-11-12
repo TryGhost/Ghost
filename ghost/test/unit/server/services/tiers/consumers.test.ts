@@ -213,6 +213,8 @@ describe('Tiers consumers', function () {
       sandbox.replace(metafields, 'exports', { bindings: {}, fields: {} });
       sandbox.stub(db, 'knex').get(() => sinon.stub());
       forget(checkoutConfigPath);
+      // Boot initializes the actions service before the config root, which reads it.
+      await require('../../../../../core/server/services/actions').default.init();
       const root = require(checkoutConfigPath).default;
       await root.init();
       const { readTier } = root.service.previews.deps;

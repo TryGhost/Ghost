@@ -3,17 +3,11 @@ import logging from '@tryghost/logging';
 import { defineService } from '../../../kernel/define-service';
 import urlUtils from '../../../shared/url-utils';
 import * as metafields from '../members-metafields';
-import {
-  actingContext,
-  recordCheckoutConfigAction,
-  type RecordCheckoutConfigAction,
-} from './actions';
 import { CheckoutBrandingService } from './branding-service';
 import { CheckoutService } from './checkout-service';
 import { CheckoutPreviewService, type PreviewableTier } from './preview-service';
 import { StripeCheckoutConfigService } from './service';
 
-export type { RequestContext } from './actions';
 export type { CheckoutBrandingService } from './branding-service';
 export type { CheckoutService } from './checkout-service';
 export type { CheckoutPreviewService } from './preview-service';
@@ -38,56 +32,51 @@ export interface StripeCheckoutServices {
   branding: CheckoutBrandingService;
 }
 
-const extras = { actingContext };
-
 // Constructed by init() at boot, not at import: knex is only available once the DB has
 // connected.
-export default defineService(
-  'Stripe Checkout Config',
-  (): StripeCheckoutServices => {
-    const { knex } = require('../../data/db');
-    const models = require('../../models');
-    const labs = require('../../../shared/labs');
+export default defineService('Stripe Checkout Config', (): StripeCheckoutServices => {
+  const { knex } = require('../../data/db');
+  const labs = require('../../../shared/labs');
 
-    // Boot sets up the custom fields services first, as shipping saves into custom fields.
-    if (!metafields.bindings || !metafields.fields) {
-      throw new errors.IncorrectUsageError({
-        message: 'The custom fields services must be set up before the Stripe Checkout config.',
-      });
-    }
-    const tiersRoot: typeof import('../tiers') = require('../tiers');
-    const recordAction: RecordCheckoutConfigAction = (transacting, input) =>
-      recordCheckoutConfigAction({ Action: models.Action, logging, transacting, ...input });
-
-    const config = new StripeCheckoutConfigService({
-      knex,
-      recordAction,
-      bindings: metafields.bindings,
-      fields: metafields.fields,
-      // Looked up on each use: tiers are set up later in boot, and throw if they aren't.
-      requirements: () => tiersRoot.default.service.requirements,
-      logging,
+  // Boot sets up the custom fields services first, as shipping saves into custom fields.
+  if (!metafields.bindings || !metafields.fields) {
+    throw new errors.IncorrectUsageError({
+      message: 'The custom fields services must be set up before the Stripe Checkout config.',
     });
-    const checkouts = new CheckoutService({ config, labs, logging });
+  }
+  const tiersRoot: typeof import('../tiers') = require('../tiers');
+  // Each save is logged as a staff action, inside the command that made it. Boot initializes
+  // the actions service before this one.
+  const actions: typeof import('../actions').default = require('../actions').default;
+  const reactions = actions.service.stripeCheckoutConfig;
 
-    return {
-      config,
+  const config = new StripeCheckoutConfigService({
+    knex,
+    reactions,
+    bindings: metafields.bindings,
+    fields: metafields.fields,
+    // Looked up on each use: tiers are set up later in boot, and throw if they aren't.
+    requirements: () => tiersRoot.default.service.requirements,
+    logging,
+  });
+  const checkouts = new CheckoutService({ config, labs, logging });
+
+  return {
+    config,
+    checkouts,
+    // Looked up on each use: Stripe, tiers and members are set up later in boot.
+    previews: new CheckoutPreviewService({
+      stripeConnected: () => require('../stripe').api.configured,
+      readTier: (id) => tiersRoot.default.service.api.read(id),
       checkouts,
-      // Looked up on each use: Stripe, tiers and members are set up later in boot.
-      previews: new CheckoutPreviewService({
-        stripeConnected: () => require('../stripe').api.configured,
-        readTier: (id) => tiersRoot.default.service.api.read(id),
-        checkouts,
-        createPreviewLink: (params) =>
-          require('../members').api.paymentsService.getPreviewLink(params),
-        siteUrl: () => urlUtils.urlFor('home', true),
-      }),
-      branding: new CheckoutBrandingService({
-        stripeConnected: () => require('../stripe').api.configured,
-        readBranding: () => require('../stripe').api.getCheckoutBranding(),
-        logging,
-      }),
-    };
-  },
-  extras,
-);
+      createPreviewLink: (params) =>
+        require('../members').api.paymentsService.getPreviewLink(params),
+      siteUrl: () => urlUtils.urlFor('home', true),
+    }),
+    branding: new CheckoutBrandingService({
+      stripeConnected: () => require('../stripe').api.configured,
+      readBranding: () => require('../stripe').api.getCheckoutBranding(),
+      logging,
+    }),
+  };
+});
