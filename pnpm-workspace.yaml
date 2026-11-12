@@ -107,7 +107,7 @@ catalog:
   '@tryghost/nql': 0.13.5
   '@tryghost/nql-lang': 0.7.1
   '@tryghost/pretty-cli': 3.4.3
-  '@tryghost/promise': 2.3.21
+  '@tryghost/promise': 2.3.22
   '@tryghost/request': 4.0.15
   '@tryghost/security': 4.0.3
   '@tryghost/string': 0.3.9

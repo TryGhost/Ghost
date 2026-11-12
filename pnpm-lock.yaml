@@ -375,8 +375,8 @@ catalogs:
       specifier: 3.4.3
       version: 3.4.3
     '@tryghost/promise':
-      specifier: 2.3.21
-      version: 2.3.21
+      specifier: 2.3.22
+      version: 2.3.22
     '@tryghost/request':
       specifier: 4.0.15
       version: 4.0.15
@@ -3944,7 +3944,7 @@ importers:
         version: 3.4.7
       '@tryghost/promise':
         specifier: 'catalog:'
-        version: 2.3.21
+        version: 2.3.22
       '@tryghost/tpl':
         specifier: 'catalog:'
         version: 2.3.21
@@ -9005,8 +9005,8 @@ packages:
       express:
         optional: true
 
-  '@tryghost/promise@2.3.21':
-    resolution: {integrity: sha512-o2olDINH9WoL3bSrbwJenNrBcqSglQWldcoQJwSx4lzgK9gotiV+pqysHUK1vLWr07QWwro/r/aw+u/+8k89hw==}
+  '@tryghost/promise@2.3.22':
+    resolution: {integrity: sha512-lHSXocDKZFpqA1SDuQAkdBrhGrhzdKLYGpncGPkB2ebJCUV170gIdrR97rmUaHC8YBcQIsEsonEOkyrHZXihaA==}
 
   '@tryghost/referrer-parser@0.1.26':
     resolution: {integrity: sha512-GKczqlCmFSjD21bdpMoGqzYNLu2gVp/8TMtO46c5dle+iuPPe6Ku8QPAVWbu7Vd7z2qU8PPYCQa9KFWKkRFw+g==}
@@ -21196,7 +21196,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/promise@2.3.21': {}
+  '@tryghost/promise@2.3.22': {}
 
   '@tryghost/referrer-parser@0.1.26': {}
 
