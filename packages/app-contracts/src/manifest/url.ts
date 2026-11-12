@@ -145,7 +145,9 @@ function mailtoRecipients(link: URL): string | null {
 export function contactField(url: UrlField) {
   const web = url(true);
   return z.string('Expected an absolute URL').transform((value, ctx) => {
-    if (!/^mailto:/i.test(value)) {
+    // Branches on the scheme as the URL parser reads it, which skips leading spaces.
+    const link = URL.parse(value);
+    if (link?.protocol !== 'mailto:') {
       const result = web.safeParse(value);
       if (!result.success) {
         for (const issue of result.error.issues) {
@@ -155,14 +157,8 @@ export function contactField(url: UrlField) {
       }
       return result.data;
     }
-    const link = URL.parse(value);
-    const recipients = link && mailtoRecipients(link);
-    if (
-      !link ||
-      !recipients ||
-      link.href.length > URL_MAX_LENGTH ||
-      !EMAIL_ADDRESS.test(recipients)
-    ) {
+    const recipients = mailtoRecipients(link);
+    if (!recipients || link.href.length > URL_MAX_LENGTH || !EMAIL_ADDRESS.test(recipients)) {
       ctx.addIssue({ code: 'custom', message: MAILTO_PROBLEM });
       return z.NEVER;
     }

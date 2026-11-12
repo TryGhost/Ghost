@@ -189,6 +189,10 @@ describe('author', () => {
     expect(accepted.author.url).toBe('mailto:support@example.com');
     expect(AppManifestSchema.parse(accepted).author.url).toBe('mailto:support@example.com');
     expect(
+      manifestOf(manifest({ author: { name: 'A', url: ' mailto:support@example.com' } })).author
+        .url,
+    ).toBe('mailto:support@example.com');
+    expect(
       manifestOf(manifest({ author: { name: 'A', url: 'mailto:josé+apps@example.co.uk' } })).author
         .url,
     ).toBe('mailto:jos%C3%A9+apps@example.co.uk');

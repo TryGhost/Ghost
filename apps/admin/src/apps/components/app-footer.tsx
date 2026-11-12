@@ -69,7 +69,9 @@ export const WithAppFooter: React.FC<{ app: AppIconSource; children: React.React
   children,
 }) => (
   <Stack className="size-full" gap="none">
-    <Box className="min-h-0 flex-1 overflow-auto">{children}</Box>
+    <Box className="min-h-0 flex-1 overflow-auto" data-testid="app-content">
+      {children}
+    </Box>
     <div className="@container/app-footer shrink-0">
       <AppFooter app={app} />
     </div>
