@@ -1004,11 +1004,6 @@ export function pickCountry(
   return { entry: { typed, picked: country }, number: withCallingCode(typed, country) };
 }
 
-/** A country's flag, drawn from its two letters, as phones show the country of a calling code. */
-export function flagOf(country: PhoneCountry): string {
-  return String.fromCodePoint(...[...country].map((letter) => 0x1f1a5 + letter.charCodeAt(0)));
-}
-
 /**
  * The country someone most likely has a number from, by the region of the first of their
  * `locales` that names one a phone can belong to: `en-GB` is the United Kingdom, and `fr` France.

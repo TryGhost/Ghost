@@ -12,7 +12,6 @@ import {
   CALLING_CODES,
   INTERNATIONAL_PREFIXES,
   SHARED_CODES,
-  flagOf,
   holdNumber,
   isPhoneCountry,
   phoneCountryOfLocales,
@@ -272,10 +271,6 @@ describe('phone numbers in a browser', function () {
         country,
       );
     }
-  });
-
-  it("draws a country's flag", function () {
-    assert.equal(flagOf('GB'), '🇬🇧');
   });
 
   it('knows a country no number belongs to', function () {
