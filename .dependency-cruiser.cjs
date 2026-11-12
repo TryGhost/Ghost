@@ -61,6 +61,31 @@ const serviceDependencyAllowlist = [
   '^ghost/core/server/lib/mail/format-address-for-delivery\\.ts$', // Mailbox formatting for delivery; no sender policy or application instances.
 ];
 
+// What to do about a dependency the service rule rejects, read by
+// `pnpm gx services report`. The services guide states the rule. A rejected
+// dependency that matches nothing here has no decision yet. Patterns match the
+// dependency as the report names it: the import specifier for an external
+// package, the resolved source path for anything else.
+const serviceDependencyDecisions = {
+  // Holds state of the running application or does its own I/O: the root wires
+  // it and passes it in.
+  inject: [
+    '^@tryghost/logging$', // Logging.
+    '^ghost/core/shared/config/', // Config.
+    '^ghost/core/shared/settings-cache/', // Settings.
+    '^ghost/core/server/models/index\\.js$', // Models.
+    '^ghost/core/server/data/db/', // The database connection.
+    '^@tryghost/domain-events$|^ghost/core/server/lib/common/events\\.js$|^ghost/core/shared/events(-ts)?/index\\.(js|ts)$', // Event buses.
+    `^${servicesRoot}/`, // Other services, including the events and helpers they own.
+  ],
+  // Allowed only in another form.
+  importForm: [
+    '^lodash$', // Import individual functions, such as lodash/isEmpty.
+    '^moment(-timezone)?$', // Use the kernel clock, which exports moment for existing date logic.
+    '^(node:)?fs(/promises)?$|^fs-extra$', // The root passes a loader limited to the files needed.
+  ],
+};
+
 /*
  * Architectural boundary rules for the monorepo, enforced on the resolved
  * module graph (require AND import). Two sections:
@@ -377,3 +402,9 @@ module.exports = {
     },
   },
 };
+
+// dependency-cruiser rejects configuration keys it does not know, so the
+// decisions are a property its validation does not see.
+Object.defineProperty(module.exports, 'serviceDependencyDecisions', {
+  value: serviceDependencyDecisions,
+});

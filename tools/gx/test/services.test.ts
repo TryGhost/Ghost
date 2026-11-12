@@ -173,6 +173,41 @@ test('rejects incomplete assessments and invalid audit data instead of reporting
   }
 });
 
+test('classifies each rejected dependency by the first decision that matches it', () => {
+  const [alpha] = buildServiceReport(
+    { services: { alpha: entry() } },
+    audit(
+      ['alpha'],
+      [
+        finding('alpha/a.ts', 'ghost/core/shared/labs.js'),
+        finding('alpha/a.ts', 'lodash'),
+        finding('alpha/a.ts', 'lodash/pick'),
+        finding('alpha/a.ts', `${services}/beta/index.ts`),
+        finding('alpha/a.ts', `${services}/alpha/index.ts`, 'service-own-root'),
+        finding('alpha/a.ts', './missing', 'service-unresolved'),
+      ],
+    ),
+    {
+      inject: ['^ghost/core/shared/labs\\.js$', `^${services}/`],
+      importForm: ['^lodash$', '^ghost/core/shared/labs\\.js$'],
+    },
+  );
+  assert.deepEqual(
+    alpha?.findings.map(({ to, kind }) => [to, kind]),
+    [
+      ['ghost/core/shared/labs.js', 'inject'],
+      ['lodash', 'import-form'],
+      ['lodash/pick', 'no-decision'],
+      [`${services}/beta/index.ts`, 'inject'],
+      [`${services}/alpha/index.ts`, undefined],
+      ['./missing', undefined],
+    ],
+  );
+  assert.throws(() =>
+    buildServiceReport({ services: { alpha: entry() } }, audit(['alpha']), { inject: ['^a$'] }),
+  );
+});
+
 async function fixture(t: TestContext) {
   const root = await mkdtemp(join(tmpdir(), 'ghost-gx-services-'));
   t.after(() => rm(root, { recursive: true, force: true }));
@@ -237,6 +272,12 @@ test('CLI reports classifications, per-service evidence and distinct dependency 
     'Left to migrate with dependency violations': 1,
     'Standard services with dependency violations': 0,
     'Not analyzed': 0,
+    'Dependency violations': {
+      'Instances to inject': 0,
+      'Wrong import form': 0,
+      'No decision yet': 2,
+      Total: 2,
+    },
   });
   const listing = f.run(['list', '--json']);
   assert.equal(listing.status, 0, listing.stderr);
@@ -273,7 +314,7 @@ test('CLI reports classifications, per-service evidence and distinct dependency 
   const frequencies = f.run(['dependencies', '--json']);
   assert.equal(frequencies.status, 0, frequencies.stderr);
   assert.deepEqual(JSON.parse(frequencies.stdout), [
-    { dependency: 'ghost/core/shared/client.js', files: 2 },
+    { dependency: 'ghost/core/shared/client.js', files: 2, kind: 'no-decision' },
   ]);
   const markdown = f.run(['audit', '--output-type', 'markdown']);
   assert.equal(markdown.status, 0, markdown.stderr);
@@ -292,6 +333,67 @@ test('CLI reports classifications, per-service evidence and distinct dependency 
   assert.equal(unknown.status, 1);
   assert.equal(unknown.stdout, '');
   assert.match(unknown.stderr, /Unknown service: nonexistent/);
+});
+
+test('CLI groups rejected dependencies by the decisions in the boundary config', async (t) => {
+  const f = await fixture(t);
+  await f.write(
+    `${services}/alpha/third.ts`,
+    "import '../../../shared/labs.js'; import '../../../shared/client.js';",
+  );
+  await f.write('ghost/core/shared/labs.js', 'export const labs = {};');
+  const summary = f.run(['report', '--json']);
+  assert.equal(summary.status, 0, summary.stderr);
+  const violations = JSON.parse(summary.stdout)['Dependency violations'];
+  assert.deepEqual(violations, {
+    'Instances to inject': 1,
+    'Wrong import form': 0,
+    'No decision yet': 3,
+    Total: 4,
+  });
+  const text = f.run(['report']);
+  assert.match(text.stdout, /^Instances to inject\s+1\s+inject$/m);
+  assert.match(text.stdout, /^No decision yet\s+3\s+no-decision$/m);
+  assert.match(text.stdout, /^Total\s+4$/m);
+
+  const all = f.run(['dependencies']);
+  assert.match(all.stdout, /^FILES\s+KIND\s+DEPENDENCY$/m);
+  assert.match(all.stdout, /^3\s+no-decision\s+ghost\/core\/shared\/client\.js$/m);
+  const inject = f.run(['dependencies', '--kind', 'inject', '--json']);
+  assert.equal(inject.status, 0, inject.stderr);
+  assert.deepEqual(JSON.parse(inject.stdout), [
+    { dependency: 'ghost/core/shared/labs.js', files: 1, kind: 'inject' },
+  ]);
+  const details = f.run(['report', 'alpha']);
+  assert.ok(details.stdout.includes('ghost/core/shared/labs.js [service-dependencies, inject]'));
+
+  const help = f.run(['dependencies', '--help']);
+  for (const kind of ['inject', 'import-form', 'no-decision']) {
+    assert.ok(help.stdout.includes(kind), kind);
+  }
+  for (const [command, args] of [
+    ['dependencies', ['--kind', 'nonexistent']],
+    ['report', ['--kind', 'inject']],
+    ['list', ['--kind', 'inject']],
+  ] as const) {
+    const invalid = f.run([command, ...args]);
+    assert.equal(invalid.status, 1, command);
+    assert.equal(invalid.stdout, '', command);
+    assert.match(invalid.stderr, /kind/, command);
+  }
+
+  // A config without the decisions cannot produce a report that calls everything undecided.
+  const config = await readFile(join(f.root, '.dependency-cruiser.cjs'), 'utf8');
+  const withoutDecisions = config.replace(
+    /\nObject\.defineProperty\(module\.exports[\s\S]*$/,
+    '\n',
+  );
+  assert.notEqual(withoutDecisions, config);
+  await f.write('.dependency-cruiser.cjs', withoutDecisions);
+  const missing = f.run(['report']);
+  assert.equal(missing.status, 1);
+  assert.equal(missing.stdout, '');
+  assert.match(missing.stderr, /serviceDependencyDecisions/);
 });
 
 test('planned splits show runtime-service notes ahead of older migration assessments', async (t) => {
@@ -436,10 +538,22 @@ test('list filters match every report group, including unknown analysis and ever
   assert.equal(reportRows.length, groups.length - 1);
   assert.doesNotMatch(report.stdout, /Not analyzed|Not inventoried/);
   assert.match(report.stdout, /\s+relocate\nSplit\s+1\s+split\n/);
-  assert.deepEqual(footer, ['List a group: pnpm gx services list --group <group>']);
+  assert.deepEqual(footer, [
+    'List a group: pnpm gx services list --group <group>',
+    [
+      'DEPENDENCY VIOLATIONS  COUNT  KIND',
+      'Instances to inject    0      inject',
+      'Wrong import form      0      import-form',
+      'No decision yet        5      no-decision',
+      'Total                  5',
+    ].join('\n'),
+    'List a kind: pnpm gx services dependencies --kind <kind>',
+  ]);
   const summary = f.run(['report', '--json']);
   assert.equal(summary.status, 0, summary.stderr);
-  const counts = JSON.parse(summary.stdout);
+  // Own-root and unresolved imports are counted per service, not as rejected dependencies.
+  const { 'Dependency violations': violations, ...counts } = JSON.parse(summary.stdout);
+  assert.equal(violations.Total, 5);
   assert.equal(Object.keys(counts).length, groups.length);
   assert.equal(
     counts['Legacy entries'],

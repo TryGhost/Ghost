@@ -186,6 +186,11 @@ Some dependencies look like libraries but are treated as instances:
 - Lodash is allowed only as individual functions, such as `lodash/isEmpty`.
   Plain JavaScript is often simpler.
 
+The config's `serviceDependencyDecisions` records these for
+[`gx services report`](../../../../tools/gx/README.md#interpreting-the-reports),
+which groups every rejected dependency as an instance to inject, a wrong
+import form or one with no decision yet.
+
 Require models, the database and other services inside the `create` callback
 rather than at module scope, so importing a root doesn't depend on how far boot
 has got. Keep each dependency's existing timing:

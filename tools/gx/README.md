@@ -160,7 +160,7 @@ Dependency Cruiser audit. Run them from the repository root:
 | `pnpm gx services report`               | Legacy and standard totals, ownership and remaining work              |
 | `pnpm gx services list`                 | Services, ownership, migration status and dependency counts           |
 | `pnpm gx services report email-address` | One legacy entry's notes, assessments, blockers and offending imports |
-| `pnpm gx services dependencies`         | Disallowed dependencies ranked by distinct importing files            |
+| `pnpm gx services dependencies`         | Disallowed dependencies and their kind, ranked by importing files     |
 | `pnpm gx services audit`                | Dependency Cruiser's full native report                               |
 | `pnpm gx services verify email-address` | Pass or fail checks on a committed service change                     |
 
@@ -239,7 +239,22 @@ filters, but omitted from the text summary.
 `list` counts distinct disallowed dependency targets per entry, with unresolved
 and own-root imports in separate columns. `dependencies` counts distinct
 importing implementation files per target, largest first; it excludes unresolved
-and own-root findings. The native `audit` counts rule violations, so one import
+and own-root findings.
+
+The report's second table groups every rejected dependency into one of three
+kinds, which add up to its total:
+
+- **Instances to inject** (`inject`): the dependency holds application state or
+  does its own I/O, so the root wires it.
+- **Wrong import form** (`import-form`): the library is allowed only in another
+  form, such as individual Lodash functions.
+- **No decision yet** (`no-decision`): nothing has been decided.
+
+The kinds come from `serviceDependencyDecisions` in
+[`.dependency-cruiser.cjs`](../../.dependency-cruiser.cjs), next to the allowlist;
+a dependency that matches no pattern there has no decision. Record a decision by
+adding a pattern with its reason. `dependencies --kind no-decision` lists what is
+left to decide, and per-service reports show each finding's kind. The native `audit` counts rule violations, so one import
 can appear under more than one rule.
 
 All service commands use the same full dependency-cruiser scan and
