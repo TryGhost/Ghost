@@ -4,6 +4,7 @@ import sinon from 'sinon';
 import type { Knex } from 'knex';
 import logging from '@tryghost/logging';
 import { GiftLinksService } from '../../../core/server/services/gift-links/service';
+import { ActionLogService } from '../../../core/server/services/action-log/service';
 import {
   recordGiftLinkAction,
   type RecordGiftLinkAction,
@@ -36,9 +37,10 @@ describe('GiftLinksService (integration)', function () {
     await testUtils.setup('users:roles', 'posts')();
     postId = testUtils.DataGenerator.Content.posts[0].id;
     otherPostId = testUtils.DataGenerator.Content.posts[1].id;
-    // Mirror init()'s wiring: recordGiftLinkAction partially applied to models.Action.
+    // Mirror init()'s wiring: recordGiftLinkAction partially applied to the action log.
+    const actionLog = new ActionLogService({ knex: models.Base.knex, Action: models.Action });
     const recordAction: RecordGiftLinkAction = (transacting, { context, verb, subject }) =>
-      recordGiftLinkAction({ Action: models.Action, logging, transacting, context, verb, subject });
+      recordGiftLinkAction({ actionLog, logging, transacting, context, verb, subject });
     service = new GiftLinksService({ knex: models.Base.knex, recordAction });
   });
 
@@ -108,7 +110,8 @@ describe('GiftLinksService (integration)', function () {
       const existing = command === 'create' ? await service.create(CTX, postId) : undefined;
       const before = await models.Base.knex('gift_links').where('post_id', postId);
       const previousLiveLinks = await liveLinks(postId);
-      const recordAction = sinon.spy(models.Action, 'add');
+      const loggedActions = () => models.Base.knex('actions').where('resource_type', 'gift_link');
+      const actionsBefore = await loggedActions();
       // Fail the second write in the real transaction, after the history row
       // has been inserted. A rejected transaction stub cannot prove rollback.
       await models.Base.knex.raw(`
@@ -124,7 +127,7 @@ describe('GiftLinksService (integration)', function () {
 
       assert.deepEqual(await models.Base.knex('gift_links').where('post_id', postId), before);
       assert.deepEqual(await liveLinks(postId), previousLiveLinks);
-      sinon.assert.notCalled(recordAction);
+      assert.deepEqual(await loggedActions(), actionsBefore, 'a rolled back change logs nothing');
       if (existing) {
         assert.equal((await service.getPostByToken(existing.giftLinks[0]!.token))?.id, postId);
       }
@@ -132,7 +135,7 @@ describe('GiftLinksService (integration)', function () {
       // The failed command must not leave the connection or transaction stuck.
       const recovered = await service[command](CTX, postId);
       assert.equal((await liveLinks(postId))[0]?.token, recovered.giftLinks[0]?.token);
-      sinon.assert.calledOnce(recordAction);
+      assert.equal((await loggedActions()).length, actionsBefore.length + 1);
     });
   }
 
@@ -157,8 +160,8 @@ describe('GiftLinksService (integration)', function () {
       recordAction: (transacting, { context, verb, subject }) =>
         recordGiftLinkAction({
           logging,
-          Action: {
-            add: async () => {
+          actionLog: {
+            write: async () => {
               throw new Error('action write failed');
             },
           },

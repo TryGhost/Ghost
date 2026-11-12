@@ -1,6 +1,7 @@
 import type { Knex } from 'knex';
 import type { InternalApiKey, InternalKeys } from '../services/internal-keys';
 import internalKeysDefault from '../services/internal-keys';
+import type { ActionWriter } from '../services/action-log/models';
 const modelsDefault = require('../models');
 const { deleteAllSessions: deleteAllSessionsDefault } = require('./session').default;
 
@@ -8,6 +9,7 @@ interface ResetAuthenticationArgs {
   schedulerAdapter: { rescheduleAll(opts: { previousKey?: InternalApiKey }): Promise<unknown> };
   userService: { lockAll(options: any): Promise<{ count: number }> };
   options: { context?: { user?: string }; [key: string]: unknown };
+  actionLog: ActionWriter;
   models?: any;
   internalKeys?: InternalKeys;
   deleteAllSessions?: () => Promise<void>;
@@ -25,14 +27,15 @@ interface ResetAuthenticationResult {
  * the rescheduleAll, so a failure inside the adapter can't leave stale
  * session rows live for an attacker.
  *
- * The schedulerAdapter and userService come from boot's lifecycle, so they
- * are explicit parameters. The auth-domain primitives (models, internalKeys,
+ * The schedulerAdapter, userService and actionLog come from boot's lifecycle,
+ * so they are explicit parameters. The auth-domain primitives (models, internalKeys,
  * sessions) default to their module singletons; tests pass overrides.
  */
 export default async function resetAuthentication({
   schedulerAdapter,
   userService,
   options,
+  actionLog,
   models = modelsDefault,
   internalKeys = internalKeysDefault.service,
   deleteAllSessions = deleteAllSessionsDefault,
@@ -48,7 +51,7 @@ export default async function resetAuthentication({
       const { count: locked } = await userService.lockAll(txOptions);
 
       if (actorId) {
-        await models.Action.add(
+        await actionLog.write(
           {
             event: 'edited',
             resource_type: 'security_action',
@@ -61,7 +64,7 @@ export default async function resetAuthentication({
               users_locked: locked,
             },
           },
-          { transacting: tx, autoRefresh: false },
+          tx,
         );
       }
 

@@ -5,13 +5,9 @@ import type {
   InternalApiKey,
   InternalIntegrationSlug,
 } from '../../../../core/server/services/internal-keys';
+import type { ActionWriter } from '../../../../core/server/services/action-log/models';
 
-interface ActionRow {
-  event: string;
-  resource_type: string;
-  actor_id: string;
-  context: { action_name: string; api_keys_rotated: number; users_locked: number };
-}
+type ActionRow = Parameters<ActionWriter['write']>[0];
 
 type TxCallback = (_tx: object) => Promise<unknown>;
 
@@ -47,11 +43,11 @@ function buildAuthDomain({
     ApiKey: {
       refreshAllSecrets: async () => ({ count: apiKeysToRotate }),
     },
-    Action: {
-      add: async (payload: ActionRow) => {
-        recorded.actions.push(payload);
-        return {};
-      },
+  };
+
+  const actionLog: ActionWriter = {
+    write: async (action) => {
+      recorded.actions.push(action);
     },
   };
 
@@ -73,7 +69,7 @@ function buildAuthDomain({
 
   const userService = { lockAll: async () => ({ count: usersToLock }) };
 
-  return { models, internalKeys, deleteAllSessions, userService, recorded };
+  return { models, actionLog, internalKeys, deleteAllSessions, userService, recorded };
 }
 
 describe('resetAuthentication', function () {
@@ -90,6 +86,7 @@ describe('resetAuthentication', function () {
       userService: env.userService,
       options: { context: { user: 'user-1' } },
       models: env.models,
+      actionLog: env.actionLog,
       internalKeys: env.internalKeys,
       deleteAllSessions: env.deleteAllSessions,
     });
@@ -97,12 +94,14 @@ describe('resetAuthentication', function () {
     assert.deepEqual(result, { apiKeysRotated: 4, usersLocked: 3 });
     assert.equal(env.recorded.committed, true);
     assert.equal(env.recorded.actions.length, 1);
-    assert.equal(env.recorded.actions[0].event, 'edited');
-    assert.equal(env.recorded.actions[0].resource_type, 'security_action');
-    assert.equal(env.recorded.actions[0].actor_id, 'user-1');
-    assert.equal(env.recorded.actions[0].context.action_name, 'reset_authentication');
-    assert.equal(env.recorded.actions[0].context.api_keys_rotated, 4);
-    assert.equal(env.recorded.actions[0].context.users_locked, 3);
+    assert.deepEqual(env.recorded.actions[0], {
+      event: 'edited',
+      resource_type: 'security_action',
+      resource_id: null,
+      actor_type: 'user',
+      actor_id: 'user-1',
+      context: { action_name: 'reset_authentication', api_keys_rotated: 4, users_locked: 3 },
+    });
   });
 
   it('asks the scheduler adapter to reschedule with the pre-rotation key', async function () {
@@ -122,6 +121,7 @@ describe('resetAuthentication', function () {
       userService: env.userService,
       options: { context: { user: 'user-1' } },
       models: env.models,
+      actionLog: env.actionLog,
       internalKeys: env.internalKeys,
       deleteAllSessions: env.deleteAllSessions,
     });
@@ -141,6 +141,7 @@ describe('resetAuthentication', function () {
       userService: env.userService,
       options: {},
       models: env.models,
+      actionLog: env.actionLog,
       internalKeys: env.internalKeys,
       deleteAllSessions: env.deleteAllSessions,
     });
@@ -170,6 +171,7 @@ describe('resetAuthentication', function () {
         },
         options: { context: { user: 'user-1' } },
         models: env.models,
+        actionLog: env.actionLog,
         internalKeys: env.internalKeys,
         deleteAllSessions: env.deleteAllSessions,
       }),
@@ -199,6 +201,7 @@ describe('resetAuthentication', function () {
       userService: env.userService,
       options: { context: { user: 'user-1' } },
       models: env.models,
+      actionLog: env.actionLog,
       internalKeys: env.internalKeys,
       deleteAllSessions: env.deleteAllSessions,
     });

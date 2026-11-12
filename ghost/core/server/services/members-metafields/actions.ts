@@ -1,4 +1,5 @@
 import logging from '@tryghost/logging';
+import type { ActionWriter } from '../action-log/models';
 import type { Knex } from 'knex';
 import { z } from 'zod';
 import type { MemberAccess } from './access';
@@ -61,13 +62,6 @@ export function adminWriteOrigin(context: unknown): SingleWriteOrigin | null {
   };
 }
 
-export interface ActionRecorder {
-  add(
-    data: Record<string, unknown>,
-    options: { transacting: Knex.Transaction; autoRefresh: boolean },
-  ): Promise<unknown>;
-}
-
 // Field-definition changes map to activity-feed events. A field's timeline reads
 // added -> edited -> archived -> restored, and a permanent delete (only from the
 // archived state) ends it with deleted.
@@ -123,14 +117,14 @@ export type RecordMetafieldAction = (
  * change is rolled back with it. Nothing is written for a request that has no actor.
  */
 export async function recordMetafieldAction({
-  Action,
+  actionLog,
   transacting,
   context,
   verb,
   subject,
   details,
 }: {
-  Action: ActionRecorder;
+  actionLog: ActionWriter;
   transacting: Knex.Transaction;
   context: RequestContext;
   verb: MetafieldVerb;
@@ -141,19 +135,21 @@ export async function recordMetafieldAction({
     return;
   }
   try {
-    await Action.add(
-      {
-        event: COMMANDS[verb],
-        resource_type: 'member_custom_field',
-        // The field's id: this column holds 24 characters, and a key minted from
-        // a publisher-chosen name is bounded by the far wider key column, so only
-        // the id fits every field. Null where the act had no single field.
-        resource_id: subject,
-        actor_type: context.actor.type,
-        actor_id: context.actor.id,
-        context: details,
-      },
-      { transacting, autoRefresh: false },
+    const about = {
+      resource_type: 'member_custom_field',
+      // The field's id: this column holds 24 characters, and a key minted from
+      // a publisher-chosen name is bounded by the far wider key column, so only
+      // the id fits every field. Null where the act had no single field.
+      resource_id: subject,
+      actor_type: context.actor.type,
+      actor_id: context.actor.id,
+    } as const;
+    await actionLog.write(
+      // A reorder is about no single field, so it is stored as an edit named "reordered".
+      'action_name' in details
+        ? { ...about, event: 'edited', context: details }
+        : { ...about, event: COMMANDS[verb], context: details },
+      transacting,
     );
   } catch (err) {
     logging.error(

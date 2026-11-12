@@ -73,6 +73,9 @@ const servingApp =
     );
   };
 
+const actionLog: (typeof import('../../../../../core/server/services/action-log'))['default'] =
+  require('../../../../../core/server/services/action-log').default;
+
 describe('App installations composition root', function () {
   const sandbox = sinon.createSandbox();
   let previousModules: Map<string, NodeJS.Module | undefined>;
@@ -223,7 +226,9 @@ describe('App installations composition root', function () {
   it('logs action recording failures without failing the installation', async function () {
     const failure = new Error('History write failed');
     const error = sandbox.stub(logging, 'error');
-    const add = sandbox.stub(models.Action, 'add').rejects(failure);
+    // Boot initializes the action log before app installations, which write through it.
+    await actionLog.init();
+    const add = sandbox.stub(actionLog.service, 'write').rejects(failure);
     const insert = sandbox.stub().resolves();
     const trx = sandbox.stub().returns({ insert });
     Object.assign(query, {

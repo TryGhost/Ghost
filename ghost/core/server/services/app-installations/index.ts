@@ -98,11 +98,12 @@ export default defineService(
     // change config.
     appsConfig();
     const { knex } = require('../../data/db');
-    const models = require('../../models');
+    // Boot initializes the action log before this service, which writes its actions through it.
+    const actionLog: typeof import('../action-log').default = require('../action-log').default;
     const externalRequest = require('../../lib/request-external');
 
     const recordAction: RecordAppInstallationAction = (input) =>
-      recordAppInstallationAction({ Action: models.Action, logging, ...input });
+      recordAppInstallationAction({ actionLog: actionLog.service, logging, ...input });
 
     const fetchFromApp = createAppFetcher({
       request: externalRequest,

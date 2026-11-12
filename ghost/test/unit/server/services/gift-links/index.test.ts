@@ -32,6 +32,9 @@ function queryBuilder(sandbox: sinon.SinonSandbox) {
   };
 }
 
+const actionLog: (typeof import('../../../../../core/server/services/action-log'))['default'] =
+  require('../../../../../core/server/services/action-log').default;
+
 describe('gift-links root with its API consumers', function () {
   const sandbox = sinon.createSandbox();
   let originalModules: Map<string, NodeJS.Module | undefined>;
@@ -41,7 +44,9 @@ describe('gift-links root with its API consumers', function () {
   let getKnex: sinon.SinonSpy<[], typeof knex>;
   let addAction: sinon.SinonStub;
 
-  beforeEach(function () {
+  beforeEach(async function () {
+    // Boot initializes the action log before gift links, which writes its actions through it.
+    await actionLog.init();
     originalModules = new Map(Object.entries(require.cache));
     for (const path of MODULE_PATHS) {
       delete require.cache[path];
@@ -55,7 +60,7 @@ describe('gift-links root with its API consumers', function () {
     currentKnex = knex;
     getKnex = sandbox.spy(() => currentKnex);
     sandbox.stub(db, 'knex').get(getKnex);
-    addAction = sandbox.stub(models.Action, 'add').resolves();
+    addAction = sandbox.stub(actionLog.service, 'write').resolves();
   });
 
   afterEach(function () {
@@ -137,7 +142,7 @@ describe('gift-links root with its API consumers', function () {
     sinon.assert.notCalled(addAction);
   });
 
-  it('lets the earlier Admin controller remove links and record the action through the wired model', async function () {
+  it('lets the earlier Admin controller remove links and record the action through the wired action log', async function () {
     const controller = require(CONTROLLER_PATH);
     const root: Root = require(ROOT_PATH).default;
     assert.throws(() => root.service, /Gift Links used before init/);
@@ -151,13 +156,13 @@ describe('gift-links root with its API consumers', function () {
     sinon.assert.calledOnceWithExactly(
       addAction,
       {
-        event: 'deleted',
         resource_type: 'gift_link',
         resource_id: null,
         actor_type: 'user',
         actor_id: 'actor-id',
+        event: 'deleted',
       },
-      { transacting: knex, autoRefresh: false },
+      knex,
     );
   });
 });

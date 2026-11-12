@@ -74,10 +74,18 @@ export function init(): void {
   }
 
   const { knex } = require('../../data/db');
-  const models = require('../../models');
+  // Boot initializes the action log before this service, which writes its actions through it.
+  const actionLog: typeof import('../action-log').default = require('../action-log').default;
 
   const recordAction: RecordMetafieldAction = (transacting, { context, verb, subject, details }) =>
-    recordMetafieldAction({ Action: models.Action, transacting, context, verb, subject, details });
+    recordMetafieldAction({
+      actionLog: actionLog.service,
+      transacting,
+      context,
+      verb,
+      subject,
+      details,
+    });
 
   // Resolved here, not in the service: reading config is this module's job, and
   // the service is handed a number. A getter rather than a value because the

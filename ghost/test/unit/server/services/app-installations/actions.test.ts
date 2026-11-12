@@ -15,48 +15,46 @@ const input: Parameters<RecordAppInstallationAction>[0] = {
 
 describe('recordAppInstallationAction', function () {
   it('records the staff action without logging a successful write', async function () {
-    const add = sinon.stub().resolves();
+    const write = sinon.stub().resolves();
     const logging = createLoggingFake();
 
-    await recordAppInstallationAction({ ...input, Action: { add }, logging });
+    await recordAppInstallationAction({ ...input, actionLog: { write }, logging });
 
-    sinon.assert.calledOnceWithExactly(
-      add,
-      {
-        event: 'installed',
-        resource_type: 'app_installation',
-        resource_id: input.subject,
-        actor_type: 'user',
-        actor_id: 'staff-id',
-        context: input.details,
-      },
-      { autoRefresh: false },
-    );
+    sinon.assert.calledOnceWithExactly(write, {
+      event: 'installed',
+      resource_type: 'app_installation',
+      resource_id: input.subject,
+      actor_type: 'user',
+      actor_id: 'staff-id',
+      context: input.details,
+    });
     sinon.assert.notCalled(logging.error);
   });
 
   it('logs a failed write through the supplied logger and still resolves', async function () {
     const failure = new Error('History write failed');
-    const add = sinon.stub().rejects(failure);
+    const write = sinon.stub().rejects(failure);
     const logging = createLoggingFake();
 
-    await assert.doesNotReject(recordAppInstallationAction({ ...input, Action: { add }, logging }));
+    await assert.doesNotReject(
+      recordAppInstallationAction({ ...input, actionLog: { write }, logging }),
+    );
 
     sinon.assert.calledOnceWithExactly(logging.error, failure);
   });
 
   it('does not record or log an action without a staff actor', async function () {
-    const add = sinon.stub().resolves();
+    const write = sinon.stub().resolves();
     const logging = createLoggingFake();
 
     await recordAppInstallationAction({
       ...input,
       context: { actor: null },
-      Action: { add },
+      actionLog: { write },
       logging,
     });
 
-    sinon.assert.notCalled(add);
+    sinon.assert.notCalled(write);
     sinon.assert.notCalled(logging.error);
   });
 });

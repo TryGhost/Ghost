@@ -1,4 +1,5 @@
 import type { GhostLogger } from '@tryghost/logging';
+import type { ActionWriter } from '../action-log/models';
 import type { Knex } from 'knex';
 
 export interface Actor {
@@ -8,13 +9,6 @@ export interface Actor {
 
 export interface RequestContext {
   actor: Actor | null;
-}
-
-export interface ActionRecorder {
-  add(
-    data: Record<string, unknown>,
-    options: { transacting: Knex.Transaction; autoRefresh: boolean },
-  ): Promise<unknown>;
 }
 
 // The history UI only surfaces a verb-specific label (action_name) for 'edited' events; 'added' and
@@ -45,14 +39,14 @@ export type RecordGiftLinkAction = (
  * change is rolled back with it. Nothing is written for a request that has no actor.
  */
 export async function recordGiftLinkAction({
-  Action,
+  actionLog,
   logging,
   transacting,
   context,
   verb,
   subject,
 }: {
-  Action: ActionRecorder;
+  actionLog: ActionWriter;
   logging: Pick<GhostLogger, 'error'>;
   transacting: Knex.Transaction;
   context: RequestContext;
@@ -62,18 +56,19 @@ export async function recordGiftLinkAction({
   if (!context.actor) {
     return;
   }
-  const event = COMMANDS[verb];
+  const about = {
+    resource_type: 'gift_link',
+    resource_id: subject,
+    actor_type: context.actor.type,
+    actor_id: context.actor.id,
+  } as const;
   try {
-    await Action.add(
-      {
-        event,
-        resource_type: 'gift_link',
-        resource_id: subject,
-        actor_type: context.actor.type,
-        actor_id: context.actor.id,
-        ...(event === 'edited' ? { context: { action_name: verb } } : {}),
-      },
-      { transacting, autoRefresh: false },
+    await actionLog.write(
+      // Only an edit has a name, and the only edit of a gift link is a reset.
+      verb === 'reset'
+        ? { ...about, event: COMMANDS[verb], context: { action_name: verb } }
+        : { ...about, event: COMMANDS[verb] },
+      transacting,
     );
   } catch (err) {
     logging.error(err);
