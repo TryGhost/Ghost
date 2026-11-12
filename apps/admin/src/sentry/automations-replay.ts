@@ -44,7 +44,14 @@ export function createAutomationsReplay(
   };
 
   const maybeStartRecording = () => {
-    if (!shouldStartRecording || !isAutomationsPath(currentPathname) || recordingStarted) {
+    // Without a body there is nothing to carry the mask, so a recording would capture
+    // Automations unmasked if a body appeared later; a later route update retries
+    if (
+      !shouldStartRecording ||
+      !isAutomationsPath(currentPathname) ||
+      recordingStarted ||
+      !document.body
+    ) {
       return;
     }
     recordingStarted = true;

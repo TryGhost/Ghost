@@ -130,14 +130,19 @@ describe('createAutomationsReplay', () => {
     expect(replay.stop).not.toHaveBeenCalled();
   });
 
-  it('does not throw when document.body is gone', () => {
-    automationsReplay = createAutomationsReplay(fakeReplay(), true, '/automations');
+  it('skips the mask and the recording while document.body is gone', async () => {
+    const replay = fakeReplay();
+    automationsReplay = createAutomationsReplay(replay, true, '/posts');
+    await vi.runAllTimersAsync();
     const body = document.body;
     body.remove();
 
     try {
-      expect(() => automationsReplay?.update('/posts')).not.toThrow();
       expect(() => automationsReplay?.update('/automations')).not.toThrow();
+      await vi.runAllTimersAsync();
+      expect(replay.stop).not.toHaveBeenCalled();
+
+      expect(() => automationsReplay?.update('/posts')).not.toThrow();
       expect(() => automationsReplay?.dispose()).not.toThrow();
     } finally {
       document.documentElement.append(body);
