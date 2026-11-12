@@ -2290,7 +2290,9 @@ module.exports = {
       maxlength: 50,
       nullable: false,
       validations: {
-        isIn: [['free_signup', 'paid_subscription_started', 'paid_subscription_changed']],
+        isIn: [
+          ['free_signup', 'paid_subscription_started', 'paid_subscription_changed', 'label_added'],
+        ],
       },
     },
     scope: {
@@ -2311,6 +2313,13 @@ module.exports = {
       nullable: true,
       references: 'products.id',
       cascadeDelete: true,
+    },
+    label_id: {
+      type: 'string',
+      maxlength: 24,
+      nullable: true,
+      references: 'labels.id',
+      restrictDelete: true,
     },
     created_at: { type: 'dateTime', nullable: false },
     // Note that this UNIQUE constraint allows duplicates if `product_id` is NULL. This is intentional.
