@@ -58,10 +58,10 @@ const FloatingAppSidebar = React.forwardRef<HTMLDivElement, FloatingAppSidebarPr
       () => (
         <SidebarBodySwap settings={settingsNavigation} settingsSlotRef={settingsNavigationRef}>
           <AppSidebarContent floating />
-          {/* The negative margin lets navigation pass beneath the gradient;
-              its matching padding keeps the banner and avatar in place. */}
+          {/* Matching margins/padding fade navigation above the footer and paint
+              through the capsule's bottom padding without moving the avatar. */}
           <Stack
-            className="pointer-events-none relative z-10 -mx-5 -mt-6 min-h-0 shrink bg-linear-to-b from-transparent to-sidebar to-[calc(var(--spacing)*6)] px-5 pt-6"
+            className="pointer-events-none relative z-10 -mx-5 -mt-6 -mb-4 min-h-0 shrink bg-linear-to-b from-transparent to-[rgb(from_var(--surface-glass)_r_g_b_/_1)] to-[calc(var(--spacing)*6)] px-5 pt-6 pb-4"
             data-sidebar="footer-region"
             gap="none"
           >
