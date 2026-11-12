@@ -158,6 +158,7 @@ Dependency Cruiser audit. Run them from the repository root:
 | `pnpm gx services report email-address` | One entry's notes, assessments, blockers and offending imports |
 | `pnpm gx services dependencies`         | Disallowed dependencies ranked by distinct importing files     |
 | `pnpm gx services audit`                | Dependency Cruiser's full native report                        |
+| `pnpm gx services verify email-address` | Pass or fail checks on a committed service change              |
 
 List a group with `list --group <group>`. Report tables show group IDs;
 `list --help` lists all groups. For example:
@@ -175,6 +176,19 @@ pnpm gx services list --group migrated --json
 `--output-type markdown` and `--output-type json --output-to /tmp/service-dependencies.json`.
 It replaces `pnpm audit:services`; `services dependencies` replaces
 `pnpm audit:services:summary` without requiring `jq`.
+
+`services verify` needs a clean tree on a branch that contains the fetched base.
+It checks new files, audit SHAs, formatting, lint, types and boundaries. It runs
+dependency-cruiser twice, resolving workspace packages to authored source and then
+to the built output Ghost loads. Built output must add no service rule violation,
+every part of an added allowance must match an import from a service, and each file
+an added allowance admits must be named in a boundary regression. It then runs the
+full unit suite, runs the changed unit tests shuffled and each one alone and, for a migrated service, confirms a boot test fails when boot stops waiting
+for its `init()` but still sees it reject.
+`--static` skips lint, types and tests. `review` lines are other inventory entries
+that mention the service, for the
+[verify-service-change skill](../../.agents/skills/verify-service-change/SKILL.md)
+to confirm. Run it again after every rebase or fix.
 
 ### Interpreting the reports
 

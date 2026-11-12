@@ -267,7 +267,8 @@ Each entry also has a source-based `migration` assessment:
   Non-services use `not-applicable` for both dimensions.
 - `reason` explains the decision; `sources` points to existing source or test files
   relative to `ghost`. `reviewedAt` records the full source commit inspected for
-  this assessment, independently of the contract audit's `auditedAt`.
+  this assessment, independently of the contract audit's `auditedAt`. Like every
+  audit revision, it is a commit on main (see [Audit revisions](#audit-revisions)).
 
 These are migration estimates, not proof that the kernel must change or permission
 to redesign a service. Recheck the evidence before implementation. An assessment
@@ -291,7 +292,7 @@ earlier overall migration assessment above:
   an empty list means no separate preparation was identified. These are not
   implemented changes or permission to redesign the capability.
 - `sources` lists evidence relative to `ghost`. `reviewedAt` identifies the
-  source revision inspected for this assessment independently of the overall
+  commit on main inspected for this assessment, independently of the overall
   assessment and `auditedAt`.
 
 Use the full dependency audit and inspect source, root wiring and consumers.
@@ -342,19 +343,28 @@ test evidence. It describes audit completeness, not test coverage or migration
 readiness. An audited entry can still have test gaps or known bugs in `blockers`.
 The `notes` describe audit priorities and intended changes, not verified contracts.
 
-`auditedAt` is the full source commit SHA the record was last checked
+`auditedAt` is the full SHA of the commit on main the record was last checked
 against. Add it when completing or refreshing an audit; older records may
 omit it. Advance it only after reviewing relevant changes, not merely
-rebasing. Recorded contracts describe that revision. Preserve them and recheck
-relevant changes when work on that service begins. If cited evidence has since
-been deleted, keep a link to the file at the audited revision in the summary;
-`sources` and `tests` list files that still exist, without implying freshness.
+rebasing. Preserve recorded contracts and recheck relevant changes when work
+on that service begins. If cited evidence has since been deleted, keep a link
+to the file at the audited revision in the summary; `sources` and `tests` list
+files that still exist, without implying freshness.
+
+#### Audit revisions
+
+Every `reviewedAt` and `auditedAt` is a commit on main. A branch commit
+disappears when its pull request is squash merged, so use the main commit the
+branch is based on. Recorded contracts describe that revision plus the changes
+in the pull request that last edited the record, which `git log` on the
+inventory identifies.
 
 Before relying on a record, compare its service directory and cited
 source/test paths with that revision, and check for new callers. Changed
-files flag a recheck; the reference does not prove tests ran at that
-revision. Inventory validation checks its format without requiring Git
-history.
+files flag a recheck, apart from changes the recording pull request made. The
+reference does not prove tests ran at that revision. Inventory validation
+checks its format without requiring Git history; `pnpm gx services verify`
+checks that changed revisions are on main.
 
 The `unverified` facets are open questions:
 

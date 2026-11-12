@@ -66,9 +66,11 @@ Do not inject stateless utilities to evade the policy or duplicate shared helper
 Inspect the source before adding a library allowance. Justify why the dependency
 is a library rather than an application-owned instance, and allow only its exact
 entry or file. Include the reason and a boundary regression in the migration PR
-that needs the allowance. Assert each rejected target as well as its rule and
-source in boundary regressions. Keep allowances out of standalone skill/tooling
-PRs.
+that needs the allowance. Write out each file the allowance admits in full, as
+dependency-cruiser resolves it from source and from built output, in a boundary
+regression; `gx services verify` looks for the literal path, not one built from
+variables. Assert each rejected target as well as its rule and source. Keep
+allowances out of standalone skill/tooling PRs.
 Seek review when that distinction is unclear or a broader policy change is
 needed; do not widen the rule merely to make lint pass. Normal inventory and
 root-shape opt-ins still belong in each migration.
@@ -154,6 +156,7 @@ startup-order descriptions in other entries mechanically, without changing
 their unrelated assessments.
 Preserve historical audit provenance;
 record the inspected base and distinguish old evidence from new validation.
+Audit SHAs must be commits on main: a branch commit disappears on squash merge.
 Do not restore manual totals or erase unrelated backlog items.
 
 Opt the root into `ghost/service-root-shape` in `.oxlintrc.json` as required by
@@ -161,8 +164,11 @@ the current configuration; the tooling scope check must agree with the inventory
 `migrated: true` also opts implementations into the boundary checks. Do not claim enforcement passed if that policy was
 only checked in a temporary integration or is still awaiting merge.
 
-Run focused tests before/after, relevant real consumer/DB checks, root-shape and
-inventory validation, lint/typechecks and the default `pnpm check`. Run one full
+Run focused tests before/after, relevant real consumer/DB checks and the default
+`pnpm check`, then `pnpm gx services verify <name>` on the committed result. Repeat
+`gx services verify` after every rebase or fix: hooks do not run during a rebase.
+Before a PR is opened or marked ready, an agent that did not write the change runs
+the [verify-service-change skill](../verify-service-change/SKILL.md). Run one full
 local validation at a time. Investigate failures from fresh output; a passing
 retry or an unchanged file alone does not establish that a failure belongs to
 main. Keep unrelated fixes out of the migration.
