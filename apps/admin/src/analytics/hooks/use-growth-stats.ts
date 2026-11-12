@@ -1,5 +1,6 @@
 import moment from 'moment';
 import {
+  type MemberCountHistoryResponseType,
   type MemberStatusItem,
   type MrrHistoryItem,
   useMemberCountHistory,
@@ -26,7 +27,7 @@ const calculateTotals = ({
   mrrData: MrrHistoryItem[];
   openingMember?: MemberStatusItem;
   openingMrr?: number;
-  memberCountTotals?: { paid: number; free: number; comped: number; gift: number };
+  memberCountTotals?: MemberCountHistoryResponseType['meta']['totals'];
 }) => {
   if (!memberData.length) {
     return {
@@ -194,6 +195,7 @@ export const useGrowthStats = (range: number) => {
   const { data: mrrHistoryResponse, isLoading: isMrrLoading } = useMrrHistory({
     searchParams: {
       date_from: dateFrom,
+      ...(todayEnd ? { start_at: startDate.clone().utc().format('YYYY-MM-DDTHH:mm:ss[Z]') } : {}),
     },
   });
 
@@ -251,6 +253,9 @@ export const useGrowthStats = (range: number) => {
       }
 
       const useCurrency = currentMax.currency;
+      const openingAtStart = todayEnd
+        ? mrrHistoryResponse.meta.opening_totals?.find((total) => total.currency === useCurrency)
+        : undefined;
 
       // Filter MRR data to only include the selected currency
       const currencyFilteredData = mrrHistoryResponse.stats.filter(
@@ -260,16 +265,16 @@ export const useGrowthStats = (range: number) => {
       const allData = [...currencyFilteredData].sort(
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
       );
-      // The API dates its opening balance just before the first change. For
-      // sparse history that date can fall inside the selected range.
-      const openingPoint = allData.find((item) => item.date < dateFrom) ?? allData.at(-1);
+      // Older Core versions ignore start_at and return the opening balance in the history rows.
+      const openingPoint =
+        openingAtStart ?? allData.find((item) => item.date < dateFrom) ?? allData.at(-1);
       const latestPoint = allData[0];
-      if (todayEnd && openingPoint && latestPoint.date >= dateFrom) {
+      if (todayEnd && openingPoint && (openingAtStart || latestPoint.date >= dateFrom)) {
         // Plot the closing value at the end of Today, alongside the member totals.
         return {
           mrrData: [
             { ...openingPoint, date: dateFrom },
-            { ...latestPoint, date: todayEnd },
+            { ...(openingAtStart ? currentMax : latestPoint), date: todayEnd },
           ],
           openingMrr: openingPoint.mrr,
           selectedCurrency: useCurrency,

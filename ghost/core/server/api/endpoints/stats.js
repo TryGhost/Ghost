@@ -1,4 +1,8 @@
 const statsService = require('../../services/stats').default;
+const { z } = require('zod');
+const errors = require('@tryghost/errors');
+
+const mrrStartAt = z.iso.datetime({ precision: 0 }).optional();
 
 // The API pipeline keeps each method's cache by reference when it builds the
 // controller, before boot initializes Stats. Resolve the optional stats cache
@@ -62,7 +66,7 @@ const controller = {
       docName: 'members',
       method: 'browse',
     },
-    options: ['date_from'],
+    options: ['date_from', 'start_at'],
     cache: statsCache,
     generateCacheKeyData(frame) {
       return {
@@ -71,8 +75,15 @@ const controller = {
       };
     },
     async query(frame) {
+      const startAt = mrrStartAt.safeParse(frame.options.start_at);
+      if (!startAt.success) {
+        throw new errors.ValidationError({
+          message: 'Expected start_at to be a UTC timestamp in seconds.',
+        });
+      }
       return await statsService.service.api.getMRRHistory({
         dateFrom: frame?.options?.date_from,
+        startAt: startAt.data,
       });
     },
   },

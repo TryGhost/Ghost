@@ -374,6 +374,35 @@ describe('Analytics growth', () => {
     await expect.element(analyticsScreen.topContentCard()).toHaveTextContent('+30');
   });
 
+  it('shows Today MRR with the history response from older Core', async () => {
+    seedEmptyAnalyticsWorld();
+    const totals = { free: 10, paid: 5, comped: 0, gift: 0 };
+    fakeAdminStats.memberCount({
+      stats: [
+        { ...totals, date: localDaysAgo(1) },
+        { ...totals, date: localDaysAgo(0) },
+      ],
+      totals,
+    });
+    const mrr = fakeAdminStats.mrr({
+      stats: [
+        { date: localDaysAgo(1), mrr: 10000 },
+        { date: localDaysAgo(0), mrr: 9500 },
+      ],
+      totals: [{ currency: 'usd', mrr: 9500 }],
+    });
+    fakeAdminStats.topPosts();
+    await renderAdminApp('/analytics/growth/?tab=mrr', { boot: webAnalyticsBootOverrides() });
+
+    await analyticsScreen.dateRangeSelect().first().click();
+    await analyticsScreen.rangeOption('Today').click();
+    await expect.poll(() => mrr.lastRequest?.url).toContain('start_at=');
+    const params = new URL(mrr.lastRequest!.url).searchParams;
+    expect(params.get('date_from')).toBe(localDaysAgo(0));
+    const tab = analyticsScreen.totalMembersCard().getByRole('tab', { name: /^MRR/ });
+    await expect.element(tab).toHaveTextContent('$95-5.00%');
+  });
+
   it('shows No conversions across the top content tabs when nothing converted', async () => {
     seedEmptyAnalyticsWorld();
     seedZeroMemberHistory();
