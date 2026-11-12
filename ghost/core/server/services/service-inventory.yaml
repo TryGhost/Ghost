@@ -8780,7 +8780,7 @@ services:
           - core/boot.js
           - core/server/services/mentions/index.ts
           - core/server/api/endpoints/mentions.js
-          - core/server/api/endpoints/utils/serializers/input/mentions.js
+          - core/server/api/endpoints/utils/serializers/input/mentions.ts
           - core/server/api/endpoints/utils/serializers/output/mappers/mentions.ts
           - core/server/web/api/endpoints/admin/routes.js
           - core/server/web/webmentions/routes.js

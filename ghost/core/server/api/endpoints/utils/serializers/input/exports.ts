@@ -1,8 +1,14 @@
-const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:exports');
-const optionsUtil = require('@tryghost/api-framework').utils.options;
+import type { Frame } from '@tryghost/api-framework';
+import { utils } from '@tryghost/api-framework';
+import debugFactory from '@tryghost/debug';
+
+const debug = debugFactory('api:endpoints:utils:serializers:input:exports');
+const optionsUtil = utils.options;
+
+type ExportsFrame = Frame<{ options: { components?: unknown } }>;
 
 module.exports = {
-  download(apiConfig, frame) {
+  download(apiConfig: unknown, frame: ExportsFrame) {
     debug('download');
 
     // `components` arrives as a comma-separated string, or as an array

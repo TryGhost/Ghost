@@ -1,5 +1,9 @@
+import type { Frame } from '@tryghost/api-framework';
+
+type EmailsFrame = Frame<{ options: { withRelated?: string[] } }>;
+
 module.exports = {
-  browseFailures(apiConfig, frame) {
+  browseFailures(apiConfig: unknown, frame: EmailsFrame) {
     if (!frame.options.withRelated) {
       return;
     }
