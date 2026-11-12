@@ -3,6 +3,7 @@ import {
   SIGNED_MANIFEST_MAX_BYTES,
   parseJsonText,
 } from '@tryghost/app-contracts/identity';
+import type { AppFailureCode } from '@tryghost/app-contracts';
 import errors from '@tryghost/errors';
 import type { GhostLogger } from '@tryghost/logging';
 import type { AppFetchFailure, FetchFromApp } from './fetch-from-app';
@@ -32,7 +33,7 @@ function unreachable(
   logging.warn(failure.reason === 'unreachable' ? failure.cause : context);
   return new errors.ValidationError({
     message: 'Could not load the app’s manifest.',
-    code: 'APP_MANIFEST_UNREACHABLE',
+    code: 'APP_MANIFEST_UNREACHABLE' satisfies AppFailureCode,
     context,
   });
 }
@@ -50,7 +51,7 @@ function manifestError(
     case 'redirected':
       return new errors.ValidationError({
         message: 'The app’s manifest redirects to another host.',
-        code: 'APP_MANIFEST_REDIRECTED',
+        code: 'APP_MANIFEST_REDIRECTED' satisfies AppFailureCode,
         context: `${manifestUrl} redirects to ${failure.host}`,
       });
     case 'too_large':
@@ -61,7 +62,7 @@ function manifestError(
 export function manifestTooLarge(manifestUrl: string): errors.ValidationError {
   return new errors.ValidationError({
     message: `The app’s manifest is larger than ${MANIFEST_MAX_BYTES / 1024} KB.`,
-    code: 'APP_MANIFEST_TOO_LARGE',
+    code: 'APP_MANIFEST_TOO_LARGE' satisfies AppFailureCode,
     context: manifestUrl,
   });
 }
@@ -101,7 +102,7 @@ export function parseJson(text: string, manifestUrl: string): unknown {
   } catch {
     throw new errors.ValidationError({
       message: 'The app’s manifest is not JSON.',
-      code: 'APP_MANIFEST_NOT_JSON',
+      code: 'APP_MANIFEST_NOT_JSON' satisfies AppFailureCode,
       context: manifestUrl,
     });
   }

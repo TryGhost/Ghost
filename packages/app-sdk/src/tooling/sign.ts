@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
+import type { AppFailureCode } from '@tryghost/app-contracts';
 import {
   SIGNED_MANIFEST_MAX_BYTES,
   parseJsonText,
@@ -56,7 +57,8 @@ export type SignResult =
       errors: ManifestError[];
     };
 
-type Refusal = Extract<SignResult, { success: false }>;
+// Never if a code here stops being one Ghost answers with, so `refuse` stops compiling.
+type Refusal = Extract<SignResult, { success: false; code: AppFailureCode }>;
 
 const refuse = (code: Refusal['code'], message: string, path = ''): Refusal => ({
   success: false,
