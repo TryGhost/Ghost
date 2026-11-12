@@ -45,7 +45,7 @@ describe('Scheduling Default Adapter', function () {
       ];
 
       dates.forEach(function (time) {
-        scope.adapter._addJob({
+        scope.adapter.schedule({
           time: time,
           url: 'something',
         });
@@ -225,7 +225,7 @@ describe('Scheduling Default Adapter', function () {
       jobsToDelete[moment().add(40, 'milliseconds').valueOf()] = [{ url: '/3', time: 1236 }];
 
       _.map(jobsToDelete, function (value) {
-        scope.adapter._deleteJob(value[0]);
+        scope.adapter.unschedule(value[0]);
       });
 
       // add jobs, which will be pinged
@@ -247,7 +247,7 @@ describe('Scheduling Default Adapter', function () {
     });
 
     it('delete job (unschedule): time is null', function () {
-      scope.adapter._deleteJob({ time: null, url: '/test' });
+      scope.adapter.unschedule({ time: null, url: '/test' });
       assert.equal(Object.keys(scope.adapter.deletedJobs).length, 0);
     });
   });
