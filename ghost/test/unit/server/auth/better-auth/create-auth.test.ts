@@ -35,6 +35,7 @@ function deps({
     },
     logger: { debug() {}, info() {}, warn() {}, error() {} },
     limiters,
+    sendPasswordResetEmail: async () => {},
   };
 }
 

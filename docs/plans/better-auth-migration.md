@@ -270,19 +270,27 @@ the session (Phase 2), so they create a Better Auth session directly.
 **`ghostStaffLifecycle`** (Phase 2). Ghost's status rules layered on Better
 Auth core.
 
-- Before `/sign-in/email`: `locked` sends the reset email and throws
-  `PASSWORD_RESET_REQUIRED`; `inactive` throws `ACCOUNT_SUSPENDED`; unknown
-  email and wrong password map to today's messages (§5.3).
+- `/sign-in/email` does not enumerate staff (§5.3): an unknown email and a
+  wrong password are both `INVALID_EMAIL_OR_PASSWORD`. A failed attempt for a
+  `locked` user still sends the reset email, without changing the response.
 - Before magic-link, passkey and SSO sign-in: refuse `inactive`, and set a
   `locked` user's `status` to `active` (as reset does today). This runs before
-  the session is created, so the session guard below admits them.
-- After every sign-in: set `last_seen`, set `status` to `active`.
+  the session is created, so the session guard below admits them. The unlock
+  only matches a `locked` user, and a user suspended in the meantime is refused.
+- A successful `/reset-password` sets a `locked` user `active`, as legacy
+  `doReset` does, so the user can sign in afterwards (step 8, PLA-620). Until
+  then a native reset leaves the user locked.
+- After every sign-in: set `last_seen`, and set a `warn-*` status to `active`.
+  Both are bookkeeping, so a failure is logged and the sign-in stands.
 - `databaseHooks.session.create.before`: refuse non-active users on every path.
   It runs after the before-hooks above, so only users still non-active by then
   are refused.
 - Server-only: `setupOwner`, `acceptInvitation` (user + credential account +
-  role in one transaction), `createVerifiedSession`, `revokeUserSessions`,
-  `revokeAllSessions`, `lockAllUsers`.
+  role in one transaction), `createVerifiedSession` (the admin origin is
+  required, since a session without one is anonymous), `revokeUserSessions`,
+  `revokeAllSessions`. Authentication reset keeps legacy `lockAll`, which
+  locks users and replaces their credentials in the same transaction as the
+  key rotation and audit row, and calls `revokeAllSessions` after the commit.
 
 **`ghostDeviceVerification`** (Phase 3). `twoFactor` and `emailOTP` are per-user
 opt-in; Ghost's rule is "every staff user, trusted browser, satisfied by any
@@ -564,19 +572,26 @@ compatibility.
 Compatibility controllers map Better Auth `APIError`s to `@tryghost/errors`
 with today's messages, so older Admin builds keep working:
 
-| Better Auth                              | Ghost error                                                          |
-| ---------------------------------------- | -------------------------------------------------------------------- |
-| `USER_NOT_FOUND`                         | `NotFoundError` `There is no user with that email address.`          |
-| `INVALID_EMAIL_OR_PASSWORD` (known user) | `ValidationError` `PASSWORD_INCORRECT` `Your password is incorrect.` |
-| `PASSWORD_RESET_REQUIRED`                | `PasswordResetRequiredError`                                         |
-| `ACCOUNT_SUSPENDED`                      | `NoPermissionError` `This account has been suspended.`               |
-| `DEVICE_VERIFICATION_REQUIRED`           | `NoPermissionError`, `Needs2FAError`, `2FA_*` code                   |
-| `INVALID_TOKEN` / expired                | existing reset-token messages                                        |
-| `TOO_MANY_REQUESTS`                      | `TooManyRequestsError`                                               |
+| Better Auth                    | Ghost error                                                 |
+| ------------------------------ | ----------------------------------------------------------- |
+| `INVALID_EMAIL_OR_PASSWORD`    | today's messages or one generic message, decided with SC-90 |
+| `PASSWORD_RESET_REQUIRED`      | `PasswordResetRequiredError`                                |
+| `ACCOUNT_SUSPENDED`            | `NoPermissionError` `This account has been suspended.`      |
+| `DEVICE_VERIFICATION_REQUIRED` | `NoPermissionError`, `Needs2FAError`, `2FA_*` code          |
+| `INVALID_TOKEN` / expired      | existing reset-token messages                               |
+| `TOO_MANY_REQUESTS`            | `TooManyRequestsError`                                      |
 
-The native endpoints emit the codes the React `AuthClient` already expects
-(`USER_NOT_FOUND`, `INVALID_PASSWORD`, `PASSWORD_RESET_REQUIRED`,
-`INVALID_CODE`, `twoFactorRedirect` + `twoFactorReason`).
+The native endpoints emit the codes the React `AuthClient` expects
+(`PASSWORD_RESET_REQUIRED`, `INVALID_CODE`, `twoFactorRedirect` +
+`twoFactorReason`), except that sign-in does not enumerate staff: an unknown
+email, a wrong password and a wrong password on a suspended account are all
+Better Auth's `INVALID_EMAIL_OR_PASSWORD`, so `USER_NOT_FOUND` and
+`INVALID_PASSWORD` are not used. Admin's sign-in form keys on those two codes
+to mark the email or password field, so its native client must treat
+`INVALID_EMAIL_OR_PASSWORD` as one error for both fields. Suspension and
+`PASSWORD_RESET_REQUIRED` only show after a matching password. Today's
+messages enumerate staff (SC-90); whether the compatibility controllers keep
+them is decided with SC-90.
 
 ### 5.4 Behaviour
 
@@ -681,7 +696,9 @@ Exit: merged to main; full e2e API suite green under `legacy`.
    Until 7.0 drops `sessions`, both also delete the user's legacy `sessions`
    rows, so a rollback (§8) cannot revive a session a security event revoked.
 8. `PUT /users/password` and `PUT /authentication/password_reset` use
-   `createVerifiedSession`.
+   `createVerifiedSession`. `ghostStaffLifecycle` sets a `locked` user
+   `active` on a successful `/reset-password`, or `createVerifiedSession`
+   refuses the user it just reset.
 9. Cleanup job (§4.6).
 10. Run `session`, `session-invalidation`, `users`, `api-tokens`,
     `key-authentication`, `sso` e2e API tests and `e2e/tests/admin/signin.test.ts`

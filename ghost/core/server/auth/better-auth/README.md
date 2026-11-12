@@ -60,6 +60,29 @@ until Phase 4.
   outside `server/services`, so the
   [service checks](../../services/README.md#roots-outside-this-directory) do
   not apply to it.
+- `plugins/staff-lifecycle.ts`: `ghostStaffLifecycle`, Ghost's staff status
+  rules (plan §3.3). `/sign-in/email` keeps Better Auth's
+  `INVALID_EMAIL_OR_PASSWORD` for an unknown email, a wrong password and a
+  wrong password on a suspended account, so it can't enumerate staff (unlike
+  legacy sign-in, SC-90). A `session.create.before` hook refuses non-active
+  users on every path, so a matching password on a `locked` account is
+  `PASSWORD_RESET_REQUIRED` and on an `inactive` one `ACCOUNT_SUSPENDED`;
+  magic-link, passkey and SSO sign-in instead set a `locked` user `active`.
+  Any failed password sign-in for a `locked` user emails the legacy reset
+  link, as legacy sign-in does, without awaiting it or changing the response.
+  The after-hook that does this runs after the endpoint's CSRF check, so a
+  cross-origin request sends nothing. Every new session sets `last_seen` and
+  moves a `warn-*` status to `active`; a lock or suspension committed after
+  the guard's read stands, and a failure is logged without failing sign-in.
+  The guard reads the status without a lock, so a suspension that commits
+  while a session is being created can leave a session row, which
+  `revokeUserSessions` in the same gap misses. Anything that trusts a session
+  or token (the Admin API resolver, revocation, app tokens) must check the
+  user's status too. Server-only: `createVerifiedSession`, which requires the
+  admin origin, `revokeUserSessions` and `revokeAllSessions`, which no Ghost
+  caller uses yet.
+- `routes.ts`: the Better Auth paths that matchers, limiters and
+  `disabledPaths` refer to. A mistyped path matches nothing, silently.
 
 Ghost mounts at the subdirectory, so on a subdirectory install requests reach
 Better Auth as `/blog/ghost/api/admin/auth/...`. `basePath` therefore carries
