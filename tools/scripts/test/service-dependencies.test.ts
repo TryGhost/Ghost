@@ -70,7 +70,7 @@ function fixture(t: TestContext, files: Record<string, string>) {
     mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
     cpSync(path.join(repository, file), path.join(root, file));
   }
-  for (const file of [resolver, 'node_modules/js-yaml', 'tools/scripts/node_modules']) {
+  for (const file of [resolver, 'tools/scripts/node_modules']) {
     mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
     symlinkSync(path.join(repository, file), path.join(root, file));
   }
