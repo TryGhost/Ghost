@@ -299,7 +299,7 @@ export const ListPickerStyles = `
     .gh-portal-listpicker-option[aria-selected="true"] .gh-portal-listpicker-marker::after {
         content: "";
         position: absolute;
-        top: 0.5px;
+        top: 1px;
         left: 3.5px;
         width: 3.5px;
         height: 7px;
@@ -313,7 +313,7 @@ export const ListPickerStyles = `
     }
 
     .gh-portal-listpicker-option[aria-selected="true"] .gh-portal-listpicker-marker.is-check::after {
-        top: 0.5px;
+        top: 2px;
         left: 4.5px;
         width: 4px;
         height: 8px;
