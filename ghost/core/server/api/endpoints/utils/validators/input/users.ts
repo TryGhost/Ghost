@@ -1,13 +1,18 @@
-const debug = require('@tryghost/debug')('api:endpoints:utils:validators:input:users');
-const tpl = require('@tryghost/tpl');
-const errors = require('@tryghost/errors');
+import debugFactory from '@tryghost/debug';
+import tpl from '@tryghost/tpl';
+import errors from '@tryghost/errors';
+
+const debug = debugFactory('api:endpoints:utils:validators:input:users');
 
 const messages = {
   newPasswordsDoNotMatch: 'Your new passwords do not match',
 };
 
 module.exports = {
-  changePassword(apiConfig, frame) {
+  changePassword(
+    apiConfig: unknown,
+    frame: { data: { password: Array<{ newPassword?: unknown; ne2Password?: unknown }> } },
+  ) {
     debug('changePassword');
 
     const data = frame.data.password[0];
