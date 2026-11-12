@@ -558,6 +558,21 @@ async function initServices({ ghostServer, config, prometheusClient, jobsService
 }
 
 /**
+ * Runs one background startup step, logging its failure instead of throwing, so that a step
+ * which fails cannot stop the steps after it.
+ * @param {() => unknown} step
+ * @returns {Promise<void>}
+ */
+async function runIsolated(step) {
+  try {
+    await step();
+  } catch (err) {
+    const logging = require('@tryghost/logging');
+    logging.error(err);
+  }
+}
+
+/**
  * Kick off recurring jobs and background services
  * These are things that happen on boot, but we don't need to wait for them to finish
  * Later, this might be a service hook
@@ -579,13 +594,9 @@ async function initBackgroundServices({ config }) {
 
   // Resume any newsletter sends interrupted by a prior container shutdown.
   // Runs before activitypub.init so an activitypub failure can't disable recovery.
-  try {
-    const emailService = require('./server/services/email-service');
-    await emailService.service.resumeInterruptedSends();
-  } catch (err) {
-    const logging = require('@tryghost/logging');
-    logging.error(err);
-  }
+  await runIsolated(() =>
+    require('./server/services/email-service').service.resumeInterruptedSends(),
+  );
 
   // Retry gift deliveries interrupted by a prior shutdown. Not awaited: recovery
   // sends sequentially and must not hold up the remaining background services.
@@ -594,54 +605,19 @@ async function initBackgroundServices({ config }) {
 
   const jobsService = require('./server/services/jobs-service').getInstance();
 
-  // Runs before activitypub.init for the same reason as the send recovery
-  // above: gifts would otherwise go uncleaned for the life of the process
-  // if an unrelated background service fails.
-  try {
-    const giftJobs = require('./server/services/gifts/jobs');
-    await giftJobs.scheduleGiftCleanupJob(jobsService);
-  } catch (err) {
-    const logging = require('@tryghost/logging');
-    logging.error(err);
-  }
-
-  // Runs before activitypub.init for the same reason as the gift cleanup
-  // above: reminders would otherwise go unsent for the life of the process
-  // if an unrelated background service fails.
-  try {
-    const giftJobs = require('./server/services/gifts/jobs');
-    await giftJobs.scheduleGiftReminderJob(jobsService);
-  } catch (err) {
-    const logging = require('@tryghost/logging');
-    logging.error(err);
-  }
-
-  // Runs before activitypub.init for the same reason as the gift cleanup
-  // above: tokens and expired comped subscriptions would otherwise go
-  // uncleaned for the life of the process if an unrelated background
-  // service fails.
-  try {
-    const memberJobs = require('./server/services/members/jobs');
-    await memberJobs.scheduleTokenCleanupJob(jobsService);
-  } catch (err) {
-    const logging = require('@tryghost/logging');
-    logging.error(err);
-  }
-
-  try {
-    const memberJobs = require('./server/services/members/jobs');
-    await memberJobs.scheduleExpiredCompCleanupJob(jobsService);
-  } catch (err) {
-    const logging = require('@tryghost/logging');
-    logging.error(err);
-  }
-
-  try {
-    const signingKeys = require('./server/services/signing-keys').default;
-    await signingKeys.extras.scheduleCheckJob(jobsService);
-  } catch (err) {
-    const logging = require('@tryghost/logging');
-    logging.error(err);
+  // These run before activitypub.init for the same reason as the send recovery above: gifts,
+  // reminders, tokens, expired comped subscriptions and signing keys would otherwise go
+  // unhandled for the life of the process if an unrelated background service fails.
+  // Each is scheduled in turn and isolated from the others.
+  const jobsBeforeActivityPub = [
+    () => require('./server/services/gifts/jobs').scheduleGiftCleanupJob(jobsService),
+    () => require('./server/services/gifts/jobs').scheduleGiftReminderJob(jobsService),
+    () => require('./server/services/members/jobs').scheduleTokenCleanupJob(jobsService),
+    () => require('./server/services/members/jobs').scheduleExpiredCompCleanupJob(jobsService),
+    () => require('./server/services/signing-keys').default.extras.scheduleCheckJob(jobsService),
+  ];
+  for (const scheduleJob of jobsBeforeActivityPub) {
+    await runIsolated(scheduleJob);
   }
 
   // Load email analytics recurring jobs. Runs before activitypub.init for the
@@ -666,20 +642,12 @@ async function initBackgroundServices({ config }) {
   const activitypub = require('./server/services/activitypub');
   await activitypub.init();
 
-  try {
-    const tinybirdSync = require('./server/services/tinybird-sync');
-    await tinybirdSync.scheduleJob(jobsService);
-  } catch (err) {
-    const logging = require('@tryghost/logging');
-    logging.error(err);
-  }
-
-  try {
-    const updateCheck = require('./server/services/update-check');
-    await updateCheck.scheduleJobs(jobsService);
-  } catch (err) {
-    const logging = require('@tryghost/logging');
-    logging.error(err);
+  const jobsAfterActivityPub = [
+    () => require('./server/services/tinybird-sync').scheduleJob(jobsService),
+    () => require('./server/services/update-check').scheduleJobs(jobsService),
+  ];
+  for (const scheduleJob of jobsAfterActivityPub) {
+    await runIsolated(scheduleJob);
   }
 
   // Remote feature-flag overrides (config-gated; inert unless explicitly configured).
