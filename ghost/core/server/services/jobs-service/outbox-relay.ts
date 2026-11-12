@@ -10,14 +10,14 @@ export interface OutboxRelayTimings {
 }
 
 export interface OutboxRelayOptions extends OutboxRelayTimings {
-  outbox: JobsOutbox;
+  outbox: Pick<JobsOutbox, 'processNext'>;
   backend: Pick<JobsBackendBase, 'enqueue'>;
   logging: JobsLogger;
   sentry?: JobsErrorReporter;
 }
 
 export class OutboxRelay {
-  readonly #outbox: JobsOutbox;
+  readonly #outbox: Pick<JobsOutbox, 'processNext'>;
   readonly #backend: Pick<JobsBackendBase, 'enqueue'>;
   readonly #logging: JobsLogger;
   readonly #sentry?: JobsErrorReporter;
