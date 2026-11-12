@@ -1,11 +1,16 @@
-const assert = require('node:assert/strict');
-const linkReplacer = require('../../../../core/server/lib/link-replacer');
-const html5parser = require('html5parser');
-const sinon = require('sinon');
+import assert from 'node:assert/strict';
+import * as linkReplacer from '../../../../core/server/lib/link-replacer';
+import * as html5parser from 'html5parser';
+import { vi } from 'vitest';
+
+vi.mock('html5parser', async (importOriginal) => {
+  const original = await importOriginal<typeof import('html5parser')>();
+  return { ...original, tokenize: vi.fn(original.tokenize) };
+});
 
 describe('LinkReplacementService', function () {
   afterEach(function () {
-    sinon.restore();
+    vi.mocked(html5parser.tokenize).mockReset();
   });
 
   describe('replace', function () {
@@ -97,7 +102,9 @@ describe('LinkReplacementService', function () {
     });
 
     it('Ignores parse errors', async function () {
-      sinon.stub(html5parser, 'tokenize').throws(new Error('test'));
+      vi.mocked(html5parser.tokenize).mockImplementationOnce(() => {
+        throw new Error('test');
+      });
       const html = '<a href="http://localhost:2368/dir/path">link</a>';
 
       const replaced = await linkReplacer.replace(html, () => 'valid');

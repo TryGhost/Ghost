@@ -1,15 +1,17 @@
+import { tokenize } from 'html5parser';
+import * as entities from 'entities';
+
 /**
  * Replaces the links in the provided HTML
- * @param {string} html
- * @param {(url: URL, originalPath: string) => Promise<URL|string|false>} replaceLink
- * @param {object} options
- * @param {string} [options.base] If you want to replace relative links, this will replace them to an absolute link and call the replaceLink method too
- * @returns {Promise<string>}
  */
-const replace = async (html, replaceLink, options = {}) => {
-  const { tokenize } = require('html5parser');
-  const entities = require('entities');
-
+export const replace = async (
+  html: string,
+  replaceLink: (
+    url: URL,
+    originalPath: string,
+  ) => URL | string | false | Promise<URL | string | false>,
+  options: { base?: string } = {},
+): Promise<string> => {
   try {
     const tokens = tokenize(html); // IToken[]
     const replacements = [];
@@ -60,8 +62,8 @@ const replace = async (html, replaceLink, options = {}) => {
             // Ignore invalid URLs
           }
           if (url) {
-            url = await replaceLink(url, path);
-            const str = url.toString();
+            const replacement = await replaceLink(url, path);
+            const str = replacement.toString();
             replacements.push({ url: str, start: token.start + 1, end: token.end - 1 });
           }
 
@@ -88,5 +90,3 @@ const replace = async (html, replaceLink, options = {}) => {
     return html;
   }
 };
-
-module.exports = { replace };

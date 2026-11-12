@@ -3577,7 +3577,7 @@ services:
           - core/server/services/link-tracking/link-click-repository.js
           - core/server/services/link-tracking/post-link-repository.js
           - core/server/services/link-redirection/link-redirects-service.js
-          - core/server/lib/link-replacer.js
+          - core/server/lib/link-replacer.ts
           - core/server/models/base/plugins/bulk-operations.js
           - package.json
         tests:
