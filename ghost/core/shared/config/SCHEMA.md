@@ -48,7 +48,11 @@ Organise it by area:
   `AuthEngine`, so code that passes a value around imports it rather than
   restating it.
 - **Field types more than one area uses**, such as `httpUrl()`, are in
-  [`schema/primitives.ts`](schema/primitives.ts).
+  [`schema/primitives.ts`](schema/primitives.ts). A shape several areas embed
+  gets its own file instead: [`schema/redis.ts`](schema/redis.ts) is the one
+  Redis connection block. Its keys are ioredis option names, so the parsed value
+  is the client's options, and it is loose, like `database:connection` for
+  mysql2, so any other ioredis option passes through.
 
 An area file is reviewed by the people who own the code that reads it, in the
 same change as that code.
