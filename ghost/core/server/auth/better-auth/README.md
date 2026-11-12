@@ -61,6 +61,8 @@ cookies are not read. `Bearer` is still rejected until Phase 4.
   `status: active`. Server-only: `createVerifiedSession`,
   `revokeUserSessions`, `revokeAllSessions` and `lockAllUsers`, which no Ghost
   caller uses yet.
+- `session-controller.ts`: `POST` and `DELETE /session` under `better-auth`,
+  described below.
 - `routes.ts`: the Better Auth paths that matchers, limiters and
   `disabledPaths` refer to. A mistyped path matches nothing, silently.
 
@@ -101,6 +103,38 @@ IPv6 counts per /64, the block a single subscriber usually holds.
   `user_accounts` with the hash from `users.password` (plan §4.4). Boot runs
   it wherever the in-development tables are created (development and testing
   with `createInDevelopmentTables`); it skips users that already have one.
+
+## Running Better Auth locally
+
+Development uses MySQL, so only the engine and the tables need turning on:
+
+```bash
+auth__engine=better-auth createInDevelopmentTables=true pnpm dev:up
+```
+
+The same keys work in `ghost/config.local.json`
+(`"auth": {"engine": "better-auth"}, "createInDevelopmentTables": true`).
+Boot creates the in-development tables and copies each user's password into
+`user_accounts`. Legacy session cookies are not read, so staff sign in again
+once, and again after switching back to `legacy`. Development config has
+`security:staffDeviceVerification` off, so every new session is verified;
+with it on, sign-in can't complete until device verification moves (plan
+Phase 3). Until legacy password writes reach `user_accounts` (plan Phase 2), a
+password changed after the first boot under `better-auth` isn't seen by
+sign-in.
+
+## Compatibility routes
+
+Under `better-auth`, `POST /session` (`session-controller.ts`) calls
+`signInEmail` with headers only and `returnHeaders`, and forwards the session
+cookie, with the legacy body, `201`, rate limits and `userLogin` reset on
+success. `DELETE /session` calls `signOut` and answers `204`. Server-side calls skip Better
+Auth's origin checks, so the controller keeps the legacy login-CSRF check. It
+also keeps the legacy errors, which enumerate staff (SC-90): on Better Auth's
+generic `INVALID_EMAIL_OR_PASSWORD` it looks the email up and answers as
+legacy sign-in would. With `security:staffDeviceVerification` off, a
+`session.create.before` hook in `create-auth.ts` marks every new session
+verified, as legacy does. The legacy `sessions` table is untouched.
 
 ## Tables
 

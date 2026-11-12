@@ -30,7 +30,7 @@ describe.skipIf(isSQLite)('Better Auth instance', function () {
     sinon.restore();
   });
 
-  function build() {
+  function build({ deviceVerification = true } = {}) {
     return createAuth({
       db: knex,
       secret: 'a'.repeat(64),
@@ -40,6 +40,7 @@ describe.skipIf(isSQLite)('Better Auth instance', function () {
       logger: { debug() {}, info() {}, warn() {}, error() {} },
       limiters,
       sendPasswordResetEmail: async () => {},
+      isStaffDeviceVerificationEnabled: () => deviceVerification,
     });
   }
 
@@ -61,6 +62,15 @@ describe.skipIf(isSQLite)('Better Auth instance', function () {
       new Date(row.expires_at).getTime(),
       now.getTime() + config.get('admin:sessionMaxAgeMs'),
     );
+  });
+
+  it('verifies new sessions when staff device verification is off', async function () {
+    const result = await build({ deviceVerification: false }).api.signInEmail({
+      body: { email: owner.email, password: owner.password },
+    });
+
+    const row = await knex('user_sessions').where({ token: result.token }).first();
+    assert.equal(row.verified, 1);
   });
 
   describe('native responses', function () {

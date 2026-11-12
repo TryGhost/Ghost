@@ -1092,8 +1092,30 @@ const getFixtureOps = (toDos) => {
     return service.repository.init();
   });
 
+  fixtureOps.push(syncCredentialAccounts);
+
   return fixtureOps;
 };
+
+/**
+ * Under better-auth, sign-in reads `user_accounts`, which the fixtures' password
+ * writes don't reach until legacy password writes move there (plan Phase 2).
+ */
+async function syncCredentialAccounts() {
+  const config = require('../../core/shared/config');
+  const { knex } = require('../../core/server/data/db');
+  if (
+    config.get('auth:engine') !== 'better-auth' ||
+    !(await knex.schema.hasTable('user_accounts'))
+  ) {
+    return;
+  }
+  const {
+    seedCredentialAccounts,
+  } = require('../../core/server/auth/better-auth/seed-credential-accounts');
+  await knex('user_accounts').where({ provider_id: 'credential' }).del();
+  await seedCredentialAccounts(knex);
+}
 
 const getCurrentOwnerUser = async () => {
   return await models.User.getOwnerUser(context.internal);

@@ -8,6 +8,9 @@ const {
 const { mockMail, assert, restore } = require('../../utils/e2e-framework-mock-manager');
 const { anyContentVersion, anyEtag, stringMatching, anyUuid } = matchers;
 
+// Device verification on Better Auth is plan Phase 3
+const isBetterAuth = configUtils.config.get('auth:engine') === 'better-auth';
+
 describe('Sessions API', function () {
   let agent;
 
@@ -50,7 +53,7 @@ describe('Sessions API', function () {
     await agent.get('/users/me/').expectStatus(403);
   });
 
-  describe('Staff 2FA', function () {
+  describe.skipIf(isBetterAuth)('Staff 2FA', function () {
     let mail;
 
     beforeEach(async function () {

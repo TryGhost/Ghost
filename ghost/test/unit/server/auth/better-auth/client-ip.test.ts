@@ -54,6 +54,7 @@ describe('setClientIPHeader', function () {
       logger: { debug() {}, info() {}, warn() {}, error() {} },
       limiters,
       sendPasswordResetEmail: async () => {},
+      isStaffDeviceVerificationEnabled: () => true,
     });
     const { options } = await auth.$context;
 

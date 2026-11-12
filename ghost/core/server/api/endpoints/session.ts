@@ -3,11 +3,37 @@ import type { NextFunction, Request, Response } from 'express';
 import * as errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import type { SpamPrevention } from '../../web/shared/middleware/api/spam-prevention';
+import config from '../../../shared/config';
+import urlUtils from '../../../shared/url-utils';
 
 const models = require('../../models');
 const auth = require('../../auth');
 const api = require('./index');
 const spamPrevention: SpamPrevention = require('../../web/shared/middleware/api/spam-prevention');
+
+// Chosen once at load, as in auth/authenticate.ts
+const isBetterAuth = config.get('auth:engine') === 'better-auth';
+
+type BetterAuthSession = ReturnType<
+  typeof import('../../auth/better-auth/session-controller').createSessionController
+>;
+
+// Better Auth loads only under its engine
+let betterAuthSession: BetterAuthSession | undefined;
+function getBetterAuthSession(): BetterAuthSession {
+  if (!betterAuthSession) {
+    const { createSessionController } = require('../../auth/better-auth/session-controller');
+
+    betterAuthSession = createSessionController({
+      getAuth: () => auth.betterAuth.service.api,
+      getOriginOfRequest: auth.session.getOriginOfRequest,
+      getAdminOrigin: () => urlUtils.getAdminOrigin(),
+      resetUserLogin: (req: Request) => spamPrevention.userLogin().resetRequest(req),
+      findUserByEmail: (email: string) => models.User.getByEmail(email),
+    }) as BetterAuthSession;
+  }
+  return betterAuthSession;
+}
 
 const messages = {
   accessDenied: 'Access Denied.',
@@ -29,6 +55,17 @@ const controller = {
           message: tpl(messages.accessDenied),
         }),
       );
+    }
+
+    if (isBetterAuth) {
+      const credentials = { email: object.username, password: object.password };
+      return Promise.resolve(function betterAuthSignInMw(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+      ) {
+        getBetterAuthSession().signIn(req, res, next, credentials);
+      });
     }
 
     let skipVerification = false;
@@ -86,6 +123,16 @@ const controller = {
       });
   },
   delete(): Promise<SessionMiddleware> {
+    if (isBetterAuth) {
+      return Promise.resolve(function betterAuthSignOutMw(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+      ) {
+        getBetterAuthSession().signOut(req, res, next);
+      });
+    }
+
     return Promise.resolve(function logoutSessionMw(
       req: Request,
       res: Response,
