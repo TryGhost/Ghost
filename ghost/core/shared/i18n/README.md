@@ -32,7 +32,7 @@ eventual owner is the same as theirs, whatever the settings module becomes.
 Still untested: a persisted settings edit reaching the listener end to end,
 failures after the translator is published, and listener counts across a
 same-process stop and reboot. The full audit from before the move is in the
-[service inventory at that revision](https://github.com/TryGhost/Ghost/blob/707fc5e5ac73882415089c2c61765eb30756e522/ghost/core/server/services/service-inventory.yaml#L4650).
+[service inventory at that revision](https://github.com/TryGhost/Ghost/tree/707fc5e5ac73882415089c2c61765eb30756e522/ghost/core/server/services/service-inventory.yaml#L4650).
 
 ## Tests
 

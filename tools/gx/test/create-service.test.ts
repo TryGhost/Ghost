@@ -6,6 +6,7 @@ import {
   mkdtempSync,
   readFileSync,
   readdirSync,
+  renameSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -18,14 +19,24 @@ import { fileURLToPath } from 'node:url';
 import yaml from 'js-yaml';
 import { createService } from '../create-service.ts';
 import { readDependencyBoundaries } from '../../scripts/lib/dependency-boundaries.ts';
+import { legacyInventoryFile as inventoryPath } from '../../configs/oxlint/legacy-services.ts';
 
 const repo = fileURLToPath(new URL('../../..', import.meta.url));
 const requireRoot = createRequire(path.join(repo, 'package.json'));
 const services = 'ghost/core/server/services';
 const tests = 'ghost/test/unit/server/services';
-const inventoryPath = `${services}/service-inventory.yaml`;
+const inventoryName = path.basename(inventoryPath);
+const legacyReader = 'tools/configs/oxlint/legacy-services.ts';
 const name = 'delivery-receipts';
 const roots: string[] = [];
+// The real inventory's sections, with nothing in them except what a test lists.
+const sections = Object.keys(
+  yaml.load(readFileSync(path.join(repo, inventoryPath), 'utf8')) as object,
+);
+const inventory = (legacy: Record<string, unknown> = {}) =>
+  yaml.dump(
+    Object.fromEntries(sections.map((section) => [section, section === 'services' ? legacy : {}])),
+  );
 
 afterEach(() => {
   for (const root of roots.splice(0)) {
@@ -39,9 +50,10 @@ function fixture() {
   for (const dir of [services, tests, 'tools/gx']) {
     mkdirSync(path.join(root, dir), { recursive: true });
   }
+  // One legacy entry whose directory is gone, and a standalone legacy file.
   writeFileSync(
     path.join(root, inventoryPath),
-    `# Preserve audit evidence and comments.\nexemplaryMigration: ${name}\nservices:\n  existing:\n    kind: directory\n`,
+    inventory({ existing: { kind: 'directory' }, 'limits.ts': { kind: 'file' } }),
   );
   cpSync(path.join(repo, '.oxlintrc.json'), path.join(root, '.oxlintrc.json'));
   copy(root, '.oxfmtrc.json');
@@ -97,7 +109,7 @@ function success(result: ReturnType<typeof run>) {
   assert.equal(result.status, 0, result.stdout + result.stderr);
 }
 
-test('creates source and a root test, preserves evidence, and enables both checks', () => {
+test('creates source and a root test without registering the service anywhere', () => {
   const root = fixture();
   const before = metadata(root);
   const files = createService({ name, rootDir: root });
@@ -106,28 +118,8 @@ test('creates source and a root test, preserves evidence, and enables both check
     `${services}/${name}/${name}-service.ts`,
     `${tests}/${name}/index.test.ts`,
   ]);
-  const inventory = yaml.load(read(root, inventoryPath)) as {
-    services: Record<
-      string,
-      { migrated: boolean; status: string; migration: { reviewedAt: string } }
-    >;
-  };
-  assert.equal(inventory.services[name]?.migrated, true);
-  assert.equal(inventory.services[name]?.status, 'pending');
-  assert.equal(
-    inventory.services[name]?.migration.reviewedAt,
-    execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
-  );
-  assert.ok(read(root, inventoryPath).startsWith('# Preserve audit evidence and comments.\n'));
-  assert.ok(read(root, inventoryPath).endsWith('  existing:\n    kind: directory\n'));
-  const updatedConfig = JSON.parse(read(root, '.oxlintrc.json'));
-  const previousConfig = JSON.parse(before[1]!);
-  const rootRule = updatedConfig.overrides.find(
-    (override: { rules: Record<string, unknown> }) => override.rules['ghost/service-root-shape'],
-  );
-  assert.ok(rootRule.files.includes(`${services}/${name}/index.ts`));
-  rootRule.files = rootRule.files.filter((file: string) => file !== `${services}/${name}/index.ts`);
-  assert.deepEqual(updatedConfig, previousConfig);
+  // Not being listed as legacy is what applies every check to the new service.
+  assert.deepEqual(metadata(root), before);
   assert.match(read(root, files[0]!), /default defineService\('DeliveryReceiptsService'/);
   assert.match(read(root, files[1]!), /import type \{ GhostLogger \}/);
 });
@@ -152,20 +144,20 @@ test('rejects invalid names without changing files', () => {
     assert.throws(() => createService({ name: invalid, rootDir: root }), /Invalid service name/);
   }
   assert.deepEqual(metadata(root), before);
-  assert.deepEqual(readdirSync(path.join(root, services)), ['service-inventory.yaml']);
+  assert.deepEqual(readdirSync(path.join(root, services)), [inventoryName]);
   assert.deepEqual(readdirSync(path.join(root, tests)), []);
 });
 
-test('formats short, numbered and maximum-length names, including appended entries', () => {
+test('formats short, numbered and maximum-length names', () => {
   const root = fixture();
   const oxfmt = path.join(path.dirname(requireRoot.resolve('oxfmt/package.json')), 'bin/oxfmt');
   for (const valid of ['a', 'notify-v2', 'z'.repeat(100)]) {
     const files = createService({ name: valid, rootDir: root });
-    success(run(root, oxfmt, ['--check', ...files, inventoryPath, '.oxlintrc.json']));
+    success(run(root, oxfmt, ['--check', ...files]));
   }
 });
 
-test('refuses existing directories, standalone files, tests, and inventory entries', () => {
+test('refuses existing directories, standalone files, tests, and legacy entries', () => {
   const root = fixture();
   const before = metadata(root);
   mkdirSync(path.join(root, services, 'directory'));
@@ -180,11 +172,12 @@ test('refuses existing directories, standalone files, tests, and inventory entri
     'test-only',
     'dangling',
     'existing',
-    'service-inventory',
+    'limits',
+    'legacy-service-inventory',
   ]) {
     assert.throws(
       () => createService({ name: existing, rootDir: root }),
-      /already exists|already inventoried/,
+      /already exists|is listed in .*legacy-service-inventory\.yaml/,
     );
   }
   assert.equal(read(root, `${services}/directory/index.ts`), 'keep source');
@@ -203,20 +196,20 @@ test('refuses a repeated generation without overwriting the service', () => {
   assert.deepEqual(metadata(root), before);
 });
 
-test('checks metadata before writing and removes new directories after a write failure', () => {
+test('reads the legacy inventory before writing and removes new directories after a write failure', () => {
   const root = fixture();
-  const lint = read(root, '.oxlintrc.json');
-  writeFileSync(path.join(root, '.oxlintrc.json'), '{"overrides":[]}');
+  const valid = read(root, inventoryPath);
+  writeFileSync(path.join(root, inventoryPath), '[]');
   const before = metadata(root);
-  assert.throws(() => createService({ name, rootDir: root }), /Unrecognized service root/);
+  assert.throws(() => createService({ name, rootDir: root }), /expected a services mapping/);
   assert.deepEqual(metadata(root), before);
-  assert.deepEqual(readdirSync(path.join(root, services)), ['service-inventory.yaml']);
-  writeFileSync(path.join(root, '.oxlintrc.json'), lint);
+  assert.deepEqual(readdirSync(path.join(root, services)), [inventoryName]);
+  writeFileSync(path.join(root, inventoryPath), valid);
   rmSync(path.join(root, tests), { recursive: true });
   const restored = metadata(root);
   assert.throws(() => createService({ name, rootDir: root }), /ENOENT/);
   assert.deepEqual(metadata(root), restored);
-  assert.deepEqual(readdirSync(path.join(root, services)), ['service-inventory.yaml']);
+  assert.deepEqual(readdirSync(path.join(root, services)), [inventoryName]);
 });
 
 test('gx routes service generation to its checkout and prints boot instructions', () => {
@@ -224,7 +217,11 @@ test('gx routes service generation to its checkout and prints boot instructions'
   for (const file of ['cli.ts', 'create-service.ts', 'run-ghost-command.ts', 'package.json']) {
     copy(root, `tools/gx/${file}`);
   }
-  symlinkSync(path.join(repo, 'tools/gx/node_modules'), path.join(root, 'tools/gx/node_modules'));
+  copy(root, legacyReader);
+  copy(root, 'tools/configs/oxlint/package.json');
+  for (const modules of ['tools/gx/node_modules', 'tools/configs/oxlint/node_modules']) {
+    symlinkSync(path.join(repo, modules), path.join(root, modules));
+  }
   const cli = path.join(root, 'tools/gx/cli.ts');
   const result = run(tmpdir(), cli, ['generate', 'service', name]);
   success(result);
@@ -232,6 +229,7 @@ test('gx routes service generation to its checkout and prints boot instructions'
   assert.ok(result.stdout.includes(`await require('./server/services/${name}').default.init()`));
   assert.match(result.stdout, /after its dependencies are ready/);
   assert.match(result.stdout, /pnpm check/);
+  assert.match(result.stdout, /no inventory entry or lint registration/);
   for (const args of [[], ['Bad_Name'], ['valid', 'extra'], ['valid', '--unknown']]) {
     assert.equal(run(tmpdir(), cli, ['generate', 'service', ...args]).status, 1);
   }
@@ -240,7 +238,7 @@ test('gx routes service generation to its checkout and prints boot instructions'
   assert.match(help.stdout, /Usage: pnpm gx generate service <name>/);
 });
 
-test('generated output passes real lint, boundary and inventory checks, which reject regressions', () => {
+test('generated output passes real lint, boundary and inventory checks with no registration, and they reject regressions', () => {
   const root = fixture();
   for (const file of [
     '.dependency-cruiser.cjs',
@@ -251,7 +249,7 @@ test('generated output passes real lint, boundary and inventory checks, which re
     'ghost/tsconfig.json',
     'ghost/test/tsconfig.json',
     `${services}/README.md`,
-    `${tests}/service-inventory.test.ts`,
+    `${tests}/legacy-service-inventory.test.ts`,
   ]) {
     copy(root, file);
   }
@@ -260,15 +258,16 @@ test('generated output passes real lint, boundary and inventory checks, which re
     filter: (source) => !source.includes('node_modules'),
   });
   symlinkSync(path.join(repo, 'node_modules'), path.join(root, 'node_modules'));
+  symlinkSync(
+    path.join(repo, 'tools/configs/oxlint/node_modules'),
+    path.join(root, 'tools/configs/oxlint/node_modules'),
+  );
   symlinkSync(path.join(repo, 'ghost/node_modules'), path.join(root, 'ghost/node_modules'));
   mkdirSync(path.join(root, 'apps'));
   writeFileSync(path.join(root, '.dependency-cruiser-known-violations.json'), '[]');
+  // No legacy entries: the generated service is the only one, and it is not listed.
+  writeFileSync(path.join(root, inventoryPath), inventory());
   createService({ name, rootDir: root });
-  // Keep the generated entry intact while removing the placeholder used by unit fixtures.
-  writeFileSync(
-    path.join(root, inventoryPath),
-    read(root, inventoryPath).replace('  existing:\n    kind: directory\n', ''),
-  );
   writeFileSync(
     path.join(root, 'ghost/vitest.config.mts'),
     `export default { test: { globals: true, setupFiles: ['./setup.cjs'], include: ['test/unit/**/*.test.ts'], maxWorkers: 1 } };\n`,
@@ -307,9 +306,7 @@ test('generated output passes real lint, boundary and inventory checks, which re
     ]),
   );
   success(run(root, oxlint, ['--deny-warnings', source, `${tests}/${name}`]));
-  success(
-    run(root, oxfmt, ['--check', source, `${tests}/${name}`, inventoryPath, '.oxlintrc.json']),
-  );
+  success(run(root, oxfmt, ['--check', source, `${tests}/${name}`]));
   const cruiseArgs = [source, '--config', '.dependency-cruiser.cjs', '--output-type', 'json'];
   const cruise = run(root, depcruise, cruiseArgs);
   success(cruise);
@@ -353,15 +350,17 @@ test('generated output passes real lint, boundary and inventory checks, which re
         violation.from === implementation && violation.rule.name === 'service-dependencies',
     ),
   );
-  const inventory = yaml.load(read(root, inventoryPath)) as { services: Record<string, unknown> };
-  delete inventory.services[name];
-  writeFileSync(path.join(root, inventoryPath), yaml.dump(inventory));
+  // The inventory test requires an index.ts root from anything that is not legacy.
+  renameSync(path.join(root, rootFile), path.join(root, source, 'index.js'));
   const invalidInventory = run(path.join(root, 'ghost'), vitest, [
     'run',
     '--config',
     'vitest.config.mts',
-    'service-inventory.test.ts',
+    'legacy-service-inventory.test.ts',
   ]);
   assert.equal(invalidInventory.status, 1);
-  assert.match(invalidInventory.stdout + invalidInventory.stderr, /Update the inventory/);
+  assert.match(
+    invalidInventory.stdout + invalidInventory.stderr,
+    /not a legacy entry, so it must be a directory with an index\.ts root/,
+  );
 });

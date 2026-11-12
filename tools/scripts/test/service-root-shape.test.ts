@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import yaml from 'js-yaml';
+import { legacyInventoryFile } from '../../configs/oxlint/legacy-services.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
 const requireRoot = createRequire(path.join(root, 'package.json'));
@@ -24,7 +24,12 @@ interface Diagnostic {
   labels: { span: { line: number; column: number } }[];
 }
 
-function lint(code: string, filename = 'ghost/core/server/services/app-installations/index.ts') {
+// The fixture lists one legacy service. Every other root must be standard.
+function lint(
+  code: string,
+  filename = 'ghost/core/server/services/app-installations/index.ts',
+  inventory: string | null = JSON.stringify({ services: { legacy: {} } }),
+) {
   const cwd = mkdtempSync(path.join(tmpdir(), 'ghost-service-root-oxlint-'));
   try {
     const localConfig = structuredClone(config);
@@ -32,14 +37,17 @@ function lint(code: string, filename = 'ghost/core/server/services/app-installat
     cpSync(path.join(root, 'tools/configs/oxlint'), path.join(cwd, 'tools/configs/oxlint'), {
       recursive: true,
     });
-    // The injection guard loads the shared service policy from the repository root.
+    // The rules load the shared service policy from the repository root.
     for (const file of [
       '.dependency-cruiser.cjs',
       'tools/scripts/ci/service-dependency-resolver.mjs',
-      'ghost/core/server/services/service-inventory.yaml',
     ]) {
       mkdirSync(path.dirname(path.join(cwd, file)), { recursive: true });
       cpSync(path.join(root, file), path.join(cwd, file));
+    }
+    if (inventory !== null) {
+      mkdirSync(path.dirname(path.join(cwd, legacyInventoryFile)), { recursive: true });
+      writeFileSync(path.join(cwd, legacyInventoryFile), inventory);
     }
     for (const plugin of localConfig.jsPlugins) {
       plugin.specifier = `./tools/configs/oxlint/${path.basename(plugin.specifier)}`;
@@ -61,7 +69,7 @@ function lint(code: string, filename = 'ghost/core/server/services/app-installat
     assert.equal(result.stderr, '');
     assert.ok(result.status === 0 || result.status === 1, result.stdout);
     const output = JSON.parse(result.stdout) as { diagnostics: Diagnostic[] };
-    return { ...output, status: result.status };
+    return { ...output, status: result.status, stdout: result.stdout };
   } finally {
     rmSync(cwd, { recursive: true, force: true });
   }
@@ -315,10 +323,11 @@ test('reports the offending export position and supports Oxlint inline exception
   );
 });
 
-test('does not enforce migrated shape on legacy roots or implementation files', () => {
+test('does not enforce the root shape on legacy roots or implementation files', () => {
   for (const filename of [
-    'ghost/core/server/services/explore/index.ts',
+    'ghost/core/server/services/legacy/index.ts',
     'ghost/core/server/services/app-installations/implementation.ts',
+    'ghost/core/server/services/app-installations/nested/index.ts',
     'ghost/test/example.ts',
     'apps/admin/example.ts',
   ]) {
@@ -326,36 +335,56 @@ test('does not enforce migrated shape on legacy roots or implementation files', 
   }
 });
 
-test('configured roots match the inventory migration markers exactly', () => {
-  const inventory = yaml.load(
-    readFileSync(path.join(root, 'ghost/core/server/services/service-inventory.yaml'), 'utf8'),
-  ) as {
-    services: Record<string, { migrated?: boolean; kind: string }>;
-  };
-  for (const override of config.overrides) {
-    const settings = override.rules[ruleName];
-    if (!settings) {
-      continue;
-    }
-    assert.equal(settings[0], 'error');
-    for (const file of override.files) {
-      const expectedImport = path
-        .relative(path.dirname(file), 'ghost/core/kernel/define-service')
-        .split(path.sep)
-        .join('/');
-      assert.equal(settings[1].helperImport, expectedImport, file);
-    }
+test('enforces the root shape on every root that is not a legacy service', () => {
+  // A new service needs no registration: not being listed is what applies the rule.
+  for (const filename of [
+    'ghost/core/server/services/brand-new/index.ts',
+    'ghost/core/server/services/legacy-extra/index.ts',
+  ]) {
+    const result = lint('export default { init() {}, service: {} };', filename);
+    assert.equal(result.status, 1, filename);
+    assert.equal(result.diagnostics.length, 1, filename);
+    assert.equal(result.diagnostics[0]?.code, `${ruleName.replace('/', '(')})`);
+    assert.match(result.diagnostics[0]?.message ?? '', messages.defaultExport!);
   }
-  const actual = config.overrides
-    .filter((override: { rules: Record<string, unknown> }) => override.rules[ruleName])
-    .flatMap((override: { files: string[] }) => override.files)
-    .sort();
-  const expected = Object.entries(inventory.services)
-    .filter(([, service]) => service.migrated)
-    .map(
-      ([name, service]) =>
-        `ghost/core/server/services/${service.kind === 'directory' ? `${name}/index.ts` : name}`,
-    )
-    .sort();
-  assert.deepEqual(actual, expected, 'Update Oxlint scope when marking a service migrated');
+  assert.equal(
+    lint(prefix + `export default ${factory};`, 'ghost/core/server/services/brand-new/index.ts')
+      .status,
+    0,
+  );
+});
+
+test('applies the root shape once a legacy entry is deleted', () => {
+  const filename = 'ghost/core/server/services/legacy/index.ts';
+  const handWritten = 'export default { init() {}, service: {} };';
+  assert.equal(lint(handWritten, filename).status, 0);
+  assert.equal(lint(handWritten, filename, JSON.stringify({ services: {} })).status, 1);
+});
+
+test('fails instead of skipping roots when the legacy service inventory cannot be read', () => {
+  for (const inventory of [null, '[]', JSON.stringify({ services: { legacy: 'yes' } })]) {
+    const result = lint(prefix + `export default ${factory};`, undefined, inventory);
+    assert.equal(result.status, 1, String(inventory));
+    assert.match(result.stdout, /legacy-service-inventory\.yaml/, String(inventory));
+  }
+});
+
+test('configures the rule for every service root with the kernel helper', () => {
+  const overrides = config.overrides.filter(
+    (override: { rules: Record<string, unknown> }) => override.rules[ruleName],
+  );
+  assert.deepEqual(
+    overrides.map((override: { files: string[] }) => override.files),
+    [['ghost/core/server/services/*/index.ts']],
+    'The legacy service inventory decides which roots are exempt, not a list of paths',
+  );
+  const settings = overrides[0].rules[ruleName];
+  assert.equal(settings[0], 'error');
+  assert.equal(
+    settings[1].helperImport,
+    path
+      .relative('ghost/core/server/services/example', 'ghost/core/kernel/define-service')
+      .split(path.sep)
+      .join('/'),
+  );
 });

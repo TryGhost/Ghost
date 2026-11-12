@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@internal/cfg-eslint": "workspace:*",
+    "@internal/cfg-oxlint": "workspace:*",
     "@internal/cfg-typescript": "workspace:*",
     "@playwright/test": "catalog:",
     "@types/js-yaml": "catalog:",
@@ -42,7 +43,7 @@
       "serviceDependencyContracts": [
         "{workspaceRoot}/.dependency-cruiser.cjs",
         "{workspaceRoot}/.dependency-cruiser-known-violations.json",
-        "{workspaceRoot}/ghost/core/server/services/service-inventory.yaml"
+        "{workspaceRoot}/ghost/core/server/services/legacy-service-inventory.yaml"
       ],
       "adminTestContracts": [
         "{workspaceRoot}/apps/admin/package.json",
@@ -61,7 +62,7 @@
         "{workspaceRoot}/tools/configs/oxlint/**/*",
         "{workspaceRoot}/**/eslint.config.*",
         "{workspaceRoot}/tools/configs/eslint*/**/*.mjs",
-        "{workspaceRoot}/ghost/core/server/services/service-inventory.yaml"
+        "{workspaceRoot}/ghost/core/server/services/legacy-service-inventory.yaml"
       ]
     },
     "targets": {
