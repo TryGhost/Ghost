@@ -151,10 +151,30 @@ export function mutateBootInit(boot: string, service: string) {
   if (!required) {
     return undefined;
   }
-  const call = new RegExp(`\\b${required[1]}\\.init\\(`);
-  return call.test(boot)
-    ? { variable: required[1] as string, source: boot.replace(call, 'void $&') }
-    : undefined;
+  const start = new RegExp(`\\b${required[1]}\\.init\\(`).exec(boot);
+  if (!start) {
+    return undefined;
+  }
+  // Find the end of the call, including its arguments.
+  let depth = 0;
+  let end = start.index + start[0].length - 1;
+  for (; end < boot.length; end++) {
+    depth += boot[end] === '(' ? 1 : boot[end] === ')' ? -1 : 0;
+    if (depth === 0) {
+      break;
+    }
+  }
+  const call = boot.slice(start.index, end + 1);
+  // Boot moves on after a chain of promise steps. An init that rejects within them,
+  // like a stub behind an async wrapper, still fails boot; one a test holds pending
+  // until a timer or setImmediate does not stop it. Only a test that holds init
+  // pending can tell the difference. Boot tests run boot.js in a vm context without
+  // Node globals, so this uses Promise alone.
+  const movedOn = 'Array.from({ length: 50 }).reduce((step) => step.then(), Promise.resolve())';
+  return {
+    variable: required[1] as string,
+    source: `${boot.slice(0, start.index)}Promise.race([${call}, ${movedOn}])${boot.slice(end + 1)}`,
+  };
 }
 
 export function verifyService({

@@ -183,8 +183,8 @@ dependency-cruiser twice, resolving workspace packages to authored source and th
 to the built output Ghost loads: service boundaries must hold for both, every part
 of an added allowance must match an import from a migrated service, and each file
 an added allowance admits must be named in a boundary regression. It then runs the full unit suite, runs the changed unit tests shuffled and each one
-alone and, for a migrated service, confirms boot tests fail when boot stops waiting
-for its `init()`.
+alone and, for a migrated service, confirms a boot test fails when boot stops waiting
+for its `init()` but still sees it reject.
 `--static` skips lint, types and tests. `review` lines are other inventory entries
 that mention the service, for the
 [verify-service-change skill](../../.agents/skills/verify-service-change/SKILL.md)

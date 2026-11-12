@@ -4,6 +4,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test, type TestContext } from 'node:test';
+import { runInNewContext } from 'node:vm';
 import {
   addedAllowances,
   allowanceProblems,
@@ -205,11 +206,46 @@ test('only service rules count as built-output violations', () => {
   );
 });
 
-test('the boot mutation stops boot waiting without removing the call', () => {
+test('the boot mutation stops boot waiting but keeps rejections', async () => {
   const mutated = mutateBootInit(boot, 'staff');
   assert.equal(mutated?.variable, 'staffService');
-  assert.match(mutated?.source ?? '', /Promise\.all\(\[void staffService\.init\(\)\]\)/);
+  assert.match(
+    mutated?.source ?? '',
+    /Promise\.all\(\[Promise\.race\(\[staffService\.init\(\), Array\.from\(\{ length: 50 \}\)/,
+  );
   assert.equal(mutateBootInit(boot, 'tiers'), undefined);
+  const withArguments = mutateBootInit(
+    boot.replace('staffService.init()', 'staffService.init({ a: f(1) })'),
+    'staff',
+  );
+  assert.match(withArguments?.source ?? '', /race\(\[staffService\.init\(\{ a: f\(1\) \}\), Array/);
+
+  // Run the mutated boot as the boot tests do, in a context without Node globals,
+  // against the two kinds of init they use.
+  const startBoot = (init: () => Promise<unknown>) =>
+    runInNewContext(`${mutated?.source}\ninitServices();`, {
+      require: () => ({ default: { init } }),
+    }) as Promise<void>;
+  let released = false;
+  await startBoot(
+    () =>
+      new Promise((resolve) => {
+        setImmediate(() => {
+          released = true;
+          resolve(undefined);
+        });
+      }),
+  );
+  assert.equal(released, false, 'boot waited for an init that was still pending');
+  class InitFailure extends Error {}
+  const failure = new InitFailure('init failed');
+  await assert.rejects(
+    startBoot(async () => {
+      await null;
+      throw failure;
+    }),
+    (error) => error === failure,
+  );
 });
 
 test('a dirty tree or stale base stops before any other check', async (t) => {
@@ -368,7 +404,7 @@ test('the boot check fails when tests survive the mutation and restores boot.js'
   const check = f.verify('staff', false, runner).at(-1);
   assert.equal(check?.name, 'boot-waits-for-init');
   assert.equal(check?.status, 'fail');
-  assert.match(during, /void staffService\.init/);
+  assert.match(during, /Promise\.race\(\[staffService\.init\(\)/);
   assert.equal(await readFile(join(f.root, 'ghost/core/boot.js'), 'utf8'), boot);
 });
 
