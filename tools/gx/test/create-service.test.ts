@@ -258,6 +258,10 @@ test('generated output passes real lint, boundary and inventory checks with no r
     filter: (source) => !source.includes('node_modules'),
   });
   symlinkSync(path.join(repo, 'node_modules'), path.join(root, 'node_modules'));
+  symlinkSync(
+    path.join(repo, 'tools/configs/oxlint/node_modules'),
+    path.join(root, 'tools/configs/oxlint/node_modules'),
+  );
   symlinkSync(path.join(repo, 'ghost/node_modules'), path.join(root, 'ghost/node_modules'));
   mkdirSync(path.join(root, 'apps'));
   writeFileSync(path.join(root, '.dependency-cruiser-known-violations.json'), '[]');

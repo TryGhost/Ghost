@@ -66,7 +66,13 @@ function fixture(t: TestContext, files: Record<string, string>) {
     mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
     cpSync(path.join(repository, file), path.join(root, file));
   }
-  for (const file of [resolver, 'tools/scripts/node_modules']) {
+  // Each workspace resolves its own dependencies, so the copied inventory reader
+  // finds the YAML parser that @internal/cfg-oxlint declares.
+  for (const file of [
+    resolver,
+    'tools/scripts/node_modules',
+    'tools/configs/oxlint/node_modules',
+  ]) {
     mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
     symlinkSync(path.join(repository, file), path.join(root, file));
   }
