@@ -2,18 +2,87 @@
 
 Automations run a series of actions for a member after signup. Each automation is currently one ordered path of `wait` and `send_email` actions. It can be active or inactive.
 
+## API and repository boundaries
+
+Automations is migrating to an API that owns workflow logic and a repository
+that provides data access. The `-2` files define the target pattern for new and
+migrated operations:
+
+- [`automations-api-2.ts`](automations-api-2.ts) composes operations through an
+  injected repository. It owns workflow decisions, domain validation, IDs and
+  timestamps, scheduling calculations, response assembly, and event dispatch.
+- [`automations-repository-2.ts`](automations-repository-2.ts) defines the
+  connection-generic data-access contract. Each query operation takes its
+  connection explicitly and roughly corresponds to one database query.
+- [`database-automations-repository-2.ts`](database-automations-repository-2.ts)
+  implements that contract with Knex. It owns SQL, joins, query filters,
+  aggregates, row locks, conditional updates, and database row decoding.
+
+A repository can express complex selection criteria in SQL, as
+`findFirstActionRevisions` does. Returning typed rows, normalizing database
+values, and guarding an empty insert are data-access concerns. Deciding which
+operation to perform next, constructing domain payloads, or coordinating several
+queries belongs in the API or its private helpers. Do not split a query into
+extra round trips just to make its SQL simpler.
+
+### Transaction ownership
+
+The API composes atomic workflows with the repository's `withTransaction`
+wrapper and passes the resulting connection to every query in that workflow.
+Operations that participate in a caller's transaction use the supplied connection
+rather than opening an independent transaction. `withConnection` provides access
+when no transaction is needed.
+
+Keep lock ordering and conditional-write guards intact when moving logic. A lock
+query belongs in the repository; the workflow that decides when to acquire it
+belongs in the API. Dispatch events that depend on committed writes after the
+transaction succeeds, as `notify` does when requesting a poll.
+
+### Migration and examples
+
+[`automations-api.ts`](automations-api.ts) remains the application-facing API and
+currently wires the new factory alongside the legacy repository. Keep its
+callers' contracts stable during the migration. The workflow logic still in
+[`database-automations-repository.ts`](database-automations-repository.ts) is
+migration backlog, not a pattern to extend for new operations.
+
+Query extractions can land before their callers migrate. Reusing `insertActions`
+or `insertRunSteps` is an intermediate step: the parent workflow is migrated
+only when its orchestration has moved out of the database repository. Preserve
+behavior while changing this boundary; service initialization and removal of
+legacy welcome-email support are separate work.
+
+Use these implementations as examples:
+
+- `notify` in [`automations-api-2.ts`](automations-api-2.ts) owns eligibility
+  decisions, prepares run and step rows, composes an atomic enrollment, and
+  requests a poll after commit. Its query methods handle member locking,
+  matching action revisions, prior enrollment checks, and inserts.
+- `trackEmailClicked` in the same file uses a caller-supplied connection. The API
+  decides whether a click is new; repository queries lock rows, conditionally
+  set the timestamp, and increment the counter.
+
+API behavior tests live in
+[`automations-api-2.test.ts`](../../../../test/unit/server/services/automations/automations-api-2.test.ts)
+with the
+[`test repository helper`](../../../../test/unit/server/services/automations/test-automations-repository-2.ts).
+Database query and row-lock tests live in
+[`database-automations-repository-2.test.ts`](../../../../test/integration/services/automations/database-automations-repository-2.test.ts).
+Retain existing behavioral coverage as operations migrate; an in-memory test
+repository does not verify MySQL locking.
+
 ## How a run moves forward
 
-The member repository calls `notify(event)` after signup or a paid subscription change. Matching events start automation runs.
+The member repository calls `notify(event)` after signup or a paid subscription change. The automations API decides whether to enroll the member, creates runs and their first steps through repository queries in one transaction, and requests a poll after commit.
 
-The database repository creates run(s) and queues their first step(s). Ghost's boot process starts the service, which checks for ready steps. It checks again when a new run starts or a later step becomes ready. An in-memory timer handles checks while Ghost is running; the scheduler can wake Ghost after a restart.
+Ghost's boot process starts the service, which checks for ready steps. It checks again when a new run starts or a later step becomes ready. An in-memory timer handles checks while Ghost is running; the scheduler can wake Ghost after a restart.
 
 Each check locks ready steps, then runs up to 100 at once. A `wait` action advances when its time arrives. A `send_email` action checks the member's current status and email preference before sending. Disabled automations and ineligible members stop.
 
 ## Where to look
 
-- [`automations-api.ts`](automations-api.ts) handles reads, edits, validation, and event notifications. Edits require one path with no branches or loops.
-- [`database-automations-repository.ts`](database-automations-repository.ts) stores automations, runs, and steps.
+- [`automations-api.ts`](automations-api.ts) exposes reads, edits, validation, and event notifications while delegating migrated operations to [`automations-api-2.ts`](automations-api-2.ts). Edits require one path with no branches or loops.
+- [`database-automations-repository-2.ts`](database-automations-repository-2.ts) implements the target data-access interface; [`database-automations-repository.ts`](database-automations-repository.ts) retains operations still being migrated.
 - [`service.ts`](service.ts) starts checks and schedules future ones.
 - [`poll.ts`](poll.ts) runs ready steps.
 - [`welcome-email-automation-poll.ts`](welcome-email-automation-poll.ts) processes older welcome email runs.
