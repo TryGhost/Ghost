@@ -72,6 +72,9 @@ describe('automations service', function () {
 
     it('subscribes each poller only once when init is called multiple times', function () {
       automations.init(initOptions);
+      sinon.assert.calledTwice(domainEvents.subscribe);
+
+      automations.init(initOptions);
       automations.init(initOptions);
       automations.init(initOptions);
       automations.init(initOptions);
