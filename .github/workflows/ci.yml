@@ -516,6 +516,9 @@ jobs:
       - name: Lint boundaries
         run: pnpm nx run ghost-monorepo:lint:boundaries
 
+      - name: Lint dependencies
+        run: pnpm lint:dependencies
+
       - name: Check formatting
         run: pnpm format:check
 
