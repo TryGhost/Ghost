@@ -38,7 +38,6 @@ import {
   type FieldSource,
 } from './queries';
 import { mintableKey } from './key';
-import { parseRequest } from '../../lib/parse-request';
 import { type RecordMetafieldAction, type RequestContext } from './actions';
 import type { MetafieldsTracking } from './tracking';
 
@@ -312,51 +311,6 @@ export class MetafieldDefinitionsService {
   }
 
   /**
-   * Given an executor it joins that transaction; given none it opens its own. Unlike
-   * `add`, the key is stated rather than minted from the name, and nothing about it is
-   * worked around: a caller states a key because something else already names that key,
-   * so a variant of it would be a field nothing points at.
-   *
-   * The field is returned rather than logged: the history writes on its own connection,
-   * which a single-connection pool would deadlock against an open transaction.
-   */
-  async addOne(
-    namespace: Namespace,
-    wanted: {
-      key: string;
-      name: string;
-      access: z.infer<typeof FieldAccess>;
-    } & TypedSettings,
-    { executor = this.knex }: { executor?: Knex } = {},
-  ): Promise<Metafield> {
-    await this.namespaces.assertChangeable(namespace);
-    this.assertCreatable(wanted.type);
-    // Before any database access, the way `add` mints before opening its transaction:
-    // an unusable key is a payload problem worth reporting on its own terms.
-    const key = usableKey(wanted.key);
-
-    const write = async (db: Knex) => {
-      await this.assertRoom(db, namespace, 1);
-      await this.assertKeyAvailable(db, { namespace, key });
-      await this.assertNameAvailable(db, namespace, wanted.name);
-
-      await this.insertField(db, {
-        namespace,
-        key,
-        name: wanted.name,
-        typed: wanted,
-        memberAccess: wanted.access.member,
-        sortOrder: await this.nextSortOrder(db, namespace),
-      });
-      const [created] = await this.readMany(db, namespace, [key]);
-      return created;
-    };
-
-    // knex's marker for a transactor: join it rather than nesting a savepoint under it.
-    return executor.isTransaction ? write(executor) : executor.transaction(write);
-  }
-
-  /**
    * Refuses a type this site doesn't offer yet: one still in development, whose Labs flag is
    * off here. Asked of every create, whoever makes it, so the API refuses what Admin doesn't
    * offer.
@@ -367,22 +321,6 @@ export class MetafieldDefinitionsService {
         message: `Custom fields of the type ${type} are not available on this site.`,
         property: 'type',
         context,
-      });
-    }
-  }
-
-  /**
-   * Only for a stated key. Minting picks a free one instead, so this reads as a clean 422
-   * where the unique index would read as a 500.
-   */
-  private async assertKeyAvailable(db: Knex, field: FieldIdentity): Promise<void> {
-    const taken = await db(FIELDS_TABLE)
-      .where({ namespace: field.namespace, key: field.key })
-      .first();
-    if (taken) {
-      throw new errors.ValidationError({
-        message: 'A custom field with this key already exists.',
-        property: 'key',
       });
     }
   }
@@ -425,8 +363,7 @@ export class MetafieldDefinitionsService {
     return row ? this.readField(row) : null;
   }
 
-  /** The same entry `add` writes. Only the caller knows its transaction committed. */
-  async recordCreated(context: RequestContext, fields: Metafield[]): Promise<void> {
+  private async recordCreated(context: RequestContext, fields: Metafield[]): Promise<void> {
     for (const field of fields) {
       await this.recordAction({
         context,
@@ -797,32 +734,6 @@ export class MetafieldDefinitionsService {
       });
     });
   }
-}
-
-/**
- * A stated key, checked: made of the characters every key is, no longer than its column, and
- * not a name every object already has. Minting derives keys that are all three by
- * construction; a caller stating its own has said nothing about any of them.
- *
- * The length bound is the column's own, not `mintKey`'s: that one holds back room for a
- * `_<n>` collision suffix, and a stated key is written exactly as given and never
- * suffixed, so the whole column is available to it.
- */
-function usableKey(stated: string): Key {
-  const key = parseRequest(KeySchema, stated, 'key');
-  if (key.length > MAX_KEY_LENGTH) {
-    throw new errors.ValidationError({
-      message: `A custom field key can be at most ${MAX_KEY_LENGTH} characters.`,
-      property: 'key',
-    });
-  }
-  if (RESERVED_KEYS.includes(key)) {
-    throw new errors.ValidationError({
-      message: `${key} cannot be used as a custom field key.`,
-      property: 'key',
-    });
-  }
-  return key;
 }
 
 // What a zod issue points at within one field, by its path, such as `name` or
