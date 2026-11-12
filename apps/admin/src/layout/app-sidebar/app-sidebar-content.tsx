@@ -1,6 +1,7 @@
 import { SidebarContent } from '@tryghost/shade/components';
 import { useFeatureFlag } from '@tryghost/admin-x-framework/hooks';
 import { cn } from '@tryghost/shade/utils';
+import { Stack } from '@tryghost/shade/primitives';
 
 import AppSidebarBanner from './app-sidebar-banner';
 import NavMain from './nav-main';
@@ -37,17 +38,31 @@ function AppSidebarContent({ floating = false }: AppSidebarContentProps) {
         admin7Design && ADMIN7_NAV_ICON_CLASS_NAME,
       )}
     >
-      <div className={cn('flex flex-col gap-2', groupGap)}>
+      <Stack
+        className={cn(
+          !admin7Design && groupGap,
+          admin7Design &&
+            '[&>[data-sidebar=group]+[data-sidebar=group]]:border-t [&>[data-sidebar=group]+[data-sidebar=group]]:border-border-default [&>[data-sidebar=group]+[data-sidebar=group]]:pt-4',
+        )}
+        gap="sm"
+      >
         <NavMain />
         <NavContent />
         <NavApps />
         {!admin7Design && <NavGhostPro />}
-      </div>
-      <div className={cn('flex flex-col gap-2', groupGap)}>
+      </Stack>
+      <Stack
+        className={cn(
+          !admin7Design && groupGap,
+          admin7Design &&
+            '[&>[data-sidebar=group]:has([data-sidebar=menu-item])]:border-t [&>[data-sidebar=group]:has([data-sidebar=menu-item])]:border-border-default [&>[data-sidebar=group]:has([data-sidebar=menu-item])]:pt-4',
+        )}
+        gap="sm"
+      >
         {/* The full-height sidebar pins its banner above the footer instead */}
         {floating && <AppSidebarBanner banner={banner} />}
         <NavSettings admin7Design={admin7Design} className="pb-0" />
-      </div>
+      </Stack>
     </SidebarContent>
   );
 }

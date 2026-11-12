@@ -86,6 +86,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
   const memberCount = useMemberCount();
   const automationsEnabled = useFeatureFlag('automations');
   const appsEnabled = useFeatureFlag('apps');
+  const admin7Design = useFeatureFlag('admin7Design');
   const isMembersRouteActive = useIsActiveLink({ path: 'members', activeOnSubpath: true });
   const isMemberActivityActive = useIsActiveLink({ path: 'members-activity' });
 
@@ -196,17 +197,17 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     </>
   );
 
-  // With Apps on, eyebrows group the nav: Content and Audience here, Apps below.
-  if (appsEnabled) {
+  // Admin 7 keeps Content and Audience separate even without the Apps eyebrows.
+  if (appsEnabled || admin7Design) {
     return (
       <>
         <NavGroup {...props}>
-          <NavGroup.Label>Content</NavGroup.Label>
+          {appsEnabled && <NavGroup.Label>Content</NavGroup.Label>}
           <NavGroup.Menu>{contentItems}</NavGroup.Menu>
         </NavGroup>
         {hasAudienceItems && (
           <NavGroup {...props}>
-            <NavGroup.Label>Audience</NavGroup.Label>
+            {appsEnabled && <NavGroup.Label>Audience</NavGroup.Label>}
             <NavGroup.Menu>{audienceItems}</NavGroup.Menu>
           </NavGroup>
         )}
