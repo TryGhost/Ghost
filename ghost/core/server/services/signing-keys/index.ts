@@ -44,7 +44,7 @@ async function scheduleCheckJob(jobsService: JobsService): Promise<void> {
 
 // Before background services start there's no jobs service yet; scheduleCheckJob covers boot
 async function schedule(): Promise<void> {
-  if (scheduled || !jobs || process.env.NODE_ENV?.startsWith('test')) {
+  if (scheduled || !jobs) {
     return;
   }
 

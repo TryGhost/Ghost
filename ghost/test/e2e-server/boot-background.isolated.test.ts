@@ -8,6 +8,8 @@ const { GhostServer: GhostServerClass } = require('../../core/server/ghost-serve
 const EmailService = require('../../core/server/services/email-service/email-service');
 const emailService = require('../../core/server/services/email-service');
 const { GiftDeliveryService } = require('../../core/server/services/gifts/gift-delivery-service');
+const giftJobs = require('../../core/server/services/gifts/jobs');
+const memberJobs = require('../../core/server/services/members/jobs');
 const themes = require('../../core/server/services/themes');
 const activitypub = require('../../core/server/services/activitypub');
 const updateCheck = require('../../core/server/services/update-check');
@@ -91,6 +93,10 @@ describe('Background startup', function () {
       failedCount: 0,
     });
     // These later services start provider work and long-lived timers.
+    sandbox.stub(giftJobs, 'scheduleGiftCleanupJob').resolves();
+    sandbox.stub(giftJobs, 'scheduleGiftReminderJob').resolves();
+    sandbox.stub(memberJobs, 'scheduleTokenCleanupJob').resolves();
+    sandbox.stub(memberJobs, 'scheduleExpiredCompCleanupJob').resolves();
     sandbox.stub(activitypub, 'init').resolves();
     sandbox.stub(updateCheck, 'scheduleJobs').resolves();
     sandbox.stub(milestones, 'initAndRun').callsFake(() => {
